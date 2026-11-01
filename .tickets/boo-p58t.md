@@ -27,3 +27,7 @@ Record a decision for existing storage versus plugin. Prove concurrent writes, d
 **2026-11-01T23:02:12Z**
 
 Target Jellyfin server supplied by user: https://jellyfin.example.com. Discover its version during integration. Request credentials only through T3 private secret input.
+
+**2026-11-01T23:45:22Z**
+
+Research head e9dacdf4698f086d2aba741e5c5da36a0b84cb97 is awaiting independent review. Public evidence reports server 12.4.0; authenticated checks remain unproven. Parent has not selected a new plugin: existing advertised JellyfinEnhanced routes must be assessed before declaring existing server capabilities inadequate. Private login requested through T3; no credentials stored in this ticket.
