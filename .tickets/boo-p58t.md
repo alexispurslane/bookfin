@@ -21,3 +21,9 @@ docs/plans/bookfin.md
 
 Record a decision for existing storage versus plugin. Prove concurrent writes, discovery, deletions, isolation, retry, size limits, and restart behavior. Do not promise full sync from a successful single-device round trip.
 
+
+## Notes
+
+**2026-11-01T23:02:12Z**
+
+Target Jellyfin server supplied by user: https://jellyfin.example.com. Discover its version during integration. Request credentials only through T3 private secret input.
