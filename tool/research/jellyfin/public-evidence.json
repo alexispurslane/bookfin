@@ -1,0 +1,49 @@
+{
+  "observedAtUtc": "2026-11-01T23:28:32.456809Z",
+  "evidenceClass": "live-public-http",
+  "serverOrigin": "https://jellyfin.example.com",
+  "version": "12.4.0",
+  "productName": "Jellyfin Server",
+  "openApiVersion": "12.4.0",
+  "routes": {
+    "/DisplayPreferences/{displayPreferencesId}": [
+      "get",
+      "post"
+    ],
+    "/UserViews": [
+      "get"
+    ],
+    "/Users/Me": [
+      "get"
+    ],
+    "/Items": [
+      "get",
+      "delete"
+    ],
+    "/Items/{itemId}": [
+      "post",
+      "delete",
+      "get"
+    ],
+    "/Items/{itemId}/PlaybackInfo": [
+      "get",
+      "post"
+    ],
+    "/Items/{itemId}/Download": [
+      "get"
+    ],
+    "/Items/{itemId}/File": [
+      "get"
+    ],
+    "/Sessions/Playing": [
+      "post"
+    ],
+    "/Sessions/Playing/Progress": [
+      "post"
+    ],
+    "/Sessions/Playing/Stopped": [
+      "post"
+    ]
+  },
+  "authenticatedChecks": "blocked-no-credentials"
+}

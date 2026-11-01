@@ -1,0 +1,44 @@
+{
+  "evidenceClass": "local-file-backed-whole-set-model-not-jellyfin",
+  "readMergeWrite": {
+    "acknowledgedWrites": 2,
+    "remainingRecordIds": [
+      "bookmark-b"
+    ],
+    "lostRecordIds": [
+      "bookmark-a"
+    ]
+  },
+  "partitionDiscovery": {
+    "storedDevicePartitions": 2,
+    "discoverableDeviceIds": [
+      "device-b"
+    ],
+    "undiscoverableDeviceIds": [
+      "device-a"
+    ]
+  },
+  "staleRetryAfterDeletion": {
+    "deletedBeforeRetry": true,
+    "resurrectedAfterRetry": true,
+    "tombstoneLost": true
+  },
+  "fixtureReopen": {
+    "acceptedValueBytes": [
+      1024,
+      4096,
+      16384
+    ],
+    "separateUsers": true,
+    "separateItems": true,
+    "separateClients": true,
+    "identicalRetry": true,
+    "removedKeyStaysAbsent": true
+  },
+  "scheduledStaleWriters": {
+    "acknowledgedWrites": 32,
+    "remainingRecords": 1,
+    "lostRecords": 31,
+    "schedule": "all reads, then serialized writes; no real concurrent server requests"
+  }
+}

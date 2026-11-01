@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>
+:root{font-family:var(--font-sans);color:var(--foreground)}
+body{margin:0}section{display:grid;gap:12px}.node{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center;font-size:14px}.node small{display:block;color:var(--muted-foreground);font-size:12px;margin-top:6px}.flow{display:flex;gap:6px;align-items:center}.flow .node{flex:1;min-width:0;padding:16px 8px}.arrow{color:var(--muted-foreground)}.source{border-style:dashed}.connector{height:24px;display:flex;justify-content:flex-end;padding-right:15%;color:var(--muted-foreground);font-size:22px}.label{font-size:12px;color:var(--muted-foreground)}
+</style></head><body><section aria-label="Proposed Bookfin identity and Jellyfin source reference boundary">
+<div class="node">Account scope<small>Server instance + authenticated user</small></div>
+<div class="label">Proposed Bookfin identities</div>
+<div class="flow"><div class="node">Book<small>Work UUID</small></div><span class="arrow" aria-hidden="true">→</span><div class="node">Edition<small>Recording or text UUID</small></div><span class="arrow" aria-hidden="true">→</span><div class="node">File<small>Ordered part UUID</small></div></div>
+<div class="connector" aria-hidden="true">↓</div>
+<div class="node source">Jellyfin source reference<small>Item ID + chosen media source ID</small></div>
+<div class="label">Source structure has not been inspected with authentication.</div>
+</section></body></html>
