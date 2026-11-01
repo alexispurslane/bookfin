@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ ${BOOKFIN_NIX_SHELL:-} != 1 ]]; then
+  printf 'Run through the project shell: nix develop --command bash tool/bookfin <command>\n' >&2
+  exit 1
+fi
+cd "$(dirname "$0")/.."
+command=${1:-help}
+if (( $# > 0 )); then shift; fi
+
+case "$command" in
+  doctor)
+    flutter doctor -v
+    ;;
+  test)
+    bash test/sdk_link_test.sh
+    flutter test --reporter expanded
+    ;;
+  analyze)
+    flutter analyze
+    ;;
+  build-web)
+    flutter build web "$@"
+    ;;
+  build-android)
+    flutter build apk --debug --target-platform android-arm64 "$@"
+    ;;
+  build-probe-android)
+    flutter build apk --debug --target-platform android-arm64 --target tool/reload_probe.dart "$@"
+    ;;
+  web|probe-web)
+    target=lib/main.dart
+    if [[ "$command" == probe-web ]]; then target=tool/reload_probe.dart; fi
+    flutter run -d web-server --target "$target" --web-hostname 127.0.0.1 --web-port 7357 "$@"
+    ;;
+  attach-android)
+    device=${1:?Pass the Android device ID returned by T3.}
+    shift
+    flutter attach -d "$device" "$@"
+    ;;
+  emulator-create)
+    avd_home=${ANDROID_AVD_HOME:-"$HOME/.android/avd"}
+    if [[ -e "$avd_home/bookfin-api36.ini" || -e "$avd_home/bookfin-api36.avd" ]]; then
+      printf 'bookfin-api36 already exists. It was not changed.\n'
+      exit 0
+    fi
+    printf 'no\n' | avdmanager create avd --name bookfin-api36 --package 'system-images;android-36;google_apis;arm64-v8a' --device pixel_7
+    config="$avd_home/bookfin-api36.avd/config.ini"
+    image="$ANDROID_HOME/system-images/android-36/google_apis/arm64-v8a/"
+    awk -v image="$image" '
+      /^image.sysdir.1=/ { print "image.sysdir.1=" image; next }
+      { print }
+    ' "$config" > "$config.bookfin"
+    mv "$config.bookfin" "$config"
+    ;;
+  link-t3-sdk)
+    bash tool/link-t3-sdk "$@"
+    ;;
+  *)
+    printf 'Commands: doctor, test, analyze, build-web, build-android, build-probe-android, web, probe-web, attach-android <id>, emulator-create, link-t3-sdk <host-sdk>\n'
+    [[ "$command" == help ]]
+    ;;
+esac

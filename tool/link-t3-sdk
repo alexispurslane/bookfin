@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -euo pipefail
+: "${ANDROID_HOME:?Run this command through nix develop.}"
+sdk_root=${1:?Pass the existing SDK directory used by the T3 device host.}
+source_tools="$ANDROID_HOME/cmdline-tools/latest"
+destination="$sdk_root/cmdline-tools/latest"
+
+if [[ ! -d "$sdk_root/platform-tools" || ! -x "$source_tools/bin/avdmanager" ]]; then
+  printf 'The host SDK or project command-line tools are missing. No link was created.\n' >&2
+  exit 1
+fi
+if [[ -L "$destination" && $(readlink "$destination") == "$source_tools" ]]; then
+  printf 'T3 already uses the project command-line tools: %s\n' "$destination"
+  exit 0
+fi
+if [[ -e "$destination" || -L "$destination" ]]; then
+  printf 'Refusing to replace existing command-line tools: %s\n' "$destination" >&2
+  exit 1
+fi
+mkdir -p "$sdk_root/cmdline-tools"
+ln -s "$source_tools" "$destination"
+printf 'Linked T3 command-line tools: %s -> %s\n' "$destination" "$source_tools"
