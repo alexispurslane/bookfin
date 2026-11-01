@@ -1,0 +1,58 @@
+[
+  {
+    "id": "bookfin-web",
+    "name": "Bookfin web",
+    "icon": "play",
+    "command": "nix develop --command bash tool/bookfin web",
+    "async": true,
+    "autoOpenPreview": true,
+    "previewUrl": "http://127.0.0.1:7357",
+    "runOnWorktreeCreate": false,
+    "runOnSettle": false
+  },
+  {
+    "id": "bookfin-test",
+    "name": "Bookfin tests",
+    "icon": "test",
+    "command": "nix develop --command bash tool/bookfin test",
+    "async": false,
+    "runOnWorktreeCreate": false,
+    "runOnSettle": false
+  },
+  {
+    "id": "bookfin-analyze",
+    "name": "Bookfin analyze",
+    "icon": "lint",
+    "command": "nix develop --command bash tool/bookfin analyze",
+    "async": false,
+    "runOnWorktreeCreate": false,
+    "runOnSettle": false
+  },
+  {
+    "id": "bookfin-build-android",
+    "name": "Bookfin Android debug APK",
+    "icon": "build",
+    "command": "nix develop --command bash tool/bookfin build-android",
+    "async": false,
+    "runOnWorktreeCreate": false,
+    "runOnSettle": false
+  },
+  {
+    "id": "bookfin-build-web",
+    "name": "Bookfin web build",
+    "icon": "build",
+    "command": "nix develop --command bash tool/bookfin build-web",
+    "async": false,
+    "runOnWorktreeCreate": false,
+    "runOnSettle": false
+  },
+  {
+    "id": "bookfin-emulator-create",
+    "name": "Bookfin create Android emulator",
+    "icon": "configure",
+    "command": "nix develop --command bash tool/bookfin emulator-create",
+    "async": false,
+    "runOnWorktreeCreate": false,
+    "runOnSettle": false
+  }
+]
