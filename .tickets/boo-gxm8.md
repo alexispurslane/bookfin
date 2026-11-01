@@ -1,6 +1,6 @@
 ---
 id: boo-gxm8
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-01T21:37:34Z
@@ -111,3 +111,7 @@ No Android debugger is currently attached. After a later APK replacement, a seco
 The standard Android build output currently contains the temporary fixture APK. Rebuild the boot shell with `nix develop --command bash tool/bookfin build-android` before installing the normal shell.
 Phone access to the integrated browser preview remains independently unconfirmed.
 No unresolved product design fork was found.
+
+**2026-11-01T23:11:11Z**
+
+Independent gpt-6.1-sol High review passed correctness and design at 4752f685. Scaffold integrated in cd29777; only ticket-note conflict resolved, preserving both sides. Six T3 project scripts registered. Main checkout Nix preservation reference created at .cache/dev-shell. Remaining phone acceptance explicitly reassigned to boo-a4gi; debugger reliability remains t3-4isz. These are release dependencies, not claims of verified behavior. Setup closed for the delivered and reviewed foundation.

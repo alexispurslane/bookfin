@@ -194,7 +194,7 @@ Use fake catalog and media fixtures for repeatable UI tests. Use actual Jellyfin
 
 ## Ticket index
 
-Epic: boo-fs0n. All tickets reference this plan. No implementation tickets are started.
+Epic: boo-fs0n. All tickets reference this plan. The setup scaffold is merged; implementation and feasibility tasks are underway.
 
 | Ticket | Work | Depends on |
 | --- | --- | --- |
@@ -210,3 +210,7 @@ Epic: boo-fs0n. All tickets reference this plan. No implementation tickets are s
 | boo-3oq0 | Sync Bookfin records through validated Jellyfin storage | boo-p58t, boo-6h8w, boo-9wgg |
 | boo-gk92 | Harden accepted Android behavior and prepare release | boo-mx5i, boo-3oq0 |
 | boo-61vt | Implement cream/sepia appearance, fonts, motion, and sunset theme | boo-gxm8 |
+
+## Setup integration follow-ups
+
+The reviewed scaffold is merged. Six T3 project scripts are registered. The main checkout retains its Nix development tools through `.cache/dev-shell`. Phone text entry and independent phone web-preview acceptance are explicitly reassigned to boo-a4gi. Debugger reattachment remains `t3-4isz`. Both block release hardening, not independent feature implementation. T3 still uses its existing host emulator; its entire runtime is not claimed to be Nix-pinned.

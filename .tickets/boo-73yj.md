@@ -1,6 +1,6 @@
 ---
 id: boo-73yj
-status: open
+status: in_progress
 deps: [boo-gxm8]
 links: []
 created: 2026-11-01T21:37:34Z

@@ -1,6 +1,6 @@
 ---
 id: boo-61vt
-status: open
+status: in_progress
 deps: [boo-gxm8]
 links: []
 created: 2026-11-01T22:02:10Z
