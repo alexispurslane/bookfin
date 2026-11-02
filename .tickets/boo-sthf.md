@@ -1,6 +1,6 @@
 ---
 id: boo-sthf
-status: open
+status: in_progress
 deps: [boo-7o92]
 links: []
 created: 2026-11-01T21:37:34Z
@@ -21,3 +21,9 @@ docs/plans/bookfin.md
 
 Play a downloaded multi-file book offline. Resume after restart. Handle audio focus and lock-screen controls. Correctly report supported progress to Jellyfin without replaying old live-session events.
 
+
+## Notes
+
+**2026-11-02T04:54:59Z**
+
+Starting implementation from integrated verified downloads; real localFile boundary and shared media policy are ready. Production playback, chapters, background/lock-screen controls, and durable resume follow the approved plan. Sync research remains separate.

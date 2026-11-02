@@ -21,3 +21,9 @@ docs/plans/bookfin.md; authenticated research d327f68 pending permission-guard c
 
 Prove account isolation, inaccessible items, disabled or missing download permission, multi-file ordering, distinct editions and ebook pairing. Verify progress writes only on synthetic media. Gate release acceptance; storage proof remains boo-p58t.
 
+
+## Notes
+
+**2026-11-02T04:54:59Z**
+
+Integrated download corrections at 2cfd959: include corrected-build Android interruption, cancellation, immediate restoration commands, and early-file-failure controls in acceptance. Parent 149 tests and rebuilt APK pass; corrected Android UI run remains unclaimed.

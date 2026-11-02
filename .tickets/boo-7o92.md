@@ -1,6 +1,6 @@
 ---
 id: boo-7o92
-status: in_progress
+status: closed
 deps: [boo-u3cg]
 links: []
 created: 2026-11-01T21:37:34Z
@@ -36,3 +36,7 @@ The parent reproduced all four static review findings with five meaningful faili
 Replacement responses now discard the prior prefix before saving the new validator. The regression restarts the download owner and checks the resulting replacement bytes. Cancellation saves disabled requests before waiting for only the affected active transfer to close. All serialized commands wait for account restoration and recheck account generation before execution. Queued work takes display precedence over a file error, preserving Cancel while keeping the error message.
 
 Parent verification: 149 application tests pass, analysis has no issues, and the changed Dart files are formatted through the pinned Nix shell. The five new tests failed before implementation; the existing 144 tests remain green. Logs: /tmp/bookfin-download-fixes-red.log, /tmp/bookfin-download-fixes-suite.log, /tmp/bookfin-download-fixes-analyze.log. These corrections have not yet been inspected on Android; earlier Android observations describe the builder head. Independent correction review and integration remain pending. No coverage or mutation jobs ran.
+
+**2026-11-02T04:54:59Z**
+
+Integrated at 2cfd959 after independent correction review passed. Main:149 application tests and Android debug build pass. First build used stale cached Nix shell missing SDK34; refreshing from current pinned flake resolved it. Corrected-head Android acceptance remains explicitly in boo-2cgp; prior builder device evidence retained. No coverage/mutation or phone proof claimed.
