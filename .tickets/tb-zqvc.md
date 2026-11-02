@@ -23,3 +23,7 @@ Normal production app signs in to actual ordinary Jellyfin12.4 Book library, dow
 **2026-11-02T17:33:13Z**
 
 Public catalog evidence now distinguishes absent fields: containerFieldPresent=false and mediaSourcesFieldPresent=false in docs/evidence/reader/android-candidate-catalog.json. Original and app-private downloaded EPUB SHA256 both 6efe84b320af9a0f9997dfc6c54b172bc982e6b06978a2c3d75359161da0ce96. No forged format header/DTO, test entry, app implementation change, or approval. Parent owns correction/integration and a named-build Android rerun.
+
+**2026-11-02T17:43:14Z**
+
+Correction203f870 passed independent static review. Starting named-build Android continuation under existing user authorization: prior attempt stopped for application format refusal, not a failed device-tool retry. Test corrected candidate while R1-R4 continue separately; keep ticket open until chapter rendering observed.
