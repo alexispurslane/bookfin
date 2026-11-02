@@ -1,0 +1,74 @@
+exit_code=-6
+timed_out=false
+Two independent PDF workers initialized; loading on first.
+Running build hooks...Running build hooks...../../runtime/vm/runtime_entry.cc: 5315: error: Cannot invoke native callback from a different isolate.
+version=3.13.0 (stable) (Wed Aug 5 00:28:05 2026 -0700) on "macos_arm64"
+pid=53832, thread=11791, isolate_group=main(0x7a4e800e00), isolate=PdfrxEngineWorker(0x7a4f828380)
+os=macos, arch=arm64, comp=no, sim=no
+isolate_instructions=1026c8800, vm_instructions=0
+fp=16e1e59d0, sp=16e1e59b0, pc=102971af0
+  pc 0x0000000102971af0 fp 0x000000016e1e59d0 Dart_IsPrecompiledRuntime+0x2a3cf0
+  pc 0x00000001026c89cc fp 0x000000016e1e59f0 /nix/store/i26y4m31dir9jb7yqi1ypqg8imdz2niw-dart-3.13.0/bin/dartvm+0x309cc
+  pc 0x0000000102994634 fp 0x000000016e1e5a10 Dart_IsPrecompiledRuntime+0x2c6834
+  pc 0x0000000102992a54 fp 0x000000016e1e5aa0 Dart_IsPrecompiledRuntime+0x2c4c54
+  pc 0x0000000109fc4004 fp 0x000000016e1e5bc0 Unknown symbol
+  pc 0x000000012a342c04 fp 0x000000016e1e5be0 CFX_ExternalFontInfo::MapFont(CFX_FontMapper*, int, bool, FX_Charset, int, fxcrt::ByteString const&)+0x54
+  pc 0x000000012a2e12b8 fp 0x000000016e1e5cb0 CFX_FontMapper::FindSubstFace(fxcrt::ByteString const&, bool, unsigned int, int, int, FX_CodePage, CFX_SubstFont*)+0xdf8
+  pc 0x000000012a2de1d4 fp 0x000000016e1e5d00 CFX_Font::LoadSubstFace(fxcrt::ByteString const&, bool, unsigned int, int, int, FX_CodePage, bool)+0x90
+  pc 0x000000012a3f94ac fp 0x000000016e1e5d50 CPDF_FaceBasedSimpleFont::LoadCommon()+0xf4
+  pc 0x000000012a40070c fp 0x000000016e1e5d90 CPDF_Type1Font::Load()+0x14c
+  pc 0x000000012a3fa884 fp 0x000000016e1e5de0 CPDF_Font::Create(CPDF_Document*, fxcrt::RetainPtr<CPDF_Dictionary>, CPDF_Font::FormFactoryIface*)+0x2a8
+  pc 0x000000012a23a074 fp 0x000000016e1e5e30 CPDF_DocPageData::GetFont(fxcrt::RetainPtr<CPDF_Dictionary>)+0xdc
+  pc 0x000000012a25dc10 fp 0x000000016e1e5e60 CPDF_StreamContentParser::FindFont(fxcrt::ByteString const&)+0x80
+  pc 0x000000012a257df8 fp 0x000000016e1e5e90 CPDF_StreamContentParser::Handle_SetFont()+0xf8
+  pc 0x000000012a25e548 fp 0x000000016e1e5f00 CPDF_StreamContentParser::Parse(pdfium::span<unsigned char const, 18446744073709551615ul, unsigned char const*>, unsigned int, unsigned int, std::__Cr::vector<unsigned int, std::__Cr::allocator<unsigned int>> const&)+0x388
+  pc 0x000000012a233838 fp 0x000000016e1e5f80 CPDF_ContentParser::Parse()+0x180
+  pc 0x000000012a2330f8 fp 0x000000016e1e5fa0 CPDF_ContentParser::Continue(PauseIndicatorIface*)+0x6c
+  pc 0x000000012a24d7e8 fp 0x000000016e1e5ff0 CPDF_PageObjectHolder::ContinueParse(PauseIndicatorIface*)+0x2c
+  pc 0x000000012a346998 fp 0x000000016e1e6020 FPDF_LoadPage+0xb8
+  pc 0x0000000111908028 fp 0x000000016e1e6050 Unknown symbol
+  pc 0x0000000128943ef4 fp 0x000000016e1e6090 Unknown symbol
+  pc 0x0000000128943908 fp 0x000000016e1e60f0 Unknown symbol
+  pc 0x0000000128940d74 fp 0x000000016e1e61c0 Unknown symbol
+  pc 0x0000000128906000 fp 0x000000016e1e6220 Unknown symbol
+  pc 0x0000000128905594 fp 0x000000016e1e62c0 Unknown symbol
+  pc 0x0000000128905214 fp 0x000000016e1e6310 Unknown symbol
+  pc 0x00000001289045fc fp 0x000000016e1e63c0 Unknown symbol
+  pc 0x00000001120f18f4 fp 0x000000016e1e6400 Unknown symbol
+  pc 0x00000001120f0db0 fp 0x000000016e1e6450 Unknown symbol
+  pc 0x00000001120f0ba8 fp 0x000000016e1e6488 Unknown symbol
+  pc 0x00000001120f0a8c fp 0x000000016e1e64c0 Unknown symbol
+  pc 0x00000001120efc10 fp 0x000000016e1e6558 Unknown symbol
+  pc 0x00000001120edbd4 fp 0x000000016e1e6590 Unknown symbol
+  pc 0x00000001120ed9f0 fp 0x000000016e1e65c0 Unknown symbol
+  pc 0x00000001120aaf90 fp 0x000000016e1e6640 Unknown symbol
+  pc 0x00000001120a96e4 fp 0x000000016e1e6698 Unknown symbol
+  pc 0x0000000111903a44 fp 0x000000016e1e6770 Unknown symbol
+  pc 0x0000000102896884 fp 0x000000016e1e67e0 Dart_IsPrecompiledRuntime+0x1c8a84
+  pc 0x000000010289857c fp 0x000000016e1e6830 Dart_IsPrecompiledRuntime+0x1ca77c
+  pc 0x00000001028b8544 fp 0x000000016e1e6dc0 Dart_IsPrecompiledRuntime+0x1ea744
+  pc 0x00000001028dc32c fp 0x000000016e1e6e30 Dart_IsPrecompiledRuntime+0x20e52c
+  pc 0x00000001028dbfa0 fp 0x000000016e1e6e90 Dart_IsPrecompiledRuntime+0x20e1a0
+  pc 0x00000001029c18ac fp 0x000000016e1e6f20 Dart_IsPrecompiledRuntime+0x2f3aac
+  pc 0x00000001029c1ae0 fp 0x000000016e1e6f50 Dart_IsPrecompiledRuntime+0x2f3ce0
+  pc 0x000000010296ee8c fp 0x000000016e1e6fc0 Dart_IsPrecompiledRuntime+0x2a108c
+  pc 0x0000000185139d00 fp 0x000000016e1e6fe0 _pthread_start+0x88
+-- End of DumpStackTrace
+  pc 0x0000000000000000 fp 0x000000016e1e6050 sp 0x0000000000000000 [Stub] Exit frame
+  pc 0x0000000128943ef4 fp 0x000000016e1e6090 sp 0x000000016e1e6060 [Optimized] PDFium.init:_FPDF_LoadPage@560063680.#ffiClosure16+0x94
+  pc 0x0000000128943908 fp 0x000000016e1e60f0 sp 0x000000016e1e60a0 [Unoptimized] PDFium.FPDF_LoadPage+0x168
+  pc 0x0000000128940d74 fp 0x000000016e1e61c0 sp 0x000000016e1e6100 [Unoptimized] _PdfDocumentPdfium@59334919._measurePages@59334919.<anonymous closure>+0x6c4
+  pc 0x0000000128906000 fp 0x000000016e1e6220 sp 0x000000016e1e61d0 [Unoptimized] _PdfiumIdleTask@59334919.run.<anonymous closure>+0x170
+  pc 0x0000000128905594 fp 0x000000016e1e62c0 sp 0x000000016e1e6230 [Unoptimized] using+0x2d4
+  pc 0x0000000128905214 fp 0x000000016e1e6310 sp 0x000000016e1e62d0 [Unoptimized] _PdfiumIdleTask@59334919.run+0x1c4
+  pc 0x00000001289045fc fp 0x000000016e1e63c0 sp 0x000000016e1e6320 [Unoptimized] _TaskExecuteParams@334260128.execute+0x48c
+  pc 0x00000001120f18f4 fp 0x000000016e1e6400 sp 0x000000016e1e63d0 [Unoptimized] _WorkerScheduler@334260128._executeNext@334260128+0x104
+  pc 0x00000001120f0db0 fp 0x000000016e1e6450 sp 0x000000016e1e6410 [Unoptimized] _WorkerScheduler@334260128._drainOne@334260128+0x1c0
+  pc 0x00000001120f0ba8 fp 0x000000016e1e6488 sp 0x000000016e1e6460 [Unoptimized] _WorkerScheduler@334260128._drainOne@334260128+0xa8
+  pc 0x00000001120f0a8c fp 0x000000016e1e64c0 sp 0x000000016e1e6498 [Unoptimized] Timer._createTimer@5048458.<anonymous closure>+0xec
+  pc 0x00000001120efc10 fp 0x000000016e1e6558 sp 0x000000016e1e64d0 [Unoptimized] _Timer@1026248._runTimers@1026248+0xc00
+  pc 0x00000001120edbd4 fp 0x000000016e1e6590 sp 0x000000016e1e6568 [Unoptimized] _Timer@1026248._handleMessage@1026248+0x194
+  pc 0x00000001120ed9f0 fp 0x000000016e1e65c0 sp 0x000000016e1e65a0 [Unoptimized] _Timer@1026248._handleMessage@1026248+0xa0
+  pc 0x00000001120aaf90 fp 0x000000016e1e6640 sp 0x000000016e1e65d0 [Unoptimized] _Closure@0150898.dyn:call+0xcb0
+  pc 0x00000001120a96e4 fp 0x000000016e1e6698 sp 0x000000016e1e6650 [Unoptimized] _RawReceivePort@1026248._handleMessage@1026248+0x214
+  pc 0x0000000111903a44 fp 0x000000016e1e6770 sp 0x000000016e1e66a8 [Stub] Entry frame

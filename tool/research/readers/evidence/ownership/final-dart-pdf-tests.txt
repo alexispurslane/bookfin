@@ -1,0 +1,35 @@
+Running build hooks...No Visual Studio installation found with the requested Microsoft.VisualStudio.Component.VC.Tools.x86.x64 component.
+
+SDK cannot be located in the Nix research shell
+
+
+SDK iphoneos not installed.
+
+SDK cannot be located in the Nix research shell
+
+
+SDK iphonesimulator not installed.
+
+Running build hooks...00:00 +0: loading test/ownership_test.dart
+00:00 +0: test/ownership_test.dart: independent worker initialization is a native crash, not PDF rejection
+00:03 +1: test/ownership_test.dart: One application isolate owns the PDF worker lifecycle (setUpAll)
+00:06 +1: test/ownership_test.dart: One application isolate owns the PDF worker lifecycle multiple document callers use one callback-owning PDF worker
+00:06 +2: test/ownership_test.dart: One application isolate owns the PDF worker lifecycle closing and reopening documents retains the same font callback owner
+00:06 +3: test/ownership_test.dart: One application isolate owns the PDF worker lifecycle a failed document caller releases its document before later work
+00:06 +4: test/ownership_test.dart: One application isolate owns the PDF worker lifecycle released documents permit worker shutdown and a fresh callback owner
+00:06 +5: test/ownership_test.dart: One application isolate owns the PDF worker lifecycle (tearDownAll)
+00:06 +5: loading test/corpus_test.dart
+00:06 +5: test/corpus_test.dart: Public-source PDF and Markdown observations (setUpAll)
+00:06 +5: test/corpus_test.dart: Public-source PDF and Markdown observations nist-cloud.pdf retains source text and renders its complete sampled page
+00:06 +6: test/corpus_test.dart: Public-source PDF and Markdown observations census-notice.pdf retains source text and renders its complete sampled page
+00:06 +7: test/corpus_test.dart: Public-source PDF and Markdown observations raven-1873.pdf retains source text and renders its complete sampled page
+00:06 +8: test/corpus_test.dart: Public-source PDF and Markdown observations a raster-only derivative of the real scan renders without extracted text
+00:06 +9: test/corpus_test.dart: Public-source PDF and Markdown observations the real sonnet source retains verse line breaks in fenced Markdown
+00:06 +10: test/corpus_test.dart: Public-source PDF and Markdown observations (tearDownAll)
+00:06 +10: loading test/engine_test.dart
+00:06 +10: test/engine_test.dart: (setUpAll)
+00:06 +10: test/engine_test.dart: PDF text exposes the source page character rectangles
+00:06 +11: test/engine_test.dart: PDF original pages render without extracting text from a scan
+00:06 +12: test/engine_test.dart: Markdown preserves readable structure and local image references
+00:06 +13: test/engine_test.dart: (tearDownAll)
+00:06 +13: All tests passed!

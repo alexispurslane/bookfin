@@ -1,0 +1,24 @@
+Running build hooks...No Visual Studio installation found with the requested Microsoft.VisualStudio.Component.VC.Tools.x86.x64 component.
+
+SDK cannot be located in the Nix research shell
+
+
+SDK iphoneos not installed.
+
+SDK cannot be located in the Nix research shell
+
+
+SDK iphonesimulator not installed.
+
+Running build hooks...00:00 +0: loading test/corpus_test.dart
+00:00 +0: test/corpus_test.dart: Public-source EPUB parser observations alice-epub3 retains opening and later text in spine resources
+00:00 +1: test/corpus_test.dart: Public-source EPUB parser observations frankenstein-legacy-mobi retains opening and later text in spine resources
+00:00 +2: test/corpus_test.dart: Public-source EPUB parser observations moby-kf8 retains opening and later text in spine resources
+00:00 +3: test/compat_test.dart: EPUB chapters and local images coexist with the pinned PDF engine
+00:00 +4: test/compat_test.dart: EPUB chapters and local images coexist with the pinned PDF engine
+00:00 +5: test/compat_test.dart: EPUB cover bytes decode through the new image dependency
+00:00 +6: test/compat_test.dart: mobi6-plain conversion retains text and an embedded image
+00:00 +7: test/compat_test.dart: mobi6-palmdoc conversion retains text and an embedded image
+00:00 +8: test/compat_test.dart: alice conversion retains text and an embedded image
+00:00 +9: test/compat_test.dart: (tearDownAll)
+00:00 +9: All tests passed!
