@@ -1,6 +1,6 @@
 ---
 id: t0-odcl
-status: open
+status: in_progress
 deps: [boo-73yj]
 links: [boo-mx5i]
 created: 2026-11-02T12:30:43Z
@@ -27,3 +27,7 @@ Use the hash-pinned real notice to demonstrate readable column order or an expli
 **2026-11-02T12:51:26Z**
 
 The sampled first page retains 5,748 nonspace characters at both host reflow widths, yet mixes columns. Character retention against extracted source text therefore cannot be the fidelity acceptance criterion. Source and reflow previews and the independent Poppler layout output are retained.
+
+**2026-11-02T13:15:24Z**
+
+Start shared PDF text-quality follow-up with t0-qnnu. Approved existing policy permits explicit original-page fallback when reflow is unreliable. Do not silently present mixed-column text as successful reading.

@@ -1,6 +1,6 @@
 ---
 id: t0-ebxa
-status: open
+status: in_progress
 deps: [boo-73yj]
 links: [boo-mx5i]
 created: 2026-11-02T12:38:42Z
@@ -27,3 +27,7 @@ Reproduce the pinned callback-ownership failure in an isolated host process and 
 **2026-11-02T12:51:26Z**
 
 Serial PDF test-file execution passes all eight PDF/Markdown checks together on the host. This is a research-runner remedy only, not evidence of safe concurrent production initialization or Android callback ownership.
+
+**2026-11-02T13:15:24Z**
+
+Start bounded ownership correction from integrated public corpus. Prove host callback lifecycle with real pinned engine, preserving Android verification as a separate required observation. No device work authorized by this launch.

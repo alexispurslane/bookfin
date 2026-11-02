@@ -1,6 +1,6 @@
 ---
 id: t0-qnnu
-status: open
+status: in_progress
 deps: [boo-73yj]
 links: [boo-mx5i, boo-suhu]
 created: 2026-11-02T12:33:22Z
@@ -31,3 +31,7 @@ Precision from independent Poppler layout extraction: the source text layer miss
 **2026-11-02T13:12:05Z**
 
 Production PDF integration boo-mx5i now depends on this safe-handling gate: identify unreliable existing text and preserve an explicit original-page fallback. OCR implementation remains under boo-suhu, downstream of boo-mx5i; completing this gate does not require implementing OCR or selecting its engine.
+
+**2026-11-02T13:15:24Z**
+
+Work alongside t0-odcl under one PDF text-quality decision. Prove safe fallback with real corpus and retain usable simple text. No OCR implementation or engine selection in this follow-up.
