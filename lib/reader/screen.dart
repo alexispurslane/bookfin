@@ -8,8 +8,14 @@ import '../playback/screen.dart';
 import 'session.dart';
 
 class ReaderScreen extends StatefulWidget {
-  const ReaderScreen({super.key, required this.reader, this.playback});
+  const ReaderScreen({
+    super.key,
+    required this.reader,
+    required this.onNightChanged,
+    this.playback,
+  });
   final ReaderSession reader;
+  final ValueChanged<bool> onNightChanged;
   final Playback? playback;
   @override
   State<ReaderScreen> createState() => _ReaderScreenState();
@@ -17,7 +23,6 @@ class ReaderScreen extends StatefulWidget {
 
 class _ReaderScreenState extends State<ReaderScreen> {
   bool _controls = true;
-  bool? _night;
   int? _viewToken;
   ReaderSession get reader => widget.reader;
   @override
@@ -43,7 +48,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
       _viewToken = reader.token;
       final token = reader.token;
       final publication = reader.publication;
-      final night = _night ?? Theme.of(context).brightness == Brightness.dark;
+      final night = Theme.of(context).brightness == Brightness.dark;
       return Scaffold(
         backgroundColor: night
             ? const Color(0xff251e19)
@@ -238,8 +243,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
                                 tooltip: night
                                     ? 'Cream reading theme'
                                     : 'Night reading theme',
-                                onPressed: () =>
-                                    setState(() => _night = !night),
+                                onPressed: () => widget.onNightChanged(!night),
                                 icon: Icon(
                                   night
                                       ? Icons.light_mode_outlined

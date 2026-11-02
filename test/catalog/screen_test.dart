@@ -28,7 +28,11 @@ void main() {
   Future<void> show(WidgetTester tester) => tester.pumpWidget(
     MaterialApp(
       theme: bookfinTheme(Brightness.light),
-      home: CatalogHome(catalog: controller, onAppearance: () {}),
+      home: CatalogHome(
+        catalog: controller,
+        onAppearance: () {},
+        onReaderNightChanged: (_) {},
+      ),
     ),
   );
 

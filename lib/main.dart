@@ -196,6 +196,11 @@ class _BookfinAppState extends State<BookfinApp> with WidgetsBindingObserver {
                 downloads: widget.downloads,
                 playback: widget.playback,
                 reader: widget.reader,
+                onReaderNightChanged: (night) => unawaited(
+                  _appearance.selectMode(
+                    night ? AppearanceMode.night : AppearanceMode.day,
+                  ),
+                ),
                 onAppearance: () => showModalBottomSheet<void>(
                   context: context,
                   isScrollControlled: true,

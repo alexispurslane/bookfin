@@ -1,5 +1,8 @@
 import 'dart:async';
 
+import 'package:bookfin/appearance/appearance.dart';
+import 'package:bookfin/appearance/preferences.dart';
+import 'package:bookfin/foundation/theme.dart';
 import 'package:bookfin/reader/screen.dart';
 import 'package:bookfin/reader/session.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +12,7 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../playback/playback_test.dart' show account, LocalFiles, MemoryResume;
+import '../appearance/preferences_test.dart' show MemoryAppearanceStore;
 import 'publication_test.dart' show epub;
 import 'session_test.dart' show source, edition, book, visible;
 
@@ -102,6 +106,32 @@ Future<void> finishLoading(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
+Widget readerApp({
+  required ReaderSession reader,
+  required AppearanceController appearance,
+  TransitionBuilder? builder,
+}) => ListenableBuilder(
+  listenable: appearance,
+  builder: (context, _) => MaterialApp(
+    theme: bookfinTheme(
+      resolveAppearance(
+        appearance.settings,
+        DateTime.utc(2026, 11, 2),
+        Brightness.light,
+      ).brightness,
+    ),
+    builder: builder,
+    home: ReaderScreen(
+      reader: reader,
+      onNightChanged: (night) => unawaited(
+        appearance.selectMode(
+          night ? AppearanceMode.night : AppearanceMode.day,
+        ),
+      ),
+    ),
+  ),
+);
+
 void main() {
   testWidgets(
     'appearance changes during attachment wait for the renderer to open',
@@ -118,14 +148,17 @@ void main() {
       );
       await reader.bind(account(), [book]);
       await reader.open(book, edition);
+      final appearance = AppearanceController(MemoryAppearanceStore());
+      addTearDown(appearance.dispose);
       await tester.pumpWidget(
-        MaterialApp(
+        readerApp(
+          reader: reader,
+          appearance: appearance,
           builder: (context, child) => MediaQuery(
             data: MediaQuery.of(context)
                 .copyWith(textScaler: const TextScaler.linear(2)),
             child: child!,
           ),
-          home: ReaderScreen(reader: reader),
         ),
       );
       await finishLoading(tester);
@@ -170,8 +203,12 @@ void main() {
       await reader.bind(account(), [book]);
       await reader.open(book, edition);
       final scale = ValueNotifier<double>(2);
+      final appearance = AppearanceController(MemoryAppearanceStore());
+      addTearDown(appearance.dispose);
       await tester.pumpWidget(
-        MaterialApp(
+        readerApp(
+          reader: reader,
+          appearance: appearance,
           builder: (context, child) => ValueListenableBuilder<double>(
             valueListenable: scale,
             builder: (context, value, _) => MediaQuery(
@@ -180,7 +217,6 @@ void main() {
               child: child!,
             ),
           ),
-          home: ReaderScreen(reader: reader),
         ),
       );
       await finishLoading(tester);
@@ -207,12 +243,15 @@ void main() {
       expect(bridge.calls.map((call) => call.arguments).toList(), [
         {'argument0': 44.0, 'argument1': true},
       ]);
+      expect(reader.position!.anchor, anchor);
       bridge.calls.clear();
       scale.value = 1.5;
       await tester.pumpAndSettle();
       expect(bridge.calls.map((call) => call.arguments).toList(), [
         {'argument0': 33.0, 'argument1': true},
       ]);
+      expect(reader.position!.anchor, anchor);
+      expect(reader.fontSize, 22);
       await reader.open(book, edition);
       await tester.pumpAndSettle();
       await finishLoading(tester);

@@ -24,7 +24,11 @@ void main() {
       await reader.open(book, edition);
       final port = ControlPort();
       reader.attach(reader.token, port, []);
-      await tester.pumpWidget(MaterialApp(home: ReaderScreen(reader: reader)));
+      await tester.pumpWidget(
+        MaterialApp(
+          home: ReaderScreen(reader: reader, onNightChanged: (_) {}),
+        ),
+      );
       expect(find.textContaining('Page progress unavailable'), findsOneWidget);
       reader.acceptVisible(
         reader.token,
@@ -119,7 +123,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           theme: bookfinTheme(Brightness.light),
-          home: ReaderScreen(reader: reader),
+          home: ReaderScreen(reader: reader, onNightChanged: (_) {}),
         ),
       );
       await tester.tap(find.byTooltip('Larger text'));
@@ -159,7 +163,7 @@ void main() {
                 .copyWith(textScaler: const TextScaler.linear(2)),
             child: child!,
           ),
-          home: ReaderScreen(reader: reader),
+          home: ReaderScreen(reader: reader, onNightChanged: (_) {}),
         ),
       );
       await tester.tap(find.byTooltip('Search book'));

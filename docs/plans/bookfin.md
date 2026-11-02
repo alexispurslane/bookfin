@@ -5,6 +5,7 @@ Status: approved for implementation, 2026-11-01. Implementation uses only GPT 6.
 ## Decisions from the user
 
 - Target Android. Use Flutter and hot reload.
+- Reading and the app always share one saved appearance setting. Reader Night/Cream selects global Night/Day. Automatic remains in the app appearance controls. The user settled this on 2026-11-02 in t8-j809.
 - Use T3 Code's Device panel for shared Android emulator testing from desktop or phone.
 - Keep a browser preview for fast layout reviews and browser demonstrations.
 - Show only book libraries, with audiobooks and accompanying ebooks organized together.

@@ -25,8 +25,24 @@ Changing a palette does not replace the screen subtree.
 
 Initialize and restore one controller before starting the application.
 Pass that controller to `BookfinApp`; do not create another controller in a screen.
-Future catalog, player, and reader screens can use the same theme without owning or copying appearance policy.
+Catalog, player, and reader screens use the same theme without owning or copying appearance policy.
 The gallery's reading size and scroll positions are demonstration state, not persisted ebook positions.
+
+## Shared reading appearance
+
+The user settled t8-j809 on 2026-11-02: reading and the app always share one appearance setting.
+Reader Night selects global Night, and reader Cream selects global Day.
+Both selections use the existing controller and saved appearance record, including its save warnings and retry behavior.
+The selected city remains unchanged.
+Automatic stays available in the app appearance controls.
+Global manual changes and Automatic changes also reach a reader that is already open.
+There is no reader-local appearance override or separate saved reading theme.
+
+The reader requests a choice through the existing application composition.
+The application owns the appearance controller, and the reader consumes the application theme.
+Reading text size and saved positions remain reader records, not appearance preferences.
+The renderer still receives the final scaled text size through its existing single update path.
+Host proof and Android acceptance limits are recorded in `docs/evidence/reader/shared-appearance.md`.
 
 ## Automatic appearance
 

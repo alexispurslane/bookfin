@@ -18,12 +18,14 @@ class CatalogHome extends StatefulWidget {
     super.key,
     required this.catalog,
     required this.onAppearance,
+    required this.onReaderNightChanged,
     this.downloads,
     this.playback,
     this.reader,
   });
   final CatalogController catalog;
   final VoidCallback onAppearance;
+  final ValueChanged<bool> onReaderNightChanged;
   final Downloads? downloads;
   final Playback? playback;
   final ReaderSession? reader;
@@ -347,6 +349,8 @@ class _CatalogHomeState extends State<CatalogHome> {
                                 downloads: widget.downloads,
                                 playback: widget.playback,
                                 reader: widget.reader,
+                                onReaderNightChanged:
+                                    widget.onReaderNightChanged,
                               ),
                             ),
                           ),
@@ -671,12 +675,14 @@ class _BookPage extends StatelessWidget {
   const _BookPage({
     required this.catalog,
     required this.bookId,
+    required this.onReaderNightChanged,
     this.downloads,
     this.playback,
     this.reader,
   });
   final CatalogController catalog;
   final String bookId;
+  final ValueChanged<bool> onReaderNightChanged;
   final Downloads? downloads;
   final Playback? playback;
   final ReaderSession? reader;
@@ -787,6 +793,8 @@ class _BookPage extends StatelessWidget {
                                         MaterialPageRoute(
                                           builder: (_) => ReaderScreen(
                                             reader: reader!,
+                                            onNightChanged:
+                                                onReaderNightChanged,
                                             playback: playback,
                                           ),
                                         ),

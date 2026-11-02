@@ -46,6 +46,7 @@ void main() {
             downloads: downloads,
             reader: reader,
             onAppearance: () {},
+            onReaderNightChanged: (_) {},
           ),
         ),
       );

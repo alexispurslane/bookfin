@@ -53,6 +53,7 @@ void main() {
           home: CatalogHome(
             catalog: catalog,
             onAppearance: () {},
+            onReaderNightChanged: (_) {},
             downloads: downloads,
             playback: playback,
           ),

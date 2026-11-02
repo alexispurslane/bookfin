@@ -59,6 +59,7 @@ void main() {
         catalog: catalog,
         downloads: downloads,
         onAppearance: () {},
+        onReaderNightChanged: (_) {},
       ),
     ),
   );
