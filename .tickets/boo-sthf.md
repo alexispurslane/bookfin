@@ -44,3 +44,7 @@ R1: owner-requested native pause uses the decoder stop operation to revoke pendi
 R2: saves require successful account restoration; account changes clear that readiness before any new save, failed reads do not authorize writes, and flush waits for restoration with a generation check. R3: failed and retired reporting sessions invalidate queued progress; intentional final stops remain distinct, and old failures do not cancel a newer session. R4/R5: relative jumps compute their target inside the serialized command and use source-relative movement when total duration is unavailable. The mini-player book title now uses Source Serif 4.
 
 Eight regression tests meaningfully failed before these corrections. A further account-switch test checks old queued progress is discarded while final stop and new start retain their proper credentials. All 189 application tests pass and the Android debug build passes through the pinned shell. No corrected-build Android UI, physical phone, real Jellyfin playback, timer soak, coverage or mutation proof is claimed. Independent correction review remains pending.
+
+**2026-11-02T06:54:02Z**
+
+Reviewed corrections integrated at 8ff61d4, preserving main real-Jellyfin auth and ebook fixes. Keep in_progress pending corrected Android interruption/Stop/signout/sleep observations and supported real-Jellyfin playback report acceptance. No full runtime acceptance or user acceptance inferred from review.

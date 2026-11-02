@@ -42,3 +42,7 @@ Application HTTP acceptance from ae6be0e84539515b5c77cbb419b2f0a67c923cfd now ru
 The publisher now deletes stale observations and runs the live Flutter acceptance suite itself. Publication requires that same process to exit successfully, including all cleanup. The ninth check records success only after source metadata restoration. A regression reproduced false publication before the fix and now proves a failed runner leaves previous public evidence unchanged.
 
 Parent verification: the corrected publisher executed all nine checks successfully against the retained disposable Jellyfin fixture and regenerated app-http.json; 154 application tests pass, the publication regression passes, and scoped Dart analysis is clean. The server exited and port7364 has no listener. No Android, production-server, or credential-storage acceptance is added by this run.
+
+**2026-11-02T06:54:02Z**
+
+Integrated catalog/download access fixes and runner-authoritative evidence publisher at0faa251; parent reran nine real app acceptance checks and154 app tests. Playback now integrated at8ff61d4. Next: shared Android end-to-end acceptance for secure credential restoration, catalog/download lifecycle, and playback correction behavior; t7-bzzg stays open.
