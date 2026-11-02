@@ -35,9 +35,6 @@ nix develop .cache/sync-shell --command python3 tool/research/sync/fixture.py wa
 nix develop .cache/sync-shell --command python3 tool/research/sync/fixture.py seed
 nix develop .cache/sync-shell --command python3 tool/acceptance/jellyfin_fixture.py
 nix develop --profile .cache/dev-shell --command flutter pub get
-nix develop .cache/dev-shell --command flutter test --no-pub --concurrency=1 \
-  --reporter expanded --dart-define=BOOKFIN_APP_ACCEPTANCE=true \
-  tool/acceptance/jellyfin_app_test.dart
 nix develop .cache/sync-shell --command python3 tool/acceptance/collect_evidence.py
 ```
 
@@ -46,7 +43,10 @@ Real track and disc numbers remain unchanged.
 The source-replacement check temporarily appends synthetic bytes to one audio
 file, then restores its original bytes and refreshes Jellyfin.
 Cleanup also restores and checks the original item title after the scan.
-Evidence publication refuses sources that differ from their original hashes.
+The publisher deletes stale observations, runs the live Flutter suite itself, and
+requires its successful exit, including cleanup, before reading results. It also
+refuses sources that differ from their original hashes. A separate earlier test
+run cannot authorize publication.
 
 The live suite stays outside the default `test/` directory.
 Without the explicit Dart definition, the live checks are skipped.

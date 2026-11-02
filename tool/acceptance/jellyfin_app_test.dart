@@ -702,12 +702,6 @@ void main() {
         await downloads.remove(replacement);
         expect(await File.fromUri(oldLocal).exists(), isFalse);
         expect(await downloads.localFile(replacement.files.single), isNull);
-        record('download-source-identity', {
-          'realSourceByteReplacementChangesRevision': true,
-          'staleSourceRejectedBeforeMedia': true,
-          'newRevisionHasSeparateStorage': true,
-          'removeAlsoDeletesOldOwnedRevision': true,
-        });
       } finally {
         stale.dispose();
         await stale.idle;
@@ -726,6 +720,12 @@ void main() {
         await catalog.refresh();
         expect(book(otherRecording).title, originalDetails['Name']);
       }
+      record('download-source-identity', {
+        'realSourceByteReplacementChangesRevision': true,
+        'staleSourceRejectedBeforeMedia': true,
+        'newRevisionHasSeparateStorage': true,
+        'removeAlsoDeletesOldOwnedRevision': true,
+      });
     });
   });
 }

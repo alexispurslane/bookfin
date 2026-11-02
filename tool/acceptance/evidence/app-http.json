@@ -1,6 +1,6 @@
 {
   "baseline": "ae6be0e84539515b5c77cbb419b2f0a67c923cfd",
-  "executedAtUtc": "2026-11-02T06:25:30.157522Z",
+  "executedAtUtc": "2026-11-02T06:39:35.025865Z",
   "serverVersion": "12.4.0",
   "serverId": "7516c2a0229a419c93f2fb4bf0ff5809",
   "results": {
@@ -608,7 +608,7 @@
     },
     "interruption-and-safe-restart": {
       "passed": true,
-      "savedPrefixBytes": 327680,
+      "savedPrefixBytes": 114688,
       "retryHttpStatus": 200,
       "strongHttpEtagAbsent": true,
       "rangeResumeProven": false,
@@ -1286,7 +1286,7 @@
           "path": "/Items/8eae24fd2d83d4300940060b733b6c74/Download",
           "query": "",
           "status": 200,
-          "lastModified": "Mon, 02 Nov 2026 06:24:44 GMT"
+          "lastModified": "Mon, 02 Nov 2026 06:25:29 GMT"
         },
         {
           "method": "GET",
@@ -1305,6 +1305,36 @@
           "path": "/Items/8eae24fd2d83d4300940060b733b6c74/Refresh",
           "query": "metadataRefreshMode=FullRefresh&imageRefreshMode=None&replaceAllMetadata=false&replaceAllImages=false",
           "status": 204
+        },
+        {
+          "method": "GET",
+          "path": "/System/Info/Public",
+          "query": "",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "path": "/Users/Me",
+          "query": "",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "path": "/UserViews",
+          "query": "userId=f06c34b0c98d4ed58b22cc8505ea0220",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "path": "/UserViews",
+          "query": "userId=f06c34b0c98d4ed58b22cc8505ea0220",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "path": "/Items",
+          "query": "userId=f06c34b0c98d4ed58b22cc8505ea0220&parentId=4060b11a507fa7ba00537341733e1a2b&recursive=true&includeItemTypes=AudioBook%2CBook%2CAudio&fields=MediaSources%2CChapters%2CPeople%2CProviderIds%2CEtag%2CParentId&startIndex=0&limit=200&enableTotalRecordCount=true&sortBy=SortName&sortOrder=Ascending",
+          "status": 200
         },
         {
           "method": "GET",
@@ -1437,12 +1467,114 @@
           "path": "/Items/8eae24fd2d83d4300940060b733b6c74/Download",
           "query": "",
           "status": 200,
-          "lastModified": "Mon, 02 Nov 2026 06:25:29 GMT"
+          "lastModified": "Mon, 02 Nov 2026 06:39:33 GMT"
         },
         {
           "method": "GET",
           "path": "/Items/8eae24fd2d83d4300940060b733b6c74",
           "query": "userId=f06c34b0c98d4ed58b22cc8505ea0220",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "path": "/Items/8eae24fd2d83d4300940060b733b6c74/Refresh",
+          "query": "metadataRefreshMode=FullRefresh&imageRefreshMode=None&replaceAllMetadata=false&replaceAllImages=false",
+          "status": 204
+        },
+        {
+          "method": "GET",
+          "path": "/System/Info/Public",
+          "query": "",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "path": "/Users/Me",
+          "query": "",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "path": "/UserViews",
+          "query": "userId=f06c34b0c98d4ed58b22cc8505ea0220",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "path": "/UserViews",
+          "query": "userId=f06c34b0c98d4ed58b22cc8505ea0220",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "path": "/Items",
+          "query": "userId=f06c34b0c98d4ed58b22cc8505ea0220&parentId=4060b11a507fa7ba00537341733e1a2b&recursive=true&includeItemTypes=AudioBook%2CBook%2CAudio&fields=MediaSources%2CChapters%2CPeople%2CProviderIds%2CEtag%2CParentId&startIndex=0&limit=200&enableTotalRecordCount=true&sortBy=SortName&sortOrder=Ascending",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "path": "/System/Info/Public",
+          "query": "",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "path": "/Users/Me",
+          "query": "",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "path": "/UserViews",
+          "query": "userId=f06c34b0c98d4ed58b22cc8505ea0220",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "path": "/UserViews",
+          "query": "userId=f06c34b0c98d4ed58b22cc8505ea0220",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "path": "/Items",
+          "query": "userId=f06c34b0c98d4ed58b22cc8505ea0220&parentId=4060b11a507fa7ba00537341733e1a2b&recursive=true&includeItemTypes=AudioBook%2CBook%2CAudio&fields=MediaSources%2CChapters%2CPeople%2CProviderIds%2CEtag%2CParentId&startIndex=0&limit=200&enableTotalRecordCount=true&sortBy=SortName&sortOrder=Ascending",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "path": "/Items/8eae24fd2d83d4300940060b733b6c74",
+          "query": "",
+          "status": 204
+        },
+        {
+          "method": "GET",
+          "path": "/System/Info/Public",
+          "query": "",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "path": "/Users/Me",
+          "query": "",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "path": "/UserViews",
+          "query": "userId=f06c34b0c98d4ed58b22cc8505ea0220",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "path": "/UserViews",
+          "query": "userId=f06c34b0c98d4ed58b22cc8505ea0220",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "path": "/Items",
+          "query": "userId=f06c34b0c98d4ed58b22cc8505ea0220&parentId=4060b11a507fa7ba00537341733e1a2b&recursive=true&includeItemTypes=AudioBook%2CBook%2CAudio&fields=MediaSources%2CChapters%2CPeople%2CProviderIds%2CEtag%2CParentId&startIndex=0&limit=200&enableTotalRecordCount=true&sortBy=SortName&sortOrder=Ascending",
           "status": 200
         }
       ]

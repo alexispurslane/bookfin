@@ -115,3 +115,10 @@ The authenticated fixture shutdown completed and the server process exited.
 The restartable fixture remains only in this checkout's ignored runtime directory.
 The runtime directory is mode 0700. Account, password, and result files are mode 0600.
 No shared service or SDK installation was changed.
+
+
+## Parent evidence-publication correction
+
+The publisher now deletes stale observations and runs the live Flutter acceptance suite itself. Publication requires that same process to exit successfully, including all cleanup. The ninth check records success only after source metadata restoration. A regression reproduced false publication before the fix and now proves a failed runner leaves previous public evidence unchanged.
+
+Parent verification: the corrected publisher executed all nine checks successfully against the retained disposable Jellyfin fixture and regenerated app-http.json; 154 application tests pass, the publication regression passes, and scoped Dart analysis is clean. The server exited and port7364 has no listener. No Android, production-server, or credential-storage acceptance is added by this run.
