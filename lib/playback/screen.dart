@@ -27,6 +27,7 @@ class PlaybackMiniPlayer extends StatelessWidget {
                         (playback.editionMilliseconds ?? 0) /
                         playback.durationMilliseconds!,
                   ),
+                _UndoControl(playback: playback),
                 Row(
                   children: [
                     Expanded(
@@ -90,6 +91,21 @@ class PlaybackMiniPlayer extends StatelessWidget {
           ),
   );
 }
+
+void openListeningHistory(BuildContext context, Playback playback) => unawaited(
+  Navigator.of(context).push<void>(
+    MaterialPageRoute(
+      builder: (_) => Scaffold(
+        appBar: AppBar(title: const Text('Your listening history')),
+        body: BookfinSurface(child: PersonalRecordsView(playback: playback)),
+        bottomNavigationBar: SafeArea(
+          top: false,
+          child: PlaybackMiniPlayer(playback: playback),
+        ),
+      ),
+    ),
+  ),
+);
 
 void openPlayer(BuildContext context, Playback playback) => unawaited(
   Navigator.of(context).push<void>(
@@ -211,31 +227,7 @@ class PlayerView extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 20),
-          if (playback.undoAction != null) ...[
-            BookfinPanel(
-              child: Wrap(
-                crossAxisAlignment: WrapCrossAlignment.center,
-                spacing: 12,
-                children: [
-                  Text(
-                    playback.unsavedChanges
-                        ? 'Position changed. The previous place is not saved yet.'
-                        : 'Position changed. Your previous place is saved.',
-                  ),
-                  TextButton(
-                    onPressed: () => unawaited(playback.undoSeek()),
-                    child: const Text('Undo'),
-                  ),
-                  IconButton(
-                    tooltip: 'Dismiss Undo',
-                    onPressed: playback.dismissUndo,
-                    icon: const Icon(Icons.close),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-          ],
+          _UndoControl(playback: playback),
           Wrap(
             alignment: WrapAlignment.center,
             spacing: 10,
@@ -503,3 +495,34 @@ class _PositionSliderState extends State<_PositionSlider> {
 
 String _rate(double value) =>
     value.toStringAsFixed(2).replaceFirst(RegExp(r'\.?0+$'), '');
+
+class _UndoControl extends StatelessWidget {
+  const _UndoControl({required this.playback});
+  final Playback playback;
+
+  @override
+  Widget build(BuildContext context) => playback.undoAction == null
+      ? const SizedBox.shrink()
+      : BookfinPanel(
+          child: Wrap(
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 12,
+            children: [
+              Text(
+                playback.unsavedChanges
+                    ? 'Position changed. The previous place is not saved yet.'
+                    : 'Position changed. Your previous place is saved.',
+              ),
+              TextButton(
+                onPressed: () => unawaited(playback.undoSeek()),
+                child: const Text('Undo'),
+              ),
+              IconButton(
+                tooltip: 'Dismiss Undo',
+                onPressed: playback.dismissUndo,
+                icon: const Icon(Icons.close),
+              ),
+            ],
+          ),
+        );
+}

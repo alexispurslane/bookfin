@@ -31,6 +31,64 @@ void main() {
     await playback.close();
     downloads.dispose();
   });
+  testWidgets('mini-player offers Undo where a forward jump occurs', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: bookfinTheme(Brightness.light),
+        home: Scaffold(
+          bottomNavigationBar: PlaybackMiniPlayer(playback: playback),
+        ),
+      ),
+    );
+    await tester.runAsync(() async {
+      await tester.tap(find.byTooltip('Forward 30 seconds'));
+      await playback.flush();
+    });
+    await tester.pumpAndSettle();
+    expect(find.text('Undo'), findsOneWidget);
+    await tester.runAsync(() async {
+      await tester.tap(find.text('Undo'));
+      await playback.flush();
+    });
+    expect(playback.editionMilliseconds, 0);
+  });
+
+  testWidgets(
+    'history keeps playback controls and Undo after bookmark restore',
+    (tester) async {
+      await tester.runAsync(() async {
+        await playback.addBookmark(title: 'Beginning');
+        await playback.seekEdition(75000);
+      });
+      playback.dismissUndo();
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: bookfinTheme(Brightness.light),
+          home: Scaffold(body: PlayerView(playback: playback)),
+        ),
+      );
+      await tester.ensureVisible(find.text('History'));
+      await tester.tap(find.text('History'));
+      await tester.pumpAndSettle();
+      expect(find.byTooltip('Pause'), findsOneWidget);
+      await tester.runAsync(() async {
+        await tester.tap(find.text('Restore bookmark'));
+        await playback.flush();
+      });
+      await tester.pumpAndSettle();
+      expect(find.text('Undo'), findsOneWidget);
+      await tester.runAsync(() async {
+        await tester.tap(find.text('Undo'));
+        await playback.flush();
+        await tester.tap(find.byTooltip('Pause'));
+        await playback.flush();
+      });
+      expect(playback.editionMilliseconds, 75000);
+      expect(playback.playing, isFalse);
+    },
+  );
   testWidgets(
     'mini-player opens the same active recording and controls its position',
     (tester) async {

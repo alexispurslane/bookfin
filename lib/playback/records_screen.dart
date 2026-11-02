@@ -7,17 +7,6 @@ import '../catalog/model.dart';
 import '../foundation/theme.dart';
 import 'playback.dart';
 
-void openListeningHistory(BuildContext context, Playback playback) => unawaited(
-  Navigator.of(context).push<void>(
-    MaterialPageRoute(
-      builder: (_) => Scaffold(
-        appBar: AppBar(title: const Text('Your listening history')),
-        body: BookfinSurface(child: PersonalRecordsView(playback: playback)),
-      ),
-    ),
-  ),
-);
-
 class PersonalRecordsView extends StatelessWidget {
   const PersonalRecordsView({super.key, required this.playback});
   final Playback playback;

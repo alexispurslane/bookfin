@@ -114,3 +114,7 @@ after opening the device through T3. It requires two T3-supplied synthetic call 
 Its native-adapter correction keeps cross-file positions with the matching source and excludes unconfirmed loading placeholders.
 Confirmed paused seeks still update the visible recorded position without starting audio.
 Native Pause retains the last recorded position while releasing the decoder and revoking pending interruption recovery.
+
+Cross-edition recovery commits selection and history only after the decoder confirms a position. If loading or confirmation fails, the old selection and Undo remain. Decoder readiness means that its loaded files match the selected edition. A failed load clears readiness, so its samples cannot change the retained position. Play and seek reload that selection before using the decoder again. The invariant checker requires every ready decoder to have a selected edition.
+
+Slider origins are captured at gesture start, before any wait for queued disk writes. Explicit Pause and Stop records describe command effects independently of playing-state observations. The shared mini-player exposes Undo and stays available on History.

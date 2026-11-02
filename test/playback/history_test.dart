@@ -31,6 +31,122 @@ void main() {
   List<dynamic> savedHistory() =>
       store.values[account().scope.key]?['history'] as List? ?? [];
 
+  for (final resumeFirst in [true, false]) {
+    test(
+      'failed cross-edition restore retains selection and Undo (Play first: $resumeFirst)',
+      () async {
+        const alternate = Edition(
+          id: 'alternate',
+          kind: EditionKind.audio,
+          label: 'Other recording',
+          files: [first],
+          memberIds: ['one:m1'],
+        );
+        const other = Book(
+          id: 'other',
+          title: 'Other book',
+          author: 'Writer',
+          editions: [alternate],
+        );
+        await playback.close();
+        final failing = FailingSeekEngine();
+        playback = Playback(
+          downloads: downloads,
+          engine: failing,
+          store: store,
+        );
+        await playback.bind(account(), [title, other]);
+        await playback.open(other, alternate, autoplay: false);
+        await playback.seekEdition(20000);
+        await playback.addBookmark();
+        final bookmark = playback.bookmarks.single;
+        await playback.open(title, recording, autoplay: false);
+        await playback.seekEdition(75000);
+        final undo = playback.undoAction;
+        final count = playback.history.length;
+        failing.fail = true;
+        await playback.restoreBookmark(bookmark.id);
+        await playback.flush();
+        expect(playback.edition?.id, 'recording');
+        expect(playback.position?.sourceKey, second.key);
+        expect(playback.position?.milliseconds, 15000);
+        expect(playback.undoAction?.id, undo?.id);
+        expect(playback.history, hasLength(count));
+        expect(store.values[account().scope.key]?['selected'], 'recording');
+        failing.fail = false;
+        if (!resumeFirst) {
+          await playback.jump(forward: true);
+          expect(playback.editionMilliseconds, 105000);
+          await playback.undoSeek();
+          expect(playback.editionMilliseconds, 75000);
+          return;
+        }
+        await playback.play();
+        expect(playback.position?.sourceKey, second.key);
+        expect(playback.position?.milliseconds, 15000);
+        await playback.undoSeek();
+        expect(playback.editionMilliseconds, 0);
+        playback.checkInvariants();
+      },
+    );
+  }
+
+  test(
+    'slider origin is the gesture position even behind a pending write',
+    () async {
+      await playback.close();
+      final gated = GatedRecordStore();
+      engine = TestEngine();
+      playback = Playback(downloads: downloads, engine: engine, store: gated);
+      await playback.bind(account(), [title]);
+      await playback.open(title, recording);
+      engine.emit(0, 11000, playing: true);
+      await playback.flush();
+      gated.gate = Completer<void>();
+      final writing = playback.addBookmark();
+      await Future<void>.delayed(Duration.zero);
+      final starting = playback.beginSliderSeek();
+      engine.emit(0, 19000, playing: true);
+      final finishing = playback.finishSliderSeek(95000);
+      gated.gate!.complete();
+      await Future.wait([writing, starting, finishing]);
+      expect(playback.history.first.before.milliseconds, 11000);
+      await playback.undoSeek();
+      expect(playback.editionMilliseconds, 11000);
+    },
+  );
+
+  test(
+    'explicit Pause after interruption records its cancellation once',
+    () async {
+      engine.emit(0, 11000, playing: true);
+      engine.emit(0, 11000);
+      await playback.pause();
+      expect(playback.history.take(2).map((event) => event.kind), [
+        ListeningAction.pause,
+        ListeningAction.interruption,
+      ]);
+      expect(
+        playback.history.where((event) => event.kind == ListeningAction.pause),
+        hasLength(1),
+      );
+    },
+  );
+
+  test(
+    'Stop records the end of an already paused active session once',
+    () async {
+      await playback.pause();
+      await playback.stop();
+      await playback.stop();
+      expect(playback.history.first.kind, ListeningAction.stop);
+      expect(
+        playback.history.where((event) => event.kind == ListeningAction.stop),
+        hasLength(1),
+      );
+    },
+  );
+
   test('accepted overlapping jumps retain each previous and resulting source position', () async {
     await playback.seekEdition(45000);
     await Future.wait([
@@ -558,6 +674,7 @@ class FailingSeekEngine extends TestEngine {
   @override
   Future<AudioSample> seek(int fileIndex, int position) async {
     if (fail) throw Exception('seek failed');
+    if (fileIndex >= files.length) throw Exception('source is not loaded');
     return super.seek(fileIndex, position);
   }
 }

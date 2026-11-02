@@ -86,3 +86,15 @@ Host restarts recreate the playback owner and read persisted records. They do no
 The web build retains the existing platform restriction: it does not provide the production Android decoder or media session. No browser interaction was requested or performed.
 
 History has no pruning or expiry. Full personal-record synchronization, merge policy, remote deletion semantics, retention policy, and replacement-source reconciliation remain outside this ticket. No coverage or mutation jobs ran. Independent review, integration, runtime acceptance, and later hardening remain with the parent. The ticket stays `in_progress`.
+
+## Parent review corrections
+
+The review of `14ab8c5` found five defects. Seven new regression cases first failed for the intended behavior. They cover a failed cross-edition restore, recovery through Play or a seek, a slider gesture behind a pending write, explicit Pause during interruption, Stop while paused, and the foreground controls.
+
+A cross-edition restore now waits for a confirmed decoder position before it changes selection and records the action. A failed restore retains the old selection and Undo. Samples from the failed decoder load cannot change that retained position. The next Play or seek reloads the retained recording before it proceeds.
+
+The slider captures its origin when the gesture starts. A pending disk write cannot move that origin forward. Account changes and intervening position commands still invalidate the gesture. Explicit Pause and Stop record their command effects once, including when an interruption already paused audio.
+
+The full player and mini-player share one Undo control. History keeps the mini-player visible, so the user can pause or undo a restore without leaving History.
+
+Parent verification through Nix: all 234 application tests pass and analysis reports no issues. The initial new history widget test needed its storage setup inside the test runner's asynchronous helper. After that correction, it failed because History had no Pause control. That setup failure is not counted as behavior evidence. Android runtime acceptance remains outstanding. No device, production-server, coverage, or mutation work ran in this correction.

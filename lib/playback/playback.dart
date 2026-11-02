@@ -67,6 +67,9 @@ class Playback extends ChangeNotifier {
   bool _active = false;
   bool _closed = false;
   bool _loading = false;
+  // A failed load can leave the decoder on another edition. Ignore its
+  // samples until the retained selection is successfully loaded again.
+  bool _decoderReady = false;
   bool _restored = false;
   String? _message;
   double _speed = 1;
@@ -110,9 +113,14 @@ class Playback extends ChangeNotifier {
     _notify();
   }
 
-  Future<void> beginSliderSeek() => _enqueue(() async {
-    _sliderStart = _position;
-  });
+  /// Capture the gesture's origin now, even while a disk write blocks commands.
+  /// Selection changes and intervening position commands invalidate this origin.
+  Future<void> beginSliderSeek() {
+    _sliderStart = !_closed && _restored && !_loading && !_seeking
+        ? _position
+        : null;
+    return Future.value();
+  }
 
   Future<void> finishSliderSeek(int milliseconds) => _enqueue(() async {
     final start = _sliderStart;
@@ -244,8 +252,14 @@ class Playback extends ChangeNotifier {
     final before = _position;
     final wasPlaying = _playing;
     if (_edition?.id != edition.id) {
-      await _open(book!, edition, autoplay: false);
-      if (generation != _generation || _edition?.id != edition.id) return false;
+      await _open(
+        book!,
+        edition,
+        autoplay: wasPlaying,
+        target: target,
+        action: kind,
+      );
+      return generation == _generation && _edition?.id == edition.id;
     }
     await _seekPosition(
       edition.files.indexWhere((file) => file.key == target.sourceKey),
@@ -375,6 +389,7 @@ class Playback extends ChangeNotifier {
     _position = null;
     _playing = false;
     _active = false;
+    _decoderReady = false;
     _resumes = {};
     _history = [];
     _bookmarks = [];
@@ -498,6 +513,8 @@ class Playback extends ChangeNotifier {
     Book book,
     Edition edition, {
     required bool autoplay,
+    AudioPosition? target,
+    ListeningAction? action,
   }) async {
     if (_session == null ||
         !_books.any(
@@ -526,13 +543,14 @@ class Playback extends ChangeNotifier {
       }
       files.add(uri);
     }
-    final resume = _readPosition(edition.id);
+    final resume = target ?? _readPosition(edition.id);
     if (resume != null && !resume.fits(edition)) {
       _message = 'The saved audio source changed. Its resume is kept but was not applied.';
       _notify();
       return;
     }
     _loading = true;
+    _decoderReady = false;
     try {
       await engine.pause();
       _save();
@@ -542,29 +560,38 @@ class Playback extends ChangeNotifier {
           : edition.files.indexWhere((file) => file.key == resume.sourceKey);
       await engine.load(files, fileIndex, resume?.milliseconds ?? 0);
       await engine.speed(_speed);
+      final confirmed = target == null
+          ? AudioSample(fileIndex, resume?.milliseconds ?? 0)
+          : await engine.seek(fileIndex, target.milliseconds);
       if (generation != _generation) {
         await engine.pause();
         return;
       }
+      if (confirmed.fileIndex < 0 ||
+          confirmed.fileIndex >= edition.files.length) {
+        throw const FormatException(
+          'The decoder did not confirm an edition source.',
+        );
+      }
+      final previous = _position;
       _book = book;
       _sliderStart = null;
-      _undo = null;
+      if (target == null) _undo = null;
       _edition = edition;
       _selected = edition.id;
       _playing = false;
       _active = autoplay;
-      _position = AudioPosition(
-        editionId: edition.id,
-        sourceKey: edition.files[fileIndex].key,
-        revision: edition.files[fileIndex].revision,
-        milliseconds: resume?.milliseconds ?? 0,
-      );
+      _position = _positionForSample(confirmed);
+      _decoderReady = true;
+      if (action != null) _record(action, previous ?? _position!, _position!);
       _message = null;
       _cancelSleep();
     } finally {
       _loading = false;
     }
     _save();
+    if (target != null) await _writes;
+    if (generation != _generation) return;
     _notify();
     if (autoplay) await engine.play();
   }
@@ -572,6 +599,7 @@ class Playback extends ChangeNotifier {
   void _accept(AudioSample sample) {
     if (_closed ||
         _loading ||
+        !_decoderReady ||
         _seeking ||
         _edition == null ||
         sample.fileIndex < 0 ||
@@ -584,13 +612,13 @@ class Playback extends ChangeNotifier {
     _position = _positionForSample(sample);
     final milliseconds = _position!.milliseconds;
     _playing = _active && sample.playing && !sample.completed;
-    if (wasPlaying != _playing) {
+    if (wasPlaying != _playing && _commandAction == null) {
       _record(
         sample.completed
             ? ListeningAction.completion
             : _playing
             ? ListeningAction.resume
-            : _commandAction ?? ListeningAction.interruption,
+            : ListeningAction.interruption,
         previous!,
         _position!,
       );
@@ -630,6 +658,10 @@ class Playback extends ChangeNotifier {
 
   Future<void> play() => _enqueue(() async {
     if (_edition == null) return;
+    if (!_decoderReady) {
+      await _open(_book!, _edition!, autoplay: true, target: _position);
+      return;
+    }
     final generation = _generation;
     for (final file in _edition!.files) {
       final local = await downloads.localFile(file);
@@ -650,10 +682,12 @@ class Playback extends ChangeNotifier {
   });
 
   Future<void> pause() => _enqueue(() async {
+    final generation = _generation;
     _commandAction = ListeningAction.pause;
     try {
       await engine.pause();
-      if (_playing) _record(ListeningAction.pause, _position!, _position!);
+      if (generation != _generation) return;
+      if (_active) _record(ListeningAction.pause, _position!, _position!);
     } finally {
       _commandAction = null;
     }
@@ -664,10 +698,12 @@ class Playback extends ChangeNotifier {
   });
 
   Future<void> stop() => _enqueue(() async {
+    final generation = _generation;
     _commandAction = ListeningAction.stop;
     try {
       await engine.pause();
-      if (_playing) _record(ListeningAction.stop, _position!, _position!);
+      if (generation != _generation) return;
+      if (_active) _record(ListeningAction.stop, _position!, _position!);
     } finally {
       _commandAction = null;
     }
@@ -771,6 +807,10 @@ class Playback extends ChangeNotifier {
   }) async {
     final generation = _generation;
     final previous = before ?? _position!;
+    if (!_decoderReady) {
+      await _open(_book!, _edition!, autoplay: false, target: _position);
+      if (generation != _generation || !_decoderReady) return;
+    }
     assert(_edition != null && index >= 0 && index < _edition!.files.length);
     _sliderStart = null;
     _seeking = true;
@@ -916,6 +956,7 @@ class Playback extends ChangeNotifier {
   void checkInvariants() {
     if ((_edition == null) != (_position == null) ||
         (_edition == null) != (_book == null) ||
+        _decoderReady && _edition == null ||
         _playing && _position == null ||
         _position != null &&
             (!_position!.fits(_edition!) || _session == null)) {
