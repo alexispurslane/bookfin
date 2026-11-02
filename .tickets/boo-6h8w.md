@@ -35,3 +35,7 @@ Implemented from e8fe9c7: one serialized position transition records confirmed b
 **2026-11-02T10:40:18Z**
 
 Parent reproduced and corrected F1-F5 from review of14ab8c5. Cross-edition selection/history now commit after decoder confirmation; failure retains prior selection/Undo and reloads that selection before later Play/seek. Slider origin captures gesture time despite pending writes. Explicit Pause/Stop records are independent of decoder playing edges. Shared Undo is available in mini/full player, and History retains mini-player controls. Seven new cases failed meaningfully before correction. Full234 application tests and analyzer pass; after adding readiness invariant,29 history tests and formatting pass. Android ARM64 debug build passes. No new Android runtime or web execution claimed. Correction review and runtime acceptance remain pending; no closure.
+
+**2026-11-02T10:50:37Z**
+
+Second correction: reproduced R1 overlapping completed slider releases and R2 Undo loss after an aborted decoder reload. Each release now owns immutable origin/cancellation inputs; non-slider commands and selection/account changes invalidate stale gestures. Loading and seeking return explicit applied outcomes, propagated through restore before clearing Undo. Added both failing regressions plus an intervening-jump cancellation case. All237 app tests, analyzer and Android ARM64 debug build pass through Nix. Runtime acceptance and re-review remain open.

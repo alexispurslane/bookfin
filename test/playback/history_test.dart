@@ -133,6 +133,104 @@ void main() {
     },
   );
 
+  for (final interveningJump in [false, true]) {
+    test(
+      'completed slider gestures retain origins unless a jump intervenes ($interveningJump)',
+      () async {
+        await playback.close();
+        final gated = GatedRecordStore();
+        engine = TestEngine();
+        playback = Playback(downloads: downloads, engine: engine, store: gated);
+        await playback.bind(account(), [title]);
+        await playback.open(title, recording);
+        engine.emit(0, 11000, playing: true);
+        await playback.flush();
+        gated.gate = Completer<void>();
+        final writing = playback.addBookmark();
+        await Future<void>.delayed(Duration.zero);
+        await playback.beginSliderSeek();
+        final firstRelease = playback.finishSliderSeek(95000);
+        final jumping = interveningJump
+            ? playback.jump(forward: true)
+            : Future<void>.value();
+        engine.emit(0, 19000, playing: true);
+        await playback.beginSliderSeek();
+        final secondRelease = playback.finishSliderSeek(120000);
+        gated.gate!.complete();
+        await Future.wait([writing, firstRelease, jumping, secondRelease]);
+        final seeks = playback.history
+            .where((event) => event.kind == ListeningAction.seek)
+            .toList()
+            .reversed
+            .toList();
+        expect(seeks, hasLength(interveningJump ? 1 : 2));
+        expect(seeks[0].before.milliseconds, 11000);
+        expect(seeks[0].after.milliseconds, 35000);
+        if (interveningJump) {
+          expect(playback.editionMilliseconds, 125000);
+          expect(playback.history.first.kind, ListeningAction.jump);
+          await playback.undoSeek();
+          expect(playback.editionMilliseconds, 95000);
+          return;
+        }
+        expect(seeks[1].before.milliseconds, 19000);
+        expect(seeks[1].after.milliseconds, 60000);
+        expect(playback.editionMilliseconds, 120000);
+        await playback.undoSeek();
+        expect(playback.editionMilliseconds, 19000);
+      },
+    );
+  }
+
+  test(
+    'Undo survives a required file disappearing during decoder reload',
+    () async {
+      const alternate = Edition(
+        id: 'alternate',
+        kind: EditionKind.audio,
+        label: 'Other recording',
+        files: [first],
+        memberIds: ['one:m1'],
+      );
+      const other = Book(
+        id: 'other',
+        title: 'Other book',
+        author: 'Writer',
+        editions: [alternate],
+      );
+      await playback.close();
+      downloads.dispose();
+      final disappearing = DisappearingLocalFiles();
+      downloads = disappearing;
+      final failing = FailingSeekEngine();
+      playback = Playback(downloads: downloads, engine: failing, store: store);
+      await playback.bind(account(), [title, other]);
+      await playback.open(other, alternate, autoplay: false);
+      await playback.addBookmark();
+      final bookmark = playback.bookmarks.single;
+      await playback.open(title, recording, autoplay: false);
+      await playback.seekEdition(75000);
+      final undo = playback.undoAction;
+      failing.fail = true;
+      await playback.restoreBookmark(bookmark.id);
+      failing.fail = false;
+      final count = playback.history.length;
+      // Both files pass the restore check; the first file vanishes on reload.
+      disappearing.lookupsBeforeRemoval = 2;
+      await playback.undoSeek();
+      expect(playback.editionMilliseconds, 75000);
+      expect(playback.history, hasLength(count));
+      expect(playback.undoAction?.id, undo?.id);
+      expect(playback.message, contains('Download every file'));
+      disappearing.lookupsBeforeRemoval = null;
+      disappearing.files[first.key] = Uri.file('/one.wav');
+      await playback.undoSeek();
+      expect(playback.editionMilliseconds, 0);
+      expect(playback.undoAction, isNull);
+      expect(playback.history.first.kind, ListeningAction.undo);
+    },
+  );
+
   test(
     'Stop records the end of an already paused active session once',
     () async {
@@ -676,6 +774,19 @@ class FailingSeekEngine extends TestEngine {
     if (fail) throw Exception('seek failed');
     if (fileIndex >= files.length) throw Exception('source is not loaded');
     return super.seek(fileIndex, position);
+  }
+}
+
+class DisappearingLocalFiles extends LocalFiles {
+  int? lookupsBeforeRemoval;
+  @override
+  Future<Uri?> localFile(SourceFile source) async {
+    final remaining = lookupsBeforeRemoval;
+    if (remaining != null) {
+      if (remaining == 0) files.remove(first.key);
+      lookupsBeforeRemoval = remaining - 1;
+    }
+    return super.localFile(source);
   }
 }
 

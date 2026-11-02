@@ -98,3 +98,13 @@ The slider captures its origin when the gesture starts. A pending disk write can
 The full player and mini-player share one Undo control. History keeps the mini-player visible, so the user can pause or undo a restore without leaving History.
 
 Parent verification through Nix: all 234 application tests pass and analysis reports no issues. The initial new history widget test needed its storage setup inside the test runner's asynchronous helper. After that correction, it failed because History had no Pause control. That setup failure is not counted as behavior evidence. Android runtime acceptance remains outstanding. No device, production-server, coverage, or mutation work ran in this correction.
+
+## Second parent correction
+
+The correction review found two remaining failures. Two new regression tests reproduced them: a second slider gesture replaced the first gesture's origin, and an aborted reload removed Undo.
+
+Each completed slider release now carries its own immutable origin into the command queue. Two completed gestures behind a pending write both retain their requested targets and starting positions. A separate regression preserves cancellation when a non-slider jump occurs between those queued releases. Account and selection changes still invalidate stale gestures.
+
+Loading and seeking now return an explicit applied/not-applied result. Restoration uses that result before it clears Undo. The missing-file test removes a required file between restore validation and decoder reload. The failed attempt keeps the position, history, and Undo. Restoring the file allows the same Undo action to succeed.
+
+Parent verification through Nix: all 237 application tests pass, analysis reports no issues, and the Android ARM64 debug APK builds. Changed Dart files are formatted and the diff has no whitespace errors. No Android runtime, web build, coverage, or mutation result is added by this correction. Review and integration remain pending.

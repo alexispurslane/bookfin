@@ -39,6 +39,9 @@ abstract class ResumeStore {
   Future<void> write(String accountKey, Map<String, dynamic> value);
 }
 
+// The revision is a gesture-cancellation counter, not a media-source revision.
+typedef _SliderGesture = ({AudioPosition origin, int revision});
+
 class Playback extends ChangeNotifier {
   Playback({
     required this.downloads,
@@ -86,7 +89,8 @@ class Playback extends ChangeNotifier {
   List<ListeningEvent> _history = [];
   List<AudioBookmark> _bookmarks = [];
   ListeningEvent? _undo;
-  AudioPosition? _sliderStart;
+  _SliderGesture? _sliderStart;
+  int _sliderRevision = 0;
   bool _seeking = false;
   ListeningAction? _commandAction;
   final _pendingWrites = <String, Map<String, dynamic>>{};
@@ -116,19 +120,32 @@ class Playback extends ChangeNotifier {
   /// Capture the gesture's origin now, even while a disk write blocks commands.
   /// Selection changes and intervening position commands invalidate this origin.
   Future<void> beginSliderSeek() {
-    _sliderStart = !_closed && _restored && !_loading && !_seeking
-        ? _position
+    _sliderStart =
+        !_closed && _restored && !_loading && !_seeking && _position != null
+        ? (origin: _position!, revision: _sliderRevision)
         : null;
     return Future.value();
   }
 
-  Future<void> finishSliderSeek(int milliseconds) => _enqueue(() async {
+  /// Queue this completed gesture with its own origin. Later gestures cannot
+  /// replace it; a selection change or non-slider seek still invalidates it.
+  Future<void> finishSliderSeek(int milliseconds) {
     final start = _sliderStart;
     _sliderStart = null;
-    if (start != null && _edition != null && start.fits(_edition!)) {
-      await _seekEdition(milliseconds, before: start);
-    }
-  });
+    return _enqueue(() async {
+      if (start != null &&
+          start.revision == _sliderRevision &&
+          _edition != null &&
+          start.origin.fits(_edition!)) {
+        await _seekEdition(milliseconds, gesture: start);
+      }
+    });
+  }
+
+  void _invalidateSlider() {
+    _sliderStart = null;
+    _sliderRevision++;
+  }
 
   Future<void> undoSeek() => _enqueue(() async {
     final event = _undo;
@@ -252,22 +269,21 @@ class Playback extends ChangeNotifier {
     final before = _position;
     final wasPlaying = _playing;
     if (_edition?.id != edition.id) {
-      await _open(
+      return _open(
         book!,
         edition,
         autoplay: wasPlaying,
         target: target,
         action: kind,
       );
-      return generation == _generation && _edition?.id == edition.id;
     }
-    await _seekPosition(
+    final applied = await _seekPosition(
       edition.files.indexWhere((file) => file.key == target.sourceKey),
       target.milliseconds,
       kind,
       before: before,
     );
-    if (generation != _generation) return false;
+    if (!applied || generation != _generation) return false;
     if (wasPlaying && !_active) {
       _active = true;
       await engine.play();
@@ -394,7 +410,7 @@ class Playback extends ChangeNotifier {
     _history = [];
     _bookmarks = [];
     _undo = null;
-    _sliderStart = null;
+    _invalidateSlider();
     _selected = null;
     _speed = 1;
     _backward = 10;
@@ -507,9 +523,12 @@ class Playback extends ChangeNotifier {
   }
 
   Future<void> open(Book book, Edition edition, {bool autoplay = true}) =>
-      _enqueue(() => _open(book, edition, autoplay: autoplay));
+      _enqueue(() async {
+        await _open(book, edition, autoplay: autoplay);
+      });
 
-  Future<void> _open(
+  /// True only when this account's selection was loaded and committed.
+  Future<bool> _open(
     Book book,
     Edition edition, {
     required bool autoplay,
@@ -528,18 +547,18 @@ class Playback extends ChangeNotifier {
     if (!_restored) {
       _message = 'Cannot restore listening records. Restart Bookfin before listening. Saved listening data was not removed.';
       _notify();
-      return;
+      return false;
     }
     final generation = _generation;
     final files = <Uri>[];
     for (final file in edition.files) {
       final uri = await downloads.localFile(file);
-      if (generation != _generation) return;
+      if (generation != _generation) return false;
       if (uri == null || uri.scheme != 'file') {
         _message =
             'Download every file in this audio edition before listening.';
         _notify();
-        return;
+        return false;
       }
       files.add(uri);
     }
@@ -547,7 +566,7 @@ class Playback extends ChangeNotifier {
     if (resume != null && !resume.fits(edition)) {
       _message = 'The saved audio source changed. Its resume is kept but was not applied.';
       _notify();
-      return;
+      return false;
     }
     _loading = true;
     _decoderReady = false;
@@ -565,7 +584,7 @@ class Playback extends ChangeNotifier {
           : await engine.seek(fileIndex, target.milliseconds);
       if (generation != _generation) {
         await engine.pause();
-        return;
+        return false;
       }
       if (confirmed.fileIndex < 0 ||
           confirmed.fileIndex >= edition.files.length) {
@@ -575,7 +594,7 @@ class Playback extends ChangeNotifier {
       }
       final previous = _position;
       _book = book;
-      _sliderStart = null;
+      if (target == null || _edition?.id != edition.id) _invalidateSlider();
       if (target == null) _undo = null;
       _edition = edition;
       _selected = edition.id;
@@ -591,9 +610,10 @@ class Playback extends ChangeNotifier {
     }
     _save();
     if (target != null) await _writes;
-    if (generation != _generation) return;
+    if (generation != _generation) return false;
     _notify();
     if (autoplay) await engine.play();
+    return generation == _generation;
   }
 
   void _accept(AudioSample sample) {
@@ -675,7 +695,7 @@ class Playback extends ChangeNotifier {
     }
     if (durationMilliseconds != null &&
         editionMilliseconds == durationMilliseconds) {
-      await _seekPosition(0, 0, ListeningAction.seek);
+      if (!await _seekPosition(0, 0, ListeningAction.seek)) return;
     }
     _active = true;
     await engine.play();
@@ -722,7 +742,7 @@ class Playback extends ChangeNotifier {
   Future<void> _seekEdition(
     int milliseconds, {
     ListeningAction kind = ListeningAction.seek,
-    AudioPosition? before,
+    _SliderGesture? gesture,
   }) async {
     if (_edition == null) return;
     final duration = durationMilliseconds;
@@ -736,7 +756,7 @@ class Playback extends ChangeNotifier {
     for (var index = 0; index < _edition!.files.length; index++) {
       final length = _edition!.files[index].durationMs!;
       if (remaining < length || index == _edition!.files.length - 1) {
-        await _seekPosition(index, remaining, kind, before: before);
+        await _seekPosition(index, remaining, kind, gesture: gesture);
         return;
       }
       remaining -= length;
@@ -799,20 +819,28 @@ class Playback extends ChangeNotifier {
     if (event.changesPosition) _undo = event;
   }
 
-  Future<void> _seekPosition(
+  /// True only after a confirmed position and its action were committed.
+  Future<bool> _seekPosition(
     int index,
     int milliseconds,
     ListeningAction kind, {
     AudioPosition? before,
+    _SliderGesture? gesture,
   }) async {
     final generation = _generation;
-    final previous = before ?? _position!;
+    final previous = gesture?.origin ?? before ?? _position!;
+    if (gesture == null) _invalidateSlider();
     if (!_decoderReady) {
-      await _open(_book!, _edition!, autoplay: false, target: _position);
-      if (generation != _generation || !_decoderReady) return;
+      final loaded = await _open(
+        _book!,
+        _edition!,
+        autoplay: false,
+        target: _position,
+      );
+      if (!loaded || generation != _generation) return false;
     }
+    if (gesture != null && gesture.revision != _sliderRevision) return false;
     assert(_edition != null && index >= 0 && index < _edition!.files.length);
-    _sliderStart = null;
     _seeking = true;
     late final AudioSample confirmed;
     try {
@@ -820,7 +848,7 @@ class Playback extends ChangeNotifier {
     } finally {
       _seeking = false;
     }
-    if (generation != _generation) return;
+    if (generation != _generation) return false;
     if (confirmed.fileIndex < 0 ||
         confirmed.fileIndex >= _edition!.files.length) {
       throw const FormatException(
@@ -833,6 +861,7 @@ class Playback extends ChangeNotifier {
     _save();
     await _writes;
     _notify();
+    return generation == _generation;
   }
 
   Future<void> setSpeed(double value) => _enqueue(() async {
@@ -969,7 +998,9 @@ class Playback extends ChangeNotifier {
             _bookmarks.length ||
         _undo != null && !_history.contains(_undo) ||
         _sliderStart != null &&
-            (_edition == null || !_sliderStart!.fits(_edition!)) ||
+            (_edition == null ||
+                !_sliderStart!.origin.fits(_edition!) ||
+                _sliderStart!.revision != _sliderRevision) ||
         _failedAccounts.any(
           (account) => !_pendingWrites.containsKey(account),
         )) {
