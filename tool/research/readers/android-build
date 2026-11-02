@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")"
+: "${BOOKFIN_NDK:?Pass the project NDK from the root Nix dev shell}"
+: "${LIBMOBI_SOURCE:?Use the reader research Nix dev shell}"
+mkdir -p _out/pdfium-android
+tar xf "$PDFIUM_ANDROID_ARCHIVE" -C _out/pdfium-android
+cmake -S "$LIBMOBI_SOURCE" -B _out/android-arm64 -G Ninja \
+  -DCMAKE_TOOLCHAIN_FILE="$BOOKFIN_NDK/build/cmake/android.toolchain.cmake" \
+  -DANDROID_ABI=arm64-v8a -DANDROID_PLATFORM=android-24 \
+  -DCMAKE_BUILD_TYPE=MinSizeRel -DUSE_ENCRYPTION=OFF \
+  -DUSE_LIBXML2=OFF -DUSE_ZLIB=OFF -DUSE_MINIZ=ON
+cmake --build _out/android-arm64 --target mobi --parallel 2
+compiler="$BOOKFIN_NDK/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android24-clang"
+"$compiler" -shared -fPIC -Oz android_link_probe.c \
+  -I "$LIBMOBI_SOURCE/src" -I _out/pdfium-android/include \
+  -L _out/android-arm64/src -L _out/pdfium-android/lib \
+  -lmobi -lpdfium -Wl,--no-undefined -o _out/libbookfin_reader_probe.so
+llvm-strip _out/android-arm64/src/libmobi.so
+llvm-readelf --file-header --program-headers --dynamic --notes \
+  _out/android-arm64/src/libmobi.so \
+  _out/pdfium-android/lib/libpdfium.so _out/libbookfin_reader_probe.so \
+  > _out/android-linkage.txt
+wc -c _out/android-arm64/src/libmobi.so \
+  _out/pdfium-android/lib/libpdfium.so _out/libbookfin_reader_probe.so

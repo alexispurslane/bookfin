@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")"
+: "${PDFIUM_HOST_ARCHIVE:?Use nix develop ./tool/research/readers}"
+mkdir -p _out/pdfium-host _out/pdfium-android
+tar xf "$PDFIUM_HOST_ARCHIVE" -C _out/pdfium-host
+tar xf "$PDFIUM_ANDROID_ARCHIVE" -C _out/pdfium-android
+export PDFIUM_LIBRARY="$PWD/_out/pdfium-host/lib/libpdfium.dylib"
+python fixtures.py
+python -m unittest -v test_readers
+for name in mobi6-plain mobi6-palmdoc; do
+  mobitool -e -o _out "fixtures/$name.mobi"
+  unzip -t "_out/$name.epub" | tail -1
+done
+cp -f "$ALICE_KF8" _out/alice.mobi
+mobitool -i _out/alice.mobi > _out/alice-metadata.txt
+mobitool -e -o _out _out/alice.mobi
+unzip -t _out/alice.epub | tail -1
+for package in dart_pdf dart_epub; do
+  (
+    cd "$package"
+    dart pub get --enforce-lockfile
+    dart test --reporter expanded
+  )
+done
+python report.py

@@ -1,0 +1,8 @@
+8 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Running Gradle task 'assembleDebug'...                             78.4s
+✓ Built build/app/outputs/flutter-apk/app-debug.apk
+   161152  01-01-1981 01:01   lib/arm64-v8a/libmobi.so
+  6598376  01-01-1981 01:01   lib/arm64-v8a/libpdfium.so
+     5080  01-01-1981 01:01   lib/arm64-v8a/libpdfrx_pdfium_gate.so
+     2693  01-01-1981 01:01   assets/flutter_assets/assets/simple.pdf
