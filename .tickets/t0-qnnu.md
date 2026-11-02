@@ -35,3 +35,7 @@ Production PDF integration boo-mx5i now depends on this safe-handling gate: iden
 **2026-11-02T13:15:24Z**
 
 Work alongside t0-odcl under one PDF text-quality decision. Prove safe fallback with real corpus and retain usable simple text. No OCR implementation or engine selection in this follow-up.
+
+**2026-11-02T13:47:06Z**
+
+Shared implementation with t0-odcl distinguishes absent text, independently observed source-layer defects, and extraction-order/fragmentation errors. Raven page 9 falls back with 37 fragments; the nine-fragment library stamp also falls back. The exact historical image-only derivative is retained byte-for-byte and verified against its recorded hash. Source errors are bound only to the independently compared page 9; other source layers remain unchecked. Future offline OCR eligibility remains boo-suhu; no OCR or package selection. Checks: 37 Python, 21 Dart, 5 isolated Flutter widget tests through Nix. Host evidence only; ticket remains in_progress for orchestrator integration.

@@ -261,3 +261,135 @@ The parent owns integration, follow-up ordering, production approval, and ticket
 The November 2 host ownership proof is recorded in [pdf-worker-ownership.md](pdf-worker-ownership.md).
 It retains a subprocess native abort and proves multiple document callers through the pinned dependency's single-worker model.
 That follow-up does not replace this report's historical observations or establish Android callback ownership.
+
+## November 2: shared PDF text-quality follow-up
+
+Tickets `t0-odcl` and `t0-qnnu` share one page-local decision in `tool/research/readers/pdf_text_quality.py`.
+The decision controls both host PDF generation and the corpus probe.
+Raw PDFium extraction, source character indexes, and character boxes remain unchanged.
+The native engine and Dart's serial test-file workaround remain unchanged.
+This is research policy until a production reader exists, not an Android implementation.
+
+The three text states have separate meanings:
+
+| State | Meaning | Result |
+| --- | --- | --- |
+| Absent | The source page supplies no extracted text blocks | Show the original page. Do not generate an empty successful reading view |
+| Unreliable | The bounded geometry checks find ordering or fragmentation risks, or independent comparison establishes source-layer errors | Show the original page and retain the reasons. Do not generate a misleading reading PDF |
+| Candidate | The page passes these geometry checks | Allow host reflow with original-page access. This does not establish source correctness or universal layout support |
+
+A source block is one character group from the existing geometry extractor.
+The extractor groups characters by rounded baseline, the vertical position of the text line.
+It splits groups when the horizontal gap exceeds 18 PDF points.
+A PDF point is one seventy-second of an inch.
+
+The bounded checks reject three observed risks:
+
+- A block contains adjacent character indexes more than five source characters apart. This catches the Census blocks that combine unrelated columns.
+- At least three baselines contain separate groups whose source character ranges are not adjacent. Numbered NIST headings have adjacent ranges and remain candidates.
+- At least four blocks exist, and at least 80 percent contain at most two whitespace-separated words. This catches Raven's verse fragments and its nine-fragment library stamp.
+
+These thresholds describe this proof, not a PDF layout classifier with measured accuracy on other documents.
+A rejection does not establish that the source text layer is corrupt.
+A candidate does not establish that its words are correct.
+Character retention, phrase checks, and resolved anchors remain diagnostics, not fidelity acceptance.
+
+### Pinned results and page limits
+
+| Source pages | Observed geometry | Decision |
+| --- | --- | --- |
+| Census page 1 | 218 blocks; 14 blocks combine nonadjacent source text; 29 baselines contain separate source ranges | Original-page fallback |
+| Census page 2 | 233 blocks; seven blocks combine nonadjacent source text; 34 baselines contain separate source ranges | Original-page fallback |
+| Raven page 9 | 37 short blocks; six baselines contain separate source ranges | Original-page fallback; source defects remain a separate observation |
+| Raven page 24 | Nine short fragments from the library stamp and number | Original-page fallback, not a false positive caused by a ten-block minimum |
+| Retained image-only Raven derivative | Zero extracted blocks | Absent text, not an extraction-order error |
+| NIST page 5 | 31 source blocks become 11 paragraph candidates | Useful bounded reflow; retain headings, body paragraphs, footer, and source anchor |
+
+All seven NIST pages pass the geometry screen.
+The Raven file has 12 pages with no extracted blocks and 12 with unreliable extraction geometry.
+Only sampled pages receive rendered previews in this follow-up.
+These totals do not establish rendering or source-text correctness for every page.
+
+NIST page 5 now uses 60 and 33 paragraph-height-derived lines at widths of 360 and 720 PDF points.
+Both generated PDFs retain all 1,767 nonspace characters from the paragraph candidates in order.
+This is a clipping and transport diagnostic, not a fidelity verdict.
+The retained previews show the first generated page only; the output PDFs retain the remaining text.
+
+Paragraph candidates join nearby, similarly sized source lines within one source page.
+Large vertical gaps, changes in indentation, and heading candidates keep paragraphs separate.
+The proof retains headers and footers in physical top-to-bottom order; it does not infer or remove their semantic roles.
+NIST's numbered headings remain separate from the prose, and its page number remains last.
+The source's font-size signal is not sufficient here to restore NIST's original heading typography.
+The proof does not consume PDF tags, repair line-end hyphenation, or establish footnote associations.
+
+Paragraph candidates never join across source pages.
+The original-page link identifies the exact file SHA-256 and one-based source page, even when no text anchor is available.
+Text anchors retain PDFium's zero-based source page, source character index, and character box.
+Inserted paragraph spaces do not acquire fabricated character anchors; each paragraph retains its original source blocks.
+
+Census page 1 ends its right-column body with `needed to provide advice and`.
+Page 2 continues that body with `recommendations to the Director of the` in its left column.
+The existing extraction also mixes neighboring notices on both pages.
+The follow-up records those page boundaries but does not claim to reconstruct the continuation or separate the notices.
+Readers must use both complete original pages.
+
+### Source errors and future recognition
+
+Raven page 9 has two independently observed source-layer defects: the missing decorative opening O and the misread decorative title.
+The retained Poppler comparison and original-page image establish those observations.
+The report binds them to the pinned source hash and page, separately from geometry risk flags.
+Poppler retains much of the verse order; the existing geometry extractor adds fragmentation and reordering.
+The follow-up does not blame that additional damage on prior recognition.
+
+Absent text or independently observed source-layer errors can justify a future offline OCR retry under `boo-suhu`.
+OCR means recognizing text from a page image.
+An extraction-order error alone does not establish that another recognition pass is needed.
+Unchecked source text is not labeled correct or automatically scheduled for recognition.
+No OCR engine, language, latency, recognition quality, or Android result is selected or measured here.
+
+### Reproduce without replacing historical evidence
+
+The image-only derivative in `evidence/text-quality/raven-raster-only.pdf` is a byte-for-byte copy of the retained research input.
+It is not a newly generated fixture or another downloaded work.
+Its 647,409 bytes retain SHA-256 `cd2894179a69bd874339e419924e3a89042e7302be785444a0859e390c44e7fa`.
+Its source is the Library of Congress Raven scan, source page 9.
+The corpus manifest, generated fixtures, historical observations, and historical previews remain unchanged.
+
+Run from the checkout root:
+
+```sh
+nix develop ./tool/research/readers --command bash -c '
+  set -euo pipefail
+  cd tool/research/readers
+  python corpus_inputs.py
+  mkdir -p _out/pdfium-host
+  tar xf "$PDFIUM_HOST_ARCHIVE" -C _out/pdfium-host
+  export PDFIUM_LIBRARY="$PWD/_out/pdfium-host/lib/libpdfium.dylib"
+  export BOOKFIN_REAL_CORPUS=1
+  python -m unittest -v test_pdf_text_quality test_readers test_run_inputs test_corpus_inputs
+  python text_quality_probe.py
+'
+```
+
+The probe writes only to ignored `_out/text-quality/` by default.
+It emits complete generated reflow PDFs for NIST page 5, original-page previews, raw extraction comparisons, a self-contained HTML contact sheet, and `observations.json`.
+The committed evidence copies are under `evidence/text-quality/`.
+The report records input hashes, implementation hashes, per-page reasons, paragraph candidates, anchors, and diagnostics explicitly labeled as not fidelity checks.
+The old corpus probe also records original-page fallback instead of aborting or producing bad reading text.
+The earlier six-preview reproduction describes the historical extractor and renderer, not this changed policy.
+The current probe deliberately does not regenerate the misleading Census and Raven reflow PDFs.
+Keep the retained historical previews; do not replace them with these fallback previews or claim their pixels match.
+
+Red logs record successful bad reflow before the guard, lost paragraph joining, misplaced footer/page order, and clipped long paragraphs.
+Further red logs cover the probe's former abort, NIST heading over-rejection, future recognition reasons, and short Raven fragments.
+The long-paragraph test normalizes generated line wrapping before comparing complete words; line wrapping itself is not text loss.
+The corrected normalization also fails against unchanged baseline `5815233235c0cf97999e1e7d00098494b7ccc557`; its separate red log records that comparison.
+
+The final Nix host checks pass 37 Python tests, 21 Dart tests, and five Flutter widget tests.
+The Python count includes all discovered research suites, including the native conversion boundary and 18 new text-quality checks.
+The Dart count includes the eight serial PDF/Markdown checks, four original EPUB checks, and nine joint-parser checks.
+The Flutter count comes from the isolated research widget package, not the production Android application.
+`full-host-checks.txt` also records the unchanged fixture runner, native bridge build, corpus probe, and nine-source hash verification.
+`flutter-widget-checks.txt` records the five widget results.
+Existing nonfatal Dart hook warnings report that iOS SDKs are unavailable; no iOS or Android build is claimed.
+No coverage, mutation testing, device, browser, production Jellyfin, credentials, PR, or ticket closure is part of this follow-up.

@@ -1,0 +1,16 @@
+building '/nix/store/3fmhwh4rjvm0z44cmn9bdmjx7bnbfzck-androidsdk.drv'...
+building '/nix/store/6v1xagaqlv3my15hd03pv30iyrwmf1ww-nix-shell-env.drv'...
+Resolving dependencies...
+Downloading packages...
+  material_color_utilities 0.13.0 (0.13.1 available)
+  test_api 0.7.12 (0.7.15 available)
+Got dependencies!
+2 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+00:00 +0: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-9c44e8be/tool/research/readers/_out/flutter-widgets/test/reader_probe_test.dart
+00:00 +0: a UTF-8 license preserves its copyright symbol and non-Latin text
+00:00 +1: a Latin-1 license preserves its copyright symbol
+00:00 +2: line measurement matches the rendered style and constrained width
+00:00 +3: narrow reflow wraps text into more lines without shrinking it
+00:00 +4: a source link returns to the page that supplied the reflow text
+00:00 +5: All tests passed!

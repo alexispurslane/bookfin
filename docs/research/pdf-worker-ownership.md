@@ -176,6 +176,6 @@ It includes the native abort, meaningful red run, final suite logs, positive JSO
 Build-hook messages about unavailable Windows and iOS tools remain nonfatal host diagnostics.
 Neither platform was tested.
 
-Android callback ownership and device acceptance remain unverified and blocked by the existing host stop rule.
+Android callback ownership and device acceptance remain unverified by this host proof. The earlier device attempt stopped under the host failure rule; the user subsequently authorized a separate fresh Android attempt.
 No Android build, device, browser, production reader, production Jellyfin access, credentials, coverage, mutation testing, or PR was used.
 The orchestrator owns integration, any Android follow-up, and ticket closure.

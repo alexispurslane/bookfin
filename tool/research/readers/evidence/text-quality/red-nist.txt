@@ -1,0 +1,18 @@
+test_nist_numbered_headings_do_not_disable_useful_single_flow_text (test_pdf_text_quality.PinnedTextQuality.test_nist_numbered_headings_do_not_disable_useful_single_flow_text) ... FAIL
+
+======================================================================
+FAIL: test_nist_numbered_headings_do_not_disable_useful_single_flow_text (test_pdf_text_quality.PinnedTextQuality.test_nist_numbered_headings_do_not_disable_useful_single_flow_text)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-9c44e8be/tool/research/readers/test_pdf_text_quality.py", line 114, in test_nist_numbered_headings_do_not_disable_useful_single_flow_text
+    self.assertEqual(assess_page(blocks)["view"], "reflow")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'original-page' != 'reflow'
+- original-page
++ reflow
+
+
+----------------------------------------------------------------------
+Ran 1 test in 0.260s
+
+FAILED (failures=1)

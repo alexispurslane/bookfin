@@ -15,6 +15,8 @@ from reportlab.pdfgen import canvas
 from reportlab.platypus import Paragraph
 from reportlab.lib.styles import ParagraphStyle
 
+from pdf_text_quality import assess_page
+
 
 @cache
 def pdfium():
@@ -147,18 +149,36 @@ def safe_html(content, root):
 def reflow_pdf(blocks, destination, width):
     if width < 120:
         raise ValueError("Reflow width must leave space for text")
+    if not blocks:
+        raise ValueError("Original-page fallback: absent text")
+    paragraphs = []
+    for page_number in sorted({block["page"] for block in blocks}):
+        decision = assess_page([block for block in blocks if block["page"] == page_number])
+        if decision["view"] != "reflow":
+            raise ValueError(f"Original-page fallback: {decision['status']} text on source page {page_number + 1}: {', '.join(decision['reasons'])}")
+        paragraphs.extend(decision["paragraphs"])
     output = canvas.Canvas(str(destination), pagesize=(width, 792), invariant=1)
     baseline = 760
     line_count = 0
-    for block in blocks:
+    for block in paragraphs:
         style = ParagraphStyle("reading", fontName="Helvetica-Bold" if block["heading"] else "Helvetica", fontSize=24 if block["heading"] else 18, leading=30 if block["heading"] else 25)
         paragraph = Paragraph(escape(block["text"]), style)
-        _, height = paragraph.wrap(width - 32, 720)
-        if baseline - height < 32:
-            output.showPage()
-            baseline = 760
-        paragraph.drawOn(output, 16, baseline - height)
-        line_count += round(height / style.leading)
-        baseline -= height + 10
+        pending = [paragraph]
+        while pending:
+            paragraph = pending.pop(0)
+            _, height = paragraph.wrap(width - 32, 728)
+            if height > baseline - 32:
+                pieces = paragraph.split(width - 32, baseline - 32)
+                if not pieces:
+                    output.showPage()
+                    baseline = 760
+                    pending.insert(0, paragraph)
+                    continue
+                paragraph = pieces[0]
+                pending = pieces[1:] + pending
+                _, height = paragraph.wrap(width - 32, 728)
+            paragraph.drawOn(output, 16, baseline - height)
+            line_count += round(height / style.leading)
+            baseline -= height + 10
     output.save()
     return line_count

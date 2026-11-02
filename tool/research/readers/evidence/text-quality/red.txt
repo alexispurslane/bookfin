@@ -1,0 +1,54 @@
+test_census_continuation_page_also_requires_its_complete_original (test_pdf_text_quality.PinnedTextQuality.test_census_continuation_page_also_requires_its_complete_original) ... FAIL
+test_census_first_page_cannot_present_cross_column_combinations_as_reading (test_pdf_text_quality.PinnedTextQuality.test_census_first_page_cannot_present_cross_column_combinations_as_reading) ... FAIL
+test_raven_opening_verse_cannot_present_37_fragments_as_reading (test_pdf_text_quality.PinnedTextQuality.test_raven_opening_verse_cannot_present_37_fragments_as_reading) ... FAIL
+test_absent_text_does_not_create_an_empty_successful_reading_view (test_pdf_text_quality.TextQualityBoundary.test_absent_text_does_not_create_an_empty_successful_reading_view) ... FAIL
+
+======================================================================
+FAIL: test_census_continuation_page_also_requires_its_complete_original (test_pdf_text_quality.PinnedTextQuality.test_census_continuation_page_also_requires_its_complete_original)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-9c44e8be/tool/research/readers/test_pdf_text_quality.py", line 58, in test_census_continuation_page_also_requires_its_complete_original
+    self.assert_fallback(blocks)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-9c44e8be/tool/research/readers/test_pdf_text_quality.py", line 46, in assert_fallback
+    with self.assertRaisesRegex(ValueError, "unreliable"):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_census_first_page_cannot_present_cross_column_combinations_as_reading (test_pdf_text_quality.PinnedTextQuality.test_census_first_page_cannot_present_cross_column_combinations_as_reading)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-9c44e8be/tool/research/readers/test_pdf_text_quality.py", line 53, in test_census_first_page_cannot_present_cross_column_combinations_as_reading
+    self.assert_fallback(blocks)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-9c44e8be/tool/research/readers/test_pdf_text_quality.py", line 46, in assert_fallback
+    with self.assertRaisesRegex(ValueError, "unreliable"):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_raven_opening_verse_cannot_present_37_fragments_as_reading (test_pdf_text_quality.PinnedTextQuality.test_raven_opening_verse_cannot_present_37_fragments_as_reading)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-9c44e8be/tool/research/readers/test_pdf_text_quality.py", line 65, in test_raven_opening_verse_cannot_present_37_fragments_as_reading
+    self.assert_fallback(blocks)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-9c44e8be/tool/research/readers/test_pdf_text_quality.py", line 46, in assert_fallback
+    with self.assertRaisesRegex(ValueError, "unreliable"):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_absent_text_does_not_create_an_empty_successful_reading_view (test_pdf_text_quality.TextQualityBoundary.test_absent_text_does_not_create_an_empty_successful_reading_view)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-9c44e8be/tool/research/readers/test_pdf_text_quality.py", line 21, in test_absent_text_does_not_create_an_empty_successful_reading_view
+    with self.assertRaisesRegex(ValueError, "absent"):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.295s
+
+FAILED (failures=4)
