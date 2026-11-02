@@ -1,6 +1,6 @@
 ---
 id: boo-7o92
-status: open
+status: in_progress
 deps: [boo-u3cg]
 links: []
 created: 2026-11-01T21:37:34Z

@@ -1,6 +1,6 @@
 ---
 id: boo-u3cg
-status: in_progress
+status: closed
 deps: [boo-gxm8]
 links: []
 created: 2026-11-01T21:37:34Z
