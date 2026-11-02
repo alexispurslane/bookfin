@@ -1,0 +1,19 @@
+$ dotnet build tool/research/plugin/Bookfin.Storage.csproj -c Release -p:JellyfinDir=$BOOKFIN_SYNC_SERVER -o .cache/plugin/build --nologo
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+$ python3 -m unittest discover -s tool/research/sync -p test_*.py
+Ran 40 tests in 6.602s
+OK
+
+$ nix develop --command bash tool/bookfin test
+PASS: SDK discovery link is additive, repeatable, and refuses existing tools or a missing SDK.
+00:08 +271: All tests passed!
+
+Parent correction verification (research sources only):
+Release plugin build: 0 warnings, 0 errors.
+Dedicated-storage experiment: 21 tests pass, including concurrent conflicting enqueue and null-prefixed payload restart.
+Existing sync research: 40 tests pass.
+Recorded source hashes and changed-public-file credential audit pass.
+No corrected Flutter or Android execution claimed.

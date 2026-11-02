@@ -1,5 +1,10 @@
 # Disposable Jellyfin sync and permission evidence
 
+Later decision, November 2, 2026: the user selected dedicated server storage
+and history retained until explicit deletion. `jellyfin-dedicated-storage.md`
+records the bounded plugin proof. Existing-storage results below remain
+historical evidence, not the current production storage choice.
+
 Application follow-up: `../acceptance/jellyfin-app.md` now records real production
 catalog and download calls against a fresh core-only fixture. Those checks are
 separate from this research-client evidence. Android restoration and real-server

@@ -1,5 +1,10 @@
 # Bookfin-owned private playlist protocol: decision evidence
 
+Later decision, November 2, 2026: ordinary playlists are not the selected
+production storage surface. The user requires dedicated storage and history
+retained until explicit deletion. See `jellyfin-dedicated-storage.md` for the
+bounded plugin proof. This report preserves the earlier protocol evidence.
+
 Research ticket: t3-7fv1, under boo-p58t. Baseline: e62257c, including
 environment integration 1e6ac01. Measurements ran on November 1, 2026 in
 America/New_York; evidence uses November 2 UTC timestamps. This is a new

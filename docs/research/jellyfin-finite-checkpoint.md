@@ -1,5 +1,10 @@
 # Private playlist checkpoint continuation
 
+Later decision, November 2, 2026: the user selected dedicated storage and history
+retained until explicit deletion. `jellyfin-dedicated-storage.md` records the
+bounded plugin proof. This report remains historical playlist evidence.
+Its measured growth limits still inform the production sync protocol.
+
 Ticket: t3-7fv1, under boo-p58t. Starting commit:
 `c13748198f0b7f73ad0ba1ec2b7ac84fbe989627`.
 Measurements: November 2, 2026, in the isolated t3-16d73e22 worktree.

@@ -60,6 +60,7 @@
           pkgs.curl
           pkgs.jq
           pkgs.nixfmt
+          pkgs.dotnet-sdk_10
         ];
         BOOKFIN_SYNC_SHELL = "1";
         BOOKFIN_SYNC_SERVER = server;
@@ -67,6 +68,10 @@
         BOOKFIN_SYNC_ENHANCED = enhanced;
         DOTNET_PROCESSOR_COUNT = "2";
         DOTNET_CLI_TELEMETRY_OPTOUT = "1";
+        shellHook = ''
+          export DOTNET_CLI_HOME="$PWD/.cache/plugin/dotnet"
+          export NUGET_PACKAGES="$PWD/.cache/plugin/nuget"
+        '';
       };
     };
 }

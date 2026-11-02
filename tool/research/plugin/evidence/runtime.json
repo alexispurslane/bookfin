@@ -1,0 +1,267 @@
+{
+  "ticket": "boo-dez0",
+  "measuredAtUtc": "2026-11-02T13:09:07.840734+00:00",
+  "baseCommit": "756ae5f",
+  "purpose": "Disposable bounded feasibility proof; not production sync",
+  "runtime": {
+    "jellyfin": "12.4.0",
+    "includedDotnet": "10.0.14",
+    "sdk": "10.0.401",
+    "host": "aarch64-darwin",
+    "serverArchivePin": "tool/research/sync/sources.json",
+    "serverDllSha256": "c553ef86f47d4de0399be5cb13d3623b9df017bb5d655a4622c8e58334f0b39c",
+    "pluginDllSha256": "bb54007aefdc9c4c57f75bf6241dfc2867058c0968a1bc3d4fb753cb4c876349",
+    "sourceSha256": {
+      "tool/research/plugin/Bookfin.Storage.csproj": "eff95a6b277a57a3f2349d64536fc83577a3b3515d52fb3da5151b680fda51b9",
+      "tool/research/plugin/Directory.Build.props": "597d46a17e428ac67e406b0e6f21c3c3ccf4cb2bf3926cca67c45e9e20980bf6",
+      "tool/research/plugin/ObjectStore.cs": "21352d93ca60ea941260b945708be593134179e9e3d835a0267fc74b276045e4",
+      "tool/research/plugin/Plugin.cs": "4f756e730f42acca9d083bc7769a19169f67552d4a6acc81e3d1b32536773859",
+      "tool/research/plugin/StorageController.cs": "13c354882fe7a0d5ffc38b3ceb5dba58c73e2d688fcc1490d399b07cc6e9955a",
+      "tool/research/plugin/dedicated_fixture.py": "30141e786873a4c0c1a8009ff2d7ae93cd0c623edf541c55f937289a8986b255",
+      "tool/research/plugin/outbox.py": "851a74a58c8f6aef035a9eb1ee23cefd6d779a3bad08a5b26f285d863b39a397",
+      "tool/research/plugin/run.py": "442b3820812064366ce7aceecd820f267d68e112cdfc3c657beeacc6692b51ab",
+      "tool/research/plugin/test_outbox.py": "48de031fb1655978f8b3106fecf1563906744b2baa4d4db203bf1a11c8e5fb51",
+      "tool/research/plugin/test_storage.py": "18901b54d20c8ca5860cf196a6687ec8a59c6bbf521af4291e82b004ec17add8",
+      "tool/research/sync/finite_journal.py": "65f8da49cb7a79c66ad3da1bb0034979b40db8767e78b8bdadcff29d789d06cd",
+      "tool/research/sync/fixture.py": "329eb024966088ef1ed6ed60ffc811996870269921b80221252a059e79ceb70a",
+      "tool/research/sync/flake.lock": "620ebda96a2f73ba0777e3f4f093baeb9d15dd69681c59b0b83610fbce1be2a1",
+      "tool/research/sync/flake.nix": "b5c2c18c5db1b654b09079868be5863ae4b4896757e3575ac7a28bd9ff24e93b",
+      "tool/research/sync/sources.json": "99f1e96972102936908722cf52064bbceb4bd55ac557d3e8980b38bb9fd455e1"
+    }
+  },
+  "checks": {
+    "testsRun": 21,
+    "successful": true,
+    "elapsedSeconds": 39.98,
+    "outcomes": [
+      {
+        "test": "test_outbox.PendingActions.test_a_new_database_is_claimed_by_only_one_concurrent_account",
+        "outcome": "passed"
+      },
+      {
+        "test": "test_outbox.PendingActions.test_a_pending_action_survives_closing_and_reopening_its_account",
+        "outcome": "passed"
+      },
+      {
+        "test": "test_outbox.PendingActions.test_an_action_identity_cannot_silently_change_while_offline",
+        "outcome": "passed"
+      },
+      {
+        "test": "test_outbox.PendingActions.test_another_account_cannot_open_the_pending_actions",
+        "outcome": "passed"
+      },
+      {
+        "test": "test_outbox.PendingActions.test_concurrent_conflicting_actions_cannot_both_be_accepted",
+        "outcome": "passed"
+      },
+      {
+        "test": "test_storage.DedicatedStorage.test_01_independent_concurrent_writes_are_all_discoverable",
+        "outcome": "passed"
+      },
+      {
+        "test": "test_storage.DedicatedStorage.test_02_retries_do_not_duplicate_or_overwrite_an_identity",
+        "outcome": "passed"
+      },
+      {
+        "test": "test_storage.DedicatedStorage.test_03_normal_accounts_cannot_read_write_or_delete_each_others_objects",
+        "outcome": "passed"
+      },
+      {
+        "test": "test_storage.DedicatedStorage.test_04_explicit_delete_is_discoverable_and_blocks_delayed_uploads",
+        "outcome": "passed"
+      },
+      {
+        "test": "test_storage.DedicatedStorage.test_05_known_request_limits_fail_without_changing_history",
+        "outcome": "passed"
+      },
+      {
+        "test": "test_storage.DedicatedStorage.test_06_clean_and_forced_restarts_preserve_acknowledged_objects_and_deletions",
+        "outcome": "passed"
+      },
+      {
+        "test": "test_storage.DedicatedStorage.test_07_bookfin_retains_concurrent_versions_despite_clock_skew",
+        "outcome": "passed"
+      },
+      {
+        "test": "test_storage.DedicatedStorage.test_08_missing_earlier_actions_remain_waiting_across_restart",
+        "outcome": "passed"
+      },
+      {
+        "test": "test_storage.DedicatedStorage.test_09_pending_actions_survive_lost_acknowledgments_and_rejected_retries",
+        "outcome": "passed"
+      },
+      {
+        "test": "test_storage.DedicatedStorage.test_10_uploads_racing_with_deletion_cannot_restore_the_deleted_identity",
+        "outcome": "passed"
+      },
+      {
+        "test": "test_storage.DedicatedStorage.test_11_dedicated_objects_are_not_ordinary_playlist_items",
+        "outcome": "passed"
+      },
+      {
+        "test": "test_storage.DedicatedStorage.test_12_a_cursor_discovers_changes_made_between_pages",
+        "outcome": "passed"
+      },
+      {
+        "test": "test_storage.DedicatedStorage.test_13_history_events_remain_independent_until_one_is_explicitly_deleted",
+        "outcome": "passed"
+      },
+      {
+        "test": "test_storage.DedicatedStorage.test_14_a_genuinely_concurrent_edit_remains_a_conflict_with_deletion",
+        "outcome": "passed"
+      },
+      {
+        "test": "test_storage.DedicatedStorage.test_15_plugin_remains_active_after_its_restart_exercises",
+        "outcome": "passed"
+      },
+      {
+        "test": "test_storage.DedicatedStorage.test_16_opaque_payloads_preserve_leading_null_characters",
+        "outcome": "passed"
+      }
+    ],
+    "sqliteIntegrity": "ok",
+    "invariantSwitchEnabled": true
+  },
+  "accounts": {
+    "admin": {
+      "objects": 0,
+      "deletionMarkers": 0,
+      "livePayloadUtf8Bytes": 0,
+      "lastSequence": 0
+    },
+    "alice": {
+      "objects": 103,
+      "deletionMarkers": 5,
+      "livePayloadUtf8Bytes": 68266,
+      "lastSequence": 105
+    },
+    "bob": {
+      "objects": 5,
+      "deletionMarkers": 3,
+      "livePayloadUtf8Bytes": 12,
+      "lastSequence": 8
+    }
+  },
+  "databaseBytesAfterShutdown": 110592,
+  "starts": [
+    {
+      "after": "initial"
+    },
+    {
+      "after": "terminate"
+    },
+    {
+      "after": "kill"
+    },
+    {
+      "after": "terminate"
+    },
+    {
+      "after": "terminate"
+    }
+  ],
+  "stops": [
+    {
+      "kind": "terminate",
+      "exitCode": 0
+    },
+    {
+      "kind": "kill",
+      "exitCode": -9
+    },
+    {
+      "kind": "terminate",
+      "exitCode": 0
+    },
+    {
+      "kind": "terminate",
+      "exitCode": 0
+    },
+    {
+      "kind": "terminate",
+      "exitCode": 0
+    }
+  ],
+  "redPhases": {
+    "red-storage": [
+      "FAIL: test_01_independent_concurrent_writes_are_all_discoverable (__main__.DedicatedStorage.test_01_independent_concurrent_writes_are_all_discoverable)",
+      "AssertionError: Lists differ: [501, 501, 501, 501, 501, 501, 501, 501, 5[353 chars] 501] != [201, 201, 201, 201, 201, 201, 201, 201, 2[353 chars] 201]",
+      "FAIL: test_02_retries_do_not_duplicate_or_overwrite_an_identity (__main__.DedicatedStorage.test_02_retries_do_not_duplicate_or_overwrite_an_identity)",
+      "AssertionError: 501 != 201",
+      "FAIL: test_03_normal_accounts_cannot_read_write_or_delete_each_others_objects (__main__.DedicatedStorage.test_03_normal_accounts_cannot_read_write_or_delete_each_others_objects)",
+      "AssertionError: 501 != 201",
+      "FAIL: test_04_explicit_delete_is_discoverable_and_blocks_delayed_uploads (__main__.DedicatedStorage.test_04_explicit_delete_is_discoverable_and_blocks_delayed_uploads)",
+      "AssertionError: 501 != 201",
+      "FAIL: test_05_known_request_limits_fail_without_changing_history (__main__.DedicatedStorage.test_05_known_request_limits_fail_without_changing_history)",
+      "AssertionError: 501 != 201",
+      "FAIL: test_06_clean_and_forced_restarts_preserve_acknowledged_objects_and_deletions (__main__.DedicatedStorage.test_06_clean_and_forced_restarts_preserve_acknowledged_objects_and_deletions)",
+      "AssertionError: 501 != 201",
+      "Ran 6 tests in 8.729s",
+      "FAILED (failures=6)"
+    ],
+    "red-outbox": [
+      "FAIL: test_a_pending_action_survives_closing_and_reopening_its_account (__main__.PendingActions.test_a_pending_action_survives_closing_and_reopening_its_account)",
+      "AssertionError: Lists differ: [] != [{'device': 'device-a', 'sequence': 1, 'co[105 chars]00}}]",
+      "FAIL: test_an_action_identity_cannot_silently_change_while_offline (__main__.PendingActions.test_an_action_identity_cannot_silently_change_while_offline)",
+      "AssertionError: ValueError not raised",
+      "FAIL: test_another_account_cannot_open_the_pending_actions (__main__.PendingActions.test_another_account_cannot_open_the_pending_actions)",
+      "AssertionError: PermissionError not raised",
+      "Ran 3 tests in 0.002s",
+      "FAILED (failures=3)"
+    ],
+    "red-acknowledgment": [
+      "FAIL: test_09_pending_actions_survive_lost_acknowledgments_and_rejected_retries (__main__.DedicatedStorage.test_09_pending_actions_survive_lost_acknowledgments_and_rejected_retries)",
+      "AssertionError: TimeoutError not raised",
+      "Ran 11 tests in 29.955s",
+      "FAILED (failures=1)"
+    ],
+    "red-null": [
+      "FAIL: test_16_opaque_payloads_preserve_leading_null_characters (__main__.DedicatedStorage.test_16_opaque_payloads_preserve_leading_null_characters)",
+      "AssertionError: 500 != 201",
+      "Ran 1 test in 7.720s",
+      "FAILED (failures=1)"
+    ],
+    "red-scope-race": [
+      "ERROR: test_a_new_database_is_claimed_by_only_one_concurrent_account (__main__.PendingActions.test_a_new_database_is_claimed_by_only_one_concurrent_account)",
+      "sqlite3.OperationalError: database is locked",
+      "Ran 1 test in 0.041s",
+      "FAILED (errors=1)"
+    ],
+    "red-review-outbox": [
+      "FAIL: test_concurrent_conflicting_actions_cannot_both_be_accepted (test_outbox.PendingActions.test_concurrent_conflicting_actions_cannot_both_be_accepted)",
+      "AssertionError: Element counts were not equal:",
+      "Ran 5 tests in 0.247s",
+      "FAILED (failures=1)"
+    ],
+    "red-review-null": [
+      "FAIL: test_16_opaque_payloads_preserve_leading_null_characters (test_storage.DedicatedStorage.test_16_opaque_payloads_preserve_leading_null_characters)",
+      "AssertionError: 500 != 200 : Acknowledged opaque payload must survive startup invariants",
+      "Ran 1 test in 13.509s",
+      "FAILED (failures=1)"
+    ]
+  },
+  "cleanup": {
+    "ownProcessStopped": true,
+    "port7464HasListener": false,
+    "port7465HasListener": false,
+    "runtimeDirectoryMode": "0o700",
+    "privateFileModes": {
+      "accounts.json": "0o600",
+      "passwords.json": "0o600",
+      "bookfin-storage-v1.sqlite": "0o600"
+    },
+    "state": "Retained under ignored .cache/plugin/run-*/; no production state accessed"
+  },
+  "limits": {
+    "concurrentWorkers": 8,
+    "independentWrites": 80,
+    "payloadUtf8BytesPerObject": 65536,
+    "objectsPerPage": 4,
+    "discoveryRequestBudget": 128,
+    "automaticExpiry": "No expiry implemented; finite tests do not prove infinite durability",
+    "lifetimeStorageBound": "Not established; retained operations and deletion markers grow",
+    "productionIntegration": false,
+    "upgradeTested": false,
+    "powerLossTested": false
+  }
+}
