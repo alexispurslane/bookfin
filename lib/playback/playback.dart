@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
@@ -42,6 +43,13 @@ abstract class ResumeStore {
 // The revision is a gesture-cancellation counter, not a media-source revision.
 typedef _SliderGesture = ({AudioPosition origin, int revision});
 
+class AudioReplacement {
+  const AudioReplacement(this.book, this.edition, this.previous);
+  final Book book;
+  final Edition edition;
+  final AudioPosition previous;
+}
+
 class Playback extends ChangeNotifier {
   Playback({
     required this.downloads,
@@ -79,7 +87,7 @@ class Playback extends ChangeNotifier {
   int _backward = 10;
   int _forward = 30;
   int _generation = 0;
-  Map<String, dynamic> _resumes = {};
+  Map<String, List<Map<String, dynamic>>> _resumes = {};
   String? _selected;
   Timer? _sleep;
   DateTime? _sleepDeadline;
@@ -95,12 +103,39 @@ class Playback extends ChangeNotifier {
   ListeningAction? _commandAction;
   final _pendingWrites = <String, Map<String, dynamic>>{};
   final _failedAccounts = <String>{};
+  AudioReplacement? _replacementStart;
 
   List<ListeningEvent> get history => List.unmodifiable(_history.reversed);
   List<AudioBookmark> get bookmarks => List.unmodifiable(_bookmarks.reversed);
   ListeningEvent? get undoAction => _undo;
   bool get unsavedChanges => _pendingWrites.containsKey(_session?.scope.key);
   bool get saveFailed => _failedAccounts.contains(_session?.scope.key);
+  AudioReplacement? get replacementStart => _replacementStart;
+
+  Future<void> confirmReplacement(AudioReplacement request) =>
+      _enqueue(() async {
+        if (!identical(request, _replacementStart)) return;
+        if (request.edition.files.any(
+          (file) => file.revision.isEmpty || file.mediaSourceId.isEmpty,
+        )) {
+          _message = 'The replacement audio source cannot be identified. Refresh the library before starting it.';
+          _notify();
+          return;
+        }
+        await _open(
+          request.book,
+          request.edition,
+          autoplay: true,
+          replacement: request,
+        );
+      });
+
+  void cancelReplacement(AudioReplacement request) {
+    if (!identical(request, _replacementStart)) return;
+    _replacementStart = null;
+    _message = null;
+    _notify();
+  }
 
   String sourceName(AudioPosition position) =>
       _books
@@ -297,7 +332,9 @@ class Playback extends ChangeNotifier {
   bool get playing => _playing;
   bool get active => _active;
   bool get pendingOfflineResume =>
-      _resumes[_edition?.id]?['pendingOffline'] == true;
+      _edition != null &&
+      _resumeFits(_edition!, _resumeRecord(_edition!)) &&
+      _resumeRecord(_edition!)?['pendingOffline'] == true;
   String? get message => _message;
   double get playbackSpeed => _speed;
   int get backwardSeconds => _backward;
@@ -367,9 +404,11 @@ class Playback extends ChangeNotifier {
 
   Future<void> bind(JellyfinSession? session, List<Book> books) async {
     if (_closed) return;
+    _replacementStart = null;
     final changed = _session?.scope.key != session?.scope.key;
     _books = books;
     if (!changed) {
+      final generation = _generation;
       _session = session;
       if (_edition != null) {
         final current = books
@@ -378,12 +417,11 @@ class Playback extends ChangeNotifier {
             .firstOrNull;
         if (current == null ||
             _position?.fits(current) != true ||
-            current.files
-                    .map((file) => '${file.key}:${file.revision}')
-                    .join('|') !=
-                _edition!.files
-                    .map((file) => '${file.key}:${file.revision}')
-                    .join('|')) {
+            !listEquals(
+              current.files.map((file) => file.key).toList(),
+              _edition!.files.map((file) => file.key).toList(),
+            ) ||
+            _editionSources(current) != _editionSources(_edition!)) {
           await bind(null, []);
           await bind(session, books);
         } else {
@@ -393,6 +431,24 @@ class Playback extends ChangeNotifier {
         }
       }
       await _binding;
+      if (generation != _generation) return;
+      if (_edition == null && _restored) {
+        final book = books
+            .where(
+              (book) => book.editions.any((edition) => edition.id == _selected),
+            )
+            .firstOrNull;
+        final edition = book?.editions
+            .where((edition) => edition.id == _selected)
+            .firstOrNull;
+        if (book != null && edition != null) {
+          final resume = _readPosition(edition);
+          if (resume != null && !_resumeFits(edition, _resumeRecord(edition))) {
+            _offerReplacement(book, edition, resume);
+          }
+        }
+      }
+      _notify();
       return;
     }
     _save();
@@ -433,11 +489,14 @@ class Playback extends ChangeNotifier {
             _pendingWrites[session.scope.key] ??
             await store.read(session.scope.key);
         if (generation != _generation) return;
-        if (saved != null && saved['version'] != 1 && saved['version'] != 2) {
+        if (saved != null &&
+            saved['version'] != 1 &&
+            saved['version'] != 2 &&
+            saved['version'] != 3) {
           throw const FormatException('Unsupported listening record');
         }
         if (saved != null) {
-          if (saved['version'] == 2) {
+          if (saved['version'] != 1) {
             _history = (saved['history'] as List)
                 .map(
                   (value) => ListeningEvent.fromJson(
@@ -461,7 +520,19 @@ class Playback extends ChangeNotifier {
               );
             }
           }
-          _resumes = Map<String, dynamic>.from(saved['resumes'] as Map? ?? {});
+          final resumes = Map<String, dynamic>.from(
+            saved['resumes'] as Map? ?? {},
+          );
+          _resumes = {
+            for (final entry in resumes.entries)
+              entry.key: [
+                for (final value
+                    in saved['version'] == 3
+                        ? entry.value as List
+                        : [entry.value])
+                  Map<String, dynamic>.from(value as Map),
+              ],
+          };
           _selected = saved['selected'] as String?;
           final speed = (saved['speed'] as num?)?.toDouble() ?? 1;
           if (speed.isFinite && speed >= 0.5 && speed <= 3) _speed = speed;
@@ -480,9 +551,12 @@ class Playback extends ChangeNotifier {
             .where((edition) => edition.id == _selected)
             .firstOrNull;
         if (book != null && edition != null) {
-          final resume = _readPosition(edition.id);
-          if (resume == null || !resume.fits(edition)) {
+          final resume = _readPosition(edition);
+          if (resume == null || !_resumeFits(edition, _resumeRecord(edition))) {
             _message = 'The saved audio source changed. Its resume is kept but was not applied.';
+            if (resume != null) {
+              _offerReplacement(book, edition, resume);
+            }
           } else {
             await _open(book, edition, autoplay: false);
           }
@@ -506,8 +580,41 @@ class Playback extends ChangeNotifier {
     }
   }
 
-  AudioPosition? _readPosition(String editionId) {
-    final value = _resumes[editionId];
+  String _editionSources(Edition edition) {
+    final sources = [
+      for (final file in edition.files) [file.key, file.revision],
+    ]..sort((left, right) => left.first.compareTo(right.first));
+    return jsonEncode(sources);
+  }
+
+  bool _currentEdition(Book book, Edition edition) =>
+      _session != null &&
+      _books.any(
+        (candidate) =>
+            candidate.id == book.id && candidate.editions.contains(edition),
+      );
+
+  void _offerReplacement(Book book, Edition edition, AudioPosition resume) {
+    if (!_restored || !_currentEdition(book, edition)) return;
+    _replacementStart = AudioReplacement(book, edition, resume);
+  }
+
+  bool _resumeFits(Edition edition, Map<String, dynamic>? value) =>
+      value != null &&
+      (value['sources'] == null ||
+          value['sources'] == _editionSources(edition)) &&
+      _positionFrom(edition.id, value)?.fits(edition) == true;
+
+  Map<String, dynamic>? _resumeRecord(Edition edition) {
+    final records = _resumes[edition.id] ?? [];
+    return records.where((value) => _resumeFits(edition, value)).lastOrNull ??
+        records.lastOrNull;
+  }
+
+  AudioPosition? _readPosition(Edition edition) =>
+      _positionFrom(edition.id, _resumeRecord(edition));
+
+  AudioPosition? _positionFrom(String editionId, dynamic value) {
     if (value is! Map) return null;
     if (value['source'] is! String ||
         value['revision'] is! String ||
@@ -534,12 +641,9 @@ class Playback extends ChangeNotifier {
     required bool autoplay,
     AudioPosition? target,
     ListeningAction? action,
+    AudioReplacement? replacement,
   }) async {
-    if (_session == null ||
-        !_books.any(
-          (candidate) =>
-              candidate.id == book.id && candidate.editions.contains(edition),
-        ) ||
+    if (!_currentEdition(book, edition) ||
         edition.kind != EditionKind.audio ||
         edition.files.isEmpty) {
       throw ArgumentError('Choose an audio edition from the current account.');
@@ -553,7 +657,9 @@ class Playback extends ChangeNotifier {
     final files = <Uri>[];
     for (final file in edition.files) {
       final uri = await downloads.localFile(file);
-      if (generation != _generation) return false;
+      if (generation != _generation || !_currentEdition(book, edition)) {
+        return false;
+      }
       if (uri == null || uri.scheme != 'file') {
         _message =
             'Download every file in this audio edition before listening.';
@@ -562,9 +668,14 @@ class Playback extends ChangeNotifier {
       }
       files.add(uri);
     }
-    final resume = target ?? _readPosition(edition.id);
-    if (resume != null && !resume.fits(edition)) {
+    final resume = replacement != null
+        ? null
+        : target ?? _readPosition(edition);
+    if (resume != null &&
+        (!resume.fits(edition) ||
+            target == null && !_resumeFits(edition, _resumeRecord(edition)))) {
       _message = 'The saved audio source changed. Its resume is kept but was not applied.';
+      _offerReplacement(book, edition, resume);
       _notify();
       return false;
     }
@@ -582,8 +693,14 @@ class Playback extends ChangeNotifier {
       final confirmed = target == null
           ? AudioSample(fileIndex, resume?.milliseconds ?? 0)
           : await engine.seek(fileIndex, target.milliseconds);
-      if (generation != _generation) {
+      if (generation != _generation ||
+          replacement != null && !identical(replacement, _replacementStart)) {
         await engine.pause();
+        if (generation == _generation) {
+          _playing = false;
+          _active = false;
+          _notify();
+        }
         return false;
       }
       if (confirmed.fileIndex < 0 ||
@@ -602,6 +719,7 @@ class Playback extends ChangeNotifier {
       _active = autoplay;
       _position = _positionForSample(confirmed);
       _decoderReady = true;
+      _replacementStart = null;
       if (action != null) _record(action, previous ?? _position!, _position!);
       _message = null;
       _cancelSleep();
@@ -910,22 +1028,39 @@ class Playback extends ChangeNotifier {
     if (accountKey == null || !_restored) return;
     final position = _position;
     if (position != null) {
-      _resumes[position.editionId] = {
+      final records = _resumes.putIfAbsent(position.editionId, () => []);
+      // A legacy file-relative position can be read but cannot establish
+      // ownership of a whole recording. Keep it when saving a known recording.
+      final index = records.lastIndexWhere(
+        (value) => value['sources'] == _editionSources(_edition!),
+      );
+      final value = <String, dynamic>{
         'source': position.sourceKey,
         'revision': position.revision,
+        'sources': _editionSources(_edition!),
         'milliseconds': position.milliseconds,
         'pendingOffline':
             pendingOfflineResume ||
             downloads.policy.network == MediaNetwork.disconnected ||
             downloads.policy.network == MediaNetwork.unknown,
       };
+      if (index < 0) {
+        records.add(value);
+      } else {
+        records[index] = value;
+      }
     }
     final value = <String, dynamic>{
-      'version': 2,
+      'version': 3,
       'history': _history.map((event) => event.toJson()).toList(),
       'bookmarks': _bookmarks.map((bookmark) => bookmark.toJson()).toList(),
       'selected': _selected,
-      'resumes': Map<String, dynamic>.from(_resumes),
+      'resumes': {
+        for (final entry in _resumes.entries)
+          entry.key: [
+            for (final value in entry.value) Map<String, dynamic>.from(value),
+          ],
+      },
       'speed': _speed,
       'backward': _backward,
       'forward': _forward,
@@ -1003,7 +1138,13 @@ class Playback extends ChangeNotifier {
                 _sliderStart!.revision != _sliderRevision) ||
         _failedAccounts.any(
           (account) => !_pendingWrites.containsKey(account),
-        )) {
+        ) ||
+        _replacementStart != null &&
+            (!_restored ||
+                _session == null ||
+                !_books.any(
+                  (book) => book.editions.contains(_replacementStart!.edition),
+                ))) {
       throw StateError(
         'Personal records, pending writes, and recovery selection must agree.',
       );

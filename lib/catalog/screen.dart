@@ -182,6 +182,8 @@ class _CatalogHomeState extends State<CatalogHome> {
                     padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
                     child: Text(widget.playback!.message!),
                   ),
+                if (widget.playback != null && _destination != 2)
+                  ReplacementStartNotice(playback: widget.playback!),
                 Expanded(
                   child: _catalog.session == null
                       ? _SignInForm(catalog: _catalog)
@@ -711,6 +713,12 @@ class _BookPage extends StatelessWidget {
                     '${book.series}${book.seriesOrder == null ? '' : ' · ${_order(book.seriesOrder!)}'}',
                   ),
                 if (catalog.message != null) Text(catalog.message!),
+                if (playback != null &&
+                    playback!.replacementStart?.book.id == bookId)
+                  ReplacementStartNotice(
+                    playback: playback!,
+                    onStarted: () => openPlayer(context, playback!),
+                  ),
                 const SizedBox(height: 24),
                 for (final kind in EditionKind.values)
                   if (book.editions.any((edition) => edition.kind == kind)) ...[
