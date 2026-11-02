@@ -10,6 +10,8 @@ Review correction R2: `corrections/r2-red.txt` records lost bookmark snapshots, 
 
 Review correction R3: `corrections/r3-{red,green}.txt` records the production controls regression and correction. The test changes reported visible chapter/page counts, restores a bookmark, and supplies a new visible page count rather than reusing bookmark metadata. Unknown progress has no rail fill. `corrections/r3-engine-{red,green}.txt` checks actual source CFI ordering against two chapter anchors in one document and validates reported page counts. Host DOM tests do not measure Android page geometry.
 
+Review correction R4: `corrections/r4-red.txt` records the actual outgoing 22px then 44px commands at 200% system text scaling. `corrections/r4-attach-red.txt` records an appearance command sent before renderer opening completed. `corrections/r4-green.txt` records both corrected scenarios. The native platform boundary is replaced only to record outgoing commands and return reader-ready events. Tests cover final size, theme, system scaling, reopen, saved-source anchor, and delayed attachment. The actual-engine appearance test in the final engine report checks CSS size and preserved visible-start CFI at the display boundary. There is no Android layout or device proof.
+
 All build, test, analysis, and format commands ran through the pinned Nix shell. Only one heavy command ran at a time. Resource checks preceded builds; `build-resources.txt` records the final checks. There were no device or browser actions, installation, runtime acceptance, production requests, public servers, coverage jobs, or mutation jobs.
 
 | Check | Exact result | Evidence |

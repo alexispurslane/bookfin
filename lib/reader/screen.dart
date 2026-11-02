@@ -206,10 +206,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
                                     publication == null || reader.fontSize <= 14
                                     ? null
                                     : () => unawaited(
-                                        reader.configure(
-                                          size: reader.fontSize - 2,
-                                          night: night,
-                                        ),
+                                        reader.setFontSize(reader.fontSize - 2),
                                       ),
                                 icon: const Icon(Icons.text_decrease_rounded),
                               ),
@@ -219,10 +216,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
                                     publication == null || reader.fontSize >= 40
                                     ? null
                                     : () => unawaited(
-                                        reader.configure(
-                                          size: reader.fontSize + 2,
-                                          night: night,
-                                        ),
+                                        reader.setFontSize(reader.fontSize + 2),
                                       ),
                                 icon: const Icon(Icons.text_increase_rounded),
                               ),

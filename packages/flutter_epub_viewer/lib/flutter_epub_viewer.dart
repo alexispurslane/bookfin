@@ -46,6 +46,7 @@ class _EpubViewportState extends State<EpubViewport> {
   late final Future<ReaderResources> _resources = _loadResources();
   _NativeNavigator? _navigator;
   bool _opened = false;
+  bool _ready = false;
   Timer? _timeout;
 
   Future<ReaderResources> _loadResources() async {
@@ -93,7 +94,7 @@ class _EpubViewportState extends State<EpubViewport> {
   @override
   void didUpdateWidget(EpubViewport oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (_opened &&
+    if (_ready &&
         (widget.fontSize != oldWidget.fontSize ||
             widget.night != oldWidget.night)) {
       unawaited(
@@ -272,17 +273,30 @@ class _EpubViewportState extends State<EpubViewport> {
               return;
             }
             _opened = true;
+            var appliedSize = widget.fontSize;
+            var appliedNight = widget.night;
             try {
               final entries = await _navigator!._call('openBook', [
                 {
                   'base': widget.publication.base.toString(),
                   'packagePath': widget.publication.packagePath,
                   'initial': widget.initial?.toJson(),
-                  'fontSize': widget.fontSize,
-                  'night': widget.night,
+                  'fontSize': appliedSize,
+                  'night': appliedNight,
                 },
               ]);
+              while (mounted &&
+                  (appliedSize != widget.fontSize ||
+                      appliedNight != widget.night)) {
+                appliedSize = widget.fontSize;
+                appliedNight = widget.night;
+                await _navigator!.configure(
+                  fontSize: appliedSize,
+                  night: appliedNight,
+                );
+              }
               if (!mounted) return;
+              _ready = true;
               _timeout?.cancel();
               widget.onReady(_navigator!, [
                 for (final entry in entries as List)

@@ -389,15 +389,9 @@ class ReaderSession extends ChangeNotifier {
     if (navigator != null) await _navigate(() => navigator.contents(href));
   }
 
-  Future<void> configure({required double size, required bool night}) async {
+  Future<void> setFontSize(double size) async {
     if (!size.isFinite) return;
     _fontSize = size.clamp(14, 40);
-    final navigator = _navigator;
-    if (navigator != null) {
-      await _navigate(
-        () => navigator.configure(fontSize: fontSize, night: night),
-      );
-    }
     await _save();
     _emit();
   }
@@ -485,6 +479,9 @@ class ReaderSession extends ChangeNotifier {
                 _resumes.isNotEmpty)) ||
         (publication != null && (edition == null || !_current(edition!))) ||
         (position != null && _compatible(position!) == null) ||
+        ((_visibleLocation == null) != (position == null)) ||
+        (_visibleLocation != null &&
+            _compatible(position!)?.cfi != _visibleLocation!.cfi) ||
         _failedAccounts.any((key) => !_pendingWrites.containsKey(key))) {
       throw StateError(
         'Reading state must belong to one current account, source, and processed publication.',

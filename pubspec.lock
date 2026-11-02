@@ -163,7 +163,7 @@ packages:
     source: path
     version: "2.2.1+bookfin.1"
   flutter_inappwebview:
-    dependency: transitive
+    dependency: "direct dev"
     description:
       name: flutter_inappwebview
       sha256: "3952d116ee93bad2946401377e7ade87b5ef200e95ecb5ba1affa1b6329a6867"

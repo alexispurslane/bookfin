@@ -122,6 +122,33 @@ test('reader appearance preserves an edition font while applying the selected te
   } finally { contents.destroy(); documentDom.window.close(); opened.close(); }
 });
 
+test('a final scaled appearance restores the same visible-start CFI through the engine display boundary', async () => {
+  const opened = await open('<html xmlns="http://www.w3.org/1999/xhtml"><head/><body><p>A stable reading place.</p></body></html>');
+  const viewport = new opened.dom.window.ePub.Rendition(opened.book);
+  await viewport.started;
+  const documentDom = new JSDOM('<html><head/><body>A stable reading place.</body></html>');
+  const contents = new opened.dom.window.ePub.Contents(documentDom.window.document);
+  const displayCalls = [];
+  try {
+    const api = runtime(opened);
+    const location = await api.visibleLocation(opened.book, opened.section.find('stable')[0].cfi, 'OPS/one.xhtml');
+    opened.book.open = async () => opened.book;
+    opened.book.renderTo = () => viewport;
+    viewport.display = async cfi => { displayCalls.push(cfi); };
+    const factory = opened.dom.window.ePub;
+    opened.dom.window.ePub = Object.assign(() => opened.book, factory);
+    await api.openBook({ base: 'https://bookfin-publication.invalid/', packagePath: 'OPS/book.opf', fontSize: 40, night: false });
+    displayCalls.length = 0;
+    viewport.location = { start: { cfi: location.cfi } };
+    await api.configure(44, true);
+    viewport.themes.inject(contents);
+    viewport.themes.overrides(contents);
+    assert.equal(documentDom.window.document.body.style.fontSize, '44px');
+    assert.deepEqual(displayCalls, [location.cfi]);
+    await api.verifyLocation(opened.book, location);
+  } finally { contents.destroy(); documentDom.window.close(); opened.close(); }
+});
+
 module.exports = { open };
 
 test('visible locations carry the current contents chapter and actual displayed-page progress', async () => {

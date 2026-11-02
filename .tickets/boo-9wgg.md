@@ -59,3 +59,7 @@ R2 correction: retained latest pending reading snapshots by account, retried thr
 **2026-11-02T17:22:58Z**
 
 R3 correction: approved reader controls now show the current contents chapter and a rail for current viewport page / total viewport pages in that chapter document. Counts are one-based viewport pages, not print pages or whole-book/audio progress. Unknown counts are labeled unavailable. Transient page metadata is not persisted in bookmarks; restore waits for a new visible-location event. Widget and actual source-CFI engine red-green evidence is under tool/evidence/reader/corrections/r3*. Android geometry remains unaccepted.
+
+**2026-11-02T17:29:57Z**
+
+R4 correction: reproduced actual 22px then 44px bridge commands at 200% system text scaling. ReaderSession now stores requested size only; EpubViewport is the single sender of final scaled appearance and retains the engine visible-start restoration path. A second red test caught appearance during unfinished opening; the viewport now catches up to latest appearance before announcing readiness. Two green boundary tests cover scale/theme/reopen/attachment; separate actual-engine test checks 44px CSS and unchanged CFI passed to display. No native geometry or device acceptance. Evidence: tool/evidence/reader/corrections/r4*. Both tickets remain in_progress.
