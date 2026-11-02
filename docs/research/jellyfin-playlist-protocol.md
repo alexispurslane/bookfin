@@ -7,6 +7,12 @@ synthetic fixture in t3-b22c5e06, not the retained t3-360b5172 fixture.
 
 ## Result and recommendation
 
+November 2 continuation: `jellyfin-finite-checkpoint.md` now records one tested
+checkpoint candidate, batched costs, and the pinned 12.3.0 to 12.4.0 exercise.
+It also records exact deleted-record and missing-sequence growth blockers.
+Production sync remains gated. The initial observations and proof plan below
+remain historical evidence, not the current list of unperformed experiments.
+
 The exact payload confidentiality gap is resolved. After storing a payload,
 Alice receives 200 and the exact payload from `GET /Items/{id}`. Bob receives
 404 from the same route for the same object, with no payload in the response.
@@ -33,8 +39,8 @@ users cannot accept clearly identified app-data playlists. Normal library scan
 and clean restart preserve the tested private payload. Merely browsing a playlist
 list was not shown to destroy state. Real Jellyfin UI execution was not performed.
 
-Recommendation: do not approve a production transport yet. Continue the finite
-two-device proof below before requesting product decisions. Do not install a
+Recommendation: do not approve a production transport yet. Use the finite
+two-device continuation report before requesting product decisions. Do not install a
 production plugin. A plugin's dedicated namespace could address playlist
 management exposure, but its lower total implementation/maintenance risk has
 not been measured. A plugin also needs a retention and offline-recovery policy.
@@ -117,7 +123,11 @@ synthetic account, then restores privacy. No production credentials, records,
 server routes, or other client's storage were accessed. No File request was used.
 The existing CustomPrefs and Enhanced snapshot experiments were not rerun.
 
-## What still prevents a complete protocol claim
+## Initial gaps before the finite continuation
+
+The table records the first fixture's scope. The continuation report supersedes
+its untested checkpoint, batching, and specified-upgrade entries; it does not
+claim a complete production protocol or a lifetime storage bound.
 
 | Area | Necessary rule | Status |
 | --- | --- | --- |

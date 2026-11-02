@@ -1,0 +1,44 @@
+{
+  "evidenceClass": "research-model-not-server",
+  "observedAtUtc": "2026-11-02T05:10:12.461133+00:00",
+  "fixedResearchIdentities": [
+    "device-a",
+    "device-b"
+  ],
+  "expiryPolicy": null,
+  "deletionGrowth": [
+    {
+      "distinctBookmarksCreatedThenDeleted": 10,
+      "liveBookmarks": 0,
+      "retainedDeletionWitnesses": 10,
+      "checkpointStateUtf8Bytes": 1567,
+      "fitsExperiment64KiBEnvelope": true
+    },
+    {
+      "distinctBookmarksCreatedThenDeleted": 100,
+      "liveBookmarks": 0,
+      "retainedDeletionWitnesses": 100,
+      "checkpointStateUtf8Bytes": 15259,
+      "fitsExperiment64KiBEnvelope": true
+    },
+    {
+      "distinctBookmarksCreatedThenDeleted": 1000,
+      "liveBookmarks": 0,
+      "retainedDeletionWitnesses": 1000,
+      "checkpointStateUtf8Bytes": 153961,
+      "fitsExperiment64KiBEnvelope": false
+    }
+  ],
+  "missingFirstActionSchedule": {
+    "withheld": "device-a:1",
+    "delivered": "device-a:2..1001",
+    "coverage": {
+      "device-a": 0,
+      "device-b": 0
+    },
+    "pendingActions": 1000,
+    "checkpointStateUtf8Bytes": 134854
+  },
+  "fixedLifetimeStorageBoundProved": false,
+  "blocker": "This candidate retains one deletion witness per deleted record and all actions above an unresolved gap"
+}

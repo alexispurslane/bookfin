@@ -1,0 +1,58 @@
+{
+  "evidenceClass": "disposable-official-binary-runtime",
+  "origin": "http://127.0.0.1:7364",
+  "observedAtUtc": "2026-11-02T05:16:21.996807+00:00",
+  "phase": "finite-pagination-counts",
+  "observations": {
+    "runtimeVersion": "12.3.0",
+    "pageSize": 4,
+    "noConcurrentWritesDuringMeasurement": true,
+    "pages": [
+      {
+        "startIndex": 0,
+        "returnedItems": 4,
+        "totalRecordCount": 12,
+        "payloadHashes": [
+          "9d6e27cc20cbd51de09adfdc3f81b9a2787ba9bd50aa1dcdc1d3a3830686a1e0",
+          "4eace109b478b2fbe4fb82bab69cef1033d0c7fa51e9a4afaacb9edd469be9b1",
+          "11483a95a71febb90f4b55ed3406e1e95bb21df01b6a51175f3c6223a9e859d3",
+          "cd3b384b5bbbce61a7b887ca0687d14c477cb9e96c619d2b9b9c90fefb199331"
+        ]
+      },
+      {
+        "startIndex": 4,
+        "returnedItems": 4,
+        "totalRecordCount": 12,
+        "payloadHashes": [
+          "9312e730ef2ae8a2146ae458625bc8908bb20ac02601d92b663af85e0cd5626c",
+          "eab56d3cbd3386dadb7f3f455c4f59c613719d71d6b225b62abfc1a4dc84fe4e",
+          "7226072605cfcf2ab6b61c76a46120855bf083f4c578d9777d55755d8498c42a",
+          "d3b351b9a8df608f7d5668d24929594847e756fcbb4ffc95c05515dd7045ee87"
+        ]
+      },
+      {
+        "startIndex": 8,
+        "returnedItems": 4,
+        "totalRecordCount": 12,
+        "payloadHashes": [
+          "95cb74dacad30fd25349b36e8389de236056b04354735082a43d82d83cb87dde",
+          "0964d882a37bf5c1dd8b46b33a2decd65df1480900d56294841a4a2b965b273c",
+          "0018011261f00561035435bcf0b7f2255f0f5e8525f77b4fd7fb4b2102046eb3",
+          "c1e28e1228ddacbed81817c9336284fb2742e36bc8835021c4593bf3d2fd61b9"
+        ]
+      },
+      {
+        "startIndex": 12,
+        "returnedItems": 0,
+        "totalRecordCount": 12,
+        "payloadHashes": []
+      },
+      {
+        "startIndex": 16,
+        "returnedItems": 0,
+        "totalRecordCount": 12,
+        "payloadHashes": []
+      }
+    ]
+  }
+}

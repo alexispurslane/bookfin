@@ -159,8 +159,82 @@ separate insertion between offset pages. `scan` waits for a newly completed libr
 observing an idle task before a queued scan starts. `restarted` checks the same
 server identity and exact private payload after clean restart.
 
-The research decoder is not an app transport. It combines equal operation
+The initial research decoder is not an app transport. It combines equal operation
 identifiers only when their payloads agree, and rejects conflicting duplicate
 payloads. It does not implement current-record merging, retained deletion fences,
 checkpoint compaction, replica retirement, or history retention. The new product
 decision tickets are tb-5fyd and tb-887c. No production plugin is selected.
+
+## Finite checkpoint continuation
+
+Read `docs/research/jellyfin-finite-checkpoint.md` for the measured result and its
+remaining blockers. `finite_journal.py` is the single checkpoint/coverage model;
+`finite_runtime.py` applies it to real disposable server objects. It is research,
+not an app transport. Fixed identities, no expiry, unresolved conflicts, batch
+size 100, and the 64 KiB object envelope are research conditions, not product
+policy. Deletion witnesses and actions above a gap remain stored without a
+lifetime bound. No history retention or conflict winner was selected.
+
+The research flake also pins the official 12.3 macOS ARM64 archive. Its fixed
+output derivation unpacks that archive. `BOOKFIN_SYNC_OLD_SERVER` names it.
+`BOOKFIN_SYNC_SERVER` still defaults to 12.4. The exact pair tested is runtime
+12.3.0 to 12.4.0; it is not a general upgrade or rollback guarantee.
+
+Use a fresh checkout-local fixture, not an existing stopped fixture. In the
+server terminal, start the old version without Enhanced:
+
+```sh
+nix develop ./tool/research/sync --command bash -c \
+  'export BOOKFIN_SYNC_CORE_ONLY=1 BOOKFIN_SYNC_SERVER="$BOOKFIN_SYNC_OLD_SERVER"; exec python3 tool/research/sync/fixture.py serve' </dev/null
+```
+
+In another terminal, run each command sequentially. The first command requires
+the old runtime version explicitly. `seed`, `schedule`, and `workload` are
+first-use operations and refuse reuse of their existing synthetic state.
+
+```sh
+nix develop ./tool/research/sync --command bash -c \
+  'BOOKFIN_SYNC_VERSION=12.3.0 python3 tool/research/sync/fixture.py wait'
+nix develop ./tool/research/sync --command python3 tool/research/sync/fixture.py seed
+nix develop ./tool/research/sync --command python3 -m unittest discover -s tool/research/sync -v
+nix develop ./tool/research/sync --command python3 -O -m unittest discover -s tool/research/sync -p test_finite_journal.py -v
+nix develop ./tool/research/sync --command python3 tool/research/sync/finite_runtime.py model-costs
+nix develop ./tool/research/sync --command python3 tool/research/sync/finite_runtime.py schedule
+nix develop ./tool/research/sync --command python3 tool/research/sync/finite_runtime.py workload
+nix develop ./tool/research/sync --command python3 tool/research/sync/finite_runtime.py before-upgrade
+nix develop ./tool/research/sync --command python3 tool/research/sync/fixture.py stop
+```
+
+After the server exits and port 7364 has no listener, restart the same directories
+with the default new binary. Do not run `seed` again:
+
+```sh
+nix develop ./tool/research/sync --command bash -c \
+  'export BOOKFIN_SYNC_CORE_ONLY=1; exec python3 tool/research/sync/fixture.py serve' </dev/null
+```
+
+In the other terminal, measure and stop:
+
+```sh
+nix develop ./tool/research/sync --command python3 tool/research/sync/fixture.py wait
+nix develop ./tool/research/sync --command python3 tool/research/sync/finite_runtime.py after-upgrade
+nix develop ./tool/research/sync --command python3 tool/research/sync/fixture.py stop
+```
+
+Wait for exit, verify the listener is gone, and repeat the new-binary start once.
+Run `wait`, then `finite_runtime.py after-new-restart`, then `fixture.py stop`,
+all through the same Nix shell. Verify process exit and no listener again.
+Do not open the old binary against the migrated directories; rollback was not
+tested. The current worktree's fixture is already seeded, stopped, and retained.
+Its ignored expected-state files are measurement oracles, not a second sync
+authority. Generated credentials and expected-state files remain mode 0600 under
+the mode 0700 runtime directory. No credentials from another fixture are needed.
+
+Final discovery uses all owner playlists, with namespace decoding locally.
+It does not use `SearchTerm`: the captured 12.3.0 search omitted four of 16
+acknowledged objects with page size four even while writes were stopped.
+Two matching scans are not proof of a snapshot under concurrent changes. A
+128-request safety budget aborts rather than returning an incomplete inventory.
+The earlier filtered-query traces are retained separately from final unfiltered
+workload evidence. Neither these probes nor the unit tests claim server-side
+atomic checkpoint merging. Coverage and mutation testing remain parent-owned.

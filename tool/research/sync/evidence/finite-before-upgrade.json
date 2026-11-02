@@ -1,0 +1,75 @@
+{
+  "evidenceClass": "disposable-official-binary-runtime",
+  "origin": "http://127.0.0.1:7364",
+  "observedAtUtc": "2026-11-02T05:19:21.912352+00:00",
+  "phase": "finite-before-upgrade",
+  "observations": {
+    "specifiedPair": [
+      "12.3.0",
+      "12.4.0"
+    ],
+    "runtimeVersion": "12.3.0",
+    "sameFixtureIdentityChecked": true,
+    "namespaces": [
+      {
+        "namespace": "BookfinFinite-t3-16d73e22-schedule",
+        "checkpointStateSha256": "bb84f9cbc502fb6d4c1b61cf0b2dcea18caa96e207d5e10494367c0a9da00918",
+        "exactCheckpointPayloadSha256": "262a3a03c48c7222af2bf1afba4d6ac0f1eef7e1bf713239eaa5ab71ad8062a5",
+        "coverage": {
+          "device-a": 2,
+          "device-b": 2
+        },
+        "liveVersions": 0,
+        "deletionWitnesses": 1,
+        "privacy": {
+          "route": "/Items/{samePlaylistId}",
+          "ownerStatus": 200,
+          "ownerExactPayload": true,
+          "otherUserStatus": 404,
+          "otherUserPayloadExposed": false,
+          "otherUserResponseBytes": 162,
+          "sameObjectAndRoute": true
+        },
+        "discovery": {
+          "scans": 2,
+          "requests": 2,
+          "itemsVisited": 4,
+          "httpResponseBytes": 146184,
+          "pageSize": 4,
+          "storedNameUtf8Bytes": 279
+        }
+      },
+      {
+        "namespace": "BookfinFinite-t3-16d73e22-workload",
+        "checkpointStateSha256": "827a1afe56d256d1371d996cf0e0b98533d452b396675228a0adf29e5a452116",
+        "exactCheckpointPayloadSha256": "97ca00759b673c4b30f38e9526b3ea4a5fe61826660a593a38ca1919a6e55f1d",
+        "coverage": {
+          "device-a": 620,
+          "device-b": 620
+        },
+        "liveVersions": 160,
+        "deletionWitnesses": 40,
+        "privacy": {
+          "route": "/Items/{samePlaylistId}",
+          "ownerStatus": 200,
+          "ownerExactPayload": true,
+          "otherUserStatus": 404,
+          "otherUserPayloadExposed": false,
+          "otherUserResponseBytes": 162,
+          "sameObjectAndRoute": true
+        },
+        "discovery": {
+          "scans": 2,
+          "requests": 2,
+          "itemsVisited": 4,
+          "httpResponseBytes": 146184,
+          "pageSize": 4,
+          "storedNameUtf8Bytes": 45948
+        }
+      }
+    ],
+    "enhancedPluginInstalled": false,
+    "rollbackToOldBinaryTested": false,
+    "generalUpgradeCompatibilityEstablished": false
+  }
+}

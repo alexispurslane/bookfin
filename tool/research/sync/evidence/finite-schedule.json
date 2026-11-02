@@ -1,0 +1,42 @@
+{
+  "evidenceClass": "disposable-official-binary-runtime",
+  "origin": "http://127.0.0.1:7364",
+  "observedAtUtc": "2026-11-02T05:10:39.864772+00:00",
+  "phase": "finite-schedule",
+  "observations": {
+    "runtimeVersion": "12.3.0",
+    "fixedResearchIdentities": [
+      "device-a",
+      "device-b"
+    ],
+    "identityExpiry": false,
+    "missingEarlierActionCoverage": {
+      "device-a": 0,
+      "device-b": 0
+    },
+    "missingEarlierActionBuffered": true,
+    "independentCheckpointEditsPreserved": 2,
+    "concurrentConflictPreserved": true,
+    "deleteAfterObservingBothEdits": true,
+    "coveredObjectsRemoved": 6,
+    "delayedRetryPhysicalObjects": 2,
+    "delayedRetryObjectsRemoved": 2,
+    "freshDiscoveryLiveBookmarks": 0,
+    "retainedDeletionWitnesses": 1,
+    "coverageAfterCleanup": {
+      "device-a": 2,
+      "device-b": 2
+    },
+    "privacy": {
+      "route": "/Items/{samePlaylistId}",
+      "ownerStatus": 200,
+      "ownerExactPayload": true,
+      "otherUserStatus": 404,
+      "otherUserPayloadExposed": false,
+      "otherUserResponseBytes": 162,
+      "sameObjectAndRoute": true
+    },
+    "networkConcurrency": "controlled sequential publication of independently computed checkpoints",
+    "modelInterpretation": "Python journal reducer applied to actual server payloads; not Jellyfin merge logic"
+  }
+}

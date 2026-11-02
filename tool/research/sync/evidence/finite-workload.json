@@ -1,0 +1,81 @@
+{
+  "evidenceClass": "disposable-official-binary-runtime",
+  "origin": "http://127.0.0.1:7364",
+  "observedAtUtc": "2026-11-02T05:19:21.714181+00:00",
+  "phase": "finite-workload",
+  "observations": {
+    "runtimeVersion": "12.3.0",
+    "workload": {
+      "devices": 2,
+      "actions": 1240,
+      "bookmarksCreated": 200,
+      "revisionsPerBookmarkIncludingCreation": 6,
+      "bookmarksDeleted": 40,
+      "retainedLiveBookmarks": 160,
+      "retainedDeletionWitnesses": 40,
+      "valuePaddingCharacters": 64,
+      "maximumActionsPerBatch": 100,
+      "userVisibleListeningHistoryIncluded": false
+    },
+    "beforeCleanup": {
+      "batchPlaylists": 14,
+      "checkpointPlaylists": 2,
+      "totalPlaylists": 16,
+      "playlistFiles": 16,
+      "playlistFileBytes": 320896,
+      "includesDatabaseIndexesLogsOrFilesystemAllocation": false
+    },
+    "publicationPeak": {
+      "totalPlaylists": 17,
+      "checkpointPlaylists": 3,
+      "storedNameUtf8Bytes": 361084
+    },
+    "cleanup": {
+      "removedObjects": 16,
+      "discovery": {
+        "scans": 2,
+        "requests": 10,
+        "itemsVisited": 36,
+        "httpResponseBytes": 1141014,
+        "pageSize": 4,
+        "storedNameUtf8Bytes": 361084
+      }
+    },
+    "afterCleanup": {
+      "batchPlaylists": 0,
+      "checkpointPlaylists": 1,
+      "totalPlaylists": 1,
+      "playlistFiles": 1,
+      "playlistFileBytes": 46308,
+      "includesDatabaseIndexesLogsOrFilesystemAllocation": false
+    },
+    "discoveryBeforePage4": {
+      "scans": 2,
+      "requests": 10,
+      "itemsVisited": 34,
+      "httpResponseBytes": 996820,
+      "pageSize": 4,
+      "storedNameUtf8Bytes": 315136
+    },
+    "discoveryBeforePage128": {
+      "scans": 2,
+      "requests": 2,
+      "itemsVisited": 34,
+      "httpResponseBytes": 996432,
+      "pageSize": 128,
+      "storedNameUtf8Bytes": 315136
+    },
+    "discoveryAfterPage4": {
+      "scans": 2,
+      "requests": 2,
+      "itemsVisited": 4,
+      "httpResponseBytes": 146184,
+      "pageSize": 4,
+      "storedNameUtf8Bytes": 45948
+    },
+    "stableInventoryIsSnapshotGuaranteeUnderContinuousMutation": false,
+    "acknowledgedPublicationIdsMatchedInventory": true,
+    "checkpointStateSha256": "827a1afe56d256d1371d996cf0e0b98533d452b396675228a0adf29e5a452116",
+    "productionPolicySelected": false
+  }
+}
