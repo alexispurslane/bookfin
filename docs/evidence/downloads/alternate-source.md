@@ -60,7 +60,7 @@ Neither a query parameter nor list position supplies that binding.
 No general alternate-source download route was established for the approved book types on the pinned server.
 This is not a claim that every provider or future server version makes such a binding impossible.
 Do not borrow the dedicated personal-record plugin to serve media.
-Real-library acceptance remains with `boo-2cgp`; this investigation uses no production access.
+Unresolved alternate-source acceptance remains with open `t9-04iu`; closed `boo-2cgp` contains historical evidence. This investigation uses no production access.
 
 ## Disposable server observations
 
@@ -155,3 +155,13 @@ Static review found that an older saved alternate could retain the original item
 The download owner now applies the same source-identity eligibility to local availability and new transfers. A separately named source is unavailable even when its saved bytes match their hash. Files and source identity are preserved; this correction does not silently delete or relabel them. Safe named and unnamed originals still restore offline without HTTP.
 
 The focused transfer suite passed 49 tests. The first full run exposed an existing retained-removal test timing assumption: server first-chunk notification preceded the client receiving those bytes. The test now waits for the client's three-byte progress before deselecting. The next full run passed 303 tests. These checks ran through Nix. The unresolved alternate-source route and real alternate-item acceptance remain on open ticket t9-04iu, not closed boo-2cgp.
+
+## Parent correction: catalog qualification and visible removal
+
+The second static review found two additional gaps. The listed-empty legacy case returned a local URI; the rejected alternate appeared as Not downloaded with zero bytes. Both failures were reproduced before the correction, while the safe-original controls passed.
+
+Catalog construction now preserves original-file qualification independently of source key and revision. Both fresh download checks and local verification consume that qualification. A genuine metadata-free Book original qualifies; an explicitly listed empty ID does not. Catalog binding includes qualification changes even when identity and revision stay the same. No remote access is needed for safe offline originals.
+
+Rejected saved recordings now expose failed status, their saved byte count, and the existing confirmed Remove action. The widget regression discovers the row, confirms removal, and checks that the real saved file disappears. The source and revision are never relabeled. Existing corruption and missing-file behavior remains unchanged.
+
+Final Nix validation: 61 transfer/widget checks and 306 application tests pass; analyzer reports no issues. During test development the new catalog-refresh case needed sufficient capacity for an unknown-length Book, and the widget needed the existing real-async dialog pattern for file operations. Earlier runs exposed those test setup errors; they are not reported as product defects. A broader initial invalidation change also failed the existing corrupted-file status test and was narrowed before the final green run. No Android observation or alternate-source route is claimed. t9-04iu remains open.

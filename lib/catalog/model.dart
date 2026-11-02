@@ -83,10 +83,14 @@ class SourceFile {
     required this.container,
     required this.sizeBytes,
     this.chapters = const [],
+    this.isItemOriginal = false,
   });
   final String itemId;
   final String displayName;
   final String mediaSourceId;
+
+  /// Whether catalog metadata identifies the item original Download serves.
+  final bool isItemOriginal;
   final String revision;
   final int? durationMs;
   final String container;
@@ -148,6 +152,7 @@ List<Book> buildBooks(List<CatalogEntry> entries, {CatalogEdits? edits}) {
     final sources = (item['MediaSources'] as List? ?? [])
         .whereType<Map<String, dynamic>>()
         .toList();
+    final unnamedBookOriginal = sources.isEmpty && type == 'Book';
     if (sources.isEmpty) sources.add({'Id': ''});
     for (final source in sources) {
       final sourceId = source['Id'] as String? ?? '';
@@ -159,6 +164,12 @@ List<Book> buildBooks(List<CatalogEntry> entries, {CatalogEdits? edits}) {
             ? item['Name'] as String
             : entry.id,
         mediaSourceId: sourceId,
+        isItemOriginal:
+            unnamedBookOriginal ||
+            (identical(source, sources.first) &&
+                sourceId == entry.id &&
+                source['IsRemote'] != true &&
+                (source['Type'] == null || source['Type'] == 'Default')),
         revision:
             [
               item['DateModified'],

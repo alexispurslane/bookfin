@@ -37,6 +37,7 @@ void main() {
 
   for (final sourceKind in [
     'alternate',
+    'listed empty',
     'named original',
     'unnamed original',
   ]) {
@@ -47,6 +48,11 @@ void main() {
         fixture.bookWithoutMediaSources = sourceKind == 'unnamed original';
         if (sourceKind == 'alternate') {
           fixture.textSources = [fixture.source('alternate-text')];
+        }
+        if (sourceKind == 'listed empty') {
+          fixture.textSources = [
+            {...fixture.source('text'), 'Id': ''},
+          ];
         }
         final source = fixture.text.files.single;
         String hash(String value) =>
@@ -77,12 +83,9 @@ void main() {
         );
         await downloads.bind(fixture.session(), fixture.books);
         final local = await downloads.localFile(source);
-        if (sourceKind == 'alternate') {
+        if (sourceKind == 'alternate' || sourceKind == 'listed empty') {
           expect(local, isNull);
-          expect(
-            downloads.status(fixture.text).phase,
-            isNot(DownloadPhase.downloaded),
-          );
+          expect(downloads.status(fixture.text).phase, DownloadPhase.failed);
         } else {
           expect(local, isNotNull);
           expect(await File.fromUri(local!).readAsBytes(), [1, 2, 3, 4, 5, 6]);
@@ -94,9 +97,37 @@ void main() {
         expect(await saved.readAsBytes(), [1, 2, 3, 4, 5, 6]);
         expect(fixture.requests, isEmpty);
         downloads.checkInvariants();
+        if (sourceKind == 'alternate' || sourceKind == 'listed empty') {
+          expect(downloads.status(fixture.text).bytes, 6);
+          await downloads.remove(fixture.text);
+          expect(await saved.exists(), isFalse);
+          expect(downloads.status(fixture.text).phase, DownloadPhase.none);
+        }
       },
     );
   }
+
+  test('catalog qualification changes invalidate saved originals without changing identity', () async {
+    capacity = 2 * 1024 * 1024;
+    fixture.bookWithoutMediaSources = true;
+    await downloads.bind(fixture.session(), fixture.books);
+    final original = fixture.text.files.single;
+    await downloads.request(fixture.text);
+    await downloads.idle;
+    expect(await downloads.localFile(original), isNotNull);
+    policy.network = MediaNetwork.disconnected;
+    fixture.bookWithoutMediaSources = false;
+    fixture.textSources = [
+      {'Id': ''},
+    ];
+    final listed = fixture.text.files.single;
+    expect(listed.key, original.key);
+    expect(listed.revision, original.revision);
+    await downloads.bind(fixture.session(), fixture.books);
+    expect(await downloads.localFile(listed), isNull);
+    expect(downloads.status(fixture.text).phase, DownloadPhase.failed);
+    expect(downloads.status(fixture.text).bytes, 6);
+  });
 
   test(
     'original ebooks without media-source metadata download exact bytes',

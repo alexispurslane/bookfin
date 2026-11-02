@@ -63,7 +63,8 @@ class LocalDownloads extends Downloads {
     final signature = jsonEncode([
       session?.scope.key,
       session?.token,
-      for (final entry in sources.entries) [entry.key, entry.value.sizeBytes],
+      for (final entry in sources.entries)
+        [entry.key, entry.value.sizeBytes, entry.value.isItemOriginal],
     ]);
     _editions = editions;
     if (_signature == signature) return _binding ?? Future.value();
@@ -132,11 +133,12 @@ class LocalDownloads extends Downloads {
             }
           }
           if (record.complete && !await _verified(record)) {
-            record.complete = false;
+            await _rejectComplete(record);
+          } else {
+            record.bytes = record.complete
+                ? record.length!
+                : await _partialLength(record);
           }
-          record.bytes = record.complete
-              ? record.length!
-              : await _partialLength(record);
           if (_disposed || generation != _generation) return;
           _records[entry.key] = record;
           if (record.requested && !record.complete && record.error == null) {
@@ -188,15 +190,10 @@ class LocalDownloads extends Downloads {
       await FileSystemEntity.type(file.path, followLinks: false) ==
           FileSystemEntityType.file;
 
-  // The original-file route cannot identify a separately named media source.
-  // Apply the same identity requirement to saved bytes and fresh transfers.
-  bool _originalIdentity(SourceFile source) =>
-      source.mediaSourceId.isEmpty || source.mediaSourceId == source.itemId;
-
   bool _present(_Record record) {
     try {
       return record.complete &&
-          _originalIdentity(record.source) &&
+          record.source.isItemOriginal &&
           _session != null &&
           _containedDirectory(record.directory, _session!.scope.key) &&
           record.length != null &&
@@ -223,6 +220,20 @@ class LocalDownloads extends Downloads {
     } catch (_) {
       return false;
     }
+  }
+
+  Future<void> _rejectComplete(_Record record) async {
+    record.complete = false;
+    if (record.source.isItemOriginal) {
+      record.bytes = await _partialLength(record);
+      return;
+    }
+    record.error =
+        'Saved recording identity cannot be verified. Remove it or retry.';
+    final saved = record.file('complete');
+    record.bytes = await _regularFile(saved)
+        ? await saved.length()
+        : await _partialLength(record);
   }
 
   Future<int> _partialLength(_Record record) async =>
@@ -537,8 +548,7 @@ class LocalDownloads extends Downloads {
     final verified = await _verified(record);
     if (_disposed || generation != _generation) return null;
     if (verified && _present(record)) return record.file('complete').uri;
-    record.complete = false;
-    record.bytes = 0;
+    await _rejectComplete(record);
     await _persist(record);
     _emit();
     return null;
@@ -878,27 +888,18 @@ class LocalDownloads extends Downloads {
     if (item['Id'] != source.itemId || item['CanDownload'] != true) {
       throw const _MediaError('Jellyfin does not allow downloading this item.');
     }
-    final sources = (item['MediaSources'] as List? ?? [])
-        .whereType<Map<String, dynamic>>()
-        .toList();
-    final unnamedBookOriginal = sources.isEmpty && item['Type'] == 'Book';
-    if (unnamedBookOriginal) {
-      sources.add({'Id': ''});
-    }
-    if (sources.isEmpty ||
-        (!_originalIdentity(source) ||
-            (!unnamedBookOriginal && source.mediaSourceId.isEmpty)) ||
-        sources.first['Id'] != source.mediaSourceId ||
-        sources.first['IsRemote'] == true ||
-        (sources.first['Type'] != null && sources.first['Type'] != 'Default')) {
-      throw const _MediaError(
-        'This source cannot use Jellyfin’s original-file download. Choose the item original.',
-      );
-    }
     final freshBooks = buildBooks([CatalogEntry.fromJson(item, libraryId: '')]);
     final freshFiles = freshBooks
         .expand((book) => book.editions)
         .expand((edition) => edition.files);
+    if (!source.isItemOriginal ||
+        !freshFiles.any(
+          (file) => file.key == source.key && file.isItemOriginal,
+        )) {
+      throw const _MediaError(
+        'This source cannot use Jellyfin’s original-file download. Choose the item original.',
+      );
+    }
     if (source.revision.isEmpty ||
         !freshFiles.any(
           (file) => file.key == source.key && file.revision == source.revision,
