@@ -55,3 +55,11 @@ The Android build log is `/tmp/bookfin-retained-android.log`. The web build log 
 No device or browser operation ran for this ticket. The reader proof owns the emulator. Android interaction, cream/sepia appearance, scrolling, confirmation behavior across account changes, and relaunch behavior still need parent-owned shared Device panel acceptance. Host widget tests and build results do not establish those runtime observations.
 
 No coverage, mutation testing, PR, ticket closure, production server access, or secret input ran. The parent owns independent review, integration, acceptance, and later test hardening.
+
+## Parent account-switch correction
+
+The review found that a pending cancellation write checked its directory against the newly selected account. A regression reproduced the failure: after switching accounts, the canceled audio edition returned as waiting for Wi-Fi.
+
+Each download record now retains its owning account key. Pending writes validate containment against that immutable key, with the existing directory and symbolic-link checks intact. Account restoration waits for commands accepted before the switch to finish all their record writes. New commands wait for restoration separately.
+
+Two cases cover switching away during multi-file cancellation and immediately switching back before cancellation finishes. Returning to the original account leaves the edition canceled. Enabling Wi-Fi starts no media request. All 271 application tests, analysis, formatting, and the Android ARM64 debug build pass through Nix. No new Android runtime, web build, coverage, or mutation result is claimed. Independent correction review and integration remain pending.

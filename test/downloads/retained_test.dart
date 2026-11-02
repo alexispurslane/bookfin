@@ -43,6 +43,43 @@ void main() {
     );
   }
 
+  for (final immediateReturn in [false, true]) {
+    test(
+      'accepted multi-file cancellation survives account switch (immediate return: $immediateReturn)',
+      () async {
+        policy.network = MediaNetwork.disconnected;
+        await downloads.request(fixture.audio);
+        Future<void>? switching;
+        var switched = false;
+        void switchAfterCancellation() {
+          if (!switched &&
+              downloads.status(fixture.audio).phase == DownloadPhase.none) {
+            switched = true;
+            switching = downloads.bind(
+              fixture.session(user: 'bob'),
+              fixture.books,
+            );
+            if (immediateReturn) {
+              switching = downloads.bind(fixture.session(), fixture.books);
+            }
+          }
+        }
+
+        downloads.addListener(switchAfterCancellation);
+        await downloads.cancel(fixture.audio);
+        downloads.removeListener(switchAfterCancellation);
+        expect(switched, isTrue);
+        await switching;
+        await downloads.bind(fixture.session(), fixture.books);
+        expect(downloads.status(fixture.audio).phase, DownloadPhase.none);
+        policy.network = MediaNetwork.wifi;
+        await downloads.idle;
+        expect(fixture.mediaRequests, isEmpty);
+        downloads.checkInvariants();
+      },
+    );
+  }
+
   test(
     'catalog removal retains files without advertising availability',
     () async {

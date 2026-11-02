@@ -80,13 +80,20 @@ class LocalDownloads extends Downloads {
     _queued.clear();
     _records.clear();
     _storageError = null;
-    final binding = _binding = _restore(generation, session);
+    final binding = _binding = _restore(generation, session, _commands);
     if (accountChanged) policy.resetSession();
     _emit();
     return binding;
   }
 
-  Future<void> _restore(int generation, JellyfinSession? session) async {
+  Future<void> _restore(
+    int generation,
+    JellyfinSession? session,
+    Future<void> acceptedCommands,
+  ) async {
+    // Capture this barrier at bind entry: later commands wait on this binding.
+    // Earlier accepted commands must finish all of their account-owned writes.
+    await acceptedCommands;
     await _worker;
     await _writes;
     if (_disposed || generation != _generation) return;
@@ -99,7 +106,12 @@ class LocalDownloads extends Downloads {
           if (_disposed || generation != _generation) return;
           final directory = Directory('${account.path}/${entry.key}');
           await _safeDirectory(directory);
-          final record = _Record(entry.key, entry.value, directory);
+          final record = _Record(
+            entry.key,
+            entry.value,
+            directory,
+            session.scope.key,
+          );
           final manifest = record.file('record.json');
           if (await _regularFile(manifest)) {
             try {
@@ -909,8 +921,7 @@ class LocalDownloads extends Downloads {
       'error': record.error,
     });
     final write = _writes.then((_) async {
-      if (_session == null ||
-          !_containedDirectory(record.directory, _session!.scope.key)) {
+      if (!_containedDirectory(record.directory, record.accountKey)) {
         throw const _MediaError('Download storage is not a private directory.');
       }
       for (final name in ['record.next', 'record.json']) {
@@ -976,7 +987,9 @@ class LocalDownloads extends Downloads {
       throw StateError('Signed-out downloads must expose no account records.');
     }
     for (final record in _records.values) {
-      if (!_sources.containsKey(record.id) || _id(record.source) != record.id) {
+      if (record.accountKey != _session?.scope.key ||
+          !_sources.containsKey(record.id) ||
+          _id(record.source) != record.id) {
         throw StateError(
           'Every download must identify a current account source revision.',
         );
@@ -1012,10 +1025,11 @@ class LocalDownloads extends Downloads {
 }
 
 class _Record {
-  _Record(this.id, this.source, this.directory);
+  _Record(this.id, this.source, this.directory, this.accountKey);
   final String id;
   final SourceFile source;
   final Directory directory;
+  final String accountKey;
   int bytes = 0;
   int? length;
   String? etag;
