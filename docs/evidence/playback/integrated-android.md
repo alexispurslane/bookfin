@@ -162,3 +162,10 @@ A short emulator sleep-expiry check is not a background reliability or battery-s
 Changed-source recovery remains undecided in `t8-ld5q`.
 Strong-validator range resume remains undecided in `t7-bzzg`.
 Full personal-record sync and historical activity replay remain outside these tickets.
+
+
+## Parent correction: Pause during decoder reactivation
+
+The review regression confirmed that Pause could publish an unconfirmed loading source/zero. LocalAudioEngine now has one confirmation rule shared by publication and Pause. It retains the last confirmed sample across loading, cancels interruption recovery with decoder Stop, and restores the confirmed decoder source/time if release changed it. A regression first failed and now verifies Pause during loading, subsequent Play at the retained position, and legitimate seeking to zero. New loads clear retained confirmation.
+
+All 200 application tests pass; analysis is clean and changed Dart files are formatted through Nix. These are host tests, not a repeat of Android observations. The previously recorded native patch hash describes the earlier observed build; this correction has not yet been inspected on Android. Final-build offline repeat and discrete manual Pause during lost focus remain open.

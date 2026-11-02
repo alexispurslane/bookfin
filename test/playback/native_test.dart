@@ -17,6 +17,35 @@ import 'playback_test.dart'
         second;
 
 void main() {
+  test('Pause during reactivation retains confirmed source and resumes its position', () async {
+    final decoder = TransitionDecoder();
+    final audio = LocalAudioEngine(player: decoder);
+    final samples = <AudioSample>[];
+    final subscription = audio.samples.listen(samples.add);
+    decoder.event = decoder.event.copyWith(currentIndex: 1);
+    decoder.states.add(PlayerState(false, ProcessingState.ready));
+    decoder.event = PlaybackEvent(
+      currentIndex: 0,
+      processingState: ProcessingState.loading,
+      updatePosition: Duration.zero,
+    );
+    decoder.states.add(PlayerState(true, ProcessingState.loading));
+    await audio.pause();
+    expect(samples.last.fileIndex, 1);
+    expect(samples.last.milliseconds, 90000);
+    expect(samples.last.playing, isFalse);
+    await audio.play();
+    expect(decoder.playedIndex, 1);
+    expect(decoder.playedPosition, 90000);
+    await audio.seek(1, 0);
+    expect(samples.last.milliseconds, 0);
+    await audio.pause();
+    await audio.play();
+    expect(decoder.playedPosition, 0);
+    await subscription.cancel();
+    await audio.close();
+  });
+
   test(
     'native Pause retains the recorded position while releasing the decoder',
     () async {
@@ -184,6 +213,14 @@ void main() {
 }
 
 class TransitionDecoder implements AudioPlayer {
+  int? playedIndex;
+  int? playedPosition;
+  @override
+  Future<void> play() async {
+    playedIndex = event.currentIndex;
+    playedPosition = event.updatePosition.inMilliseconds;
+  }
+
   final states = StreamController<PlayerState>.broadcast(sync: true);
   PlaybackEvent event = PlaybackEvent(
     currentIndex: 0,

@@ -46,27 +46,31 @@ class LocalAudioEngine implements AudioEngine {
   final _events = StreamController<AudioSample>.broadcast(sync: true);
   final _subscriptions = <StreamSubscription<dynamic>>[];
   bool _changingPosition = false;
+  AudioSample? _confirmed;
   LocalAudioEngine({AudioPlayer? player}) : _player = player ?? AudioPlayer() {
     _subscriptions.add(_player.playerStateStream.listen((_) => _publish()));
     _subscriptions.add(_player.currentIndexStream.listen((_) => _publish()));
     _subscriptions.add(_player.positionStream.listen((_) => _publish()));
     _subscriptions.add(_player.errorStream.listen(_events.addError));
   }
-  void _publish({bool settledSeek = false}) {
-    if (_events.isClosed || _changingPosition) return;
+  AudioSample? _confirmPosition({bool settledSeek = false}) {
     final event = _player.playbackEvent;
     if (event.processingState == ProcessingState.loading ||
         (event.processingState == ProcessingState.idle && !settledSeek)) {
-      return;
+      return null;
     }
-    _events.add(
-      AudioSample(
-        event.currentIndex ?? 0,
-        _player.position.inMilliseconds,
-        playing: _player.playing,
-        completed: event.processingState == ProcessingState.completed,
-      ),
+    return _confirmed = AudioSample(
+      event.currentIndex ?? 0,
+      _player.position.inMilliseconds,
+      playing: _player.playing,
+      completed: event.processingState == ProcessingState.completed,
     );
+  }
+
+  void _publish({bool settledSeek = false}) {
+    if (_events.isClosed || _changingPosition) return;
+    final sample = _confirmPosition(settledSeek: settledSeek);
+    if (sample != null) _events.add(sample);
   }
 
   @override
@@ -76,6 +80,7 @@ class LocalAudioEngine implements AudioEngine {
     if (files.isEmpty || files.any((file) => file.scheme != 'file')) {
       throw ArgumentError('Only verified local audio is supported.');
     }
+    _confirmed = null;
     await _player.setAudioSources(
       files.map(AudioSource.uri).toList(),
       initialIndex: fileIndex,
@@ -94,20 +99,33 @@ class LocalAudioEngine implements AudioEngine {
   // just_audio.pause returns early during an interruption. stop also clears
   // pending interruption recovery while retaining the selected sources.
   Future<void> pause() async {
-    final event = _player.playbackEvent;
-    final paused = AudioSample(
-      event.currentIndex ?? 0,
-      _player.position.inMilliseconds,
-      playing: false,
-      completed: event.processingState == ProcessingState.completed,
-    );
+    final confirmed = _confirmPosition() ?? _confirmed;
     _changingPosition = true;
     try {
       await _player.stop();
+      // Decoder release can expose a placeholder position. Restore the same
+      // confirmed source and time before a later Play reactivates it.
+      if (confirmed != null &&
+          (_player.playbackEvent.currentIndex != confirmed.fileIndex ||
+              _player.position.inMilliseconds != confirmed.milliseconds)) {
+        await _player.seek(
+          Duration(milliseconds: confirmed.milliseconds),
+          index: confirmed.fileIndex,
+        );
+      }
     } finally {
       _changingPosition = false;
     }
-    if (!_events.isClosed) _events.add(paused);
+    if (confirmed != null && !_events.isClosed) {
+      final paused = AudioSample(
+        confirmed.fileIndex,
+        confirmed.milliseconds,
+        playing: false,
+        completed: confirmed.completed,
+      );
+      _confirmed = paused;
+      _events.add(paused);
+    }
   }
 
   @override
