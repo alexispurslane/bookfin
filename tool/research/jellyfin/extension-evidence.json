@@ -1,0 +1,36 @@
+{
+  "evidenceClass": "live-public-asset-comparison-and-upstream-source",
+  "localResearchDate": "2026-11-01 America/New_York",
+  "reportedExtensionVersion": "12.14.0.0",
+  "authenticatedPluginStatus": "Active",
+  "unauthenticatedSyntheticUserBookmarkGetStatus": 401,
+  "sourceRepository": "n00bcodr/Jellyfin-Enhanced",
+  "sourceTag": "12.14.0.0",
+  "sourceCommit": "9bbf16c0de6662baeaa23e51c71505c15c560381",
+  "sourceProjectAndManifestVersion": "12.13.0.0",
+  "releasePublishedAtUtc": "2026-10-26T11:31:34Z",
+  "jellyfin12ReleaseArchiveSha256FromMetadata": "cbedb0f98a1827fb9d943372aa986260bb2244e95672c16e5b27a524fa321d43",
+  "deployedBackendBinaryCompared": false,
+  "liveStorageWriteTestsPerformed": false,
+  "ordinaryUserIsolationProven": false,
+  "deployedAssets": [
+    {
+      "path": "/JellyfinEnhanced/js/enhanced/bookmarks/bookmarks.js",
+      "bytes": 49244,
+      "sha256": "88ed2cb6310234be67ec2e6e9126772d7a1576d1377d61a47deba038fb42b497",
+      "exactlyMatchesSourceTag": true
+    },
+    {
+      "path": "/JellyfinEnhanced/js/enhanced/config.js",
+      "bytes": 13119,
+      "sha256": "f12788930e01c1459013b20be4fb1e13df165becf8c79addf13bcad57710c3d2",
+      "exactlyMatchesSourceTag": true
+    }
+  ],
+  "upstreamSourceSha256": {
+    "Controllers/JellyfinEnhancedController.cs": "3d7c39dbf1ee17802ef0ecd6fda9595ae3ab91044fc867df1e6fd3453caaa1ba",
+    "Configuration/UserConfigurationManager.cs": "70c2d372585e9aea92928cb72befbde0ce5dda932c23e286e35db91845522fd0",
+    "Configuration/UserConfiguration.cs": "597e793d99fa9b08719c0ff456c11d9cb9318a7159fc2300e30d211be8fc08ca",
+    "Helpers/UserHelper.cs": "31c9fedff405380df3e35782be6e6679927e2df8f1e47b5b62ff0a8ead43fdc6"
+  }
+}
