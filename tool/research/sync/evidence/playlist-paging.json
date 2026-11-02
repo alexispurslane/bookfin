@@ -1,0 +1,17 @@
+{
+  "evidenceClass": "disposable-official-binary-runtime",
+  "origin": "http://127.0.0.1:7364",
+  "observedAtUtc": "2026-11-02T02:53:51.251426+00:00",
+  "phase": "playlist-paging",
+  "observations": {
+    "pageSize": 2,
+    "initialObjects": 4,
+    "deleteBeforeSecondPage": true,
+    "liveObjectSkipped": true,
+    "pageOneTotal": 4,
+    "pageTwoTotal": 3,
+    "freshScanAfterQuiescenceFindsAll": true,
+    "insertionBeforeSecondPageDuplicatesLiveObject": true,
+    "snapshotOrChangeCursorProven": false
+  }
+}

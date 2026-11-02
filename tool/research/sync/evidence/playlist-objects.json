@@ -1,0 +1,74 @@
+{
+  "evidenceClass": "disposable-official-binary-runtime",
+  "origin": "http://127.0.0.1:7364",
+  "observedAtUtc": "2026-11-02T02:48:50.036594+00:00",
+  "phase": "playlist-objects",
+  "observations": {
+    "lostAck": {
+      "realPostResponseBytesRead": 0,
+      "independentlyWitnessed": true,
+      "physicalObjectsAfterRetry": 2,
+      "logicalOperationIds": 1,
+      "objectsAfterDuplicateCleanupAndDelayedRetry": 2
+    },
+    "publication": {
+      "pendingNameVisibleBeforePayload": true,
+      "repeatPayloadUpdateStatus": 204,
+      "staleIfMatchUpdateStatus": 204,
+      "atomicLargeCreateProven": false
+    },
+    "permissions": {
+      "otherUserUpdate": 404,
+      "anonymousPayloadRead": 401,
+      "ownerDeleteWithContentDeletionDisabled": 204,
+      "ownerReadAfterDeletion": 404,
+      "ownerGenericMetadataUpdate": 403
+    },
+    "offlineIndependentOperations": {
+      "published": 2,
+      "discovered": 2,
+      "currentRecordConflictPolicyImplemented": false
+    },
+    "sizes": [
+      {
+        "createNameBytes": 240,
+        "status": 200
+      },
+      {
+        "createNameBytes": 256,
+        "status": 500
+      },
+      {
+        "createNameBytes": 1024,
+        "status": 500
+      },
+      {
+        "createNameBytes": 65536,
+        "status": 500
+      },
+      {
+        "updatePayloadBytes": 65613,
+        "status": 204,
+        "exactRead": true
+      },
+      {
+        "updatePayloadBytes": 262221,
+        "status": 204,
+        "exactRead": true
+      }
+    ],
+    "maximumSizeProven": false,
+    "coexistence": {
+      "unfilteredPlaylistListingIncludesObject": true,
+      "displayedPayloadNameBytes": 199,
+      "ordinaryRenameStatus": 204,
+      "renameOverwritesPayload": true,
+      "explicitPublicToggleStatus": 204,
+      "bobReadAfterExplicitPublicToggle": 200,
+      "publicToggleExposesSyntheticPayload": true,
+      "privateRestoredBobStatus": 404,
+      "realOtherClientUiExecuted": false
+    },
+    "createdObjects": 5
+  }
+}

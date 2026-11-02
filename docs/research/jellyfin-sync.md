@@ -211,6 +211,13 @@ documents. Use the separate fresh-user phase for first-read side effects.
 
 ## A distinct existing-storage candidate: owned private playlists
 
+Follow-up: [the complete-protocol assessment](jellyfin-playlist-protocol.md)
+resolves the same-route payload privacy gap on a fresh fixture and measures
+lost-ack logical deduplication, concurrent-mutation paging, owner management
+exposure, library scan, and clean restart. It records concrete limitations and
+unsettled retention/coexistence decisions, not approval of a complete transport.
+The original observations below remain scoped to the earlier fixture.
+
 The evidence is in `evidence/playlists.json`. This candidate uses objects that
 Bookfin would create and own, not reserved fields in someone else's records.
 
@@ -220,8 +227,10 @@ payload larger than 65 KiB, and reads that payload back. Two concurrent creation
 with different names both remain. Bob's GET /Playlists/{id}, POST /Playlists/{id},
 and DELETE /Items/{id} return 404. Bob does not discover the object in listing.
 Bob's direct GET /Items/{id}, the route used by Alice to retrieve the payload,
-was not tested. Payload read isolation remains unproved; t3-7fv1 must test that
-exact route with an owner-read control before claiming confidentiality. Alice can delete her own object even
+was not tested in that earlier phase. The t3-7fv1 follow-up now measures owner
+200 with the exact payload and Bob 404 without the payload on the same
+`GET /Items/{id}` route and object; see `playlist-confidentiality.json` and the
+linked assessment. Alice can delete her own object even
 when content-deletion permission is disabled. Ordinary-user permissions therefore
 do not justify rejecting this candidate.
 
@@ -309,11 +318,11 @@ transport.
 
 | Required proof | Core CustomPrefs snapshots | Enhanced documents/additions | App-owned private playlist primitive |
 | --- | --- | --- | --- |
-| Authentication and ordinary-user isolation | Pass | Pass for reads, saves, add, and delete | Playlist-route read, update and delete denied; direct item payload read isolation unproved |
-| Independent ownership and existing-client coexistence | A separate client scope exists; shared-scope writers still replace each other | No independent Bookfin document; existing client's full save can remove new entries | Own private objects exist; other-client and scan coexistence not fully tested |
-| Discovery | Only a known scope; arbitrary-scope enumeration absent in served API | Whole typed document is discoverable | Private objects list successfully; paging during changes unproved |
+| Authentication and ordinary-user isolation | Pass | Pass for reads, saves, add, and delete | Follow-up: same item payload route returns owner 200 and Bob 404 without payload |
+| Independent ownership and existing-client coexistence | A separate client scope exists; shared-scope writers still replace each other | No independent Bookfin document; existing client's full save can remove new entries | Follow-up: own objects survive scan, but owner rename/delete/share can alter or expose state |
+| Discovery | Only a known scope; arbitrary-scope enumeration absent in served API | Whole typed document is discoverable | Follow-up: mutation between offset pages skips a live object; fresh scan after quiescence finds it |
 | Concurrent independent edits | Lost edit reproduced | Eight independent additions survive; stale full save still loses one | Independent objects survive; complete merge/publication protocol unproved |
-| Retry after lost response | Stale retry overwrites later edit | Duplicate fresh identifiers reproduced after an unread response | Repeated creates make separate objects; logical deduplication unproved |
+| Retry after lost response | Stale retry overwrites later edit | Duplicate fresh identifiers reproduced after an unread response | Follow-up: real unread create acknowledgment yields two objects but one logical operation ID; cleanup fencing unproved |
 | Deletion without resurrection | Stale snapshot restores deletion | Stale full save restores deletion | Naive delete/create restores an operation; deletion fencing unproved |
 | Limits, bounded growth, and retention | 65,536-byte value accepted; cleared scopes retain rows; upper bounds and retention unproved | 65,536-byte label accepted; quota and retention unproved | Payload above 65 KiB accepted; object-growth bound and retention unproved |
 | Restart durability | Pass for clean restart | Pass for clean restart | Pass for clean restart of payload |

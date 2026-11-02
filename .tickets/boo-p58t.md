@@ -46,3 +46,7 @@ Addressed review F1 with a total 20-second request deadline and forced connectio
 Addressed F2: a new plugin is only a candidate fallback. The report now makes assessment of the advertised JellyfinEnhanced implementation, authorization, isolation, coexistence, semantics, limits and persistence an explicit transport-decision gate. This supersedes the earlier plugin recommendation.
 
 Verification through nix develop: SDK-link safety checks, 3 application tests, and 19 research tests passed; scoped Dart analysis found no issues. git diff --check passed. Keep this ticket in progress: authenticated integration and the storage decision remain outstanding. Supplied login JSON was privately validated; no credential values are recorded here.
+
+**2026-11-02T02:50:25Z**
+
+t3-7fv1 follow-up resolves exact GET /Items/{id} payload isolation on a fresh synthetic fixture. New report docs/research/jellyfin-playlist-protocol.md records live lost-ack logical deduplication, owner-management data exposure, offset-page omissions during mutation, sampled limits, scan preservation, and clean restart. A complete transport is not approved: normal-playlist management protection is a measured limitation; retention, stale-replica admission, checkpoint compaction and upgrade compatibility remain unsettled/unproved. Product decisions tb-887c and tb-5fyd now gate boo-3oq0. No plugin is selected and lower-risk claims are not established. Keep boo-p58t and t3-7fv1 open for parent review.

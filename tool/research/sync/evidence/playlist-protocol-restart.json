@@ -1,0 +1,18 @@
+{
+  "evidenceClass": "disposable-official-binary-runtime",
+  "origin": "http://127.0.0.1:7364",
+  "observedAtUtc": "2026-11-02T02:53:50.117187+00:00",
+  "phase": "playlist-protocol-restart",
+  "observations": {
+    "route": "/Items/{samePlaylistId}",
+    "ownerStatus": 200,
+    "ownerExactPayload": true,
+    "otherUserStatus": 404,
+    "otherUserPayloadExposed": false,
+    "otherUserResponseBytes": 162,
+    "sameObjectAndRoute": true,
+    "sameServerIdentityChecked": true,
+    "cleanRestartOnly": true,
+    "upgradeTested": false
+  }
+}
