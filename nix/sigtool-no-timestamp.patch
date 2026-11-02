@@ -1,0 +1,12 @@
+diff --git a/codesign.cpp b/codesign.cpp
+--- a/codesign.cpp
++++ b/codesign.cpp
+@@ -7,2 +7,3 @@
+     std::string identity, identifier, entitlements;
++    std::string timestamp;
+     bool force = false;
+@@ -13,2 +14,4 @@
+     app.add_option("--entitlements", entitlements, "Entitlements plist");
++    app.add_option("--timestamp", timestamp, "Only untimestamped ad-hoc signatures are supported")
++            ->check(CLI::IsMember({"none"}));
+     app.add_option("files", files, "Files to sign");

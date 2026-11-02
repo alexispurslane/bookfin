@@ -10,7 +10,7 @@ T3 worktrees, separate checkouts for individual tasks, use the same flake.
 
 `flake.lock` pins nixpkgs to `fe13242281a67641c0102cdb1087f0ebe586c7df`.
 The pinned nixpkgs source supplies Flutter, Dart, Java, and all Android native tools.
-No native dependency requires a separate source derivation.
+Native tools use pinned nixpkgs sources. The project patches sigtool's argument handling for Flutter's host tests.
 The shell also supplies FFmpeg, the video encoder used by T3's Android stream.
 Android license acceptance is declared in `flake.nix`.
 Updating the lock is a toolchain change, not part of routine setup.
@@ -20,13 +20,15 @@ Updating the lock is a toolchain change, not part of routine setup.
 | Flutter | 3.47.4 stable |
 | Dart | 3.13.3 |
 | Java | 21.0.11 |
-| Android platforms and build tools | APIs 35 and 36; build tools 36.0.0 |
+| Android platforms and build tools | APIs 34, 35, and 36; build tools 36.0.0 |
 | Android command-line tools | 19.0 |
 | Android emulator supplied by Nix | 37.1.11 |
 | Android system image | API 36, Google APIs, ARM64; revision fixed by nixpkgs |
 | Android NDK, the native compilation tools | 28.2.13676358 |
 | CMake | 3.22.1 |
 | Gradle | 9.3.1; download checksum recorded in its wrapper settings |
+| macOS SDK for native Dart hooks | 14.4, supplied by pinned nixpkgs |
+| Host library signer | sigtool 0.1.3, with the local timestamp argument patch |
 
 The shell sets `JAVA_HOME`, `ANDROID_HOME`, `ANDROID_SDK_ROOT`, and `FLUTTER_ROOT`.
 Do not put these variables in a shell profile.
@@ -50,9 +52,40 @@ nix develop --command bash tool/bookfin analyze
 ```
 
 `doctor` reports host tools, including iOS tools that this Android ticket does not use.
-The normal test command runs SDK-link safety, compiles Android reader file access against APIs 35 and 36, and runs all Flutter widget tests.
+The normal test command runs SDK-link safety, Android compilation checks, native Dart tool checks, and all Flutter widget tests.
+The Android compilation checks use APIs 35 and 36.
 A widget test runs the Flutter screen without starting an Android emulator.
 It does not prove Android behavior.
+
+## Native Dart tools on macOS
+
+A native Dart hook builds a library before Dart or Flutter runs.
+`path_provider_foundation` 2.6.0 uses this mechanism for its Objective-C dependency.
+The root shell and the reader research shell share `nix/darwin-native-tools.nix`.
+Neither package needs the former 2.4.4 compatibility override.
+
+The shared tools select the pinned macOS SDK for each `xcrun` command.
+This works when a hook does not inherit `SDKROOT` or `DEVELOPER_DIR`.
+It does not change the global Xcode selection or the caller's environment.
+The pinned SDK does not contain iOS SDKs. An iOS SDK query fails instead of returning a macOS path.
+
+sigtool attaches an ad-hoc signature, a signature without a developer certificate.
+The local patch accepts Flutter's `--timestamp=none` argument.
+It does not implement timestamp services or skip signing.
+Other timestamp values and unknown arguments still fail.
+The test compiles an unsigned Objective-C library, signs it, and checks the signature with macOS's `/usr/bin/codesign` verifier.
+The same test makes sure that changed library bytes fail verification.
+The verifier is an operating-system check, not a compiler or signer from global Xcode.
+This host-test setup does not provide Apple release signing or an iOS build toolchain.
+
+Run the focused checks without building the app:
+
+```sh
+nix develop --command bash test/darwin_native_tools_test.sh
+nix develop --command bash test/sdk_platform_test.sh
+```
+
+See `docs/evidence/toolchain/sdk35.md` and `docs/evidence/toolchain/native-hooks.md` for the build results and limits.
 
 ## Android discovery in T3
 

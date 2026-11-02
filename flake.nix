@@ -59,6 +59,7 @@
         ln -s ${android.androidsdk}/libexec/android-sdk/cmdline-tools/19.0 "$out/cmdline-tools/19.0"
         ln -s 19.0 "$out/cmdline-tools/latest"
       '';
+      nativeTools = import ./nix/darwin-native-tools.nix { inherit pkgs; };
     in
     {
       devShells.${system}.default = pkgs.mkShell {
@@ -70,6 +71,7 @@
           pkgs.jq
           pkgs.nixfmt
           android.androidsdk
+          nativeTools
         ];
         JAVA_HOME = "${pkgs.jdk21}";
         ANDROID_HOME = sdk;

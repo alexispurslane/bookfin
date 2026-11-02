@@ -80,11 +80,20 @@ The downloader consumes the active account scope, `Book.editions`, and each orde
 
 ## Dependencies and remaining acceptance
 
-`path_provider_foundation` is pinned to 2.4.4 because the secure-storage Windows dependency pulls the shared path-provider package into host tests. Version 2.6.0 adds a native Objective-C build hook that could not find this host's macOS SDK under the current Nix shell. The pin avoids changing global Xcode selection. Android secure storage still uses the Android secure-storage plugin. The Nix SDK includes platform 34 for that plugin, platform 35 for preferences, and platform 36 for the application. No SDK installer writes into the Nix store or another Android SDK.
+The secure-storage Windows dependency pulls the shared path-provider package into host tests.
+`path_provider_foundation` 2.6.0 adds a native Objective-C build hook.
+The shared pinned native tools now provide its macOS SDK and real ad-hoc signing, so the former 2.4.4 override is removed.
+The global Xcode selection is unchanged.
+Android secure storage still uses the Android secure-storage plugin.
+The Nix SDK includes platform 34 for that plugin, platform 35 for preferences and the selected reader, and platform 36 for the application.
+No SDK installer writes into the Nix store or another Android SDK.
 
 Local HTTP fixtures establish application behavior, not deployed Jellyfin permissions. Android secure-storage restart, live sign-in, large-library layout, actual multi-file grouping, ebook pairing, and ordinary-user access still require coordinated acceptance. The supplied live research used an administrator and found no indexed ebooks. `boo-2cgp` retains deployment integration checks. `boo-p58t` retains full extra-record sync proof. No live credentials, target-server writes, device actions, or research-probe code are needed by the implementation tests.
 
-The native-hook compatibility follow-up is `t7-fyql`. It depends on integration of `boo-u3cg`. WebAssembly is not claimed: the selected secure-storage package still has a legacy browser implementation. The release JavaScript build passes, and Bookfin's browser credential store remains memory-only.
+The native-hook compatibility work is tracked by `t7-fyql`.
+See `evidence/toolchain/native-hooks.md` for the passing checks and remaining limits.
+WebAssembly is not claimed: the selected secure-storage package still has a legacy browser implementation.
+The release JavaScript build passes, and Bookfin's browser credential store remains memory-only.
 
 ## Implementation verification
 
