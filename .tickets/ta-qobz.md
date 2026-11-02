@@ -1,6 +1,6 @@
 ---
 id: ta-qobz
-status: in_progress
+status: closed
 deps: []
 links: [boo-p58t, td-4nvl]
 created: 2026-11-02T00:18:50Z
