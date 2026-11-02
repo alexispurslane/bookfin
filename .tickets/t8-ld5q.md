@@ -26,3 +26,7 @@ Implemented the approved confirmed fresh start from 756ae5fcf77f8d1f9d18124311fe
 **2026-11-02T12:58:29Z**
 
 Parent reproduced review R1/R2 with three meaningful failures: both legacy formats lost the unchanged-first-file resume; a delayed lookup published an obsolete offer. Preserve legacy entries during complete-recording saves, centralize offer membership checks, and recheck catalog membership after local-file awaits. All21 replacement and292 full application tests pass; clean analysis/format/diff and Android ARM64 debug build pass. Await correction review; no runtime acceptance or integration yet.
+
+**2026-11-02T13:06:55Z**
+
+Independent correction review approved f297520 with no remaining blocker across the complete feature. Parent integrated without conflicts; application/test/toolchain sources match the tested head (292 app tests, clean analysis and Android build). Keep in_progress for Android confirmation interaction, retained-record process restart and user acceptance. No runtime or hardening claim follows from integration.
