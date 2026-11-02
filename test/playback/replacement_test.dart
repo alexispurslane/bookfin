@@ -366,7 +366,69 @@ void main() {
     },
   );
 
+  test(
+    'catalog refresh during file lookup cannot publish an obsolete offer',
+    () async {
+      downloads.lookupGate = Completer<void>();
+      final opening = playback.open(revisedBook, replacement);
+      await Future<void>.delayed(Duration.zero);
+      await playback.bind(account(), [title]);
+      downloads.lookupGate!.complete();
+      downloads.lookupGate = null;
+      await opening;
+      expect(playback.replacementStart, isNull);
+      playback.checkInvariants();
+      await playback.open(title, recording, autoplay: false);
+      expect(playback.position?.milliseconds, 18000);
+    },
+  );
+
   for (final version in [1, 2]) {
+    test(
+      'version-$version legacy position in an unchanged file survives replacement playback',
+      () async {
+        await playback.close();
+        SharedPreferences.setMockInitialValues({
+          'bookfin.playback.v1.${account().scope.key}': jsonEncode({
+            'version': version,
+            'selected': 'recording',
+            'resumes': {
+              'recording': {
+                'source': 'one:m1',
+                'revision': 'r1',
+                'milliseconds': 12000,
+              },
+            },
+            'history': [],
+            'bookmarks': [],
+          }),
+        });
+        engine = ReplacementEngine();
+        playback = Playback(
+          downloads: downloads,
+          engine: engine,
+          store: LocalResumeStore(),
+        );
+        await playback.bind(account(), [revisedBook]);
+        expect(playback.position?.milliseconds, 12000);
+        await playback.seekEdition(78000);
+        await playback.close();
+        engine = ReplacementEngine();
+        playback = Playback(
+          downloads: downloads,
+          engine: engine,
+          store: LocalResumeStore(),
+        );
+        await playback.bind(account(), [title]);
+        expect(playback.position?.revision, 'r1');
+        expect(playback.position?.milliseconds, 12000);
+        await playback.bind(account(), [revisedBook]);
+        expect(playback.position?.revision, 'replacement');
+        expect(playback.position?.milliseconds, 18000);
+        playback.checkInvariants();
+      },
+    );
+
     test(
       'version-$version resume migration retains old audio beside a confirmed replacement',
       () async {

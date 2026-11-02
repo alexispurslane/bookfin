@@ -127,3 +127,13 @@ temporary device setting was created. Build outputs and local diagnostic logs
 remain ignored or outside the checkout. Shared dependency caches remain in
 place. The orchestrator owns integration, runtime acceptance, hardening, and
 ticket closure.
+
+## Parent review corrections
+
+Independent review found two defects in `7f4f62e`. A legacy resume in an unchanged first file could be overwritten while another file changed. A catalog refresh during local-file lookup could leave an obsolete replacement offer.
+
+Three new regressions first failed: version-1 and version-2 records lost the original 12,000-millisecond position, and the delayed lookup left an offer for an obsolete edition. Saving now replaces only a resume with the same complete recording identity. Compatible legacy positions remain separately retained. All replacement offers use one current-catalog check; local-file lookup rechecks membership after each wait.
+
+The corrected focused suite passes all 21 replacement tests. The complete application suite passes 292 tests, and analysis reports no issues. Formatting and whitespace checks pass. These are host results, not Android interaction or process-death acceptance. The correction awaits independent review before integration.
+
+The corrected normal Android ARM64 debug APK also builds successfully. It was not installed. Existing dependency-version notices remain. No corrected web build or runtime acceptance is claimed.

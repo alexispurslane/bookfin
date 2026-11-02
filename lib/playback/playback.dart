@@ -444,7 +444,7 @@ class Playback extends ChangeNotifier {
         if (book != null && edition != null) {
           final resume = _readPosition(edition);
           if (resume != null && !_resumeFits(edition, _resumeRecord(edition))) {
-            _replacementStart = AudioReplacement(book, edition, resume);
+            _offerReplacement(book, edition, resume);
           }
         }
       }
@@ -555,7 +555,7 @@ class Playback extends ChangeNotifier {
           if (resume == null || !_resumeFits(edition, _resumeRecord(edition))) {
             _message = 'The saved audio source changed. Its resume is kept but was not applied.';
             if (resume != null) {
-              _replacementStart = AudioReplacement(book, edition, resume);
+              _offerReplacement(book, edition, resume);
             }
           } else {
             await _open(book, edition, autoplay: false);
@@ -585,6 +585,18 @@ class Playback extends ChangeNotifier {
       for (final file in edition.files) [file.key, file.revision],
     ]..sort((left, right) => left.first.compareTo(right.first));
     return jsonEncode(sources);
+  }
+
+  bool _currentEdition(Book book, Edition edition) =>
+      _session != null &&
+      _books.any(
+        (candidate) =>
+            candidate.id == book.id && candidate.editions.contains(edition),
+      );
+
+  void _offerReplacement(Book book, Edition edition, AudioPosition resume) {
+    if (!_restored || !_currentEdition(book, edition)) return;
+    _replacementStart = AudioReplacement(book, edition, resume);
   }
 
   bool _resumeFits(Edition edition, Map<String, dynamic>? value) =>
@@ -631,11 +643,7 @@ class Playback extends ChangeNotifier {
     ListeningAction? action,
     AudioReplacement? replacement,
   }) async {
-    if (_session == null ||
-        !_books.any(
-          (candidate) =>
-              candidate.id == book.id && candidate.editions.contains(edition),
-        ) ||
+    if (!_currentEdition(book, edition) ||
         edition.kind != EditionKind.audio ||
         edition.files.isEmpty) {
       throw ArgumentError('Choose an audio edition from the current account.');
@@ -649,7 +657,9 @@ class Playback extends ChangeNotifier {
     final files = <Uri>[];
     for (final file in edition.files) {
       final uri = await downloads.localFile(file);
-      if (generation != _generation) return false;
+      if (generation != _generation || !_currentEdition(book, edition)) {
+        return false;
+      }
       if (uri == null || uri.scheme != 'file') {
         _message =
             'Download every file in this audio edition before listening.';
@@ -665,7 +675,7 @@ class Playback extends ChangeNotifier {
         (!resume.fits(edition) ||
             target == null && !_resumeFits(edition, _resumeRecord(edition)))) {
       _message = 'The saved audio source changed. Its resume is kept but was not applied.';
-      _replacementStart = AudioReplacement(book, edition, resume);
+      _offerReplacement(book, edition, resume);
       _notify();
       return false;
     }
@@ -1019,8 +1029,10 @@ class Playback extends ChangeNotifier {
     final position = _position;
     if (position != null) {
       final records = _resumes.putIfAbsent(position.editionId, () => []);
+      // A legacy file-relative position can be read but cannot establish
+      // ownership of a whole recording. Keep it when saving a known recording.
       final index = records.lastIndexWhere(
-        (value) => _resumeFits(_edition!, value),
+        (value) => value['sources'] == _editionSources(_edition!),
       );
       final value = <String, dynamic>{
         'source': position.sourceKey,
