@@ -14,6 +14,8 @@ import 'catalog/screen.dart';
 import 'catalog/store.dart';
 import 'downloads/downloads.dart';
 import 'downloads/platform.dart';
+import 'playback/native.dart';
+import 'playback/playback.dart';
 
 Future<void> main() => runBookfin();
 
@@ -33,8 +35,14 @@ Future<void> runBookfin({bool gallery = false}) async {
   final appearance = AppearanceController(LocalAppearanceStore());
   await appearance.restore();
   final downloads = gallery ? null : await createDownloads(MediaPolicy());
+  final playback = downloads == null ? null : await createPlayback(downloads);
   runApp(
-    BookfinApp(appearance: appearance, gallery: gallery, downloads: downloads),
+    BookfinApp(
+      appearance: appearance,
+      gallery: gallery,
+      downloads: downloads,
+      playback: playback,
+    ),
   );
 }
 
@@ -46,6 +54,7 @@ class BookfinApp extends StatefulWidget {
     this.clock,
     this.catalog,
     this.downloads,
+    this.playback,
   });
 
   final AppearanceController appearance;
@@ -53,6 +62,7 @@ class BookfinApp extends StatefulWidget {
   final DateTime Function()? clock;
   final CatalogController? catalog;
   final Downloads? downloads;
+  final Playback? playback;
 
   @override
   State<BookfinApp> createState() => _BookfinAppState();
@@ -111,6 +121,7 @@ class _BookfinAppState extends State<BookfinApp> with WidgetsBindingObserver {
       _startClock();
       _refresh();
     } else {
+      unawaited(widget.playback?.flush());
       _clock?.cancel();
     }
   }
@@ -160,6 +171,7 @@ class _BookfinAppState extends State<BookfinApp> with WidgetsBindingObserver {
               builder: (context) => CatalogHome(
                 catalog: _catalog,
                 downloads: widget.downloads,
+                playback: widget.playback,
                 onAppearance: () => showModalBottomSheet<void>(
                   context: context,
                   isScrollControlled: true,

@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import '../foundation/theme.dart';
 import '../downloads/downloads.dart';
 import '../downloads/screen.dart';
+import '../playback/playback.dart';
+import '../playback/screen.dart';
 import 'controller.dart';
 import 'jellyfin.dart';
 import 'model.dart';
@@ -15,10 +17,12 @@ class CatalogHome extends StatefulWidget {
     required this.catalog,
     required this.onAppearance,
     this.downloads,
+    this.playback,
   });
   final CatalogController catalog;
   final VoidCallback onAppearance;
   final Downloads? downloads;
+  final Playback? playback;
   @override
   State<CatalogHome> createState() => _CatalogHomeState();
 }
@@ -30,6 +34,7 @@ class _CatalogHomeState extends State<CatalogHome> {
   CatalogController get _catalog => widget.catalog;
   String? _accountKey;
   bool _lastAccessBlocked = false;
+  int _bindingGeneration = 0;
 
   @override
   void initState() {
@@ -48,7 +53,10 @@ class _CatalogHomeState extends State<CatalogHome> {
       _catalog.addListener(_accessChanged);
       _accessChanged();
     }
-    if (oldWidget.downloads != widget.downloads) _bindDownloads();
+    if (oldWidget.downloads != widget.downloads ||
+        oldWidget.playback != widget.playback) {
+      _bindDownloads();
+    }
   }
 
   @override
@@ -58,6 +66,9 @@ class _CatalogHomeState extends State<CatalogHome> {
   }
 
   void _accessChanged() {
+    if (_accountKey != _catalog.session?.scope.key || _catalog.accessBlocked) {
+      unawaited(widget.playback?.bind(null, []));
+    }
     _bindDownloads();
     final key = _catalog.session?.scope.key;
     if (key == _accountKey && _lastAccessBlocked == _catalog.accessBlocked) {
@@ -77,12 +88,14 @@ class _CatalogHomeState extends State<CatalogHome> {
   void _bindDownloads() {
     final downloads = widget.downloads;
     if (downloads != null) {
-      unawaited(
-        downloads.bind(
-          _catalog.accessBlocked ? null : _catalog.session,
-          _catalog.books,
-        ),
-      );
+      final generation = ++_bindingGeneration;
+      final session = _catalog.accessBlocked ? null : _catalog.session;
+      final books = _catalog.books;
+      unawaited(() async {
+        await downloads.bind(session, books);
+        if (!mounted || generation != _bindingGeneration) return;
+        await widget.playback?.bind(session, books);
+      }());
     }
   }
 
@@ -91,6 +104,7 @@ class _CatalogHomeState extends State<CatalogHome> {
     listenable: Listenable.merge([
       _catalog,
       if (widget.downloads != null) widget.downloads!,
+      if (widget.playback != null) widget.playback!,
     ]),
     builder: (context, _) => Scaffold(
       appBar: AppBar(
@@ -115,24 +129,32 @@ class _CatalogHomeState extends State<CatalogHome> {
             ),
         ],
       ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _destination,
-        onDestinationSelected: (value) => setState(() => _destination = value),
-        destinations: [
-          NavigationDestination(
-            icon: Icon(Icons.local_library_outlined),
-            selectedIcon: Icon(Icons.local_library_rounded),
-            label: 'Library',
-          ),
-          NavigationDestination(
-            enabled: _catalog.session != null,
-            icon: Icon(Icons.download_outlined),
-            label: 'Downloads',
-          ),
-          NavigationDestination(
-            enabled: false,
-            icon: Icon(Icons.headphones_outlined),
-            label: 'Listening',
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (widget.playback != null && _destination != 2)
+            PlaybackMiniPlayer(playback: widget.playback!),
+          NavigationBar(
+            selectedIndex: _destination,
+            onDestinationSelected: (value) =>
+                setState(() => _destination = value),
+            destinations: [
+              NavigationDestination(
+                icon: Icon(Icons.local_library_outlined),
+                selectedIcon: Icon(Icons.local_library_rounded),
+                label: 'Library',
+              ),
+              NavigationDestination(
+                enabled: _catalog.session != null,
+                icon: Icon(Icons.download_outlined),
+                label: 'Downloads',
+              ),
+              NavigationDestination(
+                enabled: widget.playback != null && _catalog.session != null,
+                icon: Icon(Icons.headphones_outlined),
+                label: 'Listening',
+              ),
+            ],
           ),
         ],
       ),
@@ -155,6 +177,11 @@ class _CatalogHomeState extends State<CatalogHome> {
                       ),
                     ),
                   ),
+                if (widget.playback?.message != null && _destination != 2)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
+                    child: Text(widget.playback!.message!),
+                  ),
                 Expanded(
                   child: _catalog.session == null
                       ? _SignInForm(catalog: _catalog)
@@ -164,6 +191,8 @@ class _CatalogHomeState extends State<CatalogHome> {
                           key: ValueKey(_catalog.session!.scope.key),
                           catalog: _catalog,
                         )
+                      : _destination == 2 && widget.playback != null
+                      ? PlayerView(playback: widget.playback!)
                       : _destination == 1
                       ? DownloadsPage(
                           downloads: widget.downloads,
@@ -305,6 +334,7 @@ class _CatalogHomeState extends State<CatalogHome> {
                                 catalog: _catalog,
                                 bookId: book.id,
                                 downloads: widget.downloads,
+                                playback: widget.playback,
                               ),
                             ),
                           ),
@@ -630,13 +660,15 @@ class _BookPage extends StatelessWidget {
     required this.catalog,
     required this.bookId,
     this.downloads,
+    this.playback,
   });
   final CatalogController catalog;
   final String bookId;
   final Downloads? downloads;
+  final Playback? playback;
   @override
   Widget build(BuildContext context) => ListenableBuilder(
-    listenable: Listenable.merge([catalog, ?downloads]),
+    listenable: Listenable.merge([catalog, ?downloads, ?playback]),
     builder: (context, _) {
       final matches = catalog.books.where((book) => book.id == bookId);
       if (matches.isEmpty) {
@@ -649,6 +681,9 @@ class _BookPage extends StatelessWidget {
       }
       final book = matches.single;
       return Scaffold(
+        bottomNavigationBar: playback == null
+            ? null
+            : PlaybackMiniPlayer(playback: playback!),
         appBar: AppBar(
           title: const Text('Book details'),
           actions: [
@@ -710,6 +745,21 @@ class _BookPage extends StatelessWidget {
                                   downloads: downloads,
                                   edition: edition,
                                 ),
+                                if (kind == EditionKind.audio &&
+                                    playback != null)
+                                  FilledButton.icon(
+                                    onPressed: () async {
+                                      await playback!.open(book, edition);
+                                      if (context.mounted &&
+                                          playback!.edition == edition) {
+                                        openPlayer(context, playback!);
+                                      }
+                                    },
+                                    icon: const Icon(Icons.play_arrow_rounded),
+                                    label: const Text('Listen'),
+                                  ),
+                                if (playback?.message != null)
+                                  Text(playback!.message!),
                                 if (edition.files.length > 1)
                                   TextButton(
                                     onPressed: () =>
