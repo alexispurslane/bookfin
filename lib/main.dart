@@ -8,6 +8,9 @@ import 'appearance/appearance.dart';
 import 'appearance/preferences.dart';
 import 'development/gallery.dart';
 import 'foundation/theme.dart';
+import 'catalog/controller.dart';
+import 'catalog/screen.dart';
+import 'catalog/store.dart';
 
 Future<void> main() => runBookfin();
 
@@ -31,11 +34,13 @@ class BookfinApp extends StatefulWidget {
     required this.appearance,
     this.gallery = false,
     this.clock,
+    this.catalog,
   });
 
   final AppearanceController appearance;
   final bool gallery;
   final DateTime Function()? clock;
+  final CatalogController? catalog;
 
   @override
   State<BookfinApp> createState() => _BookfinAppState();
@@ -44,10 +49,20 @@ class BookfinApp extends StatefulWidget {
 class _BookfinAppState extends State<BookfinApp> with WidgetsBindingObserver {
   AppearanceController get _appearance => widget.appearance;
   Timer? _clock;
+  late final CatalogController _catalog;
 
   @override
   void initState() {
     super.initState();
+    _catalog =
+        widget.catalog ??
+        CatalogController(
+          credentials: SecureCredentialStore(),
+          store: LocalCatalogStore(),
+        );
+    if (widget.catalog == null && !widget.gallery) {
+      unawaited(_catalog.restore().then((_) => _catalog.refresh()));
+    }
     WidgetsBinding.instance.addObserver(this);
     _appearance.addListener(_refresh);
     _startClock();
@@ -90,6 +105,7 @@ class _BookfinAppState extends State<BookfinApp> with WidgetsBindingObserver {
   @override
   void dispose() {
     _clock?.cancel();
+    if (widget.catalog == null) _catalog.dispose();
     _appearance.removeListener(_refresh);
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
@@ -120,12 +136,28 @@ class _BookfinAppState extends State<BookfinApp> with WidgetsBindingObserver {
         reduceMotion: reduceMotion,
         child: child!,
       ),
-      home: _BookfinHome(
-        appearance: _appearance,
-        decision: decision,
-        gallery: widget.gallery,
-        currentDecision: _decision,
-      ),
+      home: widget.gallery
+          ? _BookfinHome(
+              appearance: _appearance,
+              decision: decision,
+              gallery: widget.gallery,
+              currentDecision: _decision,
+            )
+          : Builder(
+              builder: (context) => CatalogHome(
+                catalog: _catalog,
+                onAppearance: () => showModalBottomSheet<void>(
+                  context: context,
+                  isScrollControlled: true,
+                  useSafeArea: true,
+                  builder: (_) => _AppearanceSheet(
+                    appearance: _appearance,
+                    currentDecision: _decision,
+                    gallery: false,
+                  ),
+                ),
+              ),
+            ),
     );
   }
 }
