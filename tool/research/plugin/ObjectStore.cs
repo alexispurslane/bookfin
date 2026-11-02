@@ -172,7 +172,7 @@ public sealed class ObjectStore
         command.CommandText = """
             SELECT COUNT(*) FROM objects
             WHERE length(owner) != 32 OR length(identity) NOT BETWEEN 1 AND 128
-                OR sequence <= 0 OR (payload IS NOT NULL AND length(payload) = 0)
+                OR sequence <= 0 OR (payload IS NOT NULL AND length(CAST(payload AS BLOB)) = 0)
             """;
         if (Convert.ToInt64(command.ExecuteScalar()) != 0)
         {

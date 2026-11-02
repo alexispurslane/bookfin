@@ -269,6 +269,12 @@ class DedicatedStorage(unittest.TestCase):
         self.assertEqual(self.put("null-character", "\x00opaque"), 201)
         stored = self.server.api("alice").json("GET", BASE + "/null-character")
         self.assertEqual(stored["Payload"], "\x00opaque")
+        # The fixture enables ObjectStore.CheckInvariants on every store creation.
+        self.server.stop()
+        self.server.start()
+        status, _, body = self.server.api("alice").request("GET", BASE + "/null-character")
+        self.assertEqual(status, 200, "Acknowledged opaque payload must survive startup invariants")
+        self.assertEqual(json.loads(body)["Payload"], "\x00opaque")
 
 
 if __name__ == "__main__":

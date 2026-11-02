@@ -1,6 +1,6 @@
 {
   "ticket": "boo-dez0",
-  "measuredAtUtc": "2026-11-02T12:43:40.169372+00:00",
+  "measuredAtUtc": "2026-11-02T13:09:07.840734+00:00",
   "baseCommit": "756ae5f",
   "purpose": "Disposable bounded feasibility proof; not production sync",
   "runtime": {
@@ -10,18 +10,18 @@
     "host": "aarch64-darwin",
     "serverArchivePin": "tool/research/sync/sources.json",
     "serverDllSha256": "c553ef86f47d4de0399be5cb13d3623b9df017bb5d655a4622c8e58334f0b39c",
-    "pluginDllSha256": "99964ae0d2ec733036781fb7c0e6ebc69475b6e6bfba115d2d84bccdab990d27",
+    "pluginDllSha256": "bb54007aefdc9c4c57f75bf6241dfc2867058c0968a1bc3d4fb753cb4c876349",
     "sourceSha256": {
       "tool/research/plugin/Bookfin.Storage.csproj": "eff95a6b277a57a3f2349d64536fc83577a3b3515d52fb3da5151b680fda51b9",
       "tool/research/plugin/Directory.Build.props": "597d46a17e428ac67e406b0e6f21c3c3ccf4cb2bf3926cca67c45e9e20980bf6",
-      "tool/research/plugin/ObjectStore.cs": "b54b37f2ee582bb39a5a8b847ace866ae48bc49e06eba9807e9a823935096850",
+      "tool/research/plugin/ObjectStore.cs": "21352d93ca60ea941260b945708be593134179e9e3d835a0267fc74b276045e4",
       "tool/research/plugin/Plugin.cs": "4f756e730f42acca9d083bc7769a19169f67552d4a6acc81e3d1b32536773859",
       "tool/research/plugin/StorageController.cs": "13c354882fe7a0d5ffc38b3ceb5dba58c73e2d688fcc1490d399b07cc6e9955a",
       "tool/research/plugin/dedicated_fixture.py": "30141e786873a4c0c1a8009ff2d7ae93cd0c623edf541c55f937289a8986b255",
-      "tool/research/plugin/outbox.py": "129b7a5b8fff1f9f368dfa7b33355069db12687adc94ef1f01bfe7a87f5fa558",
-      "tool/research/plugin/run.py": "db3eb9a0316f0d60835240ec33a7c4972e8f20da24a93f42ccf8071f7e19e200",
-      "tool/research/plugin/test_outbox.py": "4d43c8412c19cde6fb59cf967f3b0d5b03610cee74ca7996f9b9900ecc256834",
-      "tool/research/plugin/test_storage.py": "fbb59db83cc930ac61d8af15731221d57718b33a18c22b10f48276c0317cedfe",
+      "tool/research/plugin/outbox.py": "851a74a58c8f6aef035a9eb1ee23cefd6d779a3bad08a5b26f285d863b39a397",
+      "tool/research/plugin/run.py": "442b3820812064366ce7aceecd820f267d68e112cdfc3c657beeacc6692b51ab",
+      "tool/research/plugin/test_outbox.py": "48de031fb1655978f8b3106fecf1563906744b2baa4d4db203bf1a11c8e5fb51",
+      "tool/research/plugin/test_storage.py": "18901b54d20c8ca5860cf196a6687ec8a59c6bbf521af4291e82b004ec17add8",
       "tool/research/sync/finite_journal.py": "65f8da49cb7a79c66ad3da1bb0034979b40db8767e78b8bdadcff29d789d06cd",
       "tool/research/sync/fixture.py": "329eb024966088ef1ed6ed60ffc811996870269921b80221252a059e79ceb70a",
       "tool/research/sync/flake.lock": "620ebda96a2f73ba0777e3f4f093baeb9d15dd69681c59b0b83610fbce1be2a1",
@@ -30,9 +30,9 @@
     }
   },
   "checks": {
-    "testsRun": 20,
+    "testsRun": 21,
     "successful": true,
-    "elapsedSeconds": 30.79,
+    "elapsedSeconds": 39.98,
     "outcomes": [
       {
         "test": "test_outbox.PendingActions.test_a_new_database_is_claimed_by_only_one_concurrent_account",
@@ -48,6 +48,10 @@
       },
       {
         "test": "test_outbox.PendingActions.test_another_account_cannot_open_the_pending_actions",
+        "outcome": "passed"
+      },
+      {
+        "test": "test_outbox.PendingActions.test_concurrent_conflicting_actions_cannot_both_be_accepted",
         "outcome": "passed"
       },
       {
@@ -151,6 +155,9 @@
     },
     {
       "after": "terminate"
+    },
+    {
+      "after": "terminate"
     }
   ],
   "stops": [
@@ -161,6 +168,10 @@
     {
       "kind": "kill",
       "exitCode": -9
+    },
+    {
+      "kind": "terminate",
+      "exitCode": 0
     },
     {
       "kind": "terminate",
@@ -215,6 +226,18 @@
       "sqlite3.OperationalError: database is locked",
       "Ran 1 test in 0.041s",
       "FAILED (errors=1)"
+    ],
+    "red-review-outbox": [
+      "FAIL: test_concurrent_conflicting_actions_cannot_both_be_accepted (test_outbox.PendingActions.test_concurrent_conflicting_actions_cannot_both_be_accepted)",
+      "AssertionError: Element counts were not equal:",
+      "Ran 5 tests in 0.247s",
+      "FAILED (failures=1)"
+    ],
+    "red-review-null": [
+      "FAIL: test_16_opaque_payloads_preserve_leading_null_characters (test_storage.DedicatedStorage.test_16_opaque_payloads_preserve_leading_null_characters)",
+      "AssertionError: 500 != 200 : Acknowledged opaque payload must survive startup invariants",
+      "Ran 1 test in 13.509s",
+      "FAILED (failures=1)"
     ]
   },
   "cleanup": {

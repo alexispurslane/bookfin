@@ -38,6 +38,7 @@ class Outbox:
         identity = f'action.{action["device"]}.{action["sequence"]}'
         payload = json.dumps(action, sort_keys=True, separators=(",", ":"))
         with self.database:
+            self.database.execute("BEGIN IMMEDIATE")
             existing = self.database.execute("SELECT payload FROM actions WHERE identity=?", (identity,)).fetchone()
             if existing is not None and existing[0] != payload:
                 raise ValueError("An immutable action identity has conflicting payloads")

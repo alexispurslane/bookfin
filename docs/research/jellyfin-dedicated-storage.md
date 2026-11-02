@@ -178,8 +178,8 @@ Arrival of the missing action then permits both to apply.
 ## Evidence and measured costs
 
 The release build reports zero warnings and zero errors. The final experiment
-passes 20 tests: four local tests and 16 actual-server tests. The evidence records
-the exact duration. Four server starts cover initial startup, two clean
+passes 21 tests: five local tests and 16 actual-server tests. The evidence records
+the exact duration. Five server starts cover initial startup, three clean
 restarts, and restart after one forced stop. Clean exits report 0; the forced
 stop reports -9. The plugin remains Active after those exercises.
 
@@ -243,3 +243,11 @@ The fixture is stopped. Ports 7464 and 7465 have no listeners. Private state
 remains under ignored `.cache/plugin/run-*/`. Recorded directory mode is 0700;
 account files, password files, and storage database are 0600. No secret value
 is committed. The orchestrator owns review, integration, and ticket closure.
+
+## Parent review corrections
+
+Review of `179f25a` found two defects. Both reproduced before correction. A leading-null payload uploaded successfully but returned HTTP 500 after restart with invariant checking enabled. Two coordinated connections also both accepted different payloads for the same local action identity.
+
+The invariant checker now uses the same nonempty UTF-8 byte condition as the schema. The payload test restarts the real server and reads the acknowledged payload after the startup checker runs. Local insertion now obtains the SQLite write lock before checking an identity. The two-connection regression holds the first read while the second writer begins; exactly one payload succeeds and the conflicting call fails explicitly. Reopening retains the accepted pending action.
+
+The corrected release build has zero warnings and errors. All 21 dedicated-storage tests pass in a fresh disposable fixture. The updated evidence includes both meaningful failures, corrected source and DLL hashes, five starts, and complete cleanup. These results retain the original scope: no production integration, upgrade, power-loss, disk-full or lifetime-bound claim. Earlier Flutter checks describe the builder base; this research-only correction does not change the app.

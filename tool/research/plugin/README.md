@@ -31,7 +31,7 @@ No earlier fixture, app, device, browser, or production server is used.
 Each run has its own `.cache/plugin/run-*/` directory. The runner stops
 only its own child process, including after test failure. Waits are bounded.
 Discovery stops after 128 requests and fails rather than accepting an incomplete
-inventory. The suite includes two clean restarts and one forced process stop.
+inventory. The suite includes three clean restarts and one forced process stop.
 
 Successful runs write sanitized `evidence/runtime.json`. It records source and
 DLL hashes, test outcomes, object counts, byte counts, restarts, and cleanup.

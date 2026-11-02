@@ -71,7 +71,7 @@ def collect(result, elapsed):
     source_files += [HERE.parent / "sync" / name for name in
                      ("flake.nix", "flake.lock", "sources.json", "finite_journal.py", "fixture.py")]
     red_phases = {}
-    for name in ("red-storage", "red-outbox", "red-acknowledgment", "red-null", "red-scope-race"):
+    for name in ("red-storage", "red-outbox", "red-acknowledgment", "red-null", "red-scope-race", "red-review-outbox", "red-review-null"):
         path = CACHE / (name + ".txt")
         if path.exists():
             red_phases[name] = [line for line in path.read_text().splitlines()
