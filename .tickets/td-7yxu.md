@@ -26,3 +26,6 @@ Fresh own Android binding and own tcp7365 route observed before and after one no
 **2026-11-02T18:52:37Z**
 
 Additional exclusive-device acceptance at ac6a247 observed own tcp7365 reverse forward before/after five actual process replacements:16636→19040,19040→19648,19648→20173,20173→20625,20625→21004 between18:36:08Z and18:43:01Z on2026-11-02. Final library reselection after retained-file removal succeeded. No route repair needed; earlier disappearance remains unexplained. Own route removed, services stopped, app signed out and binding released without shutdown. Evidence docs/evidence/playback/remaining-acceptance-android.md and processReplacements in remaining-acceptance-runtime.json. No closure or general reliability claim.
+**2026-11-02T18:17:50Z**
+
+Corrected reader attempt observed own tcp7365 route before/after two relaunches: online PID9143 to11538, server-unavailable PID11538 to12201. Route remained present throughout, with no repair; real catalog requests succeeded after online restart. Own route removed at cleanup. Does not explain earlier disappearance or prove repeated stability; ticket remains open. See docs/evidence/reader/android-corrected.md.

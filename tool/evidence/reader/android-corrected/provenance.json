@@ -1,0 +1,41 @@
+{
+  "date": "2026-11-02",
+  "sourceCommit": "ae8dcd918cb7791e841534461652501488d05c92",
+  "correctionCommit": "203f870690a7aea36c5110e088daf74799b2f151",
+  "sourceGitTarSha256": "9e30f2d938cf14e7e3147bc91c165ca4c1ab37198fb3275f1e1c50911a4c6d73",
+  "sourceComparison": "git diff 203f870 -- lib android packages pubspec.yaml pubspec.lock flake.nix flake.lock nix: empty",
+  "buildCommand": "nix develop --profile .cache/dev-shell --command bash -c 'bash tool/bookfin build-android'",
+  "entry": "lib/main.dart",
+  "package": "dev.bookfin.bookfin",
+  "versionName": "0.1.0",
+  "versionCode": 1,
+  "minAndroidSdk": 24,
+  "targetAndroidSdk": 36,
+  "artifacts": {
+    "built": {
+      "path": "build/app/outputs/flutter-apk/app-debug.apk",
+      "bytes": 100145127,
+      "sha256": "a7c85ad40777950a1f797b1b6c35e7647855cb27d026cd11dc34a8c7b4f253da"
+    },
+    "installedReadback": {
+      "path": ".cache/installed-corrected.apk",
+      "bytes": 100145127,
+      "sha256": "a7c85ad40777950a1f797b1b6c35e7647855cb27d026cd11dc34a8c7b4f253da"
+    },
+    "finalInstalledReadback": {
+      "path": ".cache/installed-final.apk",
+      "bytes": 100145127,
+      "sha256": "a7c85ad40777950a1f797b1b6c35e7647855cb27d026cd11dc34a8c7b4f253da"
+    },
+    "originalEpub": {
+      "path": ".cache/sync/runtime/media/public/Work/Text Edition/Synthetic Work.epub",
+      "bytes": 135959,
+      "sha256": "6efe84b320af9a0f9997dfc6c54b172bc982e6b06978a2c3d75359161da0ce96"
+    },
+    "downloadedEpubReadback": {
+      "path": ".cache/downloaded-corrected.epub",
+      "bytes": 135959,
+      "sha256": "6efe84b320af9a0f9997dfc6c54b172bc982e6b06978a2c3d75359161da0ce96"
+    }
+  }
+}

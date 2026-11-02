@@ -2,7 +2,7 @@
 id: boo-9wgg
 status: in_progress
 deps: [boo-u3cg, boo-7o92, boo-73yj, t3-9r9u, tb-zqvc]
-links: [t3-9r9u, boo-mx5i]
+links: [t3-9r9u, boo-mx5i, t8-jj2s]
 created: 2026-11-01T21:37:34Z
 type: task
 priority: 2
@@ -75,3 +75,7 @@ R4 correction: reproduced actual 22px then 44px bridge commands at 200% system t
 Final correction handoff: R1 09d0ae6; R2 49d16a8; R3 a2343ce; R4 292aaad, followed by final verification/record guards. Bookmark edit and delete now have separate behavior tests; restoring the original failed-write queue reproduces delete resurrection. Nine focused persistence cases pass, including guarded damaged records with no overwrite and immutable source identity across test reopen. Full Flutter 346/346, reader 40/40 included; JS engine 14/14, corpus admission 9/9 and iframe/source corpus 9/9. Analysis/format/SDK/native checks and ARM64 debug/JS web builds pass through Nix. Evidence, hashes, build warnings and exact remaining Android acceptance limits: tool/evidence/reader/README.md and docs/reader-implementation.md. No new product decision, device/browser/install, production credentials/server, coverage/mutation campaign, PR or ticket closure. Pending host stop-rule reauthorization stays with parent.
 
 Follow-up review: reproduced malformed outer storage and stale location failure; local corrections and regressions added. Android acceptance remains open.
+
+**2026-11-02T18:17:50Z**
+
+Corrected Android acceptance captured22 audited screenshots from readable chapters through contents, search-hit navigation, larger text/night theme, next/previous/internal links, bookmark creation/restore, and server-unavailable process restart. Exact source ae8dcd9, normal fresh APK a7c85ad4. Later visible page was persisted but reopen returned chapter opening; new t8-jj2s records filtered disk proof and screenshots18-20. Second confirmation snapshot showed chapter opening, but late screenshot21 unexpectedly shows Book details; renderer termination logs retained without asserting cause. See docs/evidence/reader/android-corrected.md. Own download removed/signout, text multiplier restored1.0, own services/route/Gradle stopped, binding released shutdown:false. No reader approval, children, hardening, PR, or closure.
