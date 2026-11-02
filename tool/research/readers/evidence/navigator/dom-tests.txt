@@ -1,0 +1,22 @@
+
+> bookfin-navigator-dom-probe@0.0.0 test
+> node --test navigation.test.cjs
+
+✔ alice-epub3: source contents resolve and search positions survive styling and reopen (214.038083ms)
+✔ frankenstein-legacy-mobi: source contents resolve and search positions survive styling and reopen (567.638375ms)
+✔ moby-kf8: source contents resolve and search positions survive styling and reopen (399.009208ms)
+✔ candide-french-epub3: source contents resolve and search positions survive styling and reopen (124.760125ms)
+✔ river: source contents resolve and search positions survive styling and reopen (20.735583ms)
+✔ mobi6-plain: source contents resolve and search positions survive styling and reopen (18.113375ms)
+✔ mobi6-palmdoc: source contents resolve and search positions survive styling and reopen (17.653334ms)
+✔ pg11-kf8: source contents resolve and search positions survive styling and reopen (1175.398292ms)
+✔ semantic-epub3: source contents resolve and search positions survive styling and reopen (20.021959ms)
+✔ semantic EPUB retains headings, language, local note targets and the embedded font association (13.565417ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2808.609958

@@ -1,0 +1,48 @@
+{
+  "observed_date": "2026-11-02",
+  "base_commit": "261d50eb48dbe78288d44419d692e27268430a78",
+  "sources": [
+    {
+      "name": "epubjs",
+      "version": "0.3.93",
+      "url": "https://registry.npmjs.org/epubjs/-/epubjs-0.3.93.tgz",
+      "sha256": "180b33059ca15e2b4f129eb7fef6cae0bf6005c02af5194d13e5cb48378d538f",
+      "strip_components": 1
+    },
+    {
+      "name": "flutter_epub_viewer",
+      "version": "2.2.1",
+      "published": "2026-10-28T11:57:10.402619Z",
+      "url": "https://pub.dev/api/archives/flutter_epub_viewer-2.2.1.tar.gz",
+      "sha256": "049f8317427146eacb94103d04fcbd66842d300c0c0fc4678685a7934bc2f963"
+    },
+    {
+      "name": "flureadium",
+      "version": "0.19.6",
+      "published": "2026-09-30T21:26:00.809768Z",
+      "url": "https://pub.dev/api/archives/flureadium-0.19.6.tar.gz",
+      "sha256": "204f10fee0fada53a4f2247d177d66f8de741331d8cd599a59c7087e25c4fb37"
+    },
+    {
+      "name": "flureadium_platform_interface",
+      "version": "0.10.4",
+      "url": "https://pub.dev/api/archives/flureadium_platform_interface-0.10.4.tar.gz",
+      "sha256": "14340314cade41a50b572502bc2189aac8fb829b2cd8ac009347bf6ac3390fed"
+    },
+    {
+      "name": "epub_view",
+      "version": "3.3.0",
+      "published": "2026-08-20T11:32:35.684740Z",
+      "url": "https://pub.dev/api/archives/epub_view-3.3.0.tar.gz",
+      "sha256": "1e1c77ef7f455c75d77c84de42b3fcf6ec9066251072d4329988ce82513ab0d3"
+    },
+    {
+      "name": "readium",
+      "version": "3.1.2",
+      "commit": "71074ea0c424eabbc39a93b48a4cefe366f7741b",
+      "url": "https://api.github.com/repos/readium/kotlin-toolkit/tarball/71074ea0c424eabbc39a93b48a4cefe366f7741b",
+      "sha256": "18f6c55a93601e710d440776a5ed96a8fca35ce9b18343023e2aa85c09033f5b",
+      "strip_components": 1
+    }
+  ]
+}

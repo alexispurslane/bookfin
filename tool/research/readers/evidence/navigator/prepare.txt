@@ -1,0 +1,72 @@
+verified epubjs-0.3.93.tar.gz: 180b33059ca15e2b4f129eb7fef6cae0bf6005c02af5194d13e5cb48378d538f
+verified flutter_epub_viewer-2.2.1.tar.gz: 049f8317427146eacb94103d04fcbd66842d300c0c0fc4678685a7934bc2f963
+verified flureadium-0.19.6.tar.gz: 204f10fee0fada53a4f2247d177d66f8de741331d8cd599a59c7087e25c4fb37
+verified flureadium_platform_interface-0.10.4.tar.gz: 14340314cade41a50b572502bc2189aac8fb829b2cd8ac009347bf6ac3390fed
+verified epub_view-3.3.0.tar.gz: 1e1c77ef7f455c75d77c84de42b3fcf6ec9066251072d4329988ce82513ab0d3
+verified readium-3.1.2.tar.gz: 18f6c55a93601e710d440776a5ed96a8fca35ce9b18343023e2aa85c09033f5b
+verified alice.epub: 4f81245d31380ac1d6eafb9a321e3691369bc70985736ae4bccf849a4f784036
+verified frankenstein.mobi: d907f385b28a2af24f6186a646fd366ede1b84c4c688afe93da3f705862e8e74
+verified moby.mobi: 1465acba582c2713767afe17ae051dcea24b6875e2c0d6f462850299c7505e2a
+verified candide.epub: 8bb0506c0b2c67a0412d6c33aa478b53b88c4f9c857145fac1398abd98fcb56a
+Title: Frankenstein; or, The modern Prometheus
+Author: Mary Wollstonecraft Shelley
+Subject: Science fiction; Horror tales; Gothic fiction; Scientists -- Fiction; Monsters -- Fiction; Frankenstein; Victor (Fictitious character) -- Fiction; Frankenstein's monster (Fictitious character) -- Fiction
+Publishing date: 1993-10-01T04:00:00+00:00
+Copyright: Public domain in the USA.
+ASIN: 86163424-6923-41c7-bb0c-d03e04442f6e
+Language: en (utf8)
+__
+Mobi version: 6
+Creator software: calibre 9.5.0
+
+Reconstructing source resources...
+
+Creating EPUB...
+Saving EPUB to /Users/alexispurslane/.t3/worktrees/bookfin/t3-77e5374b/.cache/navigator/converted/frankenstein.epub
+Title: Moby Dick; Or, The Whale
+Author: Herman Melville
+Subject: Whaling -- Fiction; Sea stories; Psychological fiction; Ship captains -- Fiction; Adventure stories; Mentally ill -- Fiction; Ahab; Captain (Fictitious character) -- Fiction; Whales -- Fiction; Whaling ships -- Fiction
+Publishing date: 2001-07-02T00:00:00+00:00
+ASIN: 5ae97491-47a8-40a2-91ec-210148aad540
+Language: en (utf8)
+__
+Mobi version: 8
+Creator software: calibre 9.5.0
+
+Reconstructing source resources...
+
+Creating EPUB...
+Saving EPUB to /Users/alexispurslane/.t3/worktrees/bookfin/t3-77e5374b/.cache/navigator/converted/moby.epub
+Title: River CC0
+Language: en (utf8)
+__
+Mobi version: 6
+
+Reconstructing source resources...
+
+Creating EPUB...
+Saving EPUB to /Users/alexispurslane/.t3/worktrees/bookfin/t3-77e5374b/.cache/navigator/converted/mobi6-plain.epub
+Title: River CC0
+Language: en (utf8)
+__
+Mobi version: 6
+
+Reconstructing source resources...
+
+Creating EPUB...
+Saving EPUB to /Users/alexispurslane/.t3/worktrees/bookfin/t3-77e5374b/.cache/navigator/converted/mobi6-palmdoc.epub
+Title: Alice's Adventures in Wonderland
+Author: Lewis Carroll
+Subject: Fantasy fiction; Children's stories; Imaginary places -- Juvenile fiction; Alice (Fictitious character from Carroll) -- Juvenile fiction
+Publishing date: 2008-06-27T00:00:00+00:00
+ASIN: 690d15c3-3f15-4f93-9331-6fb59939375b
+Language: en (utf8)
+__
+Mobi version: 8
+Creator software: calibre 9.5.0
+
+Reconstructing source resources...
+
+Creating EPUB...
+Saving EPUB to /Users/alexispurslane/.t3/worktrees/bookfin/t3-77e5374b/.cache/navigator/converted/pg11-kf8.epub
+Prepared 9 EPUB editions; no standalone HTML/Markdown inputs.

@@ -1,0 +1,25 @@
+00:00 +0: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-77e5374b/tool/research/readers/navigator/widget/test/security_gate_probe.dart
+00:00 +0: unintended remote image requests receive an explicit denial
+00:00 +0 -1: unintended remote image requests receive an explicit denial [E]
+  Expected: not null
+    Actual: <null>
+  null delegates the remote request to the WebView
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/security_gate_probe.dart 17:5                  main.<fn>
+  
+00:00 +0 -1: active and remote SVG attributes never reach the image renderer
+00:00 +0 -2: active and remote SVG attributes never reach the image renderer [E]
+  Expected: not contains 'onload'
+    Actual: '<svg xmlns="http://www.w3.org/2000/svg" onload="alert(1)"><image href="https://invalid.example/track.png"/></svg>'
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/security_gate_probe.dart 39:7                  main.<fn>
+  
+00:00 +0 -2: Some tests failed.
+
+Failing tests:
+  /Users/alexispurslane/.t3/worktrees/bookfin/t3-77e5374b/tool/research/readers/navigator/widget/test/security_gate_probe.dart: active and remote SVG attributes never reach the image renderer
+  /Users/alexispurslane/.t3/worktrees/bookfin/t3-77e5374b/tool/research/readers/navigator/widget/test/security_gate_probe.dart: unintended remote image requests receive an explicit denial

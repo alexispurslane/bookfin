@@ -35,3 +35,7 @@ Android follow-up now confirms the research-only EPUBX compatibility patch runs 
 **2026-11-02T13:40:10Z**
 
 User removed HTML/Markdown support from product scope. Implement EPUB reading here; MOBI/PDF remain boo-mx5i. Historical parser research is not a production promise.
+
+**2026-11-02T14:27:06Z**
+
+2026-11-02 concrete navigator handoff: recommend a reviewed bounded fork of flutter_epub_viewer 2.2.1 using a separately source-pinned epub.js 0.3.93 distribution; no EPUBX production dependency is required. Both engine variants pass host contents/search/CFI probes across nine local EPUB editions; small research patches prove inline-phrase, repeated-hit, and short-document search regressions. pdfrx 2.11.0 resolves in the joint solver probe without overrides. The unmodified package deliberately FAILS two host security requirements: other hosts fall through to the WebView, and active SVG is served unchanged. Implement one passive-publication/resource-admission owner, strict navigation/permission denial, immutable processed-document identity, and existing TextPosition/bookmark wiring before accepting untrusted books. Source provenance, LGPL/native-bridge costs, API paths, exact evidence, and device acceptance gates are in docs/research/epub-navigator.md. No package approval, Android render, font application, TalkBack, or process-death resume is claimed. Standalone HTML/Markdown remain out of scope; EPUB XHTML/CSS remain required.

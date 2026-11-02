@@ -1,0 +1,12 @@
+--- a/lib/assets/webpage/html/epubView.js
++++ b/lib/assets/webpage/html/epubView.js
+@@ -2338,8 +2338,8 @@
+     var index = nextIndex++;
+     var item = items[index];
+     return item.load(book.load.bind(book))
+       .then(function () {
+-        return Promise.all(item.find(q).map(function (hit) {
++        return Promise.all(item.search(q).map(function (hit) {
+           return cfiToXPath(hit.cfi).then(function (xpath) {
+             return { cfi: hit.cfi, excerpt: hit.excerpt, xpath: xpath };
+           }, function () {

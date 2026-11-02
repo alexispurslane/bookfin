@@ -1,0 +1,17 @@
+test_active_remote_and_non_wrapper_svg_never_select_a_raster (test_raster_fallback.RasterFallbackTests.test_active_remote_and_non_wrapper_svg_never_select_a_raster) ... ok
+test_converted_kf8_wrapper_resolves_its_own_local_jpeg (test_raster_fallback.RasterFallbackTests.test_converted_kf8_wrapper_resolves_its_own_local_jpeg) ... FAIL
+test_wrong_raster_dimensions_do_not_silently_change_the_cover (test_raster_fallback.RasterFallbackTests.test_wrong_raster_dimensions_do_not_silently_change_the_cover) ... ok
+
+======================================================================
+FAIL: test_converted_kf8_wrapper_resolves_its_own_local_jpeg (test_raster_fallback.RasterFallbackTests.test_converted_kf8_wrapper_resolves_its_own_local_jpeg)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-77e5374b/tool/research/readers/navigator/test_raster_fallback.py", line 18, in test_converted_kf8_wrapper_resolves_its_own_local_jpeg
+    self.assertIsNotNone(result)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^
+AssertionError: unexpectedly None
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.009s
+
+FAILED (failures=1)

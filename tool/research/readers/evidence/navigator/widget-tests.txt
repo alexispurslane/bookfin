@@ -1,0 +1,9 @@
+00:00 +0: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-77e5374b/tool/research/readers/navigator/widget/test/resources_test.dart
+00:00 +0: converted KF8 chapter, SVG and JPEG keep their own archive paths
+00:00 +1: generated EPUB chapter and PNG remain associated without URI flattening
+00:00 +2: nested chapter resources resolve local CSS, PNG and font from their containing resource
+00:00 +3: KF8 JPEG fallback and PNG produce decoded, painted image pixels
+00:01 +4: the original SVG is not a Flutter raster image
+00:01 +5: package interception passes remote requests back to the WebView
+00:01 +6: package resource serving does not sanitize active SVG
+00:01 +7: All tests passed!

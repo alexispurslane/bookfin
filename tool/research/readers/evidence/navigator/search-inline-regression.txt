@@ -1,0 +1,66 @@
+
+> bookfin-navigator-dom-probe@0.0.0 test
+> node --test navigation.test.cjs
+
+✔ alice-epub3: source contents resolve and search positions survive styling and reopen (231.697125ms)
+✔ frankenstein-legacy-mobi: source contents resolve and search positions survive styling and reopen (577.581875ms)
+✔ moby-kf8: source contents resolve and search positions survive styling and reopen (447.107166ms)
+✔ candide-french-epub3: source contents resolve and search positions survive styling and reopen (116.585542ms)
+✖ river: source contents resolve and search positions survive styling and reopen (9.828333ms)
+✖ mobi6-plain: source contents resolve and search positions survive styling and reopen (8.597667ms)
+✖ mobi6-palmdoc: source contents resolve and search positions survive styling and reopen (8.521375ms)
+✔ pg11-kf8: source contents resolve and search positions survive styling and reopen (1084.307666ms)
+✔ semantic-epub3: source contents resolve and search positions survive styling and reopen (19.673583ms)
+✔ semantic EPUB retains headings, language, local note targets and the embedded font association (12.999167ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 7
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2810.593625
+
+✖ failing tests:
+
+test at navigation.test.cjs:51:3
+✖ river: source contents resolve and search positions survive styling and reopen (9.828333ms)
+  AssertionError [ERR_ASSERTION]: Missing search phrase: The river follows the old road.
+      at TestContext.<anonymous> (/Users/alexispurslane/.t3/worktrees/bookfin/t3-77e5374b/tool/research/readers/navigator/navigation.test.cjs:61:14)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at navigation.test.cjs:51:3
+✖ mobi6-plain: source contents resolve and search positions survive styling and reopen (8.597667ms)
+  AssertionError [ERR_ASSERTION]: Missing search phrase: The river follows the old road.
+      at TestContext.<anonymous> (/Users/alexispurslane/.t3/worktrees/bookfin/t3-77e5374b/tool/research/readers/navigator/navigation.test.cjs:61:14)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at navigation.test.cjs:51:3
+✖ mobi6-palmdoc: source contents resolve and search positions survive styling and reopen (8.521375ms)
+  AssertionError [ERR_ASSERTION]: Missing search phrase: The river follows the old road.
+      at TestContext.<anonymous> (/Users/alexispurslane/.t3/worktrees/bookfin/t3-77e5374b/tool/research/readers/navigator/navigation.test.cjs:61:14)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

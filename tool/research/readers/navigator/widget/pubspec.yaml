@@ -1,0 +1,13 @@
+name: navigator_resource_probe
+publish_to: none
+environment:
+  sdk: '>=3.13.0 <4.0.0'
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_epub_viewer: 2.2.1
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  archive: 4.0.7
+  crypto: 3.0.7

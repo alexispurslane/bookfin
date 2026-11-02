@@ -1,0 +1,26 @@
+--- a/dist/epub.js
++++ b/dist/epub.js
+@@ -14425,9 +14425,9 @@
+       }, "");
+       const text = textWithCase.toLowerCase();
+-      const pos = text.indexOf(query);
++      let pos = text.indexOf(query);
+ 
+-      if (pos != -1) {
++      for (; pos !== -1; pos = text.indexOf(query, pos + 1)) {
+         const startNodeIndex = 0,
+               endPos = pos + query.length;
+         let endNodeIndex = 0,
+             l = 0;
+@@ -14484,9 +14484,10 @@
+       }
+     }
+ 
+-    if (nodeList.length > 0) {
++    while (nodeList.length > 0) {
+       search(nodeList);
++      nodeList.shift();
+     }
+ 
+     return matches;
+   }

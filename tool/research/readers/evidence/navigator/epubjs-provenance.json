@@ -1,0 +1,7 @@
+{
+  "upstream_archive_sha256": "180b33059ca15e2b4f129eb7fef6cae0bf6005c02af5194d13e5cb48378d538f",
+  "upstream_dist_sha256": "6ddd71d306ac63124850e06a8abfba854ea09481f72e7e656df76acbef22d156",
+  "bundled_dist_sha256": "a4e9b867e5590d8af13d418974cfe63df8cf2e98def9bea8ac46debbd4962650",
+  "byte_identical": false,
+  "identical_after_newline_normalization": false
+}

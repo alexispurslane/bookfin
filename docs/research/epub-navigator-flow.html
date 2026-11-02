@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root { color-scheme: light dark; }
+* { box-sizing: border-box; }
+body { margin: 0; color: var(--foreground); font-family: var(--font-sans); }
+.flow { max-width: 600px; margin: 0 auto; }
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.node { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; text-align: center; font-size: 15px; line-height: 1.5; }
+.pending { border: 2px dashed var(--warning); }
+.arrow { text-align: center; color: var(--muted-foreground); font-size: 25px; padding: 4px 0; }
+.separate { margin-top: 16px; color: var(--muted-foreground); }
+.sub { display: block; font-size: 12px; color: var(--muted-foreground); }
+</style>
+</head>
+<body>
+<div class="flow" role="img" aria-label="Proposed EPUB production path. Verified EPUB and local MOBI conversion feed one passive local publication, then the navigator document viewport. Reader controls send navigation changes. Visible reading locations become saved reading positions and bookmarks. Audio positions remain separate. Dashed boxes are not implemented by the research.">
+  <div class="row">
+    <div class="node">Verified EPUB file</div>
+    <div class="node">Supported MOBI file<span class="sub">Local EPUB conversion</span></div>
+  </div>
+  <div class="arrow">↓</div>
+  <div class="node pending">Passive local publication<span class="sub">One owner for processed content and allowed resources</span></div>
+  <div class="arrow">↓</div>
+  <div class="node pending">Navigator document viewport<span class="sub">Pinned epub.js inside the reviewed Flutter wrapper</span></div>
+  <div class="arrow">↕</div>
+  <div class="row">
+    <div class="node pending">Approved reader controls<span class="sub">Contents · text size · theme · search</span></div>
+    <div class="node pending">Saved reading positions<span class="sub">Existing TextPosition and bookmark records</span></div>
+  </div>
+  <div class="node separate">Audio position<span class="sub">Separate existing owner; no reader update changes it</span></div>
+</div>
+</body>
+</html>
