@@ -52,4 +52,6 @@ File reopening is not a Jellyfin restart or a process-restart test.
 `authenticated-evidence.json` contains sanitized live administrator counts and range outcomes.
 `extension-evidence.json` records public deployment/source comparisons, not live storage-write tests.
 It contains no personal titles, source paths, item/account identifiers, credentials, tokens, or media bytes.
-These files are not compatibility guarantees. Only the last file records authenticated live results.
+These files are not compatibility guarantees. `authenticated-evidence.json` records
+authenticated live catalog and range results. `extension-evidence.json` records
+extension deployment/source comparisons and does not establish storage writes.

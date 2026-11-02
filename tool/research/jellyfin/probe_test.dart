@@ -12,6 +12,9 @@ void main() {
   late List<String> requests;
   late Map<String, Map<String, dynamic>> preferences;
   var administrator = false;
+  bool? downloadPermission = true;
+  bool? itemDownloadable = true;
+  var denyDownload = false;
   var redirect = false;
   var failWrites = false;
   var detailedCatalog = false;
@@ -26,6 +29,9 @@ void main() {
     requests = [];
     preferences = {};
     administrator = false;
+    downloadPermission = true;
+    itemDownloadable = true;
+    denyDownload = false;
     redirect = false;
     failWrites = false;
     detailedCatalog = false;
@@ -61,7 +67,10 @@ void main() {
         }
         request.response.write(
           jsonEncode({
-            'Policy': {'IsAdministrator': administrator},
+            'Policy': {
+              'IsAdministrator': administrator,
+              'EnableContentDownloading': ?downloadPermission,
+            },
           }),
         );
       } else if (request.uri.path == '/api-docs/openapi.json') {
@@ -125,6 +134,11 @@ void main() {
         );
       } else if (request.uri.path.endsWith('/File') ||
           request.uri.path.endsWith('/Download')) {
+        if (denyDownload && request.uri.path.endsWith('/Download')) {
+          request.response.statusCode = 403;
+          await request.response.close();
+          return;
+        }
         final range = request.headers.value('range')!;
         requestedRanges.add(range);
         request.response.statusCode = ignoreRange ? 200 : 206;
@@ -137,7 +151,7 @@ void main() {
         request.response.write('{"MediaSources":[{"Id":"PRIVATE-SOURCE"}]}');
       } else if (request.uri.path.startsWith('/Items/')) {
         request.response.write(
-          '{"UserData":{"PlaybackPositionTicks":123,"Played":false,"PlayCount":1},"MediaSources":[{"Id":"PRIVATE-SOURCE"}]}',
+          '{"CanDownload":$itemDownloadable,"UserData":{"PlaybackPositionTicks":123,"Played":false,"PlayCount":1},"MediaSources":[{"Id":"PRIVATE-SOURCE"}]}',
         );
       } else if (request.uri.path.startsWith('/DisplayPreferences/')) {
         final key = request.uri.toString();
@@ -210,6 +224,44 @@ void main() {
       await directory.delete(recursive: true);
     }
   }
+
+  for (final permission in [false, null]) {
+    test(
+      'media inspection refuses account download permission $permission',
+      () async {
+        detailedCatalog = true;
+        downloadPermission = permission;
+        final result = await runAuthenticatedCommand(
+          write: false,
+          inspect: true,
+        );
+        expect(result.exitCode, 0, reason: result.stderr.toString());
+        expect(
+          requests.where((r) => r.endsWith('/File') || r.endsWith('/Download')),
+          isEmpty,
+        );
+      },
+    );
+    test('media inspection refuses item downloadability $permission', () async {
+      detailedCatalog = true;
+      itemDownloadable = permission;
+      final result = await runAuthenticatedCommand(write: false, inspect: true);
+      expect(result.exitCode, 0, reason: result.stderr.toString());
+      expect(
+        requests.where((r) => r.endsWith('/File') || r.endsWith('/Download')),
+        isEmpty,
+      );
+    });
+  }
+
+  test('a denied Download is never followed by File acquisition', () async {
+    detailedCatalog = true;
+    denyDownload = true;
+    final result = await runAuthenticatedCommand(write: false, inspect: true);
+    expect(result.exitCode, 0, reason: result.stderr.toString());
+    expect(requests.where((r) => r.endsWith('/Download')), isNotEmpty);
+    expect(requests.where((r) => r.endsWith('/File')), isEmpty);
+  });
 
   test('media inspection reports bounded ranges without private catalog values or playback writes', () async {
     detailedCatalog = true;

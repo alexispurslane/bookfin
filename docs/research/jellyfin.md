@@ -248,9 +248,14 @@ Before claiming resumable downloads, an authorized follow-up must check:
 3. Response validators and `If-Range` prevent joining bytes from different file revisions.
 4. A disabled-download ordinary account and an inaccessible item are rejected without falling back to `/File`.
 
-No live file download, HEAD request, byte range, or permission-denial matrix ran.
-The probe currently does not automate those media checks.
-Original-file ranges are a source-supported candidate, not a verified property of the user's deployment.
+The authenticated administrator capture records eight successful 64-byte partial
+responses from File and Download, totaling 512 bytes, for two representative files.
+The probe automates these bounded checks. This establishes only the observed
+ranges, not full downloads, resume safety, or an ordinary-user denial matrix.
+The corrected probe requires explicit account download permission and item
+downloadability. It checks Download first and never attempts File after an
+unsuccessful Download check. The original capture predates this correction;
+no new live request was made to verify the corrected command.
 
 ## Playback progress and sessions
 

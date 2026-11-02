@@ -316,6 +316,11 @@ Future<Map<String, dynamic>> inspectMedia(
     'typeSamples': <Map<String, dynamic>>[],
     'representativeFiles': <Map<String, dynamic>>[],
   };
+  final user = await probe.getJson('/Users/Me');
+  if ((user['Policy'] as Map?)?['EnableContentDownloading'] != true) {
+    report['outcome'] = 'download-permission-not-verified';
+    return report;
+  }
   for (final library in libraries.take(3)) {
     for (final type in ['AudioBook', 'Audio', 'Book', 'Folder']) {
       final catalog = await probe.getJson(
@@ -392,9 +397,18 @@ Future<Map<String, dynamic>> inspectMedia(
             .whereType<num>()
             .toList();
         final ranges = <Map<String, dynamic>>[];
-        for (final endpoint in ['File', 'Download']) {
-          for (final start in [0, 64]) {
-            ranges.add(await probe.inspectRange(itemId, endpoint, start));
+        if (before['CanDownload'] == true) {
+          var permitted = true;
+          for (final endpoint in ['Download', 'File']) {
+            if (!permitted) break;
+            for (final start in [0, 64]) {
+              final result = await probe.inspectRange(itemId, endpoint, start);
+              ranges.add(result);
+              if (result['validPartialResponse'] != true) {
+                permitted = false;
+                break;
+              }
+            }
           }
         }
         final after = await probe.getJson(
