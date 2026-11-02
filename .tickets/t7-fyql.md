@@ -1,6 +1,6 @@
 ---
 id: t7-fyql
-status: in_progress
+status: closed
 deps: [boo-u3cg]
 links: []
 created: 2026-11-02T02:13:24Z
@@ -31,3 +31,7 @@ Reader follow-up encountered the same host hook family: objective_c invokes xcru
 **2026-11-02T14:09:14Z**
 
 Reproduced unpinned objective_c9.5.0 hook SDK failure, real sigtool timestamp failure, and reader native_toolchain_c missing-SDK error protocol. Shared pinned native-tools module now serves root/research; SDK14.4 discovery works without inherited vars, missing SDKs exit1 on stderr, sigtool source patch accepts only timestamp=none and still writes real ad-hoc signatures. Removed path_provider_foundation2.4.4 overrides in root/selected reader, locked2.6.0. Final fresh-hook root292 tests+analysis exit0; root Android/web, shared-SDK reader APK, reader host5 tests, native conversion/EPUB5 tests pass (4optional corpus skipped). OS verifies actual hook signatures; tamper regression rejects modified bytes. Nixfmt/diff checks pass. Known dependency/Wasm/font warnings remain, no runtime/device/private access or hardening. Evidence: docs/evidence/toolchain/native-hooks.md. Leave in_progress for orchestrator.
+
+**2026-11-02T14:35:06Z**
+
+Integrated independently reviewed native-hook correction. Parent reran SDK discovery and genuine ad-hoc signature regressions through Nix: pass, including intentional unsigned/unsupported/tampered rejection cases. Root Android/web and292 tests remain builder evidence; five successful EPUB compatibility checks are documented but their successful raw log was not retained. No runtime approval implied.
