@@ -34,3 +34,7 @@ Independent correction review approved f297520 with no remaining blocker across 
 **2026-11-02T14:13:50Z**
 
 Fresh authorized current-main APK82faf07d captured required sign-in/library/download/playing path first and completed several record/retained-storage observations. Acceptance then stopped after library-navigation action and single advised retry failed while fixture reverse route was absent. Source bytes were never replaced; Android replacement confirmation/cancel/old-record separation remain unobserved. See docs/evidence/playback/current-main-android.md and route follow-up td-7yxu. No code change or closure.
+
+**2026-11-02T18:52:37Z**
+
+Additional validation from ac6a247 reran the21 existing replacement tests within154 focused and310 full passing app tests. Android work prioritized missing History Pause, grouped slider/mini-player Undo, bookmark deletion and unavailable/retained-download lifecycle. Only an owned downloaded copy was corrupted; original Jellyfin source bytes never changed. Therefore replacement confirmation/cancel and original-record separation remain unobserved on Android. Evidence docs/evidence/playback/remaining-acceptance-android.md. No production change, new defect, closure or claim that host tests establish runtime replacement acceptance.

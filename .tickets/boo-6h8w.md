@@ -55,3 +55,11 @@ Authorized fresh attempt at756ae5f stopped before field entry after my invalid S
 **2026-11-02T14:13:50Z**
 
 Current-main APK82faf07d observed +30s jump00:49 to01:19, Undo to00:49, history-result and previous-place restores adding retained history, bookmark create/edit/restore, and first process relaunch preserving position79757ms, bookmark and history without autoplay. Bob saw no Alice download or records; Alice reauthentication restored her download/position. Slider grouping, mini-player/history Pause, deletion and native interrupt matrix remain unobserved after tool stop. Evidence docs/evidence/playback/current-main-android.md; cleanup complete, no code change or closure.
+
+**2026-11-02T18:20:38Z**
+
+Additional independent acceptance worker started from ac6a247a654829d5204437a203b2b61c3ed15234. EPUB worker owns local/emulator-5554 and ports7364/7365; no device, route, fixture, or binding operations authorized here. Focused host baseline passes150 tests. Inspecting missing UI cancellation/persistence and pointer-gesture cases; Android handoff and limitations will be recorded without closure.
+
+**2026-11-02T18:52:37Z**
+
+Additional acceptance from ac6a247a654829d5204437a203b2b61c3ed15234 completed after explicit parent emulator handoff. Own normal ARM64 debug APK SHA2566ecf12063e68e73a0642563be1cd269fde49f1609b49284a7c84cf39baf38f42 matched installed readback. Newly observed History Pause39977ms, mini-player +30s/Undo, one continuous1500ms slider gesture39977→126957ms/Undo with exactly one persisted Seek, and bookmark Cancel/Delete across process relaunch while six history actions survive. Added two bookmark UI persistence regressions and two retained-removal regressions. Baseline150 focused tests, final154 focused tests, all310 app tests, clean analysis and shell toolchain checks pass through Nix. No production change or defect. Evidence docs/evidence/playback/remaining-acceptance-android.md and remaining-acceptance-runtime.json,27 public screenshots. Signed out, own media removed, own services/route/Gradle stopped, binding released shutdown:false. No closure, coverage, mutation, child or PR; parent integrates and accepts.

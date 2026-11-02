@@ -1,0 +1,720 @@
+{
+  "sourceSha": "ac6a247a654829d5204437a203b2b61c3ed15234",
+  "date": "2026-11-02",
+  "timeZone": "UTC",
+  "candidate": {
+    "target": "lib/main.dart",
+    "platform": "android-arm64",
+    "mode": "debug",
+    "package": "dev.bookfin.bookfin",
+    "apkSha256": "6ecf12063e68e73a0642563be1cd269fde49f1609b49284a7c84cf39baf38f42",
+    "installedReadbackMatches": true,
+    "apkBytes": 93551630,
+    "gradleBuildSeconds": 271.2
+  },
+  "device": {
+    "hostId": "local",
+    "deviceId": "emulator-5554",
+    "binding": "t3-c842536e0912f963d18c4a0c",
+    "exclusiveOwnership": "Explicit parent handoff after EPUB cleanup",
+    "releasedWithoutShutdown": true
+  },
+  "fixture": {
+    "coreVersion": "12.4.0",
+    "jellyfinOrigin": "http://127.0.0.1:7364",
+    "observerOrigin": "http://127.0.0.1:7365",
+    "syntheticOnly": true,
+    "fileFault": "One byte of the owned downloaded copy was flipped at offset200000. Original Jellyfin files were unchanged.",
+    "retryFault": "One observer-injected HTTP503, then two seconds between4096-byte chunks for cancellation, then empty fault controls."
+  },
+  "downloadedCopyHashes": {
+    "originalLength": 398673,
+    "originalSha256": "929bbed62214ee77c9faec26db981f6bdaa60351ac77604e5b936ceb0da37314",
+    "corruptLength": 398673,
+    "corruptSha256": "a9c155b65382174a6a60a8066173a4c8b1ef0f46098a9e50a32b662173f284b1",
+    "changedByteOffset": 200000
+  },
+  "historyAfterSliderUndo": [
+    {
+      "kind": "resume",
+      "at": "2026-11-02T18:30:47.433674Z",
+      "beforeMilliseconds": 0,
+      "afterMilliseconds": 1
+    },
+    {
+      "kind": "pause",
+      "at": "2026-11-02T18:31:27.900500Z",
+      "beforeMilliseconds": 39977,
+      "afterMilliseconds": 39977
+    },
+    {
+      "kind": "jump",
+      "at": "2026-11-02T18:31:47.484444Z",
+      "beforeMilliseconds": 39977,
+      "afterMilliseconds": 69977
+    },
+    {
+      "kind": "undo",
+      "at": "2026-11-02T18:32:03.200297Z",
+      "beforeMilliseconds": 69977,
+      "afterMilliseconds": 39977
+    },
+    {
+      "kind": "seek",
+      "at": "2026-11-02T18:32:51.240837Z",
+      "beforeMilliseconds": 39977,
+      "afterMilliseconds": 126957
+    },
+    {
+      "kind": "undo",
+      "at": "2026-11-02T18:33:28.575165Z",
+      "beforeMilliseconds": 126957,
+      "afterMilliseconds": 39977
+    }
+  ],
+  "finalOwnHistoryMatches": true,
+  "finalOwnBookmarkCount": 0,
+  "canceledPartialBytes": 4096,
+  "unavailableSavedBytes": 398673,
+  "retainedTotalBytes": 402769,
+  "processReplacements": [
+    {
+      "number": 1,
+      "beforeAt": "2026-11-02T18:36:08Z",
+      "beforePid": 16636,
+      "afterAt": "2026-11-02T18:36:16Z",
+      "afterPid": 19040,
+      "ownedRoutePresentBeforeAndAfter": true
+    },
+    {
+      "number": 2,
+      "beforeAt": "2026-11-02T18:38:23Z",
+      "beforePid": 19040,
+      "afterAt": "2026-11-02T18:38:30Z",
+      "afterPid": 19648,
+      "ownedRoutePresentBeforeAndAfter": true
+    },
+    {
+      "number": 3,
+      "beforeAt": "2026-11-02T18:40:16Z",
+      "beforePid": 19648,
+      "afterAt": "2026-11-02T18:40:23Z",
+      "afterPid": 20173,
+      "ownedRoutePresentBeforeAndAfter": true
+    },
+    {
+      "number": 4,
+      "beforeAt": "2026-11-02T18:41:43Z",
+      "beforePid": 20173,
+      "afterAt": "2026-11-02T18:41:50Z",
+      "afterPid": 20625,
+      "ownedRoutePresentBeforeAndAfter": true
+    },
+    {
+      "number": 5,
+      "beforeAt": "2026-11-02T18:42:54Z",
+      "beforePid": 20625,
+      "afterAt": "2026-11-02T18:43:01Z",
+      "afterPid": 21004,
+      "ownedRoutePresentBeforeAndAfter": true
+    }
+  ],
+  "hostVerification": {
+    "baselineFocusedTests": 150,
+    "finalFocusedTests": 154,
+    "fullApplicationTests": 310,
+    "analysis": "No issues found",
+    "productionCodeChanged": false
+  },
+  "observerRecordCount": 59,
+  "observerResponseHeaderCount": 58,
+  "observerInterruptedConnectionFollowupCount": 1,
+  "observerStatusCounts": {
+    "200": 48,
+    "204": 9,
+    "503": 1
+  },
+  "observerEvents": [
+    {
+      "at": 1793644133.559568,
+      "method": "POST",
+      "path": "/Users/AuthenticateByName",
+      "status": 200
+    },
+    {
+      "at": 1793644133.725274,
+      "method": "GET",
+      "path": "/UserViews",
+      "status": 200
+    },
+    {
+      "at": 1793644180.392117,
+      "method": "GET",
+      "path": "/System/Info/Public",
+      "status": 200
+    },
+    {
+      "at": 1793644180.4361758,
+      "method": "GET",
+      "path": "/Users/Me",
+      "status": 200
+    },
+    {
+      "at": 1793644180.49145,
+      "method": "GET",
+      "path": "/UserViews",
+      "status": 200
+    },
+    {
+      "at": 1793644180.5456781,
+      "method": "GET",
+      "path": "/UserViews",
+      "status": 200
+    },
+    {
+      "at": 1793644180.6099148,
+      "method": "GET",
+      "path": "/Items",
+      "status": 200
+    },
+    {
+      "at": 1793644225.513708,
+      "method": "GET",
+      "path": "/System/Info/Public",
+      "status": 200
+    },
+    {
+      "at": 1793644225.588897,
+      "method": "GET",
+      "path": "/Users/Me",
+      "status": 200
+    },
+    {
+      "at": 1793644225.620351,
+      "method": "GET",
+      "path": "/Items/92cc913ec354a8ef9bac2a9d5655b064",
+      "status": 200
+    },
+    {
+      "at": 1793644225.66929,
+      "method": "GET",
+      "path": "/Items/92cc913ec354a8ef9bac2a9d5655b064/Download",
+      "status": 200,
+      "length": "398673",
+      "etag": null,
+      "range": null,
+      "ifRange": null
+    },
+    {
+      "at": 1793644225.779688,
+      "method": "GET",
+      "path": "/Items/92cc913ec354a8ef9bac2a9d5655b064",
+      "status": 200
+    },
+    {
+      "at": 1793644247.041918,
+      "method": "POST",
+      "path": "/Sessions/Playing",
+      "report": {
+        "ItemId": "92cc913ec354a8ef9bac2a9d5655b064",
+        "MediaSourceId": "92cc913ec354a8ef9bac2a9d5655b064",
+        "PositionTicks": 10000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "at": 1793644257.49096,
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "92cc913ec354a8ef9bac2a9d5655b064",
+        "MediaSourceId": "92cc913ec354a8ef9bac2a9d5655b064",
+        "PositionTicks": 100360000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "at": 1793644267.499069,
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "92cc913ec354a8ef9bac2a9d5655b064",
+        "MediaSourceId": "92cc913ec354a8ef9bac2a9d5655b064",
+        "PositionTicks": 200370000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "at": 1793644277.681931,
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "92cc913ec354a8ef9bac2a9d5655b064",
+        "MediaSourceId": "92cc913ec354a8ef9bac2a9d5655b064",
+        "PositionTicks": 302350000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "at": 1793644287.482602,
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "92cc913ec354a8ef9bac2a9d5655b064",
+        "MediaSourceId": "92cc913ec354a8ef9bac2a9d5655b064",
+        "PositionTicks": 399770000,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "at": 1793644307.105762,
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "92cc913ec354a8ef9bac2a9d5655b064",
+        "MediaSourceId": "92cc913ec354a8ef9bac2a9d5655b064",
+        "PositionTicks": 699770000,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "at": 1793644322.7793221,
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "92cc913ec354a8ef9bac2a9d5655b064",
+        "MediaSourceId": "92cc913ec354a8ef9bac2a9d5655b064",
+        "PositionTicks": 399770000,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "at": 1793644370.811123,
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "92cc913ec354a8ef9bac2a9d5655b064",
+        "MediaSourceId": "92cc913ec354a8ef9bac2a9d5655b064",
+        "PositionTicks": 1269570000,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "at": 1793644408.149407,
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "92cc913ec354a8ef9bac2a9d5655b064",
+        "MediaSourceId": "92cc913ec354a8ef9bac2a9d5655b064",
+        "PositionTicks": 399770000,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "at": 1793644573.701426,
+      "method": "GET",
+      "path": "/System/Info/Public",
+      "status": 200
+    },
+    {
+      "at": 1793644573.864489,
+      "method": "GET",
+      "path": "/Users/Me",
+      "status": 200
+    },
+    {
+      "at": 1793644573.915654,
+      "method": "GET",
+      "path": "/UserViews",
+      "status": 200
+    },
+    {
+      "at": 1793644573.962742,
+      "method": "GET",
+      "path": "/UserViews",
+      "status": 200
+    },
+    {
+      "at": 1793644574.039895,
+      "method": "GET",
+      "path": "/Items",
+      "status": 200
+    },
+    {
+      "at": 1793644708.3420942,
+      "method": "GET",
+      "path": "/System/Info/Public",
+      "status": 200
+    },
+    {
+      "at": 1793644708.387106,
+      "method": "GET",
+      "path": "/Users/Me",
+      "status": 200
+    },
+    {
+      "at": 1793644708.426629,
+      "method": "GET",
+      "path": "/UserViews",
+      "status": 200
+    },
+    {
+      "at": 1793644708.4605389,
+      "method": "GET",
+      "path": "/UserViews",
+      "status": 200
+    },
+    {
+      "at": 1793644708.56839,
+      "method": "GET",
+      "path": "/Items",
+      "status": 200
+    },
+    {
+      "at": 1793644751.411556,
+      "method": "GET",
+      "path": "/System/Info/Public",
+      "status": 200
+    },
+    {
+      "at": 1793644751.436734,
+      "method": "GET",
+      "path": "/Users/Me",
+      "status": 200
+    },
+    {
+      "at": 1793644751.461107,
+      "method": "GET",
+      "path": "/Items/92cc913ec354a8ef9bac2a9d5655b064",
+      "status": 200
+    },
+    {
+      "at": 1793644751.495413,
+      "method": "GET",
+      "path": "/Items/92cc913ec354a8ef9bac2a9d5655b064/Download",
+      "status": 503,
+      "injectedFailure": true
+    },
+    {
+      "at": 1793644779.5065842,
+      "method": "GET",
+      "path": "/System/Info/Public",
+      "status": 200
+    },
+    {
+      "at": 1793644779.5643609,
+      "method": "GET",
+      "path": "/Users/Me",
+      "status": 200
+    },
+    {
+      "at": 1793644779.597986,
+      "method": "GET",
+      "path": "/Items/92cc913ec354a8ef9bac2a9d5655b064",
+      "status": 200
+    },
+    {
+      "at": 1793644779.626865,
+      "method": "GET",
+      "path": "/Items/92cc913ec354a8ef9bac2a9d5655b064/Download",
+      "status": 200,
+      "length": "398673",
+      "etag": null,
+      "range": null,
+      "ifRange": null
+    },
+    {
+      "at": 1793644785.6463768,
+      "method": "GET",
+      "path": "/Items/92cc913ec354a8ef9bac2a9d5655b064/Download",
+      "status": 200,
+      "length": "398673",
+      "etag": null,
+      "range": null,
+      "ifRange": null,
+      "connectionInterrupted": true
+    },
+    {
+      "at": 1793644821.467815,
+      "method": "GET",
+      "path": "/System/Info/Public",
+      "status": 200
+    },
+    {
+      "at": 1793644821.560725,
+      "method": "GET",
+      "path": "/Users/Me",
+      "status": 200
+    },
+    {
+      "at": 1793644821.633396,
+      "method": "GET",
+      "path": "/UserViews",
+      "status": 200
+    },
+    {
+      "at": 1793644821.70331,
+      "method": "GET",
+      "path": "/UserViews",
+      "status": 200
+    },
+    {
+      "at": 1793644821.73567,
+      "method": "GET",
+      "path": "/Items",
+      "status": 200
+    },
+    {
+      "at": 1793644899.825023,
+      "method": "GET",
+      "path": "/System/Info/Public",
+      "status": 200
+    },
+    {
+      "at": 1793644899.895883,
+      "method": "GET",
+      "path": "/Users/Me",
+      "status": 200
+    },
+    {
+      "at": 1793644899.9320672,
+      "method": "GET",
+      "path": "/UserViews",
+      "status": 200
+    },
+    {
+      "at": 1793644908.024409,
+      "method": "GET",
+      "path": "/System/Info/Public",
+      "status": 200
+    },
+    {
+      "at": 1793644908.093756,
+      "method": "GET",
+      "path": "/Users/Me",
+      "status": 200
+    },
+    {
+      "at": 1793644908.1591191,
+      "method": "GET",
+      "path": "/UserViews",
+      "status": 200
+    },
+    {
+      "at": 1793644978.750543,
+      "method": "GET",
+      "path": "/System/Info/Public",
+      "status": 200
+    },
+    {
+      "at": 1793644978.8328671,
+      "method": "GET",
+      "path": "/Users/Me",
+      "status": 200
+    },
+    {
+      "at": 1793644978.895535,
+      "method": "GET",
+      "path": "/UserViews",
+      "status": 200
+    },
+    {
+      "at": 1793645039.1450481,
+      "method": "GET",
+      "path": "/System/Info/Public",
+      "status": 200
+    },
+    {
+      "at": 1793645039.188685,
+      "method": "GET",
+      "path": "/Users/Me",
+      "status": 200
+    },
+    {
+      "at": 1793645039.2595341,
+      "method": "GET",
+      "path": "/UserViews",
+      "status": 200
+    },
+    {
+      "at": 1793645039.28498,
+      "method": "GET",
+      "path": "/UserViews",
+      "status": 200
+    },
+    {
+      "at": 1793645039.322849,
+      "method": "GET",
+      "path": "/Items",
+      "status": 200
+    }
+  ],
+  "screenshots": [
+    {
+      "path": "images/remaining-acceptance/01-library.png",
+      "sha256": "e2728a16feb0802b1b27fa4a97af07efba4636f5e935686cc156697e1430fadb"
+    },
+    {
+      "path": "images/remaining-acceptance/02-book.png",
+      "sha256": "504d11db3e886c72a914b32ded3895a7d0706d0120fb996172bf666afe61bb37"
+    },
+    {
+      "path": "images/remaining-acceptance/03-downloaded.png",
+      "sha256": "5277dfc2ba6bd878701679affb8afb1e8b3882d878322da94c13da26950d0c7b"
+    },
+    {
+      "path": "images/remaining-acceptance/04-playing.png",
+      "sha256": "7d3bc7b31b5cdd8b34838dd8aee5fa43fcbbc1cd7444e0344b513589d0c8dd5d"
+    },
+    {
+      "path": "images/remaining-acceptance/05-history-pause.png",
+      "sha256": "c82082d268b9dd1b49e201d79a2797c541abb9b7282435e2b9626b7c4de1af0c"
+    },
+    {
+      "path": "images/remaining-acceptance/06-mini-jump.png",
+      "sha256": "82aaf4580efd5f0b1a2af8af1c1b36a0e929e51efea65ea97a226b5593fe9c54"
+    },
+    {
+      "path": "images/remaining-acceptance/07-mini-undo.png",
+      "sha256": "e9296cc66d81393b6698783fdadd861c6a92a781b4ec338a108124f0da91a195"
+    },
+    {
+      "path": "images/remaining-acceptance/08-slider-release.png",
+      "sha256": "ec9316f18779afd9cc366c90d5b07f874aad5e75327b2f35fbdfbca5823605b9"
+    },
+    {
+      "path": "images/remaining-acceptance/09-slider-undo.png",
+      "sha256": "23e9e9bd828bef344ec4fe27f901ff6ee05ee350c293eee05e1a17629209cef7"
+    },
+    {
+      "path": "images/remaining-acceptance/10-grouped-slider-history.png",
+      "sha256": "61632f03bb1fab6b006d842802d219b57c39512b8494429cc7f9b0eb771f2f82"
+    },
+    {
+      "path": "images/remaining-acceptance/11-bookmark-confirmation.png",
+      "sha256": "a3a06b4bc1e216c3cd6d693f1c149b6ebb5db5fdb2706d8490149d6e1f74fc93"
+    },
+    {
+      "path": "images/remaining-acceptance/12-bookmark-kept.png",
+      "sha256": "8f14f23a9c9680e32a513527fa521ecdad7a3ec8d185b10b9dc3ba1bc8e674c5"
+    },
+    {
+      "path": "images/remaining-acceptance/13-bookmark-kept-restart.png",
+      "sha256": "bc8a07bc64e92a4141acc7b9c78745a2d9021da87954194bb9e26bd5ef31a327"
+    },
+    {
+      "path": "images/remaining-acceptance/14-bookmark-deleted.png",
+      "sha256": "bd4284be91712bc5f69313a01204d9fdff06ccdddb49714b77ce04994293afa7"
+    },
+    {
+      "path": "images/remaining-acceptance/15-deletion-restart-history-kept.png",
+      "sha256": "cb6502bf0905fee1222eb7e301e9e8b81b1673eb8894c45dfc4b9800b800c3be"
+    },
+    {
+      "path": "images/remaining-acceptance/16-unavailable-saved-copy.png",
+      "sha256": "45e81af81c2c389f1474c37ec47832bed4ebbe0190dcaffbc302c2c039c2da2b"
+    },
+    {
+      "path": "images/remaining-acceptance/17-injected-transfer-failure.png",
+      "sha256": "fdc709523cc92266815d371fb65fb7f25a01cc4e2099a372221aca5a375efcac"
+    },
+    {
+      "path": "images/remaining-acceptance/18-retry-active.png",
+      "sha256": "aee28ee2b121cdde68ef5ded97adb6815b1cf66f0393fa6c200ae5a45472a51b"
+    },
+    {
+      "path": "images/remaining-acceptance/19-retry-canceled.png",
+      "sha256": "05f86c4a3fe936110acd2470b8a6f1de2b38205210aa675eb46fe14826565edc"
+    },
+    {
+      "path": "images/remaining-acceptance/20-cancel-survives-restart.png",
+      "sha256": "e0c569dedb2468cc007a4a0496704adf165914dfee510c61f701de9932276e5c"
+    },
+    {
+      "path": "images/remaining-acceptance/21-retained-after-catalog-loss.png",
+      "sha256": "b62d08a6f37654eeeb832a85d2079ceb26ebcadfff4d09a8055ead76d2b15d10"
+    },
+    {
+      "path": "images/remaining-acceptance/22-retained-restart.png",
+      "sha256": "93de43d3e18c6f827b5e9ed6489bd1cc1111061708e57d1420080b992fa0048f"
+    },
+    {
+      "path": "images/remaining-acceptance/23-retained-kept.png",
+      "sha256": "93de43d3e18c6f827b5e9ed6489bd1cc1111061708e57d1420080b992fa0048f"
+    },
+    {
+      "path": "images/remaining-acceptance/24-retained-removed.png",
+      "sha256": "c4abeb3a62a143faed467565503d32cf30a814b669e02165af6b9965778a78cb"
+    },
+    {
+      "path": "images/remaining-acceptance/25-removal-survives-restart.png",
+      "sha256": "9ef13f929f6d3d65452b89ae152326bd5ccdaa5bb1bee7808fddd0973b8faf04"
+    },
+    {
+      "path": "images/remaining-acceptance/26-reselection-no-download.png",
+      "sha256": "c4124a929bfe5a64bfd274bde6a18ecfbb78b6363cd22b93a2980fe0637a9a04"
+    },
+    {
+      "path": "images/remaining-acceptance/27-cleaned-signed-out.png",
+      "sha256": "0bca1d821b270d364f85ef7bb4da57bc4c0d7afcdabafad1b577959ebd23e120"
+    }
+  ],
+  "cleanup": {
+    "signedOut": true,
+    "ownMediaFilesRemoved": true,
+    "nativeActive": false,
+    "nativeState": "NONE",
+    "nativePositionMilliseconds": 0,
+    "jellyfinPid": 52965,
+    "jellyfinExitCode": 0,
+    "observerPid": 54666,
+    "observerExitCode": 143,
+    "ownedRouteRemoved": true,
+    "ownGradleDaemonsStopped": 1,
+    "deviceSettingsChanged": false
+  },
+  "limits": [
+    "No production EPUB branch tested.",
+    "No Android replacement-source confirmation/cancel or original-record separation tested.",
+    "No native notification/lockscreen or interruption interaction tested.",
+    "No physical Android phone tested.",
+    "No Android missing-file-at-confirmation race tested; this is host-only.",
+    "No coverage, mutation campaign, hot reload, sync acceptance, PR or ticket closure."
+  ]
+}

@@ -149,6 +149,49 @@ void main() {
     expect(await downloads.localFile(fixture.text.files.single), isNull);
   });
 
+  test(
+    'retained removal survives restart and reselection without transferring again',
+    () async {
+      final file = await downloadText();
+      await downloads.bind(fixture.session(), []);
+      await downloads.removeRetained((await downloads.retainedStorage()).single);
+      downloads.dispose();
+      await downloads.idle;
+      downloads = LocalDownloads(
+        root: root,
+        freeBytes: () async => 1000000,
+        policy: policy,
+      );
+      await downloads.bind(fixture.session(), []);
+      expect(await downloads.retainedStorage(), isEmpty);
+      expect(await file.exists(), isFalse);
+      await downloads.bind(fixture.session(), fixture.books);
+      await downloads.idle;
+      expect(downloads.status(fixture.text).phase, DownloadPhase.none);
+      expect(await downloads.localFile(fixture.text.files.single), isNull);
+      expect(fixture.mediaRequests, ['text']);
+      downloads.checkInvariants();
+    },
+  );
+
+  test(
+    'retained removal tolerates a saved file disappearing after confirmation opens',
+    () async {
+      final file = await downloadText();
+      await downloads.bind(fixture.session(), []);
+      final retained = (await downloads.retainedStorage()).single;
+      await file.delete();
+      await downloads.removeRetained(retained);
+      expect(await downloads.retainedStorage(), isEmpty);
+      expect(await File('${file.parent.path}/record.json').exists(), isFalse);
+      await downloads.bind(fixture.session(), fixture.books);
+      expect(await downloads.localFile(fixture.text.files.single), isNull);
+      expect(downloads.status(fixture.text).phase, DownloadPhase.none);
+      expect(fixture.mediaRequests, ['text']);
+      downloads.checkInvariants();
+    },
+  );
+
   test('removing one account copy preserves another account copy of the same source', () async {
     final aliceFile = await downloadText();
     fixture.authenticatedUser = 'bob';

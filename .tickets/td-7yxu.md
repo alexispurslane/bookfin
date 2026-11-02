@@ -22,3 +22,7 @@ Before another authorized device attempt, inspect how the normal fixture reverse
 **2026-11-02T17:33:13Z**
 
 Fresh own Android binding and own tcp7365 route observed before and after one normal --relaunch at d9d238b. 17:24:53Z process3121 and route present; 17:25:11Z process4631 and same route present. Refresh books succeeded through real observer afterward. No repair needed and earlier route disappearance not reproduced or explained. New tb-zqvc stopped readable-EPUB acceptance. Own route removed during cleanup. Evidence docs/evidence/reader/android-candidate.md plus tool/evidence/reader/android-candidate/. Keep open for broader route reliability and remaining prior acceptance.
+
+**2026-11-02T18:52:37Z**
+
+Additional exclusive-device acceptance at ac6a247 observed own tcp7365 reverse forward before/after five actual process replacements:16636→19040,19040→19648,19648→20173,20173→20625,20625→21004 between18:36:08Z and18:43:01Z on2026-11-02. Final library reselection after retained-file removal succeeded. No route repair needed; earlier disappearance remains unexplained. Own route removed, services stopped, app signed out and binding released without shutdown. Evidence docs/evidence/playback/remaining-acceptance-android.md and processReplacements in remaining-acceptance-runtime.json. No closure or general reliability claim.
