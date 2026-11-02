@@ -69,3 +69,7 @@ Parent correction: the live-research media probe now rechecks explicit account d
 **2026-11-02T12:06:06Z**
 
 User chose dedicated storage and history retained until explicit deletion. boo-dez0 now owns the bounded plugin storage proof. Existing playlist research is complete as a rejected production direction; production sync still requires validated storage and application integration.
+
+**2026-11-02T13:19:12Z**
+
+Dedicated server-storage proof boo-dez0 is reviewed and integrated. User rejects ordinary-playlist storage; the minimal dedicated plugin is the selected implementation direction for extra records. Evidence docs/research/jellyfin-dedicated-storage.md separates real server transport from Python merge semantics. Production Flutter sync remains boo-3oq0; existing account/catalog/download acceptance is separately documented. Review remaining feasibility acceptance before closure.
