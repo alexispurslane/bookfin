@@ -174,6 +174,51 @@ nix develop ./tool/research/readers --command bash -c '
 '
 ```
 
+### Reproduce the six retained previews
+
+After the acquisition and probe commands above, run this command from the checkout root.
+It recreates the retained preview pixels in ignored `_out/corpus/reproduced-previews/`, without replacing historical evidence.
+The three source previews use pages 5 (NIST), 1 (Census), and 9 (Raven), selected by `corpus_probe.py`.
+Their 720-pixel source renders become 480-pixel previews through Pillow's bicubic thumbnail operation.
+The three reflow previews show only the first generated page at width 360 PDF points, rendered with a 720-pixel long edge.
+The original 720-pixel Raven source image remains unchanged for the raster-only derivative.
+
+```sh
+nix develop ./tool/research/readers --command python - <<'PYTHON'
+from pathlib import Path
+import subprocess
+from PIL import Image, ImageChops
+
+base = Path("tool/research/readers")
+source = base / "_out/corpus"
+destination = source / "reproduced-previews"
+destination.mkdir(exist_ok=True)
+for name in ("nist-text-pdf", "census-multicolumn-pdf", "raven-1873-scan"):
+    with Image.open(source / f"{name}-source.png") as picture:
+        picture.thumbnail((480, 480), Image.Resampling.BICUBIC)
+        picture.save(destination / f"{name}-source.png")
+    subprocess.run([
+        "pdftoppm", "-f", "1", "-l", "1", "-singlefile",
+        "-scale-to", "720", "-png",
+        str(source / f"{name}-reflow-360.pdf"),
+        str(destination / f"{name}-reflow360-first-page"),
+    ], check=True, capture_output=True, timeout=30)
+    for suffix in ("source", "reflow360-first-page"):
+        filename = f"{name}-{suffix}.png"
+        with Image.open(destination / filename) as actual, Image.open(
+            base / "evidence/corpus/previews" / filename
+        ) as retained:
+            assert actual.size == retained.size, filename
+            assert ImageChops.difference(
+                actual.convert("RGB"), retained.convert("RGB")
+            ).getbbox() is None, filename
+print("All six preview dimensions and decoded pixels match retained evidence.")
+PYTHON
+```
+
+The parent ran these operations through Nix against the retained derived inputs and confirmed all six pixel comparisons.
+This compares decoded pixels, not PNG compression bytes, and adds no Android or production-reader observation.
+
 If an upstream download changes, acquisition fails its exact size or SHA-256 requirement.
 Do not repin a changed source merely to make a reproduction pass.
 Review its new rights and content first, and record a separate corpus revision.

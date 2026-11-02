@@ -27,3 +27,7 @@ Use the pinned source scan and image-only derivative to distinguish absent text,
 **2026-11-02T12:47:58Z**
 
 Precision from independent Poppler layout extraction: the source text layer misses the opening O in ONCE and misreads the decorative title, but much of the verse order survives in Poppler layout output. The research geometry path adds severe fragmentation and reordering. Distinguish those two causes; do not label every existing text layer unusable or attribute all errors to prior OCR. evidence/corpus/raven-page9-poppler-layout.txt preserves the comparison.
+
+**2026-11-02T13:12:05Z**
+
+Production PDF integration boo-mx5i now depends on this safe-handling gate: identify unreliable existing text and preserve an explicit original-page fallback. OCR implementation remains under boo-suhu, downstream of boo-mx5i; completing this gate does not require implementing OCR or selecting its engine.
