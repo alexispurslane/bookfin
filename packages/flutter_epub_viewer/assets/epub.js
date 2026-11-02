@@ -22419,6 +22419,7 @@ var epubEngine = (() => {
       this.View = options.view;
       this.request = options.request;
       this.renditionQueue = options.queue;
+      this.requestResize = options.requestResize;
       this.q = new queue_default(this);
       this.settings = extend(this.settings || {}, {
         infinite: true,
@@ -22520,19 +22521,19 @@ var epubEngine = (() => {
     onOrientationChange(e) {
       let { orientation } = window;
       if (this.optsSettings.resizeOnOrientationChange) {
-        this.resize();
+        this.requestResize();
       }
       clearTimeout(this.orientationTimeout);
       this.orientationTimeout = setTimeout(function() {
         this.orientationTimeout = void 0;
         if (this.optsSettings.resizeOnOrientationChange) {
-          this.resize();
+          this.requestResize();
         }
         this.emit(EVENTS.MANAGERS.ORIENTATION_CHANGE, orientation);
       }.bind(this), 500);
     }
     onResized(e) {
-      this.resize();
+      this.requestResize();
     }
     resize(width, height, epubcfi) {
       let stageSize = this.stage.size(width, height);
@@ -22554,6 +22555,7 @@ var epubEngine = (() => {
         width: this._stageSize.width,
         height: this._stageSize.height
       }, epubcfi);
+      return { width: this._stageSize.width, height: this._stageSize.height };
     }
     createView(section, forceRight) {
       return new this.View(section, extend(this.viewSettings, { forceRight }));
@@ -22750,9 +22752,7 @@ var epubEngine = (() => {
         }
         return this.append(next, forceRight).then(function() {
           return this.handleNextPrePaginated(forceRight, next, this.append);
-        }.bind(this), (err) => {
-          return err;
-        }).then(function() {
+        }.bind(this)).then(function() {
           if (!this.isPaginated && this.settings.axis === "horizontal" && this.settings.direction === "rtl" && this.settings.rtlScrollType === "default") {
             this.scrollTo(this.container.scrollWidth, 0, true);
           }
@@ -22816,9 +22816,7 @@ var epubEngine = (() => {
               return this.prepend(left2);
             }
           }
-        }.bind(this), (err) => {
-          return err;
-        }).then(function() {
+        }.bind(this)).then(function() {
           if (this.isPaginated && this.settings.axis === "horizontal") {
             if (this.settings.direction === "rtl") {
               if (this.settings.rtlScrollType === "default") {
@@ -23946,6 +23944,7 @@ var epubEngine = (() => {
         this.manager = new this.ViewManager({
           view: this.View,
           queue: this.q,
+          requestResize: (...args) => this.resize(...args),
           request: this.book.load.bind(this.book),
           prepareContents: (contents) => this.hooks.content.trigger(contents, this),
           settings: this.settings
@@ -23957,7 +23956,6 @@ var epubEngine = (() => {
       this.layout(this.settings.globalLayoutProperties);
       this.manager.on(EVENTS.MANAGERS.ADDED, this.afterDisplayed.bind(this));
       this.manager.on(EVENTS.MANAGERS.REMOVED, this.afterRemoved.bind(this));
-      this.manager.on(EVENTS.MANAGERS.RESIZED, this.onResized.bind(this));
       this.manager.on(EVENTS.MANAGERS.ORIENTATION_CHANGE, this.onOrientationChange.bind(this));
       this.manager.on(EVENTS.MANAGERS.SCROLLED, () => this.reportLocation());
       this.emit(EVENTS.RENDITION.STARTED);
@@ -24102,7 +24100,7 @@ var epubEngine = (() => {
         height: size.height
       }, epubcfi);
       if (this.location && this.location.start) {
-        this.q.enqueue(() => this._display(epubcfi || this.location.start.cfi));
+        return this._display(epubcfi || this.location.start.cfi);
       }
     }
     /**
@@ -24133,7 +24131,10 @@ var epubEngine = (() => {
       if (height) {
         this.settings.height = height;
       }
-      this.manager.resize(width, height, epubcfi);
+      return this.q.enqueue(async () => {
+        const size = this.manager.resize(width, height, epubcfi);
+        if (size) await this.onResized(size, epubcfi);
+      });
     }
     /**
      * Clear all rendered views

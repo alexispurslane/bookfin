@@ -15,6 +15,7 @@ class DefaultViewManager {
 		this.View = options.view;
 		this.request = options.request;
 		this.renditionQueue = options.queue;
+		this.requestResize = options.requestResize;
 		this.q = new Queue(this);
 
 		this.settings = extend(this.settings || {}, {
@@ -173,7 +174,7 @@ class DefaultViewManager {
 		let {orientation} = window;
 
 		if(this.optsSettings.resizeOnOrientationChange) {
-			this.resize();
+			this.requestResize();
 		}
 
 		// Per ampproject:
@@ -186,7 +187,7 @@ class DefaultViewManager {
 			this.orientationTimeout = undefined;
 
 			if(this.optsSettings.resizeOnOrientationChange) {
-				this.resize();
+				this.requestResize();
 			}
 
 			this.emit(EVENTS.MANAGERS.ORIENTATION_CHANGE, orientation);
@@ -195,7 +196,7 @@ class DefaultViewManager {
 	}
 
 	onResized(e) {
-		this.resize();
+		this.requestResize();
 	}
 
 	resize(width, height, epubcfi){
@@ -235,6 +236,7 @@ class DefaultViewManager {
 			width: this._stageSize.width,
 			height: this._stageSize.height
 		}, epubcfi);
+		return { width: this._stageSize.width, height: this._stageSize.height };
 	}
 
 	createView(section, forceRight) {
@@ -521,9 +523,7 @@ class DefaultViewManager {
 			return this.append(next, forceRight)
 				.then(function(){
 					return this.handleNextPrePaginated(forceRight, next, this.append);
-				}.bind(this), (err) => {
-					return err;
-				})
+				}.bind(this))
 				.then(function(){
 
 					// Reset position to start for scrolled-doc vertical-rl in default mode
@@ -620,9 +620,7 @@ class DefaultViewManager {
 							return this.prepend(left);
 						}
 					}
-				}.bind(this), (err) => {
-					return err;
-				})
+				}.bind(this))
 				.then(function(){
 					if(this.isPaginated && this.settings.axis === "horizontal") {
 						if (this.settings.direction === "rtl") {

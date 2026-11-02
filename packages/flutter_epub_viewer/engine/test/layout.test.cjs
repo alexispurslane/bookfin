@@ -52,7 +52,7 @@ async function browser() {
   } };
 }
 
-async function fixture({ failStyles = false } = {}) {
+async function fixture({ failStyles = false, failedChapter, delayedChapter } = {}) {
   let releaseStyles;
   const styles = new Promise(resolve => { releaseStyles = resolve; });
   let requestedStyles;
@@ -72,6 +72,15 @@ async function fixture({ failStyles = false } = {}) {
     '/OPS/book.opf': '<package version="3.0"><metadata/><manifest><item id="one" href="one.xhtml" media-type="application/xhtml+xml"/></manifest><spine><itemref idref="one"/></spine></package>',
     '/OPS/one.xhtml': chapter,
   };
+  if (failedChapter || delayedChapter) {
+    files['/OPS/book.opf'] = '<package version="3.0"><metadata/><manifest><item id="one" href="one.xhtml" media-type="application/xhtml+xml"/><item id="two" href="two.xhtml" media-type="application/xhtml+xml"/></manifest><spine><itemref idref="one"/><itemref idref="two"/></spine></package>';
+    for (const [name, text] of [['one', 'First chapter.'], ['two', 'Second chapter.']]) {
+      files['/OPS/' + name + '.xhtml'] = '<html xmlns="http://www.w3.org/1999/xhtml"><head>' +
+        (name === failedChapter ? '<link rel="stylesheet" href="missing.css"/>' :
+          name === delayedChapter ? '<link rel="stylesheet" href="book.css"/>' : '') +
+        '</head><body><p>' + text + '</p></body></html>';
+    }
+  }
   const server = http.createServer(async (request, response) => {
     if (request.url === '/') {
       response.setHeader('Content-Type', 'text/html');
@@ -99,7 +108,7 @@ async function fixture({ failStyles = false } = {}) {
     close() { releaseStyles(); releaseFont(); server.closeAllConnections(); return new Promise(resolve => server.close(resolve)); } };
 }
 
-async function withReader(action) {
+async function withReader(action, resizeWhileLoading = false) {
   const source = await fixture();
   const page = await browser();
   try {
@@ -110,10 +119,15 @@ async function withReader(action) {
       window.opening=bookfinReader.openBook({base:${JSON.stringify(source.url)}, packagePath:'OPS/book.opf', fontSize:20, night:false, initial:${JSON.stringify(passageFive)}}); true`);
     await source.requested;
     await page.evaluate('new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))');
+    if (resizeWhileLoading) {
+      await page.evaluate("window.resizing=viewport.resize(412,667); new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))");
+      assert.equal(await page.evaluate('document.querySelectorAll("iframe").length'), 1, "Loading chapter must remain attached until resources finish");
+    }
     source.releaseStyles();
     await source.fontRequested;
     source.releaseFont();
     await page.evaluate('opening');
+    if (resizeWhileLoading) await page.evaluate('resizing');
     await page.evaluate(`Promise.all(viewport.getContents().map(contents=>contents.document.fonts.ready)).then(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))))`);
     await page.evaluate(`document.querySelector('#viewer').style.height='667px'; viewport.resize(412,667); new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>requestAnimationFrame(resolve))))`);
     await page.evaluate(`new Promise(resolve=>{function ready(){const frame=document.querySelector('iframe');if(frame?.contentDocument.querySelector('link[rel=stylesheet]')?.sheet) resolve(frame.contentDocument.fonts.ready);else requestAnimationFrame(ready)}ready()}).then(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))))`);
@@ -211,5 +225,53 @@ test('a failed publication stylesheet rejects opening and reports the real displ
     const events = await page.evaluate('events');
     assert.ok(events.some(event => event.name === 'readerFailure'));
     assert.ok(!events.some(event => event.name === 'readerLocation'));
+  } finally { await page.close(); await source.close(); }
+});
+
+test('resize during blocked initial resource loading keeps the requested passage attached', { timeout: 30000 }, async () => {
+  await withReader(async page => {
+    assert.equal(await page.evaluate('document.querySelectorAll("iframe").length'), 1);
+    assertPassageFive(await visiblePassage(page));
+  }, true);
+});
+
+for (const forward of [true, false]) {
+  test('failed neighboring chapter resource rejects ' + (forward ? 'Next' : 'Previous'), { timeout: 30000 }, async () => {
+    const source = await fixture({ failedChapter: forward ? 'two' : 'one' });
+    const page = await browser();
+    try {
+      await page.call('Page.navigate', { url: source.url });
+      await page.evaluate("new Promise(resolve => { if (window.bookfinReader) resolve(); else addEventListener('load', resolve, {once:true}); })");
+      const initial = forward ? null : { cfi: 'epubcfi(/6/4!/4/2/1:0)', resource: 'OPS/two.xhtml', quote: 'Second chapter.' };
+      await page.evaluate(`window.events=[];window.flutter_inappwebview={callHandler:(name,value)=>events.push({name,value})};bookfinReader.openBook({base:${JSON.stringify(source.url)},packagePath:'OPS/book.opf',fontSize:20,night:false,initial:${JSON.stringify(initial)}})`);
+      const result = await page.evaluate(`bookfinReader.move(${forward}).then(()=>({completed:true}),error=>({error:error.message}))`);
+      assert.equal(result.error, 'Reading resource could not be loaded');
+    } finally { await page.close(); await source.close(); }
+  });
+}
+
+test('automatic viewport resize waits for a loading neighboring chapter', { timeout: 30000 }, async () => {
+  const source = await fixture({ delayedChapter: 'two' });
+  const page = await browser();
+  try {
+    await page.call('Page.navigate', { url: source.url });
+    await page.evaluate("new Promise(resolve => { if (window.bookfinReader) resolve(); else addEventListener('load', resolve, {once:true}); })");
+    await page.evaluate(`window.saved=[];window.flutter_inappwebview={callHandler:(name,value)=>{if(name==='readerLocation')saved.push(value)}};
+      const create=ePub;window.ePub=Object.assign((...args)=>{const book=create(...args);const render=book.renderTo.bind(book);book.renderTo=(...args)=>(window.viewport=render(...args));return book},create);
+      bookfinReader.openBook({base:${JSON.stringify(source.url)},packagePath:'OPS/book.opf',fontSize:20,night:false})`);
+    await page.evaluate('window.moving=bookfinReader.move(true);true');
+    await source.requested;
+    await page.evaluate("document.querySelector('#viewer').style.height='667px'; viewport.manager.onResized(); new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))");
+    assert.equal(await page.evaluate('document.querySelectorAll("iframe").length'), 1);
+    source.releaseStyles();
+    await source.fontRequested;
+    source.releaseFont();
+    await page.evaluate('moving');
+    await page.evaluate('viewport.q.enqueue(()=>{})');
+    assert.equal(await page.evaluate('saved.at(-1).resource'), 'OPS/two.xhtml');
+    const visible = await page.evaluate(`(()=>{const frame=document.querySelector('iframe');const text=frame.contentDocument.querySelector('p');const rect=text.getBoundingClientRect();return {text:text.textContent,left:rect.left+frame.getBoundingClientRect().left,top:rect.top}})()`);
+    assert.equal(visible.text, 'Second chapter.');
+    assert.ok(visible.left >= 0 && visible.left < 412 && visible.top >= 0 && visible.top < 667);
+    await page.evaluate('viewport.checkInvariants()');
   } finally { await page.close(); await source.close(); }
 });

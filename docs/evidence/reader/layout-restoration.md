@@ -194,3 +194,7 @@ The checkout's own Gradle cache reported one daemon stopped.
 No children, PR, coverage, mutation testing, ticket closure, theme persistence,
 or production diagnostic instrumentation ran. The parent owns the remaining
 Android acceptance and independent review.
+
+## Follow-up review corrections
+
+Review F1 reproduced removal of the loading iframe when resize ran before stylesheet release. Resize requests from both the public rendition interface and native viewport/orientation notifications now enter the rendition navigation queue. Dimension changes, view disposal and restoration complete as one queued operation, after active rendering. F2 reproduced successful completion of Next and Previous despite a failed destination stylesheet. Both navigation paths now propagate the resource rejection. Real-layout regressions cover blocked initial opening, an automatic resize during a neighboring-chapter load, and failed resources in both navigation directions. Red logs are review-resize-red.txt and review-neighbor-red.txt. Android evidence for the earlier candidate does not accept these follow-up changes.

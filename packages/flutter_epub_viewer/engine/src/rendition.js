@@ -229,6 +229,7 @@ class Rendition {
 			this.manager = new this.ViewManager({
 				view: this.View,
 				queue: this.q,
+				requestResize: (...args) => this.resize(...args),
 				request: this.book.load.bind(this.book),
 				prepareContents: contents => this.hooks.content.trigger(contents, this),
 				settings: this.settings
@@ -247,9 +248,6 @@ class Rendition {
 		// Listen for displayed views
 		this.manager.on(EVENTS.MANAGERS.ADDED, this.afterDisplayed.bind(this));
 		this.manager.on(EVENTS.MANAGERS.REMOVED, this.afterRemoved.bind(this));
-
-		// Listen for resizing
-		this.manager.on(EVENTS.MANAGERS.RESIZED, this.onResized.bind(this));
 
 		// Listen for rotation
 		this.manager.on(EVENTS.MANAGERS.ORIENTATION_CHANGE, this.onOrientationChange.bind(this));
@@ -467,7 +465,7 @@ class Rendition {
 		}, epubcfi);
 
 		if (this.location && this.location.start) {
-			this.q.enqueue(() => this._display(epubcfi || this.location.start.cfi));
+			return this._display(epubcfi || this.location.start.cfi);
 		}
 
 	}
@@ -508,7 +506,11 @@ class Rendition {
 		if (height) {
 			this.settings.height = height;
 		}
-		this.manager.resize(width, height, epubcfi);
+		// Disposal and restoration must not interrupt a render awaiting resources.
+		return this.q.enqueue(async () => {
+			const size = this.manager.resize(width, height, epubcfi);
+			if (size) await this.onResized(size, epubcfi);
+		});
 	}
 
 	/**
