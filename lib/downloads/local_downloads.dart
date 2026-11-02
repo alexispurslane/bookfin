@@ -188,9 +188,15 @@ class LocalDownloads extends Downloads {
       await FileSystemEntity.type(file.path, followLinks: false) ==
           FileSystemEntityType.file;
 
+  // The original-file route cannot identify a separately named media source.
+  // Apply the same identity requirement to saved bytes and fresh transfers.
+  bool _originalIdentity(SourceFile source) =>
+      source.mediaSourceId.isEmpty || source.mediaSourceId == source.itemId;
+
   bool _present(_Record record) {
     try {
       return record.complete &&
+          _originalIdentity(record.source) &&
           _session != null &&
           _containedDirectory(record.directory, _session!.scope.key) &&
           record.length != null &&
@@ -880,7 +886,8 @@ class LocalDownloads extends Downloads {
       sources.add({'Id': ''});
     }
     if (sources.isEmpty ||
-        (!unnamedBookOriginal && source.mediaSourceId != source.itemId) ||
+        (!_originalIdentity(source) ||
+            (!unnamedBookOriginal && source.mediaSourceId.isEmpty)) ||
         sources.first['Id'] != source.mediaSourceId ||
         sources.first['IsRemote'] == true ||
         (sources.first['Type'] != null && sources.first['Type'] != 'Default')) {

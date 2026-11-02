@@ -45,7 +45,9 @@ Administrator status does not override a false or missing permission. A cached `
 
 The only media route is `/Items/{id}/Download`. Denial never triggers `/File`, a streaming route, or another source. Jellyfin's original-file Download route has no selected-media-source parameter. The downloader therefore fails closed for an alternate source instead of attaching the original file to the wrong edition. First position and `Type=Default` alone do not establish original-file identity. The t9-04iu investigation and supported limits are in `docs/evidence/downloads/alternate-source.md`. The parent-owned live probe permission correction is not copied or changed here.
 
-Source details are checked again after receipt and hashing, before final publication. Replacing the source during a transfer cannot publish bytes under the former source revision. Real-server ordinary-user and format acceptance remains in boo-2cgp.
+Source details are checked again after receipt and hashing, before final publication. Replacing the source during a transfer cannot publish bytes under the former source revision. Earlier real-server ordinary-user and format evidence is recorded in closed boo-2cgp. Unresolved alternate-source support remains on t9-04iu.
+
+Saved files also pass the original-source identity requirement before local availability is exposed. A legacy separately named source is unavailable even with a matching saved hash; its bytes and identity remain stored for explicit removal. Safe originals do not require network access to restore.
 
 ## Storage and verification
 

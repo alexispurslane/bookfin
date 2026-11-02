@@ -7,6 +7,7 @@ import 'package:bookfin/catalog/model.dart';
 import 'package:bookfin/downloads/downloads.dart';
 import 'package:bookfin/downloads/local_downloads.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:crypto/crypto.dart';
 
 void main() {
   late MediaFixture fixture;
@@ -33,6 +34,69 @@ void main() {
     await fixture.close();
     await root.delete(recursive: true);
   });
+
+  for (final sourceKind in [
+    'alternate',
+    'named original',
+    'unnamed original',
+  ]) {
+    test(
+      'legacy $sourceKind saved bytes retain safe offline availability',
+      () async {
+        policy.network = MediaNetwork.disconnected;
+        fixture.bookWithoutMediaSources = sourceKind == 'unnamed original';
+        if (sourceKind == 'alternate') {
+          fixture.textSources = [fixture.source('alternate-text')];
+        }
+        final source = fixture.text.files.single;
+        String hash(String value) =>
+            sha256.convert(utf8.encode(value)).toString();
+        final directory = Directory(
+          '${root.path}/${hash(fixture.session().scope.key)}/'
+          '${hash(jsonEncode([source.key, source.revision]))}',
+        );
+        await directory.create(recursive: true);
+        final saved = File('${directory.path}/complete');
+        await saved.writeAsBytes([1, 2, 3, 4, 5, 6]);
+        await File('${directory.path}/record.json').writeAsString(
+          jsonEncode({
+            'key': source.key,
+            'revision': source.revision,
+            'length': 6,
+            'digest': sha256.convert([1, 2, 3, 4, 5, 6]).toString(),
+            'complete': true,
+            'requested': false,
+          }),
+        );
+        downloads.dispose();
+        await downloads.idle;
+        downloads = LocalDownloads(
+          root: root,
+          freeBytes: () async => capacity,
+          policy: policy,
+        );
+        await downloads.bind(fixture.session(), fixture.books);
+        final local = await downloads.localFile(source);
+        if (sourceKind == 'alternate') {
+          expect(local, isNull);
+          expect(
+            downloads.status(fixture.text).phase,
+            isNot(DownloadPhase.downloaded),
+          );
+        } else {
+          expect(local, isNotNull);
+          expect(await File.fromUri(local!).readAsBytes(), [1, 2, 3, 4, 5, 6]);
+          expect(
+            downloads.status(fixture.text).phase,
+            DownloadPhase.downloaded,
+          );
+        }
+        expect(await saved.readAsBytes(), [1, 2, 3, 4, 5, 6]);
+        expect(fixture.requests, isEmpty);
+        downloads.checkInvariants();
+      },
+    );
+  }
 
   test(
     'original ebooks without media-source metadata download exact bytes',

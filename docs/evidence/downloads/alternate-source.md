@@ -147,3 +147,11 @@ No app build was needed for the download guard and HTTP-test changes.
 
 No device, browser, production-server, coverage, mutation, child-agent, or PR work ran.
 The ticket remains in progress for orchestrator integration and disposition of the alternate-source blocker.
+
+## Parent correction: restored legacy downloads
+
+Static review found that an older saved alternate could retain the original item's bytes and their matching hash. A new upgrade regression reproduced that exposure offline: localFile returned the saved original under the alternate key. Named and unnamed original controls passed before the fix.
+
+The download owner now applies the same source-identity eligibility to local availability and new transfers. A separately named source is unavailable even when its saved bytes match their hash. Files and source identity are preserved; this correction does not silently delete or relabel them. Safe named and unnamed originals still restore offline without HTTP.
+
+The focused transfer suite passed 49 tests. The first full run exposed an existing retained-removal test timing assumption: server first-chunk notification preceded the client receiving those bytes. The test now waits for the client's three-byte progress before deselecting. The next full run passed 303 tests. These checks ran through Nix. The unresolved alternate-source route and real alternate-item acceptance remain on open ticket t9-04iu, not closed boo-2cgp.
