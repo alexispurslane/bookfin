@@ -12,6 +12,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'preferences_test.dart' show MemoryAppearanceStore;
+import '../foundation_test.dart' show disconnectedCatalog;
 
 late String cityData;
 
@@ -31,7 +32,11 @@ Widget productionApp(
   DateTime Function()? clock,
 }) => DefaultAssetBundle(
   bundle: BundledCities(),
-  child: BookfinApp(appearance: controller, clock: clock),
+  child: BookfinApp(
+    appearance: controller,
+    clock: clock,
+    catalog: disconnectedCatalog(),
+  ),
 );
 
 Future<void> openCitySearch(WidgetTester tester) async {
@@ -97,6 +102,8 @@ void main() {
         }
         await tester.pumpAndSettle();
       }
+      await tester.ensureVisible(find.text('Done'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Done'));
       await tester.pumpAndSettle();
     }
@@ -220,7 +227,11 @@ void main() {
     expect(controller.settings.location?.latitude, closeTo(40.71427, 0.001));
     expect(controller.settings.location?.longitude, closeTo(-74.00597, 0.001));
     await tester.ensureVisible(find.text('Done'));
+    await tester.ensureVisible(find.text('Done'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Done'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Appearance'));
     await tester.pumpAndSettle();
     expect(
       find.text('Daylight · New York City, New York, United States'),
@@ -230,10 +241,16 @@ void main() {
       Theme.of(tester.element(find.byType(Scaffold).first)).brightness,
       Brightness.light,
     );
+    await tester.ensureVisible(find.text('Done'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Done'));
+    await tester.pumpAndSettle();
     final reopened = AppearanceController(store);
     await reopened.restore();
     instant = DateTime.utc(2026, 3, 20, 23, 20);
     await tester.pumpWidget(productionApp(reopened, clock: () => instant));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Appearance'));
     await tester.pumpAndSettle();
     expect(
       find.text('After sunset · New York City, New York, United States'),

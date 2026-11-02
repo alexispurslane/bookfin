@@ -1,12 +1,20 @@
 import 'package:bookfin/appearance/appearance.dart';
 import 'package:bookfin/appearance/preferences.dart';
 import 'package:bookfin/main.dart';
+import 'package:bookfin/catalog/controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'appearance/preferences_test.dart' show MemoryAppearanceStore;
 import 'contrast_test.dart' show contrast;
+import 'catalog/controller_test.dart'
+    show MemoryCredentials, MemoryCatalogStore;
+
+CatalogController disconnectedCatalog() => CatalogController(
+  credentials: MemoryCredentials(),
+  store: MemoryCatalogStore(),
+);
 
 Brightness brightness(WidgetTester tester) =>
     Theme.of(tester.element(find.byType(Scaffold).first)).brightness;
@@ -109,7 +117,11 @@ void main() {
         SelectedLocation('Tromsø', 69.6492, 18.9553),
       );
       await tester.pumpWidget(
-        BookfinApp(appearance: controller, clock: () => now),
+        BookfinApp(
+          appearance: controller,
+          clock: () => now,
+          catalog: disconnectedCatalog(),
+        ),
       );
       await tester.tap(find.byTooltip('Appearance'));
       await tester.pumpAndSettle();
@@ -168,7 +180,9 @@ void main() {
     (tester) async {
       final controller = AppearanceController(MemoryAppearanceStore());
       await controller.selectMode(AppearanceMode.day);
-      await tester.pumpWidget(BookfinApp(appearance: controller));
+      await tester.pumpWidget(
+        BookfinApp(appearance: controller, catalog: disconnectedCatalog()),
+      );
       for (final mode in [AppearanceMode.night, AppearanceMode.day]) {
         await controller.selectMode(mode);
         await tester.pump();
@@ -177,9 +191,7 @@ void main() {
           final theme = Theme.of(tester.element(find.byType(Scaffold).first));
           final scheme = theme.colorScheme;
           final paragraph = tester.renderObject<RenderParagraph>(
-            find.text(
-              'Library connection is not available in this setup build.',
-            ),
+            find.text('Your library starts here.'),
           );
           expect(
             contrast(paragraph.text.style!.color!, scheme.surface),
@@ -282,12 +294,20 @@ void main() {
         SelectedLocation('New York', 40.7128, -74.0060),
       );
       await tester.pumpWidget(
-        BookfinApp(appearance: controller, clock: () => now),
+        BookfinApp(
+          appearance: controller,
+          clock: () => now,
+          catalog: disconnectedCatalog(),
+        ),
       );
       await tester.pumpAndSettle();
       expect(brightness(tester), Brightness.light);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
       now = DateTime.utc(2026, 3, 21, 2);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
       await tester.pumpAndSettle();
       expect(brightness(tester), Brightness.dark);
@@ -308,7 +328,11 @@ void main() {
       SelectedLocation('New York', 40.7128, -74.0060),
     );
     await tester.pumpWidget(
-      BookfinApp(appearance: controller, clock: () => now),
+      BookfinApp(
+        appearance: controller,
+        clock: () => now,
+        catalog: disconnectedCatalog(),
+      ),
     );
     await tester.pumpAndSettle();
     expect(brightness(tester), Brightness.light);
@@ -324,12 +348,17 @@ void main() {
       tester.platformDispatcher.platformBrightnessTestValue = Brightness.light;
       addTearDown(tester.platformDispatcher.clearPlatformBrightnessTestValue);
       await tester.pumpWidget(
-        BookfinApp(appearance: AppearanceController(MemoryAppearanceStore())),
+        BookfinApp(
+          appearance: AppearanceController(MemoryAppearanceStore()),
+          catalog: disconnectedCatalog(),
+        ),
       );
       expect(brightness(tester), Brightness.light);
       tester.platformDispatcher.platformBrightnessTestValue = Brightness.dark;
       await tester.pumpAndSettle();
       expect(brightness(tester), Brightness.dark);
+      await tester.tap(find.byTooltip('Appearance'));
+      await tester.pumpAndSettle();
       expect(find.textContaining('System appearance'), findsOneWidget);
     },
   );

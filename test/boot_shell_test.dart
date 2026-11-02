@@ -4,13 +4,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'appearance/preferences_test.dart' show MemoryAppearanceStore;
+import 'catalog/controller_test.dart'
+    show MemoryCatalogStore, MemoryCredentials;
+
+import 'package:bookfin/catalog/controller.dart';
 
 void main() {
   testWidgets('Bookfin identifies itself before a library is connected', (
     tester,
   ) async {
     await tester.pumpWidget(
-      BookfinApp(appearance: AppearanceController(MemoryAppearanceStore())),
+      BookfinApp(
+        appearance: AppearanceController(MemoryAppearanceStore()),
+        catalog: CatalogController(
+          credentials: MemoryCredentials(),
+          store: MemoryCatalogStore(),
+        ),
+      ),
     );
 
     expect(find.text('BOOKFIN'), findsOneWidget);
@@ -21,13 +31,16 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      BookfinApp(appearance: AppearanceController(MemoryAppearanceStore())),
+      BookfinApp(
+        appearance: AppearanceController(MemoryAppearanceStore()),
+        catalog: CatalogController(
+          credentials: MemoryCredentials(),
+          store: MemoryCatalogStore(),
+        ),
+      ),
     );
 
-    expect(
-      find.text('Library connection is not available in this setup build.'),
-      findsOneWidget,
-    );
+    expect(find.widgetWithText(FilledButton, 'Sign in'), findsOneWidget);
     expect(find.byType(FloatingActionButton), findsNothing);
   });
 }

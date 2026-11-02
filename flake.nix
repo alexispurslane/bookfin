@@ -33,11 +33,13 @@
         ndkVersions = [ "28.2.13676358" ];
         cmakeVersions = [ "3.22.1" ];
       };
-      preferencePlatform =
-        builtins.head
-          (pkgs.androidenv.composeAndroidPackages {
-            platformVersions = [ "35" ];
-          }).platforms;
+      dependencyPlatforms =
+        (pkgs.androidenv.composeAndroidPackages {
+          platformVersions = [
+            "34"
+            "35"
+          ];
+        }).platforms;
       sdk = pkgs.runCommand "bookfin-android-sdk" { } ''
         mkdir -p "$out/cmdline-tools" "$out/platforms"
         for entry in ${android.androidsdk}/libexec/android-sdk/*; do
@@ -49,7 +51,11 @@
         for platform in ${android.androidsdk}/libexec/android-sdk/platforms/*; do
           ln -s "$platform" "$out/platforms/$(basename "$platform")"
         done
-        ln -s ${preferencePlatform}/libexec/android-sdk/platforms/android-35 "$out/platforms/android-35"
+        for package in ${builtins.toString dependencyPlatforms}; do
+          for platform in "$package"/libexec/android-sdk/platforms/*; do
+            ln -s "$platform" "$out/platforms/$(basename "$platform")"
+          done
+        done
         ln -s ${android.androidsdk}/libexec/android-sdk/cmdline-tools/19.0 "$out/cmdline-tools/19.0"
         ln -s 19.0 "$out/cmdline-tools/latest"
       '';
