@@ -12,6 +12,14 @@
     "binaryArchiveHash": "sha256-wQfU4Nhei6EpJMkRTSqK1D6dg1QKZ5I9vveIuTMR/i0=",
     "binaryDllSha256": "c553ef86f47d4de0399be5cb13d3623b9df017bb5d655a4622c8e58334f0b39c"
   },
+  "jellyfinUpgradeOld": {
+    "runtimeVersion": "12.3.0",
+    "binaryArchiveUrl": "https://repo.jellyfin.org/files/server/macos/stable/v12.3/arm64/jellyfin_12.3-arm64.tar.xz",
+    "binaryArchiveBytes": 85777784,
+    "binaryArchiveHash": "sha256-Lrf3QHcecgaI+Vj+6wD4BZ6KhrAKOIp5iUzMcYi9erk=",
+    "upgradeTarget": "jellyfin",
+    "independentRebuildVerified": false
+  },
   "enhanced": {
     "sourceCommit": "9bbf16c0de6662baeaa23e51c71505c15c560381",
     "sourceArchiveUrl": "https://codeload.github.com/n00bcodr/Jellyfin-Enhanced/tar.gz/9bbf16c0de6662baeaa23e51c71505c15c560381",

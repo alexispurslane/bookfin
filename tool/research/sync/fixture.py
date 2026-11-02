@@ -32,8 +32,8 @@ def require_download(policy):
         raise PermissionError("An explicit download permission is required; never fall back to File")
 
 
-def is_ready(public_info):
-    return (isinstance(public_info, dict) and public_info.get("Version") == "12.4.0"
+def is_ready(public_info, version="12.4.0"):
+    return (isinstance(public_info, dict) and public_info.get("Version") == version
             and bool(public_info.get("Id")))
 
 
@@ -112,14 +112,15 @@ def prepare():
   <LocalNetworkAddresses><string>127.0.0.1</string></LocalNetworkAddresses>
 </NetworkConfiguration>
 ''')
-    plugin = ROOT / "data/plugins/Jellyfin Enhanced_12.14.0.0"
-    plugin.mkdir(parents=True)
-    shutil.copy2(Path(os.environ["BOOKFIN_SYNC_ENHANCED"]) / "Jellyfin.Plugin.JellyfinEnhanced.dll", plugin)
-    private_json(plugin / "meta.json", {
-        "name": "Jellyfin Enhanced", "guid": "f69e946a-4b3c-4e9a-8f0a-8d7c1b2c4d9b",
-        "version": "12.14.0.0", "targetAbi": "12.0.0.0", "status": "Active", "owner": "n00bcodr",
-        "description": "Pinned official release archive; disposable research only",
-    })
+    if os.environ.get("BOOKFIN_SYNC_CORE_ONLY") != "1":
+        plugin = ROOT / "data/plugins/Jellyfin Enhanced_12.14.0.0"
+        plugin.mkdir(parents=True)
+        shutil.copy2(Path(os.environ["BOOKFIN_SYNC_ENHANCED"]) / "Jellyfin.Plugin.JellyfinEnhanced.dll", plugin)
+        private_json(plugin / "meta.json", {
+            "name": "Jellyfin Enhanced", "guid": "f69e946a-4b3c-4e9a-8f0a-8d7c1b2c4d9b",
+            "version": "12.14.0.0", "targetAbi": "12.0.0.0", "status": "Active", "owner": "n00bcodr",
+            "description": "Pinned official release archive; disposable research only",
+        })
     private_json(marker, {"origin": ORIGIN, "purpose": "ta-qobz synthetic only"})
 
 
@@ -137,11 +138,12 @@ def login(name, password):
 
 
 def wait_ready():
+    version = os.environ.get("BOOKFIN_SYNC_VERSION", "12.4.0")
     deadline = time.monotonic() + 90
     while time.monotonic() < deadline:
         try:
-            if is_ready(Api(timeout=2).json("GET", "/System/Info/Public")):
-                print("Disposable Jellyfin 12.4.0 is ready")
+            if is_ready(Api(timeout=2).json("GET", "/System/Info/Public"), version):
+                print(f"Disposable Jellyfin {version} is ready")
                 return
         except (OSError, RuntimeError, json.JSONDecodeError):
             pass

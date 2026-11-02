@@ -1,5 +1,10 @@
 # Disposable Jellyfin sync and permission evidence
 
+November 2 follow-up: `jellyfin-finite-checkpoint.md` records one private-playlist
+checkpoint candidate, measured batching, and a pinned 12.3.0 to 12.4.0 exercise
+in a new core-only synthetic fixture. Its explicit growth blockers still gate
+production personal-record sync. The original fixture results below are unchanged.
+
 Research date: November 1, 2026, America/New_York. Some evidence timestamps are
 November 2 in UTC. Base: `2817cf3`. Ticket: `ta-qobz`. This supplies evidence to
 `boo-p58t` and `boo-2cgp`; the parent owns acceptance and closure.

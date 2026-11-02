@@ -1,0 +1,29 @@
+{
+  "evidenceClass": "research-tests-and-fixture-safety",
+  "observedDate": "2026-11-02",
+  "startingCommit": "c13748198f0b7f73ad0ba1ec2b7ac84fbe989627",
+  "commands": [
+    "nix develop ./tool/research/sync --command python3 -m unittest discover -s tool/research/sync -v",
+    "nix develop ./tool/research/sync --command python3 -O -m unittest discover -s tool/research/sync -p test_finite_journal.py -v",
+    "nix develop ./tool/research/sync --command nixfmt --check tool/research/sync/flake.nix",
+    "git diff --check",
+    "lsof -nP -iTCP:7364 -sTCP:LISTEN"
+  ],
+  "researchTestsPassed": 40,
+  "optimizedModeJournalTestsPassed": 15,
+  "debugInvariantCheckerFailedBeforeCorrectionInOptimizedMode": true,
+  "nixFormattingPassed": true,
+  "diffWhitespacePassed": true,
+  "serverProcessesExited": true,
+  "port7364ListenerPresentAfterFinalShutdown": false,
+  "fixtureDirectoryMode": "0700",
+  "protectedJsonFileCount": 5,
+  "protectedJsonFileMode": "0600",
+  "exactPayloadHashSetsEqualAcrossOldUpgradeAndRestart": true,
+  "fixtureCredentialValuesAbsentFromStagedOutput": true,
+  "stagedFilesAudited": 25,
+  "coverageRun": false,
+  "mutationRun": false,
+  "flutterOrAndroidRun": false,
+  "productionTransportSelected": false
+}

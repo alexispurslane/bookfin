@@ -50,3 +50,7 @@ Verification through nix develop: SDK-link safety checks, 3 application tests, a
 **2026-11-02T02:50:25Z**
 
 t3-7fv1 follow-up resolves exact GET /Items/{id} payload isolation on a fresh synthetic fixture. New report docs/research/jellyfin-playlist-protocol.md records live lost-ack logical deduplication, owner-management data exposure, offset-page omissions during mutation, sampled limits, scan preservation, and clean restart. A complete transport is not approved: normal-playlist management protection is a measured limitation; retention, stale-replica admission, checkpoint compaction and upgrade compatibility remain unsettled/unproved. Product decisions tb-887c and tb-5fyd now gate boo-3oq0. No plugin is selected and lower-risk claims are not established. Keep boo-p58t and t3-7fv1 open for parent review.
+
+**2026-11-02T05:28:20Z**
+
+t3-7fv1 continuation measured one finite existing-storage checkpoint candidate, viable batching (1,240 actions → 16 objects before collection → one 45,948-byte checkpoint), and the exact pinned 12.3.0→12.4.0 pair plus clean new-version restart. See docs/research/jellyfin-finite-checkpoint.md for runtime/model boundaries, page-size-dependent search omissions and corrected unfiltered discovery, exact deletion/gap-growth blockers, and user-visible costs versus the accepted but unbuilt small-plugin fallback. No production transport or lower-risk plugin claim is approved; keep this ticket open.

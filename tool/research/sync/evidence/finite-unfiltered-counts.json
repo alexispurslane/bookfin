@@ -1,0 +1,48 @@
+{
+  "evidenceClass": "disposable-official-binary-runtime",
+  "origin": "http://127.0.0.1:7364",
+  "observedAtUtc": "2026-11-02T05:17:23.824814+00:00",
+  "phase": "finite-unfiltered-counts",
+  "observations": {
+    "runtimeVersion": "12.3.0",
+    "noConcurrentWritesDuringMeasurement": true,
+    "pages": [
+      {
+        "pageSize": 4,
+        "startIndex": 0,
+        "returnedItems": 4,
+        "totalRecordCount": 17
+      },
+      {
+        "pageSize": 4,
+        "startIndex": 4,
+        "returnedItems": 4,
+        "totalRecordCount": 17
+      },
+      {
+        "pageSize": 4,
+        "startIndex": 8,
+        "returnedItems": 4,
+        "totalRecordCount": 17
+      },
+      {
+        "pageSize": 4,
+        "startIndex": 12,
+        "returnedItems": 4,
+        "totalRecordCount": 17
+      },
+      {
+        "pageSize": 4,
+        "startIndex": 16,
+        "returnedItems": 1,
+        "totalRecordCount": 17
+      },
+      {
+        "pageSize": 128,
+        "startIndex": 0,
+        "returnedItems": 17,
+        "totalRecordCount": 17
+      }
+    ]
+  }
+}

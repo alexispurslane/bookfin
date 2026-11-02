@@ -5,11 +5,27 @@ from pathlib import Path
 import tempfile
 import threading
 import unittest
+from unittest.mock import patch
 
-from fixture import Api, is_ready, private_json, require_download, validate_origin
+from fixture import Api, is_ready, prepare, private_json, require_download, validate_origin
 
 
 class DisposableSafetyTests(unittest.TestCase):
+    def test_old_version_readiness_requires_the_specified_old_version(self):
+        self.assertTrue(is_ready({"Version": "12.3.0", "Id": "synthetic"}, "12.3.0"))
+        self.assertFalse(is_ready({"Version": "12.4.0", "Id": "synthetic"}, "12.3.0"))
+
+    def test_core_only_fixture_does_not_install_an_enhanced_plugin(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "runtime"
+            artifact = Path(directory) / "artifact"
+            artifact.mkdir()
+            (artifact / "Jellyfin.Plugin.JellyfinEnhanced.dll").write_bytes(b"synthetic artifact")
+            with patch("fixture.ROOT", root), patch("fixture.socket.socket"), patch.dict(os.environ, {
+                "BOOKFIN_SYNC_CORE_ONLY": "1", "BOOKFIN_SYNC_ENHANCED": str(artifact)}):
+                prepare()
+            self.assertFalse((root / "data/plugins").exists())
+
     def test_startup_status_without_a_server_identity_is_not_ready(self):
         self.assertFalse(is_ready({"Message": "Server is starting"}))
         self.assertFalse(is_ready({"Version": "12.4.0"}))
