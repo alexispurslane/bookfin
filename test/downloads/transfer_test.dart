@@ -34,6 +34,143 @@ void main() {
     await root.delete(recursive: true);
   });
 
+  test(
+    'replacement interruption never assigns new identity to old bytes',
+    () async {
+      fixture.interruptOnce = true;
+      await downloads.request(fixture.text);
+      await downloads.idle;
+      downloads.dispose();
+      await downloads.idle;
+      var checks = 0;
+      downloads = LocalDownloads(
+        root: root,
+        policy: policy,
+        freeBytes: () async {
+          if (++checks == 2) policy.network = MediaNetwork.disconnected;
+          return capacity;
+        },
+      );
+      await downloads.bind(fixture.session(), fixture.books);
+      fixture.ignoreRange = true;
+      fixture.etag = '"v2"';
+      fixture.payload = [7, 8, 9, 10, 11, 12];
+      await downloads.request(fixture.text);
+      await downloads.idle;
+      final manifests = await root
+          .list(recursive: true)
+          .where((e) => e.path.endsWith('/record.json'))
+          .toList();
+      var replacements = 0;
+      for (final entry in manifests) {
+        final data = jsonDecode(await File(entry.path).readAsString());
+        if (data['etag'] == '"v2"') {
+          replacements++;
+          final partial = File('${entry.parent.path}/partial');
+          expect(
+            await partial.exists() ? await partial.length() : 0,
+            0,
+            reason:
+                'New response identity must never cover the previous prefix',
+          );
+        }
+      }
+      expect(replacements, 1);
+      downloads.dispose();
+      await downloads.idle;
+      downloads = LocalDownloads(
+        root: root,
+        policy: policy,
+        freeBytes: () async => capacity,
+      );
+      await downloads.bind(fixture.session(), fixture.books);
+      fixture.ignoreRange = false;
+      policy.network = MediaNetwork.wifi;
+      await downloads.idle;
+      final local = await downloads.localFile(fixture.text.files.single);
+      expect(local, isNotNull);
+      expect(await File.fromUri(local!).readAsBytes(), [7, 8, 9, 10, 11, 12]);
+    },
+  );
+
+  test('cancel is durable while another edition remains downloading', () async {
+    fixture.holdItem = 'audio1';
+    await downloads.request(fixture.audio);
+    await fixture.firstChunk.future;
+    await downloads.request(fixture.text);
+    try {
+      await downloads.cancel(fixture.text).timeout(const Duration(seconds: 2));
+      final manifests = await root
+          .list(recursive: true)
+          .where((e) => e.path.endsWith('/record.json'))
+          .toList();
+      final states = await Future.wait(
+        manifests.map(
+          (e) async => jsonDecode(await File(e.path).readAsString()) as Map,
+        ),
+      );
+      expect(
+        states
+            .where((s) => s['key'] == fixture.text.files.single.key)
+            .single['requested'],
+        false,
+      );
+      expect(downloads.status(fixture.audio).phase, DownloadPhase.downloading);
+    } finally {
+      fixture.release();
+    }
+  });
+
+  for (final remove in [false, true]) {
+    test(
+      '${remove ? 'remove' : 'cancel'} waits for restored requests',
+      () async {
+        policy.network = MediaNetwork.disconnected;
+        await downloads.request(fixture.text);
+        downloads.dispose();
+        await downloads.idle;
+        downloads = LocalDownloads(
+          root: root,
+          policy: policy,
+          freeBytes: () async => capacity,
+        );
+        final binding = downloads.bind(fixture.session(), fixture.books);
+        await (remove
+            ? downloads.remove(fixture.text)
+            : downloads.cancel(fixture.text));
+        await binding;
+        expect(downloads.status(fixture.text).phase, DownloadPhase.none);
+        policy.network = MediaNetwork.wifi;
+        await downloads.idle;
+        expect(fixture.mediaRequests, isEmpty);
+      },
+    );
+  }
+
+  test(
+    'early file failure leaves later transfer active and cancellable',
+    () async {
+      fixture.denyItem = 'audio1';
+      fixture.holdItem = 'audio2';
+      await downloads.request(fixture.audio);
+      await fixture.firstChunk.future;
+      try {
+        expect(
+          downloads.status(fixture.audio).phase,
+          DownloadPhase.downloading,
+        );
+        expect(downloads.status(fixture.audio).message, isNotNull);
+        policy.network = MediaNetwork.disconnected;
+        await downloads.idle;
+        expect(downloads.status(fixture.audio).phase, DownloadPhase.waiting);
+        await downloads.cancel(fixture.audio);
+        expect(downloads.status(fixture.audio).phase, DownloadPhase.none);
+      } finally {
+        fixture.release();
+      }
+    },
+  );
+
   test('a complete ebook does not make the audio edition downloaded', () async {
     await downloads.request(fixture.text);
     await downloads.idle;
@@ -564,6 +701,7 @@ class MediaFixture {
   final mediaTokens = <String?>[];
   final ranges = <String?>[];
   final ifRanges = <String?>[];
+  List<int> payload = [1, 2, 3, 4, 5, 6];
   bool allowDownload = true;
   bool itemDownloadable = true;
   String? denyItem;
@@ -718,7 +856,7 @@ class MediaFixture {
         await _released.future;
         response.add([4, 5, 6]);
       } else {
-        response.add(offset == 0 ? [1, 2, 3, 4, 5, 6] : [4, 5, 6]);
+        response.add(payload.sublist(offset));
       }
     } else if (parts.length == 3 && parts[1] == 'Items') {
       response.write(jsonEncode(dto(parts.last)));

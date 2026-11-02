@@ -31,6 +31,7 @@ class LocalDownloads extends Downloads {
   final Set<Future<void>> _operations = {};
   HttpClient? _client;
   String? _active;
+  Completer<void>? _activeStopped;
   String? _signature;
   int _generation = 0;
   int _networkGeneration = 0;
@@ -212,10 +213,10 @@ class LocalDownloads extends Downloads {
     final all = edition.files.isNotEmpty && complete == edition.files.length;
     final phase = all
         ? DownloadPhase.downloaded
-        : error != null
-        ? DownloadPhase.failed
         : queued
         ? (_remoteAllowed ? DownloadPhase.downloading : DownloadPhase.waiting)
+        : error != null
+        ? DownloadPhase.failed
         : complete > 0
         ? DownloadPhase.partial
         : DownloadPhase.none;
@@ -248,8 +249,6 @@ class LocalDownloads extends Downloads {
 
   Future<void> _request(Edition edition) async {
     final generation = _generation;
-    await _binding;
-    if (_disposed || generation != _generation) return;
     _current(edition);
     if (_storageError != null) {
       _emit();
@@ -283,6 +282,9 @@ class LocalDownloads extends Downloads {
       for (final source in edition.files)
         if (_records[_id(source)] != null) _records[_id(source)]!,
     ];
+    final stopped = records.any((record) => record.id == _active)
+        ? _activeStopped?.future
+        : null;
     for (final record in records) {
       _queued.remove(record.id);
       record.requested = false;
@@ -290,10 +292,12 @@ class LocalDownloads extends Downloads {
       if (_active == record.id) _client?.close(force: true);
     }
     _emit();
-    await _worker;
     for (final record in records) {
       await _persist(record);
     }
+    // A retry or removal must wait for this transfer's file handle to close,
+    // not for unrelated editions to finish downloading.
+    await stopped;
   }
 
   @override
@@ -419,6 +423,8 @@ class LocalDownloads extends Downloads {
       final id = _queued.first;
       final record = _records[id]!;
       _active = id;
+      final stopped = Completer<void>();
+      _activeStopped = stopped;
       final networkGeneration = _networkGeneration;
       final session = _session!;
       final client = HttpClient()
@@ -464,7 +470,9 @@ class LocalDownloads extends Downloads {
         if (identical(_client, client)) {
           _client = null;
           _active = null;
+          _activeStopped = null;
         }
+        stopped.complete();
         _emit();
       }
     }
@@ -619,6 +627,10 @@ class LocalDownloads extends Downloads {
         'Not enough free storage. Free storage, then retry.',
       );
     }
+    // Remove the previous representation before publishing the new validator.
+    // An interruption can then leave an empty prefix, never old bytes with a
+    // new identity that a subsequent range response could incorrectly extend.
+    if (offset == 0) await _discardPartial(record);
     record.length = length;
     record.etag = etag;
     record.bytes = offset;
@@ -793,9 +805,10 @@ class LocalDownloads extends Downloads {
   Future<void> _command(Future<void> Function() action) {
     final generation = _generation;
     final operation = _commands.then((_) async {
-      if (!_disposed && generation == _generation) {
-        await action();
-      }
+      if (_disposed || generation != _generation) return;
+      await _binding;
+      if (_disposed || generation != _generation) return;
+      await action();
     });
     _commands = operation.catchError((Object _) {});
     _operations.add(operation);

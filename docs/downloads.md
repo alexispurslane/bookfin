@@ -178,3 +178,12 @@ Final checks ran sequentially through `nix develop .cache/dev-shell --command`, 
 | `git diff --check` | Passed. |
 
 Wi-Fi and mobile data were restored to their initial enabled settings. The fixture was stopped, its reverse port forward was removed, and only this thread's device session was closed with `shutdown: false`. The emulator was left running and the app signed out. No secret file was read, no production request was sent, no preview server was changed, and no coverage or mutation command ran. No PR was created. The parent owns integration and ticket closure; no product decision is required for this implementation.
+
+
+## Parent review corrections
+
+The parent reproduced all four static review findings with five meaningful failing tests: replacement-response interruption retained three old bytes under the new validator; cancellation waited for unrelated media; immediate cancel and remove missed restored requests; and an early file denial hid the active state of later files.
+
+Replacement responses now discard the prior prefix before saving the new validator. The regression restarts the download owner and checks the resulting replacement bytes. Cancellation saves disabled requests before waiting for only the affected active transfer to close. All serialized commands wait for account restoration and recheck account generation before execution. Queued work takes display precedence over a file error, preserving Cancel while keeping the error message.
+
+Parent verification: 149 application tests pass, analysis has no issues, and the changed Dart files are formatted through the pinned Nix shell. The five new tests failed before implementation; the existing 144 tests remain green. Logs: /tmp/bookfin-download-fixes-red.log, /tmp/bookfin-download-fixes-suite.log, /tmp/bookfin-download-fixes-analyze.log. These corrections have not yet been inspected on Android; earlier Android observations describe the builder head. Independent correction review and integration remain pending. No coverage or mutation jobs ran.
