@@ -12,7 +12,10 @@ import 'playback.dart';
 import 'reporting.dart';
 import 'store.dart';
 
-Future<Playback?> createPlayback(Downloads downloads) async {
+Future<Playback?> createPlayback(
+  Downloads downloads, {
+  ResumeStore? store,
+}) async {
   if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return null;
   final engine = LocalAudioEngine();
   final handler = await AudioService.init(
@@ -30,7 +33,7 @@ Future<Playback?> createPlayback(Downloads downloads) async {
   final playback = Playback(
     downloads: downloads,
     engine: engine,
-    store: LocalResumeStore(),
+    store: store ?? LocalResumeStore(),
     reports: LiveReports(
       downloads.policy,
       clientFactory: (session) =>

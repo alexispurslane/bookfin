@@ -43,3 +43,11 @@ User removed HTML/Markdown support from product scope. Implement EPUB reading he
 **2026-11-02T14:49:26Z**
 
 Begin coordinated production implementation with prerequisite t3-9r9u in the same owner/task: first resource admission/passive publication and SVG fallback, then reader UI/records. Prerequisite remains open until review/Android acceptance; do not bypass its gate or claim production approval. Candidate selected for implementation/evaluation from reviewed research; approved behavior unchanged.
+
+**2026-11-02T16:27:45Z**
+
+Coordinated stage 2 implementation: real Android XHTML/CSS viewport; contents and fragment navigation; local assets; search with cancellation, Unicode-offset fixes and visible incomplete errors; text size and cream/night palettes; editable bookmarks and edition-specific visible-start resume. ReaderSession is the sole state owner and guards account/source/closed-view asynchronous work. Existing personal-record persistence now serializes audio/reading merges without a second bookmark database; reading before first listening is regression-tested. Real LocalDownloads verification/admission/reopen and tamper rejection are tested. Final full app: 333 pass, 0 fail/skip; reader subset: 27 pass; corpus: 9 admissions plus 9 engine checks; engine regressions: 9 pass. Analysis clean; format 71 files unchanged; SDK/native-hook scripts pass; ARM64 debug APK and JavaScript web builds pass through Nix. Web shows an explicit unsupported reader rather than breaking the existing app. No device/browser/install/production-server work and no coverage/mutations. Host evidence does not establish Android layout, applied fonts, TalkBack, process-death resume or native interception. No ticket closure; parent owns independent review and acceptance. Evidence index: tool/evidence/reader/README.md.
+
+**2026-11-02T16:37:13Z**
+
+Final verification supersedes the earlier counts: 334 full app tests, 28 reader tests (included), and 14 passive-boundary tests (included), all passing with no failures/skips. Additional red-green regressions cover removed-edition loading feedback and processed-resource expansion limits. Engine checks remain 9 regressions plus 9 processed-corpus tests. Both build targets, SDK/native-hook scripts, analyzer, and formatter pass. No ticket closure or runtime acceptance.

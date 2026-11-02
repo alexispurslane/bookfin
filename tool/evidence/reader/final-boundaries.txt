@@ -1,0 +1,271 @@
+Formatted lib/reader/session.dart
+Formatted test/reader/session_test.dart
+Formatted 2 files (2 changed) in 0.01 seconds.
+Resolving dependencies...
+Downloading packages...
+  archive 4.0.9 (4.6.0 available)
+  code_assets 1.2.1 (2.1.0 available)
+  crypto 3.0.7 (3.0.8 available)
+  flutter_cache_manager 3.4.6 (3.4.8 available)
+  flutter_secure_storage 9.2.4 (11.2.0 available)
+  flutter_secure_storage_linux 1.2.3 (3.0.3 available)
+  flutter_secure_storage_macos 3.1.3 (4.0.0 available)
+  flutter_secure_storage_platform_interface 1.1.2 (2.1.1 available)
+  flutter_secure_storage_web 1.2.1 (2.1.1 available)
+  flutter_secure_storage_windows 3.1.2 (4.2.2 available)
+  hooks 2.0.2 (2.2.0 available)
+  image 4.5.4 (4.12.0 available)
+  js 0.6.7 (0.7.2 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  meta 1.18.3 (1.19.0 available)
+  objective_c 9.5.0 (9.6.2 available)
+  petitparser 7.0.2 (7.1.0 available)
+  record_use 0.6.0 (1.1.1 available)
+  shared_preferences_foundation 2.5.7 (2.6.1 available)
+  test_api 0.7.12 (0.7.15 available)
+  vector_math 2.4.0 (2.4.4 available)
+  win32 5.15.0 (6.4.0 available)
+  xml 6.6.1 (7.1.0 available)
+Got dependencies!
+23 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Analyzing t3-2e0ac911...                                        
+No issues found! (ran in 6.0s)
+Resolving dependencies...
+Downloading packages...
+  archive 4.0.9 (4.6.0 available)
+  code_assets 1.2.1 (2.1.0 available)
+  crypto 3.0.7 (3.0.8 available)
+  flutter_cache_manager 3.4.6 (3.4.8 available)
+  flutter_secure_storage 9.2.4 (11.2.0 available)
+  flutter_secure_storage_linux 1.2.3 (3.0.3 available)
+  flutter_secure_storage_macos 3.1.3 (4.0.0 available)
+  flutter_secure_storage_platform_interface 1.1.2 (2.1.1 available)
+  flutter_secure_storage_web 1.2.1 (2.1.1 available)
+  flutter_secure_storage_windows 3.1.2 (4.2.2 available)
+  hooks 2.0.2 (2.2.0 available)
+  image 4.5.4 (4.12.0 available)
+  js 0.6.7 (0.7.2 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  meta 1.18.3 (1.19.0 available)
+  objective_c 9.5.0 (9.6.2 available)
+  petitparser 7.0.2 (7.1.0 available)
+  record_use 0.6.0 (1.1.1 available)
+  shared_preferences_foundation 2.5.7 (2.6.1 available)
+  test_api 0.7.12 (0.7.15 available)
+  vector_math 2.4.0 (2.4.4 available)
+  win32 5.15.0 (6.4.0 available)
+  xml 6.6.1 (7.1.0 available)
+Got dependencies!
+23 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+00:00 +0: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/records_test.dart
+00:00 +0: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/records_test.dart: audio and text records share account persistence without overwriting each other
+00:00 +1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/session_test.dart: closing while records restore cancels the open without disabling later record saves
+00:00 +2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/session_test.dart: only the newest open can load after account records finish restoring
+00:00 +3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/session_test.dart: visible reading positions and bookmarks reopen in the same account and edition
+00:00 +4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/session_test.dart: an account change cancels a pending publication and ignores its old viewport
+00:00 +5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/session_test.dart: changed processed content rejects an old locator without deleting its bookmark
+00:00 +6: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/session_test.dart: an open requested under an old account cannot start after its restore finishes
+00:00 +7: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/session_test.dart: late search results cannot replace a newer search or cross an account boundary
+00:00 +8: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/session_test.dart: removing a source cancels its viewport and retains its account bookmarks
+00:01 +9: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/publication_test.dart: EPUB2 keeps its admitted contents document in the package manifest
+00:01 +10: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/screen_test.dart: production reading controls save a bookmark and change text size (variant: TargetPlatform.linux)
+00:01 +11: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/screen_test.dart: production reading controls save a bookmark and change text size (variant: TargetPlatform.linux)
+00:01 +12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/screen_test.dart: production reading controls save a bookmark and change text size (variant: TargetPlatform.linux)
+00:01 +13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/screen_test.dart: production reading controls save a bookmark and change text size (variant: TargetPlatform.linux)
+00:01 +14: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/screen_test.dart: production reading controls save a bookmark and change text size (variant: TargetPlatform.linux)
+00:01 +15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/screen_test.dart: production reading controls save a bookmark and change text size (variant: TargetPlatform.linux)
+00:01 +16: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/screen_test.dart: production reading controls save a bookmark and change text size (variant: TargetPlatform.linux)
+00:01 +17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/screen_test.dart: production reading controls save a bookmark and change text size (variant: TargetPlatform.linux)
+00:01 +18: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/screen_test.dart: production reading controls save a bookmark and change text size (variant: TargetPlatform.linux)
+00:01 +19: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/screen_test.dart: production reading controls save a bookmark and change text size (variant: TargetPlatform.linux)
+00:01 +20: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/screen_test.dart: production reading controls save a bookmark and change text size (variant: TargetPlatform.linux)
+00:01 +21: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/screen_test.dart: production reading controls save a bookmark and change text size (variant: TargetPlatform.linux)
+00:01 +22: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/screen_test.dart: production reading controls save a bookmark and change text size (variant: TargetPlatform.linux)
+00:01 +23: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/screen_test.dart: production reading controls save a bookmark and change text size (variant: TargetPlatform.linux)
+00:01 +24: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/catalog_flow_test.dart: book details opens the production reader and sign-out closes the old account (variant: TargetPlatform.linux)
+00:02 +25: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/catalog_flow_test.dart: book details opens the production reader and sign-out closes the old account (variant: TargetPlatform.linux)
+00:02 +26: All tests passed!
+Resolving dependencies...
+Downloading packages...
+  archive 4.0.9 (4.6.0 available)
+  code_assets 1.2.1 (2.1.0 available)
+  crypto 3.0.7 (3.0.8 available)
+  flutter_cache_manager 3.4.6 (3.4.8 available)
+  flutter_secure_storage 9.2.4 (11.2.0 available)
+  flutter_secure_storage_linux 1.2.3 (3.0.3 available)
+  flutter_secure_storage_macos 3.1.3 (4.0.0 available)
+  flutter_secure_storage_platform_interface 1.1.2 (2.1.1 available)
+  flutter_secure_storage_web 1.2.1 (2.1.1 available)
+  flutter_secure_storage_windows 3.1.2 (4.2.2 available)
+  hooks 2.0.2 (2.2.0 available)
+  image 4.5.4 (4.12.0 available)
+  js 0.6.7 (0.7.2 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  meta 1.18.3 (1.19.0 available)
+  objective_c 9.5.0 (9.6.2 available)
+  petitparser 7.0.2 (7.1.0 available)
+  record_use 0.6.0 (1.1.1 available)
+  shared_preferences_foundation 2.5.7 (2.6.1 available)
+  test_api 0.7.12 (0.7.15 available)
+  vector_math 2.4.0 (2.4.4 available)
+  win32 5.15.0 (6.4.0 available)
+  xml 6.6.1 (7.1.0 available)
+Got dependencies!
+23 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+00:00 +0: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/tool/reader/corpus_test.dart
+00:00 +0: alice-epub3: real admission retains a navigable passive publication
+00:00 +1: frankenstein-legacy-mobi: real admission retains a navigable passive publication
+00:00 +2: moby-kf8: real admission retains a navigable passive publication
+00:00 +3: candide-french-epub3: real admission retains a navigable passive publication
+00:01 +4: river: real admission retains a navigable passive publication
+00:01 +5: mobi6-plain: real admission retains a navigable passive publication
+00:01 +6: mobi6-palmdoc: real admission retains a navigable passive publication
+00:01 +7: pg11-kf8: real admission retains a navigable passive publication
+00:01 +8: semantic-epub3: real admission retains a navigable passive publication
+00:01 +9: (tearDownAll)
+00:01 +9: All tests passed!
+npm warn deprecated whatwg-encoding@3.1.1: Use @exodus/bytes instead for a more spec-conformant and faster implementation
+npm warn deprecated @xmldom/xmldom@0.8.11: this version has critical issues, please update to the latest version
+
+added 68 packages in 750ms
+
+> bookfin-epub-runtime@0.3.93-bookfin.1 build
+> esbuild src/epub.js --bundle --format=iife --global-name=epubEngine --target=chrome100 '--footer:js=window.ePub=epubEngine.default;' --outfile=../assets/epub.js && esbuild src/reader.js --bundle --format=iife --global-name=bookfinReader --target=chrome100 --outfile=../assets/reader.js && node licenses.cjs
+
+
+  ../assets/epub.js  871.7kb
+
+⚡ Done in 20ms
+
+  ../assets/reader.js  12.2kb
+
+⚡ Done in 2ms
+
+> bookfin-epub-runtime@0.3.93-bookfin.1 test
+> node --test test/*.test.cjs
+
+TAP version 13
+# Subtest: search finds an exact phrase across inline nodes, including more than five nodes
+ok 1 - search finds an exact phrase across inline nodes, including more than five nodes
+  ---
+  duration_ms: 58.943083
+  type: 'test'
+  ...
+# Subtest: short documents and repeated occurrences are not omitted
+ok 2 - short documents and repeated occurrences are not omitted
+  ---
+  duration_ms: 23.368292
+  type: 'test'
+  ...
+# Subtest: search excludes headings in the head and explicitly hidden text
+ok 3 - search excludes headings in the head and explicitly hidden text
+  ---
+  duration_ms: 10.296042
+  type: 'test'
+  ...
+# Subtest: Unicode lowercase expansion cannot shift the returned original range
+ok 4 - Unicode lowercase expansion cannot shift the returned original range
+  ---
+  duration_ms: 10.392
+  type: 'test'
+  ...
+# Subtest: an encoded contents fragment resolves to the actual heading, not the chapter start
+ok 5 - an encoded contents fragment resolves to the actual heading, not the chapter start
+  ---
+  duration_ms: 11.256875
+  type: 'test'
+  ...
+# Subtest: saved locations collapse to the visible start and reject a mismatched quote
+ok 6 - saved locations collapse to the visible start and reject a mismatched quote
+  ---
+  duration_ms: 9.283041
+  type: 'test'
+  ...
+# Subtest: a failed chapter yields a visible incomplete-search error
+ok 7 - a failed chapter yields a visible incomplete-search error
+  ---
+  duration_ms: 10.696125
+  type: 'test'
+  ...
+# Subtest: reader appearance preserves an edition font while applying the selected text size
+ok 8 - reader appearance preserves an edition font while applying the selected text size
+  ---
+  duration_ms: 76.9865
+  type: 'test'
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 8
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 443.455375
+TAP version 13
+# Subtest: alice-epub3: processed contents, search, and locators survive a fresh engine
+ok 1 - alice-epub3: processed contents, search, and locators survive a fresh engine
+  ---
+  duration_ms: 453.557
+  type: 'test'
+  ...
+# Subtest: frankenstein-legacy-mobi: processed contents, search, and locators survive a fresh engine
+ok 2 - frankenstein-legacy-mobi: processed contents, search, and locators survive a fresh engine
+  ---
+  duration_ms: 14331.485
+  type: 'test'
+  ...
+# Subtest: moby-kf8: processed contents, search, and locators survive a fresh engine
+ok 3 - moby-kf8: processed contents, search, and locators survive a fresh engine
+  ---
+  duration_ms: 2137.256291
+  type: 'test'
+  ...
+# Subtest: candide-french-epub3: processed contents, search, and locators survive a fresh engine
+ok 4 - candide-french-epub3: processed contents, search, and locators survive a fresh engine
+  ---
+  duration_ms: 363.926
+  type: 'test'
+  ...
+# Subtest: river: processed contents, search, and locators survive a fresh engine
+ok 5 - river: processed contents, search, and locators survive a fresh engine
+  ---
+  duration_ms: 23.815959
+  type: 'test'
+  ...
+# Subtest: mobi6-plain: processed contents, search, and locators survive a fresh engine
+ok 6 - mobi6-plain: processed contents, search, and locators survive a fresh engine
+  ---
+  duration_ms: 21.337083
+  type: 'test'
+  ...
+# Subtest: mobi6-palmdoc: processed contents, search, and locators survive a fresh engine
+ok 7 - mobi6-palmdoc: processed contents, search, and locators survive a fresh engine
+  ---
+  duration_ms: 16.846666
+  type: 'test'
+  ...
+# Subtest: pg11-kf8: processed contents, search, and locators survive a fresh engine
+ok 8 - pg11-kf8: processed contents, search, and locators survive a fresh engine
+  ---
+  duration_ms: 1872.225916
+  type: 'test'
+  ...
+# Subtest: semantic-epub3: processed contents, search, and locators survive a fresh engine
+ok 9 - semantic-epub3: processed contents, search, and locators survive a fresh engine
+  ---
+  duration_ms: 22.07075
+  type: 'test'
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 9
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 19471.292625

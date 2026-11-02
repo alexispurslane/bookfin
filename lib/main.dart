@@ -16,6 +16,9 @@ import 'downloads/downloads.dart';
 import 'downloads/platform.dart';
 import 'playback/native.dart';
 import 'playback/playback.dart';
+import 'playback/store.dart';
+import 'reader/session.dart';
+import 'reader/platform.dart';
 
 Future<void> main() => runBookfin();
 
@@ -31,17 +34,34 @@ Future<void> runBookfin({bool gallery = false}) async {
       ['GeoNames city data'],
       '${await rootBundle.loadString('assets/cities/NOTICE.txt')}\n\n${await rootBundle.loadString('assets/cities/CC-BY-4.0.txt')}',
     );
+    yield LicenseEntryWithLineBreaks(
+      ['Bookfin EPUB navigator'],
+      await rootBundle.loadString(
+        'packages/flutter_epub_viewer/assets/THIRD-PARTY-LICENSES.txt',
+      ),
+    );
   });
   final appearance = AppearanceController(LocalAppearanceStore());
   await appearance.restore();
   final downloads = gallery ? null : await createDownloads(MediaPolicy());
-  final playback = downloads == null ? null : await createPlayback(downloads);
+  final records = LocalResumeStore();
+  final playback = downloads == null
+      ? null
+      : await createPlayback(downloads, store: records);
+  final reader = downloads == null
+      ? null
+      : ReaderSession(
+          downloads: downloads,
+          store: records.reading,
+          load: loadPublication,
+        );
   runApp(
     BookfinApp(
       appearance: appearance,
       gallery: gallery,
       downloads: downloads,
       playback: playback,
+      reader: reader,
     ),
   );
 }
@@ -55,6 +75,7 @@ class BookfinApp extends StatefulWidget {
     this.catalog,
     this.downloads,
     this.playback,
+    this.reader,
   });
 
   final AppearanceController appearance;
@@ -63,6 +84,7 @@ class BookfinApp extends StatefulWidget {
   final CatalogController? catalog;
   final Downloads? downloads;
   final Playback? playback;
+  final ReaderSession? reader;
 
   @override
   State<BookfinApp> createState() => _BookfinAppState();
@@ -122,6 +144,7 @@ class _BookfinAppState extends State<BookfinApp> with WidgetsBindingObserver {
       _refresh();
     } else {
       unawaited(widget.playback?.flush());
+      unawaited(widget.reader?.flush());
       _clock?.cancel();
     }
   }
@@ -172,6 +195,7 @@ class _BookfinAppState extends State<BookfinApp> with WidgetsBindingObserver {
                 catalog: _catalog,
                 downloads: widget.downloads,
                 playback: widget.playback,
+                reader: widget.reader,
                 onAppearance: () => showModalBottomSheet<void>(
                   context: context,
                   isScrollControlled: true,

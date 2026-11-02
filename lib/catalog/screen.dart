@@ -7,6 +7,8 @@ import '../downloads/downloads.dart';
 import '../downloads/screen.dart';
 import '../playback/playback.dart';
 import '../playback/screen.dart';
+import '../reader/session.dart';
+import '../reader/screen.dart';
 import 'controller.dart';
 import 'jellyfin.dart';
 import 'model.dart';
@@ -18,11 +20,13 @@ class CatalogHome extends StatefulWidget {
     required this.onAppearance,
     this.downloads,
     this.playback,
+    this.reader,
   });
   final CatalogController catalog;
   final VoidCallback onAppearance;
   final Downloads? downloads;
   final Playback? playback;
+  final ReaderSession? reader;
   @override
   State<CatalogHome> createState() => _CatalogHomeState();
 }
@@ -54,7 +58,8 @@ class _CatalogHomeState extends State<CatalogHome> {
       _accessChanged();
     }
     if (oldWidget.downloads != widget.downloads ||
-        oldWidget.playback != widget.playback) {
+        oldWidget.playback != widget.playback ||
+        oldWidget.reader != widget.reader) {
       _bindDownloads();
     }
   }
@@ -68,6 +73,7 @@ class _CatalogHomeState extends State<CatalogHome> {
   void _accessChanged() {
     if (_accountKey != _catalog.session?.scope.key || _catalog.accessBlocked) {
       unawaited(widget.playback?.bind(null, []));
+      unawaited(widget.reader?.bind(null, []));
     }
     _bindDownloads();
     final key = _catalog.session?.scope.key;
@@ -91,10 +97,13 @@ class _CatalogHomeState extends State<CatalogHome> {
       final generation = ++_bindingGeneration;
       final session = _catalog.accessBlocked ? null : _catalog.session;
       final books = _catalog.books;
+      final readingBinding = widget.reader?.bind(session, books);
       unawaited(() async {
         await downloads.bind(session, books);
         if (!mounted || generation != _bindingGeneration) return;
         await widget.playback?.bind(session, books);
+        if (!mounted || generation != _bindingGeneration) return;
+        await readingBinding;
       }());
     }
   }
@@ -337,6 +346,7 @@ class _CatalogHomeState extends State<CatalogHome> {
                                 bookId: book.id,
                                 downloads: widget.downloads,
                                 playback: widget.playback,
+                                reader: widget.reader,
                               ),
                             ),
                           ),
@@ -663,11 +673,13 @@ class _BookPage extends StatelessWidget {
     required this.bookId,
     this.downloads,
     this.playback,
+    this.reader,
   });
   final CatalogController catalog;
   final String bookId;
   final Downloads? downloads;
   final Playback? playback;
+  final ReaderSession? reader;
   @override
   Widget build(BuildContext context) => ListenableBuilder(
     listenable: Listenable.merge([catalog, ?downloads, ?playback]),
@@ -765,6 +777,23 @@ class _BookPage extends StatelessWidget {
                                     },
                                     icon: const Icon(Icons.play_arrow_rounded),
                                     label: const Text('Listen'),
+                                  ),
+                                if (kind == EditionKind.text && reader != null)
+                                  FilledButton.icon(
+                                    onPressed: () {
+                                      unawaited(reader!.open(book, edition));
+                                      Navigator.push<void>(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => ReaderScreen(
+                                            reader: reader!,
+                                            playback: playback,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    icon: const Icon(Icons.menu_book_outlined),
+                                    label: const Text('Read'),
                                   ),
                                 if (playback?.message != null)
                                   Text(playback!.message!),

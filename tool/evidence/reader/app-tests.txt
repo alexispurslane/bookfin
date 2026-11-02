@@ -1,0 +1,381 @@
+Linked T3 command-line tools: /tmp/nix-shell.yqwwW7/tmp.QpqoZENcQo/existing-sdk/cmdline-tools/latest -> /nix/store/in52zy1w2yv0197h7553n827h8f03x8k-bookfin-android-sdk/cmdline-tools/latest
+T3 already uses the project command-line tools: /tmp/nix-shell.yqwwW7/tmp.QpqoZENcQo/existing-sdk/cmdline-tools/latest
+Refusing to replace existing command-line tools: /tmp/nix-shell.yqwwW7/tmp.QpqoZENcQo/existing-sdk/cmdline-tools/latest
+The host SDK or project command-line tools are missing. No link was created.
+PASS: SDK discovery link is additive, repeatable, and refuses existing tools or a missing SDK.
+PASS: Android reader file access compiles against shared SDK platforms 35 and 36.
+PASS: Native hooks discover the macOS SDK without inherited SDK variables, in either argument order.
+/tmp/nix-shell.yqwwW7/tmp.NVCW5mPSbo/reader.dylib: code object is not signed at all
+In architecture: arm64
+--timestamp:  not in {none}
+Run with --help for more information.
+The following argument was not expected: --unsupported-option
+Run with --help for more information.
+/tmp/nix-shell.yqwwW7/tmp.NVCW5mPSbo/reader.dylib: invalid signature (code or signature have been modified)
+In architecture: arm64
+PASS: Native hooks compile Objective-C and produce a real, verifiable ad-hoc signature without timestamps.
+Resolving dependencies...
+Downloading packages...
+  archive 4.0.9 (4.6.0 available)
+  code_assets 1.2.1 (2.1.0 available)
+  crypto 3.0.7 (3.0.8 available)
+  flutter_cache_manager 3.4.6 (3.4.8 available)
+  flutter_secure_storage 9.2.4 (11.2.0 available)
+  flutter_secure_storage_linux 1.2.3 (3.0.3 available)
+  flutter_secure_storage_macos 3.1.3 (4.0.0 available)
+  flutter_secure_storage_platform_interface 1.1.2 (2.1.1 available)
+  flutter_secure_storage_web 1.2.1 (2.1.1 available)
+  flutter_secure_storage_windows 3.1.2 (4.2.2 available)
+  hooks 2.0.2 (2.2.0 available)
+  image 4.5.4 (4.12.0 available)
+  js 0.6.7 (0.7.2 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  meta 1.18.3 (1.19.0 available)
+  objective_c 9.5.0 (9.6.2 available)
+  petitparser 7.0.2 (7.1.0 available)
+  record_use 0.6.0 (1.1.1 available)
+  shared_preferences_foundation 2.5.7 (2.6.1 available)
+  test_api 0.7.12 (0.7.15 available)
+  vector_math 2.4.0 (2.4.4 available)
+  win32 5.15.0 (6.4.0 available)
+  xml 6.6.1 (7.1.0 available)
+Got dependencies!
+23 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+00:00 +0: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/records_test.dart
+00:00 +0: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/records_test.dart: reading before the first listen does not prevent audio resume persistence
+00:00 +1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/records_test.dart: audio and text records share account persistence without overwriting each other
+00:00 +2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/session_test.dart: closing while records restore cancels the open without disabling later record saves
+00:00 +3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/publication_test.dart: rewritten wrapper references cannot bypass processed resource limits
+00:00 +4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/publication_test.dart: rewritten wrapper references cannot bypass processed resource limits
+00:00 +5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/publication_test.dart: rewritten wrapper references cannot bypass processed resource limits
+00:00 +6: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/publication_test.dart: rewritten wrapper references cannot bypass processed resource limits
+00:00 +7: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/publication_test.dart: rewritten wrapper references cannot bypass processed resource limits
+00:00 +8: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/publication_test.dart: rewritten wrapper references cannot bypass processed resource limits
+00:00 +9: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/publication_test.dart: rewritten wrapper references cannot bypass processed resource limits
+00:00 +10: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/publication_test.dart: rewritten wrapper references cannot bypass processed resource limits
+00:00 +11: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/publication_test.dart: rewritten wrapper references cannot bypass processed resource limits
+00:01 +12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/publication_test.dart: rewritten wrapper references cannot bypass processed resource limits
+00:01 +13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/catalog_flow_test.dart: book details opens the production reader and sign-out closes the old account (variant: TargetPlatform.linux)
+00:01 +14: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/catalog_flow_test.dart: book details opens the production reader and sign-out closes the old account (variant: TargetPlatform.linux)
+00:01 +15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/catalog_flow_test.dart: book details opens the production reader and sign-out closes the old account (variant: TargetPlatform.linux)
+00:01 +16: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/catalog_flow_test.dart: book details opens the production reader and sign-out closes the old account (variant: TargetPlatform.linux)
+00:01 +17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/catalog_flow_test.dart: book details opens the production reader and sign-out closes the old account (variant: TargetPlatform.linux)
+00:01 +18: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/catalog_flow_test.dart: book details opens the production reader and sign-out closes the old account (variant: TargetPlatform.linux)
+00:01 +19: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/catalog_flow_test.dart: book details opens the production reader and sign-out closes the old account (variant: TargetPlatform.linux)
+00:01 +20: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/catalog_flow_test.dart: book details opens the production reader and sign-out closes the old account (variant: TargetPlatform.linux)
+00:01 +21: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/catalog_flow_test.dart: book details opens the production reader and sign-out closes the old account (variant: TargetPlatform.linux)
+00:01 +22: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/catalog_flow_test.dart: book details opens the production reader and sign-out closes the old account (variant: TargetPlatform.linux)
+00:01 +23: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/catalog_flow_test.dart: book details opens the production reader and sign-out closes the old account (variant: TargetPlatform.linux)
+00:01 +24: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/catalog_flow_test.dart: book details opens the production reader and sign-out closes the old account (variant: TargetPlatform.linux)
+00:01 +25: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/catalog_flow_test.dart: book details opens the production reader and sign-out closes the old account (variant: TargetPlatform.linux)
+00:01 +26: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/catalog_flow_test.dart: book details opens the production reader and sign-out closes the old account (variant: TargetPlatform.linux)
+00:01 +27: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/catalog_flow_test.dart: book details opens the production reader and sign-out closes the old account (variant: TargetPlatform.linux)
+00:02 +28: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/preferences_test.dart: manual appearance and selected location survive a new controller
+00:02 +29: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/preferences_test.dart: returning to automatic uses the retained location
+00:02 +30: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/preferences_test.dart: removing the location persists the system fallback
+00:02 +31: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/preferences_test.dart: rapid selections save in order and keep the newest choice visible
+00:02 +32: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/preferences_test.dart: failed writes expose an unsaved choice and a later choice retries
+00:02 +33: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/preferences_test.dart: damaged and unknown saved choices use an explicit safe fallback
+00:02 +34: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: (setUpAll)
+00:02 +34: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:02 +35: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:02 +36: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:02 +37: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:02 +38: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:02 +39: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:02 +40: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:02 +41: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:02 +42: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:02 +43: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:02 +44: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:02 +45: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:02 +46: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:02 +47: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:02 +48: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:02 +49: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:02 +50: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:02 +51: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:02 +52: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:02 +53: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:02 +54: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:02 +55: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:02 +56: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:02 +57: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:02 +58: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:03 +59: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:03 +60: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:03 +61: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:03 +62: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:03 +63: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:03 +64: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:03 +65: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:03 +66: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:03 +67: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:03 +68: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:03 +69: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:03 +70: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:03 +71: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:03 +72: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:03 +73: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:03 +74: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:03 +75: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:03 +76: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:03 +77: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:03 +78: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:03 +79: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:03 +80: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:03 +81: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:03 +82: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:03 +83: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:03 +84: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:03 +85: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:03 +86: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:03 +87: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:03 +88: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:03 +89: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:03 +90: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:03 +91: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:03 +92: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:03 +93: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:03 +94: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:03 +95: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:03 +96: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:03 +97: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:03 +98: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:03 +99: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:03 +100: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:03 +101: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:03 +102: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:03 +103: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:03 +104: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +105: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +106: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +107: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +108: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +109: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +110: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +111: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +112: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +113: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +114: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +115: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +116: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +117: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +118: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +119: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +120: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +121: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +122: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:05 +123: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:05 +124: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:05 +125: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:05 +126: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:05 +127: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:05 +128: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:05 +129: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:05 +130: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:05 +131: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:05 +132: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:05 +133: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:05 +134: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:05 +135: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:05 +136: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:05 +137: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:05 +138: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:05 +139: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:05 +140: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:05 +141: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:05 +142: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:05 +143: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:05 +144: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:05 +145: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:05 +146: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:05 +147: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:05 +148: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:05 +149: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:05 +150: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:05 +151: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/root_history_test.dart: root Listening opens personal records and sign-out dismisses the private route
+00:05 +152: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/root_history_test.dart: root Listening opens personal records and sign-out dismisses the private route
+00:05 +153: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/root_history_test.dart: root Listening opens personal records and sign-out dismisses the private route
+00:05 +154: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/root_history_test.dart: root Listening opens personal records and sign-out dismisses the private route
+00:05 +155: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/root_history_test.dart: root Listening opens personal records and sign-out dismisses the private route
+00:05 +156: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/root_history_test.dart: root Listening opens personal records and sign-out dismisses the private route
+00:05 +157: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/root_history_test.dart: root Listening opens personal records and sign-out dismisses the private route
+00:05 +158: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/root_history_test.dart: root Listening opens personal records and sign-out dismisses the private route
+00:05 +159: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/root_history_test.dart: root Listening opens personal records and sign-out dismisses the private route
+00:05 +160: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/root_history_test.dart: root Listening opens personal records and sign-out dismisses the private route
+00:05 +161: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/root_history_test.dart: root Listening opens personal records and sign-out dismisses the private route
+00:05 +162: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/root_history_test.dart: root Listening opens personal records and sign-out dismisses the private route
+00:05 +163: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/root_history_test.dart: root Listening opens personal records and sign-out dismisses the private route
+00:05 +164: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/root_history_test.dart: root Listening opens personal records and sign-out dismisses the private route
+00:05 +165: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/root_history_test.dart: root Listening opens personal records and sign-out dismisses the private route
+00:05 +166: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/root_history_test.dart: root Listening opens personal records and sign-out dismisses the private route
+00:05 +167: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/root_history_test.dart: root Listening opens personal records and sign-out dismisses the private route
+00:05 +168: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/root_history_test.dart: root Listening opens personal records and sign-out dismisses the private route
+00:06 +169: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/root_history_test.dart: root Listening opens personal records and sign-out dismisses the private route
+00:06 +170: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/root_history_test.dart: root Listening opens personal records and sign-out dismisses the private route
+00:06 +171: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/root_history_test.dart: root Listening opens personal records and sign-out dismisses the private route
+00:06 +172: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/root_history_test.dart: root Listening opens personal records and sign-out dismisses the private route
+00:06 +173: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/root_history_test.dart: root Listening opens personal records and sign-out dismisses the private route
+00:06 +174: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/root_history_test.dart: root Listening opens personal records and sign-out dismisses the private route
+00:06 +175: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/root_history_test.dart: root Listening opens personal records and sign-out dismisses the private route
+00:06 +176: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/root_history_test.dart: root Listening opens personal records and sign-out dismisses the private route
+00:06 +177: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/root_history_test.dart: root Listening opens personal records and sign-out dismisses the private route
+00:06 +178: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/root_history_test.dart: root Listening opens personal records and sign-out dismisses the private route
+00:06 +179: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/root_history_test.dart: root Listening opens personal records and sign-out dismisses the private route
+00:06 +180: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/root_history_test.dart: root Listening opens personal records and sign-out dismisses the private route
+00:06 +181: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/root_history_test.dart: root Listening opens personal records and sign-out dismisses the private route
+00:06 +182: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/root_history_test.dart: root Listening opens personal records and sign-out dismisses the private route
+00:06 +183: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/root_history_test.dart: root Listening opens personal records and sign-out dismisses the private route
+00:06 +184: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/root_history_test.dart: root Listening opens personal records and sign-out dismisses the private route
+00:06 +185: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/root_history_test.dart: root Listening opens personal records and sign-out dismisses the private route
+00:06 +186: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/root_history_test.dart: root Listening opens personal records and sign-out dismisses the private route
+00:06 +187: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/root_history_test.dart: root Listening opens personal records and sign-out dismisses the private route
+00:06 +188: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/root_history_test.dart: root Listening opens personal records and sign-out dismisses the private route
+00:06 +189: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/root_history_test.dart: root Listening opens personal records and sign-out dismisses the private route
+00:06 +190: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/root_history_test.dart: root Listening opens personal records and sign-out dismisses the private route
+00:06 +191: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/screen_test.dart: mini-player offers Undo where a forward jump occurs
+00:06 +192: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/screen_test.dart: mini-player offers Undo where a forward jump occurs
+00:06 +193: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/replacement_test.dart: fresh start requires confirmation and Cancel keeps saved records
+00:06 +194: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/replacement_test.dart: fresh start requires confirmation and Cancel keeps saved records
+00:07 +195: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/replacement_test.dart: fresh start requires confirmation and Cancel keeps saved records
+00:07 +196: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/replacement_test.dart: fresh start requires confirmation and Cancel keeps saved records
+00:07 +197: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/replacement_test.dart: fresh start requires confirmation and Cancel keeps saved records
+00:07 +198: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/replacement_test.dart: fresh start requires confirmation and Cancel keeps saved records
+00:07 +199: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/replacement_test.dart: fresh start requires confirmation and Cancel keeps saved records
+00:07 +200: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/replacement_test.dart: fresh start requires confirmation and Cancel keeps saved records
+00:07 +201: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/replacement_test.dart: fresh start requires confirmation and Cancel keeps saved records
+00:07 +202: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/replacement_test.dart: fresh start requires confirmation and Cancel keeps saved records
+00:07 +203: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/replacement_test.dart: fresh start requires confirmation and Cancel keeps saved records
+00:07 +204: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/replacement_test.dart: fresh start requires confirmation and Cancel keeps saved records
+00:07 +205: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/replacement_test.dart: fresh start requires confirmation and Cancel keeps saved records
+00:07 +206: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/replacement_test.dart: fresh start requires confirmation and Cancel keeps saved records
+00:07 +207: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/replacement_test.dart: fresh start requires confirmation and Cancel keeps saved records
+00:07 +208: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/replacement_test.dart: fresh start requires confirmation and Cancel keeps saved records
+00:07 +209: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/replacement_test.dart: fresh start requires confirmation and Cancel keeps saved records
+00:07 +210: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/replacement_test.dart: fresh start requires confirmation and Cancel keeps saved records
+00:07 +211: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/replacement_test.dart: fresh start requires confirmation and Cancel keeps saved records
+00:07 +212: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/replacement_test.dart: fresh start requires confirmation and Cancel keeps saved records
+00:07 +213: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/playback/replacement_test.dart: fresh start requires confirmation and Cancel keeps saved records
+00:07 +214: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: production search accepts ASCII names and discards blank input
+00:07 +215: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: production search accepts ASCII names and discards blank input
+00:07 +216: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: production search accepts ASCII names and discards blank input
+00:07 +217: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: production search accepts ASCII names and discards blank input
+00:07 +218: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: production search accepts ASCII names and discards blank input
+00:07 +219: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: production search accepts ASCII names and discards blank input
+00:07 +220: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: production search accepts ASCII names and discards blank input
+00:07 +221: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: production search accepts ASCII names and discards blank input
+00:07 +222: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: production search accepts ASCII names and discards blank input
+00:07 +223: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: production search accepts ASCII names and discards blank input
+00:07 +224: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: navigation preserves readable painted text in both palettes
+00:07 +225: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: navigation preserves readable painted text in both palettes
+00:07 +226: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: navigation preserves readable painted text in both palettes
+00:07 +227: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: navigation preserves readable painted text in both palettes
+00:07 +228: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: navigation preserves readable painted text in both palettes
+00:07 +229: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: navigation preserves readable painted text in both palettes
+00:07 +230: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: navigation preserves readable painted text in both palettes
+00:08 +231: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: navigation preserves readable painted text in both palettes
+00:08 +232: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: navigation preserves readable painted text in both palettes
+00:08 +233: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: navigation preserves readable painted text in both palettes
+00:08 +234: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: navigation preserves readable painted text in both palettes
+00:08 +235: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: navigation preserves readable painted text in both palettes
+00:08 +236: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: navigation preserves readable painted text in both palettes
+00:08 +237: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: navigation preserves readable painted text in both palettes
+00:08 +238: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: navigation preserves readable painted text in both palettes
+00:08 +239: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: navigation preserves readable painted text in both palettes
+00:08 +240: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: navigation preserves readable painted text in both palettes
+00:09 +241: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: navigation preserves readable painted text in both palettes
+00:09 +242: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: navigation preserves readable painted text in both palettes
+00:09 +243: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: navigation preserves readable painted text in both palettes
+00:09 +244: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: navigation preserves readable painted text in both palettes
+00:09 +245: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: navigation preserves readable painted text in both palettes
+00:09 +246: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: navigation preserves readable painted text in both palettes
+00:09 +247: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: a production city persists and drives sunrise and sunset
+00:09 +248: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: a production city persists and drives sunrise and sunset
+00:09 +249: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: a production city persists and drives sunrise and sunset
+00:09 +250: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: a production city persists and drives sunrise and sunset
+00:09 +251: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: a production city persists and drives sunrise and sunset
+00:09 +252: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: a production city persists and drives sunrise and sunset
+00:09 +253: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: a production city persists and drives sunrise and sunset
+00:09 +254: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/downloads/screen_test.dart: rejected saved recordings stay discoverable and removable
+00:09 +255: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/downloads/screen_test.dart: rejected saved recordings stay discoverable and removable
+00:09 +256: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/downloads/screen_test.dart: rejected saved recordings stay discoverable and removable
+00:09 +257: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/downloads/screen_test.dart: rejected saved recordings stay discoverable and removable
+00:09 +258: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/downloads/screen_test.dart: rejected saved recordings stay discoverable and removable
+00:10 +259: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/downloads/screen_test.dart: rejected saved recordings stay discoverable and removable
+00:10 +260: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/downloads/screen_test.dart: rejected saved recordings stay discoverable and removable
+00:10 +261: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/downloads/screen_test.dart: rejected saved recordings stay discoverable and removable
+00:10 +262: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/downloads/screen_test.dart: rejected saved recordings stay discoverable and removable
+00:10 +263: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/downloads/screen_test.dart: rejected saved recordings stay discoverable and removable
+00:10 +264: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/downloads/screen_test.dart: rejected saved recordings stay discoverable and removable
+00:10 +265: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/downloads/screen_test.dart: rejected saved recordings stay discoverable and removable
+00:10 +266: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/downloads/screen_test.dart: rejected saved recordings stay discoverable and removable
+00:10 +267: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/downloads/screen_test.dart: rejected saved recordings stay discoverable and removable
+00:10 +268: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/downloads/screen_test.dart: rejected saved recordings stay discoverable and removable
+00:10 +269: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: production removal persists fallback without losing manual override
+00:10 +270: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: production removal persists fallback without losing manual override
+00:10 +271: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: production removal persists fallback without losing manual override
+00:10 +272: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: production removal persists fallback without losing manual override
+00:10 +273: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: production removal persists fallback without losing manual override
+00:10 +274: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: production removal persists fallback without losing manual override
+00:10 +275: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: production removal persists fallback without losing manual override
+00:10 +276: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: production removal persists fallback without losing manual override
+00:10 +277: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: production removal persists fallback without losing manual override
+00:10 +278: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: production removal persists fallback without losing manual override
+00:11 +279: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: production removal persists fallback without losing manual override
+00:11 +280: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: production removal persists fallback without losing manual override
+00:11 +281: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: production removal persists fallback without losing manual override
+00:11 +282: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: production removal persists fallback without losing manual override
+00:11 +283: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: production removal persists fallback without losing manual override
+00:11 +284: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: production removal persists fallback without losing manual override
+00:11 +285: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: production removal persists fallback without losing manual override
+00:11 +286: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: production removal persists fallback without losing manual override
+00:11 +287: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: production removal persists fallback without losing manual override
+00:11 +288: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: production removal persists fallback without losing manual override
+00:11 +289: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: production removal persists fallback without losing manual override
+00:11 +290: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: production removal persists fallback without losing manual override
+00:11 +291: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: production removal persists fallback without losing manual override
+00:11 +292: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: production removal persists fallback without losing manual override
+00:11 +293: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: production removal persists fallback without losing manual override
+00:11 +294: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: production removal persists fallback without losing manual override
+00:11 +295: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: production removal persists fallback without losing manual override
+00:11 +296: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: production removal persists fallback without losing manual override
+00:12 +297: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: production removal persists fallback without losing manual override
+00:12 +298: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: production removal persists fallback without losing manual override
+00:12 +299: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: production removal persists fallback without losing manual override
+00:12 +300: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: production removal persists fallback without losing manual override
+00:12 +301: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/appearance/production_city_test.dart: production removal persists fallback without losing manual override
+00:12 +302: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:12 +303: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:12 +304: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:12 +305: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:12 +306: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:12 +307: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:12 +308: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:12 +309: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:12 +310: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:12 +311: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:12 +312: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:12 +313: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:12 +314: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:12 +315: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:12 +316: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:12 +317: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:12 +318: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:12 +319: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:12 +320: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:13 +321: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:13 +322: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:13 +323: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:13 +324: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/downloads/screen_test.dart: unavailable private storage shows an error without exposing old entries
+00:13 +325: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: text stays readable during both directions of a palette change
+00:13 +326: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: text stays readable during both directions of a palette change
+00:13 +327: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: manual appearance changes the screen without losing its filter
+00:13 +328: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: reading size and scroll survive navigation and a palette change
+00:14 +329: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: automatic appearance recalculates after resume and location changes
+00:14 +330: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: automatic appearance changes while the app remains open
+00:14 +331: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: without a location Android system appearance changes are honored
+00:14 +332: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: reduced motion applies palette and screen changes immediately
+00:14 +333: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/foundation_test.dart: large text fits the gallery and appearance controls
+00:14 +334: All tests passed!

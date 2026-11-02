@@ -1,0 +1,2 @@
+c1380e6caee8fbdb782a878c920f900463fdd74239a8dff2b8bc58f472ee2ff6  build/app/outputs/flutter-apk/app-debug.apk
+bf16ccc5bf11b785ed89909b5f610cf8c98d3a63afa93e49d7a4e6523703b408  build/web/main.dart.js
