@@ -1,0 +1,215 @@
+{
+  "evidenceClass": "disposable-official-binary-runtime",
+  "origin": "http://127.0.0.1:7364",
+  "observedAtUtc": "2026-11-02T01:44:31.453445+00:00",
+  "phase": "catalog",
+  "observations": {
+    "authorizationStatuses": {
+      "unauthenticatedCatalog": 401,
+      "unauthenticatedDownload": 401,
+      "bobHiddenItem": 404,
+      "bobHiddenDownload": 404,
+      "aliceMissingItem": 404,
+      "aliceMissingDownload": 404,
+      "bobCannotImpersonateAlice": 403
+    },
+    "range": {
+      "status": 206,
+      "bytes": 32,
+      "contentRange": "bytes 0-31/398673",
+      "secondRangeStatus": 206,
+      "bytesMatchSeed": true
+    },
+    "disabledDownloadStatus": 403,
+    "missingPermission": "client guard tested without network; this server always returns the flag",
+    "fileBypassRequests": 0,
+    "ordinaryAudioCounts": {
+      "alice": 5,
+      "bob": 4
+    },
+    "orderedParts": [
+      {
+        "name": "z-first",
+        "disc": 1,
+        "track": 1,
+        "id": "b48eac7f18c929fa3f6c248caad7d7fe"
+      },
+      {
+        "name": "a-second",
+        "disc": 1,
+        "track": 2,
+        "id": "4d876e53d11899d1b9d155ff19746800"
+      },
+      {
+        "name": "m-third",
+        "disc": 2,
+        "track": 1,
+        "id": "9e8b45020ea21737b667add3655b7eea"
+      }
+    ],
+    "pairing": {
+      "audioEditionA": [
+        "b48eac7f18c929fa3f6c248caad7d7fe",
+        "4d876e53d11899d1b9d155ff19746800",
+        "9e8b45020ea21737b667add3655b7eea"
+      ],
+      "audioEditionB": [
+        "579199189737b996496cc0cb63a7c2cf"
+      ],
+      "ebookEdition": "8546278325d433c10c4c4733e5ad1e8a",
+      "sharedWorkAncestor": "5c52ef9e16de0cab8bf53773b8fef8ab",
+      "ebookRangeStatus": 206,
+      "automaticPairingDeclaredByServer": false,
+      "applicationMapperExecuted": false
+    },
+    "playback": {
+      "aliceTicks": 600000000,
+      "bobTicks": 0,
+      "minAudiobookResumeMinutesDuringProbe": 0,
+      "maxAudiobookResumeMinutesDuringProbe": 0,
+      "originalMinAudiobookResumeMinutes": 5,
+      "originalMaxAudiobookResumeMinutes": 5
+    },
+    "actualCatalogDtos": [
+      {
+        "Id": "579199189737b996496cc0cb63a7c2cf",
+        "Name": "other-narrator",
+        "Type": "AudioBook",
+        "ParentId": "5c52ef9e16de0cab8bf53773b8fef8ab",
+        "IndexNumber": 1,
+        "ParentIndexNumber": 1,
+        "Album": "Synthetic Work",
+        "Artists": [
+          "Research Author"
+        ],
+        "ProviderIds": {},
+        "SyntheticRelativePath": "public/Work/Recording B/other-narrator.m4b",
+        "mediaSourceCount": 1,
+        "chapters": []
+      },
+      {
+        "Id": "8d1a8a823d6262b96865bccaae654664",
+        "Name": "secret-synthetic",
+        "Type": "AudioBook",
+        "ParentId": "2db4b1bc22f41fcc473ced35cdd8388d",
+        "IndexNumber": 1,
+        "ParentIndexNumber": 1,
+        "Album": "Synthetic Work",
+        "Artists": [
+          "Research Author"
+        ],
+        "ProviderIds": {},
+        "SyntheticRelativePath": "private/Hidden/secret-synthetic.m4b",
+        "mediaSourceCount": 1,
+        "chapters": []
+      },
+      {
+        "Id": "b48eac7f18c929fa3f6c248caad7d7fe",
+        "Name": "z-first",
+        "Type": "AudioBook",
+        "ParentId": "d35592bb0ac61d7cfbc7c6359e26b03d",
+        "IndexNumber": 1,
+        "ParentIndexNumber": 1,
+        "Album": "Synthetic Work",
+        "Artists": [
+          "Research Author"
+        ],
+        "ProviderIds": {},
+        "SyntheticRelativePath": "public/Work/Recording A/z-first.m4b",
+        "mediaSourceCount": 1,
+        "chapters": [
+          {
+            "Name": "Beginning",
+            "StartPositionTicks": 0
+          },
+          {
+            "Name": "Ending",
+            "StartPositionTicks": 900000000
+          }
+        ]
+      },
+      {
+        "Id": "4d876e53d11899d1b9d155ff19746800",
+        "Name": "a-second",
+        "Type": "AudioBook",
+        "ParentId": "d35592bb0ac61d7cfbc7c6359e26b03d",
+        "IndexNumber": 2,
+        "ParentIndexNumber": 1,
+        "Album": "Synthetic Work",
+        "Artists": [
+          "Research Author"
+        ],
+        "ProviderIds": {},
+        "SyntheticRelativePath": "public/Work/Recording A/a-second.m4b",
+        "mediaSourceCount": 1,
+        "chapters": []
+      },
+      {
+        "Id": "9e8b45020ea21737b667add3655b7eea",
+        "Name": "m-third",
+        "Type": "AudioBook",
+        "ParentId": "d35592bb0ac61d7cfbc7c6359e26b03d",
+        "IndexNumber": 1,
+        "ParentIndexNumber": 2,
+        "Album": "Synthetic Work",
+        "Artists": [
+          "Research Author"
+        ],
+        "ProviderIds": {},
+        "SyntheticRelativePath": "public/Work/Recording A/m-third.m4b",
+        "mediaSourceCount": 1,
+        "chapters": []
+      },
+      {
+        "Id": "2db4b1bc22f41fcc473ced35cdd8388d",
+        "Name": "private",
+        "Type": "Folder",
+        "ParentId": "f27caa37e5142225cceded48f6553502",
+        "ProviderIds": {},
+        "SyntheticRelativePath": "private",
+        "mediaSourceCount": 0,
+        "chapters": []
+      },
+      {
+        "Id": "3c966cb474ac74c146d850ed07a2103a",
+        "Name": "public",
+        "Type": "Folder",
+        "ParentId": "f27caa37e5142225cceded48f6553502",
+        "ProviderIds": {},
+        "SyntheticRelativePath": "public",
+        "mediaSourceCount": 0,
+        "chapters": []
+      },
+      {
+        "Id": "d35592bb0ac61d7cfbc7c6359e26b03d",
+        "Name": "Recording A",
+        "Type": "Folder",
+        "ParentId": "5c52ef9e16de0cab8bf53773b8fef8ab",
+        "ProviderIds": {},
+        "SyntheticRelativePath": "public/Work/Recording A",
+        "mediaSourceCount": 0,
+        "chapters": []
+      },
+      {
+        "Id": "8546278325d433c10c4c4733e5ad1e8a",
+        "Name": "Synthetic Work",
+        "Type": "Book",
+        "ParentId": "5c52ef9e16de0cab8bf53773b8fef8ab",
+        "ProviderIds": {},
+        "SyntheticRelativePath": "public/Work/Text Edition/Synthetic Work.epub",
+        "mediaSourceCount": 0,
+        "chapters": []
+      },
+      {
+        "Id": "5c52ef9e16de0cab8bf53773b8fef8ab",
+        "Name": "Work",
+        "Type": "Folder",
+        "ParentId": "3c966cb474ac74c146d850ed07a2103a",
+        "ProviderIds": {},
+        "SyntheticRelativePath": "public/Work",
+        "mediaSourceCount": 0,
+        "chapters": []
+      }
+    ]
+  }
+}

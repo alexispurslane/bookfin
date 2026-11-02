@@ -1,0 +1,35 @@
+{
+  "nixpkgs": {
+    "commit": "fe13242281a67641c0102cdb1087f0ebe586c7df",
+    "narHash": "sha256-zp8ToDMnqZcu4o4IH9pdwXFXGp7yLm/M0dEnNWnyd7I="
+  },
+  "jellyfin": {
+    "sourceCommit": "83d0d0e7f76e23e2e085c8ff67d28b772d35967d",
+    "sourceArchiveUrl": "https://codeload.github.com/jellyfin/jellyfin/tar.gz/83d0d0e7f76e23e2e085c8ff67d28b772d35967d",
+    "sourceArchiveSha256": "fa96b3e173525c871d3d0b2b3afd512bd692e2b2314935c223c1c44035ec7ea1",
+    "binaryArchiveUrl": "https://repo.jellyfin.org/files/server/macos/stable/v12.4/arm64/jellyfin_12.4-arm64.tar.xz",
+    "binaryArchiveBytes": 85731032,
+    "binaryArchiveHash": "sha256-wQfU4Nhei6EpJMkRTSqK1D6dg1QKZ5I9vveIuTMR/i0=",
+    "binaryDllSha256": "c553ef86f47d4de0399be5cb13d3623b9df017bb5d655a4622c8e58334f0b39c"
+  },
+  "enhanced": {
+    "sourceCommit": "9bbf16c0de6662baeaa23e51c71505c15c560381",
+    "sourceArchiveUrl": "https://codeload.github.com/n00bcodr/Jellyfin-Enhanced/tar.gz/9bbf16c0de6662baeaa23e51c71505c15c560381",
+    "sourceArchiveSha256": "cd862a39bf506bc0efb3e21f2937d08f909d895d2d10219e00eb84d048403e59",
+    "binaryArchiveUrl": "https://github.com/n00bcodr/Jellyfin-Enhanced/releases/download/12.14.0.0/Jellyfin.Plugin.JellyfinEnhanced_12.0.0.zip",
+    "binaryArchiveBytes": 3355932,
+    "binaryArchiveHash": "sha256-y+2w+YoYJ/udlDNyqphiYLsiROlWcsFuWyelJPoyHUM=",
+    "binaryArchiveSha256": "cbedb0f98a1827fb9d943372aa986260bb2244e95672c16e5b27a524fa321d43",
+    "binaryDllSha256": "adca0f59a4271ad7c7549439b19c350f37302211fcb724b2bfa36358e5883564",
+    "embeddedInformationalVersionCommit": "9bbf16c0de6662baeaa23e51c71505c15c560381",
+    "sourceProjectAssemblyAndFileVersion": "12.13.0.0",
+    "runtimePluginAndVersionEndpointVersion": "12.14.0.0",
+    "productionBackendBinaryCompared": false,
+    "independentRebuildVerified": false
+  },
+  "referenceCheckout": {
+    "path": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-a33d17df",
+    "commit": "d327f68eb5b49642cc0cd559bf5f7f3f3038ccac",
+    "mergedOrModified": false
+  }
+}

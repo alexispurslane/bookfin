@@ -1,0 +1,25 @@
+{
+  "evidenceClass": "disposable-official-binary-runtime",
+  "origin": "http://127.0.0.1:7364",
+  "observedAtUtc": "2026-11-02T01:40:15.532196+00:00",
+  "phase": "read-side-effects",
+  "observations": {
+    "emptySyntheticBobDirectoryRemovedBeforeMeasurement": true,
+    "before": {
+      "directoryExists": false,
+      "bookmarkExists": false,
+      "settingsExists": false
+    },
+    "afterBookmarkGet": {
+      "directoryExists": true,
+      "bookmarkExists": false,
+      "settingsExists": false
+    },
+    "afterSettingsGet": {
+      "directoryExists": true,
+      "bookmarkExists": false,
+      "settingsExists": true
+    },
+    "settingsUnknownNamespaceRetained": false
+  }
+}

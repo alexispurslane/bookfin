@@ -1,0 +1,52 @@
+{
+  "evidenceClass": "observed-local-test-execution",
+  "shell": "nix develop ./tool/research/sync",
+  "command": "python3 -m unittest discover -s tool/research/sync -v",
+  "redRuns": [
+    {
+      "scope": "first four safety behavior tests",
+      "tests": 4,
+      "assertionFailuresIncludingSubtests": 14,
+      "importOrSyntaxErrors": 0,
+      "reason": "Remote origins and missing download permissions were not rejected; private output was not implemented"
+    },
+    {
+      "scope": "modern Authorization token",
+      "assertionFailures": 1,
+      "reason": "The HTTP request lacked the token in the nonlegacy Authorization header"
+    },
+    {
+      "scope": "missing permission stops actual HTTP",
+      "assertionFailures": 1,
+      "reason": "The unguarded transfer still started HTTP"
+    },
+    {
+      "scope": "startup document without version or identity",
+      "assertionFailures": 1,
+      "reason": "A startup response was incorrectly accepted as ready"
+    }
+  ],
+  "finalResearchSuite": {
+    "tests": 10,
+    "failures": 0,
+    "errors": 0,
+    "result": "OK"
+  },
+  "repositoryFlutterSuite": {
+    "command": "nix develop --command flutter test --concurrency=1 --reporter expanded",
+    "tests": 34,
+    "failures": 0,
+    "result": "All tests passed!"
+  },
+  "serverExperimentPhases": [
+    "catalog",
+    "storage",
+    "read-side-effects",
+    "playlists",
+    "provenance",
+    "after-restart"
+  ],
+  "allRetainedExperimentPhaseAssertionsPass": true,
+  "coverageJobStarted": false,
+  "mutationJobStarted": false
+}

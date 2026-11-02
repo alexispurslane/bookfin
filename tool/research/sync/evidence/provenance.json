@@ -1,0 +1,32 @@
+{
+  "evidenceClass": "disposable-official-binary-runtime",
+  "origin": "http://127.0.0.1:7364",
+  "observedAtUtc": "2026-11-02T01:40:18.215121+00:00",
+  "phase": "provenance",
+  "observations": {
+    "serverReportedVersion": "12.4.0",
+    "enhancedReportedVersion": "12.14.0.0",
+    "enhancedPluginStatus": "Active",
+    "serverDllSha256": "c553ef86f47d4de0399be5cb13d3623b9df017bb5d655a4622c8e58334f0b39c",
+    "enhancedDllSha256": "adca0f59a4271ad7c7549439b19c350f37302211fcb724b2bfa36358e5883564",
+    "enhancedEmbeddedCommitStrings": [
+      ".1.0.0+9bbf16c0de6662baeaa23e51c71505c15c560381"
+    ],
+    "enhancedAssets": {
+      "bookmarks/bookmarks.js": {
+        "sha256": "88ed2cb6310234be67ec2e6e9126772d7a1576d1377d61a47deba038fb42b497",
+        "bytes": 49244
+      },
+      "config.js": {
+        "sha256": "f12788930e01c1459013b20be4fb1e13df165becf8c79addf13bcad57710c3d2",
+        "bytes": 13119
+      }
+    },
+    "python": "3.14.7",
+    "ffmpeg": "ffmpeg version 9.0.1 Copyright (c) 2000-2026 the FFmpeg developers",
+    "serverNixStorePath": "/nix/store/1n4aw8yil7ymf633avnm4l0ndl28x58s-bookfin-research-jellyfin-12.4",
+    "enhancedNixStorePath": "/nix/store/3grhy8q6xakaq4zd824gp90vhsv9c21r-bookfin-research-enhanced-12.14.0.0",
+    "deployedProductionBackendCompared": false,
+    "independentRebuildOrAttestationVerified": false
+  }
+}
