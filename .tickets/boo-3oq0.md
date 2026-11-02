@@ -1,7 +1,7 @@
 ---
 id: boo-3oq0
 status: open
-deps: [boo-p58t, boo-6h8w, boo-9wgg]
+deps: [boo-p58t, boo-6h8w, boo-9wgg, tb-5fyd, tb-887c]
 links: []
 created: 2026-11-01T21:37:34Z
 type: task

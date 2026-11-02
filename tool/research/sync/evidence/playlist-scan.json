@@ -1,0 +1,19 @@
+{
+  "evidenceClass": "disposable-official-binary-runtime",
+  "origin": "http://127.0.0.1:7364",
+  "observedAtUtc": "2026-11-02T02:51:29.034476+00:00",
+  "phase": "playlist-scan",
+  "observations": {
+    "route": "/Items/{samePlaylistId}",
+    "ownerStatus": 200,
+    "ownerExactPayload": true,
+    "otherUserStatus": 404,
+    "otherUserPayloadExposed": false,
+    "otherUserResponseBytes": 162,
+    "sameObjectAndRoute": true,
+    "libraryScanCompleted": true,
+    "completedScanStartUtc": "2026-11-02T02:51:27.976077Z",
+    "completedScanEndUtc": "2026-11-02T02:51:28.53351Z",
+    "upgradeTested": false
+  }
+}

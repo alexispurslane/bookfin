@@ -1,0 +1,51 @@
+{
+  "evidenceClass": "research-harness-tests-and-environment-observation",
+  "baselineCommit": "e62257c",
+  "worktree": "t3-b22c5e06",
+  "shell": "nix develop ./tool/research/sync --command",
+  "red": [
+    {
+      "scope": "same-route privacy observer",
+      "tests": 5,
+      "assertionFailures": 5,
+      "importOrReferenceErrors": 0
+    },
+    {
+      "scope": "operation discovery decoder, clean red run",
+      "testsIncludingExistingObserver": 9,
+      "assertionFailures": 3,
+      "importOrReferenceErrors": 0
+    },
+    {
+      "scope": "JSON-escaped payload denial regression",
+      "testsIncludingExistingBehaviors": 10,
+      "assertionFailures": 1,
+      "importOrReferenceErrors": 0
+    }
+  ],
+  "intermediateTestPlacementError": {
+    "attributeErrors": 3,
+    "correctedBeforeCleanDecoderRed": true,
+    "countedAsMeaningfulRed": false
+  },
+  "exploratoryInsertionOrdering": {
+    "initialNumericSuffixAssumptionFailed": true,
+    "correctedProbeVerifiesInsertionOrderBeforeMeasuringPages": true,
+    "countedAsJellyfinSyncFailure": false
+  },
+  "green": {
+    "command": "python3 -m unittest discover -s tool/research/sync -v",
+    "tests": 20,
+    "newTests": 10,
+    "failures": 0,
+    "errors": 0
+  },
+  "applicationCodeChanged": false,
+  "coverageOrMutationStarted": false,
+  "productionServerContacted": false,
+  "devicesOrBrowserUsed": false,
+  "privateStateRetained": ".cache/sync/runtime/",
+  "accountFileModes": "0600",
+  "runtimeDirectoryMode": "0700",
+  "finalServerState": "cleanly stopped; no listener on TCP 7364"
+}

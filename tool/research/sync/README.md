@@ -115,3 +115,52 @@ See `docs/research/jellyfin-sync.md` for the storage decision gate. Private
 playlists are a separate, promising candidate. Snapshot counterexamples do not
 prove that every existing-storage protocol is impossible. No plugin or new
 personal-record transport is selected by this research.
+
+## Private playlist protocol follow-up: t3-7fv1
+
+Read `docs/research/jellyfin-playlist-protocol.md` for the exact decision boundary.
+This follow-up does not need the CustomPrefs or Enhanced storage phases above.
+Use a fresh fixture in your own checkout; never copy generated account files
+from another checkout or start a second listener on port 7364.
+
+Start `serve` as above with stdin redirected from `/dev/null`. Wait for readiness,
+then run `seed` once on the new fixture. Run these pinned commands sequentially:
+
+```sh
+nix develop ./tool/research/sync --command python3 -m unittest discover -s tool/research/sync -v
+nix develop ./tool/research/sync --command python3 tool/research/sync/playlist_protocol.py confidentiality
+nix develop ./tool/research/sync --command python3 tool/research/sync/playlist_protocol.py objects
+nix develop ./tool/research/sync --command python3 tool/research/sync/playlist_protocol.py paging
+nix develop ./tool/research/sync --command python3 tool/research/sync/playlist_protocol.py scan
+nix develop ./tool/research/sync --command python3 tool/research/sync/fixture.py stop
+```
+
+Wait for the server process to exit. Start the same `serve` command again with
+the same isolated directories, then run:
+
+```sh
+nix develop ./tool/research/sync --command python3 tool/research/sync/fixture.py wait
+nix develop ./tool/research/sync --command python3 tool/research/sync/playlist_protocol.py restarted
+nix develop ./tool/research/sync --command python3 tool/research/sync/fixture.py stop
+```
+
+After the process exits, `lsof -nP -iTCP:7364 -sTCP:LISTEN` must show no listener.
+Keep `.cache/sync/runtime/` to allow the parent to restart this disposable fixture.
+The retained fixture from t3-b22c5e06 is stopped and restartable.
+
+`confidentiality` tests Alice's positive payload read and Bob's negative read on
+the same `GET /Items/{id}` route. It writes only statuses, a payload hash, and
+absence checks to the public evidence. `objects` deliberately tests a public
+toggle on a separate synthetic playlist: Bob reads the synthetic note only
+after that explicit change, and the phase restores private visibility. It also
+measures a real unread create acknowledgment, caller-ID deduplication, owner
+management, and sampled create/update sizes. `paging` measures a deletion and a
+separate insertion between offset pages. `scan` waits for a newly completed library scan rather than merely
+observing an idle task before a queued scan starts. `restarted` checks the same
+server identity and exact private payload after clean restart.
+
+The research decoder is not an app transport. It combines equal operation
+identifiers only when their payloads agree, and rejects conflicting duplicate
+payloads. It does not implement current-record merging, retained deletion fences,
+checkpoint compaction, replica retirement, or history retention. The new product
+decision tickets are tb-5fyd and tb-887c. No production plugin is selected.

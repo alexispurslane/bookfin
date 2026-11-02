@@ -1,0 +1,16 @@
+{
+  "evidenceClass": "disposable-official-binary-runtime",
+  "origin": "http://127.0.0.1:7364",
+  "observedAtUtc": "2026-11-02T02:48:48.782125+00:00",
+  "phase": "playlist-confidentiality",
+  "observations": {
+    "route": "/Items/{samePlaylistId}",
+    "ownerStatus": 200,
+    "ownerExactPayload": true,
+    "otherUserStatus": 404,
+    "otherUserPayloadExposed": false,
+    "otherUserResponseBytes": 162,
+    "sameObjectAndRoute": true,
+    "payloadSha256": "4eba3656895b1d7da95e30772729422fb8e60c3363e835ba40e2b7b701014f4c"
+  }
+}
