@@ -214,6 +214,35 @@ class JellyfinClient {
     );
   }
 
+  Future<Map<String, dynamic>> personalRecordChanges(
+    JellyfinSession session,
+    int after,
+  ) => _send(
+    ['BookfinStorage', 'v1', 'objects'],
+    session: session,
+    query: {'after': '$after', 'limit': '4'},
+  );
+
+  Future<Map<String, dynamic>> uploadPersonalRecord(
+    JellyfinSession session,
+    String identity,
+    String payload,
+  ) {
+    if (!RegExp(r'^[a-zA-Z0-9._:-]{1,128}$').hasMatch(identity) ||
+        payload.isEmpty ||
+        utf8.encode(payload).length > 65536) {
+      throw const FormatException(
+        'A personal-record upload exceeds the storage contract.',
+      );
+    }
+    return _send(
+      ['BookfinStorage', 'v1', 'objects', identity],
+      session: session,
+      method: 'PUT',
+      body: {'Payload': payload},
+    );
+  }
+
   Future<List<BookLibrary>> libraries(JellyfinSession session) async {
     final response = await _send(
       ['UserViews'],

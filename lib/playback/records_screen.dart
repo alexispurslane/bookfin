@@ -136,6 +136,16 @@ class PersonalRecordsView extends StatelessWidget {
                       child: const Text('Restore place'),
                     ),
                   ],
+                  TextButton.icon(
+                    icon: const Icon(Icons.delete_outline),
+                    label: const Text('Delete history action'),
+                    onPressed: () => _deleteRecord(
+                      context,
+                      'Delete history action?',
+                      'Remove this action from your history on synced devices. Bookmarks and other actions stay.',
+                      () => playback.deleteHistory(event.id),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -146,11 +156,25 @@ class PersonalRecordsView extends StatelessWidget {
   );
 
   Future<void> _delete(BuildContext context, AudioBookmark bookmark) async {
+    await _deleteRecord(
+      context,
+      'Delete bookmark?',
+      bookmark.title ?? _place(playback, bookmark.position),
+      () => playback.deleteBookmark(bookmark.id),
+    );
+  }
+
+  Future<void> _deleteRecord(
+    BuildContext context,
+    String title,
+    String explanation,
+    Future<void> Function() remove,
+  ) async {
     await showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete bookmark?'),
-        content: Text(bookmark.title ?? _place(playback, bookmark.position)),
+        title: Text(title),
+        content: Text(explanation),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -158,7 +182,7 @@ class PersonalRecordsView extends StatelessWidget {
           ),
           TextButton(
             onPressed: () async {
-              await playback.deleteBookmark(bookmark.id);
+              await remove();
               if (context.mounted) Navigator.pop(context);
             },
             child: const Text('Delete'),

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:bookfin/playback/playback.dart';
 import 'package:bookfin/playback/store.dart';
@@ -111,7 +112,11 @@ void main() {
       () async {
         reader.dispose();
         await reader.flush();
-        await records.reading.write(account().scope.key, damaged);
+        final preferences = await SharedPreferences.getInstance();
+        await preferences.setString(
+          'bookfin.playback.v1.${account().scope.key}',
+          jsonEncode({'reading': damaged}),
+        );
         reader = ReaderSession(
           downloads: downloads,
           store: storage,

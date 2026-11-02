@@ -20,6 +20,7 @@ dependencies:
     path: packages/flutter_epub_viewer
   archive: 4.0.9
   xml: 6.6.1
+  sqflite: 2.4.5
 
 dev_dependencies:
   integration_test:
@@ -30,6 +31,7 @@ dev_dependencies:
   image: 4.5.4
   flutter_inappwebview: 6.2.0-beta.3
   shared_preferences_platform_interface: 2.4.2
+  sqflite_common_ffi: 2.4.0+2
 
 flutter:
   uses-material-design: true

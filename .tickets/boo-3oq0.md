@@ -2,7 +2,7 @@
 id: boo-3oq0
 status: in_progress
 deps: [boo-p58t, boo-6h8w, boo-9wgg, tb-5fyd, tb-887c]
-links: []
+links: [t6-t9po, t6-il6y]
 created: 2026-11-01T21:37:34Z
 type: task
 priority: 2
@@ -27,3 +27,7 @@ Two devices merge offline bookmarks and history, retain deletions, tolerate dupl
 **2026-11-02T22:49:09Z**
 
 User explicitly requests a continuous builder lane: production record sync, then remaining ebook formats and approved OCR, while separate acceptance agent owns Android. Begin implementation against reviewed dedicated-plugin storage and existing record owners; outstanding prerequisite acceptance gates remain open and must be respected before closure. No claim that dependencies are fully accepted.
+
+**2026-11-02T23:21:14Z**
+
+Production candidate now implements account-owned Flutter journal, verified plugin transport, serialized audio/reading merges, SQLite atomic records/pending uploads on Android, explicit conflict choices retaining both resume positions as bookmarks, and explicit history deletion. Two real SQLite clients pass actual disposable Jellyfin/plugin integration. Android acceptance remains open; t6-t9po tracks journal growth and t6-il6y tracks production plugin deployment. See docs/research/production-record-sync.md. No closure or release-complete claim.

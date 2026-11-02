@@ -1,0 +1,22 @@
+00:00 +0: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-6bcb40a5/test/sync/transport_test.dart
+00:00 +0: unverified upload acknowledgment survives restart and retries the same object
+00:00 +1: another authenticated account receives no pending personal records
+00:00 +2: a stale local writer cannot delete a bookmark discovered from another installation
+00:00 +3: interleaved discovery pages retain each object before advancing the cursor
+00:00 +4: a malformed remote record cannot advance discovery or replace local records
+00:00 +4 -1: a malformed remote record cannot advance discovery or replace local records [E]
+  Expected: throws <Instance of 'FormatException'>
+    Actual: <Instance of 'Future<void>'>
+     Which: emitted <null>
+  
+  package:matcher                                    expectLater
+  package:flutter_test/src/widget_tester.dart 507:8  expectLater
+  test/sync/transport_test.dart 201:11               main.<fn>
+  ===== asynchronous gap ===========================
+  dart:async                                         _CustomZone.registerUnaryCallback
+  test/sync/transport_test.dart 196:5                main.<fn>
+  
+00:00 +4 -1: Some tests failed.
+
+Failing tests:
+  /Users/alexispurslane/.t3/worktrees/bookfin/t3-6bcb40a5/test/sync/transport_test.dart: a malformed remote record cannot advance discovery or replace local records

@@ -70,6 +70,7 @@ class ReaderSession extends ChangeNotifier {
   final _pendingWrites = <String, Map<String, dynamic>>{};
   final _failedAccounts = <String>{};
   int _search = 0;
+  int _recordRevision = 0;
 
   bool get ready => publication != null && _navigator != null;
   bool get canBookmark => _recordsReady && position != null;
@@ -446,6 +447,7 @@ class ReaderSession extends ChangeNotifier {
   Future<void> _save() async {
     final key = _account;
     if (key == null || !_recordsReady || _disposed) return;
+    ++_recordRevision;
     final value = <String, dynamic>{
       'version': 1,
       'fontSize': fontSize,
@@ -477,6 +479,43 @@ class ReaderSession extends ChangeNotifier {
   Future<void> flush() async {
     await _binding;
     await _retryPending();
+  }
+
+  Future<void> refreshPersonalRecords() async {
+    await flush();
+    final account = _account;
+    if (account == null ||
+        !_recordsReady ||
+        _pendingWrites.containsKey(account)) {
+      return;
+    }
+    final revision = _recordRevision;
+    final saved = await store.read(account);
+    if (saved == null ||
+        account != _account ||
+        _disposed ||
+        revision != _recordRevision) {
+      return;
+    }
+    final resumes = (saved['resumes'] as List)
+        .map(
+          (value) =>
+              decodeTextPosition(Map<String, dynamic>.from(value as Map)),
+        )
+        .toList();
+    final bookmarks = (saved['bookmarks'] as List)
+        .map(
+          (value) =>
+              TextBookmark.fromJson(Map<String, dynamic>.from(value as Map)),
+        )
+        .toList();
+    _resumes
+      ..clear()
+      ..addAll(resumes);
+    _bookmarks
+      ..clear()
+      ..addAll(bookmarks);
+    _emit();
   }
 
   void checkInvariants() {

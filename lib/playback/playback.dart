@@ -103,6 +103,7 @@ class Playback extends ChangeNotifier {
   ListeningAction? _commandAction;
   final _pendingWrites = <String, Map<String, dynamic>>{};
   final _failedAccounts = <String>{};
+  int _recordRevision = 0;
   AudioReplacement? _replacementStart;
 
   List<ListeningEvent> get history => List.unmodifiable(_history.reversed);
@@ -251,6 +252,51 @@ class Playback extends ChangeNotifier {
     if (!_restored) return;
     _bookmarks.removeWhere((bookmark) => bookmark.id == id);
     await _saveRecords();
+  });
+
+  Future<void> deleteHistory(String id) => _enqueue(() async {
+    if (!_restored) return;
+    _history.removeWhere((event) => event.id == id);
+    if (_undo?.id == id) _undo = null;
+    await _saveRecords();
+  });
+
+  Future<void> refreshPersonalRecords() => _enqueue(() async {
+    final account = _session?.scope.key;
+    await _writes;
+    if (account == null || !_restored || _pendingWrites.containsKey(account)) {
+      return;
+    }
+    final revision = _recordRevision;
+    final saved = await store.read(account);
+    if (saved == null ||
+        account != _session?.scope.key ||
+        revision != _recordRevision) {
+      return;
+    }
+    final history = (saved['history'] as List)
+        .map(
+          (value) =>
+              ListeningEvent.fromJson(Map<String, dynamic>.from(value as Map)),
+        )
+        .toList();
+    final bookmarks = (saved['bookmarks'] as List)
+        .map(
+          (value) =>
+              AudioBookmark.fromJson(Map<String, dynamic>.from(value as Map)),
+        )
+        .toList();
+    final resumes = <String, List<Map<String, dynamic>>>{
+      for (final entry in (saved['resumes'] as Map<String, dynamic>).entries)
+        entry.key: (entry.value as List).cast<Map<String, dynamic>>(),
+    };
+    _history = history;
+    _bookmarks = bookmarks;
+    _resumes = resumes;
+    if (_undo != null && !_history.any((event) => event.id == _undo!.id)) {
+      _undo = null;
+    }
+    _notify();
   });
 
   Future<void> restoreBookmark(String id) => _enqueue(() async {
@@ -1026,6 +1072,7 @@ class Playback extends ChangeNotifier {
   void _save() {
     final accountKey = _session?.scope.key;
     if (accountKey == null || !_restored) return;
+    ++_recordRevision;
     final position = _position;
     if (position != null) {
       final records = _resumes.putIfAbsent(position.editionId, () => []);
