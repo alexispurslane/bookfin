@@ -23985,9 +23985,6 @@ var epubEngine = (() => {
      * @return {Promise}
      */
     display(target) {
-      if (this.displaying) {
-        this.displaying.resolve();
-      }
       return this.q.enqueue(this._display, target);
     }
     /**
@@ -24005,7 +24002,6 @@ var epubEngine = (() => {
       var displayed = displaying.promise;
       var section;
       var moveTo;
-      this.displaying = displaying;
       if (this.book.locations.length() && isFloat(target)) {
         target = this.book.locations.cfiFromPercentage(parseFloat(target));
       }
@@ -24016,11 +24012,9 @@ var epubEngine = (() => {
       }
       this.manager.display(section, target).then(() => this._reportLocation(isCfiString ? target : null)).then(() => {
         displaying.resolve(section);
-        this.displaying = void 0;
         this.emit(EVENTS.RENDITION.DISPLAYED, section);
       }, (err) => {
         displaying.reject(err);
-        this.displaying = void 0;
         this.emit(EVENTS.RENDITION.DISPLAY_ERROR, err);
       });
       return displayed;

@@ -198,3 +198,7 @@ Android acceptance and independent review.
 ## Follow-up review corrections
 
 Review F1 reproduced removal of the loading iframe when resize ran before stylesheet release. Resize requests from both the public rendition interface and native viewport/orientation notifications now enter the rendition navigation queue. Dimension changes, view disposal and restoration complete as one queued operation, after active rendering. F2 reproduced successful completion of Next and Previous despite a failed destination stylesheet. Both navigation paths now propagate the resource rejection. Real-layout regressions cover blocked initial opening, an automatic resize during a neighboring-chapter load, and failed resources in both navigation directions. Red logs are review-resize-red.txt and review-neighbor-red.txt. Android evidence for the earlier candidate does not accept these follow-up changes.
+
+### Public display overlap correction
+
+The second review found public display could resolve the active render completion early. Both Contents and bookmark regressions reproduce the detached loading frame while automatic resize restoration awaits a stylesheet. Public display now only queues its destination. The active render completion handle remains local to that operation, so another caller cannot resolve it. Each regression checks attachment before releasing the stylesheet and the final second-chapter destination afterward. This change still requires corrected-head Android acceptance.

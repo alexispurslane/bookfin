@@ -1,0 +1,425 @@
+Resolving dependencies...
+Downloading packages...
+  archive 4.0.9 (4.6.0 available)
+  code_assets 1.2.1 (2.1.0 available)
+  crypto 3.0.7 (3.0.8 available)
+  flutter_cache_manager 3.4.6 (3.4.8 available)
+  flutter_secure_storage 9.2.4 (11.2.0 available)
+  flutter_secure_storage_linux 1.2.3 (3.0.3 available)
+  flutter_secure_storage_macos 3.1.3 (4.0.0 available)
+  flutter_secure_storage_platform_interface 1.1.2 (2.1.1 available)
+  flutter_secure_storage_web 1.2.1 (2.1.1 available)
+  flutter_secure_storage_windows 3.1.2 (4.2.2 available)
+  hooks 2.0.2 (2.2.0 available)
+  image 4.5.4 (4.12.0 available)
+  js 0.6.7 (0.7.2 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  meta 1.18.3 (1.19.0 available)
+  objective_c 9.5.0 (9.6.2 available)
+  petitparser 7.0.2 (7.1.0 available)
+  record_use 0.6.0 (1.1.1 available)
+  shared_preferences_foundation 2.5.7 (2.6.1 available)
+  test_api 0.7.12 (0.7.15 available)
+  vector_math 2.4.0 (2.4.4 available)
+  win32 5.15.0 (6.4.0 available)
+  xml 6.6.1 (7.1.0 available)
+Got dependencies!
+23 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+00:00 +0: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/appearance_test.dart
+00:00 +0: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/appearance_test.dart: appearance changes during attachment wait for the renderer to open (variant: TargetPlatform.android)
+00:00 +1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/appearance_test.dart: appearance changes during attachment wait for the renderer to open (variant: TargetPlatform.android)
+00:00 +2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/appearance_test.dart: appearance changes during attachment wait for the renderer to open (variant: TargetPlatform.android)
+
+
+🚀 Hi, flutter_inappwebview here, thank you for using it! If you like this plugin → 💙 Support development https://inappwebview.dev/donate ⭐ Star on GitHub https://github.com/pichillilorenzo/flutter_inappwebview 📱 Showcase your app https://inappwebview.dev/showcase
+
+00:00 +3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/appearance_test.dart: appearance changes during attachment wait for the renderer to open (variant: TargetPlatform.android)
+00:00 +4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/appearance_test.dart: appearance changes during attachment wait for the renderer to open (variant: TargetPlatform.android)
+00:00 +5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/appearance_test.dart: appearance changes during attachment wait for the renderer to open (variant: TargetPlatform.android)
+00:00 +6: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/appearance_test.dart: appearance changes during attachment wait for the renderer to open (variant: TargetPlatform.android)
+00:00 +7: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/appearance_test.dart: appearance changes during attachment wait for the renderer to open (variant: TargetPlatform.android)
+00:00 +8: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/appearance_test.dart: appearance changes during attachment wait for the renderer to open (variant: TargetPlatform.android)
+00:00 +9: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/appearance_test.dart: appearance changes during attachment wait for the renderer to open (variant: TargetPlatform.android)
+00:00 +10: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/appearance_test.dart: appearance changes during attachment wait for the renderer to open (variant: TargetPlatform.android)
+00:01 +11: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/appearance_test.dart: appearance changes during attachment wait for the renderer to open (variant: TargetPlatform.android)
+00:01 +12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/appearance_test.dart: appearance changes during attachment wait for the renderer to open (variant: TargetPlatform.android)
+00:01 +13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/appearance_test.dart: appearance changes during attachment wait for the renderer to open (variant: TargetPlatform.android)
+00:01 +14: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/appearance_test.dart: appearance changes during attachment wait for the renderer to open (variant: TargetPlatform.android)
+00:01 +15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/appearance_test.dart: appearance changes during attachment wait for the renderer to open (variant: TargetPlatform.android)
+00:01 +16: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/appearance_test.dart: appearance changes during attachment wait for the renderer to open (variant: TargetPlatform.android)
+00:01 +17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/appearance_test.dart: appearance changes during attachment wait for the renderer to open (variant: TargetPlatform.android)
+00:01 +18: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/appearance_test.dart: appearance changes during attachment wait for the renderer to open (variant: TargetPlatform.android)
+00:01 +19: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/appearance_test.dart: appearance changes during attachment wait for the renderer to open (variant: TargetPlatform.android)
+00:01 +20: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/appearance_test.dart: appearance changes during attachment wait for the renderer to open (variant: TargetPlatform.android)
+00:01 +21: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/appearance_test.dart: appearance changes during attachment wait for the renderer to open (variant: TargetPlatform.android)
+00:01 +22: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/appearance_test.dart: appearance changes during attachment wait for the renderer to open (variant: TargetPlatform.android)
+00:01 +23: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/appearance_test.dart: appearance changes during attachment wait for the renderer to open (variant: TargetPlatform.android)
+00:01 +24: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/appearance_test.dart: appearance changes during attachment wait for the renderer to open (variant: TargetPlatform.android)
+00:01 +25: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/appearance_test.dart: appearance changes during attachment wait for the renderer to open (variant: TargetPlatform.android)
+00:01 +26: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/appearance_test.dart: appearance changes during attachment wait for the renderer to open (variant: TargetPlatform.android)
+00:01 +27: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/appearance_test.dart: appearance changes during attachment wait for the renderer to open (variant: TargetPlatform.android)
+00:01 +28: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/catalog_flow_test.dart: book details opens the production reader and sign-out closes the old account (variant: TargetPlatform.linux)
+00:01 +29: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/catalog_flow_test.dart: book details opens the production reader and sign-out closes the old account (variant: TargetPlatform.linux)
+00:01 +30: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/catalog_flow_test.dart: book details opens the production reader and sign-out closes the old account (variant: TargetPlatform.linux)
+00:01 +31: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/catalog_flow_test.dart: book details opens the production reader and sign-out closes the old account (variant: TargetPlatform.linux)
+00:01 +32: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/catalog_flow_test.dart: book details opens the production reader and sign-out closes the old account (variant: TargetPlatform.linux)
+00:01 +33: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/catalog_flow_test.dart: book details opens the production reader and sign-out closes the old account (variant: TargetPlatform.linux)
+00:01 +34: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/catalog_flow_test.dart: book details opens the production reader and sign-out closes the old account (variant: TargetPlatform.linux)
+00:01 +35: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/catalog_flow_test.dart: book details opens the production reader and sign-out closes the old account (variant: TargetPlatform.linux)
+00:01 +36: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/catalog_flow_test.dart: book details opens the production reader and sign-out closes the old account (variant: TargetPlatform.linux)
+00:01 +37: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/catalog_flow_test.dart: book details opens the production reader and sign-out closes the old account (variant: TargetPlatform.linux)
+00:01 +38: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/catalog_flow_test.dart: book details opens the production reader and sign-out closes the old account (variant: TargetPlatform.linux)
+00:01 +39: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/catalog_flow_test.dart: book details opens the production reader and sign-out closes the old account (variant: TargetPlatform.linux)
+00:01 +40: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/catalog_flow_test.dart: book details opens the production reader and sign-out closes the old account (variant: TargetPlatform.linux)
+00:03 +41: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/appearance_test.dart: automatic appearance follows the system without a selected location
+00:03 +42: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/preferences_test.dart: manual appearance and selected location survive a new controller
+00:03 +43: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/preferences_test.dart: manual appearance and selected location survive a new controller
+00:03 +44: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/downloaded_reader_test.dart: verified EPUB files with missing metadata false reopen and reject tampering
+00:03 +45: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/downloaded_reader_test.dart: verified EPUB files with missing metadata false reopen and reject tampering
+00:03 +46: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/downloaded_reader_test.dart: verified EPUB files with missing metadata false reopen and reject tampering
+00:03 +47: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/downloaded_reader_test.dart: verified EPUB files with missing metadata false reopen and reject tampering
+00:03 +48: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/downloaded_reader_test.dart: verified EPUB files with missing metadata false reopen and reject tampering
+00:03 +49: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/downloaded_reader_test.dart: verified EPUB files with missing metadata false reopen and reject tampering
+00:03 +50: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/downloaded_reader_test.dart: verified EPUB files with missing metadata false reopen and reject tampering
+00:03 +51: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/downloaded_reader_test.dart: verified EPUB files with missing metadata false reopen and reject tampering
+00:03 +52: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/downloaded_reader_test.dart: verified EPUB files with missing metadata false reopen and reject tampering
+00:03 +53: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/downloaded_reader_test.dart: verified EPUB files with missing metadata false reopen and reject tampering
+00:03 +54: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/downloaded_reader_test.dart: verified EPUB files with missing metadata false reopen and reject tampering
+00:03 +55: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/downloaded_reader_test.dart: verified EPUB files with missing metadata false reopen and reject tampering
+00:03 +56: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/downloaded_reader_test.dart: verified EPUB files with missing metadata false reopen and reject tampering
+00:03 +57: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/downloaded_reader_test.dart: verified EPUB files with missing metadata false reopen and reject tampering
+00:03 +58: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/downloaded_reader_test.dart: verified EPUB files with missing metadata false reopen and reject tampering
+00:03 +59: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/downloaded_reader_test.dart: verified EPUB files with missing metadata false reopen and reject tampering
+00:03 +60: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/downloaded_reader_test.dart: verified EPUB files with missing metadata false reopen and reject tampering
+00:03 +61: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/downloaded_reader_test.dart: verified EPUB files with missing metadata false reopen and reject tampering
+00:03 +62: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/downloaded_reader_test.dart: verified EPUB files with missing metadata false reopen and reject tampering
+00:03 +63: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:03 +64: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +65: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +66: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +67: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +68: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +69: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +70: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +71: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +72: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +73: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +74: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +75: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +76: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +77: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +78: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +79: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +80: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +81: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +82: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +83: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +84: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +85: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +86: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +87: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +88: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +89: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +90: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +91: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +92: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +93: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +94: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +95: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +96: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +97: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +98: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +99: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +100: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +101: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +102: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +103: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +104: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +105: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +106: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +107: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +108: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +109: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +110: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +111: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +112: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +113: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +114: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +115: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +116: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +117: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +118: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:04 +119: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:05 +120: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:05 +121: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:05 +122: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:05 +123: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:05 +124: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:05 +125: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:05 +126: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:05 +127: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:05 +128: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:05 +129: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:05 +130: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:05 +131: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:05 +132: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:05 +133: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/screen_test.dart: sign-in is usable without gallery labels or enabled media controls
+00:06 +134: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: reduced motion opens city search without moving its text
+00:06 +135: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: reduced motion opens city search without moving its text
+00:06 +136: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: reduced motion opens city search without moving its text
+00:06 +137: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: reduced motion opens city search without moving its text
+00:06 +138: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: reduced motion opens city search without moving its text
+00:06 +139: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: reduced motion opens city search without moving its text
+00:06 +140: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: reduced motion opens city search without moving its text
+00:06 +141: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: reduced motion opens city search without moving its text
+00:06 +142: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: reduced motion opens city search without moving its text
+00:06 +143: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: reduced motion opens city search without moving its text
+00:06 +144: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: reduced motion opens city search without moving its text
+00:06 +145: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: reduced motion opens city search without moving its text
+00:06 +146: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: reduced motion opens city search without moving its text
+00:06 +147: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: reduced motion opens city search without moving its text
+00:06 +148: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: reduced motion opens city search without moving its text
+00:06 +149: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: reduced motion opens city search without moving its text
+00:06 +150: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: reduced motion opens city search without moving its text
+00:06 +151: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: reduced motion opens city search without moving its text
+00:06 +152: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: reduced motion opens city search without moving its text
+00:06 +153: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: reduced motion opens city search without moving its text
+00:06 +154: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: reduced motion opens city search without moving its text
+00:06 +155: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: reduced motion opens city search without moving its text
+00:06 +156: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: reduced motion opens city search without moving its text
+00:06 +157: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: reduced motion opens city search without moving its text
+00:06 +158: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: reduced motion opens city search without moving its text
+00:06 +159: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/remaining_acceptance_test.dart: canceling bookmark deletion preserves its title note and restorable position after restart
+00:06 +160: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/remaining_acceptance_test.dart: canceling bookmark deletion preserves its title note and restorable position after restart
+00:06 +161: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/remaining_acceptance_test.dart: canceling bookmark deletion preserves its title note and restorable position after restart
+00:06 +162: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/remaining_acceptance_test.dart: canceling bookmark deletion preserves its title note and restorable position after restart
+00:06 +163: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/remaining_acceptance_test.dart: canceling bookmark deletion preserves its title note and restorable position after restart
+00:06 +164: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/remaining_acceptance_test.dart: canceling bookmark deletion preserves its title note and restorable position after restart
+00:06 +165: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/remaining_acceptance_test.dart: canceling bookmark deletion preserves its title note and restorable position after restart
+00:06 +166: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/remaining_acceptance_test.dart: canceling bookmark deletion preserves its title note and restorable position after restart
+00:06 +167: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/remaining_acceptance_test.dart: canceling bookmark deletion preserves its title note and restorable position after restart
+00:06 +168: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/remaining_acceptance_test.dart: canceling bookmark deletion preserves its title note and restorable position after restart
+00:06 +169: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/remaining_acceptance_test.dart: canceling bookmark deletion preserves its title note and restorable position after restart
+00:06 +170: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/remaining_acceptance_test.dart: canceling bookmark deletion preserves its title note and restorable position after restart
+00:06 +171: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/remaining_acceptance_test.dart: canceling bookmark deletion preserves its title note and restorable position after restart
+00:06 +172: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/remaining_acceptance_test.dart: canceling bookmark deletion preserves its title note and restorable position after restart
+00:06 +173: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/remaining_acceptance_test.dart: canceling bookmark deletion preserves its title note and restorable position after restart
+00:06 +174: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/remaining_acceptance_test.dart: canceling bookmark deletion preserves its title note and restorable position after restart
+00:06 +175: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/remaining_acceptance_test.dart: canceling bookmark deletion preserves its title note and restorable position after restart
+00:06 +176: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/remaining_acceptance_test.dart: canceling bookmark deletion preserves its title note and restorable position after restart
+00:06 +177: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/remaining_acceptance_test.dart: canceling bookmark deletion preserves its title note and restorable position after restart
+00:06 +178: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/remaining_acceptance_test.dart: canceling bookmark deletion preserves its title note and restorable position after restart
+00:06 +179: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/remaining_acceptance_test.dart: canceling bookmark deletion preserves its title note and restorable position after restart
+00:06 +180: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/remaining_acceptance_test.dart: canceling bookmark deletion preserves its title note and restorable position after restart
+00:06 +181: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/remaining_acceptance_test.dart: canceling bookmark deletion preserves its title note and restorable position after restart
+00:06 +182: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/remaining_acceptance_test.dart: canceling bookmark deletion preserves its title note and restorable position after restart
+00:06 +183: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/remaining_acceptance_test.dart: canceling bookmark deletion preserves its title note and restorable position after restart
+00:06 +184: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/remaining_acceptance_test.dart: canceling bookmark deletion preserves its title note and restorable position after restart
+00:07 +185: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/root_history_test.dart: root Listening opens personal records and sign-out dismisses the private route
+00:07 +186: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/root_history_test.dart: root Listening opens personal records and sign-out dismisses the private route
+00:07 +187: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/root_history_test.dart: root Listening opens personal records and sign-out dismisses the private route
+00:07 +188: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/root_history_test.dart: root Listening opens personal records and sign-out dismisses the private route
+00:07 +189: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/root_history_test.dart: root Listening opens personal records and sign-out dismisses the private route
+00:07 +190: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: production search accepts ASCII names and discards blank input
+00:07 +191: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: production search accepts ASCII names and discards blank input
+00:07 +192: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/screen_test.dart: mini-player offers Undo where a forward jump occurs
+00:08 +193: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/screen_test.dart: mini-player offers Undo where a forward jump occurs
+00:08 +194: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/screen_test.dart: mini-player offers Undo where a forward jump occurs
+00:08 +195: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/screen_test.dart: mini-player offers Undo where a forward jump occurs
+00:08 +196: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/screen_test.dart: mini-player offers Undo where a forward jump occurs
+00:08 +197: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/screen_test.dart: mini-player offers Undo where a forward jump occurs
+00:08 +198: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/screen_test.dart: mini-player offers Undo where a forward jump occurs
+00:08 +199: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/screen_test.dart: mini-player offers Undo where a forward jump occurs
+00:08 +200: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/screen_test.dart: mini-player offers Undo where a forward jump occurs
+00:08 +201: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/screen_test.dart: mini-player offers Undo where a forward jump occurs
+00:08 +202: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/screen_test.dart: mini-player offers Undo where a forward jump occurs
+00:08 +203: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/screen_test.dart: mini-player offers Undo where a forward jump occurs
+00:08 +204: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/screen_test.dart: mini-player offers Undo where a forward jump occurs
+00:08 +205: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/screen_test.dart: mini-player offers Undo where a forward jump occurs
+00:08 +206: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/screen_test.dart: mini-player offers Undo where a forward jump occurs
+00:08 +207: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/screen_test.dart: mini-player offers Undo where a forward jump occurs
+00:08 +208: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/screen_test.dart: mini-player offers Undo where a forward jump occurs
+00:08 +209: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: a production city persists and drives sunrise and sunset
+00:08 +210: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: a production city persists and drives sunrise and sunset
+00:08 +211: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: a production city persists and drives sunrise and sunset
+00:08 +212: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: a production city persists and drives sunrise and sunset
+00:08 +213: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: a production city persists and drives sunrise and sunset
+00:08 +214: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: a production city persists and drives sunrise and sunset
+00:08 +215: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: a production city persists and drives sunrise and sunset
+00:08 +216: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: a production city persists and drives sunrise and sunset
+00:08 +217: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: a production city persists and drives sunrise and sunset
+00:08 +218: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: a production city persists and drives sunrise and sunset
+00:08 +219: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: a production city persists and drives sunrise and sunset
+00:08 +220: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: a production city persists and drives sunrise and sunset
+00:08 +221: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: a production city persists and drives sunrise and sunset
+00:08 +222: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: a production city persists and drives sunrise and sunset
+00:08 +223: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: a production city persists and drives sunrise and sunset
+00:08 +224: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: a production city persists and drives sunrise and sunset
+00:08 +225: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: a production city persists and drives sunrise and sunset
+00:08 +226: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: a production city persists and drives sunrise and sunset
+00:08 +227: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: a production city persists and drives sunrise and sunset
+00:08 +228: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: a production city persists and drives sunrise and sunset
+00:08 +229: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: a production city persists and drives sunrise and sunset
+00:08 +230: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: a production city persists and drives sunrise and sunset
+00:08 +231: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: a production city persists and drives sunrise and sunset
+00:08 +232: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: a production city persists and drives sunrise and sunset
+00:08 +233: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: a production city persists and drives sunrise and sunset
+00:08 +234: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: a production city persists and drives sunrise and sunset
+00:08 +235: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: a production city persists and drives sunrise and sunset
+00:08 +236: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: a production city persists and drives sunrise and sunset
+00:08 +237: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: a production city persists and drives sunrise and sunset
+00:08 +238: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: a production city persists and drives sunrise and sunset
+00:08 +239: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: a production city persists and drives sunrise and sunset
+00:08 +240: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: a production city persists and drives sunrise and sunset
+00:08 +241: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: a production city persists and drives sunrise and sunset
+00:08 +242: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: a production city persists and drives sunrise and sunset
+00:09 +243: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: a production city persists and drives sunrise and sunset
+00:09 +244: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: navigation preserves readable painted text in both palettes
+00:09 +245: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/screen_test.dart: bookmarks can be added edited restored and deleted from listening history
+00:09 +246: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/screen_test.dart: bookmarks can be added edited restored and deleted from listening history
+00:09 +247: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/screen_test.dart: bookmarks can be added edited restored and deleted from listening history
+00:09 +248: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: production removal persists fallback without losing manual override
+00:09 +249: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: production removal persists fallback without losing manual override
+00:09 +250: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: production removal persists fallback without losing manual override
+00:09 +251: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: production removal persists fallback without losing manual override
+00:09 +252: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: an open appearance sheet updates its polar explanation after the date changes
+00:09 +253: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:10 +254: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:10 +255: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:10 +256: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:10 +257: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:10 +258: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:10 +259: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:10 +260: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:10 +261: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:10 +262: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:10 +263: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:10 +264: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:10 +265: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:10 +266: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:10 +267: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:10 +268: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:10 +269: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:10 +270: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:10 +271: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:10 +272: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:10 +273: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:10 +274: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:10 +275: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:10 +276: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:10 +277: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:10 +278: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:10 +279: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:10 +280: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:10 +281: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:10 +282: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:10 +283: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:10 +284: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:10 +285: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:10 +286: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:10 +287: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:10 +288: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:10 +289: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:10 +290: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:10 +291: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:10 +292: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:10 +293: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:10 +294: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:10 +295: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:10 +296: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:10 +297: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:10 +298: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:11 +299: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:11 +300: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:11 +301: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:11 +302: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:11 +303: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:11 +304: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:11 +305: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:11 +306: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:11 +307: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:11 +308: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:11 +309: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:11 +310: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:11 +311: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:11 +312: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+00:11 +313: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/screen_test.dart: the book list separates audio and ebook availability
+00:11 +314: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/screen_test.dart: the book list separates audio and ebook availability
+00:11 +315: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/screen_test.dart: the book list separates audio and ebook availability
+00:11 +316: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/screen_test.dart: the book list separates audio and ebook availability
+00:11 +317: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/screen_test.dart: the book list separates audio and ebook availability
+00:11 +318: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/screen_test.dart: the book list separates audio and ebook availability
+00:11 +319: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/screen_test.dart: the book list separates audio and ebook availability
+00:11 +320: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/screen_test.dart: the book list separates audio and ebook availability
+00:11 +321: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: manual appearance changes the screen without losing its filter
+00:11 +322: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: manual appearance changes the screen without losing its filter
+00:11 +323: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: manual appearance changes the screen without losing its filter
+00:11 +324: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: manual appearance changes the screen without losing its filter
+00:11 +325: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: manual appearance changes the screen without losing its filter
+00:11 +326: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: manual appearance changes the screen without losing its filter
+00:11 +327: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: manual appearance changes the screen without losing its filter
+00:11 +328: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: manual appearance changes the screen without losing its filter
+00:11 +329: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: manual appearance changes the screen without losing its filter
+00:11 +330: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: manual appearance changes the screen without losing its filter
+00:11 +331: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: manual appearance changes the screen without losing its filter
+00:11 +332: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: manual appearance changes the screen without losing its filter
+00:11 +333: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: manual appearance changes the screen without losing its filter
+00:11 +334: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/screen_test.dart: book details queue an edition and Downloads can cancel it
+00:11 +335: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/screen_test.dart: book details queue an edition and Downloads can cancel it
+00:11 +336: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/screen_test.dart: book details queue an edition and Downloads can cancel it
+00:11 +337: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/screen_test.dart: book details queue an edition and Downloads can cancel it
+00:11 +338: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/screen_test.dart: book details queue an edition and Downloads can cancel it
+00:11 +339: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: reading size and scroll survive navigation and a palette change
+00:11 +340: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: reading size and scroll survive navigation and a palette change
+00:12 +341: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: reading size and scroll survive navigation and a palette change
+00:12 +342: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/screen_test.dart: retained files are separate from active edition availability
+00:12 +343: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: automatic appearance recalculates after resume and location changes
+00:12 +344: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: automatic appearance recalculates after resume and location changes
+00:12 +345: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/screen_test.dart: switching accounts clears the previously displayed inventory
+00:12 +346: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: automatic appearance changes while the app remains open
+00:12 +347: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/screen_test.dart: unreadable identities have no removal action
+00:12 +348: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: without a location Android system appearance changes are honored
+00:12 +349: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: without a location Android system appearance changes are honored
+00:12 +350: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/screen_test.dart: deselected libraries move files out of the catalog and reselection restores them
+00:12 +351: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/screen_test.dart: deselected libraries move files out of the catalog and reselection restores them
+00:12 +352: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/screen_test.dart: deselected libraries move files out of the catalog and reselection restores them
+00:12 +353: All tests passed!
+Resolving dependencies...
+Downloading packages...
+  archive 4.0.9 (4.6.0 available)
+  code_assets 1.2.1 (2.1.0 available)
+  crypto 3.0.7 (3.0.8 available)
+  flutter_cache_manager 3.4.6 (3.4.8 available)
+  flutter_secure_storage 9.2.4 (11.2.0 available)
+  flutter_secure_storage_linux 1.2.3 (3.0.3 available)
+  flutter_secure_storage_macos 3.1.3 (4.0.0 available)
+  flutter_secure_storage_platform_interface 1.1.2 (2.1.1 available)
+  flutter_secure_storage_web 1.2.1 (2.1.1 available)
+  flutter_secure_storage_windows 3.1.2 (4.2.2 available)
+  hooks 2.0.2 (2.2.0 available)
+  image 4.5.4 (4.12.0 available)
+  js 0.6.7 (0.7.2 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  meta 1.18.3 (1.19.0 available)
+  objective_c 9.5.0 (9.6.2 available)
+  petitparser 7.0.2 (7.1.0 available)
+  record_use 0.6.0 (1.1.1 available)
+  shared_preferences_foundation 2.5.7 (2.6.1 available)
+  test_api 0.7.12 (0.7.15 available)
+  vector_math 2.4.0 (2.4.4 available)
+  win32 5.15.0 (6.4.0 available)
+  xml 6.6.1 (7.1.0 available)
+Got dependencies!
+23 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Analyzing t3-595ac881...                                        
+No issues found! (ran in 6.6s)
+
+> bookfin-epub-runtime@0.3.93-bookfin.1 verify
+> node verify-assets.cjs
+
+Verified assets/epub.js: b49f65af43b0c7abb3f19964fb8c31fe0c993ec447774a34cd0cc82f04cc16be
+Verified assets/reader.js: b111f45f376f1bda973529000d4ff50597e1ffdef44af7d2ddfca241428d41d1
+Verified assets/index.html: 92bb3293ae49fd6567940681a1f2eed43574442377a3d3172b0e26436ea461d4
+Verified assets/THIRD-PARTY-LICENSES.txt: b3a60a3f8f65aedaac4c9a4d5eb138ad6cc2b53cbb40553d2203ddc510de255b

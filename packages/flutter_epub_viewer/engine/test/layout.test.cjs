@@ -54,7 +54,7 @@ async function browser() {
 
 async function fixture({ failStyles = false, failedChapter, delayedChapter } = {}) {
   let releaseStyles;
-  const styles = new Promise(resolve => { releaseStyles = resolve; });
+  let styles = new Promise(resolve => { releaseStyles = resolve; });
   let requestedStyles;
   const requested = new Promise(resolve => { requestedStyles = resolve; });
   let releaseFont;
@@ -86,6 +86,7 @@ async function fixture({ failStyles = false, failedChapter, delayedChapter } = {
       response.setHeader('Content-Type', 'text/html');
       response.end('<!doctype html><style>html,body,#viewer{width:412px;height:671px;margin:0;overflow:hidden}</style><div id="viewer"></div><script src="/epub.js"></script><script src="/reader.js"></script>');
     } else if (request.url === '/OPS/book.css') {
+      response.setHeader('Cache-Control', 'no-store');
       requestedStyles(); await styles;
       if (failStyles) { response.writeHead(404); response.end(); return; }
       response.setHeader('Content-Type', 'text/css');
@@ -104,7 +105,8 @@ async function fixture({ failStyles = false, failedChapter, delayedChapter } = {
     } else { response.writeHead(404); response.end(); }
   });
   server.listen(0, '127.0.0.1'); await once(server, 'listening');
-  return { url: `http://127.0.0.1:${server.address().port}/`, requested, releaseStyles, fontRequested, releaseFont,
+  return { url: `http://127.0.0.1:${server.address().port}/`, requested, releaseStyles: () => releaseStyles(), fontRequested, releaseFont,
+    holdStyles() { styles = new Promise(resolve => { releaseStyles = resolve; }); return new Promise(resolve => { requestedStyles = resolve; }); },
     close() { releaseStyles(); releaseFont(); server.closeAllConnections(); return new Promise(resolve => server.close(resolve)); } };
 }
 
@@ -275,3 +277,33 @@ test('automatic viewport resize waits for a loading neighboring chapter', { time
     await page.evaluate('viewport.checkInvariants()');
   } finally { await page.close(); await source.close(); }
 });
+
+for (const navigation of ['contents', 'bookmark']) {
+  test(navigation + ' navigation cannot release a resize restoration before its resources finish', { timeout: 30000 }, async () => {
+    const source = await fixture({ delayedChapter: 'one' });
+    const page = await browser();
+    try {
+      source.releaseStyles();
+      source.releaseFont();
+      await page.call('Page.navigate', { url: source.url });
+      await page.evaluate("new Promise(resolve => { if (window.bookfinReader) resolve(); else addEventListener('load', resolve, {once:true}); })");
+      await page.evaluate(`window.saved=[];window.flutter_inappwebview={callHandler:(name,value)=>{if(name==='readerLocation')saved.push(value)}};
+        const create=ePub;window.ePub=Object.assign((...args)=>{const book=create(...args);const render=book.renderTo.bind(book);book.renderTo=(...args)=>(window.viewport=render(...args));return book},create);
+        bookfinReader.openBook({base:${JSON.stringify(source.url)},packagePath:'OPS/book.opf',fontSize:20,night:false})`);
+      const requested = source.holdStyles();
+      await page.evaluate("document.querySelector('#viewer').style.height='667px';viewport.manager.onResized();true");
+      await requested;
+      await page.evaluate(`window.loadingFrame=document.querySelector('iframe');window.destination=${navigation === 'contents' ?
+        "bookfinReader.go('two.xhtml')" :
+        "bookfinReader.display({cfi:'epubcfi(/6/4!/4/2/1:0)',resource:'OPS/two.xhtml',quote:'Second chapter.'})"};
+        new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>requestAnimationFrame(resolve))))`);
+      assert.equal(await page.evaluate('loadingFrame.isConnected'), true, 'Queued navigation must not remove the active loading chapter');
+      source.releaseStyles();
+      await page.evaluate('destination');
+      await page.evaluate('viewport.q.enqueue(()=>{})');
+      assert.equal(await page.evaluate('saved.at(-1).resource'), 'OPS/two.xhtml');
+      assert.equal(await page.evaluate("document.querySelector('iframe').contentDocument.querySelector('p').textContent"), 'Second chapter.');
+      await page.evaluate('viewport.checkInvariants()');
+    } finally { await page.close(); await source.close(); }
+  });
+}

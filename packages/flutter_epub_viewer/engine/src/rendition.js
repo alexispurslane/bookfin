@@ -302,9 +302,6 @@ class Rendition {
 	 * @return {Promise}
 	 */
 	display(target){
-		if (this.displaying) {
-			this.displaying.resolve();
-		}
 		return this.q.enqueue(this._display, target);
 	}
 
@@ -324,7 +321,6 @@ class Rendition {
 		var section;
 		var moveTo;
 
-		this.displaying = displaying;
 
 		// Check if this is a book percentage
 		if (this.book.locations.length() && isFloat(target)) {
@@ -342,7 +338,6 @@ class Rendition {
 			.then(() => this._reportLocation(isCfiString ? target : null))
 			.then(() => {
 				displaying.resolve(section);
-				this.displaying = undefined;
 
 				/**
 				 * Emit that a section has been displayed
@@ -353,7 +348,6 @@ class Rendition {
 				this.emit(EVENTS.RENDITION.DISPLAYED, section);
 			}, (err) => {
 				displaying.reject(err);
-				this.displaying = undefined;
 				/**
 				 * Emit that has been an error displaying
 				 * @event displayError
