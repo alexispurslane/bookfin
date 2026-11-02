@@ -48,7 +48,7 @@ var bookfinReader = (() => {
     after.setStart(range.startContainer, range.startOffset);
     return after.toString().slice(0, 120);
   }
-  async function visibleLocation(book2, cfi, resource) {
+  async function visibleLocation(book2, cfi, resource, displayed) {
     const collapsed = new window.ePub.CFI(cfi);
     collapsed.collapse(true);
     const start = collapsed.toString();
@@ -56,7 +56,22 @@ var bookfinReader = (() => {
     if (!section || resourceFor(book2, section) !== resource) throw Error("Location resource does not match");
     const range = await book2.getRange(start);
     if (!range) throw Error("Location cannot be resolved");
-    return { cfi: start, resource, quote: quoteAt(range) };
+    let chapter = section.document.querySelector("h1, title")?.textContent.trim() || `Chapter ${section.index + 1}`;
+    let chapterCfi;
+    const comparator = new window.ePub.CFI();
+    for (const item of flatten(book2.navigation.toc)) {
+      const url = new URL(book2.resolve(item.href));
+      if (url.pathname !== new URL(section.url).pathname) continue;
+      const target = url.hash ? section.document.getElementById(decodeURIComponent(url.hash.slice(1))) : section.document.body;
+      if (!target) continue;
+      const candidate = section.cfiFromElement(target);
+      if (comparator.compare(candidate, start) <= 0 && (!chapterCfi || comparator.compare(candidate, chapterCfi) >= 0)) {
+        chapter = item.title;
+        chapterCfi = candidate;
+      }
+    }
+    const pages = displayed && Number.isInteger(displayed.page) && Number.isInteger(displayed.total) && displayed.page > 0 && displayed.total >= displayed.page ? { page: displayed.page, pages: displayed.total } : {};
+    return { cfi: start, resource, quote: quoteAt(range), chapter: chapter.slice(0, 512), ...pages };
   }
   async function verifyLocation(book2, location) {
     const resolved = await visibleLocation(book2, location.cfi, location.resource);
@@ -200,7 +215,7 @@ var bookfinReader = (() => {
       try {
         const cfi = new window.ePub.CFI(location.start.cfi);
         const section = book.spine.get(cfi.spinePos);
-        const start = await visibleLocation(book, location.start.cfi, resourceFor(book, section));
+        const start = await visibleLocation(book, location.start.cfi, resourceFor(book, section), location.start.displayed);
         if (sequence === locationEvent) send("readerLocation", start);
       } catch (_) {
         send("readerFailure", "The visible reading place could not be saved. Use Contents to continue.");

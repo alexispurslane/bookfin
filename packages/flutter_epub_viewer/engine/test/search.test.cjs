@@ -124,6 +124,28 @@ test('reader appearance preserves an edition font while applying the selected te
 
 module.exports = { open };
 
+test('visible locations carry the current contents chapter and actual displayed-page progress', async () => {
+  const opened = await open('<html xmlns="http://www.w3.org/1999/xhtml"><head/><body><h1 id="river">The river</h1><p>River text</p><h2 id="bridge">The bridge</h2><p>Bridge text</p></body></html>');
+  try {
+    opened.book.navigation.toc = [
+      { label: 'The river', href: 'one.xhtml#river', subitems: [] },
+      { label: 'The bridge', href: 'one.xhtml#bridge', subitems: [] },
+    ];
+    const api = runtime(opened);
+    const river = await api.visibleLocation(opened.book, opened.section.find('River text')[0].cfi, 'OPS/one.xhtml', { page: 2, total: 8 });
+    assert.equal(river.chapter, 'The river');
+    assert.equal(river.page, 2);
+    assert.equal(river.pages, 8);
+    const bridge = await api.visibleLocation(opened.book, opened.section.find('Bridge text')[0].cfi, 'OPS/one.xhtml', { page: 3, total: 4 });
+    assert.equal(bridge.chapter, 'The bridge');
+    assert.equal(bridge.page, 3);
+    assert.equal(bridge.pages, 4);
+    const unknown = await api.visibleLocation(opened.book, river.cfi, river.resource, { page: 2, total: 0 });
+    assert.equal(unknown.page, undefined);
+    assert.equal(unknown.pages, undefined);
+  } finally { opened.close(); }
+});
+
 for (const [name, markup] of [
   ['table rows without a source tbody', '<table><tr><td id="target">Target phrase</td></tr></table>'],
   ['nested paragraph blocks', '<p><div id="target">Target phrase</div></p>'],

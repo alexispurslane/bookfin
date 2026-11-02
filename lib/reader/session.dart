@@ -28,6 +28,7 @@ class ReaderSession extends ChangeNotifier {
   Book? _book;
   Edition? _edition;
   TextPosition? _position;
+  VisibleLocation? _visibleLocation;
   VisibleLocation? _initialLocation;
   int _token = 0;
   String? _message;
@@ -41,6 +42,7 @@ class ReaderSession extends ChangeNotifier {
   Book? get book => _book;
   Edition? get edition => _edition;
   TextPosition? get position => _position;
+  VisibleLocation? get visibleLocation => _visibleLocation;
   VisibleLocation? get initialLocation => _initialLocation;
   int get token => _token;
   String? get message =>
@@ -166,6 +168,7 @@ class ReaderSession extends ChangeNotifier {
     _edition = null;
     _book = null;
     _position = null;
+    _visibleLocation = null;
     _initialLocation = null;
     _loading = false;
     _searching = false;
@@ -289,6 +292,7 @@ class ReaderSession extends ChangeNotifier {
     } catch (_) {
       return;
     }
+    _visibleLocation = location;
     _position = TextPosition(
       editionId: edition!.id,
       sourceKey: edition!.files.single.key,

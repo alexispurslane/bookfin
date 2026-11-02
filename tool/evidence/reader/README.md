@@ -8,6 +8,8 @@ Review correction R1: `corrections/r1-red.txt` records three meaningful failures
 
 Review correction R2: `corrections/r2-red.txt` records lost bookmark snapshots, a missing bind/dispose retry, and an edit that reverted after reopening. `corrections/r2-green.txt` records five passing persistence scenarios. They use the real shared preference record merger with failure injected only at the reading-store boundary. They cover flush, account isolation, delayed old-account failure, audio/reading writes, disposal, and bookmark edit/delete after storage recovery. No process-death durability is claimed while storage remains unavailable.
 
+Review correction R3: `corrections/r3-{red,green}.txt` records the production controls regression and correction. The test changes reported visible chapter/page counts, restores a bookmark, and supplies a new visible page count rather than reusing bookmark metadata. Unknown progress has no rail fill. `corrections/r3-engine-{red,green}.txt` checks actual source CFI ordering against two chapter anchors in one document and validates reported page counts. Host DOM tests do not measure Android page geometry.
+
 All build, test, analysis, and format commands ran through the pinned Nix shell. Only one heavy command ran at a time. Resource checks preceded builds; `build-resources.txt` records the final checks. There were no device or browser actions, installation, runtime acceptance, production requests, public servers, coverage jobs, or mutation jobs.
 
 | Check | Exact result | Evidence |

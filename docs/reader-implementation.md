@@ -20,6 +20,8 @@ Review correction R2 retains the newest unsaved reading snapshot for each accoun
 
 ## Supported content and bounds
 
+Review correction R3 restores the approved chapter label and progress rail in the reading controls. The chapter is the nearest preceding contents destination in the displayed source document, with a document-heading/title or reading-order chapter fallback. The rail measures the current displayed page divided by the total displayed pages in that chapter document. Pages are one-based viewport pages, not print pages, audio progress, or a whole-book text percentage. Unknown page counts show “Page progress unavailable” and no filled rail. Page counts are transient viewport data. They are not saved in anchors or reused after bookmark restore, reopening, or appearance changes. A new visible-location event supplies the new chapter and page counts.
+
 The 16 MiB resource limit and 128 MiB total limit also apply to processed bytes. Short wrapper references cannot expand into an oversized published chapter.
 
 | Input | Admission or behavior |

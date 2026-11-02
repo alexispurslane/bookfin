@@ -1,0 +1,33 @@
+TAP version 13
+# Subtest: visible locations carry the current contents chapter and actual displayed-page progress
+not ok 1 - visible locations carry the current contents chapter and actual displayed-page progress
+  ---
+  duration_ms: 60.20975
+  type: 'test'
+  location: '/Users/alexispurslane/.t3/worktrees/bookfin/t3-0c241184/packages/flutter_epub_viewer/engine/test/search.test.cjs:127:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + undefined
+    - 'The river'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'The river'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/Users/alexispurslane/.t3/worktrees/bookfin/t3-0c241184/packages/flutter_epub_viewer/engine/test/search.test.cjs:136:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 286.762

@@ -55,3 +55,7 @@ Final verification supersedes the earlier counts: 334 full app tests, 28 reader 
 **2026-11-02T17:18:33Z**
 
 R2 correction: retained latest pending reading snapshots by account, retried through normal save/bind/flush/dispose lifecycle and the existing shared personal-record store. Failed old-account writes remain owned by that account. Recover only Exception IO failures, not contract Errors. Five focused red-green persistence cases cover bookmark recovery, account isolation, delayed failure, audio merge, disposal and edit/delete reopen. Evidence: tool/evidence/reader/corrections/r2-{red,green}.txt. No closure or Android acceptance.
+
+**2026-11-02T17:22:58Z**
+
+R3 correction: approved reader controls now show the current contents chapter and a rail for current viewport page / total viewport pages in that chapter document. Counts are one-based viewport pages, not print pages or whole-book/audio progress. Unknown counts are labeled unavailable. Transient page metadata is not persisted in bookmarks; restore waits for a new visible-location event. Widget and actual source-CFI engine red-green evidence is under tool/evidence/reader/corrections/r3*. Android geometry remains unaccepted.

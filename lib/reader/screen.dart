@@ -254,6 +254,19 @@ class _ReaderScreenState extends State<ReaderScreen> {
                               ),
                             ],
                           ),
+                          if (reader.visibleLocation?.page != null)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                              ),
+                              child: LinearProgressIndicator(
+                                value:
+                                    reader.visibleLocation!.page! /
+                                    reader.visibleLocation!.pages!,
+                                semanticsLabel:
+                                    'Current chapter page progress. Page ${reader.visibleLocation!.page} of ${reader.visibleLocation!.pages}',
+                              ),
+                            ),
                           Row(
                             children: [
                               IconButton(
@@ -265,7 +278,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
                               ),
                               Expanded(
                                 child: Text(
-                                  'Your reading place stays separate from audio',
+                                  '${reader.visibleLocation?.chapter ?? 'Current chapter unavailable'} · ${reader.visibleLocation?.page == null ? 'Page progress unavailable' : 'Page ${reader.visibleLocation!.page} of ${reader.visibleLocation!.pages}'}',
                                   textAlign: TextAlign.center,
                                   style: Theme.of(context).textTheme.bodySmall,
                                 ),

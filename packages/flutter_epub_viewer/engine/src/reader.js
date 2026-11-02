@@ -15,7 +15,7 @@ function quoteAt(range) {
   return after.toString().slice(0, 120);
 }
 
-export async function visibleLocation(book, cfi, resource) {
+export async function visibleLocation(book, cfi, resource, displayed) {
   const collapsed = new window.ePub.CFI(cfi);
   collapsed.collapse(true);
   const start = collapsed.toString();
@@ -23,7 +23,23 @@ export async function visibleLocation(book, cfi, resource) {
   if (!section || resourceFor(book, section) !== resource) throw Error('Location resource does not match');
   const range = await book.getRange(start);
   if (!range) throw Error('Location cannot be resolved');
-  return { cfi: start, resource, quote: quoteAt(range) };
+  let chapter = section.document.querySelector('h1, title')?.textContent.trim() || `Chapter ${section.index + 1}`;
+  let chapterCfi;
+  const comparator = new window.ePub.CFI();
+  for (const item of flatten(book.navigation.toc)) {
+    const url = new URL(book.resolve(item.href));
+    if (url.pathname !== new URL(section.url).pathname) continue;
+    const target = url.hash ? section.document.getElementById(decodeURIComponent(url.hash.slice(1))) : section.document.body;
+    if (!target) continue;
+    const candidate = section.cfiFromElement(target);
+    if (comparator.compare(candidate, start) <= 0 && (!chapterCfi || comparator.compare(candidate, chapterCfi) >= 0)) {
+      chapter = item.title;
+      chapterCfi = candidate;
+    }
+  }
+  const pages = displayed && Number.isInteger(displayed.page) && Number.isInteger(displayed.total) &&
+    displayed.page > 0 && displayed.total >= displayed.page ? { page: displayed.page, pages: displayed.total } : {};
+  return { cfi: start, resource, quote: quoteAt(range), chapter: chapter.slice(0, 512), ...pages };
 }
 
 export async function verifyLocation(book, location) {
@@ -164,7 +180,7 @@ export async function openBook(configuration) {
     try {
       const cfi = new window.ePub.CFI(location.start.cfi);
       const section = book.spine.get(cfi.spinePos);
-      const start = await visibleLocation(book, location.start.cfi, resourceFor(book, section));
+      const start = await visibleLocation(book, location.start.cfi, resourceFor(book, section), location.start.displayed);
       if (sequence === locationEvent) send('readerLocation', start);
     } catch (_) { send('readerFailure', 'The visible reading place could not be saved. Use Contents to continue.'); }
   });
