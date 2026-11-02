@@ -1,6 +1,6 @@
 ---
 id: t0-odcl
-status: in_progress
+status: closed
 deps: [boo-73yj]
 links: [boo-mx5i]
 created: 2026-11-02T12:30:43Z
@@ -35,3 +35,7 @@ Start shared PDF text-quality follow-up with t0-qnnu. Approved existing policy p
 **2026-11-02T13:47:06Z**
 
 Implementation follow-up from 5815233: shared page-local text-quality policy now rejects both pinned Census pages for mixed source ranges and parallel text groups before reading-PDF generation. Raw extraction and anchors remain unchanged. NIST page 5 retains useful paragraph reflow, headings/footer order and anchors at two widths. Evidence and exact reproduction: docs/research/reader-public-corpus.md, evidence/text-quality/. Final checks: 37 Python, 21 Dart, 5 isolated Flutter widget tests through Nix; no Android verification, universal layout claim, OCR, coverage/mutations or closure. Ready for parent review/integration.
+
+**2026-11-02T14:13:40Z**
+
+Integrated reviewed ffc771c in fb6b11a. Independent static review passed bounded research. Parent reran 11 boundary/fixture-preservation tests through Nix successfully after correcting an omitted PDFIUM_LIBRARY setup in the initial command; real-corpus results remain builder evidence. Documentation-only merge overlap preserved both research reports. Production reader and Android acceptance remain separate.

@@ -1,6 +1,6 @@
 ---
 id: t0-qnnu
-status: in_progress
+status: closed
 deps: [boo-73yj]
 links: [boo-mx5i, boo-suhu]
 created: 2026-11-02T12:33:22Z
@@ -39,3 +39,7 @@ Work alongside t0-odcl under one PDF text-quality decision. Prove safe fallback 
 **2026-11-02T13:47:06Z**
 
 Shared implementation with t0-odcl distinguishes absent text, independently observed source-layer defects, and extraction-order/fragmentation errors. Raven page 9 falls back with 37 fragments; the nine-fragment library stamp also falls back. The exact historical image-only derivative is retained byte-for-byte and verified against its recorded hash. Source errors are bound only to the independently compared page 9; other source layers remain unchecked. Future offline OCR eligibility remains boo-suhu; no OCR or package selection. Checks: 37 Python, 21 Dart, 5 isolated Flutter widget tests through Nix. Host evidence only; ticket remains in_progress for orchestrator integration.
+
+**2026-11-02T14:13:40Z**
+
+Integrated reviewed ffc771c in fb6b11a. Bounded research acceptance passed independent review; parent boundary/fixture-preservation checks pass (11). No OCR or production Android claim. Full corpus evidence remains builder-run.
