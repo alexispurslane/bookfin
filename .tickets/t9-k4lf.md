@@ -42,3 +42,7 @@ Independent correction review approved 4d409098b48eab2e37113b0ac05382f4d5435b20 
 **2026-11-02T12:21:24Z**
 
 Fresh Android attempt on integrated main756ae5f stopped before sign-in after my invalid Settings activity argument and its failed advised retry. Retained-storage visibility/removal/relaunch remain unobserved. New normal APK builds but was not installed; all271 app tests, analyzer and SDK-link checks pass through Nix. No code change, application regression, cross-account access or runtime acceptance claim. Own resources cleaned. See docs/evidence/playback/personal-records-fresh-attempt.md. Leave in_progress.
+
+**2026-11-02T14:13:50Z**
+
+Current-main APK82faf07d observed Alice retained398040 bytes outside catalog after all libraries deselected. Retained source survived process relaunch; Keep files preserved it; explicit Remove files cleared storage. Bob saw no Alice files before removal. Screenshots10-12 and full limits in docs/evidence/playback/current-main-android.md. Restoring library after removal encountered missing fixture route then failed navigation retry, so no later acceptance. Signed out, native media root empty, own resources cleaned. No code change or closure.

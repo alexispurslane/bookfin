@@ -2,7 +2,7 @@
 id: t7-msmk
 status: in_progress
 deps: []
-links: [boo-6h8w, boo-sthf]
+links: [boo-6h8w, boo-sthf, td-7yxu]
 created: 2026-11-02T11:36:42Z
 type: task
 priority: 2
@@ -30,3 +30,7 @@ Fresh authorized attempt on integrated main756ae5fcf77f8d1f9d18124311fedbc085c76
 **2026-11-02T13:39:41Z**
 
 User explicitly reauthorized a fresh attempt after latest stop. Prioritize normal-app sign-in, catalog, download, playback and clean retained screenshots before optional Android Settings or credential-lock work. Inspect actual package/command help first; fresh refs and same single-advised-retry rule.
+
+**2026-11-02T14:13:50Z**
+
+Fresh explicitly authorized attempt at integrated main261d50e installed normal APK SHA25682faf07dfc261fd3a2d309a97b021ed39b16f54e3e18ef9c3bd36f2f7327979c (readback matched). Ordinary field entry/sign-in, library, completed download and actual native playback succeeded; clean screenshots captured first. Records/restart, account isolation and retained removal also observed. Later missing fixture route left library sheet open; navigation and single advised retry failed, so acceptance stopped. Follow-up td-7yxu. No settings/PIN/radio changes or locked-controls test. Signed out, own media removed, servers/route cleaned and binding released shutdown:false. Full evidence docs/evidence/playback/current-main-android.md and current-main-runtime.json. No code change or host-suite rerun, children, PR, hardening or closure.
