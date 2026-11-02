@@ -138,6 +138,26 @@ class JellyfinClient {
   final Uri server;
   final String deviceId;
   final JsonTransport _transport;
+  Future<void> reportPlayback(
+    JellyfinSession session,
+    String event,
+    Map<String, dynamic> body,
+  ) async {
+    if (!const {'start', 'progress', 'stop'}.contains(event)) {
+      throw ArgumentError('Unknown playback event.');
+    }
+    await _send(
+      [
+        'Sessions',
+        'Playing',
+        if (event == 'progress') 'Progress' else if (event == 'stop') 'Stopped',
+      ],
+      method: 'POST',
+      session: session,
+      body: body,
+    );
+  }
+
   Future<JellyfinSession> signIn(String username, String password) async {
     final Map<String, dynamic> response;
     try {

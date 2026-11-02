@@ -1,6 +1,6 @@
 package dev.bookfin.bookfin
 
-import io.flutter.embedding.android.FlutterActivity
+import com.ryanheise.audioservice.AudioServiceActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
@@ -13,7 +13,7 @@ import android.os.Looper
 import android.os.StatFs
 import java.io.File
 
-class MainActivity : FlutterActivity() {
+class MainActivity : AudioServiceActivity() {
     private var networkCallback: ConnectivityManager.NetworkCallback? = null
     private var networkEvents: EventChannel.EventSink? = null
     private val mainHandler = Handler(Looper.getMainLooper())

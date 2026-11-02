@@ -45,6 +45,7 @@ class _IoTransport implements JsonTransport {
         bytes.addAll(chunk);
       }
       if (_closed) throw const CatalogFailure(CatalogFailureKind.cancelled);
+      if (response.statusCode == 204 && bytes.isEmpty) return {};
       final value = jsonDecode(utf8.decode(bytes));
       if (value is! Map<String, dynamic>) {
         throw const CatalogFailure(CatalogFailureKind.invalidResponse);

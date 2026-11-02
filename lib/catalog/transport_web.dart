@@ -55,6 +55,7 @@ class _WebTransport implements JsonTransport {
       }
       final text = (await response.text().toDart).toDart;
       if (_closed) throw const CatalogFailure(CatalogFailureKind.cancelled);
+      if (response.status == 204 && text.isEmpty) return {};
       if (text.length > 16 * 1024 * 1024) {
         throw const CatalogFailure(CatalogFailureKind.invalidResponse);
       }
