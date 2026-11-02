@@ -1,0 +1,99 @@
+building '/nix/store/50gy09qcxs0wc0mj8bd460b364z6fmpq-libmobi-0.12.drv'...
+building '/nix/store/4h5mvif71q60ii4vhhdyjk1raz1r8fih-nix-shell-env.drv'...
+test_active_or_remote_html_cannot_load (test_readers.ReadingProof.test_active_or_remote_html_cannot_load) ... ok
+test_larger_pdf_title_is_a_heading_candidate (test_readers.ReadingProof.test_larger_pdf_title_is_a_heading_candidate) ... FAIL
+test_local_asset_paths_cannot_escape_the_book (test_readers.ReadingProof.test_local_asset_paths_cannot_escape_the_book) ... FAIL
+test_passive_html_keeps_local_images_headings_and_internal_links (test_readers.ReadingProof.test_passive_html_keeps_local_images_headings_and_internal_links) ... FAIL
+test_replaced_file_does_not_reuse_an_old_anchor (test_readers.ReadingProof.test_replaced_file_does_not_reuse_an_old_anchor) ... FAIL
+test_saved_source_anchor_survives_a_layout_width_change (test_readers.ReadingProof.test_saved_source_anchor_survives_a_layout_width_change) ... FAIL
+test_scanned_page_offers_no_fabricated_reflow_text (test_readers.ReadingProof.test_scanned_page_offers_no_fabricated_reflow_text) ... ok
+test_simple_pdf_exposes_text_and_source_pages (test_readers.ReadingProof.test_simple_pdf_exposes_text_and_source_pages) ... FAIL
+test_two_columns_read_down_left_before_right (test_readers.ReadingProof.test_two_columns_read_down_left_before_right) ... FAIL
+
+======================================================================
+FAIL: test_larger_pdf_title_is_a_heading_candidate (test_readers.ReadingProof.test_larger_pdf_title_is_a_heading_candidate)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "tool/research/readers/test_readers.py", line 23, in test_larger_pdf_title_is_a_heading_candidate
+    self.assertEqual([block["text"] for block in blocks if block["heading"]], ["River chapter 1", "River chapter 2"])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [] != ['River chapter 1', 'River chapter 2']
+
+Second list contains 2 additional elements.
+First extra element 0:
+'River chapter 1'
+
+- []
++ ['River chapter 1', 'River chapter 2']
+
+======================================================================
+FAIL: test_local_asset_paths_cannot_escape_the_book (test_readers.ReadingProof.test_local_asset_paths_cannot_escape_the_book)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "tool/research/readers/test_readers.py", line 58, in test_local_asset_paths_cannot_escape_the_book
+    self.assertEqual(html.count("src="), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_passive_html_keeps_local_images_headings_and_internal_links (test_readers.ReadingProof.test_passive_html_keeps_local_images_headings_and_internal_links)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "tool/research/readers/test_readers.py", line 47, in test_passive_html_keeps_local_images_headings_and_internal_links
+    self.assertIn('<h1 id="river">River chapter</h1>', html)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: '<h1 id="river">River chapter</h1>' not found in ''
+
+======================================================================
+FAIL: test_replaced_file_does_not_reuse_an_old_anchor (test_readers.ReadingProof.test_replaced_file_does_not_reuse_an_old_anchor)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "tool/research/readers/test_readers.py", line 42, in test_replaced_file_does_not_reuse_an_old_anchor
+    self.assertIsNotNone(anchor)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^
+AssertionError: unexpectedly None
+
+======================================================================
+FAIL: test_saved_source_anchor_survives_a_layout_width_change (test_readers.ReadingProof.test_saved_source_anchor_survives_a_layout_width_change)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "tool/research/readers/test_readers.py", line 32, in test_saved_source_anchor_survives_a_layout_width_change
+    self.assertIsNotNone(anchor)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^
+AssertionError: unexpectedly None
+
+======================================================================
+FAIL: test_simple_pdf_exposes_text_and_source_pages (test_readers.ReadingProof.test_simple_pdf_exposes_text_and_source_pages)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "tool/research/readers/test_readers.py", line 14, in test_simple_pdf_exposes_text_and_source_pages
+    self.assertIn("The river follows the old road.", [block["text"] for block in blocks])
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'The river follows the old road.' not found in []
+
+======================================================================
+FAIL: test_two_columns_read_down_left_before_right (test_readers.ReadingProof.test_two_columns_read_down_left_before_right)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "tool/research/readers/test_readers.py", line 19, in test_two_columns_read_down_left_before_right
+    self.assertEqual([block["text"] for block in blocks], ["Two columns", "Left 1: the journey begins.", "Left 2: the journey begins.", "Left 3: the journey begins.", "Right 1: the journey ends.", "Right 2: the journey ends.", "Right 3: the journey ends."])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [] != ['Two columns', 'Left 1: the journey begin[151 chars]ds.']
+
+Second list contains 7 additional elements.
+First extra element 0:
+'Two columns'
+
+- []
++ ['Two columns',
++  'Left 1: the journey begins.',
++  'Left 2: the journey begins.',
++  'Left 3: the journey begins.',
++  'Right 1: the journey ends.',
++  'Right 2: the journey ends.',
++  'Right 3: the journey ends.']
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.002s
+
+FAILED (failures=7)

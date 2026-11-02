@@ -1,0 +1,13 @@
+name: reader_packaging_probe
+publish_to: none
+version: 0.0.1+1
+environment:
+  sdk: '>=3.13.0 <4.0.0'
+dependencies:
+  flutter:
+    sdk: flutter
+  pdfrx: 2.11.0
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/simple.pdf

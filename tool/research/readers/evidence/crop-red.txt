@@ -1,0 +1,31 @@
+Running build hooks...No Visual Studio installation found with the requested Microsoft.VisualStudio.Component.VC.Tools.x86.x64 component.
+
+SDK cannot be located in the Nix research shell
+
+
+SDK iphoneos not installed.
+
+SDK cannot be located in the Nix research shell
+
+
+SDK iphonesimulator not installed.
+
+Running build hooks...00:00 +0: loading test/engine_test.dart
+00:00 +0: test/engine_test.dart: (setUpAll)
+00:00 +0: test/engine_test.dart: PDF original pages render without extracting text from a scan
+00:00 +0 -1: test/engine_test.dart: PDF original pages render without extracting text from a scan [E]
+  Expected: a value less than <200>
+    Actual: <255>
+     Which: is not a value less than <200>
+
+  package:matcher             expect
+  test/engine_test.dart 37:9  main.<fn>
+
+00:00 +0 -1: test/engine_test.dart: (tearDownAll)
+00:00 +0 -1: Some tests failed.
+
+Failing tests:
+  test/engine_test.dart: PDF original pages render without extracting text from a scan
+
+Consider enabling the flag chain-stack-traces to receive more detailed exceptions.
+For example, 'dart test --chain-stack-traces'.

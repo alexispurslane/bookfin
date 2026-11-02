@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")"
+: "${BOOKFIN_NIX_SHELL:?Use the root project Nix dev shell}"
+test -f _out/android-arm64/src/libmobi.so
+if [ ! -d _out/flutter-smoke/android ]; then
+  flutter create --empty --platforms=android --project-name reader_packaging_probe _out/flutter-smoke
+fi
+cp flutter_smoke/pubspec.yaml _out/flutter-smoke/pubspec.yaml
+cp flutter_smoke/main.dart _out/flutter-smoke/lib/main.dart
+if [ -f flutter_smoke/pubspec.lock ]; then
+  cp flutter_smoke/pubspec.lock _out/flutter-smoke/pubspec.lock
+fi
+mkdir -p _out/flutter-smoke/assets _out/flutter-smoke/android/app/src/main/jniLibs/arm64-v8a
+cp fixtures/simple.pdf _out/flutter-smoke/assets/simple.pdf
+cp _out/android-arm64/src/libmobi.so _out/flutter-smoke/android/app/src/main/jniLibs/arm64-v8a/
+cd _out/flutter-smoke
+flutter pub get
+flutter build apk --debug --target-platform android-arm64
+unzip -l build/app/outputs/flutter-apk/app-debug.apk | rg 'libmobi|pdfium|simple.pdf'
+"$ANDROID_HOME/build-tools/36.0.0/zipalign" -c -P 16 4 build/app/outputs/flutter-apk/app-debug.apk

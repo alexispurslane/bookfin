@@ -1,7 +1,7 @@
 ---
 id: boo-mx5i
 status: open
-deps: [boo-9wgg]
+deps: [boo-9wgg, t9-26f6]
 links: []
 created: 2026-11-01T21:37:34Z
 type: task

@@ -1,0 +1,3 @@
+Resolving dependencies...
+Because every version of pdfrx_engine depends on image ^4.8.0 and every version of epubx depends on image ^3.0.8, pdfrx_engine is incompatible with epubx.
+So, because bookfin_reader_dependency_conflict depends on both epubx 4.0.0 and pdfrx_engine 0.9.0, version solving failed.
