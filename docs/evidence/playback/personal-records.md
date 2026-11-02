@@ -1,5 +1,10 @@
 # Persistent personal records
 
+The November 2 Android runtime attempt is recorded separately in
+`personal-records-android.md`. Its normal application APK built and installed,
+but device-command failures stopped it before sign-in. It adds no playback or
+personal-record runtime pass. The acceptance tickets remain open.
+
 Ticket: `boo-6h8w`. Original base: `e8fe9c7`. Verification date: November 2, 2026.
 
 This implementation extends the existing playback owner and account-scoped `ResumeStore`. It adds no second player, position cache, navigation root, sync transport, or retention policy.

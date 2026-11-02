@@ -2,7 +2,7 @@
 id: boo-6h8w
 status: in_progress
 deps: [t0-dqxp, t0-60ea]
-links: [boo-sthf]
+links: [boo-sthf, t7-msmk]
 created: 2026-11-01T21:37:34Z
 type: task
 priority: 2
@@ -43,3 +43,7 @@ Second correction: reproduced R1 overlapping completed slider releases and R2 Un
 **2026-11-02T10:57:35Z**
 
 Independent final correction review approved10051f6 with no actionable defects. Parent fast-forward integrated the feature and both correction rounds into main. The exact code already passed237 application tests, clean analysis and Android ARM64 debug build; merge introduced no code conflicts or changes. Keep in_progress for Android runtime and user acceptance. After reader proof releases its own device session, observe grouped drag/Undo, mini-player and History controls, bookmark edit/delete/restore, native seek/pause/interruption actions, account isolation, and real process restart with retained history. No ticket closure or hardening inferred from merge.
+
+**2026-11-02T11:39:46Z**
+
+Android acceptance attempt at72996e4: built normal lib/main.dart ARM64 debug APK and installed/read-back SHA256745d4550d11d5d82b8e19b356b259cbb37e85c4a441cde75dba794a5f0404f2f. Stopped before sign-in under device failure rule: server field focus refused, advised debug retry used an expired ref and was not dispatched. No playback/store evidence or product regression established; no code fix or test APK invented. Temporary emulator-only PIN removed and Screen lock None verified; signed out, no own downloads, original networks unchanged, own fixture/observer stopped and forward removed, own binding released without shutdown. Full details and pending matrix: docs/evidence/playback/personal-records-android.md; follow-up t7-msmk. Leave in_progress for parent.

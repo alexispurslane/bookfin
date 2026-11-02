@@ -108,6 +108,8 @@ See `docs/evidence/playback/personal-records.md` for the history and bookmark im
 
 The integrated real-server follow-up is `docs/evidence/playback/integrated-android.md`.
 The later bounded final-head repeat is `docs/evidence/playback/final-head-android.md`.
+The later personal-record runtime attempt is `docs/evidence/playback/personal-records-android.md`.
+It stopped before sign-in after device-command failures and adds no runtime acceptance pass.
 Its test-only discrete interrupted Pause route is reproducible with
 `nix develop --command bash tool/acceptance/run_interrupted_pause.sh emulator-5554`
 after opening the device through T3. It requires two T3-supplied synthetic call actions.

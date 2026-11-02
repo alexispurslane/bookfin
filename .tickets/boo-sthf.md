@@ -2,7 +2,7 @@
 id: boo-sthf
 status: in_progress
 deps: [boo-7o92, t0-dqxp, t0-60ea]
-links: [t0-60ea, t0-dqxp, boo-6h8w]
+links: [t0-60ea, t0-dqxp, boo-6h8w, t7-msmk]
 created: 2026-11-01T21:37:34Z
 type: task
 priority: 1
@@ -64,3 +64,7 @@ Final bounded original acceptance evidence supplied from 03ac7f5, including actu
 **2026-11-02T09:31:54Z**
 
 Final native acceptance integrated at7090471; both native correction followups close. Parent independently reran ten native tests and clean analysis; 200-test suite and Android observations remain builder execution evidence. Keep this ticket in_progress because credential-locked-screen controls remain unverified under its original controls acceptance. Physical-phone and soak limits also remain explicit. The integrated playback interface is ready for history development; that independent work need not wait for the remaining acceptance observation. No shared user acceptance is inferred.
+
+**2026-11-02T11:39:46Z**
+
+Bounded Android follow-up at72996e4: originally unsecured emulator allowed a temporary synthetic PIN through Settings, then cleanup restored Screen lock None and deviceLocked=0. Credential-locked playback controls were not reached: acceptance stopped before production sign-in after field-focus refusal and an expired-reference diagnostic retry. This does not establish unsupported lock controls or an application defect. No permission/credential bypass, no code change, no test APK, coverage or mutation work. Own servers/forward/binding cleaned; emulator left running. See docs/evidence/playback/personal-records-android.md and t7-msmk. Leave in_progress.
