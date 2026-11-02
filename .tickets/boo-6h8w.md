@@ -51,3 +51,7 @@ Android acceptance attempt at72996e4: built normal lib/main.dart ARM64 debug APK
 **2026-11-02T12:21:24Z**
 
 Authorized fresh attempt at756ae5f stopped before field entry after my invalid Settings activity argument and failed advised retry. No grouped seek, Undo, bookmark, history, restart, isolation or reconnect runtime observation. Normal main APK built but was not installed. All271 application tests, analyzer and SDK-link tests pass through Nix. No application code changed. Evidence and safe preinstalled signed-out image: docs/evidence/playback/personal-records-fresh-attempt.md. Own services and binding cleaned, settings unchanged. Runtime acceptance remains open; no closure or hardening.
+
+**2026-11-02T14:13:50Z**
+
+Current-main APK82faf07d observed +30s jump00:49 to01:19, Undo to00:49, history-result and previous-place restores adding retained history, bookmark create/edit/restore, and first process relaunch preserving position79757ms, bookmark and history without autoplay. Bob saw no Alice download or records; Alice reauthentication restored her download/position. Slider grouping, mini-player/history Pause, deletion and native interrupt matrix remain unobserved after tool stop. Evidence docs/evidence/playback/current-main-android.md; cleanup complete, no code change or closure.

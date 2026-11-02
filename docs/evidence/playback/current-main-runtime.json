@@ -1,0 +1,432 @@
+{
+  "sourceCommit": "261d50eb48dbe78288d44419d692e27268430a78",
+  "package": "dev.bookfin.bookfin",
+  "builtApkSha256": "82faf07dfc261fd3a2d309a97b021ed39b16f54e3e18ef9c3bd36f2f7327979c",
+  "installedApkSha256": "82faf07dfc261fd3a2d309a97b021ed39b16f54e3e18ef9c3bd36f2f7327979c",
+  "hostId": "local",
+  "deviceId": "emulator-5554",
+  "result": "partial observations; stopped after failed navigation and its advised retry",
+  "fixtureOrigin": "http://127.0.0.1:7364",
+  "observerOrigin": "http://127.0.0.1:7365",
+  "screenshots": [
+    {
+      "path": "docs/evidence/playback/images/current-main/01-library.png",
+      "sha256": "ac137983e742fe01005760699a5bc1fa0af3e7d6440753c15fe3784935a6b6d0"
+    },
+    {
+      "path": "docs/evidence/playback/images/current-main/02-book-detail.png",
+      "sha256": "ceb7d3da531f878a6383f94fcf85a898882690cd228656fef775fda64d6ced07"
+    },
+    {
+      "path": "docs/evidence/playback/images/current-main/03-completed-download.png",
+      "sha256": "c118a79e38e87568c4e4d72b86ecdf57f0417d27ece00885b2878652d9f5dcc1"
+    },
+    {
+      "path": "docs/evidence/playback/images/current-main/04-playing.png",
+      "sha256": "f7e085048e62dafa31826f36edd48ad047b380232ebc9a569f584d8467af531b"
+    },
+    {
+      "path": "docs/evidence/playback/images/current-main/05-jump-undo-history.png",
+      "sha256": "7e1e8e799c48670897a4f862acd2f40b506584cd978e792b66525d31624b6aeb"
+    },
+    {
+      "path": "docs/evidence/playback/images/current-main/06-edited-bookmark.png",
+      "sha256": "34a6f7050e400a441878cb25107b7c14e91703ebee265c5027bb55c27e2be907"
+    },
+    {
+      "path": "docs/evidence/playback/images/current-main/07-restart-retains-records.png",
+      "sha256": "0c65fe5dcf74fc267e0376c2c814d76f1896f8bbeea834a38663f0261a24bb8d"
+    },
+    {
+      "path": "docs/evidence/playback/images/current-main/08-bob-no-alice-downloads.png",
+      "sha256": "1229e4a02d553b7c43c860d4bd38f1b2ccbf103642969de93b6f90b65e09eb74"
+    },
+    {
+      "path": "docs/evidence/playback/images/current-main/09-bob-no-alice-records.png",
+      "sha256": "360ed80b3dc024ede0060cfb91292da5c4b59c8a54d316c4b551177757aaa4aa"
+    },
+    {
+      "path": "docs/evidence/playback/images/current-main/10-retained-no-library.png",
+      "sha256": "c5acad79089826e22424b04f129ace33ae6d102481f9400636c7d4d89aef1855"
+    },
+    {
+      "path": "docs/evidence/playback/images/current-main/11-retained-after-restart.png",
+      "sha256": "a0a0a972d7c1533b62870455e58bde404895ac9f5aa17a241b0dea0898fb0d09"
+    },
+    {
+      "path": "docs/evidence/playback/images/current-main/12-retained-removed.png",
+      "sha256": "ce0bc5f313f3633bac0fe37cd967640b69894522cacbb7da0a6dc749f573d0a0"
+    },
+    {
+      "path": "docs/evidence/playback/images/current-main/13-stopped-library-selection.png",
+      "sha256": "c442ce18db41a5cd63f486c59b65fb6802440df2275e6f1d372a9fbd215058d9"
+    },
+    {
+      "path": "docs/evidence/playback/images/current-main/14-cleaned-signed-out.png",
+      "sha256": "63dfe71bf8d70728c704d793161fb2f2c85bfb5d70f526361f637d074bbc8451"
+    }
+  ],
+  "observerEvents": [
+    {
+      "at": 1793627434.7961369,
+      "method": "POST",
+      "path": "/Users/AuthenticateByName",
+      "status": 200
+    },
+    {
+      "at": 1793627434.9940748,
+      "method": "GET",
+      "path": "/UserViews",
+      "status": 200
+    },
+    {
+      "at": 1793627461.9083872,
+      "method": "GET",
+      "path": "/System/Info/Public",
+      "status": 200
+    },
+    {
+      "at": 1793627461.9523,
+      "method": "GET",
+      "path": "/Users/Me",
+      "status": 200
+    },
+    {
+      "at": 1793627461.9973729,
+      "method": "GET",
+      "path": "/UserViews",
+      "status": 200
+    },
+    {
+      "at": 1793627462.07134,
+      "method": "GET",
+      "path": "/UserViews",
+      "status": 200
+    },
+    {
+      "at": 1793627462.143451,
+      "method": "GET",
+      "path": "/Items",
+      "status": 200
+    },
+    {
+      "at": 1793627526.014997,
+      "method": "GET",
+      "path": "/System/Info/Public",
+      "status": 200
+    },
+    {
+      "at": 1793627526.042997,
+      "method": "GET",
+      "path": "/Users/Me",
+      "status": 200
+    },
+    {
+      "at": 1793627526.119019,
+      "method": "GET",
+      "path": "/Items/a2012f47501fbf40b74bbe04d69ea42d",
+      "status": 200
+    },
+    {
+      "at": 1793627526.194143,
+      "method": "GET",
+      "path": "/Items/a2012f47501fbf40b74bbe04d69ea42d/Download",
+      "status": 200,
+      "length": "398040",
+      "etag": null,
+      "range": null,
+      "ifRange": null
+    },
+    {
+      "at": 1793627526.4946291,
+      "method": "GET",
+      "path": "/Items/a2012f47501fbf40b74bbe04d69ea42d",
+      "status": 200
+    },
+    {
+      "at": 1793627558.4598641,
+      "method": "POST",
+      "path": "/Sessions/Playing",
+      "report": {
+        "ItemId": "a2012f47501fbf40b74bbe04d69ea42d",
+        "MediaSourceId": "a2012f47501fbf40b74bbe04d69ea42d",
+        "PositionTicks": 10000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "at": 1793627569.929545,
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "a2012f47501fbf40b74bbe04d69ea42d",
+        "MediaSourceId": "a2012f47501fbf40b74bbe04d69ea42d",
+        "PositionTicks": 100040000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "at": 1793627579.970846,
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "a2012f47501fbf40b74bbe04d69ea42d",
+        "MediaSourceId": "a2012f47501fbf40b74bbe04d69ea42d",
+        "PositionTicks": 200070000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "at": 1793627590.1181,
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "a2012f47501fbf40b74bbe04d69ea42d",
+        "MediaSourceId": "a2012f47501fbf40b74bbe04d69ea42d",
+        "PositionTicks": 302050000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "at": 1793627600.1227891,
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "a2012f47501fbf40b74bbe04d69ea42d",
+        "MediaSourceId": "a2012f47501fbf40b74bbe04d69ea42d",
+        "PositionTicks": 402080000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "at": 1793627609.7221088,
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "a2012f47501fbf40b74bbe04d69ea42d",
+        "MediaSourceId": "a2012f47501fbf40b74bbe04d69ea42d",
+        "PositionTicks": 497570000,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "at": 1793627640.6516852,
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "a2012f47501fbf40b74bbe04d69ea42d",
+        "MediaSourceId": "a2012f47501fbf40b74bbe04d69ea42d",
+        "PositionTicks": 797570000,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "at": 1793627657.265198,
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "a2012f47501fbf40b74bbe04d69ea42d",
+        "MediaSourceId": "a2012f47501fbf40b74bbe04d69ea42d",
+        "PositionTicks": 497570000,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "at": 1793627687.2943082,
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "a2012f47501fbf40b74bbe04d69ea42d",
+        "MediaSourceId": "a2012f47501fbf40b74bbe04d69ea42d",
+        "PositionTicks": 797570000,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "at": 1793627861.892067,
+      "method": "GET",
+      "path": "/System/Info/Public",
+      "status": 200
+    },
+    {
+      "at": 1793627861.9318972,
+      "method": "GET",
+      "path": "/Users/Me",
+      "status": 200
+    },
+    {
+      "at": 1793627862.041883,
+      "method": "GET",
+      "path": "/UserViews",
+      "status": 200
+    },
+    {
+      "at": 1793627862.1411898,
+      "method": "GET",
+      "path": "/UserViews",
+      "status": 200
+    },
+    {
+      "at": 1793627862.1826031,
+      "method": "GET",
+      "path": "/Items",
+      "status": 200
+    },
+    {
+      "at": 1793628081.923934,
+      "method": "POST",
+      "path": "/Users/AuthenticateByName",
+      "status": 200
+    },
+    {
+      "at": 1793628082.030837,
+      "method": "GET",
+      "path": "/UserViews",
+      "status": 200
+    },
+    {
+      "at": 1793628093.464164,
+      "method": "GET",
+      "path": "/System/Info/Public",
+      "status": 200
+    },
+    {
+      "at": 1793628093.5081222,
+      "method": "GET",
+      "path": "/Users/Me",
+      "status": 200
+    },
+    {
+      "at": 1793628093.5410419,
+      "method": "GET",
+      "path": "/UserViews",
+      "status": 200
+    },
+    {
+      "at": 1793628093.566234,
+      "method": "GET",
+      "path": "/UserViews",
+      "status": 200
+    },
+    {
+      "at": 1793628093.620096,
+      "method": "GET",
+      "path": "/Items",
+      "status": 200
+    },
+    {
+      "at": 1793628182.0898318,
+      "method": "POST",
+      "path": "/Users/AuthenticateByName",
+      "status": 200
+    },
+    {
+      "at": 1793628182.226082,
+      "method": "GET",
+      "path": "/UserViews",
+      "status": 200
+    },
+    {
+      "at": 1793628204.205728,
+      "method": "GET",
+      "path": "/System/Info/Public",
+      "status": 200
+    },
+    {
+      "at": 1793628204.2546592,
+      "method": "GET",
+      "path": "/Users/Me",
+      "status": 200
+    },
+    {
+      "at": 1793628204.32481,
+      "method": "GET",
+      "path": "/UserViews",
+      "status": 200
+    },
+    {
+      "at": 1793628226.299936,
+      "method": "GET",
+      "path": "/System/Info/Public",
+      "status": 200
+    },
+    {
+      "at": 1793628226.3874502,
+      "method": "GET",
+      "path": "/Users/Me",
+      "status": 200
+    },
+    {
+      "at": 1793628226.423438,
+      "method": "GET",
+      "path": "/UserViews",
+      "status": 200
+    }
+  ],
+  "nativeSamples": {
+    "playing": {
+      "ownerPid": 30592,
+      "state": "PLAYING",
+      "positionMs": 24408,
+      "speed": 1.0
+    },
+    "firstRelaunch": {
+      "ownerPid": 329,
+      "state": "NONE",
+      "positionMs": 79757,
+      "speed": 1.0
+    },
+    "cleanup": {
+      "active": false,
+      "state": "NONE",
+      "positionMs": 0
+    }
+  },
+  "noHostSuiteRerun": true,
+  "cleanup": {
+    "signedOut": true,
+    "downloadMediaRemoved": true,
+    "settingsChanged": false,
+    "observerStopped": true,
+    "jellyfinStopped": true,
+    "reverseForwardEntries": [],
+    "bindingReleasedWithoutShutdown": true,
+    "syntheticPersonalRecordPreferencesErased": false
+  }
+}

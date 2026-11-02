@@ -30,3 +30,7 @@ Parent reproduced review R1/R2 with three meaningful failures: both legacy forma
 **2026-11-02T13:06:55Z**
 
 Independent correction review approved f297520 with no remaining blocker across the complete feature. Parent integrated without conflicts; application/test/toolchain sources match the tested head (292 app tests, clean analysis and Android build). Keep in_progress for Android confirmation interaction, retained-record process restart and user acceptance. No runtime or hardening claim follows from integration.
+
+**2026-11-02T14:13:50Z**
+
+Fresh authorized current-main APK82faf07d captured required sign-in/library/download/playing path first and completed several record/retained-storage observations. Acceptance then stopped after library-navigation action and single advised retry failed while fixture reverse route was absent. Source bytes were never replaced; Android replacement confirmation/cancel/old-record separation remain unobserved. See docs/evidence/playback/current-main-android.md and route follow-up td-7yxu. No code change or closure.
