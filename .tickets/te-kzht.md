@@ -1,6 +1,6 @@
 ---
 id: te-kzht
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-01T23:32:51Z
