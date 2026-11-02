@@ -1,6 +1,6 @@
 ---
 id: t9-k4lf
-status: open
+status: in_progress
 deps: [boo-7o92]
 links: []
 created: 2026-11-02T04:06:10Z
@@ -20,3 +20,9 @@ docs/plans/bookfin.md; docs/downloads.md
 ## Acceptance Criteria
 
 Show retained storage separately from current edition availability. Tests prove account isolation, safe explicit removal, unreadable metadata handling, and no silent eviction.
+
+## Notes
+
+**2026-11-02T10:58:00Z**
+
+Start independent implementation from integrated history main337a70f. Provide explicit same-account retained-download management using existing download/storage owner. Reader proof owns emulator; this build uses host verification and leaves device acceptance explicit. No automatic eviction or cross-account storage access.
