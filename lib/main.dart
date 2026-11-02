@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'appearance/appearance.dart';
+import 'appearance/city_search.dart';
 import 'appearance/preferences.dart';
 import 'development/gallery.dart';
 import 'foundation/theme.dart';
@@ -19,6 +20,10 @@ Future<void> runBookfin({bool gallery = false}) async {
         font,
       ], await rootBundle.loadString('assets/fonts/OFL-$font.txt'));
     }
+    yield LicenseEntryWithLineBreaks(
+      ['GeoNames city data'],
+      '${await rootBundle.loadString('assets/cities/NOTICE.txt')}\n\n${await rootBundle.loadString('assets/cities/CC-BY-4.0.txt')}',
+    );
   });
   final appearance = AppearanceController(LocalAppearanceStore());
   await appearance.restore();
@@ -291,14 +296,34 @@ class _AppearanceSheet extends StatelessWidget {
                   style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
               const SizedBox(height: 24),
+              Text(
+                'Selected city',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 8),
+              Text(appearance.settings.location?.name ?? 'No city selected'),
+              const SizedBox(height: 8),
+              OutlinedButton(
+                onPressed: () => Navigator.of(context).push<void>(
+                  MaterialPageRoute(
+                    builder: (_) => CitySearch(appearance: appearance),
+                  ),
+                ),
+                child: const Text('Choose city'),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Search the bundled offline city list. No device location or network lookup is used.',
+              ),
               if (gallery) ...[
+                const SizedBox(height: 24),
                 Text(
                   'Development location fixtures',
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Sample cities for testing only. No device location is requested. Production city selection is tracked as remaining implementation work.',
+                  'Sample cities for testing only. The offline city search above is also available in production.',
                 ),
                 const SizedBox(height: 12),
                 Wrap(
@@ -327,10 +352,7 @@ class _AppearanceSheet extends StatelessWidget {
                   'À côté · Ελληνικά · Кириллица · 日本語 · العربية',
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
-              ] else
-                const Text(
-                  'Location selection is not available in this foundation build. No device location is requested.',
-                ),
+              ],
               if (appearance.settings.location != null)
                 TextButton(
                   onPressed: () => unawaited(appearance.selectLocation(null)),

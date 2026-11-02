@@ -26,5 +26,8 @@ flutter:
       fonts:
         - asset: assets/fonts/SourceSerif4.ttf
   assets:
+    - assets/cities/cities.tsv
+    - assets/cities/CC-BY-4.0.txt
+    - assets/cities/NOTICE.txt
     - assets/fonts/OFL-Outfit.txt
     - assets/fonts/OFL-Source-Serif-4.txt

@@ -108,10 +108,11 @@ Do not claim that the browser renderer is fully offline.
 
 ## Limitations and follow-up
 
-Ticket `te-kzht` records the unresolved production location input choice: offline city selection or approximate foreground device location.
-The gallery city fixtures are not a production city picker.
-No location package, precise/background permission, or remote location service was added.
-The `geolocator` assessment and the two designs are in `docs/appearance.md`.
+Production city input was incomplete at this foundation checkpoint, not blocked on a new product decision.
+Ticket `te-kzht` implements the already approved offline selected-city route. Its evidence is recorded separately in `docs/verification/te-kzht.md`.
+The gallery city fixtures remain development samples, separate from the production search.
+No location package, precise/background permission, or remote location service is required.
+The current production flow and dataset limitations are in `docs/appearance.md` and `docs/city-data.md`.
 
 The Android startup resources follow system light/dark appearance until Flutter loads the stored choice.
 No native application night-mode override was added.

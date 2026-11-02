@@ -26,7 +26,7 @@ Review day and night on Android and the shared T3 Device panel. Bundle fonts wit
 
 **2026-11-01T23:32:51Z**
 
-Implementation underway in assigned checkout. Meaningful red tests observed for missing appearance decisions (9 failed), preference persistence/order/failure handling (5 failed), and midway palette contrast. Pure NOAA-style UTC solar calculation now covers selected locations, date/DST boundaries, both polar seasons; automatic fallback is explicit. Production acquisition fork raised: offline selected city vs approximate foreground device location. Shared controller and development city fixtures proceed independently. No location plugin/permission/network service added.
+Implementation underway in assigned checkout. Meaningful red tests observed for missing appearance decisions (9 failed), preference persistence/order/failure handling (5 failed), and midway palette contrast. Pure NOAA-style UTC solar calculation now covers selected locations, date/DST boundaries, both polar seasons; automatic fallback is explicit. Offline selected-city input was already approved; optional approximate foreground location was not a prerequisite or new approval gate. Shared controller and development city fixtures proceed independently. No location plugin/permission/network service added.
 
 **2026-11-02T00:20:17Z**
 
@@ -34,7 +34,7 @@ Implemented bundled full TrueType Outfit/Source Serif 4 and licenses, approved d
 
 **2026-11-02T00:20:17Z**
 
-Pending product choice is tracked in te-kzht: bundled offline city input vs approximate foreground location. The production shell keeps honest system fallback; city buttons are development fixtures only. Browser gallery serves only loopback 127.0.0.1:7358, separate from untouched old 7357 shell. Browser hot reload observed at 681 ms; Flutter web fallback fonts still use its CDN, tracked in te-6x43. Android debugger attempt was bounded and detached after slow VM-service warnings; no Android hot reload claim and t3-4isz remains open. Phone keyboard/browser acceptance remains boo-a4gi. Ticket intentionally remains in_progress for parent review and integration.
+Production input was incomplete at this checkpoint. The approved offline selected-city route is implementation work in te-kzht, not a pending product choice. City buttons at this checkpoint were development fixtures only. Browser gallery serves only loopback 127.0.0.1:7358, separate from untouched old 7357 shell. Browser hot reload observed at 681 ms; Flutter web fallback fonts still use its CDN, tracked in te-6x43. Android debugger attempt was bounded and detached after slow VM-service warnings; no Android hot reload claim and t3-4isz remains open. Phone keyboard/browser acceptance remains boo-a4gi. Ticket intentionally remains in_progress for parent review and integration.
 
 **2026-11-02T00:34:02Z**
 
