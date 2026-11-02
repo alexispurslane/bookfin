@@ -35,6 +35,58 @@ void main() {
   });
 
   test(
+    'original ebooks without media-source metadata download exact bytes',
+    () async {
+      capacity = 2 * 1024 * 1024;
+      fixture.bookWithoutMediaSources = true;
+      await downloads.bind(fixture.session(), fixture.books);
+      final source = fixture.text.files.single;
+      expect(source.mediaSourceId, isEmpty);
+      await downloads.request(fixture.text);
+      await downloads.idle;
+      expect(
+        downloads.status(fixture.text).phase,
+        DownloadPhase.downloaded,
+        reason: downloads.status(fixture.text).message,
+      );
+      final local = await downloads.localFile(source);
+      expect(local, isNotNull);
+      expect(await File.fromUri(local!).readAsBytes(), [1, 2, 3, 4, 5, 6]);
+    },
+  );
+
+  test('fresh missing download permission blocks before media HTTP', () async {
+    fixture.allowDownload = null;
+    await downloads.request(fixture.text);
+    await downloads.idle;
+    expect(downloads.status(fixture.text).phase, DownloadPhase.failed);
+    expect(fixture.mediaRequests, isEmpty);
+    expect(await downloads.localFile(fixture.text.files.single), isNull);
+  });
+
+  test(
+    'audio without media-source metadata cannot use the ebook exception',
+    () async {
+      fixture.audioWithoutMediaSources = true;
+      await downloads.bind(fixture.session(), fixture.books);
+      await downloads.request(fixture.audio);
+      await downloads.idle;
+      expect(downloads.status(fixture.audio).phase, DownloadPhase.failed);
+      expect(fixture.mediaRequests, isEmpty);
+    },
+  );
+
+  test(
+    'current authentication works when the server rejects legacy token headers',
+    () async {
+      fixture.requireModernAuthentication = true;
+      await downloads.request(fixture.text);
+      await downloads.idle;
+      expect(downloads.status(fixture.text).phase, DownloadPhase.downloaded);
+    },
+  );
+
+  test(
     'replacement interruption never assigns new identity to old bytes',
     () async {
       fixture.interruptOnce = true;
@@ -702,7 +754,10 @@ class MediaFixture {
   final ranges = <String?>[];
   final ifRanges = <String?>[];
   List<int> payload = [1, 2, 3, 4, 5, 6];
-  bool allowDownload = true;
+  bool? allowDownload = true;
+  bool bookWithoutMediaSources = false;
+  bool audioWithoutMediaSources = false;
+  bool requireModernAuthentication = false;
   bool itemDownloadable = true;
   String? denyItem;
   String? holdItem;
@@ -733,16 +788,17 @@ class MediaFixture {
     'Type': id == 'text' ? 'Book' : 'AudioBook',
     'CanDownload': itemDownloadable,
     'Etag': 'catalog-v1',
-    'MediaSources': [
-      {
-        'Id': id,
-        'Type': 'Default',
-        'IsRemote': false,
-        'ETag': revision,
-        'Size': 6,
-        'Container': id == 'text' ? 'epub' : 'm4b',
-      },
-    ],
+    if (id == 'text' ? !bookWithoutMediaSources : !audioWithoutMediaSources)
+      'MediaSources': [
+        {
+          'Id': id,
+          'Type': 'Default',
+          'IsRemote': false,
+          'ETag': revision,
+          'Size': 6,
+          'Container': id == 'text' ? 'epub' : 'm4b',
+        },
+      ],
   };
   SourceFile file(String id) =>
       buildBooks([CatalogEntry.fromJson(dto(id), libraryId: 'books')])
@@ -790,6 +846,16 @@ class MediaFixture {
     final parts = request.uri.pathSegments;
     final response = request.response;
     response.headers.contentType = ContentType.json;
+    if (requireModernAuthentication &&
+        parts.last != 'Public' &&
+        request.headers
+                .value('Authorization')
+                ?.contains('Token="synthetic-token"') !=
+            true) {
+      response.statusCode = 401;
+      await response.close();
+      return;
+    }
     if (parts.last == 'Info' || parts.last == 'Public') {
       if (existingAuthorizationRoutesOnly && parts.last != 'Public') {
         response.statusCode = 403;
@@ -807,7 +873,8 @@ class MediaFixture {
         jsonEncode({
           'Id': parts.last == 'Me' ? authenticatedUser : parts.last,
           'Policy': {
-            'EnableContentDownloading': allowDownload,
+            if (allowDownload != null)
+              'EnableContentDownloading': allowDownload,
             'IsAdministrator': true,
           },
         }),

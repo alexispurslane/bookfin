@@ -1,5 +1,10 @@
 # Disposable Jellyfin sync and permission evidence
 
+Application follow-up: `../acceptance/jellyfin-app.md` now records real production
+catalog and download calls against a fresh core-only fixture. Those checks are
+separate from this research-client evidence. Android restoration and real-server
+prefix resume remain release gates in `boo-2cgp` and `t7-bzzg`.
+
 November 2 follow-up: `jellyfin-finite-checkpoint.md` records one private-playlist
 checkpoint candidate, measured batching, and a pinned 12.3.0 to 12.4.0 exercise
 in a new core-only synthetic fixture. Its explicit growth blockers still gate

@@ -96,6 +96,32 @@ void main() {
     expect(requests.single.uri.path, '/jellyfin/UserViews');
   });
 
+  test(
+    'authenticated catalog works when legacy token headers are rejected',
+    () async {
+      respond = (request) {
+        if (request.headers
+                .value('Authorization')
+                ?.contains('Token="test-token"') !=
+            true) {
+          request.response.statusCode = 401;
+        } else {
+          request.response.write(
+            jsonEncode({
+              'Items': [
+                {'Id': 'books', 'Name': 'Books', 'CollectionType': 'books'},
+              ],
+            }),
+          );
+        }
+        return request.response.close();
+      };
+      expect((await client.libraries(session)).map((library) => library.id), [
+        'books',
+      ]);
+    },
+  );
+
   test('catalog pagination fetches only selected book parents', () async {
     respond = (request) {
       final isViews = request.uri.path.endsWith('UserViews');

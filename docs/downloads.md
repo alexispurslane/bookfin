@@ -1,5 +1,9 @@
 # Verified Android downloads
 
+Real ordinary-account HTTP acceptance now runs production catalog and download
+modules. Read `docs/acceptance/jellyfin-app.md` for results and remaining Android
+release gates. The earlier implementation checks below remain historical.
+
 Ticket: boo-7o92. Design: `docs/plans/bookfin.md`. Baseline: integrated `204fa5b`, with catalog `05bdc16`. This ticket stays in progress until parent integration.
 
 ## Ownership and boundaries
@@ -34,7 +38,7 @@ Before each media request the worker checks all of these conditions:
 1. `/System/Info/Public` identifies the bound server.
 2. `/Users/Me` identifies the bound user and explicitly returns `Policy.EnableContentDownloading == true`.
 3. Fresh item details explicitly return `CanDownload == true`.
-4. The selected source is the first default, non-remote source for that item.
+4. The selected source is the first default, non-remote source for that item. A Book without MediaSources uses its unnamed original source, matching the catalog model.
 5. Rebuilding that item through the existing catalog model gives the same source key and nonempty revision.
 
 Administrator status does not override a false or missing permission. A cached `JellyfinSession.canDownload` value never grants remote access. Tokens are headers, never URL parameters. Redirects are refused. Response error bodies and authentication headers are not displayed or logged.

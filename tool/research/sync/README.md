@@ -1,5 +1,9 @@
 # Disposable Jellyfin research
 
+For production application acceptance, use `tool/acceptance/README.md`.
+It reuses this fixture in a fresh checkout-local runtime but tests the actual
+catalog and download modules. These research experiments remain server evidence.
+
 This directory runs an isolated Jellyfin server, not a shared machine service.
 It never accepts a production origin or production credentials.
 All accounts and media are synthetic. The production server was not contacted.

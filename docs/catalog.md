@@ -1,5 +1,9 @@
 # Catalog and account boundary
 
+Real ordinary-account HTTP acceptance now runs production catalog and download
+modules. Read `docs/acceptance/jellyfin-app.md` for results and remaining Android
+release gates. The earlier implementation checks below remain historical.
+
 `lib/catalog/` implements Jellyfin sign-in, book-library selection, cached browsing, and local catalog corrections. Android is the production target. `lib/gallery.dart` remains a separate development entry point. No catalog action starts playback, reads an ebook, downloads media, or writes Jellyfin progress.
 
 ## Ownership

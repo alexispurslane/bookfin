@@ -350,7 +350,7 @@ class JellyfinClient {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
         'Authorization':
-            'MediaBrowser Client="Bookfin", Device="Bookfin", DeviceId="${deviceId.replaceAll(RegExp(r'[^a-zA-Z0-9_-]'), '')}", Version="0.1.0"',
+            'MediaBrowser Client="Bookfin", Device="Bookfin", DeviceId="${deviceId.replaceAll(RegExp(r'[^a-zA-Z0-9_-]'), '')}", Version="0.1.0"${session == null ? '' : ', Token="${session.token}"'}',
         if (session != null) 'X-Emby-Token': session.token,
       },
       body: body,

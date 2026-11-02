@@ -499,6 +499,10 @@ class LocalDownloads extends Downloads {
         .timeout(const Duration(seconds: 20));
     guard();
     request.followRedirects = false;
+    request.headers.set(
+      'Authorization',
+      'MediaBrowser Token="${session.token}"',
+    );
     request.headers.set('X-Emby-Token', session.token);
     request.headers.set('Accept-Encoding', 'identity');
     headers.forEach(request.headers.set);
@@ -715,6 +719,9 @@ class LocalDownloads extends Downloads {
     final sources = (item['MediaSources'] as List? ?? [])
         .whereType<Map<String, dynamic>>()
         .toList();
+    if (sources.isEmpty && item['Type'] == 'Book') {
+      sources.add({'Id': ''});
+    }
     if (sources.isEmpty ||
         sources.first['Id'] != source.mediaSourceId ||
         sources.first['IsRemote'] == true ||
