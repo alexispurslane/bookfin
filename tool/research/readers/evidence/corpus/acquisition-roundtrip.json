@@ -1,0 +1,15 @@
+{
+  "sample": "nist-text-pdf",
+  "url": "https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-145.pdf",
+  "original_removed_from_acquisition_path_before_run": true,
+  "fresh_download_matches_retained_copy": true,
+  "size_bytes": 85781,
+  "sha256": "7b0c1a9fdfc67218b8ba2098f448c100c27070db91736b3c87fed63bfa21d418",
+  "oversized_candidate": {
+    "url": "https://www.gutenberg.org/ebooks/1342.kindle.images",
+    "limit_bytes": 16000000,
+    "curl_exit": 63,
+    "error": "Maximum file size exceeded",
+    "included_in_final_corpus": false
+  }
+}

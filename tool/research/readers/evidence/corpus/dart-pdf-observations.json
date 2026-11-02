@@ -1,0 +1,83 @@
+{
+  "nist-cloud.pdf": {
+    "pages": 7,
+    "text_characters_by_page": [
+      170,
+      484,
+      1445,
+      670,
+      2114,
+      3761,
+      2358
+    ],
+    "expected_phrase": "cloud computing",
+    "expected_phrase_present": true,
+    "sampled_page_1_based": 5,
+    "rendered_pixels": [
+      360,
+      465
+    ],
+    "has_nonwhite_pixels": true
+  },
+  "census-notice.pdf": {
+    "pages": 2,
+    "text_characters_by_page": [
+      7083,
+      7127
+    ],
+    "expected_phrase": "nominations",
+    "expected_phrase_present": true,
+    "sampled_page_1_based": 1,
+    "rendered_pixels": [
+      360,
+      465
+    ],
+    "has_nonwhite_pixels": true
+  },
+  "raven-1873.pdf": {
+    "pages": 24,
+    "text_characters_by_page": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1661,
+      0,
+      218,
+      1574,
+      555,
+      1597,
+      543,
+      1662,
+      372,
+      1161,
+      5138,
+      0,
+      0,
+      0,
+      0,
+      281,
+      0,
+      40
+    ],
+    "expected_phrase": "Nevermore",
+    "expected_phrase_present": true,
+    "sampled_page_1_based": 9,
+    "rendered_pixels": [
+      360,
+      584
+    ],
+    "has_nonwhite_pixels": true
+  },
+  "raven-raster-only.pdf": {
+    "text_characters": 0,
+    "has_nonwhite_pixels": true
+  },
+  "sonnets.md": {
+    "rendered_html_characters": 115617,
+    "contains_sonnet_18": true,
+    "preserves_adjacent_verse_lines": true
+  }
+}

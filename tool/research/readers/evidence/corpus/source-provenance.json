@@ -1,0 +1,77 @@
+{
+  "observed_date": "2026-11-02",
+  "sources": [
+    {
+      "id": "alice-epub3",
+      "source_url": "https://www.gutenberg.org/ebooks/11",
+      "source_page_sha256": "7ce2b52adc3b260467ca4fcc612be339052e3859d605b04826bb7eebb3b82625",
+      "title": "Alice's Adventures in Wonderland by Lewis Carroll | Project Gutenberg",
+      "rights": "Public domain in the USA.",
+      "territory": "USA; no worldwide determination"
+    },
+    {
+      "id": "frankenstein-legacy-mobi",
+      "source_url": "https://www.gutenberg.org/ebooks/84",
+      "source_page_sha256": "d61540d4b7f6187bda95bcc98d34244583a644c7610ce2183a8cd09917838177",
+      "title": "Frankenstein; or, The modern Prometheus by Mary Wollstonecraft Shelley | Project Gutenberg",
+      "rights": "Public domain in the USA.",
+      "territory": "USA; no worldwide determination"
+    },
+    {
+      "id": "moby-kf8",
+      "source_url": "https://www.gutenberg.org/ebooks/2701",
+      "source_page_sha256": "cfafbefe6eec76d89ce639b526c35fdc48bb44432dd8517dd3d1eb49eaf3b109",
+      "title": "Moby Dick; Or, The Whale by Herman Melville | Project Gutenberg",
+      "rights": "Public domain in the USA.",
+      "territory": "USA; no worldwide determination"
+    },
+    {
+      "id": "candide-french-epub3",
+      "source_url": "https://www.gutenberg.org/ebooks/4650",
+      "source_page_sha256": "98abddf2011ce9d4f6904cdce323cb5b5a052325e11a3cb27d95ce4b20ccef64",
+      "title": "Candide, ou l'optimisme by Voltaire | Project Gutenberg",
+      "rights": "Public domain in the USA.",
+      "territory": "USA; no worldwide determination"
+    },
+    {
+      "id": "dracula-html",
+      "source_url": "https://www.gutenberg.org/ebooks/345",
+      "source_page_sha256": "f9f912af14f47fcb8e77a6f32d74c73f26a6daeb4727d51707b358bc750fbb74",
+      "title": "Dracula by Bram Stoker | Project Gutenberg",
+      "rights": "Public domain in the USA.",
+      "territory": "USA; no worldwide determination"
+    },
+    {
+      "id": "sonnets-markdown-source",
+      "source_url": "https://www.gutenberg.org/ebooks/1041",
+      "source_page_sha256": "0de9c5a79b1e4937de2791f52f049eef1e7c083cf113bf064fd996d46809f253",
+      "title": "Shakespeare's Sonnets by William Shakespeare | Project Gutenberg",
+      "rights": "Public domain in the USA.",
+      "territory": "USA; no worldwide determination"
+    },
+    {
+      "id": "raven-1873-scan",
+      "source_url": "https://www.loc.gov/item/unk82092576/?fo=json",
+      "source_page_sha256": "dc57fc3009406779f2896da3ab838ce3175e284bf50f314bfab8954beb94eaf2",
+      "title": "The raven,",
+      "date": "1873",
+      "rights": "The books in this collection are in the public domain and are free to use and reuse.",
+      "credit": "Library of Congress"
+    },
+    {
+      "id": "nist-text-pdf",
+      "source_url": "https://www.nist.gov/open/license",
+      "source_page_sha256": "81927278c905603dd68d0bb6eb219b3d7a5e75d8afb7663e2e2e406b4ceead09",
+      "policy_excerpt": "generally are not subject to copyright protection within the United States",
+      "qualification": "US government employee-work basis only; foreign or separate rights not cleared"
+    },
+    {
+      "id": "census-multicolumn-pdf",
+      "source_url": "https://www.govinfo.gov/about/policies",
+      "source_page_sha256": "d9e3a2f1cb4486ab4ecc4eff640f94f9a9bb8655ca71ff00694b236e7011ad1c",
+      "policy_excerpt": "Government publications may contain copyrighted material",
+      "qualification": "US government employee-work basis only; foreign or separate rights not cleared"
+    }
+  ],
+  "legal_approval": false
+}

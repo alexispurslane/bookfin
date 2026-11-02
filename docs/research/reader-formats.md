@@ -624,3 +624,12 @@ The reproduction runner preserves committed fixtures by default and with `--keep
 Ticket dependencies now require `t3-9r9u` before EPUB reader completion and `t3-ipk1` before release hardening. Both follow-ups still depend on finite research `boo-73yj`. The dependency graph has no cycle. These gates do not approve a production package or a release license approach.
 
 Parent checks pass through Nix: 30 host tests across the original suites, corrected widget, and runner-input cases. The corrected Android research APK builds but was not installed. A full `run --keep-fixtures` left every fixture SHA-256 unchanged. `evidence/parent-review-corrections.json` records the new build hash, source hashes, and the unchanged input hashes. Historical Android observations still describe the earlier APK.
+
+## November 2: bounded public-corpus continuation
+
+See [reader-public-corpus.md](reader-public-corpus.md) for the nine-source, 7,427,757-byte host corpus authorized by the user.
+Its manifest pins real EPUB3, legacy MOBI6, KF8, HTML, a real poetry source serialized as Markdown, text PDF, three-column PDF, and archival scanned PDF inputs.
+The scans expose an existing text layer as well as an explicitly derived image-only case; no OCR ran.
+The three-column notice demonstrates unreadable reflow even when all extracted characters survive layout.
+This continuation preserves the earlier fixture fingerprints and all historical Android observations.
+It does not select a production navigator, establish private-library coverage, or discharge `t3-9r9u` or `t3-ipk1`.

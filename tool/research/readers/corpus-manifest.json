@@ -1,0 +1,112 @@
+{
+  "schema": 1,
+  "observed_date": "2026-11-02",
+  "base_commit": "756ae5f",
+  "correction_commit": "09c2081",
+  "scope": "Host-only public-source research. Not a private library, release license approval, OCR result, or production reader selection.",
+  "bounds": {"sources": 10, "per_source_bytes": 16000000, "total_source_bytes": 32000000, "download_seconds": 90},
+  "samples": [
+    {
+      "id": "alice-epub3", "title": "Alice's Adventures in Wonderland", "author": "Lewis Carroll", "publication_year": 1865,
+      "format": "epub", "filename": "alice.epub",
+      "url": "https://www.gutenberg.org/ebooks/11.epub3.images",
+      "catalog_url": "https://www.gutenberg.org/ebooks/11",
+      "rights_evidence": "Catalog Copyright Status: Public domain in the USA. Retain Gutenberg license and trademark terms.",
+      "territorial_limit": "USA only established by this catalog; other countries not evaluated.",
+      "size_bytes": 189249, "sha256": "4f81245d31380ac1d6eafb9a321e3691369bc70985736ae4bccf849a4f784036",
+      "expected_features": ["EPUB3 ordered chapters", "illustrations and cover", "internal links"],
+      "expected_phrases": ["White Rabbit", "THE END"]
+    },
+    {
+      "id": "frankenstein-legacy-mobi", "title": "Frankenstein; Or, The Modern Prometheus", "author": "Mary Wollstonecraft Shelley", "publication_year": 1818,
+      "format": "mobi", "filename": "frankenstein.mobi",
+      "url": "https://www.gutenberg.org/ebooks/84.kindle.images",
+      "catalog_url": "https://www.gutenberg.org/ebooks/84",
+      "rights_evidence": "Catalog Copyright Status: Public domain in the USA. Retain Gutenberg license and trademark terms.",
+      "territorial_limit": "USA only established by this catalog; other countries not evaluated.",
+      "size_bytes": 519544, "sha256": "d907f385b28a2af24f6186a646fd366ede1b84c4c688afe93da3f705862e8e74",
+      "expected_features": ["real legacy Kindle download; inspect internal MOBI version", "letters and chapters", "cover"],
+      "expected_phrases": ["You will rejoice to hear", "lost in darkness and distance"]
+    },
+    {
+      "id": "moby-kf8", "title": "Moby Dick; Or, The Whale", "author": "Herman Melville", "publication_year": 1851,
+      "format": "mobi", "filename": "moby.mobi",
+      "url": "https://www.gutenberg.org/ebooks/2701.kf8.images",
+      "catalog_url": "https://www.gutenberg.org/ebooks/2701",
+      "rights_evidence": "Catalog Copyright Status: Public domain in the USA. Retain Gutenberg license and trademark terms.",
+      "territorial_limit": "USA only established by this catalog; other countries not evaluated.",
+      "size_bytes": 1232584, "sha256": "1465acba582c2713767afe17ae051dcea24b6875e2c0d6f462850299c7505e2a",
+      "expected_features": ["real KF8 download; inspect compression and encryption", "135 chapters plus epilogue", "internal navigation and cover"],
+      "expected_phrases": ["Call me Ishmael.", "Epilogue"]
+    },
+    {
+      "id": "candide-french-epub3", "title": "Candide, ou l'optimisme", "author": "Voltaire", "publication_year": 1759,
+      "format": "epub", "filename": "candide.epub",
+      "url": "https://www.gutenberg.org/ebooks/4650.epub3.images",
+      "catalog_url": "https://www.gutenberg.org/ebooks/4650",
+      "rights_evidence": "Catalog Copyright Status: Public domain in the USA. Retain Gutenberg license and trademark terms.",
+      "territorial_limit": "USA only established by this catalog; other countries not evaluated.",
+      "size_bytes": 195063, "sha256": "8bb0506c0b2c67a0412d6c33aa478b53b88c4f9c857145fac1398abd98fcb56a",
+      "expected_features": ["French accented Unicode", "ordered chapters", "EPUB3 navigation"],
+      "expected_phrases": ["Pangloss", "était"]
+    },
+    {
+      "id": "dracula-html", "title": "Dracula", "author": "Bram Stoker", "publication_year": 1897,
+      "format": "html-zip", "filename": "dracula.zip",
+      "url": "https://www.gutenberg.org/cache/epub/345/pg345-h.zip",
+      "catalog_url": "https://www.gutenberg.org/ebooks/345",
+      "rights_evidence": "Catalog Copyright Status: Public domain in the USA. Retain Gutenberg license and trademark terms.",
+      "territorial_limit": "USA only established by this catalog; other countries not evaluated.",
+      "size_bytes": 728707, "sha256": "3289657fc5126cdf897421f911b027d32f11bbc8e416f5dc34338f5855864aac",
+      "expected_features": ["chapter anchors", "local image resources", "author CSS deliberately discarded by existing passive-content proof"],
+      "expected_phrases": ["Jonathan Harker", "Bistritz"]
+    },
+    {
+      "id": "sonnets-markdown-source", "title": "Shakespeare's Sonnets", "author": "William Shakespeare", "publication_year": 1609,
+      "format": "text-to-markdown", "filename": "sonnets.txt",
+      "url": "https://www.gutenberg.org/ebooks/1041.txt.utf-8",
+      "catalog_url": "https://www.gutenberg.org/ebooks/1041",
+      "rights_evidence": "Catalog Copyright Status: Public domain in the USA. Retain Gutenberg license and trademark terms.",
+      "territorial_limit": "USA only established by this catalog; other countries not evaluated.",
+      "size_bytes": 119936, "sha256": "4a3a5466591e30ca93b2c19daeb24770bb08833b57b1616c972b97246e23580f",
+      "expected_features": ["real poem source serialized as a fenced Markdown document", "line breaks and indentation retained in code block", "not a native publisher Markdown edition or general verse-layout proof"],
+      "expected_phrases": ["Shall I compare thee to a summer", "Love’s fire heats water, water cools not love."]
+    },
+    {
+      "id": "nist-text-pdf", "title": "The NIST Definition of Cloud Computing (SP 800-145)", "author": "Peter Mell and Timothy Grance, NIST", "publication_year": 2011,
+      "format": "pdf-text", "filename": "nist-cloud.pdf",
+      "url": "https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-145.pdf",
+      "catalog_url": "https://csrc.nist.gov/pubs/sp/800/145/final",
+      "rights_url": "https://www.nist.gov/open/license",
+      "rights_evidence": "NIST policy describes employee-authored publications as not subject to copyright protection in the United States; this report names two NIST authors.",
+      "territorial_limit": "US federal employee work basis in the USA. No worldwide or third-party material clearance is claimed.",
+      "size_bytes": 85781, "sha256": "7b0c1a9fdfc67218b8ba2098f448c100c27070db91736b3c87fed63bfa21d418",
+      "expected_features": ["born-digital text", "numbered headings", "footnotes", "indented definitions"],
+      "expected_phrases": ["on-demand self-service", "measured service"]
+    },
+    {
+      "id": "census-multicolumn-pdf", "title": "Census Scientific Advisory Committee; Request for Nominations", "author": "US Census Bureau", "publication_year": 2024,
+      "format": "pdf-multicolumn", "filename": "census-notice.pdf",
+      "url": "https://www.govinfo.gov/content/pkg/FR-2024-01-02/pdf/2023-28812.pdf",
+      "catalog_url": "https://www.govinfo.gov/content/pkg/FR-2024-01-02/html/2023-28812.htm",
+      "rights_url": "https://www.govinfo.gov/about/policies",
+      "rights_evidence": "Official Census Bureau notice in the Federal Register. GovInfo policy warns that some hosted material has separate rights; this item is a US government-authored notice, not a blanket assertion about the collection.",
+      "territorial_limit": "US government work basis in the USA. No worldwide clearance is claimed.",
+      "size_bytes": 186352, "sha256": "4a696b3ccf264093326663176e45b93e336ec024fd88447ab56d39e5e9b9e5f8",
+      "expected_features": ["three-column government page", "headers and footers", "column-spanning page boundaries", "hyphenated line endings"],
+      "expected_phrases": ["Census Scientific Advisory Committee", "nominations"]
+    },
+    {
+      "id": "raven-1873-scan", "title": "The Raven", "author": "Edgar Allan Poe", "publication_year": 1873,
+      "format": "pdf-scan", "filename": "raven-1873.pdf",
+      "url": "https://tile.loc.gov/storage-services/public/gdcmassbookdig/raven03poee/raven03poee.pdf",
+      "catalog_url": "https://www.loc.gov/item/unk82092576/",
+      "rights_url": "https://www.loc.gov/item/unk82092576/?fo=json",
+      "rights_evidence": "LOC item rights: The books in this collection are in the public domain and are free to use and reuse. Credit Line: Library of Congress.",
+      "territorial_limit": "LOC public-domain declaration recorded; no independent worldwide determination is claimed.",
+      "size_bytes": 4170541, "sha256": "25dc58e363e02a442a25174fe9fcd21d3a2f78ac4511731accaaeba326c3d8e8",
+      "expected_features": ["24 digitized leaves", "aged and skewed page images", "poetry and ornaments", "inspect whether PDF contains a text layer; do not infer OCR execution"],
+      "expected_phrases": []
+    }
+  ]
+}
