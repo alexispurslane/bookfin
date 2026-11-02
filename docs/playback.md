@@ -81,3 +81,8 @@ History still needs to define and persist the previous/resulting positions aroun
 ## Verification
 
 See `docs/evidence/playback/acceptance.md` for commands, meaningful failing tests, Android observations, and explicit limits. Coverage and mutation testing remain with the parent after acceptance. The parent owns review, integration, and ticket closure.
+
+The integrated real-server follow-up is `docs/evidence/playback/integrated-android.md`.
+Its native-adapter correction keeps cross-file positions with the matching source and excludes unconfirmed loading placeholders.
+Confirmed paused seeks still update the visible recorded position without starting audio.
+Native Pause retains the last recorded position while releasing the decoder and revoking pending interruption recovery.

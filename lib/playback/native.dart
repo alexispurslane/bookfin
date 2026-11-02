@@ -45,20 +45,26 @@ class LocalAudioEngine implements AudioEngine {
   final AudioPlayer _player;
   final _events = StreamController<AudioSample>.broadcast(sync: true);
   final _subscriptions = <StreamSubscription<dynamic>>[];
+  bool _changingPosition = false;
   LocalAudioEngine({AudioPlayer? player}) : _player = player ?? AudioPlayer() {
     _subscriptions.add(_player.playerStateStream.listen((_) => _publish()));
     _subscriptions.add(_player.currentIndexStream.listen((_) => _publish()));
     _subscriptions.add(_player.positionStream.listen((_) => _publish()));
     _subscriptions.add(_player.errorStream.listen(_events.addError));
   }
-  void _publish() {
-    if (_events.isClosed) return;
+  void _publish({bool settledSeek = false}) {
+    if (_events.isClosed || _changingPosition) return;
+    final event = _player.playbackEvent;
+    if (event.processingState == ProcessingState.loading ||
+        (event.processingState == ProcessingState.idle && !settledSeek)) {
+      return;
+    }
     _events.add(
       AudioSample(
-        _player.currentIndex ?? 0,
+        event.currentIndex ?? 0,
         _player.position.inMilliseconds,
         playing: _player.playing,
-        completed: _player.processingState == ProcessingState.completed,
+        completed: event.processingState == ProcessingState.completed,
       ),
     );
   }
@@ -87,11 +93,35 @@ class LocalAudioEngine implements AudioEngine {
   @override
   // just_audio.pause returns early during an interruption. stop also clears
   // pending interruption recovery while retaining the selected sources.
-  Future<void> pause() => _player.stop();
+  Future<void> pause() async {
+    final event = _player.playbackEvent;
+    final paused = AudioSample(
+      event.currentIndex ?? 0,
+      _player.position.inMilliseconds,
+      playing: false,
+      completed: event.processingState == ProcessingState.completed,
+    );
+    _changingPosition = true;
+    try {
+      await _player.stop();
+    } finally {
+      _changingPosition = false;
+    }
+    if (!_events.isClosed) _events.add(paused);
+  }
+
   @override
   Future<void> seek(int fileIndex, int milliseconds) async {
-    await _player.seek(Duration(milliseconds: milliseconds), index: fileIndex);
-    _publish();
+    _changingPosition = true;
+    try {
+      await _player.seek(
+        Duration(milliseconds: milliseconds),
+        index: fileIndex,
+      );
+    } finally {
+      _changingPosition = false;
+    }
+    _publish(settledSeek: true);
   }
 
   @override

@@ -86,3 +86,32 @@ Read `docs/acceptance/jellyfin-app.md` for results and release gates.
 Real Jellyfin omits a strong HTTP ETag on Download.
 This suite proves safe full-restart recovery, not real-server range resume.
 The synthetic transfer suite separately proves strict Range/If-Range handling.
+
+## Private Android observer
+
+`android_proxy.py` supports manual Android observation against the same disposable server.
+Start it through `.cache/sync-shell`, after fixture preparation.
+It verifies this checkout's server identity, then binds only `127.0.0.1:7365`.
+Forward emulator port 7365 to host port 7365 with this thread's own reverse forward.
+Use the production sign-in screen with `http://127.0.0.1:7365` and this checkout's private synthetic account.
+
+The observer forwards the real server's responses. It does not invent HTTP ETags or follow redirects.
+It records method, path without query parameters, response status, and allowlisted playback report fields.
+It never records authentication headers, authentication bodies, or live session tokens.
+Its ignored JSON-lines log is `.cache/sync/runtime/android-proxy-events.jsonl`.
+
+The optional private `android-proxy-control.json` file controls synthetic download faults.
+`delay` adds seconds between 4,096-byte chunks. `failItem` injects HTTP 503 for one synthetic item ID.
+`cutAfter` closes a download after the specified byte count. These injections are not server policy evidence.
+Use `{}` for unmodified transfers. Keep one observer and one live suite active at most.
+
+Run observer and publisher regressions through the sync shell:
+
+```sh
+nix develop .cache/sync-shell --command python3 -m unittest discover \
+  -s tool/acceptance -p 'test_*.py'
+```
+
+The observer log is raw manual observation, not runner-certified acceptance output.
+It cannot authorize publication by `collect_evidence.py`. That publisher still runs its own suite and requires success.
+Stop only this thread's observer process and remove only this thread's reverse forward after manual acceptance.

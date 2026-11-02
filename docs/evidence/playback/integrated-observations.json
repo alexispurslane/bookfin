@@ -1,0 +1,2704 @@
+{
+  "evidenceKind": "raw manual Android observations, not a runner-certified verdict",
+  "baseCommit": "d9bc3a600bec308a25c30c0e1ba9282ad21d0b7d",
+  "finalNativeCorrectionInstalledUtc": "2026-11-02T07:58:50+00:00",
+  "nativeCorrectionGitDiffSha256": "69f39597636eee33cd25939ec6ccadc515d70629b2c0072d5a0bc3dcad12b4bf",
+  "finalDebugApkSha256": "f21809c262e289646f08d1c1605e512676953e2c81476aace45e40d76162ae45",
+  "target": {
+    "platform": "Android emulator",
+    "device": "emulator-5554",
+    "jellyfinVersion": "12.4.0",
+    "coreOnly": true,
+    "upstream": "http://127.0.0.1:7364",
+    "observer": "http://127.0.0.1:7365"
+  },
+  "boundaries": [
+    "Only generated fixture media and ordinary synthetic accounts were used.",
+    "All device input and settings used the own T3 device binding.",
+    "The observer forwarded real Jellyfin responses without adding HTTP ETag.",
+    "Injected download HTTP 503 is marked and is not real-server policy evidence.",
+    "Earlier reports include the runtime defects that prompted the correction.",
+    "The separate app-http publisher ran and passed its own nine-check suite.",
+    "No discrete manual Pause while interrupted, physical-phone, locked-screen, or soak proof.",
+    "Safe full HTTP 200 retry is not strong-validator range-resume proof.",
+    "No full personal-record sync or hidden scheduling claim."
+  ],
+  "verifiedAndroidFiles": [
+    {
+      "source": "public/Work/Recording A/a-second.m4b",
+      "length": 398034,
+      "sha256": "a6462f5775e871ddd81e37db1d4a6f126fc29e1fdc918326b59aa07f6a3bc499"
+    },
+    {
+      "source": "public/Work/Text Edition/Synthetic Work.epub",
+      "length": 1221,
+      "sha256": "7057f71439a1968370619ebf5625fcac4fefeb97fb581f2205e985746c6775fa"
+    },
+    {
+      "source": "public/Work/Recording A/z-first.m4b",
+      "length": 398673,
+      "sha256": "929bbed62214ee77c9faec26db981f6bdaa60351ac77604e5b936ceb0da37314"
+    }
+  ],
+  "downloadRequests": [
+    {
+      "atUtc": "2026-11-02T07:14:22.193574+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "GET",
+      "path": "/Items/e934081a82b3de25da46c6ec0c8b521d/Download",
+      "status": 200,
+      "length": "398673",
+      "etag": null,
+      "range": null,
+      "ifRange": null
+    },
+    {
+      "atUtc": "2026-11-02T07:14:55.210903+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "GET",
+      "path": "/Items/e934081a82b3de25da46c6ec0c8b521d/Download",
+      "status": 200,
+      "length": "398673",
+      "etag": null,
+      "range": null,
+      "ifRange": null
+    },
+    {
+      "atUtc": "2026-11-02T07:16:24.888077+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "GET",
+      "path": "/Items/e934081a82b3de25da46c6ec0c8b521d/Download",
+      "status": 503,
+      "injectedFailure": true
+    },
+    {
+      "atUtc": "2026-11-02T07:16:25.034540+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "GET",
+      "path": "/Items/1026cd347881ecf222055f2b709b469c/Download",
+      "status": 200,
+      "length": "398034",
+      "etag": null,
+      "range": null,
+      "ifRange": null
+    },
+    {
+      "atUtc": "2026-11-02T07:17:08.810118+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "GET",
+      "path": "/Items/e934081a82b3de25da46c6ec0c8b521d/Download",
+      "status": 200,
+      "length": "398673",
+      "etag": null,
+      "range": null,
+      "ifRange": null
+    },
+    {
+      "atUtc": "2026-11-02T07:17:08.986061+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "GET",
+      "path": "/Items/1026cd347881ecf222055f2b709b469c/Download",
+      "status": 200,
+      "length": "398034",
+      "etag": null,
+      "range": null,
+      "ifRange": null
+    },
+    {
+      "atUtc": "2026-11-02T07:17:59.297375+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "GET",
+      "path": "/Items/88b79ccee097d7d92fa873c21019d1d3/Download",
+      "status": 200,
+      "length": "1221",
+      "etag": null,
+      "range": null,
+      "ifRange": null
+    }
+  ],
+  "downloadConnectionObservations": [
+    {
+      "atUtc": "2026-11-02T07:14:51.525821+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "GET",
+      "path": "/Items/e934081a82b3de25da46c6ec0c8b521d/Download",
+      "status": 200,
+      "length": "398673",
+      "etag": null,
+      "range": null,
+      "ifRange": null,
+      "connectionInterrupted": true
+    },
+    {
+      "atUtc": "2026-11-02T07:15:20.281480+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "GET",
+      "path": "/Items/e934081a82b3de25da46c6ec0c8b521d/Download",
+      "status": 200,
+      "length": "398673",
+      "etag": null,
+      "range": null,
+      "ifRange": null,
+      "connectionInterrupted": true
+    },
+    {
+      "atUtc": "2026-11-02T07:16:36.172602+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "GET",
+      "path": "/Items/1026cd347881ecf222055f2b709b469c/Download",
+      "status": 200,
+      "length": "398034",
+      "etag": null,
+      "range": null,
+      "ifRange": null,
+      "connectionInterrupted": true
+    }
+  ],
+  "playbackResponseCounts": {
+    "/Sessions/Playing": 19,
+    "/Sessions/Playing/Progress": 116,
+    "/Sessions/Playing/Stopped": 16
+  },
+  "finalCorrectionPlaybackResponseCounts": {
+    "/Sessions/Playing": 4,
+    "/Sessions/Playing/Progress": 19,
+    "/Sessions/Playing/Stopped": 3
+  },
+  "playbackResponses": [
+    {
+      "atUtc": "2026-11-02T07:18:11.165601+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing",
+      "report": {
+        "ItemId": "e934081a82b3de25da46c6ec0c8b521d",
+        "MediaSourceId": "e934081a82b3de25da46c6ec0c8b521d",
+        "PositionTicks": 10000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:18:21.661482+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "e934081a82b3de25da46c6ec0c8b521d",
+        "MediaSourceId": "e934081a82b3de25da46c6ec0c8b521d",
+        "PositionTicks": 100150000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:18:31.859197+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "e934081a82b3de25da46c6ec0c8b521d",
+        "MediaSourceId": "e934081a82b3de25da46c6ec0c8b521d",
+        "PositionTicks": 202130000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:18:34.876087+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "e934081a82b3de25da46c6ec0c8b521d",
+        "MediaSourceId": "e934081a82b3de25da46c6ec0c8b521d",
+        "PositionTicks": 900000000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:18:35.631352+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "e934081a82b3de25da46c6ec0c8b521d",
+        "MediaSourceId": "e934081a82b3de25da46c6ec0c8b521d",
+        "PositionTicks": 900210000,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:19:00.404012+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "e934081a82b3de25da46c6ec0c8b521d",
+        "MediaSourceId": "e934081a82b3de25da46c6ec0c8b521d",
+        "PositionTicks": 0,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:19:00.445990+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Stopped",
+      "report": {
+        "ItemId": "e934081a82b3de25da46c6ec0c8b521d",
+        "MediaSourceId": "e934081a82b3de25da46c6ec0c8b521d",
+        "PositionTicks": 0,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:19:15.259544+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 0,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:19:22.458066+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 102180000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:19:29.260874+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 204170000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:19:36.057098+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 306170000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:19:42.857064+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 408190000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:19:49.659332+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 510190000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:19:56.458817+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 612170000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:20:03.257512+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 714190000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:20:10.058134+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 816190000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:20:12.186734+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 848020000,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:20:14.091319+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 848050000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:20:20.891621+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 950070000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:20:27.693373+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 1052080000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:20:34.491399+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 1154070000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:20:41.288780+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 1256060000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:20:48.091155+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 1358070000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:20:54.897424+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 1460100000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:21:01.695645+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 1562070000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:21:08.498411+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 1664070000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:21:09.561730+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 1679270000,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:21:24.159044+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Stopped",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 1682130000,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:23:07.384513+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 252210000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:23:14.385298+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 354870000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:23:21.195978+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 456850000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:23:24.392625+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 252830000,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:23:24.482021+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 504260000,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:23:26.279174+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 404260000,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:23:26.873817+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 704260000,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:24:13.366362+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 0,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:24:13.399577+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Stopped",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 0,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:24:14.587554+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing",
+      "report": {
+        "ItemId": "e934081a82b3de25da46c6ec0c8b521d",
+        "MediaSourceId": "e934081a82b3de25da46c6ec0c8b521d",
+        "PositionTicks": 0,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:24:21.751001+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "e934081a82b3de25da46c6ec0c8b521d",
+        "MediaSourceId": "e934081a82b3de25da46c6ec0c8b521d",
+        "PositionTicks": 102410000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:24:28.547552+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "e934081a82b3de25da46c6ec0c8b521d",
+        "MediaSourceId": "e934081a82b3de25da46c6ec0c8b521d",
+        "PositionTicks": 204430000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:24:30.098052+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "e934081a82b3de25da46c6ec0c8b521d",
+        "MediaSourceId": "e934081a82b3de25da46c6ec0c8b521d",
+        "PositionTicks": 227680000,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:31:06.692057+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing",
+      "report": {
+        "ItemId": "e934081a82b3de25da46c6ec0c8b521d",
+        "MediaSourceId": "e934081a82b3de25da46c6ec0c8b521d",
+        "PositionTicks": 228460000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:31:07.460477+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "e934081a82b3de25da46c6ec0c8b521d",
+        "MediaSourceId": "e934081a82b3de25da46c6ec0c8b521d",
+        "PositionTicks": 228830000,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:31:19.671103+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Stopped",
+      "report": {
+        "ItemId": "e934081a82b3de25da46c6ec0c8b521d",
+        "MediaSourceId": "e934081a82b3de25da46c6ec0c8b521d",
+        "PositionTicks": 237520000,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:31:20.953391+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 0,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:31:28.190620+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 102190000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:31:34.989293+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 204200000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:31:41.788940+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 306190000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:31:48.589553+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 408210000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:31:55.390479+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 510210000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:32:02.188243+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 612200000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:32:06.583283+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 150000,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:32:06.622622+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 677900000,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:32:19.764584+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 0,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:32:20.900238+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Stopped",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 0,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:32:21.505698+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing",
+      "report": {
+        "ItemId": "e934081a82b3de25da46c6ec0c8b521d",
+        "MediaSourceId": "e934081a82b3de25da46c6ec0c8b521d",
+        "PositionTicks": 1700000000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:32:21.628700+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "e934081a82b3de25da46c6ec0c8b521d",
+        "MediaSourceId": "e934081a82b3de25da46c6ec0c8b521d",
+        "PositionTicks": 0,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:32:21.677972+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "e934081a82b3de25da46c6ec0c8b521d",
+        "MediaSourceId": "e934081a82b3de25da46c6ec0c8b521d",
+        "PositionTicks": 1700000000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:32:28.578942+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Stopped",
+      "report": {
+        "ItemId": "e934081a82b3de25da46c6ec0c8b521d",
+        "MediaSourceId": "e934081a82b3de25da46c6ec0c8b521d",
+        "PositionTicks": 1799350000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:32:28.599759+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 200000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:32:35.380764+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 102230000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:32:42.176185+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 204230000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:32:47.730602+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 287370000,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:32:49.398385+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 287900000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:32:56.196622+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 389910000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:33:03.001897+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 491920000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:33:09.797750+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 593920000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:33:16.597297+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 695910000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:33:23.400047+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 797910000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:33:30.203314+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 899970000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:33:36.998906+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 1001910000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:33:43.796433+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 1103910000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:33:50.595758+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 1205910000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:33:57.399013+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 1307940000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:34:04.195704+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 1409910000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:34:11.005977+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 1511910000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:34:17.799819+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 1613910000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:34:24.599817+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 1715910000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:34:30.210725+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Stopped",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 1800000000,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:36:18.535321+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing",
+      "report": {
+        "ItemId": "e934081a82b3de25da46c6ec0c8b521d",
+        "MediaSourceId": "e934081a82b3de25da46c6ec0c8b521d",
+        "PositionTicks": 1700020000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:36:25.488017+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Stopped",
+      "report": {
+        "ItemId": "e934081a82b3de25da46c6ec0c8b521d",
+        "MediaSourceId": "e934081a82b3de25da46c6ec0c8b521d",
+        "PositionTicks": 1799570000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:36:25.505369+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 260000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:36:32.287068+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 102300000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:36:39.085958+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 204290000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:36:45.886897+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 306280000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:36:48.802543+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 349630000,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:36:50.580514+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 350110000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:36:57.387265+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 452130000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:37:04.183168+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 554130000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:37:08.787095+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 623190000,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:37:26.858352+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Stopped",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 623630000,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:37:30.600621+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 623650000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:37:37.613305+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 725900000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:37:42.659463+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 801390000,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:37:58.838796+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Stopped",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 801660000,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:42:52.406741+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 801700000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:42:53.024317+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 802850000,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:43:38.349562+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Stopped",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 802850000,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:43:38.428293+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing",
+      "report": {
+        "ItemId": "e934081a82b3de25da46c6ec0c8b521d",
+        "MediaSourceId": "e934081a82b3de25da46c6ec0c8b521d",
+        "PositionTicks": 20000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:43:40.655065+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "e934081a82b3de25da46c6ec0c8b521d",
+        "MediaSourceId": "e934081a82b3de25da46c6ec0c8b521d",
+        "PositionTicks": 31720000,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:52:12.969294+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing",
+      "report": {
+        "ItemId": "e934081a82b3de25da46c6ec0c8b521d",
+        "MediaSourceId": "e934081a82b3de25da46c6ec0c8b521d",
+        "PositionTicks": 1700000000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:52:19.928429+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Stopped",
+      "report": {
+        "ItemId": "e934081a82b3de25da46c6ec0c8b521d",
+        "MediaSourceId": "e934081a82b3de25da46c6ec0c8b521d",
+        "PositionTicks": 1799390000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:52:19.964257+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 210000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:52:26.730203+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 102240000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:52:33.528831+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 204250000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:52:40.356522+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 306310000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:52:47.144014+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 408250000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:52:53.939743+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 510230000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:53:00.748950+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 612230000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:53:03.856464+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 190000,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:53:06.724298+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 658090000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:53:07.111566+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 660310000,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:53:08.608331+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 660540000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:53:15.405590+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 762560000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:53:22.205800+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 864560000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:53:29.005245+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 966640000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:53:35.804301+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 1068580000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:53:42.604072+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 1170570000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:53:49.404338+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 1272580000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:53:56.200787+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 1374560000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:54:03.006176+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 1476570000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:54:09.806104+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 1578570000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:54:16.603505+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 1680580000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:54:23.404473+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 1782590000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:54:24.566762+00:00",
+      "codePhase": "baseline-or-intermediate-corrections",
+      "method": "POST",
+      "path": "/Sessions/Playing/Stopped",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 1800000000,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:59:16.976967+00:00",
+      "codePhase": "final-native-correction",
+      "method": "POST",
+      "path": "/Sessions/Playing",
+      "report": {
+        "ItemId": "e934081a82b3de25da46c6ec0c8b521d",
+        "MediaSourceId": "e934081a82b3de25da46c6ec0c8b521d",
+        "PositionTicks": 900000000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T07:59:20.604614+00:00",
+      "codePhase": "final-native-correction",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "e934081a82b3de25da46c6ec0c8b521d",
+        "MediaSourceId": "e934081a82b3de25da46c6ec0c8b521d",
+        "PositionTicks": 950810000,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T08:00:29.145353+00:00",
+      "codePhase": "final-native-correction",
+      "method": "POST",
+      "path": "/Sessions/Playing",
+      "report": {
+        "ItemId": "e934081a82b3de25da46c6ec0c8b521d",
+        "MediaSourceId": "e934081a82b3de25da46c6ec0c8b521d",
+        "PositionTicks": 1700050000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T08:00:36.221420+00:00",
+      "codePhase": "final-native-correction",
+      "method": "POST",
+      "path": "/Sessions/Playing/Stopped",
+      "report": {
+        "ItemId": "e934081a82b3de25da46c6ec0c8b521d",
+        "MediaSourceId": "e934081a82b3de25da46c6ec0c8b521d",
+        "PositionTicks": 1799530000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T08:00:36.438851+00:00",
+      "codePhase": "final-native-correction",
+      "method": "POST",
+      "path": "/Sessions/Playing",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 850000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T08:00:43.317230+00:00",
+      "codePhase": "final-native-correction",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 103620000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T08:00:50.521957+00:00",
+      "codePhase": "final-native-correction",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 204290000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T08:00:57.374186+00:00",
+      "codePhase": "final-native-correction",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 306370000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T08:01:04.532483+00:00",
+      "codePhase": "final-native-correction",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 406470000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T08:01:13.818876+00:00",
+      "codePhase": "final-native-correction",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 509540000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T08:01:21.646320+00:00",
+      "codePhase": "final-native-correction",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 613100000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T08:01:28.470729+00:00",
+      "codePhase": "final-native-correction",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 714840000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T08:01:35.779776+00:00",
+      "codePhase": "final-native-correction",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 815190000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T08:01:43.236732+00:00",
+      "codePhase": "final-native-correction",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 917240000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T08:01:46.006725+00:00",
+      "codePhase": "final-native-correction",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 947740000,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T08:01:54.665267+00:00",
+      "codePhase": "final-native-correction",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 945480000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T08:02:02.683442+00:00",
+      "codePhase": "final-native-correction",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 1047000000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T08:02:10.977410+00:00",
+      "codePhase": "final-native-correction",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 1147590000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T08:02:18.491668+00:00",
+      "codePhase": "final-native-correction",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 1248510000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T08:02:21.283913+00:00",
+      "codePhase": "final-native-correction",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 1281990000,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T08:03:34.687618+00:00",
+      "codePhase": "final-native-correction",
+      "method": "POST",
+      "path": "/Sessions/Playing/Stopped",
+      "report": {
+        "ItemId": "1026cd347881ecf222055f2b709b469c",
+        "MediaSourceId": "1026cd347881ecf222055f2b709b469c",
+        "PositionTicks": 1283140000,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T08:04:21.879223+00:00",
+      "codePhase": "final-native-correction",
+      "method": "POST",
+      "path": "/Sessions/Playing",
+      "report": {
+        "ItemId": "e934081a82b3de25da46c6ec0c8b521d",
+        "MediaSourceId": "e934081a82b3de25da46c6ec0c8b521d",
+        "PositionTicks": 370000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T08:04:28.085799+00:00",
+      "codePhase": "final-native-correction",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "e934081a82b3de25da46c6ec0c8b521d",
+        "MediaSourceId": "e934081a82b3de25da46c6ec0c8b521d",
+        "PositionTicks": 88040000,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T08:15:33.239333+00:00",
+      "codePhase": "final-native-correction",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "e934081a82b3de25da46c6ec0c8b521d",
+        "MediaSourceId": "e934081a82b3de25da46c6ec0c8b521d",
+        "PositionTicks": 78760000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T08:15:34.376372+00:00",
+      "codePhase": "final-native-correction",
+      "method": "POST",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "e934081a82b3de25da46c6ec0c8b521d",
+        "MediaSourceId": "e934081a82b3de25da46c6ec0c8b521d",
+        "PositionTicks": 86600000,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "atUtc": "2026-11-02T08:20:15.785362+00:00",
+      "codePhase": "final-native-correction",
+      "method": "POST",
+      "path": "/Sessions/Playing/Stopped",
+      "report": {
+        "ItemId": "e934081a82b3de25da46c6ec0c8b521d",
+        "MediaSourceId": "e934081a82b3de25da46c6ec0c8b521d",
+        "PositionTicks": 91750000,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    }
+  ],
+  "nativeDiagnostics": [
+    {
+      "observation": "native Pause before command",
+      "codePhase": "final",
+      "nativeState": "PLAYING",
+      "recordedWholeEditionMilliseconds": 91554,
+      "playbackSpeed": 1.5
+    },
+    {
+      "observation": "native Pause settled",
+      "codePhase": "final",
+      "nativeState": "PAUSED",
+      "recordedWholeEditionMilliseconds": 95081,
+      "playbackSpeed": 1.5
+    },
+    {
+      "observation": "native Pause process restart",
+      "codePhase": "final",
+      "nativeState": "NONE",
+      "recordedWholeEditionMilliseconds": 95081,
+      "playbackSpeed": 1.5
+    },
+    {
+      "observation": "natural second-file playback",
+      "codePhase": "final",
+      "nativeState": "PLAYING",
+      "recordedWholeEditionMilliseconds": 215997,
+      "playbackSpeed": 1.5
+    },
+    {
+      "observation": "normal interruption focus lost",
+      "codePhase": "final",
+      "nativeState": "PAUSED",
+      "recordedWholeEditionMilliseconds": 274548,
+      "playbackSpeed": 1.5
+    },
+    {
+      "observation": "normal interruption focus returned",
+      "codePhase": "final",
+      "nativeState": "PLAYING",
+      "recordedWholeEditionMilliseconds": 304538,
+      "playbackSpeed": 1.5
+    },
+    {
+      "observation": "interrupted Stop focus returned",
+      "codePhase": "final",
+      "nativeState": "NONE",
+      "recordedWholeEditionMilliseconds": 308314,
+      "playbackSpeed": 1.5
+    },
+    {
+      "observation": "offline before process restart",
+      "codePhase": "preceding-corrected-apk",
+      "nativeState": "PLAYING",
+      "recordedWholeEditionMilliseconds": 260215,
+      "playbackSpeed": 1.5
+    },
+    {
+      "observation": "offline after process restart",
+      "codePhase": "preceding-corrected-apk",
+      "nativeState": "NONE",
+      "recordedWholeEditionMilliseconds": 260169,
+      "playbackSpeed": 1.5
+    },
+    {
+      "observation": "sleep timer focus lost",
+      "codePhase": "final",
+      "nativeState": "PAUSED",
+      "recordedWholeEditionMilliseconds": 7873,
+      "playbackSpeed": 1.5
+    },
+    {
+      "observation": "sleep expired and focus returned",
+      "codePhase": "final",
+      "nativeState": "PAUSED",
+      "recordedWholeEditionMilliseconds": 7873,
+      "playbackSpeed": 1.5
+    },
+    {
+      "observation": "sign-out before command while interrupted",
+      "codePhase": "final",
+      "nativeState": "PAUSED",
+      "recordedWholeEditionMilliseconds": 9175,
+      "playbackSpeed": 1.5
+    },
+    {
+      "observation": "sign-out focus returned",
+      "codePhase": "final",
+      "nativeState": "NONE",
+      "recordedWholeEditionMilliseconds": 0,
+      "playbackSpeed": 1.0
+    },
+    {
+      "observation": "cleanup signed-out process restart",
+      "codePhase": "final",
+      "nativeState": "NONE",
+      "recordedWholeEditionMilliseconds": 0,
+      "playbackSpeed": 1.0
+    }
+  ],
+  "offlineReconnectionPlaybackRequestCounts": {
+    "beforeReconnect": 95,
+    "afterReconnectWhilePaused": 95
+  },
+  "sleepObservation": {
+    "startedUtc": "2026-11-02T08:04:25Z",
+    "timerOffObservedUtc": "2026-11-02T08:09:25Z",
+    "wholeEditionMillisecondsAfterFocusReturn": 7873,
+    "nativeStateAfterFocusReturn": "PAUSED"
+  },
+  "cleanupObservations": [
+    "Both downloaded editions removed through confirmation; No downloads yet displayed.",
+    "Signed out and process restart retained the sign-in screen.",
+    "Wi-Fi and mobile data restored to their original enabled settings.",
+    "Own tcp:7365 reverse forward removed; reverse list empty.",
+    "Own observer and Jellyfin exited; ports 7364 and 7365 had no listener.",
+    "Own device session closed and panel released with shutdown:false.",
+    "Private restartable fixture retained ignored with restricted permissions."
+  ]
+}

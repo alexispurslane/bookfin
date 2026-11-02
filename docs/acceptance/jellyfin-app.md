@@ -122,3 +122,17 @@ No shared service or SDK installation was changed.
 The publisher now deletes stale observations and runs the live Flutter acceptance suite itself. Publication requires that same process to exit successfully, including all cleanup. The ninth check records success only after source metadata restoration. A regression reproduced false publication before the fix and now proves a failed runner leaves previous public evidence unchanged.
 
 Parent verification: the corrected publisher executed all nine checks successfully against the retained disposable Jellyfin fixture and regenerated app-http.json; 154 application tests pass, the publication regression passes, and scoped Dart analysis is clean. The server exited and port7364 has no listener. No Android, production-server, or credential-storage acceptance is added by this run.
+
+## Integrated Android follow-up
+
+The November 2 follow-up started at main `d9bc3a6` with a new checkout-local Jellyfin fixture.
+See `docs/evidence/playback/integrated-android.md` for the runtime observations and their limits.
+It observed production ordinary-user sign-in, native credential restoration after process restart, account isolation, explicit ebook pairing, and ordered audio acquisition.
+It also observed restored cancellation/removal, cancellation after an early-file failure, exact downloaded bytes, and downloaded offline playback.
+Real Jellyfin accepted native-player start, progress, and stop reports with HTTP 204.
+The follow-up found a concrete native position-sampling defect, tracked separately in `t0-dqxp`.
+
+The first two outstanding gates now have runtime evidence for parent acceptance.
+They are not ticket-closure decisions. The strong-validator gate `t7-bzzg` remains open.
+The discrete interrupted native Pause case remains unobserved in `t0-60ea`.
+No production-server, physical-phone, credential-locked-screen, or full personal-record-sync acceptance is added.

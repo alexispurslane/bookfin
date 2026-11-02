@@ -93,3 +93,10 @@ R1: owner-requested native pause uses the decoder stop operation to revoke pendi
 R2: saves require successful account restoration; account changes clear that readiness before any new save, failed reads do not authorize writes, and flush waits for restoration with a generation check. R3: failed and retired reporting sessions invalidate queued progress; intentional final stops remain distinct, and old failures do not cancel a newer session. R4/R5: relative jumps compute their target inside the serialized command and use source-relative movement when total duration is unavailable. The mini-player book title now uses Source Serif 4.
 
 Eight regression tests meaningfully failed before these corrections. A further account-switch test checks old queued progress is discarded while final stop and new start retain their proper credentials. All 189 application tests pass and the Android debug build passes through the pinned shell. No corrected-build Android UI, physical phone, real Jellyfin playback, timer soak, coverage or mutation proof is claimed. Independent correction review remains pending.
+
+## Integrated real-server follow-up
+
+See `integrated-android.md` for the new disposable Jellyfin and Android run from main `d9bc3a6`.
+That follow-up observes corrected interruption behavior and real Jellyfin report acceptance, not only this page's original emulator stub.
+It also records the new native position-sampling correction `t0-dqxp` and the remaining interrupted-Pause observation `t0-60ea`.
+Historical counts and limits above describe their own earlier runs.
