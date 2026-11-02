@@ -31,3 +31,7 @@ User explicitly requests a continuous builder lane: production record sync, then
 **2026-11-02T23:21:14Z**
 
 Production candidate now implements account-owned Flutter journal, verified plugin transport, serialized audio/reading merges, SQLite atomic records/pending uploads on Android, explicit conflict choices retaining both resume positions as bookmarks, and explicit history deletion. Two real SQLite clients pass actual disposable Jellyfin/plugin integration. Android acceptance remains open; t6-t9po tracks journal growth and t6-il6y tracks production plugin deployment. See docs/research/production-record-sync.md. No closure or release-complete claim.
+
+**2026-11-02T23:26:22Z**
+
+Normal ARM64 debug APK builds successfully from source ccff7dc (241.1s). Candidate: .cache/artifacts/bookfin-ccff7dc-record-sync.apk; SHA-256 recorded in tool/evidence/sync/20261102/apk-sha256.txt. Not installed by builder. JVM/dependency deprecation warnings retained in build evidence. Parent can hand this named build to the acceptance lane; no Android-runtime sync claim.
