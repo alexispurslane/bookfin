@@ -12,6 +12,7 @@ Status: approved for implementation, 2026-11-01. Implementation uses only GPT 6.
 - Show download availability in the book list.
 - Support series, chapters, bookmarks, and recoverable seek and pause history.
 - Read EPUB, MOBI, HTML, Markdown, and PDF, including PDF text reflow.
+- Include bundled, on-device OCR (optical character recognition) in the ultimate feature set so scanned PDF pages can support reflow and search. Prefer a fast, simple offline engine; engine and language coverage remain to be selected.
 - Sync standard progress and playback activity with Jellyfin.
 - Investigate Jellyfin storage for additional Bookfin records. A small Jellyfin plugin is acceptable if needed.
 
@@ -207,6 +208,7 @@ Epic: boo-fs0n. All tickets reference this plan. The setup scaffold is merged; i
 | boo-6h8w | Add persistent seek recovery bookmarks and listening history | boo-sthf |
 | boo-9wgg | Build EPUB HTML and Markdown reading | boo-u3cg, boo-7o92, boo-73yj |
 | boo-mx5i | Add supported MOBI and PDF reflow reading | boo-9wgg |
+| boo-suhu | Add bundled offline OCR for scanned PDF reading | boo-mx5i |
 | boo-3oq0 | Sync Bookfin records through validated Jellyfin storage | boo-p58t, boo-6h8w, boo-9wgg |
 | boo-gk92 | Harden accepted Android behavior and prepare release | boo-mx5i, boo-3oq0 |
 | boo-61vt | Implement cream/sepia appearance, fonts, motion, and sunset theme | boo-gxm8 |
@@ -214,3 +216,11 @@ Epic: boo-fs0n. All tickets reference this plan. The setup scaffold is merged; i
 ## Setup integration follow-ups
 
 The reviewed scaffold is merged. Six T3 project scripts are registered. The main checkout retains its Nix development tools through `.cache/dev-shell`. Phone text entry and independent phone web-preview acceptance are explicitly reassigned to boo-a4gi. Debugger reattachment remains `t3-4isz`. Both block release hardening, not independent feature implementation. T3 still uses its existing host emulator; its entire runtime is not claimed to be Nix-pinned.
+
+## PDF reflow acceptance and OCR extension
+
+The user accepted the displayed sample PDF reflow output as reasonable on 2026-11-01. This accepts the sample result, not untested Android reader behavior, complex-document layout, or a decision about interleaved pictures.
+
+OCR is now approved future scope, tracked by boo-suhu after boo-mx5i. Bundle recognition with the Android app so initial recognition works offline without a cloud service or a required first-use model download. Select the engine after measuring recognition quality, per-page latency, memory use and packaged size on Android. State supported languages explicitly; any optional language downloads must respect Bookfin's media network policy.
+
+Recognized text belongs to the same source edition and retains source-page positions. Cache recognition results and preserve access to the original page. Allow cancellation and fall back to the original page when recognition fails. OCR supplies text; it does not guarantee correct columns, tables or picture placement. This extension does not delay the first complete listening path.
