@@ -1,0 +1,232 @@
+[
+  {
+    "capture": "04-before-reopen",
+    "fontSize": 20.0,
+    "resume": [
+      {
+        "version": 1,
+        "processed": "89321e4371854478eec763a73fe14e25fc1bc0e0eef046fbaa139f1fcc708735",
+        "original": "6efe84b320af9a0f9997dfc6c54b172bc982e6b06978a2c3d75359161da0ce96",
+        "policy": "bookfin-passive-epub-1",
+        "engine": "epubjs-0.3.93-bookfin.1",
+        "cfi": "epubcfi(/6/2!/4/26/1:0)",
+        "resource": "OEBPS/Text/one.xhtml",
+        "quote": "Harbour passage 5. The reader followed the shoreline and watched the small boats return. A bookmark could keep this plac"
+      }
+    ],
+    "bookmarks": []
+  },
+  {
+    "capture": "05-after-reopen",
+    "fontSize": 20.0,
+    "resume": [
+      {
+        "version": 1,
+        "processed": "89321e4371854478eec763a73fe14e25fc1bc0e0eef046fbaa139f1fcc708735",
+        "original": "6efe84b320af9a0f9997dfc6c54b172bc982e6b06978a2c3d75359161da0ce96",
+        "policy": "bookfin-passive-epub-1",
+        "engine": "epubjs-0.3.93-bookfin.1",
+        "cfi": "epubcfi(/6/2!/4/18/1:0)",
+        "resource": "OEBPS/Text/one.xhtml",
+        "quote": "Harbour passage 1. The reader followed the shoreline and watched the small boats return. A bookmark could keep this plac"
+      }
+    ],
+    "bookmarks": []
+  },
+  {
+    "capture": "06-after-bookmark",
+    "fontSize": 20.0,
+    "resume": [
+      {
+        "version": 1,
+        "processed": "89321e4371854478eec763a73fe14e25fc1bc0e0eef046fbaa139f1fcc708735",
+        "original": "6efe84b320af9a0f9997dfc6c54b172bc982e6b06978a2c3d75359161da0ce96",
+        "policy": "bookfin-passive-epub-1",
+        "engine": "epubjs-0.3.93-bookfin.1",
+        "cfi": "epubcfi(/6/2!/4/26/1:0)",
+        "resource": "OEBPS/Text/one.xhtml",
+        "quote": "Harbour passage 5. The reader followed the shoreline and watched the small boats return. A bookmark could keep this plac"
+      }
+    ],
+    "bookmarks": [
+      {
+        "version": 1,
+        "processed": "89321e4371854478eec763a73fe14e25fc1bc0e0eef046fbaa139f1fcc708735",
+        "original": "6efe84b320af9a0f9997dfc6c54b172bc982e6b06978a2c3d75359161da0ce96",
+        "policy": "bookfin-passive-epub-1",
+        "engine": "epubjs-0.3.93-bookfin.1",
+        "cfi": "epubcfi(/6/2!/4/26/1:0)",
+        "resource": "OEBPS/Text/one.xhtml",
+        "quote": "Harbour passage 5. The reader followed the shoreline and watched the small boats return. A bookmark could keep this plac"
+      }
+    ]
+  },
+  {
+    "capture": "08-after-restart",
+    "fontSize": 20.0,
+    "resume": [
+      {
+        "version": 1,
+        "processed": "89321e4371854478eec763a73fe14e25fc1bc0e0eef046fbaa139f1fcc708735",
+        "original": "6efe84b320af9a0f9997dfc6c54b172bc982e6b06978a2c3d75359161da0ce96",
+        "policy": "bookfin-passive-epub-1",
+        "engine": "epubjs-0.3.93-bookfin.1",
+        "cfi": "epubcfi(/6/2!/4/16/2/1:0)",
+        "resource": "OEBPS/Text/one.xhtml",
+        "quote": "Visit the lantern roomHarbour passage 1. The reader followed the shoreline and watched the small boats return. A bookmar"
+      }
+    ],
+    "bookmarks": [
+      {
+        "version": 1,
+        "processed": "89321e4371854478eec763a73fe14e25fc1bc0e0eef046fbaa139f1fcc708735",
+        "original": "6efe84b320af9a0f9997dfc6c54b172bc982e6b06978a2c3d75359161da0ce96",
+        "policy": "bookfin-passive-epub-1",
+        "engine": "epubjs-0.3.93-bookfin.1",
+        "cfi": "epubcfi(/6/2!/4/26/1:0)",
+        "resource": "OEBPS/Text/one.xhtml",
+        "quote": "Harbour passage 5. The reader followed the shoreline and watched the small boats return. A bookmark could keep this plac"
+      }
+    ]
+  },
+  {
+    "capture": "11-larger-reopen",
+    "fontSize": 22.0,
+    "resume": [
+      {
+        "version": 1,
+        "processed": "89321e4371854478eec763a73fe14e25fc1bc0e0eef046fbaa139f1fcc708735",
+        "original": "6efe84b320af9a0f9997dfc6c54b172bc982e6b06978a2c3d75359161da0ce96",
+        "policy": "bookfin-passive-epub-1",
+        "engine": "epubjs-0.3.93-bookfin.1",
+        "cfi": "epubcfi(/6/2!/4/22/1:100)",
+        "resource": "OEBPS/Text/one.xhtml",
+        "quote": "could keep this place while the room grew dark.Harbour passage 4. The reader followed the shoreline and watched the smal"
+      }
+    ],
+    "bookmarks": [
+      {
+        "version": 1,
+        "processed": "89321e4371854478eec763a73fe14e25fc1bc0e0eef046fbaa139f1fcc708735",
+        "original": "6efe84b320af9a0f9997dfc6c54b172bc982e6b06978a2c3d75359161da0ce96",
+        "policy": "bookfin-passive-epub-1",
+        "engine": "epubjs-0.3.93-bookfin.1",
+        "cfi": "epubcfi(/6/2!/4/26/1:0)",
+        "resource": "OEBPS/Text/one.xhtml",
+        "quote": "Harbour passage 5. The reader followed the shoreline and watched the small boats return. A bookmark could keep this plac"
+      }
+    ]
+  },
+  {
+    "capture": "12-before-second-reopen",
+    "fontSize": 22.0,
+    "resume": [
+      {
+        "version": 1,
+        "processed": "89321e4371854478eec763a73fe14e25fc1bc0e0eef046fbaa139f1fcc708735",
+        "original": "6efe84b320af9a0f9997dfc6c54b172bc982e6b06978a2c3d75359161da0ce96",
+        "policy": "bookfin-passive-epub-1",
+        "engine": "epubjs-0.3.93-bookfin.1",
+        "cfi": "epubcfi(/6/4!/4/18/1:100)",
+        "resource": "OEBPS/Text/two.xhtml",
+        "quote": "could keep this place while the room grew dark.Harbour passage 6. The reader followed the shoreline and watched the smal"
+      }
+    ],
+    "bookmarks": [
+      {
+        "version": 1,
+        "processed": "89321e4371854478eec763a73fe14e25fc1bc0e0eef046fbaa139f1fcc708735",
+        "original": "6efe84b320af9a0f9997dfc6c54b172bc982e6b06978a2c3d75359161da0ce96",
+        "policy": "bookfin-passive-epub-1",
+        "engine": "epubjs-0.3.93-bookfin.1",
+        "cfi": "epubcfi(/6/2!/4/26/1:0)",
+        "resource": "OEBPS/Text/one.xhtml",
+        "quote": "Harbour passage 5. The reader followed the shoreline and watched the small boats return. A bookmark could keep this plac"
+      }
+    ]
+  },
+  {
+    "capture": "13-after-second-reopen",
+    "fontSize": 22.0,
+    "resume": [
+      {
+        "version": 1,
+        "processed": "89321e4371854478eec763a73fe14e25fc1bc0e0eef046fbaa139f1fcc708735",
+        "original": "6efe84b320af9a0f9997dfc6c54b172bc982e6b06978a2c3d75359161da0ce96",
+        "policy": "bookfin-passive-epub-1",
+        "engine": "epubjs-0.3.93-bookfin.1",
+        "cfi": "epubcfi(/6/4!/4/18/1:100)",
+        "resource": "OEBPS/Text/two.xhtml",
+        "quote": "could keep this place while the room grew dark.Harbour passage 6. The reader followed the shoreline and watched the smal"
+      }
+    ],
+    "bookmarks": [
+      {
+        "version": 1,
+        "processed": "89321e4371854478eec763a73fe14e25fc1bc0e0eef046fbaa139f1fcc708735",
+        "original": "6efe84b320af9a0f9997dfc6c54b172bc982e6b06978a2c3d75359161da0ce96",
+        "policy": "bookfin-passive-epub-1",
+        "engine": "epubjs-0.3.93-bookfin.1",
+        "cfi": "epubcfi(/6/2!/4/26/1:0)",
+        "resource": "OEBPS/Text/one.xhtml",
+        "quote": "Harbour passage 5. The reader followed the shoreline and watched the small boats return. A bookmark could keep this plac"
+      }
+    ]
+  },
+  {
+    "capture": "14-before-diagnostic",
+    "fontSize": 20.0,
+    "resume": [
+      {
+        "version": 1,
+        "processed": "89321e4371854478eec763a73fe14e25fc1bc0e0eef046fbaa139f1fcc708735",
+        "original": "6efe84b320af9a0f9997dfc6c54b172bc982e6b06978a2c3d75359161da0ce96",
+        "policy": "bookfin-passive-epub-1",
+        "engine": "epubjs-0.3.93-bookfin.1",
+        "cfi": "epubcfi(/6/2!/4/26/1:0)",
+        "resource": "OEBPS/Text/one.xhtml",
+        "quote": "Harbour passage 5. The reader followed the shoreline and watched the small boats return. A bookmark could keep this plac"
+      }
+    ],
+    "bookmarks": [
+      {
+        "version": 1,
+        "processed": "89321e4371854478eec763a73fe14e25fc1bc0e0eef046fbaa139f1fcc708735",
+        "original": "6efe84b320af9a0f9997dfc6c54b172bc982e6b06978a2c3d75359161da0ce96",
+        "policy": "bookfin-passive-epub-1",
+        "engine": "epubjs-0.3.93-bookfin.1",
+        "cfi": "epubcfi(/6/2!/4/26/1:0)",
+        "resource": "OEBPS/Text/one.xhtml",
+        "quote": "Harbour passage 5. The reader followed the shoreline and watched the small boats return. A bookmark could keep this plac"
+      }
+    ]
+  },
+  {
+    "capture": "15-after-diagnostic",
+    "fontSize": 20.0,
+    "resume": [
+      {
+        "version": 1,
+        "processed": "89321e4371854478eec763a73fe14e25fc1bc0e0eef046fbaa139f1fcc708735",
+        "original": "6efe84b320af9a0f9997dfc6c54b172bc982e6b06978a2c3d75359161da0ce96",
+        "policy": "bookfin-passive-epub-1",
+        "engine": "epubjs-0.3.93-bookfin.1",
+        "cfi": "epubcfi(/6/2!/4/18/1:0)",
+        "resource": "OEBPS/Text/one.xhtml",
+        "quote": "Harbour passage 1. The reader followed the shoreline and watched the small boats return. A bookmark could keep this plac"
+      }
+    ],
+    "bookmarks": [
+      {
+        "version": 1,
+        "processed": "89321e4371854478eec763a73fe14e25fc1bc0e0eef046fbaa139f1fcc708735",
+        "original": "6efe84b320af9a0f9997dfc6c54b172bc982e6b06978a2c3d75359161da0ce96",
+        "policy": "bookfin-passive-epub-1",
+        "engine": "epubjs-0.3.93-bookfin.1",
+        "cfi": "epubcfi(/6/2!/4/26/1:0)",
+        "resource": "OEBPS/Text/one.xhtml",
+        "quote": "Harbour passage 5. The reader followed the shoreline and watched the small boats return. A bookmark could keep this plac"
+      }
+    ]
+  }
+]

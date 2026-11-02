@@ -1,0 +1,4 @@
+Performing Streamed Install
+Success
+/data/app/~~08byS3vkgDhz0FYDO1nTZQ==/dev.bookfin.bookfin-hyaeo9dQB16HNzjAXuIy5g==/base.apk: 1 file pulled, 0 skipped. 47.3 MB/s (100150407 bytes in 2.017s)
+4e7350789b0df08d6d23c05fdee8ba9340872e47092660cfe0fd0a7d97975bbc  .cache/installed-integrated.apk

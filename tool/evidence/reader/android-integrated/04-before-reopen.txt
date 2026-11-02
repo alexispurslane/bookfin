@@ -1,0 +1,24 @@
+Page: dev.bookfin.bookfin
+App: dev.bookfin.bookfin
+Snapshot: 22 visible nodes (27 total)
+Collapsed 5 Android helper nodes from the agent-facing text snapshot; use --raw or --json for the full hierarchy.
+@e1 [group] "Harbour passage 5. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark., Harbour passage 6. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark., Harbour passage 7. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark., Harbour passage 8. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark., Harbour passage 9. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark." [focused]
+@e2 [button] "Back"
+@e3 [group] "Synthetic Work"
+@e4 [button] "Hide reader controls"
+@e7 [webview] "Bookfin reading viewport" [focused]
+@e8 [group] "Book text"
+@e9 [group] "epubjs-container-296e6139-1ecb-4a89-e7cd-afecc29cd710"
+@e10 [group] "epubjs-view-25ac8a62-f7a8-4a86-a47b-59aa0e95eb75"
+@e11 [group] "one" [focused]
+@e17 [button] "Contents"
+@e18 [button] "Search book"
+@e19 [button] "Smaller text"
+@e20 [button] "Larger text"
+@e21 [button] "Bookmark this place"
+@e22 [button] "Reading bookmarks"
+@e23 [button] "Night reading theme"
+@e24 [progressbar] "40, Current document page progress. Page 2 of 5"
+@e25 [button] "Previous page"
+@e26 [group] "The quiet harbour · Page 2 of 5"
+@e27 [button] "Next page"

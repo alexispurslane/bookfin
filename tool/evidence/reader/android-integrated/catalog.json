@@ -1,0 +1,11 @@
+{
+  "serverVersion": "12.4.0",
+  "ordinaryUser": true,
+  "books": [
+    {
+      "Name": "Synthetic Work",
+      "Id": "90389dd219c07d4467485ad049cf09f1",
+      "Type": "Book"
+    }
+  ]
+}

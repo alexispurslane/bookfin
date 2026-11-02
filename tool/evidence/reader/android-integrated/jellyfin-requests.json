@@ -1,0 +1,78 @@
+[
+  {
+    "at": 1793649548.122048,
+    "method": "POST",
+    "path": "/Users/AuthenticateByName",
+    "status": 200
+  },
+  {
+    "at": 1793649548.305408,
+    "method": "GET",
+    "path": "/UserViews",
+    "status": 200
+  },
+  {
+    "at": 1793649571.036219,
+    "method": "GET",
+    "path": "/System/Info/Public",
+    "status": 200
+  },
+  {
+    "at": 1793649571.06831,
+    "method": "GET",
+    "path": "/Users/Me",
+    "status": 200
+  },
+  {
+    "at": 1793649571.203051,
+    "method": "GET",
+    "path": "/UserViews",
+    "status": 200
+  },
+  {
+    "at": 1793649571.243743,
+    "method": "GET",
+    "path": "/UserViews",
+    "status": 200
+  },
+  {
+    "at": 1793649571.460246,
+    "method": "GET",
+    "path": "/Items",
+    "status": 200
+  },
+  {
+    "at": 1793649616.08044,
+    "method": "GET",
+    "path": "/System/Info/Public",
+    "status": 200
+  },
+  {
+    "at": 1793649616.1743171,
+    "method": "GET",
+    "path": "/Users/Me",
+    "status": 200
+  },
+  {
+    "at": 1793649616.21144,
+    "method": "GET",
+    "path": "/Items/90389dd219c07d4467485ad049cf09f1",
+    "status": 200
+  },
+  {
+    "at": 1793649616.306696,
+    "method": "GET",
+    "path": "/Items/90389dd219c07d4467485ad049cf09f1/Download",
+    "status": 200,
+    "length": "135959",
+    "etag": null,
+    "range": null,
+    "ifRange": null
+  },
+  {
+    "at": 1793649616.583049,
+    "method": "GET",
+    "path": "/Items/90389dd219c07d4467485ad049cf09f1",
+    "status": 200
+  }
+]

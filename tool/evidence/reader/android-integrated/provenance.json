@@ -1,0 +1,45 @@
+{
+  "date": "2026-11-02",
+  "sourceCommit": "f8868495509d9100146c3cc24835fada98ebaaf3",
+  "sourceGitTarSha256": "641a6513cd0d827313ec2e7407c63ae152a7085f4eaa4e91b2038b7be61fd4b9",
+  "buildCommand": "nix develop --profile .cache/dev-shell --command bash -c 'export PUB_CACHE=/Users/alexispurslane/Development/bookfin/.cache/pub; export GRADLE_USER_HOME=\"$PWD/.cache/gradle\"; bash tool/bookfin build-android'",
+  "entry": "lib/main.dart",
+  "package": "dev.bookfin.bookfin",
+  "gradleSeconds": 238.4,
+  "artifacts": {
+    "builtApk": {
+      "path": "build/app/outputs/flutter-apk/app-debug.apk",
+      "bytes": 100150407,
+      "sha256": "4e7350789b0df08d6d23c05fdee8ba9340872e47092660cfe0fd0a7d97975bbc"
+    },
+    "installedReadback": {
+      "path": ".cache/installed-integrated.apk",
+      "bytes": 100150407,
+      "sha256": "4e7350789b0df08d6d23c05fdee8ba9340872e47092660cfe0fd0a7d97975bbc"
+    },
+    "finalInstalledReadback": {
+      "path": ".cache/installed-integrated-final.apk",
+      "bytes": 100150407,
+      "sha256": "4e7350789b0df08d6d23c05fdee8ba9340872e47092660cfe0fd0a7d97975bbc"
+    },
+    "originalEpub": {
+      "path": ".cache/sync/runtime/media/public/Work/Text Edition/Synthetic Work.epub",
+      "bytes": 135959,
+      "sha256": "6efe84b320af9a0f9997dfc6c54b172bc982e6b06978a2c3d75359161da0ce96"
+    },
+    "downloadedReadback": {
+      "path": ".cache/integrated-downloaded.epub",
+      "bytes": 135959,
+      "sha256": "6efe84b320af9a0f9997dfc6c54b172bc982e6b06978a2c3d75359161da0ce96"
+    }
+  },
+  "device": {
+    "host": "local",
+    "id": "emulator-5554",
+    "processBeforeRestart": 1163,
+    "processAfterRestart": 4280,
+    "fontScaleBeforeAndAfter": "1.0",
+    "airplaneModeBeforeAndAfter": "0",
+    "serverUnavailableNotAirplaneMode": true
+  }
+}

@@ -2,7 +2,7 @@
 id: boo-9wgg
 status: in_progress
 deps: [boo-u3cg, boo-7o92, boo-73yj, t3-9r9u, tb-zqvc]
-links: [t3-9r9u, boo-mx5i, t8-jj2s]
+links: [t3-9r9u, boo-mx5i, t8-jj2s, t8-j809]
 created: 2026-11-01T21:37:34Z
 type: task
 priority: 2
@@ -79,3 +79,7 @@ Follow-up review: reproduced malformed outer storage and stale location failure;
 **2026-11-02T18:17:50Z**
 
 Corrected Android acceptance captured22 audited screenshots from readable chapters through contents, search-hit navigation, larger text/night theme, next/previous/internal links, bookmark creation/restore, and server-unavailable process restart. Exact source ae8dcd9, normal fresh APK a7c85ad4. Later visible page was persisted but reopen returned chapter opening; new t8-jj2s records filtered disk proof and screenshots18-20. Second confirmation snapshot showed chapter opening, but late screenshot21 unexpectedly shows Book details; renderer termination logs retained without asserting cause. See docs/evidence/reader/android-corrected.md. Own download removed/signout, text multiplier restored1.0, own services/route/Gradle stopped, binding released shutdown:false. No reader approval, children, hardening, PR, or closure.
+
+**2026-11-02T20:22:25Z**
+
+Integrated f886849 named Android run: normal ordinary-user sign-in, library selection, original-hash-verified EPUB download, and readable Read PASS despite real Book omitting Container and MediaSources. t8-jj2s still fails20-pixel later-page reopen both within process and after restart with server unavailable; bookmark visible-text restore passes both.22-pixel text size persists, and second-chapter later-page text/CFI survive reopen in that control case. Night override returns cream on reopen; intended lifetime tracked separately in t8-j809, not decided by test agent. Page progress labels disagree for identical visible columns; retain with restoration/layout investigation. New report docs/evidence/reader/android-integrated.md and16 audited screenshots. No native-denial, TalkBack, search, long-run, or whole-reader approval. Cleanup complete, device binding released without shutdown. No production edits or ticket closure.

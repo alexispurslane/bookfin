@@ -1,0 +1,17 @@
+11-02 15:00:35.743  1163  1163 I chromium: [INFO:CONSOLE(0)] "Error with Permissions-Policy header: Unrecognized feature: 'payment'.", source:  (0)
+11-02 15:00:35.743  1163  1163 I chromium: [INFO:CONSOLE(0)] "Error with Permissions-Policy header: Unrecognized feature: 'usb'.", source:  (0)
+11-02 15:02:28.827  1163  1163 E chromium: [ERROR:aw_browser_terminator.cc(165)] Renderer process (2561) crash detected (code -1).
+11-02 15:02:30.577  1163  1163 I chromium: [INFO:CONSOLE(0)] "Error with Permissions-Policy header: Unrecognized feature: 'payment'.", source:  (0)
+11-02 15:02:30.578  1163  1163 I chromium: [INFO:CONSOLE(0)] "Error with Permissions-Policy header: Unrecognized feature: 'usb'.", source:  (0)
+11-02 15:08:11.964  4280  4280 I chromium: [INFO:CONSOLE(0)] "Error with Permissions-Policy header: Unrecognized feature: 'payment'.", source:  (0)
+11-02 15:08:11.965  4280  4280 I chromium: [INFO:CONSOLE(0)] "Error with Permissions-Policy header: Unrecognized feature: 'usb'.", source:  (0)
+11-02 15:09:24.564  4280  4280 E chromium: [ERROR:aw_browser_terminator.cc(165)] Renderer process (4594) crash detected (code -1).
+11-02 15:09:25.913  4280  4280 I chromium: [INFO:CONSOLE(0)] "Error with Permissions-Policy header: Unrecognized feature: 'payment'.", source:  (0)
+11-02 15:09:25.914  4280  4280 I chromium: [INFO:CONSOLE(0)] "Error with Permissions-Policy header: Unrecognized feature: 'usb'.", source:  (0)
+11-02 15:11:43.546  4280  4280 E chromium: [ERROR:aw_browser_terminator.cc(165)] Renderer process (4953) crash detected (code -1).
+11-02 15:12:09.738  4280  4280 I chromium: [INFO:CONSOLE(0)] "Error with Permissions-Policy header: Unrecognized feature: 'payment'.", source:  (0)
+11-02 15:12:09.738  4280  4280 I chromium: [INFO:CONSOLE(0)] "Error with Permissions-Policy header: Unrecognized feature: 'usb'.", source:  (0)
+11-02 15:13:23.014  4280  4280 E chromium: [ERROR:aw_browser_terminator.cc(165)] Renderer process (5557) crash detected (code -1).
+11-02 15:13:51.516  4280  4280 I chromium: [INFO:CONSOLE(0)] "Error with Permissions-Policy header: Unrecognized feature: 'payment'.", source:  (0)
+11-02 15:13:51.517  4280  4280 I chromium: [INFO:CONSOLE(0)] "Error with Permissions-Policy header: Unrecognized feature: 'usb'.", source:  (0)
+11-02 15:15:19.471  4280  4280 E chromium: [ERROR:aw_browser_terminator.cc(165)] Renderer process (5934) crash detected (code -1).
