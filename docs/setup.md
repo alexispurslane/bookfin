@@ -31,7 +31,8 @@ Updating the lock is a toolchain change, not part of routine setup.
 The shell sets `JAVA_HOME`, `ANDROID_HOME`, `ANDROID_SDK_ROOT`, and `FLUTTER_ROOT`.
 Do not put these variables in a shell profile.
 The Nix SDK is read-only.
-API 35 supports the native dependency of local appearance preferences.
+API 35 supports the native dependencies of local appearance preferences and the selected pdfrx PDF reader through jni.
+API 34 remains available for existing plugins.
 The Bookfin application still compiles against API 36.
 Its `cmdline-tools/latest` link points to the pinned command-line tools, not a moving download.
 Flutter's dependency cache is `.cache/pub`.
@@ -49,7 +50,7 @@ nix develop --command bash tool/bookfin analyze
 ```
 
 `doctor` reports host tools, including iOS tools that this Android ticket does not use.
-The normal test command runs the SDK-link safety test and all Flutter widget tests.
+The normal test command runs SDK-link safety, compiles Android reader file access against APIs 35 and 36, and runs all Flutter widget tests.
 A widget test runs the Flutter screen without starting an Android emulator.
 It does not prove Android behavior.
 
