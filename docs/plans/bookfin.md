@@ -11,7 +11,7 @@ Status: approved for implementation, 2026-11-01. Implementation uses only GPT 6.
 - Prefer downloaded audio. Prevent automatic streaming away from Wi-Fi.
 - Show download availability in the book list.
 - Support series, chapters, bookmarks, and recoverable seek and pause history.
-- Read EPUB, MOBI, HTML, Markdown, and PDF, including PDF text reflow.
+- Read EPUB, MOBI, and PDF, including PDF text reflow. The user removed HTML and Markdown from product scope on 2026-11-02.
 - Include bundled, on-device OCR (optical character recognition) in the ultimate feature set so scanned PDF pages can support reflow and search. Prefer a fast, simple offline engine; engine and language coverage remain to be selected.
 - Sync standard progress and playback activity with Jellyfin.
 - Store additional Bookfin records separately from ordinary Jellyfin playlists. Prove a small Jellyfin plugin or another dedicated storage surface before production integration. The user selected this direction on 2026-11-02.
@@ -112,8 +112,6 @@ Support interrupted transfers, safe retry, cancellation, free-space checks, remo
 | Format | Intended experience | Required proof before package selection |
 | --- | --- | --- |
 | EPUB | Reflowing text, contents, font size, theme, search, saved position, bookmarks | Complex chapters, images, embedded fonts, large books, stable positions |
-| HTML | Readable local document with images and internal links | Disable active content; resolve local assets without escaping the book |
-| Markdown | Render headings, links, lists, code, and images | Stable positions and safe rendering of embedded HTML |
 | MOBI | Read unencrypted supported MOBI variants through local parsing or conversion | Sample files, conversion quality, licensing, Android packaging, offline operation |
 | PDF | Original pages and an optional reflowed text view | Text order, columns, headings, images, page-to-text anchors, license and binary size |
 
@@ -172,7 +170,7 @@ Browser demonstrations do not prove Android background playback, Wi-Fi policy, s
 2. Prove Jellyfin integration with representative libraries and ordinary user permissions. Investigate metadata storage, item grouping, chapters, downloads, and progress. In parallel, test reader format candidates.
 3. Build the first complete listening path: sign in, select book libraries, browse, download one whole book, disconnect, play, pause, and resume after app restart.
 4. Add all media policy transitions, resilient transfers, background playback, chapter navigation, bookmarks, and seek history with Undo.
-5. Add series organization, edition pairing, and the reader. Deliver EPUB, HTML, and Markdown first while MOBI and PDF proof work determines their implementation.
+5. Add series organization, edition pairing, and the reader. Deliver EPUB first while MOBI and PDF proof work determines their implementation.
 6. Implement extra-record sync using the validated Jellyfin transport or the plugin. Test two offline devices, conflicting resume positions, duplicate retries, and deleted bookmarks.
 7. Harden and release Android builds after shared user testing.
 
@@ -212,7 +210,7 @@ Epic: boo-fs0n. All tickets reference this plan. The setup scaffold is merged; i
 | t9-k4lf | Expose safe explicit removal of retained downloads outside the selected catalog | boo-7o92 |
 | boo-sthf | Deliver offline playback chapters and Jellyfin progress | boo-7o92 |
 | boo-6h8w | Add persistent seek recovery bookmarks and listening history | boo-sthf |
-| boo-9wgg | Build EPUB HTML and Markdown reading | boo-u3cg, boo-7o92, boo-73yj |
+| boo-9wgg | Build EPUB reading | boo-u3cg, boo-7o92, boo-73yj |
 | boo-mx5i | Add supported MOBI and PDF reflow reading | boo-9wgg |
 | boo-suhu | Add bundled offline OCR for scanned PDF reading | boo-mx5i |
 | boo-3oq0 | Sync Bookfin records through validated Jellyfin storage | boo-p58t, boo-6h8w, boo-9wgg |

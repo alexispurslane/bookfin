@@ -9,7 +9,7 @@ priority: 2
 assignee: Alexis Purslane
 parent: boo-fs0n
 ---
-# Build EPUB HTML and Markdown reading
+# Build EPUB reading
 
 Provide contents, text sizing, themes, search, bookmarks, local assets, and stable edition-specific positions. Keep reader and audio positions separate.
 
@@ -31,3 +31,7 @@ Read offline on Android, reopen at the correct location, and block active or uni
 **2026-11-02T11:14:09Z**
 
 Android follow-up now confirms the research-only EPUBX compatibility patch runs with pdfrx 2.11.0 in one app process and with no INTERNET permission. Generated EPUB and MOBI6 text/PNG previews display. Standalone KF8 text also displays, but its first image is SVG (OEBPS/flow00004.svg, 324 bytes), so Flutter Image.memory reports Invalid image data. t3-9r9u records this precise presentation failure. The preview also flattens heading/paragraph boundaries. No production navigator or package approval is implied.
+
+**2026-11-02T13:40:10Z**
+
+User removed HTML/Markdown support from product scope. Implement EPUB reading here; MOBI/PDF remain boo-mx5i. Historical parser research is not a production promise.
