@@ -454,10 +454,11 @@ The probe is not the production reader and does not implement the approved Bookf
 | Multi-column/table PDFs | Existing host checks retain their findings | No new Android column-order or table-association claim |
 
 The original source PDF hash is `51d05de2a89dd83fb8f04301ac254419b2d616d48f6e8bb9fbe0938745bc04ce`.
-Each Android source page produces 6 lines at width 200 and 3 lines at width 360.
+The retained screenshots show 6 rendered lines at width 200 and 4 at width 360.
+The original label and log claimed 3 lines at width 360. That separate painter omitted inherited text styling, so its count did not describe the displayed paragraph.
 Widths use logical pixels, Flutter's density-independent length unit.
 Body text stays at 18 logical pixels, with no text scaling in this research view.
-These are Android measurements, not the earlier host layouts at 360 and 720 PDF points.
+These counts come from inspecting the retained Android screenshots, not the earlier host layouts at 360 and 720 PDF points.
 The Android reflow view contains newly laid-out text, not a resized page image.
 It flattens original heading styles and paragraph breaks.
 
@@ -580,11 +581,11 @@ No claim about an assumed latest package release is needed for this candidate.
 ### Repeat the finite follow-up
 
 Run one build/test command at a time from the checkout root.
-The original host run creates the existing conversion outputs and unpacks the pinned PDFium archives.
+The host run below creates conversion outputs and unpacks the pinned PDFium archives without regenerating fixture inputs.
 Use the committed fixtures for final fingerprints; regenerating a PDF can change bytes across checkout paths.
 
 ```sh
-nix develop ./tool/research/readers --command bash tool/research/readers/run
+nix develop ./tool/research/readers --command bash tool/research/readers/run --keep-fixtures
 nix develop ./tool/research/readers --command bash tool/research/readers/epub-compat
 nix develop ./tool/research/readers#android --command bash -c 'export BOOKFIN_NDK="$ANDROID_HOME/ndk/28.2.13676358"; nix develop ./tool/research/readers --command bash tool/research/readers/android-build'
 nix develop ./tool/research/readers#android --command bash tool/research/readers/widget-check
@@ -609,3 +610,16 @@ Use the returned device-bound command, not another thread's command or session.
 Exercise Original, both PDF reflow widths, the page-2 source link, Scan, all four EPUB/MOBI previews, and Licenses.
 Gather logs only for the research application's process.
 Close only that application, stop only this checkout's build daemon, and release only this thread's binding without shutting down the emulator.
+
+
+### Parent correction of the measurement and reproduction path
+
+The retained APK, logs, screenshots, and packaging fingerprints describe the original Android execution. Its wide paragraph contains four rendered lines despite the three-line label. The observations now distinguish the original standalone-painter counts from screenshot counts. The chart uses screenshot counts. No screenshot or historical log was regenerated to conceal the mismatch.
+
+The corrected research widget measures and draws the same text span with its inherited style, locale, and constrained width. The independent painter in the loading report was removed. A widget regression first failed and now compares the displayed count against line boxes from the rendered paragraph. It uses inherited letter spacing and a parent narrower than the requested width. This is host evidence. The corrected widget has not been re-observed on Android.
+
+The reproduction runner preserves committed fixtures by default and with `--keep-fixtures`. Regeneration is a separate explicit operation: `nix develop ./tool/research/readers --command bash tool/research/readers/run --regenerate-fixtures`. Regenerated inputs establish a new run and cannot inherit the old input fingerprints. Two runner tests exercise preservation and explicit replacement with controlled external tools.
+
+Ticket dependencies now require `t3-9r9u` before EPUB reader completion and `t3-ipk1` before release hardening. Both follow-ups still depend on finite research `boo-73yj`. The dependency graph has no cycle. These gates do not approve a production package or a release license approach.
+
+Parent checks pass through Nix: 30 host tests across the original suites, corrected widget, and runner-input cases. The corrected Android research APK builds but was not installed. A full `run --keep-fixtures` left every fixture SHA-256 unchanged. `evidence/parent-review-corrections.json` records the new build hash, source hashes, and the unchanged input hashes. Historical Android observations still describe the earlier APK.

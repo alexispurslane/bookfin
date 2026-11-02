@@ -17,6 +17,45 @@ void main() {
       'The river follows the old road. '
       'A reader can change the text size without changing the saved source location.';
 
+  testWidgets(
+    'line measurement matches the rendered style and constrained width',
+    (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: DefaultTextStyle(
+              style: const TextStyle(fontSize: 22, letterSpacing: 2.5),
+              child: SizedBox(
+                width: 240,
+                child: ReflowPage(
+                  text: paragraph,
+                  width: 360,
+                  sourcePage: 1,
+                  sourceCharacter: 0,
+                  onSource: () {},
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      final rendered = tester.renderObject<RenderParagraph>(
+        find.text(paragraph, findRichText: true),
+      );
+      final lines = rendered
+          .getBoxesForSelection(
+            const TextSelection(baseOffset: 0, extentOffset: paragraph.length),
+          )
+          .map((box) => box.top)
+          .toSet()
+          .length;
+      expect(
+        find.text('Width 240 logical pixels; $lines lines; body 18'),
+        findsOneWidget,
+      );
+    },
+  );
+
   testWidgets('narrow reflow wraps text into more lines without shrinking it', (
     tester,
   ) async {
@@ -34,7 +73,9 @@ void main() {
           ),
         ),
       );
-      return tester.renderObject<RenderParagraph>(find.text(paragraph));
+      return tester.renderObject<RenderParagraph>(
+        find.text(paragraph, findRichText: true),
+      );
     }
 
     final wide = await renderAt(360);

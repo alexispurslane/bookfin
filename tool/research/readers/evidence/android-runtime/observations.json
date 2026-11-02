@@ -15,14 +15,18 @@
             689.843994140625
           ],
           "body_logical_pixels": 18,
-          "line_counts_by_width_logical_pixels": {
-            "200": 6,
-            "360": 3
-          },
           "render_pixels": [
             360,
             465
-          ]
+          ],
+          "standalone_painter_line_counts_by_width_logical_pixels": {
+            "200": 6,
+            "360": 3
+          },
+          "screenshot_rendered_line_counts_by_width_logical_pixels": {
+            "200": 6,
+            "360": 4
+          }
         },
         {
           "source_page_1_based": 2,
@@ -35,16 +39,21 @@
             689.843994140625
           ],
           "body_logical_pixels": 18,
-          "line_counts_by_width_logical_pixels": {
-            "200": 6,
-            "360": 3
-          },
           "render_pixels": [
             360,
             465
-          ]
+          ],
+          "standalone_painter_line_counts_by_width_logical_pixels": {
+            "200": 6,
+            "360": 3
+          },
+          "screenshot_rendered_line_counts_by_width_logical_pixels": {
+            "200": 6,
+            "360": 4
+          }
         }
-      ]
+      ],
+      "line_count_correction": "Original standalone TextPainter counts omitted inherited styling. Screenshot paragraphs contain 6/4 rendered lines at requested widths 200/360. Original APK/logs remain historical evidence; corrected widget not yet observed on Android."
     }
   },
   {

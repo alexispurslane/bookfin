@@ -1,12 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")"
+case "${1:---keep-fixtures}" in
+  --keep-fixtures) regenerate=false ;;
+  --regenerate-fixtures) regenerate=true ;;
+  *) printf 'Usage: run [--keep-fixtures|--regenerate-fixtures]\n' >&2; exit 2 ;;
+esac
 : "${PDFIUM_HOST_ARCHIVE:?Use nix develop ./tool/research/readers}"
 mkdir -p _out/pdfium-host _out/pdfium-android
 tar xf "$PDFIUM_HOST_ARCHIVE" -C _out/pdfium-host
 tar xf "$PDFIUM_ANDROID_ARCHIVE" -C _out/pdfium-android
 export PDFIUM_LIBRARY="$PWD/_out/pdfium-host/lib/libpdfium.dylib"
-python fixtures.py
+if "$regenerate"; then python fixtures.py; fi
 python -m unittest -v test_readers
 for name in mobi6-plain mobi6-palmdoc; do
   mobitool -e -o _out "fixtures/$name.mobi"

@@ -18,27 +18,45 @@ class ReflowPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const style = TextStyle(fontSize: 18, height: 1.4);
-    final painter = TextPainter(
-      text: TextSpan(text: text, style: style),
-      textDirection: TextDirection.ltr,
-      textScaler: TextScaler.noScaling,
-    )..layout(maxWidth: width);
-    final lines = painter.computeLineMetrics().length;
-    painter.dispose();
+    final style = DefaultTextStyle.of(context).style
+        .merge(const TextStyle(fontSize: 18, height: 1.4));
+    final span = TextSpan(text: text, style: style);
+    final locale = Localizations.maybeLocaleOf(context);
     return SizedBox(
       width: width,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          TextButton(
-            onPressed: onSource,
-            child: Text('Source page $sourcePage, character $sourceCharacter'),
-          ),
-          Text('Width ${width.toInt()} logical pixels; $lines lines; body 18'),
-          Text(text, style: style, textScaler: TextScaler.noScaling),
-          const SizedBox(height: 24),
-        ],
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final actualWidth = constraints.maxWidth;
+          final painter = TextPainter(
+            text: span,
+            textDirection: TextDirection.ltr,
+            textScaler: TextScaler.noScaling,
+            locale: locale,
+          )..layout(maxWidth: actualWidth);
+          final lines = painter.computeLineMetrics().length;
+          painter.dispose();
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextButton(
+                onPressed: onSource,
+                child: Text(
+                  'Source page $sourcePage, character $sourceCharacter',
+                ),
+              ),
+              Text(
+                'Width ${actualWidth.toInt()} logical pixels; $lines lines; body 18',
+              ),
+              RichText(
+                text: span,
+                textDirection: TextDirection.ltr,
+                textScaler: TextScaler.noScaling,
+                locale: locale,
+              ),
+              const SizedBox(height: 24),
+            ],
+          );
+        },
       ),
     );
   }

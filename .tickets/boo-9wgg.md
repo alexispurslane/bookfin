@@ -1,7 +1,7 @@
 ---
 id: boo-9wgg
 status: open
-deps: [boo-u3cg, boo-7o92, boo-73yj]
+deps: [boo-u3cg, boo-7o92, boo-73yj, t3-9r9u]
 links: [t3-9r9u, boo-mx5i]
 created: 2026-11-01T21:37:34Z
 type: task

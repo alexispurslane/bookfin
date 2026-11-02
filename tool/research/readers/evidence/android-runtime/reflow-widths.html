@@ -8,11 +8,11 @@ text { fill: var(--foreground); font-family: var(--font-sans); font-size: 16px; 
 .bar { fill: var(--chart-1); }
 p { margin: 8px 0; font-size: 14px; color: var(--muted-foreground); }
 </style></head><body>
-<svg viewBox="0 0 620 180" role="img" aria-label="Measured Android reflow: six lines at width 200 logical pixels and three lines at width 360, for each source page at fixed 18 logical pixel text size.">
-<text x="0" y="24">Lines per source page · Android API 36</text>
+<svg viewBox="0 0 620 180" role="img" aria-label="Screenshot-counted Android reflow: six lines at width 200 logical pixels and four lines at width 360, for each source page at fixed 18 logical pixel text size.">
+<text x="0" y="24">Rendered lines per source page · retained Android screenshots</text>
 <line class="axis" x1="160" y1="40" x2="160" y2="155"/>
 <text x="0" y="77">Width 200</text><rect class="bar" x="160" y="51" width="390" height="34" rx="4"/><text x="565" y="77">6</text>
-<text x="0" y="137">Width 360</text><rect class="bar" x="160" y="111" width="195" height="34" rx="4"/><text x="370" y="137">3</text>
+<text x="0" y="137">Width 360</text><rect class="bar" x="160" y="111" width="260" height="34" rx="4"/><text x="435" y="137">4</text>
 </svg>
-<p>Width and body size use logical pixels, Flutter's density-independent length unit. Body size stays at 18. Both generated source pages give the same counts. These are text layouts, not page-image scaling.</p>
+<p>Width and body size use logical pixels, Flutter's density-independent length unit. Body size stays at 18. Both generated source pages give the same counts. Counts are from the retained screenshots. The original wide-view label incorrectly reported three lines from a separate painter. The corrected widget has not been re-observed on Android.</p>
 </body></html>

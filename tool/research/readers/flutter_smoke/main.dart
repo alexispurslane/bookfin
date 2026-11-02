@@ -95,21 +95,6 @@ class _ReaderFiniteProofState extends State<ReaderFiniteProof> {
       final text = extracted.fullText.replaceAll(RegExp(r'\s+'), ' ').trim();
       _sources.add((page: page.pageNumber, text: text, character: character));
       _images.add(await _render(page));
-      final layouts = <String, int>{};
-      for (final width in [200.0, 360.0]) {
-        final painter = TextPainter(
-          text: TextSpan(
-            text: text,
-            style: const TextStyle(fontSize: 18, height: 1.4),
-          ),
-          textDirection: TextDirection.ltr,
-          textScaler: TextScaler.noScaling,
-        )..layout(maxWidth: width);
-        layouts['${width.toInt()}'] = painter.computeLineMetrics().length;
-        painter.dispose();
-      }
-      if (layouts['200']! <= layouts['360']!)
-        throw StateError('Narrow text did not reflow');
       anchors.add({
         'source_page_1_based': page.pageNumber,
         'character_index_utf16': character,
@@ -121,7 +106,6 @@ class _ReaderFiniteProofState extends State<ReaderFiniteProof> {
           rectangle.bottom,
         ],
         'body_logical_pixels': 18,
-        'line_counts_by_width_logical_pixels': layouts,
         'render_pixels': [360, _images.last.height],
       });
     }
