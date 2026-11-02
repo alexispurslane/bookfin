@@ -1,0 +1,46 @@
+{
+  "callers": 3,
+  "documents_open_before_reading": 3,
+  "same_worker": true,
+  "texts": [
+    "River chapter 1\r\nThe river follows the old road.\r\nA reader can change the text size without changing\r\nthe saved source location.",
+    "River chapter 1\r\nThe river follows the old road.\r\nA reader can change the text size without changing\r\nthe saved source location.",
+    "River chapter 1\r\nThe river follows the old road.\r\nA reader can change the text size without changing\r\nthe saved source location."
+  ],
+  "render_widths": [
+    120,
+    120,
+    120
+  ],
+  "visible_renders": [
+    true,
+    true,
+    true
+  ],
+  "font_callback_faces": [
+    "Helvetica",
+    "Helvetica-Bold"
+  ],
+  "reopened_texts": [
+    "River chapter 1\r\nThe river follows the old road.\r\nA reader can change the text size without changing\r\nthe saved source location.",
+    "River chapter 1\r\nThe river follows the old road.\r\nA reader can change the text size without changing\r\nthe saved source location."
+  ],
+  "reopen_same_worker": true,
+  "document_close_callbacks": 2,
+  "caller_failure_propagated": true,
+  "failed_document_close_callbacks": 1,
+  "after_failure_text": "River chapter 1\r\nThe river follows the old road.\r\nA reader can change the text size without changing\r\nthe saved source location.",
+  "malformed_document_rejected": true,
+  "worker_exit_events": [
+    "PdfrxEngineWorker",
+    "PdfrxEngineWorker"
+  ],
+  "restart_has_new_worker": true,
+  "restart_text": "River chapter 1\r\nThe river follows the old road.\r\nA reader can change the text size without changing\r\nthe saved source location.",
+  "restart_render_visible": true,
+  "restart_font_callback_faces": [
+    "Helvetica",
+    "Helvetica-Bold"
+  ],
+  "dart_font_mapper_enabled": true
+}

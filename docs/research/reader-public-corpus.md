@@ -255,3 +255,9 @@ Full originals, converted books, generated PDFs, native packages, and caches rem
 No account, Jellyfin server, credentials, private library, Android app, device setting, browser, or public development server was used.
 No production navigator, OCR engine, release license approach, coverage job, mutation job, subagent, PR, or ticket closure is part of this work.
 The parent owns integration, follow-up ordering, production approval, and ticket closure.
+
+## Separate ownership follow-up
+
+The November 2 host ownership proof is recorded in [pdf-worker-ownership.md](pdf-worker-ownership.md).
+It retains a subprocess native abort and proves multiple document callers through the pinned dependency's single-worker model.
+That follow-up does not replace this report's historical observations or establish Android callback ownership.
