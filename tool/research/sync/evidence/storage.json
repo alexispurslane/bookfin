@@ -1,0 +1,91 @@
+{
+  "evidenceClass": "disposable-official-binary-runtime",
+  "origin": "http://127.0.0.1:7364",
+  "observedAtUtc": "2026-11-02T01:37:40.117646+00:00",
+  "phase": "storage",
+  "observations": {
+    "readSideEffects": {
+      "before": {
+        "directoryExists": true,
+        "bookmarkExists": true,
+        "settingsExists": true
+      },
+      "afterBookmarkGet": {
+        "directoryExists": true,
+        "bookmarkExists": true,
+        "settingsExists": true
+      },
+      "afterSettingsGet": {
+        "directoryExists": true,
+        "bookmarkExists": true,
+        "settingsExists": true
+      },
+      "freshBobDirectoryBeforeBookmarkGet": false,
+      "freshBobAfterBookmarkGet": {
+        "directoryExists": true,
+        "bookmarkExists": false
+      },
+      "emptyBobDirectoryRemovedBeforeMeasurement": true
+    },
+    "authorization": {
+      "unauthenticated": 401,
+      "enhancedCrossUser": {
+        "GET": 403,
+        "POST": 403
+      },
+      "enhancedCrossUserAdd": 403,
+      "enhancedCrossUserDelete": 403,
+      "prefsCrossUserGet": 403,
+      "prefsCrossUserPost": 403
+    },
+    "enhanced": {
+      "unknownDocumentStatus": 404,
+      "unknownTopLevelFieldRetained": false,
+      "lostAcknowledgmentSamePayloadCount": 2,
+      "staleSnapshotRemovedOtherAdd": true,
+      "firstDeleteStatus": 200,
+      "repeatedDeleteStatus": 404,
+      "staleSaveResurrectedDeletion": true,
+      "parallelAdds": 8,
+      "parallelAddsPreserved": true,
+      "acceptedLabelBytes": 65536,
+      "bookmarkDocumentDiskBytes": 69464,
+      "maximumAcceptedSizeProven": false,
+      "retainedDeletionMarker": false
+    },
+    "customPreferences": {
+      "staleSnapshotLostIndependentEdit": true,
+      "staleRetryLostLaterEdit": true,
+      "deleteThenStaleRetryResurrected": true,
+      "separateScopesCoexist": true,
+      "arbitraryScopeDiscoveryRoutes": [
+        "/DisplayPreferences/{displayPreferencesId}"
+      ],
+      "acceptedValueBytes": 65536,
+      "maximumAcceptedSizeProven": false,
+      "databasePreferenceRows": {
+        "DisplayPreferences": 4,
+        "ItemDisplayPreferences": 4,
+        "CustomItemDisplayPreferences": 2
+      },
+      "staleIfMatchPostStatus": 204,
+      "scopeGetRowsBefore": {
+        "DisplayPreferences": 3,
+        "ItemDisplayPreferences": 3,
+        "CustomItemDisplayPreferences": 2
+      },
+      "scopeGetRowsAfter": {
+        "DisplayPreferences": 4,
+        "ItemDisplayPreferences": 4,
+        "CustomItemDisplayPreferences": 2
+      },
+      "emptyPostRowsAfter": {
+        "DisplayPreferences": 4,
+        "ItemDisplayPreferences": 4,
+        "CustomItemDisplayPreferences": 2
+      }
+    },
+    "lostAcknowledgmentMethod": "Send a real HTTP POST through a socket, independently witness committed state, close without reading any response bytes, then retry",
+    "retention": "No time-based retention, replica expiry, tombstone collection, or upper server bound established"
+  }
+}

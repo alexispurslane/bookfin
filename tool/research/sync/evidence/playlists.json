@@ -1,0 +1,27 @@
+{
+  "evidenceClass": "disposable-official-binary-runtime",
+  "origin": "http://127.0.0.1:7364",
+  "observedAtUtc": "2026-11-02T01:34:10.505932+00:00",
+  "phase": "playlists",
+  "observations": {
+    "authorization": {
+      "crossUserRead": 404,
+      "crossUserWrite": 404,
+      "crossUserDelete": 404
+    },
+    "privateOwnerCanCreateDiscoverUpdateDelete": true,
+    "independentConcurrentObjects": 2,
+    "retryCreatedDistinctObjects": true,
+    "renamedPayloadBytes": 65617,
+    "payloadRoundTrip": true,
+    "deleteStatus": 204,
+    "staleCreateReintroducedOperation": true,
+    "boundedRetentionProtocolProven": false,
+    "suitability": "Promising app-owned discoverable storage; not rejected by snapshot counterexamples. Complete journal/single-writer protocol, paging under churn, retention fencing and client coexistence remain unproved. No transport selected."
+  },
+  "reviewQualification": {
+    "crossUserReadRoute": "GET /Playlists/{id}",
+    "ownerPayloadReadRoute": "GET /Items/{id}",
+    "crossUserPayloadReadIsolation": "unmeasured; required by t3-7fv1"
+  }
+}

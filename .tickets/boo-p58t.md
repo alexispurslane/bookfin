@@ -1,7 +1,7 @@
 ---
 id: boo-p58t
 status: in_progress
-deps: [boo-gxm8, ta-qobz]
+deps: [boo-gxm8, ta-qobz, t3-7fv1]
 links: []
 created: 2026-11-01T21:37:34Z
 type: task

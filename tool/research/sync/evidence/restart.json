@@ -1,0 +1,16 @@
+{
+  "evidenceClass": "disposable-official-binary-runtime",
+  "origin": "http://127.0.0.1:7364",
+  "observedAtUtc": "2026-11-02T01:59:18.298569+00:00",
+  "phase": "restart",
+  "observations": {
+    "sameServerIdentityAndOrdinaryTokensWork": true,
+    "customPrefsLargeValueSurvives": true,
+    "enhancedBookmarksSurvive": true,
+    "privatePlaylistPayloadSurvives": true,
+    "standardPlaybackPositionSurvivesTicks": 600000000,
+    "restartKind": "authenticated clean shutdown followed by same pinned binary and same isolated directories",
+    "powerLossDurabilityProven": false,
+    "upgradeCompatibilityProven": false
+  }
+}
