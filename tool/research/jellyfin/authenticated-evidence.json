@@ -1,0 +1,245 @@
+{
+  "observedAtUtc": "2026-11-02T00:27:41.554903Z",
+  "evidenceClass": "live-authenticated-http",
+  "serverOrigin": "https://jellyfin.example.com",
+  "version": "12.4.0",
+  "productName": "Jellyfin Server",
+  "openApiVersion": "12.4.0",
+  "routes": {
+    "/DisplayPreferences/{displayPreferencesId}": [
+      "get",
+      "post"
+    ],
+    "/UserViews": [
+      "get"
+    ],
+    "/Users/Me": [
+      "get"
+    ],
+    "/Items": [
+      "get",
+      "delete"
+    ],
+    "/Items/{itemId}": [
+      "post",
+      "delete",
+      "get"
+    ],
+    "/Items/{itemId}/PlaybackInfo": [
+      "get",
+      "post"
+    ],
+    "/Items/{itemId}/Download": [
+      "get"
+    ],
+    "/Items/{itemId}/File": [
+      "get"
+    ],
+    "/Sessions/Playing": [
+      "post"
+    ],
+    "/Sessions/Playing/Progress": [
+      "post"
+    ],
+    "/Sessions/Playing/Stopped": [
+      "post"
+    ]
+  },
+  "authenticatedChecks": "read-only",
+  "ordinaryUserIsolation": "unproven",
+  "accountPolicy": {
+    "IsAdministrator": true,
+    "EnableContentDownloading": true,
+    "EnableMediaPlayback": true,
+    "EnableAudioPlaybackTranscoding": true
+  },
+  "bookLibraryCount": 1,
+  "librarySamples": [
+    {
+      "totalRecordCount": 1485,
+      "sampledItems": 30,
+      "itemTypes": {
+        "AudioBook": 30
+      },
+      "itemsWithChapters": 27,
+      "itemsWithProviderIds": 0
+    }
+  ],
+  "mediaInspection": {
+    "typeSamples": [
+      {
+        "requestedType": "AudioBook",
+        "totalRecordCount": 1485,
+        "sampledItems": 30,
+        "itemTypes": {
+          "AudioBook": 30
+        },
+        "itemsWithChapters": 27,
+        "itemsWithProviderIds": 0,
+        "containers": {
+          "mp3": 22,
+          "m4b": 8
+        },
+        "itemsWithMultipleMediaSources": 0,
+        "itemsWithTrackOrder": 0,
+        "distinctParentCount": 1
+      },
+      {
+        "requestedType": "Audio",
+        "totalRecordCount": 0,
+        "sampledItems": 0,
+        "itemTypes": {},
+        "itemsWithChapters": 0,
+        "itemsWithProviderIds": 0,
+        "containers": {},
+        "itemsWithMultipleMediaSources": 0,
+        "itemsWithTrackOrder": 0,
+        "distinctParentCount": 0
+      },
+      {
+        "requestedType": "Book",
+        "totalRecordCount": 0,
+        "sampledItems": 0,
+        "itemTypes": {},
+        "itemsWithChapters": 0,
+        "itemsWithProviderIds": 0,
+        "containers": {},
+        "itemsWithMultipleMediaSources": 0,
+        "itemsWithTrackOrder": 0,
+        "distinctParentCount": 0
+      },
+      {
+        "requestedType": "Folder",
+        "totalRecordCount": 5,
+        "sampledItems": 5,
+        "itemTypes": {
+          "Folder": 5
+        },
+        "itemsWithChapters": 0,
+        "itemsWithProviderIds": 0,
+        "containers": {
+          "Other": 5
+        },
+        "itemsWithMultipleMediaSources": 0,
+        "itemsWithTrackOrder": 0,
+        "distinctParentCount": 5
+      }
+    ],
+    "representativeFiles": [
+      {
+        "requestedType": "AudioBook",
+        "container": "mp3",
+        "sourceFileExtensions": [
+          "mp3"
+        ],
+        "chapterCount": 21,
+        "chapterStartTicksPresent": true,
+        "chapterStartsNonnegativeAndOrdered": true,
+        "mediaSourceCount": 1,
+        "playbackInfoMediaSourceCount": 1,
+        "siblings": {
+          "totalRecordCount": 1486,
+          "sampledItems": 30,
+          "itemTypes": {
+            "AudioBook": 30
+          },
+          "itemsWithChapters": 27,
+          "itemsWithProviderIds": 0
+        },
+        "audioAndEbookShareParent": false,
+        "ranges": [
+          {
+            "endpoint": "File",
+            "startByte": 0,
+            "status": 206,
+            "receivedBytes": 64,
+            "validPartialResponse": true
+          },
+          {
+            "endpoint": "File",
+            "startByte": 64,
+            "status": 206,
+            "receivedBytes": 64,
+            "validPartialResponse": true
+          },
+          {
+            "endpoint": "Download",
+            "startByte": 0,
+            "status": 206,
+            "receivedBytes": 64,
+            "validPartialResponse": true
+          },
+          {
+            "endpoint": "Download",
+            "startByte": 64,
+            "status": 206,
+            "receivedBytes": 64,
+            "validPartialResponse": true
+          }
+        ],
+        "userDataPresent": true,
+        "userDataUnchanged": true
+      },
+      {
+        "requestedType": "AudioBook",
+        "container": "m4b",
+        "sourceFileExtensions": [
+          "m4b"
+        ],
+        "chapterCount": 4,
+        "chapterStartTicksPresent": true,
+        "chapterStartsNonnegativeAndOrdered": true,
+        "mediaSourceCount": 1,
+        "playbackInfoMediaSourceCount": 1,
+        "siblings": {
+          "totalRecordCount": 1486,
+          "sampledItems": 30,
+          "itemTypes": {
+            "AudioBook": 30
+          },
+          "itemsWithChapters": 27,
+          "itemsWithProviderIds": 0
+        },
+        "audioAndEbookShareParent": false,
+        "ranges": [
+          {
+            "endpoint": "File",
+            "startByte": 0,
+            "status": 206,
+            "receivedBytes": 64,
+            "validPartialResponse": true
+          },
+          {
+            "endpoint": "File",
+            "startByte": 64,
+            "status": 206,
+            "receivedBytes": 64,
+            "validPartialResponse": true
+          },
+          {
+            "endpoint": "Download",
+            "startByte": 0,
+            "status": 206,
+            "receivedBytes": 64,
+            "validPartialResponse": true
+          },
+          {
+            "endpoint": "Download",
+            "startByte": 64,
+            "status": 206,
+            "receivedBytes": 64,
+            "validPartialResponse": true
+          }
+        ],
+        "userDataPresent": true,
+        "userDataUnchanged": true
+      }
+    ]
+  },
+  "enhancedPlugin": [
+    {
+      "version": "12.14.0.0",
+      "status": "Active"
+    }
+  ]
+}
