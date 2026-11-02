@@ -1,0 +1,84 @@
+
+> bookfin-epub-runtime@0.3.93-bookfin.1 test
+> node --test test/*.test.cjs
+
+TAP version 13
+# Subtest: search finds an exact phrase across inline nodes, including more than five nodes
+ok 1 - search finds an exact phrase across inline nodes, including more than five nodes
+  ---
+  duration_ms: 59.791084
+  type: 'test'
+  ...
+# Subtest: short documents and repeated occurrences are not omitted
+ok 2 - short documents and repeated occurrences are not omitted
+  ---
+  duration_ms: 22.268167
+  type: 'test'
+  ...
+# Subtest: Unicode lowercase expansion does not silently discard an admitted query
+not ok 3 - Unicode lowercase expansion does not silently discard an admitted query
+  ---
+  duration_ms: 12.14125
+  type: 'test'
+  location: '/Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/packages/flutter_epub_viewer/engine/test/search.test.cjs:42:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/packages/flutter_epub_viewer/engine/test/search.test.cjs:48:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: search excludes headings in the head and explicitly hidden text
+ok 4 - search excludes headings in the head and explicitly hidden text
+  ---
+  duration_ms: 10.294583
+  type: 'test'
+  ...
+# Subtest: Unicode lowercase expansion cannot shift the returned original range
+ok 5 - Unicode lowercase expansion cannot shift the returned original range
+  ---
+  duration_ms: 8.514208
+  type: 'test'
+  ...
+# Subtest: an encoded contents fragment resolves to the actual heading, not the chapter start
+ok 6 - an encoded contents fragment resolves to the actual heading, not the chapter start
+  ---
+  duration_ms: 10.540584
+  type: 'test'
+  ...
+# Subtest: saved locations collapse to the visible start and reject a mismatched quote
+ok 7 - saved locations collapse to the visible start and reject a mismatched quote
+  ---
+  duration_ms: 9.495292
+  type: 'test'
+  ...
+# Subtest: a failed chapter yields a visible incomplete-search error
+ok 8 - a failed chapter yields a visible incomplete-search error
+  ---
+  duration_ms: 10.482125
+  type: 'test'
+  ...
+# Subtest: reader appearance preserves an edition font while applying the selected text size
+ok 9 - reader appearance preserves an edition font while applying the selected text size
+  ---
+  duration_ms: 77.419041
+  type: 'test'
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 8
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 447.699833

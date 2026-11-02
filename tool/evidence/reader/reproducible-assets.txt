@@ -1,0 +1,28 @@
+
+> bookfin-epub-runtime@0.3.93-bookfin.1 verify
+> node verify-assets.cjs
+
+Verified assets/epub.js: 1e11ecd300dc9fa2fe877e5dca987ba64df9cc4e721054a13fc2191997fe52fb
+Verified assets/reader.js: be0662e1bbdf9bbefa99b74adc89bc1b7239c7ddb68856802beb2a602fb230f2
+Verified assets/index.html: 92bb3293ae49fd6567940681a1f2eed43574442377a3d3172b0e26436ea461d4
+Verified assets/THIRD-PARTY-LICENSES.txt: b3a60a3f8f65aedaac4c9a4d5eb138ad6cc2b53cbb40553d2203ddc510de255b
+
+> bookfin-epub-runtime@0.3.93-bookfin.1 build
+> esbuild src/epub.js --bundle --format=iife --global-name=epubEngine --target=chrome100 '--footer:js=window.ePub=epubEngine.default;' --outfile=../assets/epub.js && esbuild src/reader.js --bundle --format=iife --global-name=bookfinReader --target=chrome100 --outfile=../assets/reader.js && node licenses.cjs
+
+
+  ../assets/epub.js  871.6kb
+
+⚡ Done in 17ms
+
+  ../assets/reader.js  12.2kb
+
+⚡ Done in 2ms
+
+> bookfin-epub-runtime@0.3.93-bookfin.1 verify
+> node verify-assets.cjs
+
+Verified assets/epub.js: 1e11ecd300dc9fa2fe877e5dca987ba64df9cc4e721054a13fc2191997fe52fb
+Verified assets/reader.js: be0662e1bbdf9bbefa99b74adc89bc1b7239c7ddb68856802beb2a602fb230f2
+Verified assets/index.html: 92bb3293ae49fd6567940681a1f2eed43574442377a3d3172b0e26436ea461d4
+Verified assets/THIRD-PARTY-LICENSES.txt: b3a60a3f8f65aedaac4c9a4d5eb138ad6cc2b53cbb40553d2203ddc510de255b

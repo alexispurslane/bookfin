@@ -70,6 +70,7 @@
           pkgs.ffmpeg
           pkgs.jq
           pkgs.nixfmt
+          pkgs.nodejs_22
           android.androidsdk
           nativeTools
         ];
