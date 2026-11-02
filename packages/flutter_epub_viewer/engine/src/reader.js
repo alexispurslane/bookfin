@@ -223,9 +223,12 @@ export function applyAppearance(viewport, fontSize, night) {
   viewport.themes.fontSize(`${Math.max(14, Math.min(fontSize, 96))}px`);
 }
 export async function configure(fontSize, night, restore = true) {
-  const current = rendition.location && rendition.location.start.cfi;
-  applyAppearance(rendition, fontSize, night);
-  if (restore && current) await withNavigation(() => rendition.display(current));
+  const update = async () => {
+    const current = rendition.location && rendition.location.start.cfi;
+    applyAppearance(rendition, fontSize, night);
+    if (restore && current) await rendition.display(current);
+  };
+  return restore ? withNavigation(update) : update();
 }
 export function search(query, request) {
   searchRequest = request;

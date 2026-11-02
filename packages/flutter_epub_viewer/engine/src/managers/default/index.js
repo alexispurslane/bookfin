@@ -15,6 +15,7 @@ class DefaultViewManager {
 		this.View = options.view;
 		this.request = options.request;
 		this.renditionQueue = options.queue;
+		this.requestResize = options.requestResize;
 		this.q = new Queue(this);
 
 		this.settings = extend(this.settings || {}, {
@@ -34,6 +35,7 @@ class DefaultViewManager {
 		extend(this.settings, options.settings || {});
 
 		this.viewSettings = {
+			prepareContents: options.prepareContents,
 			ignoreClass: this.settings.ignoreClass,
 			axis: this.settings.axis,
 			flow: this.settings.flow,
@@ -172,7 +174,7 @@ class DefaultViewManager {
 		let {orientation} = window;
 
 		if(this.optsSettings.resizeOnOrientationChange) {
-			this.resize();
+			this.requestResize();
 		}
 
 		// Per ampproject:
@@ -185,7 +187,7 @@ class DefaultViewManager {
 			this.orientationTimeout = undefined;
 
 			if(this.optsSettings.resizeOnOrientationChange) {
-				this.resize();
+				this.requestResize();
 			}
 
 			this.emit(EVENTS.MANAGERS.ORIENTATION_CHANGE, orientation);
@@ -194,7 +196,7 @@ class DefaultViewManager {
 	}
 
 	onResized(e) {
-		this.resize();
+		this.requestResize();
 	}
 
 	resize(width, height, epubcfi){
@@ -234,6 +236,7 @@ class DefaultViewManager {
 			width: this._stageSize.width,
 			height: this._stageSize.height
 		}, epubcfi);
+		return { width: this._stageSize.width, height: this._stageSize.height };
 	}
 
 	createView(section, forceRight) {
@@ -270,23 +273,25 @@ class DefaultViewManager {
 
 		// View is already shown, just move to correct location in view
 		if(visible && section && this.layout.name !== "pre-paginated") {
-			let offset = visible.offset();
+			return visible.reflow().then(() => {
+				let offset = visible.offset();
 
-			if (this.settings.direction === "ltr") {
-				this.scrollTo(offset.left, offset.top, true);
-			} else {
-				let width = visible.width();
-				this.scrollTo(offset.left + width, offset.top, true);
-			}
+				if (this.settings.direction === "ltr") {
+					this.scrollTo(offset.left, offset.top, true);
+				} else {
+					let width = visible.width();
+					this.scrollTo(offset.left + width, offset.top, true);
+				}
 
-			if(target) {
-				let offset = visible.locationOf(target);
-				let width = visible.width();
-				this.moveTo(offset, width);
-			}
+				if(target) {
+					let offset = visible.locationOf(target);
+					let width = visible.width();
+					this.moveTo(offset, width);
+				}
 
-			displaying.resolve();
-			return displayed;
+				displaying.resolve();
+				return displayed;
+			});
 		}
 
 		// Hide all current views
@@ -518,9 +523,7 @@ class DefaultViewManager {
 			return this.append(next, forceRight)
 				.then(function(){
 					return this.handleNextPrePaginated(forceRight, next, this.append);
-				}.bind(this), (err) => {
-					return err;
-				})
+				}.bind(this))
 				.then(function(){
 
 					// Reset position to start for scrolled-doc vertical-rl in default mode
@@ -617,9 +620,7 @@ class DefaultViewManager {
 							return this.prepend(left);
 						}
 					}
-				}.bind(this), (err) => {
-					return err;
-				})
+				}.bind(this))
 				.then(function(){
 					if(this.isPaginated && this.settings.axis === "horizontal") {
 						if (this.settings.direction === "rtl") {
@@ -776,9 +777,9 @@ class DefaultViewManager {
 			let mapping = this.mapping.page(view.contents, view.section.cfiBase, start, end);
 
 			let totalPages = this.layout.count(width).pages;
-			let startPage = Math.floor(start / this.layout.pageWidth);
+			let startPage = Math.round(start / this.layout.pageWidth);
 			let pages = [];
-			let endPage = Math.floor(end / this.layout.pageWidth);
+			let endPage = Math.round(end / this.layout.pageWidth);
 			
 			// start page should not be negative
 			if (startPage < 0) {

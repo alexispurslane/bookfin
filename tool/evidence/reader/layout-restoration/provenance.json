@@ -1,0 +1,131 @@
+{
+  "date": "2026-11-02",
+  "base": "5d3239315038d88e6f590efd7cbe885093a2a3fb",
+  "buildInputTree": "f38a0ea40e671b352e5d77c5a240dc609417791a",
+  "runtimePatchSha256": "94ea4d87fd293dc88192469626ad6069fd583e811aba38fdec77686bfccabc31",
+  "node": "v22.23.3",
+  "browser": {
+    "version": "Chromium 138.0.7180.0",
+    "path": "/Applications/Chromium.app/Contents/MacOS/Chromium",
+    "bytes": 68728,
+    "sha256": "74824549f7b2e428328e207728b3057e77ddb23776a878d5655dbdce3fe8c90b",
+    "installedByThisTask": false
+  },
+  "locks": [
+    {
+      "path": "flake.lock",
+      "bytes": 593,
+      "sha256": "620ebda96a2f73ba0777e3f4f093baeb9d15dd69681c59b0b83610fbce1be2a1"
+    },
+    {
+      "path": "packages/flutter_epub_viewer/engine/package-lock.json",
+      "bytes": 42788,
+      "sha256": "763c4cd6e3f53afbbb3ffb7a612d3a9fd95adcafac7146975af669ab91490730"
+    }
+  ],
+  "apk": {
+    "path": "build/app/outputs/flutter-apk/app-debug.apk",
+    "bytes": 100150955,
+    "sha256": "f5fd6238fc9b34b30836ab079b9f645e3925d8ed5fd93a5d878ddc198fe15d2a",
+    "target": "lib/main.dart",
+    "gradleTargetObserved": "-Ptarget=lib/main.dart",
+    "mode": "debug",
+    "platform": "android-arm64",
+    "buildSeconds": 298.4,
+    "installed": false,
+    "installedReadback": null
+  },
+  "packagedAssets": [
+    {
+      "path": "assets/flutter_assets/packages/flutter_epub_viewer/assets/epub.js",
+      "bytes": 893800,
+      "sha256": "0416a8920a77a03afcc5d11eb17d2e66af8eeba32d56326a02f25f9765e73c64"
+    },
+    {
+      "path": "assets/flutter_assets/packages/flutter_epub_viewer/assets/reader.js",
+      "bytes": 13627,
+      "sha256": "b111f45f376f1bda973529000d4ff50597e1ffdef44af7d2ddfca241428d41d1"
+    },
+    {
+      "path": "assets/flutter_assets/packages/flutter_epub_viewer/assets/index.html",
+      "bytes": 489,
+      "sha256": "92bb3293ae49fd6567940681a1f2eed43574442377a3d3172b0e26436ea461d4"
+    },
+    {
+      "path": "assets/flutter_assets/packages/flutter_epub_viewer/assets/THIRD-PARTY-LICENSES.txt",
+      "bytes": 82251,
+      "sha256": "b3a60a3f8f65aedaac4c9a4d5eb138ad6cc2b53cbb40553d2203ddc510de255b"
+    }
+  ],
+  "fixture": {
+    "version": "12.4.0",
+    "origin": "http://127.0.0.1:7364",
+    "serverId": "affc9afc600844e88cb4c2a5c506edc9",
+    "epub": {
+      "path": ".cache/sync/runtime/media/public/Work/Text Edition/Synthetic Work.epub",
+      "bytes": 135959,
+      "sha256": "6efe84b320af9a0f9997dfc6c54b172bc982e6b06978a2c3d75359161da0ce96"
+    },
+    "signedInFromApp": false,
+    "downloadedFromApp": false
+  },
+  "commands": {
+    "engine": "nix develop --profile .cache/dev-shell --command bash -c 'cd packages/flutter_epub_viewer/engine && npm run build && npm run verify && npm test'",
+    "reader": "nix develop --profile .cache/dev-shell --command bash -c 'export PUB_CACHE=/Users/alexispurslane/Development/bookfin/.cache/pub; flutter pub get && flutter test test/reader --reporter expanded'",
+    "full": "nix develop --profile .cache/dev-shell --command bash -c 'export PUB_CACHE=/Users/alexispurslane/Development/bookfin/.cache/pub; bash tool/bookfin test && bash tool/bookfin analyze'",
+    "build": "nix develop --profile .cache/dev-shell --command bash -c 'export PUB_CACHE=/Users/alexispurslane/Development/bookfin/.cache/pub; export GRADLE_USER_HOME=\"$PWD/.cache/gradle\"; bash tool/bookfin build-android'"
+  },
+  "tests": {
+    "engine": 21,
+    "actualLayout": 6,
+    "focusedFlutterReader": 43,
+    "allFlutter": 353,
+    "analysis": "No issues found",
+    "coverageRun": false,
+    "mutationRun": false
+  },
+  "device": {
+    "hostId": "local",
+    "deviceId": "emulator-5554",
+    "initialFontScale": "1.0",
+    "initialAirplaneMode": "0",
+    "settingsChanged": false,
+    "candidateAcceptanceCompleted": false,
+    "stopReason": "Field focus refused, then required diagnostic retry failed with expired reference; retry was not dispatched",
+    "errors": [
+      {
+        "code": "APP_NOT_INSTALLED",
+        "diagnosticId": "mvzpx42k-29bc8e8a",
+        "resolution": "apps identified dev.bookfin.bookfin; exact package opened"
+      },
+      {
+        "code": "COMMAND_FAILED",
+        "message": "Field focus was refused",
+        "diagnosticId": "mvzpz5kz-5361d412"
+      },
+      {
+        "code": "COMMAND_FAILED",
+        "message": "Ref @e5 belongs to an expired ref frame",
+        "diagnosticId": "mvzq01n1-aeedae5b",
+        "dispatched": false
+      }
+    ],
+    "bindingReleased": true,
+    "shutdown": false,
+    "appLeftAtSignIn": true
+  },
+  "limitations": [
+    "Not installed or accepted on Android",
+    "No Android Back/Read or offline process restart proof",
+    "No Android bookmark or second-chapter 22px proof",
+    "Host receiver records bridge events, not native durable writes",
+    "Exact callback cause on Android remains untraced"
+  ],
+  "cleanup": {
+    "fixtureExit": 0,
+    "observerExit": 143,
+    "listeners7364And7365": false,
+    "ownReverse7365Removed": true,
+    "diagnosticForwardsCreated": false
+  }
+}

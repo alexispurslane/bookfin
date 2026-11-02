@@ -1,0 +1,33 @@
+TAP version 13
+# Subtest: resize during blocked initial resource loading keeps the requested passage attached
+not ok 1 - resize during blocked initial resource loading keeps the requested passage attached
+  ---
+  duration_ms: 1207.7665
+  type: 'test'
+  location: '/Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/packages/flutter_epub_viewer/engine/test/layout.test.cjs:222:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Loading chapter must remain attached until resources finish
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    withReader (/Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/packages/flutter_epub_viewer/engine/test/layout.test.cjs:115:14)
+    async TestContext.<anonymous> (/Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/packages/flutter_epub_viewer/engine/test/layout.test.cjs:223:3)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1267.804792

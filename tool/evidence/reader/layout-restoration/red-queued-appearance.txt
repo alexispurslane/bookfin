@@ -1,0 +1,45 @@
+
+> bookfin-epub-runtime@0.3.93-bookfin.1 build
+> esbuild src/epub.js --bundle --format=iife --global-name=epubEngine --target=chrome100 '--footer:js=window.ePub=epubEngine.default;' --outfile=../assets/epub.js && esbuild src/reader.js --bundle --format=iife --global-name=bookfinReader --target=chrome100 --outfile=../assets/reader.js && node licenses.cjs
+
+
+  ../assets/epub.js  872.4kb
+
+⚡ Done in 19ms
+
+  ../assets/reader.js  13.2kb
+
+⚡ Done in 3ms
+TAP version 13
+# Subtest: an appearance change queued after Next preserves the new reading place instead of the old one
+not ok 1 - an appearance change queued after Next preserves the new reading place instead of the old one
+  ---
+  duration_ms: 1415.872583
+  type: 'test'
+  location: '/Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/packages/flutter_epub_viewer/engine/test/layout.test.cjs:186:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+
+    'epubcfi(/6/2!/4/26/1:0)'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'epubcfi(/6/2!/4/26/1:0)'
+  actual: 'epubcfi(/6/2!/4/26/1:0)'
+  operator: 'notStrictEqual'
+  stack: |-
+    /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/packages/flutter_epub_viewer/engine/test/layout.test.cjs:190:12
+    async withReader (/Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/packages/flutter_epub_viewer/engine/test/layout.test.cjs:118:5)
+    async TestContext.<anonymous> (/Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/packages/flutter_epub_viewer/engine/test/layout.test.cjs:187:3)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1499.066583
