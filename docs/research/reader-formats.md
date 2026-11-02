@@ -586,6 +586,7 @@ Use the committed fixtures for final fingerprints; regenerating a PDF can change
 
 ```sh
 nix develop ./tool/research/readers --command bash tool/research/readers/run --keep-fixtures
+nix develop ./tool/research/readers --command python -m unittest discover -s tool/research/readers -p test_run_inputs.py -v
 nix develop ./tool/research/readers --command bash tool/research/readers/epub-compat
 nix develop ./tool/research/readers#android --command bash -c 'export BOOKFIN_NDK="$ANDROID_HOME/ndk/28.2.13676358"; nix develop ./tool/research/readers --command bash tool/research/readers/android-build'
 nix develop ./tool/research/readers#android --command bash tool/research/readers/widget-check
@@ -593,7 +594,7 @@ nix develop ./tool/research/readers#android --command bash tool/research/readers
 nix develop ./tool/research/readers --command bash tool/research/readers/verify-followup
 ```
 
-The final host checks total 27: 9 original Python, 2 native conversion, 3 PDF/Markdown Dart, 4 original EPUB Dart, 5 joint compatibility Dart, and 4 Flutter widget/license tests.
+The original follow-up recorded 27 host checks. The corrected run totals 30: 9 original Python, 2 native conversion, 3 PDF/Markdown Dart, 4 original EPUB Dart, 5 joint compatibility Dart, 5 Flutter widget/license tests, and 2 runner-input tests. The commands above include the runner-input tests added during correction.
 The first meaningful native-conversion red test rejected success without an EPUB and rejected accepting malformed input.
 The reflow red tests observed unchanged layout at narrower width and a missing source action.
 The EPUB solver/compiler failures are compatibility evidence, not mislabeled behavioral red tests.
