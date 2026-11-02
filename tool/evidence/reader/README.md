@@ -4,6 +4,8 @@ Date: November 2, 2026. Base: `2daf2ef`. Tickets: `t3-9r9u`, then `boo-9wgg`. Bo
 
 ## Final results
 
+Review correction R1: `corrections/r1-red.txt` records three meaningful failures across the actual source XML to iframe HTML-parser boundary. `corrections/r1-green.txt` records the same three passing after XML tree import replaces HTML reparsing. The cases cover implicit table bodies, paragraph normalization, and table foster parenting. Tests exercise saving, quote validation, search, contents fragments, and source IDs. Assets are rebuilt from the source fork. Android acceptance remains outstanding.
+
 All build, test, analysis, and format commands ran through the pinned Nix shell. Only one heavy command ran at a time. Resource checks preceded builds; `build-resources.txt` records the final checks. There were no device or browser actions, installation, runtime acceptance, production requests, public servers, coverage jobs, or mutation jobs.
 
 | Check | Exact result | Evidence |

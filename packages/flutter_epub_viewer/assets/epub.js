@@ -21648,22 +21648,20 @@ var epubEngine = (() => {
         this.iframe.srcdoc = contents;
         this.element.appendChild(this.iframe);
       } else {
+        this.iframe.onload = null;
         this.element.appendChild(this.iframe);
         this.document = this.iframe.contentDocument;
         if (!this.document) {
           loading.reject(new Error("No Document Available"));
           return loaded;
         }
-        this.iframe.contentDocument.open();
-        if (window.MSApp && MSApp.execUnsafeLocalFunction) {
-          var outerThis = this;
-          MSApp.execUnsafeLocalFunction(function() {
-            outerThis.iframe.contentDocument.write(contents);
-          });
-        } else {
-          this.iframe.contentDocument.write(contents);
+        const parsed = new DOMParser().parseFromString(contents, "application/xhtml+xml");
+        if (parsed.getElementsByTagName("parsererror").length || parsed.documentElement.localName !== "html" || parsed.documentElement.namespaceURI !== "http://www.w3.org/1999/xhtml") {
+          loading.reject(new Error("Invalid passive XHTML document"));
+          return loaded;
         }
-        this.iframe.contentDocument.close();
+        this.document.replaceChild(this.document.importNode(parsed.documentElement, true), this.document.documentElement);
+        this.onLoad(void 0, loading);
       }
       return loaded;
     }

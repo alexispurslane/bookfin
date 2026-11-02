@@ -123,3 +123,41 @@ test('reader appearance preserves an edition font while applying the selected te
 });
 
 module.exports = { open };
+
+for (const [name, markup] of [
+  ['table rows without a source tbody', '<table><tr><td id="target">Target phrase</td></tr></table>'],
+  ['nested paragraph blocks', '<p><div id="target">Target phrase</div></p>'],
+  ['table foster parenting', '<table><span id="target">Target phrase</span><tr><td>Cell</td></tr></table>'],
+]) {
+  test(`source and actual iframe share locations for ${name}`, async () => {
+    const opened = await open('<html xmlns="http://www.w3.org/1999/xhtml"><head/><body>' + markup + '</body></html>');
+    const api = runtime(opened);
+    const View = opened.dom.window.ePub.Rendition.prototype.requireView('iframe');
+    const view = new View(opened.section, { method: 'write' });
+    try {
+      view.create();
+      opened.dom.window.document.body.appendChild(view.element);
+      await view.load(await opened.section.render(opened.book.load.bind(opened.book)));
+      const viewportDocument = view.iframe.contentDocument;
+      const target = viewportDocument.getElementById('target');
+      const range = viewportDocument.createRange();
+      range.selectNodeContents(target);
+      range.collapse(true);
+      const viewportCfi = view.contents.cfiFromRange(range);
+      const saved = await api.visibleLocation(opened.book, viewportCfi, 'OPS/one.xhtml');
+      assert.ok(saved.quote.startsWith('Target phrase'));
+      await api.verifyLocation(opened.book, saved);
+      const hit = opened.section.find('Target phrase')[0];
+      const hitRange = new opened.dom.window.ePub.CFI(hit.cfi).toRange(viewportDocument);
+      assert.equal(hitRange.toString(), 'Target phrase');
+      const destination = await api.resolveDestination(opened.book, 'one.xhtml#target', 'https://bookfin-publication.invalid/', 'OPS/book.opf');
+      const destinationRange = new opened.dom.window.ePub.CFI(destination.cfi).toRange(viewportDocument);
+      assert.equal(destinationRange.startContainer.textContent, 'Target phrase');
+      assert.equal(target.parentNode.localName, opened.section.document.getElementById('target').parentNode.localName);
+      assert.equal(String(view.iframe.sandbox).includes('allow-scripts'), false);
+    } finally {
+      view.destroy();
+      opened.close();
+    }
+  });
+}
