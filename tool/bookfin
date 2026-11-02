@@ -15,6 +15,8 @@ case "$command" in
     ;;
   test)
     bash test/sdk_link_test.sh
+    bash test/sdk_platform_test.sh
+    bash test/darwin_native_tools_test.sh
     flutter test --reporter expanded
     ;;
   analyze)

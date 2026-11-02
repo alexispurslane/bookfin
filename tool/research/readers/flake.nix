@@ -65,15 +65,7 @@
         url = "https://www.gnu.org/licenses/gpl-3.0.txt";
         sha256 = "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986";
       };
-      nixXcrun = pkgs.writeShellScriptBin "xcrun" ''
-        case "$*" in
-          "--sdk macosx --show-sdk-path") printf '%s\n' "${pkgs.apple-sdk}/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk" ;;
-          "--sdk iphoneos --show-sdk-path"|"--sdk iphonesimulator --show-sdk-path")
-            echo 'SDK cannot be located in the Nix research shell' >&2
-            exit 1 ;;
-          *) exec ${pkgs.xcbuild}/bin/xcrun "$@" ;;
-        esac
-      '';
+      nativeTools = import ../../../nix/darwin-native-tools.nix { inherit pkgs; };
     in
     {
       devShells.${system} = {
@@ -106,7 +98,7 @@
             pkgs.curl
             pkgs.jq
             pkgs.dart
-            nixXcrun
+            nativeTools
             pkgs.poppler-utils
             pkgs.llvmPackages.llvm
             pkgs.unzip

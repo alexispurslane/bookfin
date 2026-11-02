@@ -400,11 +400,12 @@ nix develop ./tool/research/readers --command bash -c 'cd tool/research/readers/
 That command is expected to fail dependency resolution.
 It does not test reader behavior or indicate failure of the independent proof packages.
 
-The default research shell includes a small `xcrun` adapter for Dart native build hooks.
-It returns the pinned Nix macOS SDK location, not a system SDK or invented iOS SDK.
-The stock Nix `xcrun` fails the hook's lowercase `macosx` query.
-The hook also strips the shell's SDK environment, so the adapter embeds the Nix SDK path.
-This adaptation changes neither the user's profile nor the shared toolchain.
+The default research shell and root shell share `nix/darwin-native-tools.nix` for Dart native build hooks.
+It selects the pinned Nix macOS SDK even when a hook strips the shell's SDK environment.
+SDK queries work in either argument order. Missing iOS SDK queries fail without returning a macOS path.
+The same tools provide real ad-hoc signing with Flutter's `--timestamp=none` argument.
+No user's profile or global Xcode selection changes.
+See `../evidence/toolchain/native-hooks.md` for the red-green checks and limits.
 
 ## Primary sources inspected
 
@@ -520,7 +521,8 @@ The Nix flake pins the original package archive by SHA-256:
 The patch updates the two dependency ranges and adapts cover decoding to the image-4 byte type.
 It applies with zero patch fuzz.
 The committed lock files resolve archive 4.6.0 and image 4.12.0 alongside pdfrx_engine 0.9.0 and pdfrx 2.11.0.
-The only dependency override in the research Flutter package is the existing project's path_provider_foundation 2.4.4 compatibility pin.
+The research Flutter package no longer needs the former path_provider_foundation 2.4.4 compatibility override.
+Its lock now selects version 2.6.0 after the pinned native-hook tools passed host tests and shared-SDK Android packaging.
 There is no forced override that pretends unmodified EPUBX supports image 4.
 
 Five joint host checks pass: PDF extraction with EPUB chapter/image parsing, EPUB2 cover decoding, and the three MOBI conversions.
@@ -604,7 +606,9 @@ Build dependencies need an initial network/cache population. The installed reade
 The GNU download stalled in the Nix builder once; seeding the same verified fixed-output file into the Nix store unblocked it.
 Host Flutter native-asset tests also encountered the existing macOS SDK/signing-hook boundary.
 The small Flutter-only widget package avoids pretending those host hooks are Android failures.
-Actual PDFium/libmobi runtime verification stays on Android. `t7-fyql` retains the shared hook cleanup.
+Actual PDFium/libmobi runtime verification stays on Android.
+The later t7-fyql cleanup also passes the full research package's five host widget tests with native hooks enabled.
+Those host tests do not replace the Android runtime evidence.
 
 Install with the project SDK, then launch and operate only through a new T3 `device_open` binding for `local` / `emulator-5554`.
 Use the returned device-bound command, not another thread's command or session.
