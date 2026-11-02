@@ -70,7 +70,7 @@ Catalog snapshots contain selected metadata, source identities, and corrections.
 
 The browser development build retains its session only in memory. It does not store tokens in browser local storage. Browser restart requires sign-in again, and cross-origin access requires Jellyfin CORS support. Android process restart supports secure-session restoration and offline browsing.
 
-The downloader can consume the active account scope, `Book.editions`, and each ordered `SourceFile`. The player can consume that same edition and its chapter starts. Neither consumer may infer a downloaded state from a catalog entry. Currently every edition is truthfully not downloaded.
+The downloader consumes the active account scope, `Book.editions`, and each ordered `SourceFile`. The player can consume that same edition and its chapter starts. Neither consumer may infer a downloaded state from a catalog entry. Verified Android file availability and the player-facing local-file lookup are documented in `docs/downloads.md`; the browser does not simulate durable Android downloads.
 
 `JellyfinSession.canDownload` records Jellyfin's explicit `EnableContentDownloading` policy. Administrator status does not override it. A restored session or `verified == false` does not authorize remote media. The downloader must obtain fresh authorization, enforce the separate media-network policy, and check download permission before every media route, including `/Items/{id}/File`. This ticket exposes no file-download or streaming route, so it cannot provide a permission-bypassing fallback.
 

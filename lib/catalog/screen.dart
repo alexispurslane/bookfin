@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../foundation/theme.dart';
+import '../downloads/downloads.dart';
+import '../downloads/screen.dart';
 import 'controller.dart';
 import 'jellyfin.dart';
 import 'model.dart';
@@ -12,9 +14,11 @@ class CatalogHome extends StatefulWidget {
     super.key,
     required this.catalog,
     required this.onAppearance,
+    this.downloads,
   });
   final CatalogController catalog;
   final VoidCallback onAppearance;
+  final Downloads? downloads;
   @override
   State<CatalogHome> createState() => _CatalogHomeState();
 }
@@ -22,6 +26,7 @@ class CatalogHome extends StatefulWidget {
 class _CatalogHomeState extends State<CatalogHome> {
   String _query = '';
   String _filter = 'All';
+  int _destination = 0;
   CatalogController get _catalog => widget.catalog;
   String? _accountKey;
   bool _lastAccessBlocked = false;
@@ -32,6 +37,7 @@ class _CatalogHomeState extends State<CatalogHome> {
     _accountKey = _catalog.session?.scope.key;
     _lastAccessBlocked = _catalog.accessBlocked;
     _catalog.addListener(_accessChanged);
+    _bindDownloads();
   }
 
   @override
@@ -42,6 +48,7 @@ class _CatalogHomeState extends State<CatalogHome> {
       _catalog.addListener(_accessChanged);
       _accessChanged();
     }
+    if (oldWidget.downloads != widget.downloads) _bindDownloads();
   }
 
   @override
@@ -51,6 +58,7 @@ class _CatalogHomeState extends State<CatalogHome> {
   }
 
   void _accessChanged() {
+    _bindDownloads();
     final key = _catalog.session?.scope.key;
     if (key == _accountKey && _lastAccessBlocked == _catalog.accessBlocked) {
       return;
@@ -60,14 +68,30 @@ class _CatalogHomeState extends State<CatalogHome> {
     _lastAccessBlocked = _catalog.accessBlocked;
     _query = '';
     _filter = 'All';
+    _destination = 0;
     if (mounted && dismiss) {
       Navigator.of(context).popUntil((route) => route.isFirst);
     }
   }
 
+  void _bindDownloads() {
+    final downloads = widget.downloads;
+    if (downloads != null) {
+      unawaited(
+        downloads.bind(
+          _catalog.accessBlocked ? null : _catalog.session,
+          _catalog.books,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) => ListenableBuilder(
-    listenable: _catalog,
+    listenable: Listenable.merge([
+      _catalog,
+      if (widget.downloads != null) widget.downloads!,
+    ]),
     builder: (context, _) => Scaffold(
       appBar: AppBar(
         title: Text('BOOKFIN', style: Theme.of(context).textTheme.labelSmall),
@@ -92,16 +116,16 @@ class _CatalogHomeState extends State<CatalogHome> {
         ],
       ),
       bottomNavigationBar: NavigationBar(
-        selectedIndex: 0,
-        onDestinationSelected: (_) {},
-        destinations: const [
+        selectedIndex: _destination,
+        onDestinationSelected: (value) => setState(() => _destination = value),
+        destinations: [
           NavigationDestination(
             icon: Icon(Icons.local_library_outlined),
             selectedIcon: Icon(Icons.local_library_rounded),
             label: 'Library',
           ),
           NavigationDestination(
-            enabled: false,
+            enabled: _catalog.session != null,
             icon: Icon(Icons.download_outlined),
             label: 'Downloads',
           ),
@@ -140,6 +164,11 @@ class _CatalogHomeState extends State<CatalogHome> {
                           key: ValueKey(_catalog.session!.scope.key),
                           catalog: _catalog,
                         )
+                      : _destination == 1
+                      ? DownloadsPage(
+                          downloads: widget.downloads,
+                          books: _catalog.books,
+                        )
                       : _library(context),
                 ),
               ],
@@ -158,6 +187,13 @@ class _CatalogHomeState extends State<CatalogHome> {
       final kind = _filter == 'Audio' ? EditionKind.audio : EditionKind.text;
       return matches &&
           (_filter == 'All' ||
+              _filter == 'Downloaded' &&
+                  book.editions.any(
+                    (edition) =>
+                        edition.kind == EditionKind.audio &&
+                        widget.downloads?.status(edition).phase ==
+                            DownloadPhase.downloaded,
+                  ) ||
               _filter == 'Series' && book.series != null ||
               (_filter == 'Audio' || _filter == 'Ebooks') &&
                   book.editions.any((edition) => edition.kind == kind));
@@ -213,7 +249,13 @@ class _CatalogHomeState extends State<CatalogHome> {
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   children: [
-                    for (final filter in ['All', 'Audio', 'Ebooks', 'Series'])
+                    for (final filter in [
+                      'All',
+                      'Audio',
+                      'Ebooks',
+                      'Downloaded',
+                      'Series',
+                    ])
                       Padding(
                         padding: const EdgeInsets.only(right: 8),
                         child: ChoiceChip(
@@ -259,8 +301,11 @@ class _CatalogHomeState extends State<CatalogHome> {
                           onTap: () => Navigator.push<void>(
                             context,
                             MaterialPageRoute(
-                              builder: (_) =>
-                                  _BookPage(catalog: _catalog, bookId: book.id),
+                              builder: (_) => _BookPage(
+                                catalog: _catalog,
+                                bookId: book.id,
+                                downloads: widget.downloads,
+                              ),
                             ),
                           ),
                           borderRadius: BorderRadius.circular(16),
@@ -316,12 +361,20 @@ class _CatalogHomeState extends State<CatalogHome> {
                                             .textTheme
                                             .bodySmall,
                                       ),
-                                      Text(
-                                        'Not downloaded',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodySmall,
-                                      ),
+                                      for (final kind in EditionKind.values)
+                                        if (book.editions.any(
+                                          (edition) => edition.kind == kind,
+                                        ))
+                                          Text(
+                                            bookAvailability(
+                                              book,
+                                              kind,
+                                              widget.downloads,
+                                            ),
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodySmall,
+                                          ),
                                     ],
                                   ),
                                 ),
@@ -573,12 +626,17 @@ class _LibrarySelectorState extends State<_LibrarySelector> {
 }
 
 class _BookPage extends StatelessWidget {
-  const _BookPage({required this.catalog, required this.bookId});
+  const _BookPage({
+    required this.catalog,
+    required this.bookId,
+    this.downloads,
+  });
   final CatalogController catalog;
   final String bookId;
+  final Downloads? downloads;
   @override
   Widget build(BuildContext context) => ListenableBuilder(
-    listenable: catalog,
+    listenable: Listenable.merge([catalog, ?downloads]),
     builder: (context, _) {
       final matches = catalog.books.where((book) => book.id == bookId);
       if (matches.isEmpty) {
@@ -648,7 +706,10 @@ class _BookPage extends StatelessWidget {
                                 Text(
                                   '${edition.files.length} ${edition.files.length == 1 ? 'file' : 'files'}',
                                 ),
-                                const Text('Not downloaded'),
+                                DownloadControls(
+                                  downloads: downloads,
+                                  edition: edition,
+                                ),
                                 if (edition.files.length > 1)
                                   TextButton(
                                     onPressed: () =>

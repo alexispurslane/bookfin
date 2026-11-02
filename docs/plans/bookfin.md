@@ -204,6 +204,8 @@ Epic: boo-fs0n. All tickets reference this plan. The setup scaffold is merged; i
 | boo-73yj | Prove Android MOBI and PDF reflow support | boo-gxm8 |
 | boo-u3cg | Build book catalog series and edition relationships | boo-gxm8; foundation already integrated |
 | boo-7o92 | Implement verified downloads and media network policy | boo-u3cg |
+| t9-04iu | Resolve original downloads for alternate media sources without a permission bypass | boo-7o92 |
+| t9-k4lf | Expose safe explicit removal of retained downloads outside the selected catalog | boo-7o92 |
 | boo-sthf | Deliver offline playback chapters and Jellyfin progress | boo-7o92 |
 | boo-6h8w | Add persistent seek recovery bookmarks and listening history | boo-sthf |
 | boo-9wgg | Build EPUB HTML and Markdown reading | boo-u3cg, boo-7o92, boo-73yj |
