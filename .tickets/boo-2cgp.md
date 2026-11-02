@@ -1,7 +1,7 @@
 ---
 id: boo-2cgp
 status: open
-deps: [boo-u3cg, boo-7o92]
+deps: [boo-u3cg, boo-7o92, ta-qobz]
 links: []
 created: 2026-11-02T01:06:42Z
 type: task
