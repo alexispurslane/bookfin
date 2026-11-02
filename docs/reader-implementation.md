@@ -78,3 +78,11 @@ The host tests cover real preprocessing, request replies, actual engine document
 Parent acceptance still needs actual Android XHTML/CSS layout after XML tree import, PNG/JPEG display, applied embedded and fallback fonts, large-text pagination, visible-start stability after local styles/images/fonts load, visible-start resume after force-stop or process death, TalkBack reading order and focus, offline operation, and native request/navigation/permission interception. A failed attempt must not be replaced by inferred device acceptance. Readium remains the documented fallback if a concrete impossibility is established; this implementation does not silently switch navigators or drop required features.
 
 Coverage and mutation testing are intentionally deferred to the parent after user acceptance. Exact commands, test counts, build results, and historical red tests are indexed in `tool/evidence/reader/README.md`.
+
+## Missing Jellyfin format metadata correction
+
+Android acceptance of d9d238b downloaded an exact EPUB from a normal Jellyfin 12.4 Book whose DTO omitted Container and MediaSources, but the reader refused it before admission. The regression now constructs that catalog shape, restores a real verified local file, runs real EPUB admission and reopens its saved position. It failed before the correction while the named-format control passed.
+
+Single-file text editions now proceed from verified local lookup to bounded EPUB admission without requiring a catalog format label. Actual EPUB structure remains authoritative; neither a filename nor a guessed MIME type bypasses the admission boundary. A verified non-EPUB payload with matching saved length/hash is rejected. Tampered files still fail LocalDownloads verification first.
+
+Parent Nix checks: two downloaded-reader cases and all 335 application tests pass; analysis and formatting pass. Android chapter rendering after this change is not yet observed. This is independent of the concurrent R1–R4 correction work and must be combined before final acceptance. Ticket tb-zqvc remains open for the named-build Android rerun.

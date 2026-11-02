@@ -197,8 +197,7 @@ class ReaderSession extends ChangeNotifier {
     await _binding;
     if (!_live(generation) || !_current(selected)) return;
     try {
-      if (selected.files.length != 1 ||
-          selected.files.single.container.toLowerCase() != 'epub') {
+      if (selected.kind != EditionKind.text || selected.files.length != 1) {
         throw const FormatException(
           'Choose a single-file EPUB edition. Other formats are not supported by this reader.',
         );
