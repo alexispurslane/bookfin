@@ -34,3 +34,7 @@ Implemented from original base 72996e4fe51d43639a08127ad3fdf0f1a74ef2f3. LocalDo
 **2026-11-02T11:45:40Z**
 
 Parent reproduced cancellation durability failure during account switch, then fixed immutable record account ownership and restoration ordering behind accepted commands. Containment/symlink guards remain intact. Tests cover multi-file cancellation while switching away and immediately back, and no transfer after Wi-Fi returns. All271 app tests, analyzer, format and Android ARM64 debug build pass. No new runtime/web acceptance; correction review pending, no closure.
+
+**2026-11-02T11:53:06Z**
+
+Independent correction review approved 4d409098b48eab2e37113b0ac05382f4d5435b20 with no blocking correctness or design finding. Parent integrated the feature and cancellation correction into main without conflicts. Application, tests, Android, tools and Nix files match the tested correction head; no test rerun was needed for this merge. Prior parent verification: 271 application tests, clean analysis and formatting, Android ARM64 debug build. Keep in_progress: Android retained-storage interaction and relaunch acceptance remain unobserved, and no user acceptance or hardening is inferred.
