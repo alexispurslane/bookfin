@@ -263,9 +263,12 @@ var bookfinReader = (() => {
     viewport.themes.fontSize(`${Math.max(14, Math.min(fontSize, 96))}px`);
   }
   async function configure(fontSize, night, restore = true) {
-    const current = rendition.location && rendition.location.start.cfi;
-    applyAppearance(rendition, fontSize, night);
-    if (restore && current) await withNavigation(() => rendition.display(current));
+    const update = async () => {
+      const current = rendition.location && rendition.location.start.cfi;
+      applyAppearance(rendition, fontSize, night);
+      if (restore && current) await rendition.display(current);
+    };
+    return restore ? withNavigation(update) : update();
   }
   function search(query, request) {
     searchRequest = request;

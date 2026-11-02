@@ -156,6 +156,10 @@ class IframeView {
 			.then(function(contents){
 				return this.load(contents);
 			}.bind(this))
+			.then(() => Promise.all([
+				this.contents.ready(),
+				this.settings.prepareContents && this.settings.prepareContents(this.contents)
+			]))
 			.then(function(){
 
 				// find and report the writingMode axis
@@ -206,6 +210,12 @@ class IframeView {
 				this.emit(EVENTS.VIEWS.RENDERED, this.section);
 			}.bind(this));
 
+	}
+
+	async reflow() {
+		await this.contents.ready();
+		this.layout.format(this.contents, this.section, this.axis);
+		this.expand();
 	}
 
 	reset () {

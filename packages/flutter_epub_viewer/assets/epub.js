@@ -20490,6 +20490,21 @@ var epubEngine = (() => {
         this.emit(EVENTS.CONTENTS.RESIZE, this._size);
       }
     }
+    async ready() {
+      const resources = Array.from(this.document.querySelectorAll('link[rel="stylesheet"], img[src]'));
+      await Promise.all(resources.map((resource) => {
+        if (resource.localName === "img" && resource.complete && !resource.naturalWidth) {
+          throw new Error("Reading image could not be loaded");
+        }
+        if (resource.localName === "link" ? resource.sheet : resource.complete) return;
+        return new Promise((resolve, reject) => {
+          resource.addEventListener("load", resolve, { once: true });
+          resource.addEventListener("error", () => reject(new Error("Reading resource could not be loaded")), { once: true });
+        });
+      }));
+      this.content.getBoundingClientRect();
+      await this.document.fonts.ready;
+    }
     /**
      * Poll for resize detection
      * @private
@@ -21479,7 +21494,10 @@ var epubEngine = (() => {
       }
       return this.sectionRender.then(function(contents) {
         return this.load(contents);
-      }.bind(this)).then(function() {
+      }.bind(this)).then(() => Promise.all([
+        this.contents.ready(),
+        this.settings.prepareContents && this.settings.prepareContents(this.contents)
+      ])).then(function() {
         let writingMode = this.contents.writingMode();
         let axis;
         if (this.settings.flow === "scrolled") {
@@ -21511,6 +21529,11 @@ var epubEngine = (() => {
       }.bind(this)).then(function() {
         this.emit(EVENTS.VIEWS.RENDERED, this.section);
       }.bind(this));
+    }
+    async reflow() {
+      await this.contents.ready();
+      this.layout.format(this.contents, this.section, this.axis);
+      this.expand();
     }
     reset() {
       if (this.iframe) {
@@ -22412,6 +22435,7 @@ var epubEngine = (() => {
       });
       extend(this.settings, options.settings || {});
       this.viewSettings = {
+        prepareContents: options.prepareContents,
         ignoreClass: this.settings.ignoreClass,
         axis: this.settings.axis,
         flow: this.settings.flow,
@@ -22554,20 +22578,22 @@ var epubEngine = (() => {
       }
       var visible = this.views.find(section);
       if (visible && section && this.layout.name !== "pre-paginated") {
-        let offset = visible.offset();
-        if (this.settings.direction === "ltr") {
-          this.scrollTo(offset.left, offset.top, true);
-        } else {
-          let width = visible.width();
-          this.scrollTo(offset.left + width, offset.top, true);
-        }
-        if (target) {
-          let offset2 = visible.locationOf(target);
-          let width = visible.width();
-          this.moveTo(offset2, width);
-        }
-        displaying.resolve();
-        return displayed;
+        return visible.reflow().then(() => {
+          let offset = visible.offset();
+          if (this.settings.direction === "ltr") {
+            this.scrollTo(offset.left, offset.top, true);
+          } else {
+            let width = visible.width();
+            this.scrollTo(offset.left + width, offset.top, true);
+          }
+          if (target) {
+            let offset2 = visible.locationOf(target);
+            let width = visible.width();
+            this.moveTo(offset2, width);
+          }
+          displaying.resolve();
+          return displayed;
+        });
       }
       this.clear();
       let forceRight = false;
@@ -22917,9 +22943,9 @@ var epubEngine = (() => {
         used += pageWidth;
         let mapping = this.mapping.page(view.contents, view.section.cfiBase, start, end);
         let totalPages = this.layout.count(width).pages;
-        let startPage = Math.floor(start / this.layout.pageWidth);
+        let startPage = Math.round(start / this.layout.pageWidth);
         let pages = [];
-        let endPage = Math.floor(end / this.layout.pageWidth);
+        let endPage = Math.round(end / this.layout.pageWidth);
         if (startPage < 0) {
           startPage = 0;
           endPage = endPage + 1;
@@ -23921,6 +23947,7 @@ var epubEngine = (() => {
           view: this.View,
           queue: this.q,
           request: this.book.load.bind(this.book),
+          prepareContents: (contents) => this.hooks.content.trigger(contents, this),
           settings: this.settings
         });
       }
@@ -23932,7 +23959,7 @@ var epubEngine = (() => {
       this.manager.on(EVENTS.MANAGERS.REMOVED, this.afterRemoved.bind(this));
       this.manager.on(EVENTS.MANAGERS.RESIZED, this.onResized.bind(this));
       this.manager.on(EVENTS.MANAGERS.ORIENTATION_CHANGE, this.onOrientationChange.bind(this));
-      this.manager.on(EVENTS.MANAGERS.SCROLLED, this.reportLocation.bind(this));
+      this.manager.on(EVENTS.MANAGERS.SCROLLED, () => this.reportLocation());
       this.emit(EVENTS.RENDITION.STARTED);
       this.starting.resolve();
     }
@@ -23989,12 +24016,13 @@ var epubEngine = (() => {
         displaying.reject(new Error("No Section Found"));
         return displayed;
       }
-      this.manager.display(section, target).then(() => {
+      this.manager.display(section, target).then(() => this._reportLocation(isCfiString ? target : null)).then(() => {
         displaying.resolve(section);
         this.displaying = void 0;
         this.emit(EVENTS.RENDITION.DISPLAYED, section);
-        this.reportLocation();
       }, (err) => {
+        displaying.reject(err);
+        this.displaying = void 0;
         this.emit(EVENTS.RENDITION.DISPLAY_ERROR, err);
       });
       return displayed;
@@ -24051,13 +24079,7 @@ var epubEngine = (() => {
     afterDisplayed(view) {
       view.on(EVENTS.VIEWS.MARK_CLICKED, (cfiRange, data) => this.triggerMarkEvent(cfiRange, data, view.contents));
       this.hooks.render.trigger(view, this).then(() => {
-        if (view.contents) {
-          this.hooks.content.trigger(view.contents, this).then(() => {
-            this.emit(EVENTS.RENDITION.RENDERED, view.section, view);
-          });
-        } else {
-          this.emit(EVENTS.RENDITION.RENDERED, view.section, view);
-        }
+        this.emit(EVENTS.RENDITION.RENDERED, view.section, view);
       });
     }
     /**
@@ -24080,7 +24102,7 @@ var epubEngine = (() => {
         height: size.height
       }, epubcfi);
       if (this.location && this.location.start) {
-        this.display(epubcfi || this.location.start.cfi);
+        this.q.enqueue(() => this._display(epubcfi || this.location.start.cfi));
       }
     }
     /**
@@ -24124,14 +24146,20 @@ var epubEngine = (() => {
      * @return {Promise}
      */
     next() {
-      return this.q.enqueue(this.manager.next.bind(this.manager)).then(this.reportLocation.bind(this));
+      return this.q.enqueue(async () => {
+        await this.manager.next();
+        await this._reportLocation(null);
+      });
     }
     /**
      * Go to the previous "page" in the rendition
      * @return {Promise}
      */
     prev() {
-      return this.q.enqueue(this.manager.prev.bind(this.manager)).then(this.reportLocation.bind(this));
+      return this.q.enqueue(async () => {
+        await this.manager.prev();
+        await this._reportLocation(null);
+      });
     }
     //-- http://www.idpf.org/epub/301/spec/epub-publications.html#meta-properties-rendering
     /**
@@ -24244,42 +24272,36 @@ var epubEngine = (() => {
      * @fires locationChanged
      */
     reportLocation() {
-      return this.q.enqueue(function reportedLocation() {
-        requestAnimationFrame(function reportedLocationAfterRAF() {
-          var location = this.manager.currentLocation();
-          if (location && location.then && typeof location.then === "function") {
-            location.then(function(result) {
-              let located = this.located(result);
-              if (!located || !located.start || !located.end) {
-                return;
-              }
-              this.location = located;
-              this.emit(EVENTS.RENDITION.LOCATION_CHANGED, {
-                index: this.location.start.index,
-                href: this.location.start.href,
-                start: this.location.start.cfi,
-                end: this.location.end.cfi,
-                percentage: this.location.start.percentage
-              });
-              this.emit(EVENTS.RENDITION.RELOCATED, this.location);
-            }.bind(this));
-          } else if (location) {
-            let located = this.located(location);
-            if (!located || !located.start || !located.end) {
-              return;
-            }
-            this.location = located;
-            this.emit(EVENTS.RENDITION.LOCATION_CHANGED, {
-              index: this.location.start.index,
-              href: this.location.start.href,
-              start: this.location.start.cfi,
-              end: this.location.end.cfi,
-              percentage: this.location.start.percentage
-            });
-            this.emit(EVENTS.RENDITION.RELOCATED, this.location);
-          }
-        }.bind(this));
-      }.bind(this));
+      return this.q.enqueue(this._reportLocation);
+    }
+    checkInvariants() {
+      if (!this.location) return;
+      for (const boundary of [this.location.start, this.location.end]) {
+        if (new epubcfi_default(boundary.cfi).spinePos !== boundary.index) {
+          throw new Error("Reading location belongs to a different section");
+        }
+        if (boundary.displayed.page < 1 || boundary.displayed.page > boundary.displayed.total) {
+          throw new Error("Reading page is outside its document");
+        }
+      }
+    }
+    _reportLocation(cfi) {
+      return new Promise((resolve) => requestAnimationFrame(resolve)).then(() => this.manager.currentLocation()).then((location) => {
+        if (!location) return;
+        const located = this.located(location);
+        if (!located || !located.start || !located.end) return;
+        const anchor = cfi === void 0 && this.location && this.location.start.index === located.start.index ? this.location.start.cfi : cfi;
+        if (anchor) located.start.cfi = anchor;
+        this.location = located;
+        this.emit(EVENTS.RENDITION.LOCATION_CHANGED, {
+          index: located.start.index,
+          href: located.start.href,
+          start: located.start.cfi,
+          end: located.end.cfi,
+          percentage: located.start.percentage
+        });
+        this.emit(EVENTS.RENDITION.RELOCATED, located);
+      });
     }
     /**
      * Get the Current Location object
@@ -24424,7 +24446,7 @@ var epubEngine = (() => {
         });
       }
       let computed = contents.window.getComputedStyle(contents.content, null);
-      let height = (contents.content.offsetHeight - (parseFloat(computed.paddingTop) + parseFloat(computed.paddingBottom))) * 0.95;
+      let height = (this._layout.height - (parseFloat(computed.paddingTop) + parseFloat(computed.paddingBottom))) * 0.95;
       let horizontalPadding = parseFloat(computed.paddingLeft) + parseFloat(computed.paddingRight);
       contents.addStylesheetRules({
         "img": {

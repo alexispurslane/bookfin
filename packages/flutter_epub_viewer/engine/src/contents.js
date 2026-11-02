@@ -442,6 +442,22 @@ class Contents {
 		}
 	}
 
+	async ready() {
+		const resources = Array.from(this.document.querySelectorAll('link[rel="stylesheet"], img[src]'));
+		await Promise.all(resources.map(resource => {
+			if (resource.localName === "img" && resource.complete && !resource.naturalWidth) {
+				throw new Error("Reading image could not be loaded");
+			}
+			if (resource.localName === "link" ? resource.sheet : resource.complete) return;
+			return new Promise((resolve, reject) => {
+				resource.addEventListener("load", resolve, { once: true });
+				resource.addEventListener("error", () => reject(new Error("Reading resource could not be loaded")), { once: true });
+			});
+		}));
+		this.content.getBoundingClientRect();
+		await this.document.fonts.ready;
+	}
+
 	/**
 	 * Poll for resize detection
 	 * @private

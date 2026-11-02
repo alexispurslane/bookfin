@@ -230,6 +230,7 @@ class Rendition {
 				view: this.View,
 				queue: this.q,
 				request: this.book.load.bind(this.book),
+				prepareContents: contents => this.hooks.content.trigger(contents, this),
 				settings: this.settings
 			});
 		}
@@ -254,7 +255,7 @@ class Rendition {
 		this.manager.on(EVENTS.MANAGERS.ORIENTATION_CHANGE, this.onOrientationChange.bind(this));
 
 		// Listen for scroll changes
-		this.manager.on(EVENTS.MANAGERS.SCROLLED, this.reportLocation.bind(this));
+		this.manager.on(EVENTS.MANAGERS.SCROLLED, () => this.reportLocation());
 
 		/**
 		 * Emit that rendering has started
@@ -340,6 +341,7 @@ class Rendition {
 		}
 
 		this.manager.display(section, target)
+			.then(() => this._reportLocation(isCfiString ? target : null))
 			.then(() => {
 				displaying.resolve(section);
 				this.displaying = undefined;
@@ -351,8 +353,9 @@ class Rendition {
 				 * @memberof Rendition
 				 */
 				this.emit(EVENTS.RENDITION.DISPLAYED, section);
-				this.reportLocation();
 			}, (err) => {
+				displaying.reject(err);
+				this.displaying = undefined;
 				/**
 				 * Emit that has been an error displaying
 				 * @event displayError
@@ -421,20 +424,7 @@ class Rendition {
 
 		this.hooks.render.trigger(view, this)
 			.then(() => {
-				if (view.contents) {
-					this.hooks.content.trigger(view.contents, this).then(() => {
-						/**
-						 * Emit that a section has been rendered
-						 * @event rendered
-						 * @param {Section} section
-						 * @param {View} view
-						 * @memberof Rendition
-						 */
-						this.emit(EVENTS.RENDITION.RENDERED, view.section, view);
-					});
-				} else {
-					this.emit(EVENTS.RENDITION.RENDERED, view.section, view);
-				}
+				this.emit(EVENTS.RENDITION.RENDERED, view.section, view);
 			});
 
 	}
@@ -477,7 +467,7 @@ class Rendition {
 		}, epubcfi);
 
 		if (this.location && this.location.start) {
-			this.display(epubcfi || this.location.start.cfi);
+			this.q.enqueue(() => this._display(epubcfi || this.location.start.cfi));
 		}
 
 	}
@@ -533,8 +523,10 @@ class Rendition {
 	 * @return {Promise}
 	 */
 	next(){
-		return this.q.enqueue(this.manager.next.bind(this.manager))
-			.then(this.reportLocation.bind(this));
+		return this.q.enqueue(async () => {
+			await this.manager.next();
+			await this._reportLocation(null);
+		});
 	}
 
 	/**
@@ -542,8 +534,10 @@ class Rendition {
 	 * @return {Promise}
 	 */
 	prev(){
-		return this.q.enqueue(this.manager.prev.bind(this.manager))
-			.then(this.reportLocation.bind(this));
+		return this.q.enqueue(async () => {
+			await this.manager.prev();
+			await this._reportLocation(null);
+		});
 	}
 
 	//-- http://www.idpf.org/epub/301/spec/epub-publications.html#meta-properties-rendering
@@ -687,66 +681,41 @@ class Rendition {
 	 * @fires locationChanged
 	 */
 	reportLocation(){
-		return this.q.enqueue(function reportedLocation(){
-			requestAnimationFrame(function reportedLocationAfterRAF() {
-				var location = this.manager.currentLocation();
-				if (location && location.then && typeof location.then === "function") {
-					location.then(function(result) {
-						let located = this.located(result);
+		return this.q.enqueue(this._reportLocation);
+	}
 
-						if (!located || !located.start || !located.end) {
-							return;
-						}
+	checkInvariants(){
+		if (!this.location) return;
+		for (const boundary of [this.location.start, this.location.end]) {
+			if (new EpubCFI(boundary.cfi).spinePos !== boundary.index) {
+				throw new Error("Reading location belongs to a different section");
+			}
+			if (boundary.displayed.page < 1 || boundary.displayed.page > boundary.displayed.total) {
+				throw new Error("Reading page is outside its document");
+			}
+		}
+	}
 
-						this.location = located;
-
-						this.emit(EVENTS.RENDITION.LOCATION_CHANGED, {
-							index: this.location.start.index,
-							href: this.location.start.href,
-							start: this.location.start.cfi,
-							end: this.location.end.cfi,
-							percentage: this.location.start.percentage
-						});
-
-						this.emit(EVENTS.RENDITION.RELOCATED, this.location);
-					}.bind(this));
-				} else if (location) {
-					let located = this.located(location);
-
-					if (!located || !located.start || !located.end) {
-						return;
-					}
-
-					this.location = located;
-
-					/**
-					 * @event locationChanged
-					 * @deprecated
-					 * @type {object}
-					 * @property {number} index
-					 * @property {string} href
-					 * @property {EpubCFI} start
-					 * @property {EpubCFI} end
-					 * @property {number} percentage
-					 * @memberof Rendition
-					 */
-					this.emit(EVENTS.RENDITION.LOCATION_CHANGED, {
-						index: this.location.start.index,
-						href: this.location.start.href,
-						start: this.location.start.cfi,
-						end: this.location.end.cfi,
-						percentage: this.location.start.percentage
-					});
-
-					/**
-					 * @event relocated
-					 * @type {displayedLocation}
-					 * @memberof Rendition
-					 */
-					this.emit(EVENTS.RENDITION.RELOCATED, this.location);
-				}
-			}.bind(this));
-		}.bind(this));
+	_reportLocation(cfi){
+		return new Promise(resolve => requestAnimationFrame(resolve))
+			.then(() => this.manager.currentLocation())
+			.then(location => {
+				if (!location) return;
+				const located = this.located(location);
+				if (!located || !located.start || !located.end) return;
+				const anchor = cfi === undefined && this.location && this.location.start.index === located.start.index ?
+					this.location.start.cfi : cfi;
+				if (anchor) located.start.cfi = anchor;
+				this.location = located;
+				this.emit(EVENTS.RENDITION.LOCATION_CHANGED, {
+					index: located.start.index,
+					href: located.start.href,
+					start: located.start.cfi,
+					end: located.end.cfi,
+					percentage: located.start.percentage
+				});
+				this.emit(EVENTS.RENDITION.RELOCATED, located);
+			});
 	}
 
 	/**
@@ -955,7 +924,7 @@ class Rendition {
 		}
 
 		let computed = contents.window.getComputedStyle(contents.content, null);
-		let height = (contents.content.offsetHeight - (parseFloat(computed.paddingTop) + parseFloat(computed.paddingBottom))) * .95;
+		let height = (this._layout.height - (parseFloat(computed.paddingTop) + parseFloat(computed.paddingBottom))) * .95;
 		let horizontalPadding = parseFloat(computed.paddingLeft) + parseFloat(computed.paddingRight);
 
 		contents.addStylesheetRules({

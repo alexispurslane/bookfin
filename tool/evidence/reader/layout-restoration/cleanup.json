@@ -1,0 +1,15 @@
+{
+  "fixtureRuntimeRemoved": true,
+  "ports7364And7365HadNoListenerBeforeRemoval": true,
+  "publicEvidenceContainsNoFixturePasswordOrSessionToken": true,
+  "fixtureExit": 0,
+  "observerExit": 143,
+  "ownReverse7365RemovalCompletedWithoutError": true,
+  "noDiagnosticForwardCreated": true,
+  "deviceBindingReleased": true,
+  "deviceShutdown": false,
+  "deviceSettingsChanged": false,
+  "appLeftAtSignInAfterStopRule": true,
+  "candidateInstalled": false,
+  "ownGradleDaemonStopped": true
+}

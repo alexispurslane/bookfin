@@ -73,6 +73,15 @@ nix develop --command bash -c 'cd packages/flutter_epub_viewer/engine && node --
 
 ## Acceptance still required
 
+The `t8-jj2s` candidate adds real Chromium iframe layout tests for delayed local
+styles/fonts, initial height changes, intentional navigation, bookmark restore,
+appearance ordering, and fractional-pixel page labels. The current reading
+address remains authoritative across reflow. See
+`docs/evidence/reader/layout-restoration.md` for the red tests, ownership model,
+host proof, and Android stop. This host proof does not establish Android
+restoration acceptance. The candidate changes no source identity or theme
+lifetime rule.
+
 The host tests cover real preprocessing, request replies, actual engine document navigation/search, download verification, account and source isolation, record restart, and production Flutter controls. DOM tests do not render pages and do not enforce Android WebView security. Most widget tests use the actual unsupported-platform boundary. The appearance regression tests replace only the native WebView platform boundary to record commands from the real screen, session, and viewport. A separate actual-engine test checks applied CSS size and the CFI passed to the layout/display boundary. Neither test simulates Android geometry or establishes Android acceptance.
 
 Parent acceptance still needs actual Android XHTML/CSS layout after XML tree import, PNG/JPEG display, applied embedded and fallback fonts, large-text pagination, visible-start stability after local styles/images/fonts load, visible-start resume after force-stop or process death, TalkBack reading order and focus, offline operation, and native request/navigation/permission interception. A failed attempt must not be replaced by inferred device acceptance. Readium remains the documented fallback if a concrete impossibility is established; this implementation does not silently switch navigators or drop required features.
