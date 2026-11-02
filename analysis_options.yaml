@@ -5,3 +5,5 @@ analyzer:
     - build/**
     - android/**
     - web/**
+    # Standalone research packages use their own locks and verification commands.
+    - tool/research/readers/**
