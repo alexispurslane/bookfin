@@ -64,6 +64,7 @@ class Playback extends ChangeNotifier {
   bool _active = false;
   bool _closed = false;
   bool _loading = false;
+  bool _restored = false;
   String? _message;
   double _speed = 1;
   int _backward = 10;
@@ -183,6 +184,7 @@ class Playback extends ChangeNotifier {
     reports?.stop();
     final generation = ++_generation;
     _session = session;
+    _restored = false;
     _book = null;
     _edition = null;
     _position = null;
@@ -209,7 +211,10 @@ class Playback extends ChangeNotifier {
       try {
         final saved = await store.read(session.scope.key);
         if (generation != _generation) return;
-        if (saved != null && saved['version'] == 1) {
+        if (saved != null && saved['version'] != 1) {
+          throw const FormatException('Unsupported listening record');
+        }
+        if (saved != null) {
           _resumes = Map<String, dynamic>.from(saved['resumes'] as Map? ?? {});
           _selected = saved['selected'] as String?;
           final speed = (saved['speed'] as num?)?.toDouble() ?? 1;
@@ -219,6 +224,7 @@ class Playback extends ChangeNotifier {
           if (backward > 0 && backward <= 300) _backward = backward;
           if (forward > 0 && forward <= 300) _forward = forward;
         }
+        _restored = true;
         final book = _books
             .where(
               (book) => book.editions.any((edition) => edition.id == _selected),
@@ -415,7 +421,10 @@ class Playback extends ChangeNotifier {
     _notify();
   });
 
-  Future<void> seekEdition(int milliseconds) => _enqueue(() async {
+  Future<void> seekEdition(int milliseconds) =>
+      _enqueue(() => _seekEdition(milliseconds));
+
+  Future<void> _seekEdition(int milliseconds) async {
     if (_edition == null) return;
     final duration = durationMilliseconds;
     if (duration == null) {
@@ -434,36 +443,37 @@ class Playback extends ChangeNotifier {
       }
       remaining -= length;
     }
-  });
+  }
 
-  Future<void> seekSource(String sourceKey, int milliseconds) => _enqueue(
-    () async {
-      if (_edition == null) return;
-      final index = _edition!.files.indexWhere((file) => file.key == sourceKey);
-      if (index < 0 || milliseconds < 0) {
-        throw ArgumentError('Choose a chapter in this edition.');
-      }
-      final duration = _edition!.files[index].durationMs;
-      await engine.seek(
-        index,
-        duration == null ? milliseconds : milliseconds.clamp(0, duration),
-      );
-      _save();
-    },
-  );
+  Future<void> seekSource(String sourceKey, int milliseconds) =>
+      _enqueue(() => _seekSource(sourceKey, milliseconds));
 
-  Future<void> jump({required bool forward}) async {
+  Future<void> _seekSource(String sourceKey, int milliseconds) async {
+    if (_edition == null) return;
+    final index = _edition!.files.indexWhere((file) => file.key == sourceKey);
+    if (index < 0 || milliseconds < 0) {
+      throw ArgumentError('Choose a chapter in this edition.');
+    }
+    final duration = _edition!.files[index].durationMs;
+    await engine.seek(
+      index,
+      duration == null ? milliseconds : milliseconds.clamp(0, duration),
+    );
+    _save();
+  }
+
+  Future<void> jump({required bool forward}) => _enqueue(() async {
     final current = editionMilliseconds;
     final amount = (forward ? _forward : -_backward) * 1000;
-    if (current != null) {
-      await seekEdition(current + amount);
+    if (current != null && durationMilliseconds != null) {
+      await _seekEdition(current + amount);
     } else if (_position != null) {
-      await seekSource(
+      await _seekSource(
         _position!.sourceKey,
         max(0, _position!.milliseconds + amount),
       );
     }
-  }
+  });
 
   Future<void> setSpeed(double value) => _enqueue(() async {
     if (!value.isFinite || value < 0.5 || value > 3) {
@@ -508,7 +518,7 @@ class Playback extends ChangeNotifier {
 
   void _save() {
     final accountKey = _session?.scope.key;
-    if (accountKey == null) return;
+    if (accountKey == null || !_restored) return;
     final position = _position;
     if (position != null) {
       _resumes[position.editionId] = {
@@ -542,7 +552,10 @@ class Playback extends ChangeNotifier {
   }
 
   Future<void> flush() async {
+    final generation = _generation;
+    await _binding;
     await _operations;
+    if (generation != _generation) return;
     _save();
     await _writes;
     await reports?.idle;

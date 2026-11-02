@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:just_audio/just_audio.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:bookfin/playback/native.dart';
 import 'package:bookfin/playback/playback.dart';
@@ -14,6 +17,17 @@ import 'playback_test.dart'
         second;
 
 void main() {
+  test(
+    'owner pause cancels decoder recovery even when already interrupted',
+    () async {
+      final decoder = InterruptedDecoder();
+      final audio = LocalAudioEngine(player: decoder);
+      await audio.pause();
+      decoder.endInterruption();
+      expect(decoder.playing, isFalse);
+      await audio.close();
+    },
+  );
   late Playback playback;
   late TestEngine engine;
   late LocalFiles downloads;
@@ -80,4 +94,42 @@ void main() {
       expect(playback.editionMilliseconds, 60000);
     },
   );
+}
+
+// Models the pinned decoder's documented interruption flag: pause on an already
+// paused decoder returns early; stop always revokes automatic recovery.
+class InterruptedDecoder implements AudioPlayer {
+  bool recover = true;
+  bool active = false;
+  void endInterruption() {
+    if (recover) active = true;
+  }
+
+  @override
+  bool get playing => active;
+  @override
+  Stream<PlayerState> get playerStateStream => const Stream.empty();
+  @override
+  Stream<int?> get currentIndexStream => const Stream.empty();
+  @override
+  Stream<Duration> get positionStream => const Stream.empty();
+  @override
+  Stream<PlayerException> get errorStream => const Stream.empty();
+  @override
+  Future<void> pause() async {
+    if (!active) return;
+    active = false;
+    recover = false;
+  }
+
+  @override
+  Future<void> stop() async {
+    active = false;
+    recover = false;
+  }
+
+  @override
+  Future<void> dispose() async {}
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

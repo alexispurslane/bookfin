@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 import 'dart:io';
 
 import 'package:bookfin/catalog/jellyfin.dart';
@@ -14,11 +15,15 @@ void main() {
   late LiveReports reports;
   late JellyfinSession session;
   var rejectReports = false;
+  Completer<void>? responseGate;
+  Completer<void>? started;
   final requests = <Map<String, dynamic>>[];
   setUp(() async {
     HttpOverrides.global = _RealHttp();
     requests.clear();
     rejectReports = false;
+    responseGate = null;
+    started = null;
     server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
     server.listen((request) async {
       final payload = jsonDecode(
@@ -29,6 +34,8 @@ void main() {
         'body': payload,
         'token': request.headers.value('X-Emby-Token'),
       });
+      if (started?.isCompleted == false) started!.complete();
+      await responseGate?.future;
       request.response.statusCode = rejectReports ? 503 : 204;
       await request.response.close();
     });
@@ -51,6 +58,66 @@ void main() {
     await server.close(force: true);
     HttpOverrides.global = null;
   });
+
+  for (final retire in [false, true]) {
+    test(
+      'queued reports are discarded after ${retire ? 'retirement' : 'failure'}',
+      () async {
+        responseGate = Completer<void>();
+        started = Completer<void>();
+        reports.observe(session, first, 0, playing: true, speed: 1);
+        await started!.future;
+        reports.observe(session, first, 10000, playing: true, speed: 1);
+        reports.observe(session, first, 20000, playing: true, speed: 1);
+        if (retire) {
+          reports.stop();
+        } else {
+          rejectReports = true;
+        }
+        responseGate!.complete();
+        await reports.idle;
+        expect(
+          requests.where((r) => (r['path'] as String).endsWith('/Progress')),
+          isEmpty,
+        );
+        expect(requests.length, retire ? 2 : 1);
+      },
+    );
+  }
+
+  test(
+    'account change retires queued progress but keeps final stop and new start',
+    () async {
+      responseGate = Completer<void>();
+      started = Completer<void>();
+      reports.observe(session, first, 0, playing: true, speed: 1);
+      await started!.future;
+      reports.observe(session, first, 10000, playing: true, speed: 1);
+      final other = JellyfinSession(
+        scope: AccountScope(
+          server: session.scope.server,
+          serverId: 'fixture',
+          userId: 'bob',
+        ),
+        token: 'bob-token',
+        username: 'bob',
+        canDownload: true,
+      );
+      reports.observe(other, second, 2000, playing: true, speed: 1);
+      responseGate!.complete();
+      await reports.idle;
+      expect(requests.map((r) => r['path']), [
+        '/jellyfin/Sessions/Playing',
+        '/jellyfin/Sessions/Playing/Stopped',
+        '/jellyfin/Sessions/Playing',
+      ]);
+      expect(requests.map((r) => r['token']), [
+        'disposable',
+        'disposable',
+        'bob-token',
+      ]);
+    },
+  );
 
   test(
     'reports actual file and media source with source-relative Jellyfin ticks',
@@ -162,6 +229,8 @@ void main() {
     await reports.idle;
     expect(requests, hasLength(1));
     rejectReports = false;
+    responseGate = null;
+    started = null;
     policy.network = MediaNetwork.disconnected;
     policy.network = MediaNetwork.wifi;
     reports.observe(session, second, 9000, playing: true, speed: 1);

@@ -68,6 +68,79 @@ void main() {
     downloads.dispose();
   });
 
+  test('overlapping short jumps accumulate inside the command owner', () async {
+    await playback.open(title, recording);
+    await Future.wait([
+      playback.jump(forward: true),
+      playback.jump(forward: true),
+    ]);
+    expect(playback.editionMilliseconds, 60000);
+  });
+
+  test('short jumps work within a source with unknown duration', () async {
+    const file = SourceFile(
+      itemId: 'one',
+      mediaSourceId: 'm1',
+      revision: 'r1',
+      displayName: 'Unknown',
+      durationMs: null,
+      container: 'wav',
+      sizeBytes: 42,
+    );
+    const edition = Edition(
+      id: 'unknown',
+      kind: EditionKind.audio,
+      label: 'Unknown',
+      files: [file],
+      memberIds: ['one:m1'],
+    );
+    const book = Book(
+      id: 'unknown',
+      title: 'Unknown',
+      author: '',
+      editions: [edition],
+    );
+    await playback.bind(account(), [book]);
+    await playback.open(book, edition);
+    await playback.jump(forward: true);
+    expect(playback.position?.milliseconds, 30000);
+  });
+
+  for (final switchAccount in [false, true]) {
+    test(
+      'unrestored account survives ${switchAccount ? 'sign out' : 'flush'}',
+      () async {
+        await playback.open(title, recording);
+        await playback.seekEdition(75000);
+        await playback.flush();
+        await playback.bind(null, []);
+        final saved = store.values[account().scope.key];
+        store.readGate = Completer<void>();
+        final binding = playback.bind(account(), [title]);
+        final operation = switchAccount
+            ? playback.bind(null, [])
+            : playback.flush();
+        await Future<void>.delayed(Duration.zero);
+        store.readGate!.complete();
+        await Future.wait([binding, operation]);
+        expect(store.values[account().scope.key], saved);
+      },
+    );
+  }
+
+  test('failed resume read cannot be overwritten by later saves', () async {
+    await playback.open(title, recording);
+    await playback.seekEdition(75000);
+    await playback.flush();
+    await playback.bind(null, []);
+    final saved = store.values[account().scope.key];
+    store.failRead = true;
+    await playback.bind(account(), [title]);
+    await playback.flush();
+    expect(store.values[account().scope.key], saved);
+    store.failRead = false;
+  });
+
   test(
     'plays only verified local files in explicit recording order while offline',
     () async {
@@ -351,9 +424,11 @@ void main() {
 class MemoryResume implements ResumeStore {
   final values = <String, Map<String, dynamic>>{};
   Completer<void>? readGate;
+  bool failRead = false;
   @override
   Future<Map<String, dynamic>?> read(String accountKey) async {
     await readGate?.future;
+    if (failRead) throw Exception('read failed');
     return values[accountKey];
   }
 

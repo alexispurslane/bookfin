@@ -54,7 +54,10 @@ class PlaybackMiniPlayer extends StatelessWidget {
                                         overflow: TextOverflow.ellipsis,
                                         style: Theme.of(context)
                                             .textTheme
-                                            .titleMedium,
+                                            .titleMedium
+                                            ?.copyWith(
+                                              fontFamily: 'Source Serif 4',
+                                            ),
                                       ),
                                       Text(
                                         playback.book!.author,

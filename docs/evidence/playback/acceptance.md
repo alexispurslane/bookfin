@@ -84,3 +84,12 @@ Physical-phone output, Bluetooth/headset routing, a credential-locked screen, An
 Changed-source recovery is a real unresolved product choice in `t8-ld5q`. The current safe guard retains the old record and refuses to apply it to replacement media. The parent must choose confirmed fresh start with retention, or reconciliation before listening. The current implementation does not claim that the blocked replacement has a recovery UI.
 
 The parent owns acceptance, coverage, mutation testing, review, integration, and ticket closure.
+
+
+## Parent review corrections
+
+R1: owner-requested native pause uses the decoder stop operation to revoke pending interruption recovery even when already paused, retaining source selection. The focused adapter regression models the pinned dependency behavior; corrected Android interruption behavior has not yet been re-observed.
+
+R2: saves require successful account restoration; account changes clear that readiness before any new save, failed reads do not authorize writes, and flush waits for restoration with a generation check. R3: failed and retired reporting sessions invalidate queued progress; intentional final stops remain distinct, and old failures do not cancel a newer session. R4/R5: relative jumps compute their target inside the serialized command and use source-relative movement when total duration is unavailable. The mini-player book title now uses Source Serif 4.
+
+Eight regression tests meaningfully failed before these corrections. A further account-switch test checks old queued progress is discarded while final stop and new start retain their proper credentials. All 189 application tests pass and the Android debug build passes through the pinned shell. No corrected-build Android UI, physical phone, real Jellyfin playback, timer soak, coverage or mutation proof is claimed. Independent correction review remains pending.

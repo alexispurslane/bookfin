@@ -42,10 +42,10 @@ Future<Playback?> createPlayback(Downloads downloads) async {
 }
 
 class LocalAudioEngine implements AudioEngine {
-  final _player = AudioPlayer();
+  final AudioPlayer _player;
   final _events = StreamController<AudioSample>.broadcast(sync: true);
   final _subscriptions = <StreamSubscription<dynamic>>[];
-  LocalAudioEngine() {
+  LocalAudioEngine({AudioPlayer? player}) : _player = player ?? AudioPlayer() {
     _subscriptions.add(_player.playerStateStream.listen((_) => _publish()));
     _subscriptions.add(_player.currentIndexStream.listen((_) => _publish()));
     _subscriptions.add(_player.positionStream.listen((_) => _publish()));
@@ -85,7 +85,9 @@ class LocalAudioEngine implements AudioEngine {
   }
 
   @override
-  Future<void> pause() => _player.pause();
+  // just_audio.pause returns early during an interruption. stop also clears
+  // pending interruption recovery while retaining the selected sources.
+  Future<void> pause() => _player.stop();
   @override
   Future<void> seek(int fileIndex, int milliseconds) async {
     await _player.seek(Duration(milliseconds: milliseconds), index: fileIndex);

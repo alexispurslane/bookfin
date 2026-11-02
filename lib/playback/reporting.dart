@@ -105,12 +105,21 @@ class LiveReports {
     };
     live.lastReportedMs = live.milliseconds;
     _pending = _pending.then((_) async {
-      if (_closed || generation != _generation || !_allowed) return;
+      if (_closed || generation != _generation || !_allowed || live.failed) {
+        return;
+      }
+      if (event == 'stop') {
+        if (!live.started) return;
+      } else if (live.retired) {
+        return;
+      }
+      if (event == 'start') live.started = true;
       try {
         await client.reportPlayback(live.account, event, body);
       } catch (_) {
-        if (generation == _generation) {
-          if (_live?.id == live.id) _live = null;
+        live.failed = true;
+        if (generation == _generation && _live?.id == live.id) {
+          _live = null;
           _retryAfter = DateTime.now().add(const Duration(seconds: 30));
         }
       }
@@ -120,7 +129,10 @@ class LiveReports {
   void stop() {
     final live = _live;
     _live = null;
-    if (live != null && _allowed && !_closed) _send('stop', live);
+    if (live != null) {
+      live.retired = true;
+      if (_allowed && !_closed) _send('stop', live);
+    }
   }
 
   Future<void> get idle => _pending;
@@ -153,4 +165,7 @@ class _LiveSession {
   int lastReportedMs;
   bool playing;
   double speed;
+  bool retired = false;
+  bool failed = false;
+  bool started = false;
 }
