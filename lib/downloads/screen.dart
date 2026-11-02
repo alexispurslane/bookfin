@@ -31,6 +31,10 @@ class DownloadControls extends StatelessWidget {
             '${state.bytes}${state.totalBytes == null ? '' : ' / ${state.totalBytes}'} bytes · ${state.completeFiles} / ${state.totalFiles} files',
             style: Theme.of(context).textTheme.bodySmall,
           ),
+        if (state.unavailableBytes > 0)
+          Text(
+            '${state.unavailableBytes} saved bytes unavailable for playback',
+          ),
         if (state.phase == DownloadPhase.downloading)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
@@ -66,6 +70,7 @@ class DownloadControls extends StatelessWidget {
                   child: const Text('Cancel'),
                 ),
               if (state.bytes > 0 ||
+                  state.unavailableBytes > 0 ||
                   state.completeFiles > 0 ||
                   state.phase == DownloadPhase.failed)
                 TextButton(
@@ -137,7 +142,8 @@ class DownloadsPage extends StatelessWidget {
         for (final edition in book.editions)
           if ((owner?.status(edition).phase ?? DownloadPhase.none) !=
                   DownloadPhase.none ||
-              (owner?.status(edition).bytes ?? 0) > 0)
+              (owner?.status(edition).bytes ?? 0) > 0 ||
+              (owner?.status(edition).unavailableBytes ?? 0) > 0)
             (book, edition),
     ];
     return ListView(

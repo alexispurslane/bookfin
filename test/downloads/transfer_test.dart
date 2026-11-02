@@ -98,7 +98,7 @@ void main() {
         expect(fixture.requests, isEmpty);
         downloads.checkInvariants();
         if (sourceKind == 'alternate' || sourceKind == 'listed empty') {
-          expect(downloads.status(fixture.text).bytes, 6);
+          expect(downloads.status(fixture.text).unavailableBytes, 6);
           await downloads.remove(fixture.text);
           expect(await saved.exists(), isFalse);
           expect(downloads.status(fixture.text).phase, DownloadPhase.none);
@@ -126,7 +126,7 @@ void main() {
     await downloads.bind(fixture.session(), fixture.books);
     expect(await downloads.localFile(listed), isNull);
     expect(downloads.status(fixture.text).phase, DownloadPhase.failed);
-    expect(downloads.status(fixture.text).bytes, 6);
+    expect(downloads.status(fixture.text).unavailableBytes, 6);
   });
 
   test(

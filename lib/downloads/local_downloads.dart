@@ -224,16 +224,29 @@ class LocalDownloads extends Downloads {
 
   Future<void> _rejectComplete(_Record record) async {
     record.complete = false;
-    if (record.source.isItemOriginal) {
-      record.bytes = await _partialLength(record);
-      return;
+    record.bytes = await _partialLength(record);
+    if (!record.source.isItemOriginal) {
+      record.error =
+          'Saved recording identity cannot be verified. Remove it or retry.';
     }
-    record.error =
-        'Saved recording identity cannot be verified. Remove it or retry.';
-    final saved = record.file('complete');
-    record.bytes = await _regularFile(saved)
-        ? await saved.length()
-        : await _partialLength(record);
+  }
+
+  int _savedCompleteLength(_Record record) {
+    try {
+      if (_session == null ||
+          !_containedDirectory(record.directory, record.accountKey) ||
+          record.accountKey != _session!.scope.key ||
+          FileSystemEntity.typeSync(
+                record.file('complete').path,
+                followLinks: false,
+              ) !=
+              FileSystemEntityType.file) {
+        return 0;
+      }
+      return record.file('complete').lengthSync();
+    } catch (_) {
+      return 0;
+    }
   }
 
   Future<int> _partialLength(_Record record) async =>
@@ -248,6 +261,7 @@ class LocalDownloads extends Downloads {
     }
     var complete = 0;
     var bytes = 0;
+    var unavailableBytes = 0;
     String? error = _storageError;
     var queued = false;
     for (final source in edition.files) {
@@ -255,6 +269,7 @@ class LocalDownloads extends Downloads {
       if (record == null) continue;
       final present = _present(record);
       if (present) complete++;
+      if (!present) unavailableBytes += _savedCompleteLength(record);
       bytes += present
           ? record.length!
           : record.complete
@@ -278,6 +293,7 @@ class LocalDownloads extends Downloads {
       completeFiles: complete,
       totalFiles: edition.files.length,
       bytes: bytes,
+      unavailableBytes: unavailableBytes,
       totalBytes: edition.files.every((source) => source.sizeBytes != null)
           ? edition.files.fold(0, (total, source) => total! + source.sizeBytes!)
           : null,

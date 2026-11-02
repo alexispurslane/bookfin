@@ -91,7 +91,7 @@ void main() {
       );
       await downloads.bind(fixture.session(), fixture.books);
     });
-    await tester.runAsync(
+    Future<void> showDownloads() => tester.runAsync(
       () => tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -104,8 +104,40 @@ void main() {
         ),
       ),
     );
+    await showDownloads();
     await settleStorage(tester);
     expect(find.text('Remove'), findsOneWidget);
+    expect(find.text('6 saved bytes unavailable for playback'), findsOneWidget);
+    await tester.runAsync(() async {
+      await tester.tap(find.text('Retry'));
+      await downloads.idle;
+    });
+    await settleStorage(tester);
+    expect(find.text('Waiting for Wi-Fi'), findsOneWidget);
+    await tester.runAsync(() async {
+      await tester.tap(find.text('Cancel'));
+      await downloads.idle;
+    });
+    await settleStorage(tester);
+    expect(find.text('Remove'), findsOneWidget);
+    expect(find.text('6 saved bytes unavailable for playback'), findsOneWidget);
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.runAsync(() async {
+      downloads.dispose();
+      await downloads.idle;
+      downloads = LocalDownloads(
+        root: root,
+        freeBytes: () async => 1000000,
+        policy: policy,
+      );
+      await downloads.bind(fixture.session(), fixture.books);
+      expect(await saved.exists(), isTrue);
+      expect(await downloads.localFile(fixture.text.files.single), isNull);
+    });
+    await showDownloads();
+    await settleStorage(tester);
+    expect(find.text('Remove'), findsOneWidget);
+    expect(find.text('6 saved bytes unavailable for playback'), findsOneWidget);
     await tester.runAsync(() => tester.tap(find.text('Remove')));
     await tester.pumpAndSettle();
     expect(find.text('Remove download?'), findsOneWidget);

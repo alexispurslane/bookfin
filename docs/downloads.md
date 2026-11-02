@@ -47,7 +47,7 @@ The only media route is `/Items/{id}/Download`. Denial never triggers `/File`, a
 
 Source details are checked again after receipt and hashing, before final publication. Replacing the source during a transfer cannot publish bytes under the former source revision. Earlier real-server ordinary-user and format evidence is recorded in closed boo-2cgp. Unresolved alternate-source support remains on t9-04iu.
 
-Saved files also pass the original-source identity requirement before local availability is exposed. A legacy separately named source is unavailable even with a matching saved hash; its bytes and identity remain stored for explicit removal. Safe originals do not require network access to restore.
+Saved files also pass the original-source identity requirement before local availability is exposed. A legacy separately named source is unavailable even with a matching saved hash; its bytes and identity remain stored for explicit removal. Unavailable saved-file bytes are derived from storage separately from transfer progress, so Retry, Cancel, and restart retain the Downloads row and confirmed Remove control. Safe originals do not require network access to restore.
 
 ## Storage and verification
 
