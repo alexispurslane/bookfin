@@ -478,8 +478,11 @@ class TestEngine implements AudioEngine {
   @override
   Future<void> pause() async => emit(index, milliseconds);
   @override
-  Future<void> seek(int fileIndex, int position) async =>
-      emit(fileIndex, position, playing: isPlaying);
+  Future<AudioSample> seek(int fileIndex, int position) async {
+    emit(fileIndex, position, playing: isPlaying);
+    return AudioSample(index, milliseconds, playing: isPlaying);
+  }
+
   @override
   Future<void> speed(double value) async {
     rate = value;

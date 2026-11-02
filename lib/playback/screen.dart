@@ -1,10 +1,10 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 
 import '../foundation/theme.dart';
 import 'playback.dart';
+import 'records_screen.dart';
 
 class PlaybackMiniPlayer extends StatelessWidget {
   const PlaybackMiniPlayer({super.key, required this.playback});
@@ -111,11 +111,21 @@ class PlayerView extends StatelessWidget {
     builder: (context, _) {
       final book = playback.book;
       if (book == null) {
-        return const Center(
+        return Center(
           child: Padding(
-            padding: EdgeInsets.all(24),
-            child: Text(
-              'Choose a downloaded audio edition to start listening.',
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Choose a downloaded audio edition to start listening.',
+                ),
+                RecordSaveStatus(playback: playback),
+                TextButton(
+                  onPressed: () => openListeningHistory(context, playback),
+                  child: const Text('History'),
+                ),
+              ],
             ),
           ),
         );
@@ -161,33 +171,20 @@ class PlayerView extends StatelessWidget {
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodySmall,
           ),
-          if (playback.message != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 12),
-              child: Text(
-                playback.message!,
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              ),
-            ),
+          RecordSaveStatus(playback: playback),
           const SizedBox(height: 20),
           if (duration != null && duration > 0 && position != null) ...[
-            Slider(
-              semanticFormatterCallback: (value) => _time(value.round()),
-              value: position.toDouble().clamp(0, duration.toDouble()),
-              max: duration.toDouble(),
-              onChanged: (value) =>
-                  unawaited(playback.seekEdition(value.round())),
-            ),
+            _PositionSlider(playback: playback),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(_time(position)),
-                Text('${_time(duration - position)} left'),
+                Text(audioTime(position)),
+                Text('${audioTime(duration - position)} left'),
               ],
             ),
           ] else
             Text(
-              'File position · ${_time(playback.position!.milliseconds)}',
+              'File position · ${audioTime(playback.position!.milliseconds)}',
               textAlign: TextAlign.center,
             ),
           const SizedBox(height: 12),
@@ -214,6 +211,31 @@ class PlayerView extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 20),
+          if (playback.undoAction != null) ...[
+            BookfinPanel(
+              child: Wrap(
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: 12,
+                children: [
+                  Text(
+                    playback.unsavedChanges
+                        ? 'Position changed. The previous place is not saved yet.'
+                        : 'Position changed. Your previous place is saved.',
+                  ),
+                  TextButton(
+                    onPressed: () => unawaited(playback.undoSeek()),
+                    child: const Text('Undo'),
+                  ),
+                  IconButton(
+                    tooltip: 'Dismiss Undo',
+                    onPressed: playback.dismissUndo,
+                    icon: const Icon(Icons.close),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+          ],
           Wrap(
             alignment: WrapAlignment.center,
             spacing: 10,
@@ -222,6 +244,14 @@ class PlayerView extends StatelessWidget {
               OutlinedButton(
                 onPressed: () => _chapters(context),
                 child: const Text('Chapters'),
+              ),
+              OutlinedButton(
+                onPressed: () => editAudioBookmark(context, playback),
+                child: const Text('Bookmark'),
+              ),
+              OutlinedButton(
+                onPressed: () => openListeningHistory(context, playback),
+                child: const Text('History'),
               ),
               OutlinedButton(
                 onPressed: () => _speed(context),
@@ -261,7 +291,7 @@ class PlayerView extends StatelessWidget {
           for (final chapter in playback.chapters)
             ListTile(
               title: Text(chapter.name),
-              subtitle: Text(_time(chapter.milliseconds)),
+              subtitle: Text(audioTime(chapter.milliseconds)),
               selected:
                   playback.position?.sourceKey == chapter.sourceKey &&
                   playback.position!.milliseconds >= chapter.milliseconds &&
@@ -445,10 +475,30 @@ class _PlayButton extends StatelessWidget {
   }
 }
 
-String _time(int milliseconds) {
-  final seconds = max(0, milliseconds) ~/ 1000;
-  final minutes = seconds ~/ 60;
-  return '${minutes ~/ 60 > 0 ? '${minutes ~/ 60}:' : ''}${(minutes % 60).toString().padLeft(2, '0')}:${(seconds % 60).toString().padLeft(2, '0')}';
+class _PositionSlider extends StatefulWidget {
+  const _PositionSlider({required this.playback});
+  final Playback playback;
+  @override
+  State<_PositionSlider> createState() => _PositionSliderState();
+}
+
+class _PositionSliderState extends State<_PositionSlider> {
+  double? _target;
+  @override
+  Widget build(BuildContext context) => Slider(
+    semanticFormatterCallback: (value) => audioTime(value.round()),
+    value: (_target ?? widget.playback.editionMilliseconds!.toDouble()).clamp(
+      0,
+      widget.playback.durationMilliseconds!.toDouble(),
+    ),
+    max: widget.playback.durationMilliseconds!.toDouble(),
+    onChangeStart: (_) => unawaited(widget.playback.beginSliderSeek()),
+    onChanged: (value) => setState(() => _target = value),
+    onChangeEnd: (value) async {
+      await widget.playback.finishSliderSeek(value.round());
+      if (mounted) setState(() => _target = null);
+    },
+  );
 }
 
 String _rate(double value) =>

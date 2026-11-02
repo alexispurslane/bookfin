@@ -7,6 +7,9 @@ import '../catalog/jellyfin.dart';
 import '../catalog/model.dart';
 import '../downloads/downloads.dart';
 import 'reporting.dart';
+import 'records.dart';
+
+export 'records.dart';
 
 class AudioSample {
   const AudioSample(
@@ -26,7 +29,7 @@ abstract class AudioEngine {
   Future<void> load(List<Uri> files, int fileIndex, int milliseconds);
   Future<void> play();
   Future<void> pause();
-  Future<void> seek(int fileIndex, int milliseconds);
+  Future<AudioSample> seek(int fileIndex, int milliseconds);
   Future<void> speed(double value);
   Future<void> close();
 }
@@ -77,6 +80,186 @@ class Playback extends ChangeNotifier {
   Future<void> _operations = Future.value();
   Future<void> _writes = Future.value();
   Future<void> _binding = Future.value();
+  List<ListeningEvent> _history = [];
+  List<AudioBookmark> _bookmarks = [];
+  ListeningEvent? _undo;
+  AudioPosition? _sliderStart;
+  bool _seeking = false;
+  ListeningAction? _commandAction;
+  final _pendingWrites = <String, Map<String, dynamic>>{};
+  final _failedAccounts = <String>{};
+
+  List<ListeningEvent> get history => List.unmodifiable(_history.reversed);
+  List<AudioBookmark> get bookmarks => List.unmodifiable(_bookmarks.reversed);
+  ListeningEvent? get undoAction => _undo;
+  bool get unsavedChanges => _pendingWrites.containsKey(_session?.scope.key);
+  bool get saveFailed => _failedAccounts.contains(_session?.scope.key);
+
+  String sourceName(AudioPosition position) =>
+      _books
+          .expand((book) => book.editions)
+          .where((edition) => edition.id == position.editionId)
+          .expand((edition) => edition.files)
+          .where((file) => file.key == position.sourceKey)
+          .firstOrNull
+          ?.displayName ??
+      'Source ${position.sourceKey}';
+
+  void dismissUndo() {
+    _undo = null;
+    _notify();
+  }
+
+  Future<void> beginSliderSeek() => _enqueue(() async {
+    _sliderStart = _position;
+  });
+
+  Future<void> finishSliderSeek(int milliseconds) => _enqueue(() async {
+    final start = _sliderStart;
+    _sliderStart = null;
+    if (start != null && _edition != null && start.fits(_edition!)) {
+      await _seekEdition(milliseconds, before: start);
+    }
+  });
+
+  Future<void> undoSeek() => _enqueue(() async {
+    final event = _undo;
+    if (event == null) return;
+    if (await _restorePosition(event.before, ListeningAction.undo)) {
+      _undo = null;
+    }
+    _notify();
+  });
+
+  Future<void> restoreHistory(String id, {bool previous = true}) =>
+      _enqueue(() async {
+        final event = _history.where((event) => event.id == id).firstOrNull;
+        if (event == null) {
+          throw ArgumentError('Choose history from the current account.');
+        }
+        await _restorePosition(
+          previous ? event.before : event.after,
+          ListeningAction.historyRestore,
+        );
+      });
+
+  Future<void> addBookmark({
+    AudioPosition? position,
+    String? title,
+    String? note,
+  }) => _enqueue(() async {
+    if (!_restored || _position == null) return;
+    final target = position ?? _position!;
+    if (!target.fits(_edition!)) {
+      throw ArgumentError('Choose a bookmark position in this audio edition.');
+    }
+    _bookmarks.add(
+      AudioBookmark(
+        id: recordId(),
+        position: target,
+        createdAt: DateTime.now().toUtc(),
+        bookTitle: _book!.title,
+        editionLabel: _edition!.label,
+        title: _optionalText(title),
+        note: _optionalText(note),
+      ),
+    );
+    await _saveRecords();
+  });
+
+  Future<void> editBookmark(String id, {String? title, String? note}) =>
+      _enqueue(() async {
+        if (!_restored) return;
+        final index = _bookmarks.indexWhere((bookmark) => bookmark.id == id);
+        if (index < 0) {
+          throw ArgumentError('Choose a bookmark from the current account.');
+        }
+        final bookmark = _bookmarks[index];
+        _bookmarks[index] = AudioBookmark(
+          id: bookmark.id,
+          position: bookmark.position,
+          createdAt: bookmark.createdAt,
+          bookTitle: bookmark.bookTitle,
+          editionLabel: bookmark.editionLabel,
+          title: _optionalText(title),
+          note: _optionalText(note),
+        );
+        await _saveRecords();
+      });
+
+  Future<void> deleteBookmark(String id) => _enqueue(() async {
+    if (!_restored) return;
+    _bookmarks.removeWhere((bookmark) => bookmark.id == id);
+    await _saveRecords();
+  });
+
+  Future<void> restoreBookmark(String id) => _enqueue(() async {
+    final bookmark = _bookmarks
+        .where((bookmark) => bookmark.id == id)
+        .firstOrNull;
+    if (bookmark == null) {
+      throw ArgumentError('Choose a bookmark from the current account.');
+    }
+    await _restorePosition(bookmark.position, ListeningAction.bookmarkRestore);
+  });
+
+  String? _optionalText(String? value) =>
+      value == null || value.trim().isEmpty ? null : value.trim();
+
+  Future<void> _saveRecords() async {
+    _save();
+    await _writes;
+    _notify();
+  }
+
+  Future<bool> _restorePosition(
+    AudioPosition target,
+    ListeningAction kind,
+  ) async {
+    if (!_restored) return false;
+    final book = _books
+        .where(
+          (book) =>
+              book.editions.any((edition) => edition.id == target.editionId),
+        )
+        .firstOrNull;
+    final edition = book?.editions
+        .where((edition) => edition.id == target.editionId)
+        .firstOrNull;
+    if (edition == null || !target.fits(edition)) {
+      _message = 'The saved audio source changed or is unavailable. Its personal records were kept but were not applied.';
+      _notify();
+      return false;
+    }
+    final generation = _generation;
+    for (final file in edition.files) {
+      final local = await downloads.localFile(file);
+      if (generation != _generation) return false;
+      if (local == null || local.scheme != 'file') {
+        _message = 'Download every file in this audio edition before restoring a position.';
+        _notify();
+        return false;
+      }
+    }
+    final before = _position;
+    final wasPlaying = _playing;
+    if (_edition?.id != edition.id) {
+      await _open(book!, edition, autoplay: false);
+      if (generation != _generation || _edition?.id != edition.id) return false;
+    }
+    await _seekPosition(
+      edition.files.indexWhere((file) => file.key == target.sourceKey),
+      target.milliseconds,
+      kind,
+      before: before,
+    );
+    if (generation != _generation) return false;
+    if (wasPlaying && !_active) {
+      _active = true;
+      await engine.play();
+    }
+    return true;
+  }
 
   Book? get book => _book;
   Edition? get edition => _edition;
@@ -130,7 +313,9 @@ class Playback extends ChangeNotifier {
           await binding;
           if (!_closed && generation == _generation) await action();
         })
-        .onError<Exception>((error, stack) => _audioFailed());
+        .onError<Exception>((error, stack) async {
+          if (!_closed && generation == _generation) await _audioFailed();
+        });
     _operations = operation.onError<ArgumentError>((error, stack) {});
     return operation;
   }
@@ -191,6 +376,10 @@ class Playback extends ChangeNotifier {
     _playing = false;
     _active = false;
     _resumes = {};
+    _history = [];
+    _bookmarks = [];
+    _undo = null;
+    _sliderStart = null;
     _selected = null;
     _speed = 1;
     _backward = 10;
@@ -209,12 +398,38 @@ class Playback extends ChangeNotifier {
       await _writes;
       if (session == null || generation != _generation) return;
       try {
-        final saved = await store.read(session.scope.key);
+        final saved =
+            _pendingWrites[session.scope.key] ??
+            await store.read(session.scope.key);
         if (generation != _generation) return;
-        if (saved != null && saved['version'] != 1) {
+        if (saved != null && saved['version'] != 1 && saved['version'] != 2) {
           throw const FormatException('Unsupported listening record');
         }
         if (saved != null) {
+          if (saved['version'] == 2) {
+            _history = (saved['history'] as List)
+                .map(
+                  (value) => ListeningEvent.fromJson(
+                    Map<String, dynamic>.from(value as Map),
+                  ),
+                )
+                .toList();
+            _bookmarks = (saved['bookmarks'] as List)
+                .map(
+                  (value) => AudioBookmark.fromJson(
+                    Map<String, dynamic>.from(value as Map),
+                  ),
+                )
+                .toList();
+            if (_history.map((event) => event.id).toSet().length !=
+                    _history.length ||
+                _bookmarks.map((bookmark) => bookmark.id).toSet().length !=
+                    _bookmarks.length) {
+              throw const FormatException(
+                'Duplicate personal record identifiers',
+              );
+            }
+          }
           _resumes = Map<String, dynamic>.from(saved['resumes'] as Map? ?? {});
           _selected = saved['selected'] as String?;
           final speed = (saved['speed'] as num?)?.toDouble() ?? 1;
@@ -242,8 +457,16 @@ class Playback extends ChangeNotifier {
           }
         }
       } on Exception {
+        if (!_restored) {
+          _history = [];
+          _bookmarks = [];
+        }
         _message = 'Cannot restore listening position. Saved listening data was not removed.';
       } on TypeError {
+        if (!_restored) {
+          _history = [];
+          _bookmarks = [];
+        }
         _message = 'Cannot restore listening position. Saved listening data was not removed.';
       }
       _notify();
@@ -285,6 +508,11 @@ class Playback extends ChangeNotifier {
         edition.files.isEmpty) {
       throw ArgumentError('Choose an audio edition from the current account.');
     }
+    if (!_restored) {
+      _message = 'Cannot restore listening records. Restart Bookfin before listening. Saved listening data was not removed.';
+      _notify();
+      return;
+    }
     final generation = _generation;
     final files = <Uri>[];
     for (final file in edition.files) {
@@ -319,6 +547,8 @@ class Playback extends ChangeNotifier {
         return;
       }
       _book = book;
+      _sliderStart = null;
+      _undo = null;
       _edition = edition;
       _selected = edition.id;
       _playing = false;
@@ -342,24 +572,29 @@ class Playback extends ChangeNotifier {
   void _accept(AudioSample sample) {
     if (_closed ||
         _loading ||
+        _seeking ||
         _edition == null ||
         sample.fileIndex < 0 ||
         sample.fileIndex >= _edition!.files.length) {
       return;
     }
     final file = _edition!.files[sample.fileIndex];
-    final milliseconds = file.durationMs == null
-        ? max(0, sample.milliseconds)
-        : sample.milliseconds.clamp(0, file.durationMs!);
     final previous = _position;
     final wasPlaying = _playing;
-    _position = AudioPosition(
-      editionId: _edition!.id,
-      sourceKey: file.key,
-      revision: file.revision,
-      milliseconds: milliseconds,
-    );
+    _position = _positionForSample(sample);
+    final milliseconds = _position!.milliseconds;
     _playing = _active && sample.playing && !sample.completed;
+    if (wasPlaying != _playing) {
+      _record(
+        sample.completed
+            ? ListeningAction.completion
+            : _playing
+            ? ListeningAction.resume
+            : _commandAction ?? ListeningAction.interruption,
+        previous!,
+        _position!,
+      );
+    }
     reports?.observe(
       _session!,
       file,
@@ -381,6 +616,18 @@ class Playback extends ChangeNotifier {
     _notify();
   }
 
+  AudioPosition _positionForSample(AudioSample sample) {
+    final file = _edition!.files[sample.fileIndex];
+    return AudioPosition(
+      editionId: _edition!.id,
+      sourceKey: file.key,
+      revision: file.revision,
+      milliseconds: file.durationMs == null
+          ? max(0, sample.milliseconds)
+          : sample.milliseconds.clamp(0, file.durationMs!),
+    );
+  }
+
   Future<void> play() => _enqueue(() async {
     if (_edition == null) return;
     final generation = _generation;
@@ -396,14 +643,20 @@ class Playback extends ChangeNotifier {
     }
     if (durationMilliseconds != null &&
         editionMilliseconds == durationMilliseconds) {
-      await engine.seek(0, 0);
+      await _seekPosition(0, 0, ListeningAction.seek);
     }
     _active = true;
     await engine.play();
   });
 
   Future<void> pause() => _enqueue(() async {
-    await engine.pause();
+    _commandAction = ListeningAction.pause;
+    try {
+      await engine.pause();
+      if (_playing) _record(ListeningAction.pause, _position!, _position!);
+    } finally {
+      _commandAction = null;
+    }
     _playing = false;
     _save();
     await _writes;
@@ -411,7 +664,13 @@ class Playback extends ChangeNotifier {
   });
 
   Future<void> stop() => _enqueue(() async {
-    await engine.pause();
+    _commandAction = ListeningAction.stop;
+    try {
+      await engine.pause();
+      if (_playing) _record(ListeningAction.stop, _position!, _position!);
+    } finally {
+      _commandAction = null;
+    }
     _playing = false;
     _active = false;
     _cancelSleep();
@@ -424,7 +683,11 @@ class Playback extends ChangeNotifier {
   Future<void> seekEdition(int milliseconds) =>
       _enqueue(() => _seekEdition(milliseconds));
 
-  Future<void> _seekEdition(int milliseconds) async {
+  Future<void> _seekEdition(
+    int milliseconds, {
+    ListeningAction kind = ListeningAction.seek,
+    AudioPosition? before,
+  }) async {
     if (_edition == null) return;
     final duration = durationMilliseconds;
     if (duration == null) {
@@ -437,8 +700,7 @@ class Playback extends ChangeNotifier {
     for (var index = 0; index < _edition!.files.length; index++) {
       final length = _edition!.files[index].durationMs!;
       if (remaining < length || index == _edition!.files.length - 1) {
-        await engine.seek(index, remaining);
-        _save();
+        await _seekPosition(index, remaining, kind, before: before);
         return;
       }
       remaining -= length;
@@ -448,32 +710,90 @@ class Playback extends ChangeNotifier {
   Future<void> seekSource(String sourceKey, int milliseconds) =>
       _enqueue(() => _seekSource(sourceKey, milliseconds));
 
-  Future<void> _seekSource(String sourceKey, int milliseconds) async {
+  Future<void> _seekSource(
+    String sourceKey,
+    int milliseconds, {
+    ListeningAction kind = ListeningAction.chapter,
+  }) async {
     if (_edition == null) return;
     final index = _edition!.files.indexWhere((file) => file.key == sourceKey);
     if (index < 0 || milliseconds < 0) {
       throw ArgumentError('Choose a chapter in this edition.');
     }
     final duration = _edition!.files[index].durationMs;
-    await engine.seek(
+    await _seekPosition(
       index,
       duration == null ? milliseconds : milliseconds.clamp(0, duration),
+      kind,
     );
-    _save();
   }
 
   Future<void> jump({required bool forward}) => _enqueue(() async {
     final current = editionMilliseconds;
     final amount = (forward ? _forward : -_backward) * 1000;
     if (current != null && durationMilliseconds != null) {
-      await _seekEdition(current + amount);
+      await _seekEdition(current + amount, kind: ListeningAction.jump);
     } else if (_position != null) {
       await _seekSource(
         _position!.sourceKey,
         max(0, _position!.milliseconds + amount),
+        kind: ListeningAction.jump,
       );
     }
   });
+
+  void _record(
+    ListeningAction kind,
+    AudioPosition before,
+    AudioPosition after,
+  ) {
+    assert(
+      _restored && _book != null && _edition != null && after.fits(_edition!),
+    );
+    final event = ListeningEvent(
+      id: recordId(),
+      at: DateTime.now().toUtc(),
+      kind: kind,
+      before: before,
+      after: after,
+      bookTitle: _book!.title,
+      editionLabel: _edition!.label,
+    );
+    _history.add(event);
+    if (event.changesPosition) _undo = event;
+  }
+
+  Future<void> _seekPosition(
+    int index,
+    int milliseconds,
+    ListeningAction kind, {
+    AudioPosition? before,
+  }) async {
+    final generation = _generation;
+    final previous = before ?? _position!;
+    assert(_edition != null && index >= 0 && index < _edition!.files.length);
+    _sliderStart = null;
+    _seeking = true;
+    late final AudioSample confirmed;
+    try {
+      confirmed = await engine.seek(index, milliseconds);
+    } finally {
+      _seeking = false;
+    }
+    if (generation != _generation) return;
+    if (confirmed.fileIndex < 0 ||
+        confirmed.fileIndex >= _edition!.files.length) {
+      throw const FormatException(
+        'The decoder did not confirm an edition source.',
+      );
+    }
+    _position = _positionForSample(confirmed);
+    _record(kind, previous, _position!);
+    _accept(confirmed);
+    _save();
+    await _writes;
+    _notify();
+  }
 
   Future<void> setSpeed(double value) => _enqueue(() async {
     if (!value.isFinite || value < 0.5 || value > 3) {
@@ -532,19 +852,34 @@ class Playback extends ChangeNotifier {
       };
     }
     final value = <String, dynamic>{
-      'version': 1,
+      'version': 2,
+      'history': _history.map((event) => event.toJson()).toList(),
+      'bookmarks': _bookmarks.map((bookmark) => bookmark.toJson()).toList(),
       'selected': _selected,
       'resumes': Map<String, dynamic>.from(_resumes),
       'speed': _speed,
       'backward': _backward,
       'forward': _forward,
     };
+    _pendingWrites[accountKey] = value;
     _writes = _writes.then((_) async {
       try {
         await store.write(accountKey, value);
+        if (identical(_pendingWrites[accountKey], value)) {
+          _pendingWrites.remove(accountKey);
+          _failedAccounts.remove(accountKey);
+          if (_session?.scope.key == accountKey) {
+            if (_message ==
+                'Personal records could not be saved. Free storage and try again.') {
+              _message = null;
+            }
+            _notify();
+          }
+        }
       } catch (_) {
+        _failedAccounts.add(accountKey);
         if (_session?.scope.key == accountKey) {
-          _message = 'Listening position could not be saved. Free storage and try again.';
+          _message = 'Personal records could not be saved. Free storage and try again.';
           _notify();
         }
       }
@@ -583,10 +918,22 @@ class Playback extends ChangeNotifier {
         (_edition == null) != (_book == null) ||
         _playing && _position == null ||
         _position != null &&
-            (!_edition!.files.any((file) => file.key == _position!.sourceKey) ||
-                _session == null)) {
+            (!_position!.fits(_edition!) || _session == null)) {
       throw StateError(
         'Playback selection, source position, and account must agree.',
+      );
+    }
+    if (_history.map((event) => event.id).toSet().length != _history.length ||
+        _bookmarks.map((bookmark) => bookmark.id).toSet().length !=
+            _bookmarks.length ||
+        _undo != null && !_history.contains(_undo) ||
+        _sliderStart != null &&
+            (_edition == null || !_sliderStart!.fits(_edition!)) ||
+        _failedAccounts.any(
+          (account) => !_pendingWrites.containsKey(account),
+        )) {
+      throw StateError(
+        'Personal records, pending writes, and recovery selection must agree.',
       );
     }
   }

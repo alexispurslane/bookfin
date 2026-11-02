@@ -129,7 +129,7 @@ class LocalAudioEngine implements AudioEngine {
   }
 
   @override
-  Future<void> seek(int fileIndex, int milliseconds) async {
+  Future<AudioSample> seek(int fileIndex, int milliseconds) async {
     _changingPosition = true;
     try {
       await _player.seek(
@@ -139,7 +139,12 @@ class LocalAudioEngine implements AudioEngine {
     } finally {
       _changingPosition = false;
     }
-    _publish(settledSeek: true);
+    final confirmed = _confirmPosition(settledSeek: true);
+    if (confirmed == null) {
+      throw Exception('The decoder did not confirm the seek.');
+    }
+    if (!_events.isClosed) _events.add(confirmed);
+    return confirmed;
   }
 
   @override

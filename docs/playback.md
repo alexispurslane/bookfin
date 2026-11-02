@@ -1,20 +1,23 @@
 # Downloaded audio playback
 
 Ticket: boo-sthf. Base: `c13748198f0b7f73ad0ba1ec2b7ac84fbe989627`.
+Personal records: boo-6h8w. Base: `e8fe9c7`.
 
 Android now plays a downloaded audio edition through its ordered local files. The production library opens the player from an edition's Listen action. A mini-player remains available in the library, Downloads, and book details. Listening is the existing third navigation destination, not a second navigation system. The full player uses the shared cream/sepia theme and bundled fonts. Its sheets use the application's reduced-motion-aware route transitions.
 
-This ticket does not stream audio, acquire remote files during playback, implement an ebook reader, or implement history, bookmarks, Undo, conflict resolution, or full personal-record sync.
+Playback does not stream audio, acquire remote files, implement an ebook reader, resolve sync conflicts, or provide full personal-record sync.
 
 ## Ownership and boundaries
 
 | Module | Responsibility |
 | --- | --- |
-| `lib/playback/playback.dart` | Own the selected account, book, edition, source-relative position, playback state, speed, short jumps, and sleep timer. Serialize commands and durable writes. |
+| `lib/playback/playback.dart` | Own the selected account, book, edition, source-relative position, playback state, speed, short jumps, sleep timer, history, and bookmarks. Serialize commands and durable writes. |
 | `lib/playback/native.dart` | Decode local files with `just_audio`. Route Android media-session commands through the same playback owner. Configure the speech audio-focus policy with `audio_session`. |
-| `lib/playback/store.dart` | Store versioned, account-scoped resume records with `shared_preferences`. |
+| `lib/playback/store.dart` | Store versioned, account-scoped personal records with `shared_preferences`. |
+| `lib/playback/records.dart` | Define immutable listening actions, bookmarks, and their stored representation. |
 | `lib/playback/reporting.dart` | Send current live-session start, progress, and stop requests through `JellyfinClient`. Never persist a queue of old live events. |
 | `lib/playback/screen.dart` | Display the owner's state and send user commands. It stores no separate listening position. |
+| `lib/playback/records_screen.dart` | Display account history, restore controls, bookmark editing, and save failures. Use the existing navigator and shared theme. |
 | Existing Downloads | Authorize and verify application-private local files. Playback calls `Downloads.localFile(SourceFile)` for every required source. |
 
 The decoder accepts only verified `file:` locations. A missing part prevents the recording from opening. Playback never calls the download request operation and never constructs a remote media URL. It checks local availability again before an explicit Play action. A file that disappears or cannot decode stops playback, retains the last position, and produces an error message.
@@ -31,11 +34,29 @@ A restored position must pass `AudioPosition.fits` before use. Changed or empty 
 
 ## Durable local resume
 
-The storage namespace is `bookfin.playback.v1.<AccountScope.key>`. Its version-1 record contains the selected edition, a map of edition resumes, speed, and both short-jump lengths. An edition resume retains source key, revision, milliseconds, and `pendingOffline`.
+The storage namespace remains `bookfin.playback.v1.<AccountScope.key>`. The payload now uses version 2. Version-1 resumes migrate in place after a successful read. The selected edition, edition resumes, speed, and short-jump lengths retain their meanings. An edition resume retains source key, revision, milliseconds, and `pendingOffline`. Version 2 adds history and bookmarks.
 
 The owner serializes saves about once per recorded second, and at commands, account changes, and application lifecycle transitions. A process kill can lose the interval since the last completed disk write. Ordinary pause, explicit flush, and account transitions wait for relevant writes. On restart, the recording is restored paused after Downloads verifies the files. Account changes immediately hide the old selection and invalidate work still verifying its sources. A command arriving during restoration waits for restoration rather than overwriting the saved position with zero.
 
 `pendingOfflineResume` says that the selected edition has retained local activity from a disconnected or unknown network. It is not a proof that other activity reached Jellyfin. Live reporting does not clear this flag or reconcile the record with another device. A successful standard playback report does not establish full personal-record sync. Intentional rewinds remain valid positions; no greatest-position rule exists here.
+
+## History, Undo, and bookmarks
+
+The playback owner records accepted position changes through one transition operation. Slider release, short jumps, chapters, native controls, Undo, and restores use it. `AudioEngine.seek` returns the decoder's confirmed source and time. History retains that result, rather than assuming that the requested time was accepted. The native adapter still rejects loading placeholders and accepts confirmed zero positions.
+
+Each action retains a stable random identifier, UTC timestamp, action kind, previous position, resulting position, book title, and recording label. Both positions include edition ID, source key, source revision, and recorded milliseconds within that source. Restores between editions retain both edition IDs. Pauses, resumes, interruptions, stops, and completion use the same action representation. Decoder time updates save resumes but do not create visible history rows.
+
+A slider drag retains its starting position in the playback owner. The slider displays a proposed target during dragging without moving the decoder. Release submits one completed seek. Another position command, account change, or recording selection invalidates an unfinished drag. The slider's proposed target is not another listening position.
+
+Undo restores the previous position of the latest accepted position action. Dismissing Undo hides only its immediate control. The original action remains in persistent history. The History control opens account-wide history from the existing Listening destination, even when no recording can open. Each position action offers its previous position and its result separately. A pause or interruption offers its recorded place. Every successful restore appends a new action. No operation erases the action that it reverses.
+
+Bookmarks retain a stable identifier, source-relative position, creation time, recording identity, optional title, and optional note. The bookmark editor retains the position that it showed when opened. Editing title or note does not move the bookmark. Delete requires confirmation. Bookmark restores use the same transition operation as other seeks.
+
+Restores require the current account's record, a matching source revision, a valid source-relative position, and verified local files. Changed or unavailable sources keep their records without applying them. The unresolved recovery choice in `t8-ld5q` remains open. Missing files and decoder failures do not append successful restore actions.
+
+Unreadable or unsupported personal records disable saving for that restoration attempt. A new recording cannot start until an account restoration succeeds. Flush, sign-out, and later commands cannot overwrite those stored records. A failed write leaves the latest complete account snapshot available for retry in the running process. Account changes hide that snapshot from other accounts. Returning to the account restores its pending snapshot before attempting another write. The interface warns that records are not saved and offers Retry saving. Closing the process before a retry succeeds can lose those unsaved changes. No durable success is claimed for a failed write.
+
+History has no silent pruning or expiry. Bookmark deletion is local deletion, not a selected deletion protocol for synchronization. No history transport, merge policy, remote retention rule, or long-offline recovery policy is implemented here.
 
 ## Native controls and interruptions
 
@@ -66,21 +87,24 @@ History and bookmarks should use this existing owner, not create another player 
 | Interface | Meaning |
 | --- | --- |
 | `Playback.book`, `edition`, `position` | Current selected book, explicit recording, and typed source-relative audio position. |
-| `Playback.addListener` | Observe current state after owner changes. It is not a listening-history event stream. |
-| `seekSource(sourceKey, milliseconds)` | Restore a chapter or a typed audio bookmark in the current edition. |
+| `Playback.addListener` | Observe state after owner changes. Use the owner's retained history rather than inferring actions from notifications. |
+| `seekSource(sourceKey, milliseconds)` | Select a chapter in the current edition. |
 | `seekEdition(milliseconds)` | Seek by derived whole-edition recorded time when durations are known. |
+| `beginSliderSeek`, `finishSliderSeek` | Retain the drag's origin and accept one target at release. |
+| `history`, `restoreHistory`, `undoSeek`, `dismissUndo` | Read immutable account history and recover positions without removing prior actions. |
+| `bookmarks`, `addBookmark`, `editBookmark`, `deleteBookmark`, `restoreBookmark` | Manage bookmarks through the same account and command owner. |
+| `unsavedChanges`, `saveFailed` | Distinguish queued or failed writes from durable success. Retry through `flush`. |
 | `play`, `pause`, `stop`, `jump`, `setSpeed`, `setJumps`, `setSleep` | Shared commands for the UI and native controls. |
 | `flush` | Wait for queued commands and persist current state. It also waits for current report work. |
 | `ResumeStore` | Replaceable persistence boundary for durable scoped records, not an agreed server-sync protocol. |
 | `checkInvariants` | On-demand check available in every build. Tests or a debug action can call it. |
 
-The owner invariant checker requires a selected book, edition, and source position to appear together. A selected source must belong to its edition and have an account. Playing requires a selected position. Internal programming errors are not converted into successful playback.
-
-History still needs to define and persist the previous/resulting positions around accepted user commands. This ticket does not invent that ticket's event schema or implement a second position mechanism.
+The owner invariant checker requires a selected book, edition, and source position to appear together. A selected source must belong to its edition and have an account. Playing requires a selected position. History identifiers and bookmark identifiers are unique within their record types. Undo references a retained action. An unfinished slider origin fits the selected edition. Every failed account write retains a pending snapshot. Tests can call `checkInvariants` in every build. Internal transition assertions compile out of release builds. Internal programming errors are not converted into successful playback.
 
 ## Verification
 
 See `docs/evidence/playback/acceptance.md` for commands, meaningful failing tests, Android observations, and explicit limits. Coverage and mutation testing remain with the parent after acceptance. The parent owns review, integration, and ticket closure.
+See `docs/evidence/playback/personal-records.md` for the history and bookmark implementation's red/green tests, builds, and runtime limits.
 
 The integrated real-server follow-up is `docs/evidence/playback/integrated-android.md`.
 The later bounded final-head repeat is `docs/evidence/playback/final-head-android.md`.
