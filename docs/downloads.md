@@ -68,7 +68,7 @@ Resume requires a saved strong HTTP ETag, a known total length, an existing pref
 
 Free storage is checked before the media request and during writes, keeping a 65,536-byte margin. Storage failures leave an incomplete file and a retryable explanation, never a downloaded edition. A record-write failure is also a download failure. If storage cannot save a cancellation, its error remains visible; durable cancellation cannot be promised until storage works again.
 
-Removal first cancels the edition. It removes only the four owned filenames for its source revisions in the current account. Old revisions must have a matching saved source key and a matching derived directory name. Unrelated files and symbolic links are not followed or deleted. Completed old revisions are otherwise retained, not silently evicted. Files from deselected or removed catalog items remain private and hidden; explicit management of those retained sources is tracked by t9-k4lf.
+Removal first cancels the edition. It removes only the four owned filenames for its source revisions in the current account. Old revisions must have a matching saved source key and a matching derived directory name. Unrelated files and symbolic links are not followed or deleted. Completed old revisions are otherwise retained, not silently evicted. Files from deselected or removed catalog items stay private and disappear from active catalog availability. The Retained storage section provides explicit management under t9-k4lf.
 
 Android backup stays disabled. Uninstalling the app removes its private media. No foreground service, OS download manager, or background scheduling guarantee is claimed. A queued transfer can recover when the app starts again; it does not run while its process is absent.
 
@@ -81,6 +81,24 @@ Audio and ebook availability appear separately in the book list. For multiple ed
 Book details expose download, retry, cancel, and confirmed removal. Downloads is an enabled bottom-navigation destination for a connected account. It shows bytes, required-file counts, whole-edition state, failures, and Wi-Fi/mobile permission. Cancelling retains verified files and a safe prefix. If only some required files are complete, the remaining edition is Partial after cancellation. During a failure, the file count still shows that partial progress.
 
 The browser shares these screens but reports that local downloads are available in the Android app. It never simulates Android storage, downloaded files, playback, or reading.
+
+## Retained storage
+
+Downloads remains available when no library is selected. Its separate Retained storage section lists local source revisions outside the current catalog. This includes deselected libraries, removed Jellyfin items, and superseded source revisions. It does not label these files as downloaded editions or offer playback, retry, or new transfer permission.
+
+`LocalDownloads` remains the only storage owner. An inventory request waits for account restoration, then reads the current account's existing private directory. No new durable index, account-discovery mechanism, or catalog copy exists. Each row reports the combined lengths, in bytes, of regular `complete` and `partial` files. Record files, unrelated filenames, empty directories, and linked files do not contribute to that number. Inventory does not hash media or claim that retained bytes are playable.
+
+Saved records contain source identifiers, not book titles. Identified rows therefore show the saved source key and revision. Changing accounts immediately invalidates pending inventory reads and held removal confirmations. Changing the selected catalog also invalidates held confirmations. A late result from the previous account cannot populate the new account's view.
+
+Removal requires confirmation for one retained source revision. The storage owner serializes removal with existing download commands, waits for restoration, and rechecks account, catalog membership, saved identity, and directory containment. It deletes only regular downloader-owned files in that source revision's directory. Other source revisions, current editions, other accounts, unknown files, and symbolic links remain untouched. Existing edition removal still removes that edition's identified old revisions through the same ownership and deletion checks.
+
+An identified record must contain a nonempty source key and revision whose SHA-256 directory name matches the existing storage format. The record must be a regular file of at most 65,536 bytes. Missing, malformed, oversized, unreadable, or linked identity records cannot authorize retained removal. Recognizable storage directories with unidentifiable media remain visible as Unidentified stored files, without a removal action. The app does not infer ownership from a title, another account, or an arbitrary directory name. Unknown unrelated directories are not a cleanup target.
+
+Catalog changes stop the affected transfer before restoration finishes. Unreachable files are never queued by inventory or automatically evicted. Reselecting a source restores the existing download rules, including verification before local playback and any previously saved transfer intent. Explicit retained removal clears its saved transfer intent with its owned files. A corrupt retained file cannot become playable merely because the library is reselected.
+
+If private storage cannot be read, the section reports the failure and hides the previous rows. Refresh storage retries the inventory. Directory and file checks reject symbolic links and path traversal; they do not claim operating-system descriptor locking against a hostile process changing paths between filesystem calls.
+
+Host verification and the separate Android runtime acceptance gap are recorded in `docs/acceptance/retained-downloads.md`.
 
 ## Player-facing interface
 
@@ -191,3 +209,5 @@ The parent reproduced all four static review findings with five meaningful faili
 Replacement responses now discard the prior prefix before saving the new validator. The regression restarts the download owner and checks the resulting replacement bytes. Cancellation saves disabled requests before waiting for only the affected active transfer to close. All serialized commands wait for account restoration and recheck account generation before execution. Queued work takes display precedence over a file error, preserving Cancel while keeping the error message.
 
 Parent verification: 149 application tests pass, analysis has no issues, and the changed Dart files are formatted through the pinned Nix shell. The five new tests failed before implementation; the existing 144 tests remain green. Logs: /tmp/bookfin-download-fixes-red.log, /tmp/bookfin-download-fixes-suite.log, /tmp/bookfin-download-fixes-analyze.log. These corrections have not yet been inspected on Android; earlier Android observations describe the builder head. Independent correction review and integration remain pending. No coverage or mutation jobs ran.
+
+Pending record writes retain the account that owns the record, even after another account becomes selected. Directory containment uses that immutable account key. Restoration waits for earlier accepted commands to finish their writes before reading saved transfer intent. The invariant checker requires every visible record to belong to the selected account.

@@ -64,6 +64,24 @@ class EditionDownload {
   };
 }
 
+class RetainedDownload {
+  const RetainedDownload({
+    required this.accountKey,
+    required this.binding,
+    required this.id,
+    required this.sourceKey,
+    required this.revision,
+    required this.bytes,
+  });
+  final String accountKey;
+  final Object binding;
+  final String id;
+  final String? sourceKey;
+  final String? revision;
+  final int bytes;
+  bool get removable => sourceKey != null && revision != null;
+}
+
 abstract class Downloads extends ChangeNotifier {
   Downloads(this.policy);
   final MediaPolicy policy;
@@ -73,6 +91,9 @@ abstract class Downloads extends ChangeNotifier {
   Future<void> request(Edition edition);
   Future<void> cancel(Edition edition);
   Future<void> remove(Edition edition);
+  Future<List<RetainedDownload>> retainedStorage() async => const [];
+  Future<void> removeRetained(RetainedDownload download) async =>
+      throw UnsupportedError('Retained storage is unavailable.');
   Future<Uri?> localFile(SourceFile source);
   Future<void> get idle;
   Future<void> refresh() async {}

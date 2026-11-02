@@ -185,6 +185,11 @@ class _CatalogHomeState extends State<CatalogHome> {
                 Expanded(
                   child: _catalog.session == null
                       ? _SignInForm(catalog: _catalog)
+                      : _destination == 1
+                      ? DownloadsPage(
+                          downloads: widget.downloads,
+                          books: _catalog.books,
+                        )
                       : _catalog.cache == null ||
                             _catalog.cache!.selected.isEmpty
                       ? _LibrarySelector(
@@ -193,11 +198,6 @@ class _CatalogHomeState extends State<CatalogHome> {
                         )
                       : _destination == 2 && widget.playback != null
                       ? PlayerView(playback: widget.playback!)
-                      : _destination == 1
-                      ? DownloadsPage(
-                          downloads: widget.downloads,
-                          books: _catalog.books,
-                        )
                       : _library(context),
                 ),
               ],

@@ -38,6 +38,7 @@ class LocalDownloads extends Downloads {
   bool _ready = false;
   bool _disposed = false;
   String? _storageError;
+  Object _retainedBinding = Object();
 
   @override
   bool get supported => true;
@@ -70,6 +71,7 @@ class LocalDownloads extends Downloads {
         _session?.scope.key != session?.scope.key ||
         _session?.token != session?.token;
     _signature = signature;
+    _retainedBinding = Object();
     _ready = false;
     final generation = ++_generation;
     _client?.close(force: true);
@@ -78,12 +80,20 @@ class LocalDownloads extends Downloads {
     _queued.clear();
     _records.clear();
     _storageError = null;
+    final binding = _binding = _restore(generation, session, _commands);
     if (accountChanged) policy.resetSession();
     _emit();
-    return _binding = _restore(generation, session);
+    return binding;
   }
 
-  Future<void> _restore(int generation, JellyfinSession? session) async {
+  Future<void> _restore(
+    int generation,
+    JellyfinSession? session,
+    Future<void> acceptedCommands,
+  ) async {
+    // Capture this barrier at bind entry: later commands wait on this binding.
+    // Earlier accepted commands must finish all of their account-owned writes.
+    await acceptedCommands;
     await _worker;
     await _writes;
     if (_disposed || generation != _generation) return;
@@ -96,7 +106,12 @@ class LocalDownloads extends Downloads {
           if (_disposed || generation != _generation) return;
           final directory = Directory('${account.path}/${entry.key}');
           await _safeDirectory(directory);
-          final record = _Record(entry.key, entry.value, directory);
+          final record = _Record(
+            entry.key,
+            entry.value,
+            directory,
+            session.scope.key,
+          );
           final manifest = record.file('record.json');
           if (await _regularFile(manifest)) {
             try {
@@ -150,13 +165,34 @@ class LocalDownloads extends Downloads {
     }
   }
 
+  Directory _accountDirectory(String accountKey) =>
+      Directory('${root.path}/${_hash(accountKey)}');
+
+  bool _containedDirectory(Directory directory, String accountKey) {
+    final account = _accountDirectory(accountKey);
+    final name = directory.uri.pathSegments
+        .where((part) => part.isNotEmpty)
+        .last;
+    return RegExp(r'^[a-f0-9]{64}$').hasMatch(name) &&
+        directory.path == '${account.path}/$name' &&
+        [root, account, directory].every(
+          (entry) =>
+              FileSystemEntity.typeSync(entry.path, followLinks: false) ==
+              FileSystemEntityType.directory,
+        );
+  }
+
   Future<bool> _regularFile(File file) async =>
+      _session != null &&
+      _containedDirectory(file.parent, _session!.scope.key) &&
       await FileSystemEntity.type(file.path, followLinks: false) ==
-      FileSystemEntityType.file;
+          FileSystemEntityType.file;
 
   bool _present(_Record record) {
     try {
       return record.complete &&
+          _session != null &&
+          _containedDirectory(record.directory, _session!.scope.key) &&
           record.length != null &&
           record.length! > 0 &&
           FileSystemEntity.typeSync(
@@ -311,20 +347,19 @@ class LocalDownloads extends Downloads {
         if (_records[_id(source)] != null) _records[_id(source)]!,
     ];
     await _cancel(edition);
+    void guard() {
+      if (_disposed || generation != _generation) {
+        throw StateError('The active download catalog changed.');
+      }
+    }
+
+    guard();
     try {
       for (final record in records) {
         record.complete = false;
         record.bytes = 0;
         for (final directory in await _savedVersions(record)) {
-          for (final name in [
-            'partial',
-            'complete',
-            'record.json',
-            'record.next',
-          ]) {
-            final file = File('${directory.path}/$name');
-            if (await _regularFile(file)) await file.delete();
-          }
+          await _deleteOwnedFiles(directory, guard);
         }
         record.length = null;
         record.etag = null;
@@ -343,25 +378,142 @@ class LocalDownloads extends Downloads {
       if (entity is! Directory || entity.path == record.directory.path) {
         continue;
       }
-      final manifest = File('${entity.path}/record.json');
-      if (!await _regularFile(manifest) || await manifest.length() > 65536) {
-        continue;
-      }
-      try {
-        final data =
-            jsonDecode(await manifest.readAsString()) as Map<String, dynamic>;
-        final revision = data['revision'];
-        final name = entity.uri.pathSegments
-            .where((part) => part.isNotEmpty)
-            .last;
-        if (data['key'] == record.source.key &&
-            revision is String &&
-            name == _hash(jsonEncode([record.source.key, revision]))) {
-          directories.add(entity);
-        }
-      } catch (_) {}
+      final identity = await _savedIdentity(entity, _session!.scope.key);
+      if (identity?.key == record.source.key) directories.add(entity);
     }
     return directories;
+  }
+
+  Future<({String key, String revision})?> _savedIdentity(
+    Directory directory,
+    String accountKey,
+  ) async {
+    if (!_containedDirectory(directory, accountKey)) return null;
+    final id = directory.uri.pathSegments.where((part) => part.isNotEmpty).last;
+    final manifest = File('${directory.path}/record.json');
+    try {
+      if (await _regularFile(manifest) && await manifest.length() <= 65536) {
+        final data = jsonDecode(await manifest.readAsString());
+        if (data is Map<String, dynamic> &&
+            data['key'] is String &&
+            (data['key'] as String).isNotEmpty &&
+            data['revision'] is String &&
+            (data['revision'] as String).isNotEmpty &&
+            id == _hash(jsonEncode([data['key'], data['revision']]))) {
+          return (
+            key: data['key'] as String,
+            revision: data['revision'] as String,
+          );
+        }
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  Future<RetainedDownload?> _storedDownload(
+    Directory directory,
+    JellyfinSession session,
+    Object binding,
+  ) async {
+    if (!_containedDirectory(directory, session.scope.key)) return null;
+    final id = directory.uri.pathSegments.where((part) => part.isNotEmpty).last;
+    final identity = await _savedIdentity(directory, session.scope.key);
+    var bytes = 0;
+    for (final name in ['complete', 'partial']) {
+      final file = File('${directory.path}/$name');
+      if (await _regularFile(file)) bytes += await file.length();
+    }
+    return RetainedDownload(
+      accountKey: session.scope.key,
+      binding: binding,
+      id: id,
+      sourceKey: identity?.key,
+      revision: identity?.revision,
+      bytes: bytes,
+    );
+  }
+
+  @override
+  Future<List<RetainedDownload>> retainedStorage() async {
+    final generation = _generation;
+    await _binding;
+    final session = _session;
+    if (_disposed || generation != _generation || session == null) {
+      return const [];
+    }
+    final account = _accountDirectory(session.scope.key);
+    if ([root, account].any(
+      (directory) =>
+          FileSystemEntity.typeSync(directory.path, followLinks: false) !=
+          FileSystemEntityType.directory,
+    )) {
+      throw StateError('Cannot read private download storage.');
+    }
+    final retained = <RetainedDownload>[];
+    await for (final entity in account.list(followLinks: false)) {
+      if (_disposed || generation != _generation) return const [];
+      if (entity is! Directory) continue;
+      final saved = await _storedDownload(entity, session, _retainedBinding);
+      if (saved != null && saved.bytes > 0 && !_sources.containsKey(saved.id)) {
+        retained.add(saved);
+      }
+    }
+    if (_disposed || generation != _generation) return const [];
+    retained.sort((first, second) => first.id.compareTo(second.id));
+    return List.unmodifiable(retained);
+  }
+
+  @override
+  Future<void> removeRetained(RetainedDownload download) => _command(() async {
+    final generation = _generation;
+    void guard() {
+      if (_disposed ||
+          generation != _generation ||
+          _session?.scope.key != download.accountKey ||
+          !identical(_retainedBinding, download.binding) ||
+          _sources.containsKey(download.id) ||
+          !download.removable ||
+          !RegExp(r'^[a-f0-9]{64}$').hasMatch(download.id)) {
+        throw StateError(
+          'This retained download no longer belongs to this view.',
+        );
+      }
+    }
+
+    guard();
+    final directory = Directory(
+      '${_accountDirectory(download.accountKey).path}/${download.id}',
+    );
+    final identity = await _savedIdentity(directory, download.accountKey);
+    guard();
+    if (identity == null ||
+        identity.key != download.sourceKey ||
+        identity.revision != download.revision) {
+      throw StateError('The saved download identity cannot be verified.');
+    }
+    try {
+      await _deleteOwnedFiles(directory, guard);
+    } finally {
+      if (generation == _generation) _emit();
+    }
+  });
+
+  Future<void> _deleteOwnedFiles(
+    Directory directory,
+    void Function() guard,
+  ) async {
+    for (final name in ['partial', 'complete', 'record.next', 'record.json']) {
+      guard();
+      if (_session == null ||
+          !_containedDirectory(directory, _session!.scope.key)) {
+        throw StateError('Download storage is no longer a private directory.');
+      }
+      final file = File('${directory.path}/$name');
+      if (await _regularFile(file)) {
+        guard();
+        await file.delete();
+      }
+    }
   }
 
   @override
@@ -371,7 +523,11 @@ class LocalDownloads extends Downloads {
     await _binding;
     if (_disposed || generation != _generation) return null;
     final record = _records[_id(source)];
-    if (record == null || !record.complete) return null;
+    if (!_sources.containsKey(_id(source)) ||
+        record == null ||
+        !record.complete) {
+      return null;
+    }
     final verified = await _verified(record);
     if (_disposed || generation != _generation) return null;
     if (verified && _present(record)) return record.file('complete').uri;
@@ -765,6 +921,9 @@ class LocalDownloads extends Downloads {
       'error': record.error,
     });
     final write = _writes.then((_) async {
+      if (!_containedDirectory(record.directory, record.accountKey)) {
+        throw const _MediaError('Download storage is not a private directory.');
+      }
       for (final name in ['record.next', 'record.json']) {
         final type = await FileSystemEntity.type(
           record.file(name).path,
@@ -828,7 +987,9 @@ class LocalDownloads extends Downloads {
       throw StateError('Signed-out downloads must expose no account records.');
     }
     for (final record in _records.values) {
-      if (!_sources.containsKey(record.id) || _id(record.source) != record.id) {
+      if (record.accountKey != _session?.scope.key ||
+          !_sources.containsKey(record.id) ||
+          _id(record.source) != record.id) {
         throw StateError(
           'Every download must identify a current account source revision.',
         );
@@ -864,10 +1025,11 @@ class LocalDownloads extends Downloads {
 }
 
 class _Record {
-  _Record(this.id, this.source, this.directory);
+  _Record(this.id, this.source, this.directory, this.accountKey);
   final String id;
   final SourceFile source;
   final Directory directory;
+  final String accountKey;
   int bytes = 0;
   int? length;
   String? etag;

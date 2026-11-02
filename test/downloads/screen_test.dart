@@ -6,6 +6,7 @@ import 'package:bookfin/catalog/model.dart';
 import 'package:bookfin/catalog/screen.dart';
 import 'package:bookfin/downloads/downloads.dart';
 import 'package:bookfin/downloads/local_downloads.dart';
+import 'package:bookfin/downloads/screen.dart';
 import 'package:bookfin/foundation/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -136,6 +137,176 @@ void main() {
     expect(find.text('No downloads yet.'), findsOneWidget);
     expect(fixture.mediaRequests, isEmpty);
   });
+
+  Future<void> showRetained(WidgetTester tester) async {
+    await tester.runAsync(() async {
+      final text = catalog.books
+          .expand((book) => book.editions)
+          .firstWhere((edition) => edition.kind == EditionKind.text);
+      await downloads.request(text);
+      await downloads.idle;
+      await downloads.bind(catalog.session, []);
+    });
+    await tester.runAsync(
+      () => tester.pumpWidget(
+        MaterialApp(
+          theme: bookfinTheme(Brightness.light),
+          home: Scaffold(
+            body: ListenableBuilder(
+              listenable: downloads,
+              builder: (context, child) =>
+                  DownloadsPage(downloads: downloads, books: const []),
+            ),
+          ),
+        ),
+      ),
+    );
+    await settleStorage(tester);
+  }
+
+  testWidgets('retained files are separate from active edition availability', (
+    tester,
+  ) async {
+    await showRetained(tester);
+    expect(find.text('No downloads yet.'), findsOneWidget);
+    expect(find.text('Retained storage'), findsOneWidget);
+    expect(find.text('6 bytes'), findsOneWidget);
+    expect(find.text('Downloaded'), findsNothing);
+    expect(find.text('Download'), findsNothing);
+  });
+
+  testWidgets(
+    'retained removal requires confirmation and Keep preserves files',
+    (tester) async {
+      await showRetained(tester);
+      await tester.runAsync(
+        () => tester.tap(
+          find.widgetWithText(TextButton, 'Remove retained files'),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Remove retained files?'), findsOneWidget);
+      await tester.tap(find.widgetWithText(TextButton, 'Keep files'));
+      await tester.pumpAndSettle();
+      expect(await tester.runAsync(downloads.retainedStorage), hasLength(1));
+      await tester.runAsync(
+        () => tester.tap(
+          find.widgetWithText(TextButton, 'Remove retained files'),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.runAsync(() async {
+        await tester.tap(find.widgetWithText(FilledButton, 'Remove files'));
+        await downloads.idle;
+      });
+      await settleStorage(tester);
+      expect(await tester.runAsync(downloads.retainedStorage), isEmpty);
+      expect(find.text('No retained files.'), findsOneWidget);
+    },
+  );
+
+  testWidgets('switching accounts clears the previously displayed inventory', (
+    tester,
+  ) async {
+    await showRetained(tester);
+    expect(find.text('Source text:text'), findsOneWidget);
+    await tester.runAsync(
+      () => downloads.bind(fixture.session(user: 'bob'), []),
+    );
+    await settleStorage(tester);
+    expect(find.text('Source text:text'), findsNothing);
+    expect(find.text('No retained files.'), findsOneWidget);
+  });
+
+  testWidgets('unreadable identities have no removal action', (tester) async {
+    await showRetained(tester);
+    await tester.runAsync(() async {
+      final records = await root
+          .list(recursive: true)
+          .where(
+            (entry) => entry is File && entry.path.endsWith('/record.json'),
+          )
+          .toList();
+      await File(records.single.path).writeAsString('unreadable');
+      await tester.tap(find.text('Refresh storage'));
+    });
+    await settleStorage(tester);
+    expect(find.text('Unidentified stored files'), findsOneWidget);
+    expect(find.text('6 bytes'), findsOneWidget);
+    expect(find.text('Remove retained files'), findsNothing);
+  });
+
+  testWidgets(
+    'unavailable private storage shows an error without exposing old entries',
+    (tester) async {
+      await showRetained(tester);
+      await tester.runAsync(() async {
+        final records = await root
+            .list(recursive: true)
+            .where(
+              (entry) => entry is File && entry.path.endsWith('/record.json'),
+            )
+            .toList();
+        final account = File(records.single.path).parent.parent;
+        await account.rename('${root.path}/preserved-account');
+        await File(account.path).writeAsString('not a directory');
+        await tester.tap(find.text('Refresh storage'));
+      });
+      await tester.pump();
+      final view = tester.widget<FutureBuilder<List<RetainedDownload>>>(
+        find.byType(FutureBuilder<List<RetainedDownload>>),
+      );
+      await tester.runAsync(() => expectLater(view.future, throwsStateError));
+      await tester.pumpAndSettle();
+      expect(find.text('Source text:text'), findsNothing);
+      expect(find.text('Remove retained files'), findsNothing);
+      expect(
+        find.textContaining('Cannot read retained storage.'),
+        findsOneWidget,
+      );
+    },
+  );
+
+  testWidgets(
+    'deselected libraries move files out of the catalog and reselection restores them',
+    (tester) async {
+      final text = catalog.books
+          .expand((book) => book.editions)
+          .firstWhere((edition) => edition.kind == EditionKind.text);
+      await tester.runAsync(() async {
+        await downloads.request(text);
+        await downloads.idle;
+        await show(tester);
+        await catalog.refresh(selected: {});
+        await downloads.idle;
+        await tester.tap(find.text('Downloads'));
+        await tester.pump();
+      });
+      await settleStorage(tester);
+      expect(catalog.books, isEmpty);
+      expect(find.text('Source text:text'), findsOneWidget);
+      await tester.runAsync(() async {
+        await catalog.refresh(selected: {'books'});
+        await downloads.idle;
+      });
+      await settleStorage(tester);
+      expect(find.text('Source text:text'), findsNothing);
+      expect(find.text('No retained files.'), findsOneWidget);
+      expect(downloads.status(text).phase, DownloadPhase.downloaded);
+      expect(fixture.mediaRequests, ['text']);
+    },
+  );
+}
+
+Future<void> settleStorage(WidgetTester tester) async {
+  await tester.pump();
+  final view = tester.widget<FutureBuilder<List<RetainedDownload>>>(
+    find.byType(FutureBuilder<List<RetainedDownload>>),
+  );
+  await tester.runAsync(() async {
+    await view.future;
+  });
+  await tester.pumpAndSettle();
 }
 
 class _CatalogFixture extends JellyfinClient {
@@ -155,8 +326,9 @@ class _CatalogFixture extends JellyfinClient {
     JellyfinSession session,
     Set<String> selected,
   ) async => [
-    for (final id in ['audio1', 'audio2', 'text'])
-      CatalogEntry.fromJson(fixture.dto(id), libraryId: 'books'),
+    if (selected.contains('books'))
+      for (final id in ['audio1', 'audio2', 'text'])
+        CatalogEntry.fromJson(fixture.dto(id), libraryId: 'books'),
   ];
 }
 

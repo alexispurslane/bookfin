@@ -214,9 +214,160 @@ class DownloadsPage extends StatelessWidget {
               ),
             ),
           ),
+        if (owner?.supported == true) _RetainedStorageView(downloads: owner!),
       ],
     );
   }
+}
+
+class _RetainedStorageView extends StatefulWidget {
+  const _RetainedStorageView({required this.downloads});
+  final Downloads downloads;
+
+  @override
+  State<_RetainedStorageView> createState() => _RetainedStorageViewState();
+}
+
+class _RetainedStorageViewState extends State<_RetainedStorageView> {
+  late Future<List<RetainedDownload>> _inventory;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.downloads.addListener(_reload);
+    _inventory = _readStorage();
+  }
+
+  @override
+  void didUpdateWidget(_RetainedStorageView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.downloads != widget.downloads) {
+      oldWidget.downloads.removeListener(_reload);
+      widget.downloads.addListener(_reload);
+      _inventory = _readStorage();
+    }
+  }
+
+  void _reload() {
+    setState(() {
+      _inventory = _readStorage();
+    });
+  }
+
+  Future<List<RetainedDownload>> _readStorage() {
+    final inventory = widget.downloads.retainedStorage();
+    inventory.ignore();
+    return inventory;
+  }
+
+  @override
+  void dispose() {
+    widget.downloads.removeListener(_reload);
+    super.dispose();
+  }
+
+  Future<void> _remove(RetainedDownload download) async {
+    final owner = widget.downloads;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Remove retained files?'),
+        content: Text(
+          'Remove ${download.bytes} bytes stored for source ${download.sourceKey}? '
+          'These files are outside your current catalog. '
+          'Your Jellyfin files will not change.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Keep files'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Remove files'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    try {
+      await owner.removeRetained(download);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'These files could not be removed. Check your account and refresh storage.',
+            ),
+          ),
+        );
+      }
+    }
+    if (mounted) _reload();
+  }
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const SizedBox(height: 16),
+      Text('Retained storage', style: Theme.of(context).textTheme.titleLarge),
+      const Text(
+        'Local files outside this account’s current catalog. '
+        'They do not count as downloaded editions. '
+        'Files stay here until you explicitly remove them.',
+      ),
+      TextButton(onPressed: _reload, child: const Text('Refresh storage')),
+      FutureBuilder<List<RetainedDownload>>(
+        future: _inventory,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState != ConnectionState.done) {
+            return const Text('Reading retained storage…');
+          }
+          if (snapshot.hasError) {
+            return const Text(
+              'Cannot read retained storage. No files were removed. Refresh storage to retry.',
+            );
+          }
+          final entries = snapshot.data ?? const [];
+          if (entries.isEmpty) return const Text('No retained files.');
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              for (final entry in entries)
+                Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: BookfinPanel(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          entry.removable
+                              ? 'Source ${entry.sourceKey}'
+                              : 'Unidentified stored files',
+                        ),
+                        if (entry.removable) Text('Revision ${entry.revision}'),
+                        Text('${entry.bytes} bytes'),
+                        if (entry.removable)
+                          TextButton(
+                            onPressed: () => _remove(entry),
+                            child: const Text('Remove retained files'),
+                          )
+                        else
+                          const Text(
+                            'The saved identity is unreadable or does not match. '
+                            'These files cannot be safely removed here.',
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
+          );
+        },
+      ),
+    ],
+  );
 }
 
 String bookAvailability(Book book, EditionKind kind, Downloads? downloads) {
