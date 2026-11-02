@@ -1,0 +1,16 @@
+Page: dev.bookfin.bookfin
+App: dev.bookfin.bookfin
+Snapshot: 11 nodes
+@e2 [group] "BOOKFIN"
+@e3 [button] "Appearance"
+@e4 [group] "Your library starts here."
+@e5 [text-field] [editable]
+@e6 [text-field] [editable]
+@e7 [text-field] [editable]
+@e8 [button] "Sign in"
+@e9 [button] "Library
+Tab 1 of 3" [selected]
+@e10 [button] "Downloads
+Tab 2 of 3" [disabled]
+@e11 [button] "Listening
+Tab 3 of 3" [disabled]

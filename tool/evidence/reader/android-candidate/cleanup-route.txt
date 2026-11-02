@@ -1,0 +1,2 @@
+Mon Nov  2 17:31:15 UTC 2026
+adb reverse --list: no entries (raw output was one newline)

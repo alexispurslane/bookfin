@@ -1,0 +1,19 @@
+7365
+host-17 tcp:7365 tcp:7365
+
+package: dev.bookfin.bookfin
+uses-permission: name='android.permission.INTERNET'
+uses-permission: name='android.permission.ACCESS_NETWORK_STATE'
+uses-permission: name='android.permission.WAKE_LOCK'
+uses-permission: name='android.permission.FOREGROUND_SERVICE'
+uses-permission: name='android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK'
+permission: dev.bookfin.bookfin.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+uses-permission: name='dev.bookfin.bookfin.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION'
+package: name='dev.bookfin.bookfin' versionCode='1' versionName='0.1.0' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'
+sdkVersion:'24'
+targetSdkVersion:'36'
+uses-permission: name='android.permission.INTERNET'
+uses-permission: name='android.permission.ACCESS_NETWORK_STATE'
+uses-permission: name='android.permission.WAKE_LOCK'
+uses-permission: name='android.permission.FOREGROUND_SERVICE'
+uses-permission: name='android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK'

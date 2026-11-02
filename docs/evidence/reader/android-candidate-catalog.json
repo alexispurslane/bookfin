@@ -1,0 +1,16 @@
+{
+  "jellyfinVersion": "12.4.0",
+  "ordinaryUserIsAdministrator": false,
+  "bookCount": 1,
+  "catalogBook": {
+    "Id": "0c6cebf09cf984feb246dfdc40f17270",
+    "Name": "Synthetic Work",
+    "Type": "Book",
+    "Container": null,
+    "MediaSources": null
+  },
+  "containerFieldPresent": false,
+  "mediaSourcesFieldPresent": false,
+  "syntheticOriginalBytes": 135959,
+  "syntheticOriginalSha256": "6efe84b320af9a0f9997dfc6c54b172bc982e6b06978a2c3d75359161da0ce96"
+}

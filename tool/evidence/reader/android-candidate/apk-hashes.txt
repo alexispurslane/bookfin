@@ -1,0 +1,2 @@
+c1380e6caee8fbdb782a878c920f900463fdd74239a8dff2b8bc58f472ee2ff6  .cache/epub-acceptance/candidate.apk
+c1380e6caee8fbdb782a878c920f900463fdd74239a8dff2b8bc58f472ee2ff6  .cache/epub-acceptance/installed.apk
