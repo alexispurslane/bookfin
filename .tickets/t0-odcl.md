@@ -31,3 +31,7 @@ The sampled first page retains 5,748 nonspace characters at both host reflow wid
 **2026-11-02T13:15:24Z**
 
 Start shared PDF text-quality follow-up with t0-qnnu. Approved existing policy permits explicit original-page fallback when reflow is unreliable. Do not silently present mixed-column text as successful reading.
+
+**2026-11-02T13:47:06Z**
+
+Implementation follow-up from 5815233: shared page-local text-quality policy now rejects both pinned Census pages for mixed source ranges and parallel text groups before reading-PDF generation. Raw extraction and anchors remain unchanged. NIST page 5 retains useful paragraph reflow, headings/footer order and anchors at two widths. Evidence and exact reproduction: docs/research/reader-public-corpus.md, evidence/text-quality/. Final checks: 37 Python, 21 Dart, 5 isolated Flutter widget tests through Nix; no Android verification, universal layout claim, OCR, coverage/mutations or closure. Ready for parent review/integration.

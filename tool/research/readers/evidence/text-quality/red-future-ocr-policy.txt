@@ -1,0 +1,15 @@
+test_future_offline_ocr_requires_absent_or_independently_bad_source_text (test_pdf_text_quality.TextQualityBoundary.test_future_offline_ocr_requires_absent_or_independently_bad_source_text) ... FAIL
+
+======================================================================
+FAIL: test_future_offline_ocr_requires_absent_or_independently_bad_source_text (test_pdf_text_quality.TextQualityBoundary.test_future_offline_ocr_requires_absent_or_independently_bad_source_text)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-9c44e8be/tool/research/readers/test_pdf_text_quality.py", line 78, in test_future_offline_ocr_requires_absent_or_independently_bad_source_text
+    self.assertEqual(assess_page([]).get("future_ocr_reason"), "absent-text")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: None != 'absent-text'
+
+----------------------------------------------------------------------
+Ran 1 test in 0.028s
+
+FAILED (failures=1)

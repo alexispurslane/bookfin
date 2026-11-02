@@ -18,6 +18,7 @@ from reportlab.pdfgen import canvas
 
 from corpus_inputs import verify_input
 from proof import anchor_for, extract_pdf, reflow_pdf, resolve_anchor, safe_html
+from pdf_text_quality import assess_page
 
 
 ROOT = Path(__file__).resolve().parent
@@ -99,14 +100,21 @@ def inspect_pdf(sample, path):
     pages = int(re.search(r"Pages:\s+(\d+)", metadata)[1])
     selected = 4 if sample["id"] == "nist-text-pdf" else 0 if sample["id"] == "census-multicolumn-pdf" else 8
     chosen = [block for block in blocks if block["page"] == selected]
+    decisions = {str(page + 1): assess_page([block for block in blocks if block["page"] == page]) for page in range(pages)}
+    decision = decisions[str(selected + 1)]
     layouts = {}
     expected_text = re.sub(r"\s+", "", "".join(block["text"] for block in chosen))
     for width in (360, 720):
         destination = OUT / f"{sample['id']}-reflow-{width}.pdf"
+        if decision["view"] != "reflow":
+            destination.unlink(missing_ok=True)
+            layouts[str(width)] = {"status": "original-page", "text_status": decision["status"], "reasons": decision["reasons"]}
+            continue
         lines = reflow_pdf(chosen, destination, width)
         extracted = subprocess.run(["pdftotext", "-raw", str(destination), "-"], check=True, capture_output=True, text=True, timeout=30).stdout
         actual_text = re.sub(r"\s+", "", extracted)
         layouts[str(width)] = {
+            "status": "candidate-not-fidelity-validated",
             "paragraph_height_derived_line_count": lines,
             "source_nonspace_characters": len(expected_text),
             "reflow_nonspace_characters": len(actual_text),
@@ -124,6 +132,11 @@ def inspect_pdf(sample, path):
         "expected_phrases": {phrase: phrase.casefold() in text.casefold() for phrase in sample["expected_phrases"]},
         "sampled_page_1_based": selected + 1, "sampled_page_lines": [block["text"] for block in chosen],
         "sampled_page_layout_by_width_pdf_points": layouts,
+        "text_quality_by_page_1_based": {
+            page: {**{key: value for key, value in decision.items() if key != "paragraphs"},
+                   "paragraph_candidates": len(decision["paragraphs"])}
+            for page, decision in decisions.items()
+        },
         "source_anchor": anchor, "anchor_resolves": resolve_anchor(path, blocks, anchor) == phrase if phrase else None,
         "anchor_candidate_criterion": "First sampled-page block longer than 20 characters; null when none exists, not a navigation test.",
         "heading_candidates": [{"page_1_based": block["page"] + 1, "text": block["text"]} for block in blocks if block["heading"]][:20],

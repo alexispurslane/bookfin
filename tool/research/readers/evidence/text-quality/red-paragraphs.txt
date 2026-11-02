@@ -1,0 +1,50 @@
+test_census_continuation_page_also_requires_its_complete_original (test_pdf_text_quality.PinnedTextQuality.test_census_continuation_page_also_requires_its_complete_original) ... ok
+test_census_first_page_cannot_present_cross_column_combinations_as_reading (test_pdf_text_quality.PinnedTextQuality.test_census_first_page_cannot_present_cross_column_combinations_as_reading) ... ok
+test_raven_opening_verse_cannot_present_37_fragments_as_reading (test_pdf_text_quality.PinnedTextQuality.test_raven_opening_verse_cannot_present_37_fragments_as_reading) ... ok
+test_a_large_footer_stays_below_the_body_instead_of_becoming_a_title (test_pdf_text_quality.TextQualityBoundary.test_a_large_footer_stays_below_the_body_instead_of_becoming_a_title) ... FAIL
+test_a_long_reading_paragraph_continues_on_generated_pages_without_clipping (test_pdf_text_quality.TextQualityBoundary.test_a_long_reading_paragraph_continues_on_generated_pages_without_clipping) ... FAIL
+test_absent_text_does_not_create_an_empty_successful_reading_view (test_pdf_text_quality.TextQualityBoundary.test_absent_text_does_not_create_an_empty_successful_reading_view) ... ok
+test_observed_source_errors_are_separate_from_geometry_errors (test_pdf_text_quality.TextQualityBoundary.test_observed_source_errors_are_separate_from_geometry_errors) ... ok
+test_source_line_wrapping_does_not_force_a_new_paragraph (test_pdf_text_quality.TextQualityBoundary.test_source_line_wrapping_does_not_force_a_new_paragraph) ... FAIL
+test_source_pages_keep_their_order_even_when_blocks_arrive_in_reverse (test_pdf_text_quality.TextQualityBoundary.test_source_pages_keep_their_order_even_when_blocks_arrive_in_reverse) ... FAIL
+
+======================================================================
+FAIL: test_a_large_footer_stays_below_the_body_instead_of_becoming_a_title (test_pdf_text_quality.TextQualityBoundary.test_a_large_footer_stays_below_the_body_instead_of_becoming_a_title)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-9c44e8be/tool/research/readers/test_pdf_text_quality.py", line 46, in test_a_large_footer_stays_below_the_body_instead_of_becoming_a_title
+    self.assertGreater(text.index("Footer retained"), text.index("saved source location."))
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 not greater than 119
+
+======================================================================
+FAIL: test_a_long_reading_paragraph_continues_on_generated_pages_without_clipping (test_pdf_text_quality.TextQualityBoundary.test_a_long_reading_paragraph_continues_on_generated_pages_without_clipping)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-9c44e8be/tool/research/readers/test_pdf_text_quality.py", line 51, in test_a_long_reading_paragraph_continues_on_generated_pages_without_clipping
+    self.assertEqual(text.count("Readable paragraph."), 160)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 30 != 160
+
+======================================================================
+FAIL: test_source_line_wrapping_does_not_force_a_new_paragraph (test_pdf_text_quality.TextQualityBoundary.test_source_line_wrapping_does_not_force_a_new_paragraph)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-9c44e8be/tool/research/readers/test_pdf_text_quality.py", line 35, in test_source_line_wrapping_does_not_force_a_new_paragraph
+    self.assertIn("road. A reader", self.rendered_text(blocks))
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'road. A reader' not found in 'River chapter 1\nThe river follows the old road.\nA reader can change the text size without changing\nthe saved source location.\nRiver chapter 2\nThe river follows the old road.\nA reader can change the text size without changing\nthe saved source location.\x0c'
+
+======================================================================
+FAIL: test_source_pages_keep_their_order_even_when_blocks_arrive_in_reverse (test_pdf_text_quality.TextQualityBoundary.test_source_pages_keep_their_order_even_when_blocks_arrive_in_reverse)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-9c44e8be/tool/research/readers/test_pdf_text_quality.py", line 40, in test_source_pages_keep_their_order_even_when_blocks_arrive_in_reverse
+    self.assertLess(text.index("River chapter 1"), text.index("River chapter 2"))
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 236 not less than 110
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.392s
+
+FAILED (failures=4)

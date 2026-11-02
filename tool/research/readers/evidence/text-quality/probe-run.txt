@@ -1,0 +1,4 @@
+nist-text-pdf page 5: candidate; {'blocks': 31, 'mixed_blocks': 0, 'split_rows': 4, 'parallel_rows': 0, 'short_blocks': 8}; 11 paragraph candidates
+census-multicolumn-pdf page 1: unreliable; {'blocks': 218, 'mixed_blocks': 14, 'split_rows': 30, 'parallel_rows': 29, 'short_blocks': 58}; 0 paragraph candidates
+census-multicolumn-pdf page 2: unreliable; {'blocks': 233, 'mixed_blocks': 7, 'split_rows': 35, 'parallel_rows': 34, 'short_blocks': 64}; 0 paragraph candidates
+raven-1873-scan page 9: unreliable; {'blocks': 37, 'mixed_blocks': 0, 'split_rows': 8, 'parallel_rows': 6, 'short_blocks': 37}; 0 paragraph candidates

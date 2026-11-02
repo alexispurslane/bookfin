@@ -1,0 +1,295 @@
+test_active_or_remote_html_cannot_load (test_readers.ReadingProof.test_active_or_remote_html_cannot_load) ... ok
+test_larger_pdf_title_is_a_heading_candidate (test_readers.ReadingProof.test_larger_pdf_title_is_a_heading_candidate) ... ok
+test_local_asset_paths_cannot_escape_the_book (test_readers.ReadingProof.test_local_asset_paths_cannot_escape_the_book) ... ok
+test_passive_html_keeps_local_images_headings_and_internal_links (test_readers.ReadingProof.test_passive_html_keeps_local_images_headings_and_internal_links) ... ok
+test_replaced_file_does_not_reuse_an_old_anchor (test_readers.ReadingProof.test_replaced_file_does_not_reuse_an_old_anchor) ... ok
+test_saved_source_anchor_survives_a_layout_width_change (test_readers.ReadingProof.test_saved_source_anchor_survives_a_layout_width_change) ... ok
+test_scanned_page_offers_no_fabricated_reflow_text (test_readers.ReadingProof.test_scanned_page_offers_no_fabricated_reflow_text) ... ok
+test_simple_pdf_exposes_text_and_source_pages (test_readers.ReadingProof.test_simple_pdf_exposes_text_and_source_pages) ... ok
+test_two_columns_read_down_left_before_right (test_readers.ReadingProof.test_two_columns_read_down_left_before_right) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.224s
+
+OK
+Title: River CC0
+Language: en (utf8)
+__
+Mobi version: 6
+
+Reconstructing source resources...
+
+Creating EPUB...
+Saving EPUB to _out/mobi6-plain.epub
+No errors detected in compressed data of _out/mobi6-plain.epub.
+Title: River CC0
+Language: en (utf8)
+__
+Mobi version: 6
+
+Reconstructing source resources...
+
+Creating EPUB...
+Saving EPUB to _out/mobi6-palmdoc.epub
+No errors detected in compressed data of _out/mobi6-palmdoc.epub.
+Title: Alice's Adventures in Wonderland
+Author: Lewis Carroll
+Subject: Fantasy fiction; Children's stories; Imaginary places -- Juvenile fiction; Alice (Fictitious character from Carroll) -- Juvenile fiction
+Publishing date: 2008-06-27T00:00:00+00:00
+ASIN: 690d15c3-3f15-4f93-9331-6fb59939375b
+Language: en (utf8)
+__
+Mobi version: 8
+Creator software: calibre 9.5.0
+
+Reconstructing source resources...
+
+Creating EPUB...
+Saving EPUB to _out/alice.epub
+No errors detected in compressed data of _out/alice.epub.
+Resolving dependencies...
+Downloading packages...
+  markdown 7.3.0 (7.3.1 available)
+Got dependencies!
+1 package has newer versions incompatible with dependency constraints.
+Try `dart pub outdated` for more information.
+Running build hooks...No Visual Studio installation found with the requested Microsoft.VisualStudio.Component.VC.Tools.x86.x64 component.
+
+SDK cannot be located in the Nix research shell
+
+
+SDK iphoneos not installed.
+
+SDK cannot be located in the Nix research shell
+
+
+SDK iphonesimulator not installed.
+
+Running build hooks...00:00 +0: loading test/corpus_test.dart
+00:00 +0: test/corpus_test.dart: Public-source PDF and Markdown observations nist-cloud.pdf retains source text and renders its complete sampled page
+  Skip: Set BOOKFIN_REAL_CORPUS=1 after acquiring and probing the public corpus
+00:00 +0 ~1: test/corpus_test.dart: Public-source PDF and Markdown observations census-notice.pdf retains source text and renders its complete sampled page
+  Skip: Set BOOKFIN_REAL_CORPUS=1 after acquiring and probing the public corpus
+00:00 +0 ~2: test/corpus_test.dart: Public-source PDF and Markdown observations raven-1873.pdf retains source text and renders its complete sampled page
+  Skip: Set BOOKFIN_REAL_CORPUS=1 after acquiring and probing the public corpus
+00:00 +0 ~3: test/corpus_test.dart: Public-source PDF and Markdown observations a raster-only derivative of the real scan renders without extracted text
+  Skip: Set BOOKFIN_REAL_CORPUS=1 after acquiring and probing the public corpus
+00:00 +0 ~4: test/corpus_test.dart: Public-source PDF and Markdown observations the real sonnet source retains verse line breaks in fenced Markdown
+  Skip: Set BOOKFIN_REAL_CORPUS=1 after acquiring and probing the public corpus
+00:00 +0 ~5: loading test/engine_test.dart
+00:00 +0 ~5: test/engine_test.dart: (setUpAll)
+00:00 +0 ~5: test/engine_test.dart: PDF text exposes the source page character rectangles
+00:00 +1 ~5: test/engine_test.dart: PDF original pages render without extracting text from a scan
+00:00 +2 ~5: test/engine_test.dart: Markdown preserves readable structure and local image references
+00:00 +3 ~5: test/engine_test.dart: (tearDownAll)
+00:00 +3 ~5: All tests passed!
+Resolving dependencies...
+Downloading packages...
+  archive 3.6.1 (4.6.0 available)
+  image 3.3.0 (4.12.0 available)
+  xml 6.6.1 (7.1.0 available)
+Got dependencies!
+3 packages have newer versions incompatible with dependency constraints.
+Try `dart pub outdated` for more information.
+00:00 +0: loading test/epub_test.dart
+00:00 +0: test/epub_test.dart: generated EPUB exposes chapter text and embedded images
+00:00 +1: test/epub_test.dart: plain MOBI conversion exposes chapter text and embedded images
+00:00 +2: test/epub_test.dart: PalmDOC MOBI conversion exposes chapter text and embedded images
+00:00 +3: test/epub_test.dart: KF8 conversion exposes chapter text and embedded images
+00:00 +4: All tests passed!
+{
+  "reflow": {
+    "font_size_pdf_points": 18,
+    "width_pdf_points": 360,
+    "content_width_pdf_points": 328,
+    "phone_lines": 8,
+    "wide_720_lines": 6,
+    "source_anchor": {
+      "sha256": "51d05de2a89dd83fb8f04301ac254419b2d616d48f6e8bb9fbe0938745bc04ce",
+      "page": 0,
+      "character": 39,
+      "bbox": [
+        147.09597778320312,
+        689.8679809570312,
+        152.927978515625,
+        696.3599853515625
+      ]
+    }
+  },
+  "scan_extracted_blocks": 0,
+  "table_reflow_known_failure": [
+    "Item",
+    "Apple",
+    "Pear",
+    "Amount",
+    "12",
+    "34"
+  ]
+}
+patching file pubspec.yaml
+patching file lib/src/readers/book_cover_reader.dart
+Resolving dependencies...
+Downloading packages...
+  xml 6.6.1 (7.1.0 available)
+Got dependencies!
+1 package has newer versions incompatible with dependency constraints.
+Try `dart pub outdated` for more information.
+Running build hooks...No Visual Studio installation found with the requested Microsoft.VisualStudio.Component.VC.Tools.x86.x64 component.
+
+SDK cannot be located in the Nix research shell
+
+
+SDK iphoneos not installed.
+
+SDK cannot be located in the Nix research shell
+
+
+SDK iphonesimulator not installed.
+
+Running build hooks...00:00 +0: loading test/corpus_test.dart
+00:00 +0: test/corpus_test.dart: Public-source EPUB parser observations alice-epub3 retains opening and later text in spine resources
+  Skip: Set BOOKFIN_REAL_CORPUS=1 after acquiring the pinned public corpus
+00:00 +0 ~1: test/corpus_test.dart: Public-source EPUB parser observations frankenstein-legacy-mobi retains opening and later text in spine resources
+  Skip: Set BOOKFIN_REAL_CORPUS=1 after acquiring the pinned public corpus
+00:00 +0 ~2: test/corpus_test.dart: Public-source EPUB parser observations moby-kf8 retains opening and later text in spine resources
+  Skip: Set BOOKFIN_REAL_CORPUS=1 after acquiring the pinned public corpus
+00:00 +0 ~3: test/corpus_test.dart: Public-source EPUB parser observations candide-french-epub3 retains opening and later text in spine resources
+  Skip: Set BOOKFIN_REAL_CORPUS=1 after acquiring the pinned public corpus
+00:00 +0 ~4: test/compat_test.dart: (setUpAll)
+00:00 +0 ~4: test/compat_test.dart: EPUB chapters and local images coexist with the pinned PDF engine
+00:00 +1 ~4: test/compat_test.dart: EPUB cover bytes decode through the new image dependency
+00:00 +2 ~4: test/compat_test.dart: mobi6-plain conversion retains text and an embedded image
+00:00 +3 ~4: test/compat_test.dart: mobi6-palmdoc conversion retains text and an embedded image
+00:00 +4 ~4: test/compat_test.dart: alice conversion retains text and an embedded image
+00:00 +5 ~4: test/compat_test.dart: (tearDownAll)
+00:00 +5 ~4: All tests passed!
+measured alice-epub3
+measured frankenstein-legacy-mobi
+measured moby-kf8
+measured candide-french-epub3
+measured dracula-html
+measured sonnets-markdown-source
+measured nist-text-pdf
+measured census-multicolumn-pdf
+measured raven-1873-scan
+test_malformed_input_reports_failure_without_creating_an_epub (test_native_conversion.AndroidConversionBoundary.test_malformed_input_reports_failure_without_creating_an_epub) ... ok
+test_supported_variants_create_readable_epub_with_text_and_images (test_native_conversion.AndroidConversionBoundary.test_supported_variants_create_readable_epub_with_text_and_images) ... ok
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.111s
+
+OK
+Saving EPUB to /tmp/nix-shell.1P0XwM/tmpd1zi69ty/mobi6-plain.epub
+Saving EPUB to /tmp/nix-shell.1P0XwM/tmpcp43mqc4/mobi6-palmdoc.epub
+Saving EPUB to /tmp/nix-shell.1P0XwM/tmprgk5pfco/pg11-kf8.epub
+test_accepts_the_exact_recorded_source_bytes (test_corpus_inputs.CorpusInputs.test_accepts_the_exact_recorded_source_bytes) ... ok
+test_rejection_preserves_a_retained_original (test_corpus_inputs.CorpusInputs.test_rejection_preserves_a_retained_original) ... ok
+test_rejects_an_incomplete_download (test_corpus_inputs.CorpusInputs.test_rejects_an_incomplete_download) ... ok
+test_rejects_changed_bytes_even_when_the_length_matches (test_corpus_inputs.CorpusInputs.test_rejects_changed_bytes_even_when_the_length_matches) ... ok
+test_rejects_manifest_entries_above_the_download_limit (test_corpus_inputs.CorpusInputs.test_rejects_manifest_entries_above_the_download_limit) ... ok
+test_verified_download_moves_into_its_final_name (test_corpus_inputs.CorpusInputs.test_verified_download_moves_into_its_final_name) ... ok
+test_malformed_input_reports_failure_without_creating_an_epub (test_native_conversion.AndroidConversionBoundary.test_malformed_input_reports_failure_without_creating_an_epub) ... ok
+test_supported_variants_create_readable_epub_with_text_and_images (test_native_conversion.AndroidConversionBoundary.test_supported_variants_create_readable_epub_with_text_and_images) ... ok
+test_a_short_fragmented_raven_stamp_is_not_mistaken_for_a_readable_paragraph (test_pdf_text_quality.PinnedTextQuality.test_a_short_fragmented_raven_stamp_is_not_mistaken_for_a_readable_paragraph) ... ok
+test_census_continuation_page_also_requires_its_complete_original (test_pdf_text_quality.PinnedTextQuality.test_census_continuation_page_also_requires_its_complete_original) ... ok
+test_census_first_page_cannot_present_cross_column_combinations_as_reading (test_pdf_text_quality.PinnedTextQuality.test_census_first_page_cannot_present_cross_column_combinations_as_reading) ... ok
+test_extraction_order_errors_alone_do_not_blame_the_source_text_layer (test_pdf_text_quality.PinnedTextQuality.test_extraction_order_errors_alone_do_not_blame_the_source_text_layer) ... ok
+test_nist_numbered_headings_do_not_disable_useful_single_flow_text (test_pdf_text_quality.PinnedTextQuality.test_nist_numbered_headings_do_not_disable_useful_single_flow_text) ... ok
+test_nist_paragraphs_retain_headings_footer_and_a_source_anchor_at_both_widths (test_pdf_text_quality.PinnedTextQuality.test_nist_paragraphs_retain_headings_footer_and_a_source_anchor_at_both_widths) ... ok
+test_raven_opening_verse_cannot_present_37_fragments_as_reading (test_pdf_text_quality.PinnedTextQuality.test_raven_opening_verse_cannot_present_37_fragments_as_reading) ... ok
+test_the_research_probe_reports_fallback_instead_of_aborting_or_measuring_bad_reflow (test_pdf_text_quality.PinnedTextQuality.test_the_research_probe_reports_fallback_instead_of_aborting_or_measuring_bad_reflow) ... ok
+test_the_retained_image_only_raven_page_is_absent_not_a_bad_text_layer (test_pdf_text_quality.PinnedTextQuality.test_the_retained_image_only_raven_page_is_absent_not_a_bad_text_layer) ... ok
+test_a_large_footer_stays_below_the_body_instead_of_becoming_a_title (test_pdf_text_quality.TextQualityBoundary.test_a_large_footer_stays_below_the_body_instead_of_becoming_a_title) ... ok
+test_a_long_reading_paragraph_continues_on_generated_pages_without_clipping (test_pdf_text_quality.TextQualityBoundary.test_a_long_reading_paragraph_continues_on_generated_pages_without_clipping) ... ok
+test_absent_text_does_not_create_an_empty_successful_reading_view (test_pdf_text_quality.TextQualityBoundary.test_absent_text_does_not_create_an_empty_successful_reading_view) ... ok
+test_future_offline_ocr_requires_absent_or_independently_bad_source_text (test_pdf_text_quality.TextQualityBoundary.test_future_offline_ocr_requires_absent_or_independently_bad_source_text) ... ok
+test_observed_source_errors_are_separate_from_geometry_errors (test_pdf_text_quality.TextQualityBoundary.test_observed_source_errors_are_separate_from_geometry_errors) ... ok
+test_paragraphs_never_join_across_source_page_boundaries (test_pdf_text_quality.TextQualityBoundary.test_paragraphs_never_join_across_source_page_boundaries) ... ok
+test_simple_paragraphs_preserve_every_original_character_anchor (test_pdf_text_quality.TextQualityBoundary.test_simple_paragraphs_preserve_every_original_character_anchor) ... ok
+test_source_line_wrapping_does_not_force_a_new_paragraph (test_pdf_text_quality.TextQualityBoundary.test_source_line_wrapping_does_not_force_a_new_paragraph) ... ok
+test_source_pages_keep_their_order_even_when_blocks_arrive_in_reverse (test_pdf_text_quality.TextQualityBoundary.test_source_pages_keep_their_order_even_when_blocks_arrive_in_reverse) ... ok
+test_active_or_remote_html_cannot_load (test_readers.ReadingProof.test_active_or_remote_html_cannot_load) ... ok
+test_larger_pdf_title_is_a_heading_candidate (test_readers.ReadingProof.test_larger_pdf_title_is_a_heading_candidate) ... ok
+test_local_asset_paths_cannot_escape_the_book (test_readers.ReadingProof.test_local_asset_paths_cannot_escape_the_book) ... ok
+test_passive_html_keeps_local_images_headings_and_internal_links (test_readers.ReadingProof.test_passive_html_keeps_local_images_headings_and_internal_links) ... ok
+test_replaced_file_does_not_reuse_an_old_anchor (test_readers.ReadingProof.test_replaced_file_does_not_reuse_an_old_anchor) ... ok
+test_saved_source_anchor_survives_a_layout_width_change (test_readers.ReadingProof.test_saved_source_anchor_survives_a_layout_width_change) ... ok
+test_scanned_page_offers_no_fabricated_reflow_text (test_readers.ReadingProof.test_scanned_page_offers_no_fabricated_reflow_text) ... ok
+test_simple_pdf_exposes_text_and_source_pages (test_readers.ReadingProof.test_simple_pdf_exposes_text_and_source_pages) ... ok
+test_two_columns_read_down_left_before_right (test_readers.ReadingProof.test_two_columns_read_down_left_before_right) ... ok
+test_explicit_regeneration_replaces_fixture_bytes (test_run_inputs.RunnerInputs.test_explicit_regeneration_replaces_fixture_bytes) ... ok
+test_fingerprinted_run_preserves_committed_fixture_bytes (test_run_inputs.RunnerInputs.test_fingerprinted_run_preserves_committed_fixture_bytes) ... ok
+
+----------------------------------------------------------------------
+Ran 37 tests in 1.526s
+
+OK
+Saving EPUB to /tmp/nix-shell.1P0XwM/tmpo5qdgq6j/mobi6-plain.epub
+Saving EPUB to /tmp/nix-shell.1P0XwM/tmptg89w2x5/mobi6-palmdoc.epub
+Saving EPUB to /tmp/nix-shell.1P0XwM/tmpffkv6jr_/pg11-kf8.epub
+Resolving dependencies...
+Downloading packages...
+  markdown 7.3.0 (7.3.1 available)
+Got dependencies!
+1 package has newer versions incompatible with dependency constraints.
+Try `dart pub outdated` for more information.
+Running build hooks...Running build hooks...00:00 +0: loading test/corpus_test.dart
+00:00 +0: test/corpus_test.dart: Public-source PDF and Markdown observations (setUpAll)
+00:00 +0: test/corpus_test.dart: Public-source PDF and Markdown observations nist-cloud.pdf retains source text and renders its complete sampled page
+00:00 +1: test/corpus_test.dart: Public-source PDF and Markdown observations census-notice.pdf retains source text and renders its complete sampled page
+00:00 +2: test/corpus_test.dart: Public-source PDF and Markdown observations raven-1873.pdf retains source text and renders its complete sampled page
+00:00 +3: test/corpus_test.dart: Public-source PDF and Markdown observations a raster-only derivative of the real scan renders without extracted text
+00:00 +4: test/corpus_test.dart: Public-source PDF and Markdown observations the real sonnet source retains verse line breaks in fenced Markdown
+00:00 +5: test/corpus_test.dart: Public-source PDF and Markdown observations (tearDownAll)
+00:00 +5: loading test/engine_test.dart
+00:00 +5: test/engine_test.dart: (setUpAll)
+00:00 +5: test/engine_test.dart: PDF text exposes the source page character rectangles
+00:00 +6: test/engine_test.dart: PDF original pages render without extracting text from a scan
+00:00 +7: test/engine_test.dart: Markdown preserves readable structure and local image references
+00:00 +8: test/engine_test.dart: (tearDownAll)
+00:00 +8: All tests passed!
+Resolving dependencies...
+Downloading packages...
+  archive 3.6.1 (4.6.0 available)
+  image 3.3.0 (4.12.0 available)
+  xml 6.6.1 (7.1.0 available)
+Got dependencies!
+3 packages have newer versions incompatible with dependency constraints.
+Try `dart pub outdated` for more information.
+00:00 +0: loading test/epub_test.dart
+00:00 +0: test/epub_test.dart: generated EPUB exposes chapter text and embedded images
+00:00 +1: test/epub_test.dart: plain MOBI conversion exposes chapter text and embedded images
+00:00 +2: test/epub_test.dart: PalmDOC MOBI conversion exposes chapter text and embedded images
+00:00 +3: test/epub_test.dart: KF8 conversion exposes chapter text and embedded images
+00:00 +4: All tests passed!
+Resolving dependencies...
+Downloading packages...
+  xml 6.6.1 (7.1.0 available)
+Got dependencies!
+1 package has newer versions incompatible with dependency constraints.
+Try `dart pub outdated` for more information.
+Running build hooks...Running build hooks...00:00 +0: loading test/corpus_test.dart
+00:00 +0: test/corpus_test.dart: Public-source EPUB parser observations alice-epub3 retains opening and later text in spine resources
+00:00 +1: test/compat_test.dart: EPUB chapters and local images coexist with the pinned PDF engine
+00:00 +2: test/corpus_test.dart: Public-source EPUB parser observations frankenstein-legacy-mobi retains opening and later text in spine resources
+00:00 +3: test/corpus_test.dart: Public-source EPUB parser observations frankenstein-legacy-mobi retains opening and later text in spine resources
+00:00 +4: test/corpus_test.dart: Public-source EPUB parser observations frankenstein-legacy-mobi retains opening and later text in spine resources
+00:00 +5: test/corpus_test.dart: Public-source EPUB parser observations frankenstein-legacy-mobi retains opening and later text in spine resources
+00:00 +6: test/corpus_test.dart: Public-source EPUB parser observations frankenstein-legacy-mobi retains opening and later text in spine resources
+00:00 +7: test/corpus_test.dart: Public-source EPUB parser observations moby-kf8 retains opening and later text in spine resources
+00:00 +8: test/corpus_test.dart: Public-source EPUB parser observations candide-french-epub3 retains opening and later text in spine resources
+00:00 +9: test/corpus_test.dart: Public-source EPUB parser observations (tearDownAll)
+00:00 +9: All tests passed!
+nist-text-pdf page 5: candidate; {'blocks': 31, 'mixed_blocks': 0, 'split_rows': 4, 'parallel_rows': 0, 'short_blocks': 8}; 11 paragraph candidates
+census-multicolumn-pdf page 1: unreliable; {'blocks': 218, 'mixed_blocks': 14, 'split_rows': 30, 'parallel_rows': 29, 'short_blocks': 58}; 0 paragraph candidates
+census-multicolumn-pdf page 2: unreliable; {'blocks': 233, 'mixed_blocks': 7, 'split_rows': 35, 'parallel_rows': 34, 'short_blocks': 64}; 0 paragraph candidates
+raven-1873-scan page 9: unreliable; {'blocks': 37, 'mixed_blocks': 0, 'split_rows': 8, 'parallel_rows': 6, 'short_blocks': 37}; 0 paragraph candidates
+verified alice-epub3: 189249 bytes 4f81245d31380ac1d6eafb9a321e3691369bc70985736ae4bccf849a4f784036
+verified frankenstein-legacy-mobi: 519544 bytes d907f385b28a2af24f6186a646fd366ede1b84c4c688afe93da3f705862e8e74
+verified moby-kf8: 1232584 bytes 1465acba582c2713767afe17ae051dcea24b6875e2c0d6f462850299c7505e2a
+verified candide-french-epub3: 195063 bytes 8bb0506c0b2c67a0412d6c33aa478b53b88c4f9c857145fac1398abd98fcb56a
+verified dracula-html: 728707 bytes 3289657fc5126cdf897421f911b027d32f11bbc8e416f5dc34338f5855864aac
+verified sonnets-markdown-source: 119936 bytes 4a3a5466591e30ca93b2c19daeb24770bb08833b57b1616c972b97246e23580f
+verified nist-text-pdf: 85781 bytes 7b0c1a9fdfc67218b8ba2098f448c100c27070db91736b3c87fed63bfa21d418
+verified census-multicolumn-pdf: 186352 bytes 4a696b3ccf264093326663176e45b93e336ec024fd88447ab56d39e5e9b9e5f8
+verified raven-1873-scan: 4170541 bytes 25dc58e363e02a442a25174fe9fcd21d3a2f78ac4511731accaaeba326c3d8e8

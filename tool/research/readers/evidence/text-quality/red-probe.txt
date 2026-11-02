@@ -1,0 +1,26 @@
+test_the_research_probe_reports_fallback_instead_of_aborting_or_measuring_bad_reflow (test_pdf_text_quality.PinnedTextQuality.test_the_research_probe_reports_fallback_instead_of_aborting_or_measuring_bad_reflow) ... FAIL
+
+======================================================================
+FAIL: test_the_research_probe_reports_fallback_instead_of_aborting_or_measuring_bad_reflow (test_pdf_text_quality.PinnedTextQuality.test_the_research_probe_reports_fallback_instead_of_aborting_or_measuring_bad_reflow)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-9c44e8be/tool/research/readers/test_pdf_text_quality.py", line 124, in test_the_research_probe_reports_fallback_instead_of_aborting_or_measuring_bad_reflow
+    result = corpus_probe.inspect_pdf({"id": "census-multicolumn-pdf", "expected_phrases": ["nominations"]}, self.inputs["census-multicolumn-pdf"])
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-9c44e8be/tool/research/readers/corpus_probe.py", line 106, in inspect_pdf
+    lines = reflow_pdf(chosen, destination, width)
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-9c44e8be/tool/research/readers/proof.py", line 158, in reflow_pdf
+    raise ValueError(f"Original-page fallback: {decision['status']} text on source page {page_number + 1}: {', '.join(decision['reasons'])}")
+ValueError: Original-page fallback: unreliable text on source page 1: discontinuous-source-order, parallel-text-groups
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-9c44e8be/tool/research/readers/test_pdf_text_quality.py", line 126, in test_the_research_probe_reports_fallback_instead_of_aborting_or_measuring_bad_reflow
+    self.fail(f"The probe must report original-page fallback, not abort: {error}")
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: The probe must report original-page fallback, not abort: Original-page fallback: unreliable text on source page 1: discontinuous-source-order, parallel-text-groups
+
+----------------------------------------------------------------------
+Ran 1 test in 0.576s
+
+FAILED (failures=1)

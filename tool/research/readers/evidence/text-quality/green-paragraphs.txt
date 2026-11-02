@@ -1,0 +1,23 @@
+test_census_continuation_page_also_requires_its_complete_original (test_pdf_text_quality.PinnedTextQuality.test_census_continuation_page_also_requires_its_complete_original) ... ok
+test_census_first_page_cannot_present_cross_column_combinations_as_reading (test_pdf_text_quality.PinnedTextQuality.test_census_first_page_cannot_present_cross_column_combinations_as_reading) ... ok
+test_raven_opening_verse_cannot_present_37_fragments_as_reading (test_pdf_text_quality.PinnedTextQuality.test_raven_opening_verse_cannot_present_37_fragments_as_reading) ... ok
+test_a_large_footer_stays_below_the_body_instead_of_becoming_a_title (test_pdf_text_quality.TextQualityBoundary.test_a_large_footer_stays_below_the_body_instead_of_becoming_a_title) ... ok
+test_a_long_reading_paragraph_continues_on_generated_pages_without_clipping (test_pdf_text_quality.TextQualityBoundary.test_a_long_reading_paragraph_continues_on_generated_pages_without_clipping) ... ok
+test_absent_text_does_not_create_an_empty_successful_reading_view (test_pdf_text_quality.TextQualityBoundary.test_absent_text_does_not_create_an_empty_successful_reading_view) ... ok
+test_observed_source_errors_are_separate_from_geometry_errors (test_pdf_text_quality.TextQualityBoundary.test_observed_source_errors_are_separate_from_geometry_errors) ... ok
+test_source_line_wrapping_does_not_force_a_new_paragraph (test_pdf_text_quality.TextQualityBoundary.test_source_line_wrapping_does_not_force_a_new_paragraph) ... ok
+test_source_pages_keep_their_order_even_when_blocks_arrive_in_reverse (test_pdf_text_quality.TextQualityBoundary.test_source_pages_keep_their_order_even_when_blocks_arrive_in_reverse) ... ok
+test_active_or_remote_html_cannot_load (test_readers.ReadingProof.test_active_or_remote_html_cannot_load) ... ok
+test_larger_pdf_title_is_a_heading_candidate (test_readers.ReadingProof.test_larger_pdf_title_is_a_heading_candidate) ... ok
+test_local_asset_paths_cannot_escape_the_book (test_readers.ReadingProof.test_local_asset_paths_cannot_escape_the_book) ... ok
+test_passive_html_keeps_local_images_headings_and_internal_links (test_readers.ReadingProof.test_passive_html_keeps_local_images_headings_and_internal_links) ... ok
+test_replaced_file_does_not_reuse_an_old_anchor (test_readers.ReadingProof.test_replaced_file_does_not_reuse_an_old_anchor) ... ok
+test_saved_source_anchor_survives_a_layout_width_change (test_readers.ReadingProof.test_saved_source_anchor_survives_a_layout_width_change) ... ok
+test_scanned_page_offers_no_fabricated_reflow_text (test_readers.ReadingProof.test_scanned_page_offers_no_fabricated_reflow_text) ... ok
+test_simple_pdf_exposes_text_and_source_pages (test_readers.ReadingProof.test_simple_pdf_exposes_text_and_source_pages) ... ok
+test_two_columns_read_down_left_before_right (test_readers.ReadingProof.test_two_columns_read_down_left_before_right) ... ok
+
+----------------------------------------------------------------------
+Ran 18 tests in 0.391s
+
+OK

@@ -1,0 +1,13 @@
+Corrected line-wrap normalization against unchanged baseline 5815233235c0cf97999e1e7d00098494b7ccc557
+F
+======================================================================
+FAIL: test_all_words_remain_visible_after_generated_line_wrapping (__main__.OriginalLongParagraph.test_all_words_remain_visible_after_generated_line_wrapping)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<stdin>", line 18, in test_all_words_remain_visible_after_generated_line_wrapping
+AssertionError: 45 != 160
+
+----------------------------------------------------------------------
+Ran 1 test in 0.194s
+
+FAILED (failures=1)
