@@ -1,0 +1,46 @@
+{
+  "date": "2026-11-02",
+  "ticket": "t9-04iu",
+  "origin": "http://127.0.0.1:7564",
+  "runtimeVersion": "12.4.0",
+  "binaryDllSha256": "c553ef86f47d4de0399be5cb13d3623b9df017bb5d655a4622c8e58334f0b39c",
+  "sourceCommit": "83d0d0e7f76e23e2e085c8ff67d28b772d35967d",
+  "accountIsAdministrator": false,
+  "pluginsInstalled": false,
+  "fixtureItemTypes": [
+    "AudioBook",
+    "AudioBook"
+  ],
+  "mediaSourceCounts": [
+    1,
+    1
+  ],
+  "ownSourceIdsMatchItemIds": true,
+  "originalA": {
+    "sha256": "b86681233ba913a3b971a956b4e3e2e56e685980e21fec31036b313a2b656951",
+    "bytes": 16044
+  },
+  "originalB": {
+    "sha256": "37488a5dfa79ead5ea0b1cee77491f37be5d7dd57c818068b9c2dc232558ce9d",
+    "bytes": 16044
+  },
+  "downloadWithOtherSourceSelector": {
+    "status": 200,
+    "sha256": "b86681233ba913a3b971a956b4e3e2e56e685980e21fec31036b313a2b656951",
+    "equalsOriginalA": true,
+    "equalsOriginalB": false
+  },
+  "accountPolicyDenialStatus": 403,
+  "itemVisibilityDenialStatus": 404,
+  "fileOrStreamRequests": 0,
+  "limits": [
+    "Two synthetic independent audio items, not an actual alternate-source item",
+    "HTTP endpoint characterization, not production Bookfin live acceptance",
+    "No production server, private media, device, browser, or third-party media plugin tested"
+  ],
+  "cleanup": {
+    "ownedProcessExited": true,
+    "privateFixtureRemoved": true,
+    "port7564Released": true
+  }
+}

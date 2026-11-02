@@ -875,15 +875,17 @@ class LocalDownloads extends Downloads {
     final sources = (item['MediaSources'] as List? ?? [])
         .whereType<Map<String, dynamic>>()
         .toList();
-    if (sources.isEmpty && item['Type'] == 'Book') {
+    final unnamedBookOriginal = sources.isEmpty && item['Type'] == 'Book';
+    if (unnamedBookOriginal) {
       sources.add({'Id': ''});
     }
     if (sources.isEmpty ||
+        (!unnamedBookOriginal && source.mediaSourceId != source.itemId) ||
         sources.first['Id'] != source.mediaSourceId ||
         sources.first['IsRemote'] == true ||
         (sources.first['Type'] != null && sources.first['Type'] != 'Default')) {
       throw const _MediaError(
-        'This source cannot use Jellyfin’s original-file download. Choose the default source.',
+        'This source cannot use Jellyfin’s original-file download. Choose the item original.',
       );
     }
     final freshBooks = buildBooks([CatalogEntry.fromJson(item, libraryId: '')]);
