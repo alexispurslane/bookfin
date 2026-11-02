@@ -218,7 +218,7 @@ var bookfinReader = (() => {
         const start = await visibleLocation(book, location.start.cfi, resourceFor(book, section), location.start.displayed);
         if (sequence === locationEvent) send("readerLocation", start);
       } catch (_) {
-        send("readerFailure", "The visible reading place could not be saved. Use Contents to continue.");
+        if (sequence === locationEvent) send("readerFailure", "The visible reading place could not be saved. Use Contents to continue.");
       }
     });
     rendition.on("displayerror", () => send("readerFailure", "This chapter could not be displayed. Use Contents or retry the download."));

@@ -53,6 +53,44 @@ void main() {
     downloads.dispose();
   });
 
+  for (final raw in ['[]', '{"reading":[]}']) {
+    test(
+      'malformed outer storage preserves data and permits another account: $raw',
+      () async {
+        reader.dispose();
+        await reader.flush();
+        final preferences = await SharedPreferences.getInstance();
+        final key = 'bookfin.playback.v1.${account().scope.key}';
+        await preferences.setString(key, raw);
+        reader = ReaderSession(
+          downloads: downloads,
+          store: storage,
+          load: (_) async => publication,
+        );
+        await expectLater(reader.bind(account(), [book]), completes);
+        await reader.open(book, edition);
+        reader.acceptVisible(reader.token, visible);
+        expect(reader.canBookmark, isFalse);
+        expect(reader.message, contains('could not be opened'));
+        await reader.flush();
+        expect(preferences.getString(key), raw);
+        storage.writable = true;
+        await reader.bind(account(user: 'bob'), [book]);
+        await reader.open(book, edition);
+        reader.acceptVisible(reader.token, visible);
+        await reader.addBookmark(title: 'Healthy account');
+        await reader.flush();
+        expect(
+          (await records.reading.read(
+            account(user: 'bob').scope.key,
+          ))!['bookmarks'],
+          hasLength(1),
+        );
+        expect(preferences.getString(key), raw);
+      },
+    );
+  }
+
   for (final damaged in <Map<String, dynamic>>[
     {'version': 1, 'resumes': 'not a list', 'bookmarks': []},
     {

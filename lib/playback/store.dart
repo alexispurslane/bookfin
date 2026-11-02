@@ -20,7 +20,16 @@ class LocalResumeStore implements ResumeStore {
   Future<Map<String, dynamic>?> _readAccount(String accountKey) async {
     final preferences = await SharedPreferences.getInstance();
     final raw = preferences.getString(_key(accountKey));
-    return raw == null ? null : jsonDecode(raw) as Map<String, dynamic>;
+    if (raw == null) return null;
+    final decoded = jsonDecode(raw);
+    if (decoded is! Map<String, dynamic>) {
+      throw const FormatException('Personal records must be an object.');
+    }
+    final reading = decoded['reading'];
+    if (reading != null && reading is! Map<String, dynamic>) {
+      throw const FormatException('Reading records must be an object.');
+    }
+    return decoded;
   }
 
   @override

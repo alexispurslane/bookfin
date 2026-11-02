@@ -212,3 +212,45 @@ for (const [name, markup] of [
     }
   });
 }
+
+test('an obsolete location failure cannot replace a newer valid reading place', async () => {
+  const opened = await open('<html><head/><body><p>First place. Second place.</p></body></html>');
+  try {
+    const events = [];
+    const handlers = {};
+    const originalFactory = opened.dom.window.ePub;
+    opened.dom.window.ePub = Object.assign(() => opened.book, { CFI: originalFactory.CFI });
+    opened.dom.window.flutter_inappwebview = { callHandler: (name, value) => events.push({ name, value }) };
+    opened.book.open = async () => {};
+    opened.book.renderTo = () => ({
+      hooks: { content: { register() {} } },
+      on: (name, handler) => { handlers[name] = handler; },
+      themes: { default() {}, fontSize() {} },
+      display: async () => {},
+    });
+    const api = runtime(opened);
+    await api.openBook({ base: 'https://bookfin-publication.invalid/', packagePath: 'OPS/book.opf', fontSize: 20, night: false });
+    const first = opened.section.find('First place')[0].cfi;
+    const second = opened.section.find('Second place')[0].cfi;
+    const getRange = opened.book.getRange.bind(opened.book);
+    let rejectOld;
+    let firstRequest = true;
+    opened.book.getRange = cfi => {
+      if (firstRequest) {
+        firstRequest = false;
+        return new Promise((_, reject) => { rejectOld = reject; });
+      }
+      return getRange(cfi);
+    };
+    const old = handlers.relocated({ start: { cfi: first } });
+    await handlers.relocated({ start: { cfi: second } });
+    assert.equal(events.at(-1).name, 'readerLocation');
+    assert.ok(events.at(-1).value.quote.startsWith('Second place'));
+    rejectOld(Error('Old document failed'));
+    await old;
+    assert.equal(events.filter(event => event.name === 'readerFailure').length, 0);
+    opened.book.getRange = async () => { throw Error('Current document failed'); };
+    await handlers.relocated({ start: { cfi: second } });
+    assert.equal(events.at(-1).name, 'readerFailure');
+  } finally { opened.close(); }
+});

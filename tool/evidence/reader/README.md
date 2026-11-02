@@ -100,8 +100,12 @@ These are historical failures recorded before each correction. They are intentio
 
 ## What remains unverified
 
-Host DOM tests exercise real processed documents, actual fragment resolution, exact search ranges, and fresh-engine locator reopen. They do not supply browser geometry and cannot establish rendering or sandbox enforcement. Flutter widget tests exercise production controls on the explicit unsupported-platform path; they do not fake a WebView.
+Host DOM tests exercise real processed documents, actual fragment resolution, exact search ranges, and fresh-engine locator reopen. They do not supply browser geometry and cannot establish rendering or sandbox enforcement. Flutter widget tests exercise production controls on the explicit unsupported-platform path. Appearance tests replace the native WebView boundary to observe renderer commands; they do not establish Android rendering or native enforcement.
 
 Android acceptance remains required for XHTML/CSS layout, rendered PNG/JPEG, applied embedded and fallback fonts, visible-start pagination, large-text/focus behavior, TalkBack, offline operation, force-stop/process-death resume, and native network/navigation/permission denial. The original source revision and both content identities are checked by host record tests, but those checks do not replace actual Android visible-start acceptance.
 
 The implementation limits and reproduction commands are in `docs/reader-implementation.md`. Parent review must also consider the documented removal of the unused `marks-pane` path and replacement of the license-text-missing `path-webpack` shim. The selected navigator remains the bounded Flutter wrapper plus clean pinned epub.js, not Readium or another silently selected package.
+
+## Follow-up review corrections
+
+Malformed combined records and reading sections now raise FormatException at the storage decoder. Regression cases preserve the damaged bytes, disable saving for that account, then save a bookmark for another account. Obsolete location failures now obey the same newest-event rule as successful locations. The engine regression delivers a newer valid location before rejecting the older request and also checks that a current failure still reaches Flutter. Red evidence is in outer-storage-red.txt and obsolete-location-red.txt; all 15 engine checks pass in correction-engine-green.txt. These host checks do not establish Android acceptance.
