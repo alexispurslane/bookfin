@@ -28,6 +28,16 @@ def discover_operations(items, namespace):
     return operations
 
 
+def contains_payload(value, payload):
+    if isinstance(value, str):
+        return payload in value
+    if isinstance(value, dict):
+        return any(contains_payload(item, payload) for pair in value.items() for item in pair)
+    if isinstance(value, list):
+        return any(contains_payload(item, payload) for item in value)
+    return False
+
+
 def measure_privacy(alice, bob, playlist_id, payload):
     route = "/Items/" + playlist_id
     owner_status, _, owner_body = alice.request("GET", route)
@@ -38,7 +48,7 @@ def measure_privacy(alice, bob, playlist_id, payload):
     except (ValueError, UnicodeDecodeError):
         other_document = None
     exposed = (payload.encode() in other_body
-               or isinstance(other_document, dict) and other_document.get("Name") == payload)
+               or contains_payload(other_document, payload))
     assert owner_exact, "Owner must read the exact stored payload"
     assert other_status == 404 and not exposed, "Other user must be denied without the payload"
     return {"route": "/Items/{samePlaylistId}", "ownerStatus": owner_status,

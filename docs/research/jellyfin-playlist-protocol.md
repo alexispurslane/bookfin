@@ -33,8 +33,8 @@ users cannot accept clearly identified app-data playlists. Normal library scan
 and clean restart preserve the tested private payload. Merely browsing a playlist
 list was not shown to destroy state. Real Jellyfin UI execution was not performed.
 
-Recommendation: do not approve a production transport yet. Ask the two product
-questions below, then continue the chosen branch's proof. Do not install a
+Recommendation: do not approve a production transport yet. Continue the finite
+two-device proof below before requesting product decisions. Do not install a
 production plugin. A plugin's dedicated namespace could address playlist
 management exposure, but its lower total implementation/maintenance risk has
 not been measured. A plugin also needs a retention and offline-recovery policy.
@@ -245,3 +245,34 @@ listener. Private synthetic state remains restartable in this worktree's
 mode 0700. The prior research fixture remains untouched. No production plugin was
 installed, no machine service was changed, and no global toolchain was installed.
 No device or browser was used.
+
+
+## Parent correction and next engineering proof
+
+The privacy observer now searches all decoded JSON strings, including nested
+values and object keys, for the private payload. A denied response containing
+JSON-escaped text must not pass merely because it uses a field other than Name.
+The new regression failed for detail, nested detail, and array responses before
+the correction. All 21 research tests now pass through the pinned research shell.
+This corrects the observer; no new Jellyfin runtime capture was performed.
+
+The product questions above gate production sync, not reversible research or
+listening implementation. Use two fixed device identities, no automatic expiry,
+and preservation of unresolved conflicts as explicit research conditions. These
+conditions do not select product limits or discard pending user actions.
+
+Complete one bounded candidate proof:
+
+1. Check checkpoint coverage and concurrent merging with a missing earlier
+   operation and a delayed retry.
+2. Delete a bookmark, replace old operation objects with checkpoints, and verify
+   that delayed operations cannot restore the deleted bookmark.
+3. Measure immutable batches, checkpoint counts, stored bytes, and discovery work
+   for a stated workload. Quantify playlist clutter before asking tb-887c.
+4. Test one specified pinned server-version pair before any upgrade claim.
+
+If this candidate fails, report the concrete failure and compare its user-visible
+costs with the accepted plugin fallback. Do not search every imaginable protocol.
+Exact device caps, retirement durations, or history limits are not prerequisites
+for these tests. Ask about them only where measured alternatives require a
+user-visible tradeoff. No plugin or production transport is selected.

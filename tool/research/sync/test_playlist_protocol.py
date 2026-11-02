@@ -77,6 +77,14 @@ class PrivacyEvidenceTests(unittest.TestCase):
             with self.assertRaises(AssertionError):
                 measure_privacy(*clients, "synthetic-playlist", payload)
 
+    def test_denied_response_rejects_payload_in_any_decoded_string(self):
+        payload = '{"note":"synthetic private note"}'
+        for document in [{"detail": payload}, {"errors": [{"detail": "prefix " + payload + " suffix"}]}, [payload]]:
+            with self.subTest(document=document):
+                with payload_server(owner_name=payload, other_body=json.dumps(document).encode()) as clients:
+                    with self.assertRaises(AssertionError):
+                        measure_privacy(*clients, "synthetic-playlist", payload)
+
 
 class JournalDiscoveryTests(unittest.TestCase):
     def test_a_lost_ack_retry_is_one_logical_operation(self):
