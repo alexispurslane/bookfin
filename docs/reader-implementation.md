@@ -14,6 +14,8 @@ Review correction R1 keeps one canonical XML tree from passive admission through
 
 Reading positions and bookmarks use the existing `TextPosition`, record identifiers, account keys, and personal-record persistence. `LocalResumeStore.reading` is an adapter for a reading section within the existing account record, not another bookmark database. Serialized record merges retain audio and reading sections. Audio positions are not converted to text positions.
 
+Review correction R2 retains the newest unsaved reading snapshot for each account until that exact snapshot is written successfully. A new save, account binding, `flush`, and disposal retry pending snapshots through the same reading adapter and shared audio/reading merge queue. Returning to an account reads its pending snapshot before disk records. A delayed old-account failure retains its warning for that account, not the new account. Only `Exception` failures are recoverable in this write path. Contract failures remain errors and propagate. A rejected preference write is an `Exception`, not a contract failure. This is in-memory retry, not a second bookmark store. Records still cannot survive process termination while every storage write fails.
+
 `Publication.checkInvariants()` checks canonical resource paths, matching media types, and a reading order made only of admitted documents. `ReaderSession.checkInvariants()` checks that account records, the current publication, and its reading position belong to the current account and source. These methods run on demand, including in tests; a failed check is a bug, not a recovery path.
 
 ## Supported content and bounds

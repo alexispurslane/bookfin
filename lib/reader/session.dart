@@ -43,7 +43,11 @@ class ReaderSession extends ChangeNotifier {
   TextPosition? get position => _position;
   VisibleLocation? get initialLocation => _initialLocation;
   int get token => _token;
-  String? get message => _message;
+  String? get message =>
+      _message ??
+      (_failedAccounts.contains(_account)
+          ? 'Reading records were not saved. Free storage, then retry before closing.'
+          : null);
   bool get loading => _loading;
   bool get searching => _searching;
   double get fontSize => _fontSize;
@@ -61,6 +65,8 @@ class ReaderSession extends ChangeNotifier {
   int _accountGeneration = 0;
   Future<void> _binding = Future.value();
   Future<void> _writes = Future.value();
+  final _pendingWrites = <String, Map<String, dynamic>>{};
+  final _failedAccounts = <String>{};
   int _search = 0;
 
   bool get ready => publication != null && _navigator != null;
@@ -81,6 +87,7 @@ class ReaderSession extends ChangeNotifier {
         _emit();
       }
       await _binding;
+      await _retryPending();
       return;
     }
     _account = account?.scope.key;
@@ -95,10 +102,10 @@ class ReaderSession extends ChangeNotifier {
     final previous = _binding;
     _binding = () async {
       await previous;
-      await _writes;
+      await _retryPending();
       if (!_liveAccount(generation) || key == null) return;
       try {
-        final saved = await store.read(key);
+        final saved = _pendingWrites[key] ?? await store.read(key);
         if (!_liveAccount(generation)) return;
         if (saved != null) {
           if (saved['version'] != 1) {
@@ -124,7 +131,7 @@ class ReaderSession extends ChangeNotifier {
           }
         }
         _recordsReady = true;
-      } catch (_) {
+      } on Exception {
         if (_liveAccount(generation)) _message = 'Reading records could not be opened. Existing records were kept. Restart before saving new places.';
       }
       _emit();
@@ -434,33 +441,47 @@ class ReaderSession extends ChangeNotifier {
   Future<void> _save() async {
     final key = _account;
     if (key == null || !_recordsReady || _disposed) return;
-    final generation = token;
     final value = <String, dynamic>{
       'version': 1,
       'fontSize': fontSize,
       'resumes': _resumes.map(encodeTextPosition).toList(),
       'bookmarks': _bookmarks.map((value) => value.toJson()).toList(),
     };
-    final operation = _writes.then((_) => store.write(key, value));
-    _writes = operation.catchError((Object _) {});
-    try {
-      await operation;
-    } catch (_) {
-      if (_live(generation)) {
-        _message = 'Reading records were not saved. Free storage, then retry before closing.';
-        _emit();
-      }
-    }
+    _pendingWrites[key] = value;
+    await _retryPending();
   }
 
-  Future<void> flush() => _writes;
+  Future<void> _retryPending() {
+    _writes = _writes.then((_) async {
+      for (final entry in _pendingWrites.entries.toList()) {
+        try {
+          await store.write(entry.key, entry.value);
+          if (identical(_pendingWrites[entry.key], entry.value)) {
+            _pendingWrites.remove(entry.key);
+            _failedAccounts.remove(entry.key);
+          }
+        } on Exception {
+          _failedAccounts.add(entry.key);
+        }
+      }
+      _emit();
+    });
+    return _writes;
+  }
+
+  Future<void> flush() async {
+    await _binding;
+    await _retryPending();
+  }
+
   void checkInvariants() {
     if ((_account == null &&
             (publication != null ||
                 _bookmarks.isNotEmpty ||
                 _resumes.isNotEmpty)) ||
         (publication != null && (edition == null || !_current(edition!))) ||
-        (position != null && _compatible(position!) == null)) {
+        (position != null && _compatible(position!) == null) ||
+        _failedAccounts.any((key) => !_pendingWrites.containsKey(key))) {
       throw StateError(
         'Reading state must belong to one current account, source, and processed publication.',
       );
@@ -476,6 +497,7 @@ class ReaderSession extends ChangeNotifier {
     _disposed = true;
     ++_token;
     ++_search;
+    unawaited(_retryPending());
     super.dispose();
   }
 }

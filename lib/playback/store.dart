@@ -46,7 +46,7 @@ class LocalResumeStore implements ResumeStore {
         _key(accountKey),
         jsonEncode(combined),
       )) {
-        throw StateError(
+        throw Exception(
           'Personal records were not saved. Free storage, then retry.',
         );
       }

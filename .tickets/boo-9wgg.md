@@ -51,3 +51,7 @@ Coordinated stage 2 implementation: real Android XHTML/CSS viewport; contents an
 **2026-11-02T16:37:13Z**
 
 Final verification supersedes the earlier counts: 334 full app tests, 28 reader tests (included), and 14 passive-boundary tests (included), all passing with no failures/skips. Additional red-green regressions cover removed-edition loading feedback and processed-resource expansion limits. Engine checks remain 9 regressions plus 9 processed-corpus tests. Both build targets, SDK/native-hook scripts, analyzer, and formatter pass. No ticket closure or runtime acceptance.
+
+**2026-11-02T17:18:33Z**
+
+R2 correction: retained latest pending reading snapshots by account, retried through normal save/bind/flush/dispose lifecycle and the existing shared personal-record store. Failed old-account writes remain owned by that account. Recover only Exception IO failures, not contract Errors. Five focused red-green persistence cases cover bookmark recovery, account isolation, delayed failure, audio merge, disposal and edit/delete reopen. Evidence: tool/evidence/reader/corrections/r2-{red,green}.txt. No closure or Android acceptance.

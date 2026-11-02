@@ -6,6 +6,8 @@ Date: November 2, 2026. Base: `2daf2ef`. Tickets: `t3-9r9u`, then `boo-9wgg`. Bo
 
 Review correction R1: `corrections/r1-red.txt` records three meaningful failures across the actual source XML to iframe HTML-parser boundary. `corrections/r1-green.txt` records the same three passing after XML tree import replaces HTML reparsing. The cases cover implicit table bodies, paragraph normalization, and table foster parenting. Tests exercise saving, quote validation, search, contents fragments, and source IDs. Assets are rebuilt from the source fork. Android acceptance remains outstanding.
 
+Review correction R2: `corrections/r2-red.txt` records lost bookmark snapshots, a missing bind/dispose retry, and an edit that reverted after reopening. `corrections/r2-green.txt` records five passing persistence scenarios. They use the real shared preference record merger with failure injected only at the reading-store boundary. They cover flush, account isolation, delayed old-account failure, audio/reading writes, disposal, and bookmark edit/delete after storage recovery. No process-death durability is claimed while storage remains unavailable.
+
 All build, test, analysis, and format commands ran through the pinned Nix shell. Only one heavy command ran at a time. Resource checks preceded builds; `build-resources.txt` records the final checks. There were no device or browser actions, installation, runtime acceptance, production requests, public servers, coverage jobs, or mutation jobs.
 
 | Check | Exact result | Evidence |
