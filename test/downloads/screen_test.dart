@@ -1,4 +1,7 @@
 import 'dart:io';
+import 'dart:convert';
+
+import 'package:crypto/crypto.dart';
 
 import 'package:bookfin/catalog/controller.dart';
 import 'package:bookfin/catalog/jellyfin.dart';
@@ -59,6 +62,93 @@ void main() {
       ),
     ),
   );
+
+  testWidgets('rejected saved recordings stay discoverable and removable', (
+    tester,
+  ) async {
+    late File saved;
+    await tester.runAsync(() async {
+      policy.network = MediaNetwork.disconnected;
+      fixture.textSources = [fixture.source('alternate-text')];
+      final source = fixture.text.files.single;
+      String hash(String value) =>
+          sha256.convert(utf8.encode(value)).toString();
+      final directory = Directory(
+        '${root.path}/${hash(fixture.session().scope.key)}/${hash(jsonEncode([source.key, source.revision]))}',
+      );
+      await directory.create(recursive: true);
+      saved = File('${directory.path}/complete');
+      await saved.writeAsBytes([1, 2, 3, 4, 5, 6]);
+      await File('${directory.path}/record.json').writeAsString(
+        jsonEncode({
+          'key': source.key,
+          'revision': source.revision,
+          'length': 6,
+          'digest': sha256.convert([1, 2, 3, 4, 5, 6]).toString(),
+          'complete': true,
+          'requested': false,
+        }),
+      );
+      await downloads.bind(fixture.session(), fixture.books);
+    });
+    Future<void> showDownloads() => tester.runAsync(
+      () => tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: AnimatedBuilder(
+              animation: downloads,
+              builder: (_, _) =>
+                  DownloadsPage(downloads: downloads, books: fixture.books),
+            ),
+          ),
+        ),
+      ),
+    );
+    await showDownloads();
+    await settleStorage(tester);
+    expect(find.text('Remove'), findsOneWidget);
+    expect(find.text('6 saved bytes unavailable for playback'), findsOneWidget);
+    await tester.runAsync(() async {
+      await tester.tap(find.text('Retry'));
+      await downloads.idle;
+    });
+    await settleStorage(tester);
+    expect(find.text('Waiting for Wi-Fi'), findsOneWidget);
+    await tester.runAsync(() async {
+      await tester.tap(find.text('Cancel'));
+      await downloads.idle;
+    });
+    await settleStorage(tester);
+    expect(find.text('Remove'), findsOneWidget);
+    expect(find.text('6 saved bytes unavailable for playback'), findsOneWidget);
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.runAsync(() async {
+      downloads.dispose();
+      await downloads.idle;
+      downloads = LocalDownloads(
+        root: root,
+        freeBytes: () async => 1000000,
+        policy: policy,
+      );
+      await downloads.bind(fixture.session(), fixture.books);
+      expect(await saved.exists(), isTrue);
+      expect(await downloads.localFile(fixture.text.files.single), isNull);
+    });
+    await showDownloads();
+    await settleStorage(tester);
+    expect(find.text('Remove'), findsOneWidget);
+    expect(find.text('6 saved bytes unavailable for playback'), findsOneWidget);
+    await tester.runAsync(() => tester.tap(find.text('Remove')));
+    await tester.pumpAndSettle();
+    expect(find.text('Remove download?'), findsOneWidget);
+    await tester.runAsync(() async {
+      await tester.tap(find.text('Remove download'));
+      await downloads.idle;
+      expect(await saved.exists(), isFalse);
+    });
+    await tester.pumpAndSettle();
+    expect(find.text('Remove'), findsNothing);
+  });
 
   testWidgets('the book list separates audio and ebook availability', (
     tester,

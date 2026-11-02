@@ -7,7 +7,7 @@ import 'package:bookfin/downloads/local_downloads.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'transfer_test.dart' show MediaFixture;
+import 'transfer_test.dart' show MediaFixture, waitForBytes;
 
 void main() {
   late MediaFixture fixture;
@@ -321,6 +321,7 @@ void main() {
       fixture.holdItem = 'text';
       await downloads.request(fixture.text);
       await fixture.firstChunk.future;
+      await waitForBytes(downloads, fixture.text, 3);
       await downloads.bind(fixture.session(), []);
       final retained = (await downloads.retainedStorage()).single;
       expect(retained.bytes, 3);

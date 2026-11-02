@@ -38,14 +38,16 @@ Before each media request the worker checks all of these conditions:
 1. `/System/Info/Public` identifies the bound server.
 2. `/Users/Me` identifies the bound user and explicitly returns `Policy.EnableContentDownloading == true`.
 3. Fresh item details explicitly return `CanDownload == true`.
-4. The selected source is the first default, non-remote source for that item. A Book without MediaSources uses its unnamed original source, matching the catalog model.
+4. The selected source is the first default, non-remote source, and its ID equals the item ID. A Book without MediaSources uses its unnamed original source, matching the catalog model. An explicitly listed empty source ID does not qualify for that exception.
 5. Rebuilding that item through the existing catalog model gives the same source key and nonempty revision.
 
 Administrator status does not override a false or missing permission. A cached `JellyfinSession.canDownload` value never grants remote access. Tokens are headers, never URL parameters. Redirects are refused. Response error bodies and authentication headers are not displayed or logged.
 
-The only media route is `/Items/{id}/Download`. Denial never triggers `/File`, a streaming route, or another source. Jellyfin's original-file Download route has no selected-media-source parameter. The downloader therefore fails closed for an alternate source instead of attaching the original file to the wrong edition. Further source-specific support is tracked by t9-04iu. The parent-owned live probe permission correction is not copied or changed here.
+The only media route is `/Items/{id}/Download`. Denial never triggers `/File`, a streaming route, or another source. Jellyfin's original-file Download route has no selected-media-source parameter. The downloader therefore fails closed for an alternate source instead of attaching the original file to the wrong edition. First position and `Type=Default` alone do not establish original-file identity. The t9-04iu investigation and supported limits are in `docs/evidence/downloads/alternate-source.md`. The parent-owned live probe permission correction is not copied or changed here.
 
-Source details are checked again after receipt and hashing, before final publication. Replacing the source during a transfer cannot publish bytes under the former source revision. Real-server ordinary-user and format acceptance remains in boo-2cgp.
+Source details are checked again after receipt and hashing, before final publication. Replacing the source during a transfer cannot publish bytes under the former source revision. Earlier real-server ordinary-user and format evidence is recorded in closed boo-2cgp. Unresolved alternate-source support remains on t9-04iu.
+
+Saved files also pass the original-source identity requirement before local availability is exposed. A legacy separately named source is unavailable even with a matching saved hash; its bytes and identity remain stored for explicit removal. Unavailable saved-file bytes are derived from storage separately from transfer progress, so Retry, Cancel, and restart retain the Downloads row and confirmed Remove control. Safe originals do not require network access to restore.
 
 ## Storage and verification
 

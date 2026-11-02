@@ -63,7 +63,8 @@ class LocalDownloads extends Downloads {
     final signature = jsonEncode([
       session?.scope.key,
       session?.token,
-      for (final entry in sources.entries) [entry.key, entry.value.sizeBytes],
+      for (final entry in sources.entries)
+        [entry.key, entry.value.sizeBytes, entry.value.isItemOriginal],
     ]);
     _editions = editions;
     if (_signature == signature) return _binding ?? Future.value();
@@ -132,11 +133,12 @@ class LocalDownloads extends Downloads {
             }
           }
           if (record.complete && !await _verified(record)) {
-            record.complete = false;
+            await _rejectComplete(record);
+          } else {
+            record.bytes = record.complete
+                ? record.length!
+                : await _partialLength(record);
           }
-          record.bytes = record.complete
-              ? record.length!
-              : await _partialLength(record);
           if (_disposed || generation != _generation) return;
           _records[entry.key] = record;
           if (record.requested && !record.complete && record.error == null) {
@@ -191,6 +193,7 @@ class LocalDownloads extends Downloads {
   bool _present(_Record record) {
     try {
       return record.complete &&
+          record.source.isItemOriginal &&
           _session != null &&
           _containedDirectory(record.directory, _session!.scope.key) &&
           record.length != null &&
@@ -219,6 +222,33 @@ class LocalDownloads extends Downloads {
     }
   }
 
+  Future<void> _rejectComplete(_Record record) async {
+    record.complete = false;
+    record.bytes = await _partialLength(record);
+    if (!record.source.isItemOriginal) {
+      record.error =
+          'Saved recording identity cannot be verified. Remove it or retry.';
+    }
+  }
+
+  int _savedCompleteLength(_Record record) {
+    try {
+      if (_session == null ||
+          !_containedDirectory(record.directory, record.accountKey) ||
+          record.accountKey != _session!.scope.key ||
+          FileSystemEntity.typeSync(
+                record.file('complete').path,
+                followLinks: false,
+              ) !=
+              FileSystemEntityType.file) {
+        return 0;
+      }
+      return record.file('complete').lengthSync();
+    } catch (_) {
+      return 0;
+    }
+  }
+
   Future<int> _partialLength(_Record record) async =>
       await _regularFile(record.file('partial'))
       ? await record.file('partial').length()
@@ -231,6 +261,7 @@ class LocalDownloads extends Downloads {
     }
     var complete = 0;
     var bytes = 0;
+    var unavailableBytes = 0;
     String? error = _storageError;
     var queued = false;
     for (final source in edition.files) {
@@ -238,6 +269,7 @@ class LocalDownloads extends Downloads {
       if (record == null) continue;
       final present = _present(record);
       if (present) complete++;
+      if (!present) unavailableBytes += _savedCompleteLength(record);
       bytes += present
           ? record.length!
           : record.complete
@@ -261,6 +293,7 @@ class LocalDownloads extends Downloads {
       completeFiles: complete,
       totalFiles: edition.files.length,
       bytes: bytes,
+      unavailableBytes: unavailableBytes,
       totalBytes: edition.files.every((source) => source.sizeBytes != null)
           ? edition.files.fold(0, (total, source) => total! + source.sizeBytes!)
           : null,
@@ -531,8 +564,7 @@ class LocalDownloads extends Downloads {
     final verified = await _verified(record);
     if (_disposed || generation != _generation) return null;
     if (verified && _present(record)) return record.file('complete').uri;
-    record.complete = false;
-    record.bytes = 0;
+    await _rejectComplete(record);
     await _persist(record);
     _emit();
     return null;
@@ -872,24 +904,18 @@ class LocalDownloads extends Downloads {
     if (item['Id'] != source.itemId || item['CanDownload'] != true) {
       throw const _MediaError('Jellyfin does not allow downloading this item.');
     }
-    final sources = (item['MediaSources'] as List? ?? [])
-        .whereType<Map<String, dynamic>>()
-        .toList();
-    if (sources.isEmpty && item['Type'] == 'Book') {
-      sources.add({'Id': ''});
-    }
-    if (sources.isEmpty ||
-        sources.first['Id'] != source.mediaSourceId ||
-        sources.first['IsRemote'] == true ||
-        (sources.first['Type'] != null && sources.first['Type'] != 'Default')) {
-      throw const _MediaError(
-        'This source cannot use Jellyfin’s original-file download. Choose the default source.',
-      );
-    }
     final freshBooks = buildBooks([CatalogEntry.fromJson(item, libraryId: '')]);
     final freshFiles = freshBooks
         .expand((book) => book.editions)
         .expand((edition) => edition.files);
+    if (!source.isItemOriginal ||
+        !freshFiles.any(
+          (file) => file.key == source.key && file.isItemOriginal,
+        )) {
+      throw const _MediaError(
+        'This source cannot use Jellyfin’s original-file download. Choose the item original.',
+      );
+    }
     if (source.revision.isEmpty ||
         !freshFiles.any(
           (file) => file.key == source.key && file.revision == source.revision,

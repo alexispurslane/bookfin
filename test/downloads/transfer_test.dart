@@ -7,6 +7,7 @@ import 'package:bookfin/catalog/model.dart';
 import 'package:bookfin/downloads/downloads.dart';
 import 'package:bookfin/downloads/local_downloads.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:crypto/crypto.dart';
 
 void main() {
   late MediaFixture fixture;
@@ -32,6 +33,100 @@ void main() {
     policy.dispose();
     await fixture.close();
     await root.delete(recursive: true);
+  });
+
+  for (final sourceKind in [
+    'alternate',
+    'listed empty',
+    'named original',
+    'unnamed original',
+  ]) {
+    test(
+      'legacy $sourceKind saved bytes retain safe offline availability',
+      () async {
+        policy.network = MediaNetwork.disconnected;
+        fixture.bookWithoutMediaSources = sourceKind == 'unnamed original';
+        if (sourceKind == 'alternate') {
+          fixture.textSources = [fixture.source('alternate-text')];
+        }
+        if (sourceKind == 'listed empty') {
+          fixture.textSources = [
+            {...fixture.source('text'), 'Id': ''},
+          ];
+        }
+        final source = fixture.text.files.single;
+        String hash(String value) =>
+            sha256.convert(utf8.encode(value)).toString();
+        final directory = Directory(
+          '${root.path}/${hash(fixture.session().scope.key)}/'
+          '${hash(jsonEncode([source.key, source.revision]))}',
+        );
+        await directory.create(recursive: true);
+        final saved = File('${directory.path}/complete');
+        await saved.writeAsBytes([1, 2, 3, 4, 5, 6]);
+        await File('${directory.path}/record.json').writeAsString(
+          jsonEncode({
+            'key': source.key,
+            'revision': source.revision,
+            'length': 6,
+            'digest': sha256.convert([1, 2, 3, 4, 5, 6]).toString(),
+            'complete': true,
+            'requested': false,
+          }),
+        );
+        downloads.dispose();
+        await downloads.idle;
+        downloads = LocalDownloads(
+          root: root,
+          freeBytes: () async => capacity,
+          policy: policy,
+        );
+        await downloads.bind(fixture.session(), fixture.books);
+        final local = await downloads.localFile(source);
+        if (sourceKind == 'alternate' || sourceKind == 'listed empty') {
+          expect(local, isNull);
+          expect(downloads.status(fixture.text).phase, DownloadPhase.failed);
+        } else {
+          expect(local, isNotNull);
+          expect(await File.fromUri(local!).readAsBytes(), [1, 2, 3, 4, 5, 6]);
+          expect(
+            downloads.status(fixture.text).phase,
+            DownloadPhase.downloaded,
+          );
+        }
+        expect(await saved.readAsBytes(), [1, 2, 3, 4, 5, 6]);
+        expect(fixture.requests, isEmpty);
+        downloads.checkInvariants();
+        if (sourceKind == 'alternate' || sourceKind == 'listed empty') {
+          expect(downloads.status(fixture.text).unavailableBytes, 6);
+          await downloads.remove(fixture.text);
+          expect(await saved.exists(), isFalse);
+          expect(downloads.status(fixture.text).phase, DownloadPhase.none);
+        }
+      },
+    );
+  }
+
+  test('catalog qualification changes invalidate saved originals without changing identity', () async {
+    capacity = 2 * 1024 * 1024;
+    fixture.bookWithoutMediaSources = true;
+    await downloads.bind(fixture.session(), fixture.books);
+    final original = fixture.text.files.single;
+    await downloads.request(fixture.text);
+    await downloads.idle;
+    expect(await downloads.localFile(original), isNotNull);
+    policy.network = MediaNetwork.disconnected;
+    fixture.bookWithoutMediaSources = false;
+    fixture.textSources = [
+      {'Id': ''},
+    ];
+    final listed = fixture.text.files.single;
+    expect(listed.key, original.key);
+    expect(listed.revision, original.revision);
+    await downloads.bind(fixture.session(), fixture.books);
+    expect(await downloads.localFile(listed), isNull);
+    expect(downloads.status(fixture.text).phase, DownloadPhase.failed);
+    expect(downloads.status(fixture.text).unavailableBytes, 6);
   });
 
   test(
@@ -75,6 +170,112 @@ void main() {
       expect(fixture.mediaRequests, isEmpty);
     },
   );
+
+  for (final includeOriginal in [false, true]) {
+    test(
+      'a first-listed alternate source never receives the item original '
+      '${includeOriginal ? 'beside another source' : 'as the only source'}',
+      () async {
+        fixture.textSources = [
+          fixture.source('alternate-text'),
+          if (includeOriginal) fixture.source('text'),
+        ];
+        await downloads.bind(fixture.session(), fixture.books);
+        final selected = fixture.text.files.single;
+        expect(selected.key, 'text:alternate-text');
+        await downloads.request(fixture.text);
+        await downloads.idle;
+        expect(downloads.status(fixture.text).phase, DownloadPhase.failed);
+        expect(await downloads.localFile(selected), isNull);
+        expect(fixture.mediaRequests, isEmpty);
+        expect(fixture.requests.map((request) => request.uri.path), [
+          '/jellyfin/System/Info/Public',
+          '/jellyfin/Users/Me',
+          '/jellyfin/Items/text',
+        ]);
+      },
+    );
+  }
+
+  test('a named media-source list cannot claim an unnamed original', () async {
+    fixture.textSources = [
+      {...fixture.source('text'), 'Id': ''},
+    ];
+    await downloads.bind(fixture.session(), fixture.books);
+    final selected = fixture.text.files.single;
+    await downloads.request(fixture.text);
+    await downloads.idle;
+    expect(downloads.status(fixture.text).phase, DownloadPhase.failed);
+    expect(await downloads.localFile(selected), isNull);
+    expect(fixture.mediaRequests, isEmpty);
+  });
+
+  test('a selected second source cannot downgrade to the original', () async {
+    fixture.textSources = [
+      fixture.source('text'),
+      fixture.source('alternate-text'),
+    ];
+    final books = buildBooks([
+      CatalogEntry.fromJson(fixture.dto('text'), libraryId: 'books'),
+    ]);
+    final alternate = books.single.editions.singleWhere(
+      (edition) => edition.files.single.mediaSourceId == 'alternate-text',
+    );
+    await downloads.bind(fixture.session(), books);
+    await downloads.request(alternate);
+    await downloads.idle;
+    expect(downloads.status(alternate).phase, DownloadPhase.failed);
+    expect(await downloads.localFile(alternate.files.single), isNull);
+    expect(fixture.mediaRequests, isEmpty);
+    expect(fixture.requests.map((request) => request.uri.path), [
+      '/jellyfin/System/Info/Public',
+      '/jellyfin/Users/Me',
+      '/jellyfin/Items/text',
+    ]);
+  });
+
+  for (final denyAccount in [false, true]) {
+    test('an ordinary account cannot download an alternate after '
+        '${denyAccount ? 'account' : 'item'} policy refusal', () async {
+      fixture.textSources = [fixture.source('alternate-text')];
+      await downloads.bind(fixture.session(), fixture.books);
+      final selected = fixture.text.files.single;
+      fixture.allowDownload = !denyAccount;
+      fixture.itemDownloadable = denyAccount;
+      await downloads.request(fixture.text);
+      await downloads.idle;
+      expect(downloads.status(fixture.text).phase, DownloadPhase.failed);
+      expect(await downloads.localFile(selected), isNull);
+      expect(fixture.requests.map((request) => request.uri.path), [
+        '/jellyfin/System/Info/Public',
+        '/jellyfin/Users/Me',
+        if (!denyAccount) '/jellyfin/Items/text',
+      ]);
+    });
+  }
+
+  test('a missing selected source never switches to its replacement', () async {
+    final selected = fixture.text;
+    fixture.textSources = [fixture.source('replacement-text')];
+    await downloads.request(selected);
+    await downloads.idle;
+    expect(downloads.status(selected).phase, DownloadPhase.failed);
+    expect(await downloads.localFile(selected.files.single), isNull);
+    expect(fixture.mediaRequests, isEmpty);
+  });
+
+  test('a source removed during receipt is never published', () async {
+    final selected = fixture.text;
+    fixture.holdItem = 'text';
+    await downloads.request(selected);
+    await fixture.firstChunk.future;
+    fixture.textSources = [fixture.source('replacement-text')];
+    fixture.release();
+    await downloads.idle;
+    expect(downloads.status(selected).phase, DownloadPhase.failed);
+    expect(await downloads.localFile(selected.files.single), isNull);
+    expect(fixture.mediaRequests, ['text']);
+  });
 
   test(
     'current authentication works when the server rejects legacy token headers',
@@ -385,6 +586,7 @@ void main() {
   test(
     'fresh permission and item downloadability deny even an administrator',
     () async {
+      fixture.administrator = true;
       fixture.allowDownload = false;
       await downloads.request(fixture.text);
       await downloads.idle;
@@ -404,11 +606,14 @@ void main() {
     await downloads.request(fixture.text);
     await downloads.idle;
     expect(downloads.status(fixture.text).phase, DownloadPhase.failed);
-    expect(
-      fixture.requests.where((request) => request.uri.path.endsWith('/File')),
-      isEmpty,
-    );
+    expect(fixture.requests.map((request) => request.uri.path), [
+      '/jellyfin/System/Info/Public',
+      '/jellyfin/Users/Me',
+      '/jellyfin/Items/text',
+      '/jellyfin/Items/text/Download',
+    ]);
     expect(fixture.mediaRequests, ['text']);
+    expect(await downloads.localFile(fixture.text.files.single), isNull);
   });
 
   test('insufficient free space fails before media starts', () async {
@@ -756,9 +961,11 @@ class MediaFixture {
   List<int> payload = [1, 2, 3, 4, 5, 6];
   bool? allowDownload = true;
   bool bookWithoutMediaSources = false;
+  List<Map<String, dynamic>>? textSources;
   bool audioWithoutMediaSources = false;
   bool requireModernAuthentication = false;
   bool itemDownloadable = true;
+  bool administrator = false;
   String? denyItem;
   String? holdItem;
   bool interruptOnce = false;
@@ -789,22 +996,23 @@ class MediaFixture {
     'CanDownload': itemDownloadable,
     'Etag': 'catalog-v1',
     if (id == 'text' ? !bookWithoutMediaSources : !audioWithoutMediaSources)
-      'MediaSources': [
-        {
-          'Id': id,
-          'Type': 'Default',
-          'IsRemote': false,
-          'ETag': revision,
-          'Size': 6,
-          'Container': id == 'text' ? 'epub' : 'm4b',
-        },
-      ],
+      'MediaSources': id == 'text' && textSources != null
+          ? textSources
+          : [source(id)],
+  };
+  Map<String, dynamic> source(String id) => {
+    'Id': id,
+    'Type': 'Default',
+    'IsRemote': false,
+    'ETag': revision,
+    'Size': 6,
+    'Container': id.endsWith('text') ? 'epub' : 'm4b',
   };
   SourceFile file(String id) =>
       buildBooks([CatalogEntry.fromJson(dto(id), libraryId: 'books')])
           .single
           .editions
-          .single
+          .first
           .files
           .single;
   Edition get audio => Edition(
@@ -875,7 +1083,7 @@ class MediaFixture {
           'Policy': {
             if (allowDownload != null)
               'EnableContentDownloading': allowDownload,
-            'IsAdministrator': true,
+            'IsAdministrator': administrator,
           },
         }),
       );

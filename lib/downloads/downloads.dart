@@ -45,6 +45,7 @@ class EditionDownload {
     this.completeFiles = 0,
     this.totalFiles = 0,
     this.bytes = 0,
+    this.unavailableBytes = 0,
     this.totalBytes,
     this.message,
   });
@@ -52,6 +53,9 @@ class EditionDownload {
   final int completeFiles;
   final int totalFiles;
   final int bytes;
+
+  /// Saved complete-file bytes that are not available for playback.
+  final int unavailableBytes;
   final int? totalBytes;
   final String? message;
   String get label => switch (phase) {
