@@ -1,0 +1,32 @@
+FFF
+======================================================================
+FAIL: test_asset_chapter_distinguishes_direct_images_and_svg_fallbacks (test_reader_remaining_fixture.RemainingFixtureTests.test_asset_chapter_distinguishes_direct_images_and_svg_fallbacks)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2833dc47/tool/acceptance/test_reader_remaining_fixture.py", line 21, in test_asset_chapter_distinguishes_direct_images_and_svg_fallbacks
+    self.assertIn(label, chapter)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+AssertionError: 'Local PNG' not found in '<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="fr"><head><title>First chapter</title><link rel="stylesheet" href="../Styles/book.css"/></head><body><h1 id="heading">Édition stable</h1><p>🦦 A source position survives text size changes.</p><p>A phrase crosses <em>inline emphasis</em> in this sentence.</p><p>Repeatable phrase. Repeatable phrase.</p><p lang="ar" dir="rtl">كتاب</p><img src="../Images/dot.png" alt="A sepia square"/><a epub:type="noteref" href="two.xhtml#note">Read note</a></body></html>'
+
+======================================================================
+FAIL: test_reflow_chapter_contains_named_link_and_ordered_passages (test_reader_remaining_fixture.RemainingFixtureTests.test_reflow_chapter_contains_named_link_and_ordered_passages)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2833dc47/tool/acceptance/test_reader_remaining_fixture.py", line 38, in test_reflow_chapter_contains_named_link_and_ordered_passages
+    self.assertIn('Reflow passage 1.', chapter)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'Reflow passage 1.' not found in ''
+
+======================================================================
+FAIL: test_request_targets_are_bounded_owned_loopback_sinks (test_reader_remaining_fixture.RemainingFixtureTests.test_request_targets_are_bounded_owned_loopback_sinks)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2833dc47/tool/acceptance/test_reader_remaining_fixture.py", line 29, in test_request_targets_are_bounded_owned_loopback_sinks
+    self.assertIn('http://127.0.0.1:7364/probe/', chapter)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'http://127.0.0.1:7364/probe/' not found in ''
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.007s
+
+FAILED (failures=3)

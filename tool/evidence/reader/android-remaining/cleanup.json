@@ -1,0 +1,84 @@
+{
+  "at": "2026-11-02T23:47:45.983189+00:00",
+  "settings": {
+    "font_scale": "1.0",
+    "airplane_mode_on": "0",
+    "wifi_on": "1",
+    "mobile_data": "1",
+    "enabled_accessibility_services": "",
+    "accessibility_enabled": "1",
+    "default_input_method": "com.callstack.agentdevice.imehelper/.TestInputMethodService",
+    "sysui_qs_tiles": "internet,bt,flashlight,dnd,alarm,airplane,controls,wallet,rotation,qr_code_scanner,battery,cast,screenrecord,custom(com.google.android.gms/.nearby.sharing.SharingTileService),mictoggle,cameratoggle,custom(com.google.android.permissioncontroller/com.android.permissioncontroller.permission.service.v33.SafetyCenterQsTileService)"
+  },
+  "ownDownload": "removed through explicit normal UI confirmation; screenshot44",
+  "signIn": "signed out, empty fields; screenshot51",
+  "appearance": "automatic, no city",
+  "syntheticReaderSavedSize": 20,
+  "ownedChromeTabs": "all four individually closed; screenshot30",
+  "ports7364and7365": "no listeners after stop and recheck",
+  "reverseRoutes": "empty",
+  "finalForwardRoutes": [
+    "emulator-5554 tcp:51800 localabstract:scrcpy_7df64129"
+  ],
+  "ownedGradleDaemon": "stopped, output: 1 Daemon stopped",
+  "boundSessionClose": "Closed: t3-0687f49c0b8d6053d5bd7d54",
+  "deviceRelease": {
+    "hostId": "local",
+    "deviceId": "emulator-5554",
+    "shutdown": false,
+    "completed": true
+  },
+  "privateRuntimeRemoval": "complete after public secret audit",
+  "processChanges": {
+    "night": [
+      7474,
+      8481
+    ],
+    "day": [
+      8481,
+      9049
+    ],
+    "offline": [
+      10931,
+      11695
+    ]
+  },
+  "apkFinalSha256": "8e4f386e79a0446a9ae2c51f0f157d07d9953b4aa4cf5f23ed3c3957b5be534b",
+  "appProcessTermination": {
+    "verified": false,
+    "lastReadbackPid": 11695,
+    "sessionCloseReturnedSuccess": true,
+    "namedCloseAfterRelease": {
+      "exitCode": 127,
+      "error": "No such file or directory",
+      "attempts": 1
+    },
+    "bindingResetOrAdbUiFallback": false,
+    "followUpTicket": "t2-y0ce"
+  },
+  "privateCopiesRemoved": [
+    ".cache/current-reader.xml",
+    ".cache/current-theme.pb",
+    ".cache/theme-baseline.xml",
+    ".cache/theme-baseline.pb",
+    ".cache/native-jellyfin.log",
+    ".cache/native-observer.log",
+    ".cache/native-seed.log",
+    ".cache/helper.dex",
+    ".cache/helper-dex.txt",
+    ".cache/talkback-start.txt",
+    ".cache/talkback-diagnosis.txt",
+    ".cache/unrelated-notification-overlay-not-public.png",
+    ".cache/baseline-settings.txt",
+    ".cache/app-file-inventory.txt",
+    ".cache/observer-pid",
+    ".cache/native-cdp-port",
+    ".cache/regenerated-remaining.epub",
+    ".cache/native-square.jpg",
+    ".cache/sync/runtime",
+    ".cache/screenshot-audit"
+  ],
+  "cleanupLimits": [
+    "Signed-out normal Bookfin process11695 remained at last readback; no active fixture or diagnostic route; host follow-up t2-y0ce."
+  ]
+}

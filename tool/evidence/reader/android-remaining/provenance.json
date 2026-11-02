@@ -1,0 +1,67 @@
+{
+  "at": "2026-11-02T23:38:12.757047+00:00",
+  "initial": {
+    "source": "8283109",
+    "runtimeSameAs": "c279fd6d9fe6a792d04c8b6a15c519c4077aebde",
+    "apkSha256": "e620a4eb5f61ead9a7e0e227f1c05189a74f0f9eaa624023ac36a4e4b90c6bd7",
+    "assets": [
+      {
+        "name": "index.html",
+        "sha256": "92bb3293ae49fd6567940681a1f2eed43574442377a3d3172b0e26436ea461d4",
+        "sourceMatches": true
+      },
+      {
+        "name": "epub.js",
+        "sha256": "b49f65af43b0c7abb3f19964fb8c31fe0c993ec447774a34cd0cc82f04cc16be",
+        "sourceMatches": true
+      },
+      {
+        "name": "reader.js",
+        "sha256": "b111f45f376f1bda973529000d4ff50597e1ffdef44af7d2ddfca241428d41d1",
+        "sourceMatches": true
+      }
+    ]
+  },
+  "current": {
+    "source": "17c9e6bf175a5586566441183b8e8ed19534c1b6",
+    "tree": "739c952eae10708e00fa4e6aae70efba1b4e0a47",
+    "entryPoint": "lib/main.dart",
+    "kind": "normal Android arm64 debug APK",
+    "bytes": 100151103,
+    "apkSha256": "8e4f386e79a0446a9ae2c51f0f157d07d9953b4aa4cf5f23ed3c3957b5be534b",
+    "installedBuildAndFinalReadbackMatch": true,
+    "productionDiffAfterBuild": false,
+    "assets": [
+      {
+        "name": "index.html",
+        "sha256": "92bb3293ae49fd6567940681a1f2eed43574442377a3d3172b0e26436ea461d4",
+        "sourceMatches": true
+      },
+      {
+        "name": "epub.js",
+        "sha256": "b49f65af43b0c7abb3f19964fb8c31fe0c993ec447774a34cd0cc82f04cc16be",
+        "sourceMatches": true
+      },
+      {
+        "name": "reader.js",
+        "sha256": "b111f45f376f1bda973529000d4ff50597e1ffdef44af7d2ddfca241428d41d1",
+        "sourceMatches": true
+      }
+    ],
+    "screenshots": "13-51",
+    "observations": "current-* plus shared-theme and offline-restart records"
+  },
+  "fixtures": [
+    {
+      "name": "initial-synthetic.epub",
+      "bytes": 136187,
+      "sha256": "23c5416e3db33bdfe48b363a52f8ae9ab9de93bccc45ecb1156486284402251f"
+    },
+    {
+      "name": "synthetic.epub",
+      "bytes": 136430,
+      "sha256": "bcf88777f524e966d9f2445f5a253b83659644a704def64510674876082c7207"
+    }
+  ],
+  "fixtureRegenerationByteExact": true
+}

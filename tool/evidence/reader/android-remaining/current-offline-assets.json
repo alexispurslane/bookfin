@@ -1,0 +1,334 @@
+{
+  "at": "2026-11-02T23:20:14.120Z",
+  "mode": "observe",
+  "target": "https://bookfin-runtime.invalid/index.html",
+  "document": [
+    {
+      "registeredFonts": [
+        {
+          "family": "BookSerif",
+          "status": "loaded",
+          "weight": "normal",
+          "style": "normal"
+        },
+        {
+          "family": "BookfinSerif",
+          "status": "unloaded",
+          "weight": "normal",
+          "style": "normal"
+        }
+      ],
+      "visibleParagraphs": [
+        {
+          "text": "Asset checks",
+          "rect": {
+            "x": 17,
+            "y": 0,
+            "width": 378,
+            "height": 43.73214340209961,
+            "top": 0,
+            "right": 395,
+            "bottom": 43.73214340209961,
+            "left": 17
+          }
+        },
+        {
+          "text": "Local PNG ",
+          "rect": {
+            "x": 17,
+            "y": 62.625,
+            "width": 378,
+            "height": 53.44643020629883,
+            "top": 62.625,
+            "right": 395,
+            "bottom": 116.07143020629883,
+            "left": 17
+          }
+        },
+        {
+          "text": "Local JPEG ",
+          "rect": {
+            "x": 17,
+            "y": 134.86904907226562,
+            "width": 378,
+            "height": 77.44642639160156,
+            "top": 134.86904907226562,
+            "right": 395,
+            "bottom": 212.3154754638672,
+            "left": 17
+          }
+        },
+        {
+          "text": "Exact JPEG wrapper ",
+          "rect": {
+            "x": 17,
+            "y": 231.11309814453125,
+            "width": 378,
+            "height": 77.44642639160156,
+            "top": 231.11309814453125,
+            "right": 395,
+            "bottom": 308.5595245361328,
+            "left": 17
+          }
+        },
+        {
+          "text": "Active SVG [Unsupported image: Active SVG blocked marker]",
+          "rect": {
+            "x": 17,
+            "y": 327.3571472167969,
+            "width": 378,
+            "height": 45.94047546386719,
+            "top": 327.3571472167969,
+            "right": 395,
+            "bottom": 373.29762268066406,
+            "left": 17
+          }
+        },
+        {
+          "text": "Embedded font association: ffi WMW iii.",
+          "rect": {
+            "x": 17,
+            "y": 392.0952453613281,
+            "width": 378,
+            "height": 22.970237731933594,
+            "top": 392.0952453613281,
+            "right": 395,
+            "bottom": 415.0654830932617,
+            "left": 17
+          }
+        },
+        {
+          "text": "Visit reflow checks",
+          "rect": {
+            "x": 17,
+            "y": 433.86309814453125,
+            "width": 378,
+            "height": 22.970237731933594,
+            "top": 433.86309814453125,
+            "right": 395,
+            "bottom": 456.83333587646484,
+            "left": 17
+          }
+        },
+        {
+          "text": "Visit reflow checks",
+          "rect": {
+            "x": 17,
+            "y": 433.1011962890625,
+            "width": 149.36309814453125,
+            "height": 24.380952835083008,
+            "top": 433.1011962890625,
+            "right": 166.36309814453125,
+            "bottom": 457.4821491241455,
+            "left": 17
+          }
+        }
+      ],
+      "color": "rgb(57, 41, 31)",
+      "background": "rgb(246, 239, 226)",
+      "frameRect": {
+        "x": 0,
+        "y": 0,
+        "width": 412,
+        "height": 607,
+        "top": 0,
+        "right": 412,
+        "bottom": 607,
+        "left": 0
+      },
+      "url": "about:blank",
+      "sandbox": "allow-same-origin",
+      "text": "Asset checks\n\nLocal PNG \n\nLocal JPEG \n\nExact JPEG wrapper \n\nActive SVG [Unsupported image: Active SVG blocked marker]\n\nEmbedded font association: ffi WMW iii.\n\nVisit reflow checks",
+      "html": "<html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\"><head><base href=\"https://bookfin-publication.invalid/66b8218f87a845923c2724e259a99fa22f6423f7960a0c4b31791660f4da72a0/OEBPS/Text/one.xhtml\"><meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; script-src 'none'; style-src 'unsafe-inline' https://bookfin-publication.invalid; img-src https://bookfin-publication.invalid; font-src https://bookfin-publication.invalid https://bookfin-runtime.invalid; connect-src 'none'; frame-src 'none'; object-src 'none'; base-uri https://bookfin-publication.invalid; form-action 'none'\"><title>one</title><link rel=\"stylesheet\" href=\"../Styles/book.css\"><link rel=\"canonical\" href=\"https://bookfin-publication.invalid/66b8218f87a845923c2724e259a99fa22f6423f7960a0c4b31791660f4da72a0/OEBPS/Text/one.xhtml\"><meta name=\"dc.identifier\" content=\"one\"><meta name=\"dc.relation.ispartof\" content=\"bookfin-semantic-probe\"><style id=\"epubjs-inserted-css-\"></style><style id=\"epubjs-inserted-css-default\"></style><style>@font-face{font-family:BookfinSerif;src:url(\"https://bookfin-runtime.invalid/SourceSerif4.ttf\")}body{overflow-wrap:break-word;line-height:1.65!important;padding:0 18px!important}img{max-width:100%!important;height:auto}a:focus{outline:2px solid currentColor}</style><meta name=\"viewport\" content=\"width=412, height=607, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no\"></head><body style=\"font-size: 18.8px; width: 412px; height: 607px; overflow-y: hidden; margin: 0px !important; padding-top: 20px; padding-bottom: 20px; padding-left: 17px !important; padding-right: 17px !important; box-sizing: border-box; max-width: inherit; column-fill: auto; column-gap: 34px; column-width: 412px;\"><h1 id=\"heading\">Asset checks</h1><p>Local PNG <img src=\"../Images/dot.png\" alt=\"Local PNG sepia square\"></p><p>Local JPEG <img src=\"../Images/square.jpg\" alt=\"Local JPEG sepia rectangle\"></p><p>Exact JPEG wrapper <img src=\"../Images/square.jpg\" alt=\"Exact JPEG wrapper rectangle\"></p><p>Active SVG <span role=\"img\" aria-label=\"Unsupported image: Active SVG blocked marker\">[Unsupported image: Active SVG blocked marker]</span></p><p>Embedded font association: ffi WMW iii.</p><p><a href=\"reflow.xhtml#heading\">Visit reflow checks</a></p></body></html>",
+      "fontStatus": "loaded",
+      "fontSize": "17.672px",
+      "fontFamily": "BookSerif, serif",
+      "viewport": {
+        "width": 412,
+        "height": 607
+      },
+      "images": [
+        {
+          "source": "https://bookfin-publication.invalid/66b8218f87a845923c2724e259a99fa22f6423f7960a0c4b31791660f4da72a0/OEBPS/Images/dot.png",
+          "alt": "Local PNG sepia square",
+          "complete": true,
+          "naturalWidth": 24,
+          "naturalHeight": 24,
+          "rect": {
+            "x": 104.29167175292969,
+            "y": 62.625,
+            "width": 48,
+            "height": 48,
+            "top": 62.625,
+            "right": 152.2916717529297,
+            "bottom": 110.625,
+            "left": 104.29167175292969
+          }
+        },
+        {
+          "source": "https://bookfin-publication.invalid/66b8218f87a845923c2724e259a99fa22f6423f7960a0c4b31791660f4da72a0/OEBPS/Images/square.jpg",
+          "alt": "Local JPEG sepia rectangle",
+          "complete": true,
+          "naturalWidth": 2,
+          "naturalHeight": 3,
+          "rect": {
+            "x": 108.81547546386719,
+            "y": 134.86904907226562,
+            "width": 48,
+            "height": 72,
+            "top": 134.86904907226562,
+            "right": 156.8154754638672,
+            "bottom": 206.86904907226562,
+            "left": 108.81547546386719
+          }
+        },
+        {
+          "source": "https://bookfin-publication.invalid/66b8218f87a845923c2724e259a99fa22f6423f7960a0c4b31791660f4da72a0/OEBPS/Images/square.jpg",
+          "alt": "Exact JPEG wrapper rectangle",
+          "complete": true,
+          "naturalWidth": 2,
+          "naturalHeight": 3,
+          "rect": {
+            "x": 180.2857208251953,
+            "y": 231.11309814453125,
+            "width": 48,
+            "height": 72,
+            "top": 231.11309814453125,
+            "right": 228.2857208251953,
+            "bottom": 303.11309814453125,
+            "left": 180.2857208251953
+          }
+        }
+      ],
+      "styles": [
+        {
+          "href": "https://bookfin-publication.invalid/66b8218f87a845923c2724e259a99fa22f6423f7960a0c4b31791660f4da72a0/OEBPS/Styles/book.css"
+        },
+        {
+          "href": null
+        },
+        {
+          "href": null
+        },
+        {
+          "href": null
+        }
+      ]
+    }
+  ],
+  "appliedFonts": [
+    {
+      "nodeId": 35,
+      "text": "Asset checks",
+      "result": {
+        "fonts": [
+          {
+            "familyName": "Source Serif 4 (Fontations)",
+            "postScriptName": "SourceSerif4Roman-Regular",
+            "isCustomFont": true,
+            "glyphCount": 12
+          }
+        ]
+      }
+    },
+    {
+      "nodeId": 37,
+      "text": "Local PNG ",
+      "result": {
+        "fonts": [
+          {
+            "familyName": "Source Serif 4 (Fontations)",
+            "postScriptName": "SourceSerif4Roman-Regular",
+            "isCustomFont": true,
+            "glyphCount": 10
+          }
+        ]
+      }
+    },
+    {
+      "nodeId": 40,
+      "text": "Local JPEG ",
+      "result": {
+        "fonts": [
+          {
+            "familyName": "Source Serif 4 (Fontations)",
+            "postScriptName": "SourceSerif4Roman-Regular",
+            "isCustomFont": true,
+            "glyphCount": 11
+          }
+        ]
+      }
+    },
+    {
+      "nodeId": 43,
+      "text": "Exact JPEG wrapper ",
+      "result": {
+        "fonts": [
+          {
+            "familyName": "Source Serif 4 (Fontations)",
+            "postScriptName": "SourceSerif4Roman-Regular",
+            "isCustomFont": true,
+            "glyphCount": 19
+          }
+        ]
+      }
+    },
+    {
+      "nodeId": 46,
+      "text": "Active SVG ",
+      "result": {
+        "fonts": [
+          {
+            "familyName": "Source Serif 4 (Fontations)",
+            "postScriptName": "SourceSerif4Roman-Regular",
+            "isCustomFont": true,
+            "glyphCount": 56
+          }
+        ]
+      }
+    },
+    {
+      "nodeId": 50,
+      "text": "Embedded font association: ffi WMW iii.",
+      "result": {
+        "fonts": [
+          {
+            "familyName": "Source Serif 4 (Fontations)",
+            "postScriptName": "SourceSerif4Roman-Regular",
+            "isCustomFont": true,
+            "glyphCount": 37
+          }
+        ]
+      }
+    },
+    {
+      "nodeId": 52,
+      "text": "",
+      "result": {
+        "fonts": [
+          {
+            "familyName": "Source Serif 4 (Fontations)",
+            "postScriptName": "SourceSerif4Roman-Regular",
+            "isCustomFont": true,
+            "glyphCount": 18
+          }
+        ]
+      }
+    }
+  ],
+  "events": [
+    {
+      "method": "Log.entryAdded",
+      "params": {
+        "entry": {
+          "source": "network",
+          "level": "error",
+          "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+          "timestamp": 1793661356472.747,
+          "url": "https://bookfin-publication.invalid/66b8218f87a845923c2724e259a99fa22f6423f7960a0c4b31791660f4da72a0/META-INF/com.apple.ibooks.display-options.xml",
+          "networkRequestId": "12122.8"
+        }
+      }
+    }
+  ]
+}

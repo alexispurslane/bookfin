@@ -1,0 +1,519 @@
+{
+  "at": "2026-11-02T23:10:09.245Z",
+  "mode": "requests",
+  "target": "https://bookfin-runtime.invalid/index.html",
+  "diagnosticOnly": true,
+  "probes": [
+    {
+      "label": "admitted-get",
+      "url": "https://bookfin-publication.invalid/66b8218f87a845923c2724e259a99fa22f6423f7960a0c4b31791660f4da72a0/OEBPS/Images/dot.png",
+      "status": 200,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "91",
+        "content-type": "image/png"
+      },
+      "bytes": 91
+    },
+    {
+      "label": "missing-get",
+      "url": "https://bookfin-publication.invalid/66b8218f87a845923c2724e259a99fa22f6423f7960a0c4b31791660f4da72a0/OEBPS/Images/missing-native-probe.png",
+      "status": 403,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "0",
+        "content-type": "text/plain"
+      },
+      "bytes": 0
+    },
+    {
+      "label": "forbidden-query",
+      "url": "https://bookfin-publication.invalid/66b8218f87a845923c2724e259a99fa22f6423f7960a0c4b31791660f4da72a0/OEBPS/Images/dot.png?native-probe=1",
+      "status": 403,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "0",
+        "content-type": "text/plain"
+      },
+      "bytes": 0
+    },
+    {
+      "label": "forbidden-post",
+      "url": "https://bookfin-publication.invalid/66b8218f87a845923c2724e259a99fa22f6423f7960a0c4b31791660f4da72a0/OEBPS/Images/dot.png",
+      "status": 403,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "0",
+        "content-type": "text/plain"
+      },
+      "bytes": 0
+    },
+    {
+      "label": "loopback-csp",
+      "url": "http://127.0.0.1:7365/probe/diagnostic-fetch",
+      "error": "TypeError: Failed to fetch"
+    }
+  ],
+  "events": [
+    {
+      "method": "Log.entryAdded",
+      "params": {
+        "entry": {
+          "source": "network",
+          "level": "error",
+          "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+          "timestamp": 1793660976777.664,
+          "url": "https://bookfin-publication.invalid/66b8218f87a845923c2724e259a99fa22f6423f7960a0c4b31791660f4da72a0/META-INF/com.apple.ibooks.display-options.xml",
+          "networkRequestId": "10288.8"
+        }
+      }
+    },
+    {
+      "method": "Network.requestWillBeSent",
+      "params": {
+        "requestId": "10288.26",
+        "loaderId": "6FB8D02EE70AB4AC314B56204F26B615",
+        "documentURL": "https://bookfin-runtime.invalid/index.html",
+        "request": {
+          "url": "https://bookfin-publication.invalid/66b8218f87a845923c2724e259a99fa22f6423f7960a0c4b31791660f4da72a0/OEBPS/Images/dot.png",
+          "method": "GET",
+          "headers": {
+            "sec-ch-ua-platform": "\"Android\"",
+            "Referer": "",
+            "User-Agent": "Mozilla/5.0 (Linux; Android 16; sdk_gphone64_arm64 Build/BE2A.250530.026.F3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/133.0.6943.137 Mobile Safari/537.36",
+            "sec-ch-ua": "\"Not(A:Brand\";v=\"99\", \"Android WebView\";v=\"133\", \"Chromium\";v=\"133\"",
+            "sec-ch-ua-mobile": "?1"
+          },
+          "mixedContentType": "none",
+          "initialPriority": "High",
+          "referrerPolicy": "no-referrer",
+          "isSameSite": false
+        },
+        "timestamp": 88763.349755,
+        "wallTime": 1793661009.763714,
+        "initiator": {
+          "type": "script",
+          "stack": {
+            "callFrames": [
+              {
+                "functionName": "",
+                "scriptId": "19",
+                "url": "",
+                "lineNumber": 9,
+                "columnNumber": 33
+              }
+            ]
+          }
+        },
+        "redirectHasExtraInfo": false,
+        "type": "Fetch",
+        "frameId": "220604A54C4226D10C804D60660B4CD5",
+        "hasUserGesture": false
+      }
+    },
+    {
+      "method": "Network.responseReceived",
+      "params": {
+        "requestId": "10288.26",
+        "loaderId": "6FB8D02EE70AB4AC314B56204F26B615",
+        "timestamp": 88763.373055,
+        "type": "Fetch",
+        "response": {
+          "url": "https://bookfin-publication.invalid/66b8218f87a845923c2724e259a99fa22f6423f7960a0c4b31791660f4da72a0/OEBPS/Images/dot.png",
+          "status": 200,
+          "statusText": "OK",
+          "headers": {
+            "Content-Security-Policy": "default-src 'none'; script-src 'none'; style-src 'unsafe-inline' https://bookfin-publication.invalid; img-src https://bookfin-publication.invalid; font-src https://bookfin-publication.invalid https://bookfin-runtime.invalid; connect-src 'none'; frame-src 'none'; object-src 'none'; base-uri https://bookfin-publication.invalid; form-action 'none'",
+            "Cache-Control": "no-store",
+            "Client-Via": "shouldInterceptRequest",
+            "X-Content-Type-Options": "nosniff",
+            "Referrer-Policy": "no-referrer",
+            "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=(), usb=()",
+            "Access-Control-Allow-Origin": "https://bookfin-runtime.invalid",
+            "Content-Length": "91",
+            "Content-Type": "image/png"
+          },
+          "mimeType": "image/png",
+          "charset": "",
+          "connectionReused": false,
+          "connectionId": 0,
+          "fromDiskCache": false,
+          "fromServiceWorker": false,
+          "fromPrefetchCache": false,
+          "encodedDataLength": -1,
+          "protocol": "http/1.1",
+          "alternateProtocolUsage": "alternativeJobWonWithoutRace",
+          "securityState": "unknown"
+        },
+        "hasExtraInfo": false,
+        "frameId": "220604A54C4226D10C804D60660B4CD5"
+      }
+    },
+    {
+      "method": "Network.dataReceived",
+      "params": {
+        "requestId": "10288.26",
+        "timestamp": 88763.380717,
+        "dataLength": 91,
+        "encodedDataLength": 0
+      }
+    },
+    {
+      "method": "Network.loadingFinished",
+      "params": {
+        "requestId": "10288.26",
+        "timestamp": 88763.381278,
+        "encodedDataLength": 0
+      }
+    },
+    {
+      "method": "Network.requestWillBeSent",
+      "params": {
+        "requestId": "10288.27",
+        "loaderId": "6FB8D02EE70AB4AC314B56204F26B615",
+        "documentURL": "https://bookfin-runtime.invalid/index.html",
+        "request": {
+          "url": "https://bookfin-publication.invalid/66b8218f87a845923c2724e259a99fa22f6423f7960a0c4b31791660f4da72a0/OEBPS/Images/missing-native-probe.png",
+          "method": "GET",
+          "headers": {
+            "sec-ch-ua-platform": "\"Android\"",
+            "Referer": "",
+            "User-Agent": "Mozilla/5.0 (Linux; Android 16; sdk_gphone64_arm64 Build/BE2A.250530.026.F3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/133.0.6943.137 Mobile Safari/537.36",
+            "sec-ch-ua": "\"Not(A:Brand\";v=\"99\", \"Android WebView\";v=\"133\", \"Chromium\";v=\"133\"",
+            "sec-ch-ua-mobile": "?1"
+          },
+          "mixedContentType": "none",
+          "initialPriority": "High",
+          "referrerPolicy": "no-referrer",
+          "isSameSite": false
+        },
+        "timestamp": 88763.382457,
+        "wallTime": 1793661009.796378,
+        "initiator": {
+          "type": "script",
+          "stack": {
+            "callFrames": [
+              {
+                "functionName": "",
+                "scriptId": "19",
+                "url": "",
+                "lineNumber": 9,
+                "columnNumber": 33
+              }
+            ]
+          }
+        },
+        "redirectHasExtraInfo": false,
+        "type": "Fetch",
+        "frameId": "220604A54C4226D10C804D60660B4CD5",
+        "hasUserGesture": false
+      }
+    },
+    {
+      "method": "Network.responseReceived",
+      "params": {
+        "requestId": "10288.27",
+        "loaderId": "6FB8D02EE70AB4AC314B56204F26B615",
+        "timestamp": 88763.391808,
+        "type": "Fetch",
+        "response": {
+          "url": "https://bookfin-publication.invalid/66b8218f87a845923c2724e259a99fa22f6423f7960a0c4b31791660f4da72a0/OEBPS/Images/missing-native-probe.png",
+          "status": 403,
+          "statusText": "Forbidden",
+          "headers": {
+            "Cache-Control": "no-store",
+            "Client-Via": "shouldInterceptRequest",
+            "X-Content-Type-Options": "nosniff",
+            "Referrer-Policy": "no-referrer",
+            "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=(), usb=()",
+            "Access-Control-Allow-Origin": "https://bookfin-runtime.invalid",
+            "Content-Length": "0",
+            "Content-Type": "text/plain"
+          },
+          "mimeType": "text/plain",
+          "charset": "utf-8",
+          "connectionReused": false,
+          "connectionId": 0,
+          "fromDiskCache": false,
+          "fromServiceWorker": false,
+          "fromPrefetchCache": false,
+          "encodedDataLength": -1,
+          "protocol": "http/1.1",
+          "alternateProtocolUsage": "alternativeJobWonWithoutRace",
+          "securityState": "unknown"
+        },
+        "hasExtraInfo": false,
+        "frameId": "220604A54C4226D10C804D60660B4CD5"
+      }
+    },
+    {
+      "method": "Log.entryAdded",
+      "params": {
+        "entry": {
+          "source": "network",
+          "level": "error",
+          "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+          "timestamp": 1793661009805.71,
+          "url": "https://bookfin-publication.invalid/66b8218f87a845923c2724e259a99fa22f6423f7960a0c4b31791660f4da72a0/OEBPS/Images/missing-native-probe.png",
+          "networkRequestId": "10288.27"
+        }
+      }
+    },
+    {
+      "method": "Network.loadingFinished",
+      "params": {
+        "requestId": "10288.27",
+        "timestamp": 88763.395572,
+        "encodedDataLength": 0
+      }
+    },
+    {
+      "method": "Network.requestWillBeSent",
+      "params": {
+        "requestId": "10288.28",
+        "loaderId": "6FB8D02EE70AB4AC314B56204F26B615",
+        "documentURL": "https://bookfin-runtime.invalid/index.html",
+        "request": {
+          "url": "https://bookfin-publication.invalid/66b8218f87a845923c2724e259a99fa22f6423f7960a0c4b31791660f4da72a0/OEBPS/Images/dot.png?native-probe=1",
+          "method": "GET",
+          "headers": {
+            "sec-ch-ua-platform": "\"Android\"",
+            "Referer": "",
+            "User-Agent": "Mozilla/5.0 (Linux; Android 16; sdk_gphone64_arm64 Build/BE2A.250530.026.F3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/133.0.6943.137 Mobile Safari/537.36",
+            "sec-ch-ua": "\"Not(A:Brand\";v=\"99\", \"Android WebView\";v=\"133\", \"Chromium\";v=\"133\"",
+            "sec-ch-ua-mobile": "?1"
+          },
+          "mixedContentType": "none",
+          "initialPriority": "High",
+          "referrerPolicy": "no-referrer",
+          "isSameSite": false
+        },
+        "timestamp": 88763.397005,
+        "wallTime": 1793661009.810922,
+        "initiator": {
+          "type": "script",
+          "stack": {
+            "callFrames": [
+              {
+                "functionName": "",
+                "scriptId": "19",
+                "url": "",
+                "lineNumber": 9,
+                "columnNumber": 33
+              }
+            ]
+          }
+        },
+        "redirectHasExtraInfo": false,
+        "type": "Fetch",
+        "frameId": "220604A54C4226D10C804D60660B4CD5",
+        "hasUserGesture": false
+      }
+    },
+    {
+      "method": "Network.responseReceived",
+      "params": {
+        "requestId": "10288.28",
+        "loaderId": "6FB8D02EE70AB4AC314B56204F26B615",
+        "timestamp": 88763.413248,
+        "type": "Fetch",
+        "response": {
+          "url": "https://bookfin-publication.invalid/66b8218f87a845923c2724e259a99fa22f6423f7960a0c4b31791660f4da72a0/OEBPS/Images/dot.png?native-probe=1",
+          "status": 403,
+          "statusText": "Forbidden",
+          "headers": {
+            "Cache-Control": "no-store",
+            "Client-Via": "shouldInterceptRequest",
+            "X-Content-Type-Options": "nosniff",
+            "Referrer-Policy": "no-referrer",
+            "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=(), usb=()",
+            "Access-Control-Allow-Origin": "https://bookfin-runtime.invalid",
+            "Content-Length": "0",
+            "Content-Type": "text/plain"
+          },
+          "mimeType": "text/plain",
+          "charset": "utf-8",
+          "connectionReused": false,
+          "connectionId": 0,
+          "fromDiskCache": false,
+          "fromServiceWorker": false,
+          "fromPrefetchCache": false,
+          "encodedDataLength": -1,
+          "protocol": "http/1.1",
+          "alternateProtocolUsage": "alternativeJobWonWithoutRace",
+          "securityState": "unknown"
+        },
+        "hasExtraInfo": false,
+        "frameId": "220604A54C4226D10C804D60660B4CD5"
+      }
+    },
+    {
+      "method": "Log.entryAdded",
+      "params": {
+        "entry": {
+          "source": "network",
+          "level": "error",
+          "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+          "timestamp": 1793661009827.154,
+          "url": "https://bookfin-publication.invalid/66b8218f87a845923c2724e259a99fa22f6423f7960a0c4b31791660f4da72a0/OEBPS/Images/dot.png?native-probe=1",
+          "networkRequestId": "10288.28"
+        }
+      }
+    },
+    {
+      "method": "Network.loadingFinished",
+      "params": {
+        "requestId": "10288.28",
+        "timestamp": 88763.419049,
+        "encodedDataLength": 0
+      }
+    },
+    {
+      "method": "Network.requestWillBeSent",
+      "params": {
+        "requestId": "10288.29",
+        "loaderId": "6FB8D02EE70AB4AC314B56204F26B615",
+        "documentURL": "https://bookfin-runtime.invalid/index.html",
+        "request": {
+          "url": "https://bookfin-publication.invalid/66b8218f87a845923c2724e259a99fa22f6423f7960a0c4b31791660f4da72a0/OEBPS/Images/dot.png",
+          "method": "POST",
+          "headers": {
+            "sec-ch-ua-platform": "\"Android\"",
+            "Referer": "",
+            "User-Agent": "Mozilla/5.0 (Linux; Android 16; sdk_gphone64_arm64 Build/BE2A.250530.026.F3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/133.0.6943.137 Mobile Safari/537.36",
+            "sec-ch-ua": "\"Not(A:Brand\";v=\"99\", \"Android WebView\";v=\"133\", \"Chromium\";v=\"133\"",
+            "sec-ch-ua-mobile": "?1"
+          },
+          "mixedContentType": "none",
+          "initialPriority": "High",
+          "referrerPolicy": "no-referrer",
+          "isSameSite": false
+        },
+        "timestamp": 88763.420067,
+        "wallTime": 1793661009.833988,
+        "initiator": {
+          "type": "script",
+          "stack": {
+            "callFrames": [
+              {
+                "functionName": "",
+                "scriptId": "19",
+                "url": "",
+                "lineNumber": 9,
+                "columnNumber": 33
+              }
+            ]
+          }
+        },
+        "redirectHasExtraInfo": false,
+        "type": "Fetch",
+        "frameId": "220604A54C4226D10C804D60660B4CD5",
+        "hasUserGesture": false
+      }
+    },
+    {
+      "method": "Network.responseReceived",
+      "params": {
+        "requestId": "10288.29",
+        "loaderId": "6FB8D02EE70AB4AC314B56204F26B615",
+        "timestamp": 88763.425875,
+        "type": "Fetch",
+        "response": {
+          "url": "https://bookfin-publication.invalid/66b8218f87a845923c2724e259a99fa22f6423f7960a0c4b31791660f4da72a0/OEBPS/Images/dot.png",
+          "status": 403,
+          "statusText": "Forbidden",
+          "headers": {
+            "Cache-Control": "no-store",
+            "Client-Via": "shouldInterceptRequest",
+            "X-Content-Type-Options": "nosniff",
+            "Referrer-Policy": "no-referrer",
+            "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=(), usb=()",
+            "Access-Control-Allow-Origin": "https://bookfin-runtime.invalid",
+            "Content-Length": "0",
+            "Content-Type": "text/plain"
+          },
+          "mimeType": "text/plain",
+          "charset": "utf-8",
+          "connectionReused": false,
+          "connectionId": 0,
+          "fromDiskCache": false,
+          "fromServiceWorker": false,
+          "fromPrefetchCache": false,
+          "encodedDataLength": -1,
+          "protocol": "http/1.1",
+          "alternateProtocolUsage": "alternativeJobWonWithoutRace",
+          "securityState": "unknown"
+        },
+        "hasExtraInfo": false,
+        "frameId": "220604A54C4226D10C804D60660B4CD5"
+      }
+    },
+    {
+      "method": "Log.entryAdded",
+      "params": {
+        "entry": {
+          "source": "network",
+          "level": "error",
+          "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+          "timestamp": 1793661009839.775,
+          "url": "https://bookfin-publication.invalid/66b8218f87a845923c2724e259a99fa22f6423f7960a0c4b31791660f4da72a0/OEBPS/Images/dot.png",
+          "networkRequestId": "10288.29"
+        }
+      }
+    },
+    {
+      "method": "Network.loadingFinished",
+      "params": {
+        "requestId": "10288.29",
+        "timestamp": 88763.426069,
+        "encodedDataLength": 0
+      }
+    },
+    {
+      "method": "Log.entryAdded",
+      "params": {
+        "entry": {
+          "source": "security",
+          "level": "error",
+          "text": "Refused to connect to 'http://127.0.0.1:7365/probe/diagnostic-fetch' because it violates the following Content Security Policy directive: \"connect-src https://bookfin-publication.invalid\".\n",
+          "timestamp": 1793661009840.493,
+          "lineNumber": 9,
+          "stackTrace": {
+            "callFrames": [
+              {
+                "functionName": "",
+                "scriptId": "19",
+                "url": "",
+                "lineNumber": 9,
+                "columnNumber": 33
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "method": "Log.entryAdded",
+      "params": {
+        "entry": {
+          "source": "javascript",
+          "level": "error",
+          "text": "Fetch API cannot load http://127.0.0.1:7365/probe/diagnostic-fetch. Refused to connect because it violates the document's Content Security Policy.",
+          "timestamp": 1793661009840.601,
+          "lineNumber": 9,
+          "stackTrace": {
+            "callFrames": [
+              {
+                "functionName": "",
+                "scriptId": "19",
+                "url": "",
+                "lineNumber": 9,
+                "columnNumber": 33
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

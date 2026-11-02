@@ -1,0 +1,324 @@
+{
+  "at": "2026-11-02T23:15:59.052Z",
+  "mode": "observe",
+  "target": "https://bookfin-runtime.invalid/index.html",
+  "document": [
+    {
+      "registeredFonts": [
+        {
+          "family": "BookSerif",
+          "status": "loaded",
+          "weight": "normal",
+          "style": "normal"
+        },
+        {
+          "family": "BookfinSerif",
+          "status": "unloaded",
+          "weight": "normal",
+          "style": "normal"
+        }
+      ],
+      "visibleParagraphs": [
+        {
+          "text": "Reflow checks",
+          "rect": {
+            "x": 17,
+            "y": 0,
+            "width": 378,
+            "height": 43.73214340209961,
+            "top": 0,
+            "right": 395,
+            "bottom": 43.73214340209961,
+            "left": 17
+          }
+        },
+        {
+          "text": "Select this sentence to check native text selection.",
+          "rect": {
+            "x": 17,
+            "y": 62.625,
+            "width": 378,
+            "height": 45.94047546386719,
+            "top": 62.625,
+            "right": 395,
+            "bottom": 108.56547546386719,
+            "left": 17
+          }
+        },
+        {
+          "text": "Return to asset checks",
+          "rect": {
+            "x": 17,
+            "y": 127.36309814453125,
+            "width": 378,
+            "height": 22.970237731933594,
+            "top": 127.36309814453125,
+            "right": 395,
+            "bottom": 150.33333587646484,
+            "left": 17
+          }
+        },
+        {
+          "text": "Return to asset checks",
+          "rect": {
+            "x": 17,
+            "y": 126.6011962890625,
+            "width": 177.32737731933594,
+            "height": 24.380952835083008,
+            "top": 126.6011962890625,
+            "right": 194.32737731933594,
+            "bottom": 150.9821491241455,
+            "left": 17
+          }
+        },
+        {
+          "text": "Reflow passage 1. The quiet harbour keeps its place while the letters grow. A reader follows these words in their written order without a network connection.",
+          "rect": {
+            "x": 17,
+            "y": 169.13095092773438,
+            "width": 378,
+            "height": 91.88095092773438,
+            "top": 169.13095092773438,
+            "right": 395,
+            "bottom": 261.01190185546875,
+            "left": 17
+          }
+        },
+        {
+          "text": "Reflow passage 2. The quiet harbour keeps its place while the letters grow. A reader follows these words in their written order without a network connection.",
+          "rect": {
+            "x": 17,
+            "y": 279.8095397949219,
+            "width": 378,
+            "height": 91.88095092773438,
+            "top": 279.8095397949219,
+            "right": 395,
+            "bottom": 371.69049072265625,
+            "left": 17
+          }
+        },
+        {
+          "text": "Reflow passage 3. The quiet harbour keeps its place while the letters grow. A reader follows these words in their written order without a network connection.",
+          "rect": {
+            "x": 17,
+            "y": 390.48809814453125,
+            "width": 378,
+            "height": 91.88095092773438,
+            "top": 390.48809814453125,
+            "right": 395,
+            "bottom": 482.3690490722656,
+            "left": 17
+          }
+        },
+        {
+          "text": "Reflow passage 4. The quiet harbour keeps its place while the letters grow. A reader follows these words in their written order without a network connection.",
+          "rect": {
+            "x": 17,
+            "y": 501.16668701171875,
+            "width": 378,
+            "height": 91.88095092773438,
+            "top": 501.16668701171875,
+            "right": 395,
+            "bottom": 593.0476379394531,
+            "left": 17
+          }
+        }
+      ],
+      "color": "rgb(57, 41, 31)",
+      "background": "rgb(246, 239, 226)",
+      "frameRect": {
+        "x": 0,
+        "y": 0,
+        "width": 1648,
+        "height": 607,
+        "top": 0,
+        "right": 1648,
+        "bottom": 607,
+        "left": 0
+      },
+      "url": "about:blank",
+      "sandbox": "allow-same-origin",
+      "text": "Reflow checks\n\nSelect this sentence to check native text selection.\n\nReturn to asset checks\n\nReflow passage 1. The quiet harbour keeps its place while the letters grow. A reader follows these words in their written order without a network connection.\n\nReflow passage 2. The quiet harbour keeps its place while the letters grow. A reader follows these words in their written order without a network connection.\n\nReflow passage 3. The quiet harbour keeps its place while the letters grow. A reader follows these words in their written order without a network connection.\n\nReflow passage 4. The quiet harbour keeps its place while the letters grow. A reader follows these words in their written order without a network connection.\n\nReflow passage 5. The quiet harbour keeps its place while the letters grow. A reader follows these words in their written order without a network connection.\n\nReflow passage 6. The quiet harbour keeps its place while the letters grow. A reader follows these words in their written order without a network connection.\n\nReflow passage 7. The quiet harbour keeps its place while the letters grow. A reader follows these words in their written order without a network connection.\n\nReflow passage 8. The quiet harbour keeps its place while the letters grow. A reader follows these words in their written order without a network connection.\n\nReflow passage 9. The quiet harbour keeps its place while the letters grow. A reader follows these words in their written order without a network connection.\n\nReflow passage 10. The quiet harbour keeps its place while the letters grow. A reader follows these words in their written order without a network connection.\n\nReflow passage 11. The quiet harbour keeps its place while the letters grow. A reader follows these words in their written order without a network connection.\n\nReflow passage 12. The quiet harbour keeps its place while the letters grow. A reader follows these words in their written order without a network connection.\n\nReflow passage 13. The quiet harbour keeps its place while the letters grow. A reader follows these words in their written order without a network connection.\n\nReflow passage 14. The quiet harbour keeps its place while the letters grow. A reader follows these words in their written order without a network connection.\n\nReflow passage 15. The quiet harbour keeps its place while the letters grow. A reader follows these words in their written order without a network connection.\n\nReflow passage 16. The quiet harbour keeps its place while the letters grow. A reader follows these words in their written order without a network connection.\n\nReflow passage 17. The quiet harbour keeps its place while the letters grow. A reader follows these words in their written order without a network connection.\n\nReflow passage 18. The quiet harbour keeps its place while the letters grow. A reader follows these words in their written order without a network connection.\n\nReflow passage 19. The quiet harbour keeps its place while the letters grow. A reader follows these words in their written order without a network connection.\n\nReflow passage 20. The quiet harbour keeps its place while the letters grow. A reader follows these words in their written order without a network connection.",
+      "html": "<html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\"><head><base href=\"https://bookfin-publication.invalid/66b8218f87a845923c2724e259a99fa22f6423f7960a0c4b31791660f4da72a0/OEBPS/Text/reflow.xhtml\"><meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; script-src 'none'; style-src 'unsafe-inline' https://bookfin-publication.invalid; img-src https://bookfin-publication.invalid; font-src https://bookfin-publication.invalid https://bookfin-runtime.invalid; connect-src 'none'; frame-src 'none'; object-src 'none'; base-uri https://bookfin-publication.invalid; form-action 'none'\"><title>reflow</title><link rel=\"stylesheet\" href=\"../Styles/book.css\"><link rel=\"canonical\" href=\"https://bookfin-publication.invalid/66b8218f87a845923c2724e259a99fa22f6423f7960a0c4b31791660f4da72a0/OEBPS/Text/reflow.xhtml\"><meta name=\"dc.identifier\" content=\"reflow\"><meta name=\"dc.relation.ispartof\" content=\"bookfin-semantic-probe\"><style id=\"epubjs-inserted-css-\"></style><style id=\"epubjs-inserted-css-default\"></style><style>@font-face{font-family:BookfinSerif;src:url(\"https://bookfin-runtime.invalid/SourceSerif4.ttf\")}body{overflow-wrap:break-word;line-height:1.65!important;padding:0 18px!important}img{max-width:100%!important;height:auto}a:focus{outline:2px solid currentColor}</style><meta name=\"viewport\" content=\"width=412, height=607, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no\"></head><body style=\"font-size: 18.8px; width: 412px; height: 607px; overflow-y: hidden; margin: 0px !important; padding-top: 20px; padding-bottom: 20px; padding-left: 17px !important; padding-right: 17px !important; box-sizing: border-box; max-width: inherit; column-fill: auto; column-gap: 34px; column-width: 412px;\"><h1 id=\"heading\">Reflow checks</h1><p>Select this sentence to check native text selection.</p><p><a href=\"one.xhtml#heading\">Return to asset checks</a></p><p>Reflow passage 1. The quiet harbour keeps its place while the letters grow. A reader follows these words in their written order without a network connection.</p><p>Reflow passage 2. The quiet harbour keeps its place while the letters grow. A reader follows these words in their written order without a network connection.</p><p>Reflow passage 3. The quiet harbour keeps its place while the letters grow. A reader follows these words in their written order without a network connection.</p><p>Reflow passage 4. The quiet harbour keeps its place while the letters grow. A reader follows these words in their written order without a network connection.</p><p>Reflow passage 5. The quiet harbour keeps its place while the letters grow. A reader follows these words in their written order without a network connection.</p><p>Reflow passage 6. The quiet harbour keeps its place while the letters grow. A reader follows these words in their written order without a network connection.</p><p>Reflow passage 7. The quiet harbour keeps its place while the letters grow. A reader follows these words in their written order without a network connection.</p><p>Reflow passage 8. The quiet harbour keeps its place while the letters grow. A reader follows these words in their written order without a network connection.</p><p>Reflow passage 9. The quiet harbour keeps its place while the letters grow. A reader follows these words in their written order without a network connection.</p><p>Reflow passage 10. The quiet harbour keeps its place while the letters grow. A reader follows these words in their written order without a network connection.</p><p>Reflow passage 11. The quiet harbour keeps its place while the letters grow. A reader follows these words in their written order without a network connection.</p><p>Reflow passage 12. The quiet harbour keeps its place while the letters grow. A reader follows these words in their written order without a network connection.</p><p>Reflow passage 13. The quiet harbour keeps its place while the letters grow. A reader follows these words in their written order without a network connection.</p><p>Reflow passage 14. The quiet harbour keeps its place while the letters grow. A reader follows these words in their written order without a network connection.</p><p>Reflow passage 15. The quiet harbour keeps its place while the letters grow. A reader follows these words in their written order without a network connection.</p><p>Reflow passage 16. The quiet harbour keeps its place while the letters grow. A reader follows these words in their written order without a network connection.</p><p>Reflow passage 17. The quiet harbour keeps its place while the letters grow. A reader follows these words in their written order without a network connection.</p><p>Reflow passage 18. The quiet harbour keeps its place while the letters grow. A reader follows these words in their written order without a network connection.</p><p>Reflow passage 19. The quiet harbour keeps its place while the letters grow. A reader follows these words in their written order without a network connection.</p><p>Reflow passage 20. The quiet harbour keeps its place while the letters grow. A reader follows these words in their written order without a network connection.</p></body></html>",
+      "fontStatus": "loaded",
+      "fontSize": "17.672px",
+      "fontFamily": "BookSerif, serif",
+      "viewport": {
+        "width": 1648,
+        "height": 607
+      },
+      "images": [],
+      "styles": [
+        {
+          "href": "https://bookfin-publication.invalid/66b8218f87a845923c2724e259a99fa22f6423f7960a0c4b31791660f4da72a0/OEBPS/Styles/book.css"
+        },
+        {
+          "href": null
+        },
+        {
+          "href": null
+        },
+        {
+          "href": null
+        }
+      ]
+    }
+  ],
+  "appliedFonts": [
+    {
+      "nodeId": 35,
+      "text": "Reflow checks",
+      "result": {
+        "fonts": [
+          {
+            "familyName": "Source Serif 4 (Fontations)",
+            "postScriptName": "SourceSerif4Roman-Regular",
+            "isCustomFont": true,
+            "glyphCount": 12
+          }
+        ]
+      }
+    },
+    {
+      "nodeId": 37,
+      "text": "Select this sentence to check native text selection.",
+      "result": {
+        "fonts": [
+          {
+            "familyName": "Source Serif 4 (Fontations)",
+            "postScriptName": "SourceSerif4Roman-Regular",
+            "isCustomFont": true,
+            "glyphCount": 51
+          }
+        ]
+      }
+    },
+    {
+      "nodeId": 39,
+      "text": "",
+      "result": {
+        "fonts": [
+          {
+            "familyName": "Source Serif 4 (Fontations)",
+            "postScriptName": "SourceSerif4Roman-Regular",
+            "isCustomFont": true,
+            "glyphCount": 22
+          }
+        ]
+      }
+    },
+    {
+      "nodeId": 42,
+      "text": "Reflow passage 1. The quiet harbour keeps its place while the letters grow. A reader follows these words in their written order without a network connection.",
+      "result": {
+        "fonts": [
+          {
+            "familyName": "Source Serif 4 (Fontations)",
+            "postScriptName": "SourceSerif4Roman-Regular",
+            "isCustomFont": true,
+            "glyphCount": 153
+          }
+        ]
+      }
+    },
+    {
+      "nodeId": 44,
+      "text": "Reflow passage 2. The quiet harbour keeps its place while the letters grow. A reader follows these words in their written order without a network connection.",
+      "result": {
+        "fonts": [
+          {
+            "familyName": "Source Serif 4 (Fontations)",
+            "postScriptName": "SourceSerif4Roman-Regular",
+            "isCustomFont": true,
+            "glyphCount": 153
+          }
+        ]
+      }
+    },
+    {
+      "nodeId": 46,
+      "text": "Reflow passage 3. The quiet harbour keeps its place while the letters grow. A reader follows these words in their written order without a network connection.",
+      "result": {
+        "fonts": [
+          {
+            "familyName": "Source Serif 4 (Fontations)",
+            "postScriptName": "SourceSerif4Roman-Regular",
+            "isCustomFont": true,
+            "glyphCount": 153
+          }
+        ]
+      }
+    },
+    {
+      "nodeId": 48,
+      "text": "Reflow passage 4. The quiet harbour keeps its place while the letters grow. A reader follows these words in their written order without a network connection.",
+      "result": {
+        "fonts": [
+          {
+            "familyName": "Source Serif 4 (Fontations)",
+            "postScriptName": "SourceSerif4Roman-Regular",
+            "isCustomFont": true,
+            "glyphCount": 153
+          }
+        ]
+      }
+    },
+    {
+      "nodeId": 50,
+      "text": "Reflow passage 5. The quiet harbour keeps its place while the letters grow. A reader follows these words in their written order without a network connection.",
+      "result": {
+        "fonts": [
+          {
+            "familyName": "Source Serif 4 (Fontations)",
+            "postScriptName": "SourceSerif4Roman-Regular",
+            "isCustomFont": true,
+            "glyphCount": 153
+          }
+        ]
+      }
+    },
+    {
+      "nodeId": 52,
+      "text": "Reflow passage 6. The quiet harbour keeps its place while the letters grow. A reader follows these words in their written order without a network connection.",
+      "result": {
+        "fonts": [
+          {
+            "familyName": "Source Serif 4 (Fontations)",
+            "postScriptName": "SourceSerif4Roman-Regular",
+            "isCustomFont": true,
+            "glyphCount": 153
+          }
+        ]
+      }
+    },
+    {
+      "nodeId": 54,
+      "text": "Reflow passage 7. The quiet harbour keeps its place while the letters grow. A reader follows these words in their written order without a network connection.",
+      "result": {
+        "fonts": [
+          {
+            "familyName": "Source Serif 4 (Fontations)",
+            "postScriptName": "SourceSerif4Roman-Regular",
+            "isCustomFont": true,
+            "glyphCount": 153
+          }
+        ]
+      }
+    }
+  ],
+  "events": [
+    {
+      "method": "Log.entryAdded",
+      "params": {
+        "entry": {
+          "source": "network",
+          "level": "error",
+          "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+          "timestamp": 1793661356472.747,
+          "url": "https://bookfin-publication.invalid/66b8218f87a845923c2724e259a99fa22f6423f7960a0c4b31791660f4da72a0/META-INF/com.apple.ibooks.display-options.xml",
+          "networkRequestId": "12122.8"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,125 @@
+{
+  "at": "2026-11-02T22:52:35.760Z",
+  "mode": "observe",
+  "target": "https://bookfin-runtime.invalid/index.html",
+  "document": [
+    {
+      "url": "about:blank",
+      "sandbox": "allow-same-origin",
+      "text": "Admission checks\n\nReadable text remains after unsafe content is removed.\n\n[Unsupported image: Remote image blocked marker]\n\nRemote link blocked marker\n\nActive link blocked marker\n\nVisit reflow checks",
+      "html": "<html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\"><head><base href=\"https://bookfin-publication.invalid/66b8218f87a845923c2724e259a99fa22f6423f7960a0c4b31791660f4da72a0/OEBPS/Text/denial.xhtml\"><meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; script-src 'none'; style-src 'unsafe-inline' https://bookfin-publication.invalid; img-src https://bookfin-publication.invalid; font-src https://bookfin-publication.invalid https://bookfin-runtime.invalid; connect-src 'none'; frame-src 'none'; object-src 'none'; base-uri https://bookfin-publication.invalid; form-action 'none'\"><title>denial</title><link rel=\"stylesheet\" href=\"../Styles/book.css\"><link rel=\"stylesheet\" href=\"../Styles/denial.css\"><link rel=\"canonical\" href=\"https://bookfin-publication.invalid/66b8218f87a845923c2724e259a99fa22f6423f7960a0c4b31791660f4da72a0/OEBPS/Text/denial.xhtml\"><meta name=\"dc.identifier\" content=\"denial\"><meta name=\"dc.relation.ispartof\" content=\"bookfin-semantic-probe\"><style id=\"epubjs-inserted-css-\"></style><style id=\"epubjs-inserted-css-default\"></style><style>@font-face{font-family:BookfinSerif;src:url(\"https://bookfin-runtime.invalid/SourceSerif4.ttf\")}body{overflow-wrap:break-word;line-height:1.65!important;padding:0 18px!important}img{max-width:100%!important;height:auto}a:focus{outline:2px solid currentColor}</style><meta name=\"viewport\" content=\"width=412, height=469, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no\"></head><body style=\"font-size: 20px; width: 412px; height: 469px; overflow-y: hidden; margin: 0px !important; padding-top: 20px; padding-bottom: 20px; padding-left: 17px !important; padding-right: 17px !important; box-sizing: border-box; max-width: inherit; column-fill: auto; column-gap: 34px; column-width: 412px;\"><h1 id=\"heading\">Admission checks</h1><p>Readable text remains after unsafe content is removed.</p><span role=\"img\" aria-label=\"Unsupported image: Remote image blocked marker\">[Unsupported image: Remote image blocked marker]</span><p><a>Remote link blocked marker</a></p><p><a>Active link blocked marker</a></p><p><a href=\"reflow.xhtml#heading\">Visit reflow checks</a></p></body></html>",
+      "fontStatus": "loaded",
+      "fontSize": "20px",
+      "fontFamily": "BookSerif, serif",
+      "viewport": {
+        "width": 412,
+        "height": 469
+      },
+      "images": [],
+      "styles": [
+        {
+          "href": "https://bookfin-publication.invalid/66b8218f87a845923c2724e259a99fa22f6423f7960a0c4b31791660f4da72a0/OEBPS/Styles/book.css"
+        },
+        {
+          "href": "https://bookfin-publication.invalid/66b8218f87a845923c2724e259a99fa22f6423f7960a0c4b31791660f4da72a0/OEBPS/Styles/denial.css"
+        },
+        {
+          "href": null
+        },
+        {
+          "href": null
+        },
+        {
+          "href": null
+        }
+      ]
+    }
+  ],
+  "appliedFonts": [
+    {
+      "nodeId": 36,
+      "text": "Admission checks",
+      "result": {
+        "fonts": [
+          {
+            "familyName": "Source Serif 4 (Fontations)",
+            "postScriptName": "SourceSerif4Roman-Regular",
+            "isCustomFont": true,
+            "glyphCount": 16
+          }
+        ]
+      }
+    },
+    {
+      "nodeId": 38,
+      "text": "Readable text remains after unsafe content is removed.",
+      "result": {
+        "fonts": [
+          {
+            "familyName": "Source Serif 4 (Fontations)",
+            "postScriptName": "SourceSerif4Roman-Regular",
+            "isCustomFont": true,
+            "glyphCount": 52
+          }
+        ]
+      }
+    },
+    {
+      "nodeId": 42,
+      "text": "",
+      "result": {
+        "fonts": [
+          {
+            "familyName": "Source Serif 4 (Fontations)",
+            "postScriptName": "SourceSerif4Roman-Regular",
+            "isCustomFont": true,
+            "glyphCount": 26
+          }
+        ]
+      }
+    },
+    {
+      "nodeId": 45,
+      "text": "",
+      "result": {
+        "fonts": [
+          {
+            "familyName": "Source Serif 4 (Fontations)",
+            "postScriptName": "SourceSerif4Roman-Regular",
+            "isCustomFont": true,
+            "glyphCount": 26
+          }
+        ]
+      }
+    },
+    {
+      "nodeId": 48,
+      "text": "",
+      "result": {
+        "fonts": [
+          {
+            "familyName": "Source Serif 4 (Fontations)",
+            "postScriptName": "SourceSerif4Roman-Regular",
+            "isCustomFont": true,
+            "glyphCount": 18
+          }
+        ]
+      }
+    }
+  ],
+  "events": [
+    {
+      "method": "Log.entryAdded",
+      "params": {
+        "entry": {
+          "source": "network",
+          "level": "error",
+          "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+          "timestamp": 1793659921419.501,
+          "url": "https://bookfin-publication.invalid/66b8218f87a845923c2724e259a99fa22f6423f7960a0c4b31791660f4da72a0/META-INF/com.apple.ibooks.display-options.xml",
+          "networkRequestId": "5138.8"
+        }
+      }
+    }
+  ]
+}

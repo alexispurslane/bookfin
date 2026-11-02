@@ -1,0 +1,529 @@
+{
+  "at": "2026-11-02T23:47:46.057296+00:00",
+  "excludes": [
+    "artifact-manifest.json",
+    "public-audit.json"
+  ],
+  "files": [
+    {
+      "path": ".tickets/boo-ohud.md",
+      "bytes": 2862,
+      "sha256": "660a6abd85192194a772ec39318cc0627b84ef3517c4e2544e5dac346675651f"
+    },
+    {
+      "path": ".tickets/t8-j809.md",
+      "bytes": 4332,
+      "sha256": "8c4e54514b7bb2d7e039e474c0222c1a271d6b800ee5b2278236148813ff74af"
+    },
+    {
+      "path": ".tickets/t2-u76g.md",
+      "bytes": 1972,
+      "sha256": "af203b4de54abdb0ef21ca371a940e5668a98b96cd158d3bd82209b1576d9438"
+    },
+    {
+      "path": ".tickets/t2-y0ce.md",
+      "bytes": 1394,
+      "sha256": "a2331ba07f33553864c122f7fe1a52a49a4b706c7edfdf242fb1145c273f04ff"
+    },
+    {
+      "path": "docs/evidence/reader/android-remaining.md",
+      "bytes": 20423,
+      "sha256": "4380d1d23fc5c3b3354d2484374b6ca03cbc5df1dc21d50ca0b9dd166fc31151"
+    },
+    {
+      "path": "tool/acceptance/reader_remaining_fixture.py",
+      "bytes": 4797,
+      "sha256": "4c9ccef873cade87b62d4186bb1c0f63315f3bce5956b876341d4309cd81e200"
+    },
+    {
+      "path": "tool/acceptance/reader_remaining_server.py",
+      "bytes": 890,
+      "sha256": "102fc9d077dcc562eff13d9f29d00a24ec77425d258f7d2877b3d51f427ba05c"
+    },
+    {
+      "path": "tool/acceptance/test_reader_remaining_fixture.py",
+      "bytes": 2388,
+      "sha256": "045a05b5b9a99ad0e6c55fa30b89d09750e5c709638646b5d2e1e042454fbe69"
+    },
+    {
+      "path": "docs/evidence/reader/images/android-remaining/01-downloaded.png",
+      "bytes": 111805,
+      "sha256": "5fd4a400235274a804e8138ab0005728452e48d40598a3c024a179ff1ef0a89d"
+    },
+    {
+      "path": "docs/evidence/reader/images/android-remaining/02-assets.png",
+      "bytes": 230684,
+      "sha256": "45f6358cdbd464eafde42b78434bf735e070244794ee732fb613c7b91096e4aa"
+    },
+    {
+      "path": "docs/evidence/reader/images/android-remaining/03-request-control.png",
+      "bytes": 52328,
+      "sha256": "edfdce9d00abe2260bcff121e69cc6fa94dac37805ccd6785396e73824f7f04f"
+    },
+    {
+      "path": "docs/evidence/reader/images/android-remaining/04-after-native-navigation.png",
+      "bytes": 231185,
+      "sha256": "d70675da15739f6a8db470286c73b948dd8c2c641f84b8b86d81d69233db36bf"
+    },
+    {
+      "path": "docs/evidence/reader/images/android-remaining/05-assets-local-styles.png",
+      "bytes": 259287,
+      "sha256": "ab965e39cac0371ea5347a862ce9e06d88179cb2fc0652a6b961e7bb08a85daa"
+    },
+    {
+      "path": "docs/evidence/reader/images/android-remaining/06-admission.png",
+      "bytes": 288221,
+      "sha256": "e227a63b970a719eaeed9418624e4146797b1ad8bccba9ae2889b5a3056bf048"
+    },
+    {
+      "path": "docs/evidence/reader/images/android-remaining/07-local-link-reflow.png",
+      "bytes": 412953,
+      "sha256": "2415bd6cc56ec923e0d45490c74002738c7444d502d291bb3a356ca03fb63278"
+    },
+    {
+      "path": "docs/evidence/reader/images/android-remaining/08-selection.png",
+      "bytes": 415736,
+      "sha256": "70fbbe3e51979ecb87e2e1fed1f7c03fc664085d30c52d5eb220e0db7a6814d8"
+    },
+    {
+      "path": "docs/evidence/reader/images/android-remaining/09-talkback-enabled.png",
+      "bytes": 123757,
+      "sha256": "50bada696da578a70aace7f9f5c7dc0c355c1637df3aee5261998be23f65d8ff"
+    },
+    {
+      "path": "docs/evidence/reader/images/android-remaining/10-talkback-toggle-state.png",
+      "bytes": 123803,
+      "sha256": "151cdc2a05c2897c5abba6d974be259ecab0c45b5abc13dcf07412a7ad326755"
+    },
+    {
+      "path": "docs/evidence/reader/images/android-remaining/11-os-large-text.png",
+      "bytes": 204616,
+      "sha256": "d193369b8373f698bda7800c89e555ac76e890600e2936ecc43292de7273aee3"
+    },
+    {
+      "path": "docs/evidence/reader/images/android-remaining/12-os-large-next.png",
+      "bytes": 288767,
+      "sha256": "6450aa04c97ebb7279f39558fa3ccff58a0de3e11648869e965d1931e91c5ffb"
+    },
+    {
+      "path": "docs/evidence/reader/images/android-remaining/13-shared-build-reader.png",
+      "bytes": 499690,
+      "sha256": "1d286690a2767bc275abf58dca8e8838d3d549ef87c36bbcda077fd126fba92b"
+    },
+    {
+      "path": "docs/evidence/reader/images/android-remaining/14-theme-day-before.png",
+      "bytes": 525305,
+      "sha256": "8dd4ff54797f8a14f886bcf856c0dd9dabcc9971071e3a4088bb59a8bd6f3f7e"
+    },
+    {
+      "path": "docs/evidence/reader/images/android-remaining/15-theme-night-reader.png",
+      "bytes": 518673,
+      "sha256": "2ce3b5b41a920420bfeb13275f74dddc62ba2d87920d743aea921da9bfd14b25"
+    },
+    {
+      "path": "docs/evidence/reader/images/android-remaining/16-theme-night-app.png",
+      "bytes": 95931,
+      "sha256": "d4dd359a3f17c0d325218c18e5179bf40848e8f4eaedf4c9b0b83c51897b402e"
+    },
+    {
+      "path": "docs/evidence/reader/images/android-remaining/17-theme-night-reopen.png",
+      "bytes": 518267,
+      "sha256": "3715bc9f136790b7c297376b7bc7044b3e868f9c78e24a6a73ec23b2256bfeaa"
+    },
+    {
+      "path": "docs/evidence/reader/images/android-remaining/18-theme-night-restart-app.png",
+      "bytes": 164616,
+      "sha256": "fda59b2c4b42d39f546b2a3a24fa7d95de1f545e04bbbc5344565dd6cb996a64"
+    },
+    {
+      "path": "docs/evidence/reader/images/android-remaining/19-theme-night-restart-reader.png",
+      "bytes": 518368,
+      "sha256": "2e1597e8d1c4012d339a6aff40a99fb69c32987ad7e734739846e36df7ec150f"
+    },
+    {
+      "path": "docs/evidence/reader/images/android-remaining/20-theme-day-reader.png",
+      "bytes": 525030,
+      "sha256": "f50eda4a299198f7312b65aabc01980d0e736e532cdd5078db4f8eb540a78446"
+    },
+    {
+      "path": "docs/evidence/reader/images/android-remaining/21-theme-day-app.png",
+      "bytes": 96380,
+      "sha256": "09e87e70905a92d695fd077a49cd4f4bb6db30075647624a4a0dddd274d739ab"
+    },
+    {
+      "path": "docs/evidence/reader/images/android-remaining/22-theme-day-reopen.png",
+      "bytes": 525202,
+      "sha256": "25531c0c16766e96691993d1f7aed1764010bef69bafffea4afb23db37fda8af"
+    },
+    {
+      "path": "docs/evidence/reader/images/android-remaining/23-theme-day-restart-app.png",
+      "bytes": 165795,
+      "sha256": "d510c9b5f8a00081b6da6b6c3108fb7db423e48409e44fa1ad735402f6f0d40b"
+    },
+    {
+      "path": "docs/evidence/reader/images/android-remaining/24-theme-day-restart-reader.png",
+      "bytes": 524869,
+      "sha256": "a10fbc3d3cc0b9a5e97ad6517ecb7daa67a4bafb50b3ffd469cb1664e54a5820"
+    },
+    {
+      "path": "docs/evidence/reader/images/android-remaining/25-automatic-available.png",
+      "bytes": 157468,
+      "sha256": "1aa4b9ae03d187d17d0745833d9c616fdf9705412d1fd864e8c1da59ad08522f"
+    },
+    {
+      "path": "docs/evidence/reader/images/android-remaining/26-automatic-selected.png",
+      "bytes": 162749,
+      "sha256": "4fa1c43f4886248ccb35a5e9648d45fa8795f13b7206a05c81c4991984d09b4d"
+    },
+    {
+      "path": "docs/evidence/reader/images/android-remaining/27-exact-endpoint-control.png",
+      "bytes": 40201,
+      "sha256": "032b60873bc41dd8b1d945f309160dc3a09d5582d837f398583b00b0ba193444"
+    },
+    {
+      "path": "docs/evidence/reader/images/android-remaining/28-exact-fetch-control.png",
+      "bytes": 53399,
+      "sha256": "b3026d872f29564206361e37a729868f80076c8d19723f71b8d7cb5058adaf0e"
+    },
+    {
+      "path": "docs/evidence/reader/images/android-remaining/29-exact-resource-control.png",
+      "bytes": 52478,
+      "sha256": "5639721ed92c7b41189ec33d9ae3ec6426a73d6f5ac20c0c0868c5159cfab4ed"
+    },
+    {
+      "path": "docs/evidence/reader/images/android-remaining/30-own-browser-tabs-closed.png",
+      "bytes": 58372,
+      "sha256": "03b5cdec78162ba553fefbdb3ba097e56362d9000c5c5ac2cf7fbab6464fdd79"
+    },
+    {
+      "path": "docs/evidence/reader/images/android-remaining/31-current-assets.png",
+      "bytes": 213080,
+      "sha256": "c853edf2bd605596f2bdab61994c56520b10de175e4fff904b973fb3379b2e60"
+    },
+    {
+      "path": "docs/evidence/reader/images/android-remaining/32-current-after-native-navigation.png",
+      "bytes": 213076,
+      "sha256": "b5d55a695f3c6df892096aec467dca7bf77998560446e56a48e3feaf3a0e3a67"
+    },
+    {
+      "path": "docs/evidence/reader/images/android-remaining/33-current-admission.png",
+      "bytes": 225312,
+      "sha256": "f796fa3165da71051b2ae540cc15ce8f6820519b6afceb645c6d828a3db3b992"
+    },
+    {
+      "path": "docs/evidence/reader/images/android-remaining/34-current-selection.png",
+      "bytes": 493825,
+      "sha256": "088de598d3da63cb7f4926fd2033da11c64e022620ad07e85101c07b58edb724"
+    },
+    {
+      "path": "docs/evidence/reader/images/android-remaining/35-current-offline-large.png",
+      "bytes": 206819,
+      "sha256": "f19e8f55784308eb076004cebfe55a650338c21dfd78f64fb0346b33d7c4dfdc"
+    },
+    {
+      "path": "docs/evidence/reader/images/android-remaining/36-current-offline-large-next.png",
+      "bytes": 291071,
+      "sha256": "070e2c2b6a94d7d582f7e5215da120e0e9f5149f6e5e259f2b594c435723b9d7"
+    },
+    {
+      "path": "docs/evidence/reader/images/android-remaining/37-offline-restart-library.png",
+      "bytes": 178379,
+      "sha256": "13a99072d0ab22c0140e4aeeae3dedc70104832793f1247d0e940f4cb2d47694"
+    },
+    {
+      "path": "docs/evidence/reader/images/android-remaining/38-offline-unconfirmed-remove-dialog.png",
+      "bytes": 126155,
+      "sha256": "791cc268af96e95a6944dcb70383ab07e1c31881dc44d7d668c2512f37b37eb7"
+    },
+    {
+      "path": "docs/evidence/reader/images/android-remaining/39-offline-restart-reader.png",
+      "bytes": 82738,
+      "sha256": "0078d68c7b7cc08f5b48448185bc9fbc4b443aac91a4386634ed0f16a926436e"
+    },
+    {
+      "path": "docs/evidence/reader/images/android-remaining/40-offline-restart-settled.png",
+      "bytes": 498683,
+      "sha256": "3bc909ed0bc0b2f2f6d8e0018fb115e1f6d7ae2fe1ccdfcbf9362a25b07c133c"
+    },
+    {
+      "path": "docs/evidence/reader/images/android-remaining/41-current-offline-selection.png",
+      "bytes": 502860,
+      "sha256": "8e9f6b340b6b6e176d7fa5840b3403bc83ed099043f19589b446bf29858aa1fb"
+    },
+    {
+      "path": "docs/evidence/reader/images/android-remaining/42-selection-read-aloud-overlay.png",
+      "bytes": 497245,
+      "sha256": "d2e034c28abdb0c0cc6d50fbe917858b5b09ff51175827d15cd55c187d09e22d"
+    },
+    {
+      "path": "docs/evidence/reader/images/android-remaining/43-offline-assets-after-restart.png",
+      "bytes": 202843,
+      "sha256": "3342e8f3ca726d857847761b99d35efa9653aac1b7d0845bc64a242dffa74b37"
+    },
+    {
+      "path": "docs/evidence/reader/images/android-remaining/44-own-download-removed.png",
+      "bytes": 107046,
+      "sha256": "f90e135b408ceacba13a547d725df90e5c26cda14cfbf7c6b6a0c22b57904309"
+    },
+    {
+      "path": "docs/evidence/reader/images/android-remaining/45-signed-out.png",
+      "bytes": 72119,
+      "sha256": "ec56908eeacf02105750df1b7794536a1f716f68615104c9123bc0a6a8772bae"
+    },
+    {
+      "path": "docs/evidence/reader/images/android-remaining/46-restore-font-settings-before.png",
+      "bytes": 183858,
+      "sha256": "74a906e301b80d5024a62ebd54c16cf895f05f841605d1eecb2f2cd314f8142e"
+    },
+    {
+      "path": "docs/evidence/reader/images/android-remaining/47-font-default-tap-unchanged.png",
+      "bytes": 183854,
+      "sha256": "62ff94b2a7ba38c06b2f5778b7bffc9f7468bf94b2568da127d930b7fdfa71a6"
+    },
+    {
+      "path": "docs/evidence/reader/images/android-remaining/48-font-step-smaller.png",
+      "bytes": 184681,
+      "sha256": "1723e5c600bab6797cc5b2844697c04278f1a26668af92c5b72e49d269e6cdb2"
+    },
+    {
+      "path": "docs/evidence/reader/images/android-remaining/49-restored-font-default.png",
+      "bytes": 183282,
+      "sha256": "8f60ae256a76b6b6690209789d04d4d7f68b781fe8696da143f620c018f9fbed"
+    },
+    {
+      "path": "docs/evidence/reader/images/android-remaining/50-font-tile-removed.png",
+      "bytes": 125282,
+      "sha256": "acdbeaa00e47c380753f9b63fae1aee534905e8a8965dff0ec08507e3038bd85"
+    },
+    {
+      "path": "docs/evidence/reader/images/android-remaining/51-final-signed-out.png",
+      "bytes": 71330,
+      "sha256": "6a7ba3a81ebe3221abf98c119fa4534a44c02b2eabdec33d58d13a01999f18c2"
+    },
+    {
+      "path": "tool/evidence/reader/android-remaining/admission-document.json",
+      "bytes": 5525,
+      "sha256": "0df4e2c2d0457838447abb3203c0b9fc4773bbd0d5896eb2c72dfcf6b48a3b18"
+    },
+    {
+      "path": "tool/evidence/reader/android-remaining/admission-tests.txt",
+      "bytes": 2359,
+      "sha256": "f9a1cf8440b1fbbfa186e14e67a8f844e654dc4307a655bc939693dd521cc8b4"
+    },
+    {
+      "path": "tool/evidence/reader/android-remaining/artifact-audit.json",
+      "bytes": 3210,
+      "sha256": "d4dd4e3f3ba5590e6cc72caf24f8625709b50b5c7fd4c7e4540f37efa34f6269"
+    },
+    {
+      "path": "tool/evidence/reader/android-remaining/assets-local-styles.json",
+      "bytes": 7951,
+      "sha256": "79f24cdaf218c8ebd54c979d1f0a87521679f7db12a9a24a61f3ae65f98d1239"
+    },
+    {
+      "path": "tool/evidence/reader/android-remaining/assets.json",
+      "bytes": 7979,
+      "sha256": "98df261765c6a23b94e14aa64f808ea5b376e648d16287531f0df1a6d4e1762b"
+    },
+    {
+      "path": "tool/evidence/reader/android-remaining/automatic-offline-record.json",
+      "bytes": 1813,
+      "sha256": "680351e0b05eab6d337c04aebcd7be1a5879f5ee5b5e17e4a2f1898f3d74a930"
+    },
+    {
+      "path": "tool/evidence/reader/android-remaining/cleanup-record.json",
+      "bytes": 1802,
+      "sha256": "a373b543df9e0cd1142961e5f8075906288b8a0a7c1b93edcc427313d79f6205"
+    },
+    {
+      "path": "tool/evidence/reader/android-remaining/cleanup.json",
+      "bytes": 2898,
+      "sha256": "06148af674d90b9d9ae129f73a2453fa86cd8d994b51437e178544280c539d8f"
+    },
+    {
+      "path": "tool/evidence/reader/android-remaining/commands.txt",
+      "bytes": 5651,
+      "sha256": "6c70cbb123f225516c35cf026930f811579deb0d8488404a14a95b186ee20afc"
+    },
+    {
+      "path": "tool/evidence/reader/android-remaining/current-admission-tests.txt",
+      "bytes": 1238,
+      "sha256": "fa4137910d9b95d6df79120da15bddc1ab8d69210e97b1bc30eac8efe623df2c"
+    },
+    {
+      "path": "tool/evidence/reader/android-remaining/current-admission.json",
+      "bytes": 13834,
+      "sha256": "b0b87ad772ed7510ba41551b6f95d34dc1ed5d87ff2565e257f18966bca89289"
+    },
+    {
+      "path": "tool/evidence/reader/android-remaining/current-assets.json",
+      "bytes": 11376,
+      "sha256": "4ffaa923b9cc6232f0b7bab7264ed2176555892b47a695cb4344a61b05edc3c2"
+    },
+    {
+      "path": "tool/evidence/reader/android-remaining/current-navigation-probe.json",
+      "bytes": 6868,
+      "sha256": "4ba5539398e144fddc0ffbec7c1e7470166af05fc4a437d2bcb604a2bb40efc9"
+    },
+    {
+      "path": "tool/evidence/reader/android-remaining/current-network-resource-probe.json",
+      "bytes": 5885,
+      "sha256": "4f1373c914572dba3c70683a3b41f760045a300c2d5f60bfe82e6117c176e0c7"
+    },
+    {
+      "path": "tool/evidence/reader/android-remaining/current-offline-assets.json",
+      "bytes": 11350,
+      "sha256": "57912f204c7b3bfeecfce91e1da3a79152d6d36a521032737f6e7386d0328c49"
+    },
+    {
+      "path": "tool/evidence/reader/android-remaining/current-offline-large.json",
+      "bytes": 15401,
+      "sha256": "5724b4ca3defe7515aa11f0d3c82ca76eb70a8c47ac70bb8dd708135171cc80f"
+    },
+    {
+      "path": "tool/evidence/reader/android-remaining/current-permission-probes.json",
+      "bytes": 5683,
+      "sha256": "58414e7f9649cff6af2f8322182e5da355a2b754247f419cd5afb75d45a508fd"
+    },
+    {
+      "path": "tool/evidence/reader/android-remaining/current-request-probes.json",
+      "bytes": 18775,
+      "sha256": "09b275e3141d26717891a3cd8684b3959cbcc0fae5fc23937413f02d4c571b71"
+    },
+    {
+      "path": "tool/evidence/reader/android-remaining/day-before-record.json",
+      "bytes": 1736,
+      "sha256": "a7a6f55dbf0eacf2b20f081236174e3975c7cd059813618f0361299735c4a222"
+    },
+    {
+      "path": "tool/evidence/reader/android-remaining/day-restart-document.json",
+      "bytes": 17197,
+      "sha256": "db2e4bec5b7f0891b8856af1dd91d98b533ff33ce91834356ceeb7ad6f7ca844"
+    },
+    {
+      "path": "tool/evidence/reader/android-remaining/day-restart-record.json",
+      "bytes": 1796,
+      "sha256": "5bb94f8e79206876f0192ca3095da49db6eca1546d4df20c6363c1614b4259c9"
+    },
+    {
+      "path": "tool/evidence/reader/android-remaining/filter-readback.py",
+      "bytes": 1323,
+      "sha256": "4525531b597f19a962ae8f83644375abdbb65ca53fbf1069f497fa2f0606c6d0"
+    },
+    {
+      "path": "tool/evidence/reader/android-remaining/final-fixture-tests.txt",
+      "bytes": 1620,
+      "sha256": "5f4248ac9802108729a5cfcc2fa940f857b4a2e951935be3fe24e77560d3361a"
+    },
+    {
+      "path": "tool/evidence/reader/android-remaining/fixture-green.txt",
+      "bytes": 102,
+      "sha256": "80144f3bf12d071a1497821467ab02765712cb11da3f547a5e2b5cf79f938e9a"
+    },
+    {
+      "path": "tool/evidence/reader/android-remaining/fixture-red.txt",
+      "bytes": 2748,
+      "sha256": "a1ffa0705d667c870a032726c841cc289be55863bc5b8541170b7c9738241ea8"
+    },
+    {
+      "path": "tool/evidence/reader/android-remaining/http-events-before-current-probes.jsonl",
+      "bytes": 4671,
+      "sha256": "26906bc48c0f463d256810a78d7f92a37fe84cff330560acaee4c183c115f523"
+    },
+    {
+      "path": "tool/evidence/reader/android-remaining/http-events.jsonl",
+      "bytes": 5073,
+      "sha256": "0ace1825a18e0e5092b7782d19cd69b5c4728a8c3f98050f97d9e85aab86267d"
+    },
+    {
+      "path": "tool/evidence/reader/android-remaining/initial-synthetic.epub",
+      "bytes": 136187,
+      "sha256": "23c5416e3db33bdfe48b363a52f8ae9ab9de93bccc45ecb1156486284402251f"
+    },
+    {
+      "path": "tool/evidence/reader/android-remaining/large-text.json",
+      "bytes": 14141,
+      "sha256": "8a346b088d12d9a9007bc30b16c343e5c63096fdc3fb93018ded804eb964b3b9"
+    },
+    {
+      "path": "tool/evidence/reader/android-remaining/navigation-probe.json",
+      "bytes": 6865,
+      "sha256": "64a01081703a78c34e90806a5e7d1823427b4283622336a17795e1fb2261bb9f"
+    },
+    {
+      "path": "tool/evidence/reader/android-remaining/network-resource-probe.json",
+      "bytes": 5882,
+      "sha256": "9b51965cd33f1db131281646dc5edd87615741635fa9414b22fc88d2d0001cd6"
+    },
+    {
+      "path": "tool/evidence/reader/android-remaining/night-app-record.json",
+      "bytes": 1796,
+      "sha256": "7428b36b420ee70394759a449c3e059cd2988f2c4a31a9faaf985366a988834e"
+    },
+    {
+      "path": "tool/evidence/reader/android-remaining/night-reopen-document.json",
+      "bytes": 14146,
+      "sha256": "d900bd032b057575f7174b98336e5667833131382b73eae756f9e9b594f6f565"
+    },
+    {
+      "path": "tool/evidence/reader/android-remaining/night-restart-document.json",
+      "bytes": 14146,
+      "sha256": "9f5fccffe7a2f816d45540e856439aeeedfe648dd7b8fae91448f3177816706e"
+    },
+    {
+      "path": "tool/evidence/reader/android-remaining/night-restart-record.json",
+      "bytes": 1800,
+      "sha256": "9a6d04f3bd39a35321170e82968b7fd0a17db2bf120b6e85031a71d5443280c6"
+    },
+    {
+      "path": "tool/evidence/reader/android-remaining/observe-native.mjs",
+      "bytes": 6362,
+      "sha256": "cb0ab0b158ca6e6c23c787f3c5c36629383457951958b1c1be1ee3aa0146e47a"
+    },
+    {
+      "path": "tool/evidence/reader/android-remaining/offline-restart-document.json",
+      "bytes": 18115,
+      "sha256": "005cc854b8cd3a86072fc29f46a2b7d583f64f6be0c6f9cb3dfb97194e2b3c81"
+    },
+    {
+      "path": "tool/evidence/reader/android-remaining/permission-probes.json",
+      "bytes": 5680,
+      "sha256": "ad61540dbe9a20f5c9e4cb8508432a90ae3baa456b5359c96d072e75d1bf9a98"
+    },
+    {
+      "path": "tool/evidence/reader/android-remaining/provenance.json",
+      "bytes": 2143,
+      "sha256": "27da30737cc262e968f454fe61b978e989c5b61a66d479852865442917145024"
+    },
+    {
+      "path": "tool/evidence/reader/android-remaining/request-probes.json",
+      "bytes": 18755,
+      "sha256": "51b29fc637621e438fd02bc72c6c7cbd4b6fd951efd0ebf526ededf4a99045d2"
+    },
+    {
+      "path": "tool/evidence/reader/android-remaining/shared-build-reflow.json",
+      "bytes": 14144,
+      "sha256": "46cbb340b20d31a6fbd0c2ac3c44e7570560c8205ded6c1efa3ffb5b4690c2af"
+    },
+    {
+      "path": "tool/evidence/reader/android-remaining/shared-theme-build.txt",
+      "bytes": 1775,
+      "sha256": "75c5aad390871c2e7f34795cea4e7417a2e68bed317cb880df71263af6e34337"
+    },
+    {
+      "path": "tool/evidence/reader/android-remaining/style-fixture-red.txt",
+      "bytes": 1046,
+      "sha256": "a3969e08dc920d1263f510b8c344a327b7e46bb6ec95d770f1edd1aa68ffc934"
+    },
+    {
+      "path": "tool/evidence/reader/android-remaining/synthetic.epub",
+      "bytes": 136430,
+      "sha256": "bcf88777f524e966d9f2445f5a253b83659644a704def64510674876082c7207"
+    },
+    {
+      "path": "tool/evidence/reader/android-remaining/talkback-host.txt",
+      "bytes": 2165,
+      "sha256": "b8445dc54f711a407df776bfdc61465191667bbf416c3408e7b6195a5dbdb4a0"
+    }
+  ]
+}

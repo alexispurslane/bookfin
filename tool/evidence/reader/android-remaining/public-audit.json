@@ -1,0 +1,29 @@
+{
+  "at": "2026-11-02T23:47:46.068521+00:00",
+  "result": "pass",
+  "secretValuesChecked": 6,
+  "secretKinds": [
+    "three generated disposable-account passwords",
+    "three disposable-account access tokens"
+  ],
+  "secretValuesOrHashesPublished": false,
+  "publicFilesScanned": 104,
+  "epubEntriesAlsoScanned": true,
+  "findings": [],
+  "screenshotVisualAudit": {
+    "retainedScreenshots": 51,
+    "allReviewedInOrderedContactSheets": true,
+    "keyOutcomesReviewedAtFullResolution": true,
+    "unrelatedNotificationOverlayExcluded": true
+  },
+  "privateRuntimeAndRawCopiesRemoved": true,
+  "scope": "Only named test/evidence/ticket files; unrelated app account readbacks excluded.",
+  "cleanupLimit": "Signed-out normal app process remained at last readback; t2-y0ce.",
+  "postAuditWhitespaceNormalization": {
+    "files": [
+      ".tickets/t2-y0ce.md",
+      "tool/evidence/reader/android-remaining/shared-theme-build.txt"
+    ],
+    "changes": "Remove generated ticket blank EOF line and build-progress trailing spaces only; no text or secret values added."
+  }
+}

@@ -1,0 +1,224 @@
+{
+  "at": "2026-11-02T23:10:11.962Z",
+  "mode": "navigation",
+  "target": "https://bookfin-runtime.invalid/index.html",
+  "diagnosticOnly": true,
+  "before": "https://bookfin-runtime.invalid/index.html",
+  "attempt": "location.assign invoked",
+  "after": "https://bookfin-runtime.invalid/index.html",
+  "events": [
+    {
+      "method": "Log.entryAdded",
+      "params": {
+        "entry": {
+          "source": "network",
+          "level": "error",
+          "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+          "timestamp": 1793660976777.664,
+          "url": "https://bookfin-publication.invalid/66b8218f87a845923c2724e259a99fa22f6423f7960a0c4b31791660f4da72a0/META-INF/com.apple.ibooks.display-options.xml",
+          "networkRequestId": "10288.8"
+        }
+      }
+    },
+    {
+      "method": "Log.entryAdded",
+      "params": {
+        "entry": {
+          "source": "network",
+          "level": "error",
+          "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+          "timestamp": 1793661009805.71,
+          "url": "https://bookfin-publication.invalid/66b8218f87a845923c2724e259a99fa22f6423f7960a0c4b31791660f4da72a0/OEBPS/Images/missing-native-probe.png",
+          "networkRequestId": "10288.27"
+        }
+      }
+    },
+    {
+      "method": "Log.entryAdded",
+      "params": {
+        "entry": {
+          "source": "network",
+          "level": "error",
+          "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+          "timestamp": 1793661009827.154,
+          "url": "https://bookfin-publication.invalid/66b8218f87a845923c2724e259a99fa22f6423f7960a0c4b31791660f4da72a0/OEBPS/Images/dot.png?native-probe=1",
+          "networkRequestId": "10288.28"
+        }
+      }
+    },
+    {
+      "method": "Log.entryAdded",
+      "params": {
+        "entry": {
+          "source": "network",
+          "level": "error",
+          "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+          "timestamp": 1793661009839.775,
+          "url": "https://bookfin-publication.invalid/66b8218f87a845923c2724e259a99fa22f6423f7960a0c4b31791660f4da72a0/OEBPS/Images/dot.png",
+          "networkRequestId": "10288.29"
+        }
+      }
+    },
+    {
+      "method": "Log.entryAdded",
+      "params": {
+        "entry": {
+          "source": "security",
+          "level": "error",
+          "text": "Refused to connect to 'http://127.0.0.1:7365/probe/diagnostic-fetch' because it violates the following Content Security Policy directive: \"connect-src https://bookfin-publication.invalid\".\n",
+          "timestamp": 1793661009840.493,
+          "lineNumber": 9,
+          "stackTrace": {
+            "callFrames": [
+              {
+                "functionName": "",
+                "scriptId": "19",
+                "url": "",
+                "lineNumber": 9,
+                "columnNumber": 33
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "method": "Log.entryAdded",
+      "params": {
+        "entry": {
+          "source": "javascript",
+          "level": "error",
+          "text": "Fetch API cannot load http://127.0.0.1:7365/probe/diagnostic-fetch. Refused to connect because it violates the document's Content Security Policy.",
+          "timestamp": 1793661009840.601,
+          "lineNumber": 9,
+          "stackTrace": {
+            "callFrames": [
+              {
+                "functionName": "",
+                "scriptId": "19",
+                "url": "",
+                "lineNumber": 9,
+                "columnNumber": 33
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "method": "Log.entryAdded",
+      "params": {
+        "entry": {
+          "source": "violation",
+          "level": "error",
+          "text": "Permissions policy violation: microphone is not allowed in this document.",
+          "timestamp": 1793661010794.355,
+          "lineNumber": 2,
+          "stackTrace": {
+            "callFrames": [
+              {
+                "functionName": "",
+                "scriptId": "20",
+                "url": "",
+                "lineNumber": 2,
+                "columnNumber": 50
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "method": "Log.entryAdded",
+      "params": {
+        "entry": {
+          "source": "violation",
+          "level": "error",
+          "text": "Permissions policy violation: camera is not allowed in this document.",
+          "timestamp": 1793661010794.605,
+          "lineNumber": 2,
+          "stackTrace": {
+            "callFrames": [
+              {
+                "functionName": "",
+                "scriptId": "20",
+                "url": "",
+                "lineNumber": 2,
+                "columnNumber": 50
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "method": "Log.entryAdded",
+      "params": {
+        "entry": {
+          "source": "violation",
+          "level": "error",
+          "text": "Permissions policy violation: Geolocation access has been blocked because of a permissions policy applied to the current document. See https://goo.gl/EuHzyv for more details.",
+          "timestamp": 1793661011655.903,
+          "lineNumber": 3,
+          "stackTrace": {
+            "callFrames": [
+              {
+                "functionName": "",
+                "scriptId": "20",
+                "url": "",
+                "lineNumber": 3,
+                "columnNumber": 66
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "method": "Page.frameScheduledNavigation",
+      "params": {
+        "frameId": "220604A54C4226D10C804D60660B4CD5",
+        "delay": 0,
+        "reason": "scriptInitiated",
+        "url": "http://127.0.0.1:7365/probe/diagnostic-navigation"
+      }
+    },
+    {
+      "method": "Page.frameRequestedNavigation",
+      "params": {
+        "frameId": "220604A54C4226D10C804D60660B4CD5",
+        "reason": "scriptInitiated",
+        "url": "http://127.0.0.1:7365/probe/diagnostic-navigation",
+        "disposition": "currentTab"
+      }
+    },
+    {
+      "method": "Page.frameStartedLoading",
+      "params": {
+        "frameId": "220604A54C4226D10C804D60660B4CD5"
+      }
+    },
+    {
+      "method": "Network.loadingFailed",
+      "params": {
+        "requestId": "02E840B159491AAC12A48A6DF4A7EE17",
+        "timestamp": 88766.115315,
+        "type": "Document",
+        "errorText": "net::ERR_ABORTED",
+        "canceled": true
+      }
+    },
+    {
+      "method": "Page.frameStoppedLoading",
+      "params": {
+        "frameId": "220604A54C4226D10C804D60660B4CD5"
+      }
+    },
+    {
+      "method": "Page.frameClearedScheduledNavigation",
+      "params": {
+        "frameId": "220604A54C4226D10C804D60660B4CD5"
+      }
+    }
+  ]
+}

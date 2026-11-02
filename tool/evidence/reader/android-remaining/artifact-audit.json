@@ -1,0 +1,100 @@
+{
+  "at": "2026-11-02T23:41:15.028907+00:00",
+  "source": "17c9e6bf175a5586566441183b8e8ed19534c1b6",
+  "result": "pass for listed artifact assertions; not missing native/TalkBack gates",
+  "resourceRequests": [
+    {
+      "case": "admitted-get",
+      "status": 200,
+      "bytes": 91,
+      "matchingNativeNetworkEvents": true
+    },
+    {
+      "case": "missing-get",
+      "status": 403,
+      "bytes": 0,
+      "matchingNativeNetworkEvents": true
+    },
+    {
+      "case": "forbidden-query",
+      "status": 403,
+      "bytes": 0,
+      "matchingNativeNetworkEvents": true
+    },
+    {
+      "case": "forbidden-post",
+      "status": 403,
+      "bytes": 0,
+      "matchingNativeNetworkEvents": true
+    }
+  ],
+  "navigationAttemptCanceled": true,
+  "permissionPolicyDenials": true,
+  "nativeCleartextDenied": true,
+  "nativePermissionCallbacksIndependentlyProven": false,
+  "arbitraryRemoteHttpsInterceptionProven": false,
+  "sinkCountsBefore": {
+    "/probe/native-control-before": 2,
+    "/probe/diagnostic-navigation": 1,
+    "/probe/diagnostic-fetch": 1,
+    "/probe/native-resource": 1
+  },
+  "sinkCountsAfter": {
+    "/probe/native-control-before": 2,
+    "/probe/diagnostic-navigation": 1,
+    "/probe/diagnostic-fetch": 1,
+    "/probe/native-resource": 1
+  },
+  "themeReadbacks": [
+    {
+      "file": "night-app-record.json",
+      "mode": "night",
+      "savedFontSize": 22,
+      "cfi": "epubcfi(/6/6!/4/14/1:85)"
+    },
+    {
+      "file": "night-restart-record.json",
+      "mode": "night",
+      "savedFontSize": 22,
+      "cfi": "epubcfi(/6/6!/4/14/1:85)"
+    },
+    {
+      "file": "day-restart-record.json",
+      "mode": "day",
+      "savedFontSize": 22,
+      "cfi": "epubcfi(/6/6!/4/14/1:85)"
+    }
+  ],
+  "automaticAvailableAndRestored": true,
+  "appliedFonts": [
+    {
+      "file": "current-assets.json",
+      "actualCustomFontGlyphs": true,
+      "family": "Source Serif 4 (Fontations)",
+      "sampleGlyphCount": 37,
+      "measuredBodyCssPixels": "19.4392px"
+    },
+    {
+      "file": "current-offline-assets.json",
+      "actualCustomFontGlyphs": true,
+      "family": "Source Serif 4 (Fontations)",
+      "sampleGlyphCount": 37,
+      "measuredBodyCssPixels": "17.672px"
+    }
+  ],
+  "largeMeasuredBodyCssPixels": "54.25px",
+  "fixtureRegenerationByteExact": true,
+  "settingsRestored": {
+    "font_scale": "1.0",
+    "airplane_mode_on": "0",
+    "wifi_on": "1",
+    "mobile_data": "1",
+    "enabled_accessibility_services": "",
+    "accessibility_enabled": "1",
+    "default_input_method": "com.callstack.agentdevice.imehelper/.TestInputMethodService",
+    "sysui_qs_tiles": "internet,bt,flashlight,dnd,alarm,airplane,controls,wallet,rotation,qr_code_scanner,battery,cast,screenrecord,custom(com.google.android.gms/.nearby.sharing.SharingTileService),mictoggle,cameratoggle,custom(com.google.android.permissioncontroller/com.android.permissioncontroller.permission.service.v33.SafetyCenterQsTileService)"
+  },
+  "talkbackAcceptance": "blocked by external host; t2-u76g",
+  "screenshotsVisuallyAudited": 51,
+  "auditCorrection": "First draft expected interim 57.75px observation. Retained current-offline-large.json is 54.25px; report corrected to retained measurement."
+}

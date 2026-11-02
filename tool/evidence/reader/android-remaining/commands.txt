@@ -1,0 +1,70 @@
+Scope: synthetic EPUB Android acceptance on November 2, 2026.
+This is a command recipe, not a complete timestamped transcript.
+All paths are relative to the worker checkout unless absolute.
+No production secrets or real publications were used.
+
+Normal Android build, source 17c9e6bf175a5586566441183b8e8ed19534c1b6:
+nice -n 10 nix develop --profile .cache/dev-shell --command bash -c 'export PUB_CACHE=/Users/alexispurslane/Development/bookfin/.cache/pub; export GRADLE_USER_HOME="$PWD/.cache/gradle"; bash tool/bookfin build-android'
+
+Fixture red/green and final focused verification:
+nix develop --profile .cache/dev-shell --command bash -c 'PYTHONPATH=tool/acceptance python3 -m unittest -v test_reader_remaining_fixture test_android_proxy'
+nix develop --profile .cache/dev-shell --command bash -c 'export PUB_CACHE=/Users/alexispurslane/Development/bookfin/.cache/pub; flutter test --no-pub --concurrency=1 --reporter expanded test/reader/publication_test.dart'
+
+Bound device command obtained from this worker's device_open(local, emulator-5554):
+/Users/alexispurslane/.t3/userdata/device/targets/t3-0687f49c0b8d6053d5bd7d54/agent-device
+Every UI/settings/launch/screenshot action used that exact executable, without global device/session selectors.
+The worker read help and refreshed field references before input.
+The worker inspected screenshots through device_screenshot and local image inspection.
+
+Synthetic generator (JPEG is a generated local 2x3 image, never a network download):
+nix develop --profile .cache/dev-shell --command python3 tool/acceptance/reader_remaining_fixture.py .cache/remaining.epub .cache/native-square.jpg
+Retained exact final archive: tool/evidence/reader/android-remaining/synthetic.epub
+Retained initial archive: tool/evidence/reader/android-remaining/initial-synthetic.epub
+
+The observer requires this checkout's running disposable Jellyfin, matching marker and version 12.4.0:
+nix develop --profile .cache/dev-shell --command python3 tool/acceptance/reader_remaining_server.py
+It binds 127.0.0.1:7365. The upstream binds 127.0.0.1:7364.
+Both ports were checked free before startup. No public listener was exposed.
+
+Android install, logs, package readback and owned forwards used project SDK adb only.
+UI actions never used adb.
+The readback recipe was:
+nix develop --profile .cache/dev-shell --command adb -s emulator-5554 shell pm path dev.bookfin.bookfin
+nix develop --profile .cache/dev-shell --command adb -s emulator-5554 pull <returned-base.apk-path> .cache/installed-final.apk
+shasum -a 256 .cache/installed-final.apk
+
+The worker forwarded an observed app-owned webview_devtools_remote_<PID> socket to a free host port.
+That numeric port was stored privately in .cache/native-cdp-port.
+Read-only observation:
+nix develop --profile .cache/dev-shell --command node tool/evidence/reader/android-remaining/observe-native.mjs observe
+Explicit diagnostic probes, separate from normal UI acceptance:
+nix develop --profile .cache/dev-shell --command node tool/evidence/reader/android-remaining/observe-native.mjs requests
+nix develop --profile .cache/dev-shell --command node tool/evidence/reader/android-remaining/observe-native.mjs permissions
+nix develop --profile .cache/dev-shell --command node tool/evidence/reader/android-remaining/observe-native.mjs navigation
+nix develop --profile .cache/dev-shell --command node tool/evidence/reader/android-remaining/observe-native.mjs network-resource
+These diagnostic modes act in the trusted top runtime, not the admitted publication iframe.
+They do not change CSP, Permissions-Policy, iframe sandbox, resource map, or native policy.
+
+Narrow app preference readback used adb exec-out run-as dev.bookfin.bookfin:
+shared_prefs/FlutterSharedPreferences.xml -> private .cache/current-reader.xml
+files/datastore/FlutterSharedPreferences.preferences_pb -> private .cache/current-theme.pb
+Only this synthetic fixture account's reading data and global appearance were exported:
+nix develop --profile .cache/dev-shell --command python3 tool/evidence/reader/android-remaining/filter-readback.py <case-name>
+The filter requires the private fixture account/marker files. They were removed after the public audit.
+
+Cleanup:
+- Remove this worker's download and sign out through the bound normal app UI.
+- Restore Automatic/no city and saved synthetic reader size20.
+- Restore airplane off, Wi-Fi on, and mobile data on through the bound settings command.
+- Restore exact font_scale1.0 through bound Android Settings UI; medium alone reads0.94.
+- Remove the automatically added Font size quick-settings tile through bound UI.
+- Disable TalkBack again through Android Settings.
+- Shut down only this checkout's disposable server through its fixture stop command.
+- Terminate only the owned observer PID; confirm7364/7365 listeners absent.
+- Remove only own tcp:7365 reverse and own diagnostic forwards.
+- Stop Gradle with this checkout's GRADLE_USER_HOME; leave other workers' daemons alone.
+- Successful bound agent-device close once, then device_close(local, emulator-5554, shutdown:false).
+- Final forward list retains only the unrelated pre-existing tcp:51800 scrcpy route; reverse list empty.
+- Later readback still found Bookfin PID11695. A single named-app close through the released binding failed exit127: No such file or directory. No binding reset or adb UI fallback followed. Follow-up t2-y0ce; session close does not prove app-process termination.
+- Audit public files against private generated passwords/tokens, then remove own private runtime and captures.
+- git diff --check; stage named evidence/test/ticket files only; commit; report clean status and exact SHA.

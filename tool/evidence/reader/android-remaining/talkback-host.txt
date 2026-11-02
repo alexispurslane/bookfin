@@ -1,0 +1,30 @@
+Observed November 2, 2026 on local/emulator-5554 through the owned bound agent-device session.
+This is an external host block, not a Bookfin failure or a TalkBack acceptance result.
+
+Installed package excerpt:
+    codePath=/product/app/talkback
+    versionName=16.0.0.738667889
+
+After enabling Use TalkBack through Android Settings and the permission dialog:
+com.google.android.marvin.talkback/com.google.android.marvin.talkback.TalkBackService
+20:     Bound services:{}
+21:     Enabled services:{{com.google.android.marvin.talkback/com.google.android.marvin.talkback.TalkBackService}}
+
+Screenshots 09 and 10 show the enabled switch. They do not show successful service binding or speech.
+Live inspection also reported touchExplorationEnabled=false and active Ui Automation.
+Those two fields were not retained in the narrow raw excerpt above.
+
+Read-only SDK dexdump of the installed host snapshot-helper's classes.dex:
+      name          : 'tryGetConnectedUiAutomation'
+      type          : '()Landroid/app/UiAutomation;'
+0063a8:                                        |[0063a8] com.callstack.agentdevice.snapshothelper.SnapshotInstrumentation.tryGetConnectedUiAutomation:()Landroid/app/UiAutomation;
+0063b8: 6e10 f900 0300                         |0000: invoke-virtual {v3}, Lcom/callstack/agentdevice/snapshothelper/SnapshotInstrumentation;.getUiAutomation:()Landroid/app/UiAutomation; // method@00f9
+
+The helper calls the no-flags overload. No supported concurrent-TalkBack mode was found in its installed help/documentation.
+No host code, accessibility permissions, snapshot-helper package, or production publication policy was patched.
+No binding reset, adb UI fallback, or global tool installation was used.
+TalkBack was disabled again through Settings before device release.
+
+Follow-up: t2-u76g. Need supported automation that preserves the actual TalkBack service, or separately authorized manual acceptance.
+Still untested: speech, reading order, accessibility focus, link activation, control labels, and return focus.
+The system Read aloud action in screenshot 42 is a separate local overlay. No audio output was measured and it is not a TalkBack pass.

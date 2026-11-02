@@ -1,0 +1,411 @@
+{
+  "at": "2026-11-02T23:11:40.452Z",
+  "mode": "observe",
+  "target": "https://bookfin-runtime.invalid/index.html",
+  "document": [
+    {
+      "registeredFonts": [
+        {
+          "family": "BookSerif",
+          "status": "loaded",
+          "weight": "normal",
+          "style": "normal"
+        },
+        {
+          "family": "BookfinSerif",
+          "status": "unloaded",
+          "weight": "normal",
+          "style": "normal"
+        }
+      ],
+      "visibleParagraphs": [
+        {
+          "text": "Admission checks",
+          "rect": {
+            "x": 17,
+            "y": 0,
+            "width": 378,
+            "height": 48.113094329833984,
+            "top": 0,
+            "right": 395,
+            "bottom": 48.113094329833984,
+            "left": 17
+          }
+        },
+        {
+          "text": "Readable text remains after unsafe content is removed.",
+          "rect": {
+            "x": 17,
+            "y": 68.89286041259766,
+            "width": 378,
+            "height": 50.53571701049805,
+            "top": 68.89286041259766,
+            "right": 395,
+            "bottom": 119.4285774230957,
+            "left": 17
+          }
+        },
+        {
+          "text": "Remote link blocked marker",
+          "rect": {
+            "x": 17,
+            "y": 224.92857360839844,
+            "width": 378,
+            "height": 25.267858505249023,
+            "top": 224.92857360839844,
+            "right": 395,
+            "bottom": 250.19643211364746,
+            "left": 17
+          }
+        },
+        {
+          "text": "Remote link blocked marker",
+          "rect": {
+            "x": 17,
+            "y": 224.1666717529297,
+            "width": 245.40476989746094,
+            "height": 26.666667938232422,
+            "top": 224.1666717529297,
+            "right": 262.40476989746094,
+            "bottom": 250.8333396911621,
+            "left": 17
+          }
+        },
+        {
+          "text": "Active link blocked marker",
+          "rect": {
+            "x": 17,
+            "y": 270.875,
+            "width": 378,
+            "height": 25.267858505249023,
+            "top": 270.875,
+            "right": 395,
+            "bottom": 296.142858505249,
+            "left": 17
+          }
+        },
+        {
+          "text": "Active link blocked marker",
+          "rect": {
+            "x": 17,
+            "y": 270.11309814453125,
+            "width": 231.99404907226562,
+            "height": 26.666667938232422,
+            "top": 270.11309814453125,
+            "right": 248.99404907226562,
+            "bottom": 296.7797660827637,
+            "left": 17
+          }
+        },
+        {
+          "text": "Visit reflow checks",
+          "rect": {
+            "x": 17,
+            "y": 316.8214416503906,
+            "width": 378,
+            "height": 25.267858505249023,
+            "top": 316.8214416503906,
+            "right": 395,
+            "bottom": 342.08930015563965,
+            "left": 17
+          }
+        },
+        {
+          "text": "Visit reflow checks",
+          "rect": {
+            "x": 17,
+            "y": 316.0595397949219,
+            "width": 161.8154754638672,
+            "height": 26.666667938232422,
+            "top": 316.0595397949219,
+            "right": 178.8154754638672,
+            "bottom": 342.7262077331543,
+            "left": 17
+          }
+        }
+      ],
+      "color": "rgb(57, 41, 31)",
+      "background": "rgb(246, 239, 226)",
+      "frameRect": {
+        "x": 0,
+        "y": 0,
+        "width": 412,
+        "height": 607,
+        "top": 0,
+        "right": 412,
+        "bottom": 607,
+        "left": 0
+      },
+      "url": "about:blank",
+      "sandbox": "allow-same-origin",
+      "text": "Admission checks\n\nReadable text remains after unsafe content is removed.\n\n[Unsupported image: Remote image blocked marker]\n\nRemote link blocked marker\n\nActive link blocked marker\n\nVisit reflow checks",
+      "html": "<html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\"><head><base href=\"https://bookfin-publication.invalid/66b8218f87a845923c2724e259a99fa22f6423f7960a0c4b31791660f4da72a0/OEBPS/Text/denial.xhtml\"><meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; script-src 'none'; style-src 'unsafe-inline' https://bookfin-publication.invalid; img-src https://bookfin-publication.invalid; font-src https://bookfin-publication.invalid https://bookfin-runtime.invalid; connect-src 'none'; frame-src 'none'; object-src 'none'; base-uri https://bookfin-publication.invalid; form-action 'none'\"><title>denial</title><link rel=\"stylesheet\" href=\"../Styles/book.css\"><link rel=\"stylesheet\" href=\"../Styles/denial.css\"><link rel=\"canonical\" href=\"https://bookfin-publication.invalid/66b8218f87a845923c2724e259a99fa22f6423f7960a0c4b31791660f4da72a0/OEBPS/Text/denial.xhtml\"><meta name=\"dc.identifier\" content=\"denial\"><meta name=\"dc.relation.ispartof\" content=\"bookfin-semantic-probe\"><style id=\"epubjs-inserted-css-\"></style><style id=\"epubjs-inserted-css-default\"></style><style>@font-face{font-family:BookfinSerif;src:url(\"https://bookfin-runtime.invalid/SourceSerif4.ttf\")}body{overflow-wrap:break-word;line-height:1.65!important;padding:0 18px!important}img{max-width:100%!important;height:auto}a:focus{outline:2px solid currentColor}</style><meta name=\"viewport\" content=\"width=412, height=607, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no\"></head><body style=\"font-size: 20.68px; width: 412px; height: 607px; overflow-y: hidden; margin: 0px !important; padding-top: 20px; padding-bottom: 20px; padding-left: 17px !important; padding-right: 17px !important; box-sizing: border-box; max-width: inherit; column-fill: auto; column-gap: 34px; column-width: 412px;\"><h1 id=\"heading\">Admission checks</h1><p>Readable text remains after unsafe content is removed.</p><span role=\"img\" aria-label=\"Unsupported image: Remote image blocked marker\">[Unsupported image: Remote image blocked marker]</span><p><a>Remote link blocked marker</a></p><p><a>Active link blocked marker</a></p><p><a href=\"reflow.xhtml#heading\">Visit reflow checks</a></p></body></html>",
+      "fontStatus": "loaded",
+      "fontSize": "19.4392px",
+      "fontFamily": "BookSerif, serif",
+      "viewport": {
+        "width": 412,
+        "height": 607
+      },
+      "images": [],
+      "styles": [
+        {
+          "href": "https://bookfin-publication.invalid/66b8218f87a845923c2724e259a99fa22f6423f7960a0c4b31791660f4da72a0/OEBPS/Styles/book.css"
+        },
+        {
+          "href": "https://bookfin-publication.invalid/66b8218f87a845923c2724e259a99fa22f6423f7960a0c4b31791660f4da72a0/OEBPS/Styles/denial.css"
+        },
+        {
+          "href": null
+        },
+        {
+          "href": null
+        },
+        {
+          "href": null
+        }
+      ]
+    }
+  ],
+  "appliedFonts": [
+    {
+      "nodeId": 36,
+      "text": "Admission checks",
+      "result": {
+        "fonts": [
+          {
+            "familyName": "Source Serif 4 (Fontations)",
+            "postScriptName": "SourceSerif4Roman-Regular",
+            "isCustomFont": true,
+            "glyphCount": 16
+          }
+        ]
+      }
+    },
+    {
+      "nodeId": 38,
+      "text": "Readable text remains after unsafe content is removed.",
+      "result": {
+        "fonts": [
+          {
+            "familyName": "Source Serif 4 (Fontations)",
+            "postScriptName": "SourceSerif4Roman-Regular",
+            "isCustomFont": true,
+            "glyphCount": 52
+          }
+        ]
+      }
+    },
+    {
+      "nodeId": 42,
+      "text": "",
+      "result": {
+        "fonts": [
+          {
+            "familyName": "Source Serif 4 (Fontations)",
+            "postScriptName": "SourceSerif4Roman-Regular",
+            "isCustomFont": true,
+            "glyphCount": 26
+          }
+        ]
+      }
+    },
+    {
+      "nodeId": 45,
+      "text": "",
+      "result": {
+        "fonts": [
+          {
+            "familyName": "Source Serif 4 (Fontations)",
+            "postScriptName": "SourceSerif4Roman-Regular",
+            "isCustomFont": true,
+            "glyphCount": 26
+          }
+        ]
+      }
+    },
+    {
+      "nodeId": 48,
+      "text": "",
+      "result": {
+        "fonts": [
+          {
+            "familyName": "Source Serif 4 (Fontations)",
+            "postScriptName": "SourceSerif4Roman-Regular",
+            "isCustomFont": true,
+            "glyphCount": 18
+          }
+        ]
+      }
+    }
+  ],
+  "events": [
+    {
+      "method": "Log.entryAdded",
+      "params": {
+        "entry": {
+          "source": "network",
+          "level": "error",
+          "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+          "timestamp": 1793660976777.664,
+          "url": "https://bookfin-publication.invalid/66b8218f87a845923c2724e259a99fa22f6423f7960a0c4b31791660f4da72a0/META-INF/com.apple.ibooks.display-options.xml",
+          "networkRequestId": "10288.8"
+        }
+      }
+    },
+    {
+      "method": "Log.entryAdded",
+      "params": {
+        "entry": {
+          "source": "network",
+          "level": "error",
+          "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+          "timestamp": 1793661009805.71,
+          "url": "https://bookfin-publication.invalid/66b8218f87a845923c2724e259a99fa22f6423f7960a0c4b31791660f4da72a0/OEBPS/Images/missing-native-probe.png",
+          "networkRequestId": "10288.27"
+        }
+      }
+    },
+    {
+      "method": "Log.entryAdded",
+      "params": {
+        "entry": {
+          "source": "network",
+          "level": "error",
+          "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+          "timestamp": 1793661009827.154,
+          "url": "https://bookfin-publication.invalid/66b8218f87a845923c2724e259a99fa22f6423f7960a0c4b31791660f4da72a0/OEBPS/Images/dot.png?native-probe=1",
+          "networkRequestId": "10288.28"
+        }
+      }
+    },
+    {
+      "method": "Log.entryAdded",
+      "params": {
+        "entry": {
+          "source": "network",
+          "level": "error",
+          "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+          "timestamp": 1793661009839.775,
+          "url": "https://bookfin-publication.invalid/66b8218f87a845923c2724e259a99fa22f6423f7960a0c4b31791660f4da72a0/OEBPS/Images/dot.png",
+          "networkRequestId": "10288.29"
+        }
+      }
+    },
+    {
+      "method": "Log.entryAdded",
+      "params": {
+        "entry": {
+          "source": "security",
+          "level": "error",
+          "text": "Refused to connect to 'http://127.0.0.1:7365/probe/diagnostic-fetch' because it violates the following Content Security Policy directive: \"connect-src https://bookfin-publication.invalid\".\n",
+          "timestamp": 1793661009840.493,
+          "lineNumber": 9,
+          "stackTrace": {
+            "callFrames": [
+              {
+                "functionName": "",
+                "scriptId": "19",
+                "url": "",
+                "lineNumber": 9,
+                "columnNumber": 33
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "method": "Log.entryAdded",
+      "params": {
+        "entry": {
+          "source": "javascript",
+          "level": "error",
+          "text": "Fetch API cannot load http://127.0.0.1:7365/probe/diagnostic-fetch. Refused to connect because it violates the document's Content Security Policy.",
+          "timestamp": 1793661009840.601,
+          "lineNumber": 9,
+          "stackTrace": {
+            "callFrames": [
+              {
+                "functionName": "",
+                "scriptId": "19",
+                "url": "",
+                "lineNumber": 9,
+                "columnNumber": 33
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "method": "Log.entryAdded",
+      "params": {
+        "entry": {
+          "source": "violation",
+          "level": "error",
+          "text": "Permissions policy violation: microphone is not allowed in this document.",
+          "timestamp": 1793661010794.355,
+          "lineNumber": 2,
+          "stackTrace": {
+            "callFrames": [
+              {
+                "functionName": "",
+                "scriptId": "20",
+                "url": "",
+                "lineNumber": 2,
+                "columnNumber": 50
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "method": "Log.entryAdded",
+      "params": {
+        "entry": {
+          "source": "violation",
+          "level": "error",
+          "text": "Permissions policy violation: camera is not allowed in this document.",
+          "timestamp": 1793661010794.605,
+          "lineNumber": 2,
+          "stackTrace": {
+            "callFrames": [
+              {
+                "functionName": "",
+                "scriptId": "20",
+                "url": "",
+                "lineNumber": 2,
+                "columnNumber": 50
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "method": "Log.entryAdded",
+      "params": {
+        "entry": {
+          "source": "violation",
+          "level": "error",
+          "text": "Permissions policy violation: Geolocation access has been blocked because of a permissions policy applied to the current document. See https://goo.gl/EuHzyv for more details.",
+          "timestamp": 1793661011655.903,
+          "lineNumber": 3,
+          "stackTrace": {
+            "callFrames": [
+              {
+                "functionName": "",
+                "scriptId": "20",
+                "url": "",
+                "lineNumber": 3,
+                "columnNumber": 66
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

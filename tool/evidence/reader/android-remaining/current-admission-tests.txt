@@ -1,0 +1,16 @@
+00:00 +0: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-2833dc47/test/reader/publication_test.dart
+00:00 +0: rewritten wrapper references cannot bypass processed resource limits
+00:01 +1: EPUB2 keeps its admitted contents document in the package manifest
+00:01 +2: publication code and active SVG cannot reach reading resources
+00:01 +3: remote CSS URLs cannot leave the passive publication
+00:01 +4: archive aliases cannot overwrite a local resource
+00:01 +5: the resource boundary denies remote requests rather than delegating them
+00:01 +6: the inherited runtime policy admits local publication styles but not their scripts
+00:01 +7: only admitted resources of this immutable publication can be requested
+00:01 +8: local styles, PNG, fonts, headings, and encoded destination fragments survive
+00:01 +9: only the exact local single-JPEG SVG wrapper uses a raster fallback
+00:01 +10: unsafe reference and active attribute forms never enter XHTML
+00:01 +11: XML entities, encrypted books, and oversized resources fail before rendering
+00:01 +12: the committed public-domain EPUB becomes a passive navigable publication
+00:01 +13: local CSS imports stay local and retain the imported publisher styles
+00:01 +14: All tests passed!

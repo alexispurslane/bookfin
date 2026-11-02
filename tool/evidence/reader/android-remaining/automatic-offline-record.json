@@ -1,0 +1,33 @@
+{
+  "at": "2026-11-02T23:14:05.704464+00:00",
+  "case": "automatic-offline-large",
+  "scope": [
+    "http://127.0.0.1:7365",
+    "ee465fa9f6b74acfa0e7edb7ef8701b2",
+    "cae6463023524fb685c124d730085880"
+  ],
+  "appearance": {
+    "version": 1,
+    "mode": "automatic",
+    "location": null
+  },
+  "reading": {
+    "version": 1,
+    "fontSize": 22.0,
+    "resumes": [
+      {
+        "edition": "b68734cfa13ccee7d46b962d4c8ae738:",
+        "source": "b68734cfa13ccee7d46b962d4c8ae738:",
+        "revision": "[null,\"baca48895df5887af9907dd302b220c0\",null,null,10000000]",
+        "anchor": "{\"version\":1,\"processed\":\"2c4b0cfef46f0ecb0a6bb4d043bf624b70c73d9bc64391a36e5a39e41612e57e\",\"original\":\"23c5416e3db33bdfe48b363a52f8ae9ab9de93bccc45ecb1156486284402251f\",\"policy\":\"bookfin-passive-epub-1\",\"engine\":\"epubjs-0.3.93-bookfin.1\",\"cfi\":\"epubcfi(/6/2!/4/2[heading]/1:0)\",\"resource\":\"OEBPS/Text/one.xhtml\",\"quote\":\"Asset checksLocal PNG Local JPEG Exact JPEG wrapper Active SVG [Unsupported image: Active SVG blocked marker]Embedded fo\"}"
+      },
+      {
+        "edition": "b68734cfa13ccee7d46b962d4c8ae738:",
+        "source": "b68734cfa13ccee7d46b962d4c8ae738:",
+        "revision": "[null,\"33ef3ccaf5985e9118b14acbef487560\",null,null,10000000]",
+        "anchor": "{\"version\":1,\"processed\":\"66b8218f87a845923c2724e259a99fa22f6423f7960a0c4b31791660f4da72a0\",\"original\":\"bcf88777f524e966d9f2445f5a253b83659644a704def64510674876082c7207\",\"policy\":\"bookfin-passive-epub-1\",\"engine\":\"epubjs-0.3.93-bookfin.1\",\"cfi\":\"epubcfi(/6/6!/4/4/1:24)\",\"resource\":\"OEBPS/Text/reflow.xhtml\",\"quote\":\"check native text selection.Return to asset checksReflow passage 1. The quiet harbour keeps its place while the letters \"}"
+      }
+    ],
+    "bookmarks": []
+  }
+}

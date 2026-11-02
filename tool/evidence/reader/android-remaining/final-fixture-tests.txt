@@ -1,0 +1,14 @@
+test_asset_chapter_distinguishes_direct_images_and_svg_fallbacks (test_reader_remaining_fixture.RemainingFixtureTests.test_asset_chapter_distinguishes_direct_images_and_svg_fallbacks) ... ok
+test_reflow_chapter_contains_named_link_and_ordered_passages (test_reader_remaining_fixture.RemainingFixtureTests.test_reflow_chapter_contains_named_link_and_ordered_passages) ... ok
+test_request_targets_are_bounded_owned_loopback_sinks (test_reader_remaining_fixture.RemainingFixtureTests.test_request_targets_are_bounded_owned_loopback_sinks) ... ok
+test_valid_asset_font_styles_are_separate_from_adversarial_styles (test_reader_remaining_fixture.RemainingFixtureTests.test_valid_asset_font_styles_are_separate_from_adversarial_styles) ... ok
+test_chunked_flutter_requests_reach_jellyfin_with_their_body (test_android_proxy.AndroidProxyTests.test_chunked_flutter_requests_reach_jellyfin_with_their_body) ... ok
+test_fixed_length_requests_retain_the_exact_bytes (test_android_proxy.AndroidProxyTests.test_fixed_length_requests_retain_the_exact_bytes) ... ok
+test_only_origin_relative_paths_can_reach_the_disposable_server (test_android_proxy.AndroidProxyTests.test_only_origin_relative_paths_can_reach_the_disposable_server) ... ok
+test_query_credentials_cannot_enter_evidence (test_android_proxy.AndroidProxyTests.test_query_credentials_cannot_enter_evidence) ... ok
+test_report_evidence_omits_unknown_fields_and_credentials (test_android_proxy.AndroidProxyTests.test_report_evidence_omits_unknown_fields_and_credentials) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.018s
+
+OK
