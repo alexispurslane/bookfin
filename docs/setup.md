@@ -20,7 +20,7 @@ Updating the lock is a toolchain change, not part of routine setup.
 | Flutter | 3.47.4 stable |
 | Dart | 3.13.3 |
 | Java | 21.0.11 |
-| Android platform and build tools | API 36 and 36.0.0 |
+| Android platforms and build tools | APIs 35 and 36; build tools 36.0.0 |
 | Android command-line tools | 19.0 |
 | Android emulator supplied by Nix | 37.1.11 |
 | Android system image | API 36, Google APIs, ARM64; revision fixed by nixpkgs |
@@ -31,6 +31,8 @@ Updating the lock is a toolchain change, not part of routine setup.
 The shell sets `JAVA_HOME`, `ANDROID_HOME`, `ANDROID_SDK_ROOT`, and `FLUTTER_ROOT`.
 Do not put these variables in a shell profile.
 The Nix SDK is read-only.
+API 35 supports the native dependency of local appearance preferences.
+The Bookfin application still compiles against API 36.
 Its `cmdline-tools/latest` link points to the pinned command-line tools, not a moving download.
 Flutter's dependency cache is `.cache/pub`.
 Gradle's cache is `.cache/gradle`.
