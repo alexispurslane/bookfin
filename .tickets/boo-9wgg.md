@@ -1,6 +1,6 @@
 ---
 id: boo-9wgg
-status: open
+status: in_progress
 deps: [boo-u3cg, boo-7o92, boo-73yj, t3-9r9u]
 links: [t3-9r9u, boo-mx5i]
 created: 2026-11-01T21:37:34Z
@@ -39,3 +39,7 @@ User removed HTML/Markdown support from product scope. Implement EPUB reading he
 **2026-11-02T14:27:06Z**
 
 2026-11-02 concrete navigator handoff: recommend a reviewed bounded fork of flutter_epub_viewer 2.2.1 using a separately source-pinned epub.js 0.3.93 distribution; no EPUBX production dependency is required. Both engine variants pass host contents/search/CFI probes across nine local EPUB editions; small research patches prove inline-phrase, repeated-hit, and short-document search regressions. pdfrx 2.11.0 resolves in the joint solver probe without overrides. The unmodified package deliberately FAILS two host security requirements: other hosts fall through to the WebView, and active SVG is served unchanged. Implement one passive-publication/resource-admission owner, strict navigation/permission denial, immutable processed-document identity, and existing TextPosition/bookmark wiring before accepting untrusted books. Source provenance, LGPL/native-bridge costs, API paths, exact evidence, and device acceptance gates are in docs/research/epub-navigator.md. No package approval, Android render, font application, TalkBack, or process-death resume is claimed. Standalone HTML/Markdown remain out of scope; EPUB XHTML/CSS remain required.
+
+**2026-11-02T14:49:26Z**
+
+Begin coordinated production implementation with prerequisite t3-9r9u in the same owner/task: first resource admission/passive publication and SVG fallback, then reader UI/records. Prerequisite remains open until review/Android acceptance; do not bypass its gate or claim production approval. Candidate selected for implementation/evaluation from reviewed research; approved behavior unchanged.
