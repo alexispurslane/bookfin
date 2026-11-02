@@ -61,6 +61,10 @@
         url = "https://github.com/bblanchon/pdfium-binaries/releases/download/chromium/8125/pdfium-android-arm64.tgz";
         sha256 = "1d4py14y696i8mvbklaipn6hk9r4g6qdkgg1mv53g6a2cdqyb584";
       };
+      gplText = pkgs.fetchurl {
+        url = "https://www.gnu.org/licenses/gpl-3.0.txt";
+        sha256 = "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986";
+      };
       nixXcrun = pkgs.writeShellScriptBin "xcrun" ''
         case "$*" in
           "--sdk macosx --show-sdk-path") printf '%s\n' "${pkgs.apple-sdk}/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk" ;;
@@ -120,6 +124,11 @@
           PDFIUM_HOST_ARCHIVE = pdfiumHost;
           PDFIUM_ANDROID_ARCHIVE = pdfiumAndroid;
           ALICE_KF8 = ./fixtures/pg11-kf8.mobi;
+          GPL3_TEXT = gplText;
+          EPUBX_ARCHIVE = pkgs.fetchurl {
+            url = "https://pub.dev/api/archives/epubx-4.0.0.tar.gz";
+            sha256 = "0ab9354efa177c4be52c46f857bc15bf83f83a92667fb673465c8f89fca26db3";
+          };
           shellHook = ''
             export PUB_CACHE="$PWD/.cache/pub"
           '';

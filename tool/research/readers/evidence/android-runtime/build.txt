@@ -1,0 +1,91 @@
+Formatted tool/research/readers/flutter_smoke/main.dart
+Formatted 3 files (1 changed) in 0.02 seconds.
+Resolving dependencies...
+Downloading packages...
+  material_color_utilities 0.13.0 (0.13.1 available)
+  test_api 0.7.12 (0.7.15 available)
+Got dependencies!
+2 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Resolving dependencies...
+Downloading packages...
+  material_color_utilities 0.13.0 (0.13.1 available)
+  test_api 0.7.12 (0.7.15 available)
+Got dependencies!
+2 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+00:00 +0: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-30764a49/tool/research/readers/_out/flutter-widgets/test/reader_probe_test.dart
+00:00 +0: a UTF-8 license preserves its copyright symbol and non-Latin text
+00:00 +1: a Latin-1 license preserves its copyright symbol
+00:00 +2: narrow reflow wraps text into more lines without shrinking it
+00:00 +3: a source link returns to the page that supplied the reflow text
+00:01 +4: All tests passed!
+Resolving dependencies...
+Downloading packages...
+  code_assets 1.2.1 (2.1.0 available)
+  crypto 3.0.7 (3.0.8 available)
+  hooks 2.0.2 (2.2.0 available)
+  html 0.15.6 (0.15.7 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  meta 1.18.3 (1.19.0 available)
+  native_toolchain_c 0.19.2 (0.19.5 available)
+! path_provider_foundation 2.4.4 (overridden) (2.6.0 available)
+  petitparser 7.0.2 (7.1.0 available)
+  record_use 0.6.0 (1.1.1 available)
+  test_api 0.7.12 (0.7.15 available)
+  vector_math 2.4.0 (2.4.4 available)
+  xml 6.6.1 (7.1.0 available)
+Got dependencies!
+13 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Resolving dependencies...
+Downloading packages...
+  code_assets 1.2.1 (2.1.0 available)
+  crypto 3.0.7 (3.0.8 available)
+  hooks 2.0.2 (2.2.0 available)
+  html 0.15.6 (0.15.7 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  meta 1.18.3 (1.19.0 available)
+  native_toolchain_c 0.19.2 (0.19.5 available)
+! path_provider_foundation 2.4.4 (overridden) (2.6.0 available)
+  petitparser 7.0.2 (7.1.0 available)
+  record_use 0.6.0 (1.1.1 available)
+  test_api 0.7.12 (0.7.15 available)
+  vector_math 2.4.0 (2.4.4 available)
+  xml 6.6.1 (7.1.0 available)
+Got dependencies!
+13 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Running Gradle task 'assembleDebug'...                             10.4s
+✓ Built build/app/outputs/flutter-apk/app-debug.apk
+package: com.example.reader_packaging_probe
+permission: com.example.reader_packaging_probe.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+uses-permission: name='com.example.reader_packaging_probe.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION'
+   161152  01-01-1981 01:01   lib/arm64-v8a/libmobi.so
+  6598376  01-01-1981 01:01   lib/arm64-v8a/libpdfium.so
+     5080  01-01-1981 01:01   lib/arm64-v8a/libpdfrx_pdfium_gate.so
+    35149  01-01-1981 01:01   assets/flutter_assets/assets/licenses/libmobi-GPL-3.0.txt
+     7651  01-01-1981 01:01   assets/flutter_assets/assets/licenses/libmobi-LGPL-3.0.txt
+    11361  01-01-1981 01:01   assets/flutter_assets/assets/licenses/pdfium-abseil.txt
+      725  01-01-1981 01:01   assets/flutter_assets/assets/licenses/pdfium-agg23.txt
+     1177  01-01-1981 01:01   assets/flutter_assets/assets/licenses/pdfium-binaries-LICENSE.txt
+     1483  01-01-1981 01:01   assets/flutter_assets/assets/licenses/pdfium-catapult.txt
+    12876  01-01-1981 01:01   assets/flutter_assets/assets/licenses/pdfium-cpu_features.txt
+    12262  01-01-1981 01:01   assets/flutter_assets/assets/licenses/pdfium-dragonbox-Apache2-LLVM.txt
+     1338  01-01-1981 01:01   assets/flutter_assets/assets/licenses/pdfium-dragonbox-Boost.txt
+     1079  01-01-1981 01:01   assets/flutter_assets/assets/licenses/pdfium-fast_float.txt
+     6741  01-01-1981 01:01   assets/flutter_assets/assets/licenses/pdfium-freetype.txt
+     1971  01-01-1981 01:01   assets/flutter_assets/assets/licenses/pdfium-harfbuzz.txt
+    11357  01-01-1981 01:01   assets/flutter_assets/assets/licenses/pdfium-highway.txt
+    27718  01-01-1981 01:01   assets/flutter_assets/assets/licenses/pdfium-icu.txt
+     1353  01-01-1981 01:01   assets/flutter_assets/assets/licenses/pdfium-lcms.txt
+    12799  01-01-1981 01:01   assets/flutter_assets/assets/licenses/pdfium-libjpeg_turbo.ijg
+     5620  01-01-1981 01:01   assets/flutter_assets/assets/licenses/pdfium-libjpeg_turbo.md
+     1794  01-01-1981 01:01   assets/flutter_assets/assets/licenses/pdfium-libopenjpeg.txt
+     5345  01-01-1981 01:01   assets/flutter_assets/assets/licenses/pdfium-libpng.txt
+    16706  01-01-1981 01:01   assets/flutter_assets/assets/licenses/pdfium-libunwind.txt
+    15140  01-01-1981 01:01   assets/flutter_assets/assets/licenses/pdfium-llvm-libc.txt
+    12818  01-01-1981 01:01   assets/flutter_assets/assets/licenses/pdfium-pdfium.txt
+     1059  01-01-1981 01:01   assets/flutter_assets/assets/licenses/pdfium-simdutf.txt
+     1332  01-01-1981 01:01   assets/flutter_assets/assets/licenses/pdfium-zlib.txt
+     2693  01-01-1981 01:01   assets/flutter_assets/assets/simple.pdf

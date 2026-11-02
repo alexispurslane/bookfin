@@ -1,0 +1,21 @@
+Reader finite proof. Research only, not Bookfin's production reader.
+
+This application uses libmobi 0.12 by Bartek Fabiszewski under the
+GNU Lesser General Public License version 3 or later. Its use and the
+converter bridge that includes mobitool.c are covered by that license.
+The complete LGPL version 3 and GPL version 3 accompany this notice.
+libmobi source: https://github.com/bfabiszewski/libmobi/tree/v0.12
+The source pin, compiler flags, converter bridge, build scripts, and
+reproduction instructions are in tool/research/readers/ in this checkout.
+This research APK does not establish production redistribution compliance.
+
+PDFium chromium/8125 and its binary distributor have separate licenses.
+All license texts from the pinned Android binary archive accompany this notice.
+The Flutter license registry supplies licenses for Dart and Flutter packages.
+The EPUBX 4.0.0 source is modified for archive 4 and image 4 compatibility.
+The modifications are in epubx-compat.patch. EPUBX remains MIT licensed.
+
+The River fixtures are generated and dedicated to CC0-1.0 by the research
+fixture author. Alice's Adventures in Wonderland is public domain in the
+United States. Its Project Gutenberg edition retains the ebook's embedded
+terms. No claim is made about public-domain status outside the United States.

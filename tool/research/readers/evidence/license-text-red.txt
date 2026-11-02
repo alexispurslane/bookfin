@@ -1,0 +1,29 @@
+Resolving dependencies...
+Downloading packages...
+  material_color_utilities 0.13.0 (0.13.1 available)
+  test_api 0.7.12 (0.7.15 available)
+Got dependencies!
+2 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Resolving dependencies...
+Downloading packages...
+  material_color_utilities 0.13.0 (0.13.1 available)
+  test_api 0.7.12 (0.7.15 available)
+Got dependencies!
+2 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+00:00 +0: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-30764a49/tool/research/readers/_out/flutter-widgets/test/reader_probe_test.dart
+00:00 +0: a UTF-8 license preserves its copyright symbol and non-Latin text
+00:00 +1: a Latin-1 license preserves its copyright symbol
+00:00 +1 -1: a Latin-1 license preserves its copyright symbol [E]
+  FormatException: Unexpected extension byte (at offset 2)
+  dart:convert                                           Utf8Codec.decode
+  package:reader_packaging_probe/license_text.dart 3:47  decodeLicense
+  test/reader_probe_test.dart 13:12                      main.<fn>
+
+00:00 +1 -1: narrow reflow wraps text into more lines without shrinking it
+00:00 +2 -1: a source link returns to the page that supplied the reflow text
+00:00 +3 -1: Some tests failed.
+
+Failing tests:
+  /Users/alexispurslane/.t3/worktrees/bookfin/t3-30764a49/tool/research/readers/_out/flutter-widgets/test/reader_probe_test.dart: a Latin-1 license preserves its copyright symbol

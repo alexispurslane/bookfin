@@ -23,3 +23,7 @@ Without the path_provider_foundation override, full host app tests and Android/w
 **2026-11-02T02:18:23Z**
 
 Discovered during boo-u3cg validation. The compatibility pin keeps catalog work moving; this cleanup does not change product scope or replace boo-2cgp acceptance. Reproduce with the pinned Nix shell, without altering global Xcode or any shared Android SDK.
+
+**2026-11-02T10:47:48Z**
+
+Reader follow-up encountered the same host hook family: objective_c invokes xcrun with reversed argument order (--show-sdk-path --sdk macosx); fixing SDK discovery then reached Flutter native-asset codesigning. Nix sigtool refused --timestamp=none. No global SDK or signing changes were made. Research widget tests now use a Flutter-only package with no native assets; actual PDF/native verification stays in the Android APK. The research APK retains the existing root project path_provider_foundation 2.4.4 override. This does not resolve this cleanup ticket.

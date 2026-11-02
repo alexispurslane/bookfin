@@ -1,0 +1,3 @@
+package: com.example.reader_packaging_probe
+permission: com.example.reader_packaging_probe.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+uses-permission: name='com.example.reader_packaging_probe.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION'

@@ -1,0 +1,17 @@
+Closed: t3-8f04f14841a250b29eaec4a0
+building '/nix/store/3fmhwh4rjvm0z44cmn9bdmjx7bnbfzck-androidsdk.drv'...
+building '/nix/store/6v1xagaqlv3my15hd03pv30iyrwmf1ww-nix-shell-env.drv'...
+
+Welcome to Gradle 9.3.1!
+
+Here are the highlights of this release:
+ - Test reporting improvements
+ - Error and warning improvements
+ - Build authoring improvements
+
+For more details see https://docs.gradle.org/9.3.1/release-notes.html
+
+Stopping Daemon(s)
+1 Daemon stopped
+Released only this thread's T3 device binding with shutdown=false.
+No system setting changed. No manual forward was created.

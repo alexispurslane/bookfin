@@ -1,0 +1,15 @@
+--- a/pubspec.yaml
++++ b/pubspec.yaml
+@@ -11 +11 @@
+-  archive: ^3.1.6
++  archive: ^4.0.0
+@@ -15 +15 @@
+-  image: ^3.0.8
++  image: ^4.8.0
+--- a/lib/src/readers/book_cover_reader.dart
++++ b/lib/src/readers/book_cover_reader.dart
+@@ -1,0 +2 @@
++import 'dart:typed_data';
+@@ -43 +44 @@
+-    var retval = images.decodeImage(coverImageContent);
++    var retval = images.decodeImage(Uint8List.fromList(coverImageContent));

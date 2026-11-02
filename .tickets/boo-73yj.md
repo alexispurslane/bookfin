@@ -2,7 +2,7 @@
 id: boo-73yj
 status: in_progress
 deps: [boo-gxm8]
-links: []
+links: [boo-mx5i, t3-ipk1]
 created: 2026-11-01T21:37:34Z
 type: task
 priority: 2
@@ -33,3 +33,7 @@ Research completed in t3/research-reader-formats from a6bfc1cc82b1ce8dc1705fee54
 Independent review of b5d02cc80cbb4e37d7cf5573936216ca7e05b179 permits partial research integration, not ticket closure. F1 corrected by documenting a final report command after APK creation that requires the APK and checks both packaged engine hashes. F2 corrected by adding t9-26f6 as a prerequisite of boo-mx5i. Source-anchor wording now distinguishes source resolution from reader resume. User accepted the sample reflow and approved future OCR in boo-suhu; OCR is not implemented. Android runtime, representative corpus and production package approval remain unverified.
 
 Parent verification: executed the documented final report against the builder's existing artifacts through the research Nix shell. Initial attempt exposed missing PDFIUM_LIBRARY; corrected the command to supply the extracted pinned library path. Final command passed and both engine_provenance matches were confirmed true. No Android runtime or full suite rerun is claimed. Dependency-cycle and whitespace checks passed.
+
+**2026-11-02T11:14:09Z**
+
+2026-11-02 continuation from main e8fe9c7: bounded runtime proof now runs on local/emulator-5554, Android API 36 ARM64, in separate com.example.reader_packaging_probe. Original PDF pages and raster-only scan render; real extracted text uses fixed 18-logical-pixel body size and wraps into 6/3 lines at widths 200/360. Page-2 source link returns to original page 2; source hash, ASCII character index 39 and rectangle are recorded, not persisted resume/highlighting. All three original MOBI assets convert natively on Android and are parsed in that same process as PDFium. Plain/PalmDOC PNG previews work; KF8 text works but its first SVG fails in the raster-image preview. t3-9r9u tracks MIME-aware reader handling. Patched, source-hash-pinned EPUBX 4.0.0 is a concrete compatible parser candidate, not approved production selection. The final APK requests no INTERNET permission and all three packaged native engine/bridge hashes match the pinned proof. 27 host behavior checks pass. Native license texts are bundled byte-for-byte; a Latin-1 notice-view error was reproduced and fixed test-first. LGPL release/relink/install compliance remains t3-ipk1. Evidence and exact limits are in docs/research/reader-formats.md and tool/research/readers/evidence/android-runtime/. No private corpus exists and none is claimed; that does not block this finite generated-corpus proof. No production reader, OCR, Jellyfin access, browser, children, coverage/mutation or PR. Parent reviews/integrates and alone closes tickets.

@@ -1,0 +1,125 @@
+[
+  {
+    "kind": "PDF",
+    "data": {
+      "source_sha256": "51d05de2a89dd83fb8f04301ac254419b2d616d48f6e8bb9fbe0938745bc04ce",
+      "pdf_anchors": [
+        {
+          "source_page_1_based": 1,
+          "character_index_utf16": 39,
+          "quote": "old road",
+          "rectangle_pdf_points": [
+            147.11997985839844,
+            696.4559936523438,
+            152.9519805908203,
+            689.843994140625
+          ],
+          "body_logical_pixels": 18,
+          "line_counts_by_width_logical_pixels": {
+            "200": 6,
+            "360": 3
+          },
+          "render_pixels": [
+            360,
+            465
+          ]
+        },
+        {
+          "source_page_1_based": 2,
+          "character_index_utf16": 39,
+          "quote": "old road",
+          "rectangle_pdf_points": [
+            147.11997985839844,
+            696.4559936523438,
+            152.9519805908203,
+            689.843994140625
+          ],
+          "body_logical_pixels": 18,
+          "line_counts_by_width_logical_pixels": {
+            "200": 6,
+            "360": 3
+          },
+          "render_pixels": [
+            360,
+            465
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "kind": "SCAN",
+    "data": {
+      "scan_text_characters": 0,
+      "scan_render_pixels": [
+        360,
+        465
+      ]
+    }
+  },
+  {
+    "kind": "CONVERSION",
+    "data": {
+      "name": "river.epub",
+      "status": 0,
+      "original_sha256": "d1208cdf94fbe5565926daa452c75f26b678b650f6c3b5258e2961ea7b49e37a",
+      "epub_sha256": "d1208cdf94fbe5565926daa452c75f26b678b650f6c3b5258e2961ea7b49e37a",
+      "epub_bytes": 2089,
+      "spine_items": 1,
+      "images": 1,
+      "expected_text_retained": true
+    }
+  },
+  {
+    "kind": "CONVERSION",
+    "data": {
+      "name": "mobi6-plain.mobi",
+      "status": 0,
+      "original_sha256": "42a14c07f1acc6b530dc6fff2b8eadac3a4b08306c2dcee6d8a0558738d39d83",
+      "epub_sha256": "6a3ccb2aa5f5c4595ca29171f8fc28bcf9a2dbb1e6dcc04039f007c4bda0dae6",
+      "epub_bytes": 1626,
+      "spine_items": 1,
+      "images": 1,
+      "expected_text_retained": true
+    }
+  },
+  {
+    "kind": "CONVERSION",
+    "data": {
+      "name": "mobi6-palmdoc.mobi",
+      "status": 0,
+      "original_sha256": "6a74ec880895caf41cbdda7d8ee7e1e5455db757022fa23b6c1af1185696bdc1",
+      "epub_sha256": "6a3ccb2aa5f5c4595ca29171f8fc28bcf9a2dbb1e6dcc04039f007c4bda0dae6",
+      "epub_bytes": 1626,
+      "spine_items": 1,
+      "images": 1,
+      "expected_text_retained": true
+    }
+  },
+  {
+    "kind": "CONVERSION",
+    "data": {
+      "name": "pg11-kf8.mobi",
+      "status": 0,
+      "original_sha256": "d8211269aed55ded8302f289950936db8368b4d4d384c463b722034152f8f1d2",
+      "epub_sha256": "3548ba6751b49b5aed2bbe1d0627aca9cb29055768e37787e21e066dc44bcd20",
+      "epub_bytes": 204423,
+      "spine_items": 19,
+      "images": 3,
+      "expected_text_retained": true
+    }
+  },
+  {
+    "kind": "MALFORMED",
+    "data": {
+      "status": 3
+    }
+  },
+  {
+    "kind": "SOURCE",
+    "data": {
+      "page": 2,
+      "character": 39
+    }
+  }
+]
