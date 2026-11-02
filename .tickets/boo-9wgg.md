@@ -43,3 +43,7 @@ User removed HTML/Markdown support from product scope. Implement EPUB reading he
 **2026-11-02T14:49:26Z**
 
 Begin coordinated production implementation with prerequisite t3-9r9u in the same owner/task: first resource admission/passive publication and SVG fallback, then reader UI/records. Prerequisite remains open until review/Android acceptance; do not bypass its gate or claim production approval. Candidate selected for implementation/evaluation from reviewed research; approved behavior unchanged.
+
+**2026-11-02T17:16:33Z**
+
+User explicitly authorized a fresh Android EPUB acceptance attempt and screenshots after the previous host-rule stop. Test a named build with a fresh own device binding; known R1-R4 corrections continue independently. Runtime evidence must identify exact source/APK and does not certify later corrections.
