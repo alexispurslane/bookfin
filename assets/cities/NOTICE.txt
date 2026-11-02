@@ -1,0 +1,29 @@
+Bookfin offline city data
+
+Contains information from GeoNames (https://www.geonames.org/), licensed under
+Creative Commons Attribution 4.0 International (CC BY 4.0).
+License: https://creativecommons.org/licenses/by/4.0/
+The complete license is included in CC-BY-4.0.txt.
+GeoNames does not endorse Bookfin. Data is provided without warranty.
+
+Sources, retrieved November 1, 2026 (America/New_York):
+https://download.geonames.org/export/dump/cities15000.zip
+https://download.geonames.org/export/dump/admin1CodesASCII.txt
+https://download.geonames.org/export/dump/countryInfo.txt
+https://download.geonames.org/export/dump/readme.txt
+
+Bookfin changes: retain city identifiers, names, ASCII names, first-level region
+names, English country names, country codes, coordinates and population.
+Join region and country names into each city record. Omit redundant ASCII names.
+Sort by numeric GeoNames identifier. No coordinates are changed.
+
+This snapshot contains 34,195 populated places across 244 country/territory codes.
+GeoNames defines cities15000 as places over 15,000 people or capitals.
+Some smaller places and subdivisions are included by GeoNames. This is not a
+complete list of towns, villages or neighborhoods. Population figures vary in age.
+105 records have no available first-level region. These show city and country.
+Equal city/region/country labels also show their GeoNames identifier in Bookfin.
+
+The app searches these bundled names and ASCII spellings, regions, English
+country names and two-letter country codes. It does not search all GeoNames
+alternate names. No permission, device location or online lookup is used.

@@ -258,9 +258,32 @@ ThemeData bookfinTheme(Brightness brightness, {bool reduceMotion = false}) {
       borderRadius: BorderRadius.circular(10),
     ),
     pageTransitionsTheme: const PageTransitionsTheme(
-      builders: {TargetPlatform.android: FadeUpwardsPageTransitionsBuilder()},
+      builders: {TargetPlatform.android: BookfinPageTransitionsBuilder()},
     ),
   );
+}
+
+/// Screen routes move without fading text, matching retained-screen navigation.
+class BookfinPageTransitionsBuilder extends PageTransitionsBuilder {
+  const BookfinPageTransitionsBuilder();
+
+  @override
+  Widget buildTransitions<T>(
+    PageRoute<T> route,
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    if (MediaQuery.disableAnimationsOf(context)) return child;
+    return SlideTransition(
+      position: Tween<Offset>(
+        begin: const Offset(0, 0.015),
+        end: Offset.zero,
+      ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
+      child: child,
+    );
+  }
 }
 
 class BookfinSurface extends StatelessWidget {
