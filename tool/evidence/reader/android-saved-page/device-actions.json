@@ -1,0 +1,1465 @@
+[
+  {
+    "ts": "2026-11-02T21:21:46.794Z",
+    "kind": "action.recorded",
+    "command": "open",
+    "summary": "Opened dev.bookfin.bookfin"
+  },
+  {
+    "ts": "2026-11-02T21:21:46.794Z",
+    "kind": "request.finished",
+    "command": "open",
+    "status": "ok",
+    "summary": "Finished open"
+  },
+  {
+    "ts": "2026-11-02T21:21:47.518Z",
+    "kind": "action.recorded",
+    "command": "snapshot",
+    "summary": "Ran snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:21:47.518Z",
+    "kind": "request.finished",
+    "command": "snapshot",
+    "status": "ok",
+    "summary": "Finished snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:22:03.385Z",
+    "kind": "action.recorded",
+    "command": "snapshot",
+    "summary": "Ran snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:22:03.385Z",
+    "kind": "request.finished",
+    "command": "snapshot",
+    "status": "ok",
+    "summary": "Finished snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:22:04.643Z",
+    "kind": "action.recorded",
+    "command": "fill",
+    "summary": "Filled @e5"
+  },
+  {
+    "ts": "2026-11-02T21:22:04.644Z",
+    "kind": "request.finished",
+    "command": "fill",
+    "status": "ok",
+    "summary": "Finished fill"
+  },
+  {
+    "ts": "2026-11-02T21:22:20.164Z",
+    "kind": "action.recorded",
+    "command": "snapshot",
+    "summary": "Ran snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:22:20.164Z",
+    "kind": "request.finished",
+    "command": "snapshot",
+    "status": "ok",
+    "summary": "Finished snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:22:21.402Z",
+    "kind": "action.recorded",
+    "command": "fill",
+    "summary": "Filled @e6"
+  },
+  {
+    "ts": "2026-11-02T21:22:21.402Z",
+    "kind": "request.finished",
+    "command": "fill",
+    "status": "ok",
+    "summary": "Finished fill"
+  },
+  {
+    "ts": "2026-11-02T21:22:36.153Z",
+    "kind": "action.recorded",
+    "command": "snapshot",
+    "summary": "Ran snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:22:36.153Z",
+    "kind": "request.finished",
+    "command": "snapshot",
+    "status": "ok",
+    "summary": "Finished snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:22:37.331Z",
+    "kind": "request.finished",
+    "command": "fill",
+    "status": "ok",
+    "summary": "Finished fill"
+  },
+  {
+    "ts": "2026-11-02T21:22:49.615Z",
+    "kind": "action.recorded",
+    "command": "snapshot",
+    "summary": "Ran snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:22:49.615Z",
+    "kind": "request.finished",
+    "command": "snapshot",
+    "status": "ok",
+    "summary": "Finished snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:22:51.283Z",
+    "kind": "action.recorded",
+    "command": "press",
+    "summary": "Tapped @e8"
+  },
+  {
+    "ts": "2026-11-02T21:22:51.283Z",
+    "kind": "request.finished",
+    "command": "press",
+    "status": "ok",
+    "summary": "Finished press"
+  },
+  {
+    "ts": "2026-11-02T21:23:04.486Z",
+    "kind": "action.recorded",
+    "command": "snapshot",
+    "summary": "Ran snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:23:04.486Z",
+    "kind": "request.finished",
+    "command": "snapshot",
+    "status": "ok",
+    "summary": "Finished snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:23:05.462Z",
+    "kind": "action.recorded",
+    "command": "press",
+    "summary": "Tapped @e8"
+  },
+  {
+    "ts": "2026-11-02T21:23:05.462Z",
+    "kind": "request.finished",
+    "command": "press",
+    "status": "ok",
+    "summary": "Finished press"
+  },
+  {
+    "ts": "2026-11-02T21:23:18.027Z",
+    "kind": "action.recorded",
+    "command": "snapshot",
+    "summary": "Ran snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:23:18.027Z",
+    "kind": "request.finished",
+    "command": "snapshot",
+    "status": "ok",
+    "summary": "Finished snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:23:19.531Z",
+    "kind": "action.recorded",
+    "command": "press",
+    "summary": "Tapped @e9"
+  },
+  {
+    "ts": "2026-11-02T21:23:19.531Z",
+    "kind": "request.finished",
+    "command": "press",
+    "status": "ok",
+    "summary": "Finished press"
+  },
+  {
+    "ts": "2026-11-02T21:23:34.696Z",
+    "kind": "action.recorded",
+    "command": "snapshot",
+    "summary": "Ran snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:23:34.696Z",
+    "kind": "request.finished",
+    "command": "snapshot",
+    "status": "ok",
+    "summary": "Finished snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:23:35.853Z",
+    "kind": "action.recorded",
+    "command": "press",
+    "summary": "Tapped @e12"
+  },
+  {
+    "ts": "2026-11-02T21:23:35.853Z",
+    "kind": "request.finished",
+    "command": "press",
+    "status": "ok",
+    "summary": "Finished press"
+  },
+  {
+    "ts": "2026-11-02T21:23:47.982Z",
+    "kind": "action.recorded",
+    "command": "screenshot",
+    "summary": "Captured screenshot 01-ordinary-ebook-library.png"
+  },
+  {
+    "ts": "2026-11-02T21:23:47.982Z",
+    "kind": "request.finished",
+    "command": "screenshot",
+    "status": "ok",
+    "summary": "Finished screenshot"
+  },
+  {
+    "ts": "2026-11-02T21:23:48.223Z",
+    "kind": "action.recorded",
+    "command": "snapshot",
+    "summary": "Ran snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:23:48.223Z",
+    "kind": "request.finished",
+    "command": "snapshot",
+    "status": "ok",
+    "summary": "Finished snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:23:49.452Z",
+    "kind": "action.recorded",
+    "command": "press",
+    "summary": "Tapped @e14"
+  },
+  {
+    "ts": "2026-11-02T21:23:49.452Z",
+    "kind": "request.finished",
+    "command": "press",
+    "status": "ok",
+    "summary": "Finished press"
+  },
+  {
+    "ts": "2026-11-02T21:24:03.807Z",
+    "kind": "action.recorded",
+    "command": "snapshot",
+    "summary": "Ran snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:24:03.807Z",
+    "kind": "request.finished",
+    "command": "snapshot",
+    "status": "ok",
+    "summary": "Finished snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:24:05.134Z",
+    "kind": "action.recorded",
+    "command": "press",
+    "summary": "Tapped @e10"
+  },
+  {
+    "ts": "2026-11-02T21:24:05.134Z",
+    "kind": "request.finished",
+    "command": "press",
+    "status": "ok",
+    "summary": "Finished press"
+  },
+  {
+    "ts": "2026-11-02T21:24:16.834Z",
+    "kind": "action.recorded",
+    "command": "screenshot",
+    "summary": "Captured screenshot 02-download-complete.png"
+  },
+  {
+    "ts": "2026-11-02T21:24:16.834Z",
+    "kind": "request.finished",
+    "command": "screenshot",
+    "status": "ok",
+    "summary": "Finished screenshot"
+  },
+  {
+    "ts": "2026-11-02T21:24:17.077Z",
+    "kind": "action.recorded",
+    "command": "snapshot",
+    "summary": "Ran snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:24:17.077Z",
+    "kind": "request.finished",
+    "command": "snapshot",
+    "status": "ok",
+    "summary": "Finished snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:24:30.156Z",
+    "kind": "action.recorded",
+    "command": "snapshot",
+    "summary": "Ran snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:24:30.156Z",
+    "kind": "request.finished",
+    "command": "snapshot",
+    "status": "ok",
+    "summary": "Finished snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:24:34.374Z",
+    "kind": "action.recorded",
+    "command": "press",
+    "summary": "Tapped @e12"
+  },
+  {
+    "ts": "2026-11-02T21:24:34.374Z",
+    "kind": "request.finished",
+    "command": "press",
+    "status": "ok",
+    "summary": "Finished press"
+  },
+  {
+    "ts": "2026-11-02T21:24:50.696Z",
+    "kind": "action.recorded",
+    "command": "screenshot",
+    "summary": "Captured screenshot 03-readable-first-chapter.png"
+  },
+  {
+    "ts": "2026-11-02T21:24:50.697Z",
+    "kind": "request.finished",
+    "command": "screenshot",
+    "status": "ok",
+    "summary": "Finished screenshot"
+  },
+  {
+    "ts": "2026-11-02T21:24:50.953Z",
+    "kind": "action.recorded",
+    "command": "snapshot",
+    "summary": "Ran snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:24:50.953Z",
+    "kind": "request.finished",
+    "command": "snapshot",
+    "status": "ok",
+    "summary": "Finished snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:24:52.048Z",
+    "kind": "action.recorded",
+    "command": "press",
+    "summary": "Tapped @e29"
+  },
+  {
+    "ts": "2026-11-02T21:24:52.048Z",
+    "kind": "request.finished",
+    "command": "press",
+    "status": "ok",
+    "summary": "Finished press"
+  },
+  {
+    "ts": "2026-11-02T21:25:11.347Z",
+    "kind": "action.recorded",
+    "command": "snapshot",
+    "summary": "Ran snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:25:11.348Z",
+    "kind": "request.finished",
+    "command": "snapshot",
+    "status": "ok",
+    "summary": "Finished snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:25:12.389Z",
+    "kind": "action.recorded",
+    "command": "press",
+    "summary": "Tapped @e28"
+  },
+  {
+    "ts": "2026-11-02T21:25:12.390Z",
+    "kind": "request.finished",
+    "command": "press",
+    "status": "ok",
+    "summary": "Finished press"
+  },
+  {
+    "ts": "2026-11-02T21:25:33.722Z",
+    "kind": "action.recorded",
+    "command": "screenshot",
+    "summary": "Captured screenshot 04-passage5-before-reopen.png"
+  },
+  {
+    "ts": "2026-11-02T21:25:33.722Z",
+    "kind": "request.finished",
+    "command": "screenshot",
+    "status": "ok",
+    "summary": "Finished screenshot"
+  },
+  {
+    "ts": "2026-11-02T21:25:57.023Z",
+    "kind": "action.recorded",
+    "command": "snapshot",
+    "summary": "Ran snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:25:57.023Z",
+    "kind": "request.finished",
+    "command": "snapshot",
+    "status": "ok",
+    "summary": "Finished snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:25:58.365Z",
+    "kind": "action.recorded",
+    "command": "press",
+    "summary": "Tapped @e2"
+  },
+  {
+    "ts": "2026-11-02T21:25:58.366Z",
+    "kind": "request.finished",
+    "command": "press",
+    "status": "ok",
+    "summary": "Finished press"
+  },
+  {
+    "ts": "2026-11-02T21:26:10.232Z",
+    "kind": "action.recorded",
+    "command": "snapshot",
+    "summary": "Ran snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:26:10.232Z",
+    "kind": "request.finished",
+    "command": "snapshot",
+    "status": "ok",
+    "summary": "Finished snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:26:13.233Z",
+    "kind": "action.recorded",
+    "command": "press",
+    "summary": "Tapped @e12"
+  },
+  {
+    "ts": "2026-11-02T21:26:13.233Z",
+    "kind": "request.finished",
+    "command": "press",
+    "status": "ok",
+    "summary": "Finished press"
+  },
+  {
+    "ts": "2026-11-02T21:26:26.269Z",
+    "kind": "action.recorded",
+    "command": "screenshot",
+    "summary": "Captured screenshot 05-after-reopen.png"
+  },
+  {
+    "ts": "2026-11-02T21:26:26.269Z",
+    "kind": "request.finished",
+    "command": "screenshot",
+    "status": "ok",
+    "summary": "Finished screenshot"
+  },
+  {
+    "ts": "2026-11-02T21:27:23.274Z",
+    "kind": "action.recorded",
+    "command": "screenshot",
+    "summary": "Captured screenshot 06-after-reopen-settled.png"
+  },
+  {
+    "ts": "2026-11-02T21:27:23.274Z",
+    "kind": "request.finished",
+    "command": "screenshot",
+    "status": "ok",
+    "summary": "Finished screenshot"
+  },
+  {
+    "ts": "2026-11-02T21:27:57.433Z",
+    "kind": "action.recorded",
+    "command": "open",
+    "summary": "Opened dev.bookfin.bookfin"
+  },
+  {
+    "ts": "2026-11-02T21:27:57.433Z",
+    "kind": "request.finished",
+    "command": "open",
+    "status": "ok",
+    "summary": "Finished open"
+  },
+  {
+    "ts": "2026-11-02T21:27:57.873Z",
+    "kind": "action.recorded",
+    "command": "snapshot",
+    "summary": "Ran snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:27:57.873Z",
+    "kind": "request.finished",
+    "command": "snapshot",
+    "status": "ok",
+    "summary": "Finished snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:28:05.371Z",
+    "kind": "action.recorded",
+    "command": "screenshot",
+    "summary": "Captured screenshot 07-server-unavailable-restarted.png"
+  },
+  {
+    "ts": "2026-11-02T21:28:05.371Z",
+    "kind": "request.finished",
+    "command": "screenshot",
+    "status": "ok",
+    "summary": "Finished screenshot"
+  },
+  {
+    "ts": "2026-11-02T21:28:05.611Z",
+    "kind": "action.recorded",
+    "command": "snapshot",
+    "summary": "Ran snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:28:05.611Z",
+    "kind": "request.finished",
+    "command": "snapshot",
+    "status": "ok",
+    "summary": "Finished snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:28:06.800Z",
+    "kind": "action.recorded",
+    "command": "press",
+    "summary": "Tapped @e13"
+  },
+  {
+    "ts": "2026-11-02T21:28:06.800Z",
+    "kind": "request.finished",
+    "command": "press",
+    "status": "ok",
+    "summary": "Finished press"
+  },
+  {
+    "ts": "2026-11-02T21:28:17.917Z",
+    "kind": "action.recorded",
+    "command": "snapshot",
+    "summary": "Ran snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:28:17.917Z",
+    "kind": "request.finished",
+    "command": "snapshot",
+    "status": "ok",
+    "summary": "Finished snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:28:19.189Z",
+    "kind": "action.recorded",
+    "command": "press",
+    "summary": "Tapped @e16"
+  },
+  {
+    "ts": "2026-11-02T21:28:19.189Z",
+    "kind": "request.finished",
+    "command": "press",
+    "status": "ok",
+    "summary": "Finished press"
+  },
+  {
+    "ts": "2026-11-02T21:28:31.730Z",
+    "kind": "action.recorded",
+    "command": "snapshot",
+    "summary": "Ran snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:28:31.730Z",
+    "kind": "request.finished",
+    "command": "snapshot",
+    "status": "ok",
+    "summary": "Finished snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:28:35.474Z",
+    "kind": "action.recorded",
+    "command": "press",
+    "summary": "Tapped @e13"
+  },
+  {
+    "ts": "2026-11-02T21:28:35.474Z",
+    "kind": "request.finished",
+    "command": "press",
+    "status": "ok",
+    "summary": "Finished press"
+  },
+  {
+    "ts": "2026-11-02T21:28:47.635Z",
+    "kind": "action.recorded",
+    "command": "screenshot",
+    "summary": "Captured screenshot 08-server-unavailable-passage5.png"
+  },
+  {
+    "ts": "2026-11-02T21:28:47.635Z",
+    "kind": "request.finished",
+    "command": "screenshot",
+    "status": "ok",
+    "summary": "Finished screenshot"
+  },
+  {
+    "ts": "2026-11-02T21:29:22.051Z",
+    "kind": "action.recorded",
+    "command": "screenshot",
+    "summary": "Captured screenshot 09-server-unavailable-settled.png"
+  },
+  {
+    "ts": "2026-11-02T21:29:22.051Z",
+    "kind": "request.finished",
+    "command": "screenshot",
+    "status": "ok",
+    "summary": "Finished screenshot"
+  },
+  {
+    "ts": "2026-11-02T21:29:22.302Z",
+    "kind": "action.recorded",
+    "command": "snapshot",
+    "summary": "Ran snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:29:22.302Z",
+    "kind": "request.finished",
+    "command": "snapshot",
+    "status": "ok",
+    "summary": "Finished snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:29:23.471Z",
+    "kind": "action.recorded",
+    "command": "press",
+    "summary": "Tapped @e21"
+  },
+  {
+    "ts": "2026-11-02T21:29:23.471Z",
+    "kind": "request.finished",
+    "command": "press",
+    "status": "ok",
+    "summary": "Finished press"
+  },
+  {
+    "ts": "2026-11-02T21:29:39.856Z",
+    "kind": "action.recorded",
+    "command": "snapshot",
+    "summary": "Ran snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:29:39.856Z",
+    "kind": "request.finished",
+    "command": "snapshot",
+    "status": "ok",
+    "summary": "Finished snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:29:41.154Z",
+    "kind": "action.recorded",
+    "command": "press",
+    "summary": "Tapped @e27"
+  },
+  {
+    "ts": "2026-11-02T21:29:41.154Z",
+    "kind": "request.finished",
+    "command": "press",
+    "status": "ok",
+    "summary": "Finished press"
+  },
+  {
+    "ts": "2026-11-02T21:29:57.004Z",
+    "kind": "action.recorded",
+    "command": "screenshot",
+    "summary": "Captured screenshot 10-intentional-next.png"
+  },
+  {
+    "ts": "2026-11-02T21:29:57.004Z",
+    "kind": "request.finished",
+    "command": "screenshot",
+    "status": "ok",
+    "summary": "Finished screenshot"
+  },
+  {
+    "ts": "2026-11-02T21:29:57.502Z",
+    "kind": "action.recorded",
+    "command": "snapshot",
+    "summary": "Ran snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:29:57.502Z",
+    "kind": "request.finished",
+    "command": "snapshot",
+    "status": "ok",
+    "summary": "Finished snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:29:58.876Z",
+    "kind": "action.recorded",
+    "command": "press",
+    "summary": "Tapped @e24"
+  },
+  {
+    "ts": "2026-11-02T21:29:58.876Z",
+    "kind": "request.finished",
+    "command": "press",
+    "status": "ok",
+    "summary": "Finished press"
+  },
+  {
+    "ts": "2026-11-02T21:30:12.425Z",
+    "kind": "action.recorded",
+    "command": "screenshot",
+    "summary": "Captured screenshot 11-intentional-previous.png"
+  },
+  {
+    "ts": "2026-11-02T21:30:12.425Z",
+    "kind": "request.finished",
+    "command": "screenshot",
+    "status": "ok",
+    "summary": "Finished screenshot"
+  },
+  {
+    "ts": "2026-11-02T21:30:12.928Z",
+    "kind": "action.recorded",
+    "command": "snapshot",
+    "summary": "Ran snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:30:12.928Z",
+    "kind": "request.finished",
+    "command": "snapshot",
+    "status": "ok",
+    "summary": "Finished snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:30:14.081Z",
+    "kind": "action.recorded",
+    "command": "press",
+    "summary": "Tapped @e27"
+  },
+  {
+    "ts": "2026-11-02T21:30:14.081Z",
+    "kind": "request.finished",
+    "command": "press",
+    "status": "ok",
+    "summary": "Finished press"
+  },
+  {
+    "ts": "2026-11-02T21:30:24.419Z",
+    "kind": "action.recorded",
+    "command": "snapshot",
+    "summary": "Ran snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:30:24.419Z",
+    "kind": "request.finished",
+    "command": "snapshot",
+    "status": "ok",
+    "summary": "Finished snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:30:25.727Z",
+    "kind": "action.recorded",
+    "command": "press",
+    "summary": "Tapped @e21"
+  },
+  {
+    "ts": "2026-11-02T21:30:25.727Z",
+    "kind": "request.finished",
+    "command": "press",
+    "status": "ok",
+    "summary": "Finished press"
+  },
+  {
+    "ts": "2026-11-02T21:30:38.420Z",
+    "kind": "action.recorded",
+    "command": "snapshot",
+    "summary": "Ran snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:30:38.420Z",
+    "kind": "request.finished",
+    "command": "snapshot",
+    "status": "ok",
+    "summary": "Finished snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:30:39.662Z",
+    "kind": "action.recorded",
+    "command": "press",
+    "summary": "Tapped @e4"
+  },
+  {
+    "ts": "2026-11-02T21:30:39.662Z",
+    "kind": "request.finished",
+    "command": "press",
+    "status": "ok",
+    "summary": "Finished press"
+  },
+  {
+    "ts": "2026-11-02T21:30:53.793Z",
+    "kind": "action.recorded",
+    "command": "screenshot",
+    "summary": "Captured screenshot 12-bookmark-restored.png"
+  },
+  {
+    "ts": "2026-11-02T21:30:53.793Z",
+    "kind": "request.finished",
+    "command": "screenshot",
+    "status": "ok",
+    "summary": "Finished screenshot"
+  },
+  {
+    "ts": "2026-11-02T21:30:54.617Z",
+    "kind": "action.recorded",
+    "command": "snapshot",
+    "summary": "Ran snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:30:54.618Z",
+    "kind": "request.finished",
+    "command": "snapshot",
+    "status": "ok",
+    "summary": "Finished snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:30:55.734Z",
+    "kind": "action.recorded",
+    "command": "press",
+    "summary": "Tapped @e20"
+  },
+  {
+    "ts": "2026-11-02T21:30:55.734Z",
+    "kind": "request.finished",
+    "command": "press",
+    "status": "ok",
+    "summary": "Finished press"
+  },
+  {
+    "ts": "2026-11-02T21:31:15.594Z",
+    "kind": "action.recorded",
+    "command": "screenshot",
+    "summary": "Captured screenshot 13-resize22-retains-passage5.png"
+  },
+  {
+    "ts": "2026-11-02T21:31:15.594Z",
+    "kind": "request.finished",
+    "command": "screenshot",
+    "status": "ok",
+    "summary": "Finished screenshot"
+  },
+  {
+    "ts": "2026-11-02T21:31:16.431Z",
+    "kind": "action.recorded",
+    "command": "snapshot",
+    "summary": "Ran snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:31:16.431Z",
+    "kind": "request.finished",
+    "command": "snapshot",
+    "status": "ok",
+    "summary": "Finished snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:31:41.682Z",
+    "kind": "action.recorded",
+    "command": "snapshot",
+    "summary": "Ran snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:31:41.682Z",
+    "kind": "request.finished",
+    "command": "snapshot",
+    "status": "ok",
+    "summary": "Finished snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:31:42.787Z",
+    "kind": "action.recorded",
+    "command": "press",
+    "summary": "Tapped @e17"
+  },
+  {
+    "ts": "2026-11-02T21:31:42.787Z",
+    "kind": "request.finished",
+    "command": "press",
+    "status": "ok",
+    "summary": "Finished press"
+  },
+  {
+    "ts": "2026-11-02T21:31:59.467Z",
+    "kind": "action.recorded",
+    "command": "screenshot",
+    "summary": "Captured screenshot 14-resize20-restored-top.png"
+  },
+  {
+    "ts": "2026-11-02T21:31:59.467Z",
+    "kind": "request.finished",
+    "command": "screenshot",
+    "status": "ok",
+    "summary": "Finished screenshot"
+  },
+  {
+    "ts": "2026-11-02T21:31:59.944Z",
+    "kind": "action.recorded",
+    "command": "snapshot",
+    "summary": "Ran snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:31:59.944Z",
+    "kind": "request.finished",
+    "command": "snapshot",
+    "status": "ok",
+    "summary": "Finished snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:32:01.191Z",
+    "kind": "action.recorded",
+    "command": "press",
+    "summary": "Tapped @e23"
+  },
+  {
+    "ts": "2026-11-02T21:32:01.192Z",
+    "kind": "request.finished",
+    "command": "press",
+    "status": "ok",
+    "summary": "Finished press"
+  },
+  {
+    "ts": "2026-11-02T21:32:16.290Z",
+    "kind": "action.recorded",
+    "command": "screenshot",
+    "summary": "Captured screenshot 15-night-retains-passage5.png"
+  },
+  {
+    "ts": "2026-11-02T21:32:16.290Z",
+    "kind": "request.finished",
+    "command": "screenshot",
+    "status": "ok",
+    "summary": "Finished screenshot"
+  },
+  {
+    "ts": "2026-11-02T21:32:17.104Z",
+    "kind": "action.recorded",
+    "command": "snapshot",
+    "summary": "Ran snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:32:17.104Z",
+    "kind": "request.finished",
+    "command": "snapshot",
+    "status": "ok",
+    "summary": "Finished snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:32:18.603Z",
+    "kind": "action.recorded",
+    "command": "press",
+    "summary": "Tapped @e4"
+  },
+  {
+    "ts": "2026-11-02T21:32:18.604Z",
+    "kind": "request.finished",
+    "command": "press",
+    "status": "ok",
+    "summary": "Finished press"
+  },
+  {
+    "ts": "2026-11-02T21:32:32.372Z",
+    "kind": "action.recorded",
+    "command": "screenshot",
+    "summary": "Captured screenshot 16-hidden-controls-resize.png"
+  },
+  {
+    "ts": "2026-11-02T21:32:32.373Z",
+    "kind": "request.finished",
+    "command": "screenshot",
+    "status": "ok",
+    "summary": "Finished screenshot"
+  },
+  {
+    "ts": "2026-11-02T21:33:02.193Z",
+    "kind": "action.recorded",
+    "command": "snapshot",
+    "summary": "Ran snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:33:02.194Z",
+    "kind": "request.finished",
+    "command": "snapshot",
+    "status": "ok",
+    "summary": "Finished snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:33:03.437Z",
+    "kind": "action.recorded",
+    "command": "press",
+    "summary": "Tapped @e2"
+  },
+  {
+    "ts": "2026-11-02T21:33:03.438Z",
+    "kind": "request.finished",
+    "command": "press",
+    "status": "ok",
+    "summary": "Finished press"
+  },
+  {
+    "ts": "2026-11-02T21:33:20.999Z",
+    "kind": "action.recorded",
+    "command": "screenshot",
+    "summary": "Captured screenshot 17-shown-controls-passage5.png"
+  },
+  {
+    "ts": "2026-11-02T21:33:20.999Z",
+    "kind": "request.finished",
+    "command": "screenshot",
+    "status": "ok",
+    "summary": "Finished screenshot"
+  },
+  {
+    "ts": "2026-11-02T21:33:21.823Z",
+    "kind": "action.recorded",
+    "command": "snapshot",
+    "summary": "Ran snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:33:21.823Z",
+    "kind": "request.finished",
+    "command": "snapshot",
+    "status": "ok",
+    "summary": "Finished snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:33:22.970Z",
+    "kind": "action.recorded",
+    "command": "press",
+    "summary": "Tapped @e23"
+  },
+  {
+    "ts": "2026-11-02T21:33:22.970Z",
+    "kind": "request.finished",
+    "command": "press",
+    "status": "ok",
+    "summary": "Finished press"
+  },
+  {
+    "ts": "2026-11-02T21:33:40.981Z",
+    "kind": "action.recorded",
+    "command": "snapshot",
+    "summary": "Ran snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:33:40.981Z",
+    "kind": "request.finished",
+    "command": "snapshot",
+    "status": "ok",
+    "summary": "Finished snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:33:42.328Z",
+    "kind": "action.recorded",
+    "command": "press",
+    "summary": "Tapped @e17"
+  },
+  {
+    "ts": "2026-11-02T21:33:42.328Z",
+    "kind": "request.finished",
+    "command": "press",
+    "status": "ok",
+    "summary": "Finished press"
+  },
+  {
+    "ts": "2026-11-02T21:33:56.596Z",
+    "kind": "action.recorded",
+    "command": "snapshot",
+    "summary": "Ran snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:33:56.596Z",
+    "kind": "request.finished",
+    "command": "snapshot",
+    "status": "ok",
+    "summary": "Finished snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:33:57.981Z",
+    "kind": "action.recorded",
+    "command": "press",
+    "summary": "Tapped @e5"
+  },
+  {
+    "ts": "2026-11-02T21:33:57.981Z",
+    "kind": "request.finished",
+    "command": "press",
+    "status": "ok",
+    "summary": "Finished press"
+  },
+  {
+    "ts": "2026-11-02T21:34:11.877Z",
+    "kind": "action.recorded",
+    "command": "snapshot",
+    "summary": "Ran snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:34:11.878Z",
+    "kind": "request.finished",
+    "command": "snapshot",
+    "status": "ok",
+    "summary": "Finished snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:34:13.599Z",
+    "kind": "action.recorded",
+    "command": "press",
+    "summary": "Tapped @e22"
+  },
+  {
+    "ts": "2026-11-02T21:34:13.599Z",
+    "kind": "request.finished",
+    "command": "press",
+    "status": "ok",
+    "summary": "Finished press"
+  },
+  {
+    "ts": "2026-11-02T21:34:27.455Z",
+    "kind": "action.recorded",
+    "command": "snapshot",
+    "summary": "Ran snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:34:27.455Z",
+    "kind": "request.finished",
+    "command": "snapshot",
+    "status": "ok",
+    "summary": "Finished snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:34:28.580Z",
+    "kind": "action.recorded",
+    "command": "press",
+    "summary": "Tapped @e28"
+  },
+  {
+    "ts": "2026-11-02T21:34:28.580Z",
+    "kind": "request.finished",
+    "command": "press",
+    "status": "ok",
+    "summary": "Finished press"
+  },
+  {
+    "ts": "2026-11-02T21:34:42.288Z",
+    "kind": "action.recorded",
+    "command": "snapshot",
+    "summary": "Ran snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:34:42.288Z",
+    "kind": "request.finished",
+    "command": "snapshot",
+    "status": "ok",
+    "summary": "Finished snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:34:43.557Z",
+    "kind": "action.recorded",
+    "command": "press",
+    "summary": "Tapped @e26"
+  },
+  {
+    "ts": "2026-11-02T21:34:43.557Z",
+    "kind": "request.finished",
+    "command": "press",
+    "status": "ok",
+    "summary": "Finished press"
+  },
+  {
+    "ts": "2026-11-02T21:35:00.870Z",
+    "kind": "action.recorded",
+    "command": "screenshot",
+    "summary": "Captured screenshot 18-second-chapter22-before.png"
+  },
+  {
+    "ts": "2026-11-02T21:35:00.871Z",
+    "kind": "request.finished",
+    "command": "screenshot",
+    "status": "ok",
+    "summary": "Finished screenshot"
+  },
+  {
+    "ts": "2026-11-02T21:35:02.339Z",
+    "kind": "action.recorded",
+    "command": "snapshot",
+    "summary": "Ran snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:35:02.339Z",
+    "kind": "request.finished",
+    "command": "snapshot",
+    "status": "ok",
+    "summary": "Finished snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:35:03.767Z",
+    "kind": "action.recorded",
+    "command": "press",
+    "summary": "Tapped @e2"
+  },
+  {
+    "ts": "2026-11-02T21:35:03.767Z",
+    "kind": "request.finished",
+    "command": "press",
+    "status": "ok",
+    "summary": "Finished press"
+  },
+  {
+    "ts": "2026-11-02T21:35:29.314Z",
+    "kind": "action.recorded",
+    "command": "snapshot",
+    "summary": "Ran snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:35:29.315Z",
+    "kind": "request.finished",
+    "command": "snapshot",
+    "status": "ok",
+    "summary": "Finished snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:35:32.361Z",
+    "kind": "action.recorded",
+    "command": "press",
+    "summary": "Tapped @e13"
+  },
+  {
+    "ts": "2026-11-02T21:35:32.362Z",
+    "kind": "request.finished",
+    "command": "press",
+    "status": "ok",
+    "summary": "Finished press"
+  },
+  {
+    "ts": "2026-11-02T21:35:49.408Z",
+    "kind": "action.recorded",
+    "command": "screenshot",
+    "summary": "Captured screenshot 19-second-chapter22-reopened.png"
+  },
+  {
+    "ts": "2026-11-02T21:35:49.408Z",
+    "kind": "request.finished",
+    "command": "screenshot",
+    "status": "ok",
+    "summary": "Finished screenshot"
+  },
+  {
+    "ts": "2026-11-02T21:36:42.475Z",
+    "kind": "action.recorded",
+    "command": "screenshot",
+    "summary": "Captured screenshot 20-second-chapter22-settled.png"
+  },
+  {
+    "ts": "2026-11-02T21:36:42.475Z",
+    "kind": "request.finished",
+    "command": "screenshot",
+    "status": "ok",
+    "summary": "Finished screenshot"
+  },
+  {
+    "ts": "2026-11-02T21:36:42.872Z",
+    "kind": "action.recorded",
+    "command": "snapshot",
+    "summary": "Ran snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:36:42.873Z",
+    "kind": "request.finished",
+    "command": "snapshot",
+    "status": "ok",
+    "summary": "Finished snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:36:44.155Z",
+    "kind": "action.recorded",
+    "command": "press",
+    "summary": "Tapped @e17"
+  },
+  {
+    "ts": "2026-11-02T21:36:44.155Z",
+    "kind": "request.finished",
+    "command": "press",
+    "status": "ok",
+    "summary": "Finished press"
+  },
+  {
+    "ts": "2026-11-02T21:37:10.684Z",
+    "kind": "action.recorded",
+    "command": "snapshot",
+    "summary": "Ran snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:37:10.684Z",
+    "kind": "request.finished",
+    "command": "snapshot",
+    "status": "ok",
+    "summary": "Finished snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:37:12.495Z",
+    "kind": "action.recorded",
+    "command": "press",
+    "summary": "Tapped @e2"
+  },
+  {
+    "ts": "2026-11-02T21:37:12.495Z",
+    "kind": "request.finished",
+    "command": "press",
+    "status": "ok",
+    "summary": "Finished press"
+  },
+  {
+    "ts": "2026-11-02T21:38:29.373Z",
+    "kind": "action.recorded",
+    "command": "snapshot",
+    "summary": "Ran snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:38:29.373Z",
+    "kind": "request.finished",
+    "command": "snapshot",
+    "status": "ok",
+    "summary": "Finished snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:38:30.445Z",
+    "kind": "action.recorded",
+    "command": "press",
+    "summary": "Tapped @e12"
+  },
+  {
+    "ts": "2026-11-02T21:38:30.445Z",
+    "kind": "request.finished",
+    "command": "press",
+    "status": "ok",
+    "summary": "Finished press"
+  },
+  {
+    "ts": "2026-11-02T21:38:43.281Z",
+    "kind": "action.recorded",
+    "command": "snapshot",
+    "summary": "Ran snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:38:43.282Z",
+    "kind": "request.finished",
+    "command": "snapshot",
+    "status": "ok",
+    "summary": "Finished snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:38:44.676Z",
+    "kind": "action.recorded",
+    "command": "press",
+    "summary": "Tapped @e5"
+  },
+  {
+    "ts": "2026-11-02T21:38:44.677Z",
+    "kind": "request.finished",
+    "command": "press",
+    "status": "ok",
+    "summary": "Finished press"
+  },
+  {
+    "ts": "2026-11-02T21:39:01.481Z",
+    "kind": "action.recorded",
+    "command": "snapshot",
+    "summary": "Ran snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:39:01.482Z",
+    "kind": "request.finished",
+    "command": "snapshot",
+    "status": "ok",
+    "summary": "Finished snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:39:02.787Z",
+    "kind": "action.recorded",
+    "command": "press",
+    "summary": "Tapped @e2"
+  },
+  {
+    "ts": "2026-11-02T21:39:02.787Z",
+    "kind": "request.finished",
+    "command": "press",
+    "status": "ok",
+    "summary": "Finished press"
+  },
+  {
+    "ts": "2026-11-02T21:39:18.362Z",
+    "kind": "action.recorded",
+    "command": "snapshot",
+    "summary": "Ran snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:39:18.362Z",
+    "kind": "request.finished",
+    "command": "snapshot",
+    "status": "ok",
+    "summary": "Finished snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:39:19.647Z",
+    "kind": "action.recorded",
+    "command": "press",
+    "summary": "Tapped @e5"
+  },
+  {
+    "ts": "2026-11-02T21:39:19.648Z",
+    "kind": "request.finished",
+    "command": "press",
+    "status": "ok",
+    "summary": "Finished press"
+  },
+  {
+    "ts": "2026-11-02T21:39:35.296Z",
+    "kind": "action.recorded",
+    "command": "snapshot",
+    "summary": "Ran snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:39:35.296Z",
+    "kind": "request.finished",
+    "command": "snapshot",
+    "status": "ok",
+    "summary": "Finished snapshot"
+  },
+  {
+    "ts": "2026-11-02T21:39:36.605Z",
+    "kind": "action.recorded",
+    "command": "press",
+    "summary": "Tapped @e7"
+  },
+  {
+    "ts": "2026-11-02T21:39:36.605Z",
+    "kind": "request.finished",
+    "command": "press",
+    "status": "ok",
+    "summary": "Finished press"
+  },
+  {
+    "ts": "2026-11-02T21:40:00.952Z",
+    "kind": "action.recorded",
+    "command": "screenshot",
+    "summary": "Captured screenshot 21-cleaned-sign-in.png"
+  },
+  {
+    "ts": "2026-11-02T21:40:00.952Z",
+    "kind": "request.finished",
+    "command": "screenshot",
+    "status": "ok",
+    "summary": "Finished screenshot"
+  }
+]

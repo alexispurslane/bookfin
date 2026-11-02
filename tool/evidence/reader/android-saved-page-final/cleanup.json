@@ -1,0 +1,33 @@
+{
+  "serverExit": 0,
+  "observerExit": 143,
+  "listeners7364And7365": false,
+  "ownReverse7365Removed": true,
+  "ownDiagnosticForwardsRemoved": true,
+  "finalForwardsMatchInitial": true,
+  "ownDownloadFileListingEmpty": true,
+  "signedOut": true,
+  "scopedReadingRecordsRetained": true,
+  "readerFontSize": 20,
+  "readerTheme": "cream",
+  "androidFontScale": 1.0,
+  "airplaneMode": 0,
+  "androidSettingsChanged": false,
+  "ownGradleDaemonsStopped": 1,
+  "boundAppSessionClosed": true,
+  "bindingReleased": true,
+  "shutdown": false,
+  "productionFilesChanged": false,
+  "childrenStarted": false,
+  "hostSuiteRerun": false,
+  "coverageRun": false,
+  "mutationRun": false,
+  "ticketClosed": false,
+  "redundantCloseErrorsAfterSuccessfulBoundClose": [
+    "SESSION_NOT_FOUND",
+    "SESSION_NOT_FOUND"
+  ],
+  "t3DeviceCloseReturnedSuccess": true,
+  "noUiAfterCloseErrors": true,
+  "ownFixtureRuntimeRemovedAfterPublicAudit": true
+}

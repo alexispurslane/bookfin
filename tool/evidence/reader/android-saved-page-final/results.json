@@ -1,0 +1,115 @@
+{
+  "source": "c279fd6d9fe6a792d04c8b6a15c519c4077aebde",
+  "backRead": {
+    "result": "pass",
+    "cfi": "epubcfi(/6/2!/4/26/1:0)",
+    "actualVisibleStart": "Harbour passage 5.",
+    "pageLabel": "Page 3 of 5"
+  },
+  "serverUnavailableRestart": {
+    "result": "pass",
+    "processBefore": 22498,
+    "processAfter": 23878,
+    "cfi": "epubcfi(/6/2!/4/26/1:0)",
+    "actualVisibleStart": "Harbour passage 5.",
+    "pageLabel": "Page 3 of 5",
+    "airplaneMode": false
+  },
+  "bookmark": {
+    "result": "pass",
+    "createdOnEarlierCandidate": true,
+    "restoredAcrossChapterOnFinalSource": true
+  },
+  "intentionalNextPrevious": {
+    "result": "pass",
+    "nextCfi": "epubcfi(/6/2!/4/34/1:81)",
+    "returnedCfi": "epubcfi(/6/2!/4/26/1:0)"
+  },
+  "appearance22Then20": {
+    "result": "pass",
+    "cfi": "epubcfi(/6/2!/4/26/1:0)",
+    "anchorRemainsVisibleAt22": true,
+    "sameFirstLineRestoredAt20": true
+  },
+  "secondChapter22BackRead": {
+    "result": "pass",
+    "cfi": "epubcfi(/6/4!/4/18/1:100)",
+    "actualVisibleStart": "Tail of passage 5: could keep this place while the room grew dark.",
+    "nextCompletePassage": "Harbour passage 6.",
+    "pageLabel": "Page 3 of 6"
+  },
+  "layoutSamples": [
+    {
+      "file": "after-reopen-layout.jsonl",
+      "samples": 40,
+      "firstTime": "2026-11-02T21:48:37.104Z",
+      "lastTime": "2026-11-02T21:48:47.236Z",
+      "fontsLoadedInEverySample": true,
+      "lastViewport": {
+        "width": 412,
+        "height": 667,
+        "fontStatus": "loaded"
+      },
+      "lastFrameHorizontalPosition": -824,
+      "lastFontSize": "20px"
+    },
+    {
+      "file": "after-restart-layout.jsonl",
+      "samples": 40,
+      "firstTime": "2026-11-02T21:51:07.456Z",
+      "lastTime": "2026-11-02T21:51:17.441Z",
+      "fontsLoadedInEverySample": true,
+      "lastViewport": {
+        "width": 412,
+        "height": 667,
+        "fontStatus": "loaded"
+      },
+      "lastFrameHorizontalPosition": -824,
+      "lastFontSize": "20px"
+    },
+    {
+      "file": "resize22-layout.jsonl",
+      "samples": 1,
+      "firstTime": "2026-11-02T21:52:06.167Z",
+      "lastTime": "2026-11-02T21:52:06.167Z",
+      "fontsLoadedInEverySample": true,
+      "lastViewport": {
+        "width": 412,
+        "height": 667,
+        "fontStatus": "loaded"
+      },
+      "lastFrameHorizontalPosition": -824,
+      "lastFontSize": "22px"
+    },
+    {
+      "file": "second22-after-layout.jsonl",
+      "samples": 40,
+      "firstTime": "2026-11-02T21:54:39.704Z",
+      "lastTime": "2026-11-02T21:54:49.713Z",
+      "fontsLoadedInEverySample": true,
+      "lastViewport": {
+        "width": 412,
+        "height": 667,
+        "fontStatus": "loaded"
+      },
+      "lastFrameHorizontalPosition": -824,
+      "lastFontSize": "22px"
+    },
+    {
+      "file": "second22-before-layout.jsonl",
+      "samples": 1,
+      "firstTime": "2026-11-02T21:53:56.940Z",
+      "lastTime": "2026-11-02T21:53:56.940Z",
+      "fontsLoadedInEverySample": true,
+      "lastViewport": {
+        "width": 412,
+        "height": 667,
+        "fontStatus": "loaded"
+      },
+      "lastFrameHorizontalPosition": -823.6190795898438,
+      "lastFontSize": "22px"
+    }
+  ],
+  "releaseWideAcceptance": false,
+  "ticketClosed": false
+}

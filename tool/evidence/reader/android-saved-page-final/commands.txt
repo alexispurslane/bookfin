@@ -1,0 +1,80 @@
+All paths are relative to the T3 checkout unless absolute. Credentials are never expanded into this public file.
+Actual device action order, snapshot completions, reference/coordinate summaries, and timestamps are retained in device-actions.json.
+Every UI command used this exact device-bound executable:
+/Users/alexispurslane/.t3/userdata/device/targets/t3-98a0e3c6dc1fbba46a8e5229/agent-device
+
+Source and normal build:
+git merge --no-edit c279fd6d9fe6a792d04c8b6a15c519c4077aebde
+git rev-parse HEAD HEAD^{tree}
+git diff --stat 5447da32 HEAD
+uptime
+sysctl hw.ncpu
+memory_pressure | tail -4
+git archive HEAD | shasum -a 256
+nice -n 10 nix develop --profile .cache/dev-shell --command bash -c 'export PUB_CACHE=/Users/alexispurslane/Development/bookfin/.cache/pub; export GRADLE_USER_HOME="$PWD/.cache/gradle"; bash tool/bookfin build-android'
+
+Installation and actual installed-file readback, inside nix develop .cache/dev-shell --command bash -c:
+adb -s emulator-5554 install -r build/app/outputs/flutter-apk/app-debug.apk
+apk_path=$(adb -s emulator-5554 shell pm path dev.bookfin.bookfin | tr -d "\r" | sed "s/^package://")
+adb -s emulator-5554 pull "$apk_path" .cache/installed-final-before.apk
+shasum -a 256 .cache/installed-final-before.apk
+adb -s emulator-5554 reverse tcp:7365 tcp:7365
+
+Own fixture restart and observer, in separate retained exec sessions:
+nix develop .cache/sync-shell --command bash -c 'export BOOKFIN_SYNC_CORE_ONLY=1; python3 tool/research/sync/fixture.py serve' >.cache/jellyfin-final.log 2>&1
+nix develop .cache/sync-shell --command python3 tool/research/sync/fixture.py wait
+nix develop .cache/sync-shell --command python3 tool/acceptance/android_proxy.py >.cache/observer-final.log 2>&1
+
+Device launch/relaunch:
+/Users/alexispurslane/.t3/userdata/device/targets/t3-98a0e3c6dc1fbba46a8e5229/agent-device open dev.bookfin.bookfin --relaunch
+Immediately before every field entry or press:
+/Users/alexispurslane/.t3/userdata/device/targets/t3-98a0e3c6dc1fbba46a8e5229/agent-device snapshot -i --force-full
+Sign-in entries:
+/Users/alexispurslane/.t3/userdata/device/targets/t3-98a0e3c6dc1fbba46a8e5229/agent-device fill @e5 http://127.0.0.1:7365 --settle
+/Users/alexispurslane/.t3/userdata/device/targets/t3-98a0e3c6dc1fbba46a8e5229/agent-device fill @e6 research-alice --settle
+nix develop .cache/sync-shell --command python3 -c 'import json,sys;sys.stdout.write(json.load(open(".cache/sync/runtime/passwords.json"))["research-alice"])' | /Users/alexispurslane/.t3/userdata/device/targets/t3-98a0e3c6dc1fbba46a8e5229/agent-device fill @e7 --text-stdin --settle
+Subsequent presses use press <fresh reference> --settle. Exact refs and coordinates are in device-actions.json.
+Screenshots use screenshot <absolute checkout path>/images/android-saved-page-final/<name>.png. Names and exact byte hashes are in screenshots.sha256.
+Screenshot 14 was renamed from 14-second-chapter22-reopening-transient.png to 14-second-chapter22-reopened.png after visual inspection showed the transient layout had already completed.
+
+Native readback, inside nix develop .cache/dev-shell --command bash -c:
+adb -s emulator-5554 exec-out run-as dev.bookfin.bookfin cat shared_prefs/FlutterSharedPreferences.xml > .cache/final-before-reopen.xml
+The same readback command used final-bookmark.xml, final-next.xml, final-after-reopen.xml, final-before-restart.xml, final-after-restart.xml, final-resize22.xml, final-resize20.xml, final-second22-before.xml, final-second22-after.xml, and final-cleanup-font20.xml.
+Only the recognized fixture account's reading object was extracted to location-readback.json. No preferences were written.
+adb -s emulator-5554 exec-out run-as dev.bookfin.bookfin cat files/bookfin-media/eabdf329436ebeb0597cedf692757e1ad3fbec7df18cd6e82e8a0d9b82b80f45/3cc0e57d56be5ea885263a1548fd6217f7147dc38035004cd52c443f459f3b8c/complete > .cache/final-downloaded.epub
+shasum -a 256 .cache/final-downloaded.epub
+
+Read-only browser document sampling, inside the same Nix shell:
+adb -s emulator-5554 forward tcp:0 localabstract:webview_devtools_remote_22498 > .cache/integrated-cdp-port
+node .cache/observe-layout.mjs --timeline > tool/evidence/reader/android-saved-page-final/after-reopen-layout.jsonl
+adb -s emulator-5554 forward --remove tcp:$(cat .cache/integrated-cdp-port)
+After process restart:
+adb -s emulator-5554 forward tcp:0 localabstract:webview_devtools_remote_23878 > .cache/integrated-cdp-port
+node .cache/observe-layout.mjs --timeline > tool/evidence/reader/android-saved-page-final/after-restart-layout.jsonl
+node .cache/observe-layout.mjs > tool/evidence/reader/android-saved-page-final/resize22-layout.jsonl
+node .cache/observe-layout.mjs > tool/evidence/reader/android-saved-page-final/second22-before-layout.jsonl
+node .cache/observe-layout.mjs --timeline > tool/evidence/reader/android-saved-page-final/second22-after-layout.jsonl
+
+Server-unavailable transition, before process restart:
+nix develop .cache/sync-shell --command python3 tool/research/sync/fixture.py stop
+kill -TERM 42234
+lsof -nP -iTCP:7364 -iTCP:7365 -sTCP:LISTEN
+Server session exited 0. Observer session exited 143. No listeners remained. No radio setting changed.
+
+Final cleanup, native readback and own Gradle stop:
+adb -s emulator-5554 forward --remove tcp:$(cat .cache/integrated-cdp-port)
+adb -s emulator-5554 reverse --remove tcp:7365
+nix develop .cache/dev-shell --command bash -c 'export GRADLE_USER_HOME="$PWD/.cache/gradle"; cd android && ./gradlew --stop'
+adb -s emulator-5554 pull "$apk_path" .cache/installed-final-after.apk
+shasum -a 256 .cache/installed-final-after.apk
+adb -s emulator-5554 shell settings get system font_scale
+adb -s emulator-5554 shell settings get global airplane_mode_on
+adb -s emulator-5554 shell run-as dev.bookfin.bookfin find files/bookfin-media -type f
+adb -s emulator-5554 reverse --list
+adb -s emulator-5554 forward --list
+/Users/alexispurslane/.t3/userdata/device/targets/t3-98a0e3c6dc1fbba46a8e5229/agent-device close dev.bookfin.bookfin
+T3 device_close(hostId=local,deviceId=emulator-5554,shutdown=false)
+
+git diff --exit-code c279fd6 -- lib android packages pubspec.yaml pubspec.lock
+
+Retained text command output removes trailing whitespace. Artifact and screenshot hashes identify exact bytes.

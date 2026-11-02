@@ -1,0 +1,53 @@
+Exact earlier source:
+git merge --no-edit 9e62d821970aad67f63a5f45d429ae5f60839f3e
+git diff 5d32393 HEAD -- lib android pubspec.yaml pubspec.lock packages/flutter_epub_viewer
+cp /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/build/app/outputs/flutter-apk/app-debug.apk .cache/candidate.apk
+Python verification through nix develop .cache/sync-shell checked recorded build-input source, runtime patch SHA, APK bytes/SHA and every packaged runtime asset against candidate source and recorded hashes. No build or host suite rerun.
+
+All device interaction used:
+/Users/alexispurslane/.t3/userdata/device/targets/t3-98a0e3c6dc1fbba46a8e5229/agent-device
+Actual command order, timestamps, press references and coordinates appear in device-actions.json.
+Every input was preceded by snapshot -i --force-full. Presses used --settle.
+Package launch used open dev.bookfin.bookfin --relaunch.
+Fresh sign-in used fill @e5 http://127.0.0.1:7365 --settle, fill @e6 research-alice --settle, and fill @e7 --text-stdin --settle.
+The password came from the owned generated synthetic-account file via stdin, never a public command argument.
+Screenshots used screenshot <absolute checkout path>/images/android-saved-page/<name>.png. Exact names and byte hashes appear in screenshots.sha256.
+
+Fixture, with the existing unmodified tracked scripts:
+nix develop .cache/sync-shell --command bash -c 'export BOOKFIN_SYNC_CORE_ONLY=1; python3 tool/research/sync/fixture.py serve' >.cache/jellyfin-server.log 2>&1
+nix develop .cache/sync-shell --command bash -c 'python3 tool/research/sync/fixture.py wait && python3 tool/research/sync/fixture.py seed && cp .cache/original.epub ".cache/sync/runtime/media/public/Work/Text Edition/Synthetic Work.epub" && python3 tool/acceptance/jellyfin_fixture.py'
+nix develop .cache/sync-shell --command python3 tool/acceptance/android_proxy.py >.cache/observer.log 2>&1
+
+Installation/readbacks and owned routing ran inside nix develop .cache/dev-shell --command bash -c:
+adb -s emulator-5554 install -r .cache/candidate.apk
+apk_path=$(adb -s emulator-5554 shell pm path dev.bookfin.bookfin | tr -d "\r" | sed "s/^package://")
+adb -s emulator-5554 pull "$apk_path" .cache/installed-before.apk
+adb -s emulator-5554 pull "$apk_path" .cache/installed-candidate-final.apk
+shasum -a 256 .cache/candidate.apk .cache/installed-before.apk
+adb -s emulator-5554 reverse tcp:7365 tcp:7365
+adb -s emulator-5554 exec-out run-as dev.bookfin.bookfin cat shared_prefs/FlutterSharedPreferences.xml > .cache/before-reopen.xml
+The same native readback used after-reopen.xml, before-restart.xml, after-restart.xml, bookmark-saved.xml, intentional-next.xml, intentional-previous.xml, bookmark-restored.xml, first-chapter22.xml, first-chapter20.xml, night.xml, hidden-controls.xml, shown-controls.xml, second22-before.xml, second22-after.xml, cleanup-font20.xml.
+Only this fixture account's reading records were extracted. No preference was written.
+
+Read-only diagnostic forwards and sampling, in the same Nix shell:
+adb -s emulator-5554 forward tcp:0 localabstract:webview_devtools_remote_17470 > .cache/integrated-cdp-port
+node .cache/observe-layout.mjs --timeline > tool/evidence/reader/android-saved-page/after-reopen-layout.jsonl
+adb -s emulator-5554 forward --remove tcp:$(cat .cache/integrated-cdp-port)
+adb -s emulator-5554 forward tcp:0 localabstract:webview_devtools_remote_19046 > .cache/integrated-cdp-port
+node .cache/observe-layout.mjs --timeline > tool/evidence/reader/android-saved-page/after-restart-layout.jsonl
+node .cache/observe-layout.mjs > tool/evidence/reader/android-saved-page/bookmark-layout.jsonl
+node .cache/observe-layout.mjs > tool/evidence/reader/android-saved-page/first-chapter22-layout.jsonl
+node .cache/observe-layout.mjs > tool/evidence/reader/android-saved-page/night-layout.jsonl
+node .cache/observe-layout.mjs --timeline > tool/evidence/reader/android-saved-page/hidden-controls-layout.jsonl
+node .cache/observe-layout.mjs > tool/evidence/reader/android-saved-page/shown-controls-layout.jsonl
+node .cache/observe-layout.mjs > tool/evidence/reader/android-saved-page/second22-before-layout.jsonl
+node .cache/observe-layout.mjs --timeline > tool/evidence/reader/android-saved-page/second22-after-layout.jsonl
+
+Server-unavailable and route cleanup:
+nix develop .cache/sync-shell --command python3 tool/research/sync/fixture.py stop
+kill -TERM 14401
+lsof -nP -iTCP:7364 -iTCP:7365 -sTCP:LISTEN
+adb -s emulator-5554 forward --remove tcp:$(cat .cache/integrated-cdp-port)
+adb -s emulator-5554 reverse --remove tcp:7365
+The server exited 0, the observer exited 143. Both listeners stopped. Download removal and sign-out used normal UI confirmation.
+The binding remained open only for the user's authorized extension to the final integrated revision. Its later release is recorded separately.

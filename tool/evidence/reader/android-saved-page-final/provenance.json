@@ -1,0 +1,92 @@
+{
+  "sourceCommit": "c279fd6d9fe6a792d04c8b6a15c519c4077aebde",
+  "sourceTree": "0e65708efa5d34015af701fdb72ecb57d13dd85c",
+  "reviewedSource": "5447da32",
+  "reviewedTreeMatches": true,
+  "sourceArchiveSha256": "5e84604f5b671e4580a2a90c10c5f4638f6dce3bc70b530519b326e382ff10dd",
+  "base": "5d3239315038d88e6f590efd7cbe885093a2a3fb",
+  "buildCommand": "nice -n 10 nix develop --profile .cache/dev-shell --command bash -c 'export PUB_CACHE=/Users/alexispurslane/Development/bookfin/.cache/pub; export GRADLE_USER_HOME=\"$PWD/.cache/gradle\"; bash tool/bookfin build-android'",
+  "entry": "lib/main.dart",
+  "package": "dev.bookfin.bookfin",
+  "gradleSeconds": 235.2,
+  "freshApk": {
+    "path": "build/app/outputs/flutter-apk/app-debug.apk",
+    "bytes": 100151015,
+    "sha256": "e620a4eb5f61ead9a7e0e227f1c05189a74f0f9eaa624023ac36a4e4b90c6bd7"
+  },
+  "packagedAssets": [
+    {
+      "path": "assets/flutter_assets/packages/flutter_epub_viewer/assets/epub.js",
+      "bytes": 893778,
+      "sha256": "b49f65af43b0c7abb3f19964fb8c31fe0c993ec447774a34cd0cc82f04cc16be"
+    },
+    {
+      "path": "assets/flutter_assets/packages/flutter_epub_viewer/assets/reader.js",
+      "bytes": 13627,
+      "sha256": "b111f45f376f1bda973529000d4ff50597e1ffdef44af7d2ddfca241428d41d1"
+    },
+    {
+      "path": "assets/flutter_assets/packages/flutter_epub_viewer/assets/index.html",
+      "bytes": 489,
+      "sha256": "92bb3293ae49fd6567940681a1f2eed43574442377a3d3172b0e26436ea461d4"
+    },
+    {
+      "path": "assets/flutter_assets/packages/flutter_epub_viewer/assets/THIRD-PARTY-LICENSES.txt",
+      "bytes": 82251,
+      "sha256": "b3a60a3f8f65aedaac4c9a4d5eb138ad6cc2b53cbb40553d2203ddc510de255b"
+    }
+  ],
+  "hostSuiteRerun": false,
+  "parentReportedIndependentReview": true,
+  "oldCandidateEvidence": "docs/evidence/reader/android-saved-page.md",
+  "installedBefore": {
+    "path": ".cache/installed-final-before.apk",
+    "bytes": 100151015,
+    "sha256": "e620a4eb5f61ead9a7e0e227f1c05189a74f0f9eaa624023ac36a4e4b90c6bd7"
+  },
+  "installedAfter": {
+    "path": ".cache/installed-final-after.apk",
+    "bytes": 100151015,
+    "sha256": "e620a4eb5f61ead9a7e0e227f1c05189a74f0f9eaa624023ac36a4e4b90c6bd7"
+  },
+  "downloadedEpub": {
+    "path": ".cache/final-downloaded.epub",
+    "bytes": 135959,
+    "sha256": "6efe84b320af9a0f9997dfc6c54b172bc982e6b06978a2c3d75359161da0ce96"
+  },
+  "device": {
+    "hostId": "local",
+    "deviceId": "emulator-5554",
+    "processBeforeRestart": 22498,
+    "processAfterRestart": 23878,
+    "fontScale": 1.0,
+    "airplaneMode": 0,
+    "serverUnavailableNotAirplaneMode": true,
+    "interactionCommandFailures": 0,
+    "redundantCleanupCloseErrors": 2,
+    "cleanupCloseError": "SESSION_NOT_FOUND",
+    "noUiAfterCleanupCloseErrors": true
+  },
+  "fixture": {
+    "version": "12.4.0",
+    "ordinaryUser": true,
+    "serverId": "35c1c4a4d6104d8c9eb68c348a1c25c2",
+    "serverPid": 41984,
+    "observerPid": 42234,
+    "ports": [
+      7364,
+      7365
+    ],
+    "loopbackOnly": true,
+    "forgedResponses": false,
+    "originalBytes": 135959,
+    "originalSha256": "6efe84b320af9a0f9997dfc6c54b172bc982e6b06978a2c3d75359161da0ce96"
+  },
+  "limits": [
+    "Priority-case Android observation only, not release-wide acceptance",
+    "Parent reported independent review. This worker did not review or rerun host suites.",
+    "Theme persistence t8-j809 remains unresolved",
+    "No TalkBack, denial, adversarial publication, exact font, physical device, soak, coverage, or mutation proof",
+    "Night and hide/show-controls observations only apply to the earlier named candidate"
+  ]
+}
