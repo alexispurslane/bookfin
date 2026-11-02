@@ -1,0 +1,8 @@
+{
+  "query": "crosses inline emphasis",
+  "hits": 0,
+  "repeated_query": "Repeatable phrase",
+  "repeated_hits": 2,
+  "source": "A phrase crosses <em>inline emphasis</em> in this sentence.",
+  "scope": "Observation of the bundled wrapper search; not acceptance of missing results."
+}

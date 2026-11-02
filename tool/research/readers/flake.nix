@@ -69,6 +69,23 @@
     in
     {
       devShells.${system} = {
+        navigator = pkgs.mkShell {
+          packages = [
+            flutter
+            pkgs.nodejs
+            pkgs.git
+            pkgs.curl
+            pkgs.jq
+            libmobi
+            (pkgs.python3.withPackages (python: [ python.lxml python.pillow ]))
+          ];
+          FLUTTER_SUPPRESS_ANALYTICS = "true";
+          DART_SUPPRESS_ANALYTICS = "true";
+          BOOKFIN_NIX_SHELL = "1";
+          shellHook = ''
+            export PUB_CACHE="$PWD/.cache/navigator/pub"
+          '';
+        };
         android = pkgs.mkShell {
           packages = [
             flutter

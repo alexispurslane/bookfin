@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+set -euo pipefail
+: "${BOOKFIN_NIX_SHELL:?Run through nix develop ./tool/research/readers#navigator}"
+cd "$(dirname "$0")/../../../.."
+root="$PWD"
+probe="$root/tool/research/readers/navigator"
+evidence="$root/tool/research/readers/evidence/navigator"
+work="$root/.cache/navigator"
+mkdir -p "$evidence"
+export NAVIGATOR_WORK="$work" NAVIGATOR_EVIDENCE="$evidence"
+{
+  flutter --version
+  node --version
+  python --version
+  mobitool -v
+} > "$evidence/tool-versions.txt" 2>&1
+python "$probe/prepare.py" > "$evidence/prepare.txt" 2>&1
+python -m unittest discover -s "$probe" -p test_raster_fallback.py -v > "$evidence/raster-green.txt" 2>&1
+cd "$probe"
+npm ci --ignore-scripts --no-audit --no-fund
+for project in widget solver; do
+  logfile="$project-solver.txt"
+  if test "$project" = solver; then logfile=pdf-solver.txt; fi
+  (cd "$project"; flutter pub get --enforce-lockfile) > "$evidence/$logfile" 2>&1
+done
+npm test > "$evidence/dom-tests.txt" 2>&1
+NAVIGATOR_ENGINE=upstream npm test > "$evidence/upstream-engine-tests.txt" 2>&1
+
+expected_failure() {
+  local logfile="$1" reason="$2"
+  shift 2
+  local result=0
+  "$@" > "$evidence/$logfile" 2>&1 || result="$?"
+  test "$result" = 1
+  grep -F "$reason" "$evidence/$logfile" > /dev/null
+}
+
+expected_failure search-inline-red.txt 'A visible phrase must remain searchable across inline emphasis' \
+  env NAVIGATOR_REQUIRE_INLINE_SEARCH=1 node --test --test-name-pattern='semantic EPUB retains' navigation.test.cjs
+
+backup="$(mktemp -d "$work/patch-backup.XXXXXX")"
+cp "$work/sources/flutter_epub_viewer/lib/assets/webpage/html/epubView.js" "$backup/wrapper.js"
+cp "$work/sources/flutter_epub_viewer/lib/assets/webpage/dist/epub.js" "$backup/bundled.js"
+cp "$work/sources/epubjs/dist/epub.js" "$backup/upstream.js"
+restore() {
+  if test -n "$backup"; then
+    cp "$backup/wrapper.js" "$work/sources/flutter_epub_viewer/lib/assets/webpage/html/epubView.js"
+    cp "$backup/bundled.js" "$work/sources/flutter_epub_viewer/lib/assets/webpage/dist/epub.js"
+    cp "$backup/upstream.js" "$work/sources/epubjs/dist/epub.js"
+    rm "$backup/wrapper.js" "$backup/bundled.js" "$backup/upstream.js"
+    rmdir "$backup"
+    backup=''
+  fi
+}
+trap restore EXIT
+cd "$root"
+git apply --directory=.cache/navigator/sources/flutter_epub_viewer "$probe/search-inline.patch"
+cd "$probe"
+expected_failure search-inline-regression.txt 'Missing search phrase: The river follows the old road.' \
+  env NAVIGATOR_REQUIRE_INLINE_SEARCH=1 npm test
+expected_failure search-repeated-red.txt 'Search must return both repeated occurrences in one paragraph' \
+  env NAVIGATOR_REQUIRE_INLINE_SEARCH=1 NAVIGATOR_REQUIRE_COMPLETE_SEARCH=1 \
+  node --test --test-name-pattern='semantic EPUB retains' navigation.test.cjs
+cd "$root"
+git apply --ignore-space-change --directory=.cache/navigator/sources/flutter_epub_viewer "$probe/search-repeated.patch"
+git apply --directory=.cache/navigator/sources/epubjs "$probe/upstream-search.patch"
+cd "$probe"
+NAVIGATOR_REQUIRE_INLINE_SEARCH=1 NAVIGATOR_REQUIRE_COMPLETE_SEARCH=1 npm test > "$evidence/search-green.txt" 2>&1
+NAVIGATOR_ENGINE=upstream NAVIGATOR_REQUIRE_INLINE_SEARCH=1 NAVIGATOR_REQUIRE_COMPLETE_SEARCH=1 \
+  npm test > "$evidence/upstream-engine-patched-tests.txt" 2>&1
+restore
+cd "$probe/widget"
+{
+  date -u
+  uptime
+  memory_pressure | tail -1
+} > "$evidence/resource-pressure.txt"
+flutter test --timeout 45s --reporter expanded test/resources_test.dart > "$evidence/widget-tests.txt" 2>&1
+expected_failure upstream-security-red.txt 'null delegates the remote request to the WebView' \
+  flutter test --timeout 45s --reporter expanded test/security_gate_probe.dart
+grep -F "Expected: not contains 'onload'" "$evidence/upstream-security-red.txt" > /dev/null
+printf '%s\n' 'Host probes passed. Two upstream security gates intentionally remain red. No Android or browser acceptance ran.'

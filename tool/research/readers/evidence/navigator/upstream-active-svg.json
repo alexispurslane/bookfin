@@ -1,0 +1,1 @@
+{"status":200,"mime":"image/svg+xml","sha256":"b8c57b3905eb941e17bd68899c3d201f41dd1eb482e43b13389da5a35ca89e2b","body":"<svg xmlns=\"http://www.w3.org/2000/svg\" onload=\"alert(1)\"><image href=\"https://invalid.example/track.png\"/></svg>","scope":"Bytes served by Dart only. No script execution or remote request was attempted."}

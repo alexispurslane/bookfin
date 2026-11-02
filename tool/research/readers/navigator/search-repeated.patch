@@ -1,0 +1,23 @@
+--- a/lib/assets/webpage/dist/epub.js
++++ b/lib/assets/webpage/dist/epub.js
+@@ -13380,8 +13380,7 @@
+         return acc + current.textContent;
+       }, "");
+       const text = textWithCase.toLowerCase();
+-      const pos = text.indexOf(query);
+-      if (pos != -1) {
++      for (let pos = text.indexOf(query); pos !== -1; pos = text.indexOf(query, pos + 1)) {
+         const startNodeIndex = 0,
+           endPos = pos + query.length;
+         let endNodeIndex = 0,
+@@ -13428,8 +13427,9 @@
+         nodeList = nodeList.slice(1, maxSeqEle);
+       }
+     }
+-    if (nodeList.length > 0) {
++    while (nodeList.length > 0) {
+       search(nodeList);
++      nodeList.shift();
+     }
+     return matches;
+   }

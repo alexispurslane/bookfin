@@ -1,0 +1,8 @@
+test_active_remote_and_non_wrapper_svg_never_select_a_raster (test_raster_fallback.RasterFallbackTests.test_active_remote_and_non_wrapper_svg_never_select_a_raster) ... ok
+test_converted_kf8_wrapper_resolves_its_own_local_jpeg (test_raster_fallback.RasterFallbackTests.test_converted_kf8_wrapper_resolves_its_own_local_jpeg) ... ok
+test_wrong_raster_dimensions_do_not_silently_change_the_cover (test_raster_fallback.RasterFallbackTests.test_wrong_raster_dimensions_do_not_silently_change_the_cover) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.020s
+
+OK

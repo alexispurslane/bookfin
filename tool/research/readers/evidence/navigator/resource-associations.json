@@ -1,0 +1,13 @@
+{
+  "document": "OEBPS/part00000.html",
+  "svg": "OEBPS/flow00004.svg",
+  "svg_bytes": 324,
+  "raster": "OEBPS/resource00000.jpg",
+  "raster_mime": "image/jpeg",
+  "raster_size": [
+    800,
+    1104
+  ],
+  "raster_sha256": "2a34efaa254af4e36d509c64dc4ca5483c163da89414a3a2dcaaf3e80b331eef",
+  "policy": "Only exact local single-raster SVG wrappers; otherwise explicit unsupported-image fallback. No SVG code executes."
+}

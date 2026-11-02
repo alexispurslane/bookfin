@@ -1,0 +1,8 @@
+Flutter 3.47.4 • channel stable • https://github.com/flutter/flutter.git
+Framework • revision nixpkgs000 () • 1970-01-01 00:00:00
+Engine • revision 06a2e2a110 ()
+Tools • Dart 3.13.3 • DevTools 2.60.0
+v24.21.0
+Python 3.14.7
+mobitool build: Jan  1 1980 00:00:00 (clang Clang 21.1.8)
+libmobi: 0.12

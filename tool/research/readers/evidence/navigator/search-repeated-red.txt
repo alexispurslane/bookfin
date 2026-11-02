@@ -1,0 +1,28 @@
+✖ semantic EPUB retains headings, language, local note targets and the embedded font association (75.448167ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 318.01175
+
+✖ failing tests:
+
+test at navigation.test.cjs:95:1
+✖ semantic EPUB retains headings, language, local note targets and the embedded font association (75.448167ms)
+  AssertionError [ERR_ASSERTION]: Search must return both repeated occurrences in one paragraph
+  
+  0 !== 2
+  
+      at TestContext.<anonymous> (/Users/alexispurslane/.t3/worktrees/bookfin/t3-77e5374b/tool/research/readers/navigator/navigation.test.cjs:126:14)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 2,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
