@@ -1,6 +1,6 @@
 ---
 id: boo-2cgp
-status: in_progress
+status: closed
 deps: [boo-u3cg, boo-7o92, ta-qobz]
 links: [t7-bzzg]
 created: 2026-11-02T01:06:42Z
@@ -50,3 +50,7 @@ Integrated catalog/download access fixes and runner-authoritative evidence publi
 **2026-11-02T08:27:44Z**
 
 Completed missing observable Android follow-up from integrated d9bc3a6 against own disposable Jellyfin only. Production ordinary Alice sign-in and native secure token restoration survived process restarts. Bob could not see Alice corrections/downloads/resume; returning to Alice restored only Alice records. Book-only catalog, explicit ebook confirmation/cancel, separate recordings, two-file audio order, restored Cancel/Remove, early-file503 Cancel, Retry, and exact Android audio/EPUB bytes observed. Actual downloaded AAC played offline on the preceding corrected APK; final adapter correction separately repeated Pause restoration and native interruption cases. No production server or credential-locked-screen proof. Authoritative publisher reran nine checks successfully and regenerated app-http.json only after runner cleanup. Native runtime fixes tracked t0-dqxp; discrete interrupted Pause still t0-60ea. Jellyfin has no strong ETag, so200 full restart is safe recovery, not range-prefix reuse; t7-bzzg stays open. Details and cleanup in docs/evidence/playback/integrated-android.md. Parent alone accepts/integrates/closes; remains in_progress.
+
+**2026-11-02T09:31:54Z**
+
+Parent acceptance: integrated ordinary-account HTTP and Android evidence satisfies this ticket: isolation, permission denial, pairing/order, exact bytes, secure-storage restart and synthetic-media real-server progress writes. Final corrected playback offline/reconnect evidence is integrated at7090471. Close this bounded integration ticket; t7-bzzg remains an explicit release dependency, and no physical-phone or full-sync acceptance is inferred.

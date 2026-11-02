@@ -1,8 +1,8 @@
 ---
 id: boo-6h8w
-status: open
-deps: [boo-sthf]
-links: []
+status: in_progress
+deps: [t0-dqxp, t0-60ea]
+links: [boo-sthf]
 created: 2026-11-01T21:37:34Z
 type: task
 priority: 2
@@ -21,3 +21,9 @@ docs/plans/bookfin.md
 
 Undo an accidental jump, restart, and restore the same position from history. Test grouped slider seeks, pauses, interrupts, restores, and bookmark edits.
 
+
+## Notes
+
+**2026-11-02T09:31:54Z**
+
+Playback implementation and native corrections are integrated through7090471. Depend on the completed native correction tickets and retain a link to boo-sthf, whose remaining locked-screen acceptance does not prevent local history implementation. Preserve one Playback transition owner and existing source-relative positions; no transport or retention policy is selected.

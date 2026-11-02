@@ -2,7 +2,7 @@
 id: boo-sthf
 status: in_progress
 deps: [boo-7o92, t0-dqxp, t0-60ea]
-links: [t0-60ea, t0-dqxp]
+links: [t0-60ea, t0-dqxp, boo-6h8w]
 created: 2026-11-01T21:37:34Z
 type: task
 priority: 1
@@ -60,3 +60,7 @@ Integrated reviewed Android evidence and parent F1 correction at2edad39. 200 app
 **2026-11-02T09:24:52Z**
 
 Final bounded original acceptance evidence supplied from 03ac7f5, including actual Android on the exact final normal-app APK71c55e1d and a separate real-decoder test APK37311018 for discrete Pause while focus was already lost. Native retention, paused seeks including0, natural source transition, retained-position Play, fully disconnected playback/process restart/reconnect, and no obsolete report replay all observed.20 actual Jellyfin204 responses in the final normal-app interval. Exact artifacts, source hashes, chronology, runtime/model boundaries, test commands and cleanup are recorded in docs/evidence/playback/final-head-android.md and final-head-observations.json. All200 app tests and clean analysis; no coverage/mutation, physical phone, credential-lock, soak or full-sync claim. No application playback fix needed. t8-ld5q and t7-bzzg unchanged. Parent review/integration/acceptance/closure remain pending; no tickets closed.
+
+**2026-11-02T09:31:54Z**
+
+Final native acceptance integrated at7090471; both native correction followups close. Parent independently reran ten native tests and clean analysis; 200-test suite and Android observations remain builder execution evidence. Keep this ticket in_progress because credential-locked-screen controls remain unverified under its original controls acceptance. Physical-phone and soak limits also remain explicit. The integrated playback interface is ready for history development; that independent work need not wait for the remaining acceptance observation. No shared user acceptance is inferred.
