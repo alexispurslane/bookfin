@@ -39,3 +39,7 @@ Parent reproduced and corrected F1-F5 from review of14ab8c5. Cross-edition selec
 **2026-11-02T10:50:37Z**
 
 Second correction: reproduced R1 overlapping completed slider releases and R2 Undo loss after an aborted decoder reload. Each release now owns immutable origin/cancellation inputs; non-slider commands and selection/account changes invalidate stale gestures. Loading and seeking return explicit applied outcomes, propagated through restore before clearing Undo. Added both failing regressions plus an intervening-jump cancellation case. All237 app tests, analyzer and Android ARM64 debug build pass through Nix. Runtime acceptance and re-review remain open.
+
+**2026-11-02T10:57:35Z**
+
+Independent final correction review approved10051f6 with no actionable defects. Parent fast-forward integrated the feature and both correction rounds into main. The exact code already passed237 application tests, clean analysis and Android ARM64 debug build; merge introduced no code conflicts or changes. Keep in_progress for Android runtime and user acceptance. After reader proof releases its own device session, observe grouped drag/Undo, mini-player and History controls, bookmark edit/delete/restore, native seek/pause/interruption actions, account isolation, and real process restart with retained history. No ticket closure or hardening inferred from merge.
