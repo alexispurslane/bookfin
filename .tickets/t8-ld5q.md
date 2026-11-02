@@ -18,3 +18,7 @@ AudioPosition.fits rejects changed or empty source revisions. Playback retains t
 **2026-11-02T12:05:50Z**
 
 User selected confirmed fresh start on 2026-11-02, retaining the old scoped resume separately. Implement this approved recovery through the existing Playback owner; preserve old history/bookmarks and never silently remap them to the replacement.
+
+**2026-11-02T12:38:03Z**
+
+Implemented the approved confirmed fresh start from 756ae5fcf77f8d1f9d18124311fedbc085c7605b in the T3-prepared worktree. Existing Playback/ResumeStore owns confirmation and per-recording resumes; version-1/2 migration preserves old positions, history, bookmarks, settings and pending writes. Cancel, failed load, stale/account-changed offers, unchanged-first-file identity, corrected file order and replacement replay/restoration are tested. Eighteen new behavior cases; final Nix checks: 101 focused playback tests, all 289 app tests, clean analysis, unchanged formatting, SDK-link tests, ARM64 debug APK and JavaScript web release build pass. Evidence: docs/evidence/playback/replacement-source.md. No device/external fixture, child, PR, coverage, mutation or closure. Separate-base Android acceptance does not cover this implementation; parent integration, review and runtime acceptance remain required. Leave in_progress.

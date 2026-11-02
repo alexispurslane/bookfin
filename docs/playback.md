@@ -30,11 +30,13 @@ An audio position retains `AudioPosition.editionId`, `sourceKey`, `revision`, an
 
 Whole-edition time is derived from the ordered files. A seek or short jump can cross a file boundary. Chapters retain their own source identity and source-relative start. A source with no chapter at zero gets a file-start entry; file boundaries do not replace real chapter boundaries. If an earlier duration is unknown, the player does not invent a whole-edition time. Source/chapter seeking remains available.
 
-A restored position must pass `AudioPosition.fits` before use. Changed or empty revisions never validate a prior position. The original record remains stored. Recovery for a replacement source is deliberately undecided in `t8-ld5q`: confirmed fresh start with the original record retained, or reconciliation before listening. This ticket does not silently choose either recovery.
+A restored position must pass `AudioPosition.fits` before use. Changed or empty revisions never validate a prior position. The original record remains stored. Ticket `t8-ld5q` implements the approved confirmed fresh start: the user confirms before replacement audio starts at zero. Cancel keeps the current selection and all records. A failed load does not commit a replacement position. A canceled or obsolete confirmation cannot commit after a delayed load.
+
+Resumes remain separate for each set of source keys and source revisions within an edition. A source revision identifies one version of an audio file. Changing a revision cannot overwrite the original recording's resume, even when both recordings start with an unchanged file. Correcting file order preserves the resume within its source and reloads the decoder in the corrected order. Returning to either recording restores that recording's own resume. History and bookmarks retain their original source positions; the existing source checks still decide whether a restore is safe. No record is rewritten to match changed audio.
 
 ## Durable local resume
 
-The storage namespace remains `bookfin.playback.v1.<AccountScope.key>`. The payload now uses version 2. Version-1 resumes migrate in place after a successful read. The selected edition, edition resumes, speed, and short-jump lengths retain their meanings. An edition resume retains source key, revision, milliseconds, and `pendingOffline`. Version 2 adds history and bookmarks.
+The storage namespace remains `bookfin.playback.v1.<AccountScope.key>`. The payload now uses version 3. Version-1 and version-2 resumes migrate in place after a successful read. The selected edition, speed, and short-jump lengths retain their meanings. Each edition now retains a list of resumes. Each resume retains source key, revision, milliseconds, and `pendingOffline`, plus the set of source keys and revisions for a known recording. Version 2 introduced history and bookmarks; version 3 keeps them unchanged. Legacy resumes retain their original source scope until a matching recording is loaded. Migration never invents a changed source revision for a legacy position.
 
 The owner serializes saves about once per recorded second, and at commands, account changes, and application lifecycle transitions. A process kill can lose the interval since the last completed disk write. Ordinary pause, explicit flush, and account transitions wait for relevant writes. On restart, the recording is restored paused after Downloads verifies the files. Account changes immediately hide the old selection and invalidate work still verifying its sources. A command arriving during restoration waits for restoration rather than overwriting the saved position with zero.
 
@@ -94,12 +96,13 @@ History and bookmarks should use this existing owner, not create another player 
 | `history`, `restoreHistory`, `undoSeek`, `dismissUndo` | Read immutable account history and recover positions without removing prior actions. |
 | `bookmarks`, `addBookmark`, `editBookmark`, `deleteBookmark`, `restoreBookmark` | Manage bookmarks through the same account and command owner. |
 | `unsavedChanges`, `saveFailed` | Distinguish queued or failed writes from durable success. Retry through `flush`. |
+| `replacementStart`, `confirmReplacement`, `cancelReplacement` | Offer a fresh start and accept or cancel that exact offer. Account or catalog changes invalidate earlier offers. |
 | `play`, `pause`, `stop`, `jump`, `setSpeed`, `setJumps`, `setSleep` | Shared commands for the UI and native controls. |
 | `flush` | Wait for queued commands and persist current state. It also waits for current report work. |
 | `ResumeStore` | Replaceable persistence boundary for durable scoped records, not an agreed server-sync protocol. |
 | `checkInvariants` | On-demand check available in every build. Tests or a debug action can call it. |
 
-The owner invariant checker requires a selected book, edition, and source position to appear together. A selected source must belong to its edition and have an account. Playing requires a selected position. History identifiers and bookmark identifiers are unique within their record types. Undo references a retained action. An unfinished slider origin fits the selected edition. Every failed account write retains a pending snapshot. Tests can call `checkInvariants` in every build. Internal transition assertions compile out of release builds. Internal programming errors are not converted into successful playback.
+The owner invariant checker requires a selected book, edition, and source position to appear together. A selected source must belong to its edition and have an account. Playing requires a selected position. History identifiers and bookmark identifiers are unique within their record types. Undo references a retained action. An unfinished slider origin fits the selected edition. Every failed account write retains a pending snapshot. A replacement offer belongs to a restored account and an edition in its current catalog. Tests can call `checkInvariants` in every build. Internal transition assertions compile out of release builds. Internal programming errors are not converted into successful playback.
 
 ## Verification
 

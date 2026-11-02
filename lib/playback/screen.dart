@@ -118,6 +118,71 @@ void openPlayer(BuildContext context, Playback playback) => unawaited(
   ),
 );
 
+class ReplacementStartNotice extends StatelessWidget {
+  const ReplacementStartNotice({
+    super.key,
+    required this.playback,
+    this.onStarted,
+  });
+  final Playback playback;
+  final VoidCallback? onStarted;
+
+  @override
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: playback,
+    builder: (context, _) {
+      final request = playback.replacementStart;
+      if (request == null) return const SizedBox.shrink();
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text('${request.book.title} · ${request.edition.label}'),
+          const Text(
+            'This recording changed. Start the replacement from the beginning?',
+          ),
+          TextButton(
+            onPressed: () async {
+              final confirmed = await showDialog<bool>(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('Start replacement audio?'),
+                  content: Text(
+                    'Start ${request.edition.label} from the beginning. '
+                    'Your old position (${audioTime(request.previous.milliseconds)} within its original audio file), '
+                    'history and bookmarks will be kept separately. '
+                    'Old positions will not be applied to changed audio.',
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      child: const Text('Cancel'),
+                    ),
+                    FilledButton(
+                      onPressed: () => Navigator.pop(context, true),
+                      child: const Text('Start from beginning'),
+                    ),
+                  ],
+                ),
+              );
+              if (confirmed != true) {
+                playback.cancelReplacement(request);
+                return;
+              }
+              await playback.confirmReplacement(request);
+              if (context.mounted &&
+                  playback.edition == request.edition &&
+                  playback.replacementStart == null) {
+                onStarted?.call();
+              }
+            },
+            child: const Text('Start replacement'),
+          ),
+        ],
+      );
+    },
+  );
+}
+
 class PlayerView extends StatelessWidget {
   const PlayerView({super.key, required this.playback});
   final Playback playback;
@@ -137,6 +202,7 @@ class PlayerView extends StatelessWidget {
                   'Choose a downloaded audio edition to start listening.',
                 ),
                 RecordSaveStatus(playback: playback),
+                ReplacementStartNotice(playback: playback),
                 TextButton(
                   onPressed: () => openListeningHistory(context, playback),
                   child: const Text('History'),
@@ -188,6 +254,7 @@ class PlayerView extends StatelessWidget {
             style: Theme.of(context).textTheme.bodySmall,
           ),
           RecordSaveStatus(playback: playback),
+          ReplacementStartNotice(playback: playback),
           const SizedBox(height: 20),
           if (duration != null && duration > 0 && position != null) ...[
             _PositionSlider(playback: playback),
