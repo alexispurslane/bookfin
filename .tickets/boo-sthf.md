@@ -1,7 +1,7 @@
 ---
 id: boo-sthf
 status: in_progress
-deps: [boo-7o92]
+deps: [boo-7o92, t0-dqxp, t0-60ea]
 links: [t0-60ea, t0-dqxp]
 created: 2026-11-01T21:37:34Z
 type: task
@@ -52,3 +52,7 @@ Reviewed corrections integrated at 8ff61d4, preserving main real-Jellyfin auth a
 **2026-11-02T08:27:44Z**
 
 Integrated Android acceptance from d9bc3a6 used this worktree own fresh core-only Jellyfin12.4.0 and generated AAC/EPUB only. Found native position/source and decoder-release defects; t0-dqxp contains five meaningful red regressions and small existing-adapter fixes. Final APK: native Pause/restored position95081ms, paused chapter seeking, actual file transition, normal focus recovery, interrupted Stop, interrupted signout, and five-minute interrupted sleep expiry observed. Sleep expiry stayed PAUSED7873ms when focus returned. Preceding corrected APK additionally proved fully disconnected playback/process restore and no old offline-session replay on reconnection; that offline run was not repeated after the last Pause-position correction. Real Jellyfin accepted start/progress/stop with source-relative ticks and204 responses, not only a stub. Detailed raw evidence/boundaries: docs/evidence/playback/integrated-android.md and integrated-observations.json. Final checks:199 Flutter tests, clean analysis, Android debug build,40 research tests,6 acceptance-tool tests,9 runner-authoritative live checks. t0-60ea retains discrete manual Pause during already-lost focus; physical-phone/credential-locked-screen/background soak unproven. No coverage/mutation. Own downloads removed/signout confirmed after restart, radios restored, own forward removed, both own servers exited, own device released without shutdown. Parent owns review/integration/closure; remains in_progress.
+
+**2026-11-02T08:44:46Z**
+
+Integrated reviewed Android evidence and parent F1 correction at2edad39. 200 app tests and clean analysis. Remaining native position runtime confirmation plus final corrected-build offline/reconnect and discrete interrupted manual Pause remain original acceptance. Added explicit native followup dependencies; no closure yet.
