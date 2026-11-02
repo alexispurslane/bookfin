@@ -202,7 +202,7 @@ Epic: boo-fs0n. All tickets reference this plan. The setup scaffold is merged; i
 | boo-gxm8 | Set up Nix Flutter Android and shared T3 testing | None |
 | boo-p58t | Prove Jellyfin catalog media and extra-record storage | boo-gxm8 |
 | boo-73yj | Prove Android MOBI and PDF reflow support | boo-gxm8 |
-| boo-u3cg | Build book catalog series and edition relationships | boo-p58t, boo-61vt |
+| boo-u3cg | Build book catalog series and edition relationships | boo-gxm8; foundation already integrated |
 | boo-7o92 | Implement verified downloads and media network policy | boo-u3cg |
 | boo-sthf | Deliver offline playback chapters and Jellyfin progress | boo-7o92 |
 | boo-6h8w | Add persistent seek recovery bookmarks and listening history | boo-sthf |
@@ -224,3 +224,9 @@ The user accepted the displayed sample PDF reflow output as reasonable on 2026-1
 OCR is now approved future scope, tracked by boo-suhu after boo-mx5i. Bundle recognition with the Android app so initial recognition works offline without a cloud service or a required first-use model download. Select the engine after measuring recognition quality, per-page latency, memory use and packaged size on Android. State supported languages explicitly; any optional language downloads must respect Bookfin's media network policy.
 
 Recognized text belongs to the same source edition and retains source-page positions. Cache recognition results and preserve access to the original page. Allow cancellation and fall back to the original page when recognition fails. OCR supplies text; it does not guarantee correct columns, tables or picture placement. This extension does not delay the first complete listening path.
+
+## Production layout and parallel implementation
+
+The user clarified that the gallery previews the design language, not the first usable app layout. Production has one navigation system, bottom navigation fixed to the screen edge, and no development labels or explanatory filler. Reading is immersive, with controls hidden during reading and available on tap. Preserve the approved information organization and cream/sepia visual style.
+
+Catalog implementation now proceeds from the integrated appearance foundation without waiting for city selection or full extra-record storage proof. boo-p58t still gates sync. boo-2cgp retains ordinary-user isolation, denied-download, multi-file ordering and ebook-pairing integration acceptance and gates release hardening after catalog/download work. A disposable-server prerequisite will be attached when ta-qobz is integrated with the pending live research corrections.

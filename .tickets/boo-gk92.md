@@ -1,7 +1,7 @@
 ---
 id: boo-gk92
 status: open
-deps: [boo-mx5i, boo-3oq0, boo-a4gi, t3-4isz, te-6x43]
+deps: [boo-mx5i, boo-3oq0, boo-a4gi, t3-4isz, te-6x43, boo-2cgp]
 links: []
 created: 2026-11-01T21:37:34Z
 type: task
