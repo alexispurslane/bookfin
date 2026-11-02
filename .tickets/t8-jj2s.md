@@ -1,6 +1,6 @@
 ---
 id: t8-jj2s
-status: in_progress
+status: closed
 deps: []
 links: [boo-9wgg]
 created: 2026-11-02T18:08:45Z
