@@ -1,6 +1,6 @@
 ---
 id: boo-2cgp
-status: open
+status: in_progress
 deps: [boo-u3cg, boo-7o92, ta-qobz]
 links: []
 created: 2026-11-02T01:06:42Z
@@ -27,3 +27,7 @@ Prove account isolation, inaccessible items, disabled or missing download permis
 **2026-11-02T04:54:59Z**
 
 Integrated download corrections at 2cfd959: include corrected-build Android interruption, cancellation, immediate restoration commands, and early-file-failure controls in acceptance. Parent 149 tests and rebuilt APK pass; corrected Android UI run remains unclaimed.
+
+**2026-11-02T05:48:16Z**
+
+Begin app-level disposable integration from integrated catalog/downloads and corrected live probe. Parallel playback owns emulator; this task uses synthetic loopback server and actual production app modules without device operations. Preserve corrected-head Android UI acceptance as outstanding if not exercised.
