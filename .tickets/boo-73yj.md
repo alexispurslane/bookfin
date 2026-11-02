@@ -1,6 +1,6 @@
 ---
 id: boo-73yj
-status: in_progress
+status: closed
 deps: [boo-gxm8]
 links: [boo-mx5i, t3-ipk1]
 created: 2026-11-01T21:37:34Z
@@ -57,3 +57,7 @@ User authorized downloading public-domain books and scans from public repositori
 **2026-11-02T13:14:18Z**
 
 Independent corpus review found no blocking tooling defect. Parent made boo-mx5i depend on all three followups t0-odcl,t0-ebxa,t0-qnnu; OCR implementation stays downstream in boo-suhu. Dependency graph is acyclic. Added exact six-preview reproduction commands and ran them through Nix: all retained dimensions and decoded pixels match. Original fixtures and screenshots unchanged. Ready for bounded research integration, without production-reader/package/license approval.
+
+**2026-11-02T13:14:38Z**
+
+Parent integrated the reviewed Android/generated and public-domain corpus research plus dependency/reproduction corrections. Finite feasibility scope is complete: variants, demonstrated reflow/source-page fallback, actual Android native conversion, packaging/license inventory, and real-document failure limits are recorded. User authorized public-domain corpus and accepted sample reflow. Close this research ticket only. Production navigation/package integration, corrected-widget runtime repeat, SVG handling, PDF column/scan fallback, native callback ownership, OCR and redistribution proof remain downstream gates; no universal reader or release acceptance inferred.
