@@ -1,0 +1,58 @@
+Resolving dependencies...
+Downloading packages...
+  archive 4.0.9 (4.6.0 available)
+  code_assets 1.2.1 (2.1.0 available)
+  crypto 3.0.7 (3.0.8 available)
+  flutter_cache_manager 3.4.6 (3.4.8 available)
+  flutter_secure_storage 9.2.4 (11.2.0 available)
+  flutter_secure_storage_linux 1.2.3 (3.0.3 available)
+  flutter_secure_storage_macos 3.1.3 (4.0.0 available)
+  flutter_secure_storage_platform_interface 1.1.2 (2.1.1 available)
+  flutter_secure_storage_web 1.2.1 (2.1.1 available)
+  flutter_secure_storage_windows 3.1.2 (4.2.2 available)
+  hooks 2.0.2 (2.2.0 available)
+  image 4.5.4 (4.12.0 available)
+  js 0.6.7 (0.7.2 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  meta 1.18.3 (1.19.0 available)
+  objective_c 9.5.0 (9.6.2 available)
+  petitparser 7.0.2 (7.1.0 available)
+  record_use 0.6.0 (1.1.1 available)
+  shared_preferences_foundation 2.5.7 (2.6.1 available)
+  test_api 0.7.12 (0.7.15 available)
+  vector_math 2.4.0 (2.4.4 available)
+  win32 5.15.0 (6.4.0 available)
+  xml 6.6.1 (7.1.0 available)
+Got dependencies!
+23 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+00:00 +0: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/records_test.dart
+00:00 +0: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/session_test.dart: closing while records restore cancels the open without disabling later record saves
+00:00 +1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/session_test.dart: closing while records restore cancels the open without disabling later record saves
+00:00 +2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/session_test.dart: closing while records restore cancels the open without disabling later record saves
+00:00 +3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/session_test.dart: only the newest open can load after account records finish restoring
+00:00 +4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/session_test.dart: visible reading positions and bookmarks reopen in the same account and edition
+00:00 +5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/session_test.dart: an account change cancels a pending publication and ignores its old viewport
+00:00 +6: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/session_test.dart: changed processed content rejects an old locator without deleting its bookmark
+00:00 +7: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/session_test.dart: an open requested under an old account cannot start after its restore finishes
+00:00 +8: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/session_test.dart: late search results cannot replace a newer search or cross an account boundary
+00:00 +9: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/session_test.dart: removing a source cancels its viewport and retains its account bookmarks
+00:00 +10: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/publication_test.dart: rewritten wrapper references cannot bypass processed resource limits
+00:01 +11: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/publication_test.dart: rewritten wrapper references cannot bypass processed resource limits
+00:01 +12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/publication_test.dart: rewritten wrapper references cannot bypass processed resource limits
+00:01 +13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/catalog_flow_test.dart: book details opens the production reader and sign-out closes the old account (variant: TargetPlatform.linux)
+00:01 +14: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/catalog_flow_test.dart: book details opens the production reader and sign-out closes the old account (variant: TargetPlatform.linux)
+00:01 +15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/catalog_flow_test.dart: book details opens the production reader and sign-out closes the old account (variant: TargetPlatform.linux)
+00:01 +16: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/catalog_flow_test.dart: book details opens the production reader and sign-out closes the old account (variant: TargetPlatform.linux)
+00:01 +17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/catalog_flow_test.dart: book details opens the production reader and sign-out closes the old account (variant: TargetPlatform.linux)
+00:01 +18: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/catalog_flow_test.dart: book details opens the production reader and sign-out closes the old account (variant: TargetPlatform.linux)
+00:01 +19: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/catalog_flow_test.dart: book details opens the production reader and sign-out closes the old account (variant: TargetPlatform.linux)
+00:01 +20: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/catalog_flow_test.dart: book details opens the production reader and sign-out closes the old account (variant: TargetPlatform.linux)
+00:01 +21: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/catalog_flow_test.dart: book details opens the production reader and sign-out closes the old account (variant: TargetPlatform.linux)
+00:02 +22: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/catalog_flow_test.dart: book details opens the production reader and sign-out closes the old account (variant: TargetPlatform.linux)
+00:02 +23: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/catalog_flow_test.dart: book details opens the production reader and sign-out closes the old account (variant: TargetPlatform.linux)
+00:02 +24: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/catalog_flow_test.dart: book details opens the production reader and sign-out closes the old account (variant: TargetPlatform.linux)
+00:02 +25: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/catalog_flow_test.dart: book details opens the production reader and sign-out closes the old account (variant: TargetPlatform.linux)
+00:02 +26: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/catalog_flow_test.dart: book details opens the production reader and sign-out closes the old account (variant: TargetPlatform.linux)
+00:02 +27: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/catalog_flow_test.dart: book details opens the production reader and sign-out closes the old account (variant: TargetPlatform.linux)
+00:02 +28: All tests passed!

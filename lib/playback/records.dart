@@ -152,3 +152,63 @@ class AudioBookmark {
     );
   }
 }
+
+Map<String, dynamic> encodeTextPosition(TextPosition position) => {
+  'edition': position.editionId,
+  'source': position.sourceKey,
+  'revision': position.revision,
+  'anchor': position.anchor,
+};
+
+TextPosition decodeTextPosition(Map<String, dynamic> value) {
+  for (final name in ['edition', 'source', 'revision', 'anchor']) {
+    if (value[name] is! String || (value[name] as String).isEmpty) {
+      throw const FormatException('Invalid saved reading position.');
+    }
+  }
+  return TextPosition(
+    editionId: value['edition'] as String,
+    sourceKey: value['source'] as String,
+    revision: value['revision'] as String,
+    anchor: value['anchor'] as String,
+  );
+}
+
+class TextBookmark {
+  const TextBookmark({
+    required this.id,
+    required this.position,
+    required this.createdAt,
+    this.title,
+    this.note,
+  });
+  final String id;
+  final TextPosition position;
+  final DateTime createdAt;
+  final String? title;
+  final String? note;
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'position': encodeTextPosition(position),
+    'createdAt': createdAt.toUtc().toIso8601String(),
+    'title': title,
+    'note': note,
+  };
+  factory TextBookmark.fromJson(Map<String, dynamic> value) {
+    if (value['id'] is! String ||
+        (value['id'] as String).isEmpty ||
+        value['position'] is! Map<String, dynamic> ||
+        value['createdAt'] is! String ||
+        (value['title'] != null && value['title'] is! String) ||
+        (value['note'] != null && value['note'] is! String)) {
+      throw const FormatException('Invalid reading bookmark.');
+    }
+    return TextBookmark(
+      id: value['id'] as String,
+      position: decodeTextPosition(value['position'] as Map<String, dynamic>),
+      createdAt: DateTime.parse(value['createdAt'] as String),
+      title: value['title'] as String?,
+      note: value['note'] as String?,
+    );
+  }
+}

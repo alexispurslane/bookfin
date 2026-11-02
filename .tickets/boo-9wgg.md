@@ -58,3 +58,20 @@ Final verification supersedes the earlier counts: 334 full app tests, 28 reader 
 **2026-11-02T17:33:13Z**
 
 Fresh explicitly authorized Android attempt at d9d238b completed ordinary sign-in, actual Jellyfin12.4 ebook listing, 135959-byte download, and Read. APK source/installed SHA256 c1380e6caee8fbdb782a878c920f900463fdd74239a8dff2b8bc58f472ee2ff6 matched. Read refused before chapter rendering because real Book DTO omits Container and MediaSources. New blocker tb-zqvc. Six audited public screenshots and exact report: docs/evidence/reader/android-candidate.md. No reader, native enforcement, later R1-R4 correction, offline, or accessibility acceptance claimed. Own download removed, signed out, services/route stopped, binding released without emulator shutdown. Remains in progress.
+**2026-11-02T17:18:33Z**
+
+R2 correction: retained latest pending reading snapshots by account, retried through normal save/bind/flush/dispose lifecycle and the existing shared personal-record store. Failed old-account writes remain owned by that account. Recover only Exception IO failures, not contract Errors. Five focused red-green persistence cases cover bookmark recovery, account isolation, delayed failure, audio merge, disposal and edit/delete reopen. Evidence: tool/evidence/reader/corrections/r2-{red,green}.txt. No closure or Android acceptance.
+
+**2026-11-02T17:22:58Z**
+
+R3 correction: approved reader controls now show the current contents chapter and a rail for current viewport page / total viewport pages in that chapter document. Counts are one-based viewport pages, not print pages or whole-book/audio progress. Unknown counts are labeled unavailable. Transient page metadata is not persisted in bookmarks; restore waits for a new visible-location event. Widget and actual source-CFI engine red-green evidence is under tool/evidence/reader/corrections/r3*. Android geometry remains unaccepted.
+
+**2026-11-02T17:29:57Z**
+
+R4 correction: reproduced actual 22px then 44px bridge commands at 200% system text scaling. ReaderSession now stores requested size only; EpubViewport is the single sender of final scaled appearance and retains the engine visible-start restoration path. A second red test caught appearance during unfinished opening; the viewport now catches up to latest appearance before announcing readiness. Two green boundary tests cover scale/theme/reopen/attachment; separate actual-engine test checks 44px CSS and unchanged CFI passed to display. No native geometry or device acceptance. Evidence: tool/evidence/reader/corrections/r4*. Both tickets remain in_progress.
+
+**2026-11-02T17:53:08Z**
+
+Final correction handoff: R1 09d0ae6; R2 49d16a8; R3 a2343ce; R4 292aaad, followed by final verification/record guards. Bookmark edit and delete now have separate behavior tests; restoring the original failed-write queue reproduces delete resurrection. Nine focused persistence cases pass, including guarded damaged records with no overwrite and immutable source identity across test reopen. Full Flutter 346/346, reader 40/40 included; JS engine 14/14, corpus admission 9/9 and iframe/source corpus 9/9. Analysis/format/SDK/native checks and ARM64 debug/JS web builds pass through Nix. Evidence, hashes, build warnings and exact remaining Android acceptance limits: tool/evidence/reader/README.md and docs/reader-implementation.md. No new product decision, device/browser/install, production credentials/server, coverage/mutation campaign, PR or ticket closure. Pending host stop-rule reauthorization stays with parent.
+
+Follow-up review: reproduced malformed outer storage and stale location failure; local corrections and regressions added. Android acceptance remains open.

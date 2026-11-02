@@ -1,0 +1,1 @@
+PASS: staged project-source whitespace check; excludes vendored engine source, unchanged license files, and generated runtime assets.

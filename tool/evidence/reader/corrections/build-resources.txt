@@ -1,0 +1,22 @@
+ 12:38:19  up 38 days  0:12,  4 users,  load average: 6.10, 7.61, 7.75
+File I/O:
+Pageins: 244353334 
+Pageouts: 8081 
+
+System-wide memory free percentage: 61%
+
+Before Android ARM64 debug build
+ 12:41:29  up 38 days  0:15,  4 users,  load average: 3.79, 5.86, 6.99
+File I/O:
+Pageins: 244536736 
+Pageouts: 8081 
+
+System-wide memory free percentage: 62%
+
+Before JavaScript web build
+ 12:47:30  up 38 days  0:21,  4 users,  load average: 7.81, 9.05, 8.35
+File I/O:
+Pageins: 244653666 
+Pageouts: 8088 
+
+System-wide memory free percentage: 62%

@@ -1,0 +1,22 @@
+{
+  "name": "bookfin-epub-runtime",
+  "private": true,
+  "version": "0.3.93-bookfin.1",
+  "scripts": {
+    "build": "esbuild src/epub.js --bundle --format=iife --global-name=epubEngine --target=chrome100 '--footer:js=window.ePub=epubEngine.default;' --outfile=../assets/epub.js && esbuild src/reader.js --bundle --format=iife --global-name=bookfinReader --target=chrome100 --outfile=../assets/reader.js && node licenses.cjs",
+    "test": "node --test test/*.test.cjs",
+    "verify": "node verify-assets.cjs"
+  },
+  "dependencies": {
+    "@xmldom/xmldom": "0.8.11",
+    "event-emitter": "0.3.5",
+    "jszip": "3.10.1",
+    "localforage": "1.10.0",
+    "lodash": "4.17.21",
+    "path-browserify": "1.0.1"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.12",
+    "jsdom": "26.1.0"
+  }
+}

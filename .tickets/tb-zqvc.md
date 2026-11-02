@@ -27,3 +27,6 @@ Public catalog evidence now distinguishes absent fields: containerFieldPresent=f
 **2026-11-02T17:43:14Z**
 
 Correction203f870 passed independent static review. Starting named-build Android continuation under existing user authorization: prior attempt stopped for application format refusal, not a failed device-tool retry. Test corrected candidate while R1-R4 continue separately; keep ticket open until chapter rendering observed.
+**2026-11-02T17:38:17Z**
+
+Parent reproduced missing metadata refusal using actual catalog shape and real verified-file admission. Removed catalog-container prerequisite for single-file text editions; bounded EPUB admission still required. Verified non-EPUB and tampered-file controls reject.335 app tests/analysis pass; awaiting review, combination with R1-R4 and Android rerun.

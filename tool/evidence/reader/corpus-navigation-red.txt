@@ -1,0 +1,74 @@
+TAP version 13
+# Subtest: alice-epub3: processed contents, search, and locators survive a fresh engine
+ok 1 - alice-epub3: processed contents, search, and locators survive a fresh engine
+  ---
+  duration_ms: 428.374708
+  type: 'test'
+  ...
+# Subtest: frankenstein-legacy-mobi: processed contents, search, and locators survive a fresh engine
+ok 2 - frankenstein-legacy-mobi: processed contents, search, and locators survive a fresh engine
+  ---
+  duration_ms: 5220.739833
+  type: 'test'
+  ...
+# Subtest: moby-kf8: processed contents, search, and locators survive a fresh engine
+ok 3 - moby-kf8: processed contents, search, and locators survive a fresh engine
+  ---
+  duration_ms: 653.35725
+  type: 'test'
+  ...
+# Subtest: candide-french-epub3: processed contents, search, and locators survive a fresh engine
+ok 4 - candide-french-epub3: processed contents, search, and locators survive a fresh engine
+  ---
+  duration_ms: 299.063541
+  type: 'test'
+  ...
+# Subtest: river: processed contents, search, and locators survive a fresh engine
+ok 5 - river: processed contents, search, and locators survive a fresh engine
+  ---
+  duration_ms: 21.141625
+  type: 'test'
+  ...
+# Subtest: mobi6-plain: processed contents, search, and locators survive a fresh engine
+ok 6 - mobi6-plain: processed contents, search, and locators survive a fresh engine
+  ---
+  duration_ms: 20.400417
+  type: 'test'
+  ...
+# Subtest: mobi6-palmdoc: processed contents, search, and locators survive a fresh engine
+ok 7 - mobi6-palmdoc: processed contents, search, and locators survive a fresh engine
+  ---
+  duration_ms: 17.99125
+  type: 'test'
+  ...
+# Subtest: pg11-kf8: processed contents, search, and locators survive a fresh engine
+ok 8 - pg11-kf8: processed contents, search, and locators survive a fresh engine
+  ---
+  duration_ms: 1616.241292
+  type: 'test'
+  ...
+# No startContainer found for epubcfi(/6/4!/4/2[note]/1:0)
+# Subtest: semantic-epub3: processed contents, search, and locators survive a fresh engine
+not ok 9 - semantic-epub3: processed contents, search, and locators survive a fresh engine
+  ---
+  duration_ms: 12.686625
+  type: 'test'
+  location: '/Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/packages/flutter_epub_viewer/engine/test/corpus.cjs:25:31'
+  failureType: 'testCodeFailure'
+  error: 'Location cannot be resolved'
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    visibleLocation (eval at open (/Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/packages/flutter_epub_viewer/engine/test/corpus.cjs:12:39), <anonymous>:57:23)
+    async TestContext.<anonymous> (/Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/packages/flutter_epub_viewer/engine/test/corpus.cjs:36:22)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 8
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 8507.639916

@@ -1,0 +1,18 @@
+00:00 +0: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/publication_test.dart
+00:00 +0: publication code and active SVG cannot reach reading resources
+00:00 +1: remote CSS URLs cannot leave the passive publication
+00:00 +2: archive aliases cannot overwrite a local resource
+00:00 +3: the resource boundary denies remote requests rather than delegating them
+00:00 +3 -1: the resource boundary denies remote requests rather than delegating them [E]
+  Expected: not null
+    Actual: <null>
+  A null response delegates to the native WebView.
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/reader/publication_test.dart 55:5              main.<fn>
+  
+00:00 +3 -1: Some tests failed.
+
+Failing tests:
+  /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/publication_test.dart: the resource boundary denies remote requests rather than delegating them

@@ -1,0 +1,98 @@
+
+> bookfin-epub-runtime@0.3.93-bookfin.1 build
+> esbuild src/epub.js --bundle --format=iife --global-name=epubEngine --target=chrome100 '--footer:js=window.ePub=epubEngine.default;' --outfile=../assets/epub.js
+
+
+  ../assets/epub.js  890.2kb
+
+⚡ Done in 19ms
+
+> bookfin-epub-runtime@0.3.93-bookfin.1 test
+> node --test test/*.test.cjs
+
+TAP version 13
+# Subtest: search finds an exact phrase across inline nodes, including more than five nodes
+not ok 1 - search finds an exact phrase across inline nodes, including more than five nodes
+  ---
+  duration_ms: 60.922708
+  type: 'test'
+  location: '/Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/packages/flutter_epub_viewer/engine/test/search.test.cjs:26:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/packages/flutter_epub_viewer/engine/test/search.test.cjs:30:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: short documents and repeated occurrences are not omitted
+not ok 2 - short documents and repeated occurrences are not omitted
+  ---
+  duration_ms: 24.16025
+  type: 'test'
+  location: '/Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/packages/flutter_epub_viewer/engine/test/search.test.cjs:35:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    1 !== 2
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 2
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/packages/flutter_epub_viewer/engine/test/search.test.cjs:38:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: search excludes headings in the head and explicitly hidden text
+not ok 3 - search excludes headings in the head and explicitly hidden text
+  ---
+  duration_ms: 11.66775
+  type: 'test'
+  location: '/Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/packages/flutter_epub_viewer/engine/test/search.test.cjs:42:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    4 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 4
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/packages/flutter_epub_viewer/engine/test/search.test.cjs:45:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Unicode lowercase expansion cannot shift the returned original range
+not ok 4 - Unicode lowercase expansion cannot shift the returned original range
+  ---
+  duration_ms: 7.822791
+  type: 'test'
+  location: '/Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/packages/flutter_epub_viewer/engine/test/search.test.cjs:49:1'
+  failureType: 'testCodeFailure'
+  error: 'Offset out of bound.'
+  code: 'ERR_TEST_FAILURE'
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 0
+# fail 4
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 357.369291

@@ -1,0 +1,140 @@
+
+> bookfin-epub-runtime@0.3.93-bookfin.1 test
+> node --test test/*.test.cjs
+
+TAP version 13
+# Subtest: search finds an exact phrase across inline nodes, including more than five nodes
+ok 1 - search finds an exact phrase across inline nodes, including more than five nodes
+  ---
+  duration_ms: 57.153417
+  type: 'test'
+  ...
+# Subtest: short documents and repeated occurrences are not omitted
+ok 2 - short documents and repeated occurrences are not omitted
+  ---
+  duration_ms: 21.197291
+  type: 'test'
+  ...
+# Subtest: Unicode lowercase expansion does not silently discard an admitted query
+ok 3 - Unicode lowercase expansion does not silently discard an admitted query
+  ---
+  duration_ms: 13.200709
+  type: 'test'
+  ...
+# Subtest: search excludes headings in the head and explicitly hidden text
+ok 4 - search excludes headings in the head and explicitly hidden text
+  ---
+  duration_ms: 9.37225
+  type: 'test'
+  ...
+# Subtest: Unicode lowercase expansion cannot shift the returned original range
+ok 5 - Unicode lowercase expansion cannot shift the returned original range
+  ---
+  duration_ms: 8.451208
+  type: 'test'
+  ...
+# Subtest: an encoded contents fragment resolves to the actual heading, not the chapter start
+ok 6 - an encoded contents fragment resolves to the actual heading, not the chapter start
+  ---
+  duration_ms: 10.101917
+  type: 'test'
+  ...
+# Subtest: saved locations collapse to the visible start and reject a mismatched quote
+ok 7 - saved locations collapse to the visible start and reject a mismatched quote
+  ---
+  duration_ms: 9.378291
+  type: 'test'
+  ...
+# Subtest: a failed chapter yields a visible incomplete-search error
+ok 8 - a failed chapter yields a visible incomplete-search error
+  ---
+  duration_ms: 10.471333
+  type: 'test'
+  ...
+# Subtest: reader appearance preserves an edition font while applying the selected text size
+ok 9 - reader appearance preserves an edition font while applying the selected text size
+  ---
+  duration_ms: 76.989375
+  type: 'test'
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 9
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 437.93075
+TAP version 13
+# Subtest: alice-epub3: processed contents, search, and locators survive a fresh engine
+ok 1 - alice-epub3: processed contents, search, and locators survive a fresh engine
+  ---
+  duration_ms: 449.093833
+  type: 'test'
+  ...
+# Subtest: frankenstein-legacy-mobi: processed contents, search, and locators survive a fresh engine
+ok 2 - frankenstein-legacy-mobi: processed contents, search, and locators survive a fresh engine
+  ---
+  duration_ms: 14352.709
+  type: 'test'
+  ...
+# Subtest: moby-kf8: processed contents, search, and locators survive a fresh engine
+ok 3 - moby-kf8: processed contents, search, and locators survive a fresh engine
+  ---
+  duration_ms: 2859.694583
+  type: 'test'
+  ...
+# Subtest: candide-french-epub3: processed contents, search, and locators survive a fresh engine
+ok 4 - candide-french-epub3: processed contents, search, and locators survive a fresh engine
+  ---
+  duration_ms: 462.929334
+  type: 'test'
+  ...
+# Subtest: river: processed contents, search, and locators survive a fresh engine
+ok 5 - river: processed contents, search, and locators survive a fresh engine
+  ---
+  duration_ms: 22.106541
+  type: 'test'
+  ...
+# Subtest: mobi6-plain: processed contents, search, and locators survive a fresh engine
+ok 6 - mobi6-plain: processed contents, search, and locators survive a fresh engine
+  ---
+  duration_ms: 23.556834
+  type: 'test'
+  ...
+# Subtest: mobi6-palmdoc: processed contents, search, and locators survive a fresh engine
+ok 7 - mobi6-palmdoc: processed contents, search, and locators survive a fresh engine
+  ---
+  duration_ms: 24.567
+  type: 'test'
+  ...
+# Subtest: pg11-kf8: processed contents, search, and locators survive a fresh engine
+ok 8 - pg11-kf8: processed contents, search, and locators survive a fresh engine
+  ---
+  duration_ms: 2309.217791
+  type: 'test'
+  ...
+# Subtest: semantic-epub3: processed contents, search, and locators survive a fresh engine
+ok 9 - semantic-epub3: processed contents, search, and locators survive a fresh engine
+  ---
+  duration_ms: 22.24025
+  type: 'test'
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 9
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 20748.294459
+
+> bookfin-epub-runtime@0.3.93-bookfin.1 verify
+> node verify-assets.cjs
+
+Verified assets/epub.js: 1e11ecd300dc9fa2fe877e5dca987ba64df9cc4e721054a13fc2191997fe52fb
+Verified assets/reader.js: be0662e1bbdf9bbefa99b74adc89bc1b7239c7ddb68856802beb2a602fb230f2
+Verified assets/index.html: 92bb3293ae49fd6567940681a1f2eed43574442377a3d3172b0e26436ea461d4
+Verified assets/THIRD-PARTY-LICENSES.txt: b3a60a3f8f65aedaac4c9a4d5eb138ad6cc2b53cbb40553d2203ddc510de255b

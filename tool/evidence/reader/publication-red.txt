@@ -1,0 +1,35 @@
+00:00 +0: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/publication_test.dart
+00:00 +0: publication code and active SVG cannot reach reading resources
+00:00 +0 -1: publication code and active SVG cannot reach reading resources [E]
+  Expected: empty
+    Actual: WhereIterable<XmlElement>:[XmlElement:<script>alert(1)</script>]
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/reader/publication_test.dart 33:5              main.<fn>
+  
+00:00 +0 -1: remote CSS URLs cannot leave the passive publication
+00:00 +0 -2: remote CSS URLs cannot leave the passive publication [E]
+  Expected: not contains 'evil.invalid'
+    Actual: 'body{color:#39291f} p{background:url(https://evil.invalid/pixel)}'
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/reader/publication_test.dart 44:5              main.<fn>
+  
+00:00 +0 -2: archive aliases cannot overwrite a local resource
+00:00 +0 -3: archive aliases cannot overwrite a local resource [E]
+  Expected: throws <Instance of 'FormatException'>
+    Actual: <Closure: () => Publication>
+     Which: returned <Instance of 'Publication'>
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/reader/publication_test.dart 48:5              main.<fn>
+  
+00:00 +0 -3: Some tests failed.
+
+Failing tests:
+  /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/publication_test.dart: archive aliases cannot overwrite a local resource
+  /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/publication_test.dart: publication code and active SVG cannot reach reading resources
+  /Users/alexispurslane/.t3/worktrees/bookfin/t3-2e0ac911/test/reader/publication_test.dart: remote CSS URLs cannot leave the passive publication

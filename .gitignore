@@ -8,6 +8,7 @@ result
 .pub/
 build/
 coverage/
+node_modules/
 .idea/
 *.iml
 .DS_Store
