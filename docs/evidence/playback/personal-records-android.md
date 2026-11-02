@@ -1,5 +1,10 @@
 # Personal-record Android acceptance attempt
 
+The later authorized attempt on integrated main is recorded in
+`personal-records-fresh-attempt.md`. It also stopped before field entry, after
+an operator error in a Settings launch and its advised retry. It adds host
+verification, but no playback or personal-record Android acceptance.
+
 Date: November 2, 2026. Times below are UTC.
 Source base: `72996e4fe51d43639a08127ad3fdf0f1a74ef2f3`.
 Tickets: `boo-6h8w`, `boo-sthf`; follow-up: `t7-msmk`.

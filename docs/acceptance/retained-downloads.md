@@ -52,6 +52,12 @@ The Android build log is `/tmp/bookfin-retained-android.log`. The web build log 
 
 ## Runtime acceptance gap
 
+The authorized follow-up on integrated main `756ae5f` is recorded in
+`../evidence/playback/personal-records-fresh-attempt.md`. It stopped before
+sign-in after an invalid Settings activity argument and its advised retry.
+All 271 host application tests passed again, but retained-storage Android
+visibility, removal, and relaunch remain unobserved.
+
 No device or browser operation ran for this ticket. The reader proof owns the emulator. Android interaction, cream/sepia appearance, scrolling, confirmation behavior across account changes, and relaunch behavior still need parent-owned shared Device panel acceptance. Host widget tests and build results do not establish those runtime observations.
 
 No coverage, mutation testing, PR, ticket closure, production server access, or secret input ran. The parent owns independent review, integration, acceptance, and later test hardening.

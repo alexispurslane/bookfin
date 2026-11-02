@@ -38,3 +38,7 @@ Parent reproduced cancellation durability failure during account switch, then fi
 **2026-11-02T11:53:06Z**
 
 Independent correction review approved 4d409098b48eab2e37113b0ac05382f4d5435b20 with no blocking correctness or design finding. Parent integrated the feature and cancellation correction into main without conflicts. Application, tests, Android, tools and Nix files match the tested correction head; no test rerun was needed for this merge. Prior parent verification: 271 application tests, clean analysis and formatting, Android ARM64 debug build. Keep in_progress: Android retained-storage interaction and relaunch acceptance remain unobserved, and no user acceptance or hardening is inferred.
+
+**2026-11-02T12:21:24Z**
+
+Fresh Android attempt on integrated main756ae5f stopped before sign-in after my invalid Settings activity argument and its failed advised retry. Retained-storage visibility/removal/relaunch remain unobserved. New normal APK builds but was not installed; all271 app tests, analyzer and SDK-link checks pass through Nix. No code change, application regression, cross-account access or runtime acceptance claim. Own resources cleaned. See docs/evidence/playback/personal-records-fresh-attempt.md. Leave in_progress.

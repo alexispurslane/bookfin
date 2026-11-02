@@ -47,3 +47,7 @@ Independent final correction review approved10051f6 with no actionable defects. 
 **2026-11-02T11:39:46Z**
 
 Android acceptance attempt at72996e4: built normal lib/main.dart ARM64 debug APK and installed/read-back SHA256745d4550d11d5d82b8e19b356b259cbb37e85c4a441cde75dba794a5f0404f2f. Stopped before sign-in under device failure rule: server field focus refused, advised debug retry used an expired ref and was not dispatched. No playback/store evidence or product regression established; no code fix or test APK invented. Temporary emulator-only PIN removed and Screen lock None verified; signed out, no own downloads, original networks unchanged, own fixture/observer stopped and forward removed, own binding released without shutdown. Full details and pending matrix: docs/evidence/playback/personal-records-android.md; follow-up t7-msmk. Leave in_progress for parent.
+
+**2026-11-02T12:21:24Z**
+
+Authorized fresh attempt at756ae5f stopped before field entry after my invalid Settings activity argument and failed advised retry. No grouped seek, Undo, bookmark, history, restart, isolation or reconnect runtime observation. Normal main APK built but was not installed. All271 application tests, analyzer and SDK-link tests pass through Nix. No application code changed. Evidence and safe preinstalled signed-out image: docs/evidence/playback/personal-records-fresh-attempt.md. Own services and binding cleaned, settings unchanged. Runtime acceptance remains open; no closure or hardening.

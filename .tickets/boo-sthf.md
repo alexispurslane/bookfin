@@ -68,3 +68,7 @@ Final native acceptance integrated at7090471; both native correction followups c
 **2026-11-02T11:39:46Z**
 
 Bounded Android follow-up at72996e4: originally unsecured emulator allowed a temporary synthetic PIN through Settings, then cleanup restored Screen lock None and deviceLocked=0. Credential-locked playback controls were not reached: acceptance stopped before production sign-in after field-focus refusal and an expired-reference diagnostic retry. This does not establish unsupported lock controls or an application defect. No permission/credential bypass, no code change, no test APK, coverage or mutation work. Own servers/forward/binding cleaned; emulator left running. See docs/evidence/playback/personal-records-android.md and t7-msmk. Leave in_progress.
+
+**2026-11-02T12:21:24Z**
+
+Fresh attempt at756ae5f did not reach playback or credential setup. A malformed Settings activity argument and failed advised retry stopped acceptance under the device rule. This is operator error, not an app regression. No credential-locked control, interruption or native action acceptance was added. Normal main APK builds; all271 host tests, analyzer and SDK-link checks pass. Own services stopped and binding released without shutdown, radios/settings unchanged. See docs/evidence/playback/personal-records-fresh-attempt.md. Leave in_progress.
