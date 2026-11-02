@@ -1,0 +1,47 @@
+test_accepts_the_exact_recorded_source_bytes (test_corpus_inputs.CorpusInputs.test_accepts_the_exact_recorded_source_bytes) ... ok
+test_rejection_preserves_a_retained_original (test_corpus_inputs.CorpusInputs.test_rejection_preserves_a_retained_original) ... FAIL
+test_rejects_an_incomplete_download (test_corpus_inputs.CorpusInputs.test_rejects_an_incomplete_download) ... FAIL
+test_rejects_changed_bytes_even_when_the_length_matches (test_corpus_inputs.CorpusInputs.test_rejects_changed_bytes_even_when_the_length_matches) ... FAIL
+test_rejects_manifest_entries_above_the_download_limit (test_corpus_inputs.CorpusInputs.test_rejects_manifest_entries_above_the_download_limit) ... FAIL
+test_verified_download_moves_into_its_final_name (test_corpus_inputs.CorpusInputs.test_verified_download_moves_into_its_final_name) ... ok
+
+======================================================================
+FAIL: test_rejection_preserves_a_retained_original (test_corpus_inputs.CorpusInputs.test_rejection_preserves_a_retained_original)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-017d2441/tool/research/readers/test_corpus_inputs.py", line 44, in test_rejection_preserves_a_retained_original
+    with self.assertRaises(ValueError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_rejects_an_incomplete_download (test_corpus_inputs.CorpusInputs.test_rejects_an_incomplete_download)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-017d2441/tool/research/readers/test_corpus_inputs.py", line 33, in test_rejects_an_incomplete_download
+    with self.assertRaisesRegex(ValueError, "byte count"):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_rejects_changed_bytes_even_when_the_length_matches (test_corpus_inputs.CorpusInputs.test_rejects_changed_bytes_even_when_the_length_matches)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-017d2441/tool/research/readers/test_corpus_inputs.py", line 28, in test_rejects_changed_bytes_even_when_the_length_matches
+    with self.assertRaisesRegex(ValueError, "SHA-256"):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_rejects_manifest_entries_above_the_download_limit (test_corpus_inputs.CorpusInputs.test_rejects_manifest_entries_above_the_download_limit)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-017d2441/tool/research/readers/test_corpus_inputs.py", line 37, in test_rejects_manifest_entries_above_the_download_limit
+    with self.assertRaisesRegex(ValueError, "16 MB"):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.004s
+
+FAILED (failures=4)

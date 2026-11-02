@@ -1,0 +1,33 @@
+Resolving dependencies...
+Downloading packages...
+  markdown 7.3.0 (7.3.1 available)
+Got dependencies!
+1 package has newer versions incompatible with dependency constraints.
+Try `dart pub outdated` for more information.
+Running build hooks...No Visual Studio installation found with the requested Microsoft.VisualStudio.Component.VC.Tools.x86.x64 component.
+
+SDK cannot be located in the Nix research shell
+
+
+SDK iphoneos not installed.
+
+SDK cannot be located in the Nix research shell
+
+
+SDK iphonesimulator not installed.
+
+Running build hooks...00:00 +0: loading test/corpus_test.dart
+00:00 +0: test/corpus_test.dart: Public-source PDF and Markdown observations (setUpAll)
+00:00 +0: test/corpus_test.dart: Public-source PDF and Markdown observations nist-cloud.pdf retains source text and renders its complete sampled page
+00:00 +1: test/corpus_test.dart: Public-source PDF and Markdown observations census-notice.pdf retains source text and renders its complete sampled page
+00:00 +2: test/corpus_test.dart: Public-source PDF and Markdown observations raven-1873.pdf retains source text and renders its complete sampled page
+00:00 +3: test/corpus_test.dart: Public-source PDF and Markdown observations a raster-only derivative of the real scan renders without extracted text
+00:00 +4: test/corpus_test.dart: Public-source PDF and Markdown observations the real sonnet source retains verse line breaks in fenced Markdown
+00:00 +5: test/corpus_test.dart: Public-source PDF and Markdown observations (tearDownAll)
+00:00 +5: loading test/engine_test.dart
+00:00 +5: test/engine_test.dart: (setUpAll)
+00:00 +5: test/engine_test.dart: PDF text exposes the source page character rectangles
+00:00 +6: test/engine_test.dart: PDF original pages render without extracting text from a scan
+00:00 +7: test/engine_test.dart: Markdown preserves readable structure and local image references
+00:00 +8: test/engine_test.dart: (tearDownAll)
+00:00 +8: All tests passed!

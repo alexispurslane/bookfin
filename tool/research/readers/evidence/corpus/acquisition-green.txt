@@ -1,0 +1,11 @@
+test_accepts_the_exact_recorded_source_bytes (test_corpus_inputs.CorpusInputs.test_accepts_the_exact_recorded_source_bytes) ... ok
+test_rejection_preserves_a_retained_original (test_corpus_inputs.CorpusInputs.test_rejection_preserves_a_retained_original) ... ok
+test_rejects_an_incomplete_download (test_corpus_inputs.CorpusInputs.test_rejects_an_incomplete_download) ... ok
+test_rejects_changed_bytes_even_when_the_length_matches (test_corpus_inputs.CorpusInputs.test_rejects_changed_bytes_even_when_the_length_matches) ... ok
+test_rejects_manifest_entries_above_the_download_limit (test_corpus_inputs.CorpusInputs.test_rejects_manifest_entries_above_the_download_limit) ... ok
+test_verified_download_moves_into_its_final_name (test_corpus_inputs.CorpusInputs.test_verified_download_moves_into_its_final_name) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.004s
+
+OK

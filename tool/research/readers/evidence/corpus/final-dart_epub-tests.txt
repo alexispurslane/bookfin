@@ -1,0 +1,14 @@
+Resolving dependencies...
+Downloading packages...
+  archive 3.6.1 (4.6.0 available)
+  image 3.3.0 (4.12.0 available)
+  xml 6.6.1 (7.1.0 available)
+Got dependencies!
+3 packages have newer versions incompatible with dependency constraints.
+Try `dart pub outdated` for more information.
+00:00 +0: loading test/epub_test.dart
+00:00 +0: test/epub_test.dart: generated EPUB exposes chapter text and embedded images
+00:00 +1: test/epub_test.dart: plain MOBI conversion exposes chapter text and embedded images
+00:00 +2: test/epub_test.dart: PalmDOC MOBI conversion exposes chapter text and embedded images
+00:00 +3: test/epub_test.dart: KF8 conversion exposes chapter text and embedded images
+00:00 +4: All tests passed!

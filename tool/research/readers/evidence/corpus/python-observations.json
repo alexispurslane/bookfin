@@ -1,0 +1,998 @@
+{
+  "scope": "host-only; no OCR or production reader",
+  "samples": {
+    "alice-epub3": {
+      "input": {
+        "size_bytes": 189249,
+        "sha256": "4f81245d31380ac1d6eafb9a321e3691369bc70985736ae4bccf849a4f784036"
+      },
+      "epub": {
+        "size_bytes": 189249,
+        "sha256": "4f81245d31380ac1d6eafb9a321e3691369bc70985736ae4bccf849a4f784036",
+        "archive_entries": 24,
+        "epub_version": "3.0",
+        "spine_items": 15,
+        "spine_text_characters": 162169,
+        "headings": [
+          "The Project Gutenberg eBook of Alice's Adventures in Wonderland",
+          "Alice’s Adventures in Wonderland",
+          "by Lewis Carroll",
+          "Contents",
+          "CHAPTER I. Down the Rabbit-Hole",
+          "CHAPTER II. The Pool of Tears",
+          "CHAPTER III. A Caucus-Race and a Long Tale",
+          "CHAPTER IV. The Rabbit Sends in a Little Bill",
+          "CHAPTER V. Advice from a Caterpillar",
+          "CHAPTER VI. Pig and Pepper",
+          "CHAPTER VII. A Mad Tea-Party",
+          "CHAPTER VIII. The Queen’s Croquet-Ground",
+          "CHAPTER IX. The Mock Turtle’s Story",
+          "CHAPTER X. The Lobster Quadrille",
+          "CHAPTER XI. Who Stole the Tarts?",
+          "CHAPTER XII. Alice’s Evidence",
+          "THE FULL PROJECT GUTENBERG™ LICENSE"
+        ],
+        "expected_phrases": {
+          "White Rabbit": true,
+          "THE END": true
+        },
+        "local_references": 28,
+        "broken_references": [],
+        "media_types": {
+          "image/jpeg": 1,
+          "text/css": 3,
+          "application/xhtml+xml": 16,
+          "application/x-dtbncx+xml": 1
+        },
+        "images": [
+          {
+            "path": "OEBPS/7981341119032183217_cover.jpg",
+            "mime": "image/jpeg",
+            "size_bytes": 104775,
+            "decoded_size_pixels": [
+              800,
+              1104
+            ]
+          }
+        ]
+      }
+    },
+    "frankenstein-legacy-mobi": {
+      "input": {
+        "size_bytes": 519544,
+        "sha256": "d907f385b28a2af24f6186a646fd366ede1b84c4c688afe93da3f705862e8e74"
+      },
+      "conversion_exit": 0,
+      "mobi_version": "6",
+      "compression_type": "2",
+      "encryption_type": "0",
+      "epub": {
+        "size_bytes": 372762,
+        "sha256": "04befdc553c28057710539e9388fa0df5809569d2c2b8576c8ffe4a30161172f",
+        "archive_entries": 7,
+        "epub_version": "2.0",
+        "spine_items": 1,
+        "spine_text_characters": 440049,
+        "headings": [],
+        "expected_phrases": {
+          "You will rejoice to hear": true,
+          "lost in darkness and distance": true
+        },
+        "local_references": 60,
+        "broken_references": [],
+        "media_types": {
+          "application/xhtml+xml": 1,
+          "image/jpeg": 2,
+          "application/x-dtbncx+xml": 1
+        },
+        "images": [
+          {
+            "path": "OEBPS/resource00000.jpg",
+            "mime": "image/jpeg",
+            "size_bytes": 224340,
+            "decoded_size_pixels": [
+              1125,
+              1724
+            ]
+          },
+          {
+            "path": "OEBPS/resource00001.jpg",
+            "mime": "image/jpeg",
+            "size_bytes": 10774,
+            "decoded_size_pixels": [
+              156,
+              240
+            ]
+          }
+        ]
+      }
+    },
+    "moby-kf8": {
+      "input": {
+        "size_bytes": 1232584,
+        "sha256": "1465acba582c2713767afe17ae051dcea24b6875e2c0d6f462850299c7505e2a"
+      },
+      "conversion_exit": 0,
+      "mobi_version": "8",
+      "compression_type": "2",
+      "encryption_type": "0",
+      "epub": {
+        "size_bytes": 969877,
+        "sha256": "6f060145321397cc3754862033e6208334afefd605f0b776af6637ffcba22cd0",
+        "archive_entries": 154,
+        "epub_version": "2.0",
+        "spine_items": 144,
+        "spine_text_characters": 1243718,
+        "headings": [
+          "The Project Gutenberg eBook of Moby Dick; Or, The Whale",
+          "MOBY-DICK; or, THE WHALE.",
+          "By Herman Melville",
+          "ETYMOLOGY.",
+          "(Supplied by a Late Consumptive Usher to a Grammar School.)",
+          "EXTRACTS. (Supplied by a Sub-Sub-Librarian).",
+          "EXTRACTS.",
+          "CHAPTER 1. Loomings.",
+          "CHAPTER 2. The Carpet-Bag.",
+          "CHAPTER 3. The Spouter-Inn.",
+          "CHAPTER 4. The Counterpane.",
+          "CHAPTER 5. Breakfast.",
+          "CHAPTER 6. The Street.",
+          "CHAPTER 7. The Chapel.",
+          "CHAPTER 8. The Pulpit.",
+          "CHAPTER 9. The Sermon.",
+          "CHAPTER 10. A Bosom Friend.",
+          "CHAPTER 11. Nightgown.",
+          "CHAPTER 12. Biographical.",
+          "CHAPTER 13. Wheelbarrow.",
+          "CHAPTER 14. Nantucket.",
+          "CHAPTER 15. Chowder.",
+          "CHAPTER 16. The Ship.",
+          "CHAPTER 17. The Ramadan.",
+          "CHAPTER 18. His Mark.",
+          "CHAPTER 19. The Prophet.",
+          "CHAPTER 20. All Astir.",
+          "CHAPTER 21. Going Aboard.",
+          "CHAPTER 22. Merry Christmas.",
+          "CHAPTER 23. The Lee Shore.",
+          "CHAPTER 24. The Advocate.",
+          "CHAPTER 25. Postscript.",
+          "CHAPTER 26. Knights and Squires.",
+          "CHAPTER 27. Knights and Squires.",
+          "CHAPTER 28. Ahab.",
+          "CHAPTER 29. Enter Ahab; to Him, Stubb.",
+          "CHAPTER 30. The Pipe.",
+          "CHAPTER 31. Queen Mab.",
+          "CHAPTER 32. Cetology.",
+          "CHAPTER 33. The Specksnyder.",
+          "CHAPTER 34. The Cabin-Table.",
+          "CHAPTER 35. The Mast-Head.",
+          "CHAPTER 36. The Quarter-Deck.",
+          "CHAPTER 37. Sunset.",
+          "CHAPTER 38. Dusk.",
+          "CHAPTER 39. First Night-Watch.",
+          "CHAPTER 40. Midnight, Forecastle.",
+          "CHAPTER 41. Moby Dick.",
+          "CHAPTER 42. The Whiteness of the Whale.",
+          "CHAPTER 43. Hark!",
+          "CHAPTER 44. The Chart.",
+          "CHAPTER 45. The Affidavit.",
+          "CHAPTER 46. Surmises.",
+          "CHAPTER 47. The Mat-Maker.",
+          "CHAPTER 48. The First Lowering.",
+          "CHAPTER 49. The Hyena.",
+          "CHAPTER 50. Ahab’s Boat and Crew. Fedallah.",
+          "CHAPTER 51. The Spirit-Spout.",
+          "CHAPTER 52. The Albatross.",
+          "CHAPTER 53. The Gam.",
+          "CHAPTER 54. The Town-Ho’s Story.",
+          "CHAPTER 55. Of the Monstrous Pictures of Whales.",
+          "CHAPTER 56. Of the Less Erroneous Pictures of Whales, and the True Pictures of Whaling Scenes.",
+          "CHAPTER 57. Of Whales in Paint; in Teeth; in Wood; in Sheet-Iron; in Stone; in Mountains; in Stars.",
+          "CHAPTER 58. Brit.",
+          "CHAPTER 59. Squid.",
+          "CHAPTER 60. The Line.",
+          "CHAPTER 61. Stubb Kills a Whale.",
+          "CHAPTER 62. The Dart.",
+          "CHAPTER 63. The Crotch.",
+          "CHAPTER 64. Stubb’s Supper.",
+          "CHAPTER 65. The Whale as a Dish.",
+          "CHAPTER 66. The Shark Massacre.",
+          "CHAPTER 67. Cutting In.",
+          "CHAPTER 68. The Blanket.",
+          "CHAPTER 69. The Funeral.",
+          "CHAPTER 70. The Sphynx.",
+          "CHAPTER 71. The Jeroboam’s Story.",
+          "CHAPTER 72. The Monkey-Rope.",
+          "CHAPTER 73. Stubb and Flask kill a Right Whale; and Then Have a Talk over Him.",
+          "CHAPTER 74. The Sperm Whale’s Head—Contrasted View.",
+          "CHAPTER 75. The Right Whale’s Head—Contrasted View.",
+          "CHAPTER 76. The Battering-Ram.",
+          "CHAPTER 77. The Great Heidelburgh Tun.",
+          "CHAPTER 78. Cistern and Buckets.",
+          "CHAPTER 79. The Prairie.",
+          "CHAPTER 80. The Nut.",
+          "CHAPTER 81. The Pequod Meets The Virgin.",
+          "CHAPTER 82. The Honor and Glory of Whaling.",
+          "CHAPTER 83. Jonah Historically Regarded.",
+          "CHAPTER 84. Pitchpoling.",
+          "CHAPTER 85. The Fountain.",
+          "CHAPTER 86. The Tail.",
+          "CHAPTER 87. The Grand Armada.",
+          "CHAPTER 88. Schools and Schoolmasters.",
+          "CHAPTER 89. Fast-Fish and Loose-Fish.",
+          "CHAPTER 90. Heads or Tails.",
+          "CHAPTER 91. The Pequod Meets The Rose-Bud.",
+          "CHAPTER 92. Ambergris.",
+          "CHAPTER 93. The Castaway.",
+          "CHAPTER 94. A Squeeze of the Hand.",
+          "CHAPTER 95. The Cassock.",
+          "CHAPTER 96. The Try-Works.",
+          "CHAPTER 97. The Lamp.",
+          "CHAPTER 98. Stowing Down and Clearing Up.",
+          "CHAPTER 99. The Doubloon.",
+          "CHAPTER 100. Leg and Arm.",
+          "The Pequod, of Nantucket, Meets the Samuel Enderby, of London.",
+          "CHAPTER 101. The Decanter.",
+          "CHAPTER 102. A Bower in the Arsacides.",
+          "CHAPTER 103. Measurement of The Whale’s Skeleton.",
+          "CHAPTER 104. The Fossil Whale.",
+          "CHAPTER 105. Does the Whale’s Magnitude Diminish?—Will He Perish?",
+          "CHAPTER 106. Ahab’s Leg.",
+          "CHAPTER 107. The Carpenter.",
+          "CHAPTER 108. Ahab and the Carpenter.",
+          "The Deck—First Night Watch.",
+          "CHAPTER 109. Ahab and Starbuck in the Cabin.",
+          "CHAPTER 110. Queequeg in His Coffin.",
+          "CHAPTER 111. The Pacific.",
+          "CHAPTER 112. The Blacksmith.",
+          "CHAPTER 113. The Forge.",
+          "CHAPTER 114. The Gilder.",
+          "CHAPTER 115. The Pequod Meets The Bachelor.",
+          "CHAPTER 116. The Dying Whale.",
+          "CHAPTER 117. The Whale Watch.",
+          "CHAPTER 118. The Quadrant.",
+          "CHAPTER 119. The Candles.",
+          "CHAPTER 120. The Deck Towards the End of the First Night Watch.",
+          "CHAPTER 121. Midnight.—The Forecastle Bulwarks.",
+          "CHAPTER 122. Midnight Aloft.—Thunder and Lightning.",
+          "CHAPTER 123. The Musket.",
+          "CHAPTER 124. The Needle.",
+          "CHAPTER 125. The Log and Line.",
+          "CHAPTER 126. The Life-Buoy.",
+          "CHAPTER 127. The Deck.",
+          "CHAPTER 128. The Pequod Meets The Rachel.",
+          "CHAPTER 129. The Cabin.",
+          "CHAPTER 130. The Hat.",
+          "CHAPTER 131. The Pequod Meets The Delight.",
+          "CHAPTER 132. The Symphony.",
+          "CHAPTER 133. The Chase—First Day.",
+          "CHAPTER 134. The Chase—Second Day.",
+          "CHAPTER 135. The Chase.—Third Day.",
+          "Epilogue",
+          "“AND I ONLY AM ESCAPED ALONE TO TELL THEE” Job.",
+          "THE FULL PROJECT GUTENBERG™ LICENSE",
+          "Table of Contents"
+        ],
+        "expected_phrases": {
+          "Call me Ishmael.": true,
+          "Epilogue": true
+        },
+        "local_references": 284,
+        "broken_references": [],
+        "media_types": {
+          "text/css": 3,
+          "image/svg+xml": 1,
+          "application/xhtml+xml": 144,
+          "image/jpeg": 2,
+          "application/x-dtbncx+xml": 1
+        },
+        "images": [
+          {
+            "path": "OEBPS/flow00004.svg",
+            "mime": "image/svg+xml",
+            "size_bytes": 324
+          },
+          {
+            "path": "OEBPS/resource00000.jpg",
+            "mime": "image/jpeg",
+            "size_bytes": 257017,
+            "decoded_size_pixels": [
+              780,
+              1227
+            ]
+          },
+          {
+            "path": "OEBPS/resource00001.jpg",
+            "mime": "image/jpeg",
+            "size_bytes": 14584,
+            "decoded_size_pixels": [
+              152,
+              240
+            ]
+          }
+        ]
+      }
+    },
+    "candide-french-epub3": {
+      "input": {
+        "size_bytes": 195063,
+        "sha256": "8bb0506c0b2c67a0412d6c33aa478b53b88c4f9c857145fac1398abd98fcb56a"
+      },
+      "epub": {
+        "size_bytes": 195063,
+        "sha256": "8bb0506c0b2c67a0412d6c33aa478b53b88c4f9c857145fac1398abd98fcb56a",
+        "archive_entries": 45,
+        "epub_version": "3.0",
+        "spine_items": 36,
+        "spine_text_characters": 222103,
+        "headings": [
+          "The Project Gutenberg eBook of Candide, ou l'optimisme",
+          "OEUVRES",
+          "OEUVRES",
+          "CANDIDE,",
+          "Préface de l’Éditeur",
+          "CANDIDE,",
+          "CHAPITRE I. Comment Candide fut élevé dans un beau château, et comment il fut chassé d’icelui.",
+          "CHAPITRE II Ce que devint Candide parmi les Bulgares.",
+          "CHAPITRE III. Comment Candide se sauva d’entre les Bulgares, et ce qu’il devint.",
+          "CHAPITRE IV. Comment Candide rencontra son ancien maître de philosophie, le docteur Pangloss, et ce qui en advint.",
+          "CHAPITRE V. Tempête, naufrage, tremblement de terre, et ce qui advint du docteur Pangloss, de Candide, et de l’anabaptiste Jacques.",
+          "CHAPITRE VI. Comment on fit un bel auto-da-fé pour empêcher les tremblements de terre, et comment Candide fut fessé.",
+          "CHAPITRE VII Comment une vieille prit soin de Candide, et comment il retrouva ce qu’il aimait.",
+          "CHAPITRE VIII. Histoire de Cunégonde.",
+          "CHAPITRE IX. Ce qui advint de Cunégonde, de Candide, du grand-inquisiteur, et d’un Juif.",
+          "CHAPITRE X. Dans quelle détresse Candide, Cunégonde, et la vieille, arrivent à Cadix, et leur embarquement.",
+          "CHAPITRE XI. Histoire de la vieille.",
+          "CHAPITRE XII. Suite des malheurs de la vieille.",
+          "CHAPITRE XIII. Comment Candide fut obligé de se séparer de la belle Cunégonde et de la vieille.",
+          "CHAPITRE XIV. Comment Candide et Cacambo furent reçus chez les jésuites du Paraguai.",
+          "CHAPITRE XV. Comment Candide tua le frère de sa chère Cunégonde.",
+          "CHAPITRE XVI. Ce qui advint aux deux voyageurs avec deux filles, deux singes, et les sauvages nommés Oreillons.",
+          "CHAPITRE XVII. Arrivée de Candide et de son valet au pays d’Eldorado, et ce qu’ils y virent.",
+          "CHAPITRE XVIII Ce qu’ils virent dans le pays d’Eldorado[1].",
+          "CHAPITRE XIX. Ce qui leur arriva à Surinam, et comment Candide fit connaissance avec Martin.",
+          "CHAPITRE XX. Ce qui arriva sur mer à Candide et à Martin.",
+          "CHAPITRE XXI. Candide et Martin approchent des côtes de France, et raisonnent.",
+          "CHAPITRE XXII[1]. Ce qui arriva en France à Candide et à Martin.",
+          "CHAPITRE XXIII. Candide et Martin vont sur les côtes d’Angleterre; ce qu’ils y voient.",
+          "CHAPITRE XXIV. De Paquette, et de frère Giroflée.",
+          "CHAPITRE XXV. Visite chez le seigneur Pococurante, noble vénitien.",
+          "CHAPITRE XXVI. D’un souper que Candide et Martin firent avec six étrangers, et qui ils étaient.",
+          "CHAPITRE XXVII. Voyage de Candide à Constantinople.",
+          "CHAPITRE XXVIII. Ce qui arriva à Candide, à Cunégonde, à Pangloss, à Martin, etc.",
+          "CHAPITRE XXIX. Comment Candide retrouva Cunégonde et la vieille.",
+          "CHAPITRE XXX. Conclusion.",
+          "THE FULL PROJECT GUTENBERG™ LICENSE"
+        ],
+        "expected_phrases": {
+          "Pangloss": true,
+          "était": true
+        },
+        "local_references": 68,
+        "broken_references": [],
+        "media_types": {
+          "image/png": 1,
+          "text/css": 3,
+          "application/xhtml+xml": 37,
+          "application/x-dtbncx+xml": 1
+        },
+        "images": [
+          {
+            "path": "OEBPS/4100845049590845870_4650-cover.png",
+            "mime": "image/png",
+            "size_bytes": 63779,
+            "decoded_size_pixels": [
+              1600,
+              2400
+            ]
+          }
+        ]
+      }
+    },
+    "dracula-html": {
+      "input": {
+        "size_bytes": 728707,
+        "sha256": "3289657fc5126cdf897421f911b027d32f11bbc8e416f5dc34338f5855864aac"
+      },
+      "html": {
+        "source_path": "html/pg345-images.html",
+        "source_headings": 33,
+        "retained_headings": 33,
+        "source_local_images": [
+          "images/cover.jpg",
+          "images/colophon.png"
+        ],
+        "retained_local_images": [
+          "images/cover.jpg",
+          "images/colophon.png"
+        ],
+        "source_links": 32,
+        "retained_links": 27,
+        "source_style_elements": 2,
+        "retained_style_elements": 0,
+        "expected_phrases": {
+          "Jonathan Harker": true,
+          "Bistritz": true
+        }
+      }
+    },
+    "sonnets-markdown-source": {
+      "input": {
+        "size_bytes": 119936,
+        "sha256": "4a3a5466591e30ca93b2c19daeb24770bb08833b57b1616c972b97246e23580f"
+      },
+      "markdown": {
+        "derived_input": {
+          "size_bytes": 116966,
+          "sha256": "d1e63a1cb0d40869a9998d43d748411b47c1797f91d7bb3beb88231413089ec9"
+        },
+        "expected_phrases": {
+          "Shall I compare thee to a summer": true,
+          "Love’s fire heats water, water cools not love.": true
+        },
+        "derivation": "Whole public-domain source, including Gutenberg terms, in one fenced text block under a title; not publisher Markdown."
+      }
+    },
+    "nist-text-pdf": {
+      "input": {
+        "size_bytes": 85781,
+        "sha256": "7b0c1a9fdfc67218b8ba2098f448c100c27070db91736b3c87fed63bfa21d418"
+      },
+      "pdf": {
+        "pages": 7,
+        "blocks": 173,
+        "extracted_characters": 10768,
+        "blocks_by_page_1_based": {
+          "1": 7,
+          "2": 16,
+          "3": 18,
+          "4": 18,
+          "5": 31,
+          "6": 51,
+          "7": 32
+        },
+        "expected_phrases": {
+          "on-demand self-service": true,
+          "measured service": true
+        },
+        "sampled_page_1_based": 5,
+        "sampled_page_lines": [
+          "1.",
+          "Introduction",
+          "1.1",
+          "Authority",
+          "The National Institute of Standards and Technology (NIST) developed this document in furtherance of its",
+          "statutory responsibilities under the Federal Information Security Management Act (FISMA) of 2002,",
+          "Public Law 107-347.",
+          "NIST is responsible for developing standards and guidelines, including minimum requirements, for",
+          "providing adequate information security for all agency operations and assets; but such standards and",
+          "guidelines shall not apply to national security systems. This guideline is consistent with the requirements",
+          "of the Office of Management and Budget (OMB) Circular A-130, Section 8b(3), “Securing Agency",
+          "Information Systems,” as analyzed in A-130, Appendix IV: Analysis of Key Sections. Supplemental",
+          "information is provided in A-130, Appendix III.",
+          "This guideline has been prepared for use by Federal agencies. It may be used by nongovernmental",
+          "organizations on a voluntary basis and is not subject to copyright, though attribution is desired.",
+          "Nothing in this document should be taken to contradict standards and guidelines made mandatory and",
+          "binding on Federal agencies by the Secretary of Commerce under statutory authority, nor should these",
+          "guidelines be interpreted as altering or superseding the existing authorities of the Secretary of Commerce,",
+          "Director of the OMB, or any other Federal official.",
+          "1.2",
+          "Purpose and Scope",
+          "Cloud computing is an evolving paradigm. The NIST definition characterizes important aspects of cloud",
+          "computing and is intended to serve as a means for broad comparisons of cloud services and deployment",
+          "strategies, and to provide a baseline for discussion from what is cloud computing to how to best use cloud",
+          "computing. The service and deployment models defined form a simple taxonomy that is not intended to",
+          "prescribe or constrain any particular method of deployment, service delivery, or business operation.",
+          "1.3",
+          "Audience",
+          "The intended audience of this document is system planners, program managers, technologists, and others",
+          "adopting cloud computing as consumers or providers of cloud services.",
+          "1"
+        ],
+        "sampled_page_layout_by_width_pdf_points": {
+          "360": {
+            "paragraph_height_derived_line_count": 70,
+            "source_nonspace_characters": 1767,
+            "reflow_nonspace_characters": 1767,
+            "nonspace_text_matches_extracted_source": true,
+            "missing_character_counts": {}
+          },
+          "720": {
+            "paragraph_height_derived_line_count": 49,
+            "source_nonspace_characters": 1767,
+            "reflow_nonspace_characters": 1767,
+            "nonspace_text_matches_extracted_source": true,
+            "missing_character_counts": {}
+          }
+        },
+        "source_anchor": {
+          "sha256": "7b0c1a9fdfc67218b8ba2098f448c100c27070db91736b3c87fed63bfa21d418",
+          "page": 4,
+          "character": 35,
+          "bbox": [
+            72.32015228271484,
+            656.644287109375,
+            78.45838928222656,
+            663.9527587890625
+          ]
+        },
+        "anchor_resolves": true,
+        "anchor_candidate_criterion": "First sampled-page block longer than 20 characters; null when none exists, not a navigation test.",
+        "heading_candidates": []
+      }
+    },
+    "census-multicolumn-pdf": {
+      "input": {
+        "size_bytes": 186352,
+        "sha256": "4a696b3ccf264093326663176e45b93e336ec024fd88447ab56d39e5e9b9e5f8"
+      },
+      "pdf": {
+        "pages": 2,
+        "blocks": 451,
+        "extracted_characters": 13510,
+        "blocks_by_page_1_based": {
+          "1": 218,
+          "2": 233
+        },
+        "expected_phrases": {
+          "Census Scientific Advisory Committee": true,
+          "nominations": true
+        },
+        "sampled_page_1_based": 1,
+        "sampled_page_lines": [
+          "56",
+          "Federal Register / Vol. 89, No. 1 / Tuesday, January 2, 2024 / Notices",
+          "national origin, religion, sex, gender",
+          "SUMMARY: The Bureau of the Census",
+          "identity (including gender expression), (Census Bureau) requests nominations with the provisions of the FACA.",
+          "sexual orientation, disability, age,",
+          "of individuals to the Census Scientific",
+          "marital status, family/parental status,",
+          "Advisory Committee (CSAC or",
+          "income derived from a public assistance Committee). The Census Bureau will",
+          "program, political beliefs, or reprisal or consider nominations received in",
+          "retaliation for prior civil rights activity, response to this notice, as well as from",
+          "in any program or activity conducted or other sources. The SUPPLEMENTARY",
+          "funded by USDA (not all bases apply to INFORMATION section of this notice",
+          "all programs). Remedies and complaint provides Committee and membership",
+          "filing deadlines vary by program or",
+          "criteria.",
+          "incident. Program information may be",
+          "DATES: Please submit nominations by",
+          "made available in languages other than",
+          "February 2, 2024. The Census Bureau",
+          "English. Persons with disabilities who",
+          "will retain nominations received after",
+          "require alternative means of",
+          "this date for consideration should",
+          "communication to obtain program",
+          "additional vacancies occur.",
+          "information (e.g., Braille, large print,",
+          "ADDRESSES: Please submit nominations",
+          "audiotape, American Sign Language)",
+          "to the census.scientific.advisory",
+          "should contact the responsible Mission",
+          ".committee@census.gov (subject line",
+          "Area, agency, or staff office; or the 711",
+          "‘‘2024 CSAC Nominations’’).",
+          "Relay Service.",
+          "FOR FURTHER INFORMATION CONTACT:",
+          "To file a program discrimination",
+          "Shana Banks, Chief, Advisory",
+          "complaint, a complainant should",
+          "Committee Branch, Office of Program,",
+          "complete a Form AD–3027, USDA",
+          "Performance and Stakeholder",
+          "Program Discrimination Complaint",
+          "Integration (PPSI), Census Bureau, by",
+          "Form, which can be obtained online at",
+          "telephone at 301–763–3815 or by email",
+          "https://www.usda.gov/sites/default/",
+          "at Shana.J.Banks@census.gov.",
+          "files/documents/ad-3027.pdf, from any",
+          "Individuals who use telecommunication",
+          "USDA office, by calling (866) 632–9992,",
+          "devices for the deaf (TDD) may call the",
+          "or by writing a letter addressed to",
+          "Federal Information Relay Service",
+          "USDA. The letter must contain the",
+          "(FIRS) at 1–800–877–8339 between 8",
+          "complainant’s name, address, telephone",
+          "a.m. and 8 p.m., eastern standard time,",
+          "number, and a written description of the",
+          "Monday through Friday.",
+          "alleged discriminatory action in",
+          "SUPPLEMENTARY INFORMATION: The",
+          "sufficient detail to inform the Assistant",
+          "Census Scientific Advisory Committee consider the ethnic, racial, and gender",
+          "Secretary for Civil Rights (ASCR) about",
+          "was established in accordance with the diversity and various abilities of the",
+          "the nature and date of an alleged civil",
+          "Federal Advisory Committee Act",
+          "rights violation.",
+          "(FACA) title 5, United States Code",
+          "The completed AD–3027 form or",
+          "(U.S.C.), app. The following provides",
+          "letter must be submitted to USDA by:",
+          "information about the Committee,",
+          "(1) Mail: U.S. Department of",
+          "membership, and the nomination",
+          "Agriculture, Office of the Assistant",
+          "process.",
+          "Secretary for Civil Rights, 1400",
+          "Independence Avenue SW, Washington,",
+          "Objectives and Duties",
+          "DC 20250–9410; or",
+          "1. The Census Scientific Advisory",
+          "(2) Fax: (833) 256–1665 or (202) 690–",
+          "Committee advises the Director of the",
+          "7442; or",
+          "U.S. Census Bureau on the full range of request, reimburse travel expenses as",
+          "(3) Email: program.intake@usda.gov.",
+          "Census Bureau programs and activities authorized by 5 U.S.C. 5703.",
+          "USDA is an equal opportunity",
+          "including communications,",
+          "provider, employer, and lender.",
+          "demographic, economic, field",
+          "operations, geography, information",
+          "Andrew Berke,",
+          "technology, and statistics.",
+          "Administrator, Rural Utilities Service, USDA",
+          "2. The Census Scientific Advisory",
+          "Rural Development.",
+          "Committee will address census policies, webinars, working groups, and other",
+          "[FR Doc. 2023–27901 Filed 12–29–23; 8:45 am]",
+          "research and methodology, tests,",
+          "BILLING CODE 3410–15–P",
+          "operations, communications/messaging, consistent with the requirements of",
+          "and other activities to ascertain needs",
+          "and best practices to improve censuses,",
+          "DEPARTMENT OF COMMERCE",
+          "surveys, operations, and programs.",
+          "3. The Census Scientific Advisory",
+          "S",
+          "E",
+          "Census Bureau",
+          "Committee will provide formal review",
+          "C",
+          "I",
+          "T",
+          "O",
+          "and feedback on internal and external",
+          "N",
+          "Census Scientific Advisory Committee;",
+          "h",
+          "t",
+          "i",
+          "working papers, reports, and other",
+          "w",
+          "Request for Nominations",
+          "D",
+          "documents related to the design and",
+          "O",
+          "R",
+          "P",
+          "implementation of census programs and",
+          "2",
+          "AGENCY: Census Bureau, Commerce.",
+          "X",
+          "7",
+          "surveys.",
+          "Z",
+          "1",
+          "ACTION: Notice of request for",
+          "M",
+          "4. The Census Scientific Advisory",
+          "J",
+          "K",
+          "nominations.",
+          "S",
+          "Committee will function solely as an",
+          "D",
+          "n",
+          "o",
+          "d",
+          "n",
+          "o",
+          "m",
+          "m",
+          "a",
+          "hVerDate Sep<11>2014 15:59 Dec 29, 2023 Jkt 262001 PO 00000 Frm 00014 Fmt 4703 Sfmt 4703 E:\\FR\\FM\\02JAN1.SGM 02JAN1",
+          "k",
+          "advisory body and shall comply fully",
+          "5. The Census Scientific Advisory",
+          "Committee reports to the Director of the",
+          "Census Bureau.",
+          "Membership",
+          "1. The Census Scientific Advisory",
+          "Committee consists of up to 21 members",
+          "who are appointed by and serve at the",
+          "discretion of the Director of the Census",
+          "Bureau.",
+          "2. Members will serve for a three-year",
+          "term. All members will be evaluated at",
+          "the conclusion of their first term with",
+          "the prospect of renewal, pending",
+          "Committee needs. Active attendance",
+          "and participation in meetings and",
+          "activities will be factors considered",
+          "when determining term renewal or",
+          "membership continuance. Members may",
+          "be appointed for a second three-year",
+          "term at the discretion of the Director.",
+          "3. Members shall serve as Special",
+          "Government Employees (SGEs) and will",
+          "be subject to the ethics rules applicable",
+          "to SGEs.",
+          "4. The Census Scientific Advisory",
+          "Committee aims to have balanced",
+          "representation among its members,",
+          "considering such factors as geography,",
+          "scientific expertise, community",
+          "involvement, and knowledge of census",
+          "programs and/or activities, and, where",
+          "possible the Census Bureau will",
+          "United States population.",
+          "5. No employee of the Federal",
+          "Government can serve as a member of",
+          "the Census Scientific Advisory",
+          "Committee.",
+          "Miscellaneous",
+          "1. The Census Bureau will not",
+          "compensate members of the Committee",
+          "for their services, but shall, upon",
+          "2. The Census Scientific Advisory",
+          "Committee will convene twice per year,",
+          "budget and environmental conditions",
+          "permitting. The Committee will use",
+          "formal advisory committee meetings,",
+          "means of review to accomplish its goals,",
+          "FACA.",
+          "Nomination Information",
+          "1. Nominations are requested as",
+          "described above.",
+          "2. Nominees must have scientific and",
+          "technical expertise in such areas as",
+          "communications, demographic,",
+          "economic, field operations, geography,",
+          "information technology, and statistics.",
+          "Such knowledge and expertise are",
+          "needed to provide advice and"
+        ],
+        "sampled_page_layout_by_width_pdf_points": {
+          "360": {
+            "paragraph_height_derived_line_count": 241,
+            "source_nonspace_characters": 5748,
+            "reflow_nonspace_characters": 5748,
+            "nonspace_text_matches_extracted_source": true,
+            "missing_character_counts": {}
+          },
+          "720": {
+            "paragraph_height_derived_line_count": 220,
+            "source_nonspace_characters": 5748,
+            "reflow_nonspace_characters": 5748,
+            "nonspace_text_matches_extracted_source": true,
+            "missing_character_counts": {}
+          }
+        },
+        "source_anchor": {
+          "sha256": "4a696b3ccf264093326663176e45b93e336ec024fd88447ab56d39e5e9b9e5f8",
+          "page": 0,
+          "character": 3,
+          "bbox": [
+            146.2646026611328,
+            749.989990234375,
+            151.6741943359375,
+            756.9199829101562
+          ]
+        },
+        "anchor_resolves": true,
+        "anchor_candidate_criterion": "First sampled-page block longer than 20 characters; null when none exists, not a navigation test.",
+        "heading_candidates": []
+      }
+    },
+    "raven-1873-scan": {
+      "input": {
+        "size_bytes": 4170541,
+        "sha256": "25dc58e363e02a442a25174fe9fcd21d3a2f78ac4511731accaaeba326c3d8e8"
+      },
+      "pdf": {
+        "pages": 24,
+        "blocks": 1994,
+        "extracted_characters": 14513,
+        "blocks_by_page_1_based": {
+          "1": 0,
+          "2": 0,
+          "3": 0,
+          "4": 0,
+          "5": 0,
+          "6": 0,
+          "7": 236,
+          "8": 0,
+          "9": 37,
+          "10": 241,
+          "11": 95,
+          "12": 251,
+          "13": 95,
+          "14": 275,
+          "15": 66,
+          "16": 221,
+          "17": 431,
+          "18": 0,
+          "19": 0,
+          "20": 0,
+          "21": 0,
+          "22": 37,
+          "23": 0,
+          "24": 9
+        },
+        "expected_phrases": {},
+        "sampled_page_1_based": 9,
+        "sampled_page_lines": [
+          "N.",
+          "Hoe",
+          "ite",
+          "forgotten",
+          "suddenly",
+          "BY",
+          "EDGAR",
+          "A.",
+          "POE.-",
+          "while",
+          "I",
+          "NCE",
+          "a",
+          "upon",
+          "midnight",
+          "dreary.",
+          "and",
+          "curious",
+          "Over",
+          "a",
+          "volume",
+          "quaint",
+          "many",
+          "I",
+          "While",
+          "nodded,",
+          "nearly napping,",
+          "and",
+          "pondered, weak",
+          "weary,",
+          "lore—",
+          "of",
+          "there",
+          "came",
+          "a",
+          "tapping,",
+          "1"
+        ],
+        "sampled_page_layout_by_width_pdf_points": {
+          "360": {
+            "paragraph_height_derived_line_count": 37,
+            "source_nonspace_characters": 174,
+            "reflow_nonspace_characters": 174,
+            "nonspace_text_matches_extracted_source": true,
+            "missing_character_counts": {}
+          },
+          "720": {
+            "paragraph_height_derived_line_count": 37,
+            "source_nonspace_characters": 174,
+            "reflow_nonspace_characters": 174,
+            "nonspace_text_matches_extracted_source": true,
+            "missing_character_counts": {}
+          }
+        },
+        "source_anchor": null,
+        "anchor_resolves": null,
+        "anchor_candidate_criterion": "First sampled-page block longer than 20 characters; null when none exists, not a navigation test.",
+        "heading_candidates": [
+          {
+            "page_1_based": 7,
+            "text": "DEMOCRAT."
+          },
+          {
+            "page_1_based": 7,
+            "text": "DOYLESTOWN"
+          },
+          {
+            "page_1_based": 7,
+            "text": "esR¥#In9"
+          },
+          {
+            "page_1_based": 7,
+            "text": "Penna,"
+          },
+          {
+            "page_1_based": 7,
+            "text": "Published"
+          },
+          {
+            "page_1_based": 7,
+            "text": "at"
+          },
+          {
+            "page_1_based": 7,
+            "text": "every"
+          },
+          {
+            "page_1_based": 7,
+            "text": "Doylestown,"
+          },
+          {
+            "page_1_based": 7,
+            "text": "Tuesday,"
+          },
+          {
+            "page_1_based": 7,
+            "text": "MEO"
+          },
+          {
+            "page_1_based": 7,
+            "text": "of"
+          },
+          {
+            "page_1_based": 7,
+            "text": "Office"
+          },
+          {
+            "page_1_based": 7,
+            "text": "and"
+          },
+          {
+            "page_1_based": 7,
+            "text": "Attaches"
+          },
+          {
+            "page_1_based": 7,
+            "text": "Employes"
+          },
+          {
+            "page_1_based": 7,
+            "text": "JANUARY"
+          },
+          {
+            "page_1_based": 7,
+            "text": "1873."
+          },
+          {
+            "page_1_based": 7,
+            "text": "Ist,"
+          },
+          {
+            "page_1_based": 7,
+            "text": "“SOO"
+          },
+          {
+            "page_1_based": 7,
+            "text": "Poreman"
+          }
+        ]
+      }
+    }
+  },
+  "raven_raster_only_derivative": {
+    "size_bytes": 647409,
+    "sha256": "cd2894179a69bd874339e419924e3a89042e7302be785444a0859e390c44e7fa",
+    "source_id": "raven-1873-scan",
+    "source_page_1_based": 9,
+    "extracted_blocks": 0,
+    "derivation": "Render the real scanned page at 720 pixels; wrap that image in a new PDF without a text layer. No OCR."
+  },
+  "truncated_inputs": {
+    "frankenstein.mobi": {
+      "size_bytes": 96,
+      "sha256": "ff1d929d47371d385d544372dd8fdaebe90c4b473a9c09df5e49033268dc2d44",
+      "exit": 1,
+      "output": "Error while loading document (Corrupted data)\n",
+      "produced_epub": false
+    },
+    "nist-cloud.pdf": {
+      "size_bytes": 512,
+      "sha256": "e348bd1e83d296ebbf78bf50312c1398cde46350ac783638e9a49aa97be21746",
+      "exit": 1,
+      "output": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\n    import sys; from proof import extract_pdf; print(len(extract_pdf(sys.argv[1])))\n                                                         ~~~~~~~~~~~^^^^^^^^^^^^^\n  File \"/Users/alexispurslane/.t3/worktrees/bookfin/t3-017d2441/tool/research/readers/proof.py\", line 53, in extract_pdf\n    raise ValueError(\"PDFium could not open the PDF\")\nValueError: PDFium could not open the PDF\n",
+      "produced_epub": null
+    }
+  }
+}

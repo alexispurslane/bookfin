@@ -1,0 +1,22 @@
+test_active_or_remote_html_cannot_load (test_readers.ReadingProof.test_active_or_remote_html_cannot_load) ... ok
+test_larger_pdf_title_is_a_heading_candidate (test_readers.ReadingProof.test_larger_pdf_title_is_a_heading_candidate) ... ok
+test_local_asset_paths_cannot_escape_the_book (test_readers.ReadingProof.test_local_asset_paths_cannot_escape_the_book) ... ok
+test_passive_html_keeps_local_images_headings_and_internal_links (test_readers.ReadingProof.test_passive_html_keeps_local_images_headings_and_internal_links) ... ok
+test_replaced_file_does_not_reuse_an_old_anchor (test_readers.ReadingProof.test_replaced_file_does_not_reuse_an_old_anchor) ... ok
+test_saved_source_anchor_survives_a_layout_width_change (test_readers.ReadingProof.test_saved_source_anchor_survives_a_layout_width_change) ... ok
+test_scanned_page_offers_no_fabricated_reflow_text (test_readers.ReadingProof.test_scanned_page_offers_no_fabricated_reflow_text) ... ok
+test_simple_pdf_exposes_text_and_source_pages (test_readers.ReadingProof.test_simple_pdf_exposes_text_and_source_pages) ... ok
+test_two_columns_read_down_left_before_right (test_readers.ReadingProof.test_two_columns_read_down_left_before_right) ... ok
+test_explicit_regeneration_replaces_fixture_bytes (test_run_inputs.RunnerInputs.test_explicit_regeneration_replaces_fixture_bytes) ... ok
+test_fingerprinted_run_preserves_committed_fixture_bytes (test_run_inputs.RunnerInputs.test_fingerprinted_run_preserves_committed_fixture_bytes) ... ok
+test_accepts_the_exact_recorded_source_bytes (test_corpus_inputs.CorpusInputs.test_accepts_the_exact_recorded_source_bytes) ... ok
+test_rejection_preserves_a_retained_original (test_corpus_inputs.CorpusInputs.test_rejection_preserves_a_retained_original) ... ok
+test_rejects_an_incomplete_download (test_corpus_inputs.CorpusInputs.test_rejects_an_incomplete_download) ... ok
+test_rejects_changed_bytes_even_when_the_length_matches (test_corpus_inputs.CorpusInputs.test_rejects_changed_bytes_even_when_the_length_matches) ... ok
+test_rejects_manifest_entries_above_the_download_limit (test_corpus_inputs.CorpusInputs.test_rejects_manifest_entries_above_the_download_limit) ... ok
+test_verified_download_moves_into_its_final_name (test_corpus_inputs.CorpusInputs.test_verified_download_moves_into_its_final_name) ... ok
+
+----------------------------------------------------------------------
+Ran 17 tests in 0.860s
+
+OK

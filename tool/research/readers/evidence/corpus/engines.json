@@ -1,0 +1,32 @@
+{
+  "nixpkgs": "fe13242281a67641c0102cdb1087f0ebe586c7df",
+  "pdfium_version": "MAJOR=158\nMINOR=0\nBUILD=8125\nPATCH=0",
+  "pdfium_library_sha256": "a45c44645523968525c710462691dd974f4efb1013ce1c249919a0939cfb373a",
+  "libmobi_version": "0.12",
+  "libmobi_library_sha256": "fadc7da3fc566d58f07c2ea78bdd49002f78d21fe8505ab410b43aba9974a384",
+  "dart_version": "Dart SDK version: 3.13.0 (stable) (Wed Aug 5 00:28:05 2026 -0700) on \"macos_arm64\"",
+  "python_packages": {
+    "pillow": "12.3.0",
+    "markdown": "3.10.2",
+    "bleach": "6.4.0",
+    "lxml": "6.1.1",
+    "reportlab": "5.0.1"
+  },
+  "lock_and_patch_sha256": {
+    "flake.lock": "620ebda96a2f73ba0777e3f4f093baeb9d15dd69681c59b0b83610fbce1be2a1",
+    "epubx-compat.patch": "3ad4972938406822eb13ab55a2ce0540d9b928accb3ac2c70978f941bdd809fe",
+    "dart_pdf/pubspec.lock": "5d640b39d66c3c4afc81ba2ee37c3dea7abf84a64f0e6b3a33b8629428dae379",
+    "dart_compat/pubspec.lock": "68f6b6e0b8028c824d32871ac16ae66aadf1e1803d364abb9af303d38059e1fc",
+    "dart_epub/pubspec.lock": "f2e90b3a79c1ccddcfa94c5ac053c311189267cfc0e4a42df8a865e385fe7157"
+  },
+  "test_count": {
+    "python": 17,
+    "dart_pdf": 8,
+    "dart_epub": 4,
+    "dart_compat": 9,
+    "total": 38
+  },
+  "pdf_test_file_concurrency": 1,
+  "prior_native_abort_exit": 134,
+  "scope": "host only; no new native bridge/widget/Android execution"
+}

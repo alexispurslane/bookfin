@@ -2,7 +2,7 @@
 id: boo-suhu
 status: open
 deps: [boo-mx5i]
-links: []
+links: [t0-qnnu]
 created: 2026-11-02T00:07:18Z
 type: feature
 priority: 2

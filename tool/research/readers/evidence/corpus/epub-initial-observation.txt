@@ -1,0 +1,33 @@
+Running build hooks...No Visual Studio installation found with the requested Microsoft.VisualStudio.Component.VC.Tools.x86.x64 component.
+
+SDK cannot be located in the Nix research shell
+
+
+SDK iphoneos not installed.
+
+SDK cannot be located in the Nix research shell
+
+
+SDK iphonesimulator not installed.
+
+Running build hooks...00:00 +0: loading test/corpus_test.dart
+00:00 +0: Public-source EPUB parser observations alice-epub3 retains opening and later text in spine resources
+00:00 +1: Public-source EPUB parser observations frankenstein-legacy-mobi retains opening and later text in spine resources
+00:00 +1 -1: Public-source EPUB parser observations frankenstein-legacy-mobi retains opening and later text in spine resources [E]
+  Expected: a value greater than <1>
+    Actual: <1>
+     Which: is not a value greater than <1>
+
+  package:matcher              expect
+  test/corpus_test.dart 62:11  main.<fn>.<fn>
+
+00:00 +1 -1: Public-source EPUB parser observations moby-kf8 retains opening and later text in spine resources
+00:00 +2 -1: Public-source EPUB parser observations candide-french-epub3 retains opening and later text in spine resources
+00:00 +3 -1: Public-source EPUB parser observations (tearDownAll)
+00:00 +3 -1: Some tests failed.
+
+Failing tests:
+  test/corpus_test.dart: Public-source EPUB parser observations frankenstein-legacy-mobi retains opening and later text in spine resources
+
+Consider enabling the flag chain-stack-traces to receive more detailed exceptions.
+For example, 'dart test --chain-stack-traces'.
