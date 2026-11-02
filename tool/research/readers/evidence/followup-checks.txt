@@ -1,0 +1,121 @@
+test_active_or_remote_html_cannot_load (test_readers.ReadingProof.test_active_or_remote_html_cannot_load) ... ok
+test_larger_pdf_title_is_a_heading_candidate (test_readers.ReadingProof.test_larger_pdf_title_is_a_heading_candidate) ... ok
+test_local_asset_paths_cannot_escape_the_book (test_readers.ReadingProof.test_local_asset_paths_cannot_escape_the_book) ... ok
+test_passive_html_keeps_local_images_headings_and_internal_links (test_readers.ReadingProof.test_passive_html_keeps_local_images_headings_and_internal_links) ... ok
+test_replaced_file_does_not_reuse_an_old_anchor (test_readers.ReadingProof.test_replaced_file_does_not_reuse_an_old_anchor) ... ok
+test_saved_source_anchor_survives_a_layout_width_change (test_readers.ReadingProof.test_saved_source_anchor_survives_a_layout_width_change) ... ok
+test_scanned_page_offers_no_fabricated_reflow_text (test_readers.ReadingProof.test_scanned_page_offers_no_fabricated_reflow_text) ... ok
+test_simple_pdf_exposes_text_and_source_pages (test_readers.ReadingProof.test_simple_pdf_exposes_text_and_source_pages) ... ok
+test_two_columns_read_down_left_before_right (test_readers.ReadingProof.test_two_columns_read_down_left_before_right) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.140s
+
+OK
+test_malformed_input_reports_failure_without_creating_an_epub (test_native_conversion.AndroidConversionBoundary.test_malformed_input_reports_failure_without_creating_an_epub) ... ok
+test_supported_variants_create_readable_epub_with_text_and_images (test_native_conversion.AndroidConversionBoundary.test_supported_variants_create_readable_epub_with_text_and_images) ... ok
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.198s
+
+OK
+Saving EPUB to /tmp/nix-shell.Lss1C6/tmpes39cyzz/mobi6-plain.epub
+Saving EPUB to /tmp/nix-shell.Lss1C6/tmpn7melpcw/mobi6-palmdoc.epub
+Saving EPUB to /tmp/nix-shell.Lss1C6/tmpvbv3hgv0/pg11-kf8.epub
+Resolving dependencies...
+Downloading packages...
+  markdown 7.3.0 (7.3.1 available)
+Got dependencies!
+1 package has newer versions incompatible with dependency constraints.
+Try `dart pub outdated` for more information.
+Running build hooks...No Visual Studio installation found with the requested Microsoft.VisualStudio.Component.VC.Tools.x86.x64 component.
+
+SDK cannot be located in the Nix research shell
+
+
+SDK iphoneos not installed.
+
+SDK cannot be located in the Nix research shell
+
+
+SDK iphonesimulator not installed.
+
+Running build hooks...00:00 +0: loading test/engine_test.dart
+00:00 +0: test/engine_test.dart: (setUpAll)
+00:00 +0: test/engine_test.dart: PDF text exposes the source page character rectangles
+00:00 +1: test/engine_test.dart: PDF original pages render without extracting text from a scan
+00:00 +2: test/engine_test.dart: Markdown preserves readable structure and local image references
+00:00 +3: test/engine_test.dart: (tearDownAll)
+00:00 +3: All tests passed!
+Resolving dependencies...
+Downloading packages...
+  archive 3.6.1 (4.6.0 available)
+  image 3.3.0 (4.12.0 available)
+  xml 6.6.1 (7.1.0 available)
+Got dependencies!
+3 packages have newer versions incompatible with dependency constraints.
+Try `dart pub outdated` for more information.
+00:00 +0: loading test/epub_test.dart
+00:00 +0: test/epub_test.dart: generated EPUB exposes chapter text and embedded images
+00:00 +1: test/epub_test.dart: plain MOBI conversion exposes chapter text and embedded images
+00:00 +2: test/epub_test.dart: PalmDOC MOBI conversion exposes chapter text and embedded images
+00:00 +3: test/epub_test.dart: KF8 conversion exposes chapter text and embedded images
+00:00 +4: All tests passed!
+patching file pubspec.yaml
+patching file lib/src/readers/book_cover_reader.dart
+Resolving dependencies...
+Downloading packages...
+  xml 6.6.1 (7.1.0 available)
+Got dependencies!
+1 package has newer versions incompatible with dependency constraints.
+Try `dart pub outdated` for more information.
+Running build hooks...No Visual Studio installation found with the requested Microsoft.VisualStudio.Component.VC.Tools.x86.x64 component.
+
+SDK cannot be located in the Nix research shell
+
+
+SDK iphoneos not installed.
+
+SDK cannot be located in the Nix research shell
+
+
+SDK iphonesimulator not installed.
+
+Running build hooks...00:00 +0: loading test/compat_test.dart
+00:00 +0: test/compat_test.dart: (setUpAll)
+00:00 +0: test/compat_test.dart: EPUB chapters and local images coexist with the pinned PDF engine
+00:00 +1: test/compat_test.dart: EPUB cover bytes decode through the new image dependency
+00:00 +2: test/compat_test.dart: mobi6-plain conversion retains text and an embedded image
+00:00 +3: test/compat_test.dart: mobi6-palmdoc conversion retains text and an embedded image
+00:00 +4: test/compat_test.dart: alice conversion retains text and an embedded image
+00:00 +5: test/compat_test.dart: (tearDownAll)
+00:00 +5: All tests passed!
+{
+  "reflow": {
+    "font_size_pdf_points": 18,
+    "width_pdf_points": 360,
+    "content_width_pdf_points": 328,
+    "phone_lines": 10,
+    "wide_720_lines": 8,
+    "source_anchor": {
+      "sha256": "51d05de2a89dd83fb8f04301ac254419b2d616d48f6e8bb9fbe0938745bc04ce",
+      "page": 0,
+      "character": 39,
+      "bbox": [
+        147.09597778320312,
+        689.8679809570312,
+        152.927978515625,
+        696.3599853515625
+      ]
+    }
+  },
+  "scan_extracted_blocks": 0,
+  "table_reflow_known_failure": [
+    "Item",
+    "Apple",
+    "Pear",
+    "Amount",
+    "12",
+    "34"
+  ]
+}

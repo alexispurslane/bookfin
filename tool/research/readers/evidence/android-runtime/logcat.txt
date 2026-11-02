@@ -1,0 +1,92 @@
+--------- beginning of main
+I/packaging_probe( 3150): Late-enabling -Xcheck:jni
+I/packaging_probe( 3150): Using CollectorTypeCMC GC.
+D/nativeloader( 3150): Load libframework-connectivity-tiramisu-jni.so using APEX ns com_android_tethering for caller /apex/com.android.tethering/javalib/framework-connectivity-t.jar: ok
+D/ApplicationLoaders( 3150): Returning zygote-cached class loader: /system_ext/framework/androidx.window.extensions.jar
+D/ApplicationLoaders( 3150): Returning zygote-cached class loader: /system_ext/framework/androidx.window.sidecar.jar
+D/nativeloader( 3150): Configuring clns-9 for other apk /data/app/~~GkBQ78KL02DCYTpY6PVgWg==/com.example.reader_packaging_probe-xermkVjfhk9BL6whp9zrgA==/base.apk. target_sdk_version=36, uses_libraries=, library_path=/data/app/~~GkBQ78KL02DCYTpY6PVgWg==/com.example.reader_packaging_probe-xermkVjfhk9BL6whp9zrgA==/lib/arm64:/data/app/~~GkBQ78KL02DCYTpY6PVgWg==/com.example.reader_packaging_probe-xermkVjfhk9BL6whp9zrgA==/base.apk!/lib/arm64-v8a, permitted_path=/data:/mnt/expand:/data/user/0/com.example.reader_packaging_probe
+I/packaging_probe( 3150): AssetManager2(0xb4000076f5521758) locale list changing from [] to [en-US]
+V/GraphicsEnvironment( 3150): Currently set values for:
+V/GraphicsEnvironment( 3150):   angle_gl_driver_selection_pkgs=[]
+V/GraphicsEnvironment( 3150):   angle_gl_driver_selection_values=[]
+V/GraphicsEnvironment( 3150): com.example.reader_packaging_probe is not listed in per-application setting
+V/GraphicsEnvironment( 3150): ANGLE allowlist from config: com.dreamgames.royalmatch com.dts.freefiremax com.dxx.firenow com.gramgames.mergedragons com.ludo.king com.mojang.minecraftpe com.my.defense com.nintendo.zaka com.os.airforce com.playrix.fishdomdd.gplay io.teslatech.callbreak jp.konami.prospia net.peakgames.toonblast
+V/GraphicsEnvironment( 3150): com.example.reader_packaging_probe is not listed in ANGLE allowlist or settings, returning default
+V/GraphicsEnvironment( 3150): Neither updatable production driver nor prerelease driver is supported.
+I/packaging_probe( 3150): AssetManager2(0xb4000076f5521118) locale list changing from [] to [en-US]
+--------- beginning of system
+I/DisplayManager( 3150): Choreographer implicitly registered for the refresh rate.
+E/ashmem  ( 3150): Pinning is deprecated since Android Q. Please use trim or other methods.
+I/ResourceExtractor( 3150): Found extracted resources res_timestamp-1-1793616860127
+I/ResourceExtractor( 3150): Resource version mismatch res_timestamp-1-1793617665978
+D/FlutterJNI( 3150): Beginning load of flutter...
+I/EGL_emulation( 3150): Opening libGLESv1_CM_emulation.so
+I/EGL_emulation( 3150): Opening libGLESv2_emulation.so
+W/HWUI    ( 3150): Failed to choose config with EGL_SWAP_BEHAVIOR_PRESERVED, retrying without...
+W/HWUI    ( 3150): Failed to initialize 101010-2 format, error = EGL_SUCCESS
+D/nativeloader( 3150): Load /data/app/~~GkBQ78KL02DCYTpY6PVgWg==/com.example.reader_packaging_probe-xermkVjfhk9BL6whp9zrgA==/base.apk!/lib/arm64-v8a/libflutter.so using class loader ns clns-9 (caller=/data/app/~~GkBQ78KL02DCYTpY6PVgWg==/com.example.reader_packaging_probe-xermkVjfhk9BL6whp9zrgA==/base.apk): ok
+D/FlutterJNI( 3150): flutter (null) was loaded normally!
+D/skia    ( 3150): [SkFontMgr Android Parser] '/product/etc/fonts_customization.xml' could not be opened
+I/ResourceExtractor( 3150): Extracted baseline resource assets/flutter_assets/kernel_blob.bin
+I/ResourceExtractor( 3150): Extracted baseline resource assets/flutter_assets/vm_snapshot_data
+I/ResourceExtractor( 3150): Extracted baseline resource assets/flutter_assets/isolate_snapshot_data
+I/packaging_probe( 3150): AssetManager2(0xb4000076f5526ed8) locale list changing from [] to [en-US]
+W/packaging_probe( 3150): type=1400 audit(0.0:405): avc:  denied  { read } for  name="max_map_count" dev="proc" ino=893915 scontext=u:r:untrusted_app:s0:c220,c256,c512,c768 tcontext=u:object_r:proc_max_map_count:s0 tclass=file permissive=0 app=com.example.reader_packaging_probe
+D/DesktopModeFlags( 3150): Toggle override initialized to: OVERRIDE_UNSET
+I/flutter ( 3150): [IMPORTANT:flutter/shell/platform/android/android_context_gl_impeller.cc(104)] Using the Impeller rendering backend (OpenGLES).
+I/flutter ( 3150): Could not start Dart VM service HTTP server:
+I/flutter ( 3150): SocketException: Failed to create server socket (OS Error: Operation not permitted, errno = 1), address = 127.0.0.1, port = 0
+I/flutter ( 3150): #0      _NativeSocket.bind (dart:io-patch/socket_patch.dart:1248:7)
+I/flutter ( 3150): <asynchronous suspension>
+I/flutter ( 3150): #1      _RawServerSocket.bind.<anonymous closure> (dart:io-patch/socket_patch.dart:2195:12)
+I/flutter ( 3150): <asynchronous suspension>
+I/flutter ( 3150): #2      _ServerSocket.bind.<anonymous closure> (dart:io-patch/socket_patch.dart:2515:12)
+I/flutter ( 3150): <asynchronous suspension>
+I/flutter ( 3150): #3      _HttpServer.bind.<anonymous closure> (dart:_http/http_impl.dart:3479:24)
+I/flutter ( 3150): <asynchronous suspension>
+I/flutter ( 3150): #4      Server.startup.startServer (dart:vmservice_io/vmservice_server.dart:324:23)
+I/flutter ( 3150): <asynchronous suspension>
+I/flutter ( 3150): #5      Server.startup (dart:vmservice_io/vmservice_server.dart:346:11)
+I/flutter ( 3150): <asynchronous suspension>
+I/flutter ( 3150): #6      _toggleWebServer (dart:vmservice_io:229:5)
+I/flutter ( 3150): <asynchronous suspension>
+I/flutter ( 3150): #7      main.<anonymous closure> (dart:vmservice_io:302:37)
+I/flutter ( 3150): <asynchronous suspension>
+D/nativeloader( 3150): Load /data/app/~~GkBQ78KL02DCYTpY6PVgWg==/com.example.reader_packaging_probe-xermkVjfhk9BL6whp9zrgA==/base.apk!/lib/arm64-v8a/libdartjni.so using class loader ns clns-9 (caller=/data/app/~~GkBQ78KL02DCYTpY6PVgWg==/com.example.reader_packaging_probe-xermkVjfhk9BL6whp9zrgA==/base.apk!classes3.dex): ok
+I/packaging_probe( 3150): hiddenapi: Accessing hidden method Landroid/view/accessibility/AccessibilityNodeInfo;->getSourceNodeId()J (runtime_flags=0, domain=platform, api=unsupported,test-api) from Lio/flutter/view/AccessibilityViewEmbedder$ReflectionAccessors; (domain=app) using reflection: allowed
+I/packaging_probe( 3150): hiddenapi: Accessing hidden method Landroid/view/accessibility/AccessibilityRecord;->getSourceNodeId()J (runtime_flags=0, domain=platform, api=unsupported) from Lio/flutter/view/AccessibilityViewEmbedder$ReflectionAccessors; (domain=app) using reflection: allowed
+I/packaging_probe( 3150): hiddenapi: Accessing hidden field Landroid/view/accessibility/AccessibilityNodeInfo;->mChildNodeIds:Landroid/util/LongArray; (runtime_flags=0, domain=platform, api=unsupported) from Lio/flutter/view/AccessibilityViewEmbedder$ReflectionAccessors; (domain=app) using reflection: allowed
+I/packaging_probe( 3150): hiddenapi: Accessing hidden method Landroid/util/LongArray;->get(I)J (runtime_flags=0, domain=platform, api=unsupported) from Lio/flutter/view/AccessibilityViewEmbedder$ReflectionAccessors; (domain=app) using reflection: allowed
+D/AccessibilityBridge( 3150): Setting not found: accessibility_display_inversion_enabled, using default: 0
+D/FlutterRenderer( 3150): Width is zero. 0,0
+D/CompatChangeReporter( 3150): Compat change id reported: 377864165; UID 10220; state: ENABLED
+W/HWUI    ( 3150): Unknown dataspace 0
+I/WindowExtensionsImpl( 3150): Initializing Window Extensions, vendor API level=9, activity embedding enabled=true
+I/packaging_probe( 3150): Compiler allocated 5111KB to compile void android.view.ViewRootImpl.performTraversals()
+D/FlutterRenderer( 3150): Width is zero. 0,0
+D/FlutterJNI( 3150): Sending viewport metrics to the engine.
+D/WindowLayoutComponentImpl( 3150): Register WindowLayoutInfoListener on Context=com.example.reader_packaging_probe.MainActivity@de4d132, of which baseContext=android.app.ContextImpl@50f3afb
+D/FlutterJNI( 3150): Sending viewport metrics to the engine.
+D/FlutterJNI( 3150): Sending viewport metrics to the engine.
+D/InsetsController( 3150): hide(ime(), fromIme=false)
+I/ImeTracker( 3150): com.example.reader_packaging_probe:5e3f9b31: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+I/flutter ( 3150): READER_PDF {"source_sha256":"51d05de2a89dd83fb8f04301ac254419b2d616d48f6e8bb9fbe0938745bc04ce","pdf_anchors":[{"source_page_1_based":1,"character_index_utf16":39,"quote":"old road","rectangle_pdf_points":[147.11997985839844,696.4559936523438,152.9519805908203,689.843994140625],"body_logical_pixels":18,"line_counts_by_width_logical_pixels":{"200":6,"360":3},"render_pixels":[360,465]},{"source_page_1_based":2,"character_index_utf16":39,"quote":"old road","rectangle_pdf_points":[147.11997985839844,696.4559936523438,152.9519805908203,689.843994140625],"body_logical_pixels":18,"line_counts_by_width_logical_pixels":{"200":6,"360":3},"render_pixels":[360,465]}]}
+I/flutter ( 3150): READER_SCAN {"scan_text_characters":0,"scan_render_pixels":[360,465]}
+I/flutter ( 3150): READER_CONVERSION {"name":"river.epub","status":0,"original_sha256":"d1208cdf94fbe5565926daa452c75f26b678b650f6c3b5258e2961ea7b49e37a","epub_sha256":"d1208cdf94fbe5565926daa452c75f26b678b650f6c3b5258e2961ea7b49e37a","epub_bytes":2089,"spine_items":1,"images":1,"expected_text_retained":true}
+I/flutter ( 3150): READER_CONVERSION {"name":"mobi6-plain.mobi","status":0,"original_sha256":"42a14c07f1acc6b530dc6fff2b8eadac3a4b08306c2dcee6d8a0558738d39d83","epub_sha256":"6a3ccb2aa5f5c4595ca29171f8fc28bcf9a2dbb1e6dcc04039f007c4bda0dae6","epub_bytes":1626,"spine_items":1,"images":1,"expected_text_retained":true}
+I/flutter ( 3150): READER_CONVERSION {"name":"mobi6-palmdoc.mobi","status":0,"original_sha256":"6a74ec880895caf41cbdda7d8ee7e1e5455db757022fa23b6c1af1185696bdc1","epub_sha256":"6a3ccb2aa5f5c4595ca29171f8fc28bcf9a2dbb1e6dcc04039f007c4bda0dae6","epub_bytes":1626,"spine_items":1,"images":1,"expected_text_retained":true}
+I/flutter ( 3150): READER_CONVERSION {"name":"pg11-kf8.mobi","status":0,"original_sha256":"d8211269aed55ded8302f289950936db8368b4d4d384c463b722034152f8f1d2","epub_sha256":"3548ba6751b49b5aed2bbe1d0627aca9cb29055768e37787e21e066dc44bcd20","epub_bytes":204423,"spine_items":19,"images":3,"expected_text_retained":true}
+I/flutter ( 3150): READER_MALFORMED {"status":3}
+D/ProfileInstaller( 3150): Installing profile for com.example.reader_packaging_probe
+I/flutter ( 3150): READER_SOURCE {"page":2,"character":39}
+D/HWUI    ( 3150): --- Failed to create image decoder with message 'unimplemented'
+E/FlutterImageDecoderImplDefault( 3150): Failed to decode image
+E/FlutterImageDecoderImplDefault( 3150): android.graphics.ImageDecoder$DecodeException: Failed to create image decoder with message 'unimplemented'Input contained an error.
+E/FlutterImageDecoderImplDefault( 3150): 	at android.graphics.ImageDecoder.nCreate(Native Method)
+E/FlutterImageDecoderImplDefault( 3150): 	at android.graphics.ImageDecoder.-$$Nest$smnCreate(Unknown Source:0)
+E/FlutterImageDecoderImplDefault( 3150): 	at android.graphics.ImageDecoder$ByteBufferSource.createImageDecoder(ImageDecoder.java:256)
+E/FlutterImageDecoderImplDefault( 3150): 	at android.graphics.ImageDecoder.decodeBitmapImpl(ImageDecoder.java:1858)
+E/FlutterImageDecoderImplDefault( 3150): 	at android.graphics.ImageDecoder.decodeBitmap(ImageDecoder.java:1850)
+E/FlutterImageDecoderImplDefault( 3150): 	at io.flutter.embedding.engine.image.ImageDecoderDefaultImpl.decodeImage(ImageDecoderDefaultImpl.java:44)
+E/FlutterImageDecoderImplDefault( 3150): 	at io.flutter.embedding.engine.image.FlutterImageDecoder.decodeImage(FlutterImageDecoder.java:60)
+E/FlutterImageDecoderImplDefault( 3150): 	at io.flutter.embedding.engine.FlutterJNI.decodeImage(FlutterJNI.java:577)

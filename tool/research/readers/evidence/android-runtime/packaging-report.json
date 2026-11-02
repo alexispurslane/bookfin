@@ -1,0 +1,151 @@
+{
+  "fixtures": {
+    "chapter.html": {
+      "bytes": 306,
+      "sha256": "16eb9e4844e870d8da8cc68da97e508c311823b5a1d86e8b3a0904afb79bfed1"
+    },
+    "chapter.md": {
+      "bytes": 233,
+      "sha256": "bdb7215b37dd7aa5a76888b0e9ff8b08d697f04402a0da98d9bf855f5d711224"
+    },
+    "columns.pdf": {
+      "bytes": 1600,
+      "sha256": "2e4d0173add021ccb2b14b5101822aaddaf82b339752b059222ccccde1af1572"
+    },
+    "dot.png": {
+      "bytes": 91,
+      "sha256": "01a46dca6fd3dfa73b83eb3ca65911529cf7725d98fa30ad19dea6a42c473d08"
+    },
+    "mobi6-palmdoc.mobi": {
+      "bytes": 604,
+      "sha256": "6a74ec880895caf41cbdda7d8ee7e1e5455db757022fa23b6c1af1185696bdc1"
+    },
+    "mobi6-plain.mobi": {
+      "bytes": 604,
+      "sha256": "42a14c07f1acc6b530dc6fff2b8eadac3a4b08306c2dcee6d8a0558738d39d83"
+    },
+    "pg11-kf8.mobi": {
+      "bytes": 255506,
+      "sha256": "d8211269aed55ded8302f289950936db8368b4d4d384c463b722034152f8f1d2"
+    },
+    "river.epub": {
+      "bytes": 2089,
+      "sha256": "d1208cdf94fbe5565926daa452c75f26b678b650f6c3b5258e2961ea7b49e37a"
+    },
+    "scanned.pdf": {
+      "bytes": 6683,
+      "sha256": "7edfa36f57337ceeb7af6c58b87b68e6ebc25dfb0200593e415150a5d2052c06"
+    },
+    "simple.pdf": {
+      "bytes": 2693,
+      "sha256": "51d05de2a89dd83fb8f04301ac254419b2d616d48f6e8bb9fbe0938745bc04ce"
+    },
+    "table.pdf": {
+      "bytes": 1393,
+      "sha256": "b7bba98b1dbff2e4707ab4b284f1a2f3dc5581c40bc71a149a3caad69cdbdc20"
+    }
+  },
+  "python_packages": {
+    "reportlab": "5.0.1",
+    "pillow": "12.3.0",
+    "markdown": "3.10.2",
+    "bleach": "6.4.0",
+    "lxml": "6.1.1"
+  },
+  "pdfium_version": "MAJOR=158\nMINOR=0\nBUILD=8125\nPATCH=0",
+  "reflow": {
+    "font_size_pdf_points": 18,
+    "width_pdf_points": 360,
+    "content_width_pdf_points": 328,
+    "phone_lines": 10,
+    "wide_720_lines": 8,
+    "source_anchor": {
+      "sha256": "51d05de2a89dd83fb8f04301ac254419b2d616d48f6e8bb9fbe0938745bc04ce",
+      "page": 0,
+      "character": 39,
+      "bbox": [
+        147.09597778320312,
+        689.8679809570312,
+        152.927978515625,
+        696.3599853515625
+      ]
+    }
+  },
+  "column_reflow": [
+    "Two columns",
+    "Left 1: the journey begins.",
+    "Left 2: the journey begins.",
+    "Left 3: the journey begins.",
+    "Right 1: the journey ends.",
+    "Right 2: the journey ends.",
+    "Right 3: the journey ends."
+  ],
+  "column_poppler_default": [
+    "Two columns",
+    "Left 1: the journey begins.",
+    "Left 2: the journey begins.",
+    "Left 3: the journey begins.",
+    "",
+    "Right 1: the journey ends.",
+    "Right 2: the journey ends.",
+    "Right 3: the journey ends.",
+    "",
+    ""
+  ],
+  "table_reflow_known_failure": [
+    "Item",
+    "Apple",
+    "Pear",
+    "Amount",
+    "12",
+    "34"
+  ],
+  "scan_extracted_blocks": 0,
+  "headings": [
+    "River chapter 1",
+    "River chapter 2"
+  ],
+  "converted_epubs": {
+    "mobi6-plain": {
+      "entries": 6,
+      "bytes": 1626
+    },
+    "mobi6-palmdoc": {
+      "entries": 6,
+      "bytes": 1626
+    },
+    "alice": {
+      "entries": 29,
+      "bytes": 204423
+    }
+  },
+  "android_apk": {
+    "bytes": 133879776,
+    "sha256": "00372a304069dce726ffd2678734f276e3d360069fb3eb5e175c0730ab6fd4d1",
+    "native_entries": {
+      "lib/arm64-v8a/libVkLayer_khronos_validation.so": 15240080,
+      "lib/arm64-v8a/libdartjni.so": 97952,
+      "lib/arm64-v8a/libflutter.so": 38828704,
+      "lib/arm64-v8a/libmobi.so": 161152,
+      "lib/arm64-v8a/libpdfium.so": 6598376,
+      "lib/arm64-v8a/libpdfrx_pdfium_gate.so": 5080,
+      "lib/arm64-v8a/libreader_convert.so": 80016,
+      "lib/armeabi-v7a/libdartjni.so": 57600,
+      "lib/x86_64/libdartjni.so": 99968
+    },
+    "engine_provenance": {
+      "libpdfium.so": {
+        "sha256": "de19db1c0fb33579bca6ace903af7ccb9d03ad1d3f6c5202970d8d79d7538303",
+        "matches_pinned_native_proof": true
+      },
+      "libmobi.so": {
+        "sha256": "13a69566c38f3286287465720576357d192494a59269a2581401ab3d05ba881c",
+        "matches_pinned_native_proof": true
+      },
+      "libreader_convert.so": {
+        "sha256": "46c6c9a84dbdb6e4b588f358f75b8d70b799d4b80bb9156546d2177ff2b95bd0",
+        "matches_pinned_native_proof": true
+      }
+    }
+  }
+}

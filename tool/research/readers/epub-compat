@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")"
+: "${EPUBX_ARCHIVE:?Use the reader research Nix shell}"
+rm -rf _out/epubx-compat
+mkdir -p _out/epubx-compat
+tar xf "$EPUBX_ARCHIVE" -C _out/epubx-compat
+patch --fuzz=0 -p1 -d _out/epubx-compat < epubx-compat.patch
+cd dart_compat
+dart pub get --enforce-lockfile
+dart test --reporter expanded

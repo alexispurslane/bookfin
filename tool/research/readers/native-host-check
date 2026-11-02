@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")"
+: "${LIBMOBI_SOURCE:?Use the reader research Nix shell}"
+clang -dynamiclib -fPIC -Os -DUSE_XMLWRITER -DMINIZ_NO_ZLIB_COMPATIBLE_NAMES= \
+  -I "$LIBMOBI_SOURCE/src" -I "$LIBMOBI_SOURCE/tools" \
+  android_convert.c "$LIBMOBI_SOURCE/tools/common.c" "$LIBMOBI_SOURCE/src/miniz.c" \
+  -L "$LIBMOBI_PREFIX/lib" -Wl,-rpath,"$LIBMOBI_PREFIX/lib" -lmobi -o _out/libreader_convert.dylib
+BOOKFIN_CONVERTER="$PWD/_out/libreader_convert.dylib" python -m unittest -v test_native_conversion

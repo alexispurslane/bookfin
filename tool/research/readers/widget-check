@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")"
+mkdir -p _out/flutter-widgets/lib _out/flutter-widgets/test
+cp flutter_smoke/widget_pubspec.yaml _out/flutter-widgets/pubspec.yaml
+cp flutter_smoke/widget_pubspec.lock _out/flutter-widgets/pubspec.lock
+cp flutter_smoke/reader_probe.dart _out/flutter-widgets/lib/
+cp flutter_smoke/license_text.dart _out/flutter-widgets/lib/
+cp flutter_smoke/test/reader_probe_test.dart _out/flutter-widgets/test/
+cd _out/flutter-widgets
+flutter pub get --enforce-lockfile
+flutter test --reporter expanded

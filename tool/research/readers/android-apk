@@ -8,14 +8,34 @@ if [ ! -d _out/flutter-smoke/android ]; then
 fi
 cp flutter_smoke/pubspec.yaml _out/flutter-smoke/pubspec.yaml
 cp flutter_smoke/main.dart _out/flutter-smoke/lib/main.dart
+cp flutter_smoke/reader_probe.dart _out/flutter-smoke/lib/reader_probe.dart
+cp flutter_smoke/license_text.dart _out/flutter-smoke/lib/license_text.dart
+mkdir -p _out/flutter-smoke/test
+cp flutter_smoke/test/reader_probe_test.dart _out/flutter-smoke/test/
 if [ -f flutter_smoke/pubspec.lock ]; then
   cp flutter_smoke/pubspec.lock _out/flutter-smoke/pubspec.lock
 fi
 mkdir -p _out/flutter-smoke/assets _out/flutter-smoke/android/app/src/main/jniLibs/arm64-v8a
 cp fixtures/simple.pdf _out/flutter-smoke/assets/simple.pdf
+cp fixtures/scanned.pdf fixtures/river.epub fixtures/mobi6-plain.mobi \
+  fixtures/mobi6-palmdoc.mobi fixtures/pg11-kf8.mobi _out/flutter-smoke/assets/
+mkdir -p _out/flutter-smoke/assets/licenses
+cp -f _out/licenses/* flutter_smoke/NOTICE.txt _out/flutter-smoke/assets/licenses/
 cp _out/android-arm64/src/libmobi.so _out/flutter-smoke/android/app/src/main/jniLibs/arm64-v8a/
+cp _out/libreader_convert.so _out/flutter-smoke/android/app/src/main/jniLibs/arm64-v8a/
+mkdir -p _out/flutter-smoke/epubx-compat
+cp -R _out/epubx-compat/. _out/flutter-smoke/epubx-compat/
+cp flutter_smoke/AndroidManifest.xml _out/flutter-smoke/android/app/src/main/AndroidManifest.xml
+cp flutter_smoke/OfflineManifest.xml _out/flutter-smoke/android/app/src/debug/AndroidManifest.xml
+cp flutter_smoke/OfflineManifest.xml _out/flutter-smoke/android/app/src/profile/AndroidManifest.xml
 cd _out/flutter-smoke
-flutter pub get
+flutter pub get --enforce-lockfile
 flutter build apk --debug --target-platform android-arm64
+"$ANDROID_HOME/build-tools/36.0.0/aapt2" dump permissions build/app/outputs/flutter-apk/app-debug.apk > ../apk-permissions.txt
+cat ../apk-permissions.txt
+if rg -q 'android.permission.INTERNET' ../apk-permissions.txt; then
+  echo 'Offline proof must not request INTERNET permission' >&2
+  exit 1
+fi
 unzip -l build/app/outputs/flutter-apk/app-debug.apk | rg 'libmobi|pdfium|simple.pdf'
 "$ANDROID_HOME/build-tools/36.0.0/zipalign" -c -P 16 4 build/app/outputs/flutter-apk/app-debug.apk

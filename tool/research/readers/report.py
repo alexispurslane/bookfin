@@ -53,6 +53,7 @@ def report():
             for name, reference in {
                 "libpdfium.so": output / "pdfium-android/lib/libpdfium.so",
                 "libmobi.so": output / "android-arm64/src/libmobi.so",
+                "libreader_convert.so": output / "libreader_convert.so",
             }.items():
                 packaged = hashlib.sha256(archive.read(f"lib/arm64-v8a/{name}")).hexdigest()
                 pinned = hashlib.sha256(reference.read_bytes()).hexdigest()

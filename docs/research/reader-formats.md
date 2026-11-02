@@ -8,7 +8,9 @@ Local MOBI conversion and true PDF text reflow work on the generated samples in 
 The Android native libraries also compile and link for ARM64, the 64-bit ARM architecture.
 These results do not establish released format support.
 No user-supplied books are available, and none passed these tests.
-No emulator, phone, shared app installation, or production reader UI was used.
+The November 1 checkpoint used no emulator, phone, shared app installation, or production reader UI.
+The November 2 follow-up below adds a bounded Android runtime proof in a separate research application.
+It does not approve a production reader package.
 
 The experiments live in `tool/research/readers/`.
 They do not change the shared Flutter app, shared dependencies, shared SDK, or shared Nix flake.
@@ -427,3 +429,198 @@ Package source and license observations refer to the named versions, not an assu
 | https://github.com/kovidgoyal/calibre | Desktop converter source and license alternative. No binary test performed |
 | https://www.gutenberg.org/ebooks/11 | External KF8 source, public-domain status in the United States, and ebook terms |
 | Pinned nixpkgs `pkgs/by-name/mu/mupdf/package.nix` and `pkgs/by-name/ca/calibre/package.nix` | Reproducible alternative versions 1.27.2 and 9.15.0 without installing them |
+
+## November 2: finite Android follow-up
+
+Base: main `e8fe9c7`. This follow-up uses the same pinned engines and original generated/public-domain corpus.
+No private user corpus is available. That boundary does not prevent generated-corpus execution.
+No production Jellyfin server, credentials, Bookfin app state, browser, or other device session is used.
+
+### Android results
+
+The separate `com.example.reader_packaging_probe` application runs on the shared Android API 36 ARM64 emulator.
+The T3 host is `local`, and the device is `emulator-5554`.
+The probe is not the production reader and does not implement the approved Bookfin mockup.
+
+| Input | Android result | Boundary |
+| --- | --- | --- |
+| Two-page `simple.pdf` | Both original pages render through pinned PDFium. Extracted text wraps at two widths. A source link from page 2 returns to original page 2 | Plain extracted text, not paragraph/heading/image fidelity or a general PDF layout algorithm |
+| Raster-only `scanned.pdf` | Original page renders, including the bottom-right marker. Extraction returns zero characters | No OCR. Future OCR remains approved in `boo-suhu`, not implemented here |
+| Generated EPUB3 `river.epub` | Declared chapter text and embedded PNG display locally alongside the PDF engine | Plain preview, not chapter navigation, CSS, search, bookmarks, accessibility acceptance, or resume |
+| Uncompressed MOBI6 | Android native conversion returns 0. Its EPUB text and PNG display locally | Generated UTF-8 fixture only |
+| PalmDOC-marked MOBI6 | Android native conversion returns 0. Its EPUB text and PNG display locally | The small generated compression stream uses literal runs, not a broad PalmDOC compression corpus |
+| Public-domain standalone KF8 Alice | Android native conversion returns 0. EPUBX reads 19 spine items and 3 image resources. Text displays locally | The preview's first image is SVG and fails in Flutter's raster-image widget. This is not complete KF8 presentation support |
+| Truncated, malformed MOBI bytes | Android conversion returns nonzero status 3 and creates no EPUB | One malformed fixture, not fuzzing or native crash-containment proof |
+| Multi-column/table PDFs | Existing host checks retain their findings | No new Android column-order or table-association claim |
+
+The original source PDF hash is `51d05de2a89dd83fb8f04301ac254419b2d616d48f6e8bb9fbe0938745bc04ce`.
+The retained screenshots show 6 rendered lines at width 200 and 4 at width 360.
+The original label and log claimed 3 lines at width 360. That separate painter omitted inherited text styling, so its count did not describe the displayed paragraph.
+Widths use logical pixels, Flutter's density-independent length unit.
+Body text stays at 18 logical pixels, with no text scaling in this research view.
+These counts come from inspecting the retained Android screenshots, not the earlier host layouts at 360 and 720 PDF points.
+The Android reflow view contains newly laid-out text, not a resized page image.
+It flattens original heading styles and paragraph breaks.
+
+For both source pages, the Android report records the 1-based source page, the quote `old road`, character index 39, and its source rectangle.
+The source link selects the corresponding original page. It does not highlight the exact rectangle.
+The Android report labels the character index as a UTF-16 text index.
+This index relationship is established only for the fixture's ASCII anchor.
+The source PDF hash stays unchanged across both widths.
+The observed action returns from narrow page-2 text to original page 2, where `River chapter 2` remains visible.
+This proves source-page correspondence during one open document, not persisted reflow resume or migration between engine versions.
+
+Original pages render at 360 by 465 pixels.
+The scan's bottom-right marker remains visible, so this execution does not repeat the earlier render-area crop mistake.
+No PDF image is inserted into the text-only reflow preview.
+
+### Offline boundary and evidence
+
+The installed APK has no `android.permission.INTERNET` permission.
+`aapt2 dump permissions` checks the final merged APK, not just a source manifest.
+The first packaging attempt failed this check because Flutter's debug manifest reintroduced the permission.
+The proof now removes it from the higher-priority debug/profile manifests too.
+Each launch creates a new private temporary directory and converts the three original MOBI assets there.
+No host-converted EPUB is bundled as a substitute for those Android conversions.
+The source files remain unchanged, and every EPUB is parsed in the same Android process as PDFium.
+
+This proves local operation in an app process without network permission.
+It is not a device-wide airplane-mode test or packet-capture experiment.
+Device setting-read commands returned `INVALID_ARGS` because this host requires an explicit state.
+No radio, appearance, permission, or other system setting changed.
+
+The committed evidence is under `tool/research/readers/evidence/android-runtime/`:
+
+- `observations.json` contains Android extraction, conversion, source-link, and malformed-input results.
+- `logcat.txt` contains logs from the research application's process only.
+- `interaction.txt` contains device-bound actions and accessibility snapshots.
+- PNG files show original pages, both reflow widths, source-page return, the scan, the EPUB/MOBI previews, and the license view.
+- `packaging-report.json` contains the APK fingerprint and all three packaged native-library comparisons.
+- `permissions.txt` contains the final APK permission inventory.
+- `license-inventory.json` checks the packaged native license bytes against all 24 pinned source notice files.
+
+The PDFium, libmobi, and converter-bridge bytes in the APK match their pinned native proof artifacts.
+The APK passes the existing 16-KiB ZIP-alignment check.
+No physical phone, other Android API level, other CPU architecture, release APK, or 16-KiB-page kernel is tested.
+The debug APK size is not a production download-size estimate.
+
+### Concrete EPUB compatibility candidate
+
+Unmodified EPUBX 4.0.0 remains incompatible with pdfrx_engine 0.9.0.
+Its image-3/archive-3 constraints cannot share a solver with the pinned image-4/archive-4 PDF dependency graph.
+Changing only those ranges produces a concrete compiler error:
+
+```text
+The argument type 'List<int>' can't be assigned to the parameter type 'Uint8List'.
+```
+
+The research candidate is EPUBX 4.0.0 plus `epubx-compat.patch`, not a different published package.
+The Nix flake pins the original package archive by SHA-256:
+`0ab9354efa177c4be52c46f857bc15bf83f83a92667fb673465c8f89fca26db3`.
+The patch updates the two dependency ranges and adapts cover decoding to the image-4 byte type.
+It applies with zero patch fuzz.
+The committed lock files resolve archive 4.6.0 and image 4.12.0 alongside pdfrx_engine 0.9.0 and pdfrx 2.11.0.
+The only dependency override in the research Flutter package is the existing project's path_provider_foundation 2.4.4 compatibility pin.
+There is no forced override that pretends unmodified EPUBX supports image 4.
+
+Five joint host checks pass: PDF extraction with EPUB chapter/image parsing, EPUB2 cover decoding, and the three MOBI conversions.
+The Android application compiles and runs the patched parser with the pinned PDF engine in one dependency graph and process.
+This is a compatible parser candidate, not an approved EPUB navigator.
+Maintenance ownership, full navigation, resource associations, security limits, accessibility, and saved positions remain reader integration work in `boo-9wgg`.
+
+The bounded presentation failure is precise:
+`OEBPS/flow00004.svg`, 324 bytes, is the KF8 conversion's first image resource.
+The plain preview passes those SVG bytes to a raster-image widget, which reports `Exception: Invalid image data`.
+The converted JPEG resources are valid RGB JPEGs under the host decoder.
+Neither conversion nor text rendering fails.
+No new SVG engine is selected, and the proof does not silently skip the failed asset.
+Ticket `t3-9r9u` records the MIME-aware SVG/resource requirement for the eventual reader.
+The plain preview also merges some heading/paragraph boundaries. It is not a fidelity claim.
+
+### Redistribution inventory and release gate
+
+These are engineering findings from the pinned license texts, not qualified legal approval of a release.
+
+| Component | Pinned terms inspected | Required work before redistribution |
+| --- | --- | --- |
+| libmobi 0.12 | `COPYING` is LGPL version 3. Source headers permit version 3 or later | Prominent library/use notice, LGPL and GPL texts, applicable source delivery, and an effective modification/relinking route |
+| Research converter bridge | Includes upstream `tools/mobitool.c`; that file is LGPL-3.0-or-later | Treat the bridge and incorporated tool code as covered library-derived work, retain notices, and provide exact corresponding source/build instructions |
+| Included miniz and internal XML writer | The pinned source retains its original notices. The internal XML writer is LGPL-3.0-or-later; miniz carries its own public-domain notice | Preserve the complete upstream source notices instead of assigning one guessed license to every file |
+| PDFium chromium/8125 | PDFium's BSD-style notice, binary distributor's MIT notice, and the archive's 21 third-party license files | Retain the whole license bundle, including font, image, and other transitive notices |
+| Patched EPUBX 4.0.0 | MIT, original copyright retained in the generated local source package | Preserve copyright/permission text and identify the research modifications; review any maintained fork before approval |
+| Dart/Flutter dependencies | Package license files and Flutter's generated license registry | Retain the complete registry, not only the top-level engine license |
+| Generated fixtures and Alice KF8 | Generated material is CC0. Alice is public domain in the United States with its embedded Project Gutenberg terms retained | Keep the original ebook terms and avoid assuming worldwide public-domain status |
+
+LGPL version 3 section 4 requires more than a shared-library filename.
+Section 4(d) describes a suitable shared-library mechanism or corresponding application code that permits recombination/relinking.
+Section 4(e), together with GPL version 3 section 6 where applicable, addresses installation information.
+Android APK signing, packaging, store terms, and any integrity checks therefore need an actual replacement/relink/install demonstration.
+Do not declare compliance just because Dart uses a dynamic-library call.
+The combined-work terms must also permit debugging library modifications, as section 4 describes.
+This does not automatically require licensing the whole independent application under LGPL.
+
+The research APK includes the unmodified LGPL text, the full GPL version 3 text, all PDFium archive notices, and a prominent research notice.
+The GPL text is a hash-pinned GNU source input, SHA-256 `3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986`.
+The exact libmobi source pin, native flags, bridge source, and build scripts remain in this repository.
+Those research artifacts do not constitute a complete release source/relinking offer.
+Ticket `t3-ipk1` tracks that missing redistribution and replacement proof.
+No maintenance assurance or security audit of the old libmobi release is implied.
+
+The first research license-view attempt failed on PDFium's `freetype.txt`, byte `0xA9` at offset 2038.
+That file uses a Latin-1 copyright symbol rather than valid UTF-8.
+A failing behavior test captured the decoding error.
+The corrected viewer tries UTF-8, then Latin-1, while the packaged license bytes remain unchanged.
+UTF-8 non-Latin text and Latin-1 copyright symbols both have passing behavior tests.
+The corrected Android license list opens without the earlier decoding error.
+
+Primary license sources are the pinned libmobi `COPYING`, source headers, PDFium archive `LICENSE` and `licenses/`, EPUBX's package `LICENSE`, and GNU's complete GPL text:
+https://www.gnu.org/licenses/gpl-3.0.txt.
+The original EPUBX package metadata was fetched from https://pub.dev/api/packages/epubx/versions/4.0.0 on November 2, 2026.
+No claim about an assumed latest package release is needed for this candidate.
+
+### Repeat the finite follow-up
+
+Run one build/test command at a time from the checkout root.
+The host run below creates conversion outputs and unpacks the pinned PDFium archives without regenerating fixture inputs.
+Use the committed fixtures for final fingerprints; regenerating a PDF can change bytes across checkout paths.
+
+```sh
+nix develop ./tool/research/readers --command bash tool/research/readers/run --keep-fixtures
+nix develop ./tool/research/readers --command python -m unittest discover -s tool/research/readers -p test_run_inputs.py -v
+nix develop ./tool/research/readers --command bash tool/research/readers/epub-compat
+nix develop ./tool/research/readers#android --command bash -c 'export BOOKFIN_NDK="$ANDROID_HOME/ndk/28.2.13676358"; nix develop ./tool/research/readers --command bash tool/research/readers/android-build'
+nix develop ./tool/research/readers#android --command bash tool/research/readers/widget-check
+nix develop ./tool/research/readers#android --command bash tool/research/readers/android-apk
+nix develop ./tool/research/readers --command bash tool/research/readers/verify-followup
+```
+
+The original follow-up recorded 27 host checks. The corrected run totals 30: 9 original Python, 2 native conversion, 3 PDF/Markdown Dart, 4 original EPUB Dart, 5 joint compatibility Dart, 5 Flutter widget/license tests, and 2 runner-input tests. The commands above include the runner-input tests added during correction.
+The first meaningful native-conversion red test rejected success without an EPUB and rejected accepting malformed input.
+The reflow red tests observed unchanged layout at narrower width and a missing source action.
+The EPUB solver/compiler failures are compatibility evidence, not mislabeled behavioral red tests.
+No coverage, mutation testing, or PR work runs in this follow-up.
+
+Build dependencies need an initial network/cache population. The installed reader probe does not.
+The GNU download stalled in the Nix builder once; seeding the same verified fixed-output file into the Nix store unblocked it.
+Host Flutter native-asset tests also encountered the existing macOS SDK/signing-hook boundary.
+The small Flutter-only widget package avoids pretending those host hooks are Android failures.
+Actual PDFium/libmobi runtime verification stays on Android. `t7-fyql` retains the shared hook cleanup.
+
+Install with the project SDK, then launch and operate only through a new T3 `device_open` binding for `local` / `emulator-5554`.
+Use the returned device-bound command, not another thread's command or session.
+Exercise Original, both PDF reflow widths, the page-2 source link, Scan, all four EPUB/MOBI previews, and Licenses.
+Gather logs only for the research application's process.
+Close only that application, stop only this checkout's build daemon, and release only this thread's binding without shutting down the emulator.
+
+
+### Parent correction of the measurement and reproduction path
+
+The retained APK, logs, screenshots, and packaging fingerprints describe the original Android execution. Its wide paragraph contains four rendered lines despite the three-line label. The observations now distinguish the original standalone-painter counts from screenshot counts. The chart uses screenshot counts. No screenshot or historical log was regenerated to conceal the mismatch.
+
+The corrected research widget measures and draws the same text span with its inherited style, locale, and constrained width. The independent painter in the loading report was removed. A widget regression first failed and now compares the displayed count against line boxes from the rendered paragraph. It uses inherited letter spacing and a parent narrower than the requested width. This is host evidence. The corrected widget has not been re-observed on Android.
+
+The reproduction runner preserves committed fixtures by default and with `--keep-fixtures`. Regeneration is a separate explicit operation: `nix develop ./tool/research/readers --command bash tool/research/readers/run --regenerate-fixtures`. Regenerated inputs establish a new run and cannot inherit the old input fingerprints. Two runner tests exercise preservation and explicit replacement with controlled external tools.
+
+Ticket dependencies now require `t3-9r9u` before EPUB reader completion and `t3-ipk1` before release hardening. Both follow-ups still depend on finite research `boo-73yj`. The dependency graph has no cycle. These gates do not approve a production package or a release license approach.
+
+Parent checks pass through Nix: 30 host tests across the original suites, corrected widget, and runner-input cases. The corrected Android research APK builds but was not installed. A full `run --keep-fixtures` left every fixture SHA-256 unchanged. `evidence/parent-review-corrections.json` records the new build hash, source hashes, and the unchanged input hashes. Historical Android observations still describe the earlier APK.

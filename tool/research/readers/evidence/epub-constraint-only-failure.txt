@@ -1,0 +1,101 @@
+building '/nix/store/2hnps1szh5vim3cjdgya3kl8b62j40y5-epubx-4.0.0.tar.gz.drv'...
+building '/nix/store/pjypbrsydmsi8qg4hz30a3whv5qawac7-nix-shell-env.drv'...
+patching file pubspec.yaml
+Hunk #1 succeeded at 8 (offset -2 lines).
+Resolving dependencies...
+Downloading packages...
++ _fe_analyzer_shared 111.0.0
++ analyzer 14.7.0
++ archive 4.6.0
++ args 2.7.0
++ async 2.13.1
++ boolean_selector 2.1.2
++ cli_config 0.2.0
++ cli_util 0.6.0
++ code_assets 2.1.0
++ collection 1.19.1
++ convert 3.1.2
++ coverage 1.16.0
++ crypto 3.0.8
++ epubx 4.0.0 from path ../_out/epubx-compat
++ ffi 2.2.0
++ file 7.0.1
++ frontend_server_client 4.2.0
++ glob 2.2.0
++ hooks 2.2.0
++ http 1.6.0
++ http_multi_server 3.2.3
++ http_parser 4.1.2
++ image 4.12.0
++ io 1.1.0
++ logging 1.3.0
++ matcher 0.12.20
++ meta 1.19.0
++ mime 2.1.0
++ native_toolchain_c 0.19.5
++ node_preamble 2.0.2
++ package_config 3.0.0
++ path 1.9.1
++ pdfium_dart 0.4.1
++ pdfrx_engine 0.9.0
++ petitparser 7.1.0
++ platform 3.2.0
++ pool 1.5.3
++ posix 6.5.4
++ process 5.0.6
++ pub_semver 2.2.1
++ quiver 3.2.2
++ record_use 1.1.1
++ rxdart 0.28.0
++ shelf 1.4.3
++ shelf_packages_handler 3.0.2
++ shelf_static 1.2.0
++ shelf_web_socket 3.0.0
++ source_map_stack_trace 2.1.2
++ source_maps 0.10.14
++ source_span 1.10.2
++ stack_trace 1.12.2
++ stream_channel 2.1.4
++ string_scanner 1.4.1
++ synchronized 3.5.0
++ term_glyph 1.2.2
++ test 1.33.0
++ test_api 0.7.15
++ test_core 0.6.21
++ typed_data 1.4.0
++ vector_math 2.4.4
++ vm_service 15.4.0
++ watcher 1.2.1
++ web 1.1.2
++ web_socket 1.0.1
++ web_socket_channel 3.0.3
++ webkit_inspection_protocol 1.2.1
++ xml 6.6.1 (7.1.0 available)
++ yaml 3.1.4
+Changed 68 dependencies!
+1 package has newer versions incompatible with dependency constraints.
+Try `dart pub outdated` for more information.
+Running build hooks...No Visual Studio installation found with the requested Microsoft.VisualStudio.Component.VC.Tools.x86.x64 component.
+
+SDK cannot be located in the Nix research shell
+
+
+SDK iphoneos not installed.
+
+SDK cannot be located in the Nix research shell
+
+
+SDK iphonesimulator not installed.
+
+Running build hooks...00:00 +0: loading test/compat_test.dart
+00:00 +0 -1: loading test/compat_test.dart [E]
+  Failed to load "test/compat_test.dart":
+  ../_out/epubx-compat/lib/src/readers/book_cover_reader.dart:43:37: Error: The argument type 'List<int>' can't be assigned to the parameter type 'Uint8List'.
+   - 'List' is from 'dart:core'.
+   - 'Uint8List' is from 'dart:typed_data'.
+      var retval = images.decodeImage(coverImageContent);
+                                      ^
+00:00 +0 -1: Some tests failed.
+
+Failing tests:
+  test/compat_test.dart: loading test/compat_test.dart

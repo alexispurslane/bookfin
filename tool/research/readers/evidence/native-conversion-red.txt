@@ -1,0 +1,46 @@
+test_malformed_input_reports_failure_without_creating_an_epub (test_native_conversion.AndroidConversionBoundary.test_malformed_input_reports_failure_without_creating_an_epub) ... FAIL
+test_supported_variants_create_readable_epub_with_text_and_images (test_native_conversion.AndroidConversionBoundary.test_supported_variants_create_readable_epub_with_text_and_images) ...
+  test_supported_variants_create_readable_epub_with_text_and_images (test_native_conversion.AndroidConversionBoundary.test_supported_variants_create_readable_epub_with_text_and_images) (path=PosixPath('fixtures/mobi6-plain.mobi')) ... FAIL
+  test_supported_variants_create_readable_epub_with_text_and_images (test_native_conversion.AndroidConversionBoundary.test_supported_variants_create_readable_epub_with_text_and_images) (path=PosixPath('fixtures/mobi6-palmdoc.mobi')) ... FAIL
+  test_supported_variants_create_readable_epub_with_text_and_images (test_native_conversion.AndroidConversionBoundary.test_supported_variants_create_readable_epub_with_text_and_images) (path=PosixPath('fixtures/pg11-kf8.mobi')) ... FAIL
+
+======================================================================
+FAIL: test_malformed_input_reports_failure_without_creating_an_epub (test_native_conversion.AndroidConversionBoundary.test_malformed_input_reports_failure_without_creating_an_epub)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-30764a49/tool/research/readers/test_native_conversion.py", line 40, in test_malformed_input_reports_failure_without_creating_an_epub
+    self.assertNotEqual(self.convert(os.fsencode(original)), 0)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0
+
+======================================================================
+FAIL: test_supported_variants_create_readable_epub_with_text_and_images (test_native_conversion.AndroidConversionBoundary.test_supported_variants_create_readable_epub_with_text_and_images) (path=PosixPath('fixtures/mobi6-plain.mobi'))
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-30764a49/tool/research/readers/test_native_conversion.py", line 26, in test_supported_variants_create_readable_epub_with_text_and_images
+    self.assertTrue(destination.is_file(), "conversion must write an EPUB, not merely parse MOBI")
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: False is not true : conversion must write an EPUB, not merely parse MOBI
+
+======================================================================
+FAIL: test_supported_variants_create_readable_epub_with_text_and_images (test_native_conversion.AndroidConversionBoundary.test_supported_variants_create_readable_epub_with_text_and_images) (path=PosixPath('fixtures/mobi6-palmdoc.mobi'))
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-30764a49/tool/research/readers/test_native_conversion.py", line 26, in test_supported_variants_create_readable_epub_with_text_and_images
+    self.assertTrue(destination.is_file(), "conversion must write an EPUB, not merely parse MOBI")
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: False is not true : conversion must write an EPUB, not merely parse MOBI
+
+======================================================================
+FAIL: test_supported_variants_create_readable_epub_with_text_and_images (test_native_conversion.AndroidConversionBoundary.test_supported_variants_create_readable_epub_with_text_and_images) (path=PosixPath('fixtures/pg11-kf8.mobi'))
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-30764a49/tool/research/readers/test_native_conversion.py", line 26, in test_supported_variants_create_readable_epub_with_text_and_images
+    self.assertTrue(destination.is_file(), "conversion must write an EPUB, not merely parse MOBI")
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: False is not true : conversion must write an EPUB, not merely parse MOBI
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.093s
+
+FAILED (failures=4)

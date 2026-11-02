@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")"
+: "${PDFIUM_HOST_ARCHIVE:?Use the reader research Nix shell}"
+export PDFIUM_LIBRARY="$PWD/_out/pdfium-host/lib/libpdfium.dylib"
+python -m unittest -v test_readers
+bash native-host-check
+for package in dart_pdf dart_epub; do
+  (cd "$package"; dart pub get --enforce-lockfile; dart test --reporter expanded)
+done
+bash epub-compat
+test -f _out/flutter-smoke/build/app/outputs/flutter-apk/app-debug.apk
+python report.py
