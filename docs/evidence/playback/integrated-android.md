@@ -1,5 +1,10 @@
 # Integrated Android and real Jellyfin observations
 
+The bounded follow-up from main `03ac7f5`, including the parent's later correction,
+is recorded in `final-head-android.md` and `final-head-observations.json`.
+That follow-up identifies its own final APK and repeats disconnected playback;
+the earlier APK observations below are not reused as proof of that build.
+
 Date: November 2, 2026. Starting main: `d9bc3a600bec308a25c30c0e1ba9282ad21d0b7d`.
 Tickets: `boo-sthf`, `boo-2cgp`, and the runtime correction `t0-dqxp`.
 The parent owns review, integration, acceptance, and ticket closure.

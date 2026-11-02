@@ -1,0 +1,442 @@
+{
+  "purpose": "Bounded manual Android observations; not publisher-certified full sync acceptance",
+  "baseCommit": "03ac7f5f8eafead7ff08420553406d5f51d4ccf6",
+  "correctionCommit": "2edad39fefa1d06bbcbcc25dd4f8b3fb091a64ea",
+  "device": {
+    "host": "local",
+    "id": "emulator-5554",
+    "physical": false
+  },
+  "server": {
+    "version": "12.4.0",
+    "coreOnly": true,
+    "origin": "http://127.0.0.1:7364",
+    "observer": "http://127.0.0.1:7365",
+    "syntheticOnly": true
+  },
+  "sourceSha256": {
+    "lib/playback/native.dart": "7c3abc5c57d652c39c380be617708d3f5f8130594fc013365bed7283fd685a14",
+    "lib/playback/playback.dart": "ae0d43385e6b616321cbd1a81a721a874e48772a5f7a00c6fd4e7d821effe63a",
+    "integration_test/interrupted_pause_test.dart": "f370385f462ad948048a22964df868ab96383fe3612ddd068c3261393b577ed5",
+    "android/settings.gradle.kts": "4daccb0ef1706d70244fbda797a19ea769f7b1ccc26a4ddc6fce40c798e6c499",
+    "pubspec.yaml": "aa3a12103fa52a168e7ea3a0e7dc3cb5a05f9650a38a09c1fac827c020574a79",
+    "pubspec.lock": "92ddbccf3cd3b0375e00746939adfe2b04df321bd9f72f4de08ea5d79d6a6610",
+    "flake.lock": "620ebda96a2f73ba0777e3f4f093baeb9d15dd69681c59b0b83610fbce1be2a1",
+    "tool/research/sync/flake.lock": "620ebda96a2f73ba0777e3f4f093baeb9d15dd69681c59b0b83610fbce1be2a1"
+  },
+  "artifacts": {
+    "finalNormalApp": {
+      "sha256": "71c55e1dfbfeeea00b5dbdd17430ac103ad4b36f57964508245d427f4ceef306",
+      "installedApkSha256": "71c55e1dfbfeeea00b5dbdd17430ac103ad4b36f57964508245d427f4ceef306",
+      "runtimeStart": "2026-11-02T09:12:49Z"
+    },
+    "finalDecoderTest": {
+      "sha256": "373110187a0345295885bf860ccb1362f179b17b80e009b0a9baa67ef83aca28",
+      "retainedMilliseconds": 34642,
+      "afterFocusReturnSeconds": 3,
+      "passed": true
+    }
+  },
+  "syntheticMedia": {
+    "public/Work/Recording A/z-first.m4b": {
+      "itemId": "bb59abb19ce76c08e6a5d85e6b812ff3",
+      "length": 398673,
+      "sha256": "929bbed62214ee77c9faec26db981f6bdaa60351ac77604e5b936ceb0da37314"
+    },
+    "public/Work/Recording A/a-second.m4b": {
+      "itemId": "2d1790f05058cd3cd3a8d21bf76035ee",
+      "length": 398034,
+      "sha256": "a6462f5775e871ddd81e37db1d4a6f126fc29e1fdc918326b59aa07f6a3bc499"
+    }
+  },
+  "nativeSamples": [
+    {
+      "observation": "native-pause",
+      "at": "2026-11-02T09:14:30+00:00",
+      "state": "PAUSED",
+      "editionMilliseconds": 19929
+    },
+    {
+      "observation": "paused-restored",
+      "at": "2026-11-02T09:14:56+00:00",
+      "state": "NONE",
+      "editionMilliseconds": 19929
+    },
+    {
+      "observation": "seek-zero",
+      "at": "2026-11-02T09:15:16+00:00",
+      "state": "PAUSED",
+      "editionMilliseconds": 0
+    },
+    {
+      "observation": "seek-nonzero",
+      "at": "2026-11-02T09:15:45+00:00",
+      "state": "PAUSED",
+      "editionMilliseconds": 90000
+    },
+    {
+      "observation": "seek-second-zero",
+      "at": "2026-11-02T09:15:47+00:00",
+      "state": "PAUSED",
+      "editionMilliseconds": 180000
+    },
+    {
+      "observation": "artifact-and-transition",
+      "at": "2026-11-02T09:16:27+00:00",
+      "state": "PLAYING",
+      "editionMilliseconds": 208471
+    },
+    {
+      "observation": "disconnected-playing",
+      "at": "2026-11-02T09:16:43+00:00",
+      "state": "PLAYING",
+      "editionMilliseconds": 224589
+    },
+    {
+      "observation": "offline-before-restart",
+      "at": "2026-11-02T09:17:01+00:00",
+      "state": "PLAYING",
+      "editionMilliseconds": 242387
+    },
+    {
+      "observation": "offline-restored",
+      "at": "2026-11-02T09:17:33+00:00",
+      "state": "NONE",
+      "editionMilliseconds": 242186
+    },
+    {
+      "observation": "offline-resumed",
+      "at": "2026-11-02T09:18:06+00:00",
+      "state": "PLAYING",
+      "editionMilliseconds": 274227
+    },
+    {
+      "observation": "reconnected-paused",
+      "at": "2026-11-02T09:19:09+00:00",
+      "state": "PAUSED",
+      "editionMilliseconds": 274595
+    },
+    {
+      "observation": "cleanup",
+      "at": "2026-11-02T09:20:25+00:00",
+      "state": "NONE",
+      "editionMilliseconds": 0
+    }
+  ],
+  "finalNormalAppReports": [
+    {
+      "at": "2026-11-02T09:14:09.590+00:00",
+      "path": "/Sessions/Playing",
+      "report": {
+        "ItemId": "bb59abb19ce76c08e6a5d85e6b812ff3",
+        "MediaSourceId": "bb59abb19ce76c08e6a5d85e6b812ff3",
+        "PositionTicks": 20000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "at": "2026-11-02T09:14:20.084+00:00",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "bb59abb19ce76c08e6a5d85e6b812ff3",
+        "MediaSourceId": "bb59abb19ce76c08e6a5d85e6b812ff3",
+        "PositionTicks": 100900000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "at": "2026-11-02T09:14:30.198+00:00",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "bb59abb19ce76c08e6a5d85e6b812ff3",
+        "MediaSourceId": "bb59abb19ce76c08e6a5d85e6b812ff3",
+        "PositionTicks": 199290000,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "at": "2026-11-02T09:14:57.269+00:00",
+      "path": "/Sessions/Playing",
+      "report": {
+        "ItemId": "bb59abb19ce76c08e6a5d85e6b812ff3",
+        "MediaSourceId": "bb59abb19ce76c08e6a5d85e6b812ff3",
+        "PositionTicks": 199290000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "at": "2026-11-02T09:15:07.442+00:00",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "bb59abb19ce76c08e6a5d85e6b812ff3",
+        "MediaSourceId": "bb59abb19ce76c08e6a5d85e6b812ff3",
+        "PositionTicks": 299610000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "at": "2026-11-02T09:15:13.487+00:00",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "bb59abb19ce76c08e6a5d85e6b812ff3",
+        "MediaSourceId": "bb59abb19ce76c08e6a5d85e6b812ff3",
+        "PositionTicks": 359580000,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "at": "2026-11-02T09:15:15.114+00:00",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "bb59abb19ce76c08e6a5d85e6b812ff3",
+        "MediaSourceId": "bb59abb19ce76c08e6a5d85e6b812ff3",
+        "PositionTicks": 0,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "at": "2026-11-02T09:15:43.942+00:00",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "bb59abb19ce76c08e6a5d85e6b812ff3",
+        "MediaSourceId": "bb59abb19ce76c08e6a5d85e6b812ff3",
+        "PositionTicks": 900000000,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "at": "2026-11-02T09:15:46.664+00:00",
+      "path": "/Sessions/Playing/Stopped",
+      "report": {
+        "ItemId": "bb59abb19ce76c08e6a5d85e6b812ff3",
+        "MediaSourceId": "bb59abb19ce76c08e6a5d85e6b812ff3",
+        "PositionTicks": 900000000,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "at": "2026-11-02T09:15:48.547+00:00",
+      "path": "/Sessions/Playing",
+      "report": {
+        "ItemId": "bb59abb19ce76c08e6a5d85e6b812ff3",
+        "MediaSourceId": "bb59abb19ce76c08e6a5d85e6b812ff3",
+        "PositionTicks": 1700010000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "at": "2026-11-02T09:15:58.684+00:00",
+      "path": "/Sessions/Playing/Stopped",
+      "report": {
+        "ItemId": "bb59abb19ce76c08e6a5d85e6b812ff3",
+        "MediaSourceId": "bb59abb19ce76c08e6a5d85e6b812ff3",
+        "PositionTicks": 1798300000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "at": "2026-11-02T09:15:58.717+00:00",
+      "path": "/Sessions/Playing",
+      "report": {
+        "ItemId": "2d1790f05058cd3cd3a8d21bf76035ee",
+        "MediaSourceId": "2d1790f05058cd3cd3a8d21bf76035ee",
+        "PositionTicks": 210000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "at": "2026-11-02T09:16:08.690+00:00",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "2d1790f05058cd3cd3a8d21bf76035ee",
+        "MediaSourceId": "2d1790f05058cd3cd3a8d21bf76035ee",
+        "PositionTicks": 100230000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "at": "2026-11-02T09:16:19.003+00:00",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "2d1790f05058cd3cd3a8d21bf76035ee",
+        "MediaSourceId": "2d1790f05058cd3cd3a8d21bf76035ee",
+        "PositionTicks": 200730000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "at": "2026-11-02T09:16:29.141+00:00",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "2d1790f05058cd3cd3a8d21bf76035ee",
+        "MediaSourceId": "2d1790f05058cd3cd3a8d21bf76035ee",
+        "PositionTicks": 301870000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "at": "2026-11-02T09:16:39.339+00:00",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "2d1790f05058cd3cd3a8d21bf76035ee",
+        "MediaSourceId": "2d1790f05058cd3cd3a8d21bf76035ee",
+        "PositionTicks": 403870000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "at": "2026-11-02T09:19:10.167+00:00",
+      "path": "/Sessions/Playing",
+      "report": {
+        "ItemId": "2d1790f05058cd3cd3a8d21bf76035ee",
+        "MediaSourceId": "2d1790f05058cd3cd3a8d21bf76035ee",
+        "PositionTicks": 945970000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "at": "2026-11-02T09:19:20.296+00:00",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "2d1790f05058cd3cd3a8d21bf76035ee",
+        "MediaSourceId": "2d1790f05058cd3cd3a8d21bf76035ee",
+        "PositionTicks": 1046120000,
+        "IsPaused": false,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "at": "2026-11-02T09:19:24.846+00:00",
+      "path": "/Sessions/Playing/Progress",
+      "report": {
+        "ItemId": "2d1790f05058cd3cd3a8d21bf76035ee",
+        "MediaSourceId": "2d1790f05058cd3cd3a8d21bf76035ee",
+        "PositionTicks": 1090800000,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    },
+    {
+      "at": "2026-11-02T09:19:51.886+00:00",
+      "path": "/Sessions/Playing/Stopped",
+      "report": {
+        "ItemId": "2d1790f05058cd3cd3a8d21bf76035ee",
+        "MediaSourceId": "2d1790f05058cd3cd3a8d21bf76035ee",
+        "PositionTicks": 1090800000,
+        "IsPaused": true,
+        "IsMuted": false,
+        "CanSeek": true,
+        "PlayMethod": "DirectPlay"
+      },
+      "status": 204
+    }
+  ],
+  "reconnect": {
+    "beforeAt": "2026-11-02T09:18:07.469+00:00",
+    "before": 37,
+    "afterAt": "2026-11-02T09:19:09.437+00:00",
+    "after": 37
+  },
+  "network": {
+    "disconnected": {
+      "wifi": false,
+      "mobileData": false,
+      "defaultNetwork": null,
+      "reverseForward": false
+    },
+    "restored": {
+      "wifi": true,
+      "mobileData": true,
+      "ownForwardRemoved": true
+    }
+  },
+  "verification": {
+    "applicationTests": 200,
+    "nativeUnitTests": 10,
+    "androidIntegrationTests": 1,
+    "analysis": "clean",
+    "coverageAndMutation": "not run"
+  },
+  "cleanup": {
+    "noDownloadsScreenObserved": true,
+    "signedOutAfterRestart": true,
+    "fixtureExited": true,
+    "observerExitedOnSigterm": true,
+    "ports7364And7365NoListeners": true,
+    "deviceReleasedWithoutShutdown": true
+  }
+}

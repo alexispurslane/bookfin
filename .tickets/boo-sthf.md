@@ -56,3 +56,7 @@ Integrated Android acceptance from d9bc3a6 used this worktree own fresh core-onl
 **2026-11-02T08:44:46Z**
 
 Integrated reviewed Android evidence and parent F1 correction at2edad39. 200 app tests and clean analysis. Remaining native position runtime confirmation plus final corrected-build offline/reconnect and discrete interrupted manual Pause remain original acceptance. Added explicit native followup dependencies; no closure yet.
+
+**2026-11-02T09:24:52Z**
+
+Final bounded original acceptance evidence supplied from 03ac7f5, including actual Android on the exact final normal-app APK71c55e1d and a separate real-decoder test APK37311018 for discrete Pause while focus was already lost. Native retention, paused seeks including0, natural source transition, retained-position Play, fully disconnected playback/process restart/reconnect, and no obsolete report replay all observed.20 actual Jellyfin204 responses in the final normal-app interval. Exact artifacts, source hashes, chronology, runtime/model boundaries, test commands and cleanup are recorded in docs/evidence/playback/final-head-android.md and final-head-observations.json. All200 app tests and clean analysis; no coverage/mutation, physical phone, credential-lock, soak or full-sync claim. No application playback fix needed. t8-ld5q and t7-bzzg unchanged. Parent review/integration/acceptance/closure remain pending; no tickets closed.

@@ -24,3 +24,11 @@ plugins {
 }
 
 include(":app")
+
+findProject(":integration_test")?.let { integrationTest ->
+    if (!integrationTest.projectDir.canWrite()) {
+        val writableAndroid = file("../.cache/integration-test-package/android")
+        integrationTest.projectDir.copyRecursively(writableAndroid, overwrite = true)
+        integrationTest.projectDir = writableAndroid
+    }
+}
