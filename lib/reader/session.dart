@@ -110,8 +110,16 @@ class ReaderSession extends ChangeNotifier {
         final saved = _pendingWrites[key] ?? await store.read(key);
         if (!_liveAccount(generation)) return;
         if (saved != null) {
-          if (saved['version'] != 1) {
-            throw const FormatException('Unknown reading record version.');
+          if (saved['version'] != 1 ||
+              saved['resumes'] is! List ||
+              saved['bookmarks'] is! List ||
+              (saved['resumes'] as List).any(
+                (value) => value is! Map<String, dynamic>,
+              ) ||
+              (saved['bookmarks'] as List).any(
+                (value) => value is! Map<String, dynamic>,
+              )) {
+            throw const FormatException('Invalid reading record.');
           }
           final resumes = (saved['resumes'] as List)
               .map((value) => decodeTextPosition(value as Map<String, dynamic>))

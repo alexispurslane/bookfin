@@ -31,15 +31,17 @@ void main() {
   late FailingRecords storage;
   late LocalFiles downloads;
   late ReaderSession reader;
+  late Publication publication;
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
     records = LocalResumeStore();
     storage = FailingRecords(records.reading);
     downloads = LocalFiles()..files[source.key] = Uri.file('/verified.epub');
+    publication = Publication.admit(epub());
     reader = ReaderSession(
       downloads: downloads,
       store: storage,
-      load: (_) async => Publication.admit(epub()),
+      load: (_) async => publication,
     );
     await reader.bind(account(), [book]);
     await reader.open(book, edition);
@@ -50,6 +52,43 @@ void main() {
     await reader.flush();
     downloads.dispose();
   });
+
+  for (final damaged in <Map<String, dynamic>>[
+    {'version': 1, 'resumes': 'not a list', 'bookmarks': []},
+    {
+      'version': 1,
+      'resumes': [null],
+      'bookmarks': [],
+    },
+    {
+      'version': 1,
+      'resumes': [],
+      'bookmarks': [
+        {'id': 'mark', 'position': null, 'createdAt': 7},
+      ],
+    },
+  ]) {
+    test(
+      'damaged reading records are guarded without overwriting their data: $damaged',
+      () async {
+        reader.dispose();
+        await reader.flush();
+        await records.reading.write(account().scope.key, damaged);
+        reader = ReaderSession(
+          downloads: downloads,
+          store: storage,
+          load: (_) async => publication,
+        );
+        await expectLater(reader.bind(account(), [book]), completes);
+        await reader.open(book, edition);
+        reader.acceptVisible(reader.token, visible);
+        await reader.addBookmark();
+        expect(reader.canBookmark, isFalse);
+        expect(reader.message, contains('could not be opened'));
+        expect(await records.reading.read(account().scope.key), damaged);
+      },
+    );
+  }
 
   test(
     'flush retries a failed bookmark before switching accounts and returning',
@@ -125,7 +164,7 @@ void main() {
       reader = ReaderSession(
         downloads: downloads,
         store: storage,
-        load: (_) async => Publication.admit(epub()),
+        load: (_) async => publication,
       );
       final saved = await records.reading.read(account().scope.key);
       expect(saved, isNotNull);
@@ -138,7 +177,7 @@ void main() {
   );
 
   test(
-    'editing and deleting bookmarks survive failed writes and reopening',
+    'editing a bookmark survives rejected storage and account reopen',
     () async {
       storage.writable = true;
       await reader.addBookmark(title: 'Original', note: 'Old note');
@@ -160,6 +199,15 @@ void main() {
       expect(edited.createdAt.isAtSameMomentAs(bookmark.createdAt), isTrue);
       expect(edited.title, 'Revised');
       expect(edited.note, 'New note');
+    },
+  );
+
+  test(
+    'deleting a bookmark survives rejected storage and account reopen',
+    () async {
+      storage.writable = true;
+      await reader.addBookmark(title: 'Remove this mark');
+      final bookmark = reader.bookmarks.single;
       storage.writable = false;
       await reader.deleteBookmark(bookmark.id);
       storage.writable = true;

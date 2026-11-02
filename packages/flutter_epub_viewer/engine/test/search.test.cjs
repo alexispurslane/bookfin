@@ -188,6 +188,8 @@ for (const [name, markup] of [
       opened.dom.window.document.body.appendChild(view.element);
       await view.load(await opened.section.render(opened.book.load.bind(opened.book)));
       const viewportDocument = view.iframe.contentDocument;
+      assert.equal(opened.section.document.contentType, 'application/xhtml+xml');
+      assert.equal(viewportDocument.contentType, 'text/html');
       const target = viewportDocument.getElementById('target');
       const range = viewportDocument.createRange();
       range.selectNodeContents(target);

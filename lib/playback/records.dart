@@ -195,7 +195,12 @@ class TextBookmark {
     'note': note,
   };
   factory TextBookmark.fromJson(Map<String, dynamic> value) {
-    if (value['id'] is! String || (value['id'] as String).isEmpty) {
+    if (value['id'] is! String ||
+        (value['id'] as String).isEmpty ||
+        value['position'] is! Map<String, dynamic> ||
+        value['createdAt'] is! String ||
+        (value['title'] != null && value['title'] is! String) ||
+        (value['note'] != null && value['note'] is! String)) {
       throw const FormatException('Invalid reading bookmark.');
     }
     return TextBookmark(

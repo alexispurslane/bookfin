@@ -258,7 +258,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
                                     reader.visibleLocation!.page! /
                                     reader.visibleLocation!.pages!,
                                 semanticsLabel:
-                                    'Current chapter page progress. Page ${reader.visibleLocation!.page} of ${reader.visibleLocation!.pages}',
+                                    'Current document page progress. Page ${reader.visibleLocation!.page} of ${reader.visibleLocation!.pages}',
                               ),
                             ),
                           Row(
