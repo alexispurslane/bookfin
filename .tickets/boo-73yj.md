@@ -45,3 +45,7 @@ Parent corrected review F1-F3: displayed reflow measurement now uses the same ef
 **2026-11-02T11:55:52Z**
 
 Independent correction review approved bounded research integration with no blocking finding. Parent corrected the remaining repeat-instructions note: the documented command now runs both runner-input tests, and the report distinguishes the historical 27 checks from the corrected 30. That exact new command passed both tests through Nix. Integrated without conflicts; research sources match the reviewed correction and production application sources are unchanged by this merge. Dependency-cycle check passes. Keep in_progress for representative-book and production-package acceptance. Corrected widget Android execution, SVG handling and redistribution proof remain explicit limits; no production reader or release approval is inferred.
+
+**2026-11-02T12:05:50Z**
+
+User authorized downloading public-domain books and scans from public repositories for compatibility work. Use a bounded diverse corpus with source URLs, rights provenance, hashes and per-format results. This is not access to the private library or approval of a production reader.

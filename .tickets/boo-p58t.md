@@ -1,7 +1,7 @@
 ---
 id: boo-p58t
 status: in_progress
-deps: [boo-gxm8, ta-qobz, t3-7fv1]
+deps: [boo-gxm8, ta-qobz, t3-7fv1, boo-dez0]
 links: []
 created: 2026-11-01T21:37:34Z
 type: task
@@ -65,3 +65,7 @@ Final checks through nix develop: flutter test test tool/research/jellyfin --rep
 
 
 Parent correction: the live-research media probe now rechecks explicit account download permission, requires item CanDownload=true, and completes Download range checks before any File checks. A denial or invalid Download result stops File acquisition. Five regressions first failed; the old-checkout application and research suite passes 35 tests. Documentation now names authenticated evidence and its limited eight 64-byte range capture accurately. No new live requests or token cleanup occurred; initial-session revocation remains unproved. Full transport proof stays open.
+
+**2026-11-02T12:06:06Z**
+
+User chose dedicated storage and history retained until explicit deletion. boo-dez0 now owns the bounded plugin storage proof. Existing playlist research is complete as a rejected production direction; production sync still requires validated storage and application integration.

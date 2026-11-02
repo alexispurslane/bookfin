@@ -14,7 +14,11 @@ Status: approved for implementation, 2026-11-01. Implementation uses only GPT 6.
 - Read EPUB, MOBI, HTML, Markdown, and PDF, including PDF text reflow.
 - Include bundled, on-device OCR (optical character recognition) in the ultimate feature set so scanned PDF pages can support reflow and search. Prefer a fast, simple offline engine; engine and language coverage remain to be selected.
 - Sync standard progress and playback activity with Jellyfin.
-- Investigate Jellyfin storage for additional Bookfin records. A small Jellyfin plugin is acceptable if needed.
+- Store additional Bookfin records separately from ordinary Jellyfin playlists. Prove a small Jellyfin plugin or another dedicated storage surface before production integration. The user selected this direction on 2026-11-02.
+- Keep browsable listening history until the user explicitly deletes it. Do not impose automatic history expiry or discard unsynced changes. Bookmarks and current resume positions remain separate.
+- When an audio source changes, offer a confirmed fresh start for the replacement and retain the old position separately. Never silently apply the old position to changed audio.
+- Use downloaded public-domain books and scans for reader compatibility tests. Record source URLs and provenance; do not claim coverage of the user's private library.
+- The user authorized a fresh Android acceptance attempt after the field-entry tool failure on 2026-11-02. Use a fresh binding and current screen references, follow the tool failure rule, and restore temporary settings.
 
 ## Visual direction accepted in principle
 
