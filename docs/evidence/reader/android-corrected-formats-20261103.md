@@ -196,3 +196,142 @@ migration, conflicts/history on two actual Android clients, physical-device
 behavior, TalkBack, and qualified signing/distribution/compliance review.
 No production OCR source or future OCR APK result is claimed.
 The orchestrator owns integration, acceptance decisions and ticket closure.
+
+## Host investigation of t2-00a4, November 3, 2026
+
+The first failed upload was identified from the committed sanitized action
+values, without using the device or the original server. The investigation
+started from `a22e0b865a4fe70848849bdd539bad0b9bd4f224`.
+This section records a host correction candidate, not Android acceptance.
+The original Android results above remain unchanged.
+
+### Proven first failure
+
+The first pending identity was
+`action.d5d25281004bf85bacba67d9fc1873fb7d45d3dd.10`.
+Its original captured payload hash was
+`c7b39b4209f44fe212dc6cd5813e0e963c51d72721789087e9f42042b8140750`.
+The saved place was PDF page 5, character 492. Its quote ended with
+`Section 8b(3), “`. That final character was U+201C, a left double quotation mark.
+Actions 1 through 9 contained only ASCII characters, the basic English character set.
+
+The original native HTTP transport used this line:
+
+```dart
+      if (body != null) request.write(jsonEncode(body));
+```
+
+where
+
+- `body` = the optional JSON request object; an upload contained its `Payload` string.
+- `request` = the outgoing Dart HTTP request.
+- `jsonEncode(body)` = the JSON text for that request object.
+- `request.write(...)` = the text writer, which selected the request's character encoding.
+
+The request declared `application/json` without a character encoding.
+The pinned Dart text writer therefore selected Latin-1, an encoding limited to U+0000 through U+00FF.
+It could not encode U+201C. The retained diagnostic reproduced this exact failure:
+
+```text
+sequence=10 pending=1 encoding=iso-8859-1 utf8Bytes=1058
+sequence=10 error=ArgumentError name=string message=Contains invalid characters.
+```
+
+where
+
+- `sequence` = the immutable action number within this installation.
+- `pending` = 1 when the captured action still needed an upload acknowledgment; otherwise 0.
+- `encoding` = the outgoing request's selected character encoding; `iso-8859-1` meant Latin-1.
+- `utf8Bytes` = the length in bytes of the sanitized action encoded as UTF-8.
+- `error`, `name` and `message` = the exception type, rejected argument name and exact error message.
+
+The stack entered `Latin1Codec.encode`, then the HTTP text writer.
+The diagnostic server received exactly nine requests, not ten.
+There was no plugin rejection response for action 10: encoding failed before transmission.
+The transport converted that exception to its generic unavailable-server error.
+The coordinator then displayed the generic personal-record warning.
+Discovery pagination was not the cause of this reproduced failure.
+
+The sanitized action measured 1,058 UTF-8 bytes, below the 65,536-byte upload limit.
+The diagnostic measured sanitized bytes, not the original private payload bytes.
+The captured hash identified the original payload; it was not a hash of the sanitized reconstruction.
+
+### Correction and retry proof
+
+The correction changed only the JSON body writer in `lib/catalog/transport_io.dart`:
+
+```dart
+      if (body != null) request.add(utf8.encode(jsonEncode(body)));
+```
+
+where
+
+- `body`, `request` and `jsonEncode` = the same request object, HTTP request and JSON encoder defined above.
+- `utf8.encode(...)` = the conversion of JSON text to UTF-8 bytes, which represented the captured quotation mark.
+- `request.add(...)` = the byte writer, which avoided an implicit Latin-1 text conversion.
+
+The fix applied to all native JSON request bodies, including authentication and personal-record uploads.
+It did not change action serialization, identities, acknowledgments, pending contents, discovery rules or plugin storage.
+No OCR or PDF production file changed.
+
+Three new behavior tests failed before the fix and passed afterward.
+One uploaded the exact sanitized action 10 through the real native HTTP transport.
+Another preserved accented text, Chinese text, quotation marks and a supplementary Unicode character.
+The third restored all 37 captured actions into disposable host SQLite storage with exactly 28 pending actions.
+SQLite is the local database used for these host durability checks.
+Only the sanitized action account label changed to the disposable authenticated account key.
+All action identities, values, causal context and pending membership stayed unchanged.
+
+The retry test sent the nine previously accepted actions to its disposable server first.
+It then withheld confirmation for action 10 after the server accepted it.
+The client retained the same 28 pending actions and unchanged database state.
+After closing and reopening SQLite, retry reused action 10's exact identity and payload.
+All 37 actions remained byte-identical within that account mapping; none remained pending.
+Discovery read back all 37 payloads, and a further sync sent no additional upload.
+A separate account's seven synthetic retained actions remained unchanged throughout.
+Those seven host sentinels tested account isolation; they were not the device's earlier seven actions.
+
+The same retry test also passed through authenticated Jellyfin 12.4.0 and the actual plugin.
+The unchanged Bookfin Storage 0.1.1.0 package rebuilt to SHA-256
+`3b0de5ca1df39baf67c786079898b1ee3b0b09d3bdb86d00ece8a7f5731a9105`.
+One owned disposable fixture used ports 7464/7465. Its process stopped afterward.
+Its database, private credentials and temporary data were removed; both ports were free.
+The fixture runner now included this retry test under a separate ordinary account from its existing two-client test.
+
+### Verification and remaining acceptance
+
+Evidence directory: `tool/evidence/sync/20261103/format-retry/`.
+Every build and test command used the pinned Nix development shell.
+
+| Evidence file | Observed result |
+| --- | --- |
+| `encoding_probe.dart`, `encoding-probe.txt` | Reproduced the original writer: actions 1–9 reached the server; action 10 failed in Latin-1 encoding. |
+| `red.txt` | All three new behavior tests failed before the correction, through the generic transport error rather than a missing symbol or syntax error. |
+| `focused-green.txt` | All 23 focused transport, retry, database, saved-journal and coordinator checks passed. |
+| `plugin-green.txt` | Plugin build had zero warnings and errors; all four checks passed, including the captured retry and existing two-client integration. |
+| `full-host.txt` | SDK link/platform/native-hook checks and all 434 Flutter tests passed; three optional checks were skipped. |
+| `analysis.txt` | Flutter analysis reported no issues. |
+
+The full-suite skips were the journal-growth measurement, plugin-upgrade fixture and ordinary actual-plugin fixture.
+The ordinary actual-plugin fixture passed separately in `plugin-green.txt`.
+No growth measurement or upgrade acceptance was claimed.
+Existing iOS SDK discovery warnings remained on this host without an iOS SDK.
+No iOS result followed from these checks.
+
+Commands for reproduction from the repository root:
+
+```sh
+nix develop --command dart tool/evidence/sync/20261103/format-retry/encoding_probe.dart
+nix develop --command flutter test --no-pub test/sync/format_retry_test.dart test/sync/transport_test.dart test/sync/database_test.dart test/sync/persisted_journal_test.dart test/sync/coordinator_test.dart --concurrency=1 --reporter expanded
+nix develop ./tool/research/sync --command python3 tool/sync_fixture.py
+nix develop --command bash -c 'bash test/sdk_link_test.sh && bash test/sdk_platform_test.sh && bash test/darwin_native_tools_test.sh && flutter test --no-pub --concurrency=1 --reporter expanded'
+nix develop --command flutter analyze --no-pub
+```
+
+The implementation agent performed no device action, browser action, live installation or live database change.
+Host snapshot restoration did not reproduce Android's ordinary action creation controls.
+The device's existing seven previous-account actions and 37 current-account actions were not accessed or changed.
+The original Android warning had no exception trace; matching host reproduction identified a deterministic client failure in its first pending payload.
+The parent still needed independent review and an ordinary Android retry with this correction.
+That acceptance needed to verify the original 28 pending actions, their retry identities and all retained payloads through the actual plugin.
+No coverage or mutation hardening ran. Ticket t2-00a4 remained open for integration and Android acceptance.

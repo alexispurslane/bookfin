@@ -24,7 +24,7 @@ class _IoTransport implements JsonTransport {
           .timeout(const Duration(seconds: 20));
       request.followRedirects = false;
       headers.forEach(request.headers.set);
-      if (body != null) request.write(jsonEncode(body));
+      if (body != null) request.add(utf8.encode(jsonEncode(body)));
       final response = await request.close().timeout(
         const Duration(seconds: 20),
       );

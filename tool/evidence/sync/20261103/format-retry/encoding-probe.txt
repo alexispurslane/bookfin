@@ -1,0 +1,30 @@
+sequence=1 pending=0 encoding=iso-8859-1 utf8Bytes=1029
+sequence=1 HTTP=200
+sequence=2 pending=0 encoding=iso-8859-1 utf8Bytes=1065
+sequence=2 HTTP=200
+sequence=3 pending=0 encoding=iso-8859-1 utf8Bytes=1054
+sequence=3 HTTP=200
+sequence=4 pending=0 encoding=iso-8859-1 utf8Bytes=1059
+sequence=4 HTTP=200
+sequence=5 pending=0 encoding=iso-8859-1 utf8Bytes=1059
+sequence=5 HTTP=200
+sequence=6 pending=0 encoding=iso-8859-1 utf8Bytes=1063
+sequence=6 HTTP=200
+sequence=7 pending=0 encoding=iso-8859-1 utf8Bytes=1055
+sequence=7 HTTP=200
+sequence=8 pending=0 encoding=iso-8859-1 utf8Bytes=1059
+sequence=8 HTTP=200
+sequence=9 pending=0 encoding=iso-8859-1 utf8Bytes=1055
+sequence=9 HTTP=200
+sequence=10 pending=1 encoding=iso-8859-1 utf8Bytes=1058
+sequence=10 error=ArgumentError name=string message=Contains invalid characters.
+#0      _UnicodeSubsetEncoder.convert (dart:convert/ascii.dart:92:9)
+#1      Latin1Codec.encode (dart:convert/latin1.dart:40:46)
+#2      _IOSinkImpl._writeString (dart:_http/http_impl.dart:1108:23)
+#3      _IOSinkImpl.write (dart:_http/http_impl.dart:1115:5)
+#4      _HttpOutboundMessage.write (dart:_http/http_impl.dart:1228:11)
+#5      _HttpClientRequest.write (dart:_http/http_impl.dart:1651:11)
+#6      main (file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-2ef60719/tool/evidence/sync/20261103/format-retry/encoding_probe.dart:36:17)
+<asynchronous suspension>
+
+HTTP requests received=9

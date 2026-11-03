@@ -1,0 +1,28 @@
+  Determining projects to restore...
+  Restored /Users/alexispurslane/.t3/worktrees/bookfin/t3-2ef60719/plugin/Bookfin.Storage/Bookfin.Storage.csproj (in 57 ms).
+  Bookfin.Storage -> /Users/alexispurslane/.t3/worktrees/bookfin/t3-2ef60719/.cache/plugin/package/build-_vj241es/out/Bookfin.Storage.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.82
+xcrun: error: SDK cannot be located: error: unable to find sdk: 'iphoneos'
+
+
+SDK iphoneos not installed.
+
+xcrun: error: SDK cannot be located: error: unable to find sdk: 'iphonesimulator'
+
+
+SDK iphonesimulator not installed.
+
+00:00 +0: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-2ef60719/test/sync/plugin_integration_test.dart
+00:00 +0: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2ef60719/test/sync/plugin_integration_test.dart: two durable ordinary-account clients merge offline edits through the actual plugin
+00:00 +1: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-2ef60719/test/sync/format_retry_test.dart
+00:01 +1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2ef60719/test/sync/format_retry_test.dart: the first pending Android quote uploads without changing its payload
+00:01 +2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2ef60719/test/sync/format_retry_test.dart: personal records preserve accented text and supplementary Unicode
+00:01 +3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-2ef60719/test/sync/format_retry_test.dart: all 28 pending Android actions retry durably without changing identity or another account
+00:01 +4: All tests passed!
+{"package": "Bookfin.Storage_0.1.1.0.zip", "sha256": "3b0de5ca1df39baf67c786079898b1ee3b0b09d3bdb86d00ece8a7f5731a9105"}
+Owned loopback plugin fixture stopped; disposable data and credentials removed.
