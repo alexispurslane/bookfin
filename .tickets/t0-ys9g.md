@@ -1,6 +1,6 @@
 ---
 id: t0-ys9g
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-03T19:07:13Z
@@ -38,3 +38,7 @@ Independent review approves bounded source integration without production blocke
 **2026-11-03T20:47:56Z**
 
 Authorized normal Android acceptance from main e4baaf9 used exact d8e1021 APK 8b31c7448f746226453d4677f944c9ba4f5668f657bba8015f94973372744e09 in place. Cancellation/rendering behavior accepted: three active Cancel sequences preserved fresh complete inspection, controls and original pages, including known page with unknown total; reliable single-column retry produced English reflow. Dense and single-column active departure returned to details. Character-574 resume/bookmark survived ordinary cache removal/redownload, uncached Cancel, bookmark invocation and recovered reflow. Native drain serialization remains unmeasured; one selected cache appeared within the Back command, so exact late-return/disposal ordering is not proved. No native ordering claim from the reviewed host immediate-call count. Final all70 prior identities/payloads/pending flags unchanged, original28 pending; cleanup complete, release shutdown:false. Evidence docs/evidence/reader/android-resumed-20261103.md and tool/evidence/reader/integrated/20261103/resumed/. Parent owns integration/closure; no closure here.
+
+**2026-11-03T20:55:00Z**
+
+Parent integrated acceptance evidence as fd7eaef, inspected cancellation original-page, retry-reflow and explicit-sync screenshots, and reran Nix evidence audit successfully. Close bounded cancellation/rendering defect: controls remain usable, original fallback, retry and active departure observed on reviewed d8e1021 APK. Exact native drain and callback-after-disposal timing remain unverified under boo-suhu; this closure does not accept those broader gates. All70 prior actions unchanged;79 total,28original pending; cleanup complete.
