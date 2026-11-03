@@ -91,10 +91,51 @@ acceptance claim belongs to this change.
 
 ## Packaging handoff
 
-After committing the correction and this evidence, build the normal ARM64 debug
-APK through `bash tool/bookfin build-android` in the pinned shell. Keep build logs
-outside the tracked source until export finishes. Export the clean commit with
-`python3 tool/reader/native_package.py sources <new-output-directory>`.
-Retain the APK, both package-verifier results, source manifest, and hashes in a
-new worktree-local artifact directory. The existing combined artifact directory
-in the main checkout stays read-only. The parent installs the candidate later.
+The corrected source commit is `d8e1021fef2be69291d135594a45d556570c235f`.
+The working tree was clean before source export and after build and verification.
+The later packaging-evidence commit does not change application source.
+
+The artifact directory is
+`/Users/alexispurslane/.t3/worktrees/bookfin/t3-f29350e1/.cache/artifacts/bookfin-d8e1021-cancel`.
+It contains the normal `bookfin-d8e1021-arm64-debug.apk`, the matching source
+bundle under `source/`, full command output, and both empty clean-status files.
+`artifact.json` records the absolute paths and verification results.
+
+| Artifact | SHA-256 |
+| --- | --- |
+| Normal ARM64 debug APK | `8b31c7448f746226453d4677f944c9ba4f5668f657bba8015f94973372744e09` |
+| `source/bookfin-source.tar` | `3dd0c18fb2cdc3b94e8831f12b4ef92d573bccd73392a626b3c46de1dae45f60` |
+
+The pinned Nix shell ran these commands from the clean source commit:
+
+```sh
+python3 tool/reader/native_package.py sources "$artifact/source"
+bash tool/bookfin build-android
+cp build/app/outputs/flutter-apk/app-debug.apk "$artifact/bookfin-d8e1021-arm64-debug.apk"
+python3 tool/reader/native_package.py verify "$artifact/bookfin-d8e1021-arm64-debug.apk"
+python3 tool/reader/ocr_package.py verify "$artifact/bookfin-d8e1021-arm64-debug.apk"
+"$ANDROID_HOME/build-tools/36.0.0/zipalign" -c -P 16 4 "$artifact/bookfin-d8e1021-arm64-debug.apk"
+"$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$artifact/bookfin-d8e1021-arm64-debug.apk"
+"$ANDROID_HOME/build-tools/36.0.0/aapt2" dump badging "$artifact/bookfin-d8e1021-arm64-debug.apk"
+```
+
+where
+
+- `artifact` is the absolute artifact directory named above.
+- `ANDROID_HOME` is the SDK root supplied by the pinned Nix shell.
+
+Every command exited successfully. The build uses the normal `lib/main.dart`
+entry point. Package metadata identifies `dev.bookfin.bookfin` and ARM64 only.
+The verifiers establish the pinned PDFium library, 29 notices, bundled English
+model, native libraries, debug signature, 16 KiB alignment, and clean provenance.
+`source-export.txt` inventories the source archive and dependency source bundles.
+The APK's bundled provenance matches the source commit and source archive hash.
+
+Gradle used this worktree's private `.cache/gradle` home, with cloned dependency
+caches but no shared daemon registry. Its properties disabled persistent daemons
+and ran Kotlin compilation inside Gradle. The exit trap ran `./gradlew --stop`
+only against that private home. It reported no Gradle daemons. The final process
+check found no Gradle or Kotlin compiler daemon. Build output stayed in files.
+The existing combined artifact directory in main was not changed.
+No install, relaunch, device inspection, or Android acceptance occurred.
+The parent handles independent review, integration, and device acceptance.
