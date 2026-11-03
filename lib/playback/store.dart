@@ -113,7 +113,7 @@ class LocalResumeStore implements ResumeStore {
       await _update(account, (_, journal) {
         journal.receive(actions);
         for (final action in actions) {
-          _validateRemote(action);
+          _validateActionValue(action);
         }
         journal.cursor = previous;
       });
@@ -124,7 +124,7 @@ class LocalResumeStore implements ResumeStore {
     );
   }
 
-  void _validateRemote(Map<String, dynamic> action) {
+  void _validateActionValue(Map<String, dynamic> action) {
     final value = action['value'] as Map<String, dynamic>?;
     if (value == null) return;
     final address = jsonDecode(action['record'] as String) as List;
@@ -169,9 +169,14 @@ class LocalResumeStore implements ResumeStore {
             throw const FormatException();
           }
       }
-    } catch (_) {
+    } on FormatException {
       throw const FormatException(
-        'A remote personal record is invalid. Local records were kept.',
+        'A personal record is invalid. Existing records were kept.',
+      );
+    } on TypeError {
+      // Record decoders also use checked casts for persisted field types.
+      throw const FormatException(
+        'A personal record is invalid. Existing records were kept.',
       );
     }
   }
@@ -341,6 +346,12 @@ class LocalResumeStore implements ResumeStore {
           journal.change(entry.key, entry.value);
         }
       }
+    }
+    // Saved and downloaded actions share the same record schema, including
+    // superseded actions that can still be uploaded or used in conflicts.
+    for (final action
+        in journal.encode()['actions'] as List<Map<String, dynamic>>) {
+      _validateActionValue(action);
     }
     return journal;
   }

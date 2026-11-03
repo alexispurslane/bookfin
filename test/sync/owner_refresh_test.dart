@@ -97,6 +97,58 @@ void main() {
     );
   });
 
+  test('a reading refresh from an ended account session cannot replace records after returning', () async {
+    final records = LocalResumeStore();
+    final held = HeldRecords(records.reading);
+    final downloads = audio.LocalFiles()
+      ..files[reading.source.key] = Uri.file('/verified.epub');
+    final reader = ReaderSession(
+      downloads: downloads,
+      store: held,
+      load: (_) async => Publication.admit(epub()),
+    );
+    addTearDown(() async {
+      reader.dispose();
+      await reader.flush();
+      downloads.dispose();
+    });
+    await reader.bind(fixture.session, [reading.book]);
+    await reader.open(reading.book, reading.edition);
+    reader.acceptVisible(reader.token, reading.visible);
+    await reader.addBookmark(title: 'Local X');
+    held.holdRead();
+    final refreshing = reader.refreshPersonalRecords();
+    await held.readReady!.future;
+    final remote = RecordJournal(fixture.session.scope.key, 'remote');
+    remote.change(jsonEncode(['reading', 'bookmarks', 'remote-y']), {
+      ...reader.bookmarks.single.toJson(),
+      'id': 'remote-y',
+      'title': 'Remote Y',
+    });
+    fixture.publish(remote);
+    await records.synchronize(fixture.session, fixture.client);
+    await reader.bind(audio.account(user: 'bob'), [reading.book]);
+    await reader.bind(fixture.session, [reading.book]);
+    await reader.open(reading.book, reading.edition);
+    expect(
+      reader.bookmarks.map((mark) => mark.title),
+      unorderedEquals(['Local X', 'Remote Y']),
+    );
+    held.readRelease!.complete();
+    await refreshing;
+    expect(
+      reader.bookmarks.map((mark) => mark.title),
+      unorderedEquals(['Local X', 'Remote Y']),
+    );
+    await reader.deleteBookmark('remote-y');
+    expect(
+      ((await records.reading.read(fixture.session.scope.key))!['bookmarks']
+              as List)
+          .map((mark) => mark['title']),
+      ['Local X'],
+    );
+  });
+
   test('a rejected reading refresh cannot make a local save delete an unseen remote bookmark', () async {
     final records = LocalResumeStore();
     final held = HeldRecords(records.reading);

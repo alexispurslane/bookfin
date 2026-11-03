@@ -18,6 +18,29 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   HttpOverrides.global = null;
   final damages = <String, void Function(Map<String, dynamic>)>{
+    'saved listening resume has an invalid edition': (saved) {
+      final journal = saved['sync'] as Map<String, dynamic>;
+      final actions = journal['actions'] as List;
+      actions.add({
+        'version': 1,
+        'account': actions.first['account'],
+        'replica': 'damaged',
+        'sequence': 1,
+        'context': <String, dynamic>{},
+        'preserve': <String>[],
+        'record': jsonEncode([
+          'audio',
+          'resumes',
+          jsonEncode(['audio', 'source', 'revision']),
+        ]),
+        'value': {
+          'edition': 7,
+          'source': 'source',
+          'revision': 'revision',
+          'milliseconds': 900,
+        },
+      });
+    },
     'sync is a list': (saved) => saved['sync'] = [],
     'actions is null': (saved) => saved['sync']['actions'] = null,
     'pending contains a nonstring': (saved) => saved['sync']['pending'] = [7],

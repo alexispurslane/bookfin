@@ -1,0 +1,502 @@
+Resolving dependencies...
+Downloading packages...
+  archive 4.0.9 (4.6.0 available)
+  code_assets 1.2.1 (2.1.0 available)
+  crypto 3.0.7 (3.0.8 available)
+  flutter_cache_manager 3.4.6 (3.4.8 available)
+  flutter_secure_storage 9.2.4 (11.2.0 available)
+  flutter_secure_storage_linux 1.2.3 (3.0.3 available)
+  flutter_secure_storage_macos 3.1.3 (4.0.0 available)
+  flutter_secure_storage_platform_interface 1.1.2 (2.1.1 available)
+  flutter_secure_storage_web 1.2.1 (2.1.1 available)
+  flutter_secure_storage_windows 3.1.2 (4.2.2 available)
+  hooks 2.0.2 (2.2.0 available)
+  image 4.8.0 (4.12.0 available)
+  js 0.6.7 (0.7.2 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  meta 1.18.3 (1.19.0 available)
+  native_toolchain_c 0.19.2 (0.19.5 available)
+  objective_c 9.5.0 (9.6.2 available)
+  petitparser 7.0.2 (7.1.0 available)
+  record_use 0.6.0 (1.1.1 available)
+  shared_preferences_foundation 2.5.7 (2.6.1 available)
+  sqflite_common_ffi 2.4.0+2 (2.4.5 available)
+  sqlite3 3.5.2 (3.8.0 available)
+  test_api 0.7.12 (0.7.15 available)
+  vector_math 2.4.0 (2.4.4 available)
+  win32 5.15.0 (6.4.0 available)
+  xml 6.6.1 (7.1.0 available)
+Got dependencies!
+26 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+xcrun: error: SDK cannot be located: error: unable to find sdk: 'iphoneos'
+
+
+SDK iphoneos not installed.
+
+xcrun: error: SDK cannot be located: error: unable to find sdk: 'iphonesimulator'
+
+
+SDK iphonesimulator not installed.
+
+00:00 +0: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/appearance_test.dart
+00:00 +0: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/appearance_test.dart: appearance changes during attachment wait for the renderer to open (variant: TargetPlatform.android)
+
+
+🚀 Hi, flutter_inappwebview here, thank you for using it! If you like this plugin → 💙 Support development https://inappwebview.dev/donate ⭐ Star on GitHub https://github.com/pichillilorenzo/flutter_inappwebview 📱 Showcase your app https://inappwebview.dev/showcase
+
+00:01 +1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/appearance_test.dart: 200 percent text scaling sends one final size and preserves the reading place (variant: TargetPlatform.android)
+00:01 +2: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/records_test.dart
+00:02 +2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/records_test.dart: reading before the first listen does not prevent audio resume persistence
+00:02 +3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/records_test.dart: audio and text records share account persistence without overwriting each other
+00:02 +4: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/session_test.dart
+00:04 +4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/session_test.dart: closing while records restore cancels the open without disabling later record saves
+00:05 +5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/session_test.dart: only the newest open can load after account records finish restoring
+00:05 +6: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/session_test.dart: visible reading positions and bookmarks reopen in the same account and edition
+00:05 +7: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/session_test.dart: an account change cancels a pending publication and ignores its old viewport
+00:05 +8: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/session_test.dart: changed processed content rejects an old locator without deleting its bookmark
+00:05 +9: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/session_test.dart: an open requested under an old account cannot start after its restore finishes
+00:05 +10: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/session_test.dart: late search results cannot replace a newer search or cross an account boundary
+00:05 +11: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/session_test.dart: removing a source cancels its viewport and retains its account bookmarks
+00:06 +12: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/screen_test.dart
+00:08 +12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/screen_test.dart: chapter and progress follow visible pages, including after restore (variant: TargetPlatform.linux)
+00:14 +13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/screen_test.dart: production reading controls save a bookmark and change text size (variant: TargetPlatform.linux)
+00:16 +14: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/screen_test.dart: incomplete search is visible and large controls do not overflow (variant: TargetPlatform.linux)
+00:17 +15: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/publication_test.dart
+00:19 +15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/publication_test.dart: rewritten wrapper references cannot bypass processed resource limits
+00:23 +16: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/publication_test.dart: EPUB2 keeps its admitted contents document in the package manifest
+00:23 +17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/publication_test.dart: publication code and active SVG cannot reach reading resources
+00:23 +18: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/publication_test.dart: remote CSS URLs cannot leave the passive publication
+00:23 +19: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/publication_test.dart: archive aliases cannot overwrite a local resource
+00:23 +20: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/publication_test.dart: the resource boundary denies remote requests rather than delegating them
+00:23 +21: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/publication_test.dart: the inherited runtime policy admits local publication styles but not their scripts
+00:23 +22: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/publication_test.dart: only admitted resources of this immutable publication can be requested
+00:23 +23: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/publication_test.dart: local styles, PNG, fonts, headings, and encoded destination fragments survive
+00:23 +24: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/publication_test.dart: only the exact local single-JPEG SVG wrapper uses a raster fallback
+00:23 +25: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/publication_test.dart: unsafe reference and active attribute forms never enter XHTML
+00:23 +26: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/publication_test.dart: XML entities, encrypted books, and oversized resources fail before rendering
+00:24 +27: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/publication_test.dart: the committed public-domain EPUB becomes a passive navigable publication
+00:24 +28: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/publication_test.dart: local CSS imports stay local and retain the imported publisher styles
+00:24 +29: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/pdf_screen_test.dart
+00:25 +29: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/pdf_screen_test.dart: (setUpAll)
+00:25 +29: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/pdf_screen_test.dart: PDF controls reflow real extracted text and keep source-page bookmarks (variant: TargetPlatform.linux)
+00:29 +30: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/pdf_screen_test.dart: (tearDownAll)
+00:29 +30: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/catalog_flow_test.dart
+00:31 +30: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/catalog_flow_test.dart: book details opens the production reader and sign-out closes the old account (variant: TargetPlatform.linux)
+00:33 +31: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/shared_appearance_test.dart
+00:34 +31: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/shared_appearance_test.dart: reader night changes the app and survives reopen and controller restart (variant: TargetPlatform.android)
+
+
+🚀 Hi, flutter_inappwebview here, thank you for using it! If you like this plugin → 💙 Support development https://inappwebview.dev/donate ⭐ Star on GitHub https://github.com/pichillilorenzo/flutter_inappwebview 📱 Showcase your app https://inappwebview.dev/showcase
+
+00:41 +32: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/shared_appearance_test.dart: reader day changes the app and survives reopen and controller restart (variant: TargetPlatform.android)
+00:43 +33: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/shared_appearance_test.dart: global modes and Automatic follow system changes in an open reader after a reader selection (variant: TargetPlatform.android)
+00:46 +34: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/pdf_session_test.dart
+00:47 +34: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/pdf_session_test.dart: PDF bookmarks and resume keep source pages through the existing reading owner
+00:47 +35: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/persistence_test.dart
+00:48 +35: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/persistence_test.dart: malformed outer storage preserves data and permits another account: []
+00:48 +36: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/persistence_test.dart: malformed outer storage preserves data and permits another account: {"reading":[]}
+00:48 +37: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/persistence_test.dart: damaged reading records are guarded without overwriting their data: {version: 1, resumes: not a list, bookmarks: []}
+00:48 +38: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/persistence_test.dart: damaged reading records are guarded without overwriting their data: {version: 1, resumes: [null], bookmarks: []}
+00:48 +39: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/persistence_test.dart: damaged reading records are guarded without overwriting their data: {version: 1, resumes: [], bookmarks: [{id: mark, position: null, createdAt: 7}]}
+00:48 +40: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/persistence_test.dart: flush retries a failed bookmark before switching accounts and returning
+00:48 +41: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/persistence_test.dart: an old-account failure remains pending without warning the new account
+00:48 +42: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/persistence_test.dart: binding retries failed reading records and retains concurrent audio records
+00:48 +43: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/persistence_test.dart: dispose retries pending snapshots without moving them to another account
+00:48 +44: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/persistence_test.dart: editing a bookmark survives rejected storage and account reopen
+00:48 +45: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/persistence_test.dart: deleting a bookmark survives rejected storage and account reopen
+00:48 +46: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/mobi_document_test.dart
+00:49 +46: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/mobi_document_test.dart: the production importer converts mobi6-plain locally without changing original bytes
+00:49 +47: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/mobi_document_test.dart: the production importer converts mobi6-palmdoc locally without changing original bytes
+00:49 +48: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/mobi_document_test.dart: the production importer converts pg11-kf8 locally without changing original bytes
+00:49 +49: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/mobi_document_test.dart: malformed MOBI never replaces its original or publishes a successful cache
+00:49 +50: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/pdf_document_test.dart
+00:50 +50: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/pdf_document_test.dart: an extraction isolate cannot initialize a second native font-callback owner
+00:50 +51: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/pdf_document_test.dart: the production importer opens the verified PDF as original source pages
+00:50 +52: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/pdf_document_test.dart: a scanned source page keeps its visible original without inventing text
+00:50 +53: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/pdf_document_test.dart: columns pages keep the original instead of offering misleading text order
+00:50 +54: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/pdf_document_test.dart: table pages keep the original instead of offering misleading text order
+00:50 +55: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/pdf_document_test.dart: closing drains admitted page work and the shared engine can restart
+00:50 +56: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/downloaded_reader_test.dart
+00:51 +56: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/downloaded_reader_test.dart: verified EPUB files with missing metadata false reopen and reject tampering
+00:51 +57: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reader/downloaded_reader_test.dart: verified EPUB files with missing metadata true reopen and reject tampering
+00:51 +58: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart
+00:52 +58: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: (setUpAll)
+00:52 +58: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: city route text stays opaque during entry and exit
+00:56 +59: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: reduced motion opens city search without moving its text
+00:57 +60: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: large text city results remain selectable above a landscape keyboard
+00:57 +61: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: production search distinguishes cities with the same name
+00:58 +62: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: production search accepts ASCII names and discards blank input
+00:58 +63: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: a production city persists and drives sunrise and sunset
+01:00 +64: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: production removal persists fallback without losing manual override
+01:01 +65: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/production_city_test.dart: (tearDownAll)
+01:01 +65: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/preferences_test.dart
+01:02 +65: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/preferences_test.dart: manual appearance and selected location survive a new controller
+01:03 +66: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/preferences_test.dart: returning to automatic uses the retained location
+01:03 +67: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/preferences_test.dart: removing the location persists the system fallback
+01:03 +68: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/preferences_test.dart: rapid selections save in order and keep the newest choice visible
+01:03 +69: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/preferences_test.dart: failed writes expose an unsaved choice and a later choice retries
+01:03 +70: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/preferences_test.dart: damaged and unknown saved choices use an explicit safe fallback
+01:03 +71: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/appearance_test.dart
+01:03 +71: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/appearance_test.dart: automatic appearance follows the system without a selected location
+01:03 +72: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/appearance_test.dart: manual day overrides darkness and retains the selected location
+01:03 +73: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/appearance_test.dart: manual night overrides daylight
+01:03 +74: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/appearance_test.dart: New York changes from night to day around the March sunrise
+01:03 +75: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/appearance_test.dart: New York changes from day to night around the March sunset
+01:03 +76: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/appearance_test.dart: the same instant has the same appearance across time zones and DST
+01:03 +77: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/appearance_test.dart: a selected location uses its sunlight rather than the device date
+01:03 +78: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/appearance_test.dart: a new date and a leap day are calculated from the supplied instant
+01:03 +79: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/appearance_test.dart: polar summer remains day and polar winter remains night
+01:03 +80: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/appearance_test.dart: southern polar seasons are the reverse of northern seasons
+01:03 +81: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/appearance_test.dart: invalid selected locations cannot enter appearance policy
+01:04 +82: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/cities_test.dart
+01:05 +82: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/cities_test.dart: search finds city names and ASCII spellings with region or country
+01:05 +83: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/cities_test.dart: same-name places remain distinct even within the same region
+01:05 +84: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/cities_test.dart: search ranks name prefixes then larger cities and bounds the result list
+01:05 +85: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/cities_test.dart: invalid or ambiguous dataset records cannot offer selectable coordinates
+01:05 +86: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/appearance/cities_test.dart: the complete bundled catalog loads and offers cities across continents
+01:06 +87: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/store_test.dart
+01:07 +87: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/store_test.dart: offline catalog serialization retains relationships without credentials
+01:07 +88: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/store_test.dart: another account cannot decode the same cached catalog
+01:07 +89: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/store_test.dart: cached entries outside the saved selected libraries are rejected
+01:07 +90: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/store_test.dart: secure session persistence restores the token and sign-out deletes it
+01:07 +91: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/store_test.dart: one device identity is retained through secure session replacement
+01:07 +92: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/jellyfin_test.dart
+01:07 +92: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/jellyfin_test.dart: sign-in sends password only in the JSON body and preserves a server subpath
+01:07 +93: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/jellyfin_test.dart: only book libraries are offered
+01:07 +94: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/jellyfin_test.dart: authenticated catalog works when legacy token headers are rejected
+01:07 +95: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/jellyfin_test.dart: catalog pagination fetches only selected book parents
+01:07 +96: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/jellyfin_test.dart: an unselected or non-book parent is rejected before item fetching
+01:07 +97: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/jellyfin_test.dart: a truncated page sequence never becomes a complete catalog
+01:07 +98: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/jellyfin_test.dart: denied access is not retried through a different media or file route
+01:07 +99: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/jellyfin_test.dart: a revoked token requires sign-in without leaking server error text
+01:07 +100: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/jellyfin_test.dart: credentials never follow a redirect, including same-origin redirects
+01:07 +101: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/jellyfin_test.dart: a client cannot use another server session
+01:07 +102: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/jellyfin_test.dart: only HTTPS and local HTTP fixture addresses accept sign-in
+01:07 +103: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/jellyfin_test.dart: changing totals and duplicate pages are not published as complete
+01:07 +104: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/jellyfin_test.dart: cancelling a request aborts its response without waiting for the server
+01:07 +105: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/jellyfin_test.dart: a strict Jellyfin catalog returns general audio only from a selected book library
+01:07 +106: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/jellyfin_test.dart: rejected sign-in explains credentials rather than claiming an expired session
+01:07 +107: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/model_test.dart
+01:08 +107: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/model_test.dart: one M4B remains one audio edition with chapter ranges
+01:08 +108: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/model_test.dart: identical titles and folder metadata never merge recordings
+01:08 +109: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/model_test.dart: possible ebook matches require confirmation even with the same ISBN
+01:08 +110: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/model_test.dart: confirmed files of one recording use disc then track order
+01:08 +111: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/model_test.dart: a confirmed file order overrides misleading source track numbers
+01:08 +112: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/model_test.dart: alternate media sources remain separate editions, never consecutive files
+01:08 +113: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/model_test.dart: explicit series order retains fractional side stories and ignores TV series fields
+01:08 +114: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/model_test.dart: audio positions cannot cross editions or reuse replaced files
+01:08 +115: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/model_test.dart: text anchors belong to a text edition and retain a PDF source page
+01:08 +116: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/model_test.dart: non-book media cannot enter the catalog
+01:08 +117: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/model_test.dart: an unidentified file revision never validates a saved audio position
+01:08 +118: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/model_test.dart: cached metadata does not change when the caller changes its input
+01:08 +119: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/screen_test.dart
+01:09 +119: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/screen_test.dart: permission recovery closes only the library selector
+01:10 +120: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/screen_test.dart: sign-in is usable without gallery labels or enabled media controls
+01:10 +121: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/screen_test.dart: the only main navigation stays at the bottom screen edge
+01:10 +122: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/screen_test.dart: selecting a book library reveals saved books and their real editions
+01:10 +123: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/screen_test.dart: book search filters the real cached catalog
+01:11 +124: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/screen_test.dart: series use explicit fractional order rather than title order
+01:11 +125: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/screen_test.dart: sign-out dismisses open corrections from the previous account
+01:11 +126: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/screen_test.dart: revoked library access dismisses an open book correction
+01:11 +127: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/screen_test.dart: recording file choices use source names and require confirmation
+01:11 +128: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/screen_test.dart: ambiguous matches stay separate until the final confirmation
+01:12 +129: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/screen_test.dart: resetting corrections requires confirmation and restores source details
+01:12 +130: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/controller_test.dart
+01:13 +130: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/controller_test.dart: known denial survives an offline restart until access succeeds
+01:13 +131: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/controller_test.dart: refresh preserves a recording after its anchor file disappears
+01:13 +132: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/controller_test.dart: linking into a separated book preserves chosen target details
+01:13 +133: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/controller_test.dart: a complete selected catalog is available after a fresh offline restart
+01:13 +134: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/controller_test.dart: sign-out clears visible books and token but preserves the account cache
+01:13 +135: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/controller_test.dart: another user never sees the previous account books or corrections
+01:13 +136: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/controller_test.dart: the same user name on a different server never restores another catalog
+01:13 +137: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/controller_test.dart: a failed refresh retains the last complete persisted catalog
+01:13 +138: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/controller_test.dart: a stale refresh cannot repopulate a signed-out account
+01:13 +139: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/controller_test.dart: cancelled refresh keeps cached books and ignores its late response
+01:13 +140: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/controller_test.dart: a delayed sign-in cannot overwrite sign-out token deletion
+01:13 +141: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/controller_test.dart: revoked authorization hides cached books without deleting the complete cache
+01:13 +142: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/controller_test.dart: forbidden catalog access hides books but does not destroy offline records
+01:13 +143: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/controller_test.dart: confirmed links, file groups, and series corrections survive a restart
+01:13 +144: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/controller_test.dart: a failed correction save leaves the previous visible correction intact
+01:13 +145: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/controller_test.dart: a vault failure never leaves a signed-in session that only appears durable
+01:13 +146: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/controller_test.dart: refresh cancellation does not discard a correction already being saved
+01:13 +147: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/controller_test.dart: overlapping correction saves retain both decisions
+01:13 +148: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/controller_test.dart: a new sign-in never exposes libraries whose access has been removed
+01:13 +149: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/controller_test.dart: an unreadable catalog does not discard successful secure sign-in
+01:13 +150: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/controller_test.dart: an invalid account switch cannot restore the old token on restart
+01:13 +151: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/catalog/controller_test.dart: separating the first file preserves the chosen order of remaining files
+01:13 +152: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reload_probe_test.dart
+01:13 +152: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/reload_probe_test.dart: the shared setup note survives widget reassembly
+01:14 +153: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/boot_shell_test.dart
+01:15 +153: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/boot_shell_test.dart: Bookfin identifies itself before a library is connected
+01:17 +154: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/boot_shell_test.dart: the setup shell does not pretend that books are available
+01:17 +155: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/reporting_test.dart
+01:17 +155: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/reporting_test.dart: queued reports are discarded after failure
+01:17 +156: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/reporting_test.dart: queued reports are discarded after retirement
+01:17 +157: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/reporting_test.dart: account change retires queued progress but keeps final stop and new start
+01:17 +158: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/reporting_test.dart: reports actual file and media source with source-relative Jellyfin ticks
+01:17 +159: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/reporting_test.dart: offline progress is never replayed when the live reporter restarts
+01:17 +160: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/reporting_test.dart: network loss discards the old live session rather than backfilling it
+01:17 +161: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/reporting_test.dart: pause and completion report the last position without inventing listening time
+01:17 +162: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/reporting_test.dart: small live progress reports use mobile data without authorizing remote media
+01:18 +163: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/reporting_test.dart: an unavailable server cannot turn audio position samples into a request flood
+01:18 +164: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/remaining_acceptance_test.dart
+01:18 +164: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/remaining_acceptance_test.dart: canceling bookmark deletion preserves its title note and restorable position after restart
+01:19 +165: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/remaining_acceptance_test.dart: confirmed bookmark deletion survives restart without deleting another bookmark or history
+01:20 +166: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/history_test.dart
+01:21 +166: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/history_test.dart: failed cross-edition restore retains selection and Undo (Play first: true)
+01:21 +167: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/history_test.dart: failed cross-edition restore retains selection and Undo (Play first: false)
+01:21 +168: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/history_test.dart: slider origin is the gesture position even behind a pending write
+01:21 +169: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/history_test.dart: explicit Pause after interruption records its cancellation once
+01:21 +170: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/history_test.dart: completed slider gestures retain origins unless a jump intervenes (false)
+01:21 +171: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/history_test.dart: completed slider gestures retain origins unless a jump intervenes (true)
+01:21 +172: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/history_test.dart: Undo survives a required file disappearing during decoder reload
+01:21 +173: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/history_test.dart: Stop records the end of an already paused active session once
+01:21 +174: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/history_test.dart: accepted overlapping jumps retain each previous and resulting source position
+01:21 +175: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/history_test.dart: pause resume and interruption are history but decoder ticks are not
+01:21 +176: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/history_test.dart: restart retains recovery actions beside the migrated resume
+01:21 +177: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/history_test.dart: a slider drag records its starting place and only its completed target
+01:21 +178: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/history_test.dart: overlapping recovery commands each start at the last accepted result
+01:21 +179: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/history_test.dart: history restores either side after restart and adds rather than erases actions
+01:21 +180: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/history_test.dart: bookmarks retain their ID and position through edits restart and delete
+01:21 +181: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/history_test.dart: account switches hide personal records and restore only the matching account
+01:21 +182: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/history_test.dart: a new command invalidates an unfinished slider drag
+01:21 +183: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/history_test.dart: failed seek leaves no accepted restore or changed position
+01:21 +184: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/history_test.dart: changed sources keep old bookmarks and history without applying them
+01:21 +185: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/history_test.dart: durable write failure remains visible and retries without losing records on account switch
+01:21 +186: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/history_test.dart: failed restoration never overwrites stored personal records
+01:21 +187: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/history_test.dart: opening a recording after a failed account read cannot start an unsaved session
+01:21 +188: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/history_test.dart: commands during account restoration wait for the restored personal records
+01:21 +189: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/history_test.dart: native controls use the same history and Undo as on-screen controls
+01:21 +190: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/history_test.dart: a verified local source is required before a bookmark restore is accepted
+01:21 +191: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/history_test.dart: an interruption during a durable seek write is still recorded
+01:21 +192: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/history_test.dart: a failing old-account command cannot publish an error to the next account
+01:21 +193: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/history_test.dart: version-one local resumes migrate without changing their source or playback settings
+01:21 +194: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/history_test.dart: an unreadable action prevents later writes from replacing any personal records
+01:21 +195: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/history_test.dart: history retains the confirmed decoder result rather than the requested target
+01:21 +196: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/history_test.dart: a bookmark draft retains the place shown when the editor opens
+01:21 +197: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/history_test.dart: restores between editions retain both edition positions and support Undo
+01:21 +198: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/root_history_test.dart
+01:22 +198: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/root_history_test.dart: root Listening opens personal records and sign-out dismisses the private route
+01:24 +199: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/native_test.dart
+01:25 +199: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/native_test.dart: Pause during reactivation retains confirmed source and resumes its position
+01:25 +200: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/native_test.dart: native Pause retains the recorded position while releasing the decoder
+01:25 +201: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/native_test.dart: a paused seek publishes the confirmed position while the decoder is stopped
+01:25 +202: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/native_test.dart: decoder reactivation does not publish placeholder loading positions
+01:25 +203: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/native_test.dart: a cross-file seek never publishes its target time under the previous source
+01:25 +204: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/native_test.dart: native samples keep source identity with its recorded position during a file transition
+01:25 +205: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/native_test.dart: owner pause cancels decoder recovery even when already interrupted
+01:25 +206: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/native_test.dart: media controls share edition seeking and recorded-time position with the visible player
+01:25 +207: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/native_test.dart: stopped media controls stay stopped when a late paused sample arrives
+01:25 +208: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/native_test.dart: system seek-forward and seek-backward use the same configured short jumps
+01:25 +209: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/screen_test.dart
+01:26 +209: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/screen_test.dart: mini-player offers Undo where a forward jump occurs
+01:27 +210: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/screen_test.dart: history keeps playback controls and Undo after bookmark restore
+01:27 +211: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/screen_test.dart: mini-player opens the same active recording and controls its position
+01:27 +212: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/screen_test.dart: chapter selection seeks to the actual source without losing playback
+01:27 +213: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/screen_test.dart: player offers speed and sleep without claiming sync completion
+01:28 +214: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/screen_test.dart: slider previews a drag without seeking until release and offers Undo
+01:28 +215: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/screen_test.dart: bookmarks can be added edited restored and deleted from listening history
+01:29 +216: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/replacement_test.dart
+01:30 +216: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/replacement_test.dart: changed audio offers a fresh start without applying the old position
+01:30 +217: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/replacement_test.dart: confirmation starts replacement at zero and retains original records
+01:30 +218: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/replacement_test.dart: cancel keeps the old resume and permits another explicit offer
+01:30 +219: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/replacement_test.dart: failed replacement load keeps the offer and the original resume
+01:30 +220: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/replacement_test.dart: restart reopens replacement and both recordings retain their own resume
+01:30 +221: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/replacement_test.dart: replacement at an unchanged first file never overwrites original identity
+01:30 +222: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/replacement_test.dart: correcting file order keeps the same recording resume and reloads its decoder order
+01:30 +223: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/replacement_test.dart: account change rejects old confirmation (load started: false)
+01:30 +224: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/replacement_test.dart: account change rejects old confirmation (load started: true)
+01:30 +225: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/replacement_test.dart: catalog refresh during confirmation cannot commit the obsolete replacement
+01:30 +226: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/replacement_test.dart: cancel during a replacement load cannot commit a fresh start
+01:30 +227: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/replacement_test.dart: an aborted replacement load keeps the prior recording recoverable without claiming it is playing
+01:30 +228: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/replacement_test.dart: fresh start cannot accept audio with an unknown source revision
+01:30 +229: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/replacement_test.dart: catalog refresh during file lookup cannot publish an obsolete offer
+01:30 +230: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/replacement_test.dart: version-1 legacy position in an unchanged file survives replacement playback
+01:30 +231: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/replacement_test.dart: version-1 resume migration retains old audio beside a confirmed replacement
+01:30 +232: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/replacement_test.dart: version-2 legacy position in an unchanged file survives replacement playback
+01:31 +233: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/replacement_test.dart: version-2 resume migration retains old audio beside a confirmed replacement
+01:31 +234: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/replacement_test.dart: failed account writes keep original and replacement pending until retry
+01:31 +235: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/replacement_test.dart: confirmation waits behind a pending record write without dropping it
+01:31 +236: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/replacement_test.dart: fresh start requires confirmation and Cancel keeps saved records
+01:32 +237: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/playback_test.dart
+01:32 +237: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/playback_test.dart: overlapping short jumps accumulate inside the command owner
+01:32 +238: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/playback_test.dart: short jumps work within a source with unknown duration
+01:32 +239: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/playback_test.dart: unrestored account survives flush
+01:32 +240: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/playback_test.dart: unrestored account survives sign out
+01:32 +241: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/playback_test.dart: failed resume read cannot be overwritten by later saves
+01:32 +242: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/playback_test.dart: plays only verified local files in explicit recording order while offline
+01:32 +243: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/playback_test.dart: a missing local part cannot become a remote playback request
+01:32 +244: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/playback_test.dart: maps edition time and configurable jumps across ordered file boundaries
+01:32 +245: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/playback_test.dart: chapter ranges remain distinct from file boundaries
+01:32 +246: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/playback_test.dart: speed changes do not multiply the recorded audio position
+01:32 +247: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/playback_test.dart: restart restores the source position paused and retains pending offline resume
+01:32 +248: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/playback_test.dart: sampled native position survives restart without an ordinary pause
+01:32 +249: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/playback_test.dart: changing account stops playback and never exposes the previous account resume
+01:32 +250: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/playback_test.dart: a different server installation cannot reuse a saved resume
+01:32 +251: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/playback_test.dart: an explicit play waits for account resume restoration instead of overwriting it
+01:32 +252: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/playback_test.dart: source verification cannot start audio after sign-out
+01:32 +253: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/playback_test.dart: metadata corrections update the selected book without a second playback owner
+01:32 +254: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/playback_test.dart: finishing the recording preserves its final source and explicit play begins again
+01:32 +255: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/playback_test.dart: a changed source revision keeps the saved resume but does not apply it
+01:32 +256: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/playback_test.dart: unknown durations still permit source chapter seeking but not guessed edition time
+01:32 +257: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/playback_test.dart: sleep timer pauses playback without erasing the resume
+01:33 +258: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/playback_test.dart: rejects unsafe speeds and jump lengths without changing settings
+01:33 +259: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/playback_test.dart: a native playback failure stops audio and keeps the last durable source position
+01:33 +260: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/playback/playback_test.dart: recording completion clears native play intent so later chapter seeks stay paused
+01:33 +261: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart
+01:33 +261: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: navigation preserves readable painted text in both palettes
+01:35 +262: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: gallery retains chapter and history actions without fake playback
+01:35 +263: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: an open appearance sheet updates its polar explanation after the date changes
+01:35 +264: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: appearance controls and sheet text stay readable during selection
+01:37 +265: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: text stays readable during both directions of a palette change
+01:37 +266: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: manual appearance changes the screen without losing its filter
+01:38 +267: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: reading size and scroll survive navigation and a palette change
+01:38 +268: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: automatic appearance recalculates after resume and location changes
+01:38 +269: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: automatic appearance changes while the app remains open
+01:38 +270: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: without a location Android system appearance changes are honored
+01:38 +271: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: reduced motion applies palette and screen changes immediately
+01:38 +272: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/foundation_test.dart: large text fits the gallery and appearance controls
+01:39 +273: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/sync/coordinator_test.dart
+01:39 +273: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/sync/coordinator_test.dart: choosing the 900 ms resume survives coordinator flushes without moving paused audio
+01:39 +274: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/sync/coordinator_test.dart: choosing the 100 ms resume survives coordinator flushes without moving paused audio
+01:40 +275: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/sync/coordinator_test.dart: a displayed conflict that changed before the tap gives a recoverable result
+01:40 +276: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/sync/transport_test.dart
+01:40 +276: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/sync/transport_test.dart: unverified upload acknowledgment survives restart and retries the same object
+01:40 +277: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/sync/transport_test.dart: another authenticated account receives no pending personal records
+01:40 +278: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/sync/transport_test.dart: a stale local writer cannot delete a bookmark discovered from another installation
+01:40 +279: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/sync/transport_test.dart: interleaved discovery pages retain each object before advancing the cursor
+01:40 +280: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/sync/transport_test.dart: a malformed remote record cannot advance discovery or replace local records
+01:40 +281: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/sync/journal_test.dart
+01:41 +281: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/sync/journal_test.dart: two offline installations retain independent bookmarks and old history
+01:41 +282: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/sync/journal_test.dart: duplicate retries after restart cannot restore a deleted bookmark
+01:41 +283: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/sync/journal_test.dart: concurrent reading places remain unresolved instead of using wall clocks
+01:41 +284: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/sync/journal_test.dart: a causally incomplete action waits across restart for the missing action
+01:41 +285: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/sync/journal_test.dart: another account cannot inject actions or alter an immutable action
+01:41 +286: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/sync/journal_test.dart: an unseen edit concurrent with deletion preserves both for a user choice
+01:41 +287: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/sync/journal_test.dart: continued listening does not silently choose between conflicting places
+01:41 +288: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/sync/plugin_integration_test.dart
+01:42 +288: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/sync/plugin_integration_test.dart: two durable ordinary-account clients merge offline edits through the actual plugin
+  Skip: Run tool/sync_fixture.py in the pinned shells.
+01:42 +288 ~1: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/sync/durability_test.dart
+01:42 +288 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/sync/durability_test.dart: saving a bookmark durably retains its upload before a restart
+01:42 +289 ~1: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/sync/database_test.dart
+01:43 +289 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/sync/database_test.dart: Android record storage migrates legacy records and retains uploads outside preferences
+01:43 +290 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/sync/database_test.dart: a completed personal-record write survives closing and reopening SQLite
+01:43 +291 ~1: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/sync/persisted_journal_test.dart
+01:44 +291 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/sync/persisted_journal_test.dart: saved listening resume has an invalid edition reports a storage error without destroying records or poisoning later reader saves
+01:44 +292 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/sync/persisted_journal_test.dart: sync is a list reports a storage error without destroying records or poisoning later reader saves
+01:44 +293 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/sync/persisted_journal_test.dart: actions is null reports a storage error without destroying records or poisoning later reader saves
+01:44 +294 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/sync/persisted_journal_test.dart: pending contains a nonstring reports a storage error without destroying records or poisoning later reader saves
+01:44 +295 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/sync/persisted_journal_test.dart: cursor is a string reports a storage error without destroying records or poisoning later reader saves
+01:44 +296 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/sync/persisted_journal_test.dart: pending references an absent action reports a storage error without destroying records or poisoning later reader saves
+01:44 +297 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/sync/persisted_journal_test.dart: invalid persisted journal references are normal format errors, not failed internal invariants
+01:44 +298 ~1: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/sync/screen_test.dart
+01:45 +298 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/sync/screen_test.dart: conflict choices identify saved books and readable positions instead of raw record addresses
+01:46 +299 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/sync/screen_test.dart: conflict choices use the current catalog book, edition and source names
+01:46 +300 ~1: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/sync/owner_refresh_test.dart
+01:46 +300 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/sync/owner_refresh_test.dart: a failed listening bookmark remains pending across account changes until storage recovers
+01:46 +301 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/sync/owner_refresh_test.dart: a rejected listening refresh cannot make a local save delete an unseen remote bookmark
+01:46 +302 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/sync/owner_refresh_test.dart: a reading refresh from an ended account session cannot replace records after returning
+01:46 +303 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/sync/owner_refresh_test.dart: a rejected reading refresh cannot make a local save delete an unseen remote bookmark
+01:46 +304 ~1: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/contrast_test.dart
+01:47 +304 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/contrast_test.dart: Brightness.dark text remains readable across every surface
+01:47 +305 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/contrast_test.dart: Brightness.light text remains readable across every surface
+01:47 +306 ~1: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/policy_test.dart
+01:48 +306 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/policy_test.dart: remote media waits for known Wi-Fi but complete files stay local
+01:48 +307 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/policy_test.dart: mobile permission lasts only for this account session
+01:48 +308 ~1: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart
+01:49 +308 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart: legacy alternate saved bytes retain safe offline availability
+01:49 +309 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart: legacy listed empty saved bytes retain safe offline availability
+01:49 +310 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart: legacy named original saved bytes retain safe offline availability
+01:49 +311 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart: legacy unnamed original saved bytes retain safe offline availability
+01:49 +312 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart: catalog qualification changes invalidate saved originals without changing identity
+01:49 +313 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart: original ebooks without media-source metadata download exact bytes
+01:49 +314 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart: fresh missing download permission blocks before media HTTP
+01:49 +315 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart: audio without media-source metadata cannot use the ebook exception
+01:49 +316 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart: a first-listed alternate source never receives the item original as the only source
+01:49 +317 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart: a first-listed alternate source never receives the item original beside another source
+01:49 +318 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart: a named media-source list cannot claim an unnamed original
+01:49 +319 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart: a selected second source cannot downgrade to the original
+01:49 +320 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart: an ordinary account cannot download an alternate after item policy refusal
+01:49 +321 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart: an ordinary account cannot download an alternate after account policy refusal
+01:49 +322 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart: a missing selected source never switches to its replacement
+01:49 +323 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart: a source removed during receipt is never published
+01:49 +324 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart: current authentication works when the server rejects legacy token headers
+01:49 +325 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart: replacement interruption never assigns new identity to old bytes
+01:49 +326 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart: cancel is durable while another edition remains downloading
+01:49 +327 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart: cancel waits for restored requests
+01:49 +328 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart: remove waits for restored requests
+01:49 +329 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart: early file failure leaves later transfer active and cancellable
+01:49 +330 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart: a complete ebook does not make the audio edition downloaded
+01:49 +331 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart: one complete audio file is only a partial multi-file edition
+01:49 +332 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart: unknown and disconnected networks queue without opening media
+01:49 +333 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart: Wi-Fi loss interrupts remote bytes and waits until Wi-Fi returns
+01:49 +334 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart: restart recovers an interrupted file with a matching range validator
+01:49 +335 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart: invalid ranges never append untrusted bytes
+01:50 +336 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart: a changed ETag discards the old prefix before retry
+01:50 +337 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart: cancel prevents the next file and retry keeps completed files
+01:50 +338 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart: fresh permission and item downloadability deny even an administrator
+01:50 +339 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart: a denied Download never tries File or another route
+01:50 +340 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart: insufficient free space fails before media starts
+01:50 +341 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart: missing and corrupted local files lose their complete status
+01:50 +342 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart: account switching hides old files and invalidates held callbacks
+01:50 +343 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart: removal keeps unrelated files and survives account restoration
+01:50 +344 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart: complete files survive restart but not a changed source revision
+01:50 +345 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart: a source changed on the server is not downloaded under its old revision
+01:50 +346 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart: a queued download resumes after process-owner replacement
+01:50 +347 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart: disk space exhausted after the prefix never publishes a complete file
+01:50 +348 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart: a server that ignores Range replaces rather than duplicates the prefix
+01:50 +349 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart: account and server identities keep completed files separate
+01:50 +350 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart: a request waiting on disk cannot queue a new account download
+01:50 +351 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart: the authenticated user must match the account that owns the job
+01:50 +352 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart: authorization uses the existing public server and current-user routes
+01:50 +353 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart: a source replaced during transfer is not published under the old revision
+01:50 +354 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart: a failed manifest write is reported without starting media
+01:50 +355 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart: retry immediately after cancel starts a new attempt after cancellation
+01:50 +356 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart: removing an edition removes its old revisions but keeps unrelated files
+01:50 +357 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart: a missing complete file contributes no bytes to a queued retry
+01:50 +358 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/transfer_test.dart: player lookup waits for saved files before declaring them unavailable
+01:50 +359 ~1: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/screen_test.dart
+01:51 +359 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/screen_test.dart: rejected saved recordings stay discoverable and removable
+01:52 +360 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/screen_test.dart: the book list separates audio and ebook availability
+01:53 +361 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/screen_test.dart: Downloads lists real status and removes a verified local copy
+01:54 +362 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/screen_test.dart: book details queue an edition and Downloads can cancel it
+01:55 +363 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/screen_test.dart: retained files are separate from active edition availability
+01:55 +364 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/screen_test.dart: retained removal requires confirmation and Keep preserves files
+01:55 +365 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/screen_test.dart: switching accounts clears the previously displayed inventory
+01:55 +366 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/screen_test.dart: unreadable identities have no removal action
+01:55 +367 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/screen_test.dart: unavailable private storage shows an error without exposing old entries
+01:55 +368 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/screen_test.dart: deselected libraries move files out of the catalog and reselection restores them
+01:55 +369 ~1: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/retained_test.dart
+01:56 +369 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/retained_test.dart: accepted multi-file cancellation survives account switch (immediate return: false)
+01:56 +370 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/retained_test.dart: accepted multi-file cancellation survives account switch (immediate return: true)
+01:56 +371 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/retained_test.dart: catalog removal retains files without advertising availability
+01:56 +372 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/retained_test.dart: reselection restores verified availability without another transfer
+01:56 +373 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/retained_test.dart: retained inventory belongs only to the current server and user
+01:56 +374 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/retained_test.dart: explicit removal deletes only identified downloader files
+01:56 +375 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/retained_test.dart: retained removal survives restart and reselection without transferring again
+01:56 +376 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/retained_test.dart: retained removal tolerates a saved file disappearing after confirmation opens
+01:57 +377 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/retained_test.dart: removing one account copy preserves another account copy of the same source
+01:57 +378 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/retained_test.dart: another server address cannot see retained files with the same server and user identifiers
+01:57 +379 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/retained_test.dart: a source reselected during confirmation cannot be removed as retained
+01:57 +380 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/retained_test.dart: old revisions are separate retained storage, not current availability
+01:57 +381 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/retained_test.dart: ambiguous metadata stays visible but cannot authorize removal: not json
+01:57 +382 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/retained_test.dart: ambiguous metadata stays visible but cannot authorize removal: {"key":"other","revision":"wrong"}
+01:57 +383 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/retained_test.dart: ambiguous metadata stays visible but cannot authorize removal: []
+01:57 +384 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/retained_test.dart: removal rechecks metadata instead of trusting an earlier inventory
+01:57 +385 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/retained_test.dart: inventory restoration never resumes transfers outside the catalog
+01:57 +386 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/retained_test.dart: a symlinked retained directory never exposes or deletes its target
+01:57 +387 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/retained_test.dart: foreign and forged record paths do not authorize traversal
+01:57 +388 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/retained_test.dart: deselection stops an in-flight transfer before explicit removal
+01:57 +389 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/retained_test.dart: an account switch invalidates an inventory already being read
+01:57 +390 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/retained_test.dart: restoration to another account cannot act on a held removal
+01:57 +391 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/retained_test.dart: missing metadata cannot establish ownership for removal
+01:57 +392 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/retained_test.dart: directory metadata cannot establish ownership for removal
+01:57 +393 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/retained_test.dart: symlink metadata cannot establish ownership for removal
+01:57 +394 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/retained_test.dart: oversized metadata cannot establish ownership for removal
+01:57 +395 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/retained_test.dart: a symlinked account directory cannot expose or remove any files
+01:57 +396 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/retained_test.dart: retained removal never follows or deletes a linked media file
+01:57 +397 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/retained_test.dart: verified lookup refuses a source directory replaced with a symlink
+01:57 +398 ~1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-595ac881/test/downloads/retained_test.dart: a corrupt retained copy is not playable after reselection
+01:57 +399 ~1: All tests passed!

@@ -524,10 +524,11 @@ class ReaderSession extends ChangeNotifier {
       return;
     }
     final revision = _recordRevision;
+    final generation = _accountGeneration;
     final saved = await store.read(account);
     if (saved == null ||
+        !_liveAccount(generation) ||
         account != _account ||
-        _disposed ||
         revision != _recordRevision) {
       return;
     }

@@ -17,7 +17,19 @@ void main() {
         'resumes': <String, dynamic>{},
         'history': <dynamic>[],
         'bookmarks': [
-          {'id': 'mark-a', 'title': 'Offline bookmark'},
+          {
+            'id': 'mark-a',
+            'title': 'Offline bookmark',
+            'position': {
+              'edition': 'edition',
+              'source': 'source',
+              'revision': 'revision',
+              'milliseconds': 900,
+            },
+            'createdAt': '2026-11-02T12:00:00.000Z',
+            'bookTitle': 'Saved book',
+            'editionLabel': 'Recording',
+          },
         ],
       });
       final preferences = await SharedPreferences.getInstance();
@@ -37,7 +49,19 @@ void main() {
       expect(
         await LocalResumeStore().read('alice'),
         containsPair('bookmarks', [
-          {'id': 'mark-a', 'title': 'Offline bookmark'},
+          {
+            'id': 'mark-a',
+            'title': 'Offline bookmark',
+            'position': {
+              'edition': 'edition',
+              'source': 'source',
+              'revision': 'revision',
+              'milliseconds': 900,
+            },
+            'createdAt': '2026-11-02T12:00:00.000Z',
+            'bookTitle': 'Saved book',
+            'editionLabel': 'Recording',
+          },
         ]),
       );
     },
