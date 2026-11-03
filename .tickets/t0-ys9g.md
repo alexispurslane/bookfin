@@ -1,6 +1,6 @@
 ---
 id: t0-ys9g
-status: open
+status: in_progress
 deps: []
 links: []
 created: 2026-11-03T19:07:13Z
@@ -16,3 +16,9 @@ November 3 normal APK source 71af288: a complete fresh snapshot of a 1600x4000-p
 ## Acceptance Criteria
 
 Investigate whether the reader loses accessible semantics or the helper rejects a legitimate sparse reader window. Restore supported inspection without replacing the binding or using an alternate UI engine. Under explicit renewed authorization, finish owned-download removal, sign-out/close, network 0/1/1 restoration with media muted, and then run still-unproved normal-app cancel/drain/retry and active-departure acceptance. Preserve every retained action.
+
+## Notes
+
+**2026-11-03T19:38:50Z**
+
+Renewed-authorized parent diagnosis: before restart T3 screenshot shows Flutter red error screen, Null check operator used on a null value. Error screenshot retained; exact throwing location remains unproved. Relaunch restores accessible controls. Removed both owned downloads, signed out/closed, restored network0/1/1 and retained media mute. Read-only audit verifies all70 retained identities/payload hashes/pending flags unchanged, original28 pending, SQLite integrity ok, no app process. Binding released shutdown:false. Evidence tool/evidence/reader/integrated/20261103/cancel-diagnosis/. Investigate and reproduce app cancellation rendering failure before another acceptance run.

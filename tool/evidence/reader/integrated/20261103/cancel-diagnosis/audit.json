@@ -1,0 +1,25 @@
+{
+  "all70ActionsUnchanged": true,
+  "retainedActions": 70,
+  "pendingActions": 28,
+  "databaseIntegrity": "ok",
+  "network": {
+    "airplane_mode_on": "0",
+    "wifi_on": "1",
+    "mobile_data": "1"
+  },
+  "mediaMuted": true,
+  "appProcessAbsent": true,
+  "remainingPrivateFileNames": [
+    "./libCachedImageData.db",
+    "./libCachedImageData.db-journal",
+    "./profileInstalled",
+    "./datastore/FlutterSharedPreferences.preferences_pb",
+    "./bookfin-ocr-engine/tessdata/eng.traineddata"
+  ],
+  "uiEvidence": [
+    "downloads.txt",
+    "signed-out.txt"
+  ],
+  "scope": "Cleanup only; no new OCR or sync acceptance."
+}

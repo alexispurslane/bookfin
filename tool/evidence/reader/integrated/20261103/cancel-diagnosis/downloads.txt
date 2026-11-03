@@ -1,0 +1,21 @@
+Page: dev.bookfin.bookfin
+App: dev.bookfin.bookfin
+Snapshot: 14 nodes
+@e2 [group] "BOOKFIN"
+@e3 [button] "Book libraries"
+@e4 [button] "Appearance"
+@e5 [button] "Account"
+@e6 [group] "Cannot reach Jellyfin. Saved books are still available."
+@e7 [group] "Downloads"
+@e8 [group] "Offline · Waiting for Wi-Fi"
+@e9 [group] "No downloads yet."
+@e10 [group] "Retained storage
+Local files outside this account’s current catalog. They do not count as downloaded editions. Files stay here until you explicitly remove them.
+No retained files."
+@e11 [button] "Refresh storage"
+@e12 [button] "Library
+Tab 1 of 3"
+@e13 [button] "Downloads
+Tab 2 of 3" [selected]
+@e14 [button] "Listening
+Tab 3 of 3"
