@@ -102,6 +102,10 @@ void main() {
     pdf.textSupply!.retry(1);
     expect((await pdf.text(1)).text, 'The quiet garden.');
     expect(calls, 1);
+    expect((await pdf.text(1)).text, 'The quiet garden.');
+    reader.closeView(reader.token);
+    expect((await (await open()).text(1)).text, 'The quiet garden.');
+    expect(calls, 1);
   });
 
   test('corrupt cached text is recognized again rather than trusted or made permanent', () async {
@@ -175,6 +179,40 @@ void main() {
       expect(calls, 2);
     },
   );
+
+  test('fatal native recognition requires restart rather than another unsafe admission', () async {
+    recognize = () async => throw PlatformException(code: 'recognition-fatal');
+    final pdf = await open();
+    final text = await pdf.text(1);
+    expect(text.status, PdfTextStatus.absent);
+    expect(text.reason, contains('Restart Bookfin'));
+    recognize = () async => englishPage;
+    expect((await pdf.text(1)).status, PdfTextStatus.absent);
+    expect(calls, 1);
+    expect((await pdf.render(1, 360)).width, 360);
+  });
+
+  test('chosen recognition stays consistent for this document when its cache cannot be saved', () async {
+    await File('tool/research/readers/fixtures/columns.pdf')
+        .copy('${root.path}/complete');
+    final pdf = await open();
+    expect((await pdf.text(1)).status, PdfTextStatus.unreliable);
+    pdf.textSupply!.retry(1);
+    recognize = () async {
+      final key = sha256.convert(
+        utf8.encode('${BundledEnglishText.version}/${pdf.originalDigest}/1'),
+      );
+      await Directory('${root.path}/.bookfin-ocr/$key.json')
+          .create(recursive: true);
+      return englishPage;
+    };
+    final selected = await pdf.text(1);
+    expect(selected.text, 'The quiet garden.');
+    expect(selected.reason, contains('could not be cached'));
+    recognize = () async => englishPage.replaceAll('garden', 'meadow');
+    expect((await pdf.text(1)).text, selected.text);
+    expect(calls, 1);
+  });
 
   test('a recognition-close failure is reported without retaining the PDF native owner', () async {
     final pdf = await open();

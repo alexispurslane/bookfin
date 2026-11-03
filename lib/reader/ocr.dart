@@ -11,22 +11,26 @@ import 'pdf.dart';
 
 class BundledEnglishText implements PdfTextSupply {
   static const version =
-      'bookfin-ocr-1/tesseract4android-4.9.0/tesseract-5.5.1/leptonica-1.85.0/tessdata_fast-4.1.0-eng-7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2';
+      'bookfin-ocr-2/tesseract4android-4.9.0/tesseract-5.5.1/leptonica-1.85.0/tessdata_fast-4.1.0-eng-7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2';
   static const _channel = MethodChannel('bookfin/ocr');
   PdfTextLease? _lease;
   int _generation = 0;
   bool _closed = false;
+  bool _fatal = false;
   Future<void> _draining = Future.value();
   final Map<({int page, int generation}), Future<PdfText>> _pending = {};
-  final Set<int> _retry = {};
+  final Set<int> _requested = {};
+  final Map<int, PdfText> _selected = {};
   final _recognizing = ValueNotifier(false);
   @override
   ValueListenable<bool> get recognizing => _recognizing;
+  @override
+  bool get canRetry => !_closed && !_fatal;
 
   @override
   void bind(PdfTextLease lease) => _lease = lease;
   @override
-  void retry(int page) => _retry.add(page);
+  void retry(int page) => _requested.add(page);
   @override
   void cancel() {
     _generation++;
@@ -35,12 +39,10 @@ class BundledEnglishText implements PdfTextSupply {
 
   @override
   Future<PdfText> text(PdfBook book, int page, PdfText extracted) {
-    final retry = _retry.remove(page);
-    if (extracted.status == PdfTextStatus.candidate ||
-        extracted.status == PdfTextStatus.unreliable && !retry ||
-        _closed) {
+    if (extracted.status == PdfTextStatus.candidate || _closed) {
       return Future.value(extracted);
     }
+    if (_fatal) return Future.value(_fatalFallback);
     final request = (page: page, generation: _generation);
     if (_pending.containsKey(request)) return _pending[request]!;
     if (_pending.length >= 2) {
@@ -52,6 +54,7 @@ class BundledEnglishText implements PdfTextSupply {
     final previous = _draining;
     final operation = () async {
       await previous;
+      if (_fatal) return _fatalFallback;
       bool requestLive() => !_closed && generation == _generation;
       if (!requestLive()) return _canceled;
       final lease = _lease;
@@ -73,8 +76,14 @@ class BundledEnglishText implements PdfTextSupply {
                 key,
               );
               if (!live()) return _canceled;
+              final selected = _selected[page];
+              if (selected != null) return selected;
               final saved = _cachedPage(cached);
-              if (saved != null) return saved;
+              if (saved != null) return _select(page, saved);
+              if (extracted.status == PdfTextStatus.unreliable &&
+                  !_requested.contains(page)) {
+                return extracted;
+              }
               _recognizing.value = true;
               final raster = await book.render(page, 1600);
               if (!live()) return _canceled;
@@ -96,24 +105,32 @@ class BundledEnglishText implements PdfTextSupply {
                   );
                 } on Exception {
                   if (!live()) return _canceled;
-                  return PdfText(
-                    source: result.source,
-                    text: result.text,
-                    sourceOffsets: result.sourceOffsets,
-                    status: result.status,
-                    reason: 'English text is available, but could not be cached. Free storage to save recognition.',
+                  return _select(
+                    page,
+                    PdfText(
+                      source: result.source,
+                      text: result.text,
+                      sourceOffsets: result.sourceOffsets,
+                      status: result.status,
+                      recognition: result.recognition,
+                      reason: 'English text is available, but could not be cached. Free storage to save recognition.',
+                    ),
                   );
                 }
               }
-              return live() ? result : _canceled;
+              return live() ? _select(page, result) : _canceled;
             }) ??
             _fallback(
               'The download is no longer available. The original page remains open.',
             );
+      } on PlatformException catch (error) {
+        if (error.code == 'recognition-fatal') {
+          _fatal = true;
+          return _fatalFallback;
+        }
+        return _recognitionFailure;
       } on Exception {
-        return _fallback(
-          'English recognition failed. Retry or read the original page.',
-        );
+        return _recognitionFailure;
       }
     }();
     _pending[request] = operation;
@@ -122,6 +139,16 @@ class BundledEnglishText implements PdfTextSupply {
       if (identical(_pending[request], operation)) _pending.remove(request);
     });
     return operation;
+  }
+
+  PdfText _select(int page, PdfText text) {
+    if (text.status == PdfTextStatus.candidate) {
+      if (_selected.length >= 16 && !_selected.containsKey(page)) {
+        _selected.remove(_selected.keys.first);
+      }
+      _selected[page] = text;
+    }
+    return text;
   }
 
   @override
@@ -137,9 +164,14 @@ class BundledEnglishText implements PdfTextSupply {
   }
 
   void checkInvariants() {
-    if (_pending.length > 2 || _closed && _recognizing.value) {
+    if (_pending.length > 2 ||
+        _selected.length > 16 ||
+        _selected.values.any(
+          (text) => text.status != PdfTextStatus.candidate,
+        ) ||
+        _closed && _recognizing.value) {
       throw StateError(
-        'Recognition must have at most one active page and one waiting page.',
+        'Recognition must have at most one active page, one waiting page, and sixteen selected readable pages.',
       );
     }
   }
@@ -151,6 +183,13 @@ const _canceled = PdfText(
   sourceOffsets: [],
   status: PdfTextStatus.absent,
   reason: 'Recognition canceled. The original page is available.',
+);
+
+final _recognitionFailure = _fallback(
+  'English recognition failed. Retry or read the original page.',
+);
+final _fatalFallback = _fallback(
+  'English recognition cannot continue safely. Restart Bookfin. The original page remains available.',
 );
 
 PdfText? _cachedPage(String? hocr) {
@@ -177,16 +216,15 @@ PdfText decodeRecognizedPage(String hocr) {
   final document = XmlDocument.parse(hocr);
   final lines = document.descendants
       .whereType<XmlElement>()
-      .where(
-        (element) => (element.getAttribute('class') ?? '')
-            .split(' ')
-            .contains('ocr_line'),
-      )
+      .where(_textLine)
       .toList();
   final source = StringBuffer();
   final boxes = <List<int>>[];
   var shortLines = 0;
   for (final line in lines) {
+    if (line.ancestors.whereType<XmlElement>().any(_textLine)) {
+      throw const FormatException('Nested recognized text lines.');
+    }
     final title = line.getAttribute('title') ?? '';
     final match = RegExp(r'(?:^|;)\s*bbox (\d+) (\d+) (\d+) (\d+)(?:;|$)')
         .firstMatch(title);
@@ -200,13 +238,16 @@ PdfText decodeRecognizedPage(String hocr) {
       throw const FormatException('Invalid recognized source-page geometry.');
     }
     boxes.add(box);
-    final words = line.descendants
+    final elements = line.descendants
         .whereType<XmlElement>()
-        .where(
-          (element) => (element.getAttribute('class') ?? '')
-              .split(' ')
-              .contains('ocrx_word'),
-        )
+        .where(_word)
+        .toList();
+    if (elements.any(
+      (element) => element.ancestors.whereType<XmlElement>().any(_word),
+    )) {
+      throw const FormatException('Nested recognized words.');
+    }
+    final words = elements
         .map((element) => element.innerText.trim())
         .where((word) => word.isNotEmpty)
         .toList();
@@ -256,9 +297,25 @@ PdfText decodeRecognizedPage(String hocr) {
     source: raw,
     text: text.toString(),
     sourceOffsets: offsets,
+    recognition: BundledEnglishText.version,
     status: unreliable ? PdfTextStatus.unreliable : PdfTextStatus.candidate,
     reason: unreliable
         ? 'Recognized text order is unreliable. Read the original page.'
         : null,
   );
 }
+
+bool _textLine(XmlElement element) => (element.getAttribute('class') ?? '')
+    .split(RegExp(r'\s+'))
+    .any(
+      (name) => const {
+        'ocr_line',
+        'ocr_header',
+        'ocr_textfloat',
+        'ocr_caption',
+      }.contains(name),
+    );
+
+bool _word(XmlElement element) => (element.getAttribute('class') ?? '')
+    .split(RegExp(r'\s+'))
+    .contains('ocrx_word');

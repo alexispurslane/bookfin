@@ -18,8 +18,11 @@ public final class OcrWorker {
     private boolean ownsEngine;
     private boolean busy;
     private CompletableFuture<Void> closing;
+    private Throwable terminalFailure;
 
     public OcrWorker(Factory factory) { this.factory = factory; }
+
+    public synchronized boolean requiresRestart() { return terminalFailure != null; }
 
     public synchronized CompletableFuture<String> recognize(byte[] bgra, int width, int height) {
         CompletableFuture<String> result = new CompletableFuture<>();
@@ -31,7 +34,8 @@ public final class OcrWorker {
         busy = true;
         executor.execute(() -> {
             String text = null;
-            Exception failure = null;
+            Throwable failure = null;
+            boolean unsafe = false;
             try {
                 if (engine == null) {
                     if (!ENGINE_OWNER.tryAcquire()) throw new IllegalStateException("Another recognition owner is draining.");
@@ -39,15 +43,38 @@ public final class OcrWorker {
                     engine = factory.create();
                 }
                 text = engine.recognize(bgra, width, height);
-            } catch (Exception error) {
+            } catch (Throwable error) {
                 failure = error;
-                try { releaseEngine(); } catch (Exception closeError) { error.addSuppressed(closeError); }
+                unsafe = error instanceof Error;
+                try {
+                    releaseEngine();
+                } catch (Throwable closeError) {
+                    failure = retainFailure(error, closeError);
+                    unsafe = true;
+                }
+            } finally {
+                synchronized (this) {
+                    busy = false;
+                    if (unsafe) {
+                        terminalFailure = failure;
+                        close();
+                    }
+                }
             }
-            synchronized (this) { busy = false; }
             if (failure == null) result.complete(text);
             else result.completeExceptionally(failure);
         });
         return result;
+    }
+
+    private static Throwable retainFailure(Throwable failure, Throwable cleanup) {
+        if (failure == cleanup) return failure;
+        if (cleanup instanceof Error && !(failure instanceof Error)) {
+            cleanup.addSuppressed(failure);
+            return cleanup;
+        }
+        failure.addSuppressed(cleanup);
+        return failure;
     }
 
     private void releaseEngine() throws Exception {
@@ -66,12 +93,14 @@ public final class OcrWorker {
         if (closing != null) return closing;
         closing = new CompletableFuture<>();
         executor.execute(() -> {
+            Throwable failure = terminalFailure;
             try {
                 releaseEngine();
-                closing.complete(null);
-            } catch (Exception error) {
-                closing.completeExceptionally(error);
+            } catch (Throwable error) {
+                failure = failure == null ? error : retainFailure(failure, error);
             }
+            if (failure == null) closing.complete(null);
+            else closing.completeExceptionally(failure);
         });
         executor.shutdown();
         return closing;

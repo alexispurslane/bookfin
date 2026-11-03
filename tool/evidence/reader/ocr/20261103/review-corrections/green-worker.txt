@@ -1,0 +1,1 @@
+PASS: bounded admission, process-wide permit cleanup, draining close, fatal init/operation/close settlement, preserved invariant Errors, unsafe-worker rejection, and safe IOException retry

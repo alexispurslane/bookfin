@@ -1,0 +1,5 @@
+234:          hocr_str << "ocr_header";
+237:          hocr_str << "ocr_textfloat";
+240:          hocr_str << "ocr_caption";
+248:          hocr_str << "ocr_line";
+495:      " ocr_line ocrx_word ocrp_dir ocrp_lang ocrp_wconf");

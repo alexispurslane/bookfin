@@ -34,6 +34,52 @@ Neither extracted text nor recognized text is a checked transcription.
 The existing conservative fragmentation and parallel-row counts also screen
 recognized lines. This is not a general table, column or reading-order repair.
 
+The document owns the selected page text for every reader operation. Search and
+the viewport do not choose different text layers. An unreliable extracted layer
+stays selected until the user requests recognition or verified recognition already
+exists for that source page. The explicit request remains in effect for the open
+document. Successful recognition stays selected for later requests and reopening.
+The document keeps at most sixteen successful recognized pages in memory.
+This also preserves the chosen text when saving its cache fails. Each reuse still
+enters the existing download ownership interval and verifies the original bytes.
+
+## Text coordinates and compatibility
+
+A text representation identifies the exact text that gives character numbers meaning.
+Each new PDF text address includes its text representation. It covers the PDF text
+policy, PDFium version, extraction or exact recognition version, and SHA-256 of
+the complete source-page text. Recognition version 2 includes the corrected decoder
+and the exact engine and English model versions. The decoder accepts the pinned
+`ocr_line`, `ocr_header`, `ocr_textfloat` and `ocr_caption` classes through one
+geometry check. It rejects nested textual lines and nested recognized words.
+
+A character number is a zero-based UTF-16 code-unit offset within that source-page
+text. It is not a position within the PDF file or the displayed reflow layout.
+The document creates addresses for search and scrolling. The document also resolves
+saved addresses against the current text representation before the viewport applies
+a nonzero character number. A changed model, decoder, policy or source-page text
+cannot silently reuse another text representation's character numbers.
+
+Source compatibility and text compatibility are separate. An unchanged verified
+original keeps its source-page address through text-policy and engine changes.
+The existing edition and account checks still belong to `ReaderSession`.
+Different original bytes still reject the saved address.
+
+An unresolved address retains its original character number, quote and text
+representation. The viewport displays the original source page. Failed recognition,
+missing or damaged cache, and cancellation do not replace that address with zero.
+The existing resume and bookmark owners persist the unresolved address unchanged.
+Choosing a source page in Contents explicitly starts that page at character zero.
+Compatible text still restores and updates nonzero reflow positions normally.
+
+Legacy PDF addresses have no text representation. Character zero remains a valid
+source-page start. A nonzero legacy character is ambiguous between extracted and
+recognized text. Bookfin retains that address but displays its original source page
+instead of interpreting that character in current text. No second bookmark or resume
+store is introduced.
+
+## Existing download ownership
+
 `LocalDownloads.readLocalFile` remains the storage owner. Its optional ownership
 callback exposes whether an admitted read still belongs to the selected account
 and source. Removal revokes the active read before queued deletion. Account or
@@ -61,7 +107,7 @@ The cache key covers the verified original SHA-256, source-page number, text pol
 wrapper version, engine version, Leptonica version and exact model hash. Cached
 hOCR, an HTML description of recognized words and page geometry, also has a content
 hash. Cache reads verify the original bytes again and reject damaged records.
-Failed or canceled recognition is not cached. Successful recognition can retry
+Failed or canceled recognition is not cached. After reopening, recognition can retry
 after corruption. Storage failure leaves readable text for that visit and reports
 that the cache could not be saved.
 
@@ -82,8 +128,19 @@ initialization or font-callback owner is introduced.
 If recognition close reports an error, PDF disposal still runs. The reader keeps
 its existing release-failure gate and requires restart before another document.
 
-The coordinator's invariants are bounded page admission and no live recognition
-status after close. `BundledEnglishText.checkInvariants()` checks them on demand.
+Fatal native errors settle the admitted operation with the original Java `Error`.
+The worker then closes itself and rejects later operations. Its close future also
+reports the failure, so document disposal does not wait forever or hide the failure.
+Cleanup errors remain attached to the original failure. A fatal cleanup error takes
+precedence over an ordinary operation exception. An unsafe cleanup also closes the
+worker. The Android channel and reader require restart rather than offer recognition
+retry. Ordinary `IOException` failures can retry after successful engine cleanup.
+The process-wide engine permit is released on initialization, operation and close
+failure paths. Native invariant failures remain errors, not successful fallbacks.
+
+The coordinator's invariants are bounded page admission, at most sixteen selected
+readable pages, and no live recognition status after close.
+`BundledEnglishText.checkInvariants()` checks them on demand.
 The PDF and download owners retain their existing invariant checkers.
 
 ## Pinned inputs
@@ -113,6 +170,13 @@ recognition, leaving/reopening, removal, account changes and source changes.
 Widget tests exercise the existing viewport's reflow, search, source-page links,
 English-only wording, cancellation and original-page display. Their image/native
 response boundaries are controlled fixtures, not Android recognition.
+
+Review-correction tests also use the actual SQLite record owner. They close and
+reopen the database and create a new reader session around the same original.
+They retain page-two nonzero recognized resume and bookmark addresses after missing
+or damaged cache, empty recognition, recognition exceptions and active cancellation.
+They test changed text, model and policy, ambiguous legacy addresses, and compatible
+nonzero reflow restoration. These are host tests, not Android process-restart tests.
 
 The host-native test sends an actual PDFium rendering of the pinned generated
 English scan to the Nix Tesseract executable. It uses the exact selected English

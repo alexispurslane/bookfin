@@ -19,12 +19,14 @@ class PdfText {
     required this.sourceOffsets,
     required this.status,
     this.reason,
+    this.recognition,
   });
   final String source;
   final String text;
   final List<int> sourceOffsets;
   final PdfTextStatus status;
   final String? reason;
+  final String? recognition;
 }
 
 class PdfRaster {
@@ -39,6 +41,47 @@ abstract class PdfBook extends ReaderDocument {
   int get pageCount;
   Future<PdfText> text(int sourcePage);
   Future<PdfRaster> render(int sourcePage, double width);
+
+  PdfAddress addressFor(int sourcePage, PdfText text, int character) {
+    if (text.status != PdfTextStatus.candidate ||
+        character < 0 ||
+        character > text.source.length) {
+      throw ArgumentError('Choose a character in available PDF text.');
+    }
+    return PdfAddress(
+      sourcePage,
+      character,
+      pageCount: pageCount,
+      quote: text.source.substring(
+        character,
+        (character + 160).clamp(0, text.source.length),
+      ),
+      representation:
+          '$policy/$engine/${text.recognition ?? 'extracted'}/${sha256.convert(utf8.encode(text.source))}',
+    );
+  }
+
+  PdfAddress? resolveAddress(PdfAddress address, PdfText text) {
+    if (!accepts(address) ||
+        text.status != PdfTextStatus.candidate ||
+        address.character > text.source.length) {
+      return null;
+    }
+    final resolved = addressFor(address.sourcePage, text, address.character);
+    return address.character == 0 ||
+            address.representation == resolved.representation
+        ? resolved
+        : null;
+  }
+
+  @override
+  ReaderAddress? restore(Map<String, dynamic> value) {
+    if (value['version'] != 1 || value['original'] != originalDigest) {
+      return null;
+    }
+    final address = decodeAddress(value);
+    return accepts(address) ? address : null;
+  }
 }
 
 typedef PdfTextLease = Future<PdfText?> Function(
@@ -47,6 +90,7 @@ typedef PdfTextLease = Future<PdfText?> Function(
 
 abstract class PdfTextSupply {
   ValueListenable<bool> get recognizing;
+  bool get canRetry;
   void bind(PdfTextLease lease);
   void cancel();
   void retry(int page);
@@ -149,7 +193,8 @@ class _NativePdfBook extends PdfBook {
   ReaderAddress decodeAddress(Map<String, dynamic> value) {
     if (value['page'] is! int ||
         value['character'] is! int ||
-        value['quote'] is! String) {
+        value['quote'] is! String ||
+        value['representation'] != null && value['representation'] is! String) {
       throw const FormatException('Invalid saved PDF source page.');
     }
     return PdfAddress(
@@ -157,6 +202,7 @@ class _NativePdfBook extends PdfBook {
       value['character'] as int,
       quote: value['quote'] as String,
       pageCount: pageCount,
+      representation: value['representation'] as String?,
     );
   }
 

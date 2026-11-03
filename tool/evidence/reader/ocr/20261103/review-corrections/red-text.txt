@@ -1,0 +1,124 @@
+Resolving dependencies...
+Downloading packages...
+  archive 4.0.9 (4.6.0 available)
+  code_assets 1.2.1 (2.1.0 available)
+  crypto 3.0.7 (3.0.8 available)
+  flutter_cache_manager 3.4.6 (3.4.8 available)
+  flutter_secure_storage 9.2.4 (11.2.0 available)
+  flutter_secure_storage_linux 1.2.3 (3.0.3 available)
+  flutter_secure_storage_macos 3.1.3 (4.0.0 available)
+  flutter_secure_storage_platform_interface 1.1.2 (2.1.1 available)
+  flutter_secure_storage_web 1.2.1 (2.1.1 available)
+  flutter_secure_storage_windows 3.1.2 (4.2.2 available)
+  hooks 2.0.2 (2.2.0 available)
+  image 4.8.0 (4.12.0 available)
+  js 0.6.7 (0.7.2 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  meta 1.18.3 (1.19.0 available)
+  native_toolchain_c 0.19.2 (0.19.5 available)
+  objective_c 9.5.0 (9.6.2 available)
+  petitparser 7.0.2 (7.1.0 available)
+  record_use 0.6.0 (1.1.1 available)
+  shared_preferences_foundation 2.5.7 (2.6.1 available)
+  sqflite_common_ffi 2.4.0+2 (2.4.5 available)
+  sqlite3 3.5.2 (3.8.0 available)
+  test_api 0.7.12 (0.7.15 available)
+  vector_math 2.4.0 (2.4.4 available)
+  win32 5.15.0 (6.4.0 available)
+  xml 6.6.1 (7.1.0 available)
+Got dependencies!
+26 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+xcrun: error: SDK cannot be located: error: unable to find sdk: 'iphoneos'
+
+
+SDK iphoneos not installed.
+
+xcrun: error: SDK cannot be located: error: unable to find sdk: 'iphonesimulator'
+
+
+SDK iphonesimulator not installed.
+
+00:00 +0: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-7b2e5fcf/test/reader/ocr_quality_test.dart
+00:00 +0: /Users/alexispurslane/.t3/worktrees/bookfin/t3-7b2e5fcf/test/reader/ocr_quality_test.dart: all pinned textual line classes keep their words in source order
+00:00 +0 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-7b2e5fcf/test/reader/ocr_test.dart: recognized page text keeps the existing PDF identity and source address
+00:00 +0 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-7b2e5fcf/test/reader/ocr_quality_test.dart: all pinned textual line classes keep their words in source order [E]
+  Expected: 'A chapter heading\n'
+              'The body follows\n'
+              'A floating note\n'
+              'The picture caption'
+    Actual: 'The body follows'
+     Which: is different.
+            Expected: A chapter  ...
+              Actual: The body f ...
+                      ^
+             Differ at offset 0
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/reader/ocr_quality_test.dart 13:5              main.<fn>
+  
+00:00 +0 -2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-7b2e5fcf/test/reader/ocr_test.dart: recognized page text keeps the existing PDF identity and source address
+00:00 +0 -2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-7b2e5fcf/test/reader/ocr_quality_test.dart: a heading-only recognized page is not reported as absent [E]
+  Expected: 'A chapter heading'
+    Actual: ''
+     Which: is different. Both strings start the same, but the actual value is missing the following trailing characters: A chapter  ...
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/reader/ocr_quality_test.dart 21:5              main.<fn>
+  
+00:00 +0 -3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-7b2e5fcf/test/reader/ocr_test.dart: recognized page text keeps the existing PDF identity and source address
+00:00 +0 -3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-7b2e5fcf/test/reader/ocr_quality_test.dart: alternate textual line classes retain conservative column fallback [E]
+  Expected: PdfTextStatus:<PdfTextStatus.unreliable>
+    Actual: PdfTextStatus:<PdfTextStatus.absent>
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/reader/ocr_quality_test.dart 29:5              main.<fn>
+  
+00:00 +0 -4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-7b2e5fcf/test/reader/ocr_test.dart: recognized page text keeps the existing PDF identity and source address
+00:00 +0 -4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-7b2e5fcf/test/reader/ocr_quality_test.dart: nested textual lines cannot publish duplicated recognized words [E]
+  Expected: throws <Instance of 'FormatException'>
+    Actual: <Closure: () => PdfText>
+     Which: returned <Instance of 'PdfText'>
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/reader/ocr_quality_test.dart 33:5              main.<fn>
+  
+00:00 +1 -4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-7b2e5fcf/test/reader/ocr_test.dart: recognized page text keeps the existing PDF identity and source address
+00:00 +2 -4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-7b2e5fcf/test/reader/ocr_test.dart: recognized page text keeps the existing PDF identity and source address
+00:00 +3 -4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-7b2e5fcf/test/reader/ocr_test.dart: recognized page text keeps the existing PDF identity and source address
+00:00 +4 -4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-7b2e5fcf/test/reader/ocr_test.dart: recognized page text keeps the existing PDF identity and source address
+00:00 +5 -4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-7b2e5fcf/test/reader/ocr_test.dart: recognized page text keeps the existing PDF identity and source address
+00:00 +6 -4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-7b2e5fcf/test/reader/ocr_test.dart: unreliable extracted text keeps its fallback until English recognition is requested
+00:00 +6 -5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-7b2e5fcf/test/reader/ocr_test.dart: unreliable extracted text keeps its fallback until English recognition is requested [E]
+  Expected: 'The quiet garden.'
+    Actual: 'Two columns Left 1: the journey begins. Right 1: the journey ends. Left 2: the journey begins. Right 2: the journey ends. Left 3: the journey begins. Right 3: the journey ends.'
+     Which: is different.
+            Expected: The quiet g ...
+              Actual: Two columns ...
+                       ^
+             Differ at offset 1
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/reader/ocr_test.dart 105:5                     main.<fn>
+  
+00:00 +6 -5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-7b2e5fcf/test/reader/ocr_test.dart: corrupt cached text is recognized again rather than trusted or made permanent
+00:00 +7 -5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-7b2e5fcf/test/reader/ocr_test.dart: changed source bytes cannot reuse recognition from the previous PDF
+00:00 +8 -5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-7b2e5fcf/test/reader/ocr_test.dart: a cache record from a different engine and model version is not reused
+00:00 +9 -5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-7b2e5fcf/test/reader/ocr_test.dart: reopening uses verified cached text without running the engine again
+00:00 +10 -5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-7b2e5fcf/test/reader/ocr_test.dart: recognition failure keeps the original and the next request retries
+00:00 +11 -5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-7b2e5fcf/test/reader/ocr_test.dart: a recognition-close failure is reported without retaining the PDF native owner
+00:00 +12 -5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-7b2e5fcf/test/reader/ocr_test.dart: retry during cancellation waits for the native page then recognizes a fresh request
+00:00 +13 -5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-7b2e5fcf/test/reader/ocr_test.dart: leaving rejects a late native result and reopening recognizes again
+00:00 +14 -5: Some tests failed.
+
+Failing tests:
+  /Users/alexispurslane/.t3/worktrees/bookfin/t3-7b2e5fcf/test/reader/ocr_quality_test.dart: a heading-only recognized page is not reported as absent
+  /Users/alexispurslane/.t3/worktrees/bookfin/t3-7b2e5fcf/test/reader/ocr_quality_test.dart: all pinned textual line classes keep their words in source order
+  /Users/alexispurslane/.t3/worktrees/bookfin/t3-7b2e5fcf/test/reader/ocr_quality_test.dart: alternate textual line classes retain conservative column fallback
+  /Users/alexispurslane/.t3/worktrees/bookfin/t3-7b2e5fcf/test/reader/ocr_quality_test.dart: nested textual lines cannot publish duplicated recognized words
+  /Users/alexispurslane/.t3/worktrees/bookfin/t3-7b2e5fcf/test/reader/ocr_test.dart: unreliable extracted text keeps its fallback until English recognition is requested

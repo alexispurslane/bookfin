@@ -31,8 +31,12 @@ class HeldPdf extends PdfBook {
   bool accepts(ReaderAddress address) =>
       address is PdfAddress && address.sourcePage <= 2;
   @override
-  ReaderAddress decodeAddress(Map<String, dynamic> value) =>
-      PdfAddress(value['page'] as int, value['character'] as int);
+  ReaderAddress decodeAddress(Map<String, dynamic> value) => PdfAddress(
+    value['page'] as int,
+    value['character'] as int,
+    quote: value['quote'] as String? ?? '',
+    representation: value['representation'] as String?,
+  );
   @override
   Future<void> dispose() async {}
   @override

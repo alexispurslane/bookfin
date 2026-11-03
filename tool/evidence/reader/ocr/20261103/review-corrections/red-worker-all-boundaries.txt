@@ -1,0 +1,24 @@
+BOUNDARY: init
+Exception in thread "pool-1-thread-1" java.lang.AssertionError: held init
+	at OcrWorkerTest.main(OcrWorkerTest.java:57)
+Exception in thread "main" java.util.concurrent.TimeoutException
+	at java.base/java.util.concurrent.CompletableFuture.timedGet(CompletableFuture.java:1960)
+	at java.base/java.util.concurrent.CompletableFuture.get(CompletableFuture.java:2095)
+	at OcrWorkerTest.fatalBoundary(OcrWorkerTest.java:39)
+	at OcrWorkerTest.main(OcrWorkerTest.java:57)
+BOUNDARY: operation
+Exception in thread "pool-1-thread-1" java.lang.AssertionError: held operation
+	at OcrWorkerTest.main(OcrWorkerTest.java:57)
+Exception in thread "main" java.util.concurrent.TimeoutException
+	at java.base/java.util.concurrent.CompletableFuture.timedGet(CompletableFuture.java:1960)
+	at java.base/java.util.concurrent.CompletableFuture.get(CompletableFuture.java:2095)
+	at OcrWorkerTest.fatalBoundary(OcrWorkerTest.java:39)
+	at OcrWorkerTest.main(OcrWorkerTest.java:57)
+BOUNDARY: close
+Exception in thread "pool-1-thread-1" java.lang.AssertionError: held close
+	at OcrWorkerTest.main(OcrWorkerTest.java:57)
+Exception in thread "main" java.util.concurrent.TimeoutException
+	at java.base/java.util.concurrent.CompletableFuture.timedGet(CompletableFuture.java:1960)
+	at java.base/java.util.concurrent.CompletableFuture.get(CompletableFuture.java:2095)
+	at OcrWorkerTest.fatalBoundary(OcrWorkerTest.java:49)
+	at OcrWorkerTest.main(OcrWorkerTest.java:57)

@@ -103,6 +103,7 @@ class PdfAddress extends ReaderAddress {
     this.character, {
     this.quote = '',
     this.pageCount,
+    this.representation,
   }) {
     if (sourcePage < 1 ||
         character < 0 ||
@@ -114,6 +115,7 @@ class PdfAddress extends ReaderAddress {
   final int sourcePage;
   final int character;
   final int? pageCount;
+  final String? representation;
   @override
   final String quote;
   @override
@@ -129,6 +131,7 @@ class PdfAddress extends ReaderAddress {
     'page': sourcePage,
     'character': character,
     'quote': quote,
+    if (representation != null) 'representation': representation,
   };
 }
 

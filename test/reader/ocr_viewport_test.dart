@@ -13,6 +13,8 @@ import 'pdf_navigation_test.dart' show HeldPdf;
 
 class HeldRecognition implements PdfTextSupply {
   @override
+  bool get canRetry => true;
+  @override
   final ValueNotifier<bool> recognizing = ValueNotifier(false);
   final result = Completer<PdfText>();
   var active = false;

@@ -33,7 +33,8 @@ class _PdfViewportState extends State<PdfViewport>
   ui.Image? _image;
   TextPainter? _layout;
   int _page = 1;
-  int _character = 0;
+  late PdfAddress _address;
+  bool _positionResolved = false;
   int _generation = 0;
   int? _drawingGeneration;
   int _search = 0;
@@ -75,7 +76,8 @@ class _PdfViewportState extends State<PdfViewport>
     final generation = ++_generation;
     setState(() {
       _page = address.sourcePage;
-      _character = address.character;
+      _address = address;
+      _positionResolved = false;
       _loading = true;
       _failure = null;
       _text = null;
@@ -99,9 +101,15 @@ class _PdfViewportState extends State<PdfViewport>
       if (!mounted || generation != _generation) return;
       setState(() {
         _text = text;
-        _character = lastViewport
-            ? text.source.length
-            : _character.clamp(0, text.source.length);
+        final resolved = widget.book.resolveAddress(address, text);
+        _positionResolved = resolved != null;
+        if (resolved != null) {
+          _address = widget.book.addressFor(
+            _page,
+            text,
+            lastViewport ? text.source.length : resolved.character,
+          );
+        }
         _loading = false;
       });
     } on Exception {
@@ -120,7 +128,7 @@ class _PdfViewportState extends State<PdfViewport>
     if (!_usingText) await _draw(generation);
   }
 
-  bool get _usingText => _reflow && _text?.status == PdfTextStatus.candidate;
+  bool get _usingText => _reflow && _positionResolved;
 
   Future<void> _draw(int generation) async {
     if (_image != null ||
@@ -163,19 +171,7 @@ class _PdfViewportState extends State<PdfViewport>
   }
 
   void _publish() {
-    final source = _text?.source ?? '';
-    final character = _character.clamp(0, source.length);
-    widget.onAddress(
-      PdfAddress(
-        _page,
-        character,
-        pageCount: widget.book.pageCount,
-        quote: source.substring(
-          character,
-          math.min(source.length, character + 160),
-        ),
-      ),
-    );
+    widget.onAddress(_address);
   }
 
   void _scrolled() {
@@ -190,8 +186,8 @@ class _PdfViewportState extends State<PdfViewport>
     final character = offset < text.sourceOffsets.length
         ? text.sourceOffsets[offset]
         : text.source.length;
-    if (character == _character) return;
-    _character = character;
+    if (character == _address.character) return;
+    _address = widget.book.addressFor(_page, text, character);
     _publish();
   }
 
@@ -259,14 +255,10 @@ class _PdfViewportState extends State<PdfViewport>
         for (final match in pattern.allMatches(text.text)) {
           hits.add(
             ReaderHit(
-              PdfAddress(
+              widget.book.addressFor(
                 page,
+                text,
                 text.sourceOffsets[match.start],
-                pageCount: widget.book.pageCount,
-                quote: text.text.substring(
-                  match.start,
-                  math.min(text.text.length, match.start + 160),
-                ),
               ),
               'Source page $page: ${text.text.substring(math.max(0, match.start - 40), math.min(text.text.length, match.end + 80))}',
             ),
@@ -307,7 +299,7 @@ class _PdfViewportState extends State<PdfViewport>
         )..layout(maxWidth: width);
         _layoutWidth = width;
         final index = text.sourceOffsets.indexWhere(
-          (offset) => offset >= _character,
+          (offset) => offset >= _address.character,
         );
         final target = _layout!
             .getOffsetForCaret(
@@ -383,12 +375,13 @@ class _PdfViewportState extends State<PdfViewport>
                   child: const Text('Cancel recognition'),
                 ),
               if (!recognizing &&
+                  widget.book.textSupply!.canRetry &&
                   !_loading &&
                   _text?.status != PdfTextStatus.candidate)
                 TextButton(
                   onPressed: () {
                     widget.book.textSupply!.retry(_page);
-                    unawaited(_load(PdfAddress(_page, _character)));
+                    unawaited(_load(_address));
                   },
                   child: Text(
                     _text?.status == PdfTextStatus.unreliable
@@ -403,7 +396,9 @@ class _PdfViewportState extends State<PdfViewport>
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
-            _text?.reason ??
+            (!_positionResolved && _address.character > 0 && !_loading
+                    ? 'The saved text position is not available in this page text. Read the original page, or choose this source page in Contents to start its current text.'
+                    : _text?.reason) ??
                 (_usingText
                     ? 'Extracted text is not checked against the page. Pictures and page layout stay in the original page.'
                     : _failure ?? 'Checking source-page text.'),
@@ -424,8 +419,7 @@ class _PdfViewportState extends State<PdfViewport>
                 child: _failure == null
                     ? const CircularProgressIndicator()
                     : TextButton(
-                        onPressed: () =>
-                            unawaited(_load(PdfAddress(_page, _character))),
+                        onPressed: () => unawaited(_load(_address)),
                         child: const Text('Retry source page'),
                       ),
               )

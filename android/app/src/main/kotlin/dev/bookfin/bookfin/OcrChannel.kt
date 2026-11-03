@@ -44,6 +44,7 @@ class OcrChannel(private val context: Context, messenger: BinaryMessenger) {
                             main.post {
                                 if (attached) {
                                     if (error == null) result.success(text)
+                                    else if (error is Error || owner.requiresRestart()) result.error("recognition-fatal", "English recognition cannot continue safely. Restart Bookfin.", null)
                                     else result.error("recognition", "English recognition failed. The original page is available.", null)
                                 }
                             }
@@ -118,8 +119,12 @@ private class TesseractEngine(context: Context) : OcrWorker.Engine {
                 throw java.io.IOException("Bundled English model initialization failed.")
             }
             engine.setPageSegMode(3)
-        } catch (error: Exception) {
-            engine.recycle()
+        } catch (error: Throwable) {
+            try {
+                engine.recycle()
+            } catch (cleanup: Throwable) {
+                throw retainFailure(error, cleanup)
+            }
             throw error
         }
     }
@@ -134,13 +139,31 @@ private class TesseractEngine(context: Context) : OcrWorker.Engine {
                 (bgra[offset].toInt() and 255) * 29) shr 8
             gray[pixel] = ((luminance * alpha + 255 * (255 - alpha)) / 255).toByte()
         }
+        var failure: Throwable? = null
         try {
             engine.setImage(gray, width, height, 1, width)
             return engine.getHOCRText(0) ?: ""
+        } catch (error: Throwable) {
+            failure = error
+            throw error
         } finally {
-            engine.clear()
+            try {
+                engine.clear()
+            } catch (cleanup: Throwable) {
+                throw failure?.let { retainFailure(it, cleanup) } ?: cleanup
+            }
         }
     }
 
     override fun close() { engine.recycle() }
+}
+
+private fun retainFailure(failure: Throwable, cleanup: Throwable): Throwable {
+    if (failure === cleanup) return failure
+    if (cleanup is Error && failure !is Error) {
+        cleanup.addSuppressed(failure)
+        return cleanup
+    }
+    failure.addSuppressed(cleanup)
+    return failure
 }
