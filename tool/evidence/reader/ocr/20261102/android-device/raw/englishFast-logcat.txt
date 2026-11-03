@@ -1,0 +1,51 @@
+--------- beginning of main
+11-02 20:21:28.867  6584  6584 I obe.englishfast: Late-enabling -Xcheck:jni
+11-02 20:21:28.883  6584  6584 I obe.englishfast: Using CollectorTypeCMC GC.
+11-02 20:21:28.889  6584  6584 D nativeloader: Load libframework-connectivity-tiramisu-jni.so using APEX ns com_android_tethering for caller /apex/com.android.tethering/javalib/framework-connectivity-t.jar: ok
+11-02 20:21:28.996  6584  6584 D nativeloader: Configuring clns-9 for other apk /data/app/~~DZ4Wf1FMqkyOoPCa--V7XA==/dev.bookfin.ocr.probe.englishfast-2u7jYEIYZDprJChxduA0JA==/base.apk. target_sdk_version=36, uses_libraries=, library_path=/data/app/~~DZ4Wf1FMqkyOoPCa--V7XA==/dev.bookfin.ocr.probe.englishfast-2u7jYEIYZDprJChxduA0JA==/lib/arm64:/data/app/~~DZ4Wf1FMqkyOoPCa--V7XA==/dev.bookfin.ocr.probe.englishfast-2u7jYEIYZDprJChxduA0JA==/base.apk!/lib/arm64-v8a, permitted_path=/data:/mnt/expand:/data/user/0/dev.bookfin.ocr.probe.englishfast
+11-02 20:21:29.007  6584  6584 I obe.englishfast: AssetManager2(0xb4000076f5521758) locale list changing from [] to [en-US]
+11-02 20:21:29.021  6584  6584 V GraphicsEnvironment: Currently set values for:
+11-02 20:21:29.021  6584  6584 V GraphicsEnvironment:   angle_gl_driver_selection_pkgs=[]
+11-02 20:21:29.021  6584  6584 V GraphicsEnvironment:   angle_gl_driver_selection_values=[]
+11-02 20:21:29.021  6584  6584 V GraphicsEnvironment: dev.bookfin.ocr.probe.englishfast is not listed in per-application setting
+11-02 20:21:29.021  6584  6584 V GraphicsEnvironment: ANGLE allowlist from config: com.dreamgames.royalmatch com.dts.freefiremax com.dxx.firenow com.gramgames.mergedragons com.ludo.king com.mojang.minecraftpe com.my.defense com.nintendo.zaka com.os.airforce com.playrix.fishdomdd.gplay io.teslatech.callbreak jp.konami.prospia net.peakgames.toonblast
+11-02 20:21:29.021  6584  6584 V GraphicsEnvironment: dev.bookfin.ocr.probe.englishfast is not listed in ANGLE allowlist or settings, returning default
+11-02 20:21:29.021  6584  6584 V GraphicsEnvironment: Neither updatable production driver nor prerelease driver is supported.
+11-02 20:21:29.047  6584  6584 I obe.englishfast: AssetManager2(0xb4000076f551b358) locale list changing from [] to [en-US]
+11-02 20:21:29.051  6584  6584 E ashmem  : Pinning is deprecated since Android Q. Please use trim or other methods.
+--------- beginning of system
+11-02 20:21:29.054  6584  6599 I DisplayManager: Choreographer implicitly registered for the refresh rate.
+11-02 20:21:29.067  6584  6584 D CompatChangeReporter: Compat change id reported: 376561342; UID 10222; state: ENABLED
+11-02 20:21:29.099  6584  6584 D CompatChangeReporter: Compat change id reported: 377864165; UID 10222; state: ENABLED
+11-02 20:21:29.100  6584  6584 D DesktopModeFlags: Toggle override initialized to: OVERRIDE_UNSET
+11-02 20:21:29.110  6584  6599 I EGL_emulation: Opening libGLESv1_CM_emulation.so
+11-02 20:21:29.110  6584  6599 I EGL_emulation: Opening libGLESv2_emulation.so
+11-02 20:21:29.120  6584  6599 W HWUI    : Failed to choose config with EGL_SWAP_BEHAVIOR_PRESERVED, retrying without...
+11-02 20:21:29.121  6584  6599 W HWUI    : Failed to initialize 101010-2 format, error = EGL_SUCCESS
+11-02 20:21:29.140  6584  6584 W HWUI    : Unknown dataspace 0
+11-02 20:21:29.469  6584  6584 D InsetsController: hide(ime(), fromIme=false)
+11-02 20:21:29.469  6584  6584 I ImeTracker: dev.bookfin.ocr.probe.englishfast:e8c32905: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+11-02 20:21:29.857  6584  6589 I obe.englishfast: Compiler allocated 5111KB to compile void android.view.ViewRootImpl.performTraversals()
+11-02 20:21:30.084  6584  6626 I obe.englishfast: Using smaps_rollup for pss collection
+11-02 20:21:30.100  6584  6626 D nativeloader: Load /data/app/~~DZ4Wf1FMqkyOoPCa--V7XA==/dev.bookfin.ocr.probe.englishfast-2u7jYEIYZDprJChxduA0JA==/base.apk!/lib/arm64-v8a/libjpeg.so using class loader ns clns-9 (caller=/data/app/~~DZ4Wf1FMqkyOoPCa--V7XA==/dev.bookfin.ocr.probe.englishfast-2u7jYEIYZDprJChxduA0JA==/base.apk): ok
+11-02 20:21:30.101  6584  6626 D nativeloader: Load /data/app/~~DZ4Wf1FMqkyOoPCa--V7XA==/dev.bookfin.ocr.probe.englishfast-2u7jYEIYZDprJChxduA0JA==/base.apk!/lib/arm64-v8a/libpngx.so using class loader ns clns-9 (caller=/data/app/~~DZ4Wf1FMqkyOoPCa--V7XA==/dev.bookfin.ocr.probe.englishfast-2u7jYEIYZDprJChxduA0JA==/base.apk): ok
+11-02 20:21:30.102  6584  6626 D nativeloader: Load /data/app/~~DZ4Wf1FMqkyOoPCa--V7XA==/dev.bookfin.ocr.probe.englishfast-2u7jYEIYZDprJChxduA0JA==/base.apk!/lib/arm64-v8a/libleptonica.so using class loader ns clns-9 (caller=/data/app/~~DZ4Wf1FMqkyOoPCa--V7XA==/dev.bookfin.ocr.probe.englishfast-2u7jYEIYZDprJChxduA0JA==/base.apk): ok
+11-02 20:21:30.104  6584  6626 D nativeloader: Load /data/app/~~DZ4Wf1FMqkyOoPCa--V7XA==/dev.bookfin.ocr.probe.englishfast-2u7jYEIYZDprJChxduA0JA==/base.apk!/lib/arm64-v8a/libtesseract.so using class loader ns clns-9 (caller=/data/app/~~DZ4Wf1FMqkyOoPCa--V7XA==/dev.bookfin.ocr.probe.englishfast-2u7jYEIYZDprJChxduA0JA==/base.apk): ok
+11-02 20:21:30.202  6584  6628 D CompatChangeReporter: Compat change id reported: 288912692; UID 10222; state: ENABLED
+11-02 20:21:30.444  6584  6626 I Tesseract(native): Initialized Tesseract API with language=eng
+11-02 20:21:30.824  6584  6626 W HWUI    : Image decoding logging dropped!
+11-02 20:21:30.826  6584  6626 I obe.englishfast: hiddenapi: Accessing hidden field Landroid/graphics/Bitmap;->mNativePtr:J (runtime_flags=0, domain=platform, api=unsupported) from Lcom/googlecode/leptonica/android/ReadFile; (domain=app) using JNI: allowed
+11-02 20:21:31.738  6584  6626 W HWUI    : Image decoding logging dropped!
+11-02 20:21:32.384  6584  6626 W HWUI    : Image decoding logging dropped!
+11-02 20:21:32.601  6584  6626 W HWUI    : Image decoding logging dropped!
+11-02 20:21:32.946  6584  6626 W HWUI    : Image decoding logging dropped!
+11-02 20:21:34.980  6584  6626 W HWUI    : Image decoding logging dropped!
+11-02 20:21:36.912  6584  6626 W HWUI    : Image decoding logging dropped!
+11-02 20:21:37.831  6584  6626 W HWUI    : Image decoding logging dropped!
+11-02 20:21:38.728  6584  6626 W HWUI    : Image decoding logging dropped!
+11-02 20:21:41.472  6584  6626 W HWUI    : Image decoding logging dropped!
+11-02 20:21:41.488  6584  6590 I obe.englishfast: NativeAlloc concurrent mark compact GC freed 2154KB AllocSpace bytes, 5(240KB) LOS objects, 49% free, 1913KB/3826KB, paused 34us,8.795ms total 14.051ms
+11-02 20:21:44.204  6584  6626 W HWUI    : Image decoding logging dropped!
+11-02 20:21:44.320  6584  6626 W HWUI    : Image decoding logging dropped!
+11-02 20:21:44.433  6584  6626 W HWUI    : Image decoding logging dropped!
+11-02 20:21:44.545  6584  6626 W HWUI    : Image decoding logging dropped!

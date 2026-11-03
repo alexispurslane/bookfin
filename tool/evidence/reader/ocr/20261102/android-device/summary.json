@@ -1,0 +1,80 @@
+{
+  "schema": 1,
+  "status": "partial-stopped-on-second-device-command-timeout",
+  "documentationCommit": "562dec23c11bce782b13935e49b2b126a94ea325",
+  "sourceCommit": "838d8a4a0b6f2a55f0042df042ab5f5b97df51df",
+  "normalBookfinModified": false,
+  "productionOcrAccepted": false,
+  "engineOrLanguageSelected": false,
+  "candidateStatus": {
+    "baseline": "storage-only",
+    "englishFast": "two-completed-offline-runs-lifecycle-incomplete",
+    "englishBest": "hash-and-permissions-verified-not-installed",
+    "latinFast": "hash-and-permissions-verified-not-installed",
+    "mlkit": "hash-and-permissions-verified-not-installed"
+  },
+  "reports": [
+    {
+      "run": "fresh",
+      "startedUtc": "2026-11-03T01:21:30.083000+00:00",
+      "completedUtc": "2026-11-03T01:21:44.650000+00:00",
+      "initializationMs": 356.795334,
+      "durationMs": 14567,
+      "memory": {
+        "baselineProcessPssKiB": 52935,
+        "sampledPeakProcessPssKiB": 269055,
+        "sampledPeakNativeAllocatedBytes": 216281600,
+        "sampledPeakJavaUsedBytes": 4345328,
+        "samples": 147
+      }
+    },
+    {
+      "run": "repeat",
+      "startedUtc": "2026-11-03T01:27:47.552000+00:00",
+      "completedUtc": "2026-11-03T01:28:01.910000+00:00",
+      "initializationMs": 107.698917,
+      "durationMs": 14358,
+      "memory": {
+        "baselineProcessPssKiB": 76548,
+        "sampledPeakProcessPssKiB": 274751,
+        "sampledPeakNativeAllocatedBytes": 218108864,
+        "sampledPeakJavaUsedBytes": 2475216,
+        "samples": 145
+      }
+    }
+  ],
+  "recognizedTextIdenticalAcrossRuns": true,
+  "directoryStorage": {
+    "units": "KiB (1024 bytes), allocated directory blocks measured with du -ak",
+    "scope": "Package directory plus app-private data/cache; excludes unmeasured system-managed compilation/profile storage. Not Android StorageStats total.",
+    "baseline": {
+      "packageKiB": 13200,
+      "privateKiB": 24,
+      "sumKiB": 13224
+    },
+    "englishFast": {
+      "packageKiB": 24632,
+      "privateKiB": 4108,
+      "sumKiB": 28740,
+      "privateModelLogicalBytes": 4113088,
+      "bundledModelLogicalBytes": 4113088
+    }
+  },
+  "lifecycle": {
+    "cancelRequestedOn": "census-notice-page-1 pass 1",
+    "previousReportPreserved": true,
+    "laterRunStarted": true,
+    "leaveAndReopenObserved": true,
+    "laterCompleteSuccessObserved": false,
+    "nativeInterruptionTimed": false,
+    "accepted": false
+  },
+  "cleanup": {
+    "ownedPackagesRemoved": true,
+    "ownedProcessesAbsentBeforeRelease": true,
+    "networkRestoredToInitialState": true,
+    "mediaMutedBeforeAndAfter": true,
+    "bindingReleased": true,
+    "deviceShutdown": false
+  }
+}

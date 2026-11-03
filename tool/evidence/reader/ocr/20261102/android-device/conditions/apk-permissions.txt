@@ -1,0 +1,7 @@
+package: dev.bookfin.ocr.probe.baseline
+package: dev.bookfin.ocr.probe.englishfast
+package: dev.bookfin.ocr.probe.englishbest
+package: dev.bookfin.ocr.probe.latinfast
+package: dev.bookfin.ocr.probe.mlkit
+permission: dev.bookfin.ocr.probe.mlkit.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+uses-permission: name='dev.bookfin.ocr.probe.mlkit.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION'

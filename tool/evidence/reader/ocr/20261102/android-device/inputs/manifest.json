@@ -1,0 +1,111 @@
+{
+  "schema": 1,
+  "samples": [
+    {
+      "id": "raven-1873-page-9",
+      "file": "raven-1873-page-9.png",
+      "sha256": "34855abb79acfa2ff09156b1f889b41547c21770d1515ef4716a40f9ebea2b7a",
+      "width": 2737,
+      "height": 4445,
+      "dpi": 200,
+      "sourceFile": "raven-1873.pdf",
+      "sourceSha256": "25dc58e363e02a442a25174fe9fcd21d3a2f78ac4511731accaaeba326c3d8e8",
+      "sourcePage": 9,
+      "rights": "LOC item rights: The books in this collection are in the public domain and are free to use and reuse. Credit Line: Library of Congress.",
+      "territory": "LOC public-domain declaration recorded; no independent worldwide determination is claimed.",
+      "reference": null,
+      "referenceProvenance": "No quality score without independently checked transcription."
+    },
+    {
+      "id": "raven-1873-page-9-poem-crop",
+      "file": "raven-1873-page-9-poem-crop.png",
+      "sha256": "9e5164b5e06471c9fb1152bf1809a406f02c07d2d6bd823df3789969950d8331",
+      "width": 2162,
+      "height": 320,
+      "dpi": 200,
+      "sourceFile": "raven-1873.pdf",
+      "sourceSha256": "25dc58e363e02a442a25174fe9fcd21d3a2f78ac4511731accaaeba326c3d8e8",
+      "sourcePage": 9,
+      "cropFractionsLeftTopRightBottom": [
+        0.06,
+        0.79,
+        0.85,
+        0.862
+      ],
+      "rights": "LOC item rights: The books in this collection are in the public domain and are free to use and reuse. Credit Line: Library of Congress.",
+      "territory": "LOC public-domain declaration recorded; no independent worldwide determination is claimed.",
+      "reference": "raven-1873-page-9-poem-crop.txt",
+      "referenceSha256": "0f788773d79da7f2567df41063cfc7de0fe16ef36cef5704eb637eccf2c3af74",
+      "referenceProvenance": "Builder visually transcribed the three visible poem lines from the rendered 1873 scan; not its defective existing OCR layer. Crop excludes title, byline, illustration, and page number. Independent acceptance transcription check remains required."
+    },
+    {
+      "id": "raven-1873-page-10",
+      "file": "raven-1873-page-10.png",
+      "sha256": "510acfc405cf61a231ecfafe0497306bb53d73ceb7f6ee9b16880b63adf6b60a",
+      "width": 2737,
+      "height": 4445,
+      "dpi": 200,
+      "sourceFile": "raven-1873.pdf",
+      "sourceSha256": "25dc58e363e02a442a25174fe9fcd21d3a2f78ac4511731accaaeba326c3d8e8",
+      "sourcePage": 10,
+      "rights": "LOC item rights: The books in this collection are in the public domain and are free to use and reuse. Credit Line: Library of Congress.",
+      "territory": "LOC public-domain declaration recorded; no independent worldwide determination is claimed.",
+      "reference": null,
+      "referenceProvenance": "No quality score without independently checked transcription."
+    },
+    {
+      "id": "nist-cloud-page-5",
+      "file": "nist-cloud-page-5.png",
+      "sha256": "6e0f0dc96c9074c6cabc4ae71a5d330f0eb063ba1a9dfe6cf018e83fbf944df6",
+      "width": 1700,
+      "height": 2200,
+      "dpi": 200,
+      "sourceFile": "nist-cloud.pdf",
+      "sourceSha256": "7b0c1a9fdfc67218b8ba2098f448c100c27070db91736b3c87fed63bfa21d418",
+      "sourcePage": 5,
+      "rights": "NIST policy describes employee-authored publications as not subject to copyright protection in the United States; this report names two NIST authors.",
+      "territory": "US federal employee work basis in the USA. No worldwide or third-party material clearance is claimed.",
+      "reference": null,
+      "referenceProvenance": "No quality score without independently checked transcription."
+    },
+    {
+      "id": "census-notice-page-1",
+      "file": "census-notice-page-1.png",
+      "sha256": "db7f6beec469ad39247b22d83883d4986f3304137801996dc6f7955630dba972",
+      "width": 1700,
+      "height": 2200,
+      "dpi": 200,
+      "sourceFile": "census-notice.pdf",
+      "sourceSha256": "4a696b3ccf264093326663176e45b93e336ec024fd88447ab56d39e5e9b9e5f8",
+      "sourcePage": 1,
+      "rights": "Official Census Bureau notice in the Federal Register. GovInfo policy warns that some hosted material has separate rights; this item is a US government-authored notice, not a blanket assertion about the collection.",
+      "territory": "US government work basis in the USA. No worldwide clearance is claimed.",
+      "reference": null,
+      "referenceProvenance": "No quality score without independently checked transcription."
+    },
+    {
+      "id": "generated-english",
+      "file": "generated-english.png",
+      "sha256": "30fce43633b99aa18db29680ee9ed9ebd1733c97eca7ee6c3055eaeddd1d6af6",
+      "width": 1400,
+      "height": 600,
+      "fontSha256": "97b2d4da6e3cb494b5a1e66ae176914d852ccabef49e0c02c0df25f3e39aca0b",
+      "rights": "Generated Bookfin fixture; font under assets/fonts/OFL-Source-Serif-4.txt.",
+      "reference": "generated-english.txt",
+      "referenceSha256": "723d33dff412736715fc684a7393469a200e86f58fc4042df3bf0142010c564d",
+      "referenceProvenance": "Exact input text, generated scan; not a historic scan accuracy claim."
+    },
+    {
+      "id": "generated-french",
+      "file": "generated-french.png",
+      "sha256": "bcd1edeefdb38b0e7e504d955ec124f07afc11fe948a5f47ed3016a5fb301b53",
+      "width": 1400,
+      "height": 600,
+      "fontSha256": "97b2d4da6e3cb494b5a1e66ae176914d852ccabef49e0c02c0df25f3e39aca0b",
+      "rights": "Generated Bookfin fixture; font under assets/fonts/OFL-Source-Serif-4.txt.",
+      "reference": "generated-french.txt",
+      "referenceSha256": "0ea8cda35f0ad4b57e124949f0c733d873a6b6f3da0908afe22c21467074e377",
+      "referenceProvenance": "Exact input text, generated scan; not a historic scan accuracy claim."
+    }
+  ]
+}

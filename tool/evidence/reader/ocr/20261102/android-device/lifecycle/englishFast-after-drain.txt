@@ -1,0 +1,7 @@
+Page: dev.bookfin.ocr.probe.englishfast
+App: dev.bookfin.ocr.probe.englishfast
+Snapshot: 4 nodes
+@e1 [button] "RUN OFFLINE OCR MEASUREMENTS"
+@e2 [button] "CANCEL AFTER CURRENT NATIVE PAGE"
+@e3 [scroll-area] [scrollable]
+@e4 [text] "Text view" [preview:"Research only: englishFast Fully bundled inpu..."] [truncated]

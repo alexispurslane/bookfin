@@ -1,0 +1,29 @@
+Tue Nov  3 01:23:28 UTC 2026
+package:/data/app/~~DZ4Wf1FMqkyOoPCa--V7XA==/dev.bookfin.ocr.probe.englishfast-2u7jYEIYZDprJChxduA0JA==/base.apk
+code_directory_allocated_KiB
+24608	/data/app/~~DZ4Wf1FMqkyOoPCa--V7XA==/dev.bookfin.ocr.probe.englishfast-2u7jYEIYZDprJChxduA0JA==/base.apk
+8	/data/app/~~DZ4Wf1FMqkyOoPCa--V7XA==/dev.bookfin.ocr.probe.englishfast-2u7jYEIYZDprJChxduA0JA==/lib/arm64
+16	/data/app/~~DZ4Wf1FMqkyOoPCa--V7XA==/dev.bookfin.ocr.probe.englishfast-2u7jYEIYZDprJChxduA0JA==/lib
+24632	/data/app/~~DZ4Wf1FMqkyOoPCa--V7XA==/dev.bookfin.ocr.probe.englishfast-2u7jYEIYZDprJChxduA0JA==
+private_allocated_KiB
+8	./cache
+8	./code_cache
+4024	./files/tesseract/tessdata/eng.traineddata
+4032	./files/tesseract/tessdata
+4040	./files/tesseract
+36	./files/report.json
+4084	./files
+4108	.
+private_file_logical_bytes
+files:
+total 44
+-rw------- 1 u0_a222 u0_a222 32608 2026-11-02 20:21 report.json
+drwx------ 3 u0_a222 u0_a222  4096 2026-11-02 20:21 tesseract
+
+files/tesseract:
+total 8
+drwx------ 2 u0_a222 u0_a222 4096 2026-11-02 20:21 tessdata
+
+files/tesseract/tessdata:
+total 4024
+-rw------- 1 u0_a222 u0_a222 4113088 2026-11-02 20:21 eng.traineddata

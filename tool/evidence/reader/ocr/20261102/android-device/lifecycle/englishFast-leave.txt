@@ -1,0 +1,6 @@
+Back
+settled after 581ms: +1 -1 (~3 unchanged)
+- @e4 [text] "Recognizing raven-1873-page-9 pass 1…"
++ @e4~s768575 [text] "Research only: baseline
+Fully bundled inputs. No Internet permission. Two passes per scan. Keep the app visible. Results: private files/report.json. Baseline is size-only."
+hint: Settled on a nearly-empty tree — the app may still be loading. Wait for specific content (wait text ...) before interacting.

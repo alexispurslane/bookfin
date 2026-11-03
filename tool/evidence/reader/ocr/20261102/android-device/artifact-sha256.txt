@@ -1,0 +1,6 @@
+d41f6546b25a53c6d66bd444ae1ddcdc1329b8c4a0ca468d7306f0ea634eb2bc  /Users/alexispurslane/.t3/worktrees/bookfin/t3-6bcb40a5/.cache/artifacts/ocr-20261102/bookfin-ocr-baseline-research-1.apk
+c944f885cd856216552fb1625b6c3b756e433c8be09c1744c212b5491d8e7099  /Users/alexispurslane/.t3/worktrees/bookfin/t3-6bcb40a5/.cache/artifacts/ocr-20261102/bookfin-ocr-englishFast-research-1.apk
+1eb727116b606381d2f90384908082d3a431ce87e669678cf5ac853d8a25d052  /Users/alexispurslane/.t3/worktrees/bookfin/t3-6bcb40a5/.cache/artifacts/ocr-20261102/bookfin-ocr-englishBest-research-1.apk
+0ac5bb8be95d9a56b359b15799c723352822fb57a789e372e8ecca982ea52862  /Users/alexispurslane/.t3/worktrees/bookfin/t3-6bcb40a5/.cache/artifacts/ocr-20261102/bookfin-ocr-latinFast-research-1.apk
+77403f3e6cb407293f31a4b7e5603c6fe462823858aec7c3a80ad4e4003e80a5  /Users/alexispurslane/.t3/worktrees/bookfin/t3-6bcb40a5/.cache/artifacts/ocr-20261102/bookfin-ocr-mlkit-research-1.apk
+d723f7bc35de18ef92ec727957dd591a8d42690a9eb58602c124f5009feae0a7  /Users/alexispurslane/.t3/worktrees/bookfin/t3-6bcb40a5/.cache/artifacts/ocr-20261102/bookfin-source-838d8a4.tar.gz

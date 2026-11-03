@@ -1,0 +1,7 @@
+Tapped (540, 140)
+settled after 933ms: +2 -2 (~2 unchanged)
+- @e1 [button] "RUN OFFLINE OCR MEASUREMENTS"
++ @e1~s768572 [button] "RUN OFFLINE OCR MEASUREMENTS" [disabled]
+- @e4 [text] "Cancelled. Current native page drains before the next run. No stale result is published."
++ @e4~s768572 [text] "Recognizing raven-1873-page-9 pass 1…"
+hint: Settled on a nearly-empty tree — the app may still be loading. Wait for specific content (wait text ...) before interacting.

@@ -1,0 +1,34 @@
+first complete diagnostics SHA256 1e4cb56b278299524e3a29561c2ab800a0091cfd8c665e64aea32e67b9a626d5
+second complete diagnostics SHA256 b4524a5a5e9cfb637d404597ea4fcd46954b103c3490ff402dd6b7af6254585b
+englishFast-fresh.json b4db8f8db5f5be54c9c633a16b35e37f00bdd40bcc258ba389922d5d4dba7c8d
+englishFast-repeat.json d6ad3bfa12e0ea33987c767c83ef8fcf1bcd830072ad74cf838861c373e78967
+[
+  {
+    "run": "fresh",
+    "startedUtc": "2026-11-03T01:21:30.083000+00:00",
+    "completedUtc": "2026-11-03T01:21:44.650000+00:00",
+    "initializationMs": 356.795334,
+    "durationMs": 14567,
+    "memory": {
+      "baselineProcessPssKiB": 52935,
+      "sampledPeakProcessPssKiB": 269055,
+      "sampledPeakNativeAllocatedBytes": 216281600,
+      "sampledPeakJavaUsedBytes": 4345328,
+      "samples": 147
+    }
+  },
+  {
+    "run": "repeat",
+    "startedUtc": "2026-11-03T01:27:47.552000+00:00",
+    "completedUtc": "2026-11-03T01:28:01.910000+00:00",
+    "initializationMs": 107.698917,
+    "durationMs": 14358,
+    "memory": {
+      "baselineProcessPssKiB": 76548,
+      "sampledPeakProcessPssKiB": 274751,
+      "sampledPeakNativeAllocatedBytes": 218108864,
+      "sampledPeakJavaUsedBytes": 2475216,
+      "samples": 145
+    }
+  }
+]

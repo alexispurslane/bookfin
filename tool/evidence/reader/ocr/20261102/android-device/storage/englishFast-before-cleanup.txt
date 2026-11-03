@@ -1,0 +1,21 @@
+Tue Nov  3 01:31:45 UTC 2026
+8	./cache
+8	./code_cache
+4024	./files/tesseract/tessdata/eng.traineddata
+4032	./files/tesseract/tessdata
+4040	./files/tesseract
+36	./files/report.json
+4084	./files
+4108	.
+files:
+total 44
+-rw------- 1 u0_a222 u0_a222 32610 2026-11-02 20:28 report.json
+drwx------ 3 u0_a222 u0_a222  4096 2026-11-02 20:21 tesseract
+
+files/tesseract:
+total 8
+drwx------ 2 u0_a222 u0_a222 4096 2026-11-02 20:21 tessdata
+
+files/tesseract/tessdata:
+total 4024
+-rw------- 1 u0_a222 u0_a222 4113088 2026-11-02 20:30 eng.traineddata

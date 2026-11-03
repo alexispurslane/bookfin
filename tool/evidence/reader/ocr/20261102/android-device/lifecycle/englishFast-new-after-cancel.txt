@@ -1,0 +1,8 @@
+Tapped text="RUN OFFLINE OCR MEASUREMENTS" (540, 87)
+settled after 535ms: +0 -0 (~4 unchanged)
+unchanged interactive (4):
+= @e1~s768386 [button] "RUN OFFLINE OCR MEASUREMENTS"
+= @e2~s768386 [button] "CANCEL AFTER CURRENT NATIVE PAGE"
+= @e3~s768386 [scroll-area]
+= @e4~s768386 [text] "Cancelled. Current native page drains before the next run. No stale result is published."
+hint: Settled on a nearly-empty tree — the app may still be loading. Wait for specific content (wait text ...) before interacting.

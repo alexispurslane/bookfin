@@ -1,0 +1,8 @@
+package:/data/app/~~w6YCA0UaTuX3y9c2nfQy-w==/dev.bookfin.ocr.probe.baseline-qnGcSFzZYD1ACKqU7nj_VA==/base.apk
+code_directory
+13192	/data/app/~~w6YCA0UaTuX3y9c2nfQy-w==/dev.bookfin.ocr.probe.baseline-qnGcSFzZYD1ACKqU7nj_VA==/base.apk
+13200	/data/app/~~w6YCA0UaTuX3y9c2nfQy-w==/dev.bookfin.ocr.probe.baseline-qnGcSFzZYD1ACKqU7nj_VA==
+private_allocated_KiB
+8	./cache
+8	./code_cache
+24	.
