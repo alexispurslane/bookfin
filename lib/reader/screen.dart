@@ -52,6 +52,13 @@ class _ReaderScreenState extends State<ReaderScreen> {
       final token = reader.token;
       final publication = reader.publication;
       final document = reader.document;
+      final page = reader.visibleAddress?.page;
+      final pages = reader.visibleAddress?.pages;
+      final pageLabel = page == null
+          ? 'Page progress unavailable'
+          : pages == null
+          ? 'Page $page'
+          : 'Page $page of $pages';
       final night = Theme.of(context).brightness == Brightness.dark;
       return Scaffold(
         backgroundColor: night
@@ -268,17 +275,15 @@ class _ReaderScreenState extends State<ReaderScreen> {
                               ),
                             ],
                           ),
-                          if (reader.visibleAddress?.page != null)
+                          if (page != null && pages != null)
                             Padding(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 16,
                               ),
                               child: LinearProgressIndicator(
-                                value:
-                                    reader.visibleAddress!.page! /
-                                    reader.visibleAddress!.pages!,
+                                value: page / pages,
                                 semanticsLabel:
-                                    'Current document page progress. Page ${reader.visibleAddress!.page} of ${reader.visibleAddress!.pages}',
+                                    'Current document page progress. $pageLabel',
                               ),
                             ),
                           Row(
@@ -292,7 +297,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
                               ),
                               Expanded(
                                 child: Text(
-                                  '${reader.visibleAddress?.chapter ?? 'Current chapter unavailable'} · ${reader.visibleAddress?.page == null ? 'Page progress unavailable' : 'Page ${reader.visibleAddress!.page} of ${reader.visibleAddress!.pages}'}',
+                                  '${reader.visibleAddress?.chapter ?? 'Current chapter unavailable'} · $pageLabel',
                                   textAlign: TextAlign.center,
                                   style: Theme.of(context).textTheme.bodySmall,
                                 ),

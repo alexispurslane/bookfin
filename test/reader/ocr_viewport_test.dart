@@ -4,12 +4,18 @@ import 'package:bookfin/reader/document.dart';
 import 'package:bookfin/reader/ocr.dart';
 import 'package:bookfin/reader/pdf.dart';
 import 'package:bookfin/reader/pdf_viewport.dart';
+import 'package:bookfin/reader/platform_io.dart';
+import 'package:bookfin/reader/screen.dart';
+import 'package:bookfin/reader/session.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../playback/playback_test.dart' show account, LocalFiles, MemoryResume;
 import 'ocr_test.dart' show englishPage;
+import 'pdf_document_test.dart' show pdfSource;
 import 'pdf_navigation_test.dart' show HeldPdf;
+import 'pdf_session_test.dart' show book, edition;
 
 class HeldRecognition implements PdfTextSupply {
   @override
@@ -74,6 +80,44 @@ class ViewportPdf extends HeldPdf {
 }
 
 void main() {
+  testWidgets(
+    'canceling unsettled scan text keeps the full reader controls usable',
+    (tester) async {
+      final supply = HeldRecognition();
+      final pdf = ViewportPdf(textSupply: supply);
+      final downloads = LocalFiles()
+        ..files[pdfSource.key] = Uri.file('/scan.pdf');
+      final reader = ReaderSession(
+        downloads: downloads,
+        store: MemoryResume(),
+        load: loadPublication,
+        loadDocument: (_, _) async => pdf,
+      );
+      addTearDown(() async {
+        await tester.pumpWidget(const SizedBox());
+        reader.dispose();
+        downloads.dispose();
+        supply.recognizing.dispose();
+      });
+      await reader.bind(account(), [book]);
+      await reader.open(book, edition);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: ReaderScreen(reader: reader, onNightChanged: (_) {}),
+        ),
+      );
+      await tester.pump();
+      expect(find.text('Recognizing English text…'), findsOneWidget);
+      await tester.tap(find.text('Cancel recognition'));
+      await tester.pump();
+      expect(find.byType(ErrorWidget), findsNothing);
+      expect(find.byTooltip('Next page'), findsOneWidget);
+      expect(find.text('Retry recognition'), findsOneWidget);
+      expect((reader.visibleAddress as PdfAddress).sourcePage, 1);
+      expect((reader.visibleAddress as PdfAddress).character, 0);
+    },
+  );
+
   testWidgets(
     'English recognition can be canceled while its original page remains visible',
     (tester) async {

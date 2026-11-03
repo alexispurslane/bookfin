@@ -1,0 +1,23 @@
+xcrun: error: SDK cannot be located: error: unable to find sdk: 'iphoneos'
+
+
+SDK iphoneos not installed.
+
+xcrun: error: SDK cannot be located: error: unable to find sdk: 'iphonesimulator'
+
+
+SDK iphonesimulator not installed.
+
+00:00 +0: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-f29350e1/test/reader/ocr_viewport_test.dart
+00:00 +0: /Users/alexispurslane/.t3/worktrees/bookfin/t3-f29350e1/test/reader/ocr_viewport_test.dart: canceling unsettled scan text keeps the full reader controls usable
+00:01 +1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-f29350e1/test/reader/ocr_cancel_screen_test.dart: cancel and retry preserve an unresolved nonzero saved place until an explicit source-page choice (variant: TargetPlatform.android)
+00:01 +2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-f29350e1/test/reader/ocr_cancel_screen_test.dart: cancel and retry preserve an unresolved nonzero saved place until an explicit source-page choice (variant: TargetPlatform.android)
+00:01 +3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-f29350e1/test/reader/ocr_cancel_screen_test.dart: cancel and retry preserve an unresolved nonzero saved place until an explicit source-page choice (variant: TargetPlatform.android)
+00:02 +4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-f29350e1/test/reader/ocr_cancel_screen_test.dart: cancel during pending render keeps controls and original fallback through retry success (variant: TargetPlatform.android)
+00:03 +5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-f29350e1/test/reader/ocr_cancel_screen_test.dart: cancel during pending render keeps controls and original fallback through retry failure (variant: TargetPlatform.android)
+00:03 +6: /Users/alexispurslane/.t3/worktrees/bookfin/t3-f29350e1/test/reader/ocr_cancel_screen_test.dart: cancel during pending native recognition keeps controls and original fallback through retry success (variant: TargetPlatform.android)
+00:04 +7: /Users/alexispurslane/.t3/worktrees/bookfin/t3-f29350e1/test/reader/ocr_cancel_screen_test.dart: cancel during pending native recognition keeps controls and original fallback through retry failure (variant: TargetPlatform.android)
+00:05 +8: All tests passed!
+Analyzing t3-f29350e1...
+No issues found! (ran in 4.1s)
+Formatted 3 files (0 changed) in 0.06 seconds.

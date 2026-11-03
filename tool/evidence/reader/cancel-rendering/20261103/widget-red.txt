@@ -1,0 +1,90 @@
+xcrun: error: SDK cannot be located: error: unable to find sdk: 'iphoneos'
+
+
+SDK iphoneos not installed.
+
+xcrun: error: SDK cannot be located: error: unable to find sdk: 'iphonesimulator'
+
+
+SDK iphonesimulator not installed.
+
+00:00 +0: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-f29350e1/test/reader/ocr_viewport_test.dart
+00:00 +0: canceling unsettled scan text keeps the full reader controls usable
+══╡ EXCEPTION CAUGHT BY WIDGETS LIBRARY ╞═══════════════════════════════════════════════════════════
+The following _TypeError was thrown building ListenableBuilder(listenable: Instance of
+'ReaderSession', dirty, dependencies: [InheritedCupertinoTheme, MediaQuery, _InheritedTheme,
+_LocalizationsScope-[GlobalKey#bfcff]], state: _AnimatedState#05d29):
+Null check operator used on a null value
+
+The relevant error-causing widget was:
+  ListenableBuilder
+  ListenableBuilder:file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-f29350e1/lib/reader/screen.dart:48:41
+
+When the exception was thrown, this was the stack:
+#0      _ReaderScreenState.build.<anonymous closure> (package:bookfin/reader/screen.dart:279:65)
+#1      ListenableBuilder.build (package:flutter/src/widgets/transitions.dart:1173:48)
+#2      _AnimatedState.build (package:flutter/src/widgets/transitions.dart:139:48)
+#3      StatefulElement.build (package:flutter/src/widgets/framework.dart:5944:27)
+#4      ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5830:15)
+#5      StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5995:11)
+#6      Element.rebuild (package:flutter/src/widgets/framework.dart:5542:7)
+#7      BuildScope._tryRebuild (package:flutter/src/widgets/framework.dart:2763:15)
+#8      BuildScope._flushDirtyElements (package:flutter/src/widgets/framework.dart:2820:11)
+#9      BuildOwner.buildScope (package:flutter/src/widgets/framework.dart:3124:18)
+#10     AutomatedTestWidgetsFlutterBinding.drawFrame (package:flutter_test/src/binding.dart:2432:19)
+#11     RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:558:5)
+#12     SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1430:15)
+#13     SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1345:9)
+#14     AutomatedTestWidgetsFlutterBinding.pump.<anonymous closure> (package:flutter_test/src/binding.dart:2261:9)
+#17     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#18     AutomatedTestWidgetsFlutterBinding.pump (package:flutter_test/src/binding.dart:2250:27)
+#19     WidgetTester.pump.<anonymous closure> (package:flutter_test/src/widget_tester.dart:652:53)
+#22     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#23     WidgetTester.pump (package:flutter_test/src/widget_tester.dart:652:27)
+#24     main.<anonymous closure> (file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-f29350e1/test/reader/ocr_viewport_test.dart:110:20)
+<asynchronous suspension>
+#25     testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#26     TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided 5 frames from dart:async and package:stack_trace)
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: no matching candidates
+  Actual: _TypeWidgetFinder:<Found 1 widget with type "ErrorWidget": [
+            ErrorWidget-[#9586e](message: Null check operator used on a null value\nSee also:
+https://docs.flutter.dev/testing/errors, renderObject: RenderErrorBox#42e29),
+          ]>
+   Which: means one was found but none were expected
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-f29350e1/test/reader/ocr_viewport_test.dart:111:7)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-f29350e1/test/reader/ocr_viewport_test.dart line 111
+The test description was:
+  canceling unsettled scan text keeps the full reader controls usable
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following message was thrown:
+Multiple exceptions (2) were detected during the running of the current test, and at least one was
+unexpected.
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:00 +0 -1: canceling unsettled scan text keeps the full reader controls usable [E]
+  Test failed. See exception logs above.
+  The test description was: canceling unsettled scan text keeps the full reader controls usable
+
+00:00 +0 -1: Some tests failed.
+
+Failing tests:
+  /Users/alexispurslane/.t3/worktrees/bookfin/t3-f29350e1/test/reader/ocr_viewport_test.dart: canceling unsettled scan text keeps the full reader controls usable
