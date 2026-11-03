@@ -42,9 +42,12 @@ document. Successful recognition stays selected for later requests and reopening
 The document keeps at most sixteen disk-backed recognized pages in memory.
 Selections whose cache could not be saved remain in memory until document close;
 this memory grows with unsaved selections rather than discarding their only copy.
-Text reuse precedes native-work admission. It uses the active download ownership
-interval when one exists, or enters a new interval, and verifies original bytes.
-Cancellation of native work does not revoke download ownership by itself.
+Text reuse precedes native-work admission and verifies original bytes. One owned
+read operation serves concurrent users from the start of acquisition through the
+last user's completion. Requests join that operation even while acquisition is
+pending. The download owner retains its revocation checks; recognition completing
+or failing cannot expire another user's read. Cancellation of native work does not
+revoke download ownership by itself. Close also drains admitted text reads.
 
 ## Text coordinates and compatibility
 

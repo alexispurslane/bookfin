@@ -1,0 +1,62 @@
+Resolving dependencies...
+Downloading packages...
+  archive 4.0.9 (4.6.0 available)
+  code_assets 1.2.1 (2.1.0 available)
+  crypto 3.0.7 (3.0.8 available)
+  flutter_cache_manager 3.4.6 (3.4.8 available)
+  flutter_secure_storage 9.2.4 (11.2.0 available)
+  flutter_secure_storage_linux 1.2.3 (3.0.3 available)
+  flutter_secure_storage_macos 3.1.3 (4.0.0 available)
+  flutter_secure_storage_platform_interface 1.1.2 (2.1.1 available)
+  flutter_secure_storage_web 1.2.1 (2.1.1 available)
+  flutter_secure_storage_windows 3.1.2 (4.2.2 available)
+  hooks 2.0.2 (2.2.0 available)
+  image 4.8.0 (4.12.0 available)
+  js 0.6.7 (0.7.2 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  meta 1.18.3 (1.19.0 available)
+  native_toolchain_c 0.19.2 (0.19.5 available)
+  objective_c 9.5.0 (9.6.2 available)
+  petitparser 7.0.2 (7.1.0 available)
+  record_use 0.6.0 (1.1.1 available)
+  shared_preferences_foundation 2.5.7 (2.6.1 available)
+  sqflite_common_ffi 2.4.0+2 (2.4.5 available)
+  sqlite3 3.5.2 (3.8.0 available)
+  test_api 0.7.12 (0.7.15 available)
+  vector_math 2.4.0 (2.4.4 available)
+  win32 5.15.0 (6.4.0 available)
+  xml 6.6.1 (7.1.0 available)
+Got dependencies!
+26 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+xcrun: error: SDK cannot be located: error: unable to find sdk: 'iphoneos'
+
+
+SDK iphoneos not installed.
+
+xcrun: error: SDK cannot be located: error: unable to find sdk: 'iphonesimulator'
+
+
+SDK iphonesimulator not installed.
+
+00:00 +0: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-7b2e5fcf/test/reader/ocr_read_lifetime_test.dart
+00:00 +0: selected text joins a read still acquiring ownership before native work
+00:03 +0 -1: selected text joins a read still acquiring ownership before native work [E]
+  TimeoutException after 0:00:03.000000: Future not completed
+  dart:async  _startMicrotaskLoop
+  
+00:03 +0 -1: ordinary native failure does not expire selected text while its original bytes are being verified
+00:03 +0 -2: ordinary native failure does not expire selected text while its original bytes are being verified [E]
+  Expected: 'The quiet garden.'
+    Actual: ''
+     Which: is different. Both strings start the same, but the actual value is missing the following trailing characters: The quiet  ...
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/reader/ocr_read_lifetime_test.dart 201:7       main.<fn>
+  
+00:03 +0 -2: Some tests failed.
+
+Failing tests:
+  /Users/alexispurslane/.t3/worktrees/bookfin/t3-7b2e5fcf/test/reader/ocr_read_lifetime_test.dart: ordinary native failure does not expire selected text while its original bytes are being verified
+  /Users/alexispurslane/.t3/worktrees/bookfin/t3-7b2e5fcf/test/reader/ocr_read_lifetime_test.dart: selected text joins a read still acquiring ownership before native work

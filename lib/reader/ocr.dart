@@ -21,7 +21,7 @@ class BundledEnglishText implements PdfTextSupply {
   final Map<({int page, int generation}), Future<PdfText>> _pending = {};
   final Set<int> _requested = {};
   final Map<int, ({PdfText text, bool saved})> _selected = {};
-  ({Uri original, bool Function() live})? _activeLease;
+  _OwnedTextRead? _read;
   final _recognizing = ValueNotifier(false);
   @override
   ValueListenable<bool> get recognizing => _recognizing;
@@ -60,22 +60,12 @@ class BundledEnglishText implements PdfTextSupply {
     }
 
     try {
-      final active = _activeLease;
-      final PdfText? reused;
-      if (active != null) {
-        reused = await reuse(active.original, active.live);
-      } else {
-        // A null result from the lease means ownership ended, not a cache miss.
-        var available = false;
-        PdfText? found;
-        await _lease?.call((original, owned) async {
-          available = true;
-          found = await reuse(original, owned);
-          return found ?? extracted;
-        });
-        if (!available) return _canceled;
-        reused = found;
-      }
+      var available = false;
+      final reused = await _withRead((original, owned) async {
+        available = true;
+        return reuse(original, owned);
+      });
+      if (!available) return _canceled;
       if (reused != null) return reused;
     } on Exception {
       return _recognitionFailure;
@@ -102,7 +92,7 @@ class BundledEnglishText implements PdfTextSupply {
         );
       }
       try {
-        return await lease((original, owned) async {
+        return await _withRead((original, owned) async {
               bool live() => requestLive() && owned();
               if (!live()) return _canceled;
               final reused = await reuse(original, owned);
@@ -111,48 +101,42 @@ class BundledEnglishText implements PdfTextSupply {
                   !_requested.contains(page)) {
                 return extracted;
               }
-              final active = (original: original, live: owned);
-              _activeLease = active;
-              try {
-                _recognizing.value = true;
-                final raster = await book.render(page, 1600);
-                if (!live()) return _canceled;
-                final hocr = await _channel.invokeMethod<String>('recognize', {
-                  'width': raster.width,
-                  'height': raster.height,
-                  'bgra': raster.bgra,
-                });
-                if (!live()) return _canceled;
-                final result = decodeRecognizedPage(hocr ?? '');
-                if (result.status == PdfTextStatus.candidate) {
-                  try {
-                    await writeOcrCache(
-                      original,
-                      book.originalDigest,
-                      key,
-                      hocr!,
-                      live,
-                    );
-                  } on Exception {
-                    if (!live()) return _canceled;
-                    return _select(
-                      page,
-                      PdfText(
-                        source: result.source,
-                        text: result.text,
-                        sourceOffsets: result.sourceOffsets,
-                        status: result.status,
-                        recognition: result.recognition,
-                        reason: 'English text is available, but could not be cached. Free storage to save recognition.',
-                      ),
-                      saved: false,
-                    );
-                  }
+              _recognizing.value = true;
+              final raster = await book.render(page, 1600);
+              if (!live()) return _canceled;
+              final hocr = await _channel.invokeMethod<String>('recognize', {
+                'width': raster.width,
+                'height': raster.height,
+                'bgra': raster.bgra,
+              });
+              if (!live()) return _canceled;
+              final result = decodeRecognizedPage(hocr ?? '');
+              if (result.status == PdfTextStatus.candidate) {
+                try {
+                  await writeOcrCache(
+                    original,
+                    book.originalDigest,
+                    key,
+                    hocr!,
+                    live,
+                  );
+                } on Exception {
+                  if (!live()) return _canceled;
+                  return _select(
+                    page,
+                    PdfText(
+                      source: result.source,
+                      text: result.text,
+                      sourceOffsets: result.sourceOffsets,
+                      status: result.status,
+                      recognition: result.recognition,
+                      reason: 'English text is available, but could not be cached. Free storage to save recognition.',
+                    ),
+                    saved: false,
+                  );
                 }
-                return live() ? _select(page, result) : _canceled;
-              } finally {
-                _activeLease = null;
               }
+              return live() ? _select(page, result) : _canceled;
             }) ??
             _fallback(
               'The download is no longer available. The original page remains open.',
@@ -175,6 +159,19 @@ class BundledEnglishText implements PdfTextSupply {
     return operation;
   }
 
+  Future<PdfText?> _withRead(
+    Future<PdfText?> Function(Uri original, bool Function() owned) action,
+  ) {
+    final lease = _lease;
+    if (_closed || lease == null) return Future.value(null);
+    var read = _read;
+    if (read == null || !read.accepting) {
+      read = _OwnedTextRead(lease);
+      _read = read;
+    }
+    return read.use(action);
+  }
+
   PdfText _select(int page, PdfText text, {bool saved = true}) {
     if (text.status == PdfTextStatus.candidate) {
       // Only verified disk-backed results may leave the in-memory selection.
@@ -194,6 +191,7 @@ class BundledEnglishText implements PdfTextSupply {
     cancel();
     _closed = true;
     await _draining;
+    await _read?.done;
     try {
       await _channel.invokeMethod<void>('close');
     } finally {
@@ -203,6 +201,7 @@ class BundledEnglishText implements PdfTextSupply {
   }
 
   void checkInvariants() {
+    _read?.checkInvariants();
     if (_pending.length > 2 ||
         _selected.values.where((value) => value.saved).length > 16 ||
         _selected.values.any(
@@ -211,6 +210,61 @@ class BundledEnglishText implements PdfTextSupply {
         _closed && _recognizing.value) {
       throw StateError(
         'Recognition must have at most one active page, one waiting page, and sixteen disk-backed selected pages; unsaved selections remain until close.',
+      );
+    }
+  }
+}
+
+// One acquisition serves all admitted text users. The download read remains
+// owned until the last user finishes; revocation still comes from downloads.
+// Invariants: users are nonnegative; a drained read admits no further users.
+class _OwnedTextRead {
+  _OwnedTextRead(this._lease);
+  final PdfTextLease _lease;
+  final _ready = Completer<({Uri original, bool Function() owned})?>();
+  final _drained = Completer<void>();
+  Future<void>? _done;
+  int _users = 0;
+  bool get accepting => !_drained.isCompleted;
+  Future<void>? get done => _done;
+
+  Future<PdfText?> use(
+    Future<PdfText?> Function(Uri original, bool Function() owned) action,
+  ) async {
+    assert(accepting);
+    _users++;
+    _done ??= _acquire();
+    try {
+      final access = await _ready.future;
+      if (access == null) return null;
+      return await action(access.original, access.owned);
+    } finally {
+      _users--;
+      if (_users == 0) {
+        _drained.complete();
+        await _done;
+      }
+    }
+  }
+
+  Future<void> _acquire() async {
+    try {
+      await _lease((original, owned) async {
+        _ready.complete((original: original, owned: owned));
+        await _drained.future;
+        return _canceled; // The lease result is unused; each user owns its result.
+      });
+      if (!_ready.isCompleted) _ready.complete(null);
+    } catch (error, stack) {
+      if (_ready.isCompleted) rethrow;
+      _ready.completeError(error, stack);
+    }
+  }
+
+  void checkInvariants() {
+    if (_users < 0 || accepting != (_users > 0)) {
+      throw StateError(
+        'An owned text read admits users until its last user leaves.',
       );
     }
   }
