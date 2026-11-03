@@ -1,0 +1,10 @@
+Tapped @e20 (540, 2117)
+settled after 1297ms: +3 -5 (~22 unchanged)
++ @e12~s901957 [text] "Harbour passage 4. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark."
+- @e14 [text] "Harbour passage 7. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark."
+- @e15 [text] "Harbour passage 8. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark."
+- @e16 [text] "Harbour passage 9. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark."
+- @e24 [progressbar] "60, Current document page progress. Page 3 of 5"
++ @e22~s901957 [progressbar] "50, Current document page progress. Page 3 of 6"
+- @e26 [group] "The quiet harbour · Page 3 of 5"
++ @e24~s901957 [group] "The quiet harbour · Page 3 of 6"

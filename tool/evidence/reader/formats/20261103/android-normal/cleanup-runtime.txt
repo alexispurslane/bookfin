@@ -1,0 +1,10 @@
+Remaining reverse routes
+
+Remaining forwards
+emulator-5554 tcp:51800 localabstract:scrcpy_7df64129
+
+Bookfin PID
+Owned listeners
+Owned service PIDs
+  PID COMMAND
+Owned build daemons

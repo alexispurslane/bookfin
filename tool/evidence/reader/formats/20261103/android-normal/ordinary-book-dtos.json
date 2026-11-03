@@ -1,0 +1,65 @@
+[
+  {
+    "Id": "7b9807c77575984e5e57e29a7a5a5e8a",
+    "Name": "01 NIST PDF",
+    "Type": "Book",
+    "Container": null,
+    "MediaSources": null
+  },
+  {
+    "Id": "1348495e14056b7aef96d23a742a9a27",
+    "Name": "02 Census PDF",
+    "Type": "Book",
+    "Container": null,
+    "MediaSources": null
+  },
+  {
+    "Id": "e85465374464bde7c9cc90959c93296d",
+    "Name": "03 Raven PDF",
+    "Type": "Book",
+    "Container": null,
+    "MediaSources": null
+  },
+  {
+    "Id": "265795243309c9cde276f6301c3d587f",
+    "Name": "04 Plain MOBI",
+    "Type": "Book",
+    "Container": null,
+    "MediaSources": null
+  },
+  {
+    "Id": "66b97d11b43fc20e4fcf4db460d5b1f8",
+    "Name": "05 PalmDOC MOBI",
+    "Type": "Book",
+    "Container": null,
+    "MediaSources": null
+  },
+  {
+    "Id": "ed85a6218790b4684f86147215027a7b",
+    "Name": "06 Alice KF8",
+    "Type": "Book",
+    "Container": null,
+    "MediaSources": null
+  },
+  {
+    "Id": "2c77a07f7a02f2e8008f973402c96788",
+    "Name": "07 EPUB assets",
+    "Type": "Book",
+    "Container": null,
+    "MediaSources": null
+  },
+  {
+    "Id": "8bd9947778f288fa939437d3f97e16b4",
+    "Name": "08 Short PDF",
+    "Type": "Book",
+    "Container": null,
+    "MediaSources": null
+  },
+  {
+    "Id": "967536ca520c49072cde07f0ef484368",
+    "Name": "09 Scan PDF",
+    "Type": "Book",
+    "Container": null,
+    "MediaSources": null
+  }
+]

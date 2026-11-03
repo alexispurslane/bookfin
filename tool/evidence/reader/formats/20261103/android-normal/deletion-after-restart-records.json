@@ -1,0 +1,223 @@
+{
+  "case": "deletion-after-restart",
+  "installedApkSha256": "610fb123b835858d675302c550e4b6476ddfcd12372aaebac85a7f2f4b51f7ef",
+  "source": "4ae8c6c2299e7ec7c16420663a8fc305e87e6c9a",
+  "scope": "Only owned ordinary acceptance account; copied SQLite readback, not timing measurement",
+  "sqliteUserVersion": 2,
+  "integrity": "ok",
+  "tables": {
+    "accounts": [],
+    "record_accounts": [
+      {
+        "account": "owned-ordinary-account",
+        "replica": "8d31aa3d7d17dc5555511d584433feb8e7ed22bd",
+        "cursor": 7,
+        "metadata": {
+          "version": 3,
+          "reading": {
+            "version": 1,
+            "fontSize": 22.0
+          }
+        }
+      }
+    ],
+    "record_actions": [
+      {
+        "account": "owned-ordinary-account",
+        "identity": "action.8d31aa3d7d17dc5555511d584433feb8e7ed22bd.1",
+        "payload": {
+          "version": 1,
+          "account": "owned-ordinary-account",
+          "replica": "8d31aa3d7d17dc5555511d584433feb8e7ed22bd",
+          "sequence": 1,
+          "context": {},
+          "record": "[\"reading\",\"resumes\",\"[\\\"2c77a07f7a02f2e8008f973402c96788:\\\",\\\"2c77a07f7a02f2e8008f973402c96788:\\\",\\\"[null,\\\\\\\"543b6ca4c9f21c87d81daf7a932499c0\\\\\\\",null,null,null]\\\"]\"]",
+          "value": {
+            "edition": "2c77a07f7a02f2e8008f973402c96788:",
+            "source": "2c77a07f7a02f2e8008f973402c96788:",
+            "revision": "[null,\"543b6ca4c9f21c87d81daf7a932499c0\",null,null,null]",
+            "anchor": "{\"version\":1,\"processed\":\"89321e4371854478eec763a73fe14e25fc1bc0e0eef046fbaa139f1fcc708735\",\"original\":\"6efe84b320af9a0f9997dfc6c54b172bc982e6b06978a2c3d75359161da0ce96\",\"policy\":\"bookfin-passive-epub-1\",\"engine\":\"epubjs-0.3.93-bookfin.1\",\"cfi\":\"epubcfi(/6/2!/4/2[heading]/1:0)\",\"resource\":\"OEBPS/Text/one.xhtml\",\"quote\":\"The quiet harbourThis book was written for a disposable Bookfin reading test. No private library or published story is u\"}"
+          },
+          "preserve": []
+        },
+        "pending": 0,
+        "payloadSha256": "becd5a84d51ba1c383718eca5a8d0e84fa03fc0233550fa754292ce22aaf997d"
+      },
+      {
+        "account": "owned-ordinary-account",
+        "identity": "action.8d31aa3d7d17dc5555511d584433feb8e7ed22bd.2",
+        "payload": {
+          "version": 1,
+          "account": "owned-ordinary-account",
+          "replica": "8d31aa3d7d17dc5555511d584433feb8e7ed22bd",
+          "sequence": 2,
+          "context": {
+            "8d31aa3d7d17dc5555511d584433feb8e7ed22bd": 1
+          },
+          "record": "[\"reading\",\"resumes\",\"[\\\"2c77a07f7a02f2e8008f973402c96788:\\\",\\\"2c77a07f7a02f2e8008f973402c96788:\\\",\\\"[null,\\\\\\\"543b6ca4c9f21c87d81daf7a932499c0\\\\\\\",null,null,null]\\\"]\"]",
+          "value": {
+            "edition": "2c77a07f7a02f2e8008f973402c96788:",
+            "source": "2c77a07f7a02f2e8008f973402c96788:",
+            "revision": "[null,\"543b6ca4c9f21c87d81daf7a932499c0\",null,null,null]",
+            "anchor": "{\"version\":1,\"processed\":\"89321e4371854478eec763a73fe14e25fc1bc0e0eef046fbaa139f1fcc708735\",\"original\":\"6efe84b320af9a0f9997dfc6c54b172bc982e6b06978a2c3d75359161da0ce96\",\"policy\":\"bookfin-passive-epub-1\",\"engine\":\"epubjs-0.3.93-bookfin.1\",\"cfi\":\"epubcfi(/6/2!/4/16/2/1:0)\",\"resource\":\"OEBPS/Text/one.xhtml\",\"quote\":\"Visit the lantern roomHarbour passage 1. The reader followed the shoreline and watched the small boats return. A bookmar\"}"
+          },
+          "preserve": []
+        },
+        "pending": 0,
+        "payloadSha256": "b205595e19d83f259809c89f00d85c93f652584b97fca2d0985cae3d3070c121"
+      },
+      {
+        "account": "owned-ordinary-account",
+        "identity": "action.8d31aa3d7d17dc5555511d584433feb8e7ed22bd.3",
+        "payload": {
+          "version": 1,
+          "account": "owned-ordinary-account",
+          "replica": "8d31aa3d7d17dc5555511d584433feb8e7ed22bd",
+          "sequence": 3,
+          "context": {
+            "8d31aa3d7d17dc5555511d584433feb8e7ed22bd": 2
+          },
+          "record": "[\"reading\",\"resumes\",\"[\\\"2c77a07f7a02f2e8008f973402c96788:\\\",\\\"2c77a07f7a02f2e8008f973402c96788:\\\",\\\"[null,\\\\\\\"543b6ca4c9f21c87d81daf7a932499c0\\\\\\\",null,null,null]\\\"]\"]",
+          "value": {
+            "edition": "2c77a07f7a02f2e8008f973402c96788:",
+            "source": "2c77a07f7a02f2e8008f973402c96788:",
+            "revision": "[null,\"543b6ca4c9f21c87d81daf7a932499c0\",null,null,null]",
+            "anchor": "{\"version\":1,\"processed\":\"89321e4371854478eec763a73fe14e25fc1bc0e0eef046fbaa139f1fcc708735\",\"original\":\"6efe84b320af9a0f9997dfc6c54b172bc982e6b06978a2c3d75359161da0ce96\",\"policy\":\"bookfin-passive-epub-1\",\"engine\":\"epubjs-0.3.93-bookfin.1\",\"cfi\":\"epubcfi(/6/2!/4/26/1:0)\",\"resource\":\"OEBPS/Text/one.xhtml\",\"quote\":\"Harbour passage 5. The reader followed the shoreline and watched the small boats return. A bookmark could keep this plac\"}"
+          },
+          "preserve": []
+        },
+        "pending": 0,
+        "payloadSha256": "b423d731f40fd4cdb93b2b7c3f9b5c3b3cbbdba2f386a64d762a51be89a4dbc3"
+      },
+      {
+        "account": "owned-ordinary-account",
+        "identity": "action.8d31aa3d7d17dc5555511d584433feb8e7ed22bd.4",
+        "payload": {
+          "version": 1,
+          "account": "owned-ordinary-account",
+          "replica": "8d31aa3d7d17dc5555511d584433feb8e7ed22bd",
+          "sequence": 4,
+          "context": {
+            "8d31aa3d7d17dc5555511d584433feb8e7ed22bd": 3
+          },
+          "record": "[\"reading\",\"bookmarks\",\"5f6d2b792c91cde8971ee79f2afe45b0\"]",
+          "value": {
+            "id": "5f6d2b792c91cde8971ee79f2afe45b0",
+            "position": {
+              "edition": "2c77a07f7a02f2e8008f973402c96788:",
+              "source": "2c77a07f7a02f2e8008f973402c96788:",
+              "revision": "[null,\"543b6ca4c9f21c87d81daf7a932499c0\",null,null,null]",
+              "anchor": "{\"version\":1,\"processed\":\"89321e4371854478eec763a73fe14e25fc1bc0e0eef046fbaa139f1fcc708735\",\"original\":\"6efe84b320af9a0f9997dfc6c54b172bc982e6b06978a2c3d75359161da0ce96\",\"policy\":\"bookfin-passive-epub-1\",\"engine\":\"epubjs-0.3.93-bookfin.1\",\"cfi\":\"epubcfi(/6/2!/4/26/1:0)\",\"resource\":\"OEBPS/Text/one.xhtml\",\"quote\":\"Harbour passage 5. The reader followed the shoreline and watched the small boats return. A bookmark could keep this plac\"}"
+            },
+            "createdAt": "2026-11-03T13:43:46.790736Z",
+            "title": null,
+            "note": null
+          },
+          "preserve": []
+        },
+        "pending": 0,
+        "payloadSha256": "6447eeb799cd2f6ccba7d7e0e4fec93d4880e37108c80efc13943862af1b1a67"
+      },
+      {
+        "account": "owned-ordinary-account",
+        "identity": "action.8d31aa3d7d17dc5555511d584433feb8e7ed22bd.5",
+        "payload": {
+          "version": 1,
+          "account": "owned-ordinary-account",
+          "replica": "8d31aa3d7d17dc5555511d584433feb8e7ed22bd",
+          "sequence": 5,
+          "context": {
+            "8d31aa3d7d17dc5555511d584433feb8e7ed22bd": 4
+          },
+          "record": "[\"reading\",\"resumes\",\"[\\\"2c77a07f7a02f2e8008f973402c96788:\\\",\\\"2c77a07f7a02f2e8008f973402c96788:\\\",\\\"[null,\\\\\\\"543b6ca4c9f21c87d81daf7a932499c0\\\\\\\",null,null,null]\\\"]\"]",
+          "value": {
+            "edition": "2c77a07f7a02f2e8008f973402c96788:",
+            "source": "2c77a07f7a02f2e8008f973402c96788:",
+            "revision": "[null,\"543b6ca4c9f21c87d81daf7a932499c0\",null,null,null]",
+            "anchor": "{\"version\":1,\"processed\":\"89321e4371854478eec763a73fe14e25fc1bc0e0eef046fbaa139f1fcc708735\",\"original\":\"6efe84b320af9a0f9997dfc6c54b172bc982e6b06978a2c3d75359161da0ce96\",\"policy\":\"bookfin-passive-epub-1\",\"engine\":\"epubjs-0.3.93-bookfin.1\",\"cfi\":\"epubcfi(/6/2!/4/30/1:0)\",\"resource\":\"OEBPS/Text/one.xhtml\",\"quote\":\"Harbour passage 7. The reader followed the shoreline and watched the small boats return. A bookmark could keep this plac\"}"
+          },
+          "preserve": []
+        },
+        "pending": 0,
+        "payloadSha256": "e7d8a42e88484b80ff4d1c4f2b793165d6b6f59d2a2eb7417c53faf5e4be7dee"
+      },
+      {
+        "account": "owned-ordinary-account",
+        "identity": "action.8d31aa3d7d17dc5555511d584433feb8e7ed22bd.6",
+        "payload": {
+          "version": 1,
+          "account": "owned-ordinary-account",
+          "replica": "8d31aa3d7d17dc5555511d584433feb8e7ed22bd",
+          "sequence": 6,
+          "context": {
+            "8d31aa3d7d17dc5555511d584433feb8e7ed22bd": 5
+          },
+          "record": "[\"reading\",\"bookmarks\",\"6e434cdecfa3b681aa91404985b68945\"]",
+          "value": {
+            "id": "6e434cdecfa3b681aa91404985b68945",
+            "position": {
+              "edition": "2c77a07f7a02f2e8008f973402c96788:",
+              "source": "2c77a07f7a02f2e8008f973402c96788:",
+              "revision": "[null,\"543b6ca4c9f21c87d81daf7a932499c0\",null,null,null]",
+              "anchor": "{\"version\":1,\"processed\":\"89321e4371854478eec763a73fe14e25fc1bc0e0eef046fbaa139f1fcc708735\",\"original\":\"6efe84b320af9a0f9997dfc6c54b172bc982e6b06978a2c3d75359161da0ce96\",\"policy\":\"bookfin-passive-epub-1\",\"engine\":\"epubjs-0.3.93-bookfin.1\",\"cfi\":\"epubcfi(/6/2!/4/30/1:0)\",\"resource\":\"OEBPS/Text/one.xhtml\",\"quote\":\"Harbour passage 7. The reader followed the shoreline and watched the small boats return. A bookmark could keep this plac\"}"
+            },
+            "createdAt": "2026-11-03T13:50:06.194390Z",
+            "title": null,
+            "note": null
+          },
+          "preserve": []
+        },
+        "pending": 0,
+        "payloadSha256": "06ad3ee6eb2e88b9ad701c2a8c18e5cee5f8eec820fc8f67eddd73a669ae81b5"
+      },
+      {
+        "account": "owned-ordinary-account",
+        "identity": "action.8d31aa3d7d17dc5555511d584433feb8e7ed22bd.7",
+        "payload": {
+          "version": 1,
+          "account": "owned-ordinary-account",
+          "replica": "8d31aa3d7d17dc5555511d584433feb8e7ed22bd",
+          "sequence": 7,
+          "context": {
+            "8d31aa3d7d17dc5555511d584433feb8e7ed22bd": 6
+          },
+          "record": "[\"reading\",\"bookmarks\",\"5f6d2b792c91cde8971ee79f2afe45b0\"]",
+          "value": null,
+          "preserve": []
+        },
+        "pending": 0,
+        "payloadSha256": "e1bc70a3a5390f52426b9ae3bba637143da31bfef6228de2a3a2746c7730834b"
+      }
+    ],
+    "record_versions": [
+      {
+        "account": "owned-ordinary-account",
+        "record": "[\"reading\",\"bookmarks\",\"5f6d2b792c91cde8971ee79f2afe45b0\"]",
+        "identities": [
+          "action.8d31aa3d7d17dc5555511d584433feb8e7ed22bd.7"
+        ]
+      },
+      {
+        "account": "owned-ordinary-account",
+        "record": "[\"reading\",\"bookmarks\",\"6e434cdecfa3b681aa91404985b68945\"]",
+        "identities": [
+          "action.8d31aa3d7d17dc5555511d584433feb8e7ed22bd.6"
+        ]
+      },
+      {
+        "account": "owned-ordinary-account",
+        "record": "[\"reading\",\"resumes\",\"[\\\"2c77a07f7a02f2e8008f973402c96788:\\\",\\\"2c77a07f7a02f2e8008f973402c96788:\\\",\\\"[null,\\\\\\\"543b6ca4c9f21c87d81daf7a932499c0\\\\\\\",null,null,null]\\\"]\"]",
+        "identities": [
+          "action.8d31aa3d7d17dc5555511d584433feb8e7ed22bd.5"
+        ]
+      }
+    ],
+    "record_coverage": [
+      {
+        "account": "owned-ordinary-account",
+        "replica": "8d31aa3d7d17dc5555511d584433feb8e7ed22bd",
+        "sequence": 7
+      }
+    ]
+  }
+}

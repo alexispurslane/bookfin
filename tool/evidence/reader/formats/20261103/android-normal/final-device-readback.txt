@@ -1,0 +1,17 @@
+Bookfin process after bound close
+Installed APK hash
+610fb123b835858d675302c550e4b6476ddfcd12372aaebac85a7f2f4b51f7ef  /data/app/~~oBH41Xl6Oa6H5atRn--oew==/dev.bookfin.bookfin-l0Z5SX3aIvYqV9tA41Eh1g==/base.apk
+Network settings: airplane, Wi-Fi, mobile data
+0
+1
+1
+Media stream
+- STREAM_MUSIC:
+   Muted: true
+   Muted Internally: false
+   Min: 0
+   Max: 15
+   streamVolume:0
+   Current: 2 (speaker): 5, 40000000 (default): 5
+   Devices: speaker(2)
+{"baselinePreferenceEntries": 10, "unchangedBaselinePreferenceEntries": 10, "changedBaselinePreferenceEntries": 0, "newPreferenceEntries": 0, "nativeErrorLogBytes": 0}

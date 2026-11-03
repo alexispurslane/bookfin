@@ -1,0 +1,59 @@
+{
+  "scope": "Exact originals; finite fixture subset; generated asset EPUB",
+  "samples": [
+    {
+      "title": "01 NIST PDF",
+      "file": "01 NIST PDF.pdf",
+      "bytes": 85781,
+      "sha256": "7b0c1a9fdfc67218b8ba2098f448c100c27070db91736b3c87fed63bfa21d418"
+    },
+    {
+      "title": "02 Census PDF",
+      "file": "02 Census PDF.pdf",
+      "bytes": 186352,
+      "sha256": "4a696b3ccf264093326663176e45b93e336ec024fd88447ab56d39e5e9b9e5f8"
+    },
+    {
+      "title": "03 Raven PDF",
+      "file": "03 Raven PDF.pdf",
+      "bytes": 4170541,
+      "sha256": "25dc58e363e02a442a25174fe9fcd21d3a2f78ac4511731accaaeba326c3d8e8"
+    },
+    {
+      "title": "04 Plain MOBI",
+      "file": "04 Plain MOBI.mobi",
+      "bytes": 604,
+      "sha256": "42a14c07f1acc6b530dc6fff2b8eadac3a4b08306c2dcee6d8a0558738d39d83"
+    },
+    {
+      "title": "05 PalmDOC MOBI",
+      "file": "05 PalmDOC MOBI.mobi",
+      "bytes": 604,
+      "sha256": "6a74ec880895caf41cbdda7d8ee7e1e5455db757022fa23b6c1af1185696bdc1"
+    },
+    {
+      "title": "06 Alice KF8",
+      "file": "06 Alice KF8.mobi",
+      "bytes": 255506,
+      "sha256": "d8211269aed55ded8302f289950936db8368b4d4d384c463b722034152f8f1d2"
+    },
+    {
+      "title": "07 EPUB assets",
+      "file": "07 EPUB assets.epub",
+      "bytes": 135959,
+      "sha256": "6efe84b320af9a0f9997dfc6c54b172bc982e6b06978a2c3d75359161da0ce96"
+    },
+    {
+      "title": "08 Short PDF",
+      "file": "08 Short PDF.pdf",
+      "bytes": 2693,
+      "sha256": "51d05de2a89dd83fb8f04301ac254419b2d616d48f6e8bb9fbe0938745bc04ce"
+    },
+    {
+      "title": "09 Scan PDF",
+      "file": "09 Scan PDF.pdf",
+      "bytes": 6683,
+      "sha256": "7edfa36f57337ceeb7af6c58b87b68e6ebc25dfb0200593e415150a5d2052c06"
+    }
+  ]
+}

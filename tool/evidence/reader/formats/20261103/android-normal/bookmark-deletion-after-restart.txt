@@ -1,0 +1,33 @@
+Tapped @e21 (813, 2117)
+settled after 1034ms: +5 -25 (~1 unchanged)
+- @e2 [button] "Back"
+- @e3 [group] "07 EPUB assets"
+- @e4 [button] "Hide reader controls"
+- @e5 [group]
+- @e6 [group] [disabled]
+- @e7 [webview] "Bookfin reading viewport"
+- @e8 [group] "Book text"
+- @e9 [group] "epubjs-container-0a7779c1-cb2c-42d9-ab65-6730ddcdb49f"
+- @e10 [group] "epubjs-view-25d48ea1-d4a8-4a2d-8359-cc76ef520b6c"
+- @e11 [group] "one"
+- @e12 [text] "Harbour passage 7. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark."
+- @e13 [text] "Harbour passage 8. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark."
+- @e14 [text] "Harbour passage 9. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark."
+- @e15 [text] "Harbour passage 10. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark."
+- @e16 [button] "Contents"
+- @e17 [button] "Search book"
+- @e18 [button] "Smaller text"
+- @e19 [button] "Larger text"
+- @e20 [button] "Bookmark this place"
+- @e21 [button] "Reading bookmarks"
+- @e22 [button] "Night reading theme"
+- @e23 [progressbar] "67, Current document page progress. Page 4 of 6"
+- @e24 [button] "Previous page"
+- @e25 [group] "The quiet harbour · Page 4 of 6"
+- @e26 [button] "Next page"
++ @e2~s902058 [button] "Dismiss"
++ @e3~s902058 [group] "Reading bookmarks"
++ @e4~s902058 [button] "Saved reading place
+2026-11-03 08:50:06.194390"
++ @e5~s902058 [button] "Edit reading bookmark"
++ @e6~s902058 [group] "Scrim"

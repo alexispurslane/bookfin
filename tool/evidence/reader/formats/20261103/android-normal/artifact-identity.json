@@ -1,0 +1,44 @@
+{
+  "source": "4ae8c6c2299e7ec7c16420663a8fc305e87e6c9a",
+  "normalApk": {
+    "file": "/Users/alexispurslane/Development/bookfin/.cache/artifacts/bookfin-4ae8c6c-incremental-sync.apk",
+    "bytes": 159290067,
+    "sha256": "610fb123b835858d675302c550e4b6476ddfcd12372aaebac85a7f2f4b51f7ef",
+    "installed": true,
+    "installedHashMatchesAllRecordReadbacks": true
+  },
+  "modifiedLibraryCompanion": {
+    "file": "/Users/alexispurslane/Development/bookfin/.cache/artifacts/bookfin-4ae8c6c-replacement/bookfin-replacement.apk",
+    "bytes": 114387933,
+    "sha256": "3a1dd3864a5aa4361750b71430c626f4a3531e8eb056047ad7db7f86688f7849",
+    "installed": false,
+    "reason": "Ordinary MOBI reading fails before converter entry; no MOBI bookmark/resume prerequisite can be established"
+  },
+  "sourceBundle": {
+    "directory": "/Users/alexispurslane/Development/bookfin/.cache/artifacts/bookfin-4ae8c6c-source",
+    "allManifestHashesVerified": true,
+    "manifest": {
+      "sourceCommit": "4ae8c6c2299e7ec7c16420663a8fc305e87e6c9a",
+      "files": {
+        "LGPL-3.0.txt": "da7eabb7bafdf7d3ae5e9f223aa5bdc1eece45ac569dc21b3b037520b4464768",
+        "libmobi-0.12-source.tar.gz": "edadd426c29eba27cb0e377094f3a11c3a6839253485021c0967de9717e35c20",
+        "bookfin-source.tar": "dbb1509d20401d50177a82f7dfcf0156c79e81b1dc8a59f7c0af52160591030b",
+        "GPL-3.0.txt": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+        "BUILD-AND-INSTALL.md": "f10ebfd8e269e13a0291ccec198a9ea55b0b1e4e9e76f4a96f1eb99b78a215c7"
+      }
+    }
+  },
+  "device": {
+    "host": "local",
+    "id": "emulator-5554",
+    "physical": false,
+    "platform": "Android API 36 ARM64",
+    "binding": "t3-c1b0700b94e894a1d4e08ade"
+  },
+  "plugin": {
+    "version": "0.1.1.0",
+    "jellyfinVersion": "12.4.0",
+    "sha256": "3b0de5ca1df39baf67c786079898b1ee3b0b09d3bdb86d00ece8a7f5731a9105",
+    "freshReproductionMatchesReviewedPackage": true
+  }
+}

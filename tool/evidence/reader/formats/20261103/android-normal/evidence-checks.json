@@ -1,0 +1,17 @@
+{
+  "allReadbacksUseExactNormalApk": true,
+  "allSourceBundleHashesMatch": true,
+  "offlineActionsSurviveProcessRestartAndFailedSync": true,
+  "uploadedActionsMatchExactAndroidPayloadHashes": true,
+  "deletionAddsOneActionWithoutRewritingSixEarlierActions": true,
+  "bookmarkDeletionSurvivesRestart": true,
+  "downloadRemovalLeavesAllNormalizedTablesUnchanged": true,
+  "ownedOriginalBytesBeforeRemoval": 222344,
+  "ownedOriginalBytesAfterEpubRemoval": 86385,
+  "ownedOriginalBytesAfterCleanup": 0,
+  "derivedMobiReclamationProved": false,
+  "androidMigrationProved": false,
+  "twoAndroidDevicesProved": false,
+  "comparisonScope": "Snapshot and API consistency only; no timing, row-write instrumentation, coverage or mutation campaign",
+  "allThreeDownloadedOriginalsMatchCorpusHashesAndLengths": true
+}

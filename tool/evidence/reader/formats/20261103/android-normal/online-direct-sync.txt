@@ -1,0 +1,4 @@
+Tapped @e8 (222, 1844)
+settled after 559ms: +1 -1 (~11 unchanged)
+- @e7 [group] "Personal records remain on this device. Sync needs a connection and the compatible Bookfin Storage plugin on Jellyfin. No other storage is used. Retry after checking the server."
++ @e7~s902008 [group] "Personal records are synced."

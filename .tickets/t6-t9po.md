@@ -58,3 +58,7 @@ Android migration/process-death/memory and user acceptance remain pending;
 prior 27bf44e APKs do not test this storage implementation. Ticket stays open.
 Device work remains paused after the earlier repeated device-command failure,
 awaiting renewed user authorization. No device interaction performed here.
+
+**2026-11-03T14:16:49Z**
+
+Exact incremental-storage normal APK 610fb123b835858d675302c550e4b6476ddfcd12372aaebac85a7f2f4b51f7ef observed on Android API36. Copied normalized SQLite rows retain six pending real app-created actions across offline process restart/failed sync, acknowledge them through unchanged actual plugin, then retain six earlier payload hashes plus one bookmark-deletion action across restart. All seven actions and normalized tables remain identical across explicit original-download removal. Integrity checks pass. This is small fresh-account runtime evidence, not physical-write instrumentation, Android scale/performance, authentic v1 migration, or two-device acceptance. Authentic migration still needs compatible older artifact and real same-account old-schema state; no inserted new-schema rows used. Source export/hash matched; no build, production edit, hardening, or closure. Report docs/evidence/reader/android-normal-formats-20261103.md.

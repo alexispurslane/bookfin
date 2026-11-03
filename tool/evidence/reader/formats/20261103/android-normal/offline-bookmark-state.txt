@@ -1,0 +1,22 @@
+Airplane, Wi-Fi, mobile data
+1
+0
+0
+Active default network: none
+- STREAM_MUSIC:
+   Muted: true
+   Muted Internally: false
+   Min: 0
+   Max: 15
+   streamVolume:0
+   Current: 2 (speaker): 5, 40000000 (default): 5
+   Devices: speaker(2)
+Page: dev.bookfin.bookfin
+App: dev.bookfin.bookfin
+Snapshot: 6 nodes
+@e2 [button] "Dismiss"
+@e3 [group] "Reading bookmarks"
+@e4 [button] "Saved reading place
+2026-11-03 08:43:46.790736"
+@e5 [button] "Edit reading bookmark"
+@e6 [group] "Scrim"

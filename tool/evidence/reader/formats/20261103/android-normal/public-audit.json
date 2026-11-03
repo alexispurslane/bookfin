@@ -1,0 +1,22 @@
+{
+  "generatedCredentialsChecked": 6,
+  "publicFilesScanned": 66,
+  "credentialMatches": 0,
+  "screenshotsVisuallyAudited": 11,
+  "screenshotSha256": {
+    "01-nist-rejected-as-epub.png": "66b41e5abef2d1961916666c332cd6de2e4befa6b7da8f00a8b7bb62ef5a3254",
+    "02-mobi-rejected-as-epub.png": "3283438601e81087eb4edf486bf828018d97e58992bc6bc2c925bbf856a2ee8c",
+    "03-epub-images.png": "0057bc8756cbfd359f5d0aded76b10dda92cbe3fcf82614ef391cbe7dadbe34a",
+    "04-epub-offline-larger.png": "47e4509ce0c8cc137d2d44d61b4d673060875ec74a61edd3d568817dea467db0",
+    "05-epub-offline-process-restart.png": "1c458991edc53a420e28f9f80f5f59d1efc23dce632fb96750368e8de4c09c57",
+    "06-offline-sync-keeps-records.png": "084c4eb408641b564b8c32f7f28fb57ed6119e9368221033647f6870557a433d",
+    "07-online-synced.png": "de683f868c6760ded1087f46a666fc556028c4a256aca7209fb0f59ac965dbb0",
+    "08-bookmark-deleted-other-kept.png": "ae4ea95dbef36c1e5999f20ea89fcd10da53a0ab01756f0b8e16bea481f383f4",
+    "09-epub-download-removed-records-kept.png": "74108ff40be985dd1910ce8ac1df52327e6f38c97d2122223c66d4342697526b",
+    "10-owned-downloads-cleaned.png": "cc6a21105232f57b88e460fd16736b968867ab0acba3c5d70240b090a046cbd4",
+    "11-cleaned-signed-out.png": "dfa4dcb71b32d4402f51160d8ec751e44f5b4b2c1d7d52df13a5ab87ca9a54f9"
+  },
+  "scope": "Exact generated passwords/tokens plus visual screenshot audit; not a universal redaction guarantee",
+  "ownedPrivateHostDataRemoved": true,
+  "removedScope": "Owned disposable Jellyfin runtime/accounts, private SQLite/pref copies, credentials, fixture logs, and WebView diagnostic port marker; acknowledged synthetic app journal remains intentionally retained"
+}

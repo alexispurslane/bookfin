@@ -2,7 +2,7 @@
 id: t3-ipk1
 status: in_progress
 deps: [boo-73yj]
-links: [boo-73yj, boo-mx5i]
+links: [boo-73yj, boo-mx5i, t3-jrhf, t0-ebxa]
 created: 2026-11-02T10:46:17Z
 type: task
 priority: 2
@@ -30,3 +30,7 @@ Bounded packaging preparation starts after b81b472 while parent handles final sy
 **2026-11-03T00:40:52Z**
 
 Source preparation milestone 4ee30c6 is committed. Clean-tree export succeeds: .cache/artifacts/native-reader-source/ contains complete Bookfin commit archive, exact libmobi source, complete LGPL/GPL texts and build/install instructions; SHA-256 inventory recorded separately in packaging/source-bundle.txt. Normal notice-complete APK .cache/artifacts/bookfin-4ee30c6-reader-notices.apk SHA256 fd5879f0672b73f8c1a8ff774e427214de3a38a26b71d92f47c67f81540dcaf3; replacement .cache/artifacts/native-reader-replacement/bookfin-replacement.apk SHA256 a2574c211f3c3ec73a469975ec418acd5702197e7cf4e7e3a1bb1d4a53316801. Parent alone coordinates review/install, no Android runtime or legal acceptance claim. Raw upstream notice bytes intentionally retain their whitespace.
+
+**2026-11-03T14:16:49Z**
+
+Renewed normal-app attempt verifies the exact 4ae8c6c source export hashes and normal installed APK 610fb123b835858d675302c550e4b6476ddfcd12372aaebac85a7f2f4b51f7ef. Ordinary MOBI Read fails before converter entry (t3-jrhf), so no normal MOBI bookmark/resume prerequisite can be established. Same-key companion SHA256 3a1dd3864a5aa4361750b71430c626f4a3531e8eb056047ad7db7f86688f7849 remains unchanged and uninstalled; installing it behind unreachable conversion would not prove modified converter loading. No EPUB/cache/private-state substitute, data reset, legal approval, or closure. Report docs/evidence/reader/android-normal-formats-20261103.md.

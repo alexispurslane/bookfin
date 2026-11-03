@@ -57,3 +57,7 @@ Main merge 681c168 includes all reviewed sync prerequisites and corrections
 through dbc54ed plus reviewed PDF/MOBI corrections through 2e108df. The merge
 preserves both ticket histories. No corrected-build two-device Android result
 is claimed; journal growth t6-t9po and plugin deployment t6-il6y remain open.
+
+**2026-11-03T14:16:49Z**
+
+Bounded actual normal Android + unchanged packaged plugin proof on source4ae8c6c: UI creates EPUB positions/bookmarks, creates another position/bookmark genuinely offline with no default network or fixture reverse route, and survives process restart with six exact retained/pending actions. Failed sync retains them. Direct ordinary-account sync to owned Jellyfin12.4 / Bookfin Storage0.1.1.0 acknowledges all six; server payload hashes match Android exactly. UI deletion adds action7 while retaining six prior payloads; restart uploads deletion and keeps the second bookmark. Bob discovery empty. Initial observer cannot forward PUT; owned direct route avoids this fixture limitation without changing app origin/API/package. No second Android client, conflicts/listening-history/clock acceptance, production edits, or closure. Report docs/evidence/reader/android-normal-formats-20261103.md.

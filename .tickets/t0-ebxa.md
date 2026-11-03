@@ -2,7 +2,7 @@
 id: t0-ebxa
 status: in_progress
 deps: [boo-73yj]
-links: [boo-mx5i]
+links: [boo-mx5i, t3-jrhf, t3-ipk1]
 created: 2026-11-02T12:38:42Z
 type: bug
 priority: 2
@@ -39,3 +39,7 @@ Bounded macOS ARM64 proof complete from 5815233235c0cf97999e1e7d00098494b7ccc557
 **2026-11-02T14:13:40Z**
 
 Integrated reviewed 7498e52; independent static review passed host ownership proof. Corrected historical stop-rule wording: a separate Android attempt was reauthorized. Keep this ticket open for its separate Android verification; do not generalize host results.
+
+**2026-11-03T14:16:49Z**
+
+Exact normal Android attempt on 4ae8c6c is blocked before PDF native entry by t3-jrhf. Ordinary Jellyfin NIST original downloads intact but is routed to EPUB and rejected. Do not infer Android callback/font/disposal/reopen acceptance from the host proof or the empty normal-app error log. No production edit or closure. See docs/evidence/reader/android-normal-formats-20261103.md.

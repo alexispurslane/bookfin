@@ -1,0 +1,19 @@
+Page: dev.bookfin.bookfin
+App: dev.bookfin.bookfin
+Snapshot: 17 nodes
+@e2 [button] "Back"
+@e3 [group] "01 NIST PDF"
+@e4 [button] "Hide reader controls"
+@e5 [group] "Unsupported EPUB ZIP directory."
+@e6 [button] "Retry opening"
+@e7 [group] "This EPUB is not open. Use the message above to retry."
+@e8 [button] "Contents" [disabled]
+@e9 [button] "Search book" [disabled]
+@e10 [button] "Smaller text" [disabled]
+@e11 [button] "Larger text" [disabled]
+@e12 [button] "Bookmark this place" [disabled]
+@e13 [button] "Reading bookmarks" [disabled]
+@e14 [button] "Night reading theme"
+@e15 [button] "Previous page" [disabled]
+@e16 [group] "Current chapter unavailable · Page progress unavailable"
+@e17 [button] "Next page" [disabled]

@@ -1,0 +1,307 @@
+{
+  "at": "2026-11-03T13:49:23.224Z",
+  "mode": "observe",
+  "target": "https://bookfin-runtime.invalid/index.html",
+  "document": [
+    {
+      "registeredFonts": [
+        {
+          "family": "BookSerif",
+          "status": "loaded",
+          "weight": "normal",
+          "style": "normal"
+        },
+        {
+          "family": "BookfinSerif",
+          "status": "unloaded",
+          "weight": "normal",
+          "style": "normal"
+        }
+      ],
+      "visibleParagraphs": [
+        {
+          "text": "Harbour passage 3. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark.",
+          "rect": {
+            "x": 429,
+            "y": 0,
+            "width": 790,
+            "height": 667,
+            "top": 0,
+            "right": 1219,
+            "bottom": 667,
+            "left": 429
+          }
+        },
+        {
+          "text": "Harbour passage 4. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark.",
+          "rect": {
+            "x": 841,
+            "y": 88,
+            "width": 378,
+            "height": 165,
+            "top": 88,
+            "right": 1219,
+            "bottom": 253,
+            "left": 841
+          }
+        },
+        {
+          "text": "Harbour passage 5. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark.",
+          "rect": {
+            "x": 841,
+            "y": 275,
+            "width": 378,
+            "height": 165,
+            "top": 275,
+            "right": 1219,
+            "bottom": 440,
+            "left": 841
+          }
+        },
+        {
+          "text": "Harbour passage 6. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark.",
+          "rect": {
+            "x": 841,
+            "y": 462,
+            "width": 378,
+            "height": 165,
+            "top": 462,
+            "right": 1219,
+            "bottom": 627,
+            "left": 841
+          }
+        }
+      ],
+      "color": "rgb(57, 41, 31)",
+      "background": "rgb(246, 239, 226)",
+      "frameRect": {
+        "x": -824,
+        "y": 0,
+        "width": 2472,
+        "height": 667,
+        "top": 0,
+        "right": 1648,
+        "bottom": 667,
+        "left": -824
+      },
+      "url": "about:blank",
+      "sandbox": "allow-same-origin",
+      "text": "The quiet harbour\n\nThis book was written for a disposable Bookfin reading test. No private library or published story is used.\n\nMorning light filled the quiet harbour. Mira carried a lantern to the old reading room, where every shelf held a different journey.\n\nThe sepia square below is a local PNG image.\n\nThe next square is a local JPEG image.\n\nVisit the lantern room\n\nHarbour passage 1. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark.\n\nHarbour passage 2. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark.\n\nHarbour passage 3. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark.\n\nHarbour passage 4. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark.\n\nHarbour passage 5. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark.\n\nHarbour passage 6. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark.\n\nHarbour passage 7. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark.\n\nHarbour passage 8. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark.\n\nHarbour passage 9. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark.\n\nHarbour passage 10. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark.\n\nHarbour passage 11. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark.\n\nHarbour passage 12. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark.\n\nHarbour passage 13. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark.\n\nHarbour passage 14. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark.\n\nHarbour passage 15. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark.\n\nHarbour passage 16. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark.",
+      "html": "<html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\"><head><base href=\"https://bookfin-publication.invalid/89321e4371854478eec763a73fe14e25fc1bc0e0eef046fbaa139f1fcc708735/OEBPS/Text/one.xhtml\"><meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; script-src 'none'; style-src 'unsafe-inline' https://bookfin-publication.invalid; img-src https://bookfin-publication.invalid; font-src https://bookfin-publication.invalid https://bookfin-runtime.invalid; connect-src 'none'; frame-src 'none'; object-src 'none'; base-uri https://bookfin-publication.invalid; form-action 'none'\"><title>one</title><link rel=\"stylesheet\" href=\"../Styles/book.css\"><link rel=\"canonical\" href=\"https://bookfin-publication.invalid/89321e4371854478eec763a73fe14e25fc1bc0e0eef046fbaa139f1fcc708735/OEBPS/Text/one.xhtml\"><meta name=\"dc.identifier\" content=\"one\"><meta name=\"dc.relation.ispartof\" content=\"bookfin-semantic-probe\"><style id=\"epubjs-inserted-css-\"></style><style id=\"epubjs-inserted-css-default\"></style><style>@font-face{font-family:BookfinSerif;src:url(\"https://bookfin-runtime.invalid/SourceSerif4.ttf\")}body{overflow-wrap:break-word;line-height:1.65!important;padding:0 18px!important}img{max-width:100%!important;height:auto}a:focus{outline:2px solid currentColor}</style><meta name=\"viewport\" content=\"width=412, height=667, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no\"></head><body style=\"font-size: 22px; width: 412px; height: 667px; overflow-y: hidden; margin: 0px !important; padding-top: 20px; padding-bottom: 20px; padding-left: 17px !important; padding-right: 17px !important; box-sizing: border-box; max-width: inherit; column-fill: auto; column-gap: 34px; column-width: 412px;\"><h1 id=\"heading\">The quiet harbour</h1><p>This book was written for a disposable Bookfin reading test. No private library or published story is used.</p><p>Morning light filled the quiet harbour. Mira carried a lantern to the old reading room, where every shelf held a different journey.</p><p>The sepia square below is a local PNG image.</p><img src=\"../Images/dot.png\" alt=\"A sepia PNG square\"><p>The next square is a local JPEG image.</p><img src=\"../Images/square.jpg\" alt=\"A sepia JPEG square\"><p><a href=\"two.xhtml#note\">Visit the lantern room</a></p><p>Harbour passage 1. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark.</p><p>Harbour passage 2. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark.</p><p>Harbour passage 3. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark.</p><p>Harbour passage 4. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark.</p><p>Harbour passage 5. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark.</p><p>Harbour passage 6. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark.</p><p>Harbour passage 7. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark.</p><p>Harbour passage 8. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark.</p><p>Harbour passage 9. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark.</p><p>Harbour passage 10. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark.</p><p>Harbour passage 11. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark.</p><p>Harbour passage 12. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark.</p><p>Harbour passage 13. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark.</p><p>Harbour passage 14. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark.</p><p>Harbour passage 15. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark.</p><p>Harbour passage 16. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark.</p></body></html>",
+      "fontStatus": "loaded",
+      "fontSize": "22px",
+      "fontFamily": "BookSerif, serif",
+      "viewport": {
+        "width": 2472,
+        "height": 667
+      },
+      "images": [
+        {
+          "source": "https://bookfin-publication.invalid/89321e4371854478eec763a73fe14e25fc1bc0e0eef046fbaa139f1fcc708735/OEBPS/Images/dot.png",
+          "alt": "A sepia PNG square",
+          "complete": true,
+          "naturalWidth": 24,
+          "naturalHeight": 24,
+          "rect": {
+            "x": 17,
+            "y": 439.5535888671875,
+            "width": 96,
+            "height": 96,
+            "top": 439.5535888671875,
+            "right": 113,
+            "bottom": 535.5535888671875,
+            "left": 17
+          }
+        },
+        {
+          "source": "https://bookfin-publication.invalid/89321e4371854478eec763a73fe14e25fc1bc0e0eef046fbaa139f1fcc708735/OEBPS/Images/square.jpg",
+          "alt": "A sepia JPEG square",
+          "complete": true,
+          "naturalWidth": 24,
+          "naturalHeight": 24,
+          "rect": {
+            "x": 429,
+            "y": 0,
+            "width": 96,
+            "height": 96,
+            "top": 0,
+            "right": 525,
+            "bottom": 96,
+            "left": 429
+          }
+        }
+      ],
+      "styles": [
+        {
+          "href": "https://bookfin-publication.invalid/89321e4371854478eec763a73fe14e25fc1bc0e0eef046fbaa139f1fcc708735/OEBPS/Styles/book.css"
+        },
+        {
+          "href": null
+        },
+        {
+          "href": null
+        },
+        {
+          "href": null
+        }
+      ]
+    }
+  ],
+  "appliedFonts": [
+    {
+      "nodeId": 35,
+      "text": "The quiet harbour",
+      "result": {
+        "fonts": [
+          {
+            "familyName": "Source Serif 4 (Fontations)",
+            "postScriptName": "SourceSerif4Roman-Regular",
+            "isCustomFont": true,
+            "glyphCount": 17
+          }
+        ]
+      }
+    },
+    {
+      "nodeId": 37,
+      "text": "This book was written for a disposable Bookfin reading test. No private library or published story is used.",
+      "result": {
+        "fonts": [
+          {
+            "familyName": "Source Serif 4 (Fontations)",
+            "postScriptName": "SourceSerif4Roman-Regular",
+            "isCustomFont": true,
+            "glyphCount": 104
+          }
+        ]
+      }
+    },
+    {
+      "nodeId": 39,
+      "text": "Morning light filled the quiet harbour. Mira carried a lantern to the old reading room, where every shelf held a different journey.",
+      "result": {
+        "fonts": [
+          {
+            "familyName": "Source Serif 4 (Fontations)",
+            "postScriptName": "SourceSerif4Roman-Regular",
+            "isCustomFont": true,
+            "glyphCount": 126
+          }
+        ]
+      }
+    },
+    {
+      "nodeId": 41,
+      "text": "The sepia square below is a local PNG image.",
+      "result": {
+        "fonts": [
+          {
+            "familyName": "Source Serif 4 (Fontations)",
+            "postScriptName": "SourceSerif4Roman-Regular",
+            "isCustomFont": true,
+            "glyphCount": 43
+          }
+        ]
+      }
+    },
+    {
+      "nodeId": 44,
+      "text": "The next square is a local JPEG image.",
+      "result": {
+        "fonts": [
+          {
+            "familyName": "Source Serif 4 (Fontations)",
+            "postScriptName": "SourceSerif4Roman-Regular",
+            "isCustomFont": true,
+            "glyphCount": 38
+          }
+        ]
+      }
+    },
+    {
+      "nodeId": 47,
+      "text": "",
+      "result": {
+        "fonts": [
+          {
+            "familyName": "Source Serif 4 (Fontations)",
+            "postScriptName": "SourceSerif4Roman-Regular",
+            "isCustomFont": true,
+            "glyphCount": 22
+          }
+        ]
+      }
+    },
+    {
+      "nodeId": 50,
+      "text": "Harbour passage 1. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark.",
+      "result": {
+        "fonts": [
+          {
+            "familyName": "Source Serif 4 (Fontations)",
+            "postScriptName": "SourceSerif4Roman-Regular",
+            "isCustomFont": true,
+            "glyphCount": 143
+          }
+        ]
+      }
+    },
+    {
+      "nodeId": 52,
+      "text": "Harbour passage 2. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark.",
+      "result": {
+        "fonts": [
+          {
+            "familyName": "Source Serif 4 (Fontations)",
+            "postScriptName": "SourceSerif4Roman-Regular",
+            "isCustomFont": true,
+            "glyphCount": 143
+          }
+        ]
+      }
+    },
+    {
+      "nodeId": 54,
+      "text": "Harbour passage 3. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark.",
+      "result": {
+        "fonts": [
+          {
+            "familyName": "Source Serif 4 (Fontations)",
+            "postScriptName": "SourceSerif4Roman-Regular",
+            "isCustomFont": true,
+            "glyphCount": 143
+          }
+        ]
+      }
+    },
+    {
+      "nodeId": 56,
+      "text": "Harbour passage 4. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark.",
+      "result": {
+        "fonts": [
+          {
+            "familyName": "Source Serif 4 (Fontations)",
+            "postScriptName": "SourceSerif4Roman-Regular",
+            "isCustomFont": true,
+            "glyphCount": 143
+          }
+        ]
+      }
+    }
+  ],
+  "events": [
+    {
+      "method": "Log.entryAdded",
+      "params": {
+        "entry": {
+          "source": "network",
+          "level": "error",
+          "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+          "timestamp": 1793713333937.019,
+          "url": "https://bookfin-publication.invalid/89321e4371854478eec763a73fe14e25fc1bc0e0eef046fbaa139f1fcc708735/META-INF/com.apple.ibooks.display-options.xml",
+          "networkRequestId": "908.8"
+        }
+      }
+    }
+  ]
+}

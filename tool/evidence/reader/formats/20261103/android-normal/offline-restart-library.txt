@@ -1,0 +1,41 @@
+Old/new Android process IDs
+30739
+3591
+Offline network
+Active default network: none
+
+Page: dev.bookfin.bookfin
+App: dev.bookfin.bookfin
+Snapshot: 22 visible nodes
+@e2 [group] "BOOKFIN"
+@e3 [button] "Book libraries"
+@e4 [button] "Appearance"
+@e5 [button] "Account"
+@e6 [group] "Cannot reach Jellyfin. Saved books are still available."
+@e7 [group] "A little further
+into the story."
+@e8 [button] "Refresh books"
+@e9 [text-field] [editable]
+@e10 [horizontalscrollview] [scrollable]
+@e11 [button] "All" [selected]
+@e12 [button] "Audio"
+@e13 [button] "Ebooks"
+@e14 [button] "Downloaded"
+@e15 [group] "Saved library · 2026-11-03 08:36:47"
+@e16 [scroll-area] [scrollable]
+  [content below scroll-area hidden]
+@e17 [group] "01 NIST PDF
+1 ebook
+Ebook · Downloaded"
+@e18 [group] "02 Census PDF
+1 ebook
+Ebook · Not downloaded"
+@e19 [group] "03 Raven PDF
+1 ebook
+Ebook · Not downloaded"
+@e20 [button] "Library
+Tab 1 of 3" [selected]
+@e21 [button] "Downloads
+Tab 2 of 3"
+@e22 [button] "Listening
+Tab 3 of 3"

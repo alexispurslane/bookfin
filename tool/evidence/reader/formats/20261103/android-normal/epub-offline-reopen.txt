@@ -1,0 +1,29 @@
+Tapped @e12 (234, 1071)
+settled after 1121ms: +15 -12 (~3 unchanged)
+- @e3 [group] "Book details"
+- @e4 [button] "Correct book details"
+- @e6 [group] "Ebook editions"
+- @e7 [group] "Text"
+- @e8 [group] "1 file"
+- @e9 [group] "Downloaded"
+- @e10 [group] "135959 bytes · 1 / 1 files"
+- @e11 [button] "Remove"
+- @e12 [button] "Read"
+- @e13 [group] "Collapsed"
+- @e14 [group] "07 EPUB assets, Collapsed"
+- @e15 [button] "Link another book or ebook"
++ @e4~s901971 [button] "Hide reader controls"
++ @e5~s901971 [group]
++ @e6~s901971 [group] [disabled]
++ @e7~s901971 [webview]
++ @e8~s901971 [group] "Laying out the book"
++ @e9~s901971 [button] "Contents" [disabled]
++ @e10~s901971 [button] "Search book" [disabled]
++ @e11~s901971 [button] "Smaller text"
++ @e12~s901971 [button] "Larger text"
++ @e13~s901971 [button] "Bookmark this place" [disabled]
++ @e14~s901971 [button] "Reading bookmarks"
++ @e15~s901971 [button] "Night reading theme"
++ @e16~s901971 [button] "Previous page" [disabled]
++ @e17~s901971 [group] "Current chapter unavailable · Page progress unavailable"
++ @e18~s901971 [button] "Next page" [disabled]

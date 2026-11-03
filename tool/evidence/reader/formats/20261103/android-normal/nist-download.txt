@@ -1,0 +1,18 @@
+Page: dev.bookfin.bookfin
+App: dev.bookfin.bookfin
+Snapshot: 15 nodes
+@e2 [button] "Back"
+@e3 [group] "Book details"
+@e4 [button] "Correct book details"
+@e5 [group] "01 NIST PDF"
+@e6 [group] "Ebook editions"
+@e7 [group] "Text"
+@e8 [group] "1 file"
+@e9 [group] "Downloaded"
+@e10 [group] "85781 bytes · 1 / 1 files"
+@e11 [button] "Remove"
+@e12 [button] "Read"
+@e13 [group] "Collapsed"
+@e14 [group] "01 NIST PDF
+0.0 minutes, Collapsed"
+@e15 [button] "Link another book or ebook"

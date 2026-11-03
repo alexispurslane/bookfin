@@ -2,7 +2,7 @@
 id: boo-mx5i
 status: in_progress
 deps: [boo-9wgg, t9-26f6, t0-odcl, t0-ebxa, t0-qnnu]
-links: [boo-73yj, t3-ipk1, t3-9r9u, boo-9wgg, t0-odcl, t0-qnnu, t0-ebxa]
+links: [boo-73yj, t3-ipk1, t3-9r9u, boo-9wgg, t0-odcl, t0-qnnu, t0-ebxa, t3-jrhf]
 created: 2026-11-01T21:37:34Z
 type: task
 priority: 2
@@ -72,3 +72,7 @@ sync/format stack in 681c168 and separately reviewed packaging preparation in
 6a7fb49/40ee5d4. Ticket-note conflicts retained both histories; no production
 source conflict occurred. Exact combined APK Android corpus acceptance, native
 replacement demonstration and qualified compliance remain open. No closure.
+
+**2026-11-03T14:16:49Z**
+
+Renewed normal Android acceptance on exact source 4ae8c6c2299e7ec7c16420663a8fc305e87e6c9a / installed APK SHA256 610fb123b835858d675302c550e4b6476ddfcd12372aaebac85a7f2f4b51f7ef finds blocker t3-jrhf: real ordinary Jellyfin12.4 Book DTOs omit Container/MediaSources. Exact pinned NIST PDF (85781 bytes, matching private digest) and generated plain MOBI (604 bytes, matching digest) both Read as Unsupported EPUB ZIP directory. Native PDF/MOBI paths are not reached. No corpus/format acceptance or production fix claimed. Separate generated-EPUB images/font/offline resume and normal-app single-device sync checks pass within stated limits. Report docs/evidence/reader/android-normal-formats-20261103.md; raw evidence tool/evidence/reader/formats/20261103/android-normal/. All owned downloads removed, signed out, muted settings preserved/restored, app and owned services stopped, device released shutdown:false. Parent owns integration/closure.

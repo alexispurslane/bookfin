@@ -1,0 +1,2 @@
+7b0c1a9fdfc67218b8ba2098f448c100c27070db91736b3c87fed63bfa21d418  files/bookfin-media/ed79ea2cd237513c7b399e71da1817181ad4fea19a4f197b29a95fdb1a7b95f8/125687698a449bb423097166371f73d35275c067176facf666e8bb834cfe8f98/complete
+{"key":"7b9807c77575984e5e57e29a7a5a5e8a:","revision":"[null,\"bce936fe28a8c9f87536821c9de01117\",null,null,70000]","length":85781,"etag":null,"digest":"7b0c1a9fdfc67218b8ba2098f448c100c27070db91736b3c87fed63bfa21d418","requested":false,"complete":true,"error":null}

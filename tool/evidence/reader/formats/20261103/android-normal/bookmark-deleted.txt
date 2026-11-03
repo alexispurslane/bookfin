@@ -1,0 +1,11 @@
+Tapped @e3 (755, 1025)
+settled after 989ms: +5 -3 (~1 unchanged)
+- @e2 [menu-item] "Edit title and note"
+- @e3 [menu-item] "Delete"
+- @e4 [group] "Dismiss menu"
++ @e2~s902032 [button] "Dismiss"
++ @e3~s902032 [group] "Reading bookmarks"
++ @e4~s902032 [button] "Saved reading place
+2026-11-03 08:50:06.194390"
++ @e5~s902032 [button] "Edit reading bookmark"
++ @e6~s902032 [group] "Scrim"

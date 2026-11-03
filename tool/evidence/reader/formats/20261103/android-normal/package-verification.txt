@@ -1,0 +1,6 @@
+{
+  "apk": "/Users/alexispurslane/Development/bookfin/.cache/artifacts/bookfin-4ae8c6c-incremental-sync.apk",
+  "sha256": "610fb123b835858d675302c550e4b6476ddfcd12372aaebac85a7f2f4b51f7ef",
+  "noticeFiles": 29,
+  "pdfiumSha256": "de19db1c0fb33579bca6ace903af7ccb9d03ad1d3f6c5202970d8d79d7538303"
+}

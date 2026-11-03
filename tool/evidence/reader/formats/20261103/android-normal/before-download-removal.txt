@@ -1,0 +1,1 @@
+{"case": "before-download-removal", "installedApkSha256": "610fb123b835858d675302c550e4b6476ddfcd12372aaebac85a7f2f4b51f7ef", "retainedActions": 7, "pendingActions": 0, "legacyAccountRows": 0, "integrity": "ok"}

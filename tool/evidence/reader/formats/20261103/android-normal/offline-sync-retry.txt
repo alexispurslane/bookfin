@@ -1,0 +1,15 @@
+Tapped @e8 (222, 1844)
+settled after 655ms: +0 -0 (~12 unchanged)
+unchanged interactive (12):
+= @e1~s902000 [group]
+= @e2~s902000 [button] "Dismiss"
+= @e3~s902000 [group] "Account"
+= @e4~s902000 [group] "research-alice"
+= @e5~s902000 [group] "http://127.0.0.1:7365"
+= @e6~s902000 [group] "Personal-record sync"
+= @e7~s902000 [group] "Personal records remain on this device. Sync needs a connection and the compatible Bookfin Storage plugin on Jellyfin. No other storage is used. Retry after checking the server."
+= @e8~s902000 [button] "Sync now"
+= @e9~s902000 [button] "Software licenses"
+= @e10~s902000 [button] "Reset catalog corrections"
+= @e11~s902000 [button] "Sign out"
+= @e12~s902000 [group] "Scrim"
