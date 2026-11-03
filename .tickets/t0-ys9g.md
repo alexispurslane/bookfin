@@ -16,4 +16,3 @@ November 3 normal APK source 71af288: a complete fresh snapshot of a 1600x4000-p
 ## Acceptance Criteria
 
 Investigate whether the reader loses accessible semantics or the helper rejects a legitimate sparse reader window. Restore supported inspection without replacing the binding or using an alternate UI engine. Under explicit renewed authorization, finish owned-download removal, sign-out/close, network 0/1/1 restoration with media muted, and then run still-unproved normal-app cancel/drain/retry and active-departure acceptance. Preserve every retained action.
-
