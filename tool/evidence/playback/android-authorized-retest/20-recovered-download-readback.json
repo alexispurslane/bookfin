@@ -1,0 +1,25 @@
+{
+  "account": "own disposable ordinary alice",
+  "files": [
+    {
+      "path": "9a791f57062c1753e2102ab44420258f93cc076c452f6c5eb5486b389cc0f093/record.json",
+      "bytes": 309,
+      "sha256": "c839e5ead4da6ac6106d854280d073f8463b2f5ef302904a4aa993593055029d",
+      "manifest": {
+        "key": "785b3dab0c96b8a15590d7557f235700:785b3dab0c96b8a15590d7557f235700",
+        "revision": "[null,\"983ba095cee3d013d08e8e50882c3fc1\",398040,\"m4b\",1800000000]",
+        "length": 398040,
+        "etag": null,
+        "digest": "4a9250e74b118ec8c565a5d7f91f120482f822e48af2d02399993ecd55dcf855",
+        "requested": false,
+        "complete": true,
+        "error": null
+      }
+    },
+    {
+      "path": "9a791f57062c1753e2102ab44420258f93cc076c452f6c5eb5486b389cc0f093/complete",
+      "bytes": 398040,
+      "sha256": "4a9250e74b118ec8c565a5d7f91f120482f822e48af2d02399993ecd55dcf855"
+    }
+  ]
+}

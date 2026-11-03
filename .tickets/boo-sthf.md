@@ -80,3 +80,7 @@ Current-main normal APK82faf07d reached downloaded one-file M4B native PLAYING a
 **2026-11-03T00:00:39Z**
 
 Exclusive Android lane from1f1b1c6 verified existing normal APK by exact installed readback, but stopped before sign-in after field-focus refusal and worker expired-reference error. No notification/lock-screen/interruption or replacement case advanced. Prior completed listening cases not rerun. Cleanup complete; see docs/evidence/playback/android-replacement-native-attempt.md. No production change, new product defect, hardening or closure.
+
+**2026-11-03T00:53:19Z**
+
+Fresh fc4531c normal Android acceptance observed real-Jellyfin replacement playback, native notification Pause, +30s/-10s controls and retained Undo history. Simulated incoming call paused actual playback and created Interrupted124140->124309ms; call end resumed near124489ms. Credential-locked controls remain unobserved: existing lockscreen disabled=true and sleep/wake returned directly to app; no PIN/settings changed. This does not verify explicit pause during call, permanent focus loss, native Stop, physical routing or timer soak. Full evidence docs/evidence/playback/android-authorized-retest.md. Own resources cleaned, signed out, named close verified noPID before shutdown:false release. No closure.

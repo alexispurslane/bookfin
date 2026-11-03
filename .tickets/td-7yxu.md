@@ -29,3 +29,7 @@ Additional exclusive-device acceptance at ac6a247 observed own tcp7365 reverse f
 **2026-11-02T18:17:50Z**
 
 Corrected reader attempt observed own tcp7365 route before/after two relaunches: online PID9143 to11538, server-unavailable PID11538 to12201. Route remained present throughout, with no repair; real catalog requests succeeded after online restart. Own route removed at cleanup. Does not explain earlier disappearance or prove repeated stability; ticket remains open. See docs/evidence/reader/android-corrected.md.
+
+**2026-11-03T00:54:04Z**
+
+Fresh fc4531c authorized normal-app acceptance created only own port7365 reverse route after initially empty list. Route remained observed after named app restart and interrupted-download process relaunches; no reset/rebinding or adb UI fallback. Removed own route during cleanup; final list empty. Ports7364/7365 and owned processes stopped; builder7464/7465 untouched. Evidence docs/evidence/playback/android-authorized-retest.md.

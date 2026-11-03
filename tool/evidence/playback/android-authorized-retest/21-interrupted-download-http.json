@@ -1,0 +1,54 @@
+[
+  {
+    "at": 1793666601.660161,
+    "method": "GET",
+    "path": "/Items/785b3dab0c96b8a15590d7557f235700/Download",
+    "status": 200,
+    "length": "398040",
+    "etag": null,
+    "range": null,
+    "ifRange": null
+  },
+  {
+    "at": 1793666625.744054,
+    "method": "GET",
+    "path": "/Items/785b3dab0c96b8a15590d7557f235700/Download",
+    "status": 200,
+    "length": "398040",
+    "etag": null,
+    "range": null,
+    "ifRange": null,
+    "connectionInterrupted": true
+  },
+  {
+    "at": 1793666629.429827,
+    "method": "GET",
+    "path": "/Items/785b3dab0c96b8a15590d7557f235700/Download",
+    "status": 200,
+    "length": "398040",
+    "etag": null,
+    "range": null,
+    "ifRange": null
+  },
+  {
+    "at": 1793666683.624453,
+    "method": "GET",
+    "path": "/Items/785b3dab0c96b8a15590d7557f235700/Download",
+    "status": 200,
+    "length": "398040",
+    "etag": null,
+    "range": null,
+    "ifRange": null,
+    "connectionInterrupted": true
+  },
+  {
+    "at": 1793666685.746742,
+    "method": "GET",
+    "path": "/Items/785b3dab0c96b8a15590d7557f235700/Download",
+    "status": 200,
+    "length": "398040",
+    "etag": null,
+    "range": null,
+    "ifRange": null
+  }
+]

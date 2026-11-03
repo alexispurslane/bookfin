@@ -1,0 +1,77 @@
+{
+  "account": "own disposable ordinary alice",
+  "records": {
+    "version": 3,
+    "history": [
+      {
+        "id": "2db81bb65121249f35872121af7edb38",
+        "at": "2026-11-03T00:21:11.177837Z",
+        "kind": "resume",
+        "before": {
+          "edition": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "source": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "revision": "[null,\"ac01bb7179ce2a301ae4de2bf41a8f89\",398673,\"m4b\",1800000000]",
+          "milliseconds": 0
+        },
+        "after": {
+          "edition": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "source": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "revision": "[null,\"ac01bb7179ce2a301ae4de2bf41a8f89\",398673,\"m4b\",1800000000]",
+          "milliseconds": 3
+        },
+        "bookTitle": "Synthetic Work",
+        "editionLabel": "M4B"
+      },
+      {
+        "id": "fc32bbb248afabf3ab69b6ffb7f2f4e8",
+        "at": "2026-11-03T00:21:37.067468Z",
+        "kind": "pause",
+        "before": {
+          "edition": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "source": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "revision": "[null,\"ac01bb7179ce2a301ae4de2bf41a8f89\",398673,\"m4b\",1800000000]",
+          "milliseconds": 24298
+        },
+        "after": {
+          "edition": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "source": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "revision": "[null,\"ac01bb7179ce2a301ae4de2bf41a8f89\",398673,\"m4b\",1800000000]",
+          "milliseconds": 24298
+        },
+        "bookTitle": "Synthetic Work",
+        "editionLabel": "M4B"
+      }
+    ],
+    "bookmarks": [
+      {
+        "id": "49072bc9783f9d340274c858459de33c",
+        "position": {
+          "edition": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "source": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "revision": "[null,\"ac01bb7179ce2a301ae4de2bf41a8f89\",398673,\"m4b\",1800000000]",
+          "milliseconds": 24298
+        },
+        "createdAt": "2026-11-03T00:23:21.080890Z",
+        "bookTitle": "Synthetic Work",
+        "editionLabel": "M4B",
+        "title": "Original recording marker",
+        "note": null
+      }
+    ],
+    "selected": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+    "resumes": {
+      "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a": [
+        {
+          "source": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "revision": "[null,\"ac01bb7179ce2a301ae4de2bf41a8f89\",398673,\"m4b\",1800000000]",
+          "sources": "[[\"0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a\",\"[null,\\\"ac01bb7179ce2a301ae4de2bf41a8f89\\\",398673,\\\"m4b\\\",1800000000]\"]]",
+          "milliseconds": 24298,
+          "pendingOffline": false
+        }
+      ]
+    },
+    "speed": 1.0,
+    "backward": 10,
+    "forward": 30
+  }
+}

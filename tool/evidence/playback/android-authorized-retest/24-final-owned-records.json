@@ -1,0 +1,359 @@
+{
+  "account": "own disposable ordinary alice",
+  "records": {
+    "version": 3,
+    "history": [
+      {
+        "id": "2db81bb65121249f35872121af7edb38",
+        "at": "2026-11-03T00:21:11.177837Z",
+        "kind": "resume",
+        "before": {
+          "edition": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "source": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "revision": "[null,\"ac01bb7179ce2a301ae4de2bf41a8f89\",398673,\"m4b\",1800000000]",
+          "milliseconds": 0
+        },
+        "after": {
+          "edition": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "source": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "revision": "[null,\"ac01bb7179ce2a301ae4de2bf41a8f89\",398673,\"m4b\",1800000000]",
+          "milliseconds": 3
+        },
+        "bookTitle": "Synthetic Work",
+        "editionLabel": "M4B"
+      },
+      {
+        "id": "fc32bbb248afabf3ab69b6ffb7f2f4e8",
+        "at": "2026-11-03T00:21:37.067468Z",
+        "kind": "pause",
+        "before": {
+          "edition": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "source": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "revision": "[null,\"ac01bb7179ce2a301ae4de2bf41a8f89\",398673,\"m4b\",1800000000]",
+          "milliseconds": 24298
+        },
+        "after": {
+          "edition": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "source": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "revision": "[null,\"ac01bb7179ce2a301ae4de2bf41a8f89\",398673,\"m4b\",1800000000]",
+          "milliseconds": 24298
+        },
+        "bookTitle": "Synthetic Work",
+        "editionLabel": "M4B"
+      },
+      {
+        "id": "b8611835aad0e3078e1aeaaa2bd4fdeb",
+        "at": "2026-11-03T00:27:33.883739Z",
+        "kind": "resume",
+        "before": {
+          "edition": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "source": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "revision": "[null,\"05f4cf429ec3be048d83eff123f1509c\",398719,\"m4b\",1800000000]",
+          "milliseconds": 0
+        },
+        "after": {
+          "edition": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "source": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "revision": "[null,\"05f4cf429ec3be048d83eff123f1509c\",398719,\"m4b\",1800000000]",
+          "milliseconds": 0
+        },
+        "bookTitle": "z-first",
+        "editionLabel": "M4B"
+      },
+      {
+        "id": "b299d3800833b0680a74f176045c641a",
+        "at": "2026-11-03T00:28:43.291357Z",
+        "kind": "pause",
+        "before": {
+          "edition": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "source": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "revision": "[null,\"05f4cf429ec3be048d83eff123f1509c\",398719,\"m4b\",1800000000]",
+          "milliseconds": 25864
+        },
+        "after": {
+          "edition": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "source": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "revision": "[null,\"05f4cf429ec3be048d83eff123f1509c\",398719,\"m4b\",1800000000]",
+          "milliseconds": 25864
+        },
+        "bookTitle": "z-first",
+        "editionLabel": "M4B"
+      },
+      {
+        "id": "986db6481c34b9abffc62387f85cfa5f",
+        "at": "2026-11-03T00:31:18.504899Z",
+        "kind": "historyRestore",
+        "before": {
+          "edition": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "source": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "revision": "[null,\"05f4cf429ec3be048d83eff123f1509c\",398719,\"m4b\",1800000000]",
+          "milliseconds": 25864
+        },
+        "after": {
+          "edition": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "source": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "revision": "[null,\"05f4cf429ec3be048d83eff123f1509c\",398719,\"m4b\",1800000000]",
+          "milliseconds": 25864
+        },
+        "bookTitle": "z-first",
+        "editionLabel": "M4B"
+      },
+      {
+        "id": "f49d4fe6f022f757eae7c4dbeb1d63d3",
+        "at": "2026-11-03T00:32:03.831049Z",
+        "kind": "resume",
+        "before": {
+          "edition": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "source": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "revision": "[null,\"05f4cf429ec3be048d83eff123f1509c\",398719,\"m4b\",1800000000]",
+          "milliseconds": 25864
+        },
+        "after": {
+          "edition": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "source": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "revision": "[null,\"05f4cf429ec3be048d83eff123f1509c\",398719,\"m4b\",1800000000]",
+          "milliseconds": 25864
+        },
+        "bookTitle": "z-first",
+        "editionLabel": "M4B"
+      },
+      {
+        "id": "61c5ce1d0ed23000d423e301543bc23e",
+        "at": "2026-11-03T00:33:14.081179Z",
+        "kind": "pause",
+        "before": {
+          "edition": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "source": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "revision": "[null,\"05f4cf429ec3be048d83eff123f1509c\",398719,\"m4b\",1800000000]",
+          "milliseconds": 77281
+        },
+        "after": {
+          "edition": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "source": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "revision": "[null,\"05f4cf429ec3be048d83eff123f1509c\",398719,\"m4b\",1800000000]",
+          "milliseconds": 77281
+        },
+        "bookTitle": "z-first",
+        "editionLabel": "M4B"
+      },
+      {
+        "id": "fa5a34a275af3ebca626c2b6a4147d22",
+        "at": "2026-11-03T00:33:44.704171Z",
+        "kind": "jump",
+        "before": {
+          "edition": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "source": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "revision": "[null,\"05f4cf429ec3be048d83eff123f1509c\",398719,\"m4b\",1800000000]",
+          "milliseconds": 77281
+        },
+        "after": {
+          "edition": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "source": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "revision": "[null,\"05f4cf429ec3be048d83eff123f1509c\",398719,\"m4b\",1800000000]",
+          "milliseconds": 107281
+        },
+        "bookTitle": "z-first",
+        "editionLabel": "M4B"
+      },
+      {
+        "id": "56c715da58920043bd2c38139d1ec9b0",
+        "at": "2026-11-03T00:34:14.218457Z",
+        "kind": "jump",
+        "before": {
+          "edition": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "source": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "revision": "[null,\"05f4cf429ec3be048d83eff123f1509c\",398719,\"m4b\",1800000000]",
+          "milliseconds": 107281
+        },
+        "after": {
+          "edition": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "source": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "revision": "[null,\"05f4cf429ec3be048d83eff123f1509c\",398719,\"m4b\",1800000000]",
+          "milliseconds": 97281
+        },
+        "bookTitle": "z-first",
+        "editionLabel": "M4B"
+      },
+      {
+        "id": "76a7aacd19e07dbb39023e212c58a9ca",
+        "at": "2026-11-03T00:34:40.410081Z",
+        "kind": "undo",
+        "before": {
+          "edition": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "source": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "revision": "[null,\"05f4cf429ec3be048d83eff123f1509c\",398719,\"m4b\",1800000000]",
+          "milliseconds": 97281
+        },
+        "after": {
+          "edition": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "source": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "revision": "[null,\"05f4cf429ec3be048d83eff123f1509c\",398719,\"m4b\",1800000000]",
+          "milliseconds": 107281
+        },
+        "bookTitle": "z-first",
+        "editionLabel": "M4B"
+      },
+      {
+        "id": "8ef5ac6a3db156019a8bd7f43411d3c8",
+        "at": "2026-11-03T00:36:25.656061Z",
+        "kind": "resume",
+        "before": {
+          "edition": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "source": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "revision": "[null,\"05f4cf429ec3be048d83eff123f1509c\",398719,\"m4b\",1800000000]",
+          "milliseconds": 107281
+        },
+        "after": {
+          "edition": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "source": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "revision": "[null,\"05f4cf429ec3be048d83eff123f1509c\",398719,\"m4b\",1800000000]",
+          "milliseconds": 107282
+        },
+        "bookTitle": "z-first",
+        "editionLabel": "M4B"
+      },
+      {
+        "id": "ac842f2ee0600492416be8955dbd8167",
+        "at": "2026-11-03T00:36:43.207050Z",
+        "kind": "interruption",
+        "before": {
+          "edition": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "source": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "revision": "[null,\"05f4cf429ec3be048d83eff123f1509c\",398719,\"m4b\",1800000000]",
+          "milliseconds": 124140
+        },
+        "after": {
+          "edition": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "source": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "revision": "[null,\"05f4cf429ec3be048d83eff123f1509c\",398719,\"m4b\",1800000000]",
+          "milliseconds": 124309
+        },
+        "bookTitle": "z-first",
+        "editionLabel": "M4B"
+      },
+      {
+        "id": "0ec35283587e68a5c1808444d5d70327",
+        "at": "2026-11-03T00:37:18.236412Z",
+        "kind": "resume",
+        "before": {
+          "edition": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "source": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "revision": "[null,\"05f4cf429ec3be048d83eff123f1509c\",398719,\"m4b\",1800000000]",
+          "milliseconds": 124488
+        },
+        "after": {
+          "edition": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "source": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "revision": "[null,\"05f4cf429ec3be048d83eff123f1509c\",398719,\"m4b\",1800000000]",
+          "milliseconds": 124489
+        },
+        "bookTitle": "z-first",
+        "editionLabel": "M4B"
+      },
+      {
+        "id": "eec166252d1e914523095611759a5297",
+        "at": "2026-11-03T00:37:33.822922Z",
+        "kind": "pause",
+        "before": {
+          "edition": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "source": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "revision": "[null,\"05f4cf429ec3be048d83eff123f1509c\",398719,\"m4b\",1800000000]",
+          "milliseconds": 139798
+        },
+        "after": {
+          "edition": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "source": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "revision": "[null,\"05f4cf429ec3be048d83eff123f1509c\",398719,\"m4b\",1800000000]",
+          "milliseconds": 139798
+        },
+        "bookTitle": "z-first",
+        "editionLabel": "M4B"
+      },
+      {
+        "id": "150dc2ec409b366107a4947fa2099a4b",
+        "at": "2026-11-03T00:45:50.963311Z",
+        "kind": "resume",
+        "before": {
+          "edition": "785b3dab0c96b8a15590d7557f235700:785b3dab0c96b8a15590d7557f235700",
+          "source": "785b3dab0c96b8a15590d7557f235700:785b3dab0c96b8a15590d7557f235700",
+          "revision": "[null,\"983ba095cee3d013d08e8e50882c3fc1\",398040,\"m4b\",1800000000]",
+          "milliseconds": 0
+        },
+        "after": {
+          "edition": "785b3dab0c96b8a15590d7557f235700:785b3dab0c96b8a15590d7557f235700",
+          "source": "785b3dab0c96b8a15590d7557f235700:785b3dab0c96b8a15590d7557f235700",
+          "revision": "[null,\"983ba095cee3d013d08e8e50882c3fc1\",398040,\"m4b\",1800000000]",
+          "milliseconds": 4
+        },
+        "bookTitle": "Synthetic Work",
+        "editionLabel": "M4B"
+      },
+      {
+        "id": "31a770b2fb74169c3ed0f400dd9d6b89",
+        "at": "2026-11-03T00:46:18.299399Z",
+        "kind": "pause",
+        "before": {
+          "edition": "785b3dab0c96b8a15590d7557f235700:785b3dab0c96b8a15590d7557f235700",
+          "source": "785b3dab0c96b8a15590d7557f235700:785b3dab0c96b8a15590d7557f235700",
+          "revision": "[null,\"983ba095cee3d013d08e8e50882c3fc1\",398040,\"m4b\",1800000000]",
+          "milliseconds": 26847
+        },
+        "after": {
+          "edition": "785b3dab0c96b8a15590d7557f235700:785b3dab0c96b8a15590d7557f235700",
+          "source": "785b3dab0c96b8a15590d7557f235700:785b3dab0c96b8a15590d7557f235700",
+          "revision": "[null,\"983ba095cee3d013d08e8e50882c3fc1\",398040,\"m4b\",1800000000]",
+          "milliseconds": 26847
+        },
+        "bookTitle": "Synthetic Work",
+        "editionLabel": "M4B"
+      }
+    ],
+    "bookmarks": [
+      {
+        "id": "49072bc9783f9d340274c858459de33c",
+        "position": {
+          "edition": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "source": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "revision": "[null,\"ac01bb7179ce2a301ae4de2bf41a8f89\",398673,\"m4b\",1800000000]",
+          "milliseconds": 24298
+        },
+        "createdAt": "2026-11-03T00:23:21.080890Z",
+        "bookTitle": "Synthetic Work",
+        "editionLabel": "M4B",
+        "title": "Original recording marker",
+        "note": null
+      }
+    ],
+    "selected": "785b3dab0c96b8a15590d7557f235700:785b3dab0c96b8a15590d7557f235700",
+    "resumes": {
+      "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a": [
+        {
+          "source": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "revision": "[null,\"ac01bb7179ce2a301ae4de2bf41a8f89\",398673,\"m4b\",1800000000]",
+          "sources": "[[\"0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a\",\"[null,\\\"ac01bb7179ce2a301ae4de2bf41a8f89\\\",398673,\\\"m4b\\\",1800000000]\"]]",
+          "milliseconds": 24298,
+          "pendingOffline": false
+        },
+        {
+          "source": "0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a",
+          "revision": "[null,\"05f4cf429ec3be048d83eff123f1509c\",398719,\"m4b\",1800000000]",
+          "sources": "[[\"0c31f5b485737b77374d44acf08f404a:0c31f5b485737b77374d44acf08f404a\",\"[null,\\\"05f4cf429ec3be048d83eff123f1509c\\\",398719,\\\"m4b\\\",1800000000]\"]]",
+          "milliseconds": 139798,
+          "pendingOffline": false
+        }
+      ],
+      "785b3dab0c96b8a15590d7557f235700:785b3dab0c96b8a15590d7557f235700": [
+        {
+          "source": "785b3dab0c96b8a15590d7557f235700:785b3dab0c96b8a15590d7557f235700",
+          "revision": "[null,\"983ba095cee3d013d08e8e50882c3fc1\",398040,\"m4b\",1800000000]",
+          "sources": "[[\"785b3dab0c96b8a15590d7557f235700:785b3dab0c96b8a15590d7557f235700\",\"[null,\\\"983ba095cee3d013d08e8e50882c3fc1\\\",398040,\\\"m4b\\\",1800000000]\"]]",
+          "milliseconds": 26847,
+          "pendingOffline": false
+        }
+      ]
+    },
+    "speed": 1.0,
+    "backward": 10,
+    "forward": 30
+  }
+}

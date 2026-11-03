@@ -1,0 +1,85 @@
+{
+  "localDate": "2026-11-02",
+  "eventTimeZone": "UTC",
+  "source": "fc4531c4ff9cf38d85317961e6ce771d9567a058",
+  "runtimeSource": "17c9e6bf175a5586566441183b8e8ed19534c1b6",
+  "runtimeSourceComparison": "No differences in lib, android, assets, packages, pubspec.yaml, pubspec.lock, flake.nix, flake.lock or nix",
+  "package": "dev.bookfin.bookfin",
+  "apkBytes": 100151103,
+  "apkSha256": "8e4f386e79a0446a9ae2c51f0f157d07d9953b4aa4cf5f23ed3c3957b5be534b",
+  "installedReadbackMatchesPriorCandidate": true,
+  "newBuildOrInstall": false,
+  "host": "local",
+  "device": "emulator-5554",
+  "binding": "t3-42ca2fc685f8e741abe863b6",
+  "initialNamedAppPid": null,
+  "cancelRecordsExactlyUnchanged": true,
+  "restartRecordsExactlyUnchanged": true,
+  "originalResumeRetained": true,
+  "originalHistoryRetained": true,
+  "originalBookmarksRetained": true,
+  "replacementInitialEvent": {
+    "beforeMs": 0,
+    "afterMs": 0
+  },
+  "recordRestartPids": [
+    22749,
+    26011
+  ],
+  "nativeJumps": [
+    {
+      "beforeMs": 77281,
+      "afterMs": 107281
+    },
+    {
+      "beforeMs": 107281,
+      "afterMs": 97281
+    }
+  ],
+  "nativeJumpUndo": [
+    {
+      "beforeMs": 97281,
+      "afterMs": 107281
+    }
+  ],
+  "callInterruption": {
+    "beforeMs": 124140,
+    "afterMs": 124309
+  },
+  "downloadRestartPids": [
+    29400,
+    29905,
+    30209
+  ],
+  "recoveredDownload": {
+    "bytes": 398040,
+    "sha256": "4a9250e74b118ec8c565a5d7f91f120482f822e48af2d02399993ecd55dcf855",
+    "playedInNormalApp": true
+  },
+  "realSavedPrefixReuseAccepted": false,
+  "credentialLockedControlsAccepted": false,
+  "talkBackAccepted": false,
+  "cleanup": {
+    "signedOut": true,
+    "ownedMediaFiles": [],
+    "namedCloseBeforeRelease": "Closed: t3-42ca2fc685f8e741abe863b6",
+    "namedAppPidAfterClose": null,
+    "reverseRoutesAfterOwnRemoval": [],
+    "fontScale": "1.0",
+    "airplaneModeOn": "0",
+    "wifiOn": "1",
+    "enabledAccessibilityServices": "",
+    "lockScreenDisabled": true,
+    "settingsChanged": false,
+    "ownSimulatedCallEnded": true,
+    "syntheticMissedCallLogMayRemain": true,
+    "originalSourceBytesAndTitleRestored": true,
+    "jellyfinPid": 85150,
+    "jellyfinExit": 0,
+    "observerPid": 90190,
+    "observerExit": 143,
+    "fixturePortsListening": [],
+    "deviceReleased": true,
+    "shutdown": false
+  }
+}

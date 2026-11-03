@@ -46,3 +46,11 @@ Exclusive Android acceptance worker starts from parent1f1b1c6. Own new bindinglo
 **2026-11-03T00:00:39Z**
 
 Acceptance from parent1f1b1c6 verified runtime-source equality with17c9e6b and installed APK SHA2568e4f386e79a0446a9ae2c51f0f157d07d9953b4aa4cf5f23ed3c3957b5be534b. Stopped before sign-in: bound server fill refused focus; worker then incorrectly reused an expired username reference in the same shell command. No advised debug retry occurred before that second error. No replacement, record-restart, notification, interruption, or download-recovery acceptance advanced. Evidence docs/evidence/playback/android-replacement-native-attempt.md. No production defect/change, children, hardening or closure. Cleanup complete; renewed Android authorization needed after stop.
+
+**2026-11-03T00:19:10Z**
+
+Fresh explicitly renewed authorized Android acceptance from fc4531c4ff9cf38d85317961e6ce771d9567a058. Runtime/source unchanged from17c9e6b; installed readback matches SHA2568e4f386e79a0446a9ae2c51f0f157d07d9953b4aa4cf5f23ed3c3957b5be534b. Own binding local/emulator-5554; only own7364/7365 fixture and route. One UI action per command with fresh snapshots. No production edits or unaccepted sync branch.
+
+**2026-11-03T00:53:19Z**
+
+Fresh renewed-authorized normal Android run from fc4531c passed replacement confirmation and Cancel (entire playback payload unchanged), then confirmed actual replacement playback from0. Original resume24298ms/history/bookmark retained separately from replacement25864ms. Named relaunchPID22749->26011 retained all records exactly; incompatible original bookmark restore was refused without remapping. Later final record still retains original resume and records. Installed APK readbackSHA2568e4f386e79a0446a9ae2c51f0f157d07d9953b4aa4cf5f23ed3c3957b5be534b, no runtime source differences from17c9e6b. Evidence docs/evidence/playback/android-authorized-retest.md and numbered bounded readbacks/screenshots. No production edit, hardening or closure. Parent owns integration and acceptance.

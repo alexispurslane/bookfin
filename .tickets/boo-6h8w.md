@@ -67,3 +67,7 @@ Additional acceptance from ac6a247a654829d5204437a203b2b61c3ed15234 completed af
 **2026-11-03T00:00:39Z**
 
 Exclusive Android lane from1f1b1c6 verified existing normal APK by exact installed readback, but stopped before sign-in after field-focus refusal and worker expired-reference error. No notification/lock-screen/interruption or replacement case advanced. Prior completed listening cases not rerun. Cleanup complete; see docs/evidence/playback/android-replacement-native-attempt.md. No production change, new product defect, hardening or closure.
+
+**2026-11-03T00:53:19Z**
+
+Fresh fc4531c Android acceptance records native notification pause at77281ms, native +30s to107281ms then -10s to97281ms, and app Undo back107281ms with native jump history retained. Replacement original24298ms resume/history/bookmark remained separate across named process restart. Original bookmark restore on changed audio refused; valid replacement history restored25864ms. Transient incoming call saved Interrupted and subsequent Resumed events. See docs/evidence/playback/android-authorized-retest.md and bounded account readbacks. Not full sync, locked-screen, hardening or closure acceptance.

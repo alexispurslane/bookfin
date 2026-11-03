@@ -22,3 +22,7 @@ Supported bound named-app close confirms Bookfin no longer runs before device re
 **2026-11-03T00:00:39Z**
 
 Independent authorized listening attempt from1f1b1c6 observed initial existingPID11695. During own cleanup, before device release, fresh still-valid bound agent-device close dev.bookfin.bookfin returned Closed:t3-b9718bd16302bb4fb7b69f4f and allowed pidof readback returned no PID. Released shutdown:false afterward. This proves the supported named-close-before-release sequence for this run, not successful termination by the prior released reader binding. Evidence docs/evidence/playback/android-replacement-native-attempt.md and tool/evidence/playback/android-replacement-native/runtime.json. Parent owns assessment/closure.
+
+**2026-11-03T00:54:04Z**
+
+Fresh fc4531c acceptance independently repeated supported sequence: signed out and removed own media, bound close dev.bookfin.bookfin returned Closed:t3-42ca2fc685f8e741abe863b6, two allowed PID readbacks showed no Bookfin process BEFORE device_close(shutdown:false). Own fixture/services/routes also stopped before release. This verifies named-app close rather than assuming session release terminates the process. Evidence docs/evidence/playback/android-authorized-retest.md. Parent owns closure.
