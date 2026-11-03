@@ -10,10 +10,11 @@ import 'package:flutter_test/flutter_test.dart';
 class HeldPdf extends PdfBook {
   final rendering = Completer<PdfRaster>();
   int renders = 0;
-  final source = List.generate(
-    180,
-    (i) => 'Line $i follows the river.',
-  ).join(' ');
+  HeldPdf({String? source})
+    : source =
+          source ??
+          List.generate(180, (i) => 'Line $i follows the river.').join(' ');
+  final String source;
   @override
   String get originalDigest => 'fixture';
   @override
@@ -128,6 +129,58 @@ void main() {
       expect(location!.sourcePage, 1);
       expect(scroll.offset, closeTo(scroll.position.maxScrollExtent, 1));
       expect(location!.character, greaterThan(0));
+      await tester.pumpWidget(const SizedBox());
+      book.rendering.complete(PdfRaster(1, 1, Uint8List(4)));
+      await tester.pump();
+    },
+  );
+  testWidgets(
+    'Previous onto a short page saves its visible beginning for larger-text restoration',
+    (tester) async {
+      final book = HeldPdf(
+        source: List.generate(12, (i) => 'River sentence $i.').join(' '),
+      );
+      late DocumentNavigator navigation;
+      PdfAddress? location;
+      Widget reader(double size, {PdfAddress? initial}) => MaterialApp(
+        home: Scaffold(
+          body: PdfViewport(
+            book: book,
+            fontSize: size,
+            initial: initial,
+            onReady: (value, _) => navigation = value,
+            onAddress: (value) => location = value,
+          ),
+        ),
+      );
+      await tester.pumpWidget(reader(20));
+      await tester.pump();
+      await tester.tap(find.text('Reflow text'));
+      await tester.pumpAndSettle();
+      ScrollController scroll() => tester
+          .widget<SingleChildScrollView>(find.byType(SingleChildScrollView))
+          .controller!;
+      expect(scroll().position.maxScrollExtent, 0);
+      await navigation.move(true);
+      await tester.pumpAndSettle();
+      expect(location!.sourcePage, 2);
+      await navigation.move(false);
+      await tester.pumpAndSettle();
+      expect(location!.sourcePage, 1);
+      expect(location!.character, 0);
+      expect(location!.quote, startsWith('River sentence 0.'));
+      final saved = location!;
+      await tester.pumpWidget(const SizedBox());
+      await tester.binding.setSurfaceSize(const Size(300, 600));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.pumpWidget(reader(40, initial: saved));
+      await tester.pump();
+      await tester.tap(find.text('Reflow text'));
+      await tester.pumpAndSettle();
+      expect(scroll().position.maxScrollExtent, greaterThan(0));
+      expect(scroll().offset, 0);
+      expect(location!.character, 0);
+      expect(location!.quote, startsWith('River sentence 0.'));
       await tester.pumpWidget(const SizedBox());
       book.rendering.complete(PdfRaster(1, 1, Uint8List(4)));
       await tester.pump();

@@ -49,3 +49,13 @@ checks are retained with 405 final Flutter passes, one optional plugin skip,
 and clean analysis in tool/evidence/reader/formats/20261102/review-corrections/.
 Independent source re-review and exact combined-build Android acceptance remain
 required. No format, native replacement, compliance or OCR acceptance is claimed.
+
+## Short-page review follow-up
+
+Review R1 reproduced: Previous onto a short page published character 217 instead
+of its visible beginning at character 0. Placement now samples the actual
+visible address even without a scroll change. The regression also reopens that
+address with larger text and narrower width. Three focused tests and 406 full
+Flutter tests pass (one optional plugin skip); analysis clean. Evidence:
+tool/evidence/reader/formats/20261102/short-page-correction/. Independent review
+and exact combined Android acceptance remain pending; ticket stays open.

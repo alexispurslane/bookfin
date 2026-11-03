@@ -305,6 +305,8 @@ class _PdfViewportState extends State<PdfViewport>
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted && _usingText && _scroll.hasClients) {
             _scroll.jumpTo(target.clamp(0.0, _scroll.position.maxScrollExtent));
+            // Placement can leave the scroll offset unchanged on a short page.
+            _scrolled();
           }
         });
       }
