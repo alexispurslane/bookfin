@@ -62,3 +62,46 @@ Coverage and mutation campaigns wait for user acceptance.
 remaining distribution/source/installation-information decisions. The build
 handoff records its exact source commit, APK hash and matching-source inventory
 separately after a clean, checked source commit.
+
+## Verified normal-app build
+
+The final APK and matching source come from clean source commit
+`5fca4a23843c57d4ba162d94500e700bd036266f`. Later changes to this evidence directory
+and the ticket do not change that APK or its source stamp.
+
+| Artifact | Value |
+| --- | --- |
+| Normal app | `dev.bookfin.bookfin`, `lib/main.dart`, ARM64 debug |
+| APK | `.cache/artifacts/ocr-20261103-production/bookfin-5fca4a2-arm64-debug.apk` |
+| APK bytes | 131217891 |
+| APK SHA-256 | `5b0f6d3d451bfb36671e8fc19084f2084064e21d4edc26fdbf8d982308a0bf32` |
+| Source directory | `.cache/artifacts/ocr-20261103-production/source-5fca4a2` |
+| Bookfin source tar SHA-256 | `d24275341d56639f881081b3832422d8e13725678b9c53744df68ec16a388404` |
+| Source manifest SHA-256 | `5fb0a2cf5fba9264995e7eec954ba74d224e238ccdfb956963baca479b10b083` |
+
+`build.txt`, `apk-verification.json`, `reader-apk-verification.json`, `badging.txt`
+and `provenance.json` record the exact candidate. All 13 native libraries are
+ARM64 and have at least 16 KiB ELF load alignment. Package alignment passes at
+16 KiB. All four OCR libraries match the pinned AAR byte for byte. The exact
+4,113,088-byte English model is stored uncompressed. OCR notices, existing reader
+notices, application permissions, package identity, APK v2 signature and the clean
+source stamp pass verification. The APK's Bookfin source stamp is not Google's
+separate APK SourceStamp signing feature.
+
+The first build stopped at a Gradle digest-import namespace collision, recorded
+in `gradle-configuration-failure.txt`. The next compilation succeeded, but package
+verification rejected unrequested native architectures, recorded in
+`package-architecture-red.txt`. The final source derives dependency architecture
+filters from Flutter's requested targets. It does not impose an ARM64-only
+product restriction on other requested builds.
+
+`post-build-tests.txt` repeats all 453 tests and the SDK/native worker checks on
+the final source, with the same three existing opt-in skips.
+`post-build-analysis.txt` reports no issues. `daemon-stop.txt` records stopping
+the single daemon in this checkout's Gradle home. No owned Gradle or Kotlin
+compiler process remains. No other process was stopped.
+
+Raw command logs and upstream license files preserve their original whitespace.
+The source-only diff check excludes those verbatim evidence/license inputs.
+This build was not installed. Android OCR behavior, resource measurements,
+approved reader layout and distribution terms remain parent-owned gates.

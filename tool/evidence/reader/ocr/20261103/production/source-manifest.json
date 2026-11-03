@@ -1,0 +1,14 @@
+{
+  "sourceCommit": "5fca4a23843c57d4ba162d94500e700bd036266f",
+  "files": {
+    "LGPL-3.0.txt": "da7eabb7bafdf7d3ae5e9f223aa5bdc1eece45ac569dc21b3b037520b4464768",
+    "libmobi-0.12-source.tar.gz": "5482d4d8551f0602bcf25d968228c5edc957f48dacf316217154f2f81dcf30f8",
+    "Tesseract4Android-4.9.0-source.tar.gz": "4569f9093d641d13188ba2dd36a74396661eaa3f9e44637ff1cac9a36076a20e",
+    "bookfin-source.tar": "d24275341d56639f881081b3832422d8e13725678b9c53744df68ec16a388404",
+    "eng.traineddata": "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2",
+    "tessdata-fast-4.1.0-LICENSE.txt": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+    "GPL-3.0.txt": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+    "BUILD-AND-INSTALL.md": "f10ebfd8e269e13a0291ccec198a9ea55b0b1e4e9e76f4a96f1eb99b78a215c7",
+    "OCR-BUILD-AND-TERMS.md": "257025d14647d866874e0d6aef5501bdd32a9aebd40ab8e0885ff87f7ccbf99d"
+  }
+}

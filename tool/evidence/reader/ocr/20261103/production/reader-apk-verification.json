@@ -1,0 +1,6 @@
+{
+  "apk": ".cache/artifacts/ocr-20261103-production/bookfin-5fca4a2-arm64-debug.apk",
+  "sha256": "5b0f6d3d451bfb36671e8fc19084f2084064e21d4edc26fdbf8d982308a0bf32",
+  "noticeFiles": 29,
+  "pdfiumSha256": "de19db1c0fb33579bca6ace903af7ccb9d03ad1d3f6c5202970d8d79d7538303"
+}

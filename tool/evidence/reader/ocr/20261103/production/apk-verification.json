@@ -1,0 +1,146 @@
+{
+  "apk": ".cache/artifacts/ocr-20261103-production/bookfin-5fca4a2-arm64-debug.apk",
+  "apkSha256": "5b0f6d3d451bfb36671e8fc19084f2084064e21d4edc26fdbf8d982308a0bf32",
+  "modelBytes": 4113088,
+  "modelSha256": "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2",
+  "ocrLibraries": {
+    "lib/arm64-v8a/libjpeg.so": "0e751fcd26f2a60e8b87c2da274473c6c2a26352e5a9071033f1f88a93b39308",
+    "lib/arm64-v8a/libleptonica.so": "00436d8562bc833a22111a1451cf46147f05aecf8a257751e127689a1ee6e3c4",
+    "lib/arm64-v8a/libpngx.so": "e70d48e405b56f1df06921c4ebbee0612140a8f2c7b0a2641fbbf6fea53eda4c",
+    "lib/arm64-v8a/libtesseract.so": "bce8dcca1544d9f8708ac126c1e920bfa92481509672d8472470e8c2eebcd43c"
+  },
+  "native": [
+    {
+      "file": "lib/arm64-v8a/libVkLayer_khronos_validation.so",
+      "sha256": "ae445f7e74d402e3a367adb230b1edd9841899fcb3310166e5cc96a09ad37a3f",
+      "loadAlignments": [
+        65536,
+        65536,
+        65536
+      ]
+    },
+    {
+      "file": "lib/arm64-v8a/libbookfin_mobi.so",
+      "sha256": "1a18f9bda345220f61e391e5f3820b10b16cd6a4f8f8039fe692d80db38cbb48",
+      "loadAlignments": [
+        16384,
+        16384,
+        16384
+      ]
+    },
+    {
+      "file": "lib/arm64-v8a/libdartjni.so",
+      "sha256": "9fc7cf4108824526a5cbe49580e81993138eaddcaefdc67273d83421bff708a7",
+      "loadAlignments": [
+        16384,
+        16384,
+        16384
+      ]
+    },
+    {
+      "file": "lib/arm64-v8a/libdatastore_shared_counter.so",
+      "sha256": "178f89a2c6c9234ddf980dd4cd1f3616186a46b2b932aafa6707abd04c5fd76a",
+      "loadAlignments": [
+        16384,
+        16384,
+        16384,
+        16384
+      ]
+    },
+    {
+      "file": "lib/arm64-v8a/libflutter.so",
+      "sha256": "2cf5d86b8aa2b883aa4b40365380b5de97f6d42732520b7a750c185d524efd8d",
+      "loadAlignments": [
+        65536,
+        65536,
+        65536
+      ]
+    },
+    {
+      "file": "lib/arm64-v8a/libjpeg.so",
+      "sha256": "0e751fcd26f2a60e8b87c2da274473c6c2a26352e5a9071033f1f88a93b39308",
+      "loadAlignments": [
+        16384,
+        16384
+      ]
+    },
+    {
+      "file": "lib/arm64-v8a/libleptonica.so",
+      "sha256": "00436d8562bc833a22111a1451cf46147f05aecf8a257751e127689a1ee6e3c4",
+      "loadAlignments": [
+        16384,
+        16384,
+        16384
+      ]
+    },
+    {
+      "file": "lib/arm64-v8a/libmobi.so",
+      "sha256": "3af5f3d9c9e639dd8dc2030bffb857b09f729286b5a18bab58d646b9c17660d0",
+      "loadAlignments": [
+        16384,
+        16384,
+        16384
+      ]
+    },
+    {
+      "file": "lib/arm64-v8a/libpdfium.so",
+      "sha256": "de19db1c0fb33579bca6ace903af7ccb9d03ad1d3f6c5202970d8d79d7538303",
+      "loadAlignments": [
+        16384,
+        16384,
+        16384
+      ]
+    },
+    {
+      "file": "lib/arm64-v8a/libpdfrx_pdfium_gate.so",
+      "sha256": "0f03859b7c72400547d73a4e22a10988236a3c4f8e42a51797f22dc88aaa1b74",
+      "loadAlignments": [
+        16384,
+        16384,
+        16384,
+        16384
+      ]
+    },
+    {
+      "file": "lib/arm64-v8a/libpngx.so",
+      "sha256": "e70d48e405b56f1df06921c4ebbee0612140a8f2c7b0a2641fbbf6fea53eda4c",
+      "loadAlignments": [
+        16384,
+        16384
+      ]
+    },
+    {
+      "file": "lib/arm64-v8a/libsqlite3.so",
+      "sha256": "081df67ee9ab852daea6a0679427e90fc89a0245d06f93dafe2309875c609c5c",
+      "loadAlignments": [
+        16384,
+        16384,
+        16384
+      ]
+    },
+    {
+      "file": "lib/arm64-v8a/libtesseract.so",
+      "sha256": "bce8dcca1544d9f8708ac126c1e920bfa92481509672d8472470e8c2eebcd43c",
+      "loadAlignments": [
+        16384,
+        16384,
+        16384
+      ]
+    }
+  ],
+  "permissions": [
+    "android.permission.ACCESS_NETWORK_STATE",
+    "android.permission.FOREGROUND_SERVICE",
+    "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK",
+    "android.permission.INTERNET",
+    "android.permission.WAKE_LOCK",
+    "dev.bookfin.bookfin.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+  ],
+  "source": {
+    "sourceCommit": "5fca4a23843c57d4ba162d94500e700bd036266f",
+    "clean": true,
+    "sourceArchiveSha256": "d24275341d56639f881081b3832422d8e13725678b9c53744df68ec16a388404"
+  },
+  "signature": "Verifies\nVerified using v1 scheme (JAR signing): false\nVerified using v2 scheme (APK Signature Scheme v2): true\nVerified using v3 scheme (APK Signature Scheme v3): false\nVerified using v3.1 scheme (APK Signature Scheme v3.1): false\nVerified using v4 scheme (APK Signature Scheme v4): false\nVerified for SourceStamp: false\nNumber of signers: 1\n",
+  "zipAlignmentBytes": 16384
+}

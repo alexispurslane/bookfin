@@ -1,0 +1,71 @@
+{
+  "baseCommit": "2d43820a179ad0e8e433fd5f3eb83ce66c9bdd33",
+  "parentAdmissionCommit": "44d53af",
+  "cherryPickedAdmissionCommit": "78ce699",
+  "sourceCommit": "5fca4a23843c57d4ba162d94500e700bd036266f",
+  "apk": {
+    "path": ".cache/artifacts/ocr-20261103-production/bookfin-5fca4a2-arm64-debug.apk",
+    "sha256": "5b0f6d3d451bfb36671e8fc19084f2084064e21d4edc26fdbf8d982308a0bf32",
+    "bytes": 131217891,
+    "package": "dev.bookfin.bookfin",
+    "entrypoint": "lib/main.dart",
+    "build": "ARM64 debug, normal application; not installed"
+  },
+  "sourceDirectory": ".cache/artifacts/ocr-20261103-production/source-5fca4a2",
+  "sourceManifestSha256": "5fb0a2cf5fba9264995e7eec954ba74d224e238ccdfb956963baca479b10b083",
+  "sourceFiles": {
+    "LGPL-3.0.txt": "da7eabb7bafdf7d3ae5e9f223aa5bdc1eece45ac569dc21b3b037520b4464768",
+    "libmobi-0.12-source.tar.gz": "5482d4d8551f0602bcf25d968228c5edc957f48dacf316217154f2f81dcf30f8",
+    "Tesseract4Android-4.9.0-source.tar.gz": "4569f9093d641d13188ba2dd36a74396661eaa3f9e44637ff1cac9a36076a20e",
+    "bookfin-source.tar": "d24275341d56639f881081b3832422d8e13725678b9c53744df68ec16a388404",
+    "eng.traineddata": "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2",
+    "tessdata-fast-4.1.0-LICENSE.txt": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+    "GPL-3.0.txt": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+    "BUILD-AND-INSTALL.md": "f10ebfd8e269e13a0291ccec198a9ea55b0b1e4e9e76f4a96f1eb99b78a215c7",
+    "OCR-BUILD-AND-TERMS.md": "257025d14647d866874e0d6aef5501bdd32a9aebd40ab8e0885ff87f7ccbf99d"
+  },
+  "bundledModel": {
+    "bytes": 4113088,
+    "storedUncompressed": true
+  },
+  "verification": {
+    "flutterTestsPassed": 453,
+    "existingOptInSkips": 3,
+    "analysis": "No issues found",
+    "sdkNativeHooksAndProductionJavaWorker": "passed",
+    "nativeLibraries": 13,
+    "exactPinnedOcrLibraries": 4,
+    "elfAndZipMinimumAlignmentBytes": 16384,
+    "apkV2Signature": "verified",
+    "modelNoticesPermissionsSource": "verified"
+  },
+  "logs": {
+    "build-verified.txt": {
+      "path": ".cache/artifacts/ocr-20261103-production/build-verified.txt",
+      "sha256": "e095f001e21f1182b2914a2a02f100b4e4263d79d711a36929eed790635ae77a"
+    },
+    "final-tests.txt": {
+      "path": ".cache/artifacts/ocr-20261103-production/final-tests.txt",
+      "sha256": "48af0e335a01db2e1b45d293f78ee1d1aa4411b14fee474b9bc94d20973a9c92"
+    },
+    "final-analysis.txt": {
+      "path": ".cache/artifacts/ocr-20261103-production/final-analysis.txt",
+      "sha256": "2c9565674b27705366452ee808b40c7942da248fb32331bb6c6a0545a42f192d"
+    },
+    "daemon-stop.txt": {
+      "path": ".cache/artifacts/ocr-20261103-production/daemon-stop.txt",
+      "sha256": "fa35640e019e1822cbae53923c032427ff502263ac8bea1bededc399474649a3"
+    },
+    "badging.txt": {
+      "path": ".cache/artifacts/ocr-20261103-production/badging.txt",
+      "sha256": "ffe8df067c82b6202f12f0f7ba8d2b6e15ea5b4d2da0f0565041ec2d064b6747"
+    }
+  },
+  "limits": [
+    "English only",
+    "host recognition is not Android app acceptance",
+    "normal-app Android OCR acceptance and resource/layout measurements remain",
+    "distribution, source delivery and installation-information decisions remain",
+    "no installation, device action, coverage/mutation campaign, PR, publishing or ticket closure"
+  ]
+}
