@@ -1,0 +1,176 @@
+{
+  "ticket": "t6-t9po",
+  "measuredAtUtc": "2026-11-03T02:08:26.683114Z",
+  "host": "macos",
+  "dart": "3.13.3 (stable) (Tue Sep 1 01:07:17 2026 -0700) on \"macos_arm64\"",
+  "baseCommit": "96d69c1919c5c0d63760247508beaaee59203d51",
+  "cadence": {
+    "syntheticDecoderSamples": 20,
+    "sourcePositionStepMilliseconds": 100,
+    "sourcePositionDurationMilliseconds": 2000,
+    "databaseWrites": 2,
+    "newImmutableResumeActions": 2,
+    "newPendingActions": 2,
+    "realTimeListeningMeasured": false
+  },
+  "profiles": [
+    {
+      "profile": "60-offline",
+      "retainedResumeActionsAtStart": 60,
+      "totalRetainedActionsAtStart": 106,
+      "pendingActionsAtStart": 103,
+      "payloadUtf8BytesAtStart": 49066,
+      "payloadUtf8BytesAfterSamples": 52606,
+      "logicalRowPayloadBytesWrittenAcrossEightSamples": 410936,
+      "closedSqliteFileBytes": 61440,
+      "writeIncludingReplayValidationSerializationAndSqliteCommit": {
+        "samples": 8,
+        "minimumMilliseconds": 4.863,
+        "medianMilliseconds": 5.6145,
+        "maximumMilliseconds": 5.923,
+        "meanMilliseconds": 5.462625
+      },
+      "jsonDecodeAndJournalReplayOnly": {
+        "samples": 8,
+        "minimumMilliseconds": 1.497,
+        "medianMilliseconds": 1.6595,
+        "maximumMilliseconds": 1.862,
+        "meanMilliseconds": 1.6698750000000002
+      },
+      "allOriginalActionsAndPendingRetainedAfterRestart": true,
+      "historyDeletionsReadingConflictsAndCausalGapRetainedAfterRestart": true,
+      "preconditioningWrites": 1,
+      "warmupWrites": 2,
+      "measuredWrites": 8
+    },
+    {
+      "profile": "600-offline",
+      "retainedResumeActionsAtStart": 600,
+      "totalRetainedActionsAtStart": 646,
+      "pendingActionsAtStart": 643,
+      "payloadUtf8BytesAtStart": 227768,
+      "payloadUtf8BytesAfterSamples": 231318,
+      "logicalRowPayloadBytesWrittenAcrossEightSamples": 1840604,
+      "closedSqliteFileBytes": 241664,
+      "writeIncludingReplayValidationSerializationAndSqliteCommit": {
+        "samples": 8,
+        "minimumMilliseconds": 15.262,
+        "medianMilliseconds": 15.788,
+        "maximumMilliseconds": 21.479,
+        "meanMilliseconds": 16.42175
+      },
+      "jsonDecodeAndJournalReplayOnly": {
+        "samples": 8,
+        "minimumMilliseconds": 7.496,
+        "medianMilliseconds": 8.2765,
+        "maximumMilliseconds": 8.775,
+        "meanMilliseconds": 8.137
+      },
+      "allOriginalActionsAndPendingRetainedAfterRestart": true,
+      "historyDeletionsReadingConflictsAndCausalGapRetainedAfterRestart": true,
+      "preconditioningWrites": 1,
+      "warmupWrites": 2,
+      "measuredWrites": 8
+    },
+    {
+      "profile": "3600-offline",
+      "retainedResumeActionsAtStart": 3600,
+      "totalRetainedActionsAtStart": 3646,
+      "pendingActionsAtStart": 3643,
+      "payloadUtf8BytesAtStart": 1231301,
+      "payloadUtf8BytesAfterSamples": 1234891,
+      "logicalRowPayloadBytesWrittenAcrossEightSamples": 9869076,
+      "closedSqliteFileBytes": 1245184,
+      "writeIncludingReplayValidationSerializationAndSqliteCommit": {
+        "samples": 8,
+        "minimumMilliseconds": 78.769,
+        "medianMilliseconds": 83.39750000000001,
+        "maximumMilliseconds": 86.527,
+        "meanMilliseconds": 83.44112500000001
+      },
+      "jsonDecodeAndJournalReplayOnly": {
+        "samples": 8,
+        "minimumMilliseconds": 43.072,
+        "medianMilliseconds": 48.1205,
+        "maximumMilliseconds": 52.747,
+        "meanMilliseconds": 48.08375000000001
+      },
+      "allOriginalActionsAndPendingRetainedAfterRestart": true,
+      "historyDeletionsReadingConflictsAndCausalGapRetainedAfterRestart": true,
+      "preconditioningWrites": 1,
+      "warmupWrites": 2,
+      "measuredWrites": 8
+    },
+    {
+      "profile": "21600-offline",
+      "retainedResumeActionsAtStart": 21600,
+      "totalRetainedActionsAtStart": 21646,
+      "pendingActionsAtStart": 21643,
+      "payloadUtf8BytesAtStart": 7307834,
+      "payloadUtf8BytesAfterSamples": 7311464,
+      "logicalRowPayloadBytesWrittenAcrossEightSamples": 58481548,
+      "closedSqliteFileBytes": 7327744,
+      "writeIncludingReplayValidationSerializationAndSqliteCommit": {
+        "samples": 8,
+        "minimumMilliseconds": 461.425,
+        "medianMilliseconds": 492.047,
+        "maximumMilliseconds": 502.031,
+        "meanMilliseconds": 487.80987500000003
+      },
+      "jsonDecodeAndJournalReplayOnly": {
+        "samples": 8,
+        "minimumMilliseconds": 277.731,
+        "medianMilliseconds": 281.8325,
+        "maximumMilliseconds": 298.352,
+        "meanMilliseconds": 284.359125
+      },
+      "allOriginalActionsAndPendingRetainedAfterRestart": true,
+      "historyDeletionsReadingConflictsAndCausalGapRetainedAfterRestart": true,
+      "preconditioningWrites": 1,
+      "warmupWrites": 2,
+      "measuredWrites": 8
+    },
+    {
+      "profile": "21600-mostly-acknowledged",
+      "retainedResumeActionsAtStart": 21600,
+      "totalRetainedActionsAtStart": 21646,
+      "pendingActionsAtStart": 16,
+      "payloadUtf8BytesAtStart": 6864773,
+      "payloadUtf8BytesAfterSamples": 6868403,
+      "logicalRowPayloadBytesWrittenAcrossEightSamples": 54937060,
+      "closedSqliteFileBytes": 6885376,
+      "writeIncludingReplayValidationSerializationAndSqliteCommit": {
+        "samples": 8,
+        "minimumMilliseconds": 443.294,
+        "medianMilliseconds": 477.8435,
+        "maximumMilliseconds": 496.907,
+        "meanMilliseconds": 476.464875
+      },
+      "jsonDecodeAndJournalReplayOnly": {
+        "samples": 8,
+        "minimumMilliseconds": 259.53,
+        "medianMilliseconds": 274.725,
+        "maximumMilliseconds": 288.163,
+        "meanMilliseconds": 274.547875
+      },
+      "allOriginalActionsAndPendingRetainedAfterRestart": true,
+      "historyDeletionsReadingConflictsAndCausalGapRetainedAfterRestart": true,
+      "preconditioningWrites": 1,
+      "warmupWrites": 2,
+      "measuredWrites": 8
+    }
+  ],
+  "sourcesSha256": {
+    "lib/playback/playback.dart": "8eef615fd4a21acfb99073fe8f032f6b2b79365b7ef91715d358a896186c6ed5",
+    "lib/playback/store.dart": "ce4c66f9407b3b1d873321b037e0af5a9b05bb743cd2fa7c5ce315c000378f61",
+    "lib/playback/database.dart": "bfa0dab885edbb7f55f0fbf908c0e34f28bb1d862e32b39418fe1d372a90dbf5",
+    "lib/sync/journal.dart": "6db821149f34ca75ea27a95e7a40a57b83a6fdc722a73fd409d509b7fe530e3b",
+    "test/research/journal_growth_measurement_test.dart": "2a4a75fab34cff4f388828c6e81258045a889c58331b96278a960149e2052960"
+  },
+  "limits": [
+    "Synthetic host fixtures, not Android performance or real-time listening",
+    "Eight measured writes after two warmups per profile, not a soak or hardening campaign",
+    "Logical row payload bytes are not filesystem, flash, or WAL write amplification",
+    "No network synchronization, compaction, checkpoints, pruning, or production code changes"
+  ]
+}

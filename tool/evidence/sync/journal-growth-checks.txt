@@ -1,0 +1,38 @@
+Ticket t6-t9po: bounded host measurement only, after plugin milestone 96d69c1.
+
+PASS: nix develop --command bash -c 'BOOKFIN_JOURNAL_GROWTH_EVIDENCE=tool/evidence/sync/journal-growth.json flutter test --no-pub test/research/journal_growth_measurement_test.dart --concurrency=1 --reporter expanded'
+One bounded measurement test passed in about 29 seconds.
+Five profiles: 60, 600, 3600, and 21600 retained resume actions while offline,
+plus 21600 retained resume actions with only 16 initially pending actions.
+Each includes 46 further actions for history, reading, bookmarks, deletion,
+unresolved resume conflict, and a missing causal predecessor.
+Two warmup saves and eight measured saves per profile.
+Every original action and pending identity survived SQLite close/reopen.
+History, deletion barriers, reading, conflicts and the waiting action survived.
+Real playback owner plus synthetic decoder samples: 20 x 100 ms position advances
+created exactly two SQLite writes and two pending immutable resume actions.
+No two-second wall-clock or Android listening measurement is claimed.
+
+At 21600 offline resume actions, median full store save: 492.047 ms.
+Separate median JSON decode plus journal reconstruction: 281.8325 ms.
+Initial entire account-row payload: 7307834 UTF-8 bytes.
+Eight measured logical row replacements submitted 58481548 payload bytes.
+With the same retained actions but only 16 initially pending identities,
+median full save: 477.8435 ms, initial payload: 6864773 bytes.
+Logical payload bytes do not establish filesystem, SQLite page, WAL or flash writes.
+
+The test is opt-in during the ordinary project suite.
+No production code changes. No sync protocol, compaction or checkpoint implementation.
+No decision between the two designs in docs/research/personal-record-journal-growth.md.
+No coverage, mutations, soak, Android use, APK build, live server, publication or ticket closure.
+Temporary measurement databases close and delete during cleanup. No servers start.
+
+PASS: nix develop --command flutter analyze
+No issues found after placing the opt-in harness in the normal test directory.
+
+PASS: nix develop --command bash tool/bookfin test
+407 Flutter tests passed. Three fixture/measurement tests skipped without opt-in variables.
+SDK discovery, SDK platform, and native-tools shell tests passed.
+The host's missing iOS SDK warnings did not fail these host checks.
+
+PASS: git diff --check
