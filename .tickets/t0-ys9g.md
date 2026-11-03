@@ -30,3 +30,7 @@ Implementation from ee2a2c1: full ReaderScreen + PdfViewport widget red and five
 **2026-11-03T19:58:30Z**
 
 Correction and red/green evidence committed as d8e1021fef2be69291d135594a45d556570c235f. Built normal lib/main.dart ARM64 debug APK from that clean commit in the pinned Nix shell, no install. APK /Users/alexispurslane/.t3/worktrees/bookfin/t3-f29350e1/.cache/artifacts/bookfin-d8e1021-cancel/bookfin-d8e1021-arm64-debug.apk SHA256 8b31c7448f746226453d4677f944c9ba4f5668f657bba8015f94973372744e09. Matching source/bookfin-source.tar SHA256 3dd0c18fb2cdc3b94e8831f12b4ef92d573bccd73392a626b3c46de1dae45f60. Native/OCR verifiers, signature, and 16KiB ZIP alignment pass; bundled provenance identifies clean d8e1021 and the same source hash. Private Gradle home only; exit cleanup and process audit find no Gradle/Kotlin daemon. Main combined artifacts unchanged. Packaging evidence artifact.json and adjacent logs retained. Parent review/integration and normal-app cancel/drain/retry/departure acceptance remain required; ticket stays in progress.
+
+**2026-11-03T20:07:36Z**
+
+Independent review approves bounded source integration without production blockers; main27804c4/0828ec9. Recorded P3 evidence qualification: immediate native-call count before async retry admission does not independently prove drain serialization. Partial-address restoration fixture is not exact production PDF restoration. Existing verified APK source d8e1021 remains the Android candidate. Resume authorized Android acceptance; no ticket closure.

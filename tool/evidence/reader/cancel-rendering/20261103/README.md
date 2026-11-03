@@ -139,3 +139,18 @@ check found no Gradle or Kotlin compiler daemon. Build output stayed in files.
 The existing combined artifact directory in main was not changed.
 No install, relaunch, device inspection, or Android acceptance occurred.
 The parent handles independent review, integration, and device acceptance.
+
+## Independent review and integration
+
+Independent read-only review approves bounded source integration with no blocking
+production finding. Integrated on main as 27804c4 and 0828ec9.
+
+The retry test's immediate native call-count assertion does not independently
+prove drain-before-retry serialization: asynchronous original-file verification
+may not yet have admitted retry. Treat it as cancellation/retry outcome coverage,
+not a timing proof. The restored-position fixture also omits a total page count;
+it covers a valid partial address, not an exact production PDF restore sequence.
+Host reproductions identify the throwing expression in the reproduced path;
+the Android error screenshot alone does not identify its exact throwing location.
+Android cancellation, native-drain ordering, retry, late-result rejection and
+active departure remain acceptance gates. No ticket closes on this review.
