@@ -1,0 +1,36 @@
+Tapped @e25 (392, 2274)
+settled after 801ms: +10 -21 (~1 unchanged)
+- @e6 [group]
+- @e7 [group]
+- @e8 [group]
+- @e10 [group]
+- @e11 [group]
+- @e12 [group]
+- @e13 [group]
+- @e14 [group]
+- @e15 [button] "Dismiss"
+- @e16 [group]
+- @e17 [group] "Account"
+- @e18 [group] "research-alice"
+- @e19 [group] "http://127.0.0.1:7364"
+- @e20 [group] "Personal-record sync"
+- @e21 [group] "Personal records are synced."
+- @e22 [button] "Sync now"
+- @e23 [button] "Software licenses"
+- @e24 [button] "Reset catalog corrections"
+- @e25 [button] "Sign out"
+- @e26 [group]
+- @e27 [group] "Scrim"
++ @e2~s280425 [group] "BOOKFIN"
++ @e3~s280425 [button] "Appearance"
++ @e4~s280425 [group] "Your library starts here."
++ @e5~s280425 [text-field]
++ @e6~s280425 [text-field]
++ @e7~s280425 [text-field]
++ @e8~s280425 [button] "Sign in"
++ @e9~s280425 [button] "Library
+Tab 1 of 3" [selected]
++ @e10~s280425 [button] "Downloads
+Tab 2 of 3" [disabled]
++ @e11~s280425 [button] "Listening
+Tab 3 of 3" [disabled]

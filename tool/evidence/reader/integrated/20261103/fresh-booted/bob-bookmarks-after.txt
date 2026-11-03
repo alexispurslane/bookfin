@@ -1,0 +1,13 @@
+Page: dev.bookfin.bookfin
+App: dev.bookfin.bookfin
+Snapshot: 21 nodes
+@e1 [text] "5:00"
+@e2 [image] "Android System notification:"
+@e3 [image] "Airplane mode."
+@e4 [group] "Battery charging, 100 percent."
+  @e5 [image]
+    @e8 [group]
+      @e15 [button] "Dismiss"
+        @e18 [group] "Reading bookmarks"
+        @e19 [group] "No reading bookmarks in this edition. Use Bookmark this place while reading."
+      @e21 [group] "Scrim"

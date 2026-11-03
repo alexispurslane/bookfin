@@ -1,0 +1,33 @@
+Tapped @e21 (713, 1440)
+settled after 1088ms: +14 -16 (~1 unchanged)
+- @e6 [group]
+- @e7 [group]
+- @e8 [group]
+- @e10 [group]
+- @e11 [group]
+- @e12 [group]
+- @e13 [group]
+- @e14 [group]
+- @e15 [group]
+- @e16 [group]
+- @e17 [group] "Remove download?"
+- @e18 [group]
+- @e19 [group] "Remove this edition’s local files and unfinished transfers. Your Jellyfin files will not change."
+- @e20 [button] "Keep download"
+- @e21 [button] "Remove download"
+- @e22 [group] "Dismiss"
++ @e2~s280291 [button] "Back"
++ @e3~s280291 [group] "Book details"
++ @e4~s280291 [button] "Correct book details"
++ @e5~s280291 [group] "Fresh single English"
++ @e6~s280291 [group] "Cannot reach Jellyfin. Saved books are still available."
++ @e7~s280291 [group] "Ebook editions"
++ @e8~s280291 [group] "Text"
++ @e9~s280291 [group] "1 file"
++ @e10~s280291 [group] "Not downloaded"
++ @e11~s280291 [button] "Download"
++ @e12~s280291 [button] "Read"
++ @e13~s280291 [group] "Collapsed"
++ @e14~s280291 [group] "Fresh single English
+0.0 minutes, Collapsed"
++ @e15~s280291 [button] "Link another book or ebook"

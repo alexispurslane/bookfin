@@ -24,3 +24,10 @@ No ticket closure, broader hardening, or overall release approval is implied.
 
 The full report, exact error, hashes, scoped audit, paths, and cleanup are in
 `tool/evidence/reader/integrated/20261103/fresh-install/README.md`.
+
+## Authorized continuation after provisioning recovery
+
+`td-e1sx` resolved the pinned image path in parent `b186860`.
+The separate disposable device then completed fresh-install offline OCR, durable Unicode pending upload, and account-owned cache checks.
+The continuation is recorded in `docs/evidence/reader/android-fresh-booted-20261103.md`.
+This earlier blocked report remains the record of the initial provisioning attempt.

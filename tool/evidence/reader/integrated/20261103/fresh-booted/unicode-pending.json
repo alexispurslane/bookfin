@@ -1,0 +1,202 @@
+{
+  "case": "unicode-pending",
+  "timeUnix": 1793742561.6099908,
+  "emptyBaseline": true,
+  "integrity": "ok",
+  "actions": [
+    {
+      "accountSha256": "fc3c12f64c0e6f1c1fade998f49c8cdaaf1390ebbb3ab7d43c879be4bde38175",
+      "identity": "action.4dc7af887b1c059661dc7f3cec7b126d19c662f1.1",
+      "payloadSha256": "803644b67acbcdb7813fa6e7fb575c2911b1ab16b920587dff949843c4743adf",
+      "pending": 1,
+      "action": {
+        "version": 1,
+        "account": "fc3c12f64c0e6f1c1fade998f49c8cdaaf1390ebbb3ab7d43c879be4bde38175",
+        "replica": "4dc7af887b1c059661dc7f3cec7b126d19c662f1",
+        "sequence": 1,
+        "context": {},
+        "record": "[\"reading\",\"resumes\",\"[\\\"e0f0ab70a744e393ea04813fa30b65a6:\\\",\\\"e0f0ab70a744e393ea04813fa30b65a6:\\\",\\\"[null,\\\\\\\"60e3c8ef021f68c43205e654724fbc1f\\\\\\\",null,null,20000]\\\"]\"]",
+        "value": {
+          "edition": "e0f0ab70a744e393ea04813fa30b65a6:",
+          "source": "e0f0ab70a744e393ea04813fa30b65a6:",
+          "revision": "[null,\"60e3c8ef021f68c43205e654724fbc1f\",null,null,20000]",
+          "anchor": "{\"version\":1,\"processed\":\"8e209383c9747160c664bd13976e9207dce3cdd8a781916af9816de94ce51571\",\"original\":\"c06b75aca75f9e332d57f6f2d5c9cd8f518d781dde72b775359803fbbb0445a3\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":0,\"quote\":\"The quiet garden\\nA reader opened the book beside the window.\\nThree birds crossed the pale morning sky.\\nThe next page held a map, a letter, and a promise.\\nOrigin\",\"representation\":\"bookfin-pdf-source-pages-1/pdfrx-0.9.0-pdfium-8125/bookfin-ocr-2/tesseract4android-4.9.0/tesseract-5.5.1/leptonica-1.85.0/tessdata_fast-4.1.0-eng-7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2/121cbf95ba2fc43fff7d42ee5d4cfcae063ff22106cd49c325355b6575ada6f5\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "fc3c12f64c0e6f1c1fade998f49c8cdaaf1390ebbb3ab7d43c879be4bde38175",
+      "identity": "action.4dc7af887b1c059661dc7f3cec7b126d19c662f1.2",
+      "payloadSha256": "1976f176b411d8437192890336077480f45cdee486f606ecf009887bd4e96bc4",
+      "pending": 1,
+      "action": {
+        "version": 1,
+        "account": "fc3c12f64c0e6f1c1fade998f49c8cdaaf1390ebbb3ab7d43c879be4bde38175",
+        "replica": "4dc7af887b1c059661dc7f3cec7b126d19c662f1",
+        "sequence": 2,
+        "context": {
+          "4dc7af887b1c059661dc7f3cec7b126d19c662f1": 1
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"e0f0ab70a744e393ea04813fa30b65a6:\\\",\\\"e0f0ab70a744e393ea04813fa30b65a6:\\\",\\\"[null,\\\\\\\"60e3c8ef021f68c43205e654724fbc1f\\\\\\\",null,null,20000]\\\"]\"]",
+        "value": {
+          "edition": "e0f0ab70a744e393ea04813fa30b65a6:",
+          "source": "e0f0ab70a744e393ea04813fa30b65a6:",
+          "revision": "[null,\"60e3c8ef021f68c43205e654724fbc1f\",null,null,20000]",
+          "anchor": "{\"version\":1,\"processed\":\"8e209383c9747160c664bd13976e9207dce3cdd8a781916af9816de94ce51571\",\"original\":\"c06b75aca75f9e332d57f6f2d5c9cd8f518d781dde72b775359803fbbb0445a3\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":640,\"quote\":\"garden\\nA reader opened the book beside the window.\\nThree birds crossed the pale morning sky.\\nThe next page held a map, a letter, and a promise.\\nOriginal pages r\",\"representation\":\"bookfin-pdf-source-pages-1/pdfrx-0.9.0-pdfium-8125/bookfin-ocr-2/tesseract4android-4.9.0/tesseract-5.5.1/leptonica-1.85.0/tessdata_fast-4.1.0-eng-7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2/121cbf95ba2fc43fff7d42ee5d4cfcae063ff22106cd49c325355b6575ada6f5\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "fc3c12f64c0e6f1c1fade998f49c8cdaaf1390ebbb3ab7d43c879be4bde38175",
+      "identity": "action.4dc7af887b1c059661dc7f3cec7b126d19c662f1.3",
+      "payloadSha256": "6b2565635cec3c96cc8da224b60b8a21b0e4611ed51b75c8bcb83b8cc4811c19",
+      "pending": 1,
+      "action": {
+        "version": 1,
+        "account": "fc3c12f64c0e6f1c1fade998f49c8cdaaf1390ebbb3ab7d43c879be4bde38175",
+        "replica": "4dc7af887b1c059661dc7f3cec7b126d19c662f1",
+        "sequence": 3,
+        "context": {
+          "4dc7af887b1c059661dc7f3cec7b126d19c662f1": 2
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"e0f0ab70a744e393ea04813fa30b65a6:\\\",\\\"e0f0ab70a744e393ea04813fa30b65a6:\\\",\\\"[null,\\\\\\\"60e3c8ef021f68c43205e654724fbc1f\\\\\\\",null,null,20000]\\\"]\"]",
+        "value": {
+          "edition": "e0f0ab70a744e393ea04813fa30b65a6:",
+          "source": "e0f0ab70a744e393ea04813fa30b65a6:",
+          "revision": "[null,\"60e3c8ef021f68c43205e654724fbc1f\",null,null,20000]",
+          "anchor": "{\"version\":1,\"processed\":\"8e209383c9747160c664bd13976e9207dce3cdd8a781916af9816de94ce51571\",\"original\":\"c06b75aca75f9e332d57f6f2d5c9cd8f518d781dde72b775359803fbbb0445a3\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":611,\"quote\":\"words are unclear.\\nThe quiet garden\\nA reader opened the book beside the window.\\nThree birds crossed the pale morning sky.\\nThe next page held a map, a letter, an\",\"representation\":\"bookfin-pdf-source-pages-1/pdfrx-0.9.0-pdfium-8125/bookfin-ocr-2/tesseract4android-4.9.0/tesseract-5.5.1/leptonica-1.85.0/tessdata_fast-4.1.0-eng-7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2/121cbf95ba2fc43fff7d42ee5d4cfcae063ff22106cd49c325355b6575ada6f5\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "fc3c12f64c0e6f1c1fade998f49c8cdaaf1390ebbb3ab7d43c879be4bde38175",
+      "identity": "action.4dc7af887b1c059661dc7f3cec7b126d19c662f1.4",
+      "payloadSha256": "2193156ca9935ed5b960edf44e67f4ea645269b60d63a9685812e6e72d3689c2",
+      "pending": 1,
+      "action": {
+        "version": 1,
+        "account": "fc3c12f64c0e6f1c1fade998f49c8cdaaf1390ebbb3ab7d43c879be4bde38175",
+        "replica": "4dc7af887b1c059661dc7f3cec7b126d19c662f1",
+        "sequence": 4,
+        "context": {
+          "4dc7af887b1c059661dc7f3cec7b126d19c662f1": 3
+        },
+        "record": "[\"reading\",\"bookmarks\",\"56ee97bafde0bb9bb1221b080f9c8792\"]",
+        "value": {
+          "id": "56ee97bafde0bb9bb1221b080f9c8792",
+          "position": {
+            "edition": "e0f0ab70a744e393ea04813fa30b65a6:",
+            "source": "e0f0ab70a744e393ea04813fa30b65a6:",
+            "revision": "[null,\"60e3c8ef021f68c43205e654724fbc1f\",null,null,20000]",
+            "anchor": "{\"version\":1,\"processed\":\"8e209383c9747160c664bd13976e9207dce3cdd8a781916af9816de94ce51571\",\"original\":\"c06b75aca75f9e332d57f6f2d5c9cd8f518d781dde72b775359803fbbb0445a3\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":611,\"quote\":\"words are unclear.\\nThe quiet garden\\nA reader opened the book beside the window.\\nThree birds crossed the pale morning sky.\\nThe next page held a map, a letter, an\",\"representation\":\"bookfin-pdf-source-pages-1/pdfrx-0.9.0-pdfium-8125/bookfin-ocr-2/tesseract4android-4.9.0/tesseract-5.5.1/leptonica-1.85.0/tessdata_fast-4.1.0-eng-7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2/121cbf95ba2fc43fff7d42ee5d4cfcae063ff22106cd49c325355b6575ada6f5\"}"
+          },
+          "createdAt": "2026-11-03T21:48:15.785881Z",
+          "title": null,
+          "note": null
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "fc3c12f64c0e6f1c1fade998f49c8cdaaf1390ebbb3ab7d43c879be4bde38175",
+      "identity": "action.4dc7af887b1c059661dc7f3cec7b126d19c662f1.5",
+      "payloadSha256": "59831ec4c45ff2ca16ac659db91726aca9b8585e04f630ae788201c552bd89c4",
+      "pending": 1,
+      "action": {
+        "version": 1,
+        "account": "fc3c12f64c0e6f1c1fade998f49c8cdaaf1390ebbb3ab7d43c879be4bde38175",
+        "replica": "4dc7af887b1c059661dc7f3cec7b126d19c662f1",
+        "sequence": 5,
+        "context": {
+          "4dc7af887b1c059661dc7f3cec7b126d19c662f1": 4
+        },
+        "record": "[\"reading\",\"bookmarks\",\"56ee97bafde0bb9bb1221b080f9c8792\"]",
+        "value": {
+          "id": "56ee97bafde0bb9bb1221b080f9c8792",
+          "position": {
+            "edition": "e0f0ab70a744e393ea04813fa30b65a6:",
+            "source": "e0f0ab70a744e393ea04813fa30b65a6:",
+            "revision": "[null,\"60e3c8ef021f68c43205e654724fbc1f\",null,null,20000]",
+            "anchor": "{\"version\":1,\"processed\":\"8e209383c9747160c664bd13976e9207dce3cdd8a781916af9816de94ce51571\",\"original\":\"c06b75aca75f9e332d57f6f2d5c9cd8f518d781dde72b775359803fbbb0445a3\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":611,\"quote\":\"words are unclear.\\nThe quiet garden\\nA reader opened the book beside the window.\\nThree birds crossed the pale morning sky.\\nThe next page held a map, a letter, an\",\"representation\":\"bookfin-pdf-source-pages-1/pdfrx-0.9.0-pdfium-8125/bookfin-ocr-2/tesseract4android-4.9.0/tesseract-5.5.1/leptonica-1.85.0/tessdata_fast-4.1.0-eng-7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2/121cbf95ba2fc43fff7d42ee5d4cfcae063ff22106cd49c325355b6575ada6f5\"}"
+          },
+          "createdAt": "2026-11-03T21:48:15.785881Z",
+          "title": "Fresh “Café” 中文 🐟",
+          "note": "Déjà vu — ‘naïve’ 中文 🐟"
+        },
+        "preserve": []
+      }
+    }
+  ],
+  "files": [
+    {
+      "name": "./libCachedImageData.db",
+      "bytes": 16384,
+      "sha256": "1cfd1af65895c7ec7c66fda685544496b5a400cd4c882296f20505ccb6723ed5",
+      "modified": 1793742137
+    },
+    {
+      "name": "./libCachedImageData.db-journal",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "modified": 1793742137
+    },
+    {
+      "name": "./profileInstalled",
+      "bytes": 24,
+      "sha256": "fbd3994fc7fc8a78dbc62b6c710817afbeeba4e493530517f556802c2cd91371",
+      "modified": 1793742142
+    },
+    {
+      "name": "./bookfin-media/fc3c12f64c0e6f1c1fade998f49c8cdaaf1390ebbb3ab7d43c879be4bde38175/d925d236a50f219f3942effd2f7c3ccf98f2a9107842875ba952b4e547a00e90/record.json",
+      "bytes": 266,
+      "sha256": "6b1eb67b4450d1cfeec109319325dd9935b1957e3c01b7ac5b4521153828199f",
+      "modified": 1793742342
+    },
+    {
+      "name": "./bookfin-media/fc3c12f64c0e6f1c1fade998f49c8cdaaf1390ebbb3ab7d43c879be4bde38175/d925d236a50f219f3942effd2f7c3ccf98f2a9107842875ba952b4e547a00e90/complete",
+      "bytes": 72417,
+      "sha256": "fe5149e7d965a3229af11e3e38f63e3957d10d7718c4a42d9749a4ab2a4c9744",
+      "modified": 1793742342
+    },
+    {
+      "name": "./bookfin-media/fc3c12f64c0e6f1c1fade998f49c8cdaaf1390ebbb3ab7d43c879be4bde38175/b35de449479796e4411252258099696aa809952bb0f16952f06e4a3b3181ba7f/.bookfin-ocr/f0f71f22f73d4c92fa30075d40c734158f87ce9c276dcac9e1d5650e2522a6a4.json",
+      "bytes": 56384,
+      "sha256": "b7d2df5858af2d84b73bb4562e3354f5fdd463b8a3b3da3db647cf4c4c421667",
+      "modified": 1793742400
+    },
+    {
+      "name": "./bookfin-media/fc3c12f64c0e6f1c1fade998f49c8cdaaf1390ebbb3ab7d43c879be4bde38175/b35de449479796e4411252258099696aa809952bb0f16952f06e4a3b3181ba7f/record.json",
+      "bytes": 266,
+      "sha256": "0c7ebb39b9956a9688d167c0a05b10d9ba7cec7868b0a2b732b27cd31b057354",
+      "modified": 1793742294
+    },
+    {
+      "name": "./bookfin-media/fc3c12f64c0e6f1c1fade998f49c8cdaaf1390ebbb3ab7d43c879be4bde38175/b35de449479796e4411252258099696aa809952bb0f16952f06e4a3b3181ba7f/complete",
+      "bytes": 72831,
+      "sha256": "c06b75aca75f9e332d57f6f2d5c9cd8f518d781dde72b775359803fbbb0445a3",
+      "modified": 1793742294
+    },
+    {
+      "name": "./datastore/FlutterSharedPreferences.preferences_pb",
+      "bytes": 1196,
+      "sha256": "9e43235a13ce76f59c807acba04d38557546a6c9946b5669709acaf0cfbf1b4d",
+      "modified": 1793742276
+    },
+    {
+      "name": "./bookfin-ocr-engine/tessdata/eng.traineddata",
+      "bytes": 4113088,
+      "sha256": "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2",
+      "modified": 1793742398
+    }
+  ],
+  "mediaMuted": true,
+  "network": {
+    "airplane_mode_on": "1",
+    "wifi_on": "0",
+    "mobile_data": "0"
+  },
+  "appProcessAbsent": false
+}

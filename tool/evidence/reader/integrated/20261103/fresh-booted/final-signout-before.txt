@@ -1,0 +1,20 @@
+Page: dev.bookfin.bookfin
+App: dev.bookfin.bookfin
+Snapshot: 27 nodes
+@e1 [text] "5:09"
+@e2 [image] "Android System notification:"
+@e3 [image] "Airplane mode."
+@e4 [group] "Battery charging, 100 percent."
+  @e5 [image]
+    @e8 [group]
+      @e15 [button] "Dismiss"
+        @e17 [group] "Account"
+        @e18 [group] "research-alice"
+        @e19 [group] "http://127.0.0.1:7364"
+        @e20 [group] "Personal-record sync"
+        @e21 [group] "Personal records are synced."
+        @e22 [button] "Sync now"
+        @e23 [button] "Software licenses"
+        @e24 [button] "Reset catalog corrections"
+        @e25 [button] "Sign out"
+      @e27 [group] "Scrim"

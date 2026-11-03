@@ -16,3 +16,9 @@ Normal d8e1021 APK, emulator-5554: remove the downloaded PDF Acceptance single c
 ## Acceptance Criteria
 
 A missing or waiting PDF original shows format-neutral wording or PDF wording. Preserve the existing verified-local-file guard and its retry action.
+
+## Notes
+
+**2026-11-03T22:14:32Z**
+
+Fresh disposable normal d8e1021 Android confirmation: Bob signed in normally after Alice, could not open Alice-owned PDF download/cache, and reader correctly required a verified local original but also displayed This EPUB is not open. Existing wording defect reproduced; no new defect or production fix. Evidence tool/evidence/reader/integrated/20261103/fresh-booted/bob-no-original-after.txt. No closure.

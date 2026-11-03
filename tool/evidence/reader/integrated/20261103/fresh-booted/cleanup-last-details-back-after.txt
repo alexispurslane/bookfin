@@ -1,0 +1,34 @@
+Page: dev.bookfin.bookfin
+App: dev.bookfin.bookfin
+Snapshot: 34 nodes
+@e1 [text] "5:06"
+@e2 [image] "Android System notification:"
+@e3 [image] "Airplane mode."
+@e4 [group] "Battery charging, 100 percent."
+  @e5 [image]
+    @e8 [group]
+      @e15 [group] "BOOKFIN"
+      @e16 [button] "Book libraries"
+      @e17 [button] "Appearance"
+      @e18 [button] "Account"
+      @e19 [group] "A little further
+into the story."
+      @e20 [button] "Refresh books"
+      @e21 [text-field] [editable]
+      @e22 [horizontalscrollview] [scrollable]
+        @e23 [button] "All" [selected]
+        @e24 [button] "Audio"
+        @e25 [button] "Ebooks"
+        @e26 [button] "Downloaded"
+          @e29 [group] "Fresh blank
+1 ebook
+Ebook · Not downloaded"
+          @e30 [group] "Fresh single English
+1 ebook
+Ebook · Not downloaded"
+        @e32 [button] "Library
+Tab 1 of 3" [selected]
+        @e33 [button] "Downloads
+Tab 2 of 3"
+        @e34 [button] "Listening
+Tab 3 of 3"

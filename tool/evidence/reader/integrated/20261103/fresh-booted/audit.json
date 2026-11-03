@@ -1,0 +1,10 @@
+{
+  "firstOfflineOcr": true,
+  "durableUnicodePending": 5,
+  "explicitAliceUploads": 8,
+  "crossAccountOwnership": true,
+  "finalAcknowledgedActions": 10,
+  "finalPending": 0,
+  "integrity": "ok",
+  "cleanup": "downloads removed, signed out, app closed, routes absent, radios restored, media muted"
+}

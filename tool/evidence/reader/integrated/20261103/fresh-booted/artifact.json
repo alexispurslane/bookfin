@@ -1,0 +1,15 @@
+{
+  "baseCommit": "b186860",
+  "sourceCommit": "d8e1021fef2be69291d135594a45d556570c235f",
+  "apkPath": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f29350e1/.cache/artifacts/bookfin-d8e1021-cancel/bookfin-d8e1021-arm64-debug.apk",
+  "apkSha256": "8b31c7448f746226453d4677f944c9ba4f5668f657bba8015f94973372744e09",
+  "sourceArchivePath": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f29350e1/.cache/artifacts/bookfin-d8e1021-cancel/source/bookfin-source.tar",
+  "sourceArchiveSha256": "3dd0c18fb2cdc3b94e8831f12b4ef92d573bccd73392a626b3c46de1dae45f60",
+  "pluginSha256": "3b0de5ca1df39baf67c786079898b1ee3b0b09d3bdb86d00ece8a7f5731a9105",
+  "package": "dev.bookfin.bookfin",
+  "entrypoint": "lib/main.dart",
+  "hostId": "local",
+  "deviceId": "emulator-5556",
+  "avd": "bookfin-accept-20261103-db111f95",
+  "installation": "Fresh normal adb install after proving package and private directories absent; no reset, uninstall, rebuild, or private-row changes"
+}

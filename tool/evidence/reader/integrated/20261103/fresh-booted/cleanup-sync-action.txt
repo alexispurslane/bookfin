@@ -1,0 +1,25 @@
+Tapped @e22 (437, 1844)
+settled after 740ms: +0 -10 (~12 unchanged)
+- @e6 [group]
+- @e7 [group]
+- @e8 [group]
+- @e10 [group]
+- @e11 [group]
+- @e12 [group]
+- @e13 [group]
+- @e14 [group]
+- @e16 [group]
+- @e26 [group]
+unchanged interactive (12):
+= @e1~s280420 [group]
+= @e2~s280420 [button] "Dismiss"
+= @e3~s280420 [group] "Account"
+= @e4~s280420 [group] "research-alice"
+= @e5~s280420 [group] "http://127.0.0.1:7364"
+= @e6~s280420 [group] "Personal-record sync"
+= @e7~s280420 [group] "Personal records are synced."
+= @e8~s280420 [button] "Sync now"
+= @e9~s280420 [button] "Software licenses"
+= @e10~s280420 [button] "Reset catalog corrections"
+= @e11~s280420 [button] "Sign out"
+= @e12~s280420 [group] "Scrim"

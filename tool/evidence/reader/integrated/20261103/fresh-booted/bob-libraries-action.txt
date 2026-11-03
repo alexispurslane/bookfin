@@ -1,0 +1,35 @@
+Tapped @e25 (540, 669)
+settled after 1093ms: +10 -18 (~8 unchanged)
+- @e6 [group]
+- @e7 [group]
+- @e8 [group]
+- @e10 [group]
+- @e11 [group]
+- @e12 [group]
+- @e13 [group]
+- @e14 [group]
+- @e19 [group]
+- @e20 [group]
+- @e21 [group] "Choose book libraries"
+- @e22 [group]
+- @e23 [checkbox] "Remaining acceptance scans" [checked]
+- @e24 [group]
+- @e25 [button] "Save libraries"
+- @e26 [group]
+- @e27 [button] "Refresh libraries"
+- @e28 [group]
++ @e6~s280223 [group] "A little further
+into the story."
++ @e7~s280223 [button] "Refresh books"
++ @e8~s280223 [text-field]
++ @e9~s280223 [horizontalscrollview]
++ @e10~s280223 [button] "All" [selected]
++ @e11~s280223 [button] "Audio"
++ @e12~s280223 [button] "Ebooks"
++ @e13~s280223 [button] "Downloaded"
++ @e14~s280223 [group] "Fresh blank
+1 ebook
+Ebook · Not downloaded"
++ @e15~s280223 [group] "Fresh single English
+1 ebook
+Ebook · Not downloaded"

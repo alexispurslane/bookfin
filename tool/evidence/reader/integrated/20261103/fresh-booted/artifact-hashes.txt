@@ -1,0 +1,3 @@
+8b31c7448f746226453d4677f944c9ba4f5668f657bba8015f94973372744e09  /Users/alexispurslane/.t3/worktrees/bookfin/t3-f29350e1/.cache/artifacts/bookfin-d8e1021-cancel/bookfin-d8e1021-arm64-debug.apk
+3dd0c18fb2cdc3b94e8831f12b4ef92d573bccd73392a626b3c46de1dae45f60  /Users/alexispurslane/.t3/worktrees/bookfin/t3-f29350e1/.cache/artifacts/bookfin-d8e1021-cancel/source/bookfin-source.tar
+3b0de5ca1df39baf67c786079898b1ee3b0b09d3bdb86d00ece8a7f5731a9105  /Users/alexispurslane/.t3/worktrees/bookfin/t3-2ef60719/.cache/plugin/package/Bookfin.Storage_0.1.1.0.zip

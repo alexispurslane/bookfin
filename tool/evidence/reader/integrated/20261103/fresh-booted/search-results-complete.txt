@@ -1,0 +1,23 @@
+Page: dev.bookfin.bookfin
+App: dev.bookfin.bookfin
+Snapshot: 28 visible nodes (29 total)
+Collapsed 1 Android helper node from the agent-facing text snapshot; use --raw or --json for the full hierarchy.
+@e1 [text] "4:48"
+@e2 [image] "Android System notification:"
+@e3 [image] "Airplane mode."
+@e4 [group] "Battery charging, 100 percent."
+  @e5 [image]
+    @e8 [group]
+      @e15 [button] "Dismiss"
+      @e16 [group] "Search"
+      @e17 [button] "Cancel search"
+      @e18 [text-field] "garden" [focused] [editable]
+        @e19 [group] "250 characters remaining"
+        @e21 [scroll-area] [scrollable]
+          @e22 [group] "Search skipped 1 source pages without reliable text. Those original pages are still available."
+          @e23 [group] "Search uses basic lowercase matching. Some language-specific letter forms differ. Spaces, tabs, and line breaks match as one space. Accents must match. Different Unicode spellings are not combined. Text hidden only by a stylesheet can appear in results."
+          @e24 [button] "Source page 1: The quiet garden A reader opened the book beside the window. Three birds crossed the pale mornin"
+          @e25 [button] "Source page 1: lable when words are unclear. The quiet garden A reader opened the book beside the window. Three birds crossed the pale mornin"
+          @e27 [button] "Source page 1: lable when words are unclear. The quiet garden A reader opened the book beside the window. Three birds crossed the pale mornin"
+          [content below scroll-area hidden]
+      @e29 [group] "Scrim"

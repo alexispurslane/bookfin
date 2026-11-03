@@ -1,0 +1,21 @@
+{
+  "pluginSha256": "3b0de5ca1df39baf67c786079898b1ee3b0b09d3bdb86d00ece8a7f5731a9105",
+  "imageSha256": "30fce43633b99aa18db29680ee9ed9ebd1733c97eca7ee6c3055eaeddd1d6af6",
+  "singleColumnPage": {
+    "widthPoints": 1600,
+    "heightPoints": 4000,
+    "imageDraws": 11,
+    "referenceWords": 407
+  },
+  "secondPage": "Genuinely blank, zero drawing commands and no text layer",
+  "files": {
+    "Fresh blank.pdf": {
+      "bytes": 72417,
+      "sha256": "fe5149e7d965a3229af11e3e38f63e3957d10d7718c4a42d9749a4ab2a4c9744"
+    },
+    "Fresh single English.pdf": {
+      "bytes": 72831,
+      "sha256": "c06b75aca75f9e332d57f6f2d5c9cd8f518d781dde72b775359803fbbb0445a3"
+    }
+  }
+}

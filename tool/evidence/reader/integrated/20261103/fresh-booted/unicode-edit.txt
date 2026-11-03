@@ -1,0 +1,15 @@
+Page: dev.bookfin.bookfin
+App: dev.bookfin.bookfin
+Snapshot: 24 nodes
+@e1 [text] "4:49"
+@e2 [image] "Android System notification:"
+@e3 [image] "Airplane mode."
+@e4 [group] "Battery charging, 100 percent."
+  @e5 [image]
+    @e8 [group]
+      @e17 [group] "Reading bookmark"
+        @e20 [text-field] "Fresh “Café” 中文 🐟" [editable]
+        @e21 [text-field] "Déjà vu — ‘naïve’ 中文 🐟" [focused] [editable]
+      @e22 [button] "Cancel"
+      @e23 [button] "Save"
+      @e24 [group] "Dismiss"

@@ -1,0 +1,42 @@
+Tapped @e15 (74, 137)
+settled after 1002ms: +13 -26 (~3 unchanged)
+- @e6 [group]
+- @e7 [group]
+- @e8 [group]
+- @e10 [group]
+- @e11 [group]
+- @e12 [group]
+- @e13 [group]
+- @e14 [group]
++ @e3~s280129 [group] "Book details"
++ @e4~s280129 [button] "Correct book details"
+- @e17 [button] "Hide reader controls"
+- @e18 [button] "Original page"
+- @e19 [button] "Reflow text"
+- @e20 [group] "English scans only. Other languages are not supported."
+- @e21 [button] "Retry recognition"
+- @e22 [group] "No English text was recognized. Read the original page."
+- @e23 [image] "Original source page 2"
+- @e24 [group]
+- @e25 [button] "Contents"
+- @e26 [button] "Search book"
+- @e27 [button] "Smaller text"
+- @e28 [button] "Larger text"
+- @e29 [button] "Bookmark this place"
+- @e30 [button] "Reading bookmarks"
+- @e31 [button] "Night reading theme"
+- @e32 [button] "Previous page"
+- @e33 [group] "Source page 2 · Page 2"
+- @e34 [button] "Next page"
++ @e6~s280129 [group] "Cannot reach Jellyfin. Saved books are still available."
++ @e7~s280129 [group] "Ebook editions"
++ @e8~s280129 [group] "Text"
++ @e9~s280129 [group] "1 file"
++ @e10~s280129 [group] "Downloaded"
++ @e11~s280129 [group] "72831 bytes · 1 / 1 files"
++ @e12~s280129 [button] "Remove"
++ @e13~s280129 [button] "Read"
++ @e14~s280129 [group] "Collapsed"
++ @e15~s280129 [group] "Fresh single English
+0.0 minutes, Collapsed"
++ @e16~s280129 [button] "Link another book or ebook"

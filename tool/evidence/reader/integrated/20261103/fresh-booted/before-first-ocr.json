@@ -1,0 +1,64 @@
+{
+  "case": "before-first-ocr",
+  "timeUnix": 1793742359.4379258,
+  "emptyBaseline": true,
+  "integrity": "ok",
+  "actions": [],
+  "files": [
+    {
+      "name": "./libCachedImageData.db",
+      "bytes": 16384,
+      "sha256": "1cfd1af65895c7ec7c66fda685544496b5a400cd4c882296f20505ccb6723ed5",
+      "modified": 1793742137
+    },
+    {
+      "name": "./libCachedImageData.db-journal",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "modified": 1793742137
+    },
+    {
+      "name": "./profileInstalled",
+      "bytes": 24,
+      "sha256": "fbd3994fc7fc8a78dbc62b6c710817afbeeba4e493530517f556802c2cd91371",
+      "modified": 1793742142
+    },
+    {
+      "name": "./bookfin-media/fc3c12f64c0e6f1c1fade998f49c8cdaaf1390ebbb3ab7d43c879be4bde38175/d925d236a50f219f3942effd2f7c3ccf98f2a9107842875ba952b4e547a00e90/record.json",
+      "bytes": 266,
+      "sha256": "6b1eb67b4450d1cfeec109319325dd9935b1957e3c01b7ac5b4521153828199f",
+      "modified": 1793742342
+    },
+    {
+      "name": "./bookfin-media/fc3c12f64c0e6f1c1fade998f49c8cdaaf1390ebbb3ab7d43c879be4bde38175/d925d236a50f219f3942effd2f7c3ccf98f2a9107842875ba952b4e547a00e90/complete",
+      "bytes": 72417,
+      "sha256": "fe5149e7d965a3229af11e3e38f63e3957d10d7718c4a42d9749a4ab2a4c9744",
+      "modified": 1793742342
+    },
+    {
+      "name": "./bookfin-media/fc3c12f64c0e6f1c1fade998f49c8cdaaf1390ebbb3ab7d43c879be4bde38175/b35de449479796e4411252258099696aa809952bb0f16952f06e4a3b3181ba7f/record.json",
+      "bytes": 266,
+      "sha256": "0c7ebb39b9956a9688d167c0a05b10d9ba7cec7868b0a2b732b27cd31b057354",
+      "modified": 1793742294
+    },
+    {
+      "name": "./bookfin-media/fc3c12f64c0e6f1c1fade998f49c8cdaaf1390ebbb3ab7d43c879be4bde38175/b35de449479796e4411252258099696aa809952bb0f16952f06e4a3b3181ba7f/complete",
+      "bytes": 72831,
+      "sha256": "c06b75aca75f9e332d57f6f2d5c9cd8f518d781dde72b775359803fbbb0445a3",
+      "modified": 1793742294
+    },
+    {
+      "name": "./datastore/FlutterSharedPreferences.preferences_pb",
+      "bytes": 1196,
+      "sha256": "9e43235a13ce76f59c807acba04d38557546a6c9946b5669709acaf0cfbf1b4d",
+      "modified": 1793742276
+    }
+  ],
+  "mediaMuted": true,
+  "network": {
+    "airplane_mode_on": "1",
+    "wifi_on": "0",
+    "mobile_data": "0"
+  },
+  "appProcessAbsent": false
+}

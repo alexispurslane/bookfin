@@ -1,0 +1,41 @@
+{
+  "timeUnix": 1793743776.768498,
+  "serverVersion": "12.4.0",
+  "cursor": 1,
+  "objects": [
+    {
+      "identity": "action.5fbe85a1ed171a94f5787395247af7ba3c7e18a0.1",
+      "sequence": 1,
+      "payloadSha256": "368cd38c185a5a979247c5b6c96aeddf6aaf1be9b96b4ac5cefc6a5591437280",
+      "action": {
+        "version": 1,
+        "account": "600efe6e4aa2ca4449ab8de82d22e2385098e8ea9afa99fa3ef12df26d1aa82a",
+        "replica": "5fbe85a1ed171a94f5787395247af7ba3c7e18a0",
+        "sequence": 1,
+        "context": {},
+        "record": "[\"reading\",\"resumes\",\"[\\\"e0f0ab70a744e393ea04813fa30b65a6:\\\",\\\"e0f0ab70a744e393ea04813fa30b65a6:\\\",\\\"[null,\\\\\\\"60e3c8ef021f68c43205e654724fbc1f\\\\\\\",null,null,20000]\\\"]\"]",
+        "value": {
+          "edition": "e0f0ab70a744e393ea04813fa30b65a6:",
+          "source": "e0f0ab70a744e393ea04813fa30b65a6:",
+          "revision": "[null,\"60e3c8ef021f68c43205e654724fbc1f\",null,null,20000]",
+          "anchor": "{\"version\":1,\"processed\":\"8e209383c9747160c664bd13976e9207dce3cdd8a781916af9816de94ce51571\",\"original\":\"c06b75aca75f9e332d57f6f2d5c9cd8f518d781dde72b775359803fbbb0445a3\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":0,\"quote\":\"The quiet garden\\nA reader opened the book beside the window.\\nThree birds crossed the pale morning sky.\\nThe next page held a map, a letter, and a promise.\\nOrigin\",\"representation\":\"bookfin-pdf-source-pages-1/pdfrx-0.9.0-pdfium-8125/bookfin-ocr-2/tesseract4android-4.9.0/tesseract-5.5.1/leptonica-1.85.0/tessdata_fast-4.1.0-eng-7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2/121cbf95ba2fc43fff7d42ee5d4cfcae063ff22106cd49c325355b6575ada6f5\"}"
+        },
+        "preserve": []
+      }
+    }
+  ],
+  "ordinaryOriginals": [
+    {
+      "name": "Fresh blank",
+      "id": "0492ffa9fab1d9dcb5c1e0d69f1fa236",
+      "containerOmitted": true,
+      "mediaSourcesOmitted": true
+    },
+    {
+      "name": "Fresh single English",
+      "id": "e0f0ab70a744e393ea04813fa30b65a6",
+      "containerOmitted": true,
+      "mediaSourcesOmitted": true
+    }
+  ]
+}

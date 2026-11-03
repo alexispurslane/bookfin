@@ -1,0 +1,2 @@
+ls: /data/user/0/dev.bookfin.bookfin: No such file or directory
+ls: /sdcard/Android/data/dev.bookfin.bookfin: No such file or directory

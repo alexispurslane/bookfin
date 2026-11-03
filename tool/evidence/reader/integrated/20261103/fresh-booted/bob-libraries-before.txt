@@ -1,0 +1,23 @@
+Page: dev.bookfin.bookfin
+App: dev.bookfin.bookfin
+Snapshot: 31 nodes
+@e1 [text] "4:58"
+@e2 [image] "Android System notification:"
+@e3 [image] "Airplane mode."
+@e4 [group] "Battery charging, 100 percent."
+  @e5 [image]
+    @e8 [group]
+      @e15 [group] "BOOKFIN"
+      @e16 [button] "Book libraries"
+      @e17 [button] "Appearance"
+      @e18 [button] "Account"
+        @e21 [group] "Choose book libraries"
+          @e23 [checkbox] "Remaining acceptance scans" [checked]
+          @e25 [button] "Save libraries"
+          @e27 [button] "Refresh libraries"
+      @e29 [button] "Library
+Tab 1 of 3" [selected]
+      @e30 [button] "Downloads
+Tab 2 of 3"
+      @e31 [button] "Listening
+Tab 3 of 3"

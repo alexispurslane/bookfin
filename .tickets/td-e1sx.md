@@ -22,3 +22,7 @@ Resolve the newly owned AVD pinned image through supported provisioning or suppo
 **2026-11-03T21:39:10Z**
 
 Parent recovery: changed only owned bookfin-accept-20261103-db111f95 AVD image.sysdir.1 from relative system-images/android-36/google_apis/arm64-v8a/ to verified absolute /nix/store/in52zy1w2yv0197h7553n827h8f03x8k-bookfin-android-sdk/system-images/android-36/google_apis/arm64-v8a/. Backed up config.ini.before-image-path. T3 device_open succeeded on one retry, returned local/emulator-5556 and bound command. No manual boot, application install, UI or settings actions. Released parent binding shutdown:false for exclusive acceptance continuation. Retained emulator5554 untouched. Provisioning blocker resolved; fresh-install/pending acceptance still required.
+
+**2026-11-03T22:14:32Z**
+
+Acceptance continuation from b186860 successfully opened its own local/emulator-5556 T3 binding after parent image-path fix. Exact normal APK fresh install/offline OCR and durable new-account Unicode upload checks passed; no additional AVD provisioning, host SDK edit, or operation of original5554. Owned AVD released shutdown:true after all10 actions acknowledged, ordinary device cleanup and owned fixture cleanup. Final discovery: owned AVD retained/unbooted; no thread devices open. Evidence docs/evidence/reader/android-fresh-booted-20261103.md. Existing closed status unchanged.

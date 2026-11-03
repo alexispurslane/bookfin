@@ -1,0 +1,45 @@
+Tapped @e25 (540, 1218)
+settled after 1319ms: +14 -20 (~4 unchanged)
+- @e6 [group]
+- @e7 [group]
+- @e8 [group]
+- @e10 [group]
+- @e11 [group]
+- @e12 [group]
+- @e13 [group]
+- @e14 [group]
++ @e3~s280339 [button] "Book libraries"
+- @e17 [group]
+- @e18 [group]
+- @e19 [group] "Your library starts here."
+- @e20 [group]
+- @e21 [group]
+- @e22 [text-field] "http://127.0.0.1:7364"
+- @e23 [text-field] "research-alice"
+- @e24 [text-field] "••••••••••••••••••••••••••••••••"
+- @e25 [button] "Sign in"
+- @e26 [group]
++ @e5~s280339 [button] "Account"
++ @e6~s280339 [group] "A little further
+into the story."
++ @e7~s280339 [button] "Refresh books"
++ @e8~s280339 [text-field]
++ @e9~s280339 [horizontalscrollview]
++ @e10~s280339 [button] "All" [selected]
++ @e11~s280339 [button] "Audio"
++ @e12~s280339 [button] "Ebooks"
++ @e13~s280339 [button] "Downloaded"
++ @e14~s280339 [group] "Fresh blank
+1 ebook
+Ebook · Downloaded"
++ @e15~s280339 [group] "Fresh single English
+1 ebook
+Ebook · Downloaded"
+- @e28 [button] "Downloads
+Tab 2 of 3" [disabled]
+- @e29 [button] "Listening
+Tab 3 of 3" [disabled]
++ @e17~s280339 [button] "Downloads
+Tab 2 of 3"
++ @e18~s280339 [button] "Listening
+Tab 3 of 3"

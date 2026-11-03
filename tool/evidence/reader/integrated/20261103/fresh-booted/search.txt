@@ -1,0 +1,16 @@
+Page: dev.bookfin.bookfin
+App: dev.bookfin.bookfin
+Snapshot: 24 nodes
+@e1 [text] "4:47"
+@e2 [image] "Android System notification:"
+@e3 [image] "Airplane mode."
+@e4 [group] "Battery charging, 100 percent."
+  @e5 [image]
+    @e8 [group]
+      @e15 [button] "Dismiss"
+      @e16 [group] "Search"
+      @e17 [button] "Cancel search"
+      @e18 [text-field] "garden" [focused] [editable]
+        @e19 [group] "250 characters remaining"
+          @e22 [group] "Search uses basic lowercase matching. Some language-specific letter forms differ. Spaces, tabs, and line breaks match as one space. Accents must match. Different Unicode spellings are not combined. Text hidden only by a stylesheet can appear in results."
+      @e24 [group] "Scrim"

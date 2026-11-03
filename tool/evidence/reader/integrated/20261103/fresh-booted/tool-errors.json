@@ -1,0 +1,42 @@
+[
+  {
+    "diagnosticId": "mw17qe3e-1b802cf8",
+    "error": "open <app> <url> requires a valid URL target",
+    "recovery": "Read help open as advised; documented --activity settings launch succeeded. No alternate binding or engine."
+  },
+  {
+    "diagnosticId": "mw17skhj-19919d00",
+    "error": "Field focus was refused",
+    "recovery": "Inspected diagnostic and fresh full snapshot; one --debug retry succeeded for server address."
+  },
+  {
+    "diagnosticId": "mw17t5h2-089ddc51",
+    "error": "Field focus was refused",
+    "recovery": "Inspected diagnostic and fresh full snapshot; one --debug retry succeeded for username."
+  },
+  {
+    "diagnosticId": "mw17v0s3-8e56e7d5",
+    "error": "Ref @e28 had no confirmed resting position when the transition window ran out",
+    "recovery": "Fresh full snapshot and one advised --settle retry succeeded for blank download."
+  },
+  {
+    "diagnosticId": "mw188v1g-a8f383a9",
+    "error": "Android helper could not launch the application",
+    "recovery": "Inspected diagnostics; one advised --debug relaunch succeeded."
+  },
+  {
+    "diagnosticId": "mw18avr2-e03ff140",
+    "error": "Ref @e23 had no confirmed resting position when the transition window ran out",
+    "recovery": "Fresh full snapshot and one advised --settle retry succeeded for second-account username focus."
+  },
+  {
+    "diagnosticId": "mw18bhmn-41fca411",
+    "error": "Ref @e24 had no confirmed resting position when the transition window ran out",
+    "recovery": "Fresh full snapshot and one advised --settle retry succeeded for second-account password focus."
+  },
+  {
+    "diagnosticId": "mw18i5u1-608d8fd5",
+    "error": "Ref @e23 had no confirmed resting position when the transition window ran out",
+    "recovery": "Fresh full snapshot and one advised --settle retry succeeded for first-account return username focus."
+  }
+]

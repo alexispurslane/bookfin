@@ -1,0 +1,12 @@
+{
+  "release": "device_close local/emulator-5556 shutdown:true succeeded",
+  "discovery": "device_list after release",
+  "ownedAvd": "bookfin-accept-20261103-db111f95",
+  "ownedAvdBooted": false,
+  "threadOpenDevices": [],
+  "retainedOriginalListedBooted": true,
+  "originalDeviceOperated": false,
+  "ownedAvdDeleted": false,
+  "ownedDurableActions": 10,
+  "ownedPendingActions": 0
+}

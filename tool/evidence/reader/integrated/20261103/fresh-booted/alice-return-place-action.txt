@@ -1,0 +1,37 @@
+Tapped @e19 (540, 878)
+settled after 898ms: +18 -16 (~1 unchanged)
+- @e6 [group]
+- @e7 [group]
+- @e8 [group]
+- @e10 [group]
+- @e11 [group]
+- @e12 [group]
+- @e13 [group]
+- @e14 [group]
+- @e15 [button] "Dismiss"
+- @e16 [group]
+- @e17 [group]
+- @e18 [group] "Reading bookmarks"
+- @e19 [button] "Fresh “Café” 中文 🐟
+Déjà vu — ‘naïve’ 中文 🐟"
+- @e20 [button] "Edit reading bookmark"
+- @e21 [group]
+- @e22 [group] "Scrim"
++ @e2~s280362 [button] "Back"
++ @e3~s280362 [group] "Fresh single English"
++ @e4~s280362 [button] "Hide reader controls"
++ @e5~s280362 [button] "Original page"
++ @e6~s280362 [button] "Reflow text"
++ @e7~s280362 [group] "English scans only. Other languages are not supported."
++ @e8~s280362 [image] "Original source page 1"
++ @e9~s280362 [button] "Contents"
++ @e10~s280362 [button] "Search book"
++ @e11~s280362 [button] "Smaller text"
++ @e12~s280362 [button] "Larger text"
++ @e13~s280362 [button] "Bookmark this place"
++ @e14~s280362 [button] "Reading bookmarks"
++ @e15~s280362 [button] "Night reading theme"
++ @e16~s280362 [progressbar] "50, Current document page progress. Page 1 of 2"
++ @e17~s280362 [button] "Previous page"
++ @e18~s280362 [group] "Source page 1 · Page 1 of 2"
++ @e19~s280362 [button] "Next page"

@@ -1,0 +1,20 @@
+{
+  "timeUnix": 1793743298.8396318,
+  "serverVersion": "12.4.0",
+  "cursor": 0,
+  "objects": [],
+  "ordinaryOriginals": [
+    {
+      "name": "Fresh blank",
+      "id": "0492ffa9fab1d9dcb5c1e0d69f1fa236",
+      "containerOmitted": true,
+      "mediaSourcesOmitted": true
+    },
+    {
+      "name": "Fresh single English",
+      "id": "e0f0ab70a744e393ea04813fa30b65a6",
+      "containerOmitted": true,
+      "mediaSourcesOmitted": true
+    }
+  ]
+}

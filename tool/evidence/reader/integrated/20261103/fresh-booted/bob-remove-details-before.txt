@@ -1,0 +1,36 @@
+Page: dev.bookfin.bookfin
+App: dev.bookfin.bookfin
+Snapshot: 36 nodes
+@e1 [text] "5:02"
+@e2 [image] "Android System notification:"
+@e3 [image] "Airplane mode."
+@e4 [group] "Battery charging, 100 percent."
+  @e5 [image]
+    @e8 [group]
+      @e15 [group] "BOOKFIN"
+      @e16 [button] "Book libraries"
+      @e17 [button] "Appearance"
+      @e18 [button] "Account"
+      @e19 [group] "Cannot reach Jellyfin. Saved books are still available."
+      @e20 [group] "A little further
+into the story."
+      @e21 [button] "Refresh books"
+      @e22 [text-field] [editable]
+      @e23 [horizontalscrollview] [scrollable]
+        @e24 [button] "All" [selected]
+        @e25 [button] "Audio"
+        @e26 [button] "Ebooks"
+        @e27 [button] "Downloaded"
+      @e28 [group] "Saved library · 2026-11-03 16:58:41"
+        @e31 [group] "Fresh blank
+1 ebook
+Ebook · Not downloaded"
+        @e32 [group] "Fresh single English
+1 ebook
+Ebook · Downloaded"
+        @e34 [button] "Library
+Tab 1 of 3" [selected]
+        @e35 [button] "Downloads
+Tab 2 of 3"
+        @e36 [button] "Listening
+Tab 3 of 3"

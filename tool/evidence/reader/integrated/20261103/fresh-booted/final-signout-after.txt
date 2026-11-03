@@ -1,0 +1,22 @@
+Page: dev.bookfin.bookfin
+App: dev.bookfin.bookfin
+Snapshot: 29 nodes
+@e1 [text] "5:09"
+@e2 [image] "Android System notification:"
+@e3 [image] "Airplane mode."
+@e4 [group] "Battery charging, 100 percent."
+  @e5 [image]
+    @e8 [group]
+      @e15 [group] "BOOKFIN"
+      @e16 [button] "Appearance"
+        @e19 [group] "Your library starts here."
+          @e22 [text-field] [editable]
+          @e23 [text-field] [editable]
+          @e24 [text-field] [editable]
+          @e25 [button] "Sign in"
+      @e27 [button] "Library
+Tab 1 of 3" [selected]
+      @e28 [button] "Downloads
+Tab 2 of 3" [disabled]
+      @e29 [button] "Listening
+Tab 3 of 3" [disabled]

@@ -1,0 +1,31 @@
+Page: dev.bookfin.bookfin
+App: dev.bookfin.bookfin
+Snapshot: 35 visible nodes
+@e1 [text] "4:53"
+@e2 [image] "Android System notification:"
+@e3 [image] "Airplane mode."
+@e4 [group] "Battery charging, 100 percent."
+  @e5 [image]
+    @e8 [group]
+      @e15 [button] "Back"
+      @e16 [group] "Fresh single English"
+      @e17 [button] "Hide reader controls"
+      @e18 [button] "Original page"
+      @e19 [button] "Reflow text"
+      @e20 [group] "English scans only. Other languages are not supported."
+      @e21 [group] "Extracted text is not checked against the page. Pictures and page layout stay in the original page."
+      @e22 [scroll-area] [scrollable]
+        [content above scroll-area hidden]
+        @e23 [group] "The quiet garden A reader opened the book beside the window. Three birds crossed the pale morning sky. The next page held a map, a letter, and a promise. Original pages remain available when words are unclear. The quiet garden A reader opened the book beside the window. Three birds crossed the pale morning sky. The next page held a map, a letter, and a promise. Original pages remain available when words are unclear. The quiet garden A reader opened the book beside the window. Three birds crossed the pale morning sky. The next page held a map, a letter, and a promise. Original pages remain available when words are unclear. The quiet garden A reader opened the book beside the window. Three birds crossed the pale morning sky. The next page held a map, a letter, and a promise. Original pages remain available when words are unclear. The quiet garden A reader opened the book beside the window. Three birds crossed the pale morning sky. The next page held a map, a letter, and a promise. Original pages remain available when words are unclear. The quiet garden A reader opened the book beside the window. Three birds crossed the pale morning sky. The next page held a map, a letter, and a promise. Original pages remain available when words are unclear. The quiet garden A reader opened the book beside the window. Three birds crossed the pale morning sky. The next page held a map, a letter, and a promise. Original pages remain available when words are unclear. The quiet garden A reader opened the book beside the window. Three birds crossed the pale morning sky. The next page held a map, a letter, and a promise. Original pages remain available when words are unclear. The quiet garden A reader opened the book beside the window. Three birds crossed the pale morning sky. The next page held a map, a letter, and a promise. Original pages remain available when words are unclear. The quiet garden A reader opened the book beside the window. Three birds crossed the pale morning sky. The next page held a map, a letter, and a promise. Original pages remain available when words are unclear. The quiet garden A reader opened the book beside the window. Three birds crossed the pale morning sky. The next page held a map, a letter, and a promise. Original pages remain available when words are unclear."
+        @e25 [button] "Contents"
+        @e26 [button] "Search book"
+        @e27 [button] "Smaller text"
+        @e28 [button] "Larger text"
+        @e29 [button] "Bookmark this place"
+        @e30 [button] "Reading bookmarks"
+        @e31 [button] "Night reading theme"
+        @e32 [progressbar] "50, Current document page progress. Page 1 of 2"
+        @e33 [button] "Previous page"
+        @e34 [group] "Source page 1 · Page 1 of 2"
+        @e35 [button] "Next page"
+        [content below scroll-area hidden]

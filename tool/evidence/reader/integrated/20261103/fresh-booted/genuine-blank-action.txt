@@ -1,0 +1,45 @@
+Tapped @e29 (234, 1053)
+settled after 1415ms: +17 -25 (~3 unchanged)
+- @e6 [group]
+- @e7 [group]
+- @e8 [group]
+- @e10 [group]
+- @e11 [group]
+- @e12 [group]
+- @e13 [group]
+- @e14 [group]
+- @e16 [group] "Book details"
+- @e17 [button] "Correct book details"
+- @e18 [group]
+- @e19 [group]
+- @e21 [group] "Cannot reach Jellyfin. Saved books are still available."
+- @e22 [group] "Ebook editions"
+- @e23 [group]
+- @e24 [group] "Text"
+- @e25 [group] "1 file"
+- @e26 [group] "Downloaded"
+- @e27 [group] "72417 bytes · 1 / 1 files"
+- @e28 [button] "Remove"
+- @e29 [button] "Read"
+- @e30 [group] "Collapsed"
+- @e31 [group] "Fresh blank
+0.0 minutes, Collapsed"
+- @e32 [group]
+- @e33 [button] "Link another book or ebook"
++ @e4~s280143 [button] "Hide reader controls"
++ @e5~s280143 [button] "Original page"
++ @e6~s280143 [button] "Reflow text"
++ @e7~s280143 [group] "English scans only. Other languages are not supported."
++ @e8~s280143 [button] "Retry recognition"
++ @e9~s280143 [group] "No English text was recognized. Read the original page."
++ @e10~s280143 [image] "Original source page 1"
++ @e11~s280143 [button] "Contents"
++ @e12~s280143 [button] "Search book"
++ @e13~s280143 [button] "Smaller text"
++ @e14~s280143 [button] "Larger text"
++ @e15~s280143 [button] "Bookmark this place"
++ @e16~s280143 [button] "Reading bookmarks"
++ @e17~s280143 [button] "Night reading theme"
++ @e18~s280143 [button] "Previous page"
++ @e19~s280143 [group] "Source page 1 · Page 1"
++ @e20~s280143 [button] "Next page"

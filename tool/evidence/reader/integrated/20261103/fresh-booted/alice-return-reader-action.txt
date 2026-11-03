@@ -1,0 +1,45 @@
+Tapped @e28 (234, 998)
+settled after 1666ms: +18 -24 (~3 unchanged)
+- @e6 [group]
+- @e7 [group]
+- @e8 [group]
+- @e10 [group]
+- @e11 [group]
+- @e12 [group]
+- @e13 [group]
+- @e14 [group]
+- @e16 [group] "Book details"
+- @e17 [button] "Correct book details"
+- @e18 [group]
+- @e19 [group]
+- @e21 [group] "Ebook editions"
+- @e22 [group]
+- @e23 [group] "Text"
+- @e24 [group] "1 file"
+- @e25 [group] "Downloaded"
+- @e26 [group] "72831 bytes · 1 / 1 files"
+- @e27 [button] "Remove"
+- @e28 [button] "Read"
+- @e29 [group] "Collapsed"
+- @e30 [group] "Fresh single English
+0.0 minutes, Collapsed"
+- @e31 [group]
+- @e32 [button] "Link another book or ebook"
++ @e4~s280351 [button] "Hide reader controls"
++ @e5~s280351 [button] "Original page"
++ @e6~s280351 [button] "Reflow text"
++ @e7~s280351 [group] "English scans only. Other languages are not supported."
++ @e8~s280351 [button] "Retry recognition"
++ @e9~s280351 [group] "No English text was recognized. Read the original page."
++ @e10~s280351 [image] "Original source page 2"
++ @e11~s280351 [button] "Contents"
++ @e12~s280351 [button] "Search book"
++ @e13~s280351 [button] "Smaller text"
++ @e14~s280351 [button] "Larger text"
++ @e15~s280351 [button] "Bookmark this place"
++ @e16~s280351 [button] "Reading bookmarks"
++ @e17~s280351 [button] "Night reading theme"
++ @e18~s280351 [progressbar] "100, Current document page progress. Page 2 of 2"
++ @e19~s280351 [button] "Previous page"
++ @e20~s280351 [group] "Source page 2 · Page 2 of 2"
++ @e21~s280351 [button] "Next page"

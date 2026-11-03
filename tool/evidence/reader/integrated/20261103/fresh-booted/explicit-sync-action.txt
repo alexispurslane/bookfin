@@ -1,0 +1,26 @@
+Tapped @e22 (222, 1844)
+settled after 1062ms: +1 -11 (~11 unchanged)
+- @e6 [group]
+- @e7 [group]
+- @e8 [group]
+- @e10 [group]
+- @e11 [group]
+- @e12 [group]
+- @e13 [group]
+- @e14 [group]
+- @e16 [group]
+- @e22 [button] "Sync now"
++ @e8~s280174 [button] "Syncing personal records…" [disabled]
+- @e26 [group]
+unchanged interactive (11):
+= @e1~s280174 [group]
+= @e2~s280174 [button] "Dismiss"
+= @e3~s280174 [group] "Account"
+= @e4~s280174 [group] "research-alice"
+= @e5~s280174 [group] "http://127.0.0.1:7364"
+= @e6~s280174 [group] "Personal-record sync"
+= @e7~s280174 [group] "Sync bookmarks, listening history, and saved places through the Bookfin Storage Jellyfin plugin. Local reading and listening work without the plugin."
+= @e9~s280174 [button] "Software licenses"
+= @e10~s280174 [button] "Reset catalog corrections"
+= @e11~s280174 [button] "Sign out"
+= @e12~s280174 [group] "Scrim"

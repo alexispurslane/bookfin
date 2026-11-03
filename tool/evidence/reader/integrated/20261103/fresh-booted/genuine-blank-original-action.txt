@@ -1,0 +1,32 @@
+Tapped @e18 (399, 273)
+settled after 741ms: +0 -9 (~20 unchanged)
+- @e6 [group]
+- @e7 [group]
+- @e8 [group]
+- @e10 [group]
+- @e11 [group]
+- @e12 [group]
+- @e13 [group]
+- @e14 [group]
+- @e24 [group]
+unchanged interactive (20):
+= @e1~s280149 [group]
+= @e2~s280149 [button] "Back"
+= @e3~s280149 [group] "Fresh blank"
+= @e4~s280149 [button] "Hide reader controls"
+= @e5~s280149 [button] "Original page"
+= @e6~s280149 [button] "Reflow text"
+= @e7~s280149 [group] "English scans only. Other languages are not supported."
+= @e8~s280149 [button] "Retry recognition"
+= @e9~s280149 [group] "No English text was recognized. Read the original page."
+= @e10~s280149 [image] "Original source page 1"
+= @e11~s280149 [button] "Contents"
+= @e12~s280149 [button] "Search book"
+= @e13~s280149 [button] "Smaller text"
+= @e14~s280149 [button] "Larger text"
+= @e15~s280149 [button] "Bookmark this place"
+= @e16~s280149 [button] "Reading bookmarks"
+= @e17~s280149 [button] "Night reading theme"
+= @e18~s280149 [button] "Previous page"
+= @e19~s280149 [group] "Source page 1 · Page 1"
+= @e20~s280149 [button] "Next page"

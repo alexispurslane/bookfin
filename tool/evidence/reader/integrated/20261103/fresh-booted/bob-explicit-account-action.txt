@@ -1,0 +1,51 @@
+Tapped @e18 (1017, 137)
+settled after 938ms: +11 -30 (~1 unchanged)
+- @e6 [group]
+- @e7 [group]
+- @e8 [group]
+- @e10 [group]
+- @e11 [group]
+- @e12 [group]
+- @e13 [group]
+- @e14 [group]
+- @e15 [group] "BOOKFIN"
+- @e16 [button] "Book libraries"
+- @e17 [button] "Appearance"
+- @e18 [button] "Account"
+- @e19 [group] "Cannot reach Jellyfin. Saved books are still available."
+- @e20 [group] "A little further
+into the story."
+- @e21 [button] "Refresh books"
+- @e22 [text-field]
+- @e23 [horizontalscrollview]
+- @e24 [button] "All" [selected]
+- @e25 [button] "Audio"
+- @e26 [button] "Ebooks"
+- @e27 [button] "Downloaded"
+- @e28 [group] "Saved library · 2026-11-03 16:58:41"
+- @e29 [group]
+- @e30 [group]
+- @e31 [group] "Fresh blank
+1 ebook
+Ebook · Not downloaded"
+- @e32 [group] "Fresh single English
+1 ebook
+Ebook · Downloaded"
+- @e33 [group]
+- @e34 [button] "Library
+Tab 1 of 3" [selected]
+- @e35 [button] "Downloads
+Tab 2 of 3"
+- @e36 [button] "Listening
+Tab 3 of 3"
++ @e2~s280266 [button] "Dismiss"
++ @e3~s280266 [group] "Account"
++ @e4~s280266 [group] "research-bob"
++ @e5~s280266 [group] "http://127.0.0.1:7364"
++ @e6~s280266 [group] "Personal-record sync"
++ @e7~s280266 [group] "Sync bookmarks, listening history, and saved places through the Bookfin Storage Jellyfin plugin. Local reading and listening work without the plugin."
++ @e8~s280266 [button] "Sync now"
++ @e9~s280266 [button] "Software licenses"
++ @e10~s280266 [button] "Reset catalog corrections"
++ @e11~s280266 [button] "Sign out"
++ @e12~s280266 [group] "Scrim"
