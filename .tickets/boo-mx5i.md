@@ -39,3 +39,13 @@ Continuous builder begins production format integration after sync milestone ccf
 **2026-11-03T00:00:14Z**
 
 Safe source milestone at sync-review interruption: production PDF original-page/reflow integration and existing account-owned source-page records pass focused real-native tests. Public NIST/Census/Raven pages preserve reviewed candidate/fallback decisions (9 native checks). Local MOBI admission, already implemented before the interruption, passes four native corpus/cache/error tests. Android format packaging/runtime, EPUB/PDF ownership acceptance, libmobi t3-ipk1, and OCR remain open. Next priority is independent sync review F1–F4. See docs/research/production-reader-formats.md.
+
+## Production format review corrections
+
+Parent correction on dbc54ed addresses F1 derived MOBI byte accounting/removal
+and in-flight import ownership, F2 overlapping PDF image draws, and F3 backward
+reflow boundary placement. Meaningful baseline and native-import overlap red
+checks are retained with 405 final Flutter passes, one optional plugin skip,
+and clean analysis in tool/evidence/reader/formats/20261102/review-corrections/.
+Independent source re-review and exact combined-build Android acceptance remain
+required. No format, native replacement, compliance or OCR acceptance is claimed.

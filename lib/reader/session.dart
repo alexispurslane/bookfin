@@ -235,16 +235,24 @@ class ReaderSession extends ChangeNotifier {
       if (selected.kind != EditionKind.text || selected.files.length != 1) {
         throw const FormatException('Choose a single-file ebook edition.');
       }
-      final uri = await downloads.localFile(selected.files.single);
-      if (!_live(generation)) return;
-      if (uri == null || uri.scheme != 'file') {
+      final admitted = await downloads.readLocalFile<ReaderDocument>(
+        selected.files.single,
+        (uri) async {
+          if (uri.scheme != 'file') {
+            throw const FormatException(
+              'The reader requires a verified local download.',
+            );
+          }
+          return loadDocument == null
+              ? EpubDocument(await load(uri))
+              : await loadDocument!(uri, selected.files.single);
+        },
+      );
+      if (admitted == null) {
         throw const FormatException(
           'Download this ebook before reading. Only verified local files can open.',
         );
       }
-      final admitted = loadDocument == null
-          ? EpubDocument(await load(uri))
-          : await loadDocument!(uri, selected.files.single);
       if (!_live(generation) || !_current(selected)) {
         await admitted.dispose();
         return;

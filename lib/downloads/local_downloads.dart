@@ -7,6 +7,7 @@ import 'package:crypto/crypto.dart';
 import '../catalog/jellyfin.dart';
 import '../catalog/model.dart';
 import 'downloads.dart';
+import 'derived_files.dart';
 
 class LocalDownloads extends Downloads {
   LocalDownloads({
@@ -269,7 +270,12 @@ class LocalDownloads extends Downloads {
       if (record == null) continue;
       final present = _present(record);
       if (present) complete++;
-      if (!present) unavailableBytes += _savedCompleteLength(record);
+      if (!present) {
+        unavailableBytes += _savedCompleteLength(record);
+        if (_containedDirectory(record.directory, record.accountKey)) {
+          unavailableBytes += DerivedBookFiles.bytes(record.directory);
+        }
+      }
       bytes += present
           ? record.length!
           : record.complete
@@ -451,7 +457,7 @@ class LocalDownloads extends Downloads {
     if (!_containedDirectory(directory, session.scope.key)) return null;
     final id = directory.uri.pathSegments.where((part) => part.isNotEmpty).last;
     final identity = await _savedIdentity(directory, session.scope.key);
-    var bytes = 0;
+    var bytes = DerivedBookFiles.bytes(directory);
     for (final name in ['complete', 'partial']) {
       final file = File('${directory.path}/$name');
       if (await _regularFile(file)) bytes += await file.length();
@@ -535,6 +541,12 @@ class LocalDownloads extends Downloads {
     Directory directory,
     void Function() guard,
   ) async {
+    guard();
+    if (_session == null ||
+        !_containedDirectory(directory, _session!.scope.key)) {
+      throw StateError('Download storage is no longer a private directory.');
+    }
+    await DerivedBookFiles.remove(directory);
     for (final name in ['partial', 'complete', 'record.next', 'record.json']) {
       guard();
       if (_session == null ||
@@ -547,6 +559,21 @@ class LocalDownloads extends Downloads {
         await file.delete();
       }
     }
+  }
+
+  @override
+  Future<T?> readLocalFile<T>(
+    SourceFile source,
+    Future<T> Function(Uri original) read,
+  ) async {
+    T? result;
+    // The existing command owner also orders removal and account restoration.
+    // A converter must settle before either can reclaim its source directory.
+    await _command(() async {
+      final uri = await localFile(source);
+      if (uri != null) result = await read(uri);
+    });
+    return result;
   }
 
   @override

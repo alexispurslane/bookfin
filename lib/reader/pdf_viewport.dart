@@ -35,6 +35,7 @@ class _PdfViewportState extends State<PdfViewport>
   int _page = 1;
   int _character = 0;
   int _generation = 0;
+  int? _drawingGeneration;
   int _search = 0;
   bool _reflow = false;
   bool _loading = true;
@@ -64,7 +65,7 @@ class _PdfViewportState extends State<PdfViewport>
     super.dispose();
   }
 
-  Future<void> _load(PdfAddress address) async {
+  Future<void> _load(PdfAddress address, {bool lastViewport = false}) async {
     if (!widget.book.accepts(address)) {
       throw ArgumentError('Choose a source page in this PDF.');
     }
@@ -84,7 +85,9 @@ class _PdfViewportState extends State<PdfViewport>
       if (!mounted || generation != _generation) return;
       setState(() {
         _text = text;
-        _character = _character.clamp(0, text.source.length);
+        _character = lastViewport
+            ? text.source.length
+            : _character.clamp(0, text.source.length);
         _loading = false;
       });
     } on Exception {
@@ -106,7 +109,13 @@ class _PdfViewportState extends State<PdfViewport>
   bool get _usingText => _reflow && _text?.status == PdfTextStatus.candidate;
 
   Future<void> _draw(int generation) async {
-    if (_image != null || !mounted) return;
+    if (_image != null ||
+        !mounted ||
+        generation != _generation ||
+        _drawingGeneration == generation) {
+      return;
+    }
+    _drawingGeneration = generation;
     try {
       final raster = await widget.book.render(
         _page,
@@ -134,6 +143,8 @@ class _PdfViewportState extends State<PdfViewport>
           () => _failure = 'The original page could not be drawn. Retry this source page or reopen the download.',
         );
       }
+    } finally {
+      if (_drawingGeneration == generation) _drawingGeneration = null;
     }
   }
 
@@ -185,7 +196,7 @@ class _PdfViewportState extends State<PdfViewport>
     }
     final page = _page + (forward ? 1 : -1);
     if (page >= 1 && page <= widget.book.pageCount) {
-      await _load(PdfAddress(page, 0));
+      await _load(PdfAddress(page, 0), lastViewport: !forward && _usingText);
     }
   }
 

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 import 'dart:io';
 
 import 'package:bookfin/catalog/jellyfin.dart';
@@ -6,6 +7,11 @@ import 'package:bookfin/downloads/downloads.dart';
 import 'package:bookfin/downloads/local_downloads.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import 'package:bookfin/reader/session.dart';
+import 'package:bookfin/reader/platform_io.dart';
+
+import '../playback/playback_test.dart' show MemoryResume;
 
 import 'transfer_test.dart' show MediaFixture, waitForBytes;
 
@@ -42,6 +48,134 @@ void main() {
       (await downloads.localFile(fixture.text.files.single))!,
     );
   }
+
+  test('removing a downloaded book removes its converted copy', () async {
+    final file = await downloadText();
+    final cache = Directory('${file.parent.path}/.bookfin-mobi/converted');
+    await cache.create(recursive: true);
+    await File('${cache.path}/book.epub').writeAsBytes([7, 8, 9]);
+    await downloads.remove(fixture.text);
+    expect(await cache.exists(), isFalse);
+    expect(await file.exists(), isFalse);
+  });
+
+  test(
+    'retained storage counts converted bytes and removes cache-only books',
+    () async {
+      final file = await downloadText();
+      final cache = Directory('${file.parent.path}/.bookfin-mobi/converted');
+      await cache.create(recursive: true);
+      await File('${cache.path}/book.epub').writeAsBytes([7, 8, 9]);
+      await file.delete();
+      expect(downloads.status(fixture.text).unavailableBytes, 3);
+      await downloads.bind(fixture.session(), []);
+      final retained = await downloads.retainedStorage();
+      expect(retained, hasLength(1));
+      expect(retained.single.bytes, 3);
+      await downloads.removeRetained(retained.single);
+      expect(await cache.exists(), isFalse);
+    },
+  );
+
+  test('removal waits for a running native MOBI import and no cache can reappear', () async {
+    final bytes = await File('tool/research/readers/fixtures/mobi6-plain.mobi')
+        .readAsBytes();
+    fixture.textSources = [
+      {...fixture.source('text'), 'Size': bytes.length, 'Container': 'mobi'},
+    ];
+    final source = fixture.text.files.single;
+    String hash(String value) => sha256.convert(utf8.encode(value)).toString();
+    final directory = Directory(
+      '${root.path}/${hash(fixture.session().scope.key)}/${hash(jsonEncode([source.key, source.revision]))}',
+    );
+    await directory.create(recursive: true);
+    final original = await File('${directory.path}/complete')
+        .writeAsBytes(bytes);
+    await File('${directory.path}/record.json').writeAsString(
+      jsonEncode({
+        'key': source.key,
+        'revision': source.revision,
+        'length': bytes.length,
+        'digest': sha256.convert(bytes).toString(),
+        'complete': true,
+        'requested': false,
+      }),
+    );
+    await downloads.bind(fixture.session(), fixture.books);
+    expect(await downloads.localFile(source), original.uri);
+    final started = Completer<void>();
+    final release = Completer<void>();
+    final reader = ReaderSession(
+      downloads: downloads,
+      store: MemoryResume(),
+      load: loadPublication,
+      loadDocument: (uri, source) async {
+        started.complete();
+        await release.future;
+        return loadReadingDocument(uri, source);
+      },
+    );
+    addTearDown(() async {
+      reader.dispose();
+      await reader.flush();
+    });
+    await reader.bind(fixture.session(), fixture.books);
+    final opening = reader.open(fixture.books.single, fixture.text);
+    await Future.any([
+      started.future,
+      opening.then((_) {
+        if (!started.isCompleted) {
+          throw StateError('Import did not start: ${reader.message}');
+        }
+      }),
+    ]);
+    var removed = false;
+    final removal = downloads.remove(fixture.text).then((_) => removed = true);
+    await Future.any([
+      removal,
+      Future<void>.delayed(const Duration(milliseconds: 100)),
+    ]);
+    final removedDuringImport = removed;
+    release.complete();
+    await opening;
+    await removal;
+    expect(removedDuringImport, isFalse);
+    expect(reader.document?.format, 'mobi', reason: reader.message);
+    expect(await original.exists(), isFalse);
+    expect(
+      await Directory('${original.parent.path}/.bookfin-mobi').exists(),
+      isFalse,
+    );
+    var readAgain = false;
+    await downloads.readLocalFile(fixture.text.files.single, (_) async {
+      readAgain = true;
+    });
+    expect(readAgain, isFalse);
+    expect(await downloads.localFile(fixture.text.files.single), isNull);
+  });
+
+  test(
+    'derived storage never counts or removes symbolic-link targets',
+    () async {
+      final original = await downloadText();
+      final outside = await Directory.systemTemp.createTemp(
+        'bookfin-cache-outside-',
+      );
+      addTearDown(() => outside.delete(recursive: true));
+      final target = await File('${outside.path}/private')
+          .writeAsBytes([8, 9, 10, 11]);
+      final cache = Directory('${original.parent.path}/.bookfin-mobi');
+      await cache.create();
+      await File('${cache.path}/book.epub').writeAsBytes([7]);
+      await Link('${cache.path}/external').create(outside.path);
+      await downloads.bind(fixture.session(), []);
+      final retained = (await downloads.retainedStorage()).single;
+      expect(retained.bytes, 7);
+      await downloads.removeRetained(retained);
+      expect(await target.readAsBytes(), [8, 9, 10, 11]);
+      expect(await cache.exists(), isFalse);
+    },
+  );
 
   for (final immediateReturn in [false, true]) {
     test(
@@ -149,48 +283,42 @@ void main() {
     expect(await downloads.localFile(fixture.text.files.single), isNull);
   });
 
-  test(
-    'retained removal survives restart and reselection without transferring again',
-    () async {
-      final file = await downloadText();
-      await downloads.bind(fixture.session(), []);
-      await downloads.removeRetained((await downloads.retainedStorage()).single);
-      downloads.dispose();
-      await downloads.idle;
-      downloads = LocalDownloads(
-        root: root,
-        freeBytes: () async => 1000000,
-        policy: policy,
-      );
-      await downloads.bind(fixture.session(), []);
-      expect(await downloads.retainedStorage(), isEmpty);
-      expect(await file.exists(), isFalse);
-      await downloads.bind(fixture.session(), fixture.books);
-      await downloads.idle;
-      expect(downloads.status(fixture.text).phase, DownloadPhase.none);
-      expect(await downloads.localFile(fixture.text.files.single), isNull);
-      expect(fixture.mediaRequests, ['text']);
-      downloads.checkInvariants();
-    },
-  );
+  test('retained removal survives restart and reselection without transferring again', () async {
+    final file = await downloadText();
+    await downloads.bind(fixture.session(), []);
+    await downloads.removeRetained((await downloads.retainedStorage()).single);
+    downloads.dispose();
+    await downloads.idle;
+    downloads = LocalDownloads(
+      root: root,
+      freeBytes: () async => 1000000,
+      policy: policy,
+    );
+    await downloads.bind(fixture.session(), []);
+    expect(await downloads.retainedStorage(), isEmpty);
+    expect(await file.exists(), isFalse);
+    await downloads.bind(fixture.session(), fixture.books);
+    await downloads.idle;
+    expect(downloads.status(fixture.text).phase, DownloadPhase.none);
+    expect(await downloads.localFile(fixture.text.files.single), isNull);
+    expect(fixture.mediaRequests, ['text']);
+    downloads.checkInvariants();
+  });
 
-  test(
-    'retained removal tolerates a saved file disappearing after confirmation opens',
-    () async {
-      final file = await downloadText();
-      await downloads.bind(fixture.session(), []);
-      final retained = (await downloads.retainedStorage()).single;
-      await file.delete();
-      await downloads.removeRetained(retained);
-      expect(await downloads.retainedStorage(), isEmpty);
-      expect(await File('${file.parent.path}/record.json').exists(), isFalse);
-      await downloads.bind(fixture.session(), fixture.books);
-      expect(await downloads.localFile(fixture.text.files.single), isNull);
-      expect(downloads.status(fixture.text).phase, DownloadPhase.none);
-      expect(fixture.mediaRequests, ['text']);
-      downloads.checkInvariants();
-    },
-  );
+  test('retained removal tolerates a saved file disappearing after confirmation opens', () async {
+    final file = await downloadText();
+    await downloads.bind(fixture.session(), []);
+    final retained = (await downloads.retainedStorage()).single;
+    await file.delete();
+    await downloads.removeRetained(retained);
+    expect(await downloads.retainedStorage(), isEmpty);
+    expect(await File('${file.parent.path}/record.json').exists(), isFalse);
+    await downloads.bind(fixture.session(), fixture.books);
+    expect(await downloads.localFile(fixture.text.files.single), isNull);
+    expect(downloads.status(fixture.text).phase, DownloadPhase.none);
+    expect(fixture.mediaRequests, ['text']);
+    downloads.checkInvariants();
+  });
 
   test('removing one account copy preserves another account copy of the same source', () async {
     final aliceFile = await downloadText();

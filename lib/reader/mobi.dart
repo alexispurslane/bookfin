@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_epub_viewer/publication.dart';
 
 import 'document.dart';
+import '../downloads/derived_files.dart';
 
 Future<void> _imports = Future.value();
 
@@ -26,7 +27,7 @@ Future<EpubDocument> _convert(String path) async {
   }
   final bytes = await original.readAsBytes();
   final digest = sha256.convert(bytes).toString();
-  final cacheRoot = Directory('${original.parent.path}/.bookfin-mobi');
+  final cacheRoot = DerivedBookFiles.mobiDirectory(original);
   final rootType = await FileSystemEntity.type(
     cacheRoot.path,
     followLinks: false,
