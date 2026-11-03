@@ -62,3 +62,13 @@ and exact combined Android acceptance remain pending; ticket stays open.
 **2026-11-03T00:39:14Z**
 
 Android normal-app packaging now succeeds with native MOBI/PDF libraries; separate native notice/source/replacement preparation is under t3-ipk1. Source before final sync R1/R2 remains pre-acceptance. No device use. 398 full Flutter tests pass with one optional plugin skip, SDK checks pass, analysis clean; subsequent host production MOBI importer is checked against interface-compatible modified library. Packaging/evidence milestone follows separately from b81b472. Android format/runtime gates remain open.
+
+## Reviewed source integration
+
+Independent final static review supports the correction stack through 2e108df:
+derived MOBI lifetime/accounting, PDF draw admission, long-page backward entry,
+and short-page visible-address publication. Main integrated the full reviewed
+sync/format stack in 681c168 and separately reviewed packaging preparation in
+6a7fb49/40ee5d4. Ticket-note conflicts retained both histories; no production
+source conflict occurred. Exact combined APK Android corpus acceptance, native
+replacement demonstration and qualified compliance remain open. No closure.

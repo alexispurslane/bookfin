@@ -50,3 +50,10 @@ Independent review corrections F1–F4 now have meaningful red regressions and p
 **2026-11-03T00:43:29Z**
 
 Parent fixes second review R1/R2 on b81b472: all retained saved action values use the downloaded-record validator, with normal format/type decoding failures and no catch of invariant failures; reading refresh rejects an ended account generation across A-to-B-to-A. Both meaningful reds retained. Eleven focused tests and399 full Flutter tests pass (one optional plugin skip), clean analysis and SDK/native checks. Two old storage fixtures now contain complete valid bookmarks. Evidence tool/evidence/sync/20261102/final-boundaries/. No APK/device/plugin rerun or growth/deployment acceptance; independent re-review pending.
+
+## Reviewed source integration
+
+Main merge 681c168 includes all reviewed sync prerequisites and corrections
+through dbc54ed plus reviewed PDF/MOBI corrections through 2e108df. The merge
+preserves both ticket histories. No corrected-build two-device Android result
+is claimed; journal growth t6-t9po and plugin deployment t6-il6y remain open.
