@@ -1,0 +1,46 @@
+building '/nix/store/a3g4p6f066g2igibvai7zd6x3kcw71wp-nix-shell-env.drv'...
+xcrun: error: SDK cannot be located: error: unable to find sdk: 'iphoneos'
+
+
+SDK iphoneos not installed.
+
+xcrun: error: SDK cannot be located: error: unable to find sdk: 'iphonesimulator'
+
+
+SDK iphonesimulator not installed.
+
+00:00 +0: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-6bcb40a5/test/reader/pdf_screen_test.dart
+00:00 +0: (setUpAll)
+00:00 +0: PDF controls reflow real extracted text and keep source-page bookmarks (variant: TargetPlatform.linux)
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: exactly one matching candidate
+  Actual: _ElementPredicateWidgetFinder:<Found 0 widgets with a semantics label named "Original
+source page 1": []>
+   Which: means none were found but one was expected
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-6bcb40a5/test/reader/pdf_screen_test.dart:42:5)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-6bcb40a5/test/reader/pdf_screen_test.dart line 42
+The test description was:
+  PDF controls reflow real extracted text and keep source-page bookmarks (variant:
+  TargetPlatform.linux)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:02 +0 -1: PDF controls reflow real extracted text and keep source-page bookmarks (variant: TargetPlatform.linux) [E]
+  Test failed. See exception logs above.
+  The test description was: PDF controls reflow real extracted text and keep source-page bookmarks (variant: TargetPlatform.linux)
+  
+00:02 +0 -1: (tearDownAll)
+00:02 +0 -1: Some tests failed.
+
+Failing tests:
+  /Users/alexispurslane/.t3/worktrees/bookfin/t3-6bcb40a5/test/reader/pdf_screen_test.dart: PDF controls reflow real extracted text and keep source-page bookmarks (variant: TargetPlatform.linux)

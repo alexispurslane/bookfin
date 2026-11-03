@@ -1,0 +1,38 @@
+xcrun: error: SDK cannot be located: error: unable to find sdk: 'iphoneos'
+
+
+SDK iphoneos not installed.
+
+xcrun: error: SDK cannot be located: error: unable to find sdk: 'iphonesimulator'
+
+
+SDK iphonesimulator not installed.
+
+00:00 +0: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-6bcb40a5/test/reader/mobi_document_test.dart
+00:00 +0: the production importer converts mobi6-plain locally without changing original bytes
+00:00 +0 -1: the production importer converts mobi6-plain locally without changing original bytes [E]
+  FormatException: Unsupported EPUB ZIP directory.
+  package:flutter_epub_viewer/publication.dart 182:5      _unpack
+  package:flutter_epub_viewer/publication.dart 45:25      Publication.admit
+  package:flutter/src/foundation/_isolates_io.dart 23:20  compute.<fn>
+  
+00:00 +0 -1: the production importer converts mobi6-palmdoc locally without changing original bytes
+00:00 +0 -2: the production importer converts mobi6-palmdoc locally without changing original bytes [E]
+  FormatException: Unsupported EPUB ZIP directory.
+  package:flutter_epub_viewer/publication.dart 182:5      _unpack
+  package:flutter_epub_viewer/publication.dart 45:25      Publication.admit
+  package:flutter/src/foundation/_isolates_io.dart 23:20  compute.<fn>
+  
+00:00 +0 -2: the production importer converts pg11-kf8 locally without changing original bytes
+00:00 +0 -3: the production importer converts pg11-kf8 locally without changing original bytes [E]
+  FormatException: Unsupported EPUB ZIP directory.
+  package:flutter_epub_viewer/publication.dart 182:5      _unpack
+  package:flutter_epub_viewer/publication.dart 45:25      Publication.admit
+  package:flutter/src/foundation/_isolates_io.dart 23:20  compute.<fn>
+  
+00:00 +0 -3: Some tests failed.
+
+Failing tests:
+  /Users/alexispurslane/.t3/worktrees/bookfin/t3-6bcb40a5/test/reader/mobi_document_test.dart: the production importer converts mobi6-palmdoc locally without changing original bytes
+  /Users/alexispurslane/.t3/worktrees/bookfin/t3-6bcb40a5/test/reader/mobi_document_test.dart: the production importer converts mobi6-plain locally without changing original bytes
+  /Users/alexispurslane/.t3/worktrees/bookfin/t3-6bcb40a5/test/reader/mobi_document_test.dart: the production importer converts pg11-kf8 locally without changing original bytes

@@ -60,6 +60,7 @@ Future<void> runBookfin({bool gallery = false}) async {
           downloads: downloads,
           store: records.reading,
           load: loadPublication,
+          loadDocument: loadReadingDocument,
         );
   runApp(
     BookfinApp(

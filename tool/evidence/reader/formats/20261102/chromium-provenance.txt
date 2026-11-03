@@ -1,0 +1,2 @@
+Chromium 138.0.7180.0 
+74824549f7b2e428328e207728b3057e77ddb23776a878d5655dbdce3fe8c90b  /Applications/Chromium.app/Contents/MacOS/Chromium

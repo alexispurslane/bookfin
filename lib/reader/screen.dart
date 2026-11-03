@@ -6,6 +6,9 @@ import 'package:flutter_epub_viewer/flutter_epub_viewer.dart';
 import '../playback/playback.dart';
 import '../playback/screen.dart';
 import 'session.dart';
+import 'document.dart';
+import 'pdf.dart';
+import 'pdf_viewport.dart';
 
 class ReaderScreen extends StatefulWidget {
   const ReaderScreen({
@@ -48,6 +51,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
       _viewToken = reader.token;
       final token = reader.token;
       final publication = reader.publication;
+      final document = reader.document;
       final night = Theme.of(context).brightness == Brightness.dark;
       return Scaffold(
         backgroundColor: night
@@ -104,7 +108,19 @@ class _ReaderScreenState extends State<ReaderScreen> {
                 child: Stack(
                   children: [
                     Positioned.fill(
-                      child: !epubViewportSupported
+                      child: document is PdfBook
+                          ? PdfViewport(
+                              key: ValueKey(token),
+                              book: document,
+                              initial: reader.initialAddress as PdfAddress?,
+                              fontSize: MediaQuery.textScalerOf(context)
+                                  .scale(reader.fontSize),
+                              onReady: (navigator, entries) => reader
+                                  .attachDocument(token, navigator, entries),
+                              onAddress: (address) =>
+                                  reader.acceptAddress(token, address),
+                            )
+                          : !epubViewportSupported
                           ? const Center(
                               child: Padding(
                                 padding: EdgeInsets.all(24),
@@ -208,7 +224,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
                               IconButton(
                                 tooltip: 'Smaller text',
                                 onPressed:
-                                    publication == null || reader.fontSize <= 14
+                                    document == null || reader.fontSize <= 14
                                     ? null
                                     : () => unawaited(
                                         reader.setFontSize(reader.fontSize - 2),
@@ -218,7 +234,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
                               IconButton(
                                 tooltip: 'Larger text',
                                 onPressed:
-                                    publication == null || reader.fontSize >= 40
+                                    document == null || reader.fontSize >= 40
                                     ? null
                                     : () => unawaited(
                                         reader.setFontSize(reader.fontSize + 2),
@@ -234,7 +250,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
                               ),
                               IconButton(
                                 tooltip: 'Reading bookmarks',
-                                onPressed: publication == null
+                                onPressed: document == null
                                     ? null
                                     : () => _panel(_BookmarksPanel(reader)),
                                 icon: const Icon(Icons.bookmarks_outlined),
@@ -252,17 +268,17 @@ class _ReaderScreenState extends State<ReaderScreen> {
                               ),
                             ],
                           ),
-                          if (reader.visibleLocation?.page != null)
+                          if (reader.visibleAddress?.page != null)
                             Padding(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 16,
                               ),
                               child: LinearProgressIndicator(
                                 value:
-                                    reader.visibleLocation!.page! /
-                                    reader.visibleLocation!.pages!,
+                                    reader.visibleAddress!.page! /
+                                    reader.visibleAddress!.pages!,
                                 semanticsLabel:
-                                    'Current document page progress. Page ${reader.visibleLocation!.page} of ${reader.visibleLocation!.pages}',
+                                    'Current document page progress. Page ${reader.visibleAddress!.page} of ${reader.visibleAddress!.pages}',
                               ),
                             ),
                           Row(
@@ -276,7 +292,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
                               ),
                               Expanded(
                                 child: Text(
-                                  '${reader.visibleLocation?.chapter ?? 'Current chapter unavailable'} · ${reader.visibleLocation?.page == null ? 'Page progress unavailable' : 'Page ${reader.visibleLocation!.page} of ${reader.visibleLocation!.pages}'}',
+                                  '${reader.visibleAddress?.chapter ?? 'Current chapter unavailable'} · ${reader.visibleAddress?.page == null ? 'Page progress unavailable' : 'Page ${reader.visibleAddress!.page} of ${reader.visibleAddress!.pages}'}',
                                   textAlign: TextAlign.center,
                                   style: Theme.of(context).textTheme.bodySmall,
                                 ),
