@@ -1,5 +1,6 @@
 {
   "scope": "Evidence consistency checks, not coverage, mutation testing, a second Android client, or complete acceptance",
+  "byteAccounting": "Sum of owned file lengths; not filesystem allocation or host/device free-space measurement",
   "priorActionsRetainedUnchanged": 7,
   "allRetainedActions": 44,
   "ownedRetainedActions": 37,

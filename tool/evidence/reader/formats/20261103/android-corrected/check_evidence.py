@@ -62,6 +62,7 @@ server_hashes = {entry['payloadSha256'] for entry in plugin['objects']}
 assert server_hashes <= local_hashes
 result = {
     'scope': 'Evidence consistency checks, not coverage, mutation testing, a second Android client, or complete acceptance',
+    'byteAccounting': 'Sum of owned file lengths; not filesystem allocation or host/device free-space measurement',
     'priorActionsRetainedUnchanged': len(baseline['allRetainedPayloadHashes']),
     'allRetainedActions': len(final['allRetainedPayloadHashes']),
     'ownedRetainedActions': len(final['tables']['record_actions']),

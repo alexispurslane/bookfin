@@ -171,8 +171,9 @@ before filling. No mutation is queued behind another device action.
 
 - All seven owned downloads are removed through normal confirmation dialogs.
   The app reports no downloads and no retained files. Private readback finds
-  zero owned download bytes. Cleanup reclaims 748,449 bytes, including original
-  files, derived files and manifests.
+  zero owned download bytes. Cleanup removes 748,449 bytes, including original
+  files, derived files and manifests. This is the sum of file lengths, not a
+  filesystem-block or free-space measurement.
 - The owned account signs out. No user record is deleted. All seven previous
   action payloads survive unchanged, together with the 37 new synthetic actions.
   The 28 pending synthetic actions remain retained, not silently discarded.
