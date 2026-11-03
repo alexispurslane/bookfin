@@ -76,3 +76,7 @@ Fresh attempt at756ae5f did not reach playback or credential setup. A malformed 
 **2026-11-02T14:13:50Z**
 
 Current-main normal APK82faf07d reached downloaded one-file M4B native PLAYING at24408ms, Pause at displayed00:49 and restored selection without autoplay after process restart. Real observer recorded one start and eight progress HTTP204 responses. No multi-file/offline/lock-screen/interrupt/reconnect or full-sync acceptance in this attempt. Later tool retry failure stopped acceptance; own cleanup complete. Evidence docs/evidence/playback/current-main-android.md. No source change, suite rerun or closure.
+
+**2026-11-03T00:00:39Z**
+
+Exclusive Android lane from1f1b1c6 verified existing normal APK by exact installed readback, but stopped before sign-in after field-focus refusal and worker expired-reference error. No notification/lock-screen/interruption or replacement case advanced. Prior completed listening cases not rerun. Cleanup complete; see docs/evidence/playback/android-replacement-native-attempt.md. No production change, new product defect, hardening or closure.

@@ -1,0 +1,54 @@
+{
+  "date": "2026-11-02",
+  "base": "1f1b1c6",
+  "runtimeSource": "17c9e6bf175a5586566441183b8e8ed19534c1b6",
+  "productionSourceComparison": "no differences between runtimeSource and base",
+  "package": "dev.bookfin.bookfin",
+  "apkSha256": "8e4f386e79a0446a9ae2c51f0f157d07d9953b4aa4cf5f23ed3c3957b5be534b",
+  "apkBytes": 100151103,
+  "installedReadbackMatchesPriorBuild": true,
+  "newBuildOrInstall": false,
+  "host": "local",
+  "device": "emulator-5554",
+  "session": "t3-b9718bd16302bb4fb7b69f4f",
+  "initialSignedOut": true,
+  "initialPid": 11695,
+  "errors": [
+    {
+      "at": "2026-11-02T23:58:01.879Z",
+      "command": "fill server field",
+      "diagnosticId": "mvzx5wuv-3aa4bb0a",
+      "message": "Field focus was refused",
+      "advice": "Retry with --debug and inspect diagnostics log for details."
+    },
+    {
+      "at": "2026-11-02T23:58:02.324Z",
+      "command": "fill username field",
+      "diagnosticId": "mvzx5x78-343cb8b4",
+      "message": "Ref @e6 belongs to an expired ref frame — a device action since the snapshot invalidated it",
+      "cause": "Worker reused a reference after the first failed device action."
+    }
+  ],
+  "advisedDebugRetryPerformed": false,
+  "stoppedAfterRepeatedFailure": true,
+  "signInOrPasswordAction": false,
+  "requestedAcceptanceCasesObserved": [],
+  "productionBehaviorChanged": false,
+  "cleanup": {
+    "namedCloseBeforeRelease": "Closed: t3-b9718bd16302bb4fb7b69f4f",
+    "pidAfterNamedClose": null,
+    "ownDownloadCreated": false,
+    "reverseRoutesAfterRemoval": [],
+    "fontScale": "1.0",
+    "airplaneModeOn": "0",
+    "wifiOn": "1",
+    "enabledAccessibilityServices": "",
+    "settingsActionsPerformed": false,
+    "jellyfinPid": 54005,
+    "jellyfinExit": 0,
+    "observerPid": 55108,
+    "observerExit": 143,
+    "deviceReleased": true,
+    "shutdown": false
+  }
+}

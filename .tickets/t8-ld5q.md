@@ -38,3 +38,11 @@ Fresh authorized current-main APK82faf07d captured required sign-in/library/down
 **2026-11-02T18:52:37Z**
 
 Additional validation from ac6a247 reran the21 existing replacement tests within154 focused and310 full passing app tests. Android work prioritized missing History Pause, grouped slider/mini-player Undo, bookmark deletion and unavailable/retained-download lifecycle. Only an owned downloaded copy was corrupted; original Jellyfin source bytes never changed. Therefore replacement confirmation/cancel and original-record separation remain unobserved on Android. Evidence docs/evidence/playback/remaining-acceptance-android.md. No production change, new defect, closure or claim that host tests establish runtime replacement acceptance.
+
+**2026-11-02T23:56:37Z**
+
+Exclusive Android acceptance worker starts from parent1f1b1c6. Own new bindinglocal/emulator-5554 after prior release; no production changes, children, coverage or mutation. Primary replacement confirmation/cancel, retained-record restart; then native listening gates and bounded real-Jellyfin recovery if feasible. PriorPID11695 is not claimed stopped. Parent owns integration/closure.
+
+**2026-11-03T00:00:39Z**
+
+Acceptance from parent1f1b1c6 verified runtime-source equality with17c9e6b and installed APK SHA2568e4f386e79a0446a9ae2c51f0f157d07d9953b4aa4cf5f23ed3c3957b5be534b. Stopped before sign-in: bound server fill refused focus; worker then incorrectly reused an expired username reference in the same shell command. No advised debug retry occurred before that second error. No replacement, record-restart, notification, interruption, or download-recovery acceptance advanced. Evidence docs/evidence/playback/android-replacement-native-attempt.md. No production defect/change, children, hardening or closure. Cleanup complete; renewed Android authorization needed after stop.
