@@ -235,3 +235,16 @@ Recognized text belongs to the same source edition and retains source-page posit
 The user clarified that the gallery previews the design language, not the first usable app layout. Production has one navigation system, bottom navigation fixed to the screen edge, and no development labels or explanatory filler. Reading is immersive, with controls hidden during reading and available on tap. Preserve the approved information organization and cream/sepia visual style.
 
 Catalog implementation now proceeds from the integrated appearance foundation without waiting for city selection or full extra-record storage proof. boo-p58t still gates sync. boo-2cgp retains ordinary-user isolation, denied-download, multi-file ordering and ebook-pairing integration acceptance and gates release hardening after catalog/download work. A disposable-server prerequisite will be attached when ta-qobz is integrated with the pending live research corrections.
+
+## Retained sync updates — November 3, 2026 decision
+
+The user selected incremental persistence while retaining every internal update.
+The existing personal-record owner persists changed actions and derived record
+state transactionally, instead of rewriting the full retained action history
+for each save. All existing immutable updates remain retained, including
+superseded listening positions. History, bookmarks, unsynced actions, unresolved
+conflicts, deletion barriers and causal gaps retain their existing meaning.
+Keep the current action format and plugin API. Do not implement checkpoints,
+compaction, coalescing or automatic expiry. Storage continues growing by design;
+this choice reduces repeated save work and does not promise fixed lifetime
+storage. Track implementation and migration proof in t6-t9po.

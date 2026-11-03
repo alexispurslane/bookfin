@@ -9,9 +9,9 @@ priority: 2
 assignee: Alexis Purslane
 parent: boo-fs0n
 ---
-# Bound production sync journal growth without discarding unsynced records
+# Save personal-record changes incrementally while retaining every update
 
-Production personal-record sync retains immutable operations, including superseded resume updates. Add a durable equivalent checkpoint or safely staged unsent resume representation, with causal-gap/retry/deletion/restart tests, before claiming lifetime storage bounds. Do not expire listening history. Coordinate this with boo-3oq0; no competing hardening job.
+User-selected scope: store personal-record changes incrementally under the existing record owner, retaining every immutable action, including superseded resume updates. Avoid parsing/replaying and rewriting the entire retained action history for each ordinary save or acknowledgment. Keep current records, pending status and causal coverage coherent in durable transactions. Preserve the current server API/action format and all existing sync protections. No checkpoints, compaction, coalescing, automatic expiry or fixed lifetime storage claim. Coordinate with boo-3oq0; no competing hardening job.
 
 
 ## Notes
@@ -27,3 +27,13 @@ change. Parent will ask whether to retain all internal position actions with
 incremental writes, or also summarize safely acknowledged superseded position
 actions through a versioned protocol. Both preserve history, bookmarks,
 unsynced actions, deletion barriers, causal gaps and unresolved conflicts.
+
+## User decision — November 3, 2026
+
+The user selected Design A: reduce save work only, write changes individually,
+and retain every internal update. Continued storage growth is an accepted cost.
+This supersedes the original checkpoint-oriented ticket description and the
+unselected alternatives in the retained investigation. Implement migration,
+transaction failure/retry, restart, causal-gap, conflict, deletion and account
+isolation regressions. Measure ordinary saves and acknowledgments against the
+retained-history profiles without claiming an Android latency bound.
