@@ -1,0 +1,348 @@
+{
+  "case": "nist-scrolled",
+  "installedApkSha256": "f062456644d1c6e8829b289d130e6047e582eb7fd67b139b1b7263be926615e7",
+  "integrity": "ok",
+  "source": "44d53afbe491f28cec0205584ba7f023ec8a10b6",
+  "allRetainedPayloadHashes": [
+    "06ad3ee6eb2e88b9ad701c2a8c18e5cee5f8eec820fc8f67eddd73a669ae81b5",
+    "1b5c1709e85cb2527655d89aa5a899f3b23f19638278b841a47fbac73579957b",
+    "4395577a18febd0166ce8125f835675106dabd53f06cd3afca3556c70fa73148",
+    "6447eeb799cd2f6ccba7d7e0e4fec93d4880e37108c80efc13943862af1b1a67",
+    "7f479121ec566d667786d15d29887998c20277dd22c69736a10c5811e6790881",
+    "a9613d595f4c2a4337431f3cd7ba9b875d28c877b2d7c16e2feea416fcee3849",
+    "b205595e19d83f259809c89f00d85c93f652584b97fca2d0985cae3d3070c121",
+    "b423d731f40fd4cdb93b2b7c3f9b5c3b3cbbdba2f386a64d762a51be89a4dbc3",
+    "b995c4e7f6d49c616f6b990c27136b093a4ed5d148d3fd1d65767c34678469fb",
+    "becd5a84d51ba1c383718eca5a8d0e84fa03fc0233550fa754292ce22aaf997d",
+    "bfb099848d235da6d6776187ca5c10b9c156c3bfa85c5473a3363886aac825a8",
+    "c7b39b4209f44fe212dc6cd5813e0e963c51d72721789087e9f42042b8140750",
+    "d99df630c7462e3afa9acc1d0d9e3b50c3ca613b225695d7ec91d086cb11ba51",
+    "e1bc70a3a5390f52426b9ae3bba637143da31bfef6228de2a3a2746c7730834b",
+    "e7d8a42e88484b80ff4d1c4f2b793165d6b6f59d2a2eb7417c53faf5e4be7dee",
+    "efd7d1fd3f27cc4fe10cbb6f216059d6370aea88a0f63ca81bfda0e471e95c90",
+    "f7232f7e7fa08de1a6b186958898d68296a88e9dcc4ed85f53105599e3ccc7a2",
+    "f78cd750ea78f19319664bdaf1e96923fd60908a350eef09f0303ce49998ebe7",
+    "fd20ee053986b02df8e4624bbf717c3af0c81e5cc247c257cc22b8c019a7ed0f"
+  ],
+  "tables": {
+    "accounts": [],
+    "record_accounts": [
+      {
+        "account": "owned-corrected-format-account",
+        "replica": "d5d25281004bf85bacba67d9fc1873fb7d45d3dd",
+        "cursor": 2,
+        "metadata": {
+          "version": 3,
+          "reading": {
+            "version": 1,
+            "fontSize": 20.0
+          }
+        }
+      }
+    ],
+    "record_actions": [
+      {
+        "account": "owned-corrected-format-account",
+        "identity": "action.d5d25281004bf85bacba67d9fc1873fb7d45d3dd.1",
+        "payload": {
+          "version": 1,
+          "account": "owned-corrected-format-account",
+          "replica": "d5d25281004bf85bacba67d9fc1873fb7d45d3dd",
+          "sequence": 1,
+          "context": {},
+          "record": "[\"reading\",\"resumes\",\"[\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"[null,\\\\\\\"3325a637b5e313a1d8ba378d92362636\\\\\\\",null,null,70000]\\\"]\"]",
+          "value": {
+            "edition": "a187a7a29eaffbfee5b54f1694ef99dd:",
+            "source": "a187a7a29eaffbfee5b54f1694ef99dd:",
+            "revision": "[null,\"3325a637b5e313a1d8ba378d92362636\",null,null,70000]",
+            "anchor": "{\"version\":1,\"processed\":\"4956206bede66b49f0f36e2d13086a13872e43f79b86c1ce280005e1352034f7\",\"original\":\"7b0c1a9fdfc67218b8ba2098f448c100c27070db91736b3c87fed63bfa21d418\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":0,\"quote\":\"The NIST Definition of Cloud \\r\\nComputing\\r\\nRecommendations of the National Institute \\r\\nof Standards and Technology\\r\\nPeter Mell\\r\\nTimothy Grance\\r\\nSpecial Publicati\"}"
+          },
+          "preserve": []
+        },
+        "pending": 0,
+        "payloadSha256": "4395577a18febd0166ce8125f835675106dabd53f06cd3afca3556c70fa73148"
+      },
+      {
+        "account": "owned-corrected-format-account",
+        "identity": "action.d5d25281004bf85bacba67d9fc1873fb7d45d3dd.10",
+        "payload": {
+          "version": 1,
+          "account": "owned-corrected-format-account",
+          "replica": "d5d25281004bf85bacba67d9fc1873fb7d45d3dd",
+          "sequence": 10,
+          "context": {
+            "d5d25281004bf85bacba67d9fc1873fb7d45d3dd": 9
+          },
+          "record": "[\"reading\",\"resumes\",\"[\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"[null,\\\\\\\"3325a637b5e313a1d8ba378d92362636\\\\\\\",null,null,70000]\\\"]\"]",
+          "value": {
+            "edition": "a187a7a29eaffbfee5b54f1694ef99dd:",
+            "source": "a187a7a29eaffbfee5b54f1694ef99dd:",
+            "revision": "[null,\"3325a637b5e313a1d8ba378d92362636\",null,null,70000]",
+            "anchor": "{\"version\":1,\"processed\":\"4956206bede66b49f0f36e2d13086a13872e43f79b86c1ce280005e1352034f7\",\"original\":\"7b0c1a9fdfc67218b8ba2098f448c100c27070db91736b3c87fed63bfa21d418\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":5,\"character\":492,\"quote\":\"to national security systems. This guideline is consistent with the requirements \\r\\nof the Office of Management and Budget (OMB) Circular A-130, Section 8b(3), \u201c\"}"
+          },
+          "preserve": []
+        },
+        "pending": 1,
+        "payloadSha256": "c7b39b4209f44fe212dc6cd5813e0e963c51d72721789087e9f42042b8140750"
+      },
+      {
+        "account": "owned-corrected-format-account",
+        "identity": "action.d5d25281004bf85bacba67d9fc1873fb7d45d3dd.11",
+        "payload": {
+          "version": 1,
+          "account": "owned-corrected-format-account",
+          "replica": "d5d25281004bf85bacba67d9fc1873fb7d45d3dd",
+          "sequence": 11,
+          "context": {
+            "d5d25281004bf85bacba67d9fc1873fb7d45d3dd": 10
+          },
+          "record": "[\"reading\",\"resumes\",\"[\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"[null,\\\\\\\"3325a637b5e313a1d8ba378d92362636\\\\\\\",null,null,70000]\\\"]\"]",
+          "value": {
+            "edition": "a187a7a29eaffbfee5b54f1694ef99dd:",
+            "source": "a187a7a29eaffbfee5b54f1694ef99dd:",
+            "revision": "[null,\"3325a637b5e313a1d8ba378d92362636\",null,null,70000]",
+            "anchor": "{\"version\":1,\"processed\":\"4956206bede66b49f0f36e2d13086a13872e43f79b86c1ce280005e1352034f7\",\"original\":\"7b0c1a9fdfc67218b8ba2098f448c100c27070db91736b3c87fed63bfa21d418\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":5,\"character\":560,\"quote\":\"requirements \\r\\nof the Office of Management and Budget (OMB) Circular A-130, Section 8b(3), \u201cSecuring Agency \\r\\nInformation Systems,\u201d as analyzed in A-130, Append\"}"
+          },
+          "preserve": []
+        },
+        "pending": 1,
+        "payloadSha256": "1b5c1709e85cb2527655d89aa5a899f3b23f19638278b841a47fbac73579957b"
+      },
+      {
+        "account": "owned-corrected-format-account",
+        "identity": "action.d5d25281004bf85bacba67d9fc1873fb7d45d3dd.12",
+        "payload": {
+          "version": 1,
+          "account": "owned-corrected-format-account",
+          "replica": "d5d25281004bf85bacba67d9fc1873fb7d45d3dd",
+          "sequence": 12,
+          "context": {
+            "d5d25281004bf85bacba67d9fc1873fb7d45d3dd": 11
+          },
+          "record": "[\"reading\",\"resumes\",\"[\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"[null,\\\\\\\"3325a637b5e313a1d8ba378d92362636\\\\\\\",null,null,70000]\\\"]\"]",
+          "value": {
+            "edition": "a187a7a29eaffbfee5b54f1694ef99dd:",
+            "source": "a187a7a29eaffbfee5b54f1694ef99dd:",
+            "revision": "[null,\"3325a637b5e313a1d8ba378d92362636\",null,null,70000]",
+            "anchor": "{\"version\":1,\"processed\":\"4956206bede66b49f0f36e2d13086a13872e43f79b86c1ce280005e1352034f7\",\"original\":\"7b0c1a9fdfc67218b8ba2098f448c100c27070db91736b3c87fed63bfa21d418\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":5,\"character\":592,\"quote\":\"Management and Budget (OMB) Circular A-130, Section 8b(3), \u201cSecuring Agency \\r\\nInformation Systems,\u201d as analyzed in A-130, Appendix IV: Analysis of Key Sections.\"}"
+          },
+          "preserve": []
+        },
+        "pending": 1,
+        "payloadSha256": "f78cd750ea78f19319664bdaf1e96923fd60908a350eef09f0303ce49998ebe7"
+      },
+      {
+        "account": "owned-corrected-format-account",
+        "identity": "action.d5d25281004bf85bacba67d9fc1873fb7d45d3dd.2",
+        "payload": {
+          "version": 1,
+          "account": "owned-corrected-format-account",
+          "replica": "d5d25281004bf85bacba67d9fc1873fb7d45d3dd",
+          "sequence": 2,
+          "context": {
+            "d5d25281004bf85bacba67d9fc1873fb7d45d3dd": 1
+          },
+          "record": "[\"reading\",\"resumes\",\"[\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"[null,\\\\\\\"3325a637b5e313a1d8ba378d92362636\\\\\\\",null,null,70000]\\\"]\"]",
+          "value": {
+            "edition": "a187a7a29eaffbfee5b54f1694ef99dd:",
+            "source": "a187a7a29eaffbfee5b54f1694ef99dd:",
+            "revision": "[null,\"3325a637b5e313a1d8ba378d92362636\",null,null,70000]",
+            "anchor": "{\"version\":1,\"processed\":\"4956206bede66b49f0f36e2d13086a13872e43f79b86c1ce280005e1352034f7\",\"original\":\"7b0c1a9fdfc67218b8ba2098f448c100c27070db91736b3c87fed63bfa21d418\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":5,\"character\":0,\"quote\":\"1\\r\\n1. Introduction\\r\\n1.1 Authority\\r\\nThe National Institute of Standards and Technology (NIST) developed this document in furtherance of its \\r\\nstatutory responsib\"}"
+          },
+          "preserve": []
+        },
+        "pending": 0,
+        "payloadSha256": "fd20ee053986b02df8e4624bbf717c3af0c81e5cc247c257cc22b8c019a7ed0f"
+      },
+      {
+        "account": "owned-corrected-format-account",
+        "identity": "action.d5d25281004bf85bacba67d9fc1873fb7d45d3dd.3",
+        "payload": {
+          "version": 1,
+          "account": "owned-corrected-format-account",
+          "replica": "d5d25281004bf85bacba67d9fc1873fb7d45d3dd",
+          "sequence": 3,
+          "context": {
+            "d5d25281004bf85bacba67d9fc1873fb7d45d3dd": 2
+          },
+          "record": "[\"reading\",\"resumes\",\"[\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"[null,\\\\\\\"3325a637b5e313a1d8ba378d92362636\\\\\\\",null,null,70000]\\\"]\"]",
+          "value": {
+            "edition": "a187a7a29eaffbfee5b54f1694ef99dd:",
+            "source": "a187a7a29eaffbfee5b54f1694ef99dd:",
+            "revision": "[null,\"3325a637b5e313a1d8ba378d92362636\",null,null,70000]",
+            "anchor": "{\"version\":1,\"processed\":\"4956206bede66b49f0f36e2d13086a13872e43f79b86c1ce280005e1352034f7\",\"original\":\"7b0c1a9fdfc67218b8ba2098f448c100c27070db91736b3c87fed63bfa21d418\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":5,\"character\":75,\"quote\":\"Technology (NIST) developed this document in furtherance of its \\r\\nstatutory responsibilities under the Federal Information Security Management Act (FISMA) of 20\"}"
+          },
+          "preserve": []
+        },
+        "pending": 0,
+        "payloadSha256": "7f479121ec566d667786d15d29887998c20277dd22c69736a10c5811e6790881"
+      },
+      {
+        "account": "owned-corrected-format-account",
+        "identity": "action.d5d25281004bf85bacba67d9fc1873fb7d45d3dd.4",
+        "payload": {
+          "version": 1,
+          "account": "owned-corrected-format-account",
+          "replica": "d5d25281004bf85bacba67d9fc1873fb7d45d3dd",
+          "sequence": 4,
+          "context": {
+            "d5d25281004bf85bacba67d9fc1873fb7d45d3dd": 3
+          },
+          "record": "[\"reading\",\"resumes\",\"[\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"[null,\\\\\\\"3325a637b5e313a1d8ba378d92362636\\\\\\\",null,null,70000]\\\"]\"]",
+          "value": {
+            "edition": "a187a7a29eaffbfee5b54f1694ef99dd:",
+            "source": "a187a7a29eaffbfee5b54f1694ef99dd:",
+            "revision": "[null,\"3325a637b5e313a1d8ba378d92362636\",null,null,70000]",
+            "anchor": "{\"version\":1,\"processed\":\"4956206bede66b49f0f36e2d13086a13872e43f79b86c1ce280005e1352034f7\",\"original\":\"7b0c1a9fdfc67218b8ba2098f448c100c27070db91736b3c87fed63bfa21d418\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":5,\"character\":151,\"quote\":\"responsibilities under the Federal Information Security Management Act (FISMA) of 2002, \\r\\nPublic Law 107-347. \\r\\nNIST is responsible for developing standards and\"}"
+          },
+          "preserve": []
+        },
+        "pending": 0,
+        "payloadSha256": "f7232f7e7fa08de1a6b186958898d68296a88e9dcc4ed85f53105599e3ccc7a2"
+      },
+      {
+        "account": "owned-corrected-format-account",
+        "identity": "action.d5d25281004bf85bacba67d9fc1873fb7d45d3dd.5",
+        "payload": {
+          "version": 1,
+          "account": "owned-corrected-format-account",
+          "replica": "d5d25281004bf85bacba67d9fc1873fb7d45d3dd",
+          "sequence": 5,
+          "context": {
+            "d5d25281004bf85bacba67d9fc1873fb7d45d3dd": 4
+          },
+          "record": "[\"reading\",\"resumes\",\"[\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"[null,\\\\\\\"3325a637b5e313a1d8ba378d92362636\\\\\\\",null,null,70000]\\\"]\"]",
+          "value": {
+            "edition": "a187a7a29eaffbfee5b54f1694ef99dd:",
+            "source": "a187a7a29eaffbfee5b54f1694ef99dd:",
+            "revision": "[null,\"3325a637b5e313a1d8ba378d92362636\",null,null,70000]",
+            "anchor": "{\"version\":1,\"processed\":\"4956206bede66b49f0f36e2d13086a13872e43f79b86c1ce280005e1352034f7\",\"original\":\"7b0c1a9fdfc67218b8ba2098f448c100c27070db91736b3c87fed63bfa21d418\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":5,\"character\":186,\"quote\":\"Information Security Management Act (FISMA) of 2002, \\r\\nPublic Law 107-347. \\r\\nNIST is responsible for developing standards and guidelines, including minimum requ\"}"
+          },
+          "preserve": []
+        },
+        "pending": 0,
+        "payloadSha256": "a9613d595f4c2a4337431f3cd7ba9b875d28c877b2d7c16e2feea416fcee3849"
+      },
+      {
+        "account": "owned-corrected-format-account",
+        "identity": "action.d5d25281004bf85bacba67d9fc1873fb7d45d3dd.6",
+        "payload": {
+          "version": 1,
+          "account": "owned-corrected-format-account",
+          "replica": "d5d25281004bf85bacba67d9fc1873fb7d45d3dd",
+          "sequence": 6,
+          "context": {
+            "d5d25281004bf85bacba67d9fc1873fb7d45d3dd": 5
+          },
+          "record": "[\"reading\",\"resumes\",\"[\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"[null,\\\\\\\"3325a637b5e313a1d8ba378d92362636\\\\\\\",null,null,70000]\\\"]\"]",
+          "value": {
+            "edition": "a187a7a29eaffbfee5b54f1694ef99dd:",
+            "source": "a187a7a29eaffbfee5b54f1694ef99dd:",
+            "revision": "[null,\"3325a637b5e313a1d8ba378d92362636\",null,null,70000]",
+            "anchor": "{\"version\":1,\"processed\":\"4956206bede66b49f0f36e2d13086a13872e43f79b86c1ce280005e1352034f7\",\"original\":\"7b0c1a9fdfc67218b8ba2098f448c100c27070db91736b3c87fed63bfa21d418\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":5,\"character\":222,\"quote\":\"(FISMA) of 2002, \\r\\nPublic Law 107-347. \\r\\nNIST is responsible for developing standards and guidelines, including minimum requirements, for \\r\\nproviding adequate i\"}"
+          },
+          "preserve": []
+        },
+        "pending": 0,
+        "payloadSha256": "b995c4e7f6d49c616f6b990c27136b093a4ed5d148d3fd1d65767c34678469fb"
+      },
+      {
+        "account": "owned-corrected-format-account",
+        "identity": "action.d5d25281004bf85bacba67d9fc1873fb7d45d3dd.7",
+        "payload": {
+          "version": 1,
+          "account": "owned-corrected-format-account",
+          "replica": "d5d25281004bf85bacba67d9fc1873fb7d45d3dd",
+          "sequence": 7,
+          "context": {
+            "d5d25281004bf85bacba67d9fc1873fb7d45d3dd": 6
+          },
+          "record": "[\"reading\",\"resumes\",\"[\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"[null,\\\\\\\"3325a637b5e313a1d8ba378d92362636\\\\\\\",null,null,70000]\\\"]\"]",
+          "value": {
+            "edition": "a187a7a29eaffbfee5b54f1694ef99dd:",
+            "source": "a187a7a29eaffbfee5b54f1694ef99dd:",
+            "revision": "[null,\"3325a637b5e313a1d8ba378d92362636\",null,null,70000]",
+            "anchor": "{\"version\":1,\"processed\":\"4956206bede66b49f0f36e2d13086a13872e43f79b86c1ce280005e1352034f7\",\"original\":\"7b0c1a9fdfc67218b8ba2098f448c100c27070db91736b3c87fed63bfa21d418\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":5,\"character\":298,\"quote\":\"standards and guidelines, including minimum requirements, for \\r\\nproviding adequate information security for all agency operations and assets; but such standards\"}"
+          },
+          "preserve": []
+        },
+        "pending": 0,
+        "payloadSha256": "bfb099848d235da6d6776187ca5c10b9c156c3bfa85c5473a3363886aac825a8"
+      },
+      {
+        "account": "owned-corrected-format-account",
+        "identity": "action.d5d25281004bf85bacba67d9fc1873fb7d45d3dd.8",
+        "payload": {
+          "version": 1,
+          "account": "owned-corrected-format-account",
+          "replica": "d5d25281004bf85bacba67d9fc1873fb7d45d3dd",
+          "sequence": 8,
+          "context": {
+            "d5d25281004bf85bacba67d9fc1873fb7d45d3dd": 7
+          },
+          "record": "[\"reading\",\"resumes\",\"[\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"[null,\\\\\\\"3325a637b5e313a1d8ba378d92362636\\\\\\\",null,null,70000]\\\"]\"]",
+          "value": {
+            "edition": "a187a7a29eaffbfee5b54f1694ef99dd:",
+            "source": "a187a7a29eaffbfee5b54f1694ef99dd:",
+            "revision": "[null,\"3325a637b5e313a1d8ba378d92362636\",null,null,70000]",
+            "anchor": "{\"version\":1,\"processed\":\"4956206bede66b49f0f36e2d13086a13872e43f79b86c1ce280005e1352034f7\",\"original\":\"7b0c1a9fdfc67218b8ba2098f448c100c27070db91736b3c87fed63bfa21d418\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":5,\"character\":334,\"quote\":\"minimum requirements, for \\r\\nproviding adequate information security for all agency operations and assets; but such standards and \\r\\nguidelines shall not apply to\"}"
+          },
+          "preserve": []
+        },
+        "pending": 0,
+        "payloadSha256": "efd7d1fd3f27cc4fe10cbb6f216059d6370aea88a0f63ca81bfda0e471e95c90"
+      },
+      {
+        "account": "owned-corrected-format-account",
+        "identity": "action.d5d25281004bf85bacba67d9fc1873fb7d45d3dd.9",
+        "payload": {
+          "version": 1,
+          "account": "owned-corrected-format-account",
+          "replica": "d5d25281004bf85bacba67d9fc1873fb7d45d3dd",
+          "sequence": 9,
+          "context": {
+            "d5d25281004bf85bacba67d9fc1873fb7d45d3dd": 8
+          },
+          "record": "[\"reading\",\"resumes\",\"[\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"[null,\\\\\\\"3325a637b5e313a1d8ba378d92362636\\\\\\\",null,null,70000]\\\"]\"]",
+          "value": {
+            "edition": "a187a7a29eaffbfee5b54f1694ef99dd:",
+            "source": "a187a7a29eaffbfee5b54f1694ef99dd:",
+            "revision": "[null,\"3325a637b5e313a1d8ba378d92362636\",null,null,70000]",
+            "anchor": "{\"version\":1,\"processed\":\"4956206bede66b49f0f36e2d13086a13872e43f79b86c1ce280005e1352034f7\",\"original\":\"7b0c1a9fdfc67218b8ba2098f448c100c27070db91736b3c87fed63bfa21d418\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":5,\"character\":372,\"quote\":\"adequate information security for all agency operations and assets; but such standards and \\r\\nguidelines shall not apply to national security systems. This guide\"}"
+          },
+          "preserve": []
+        },
+        "pending": 0,
+        "payloadSha256": "d99df630c7462e3afa9acc1d0d9e3b50c3ca613b225695d7ec91d086cb11ba51"
+      }
+    ],
+    "record_versions": [
+      {
+        "account": "owned-corrected-format-account",
+        "record": "[\"reading\",\"resumes\",\"[\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"[null,\\\\\\\"3325a637b5e313a1d8ba378d92362636\\\\\\\",null,null,70000]\\\"]\"]",
+        "identities": [
+          "action.d5d25281004bf85bacba67d9fc1873fb7d45d3dd.12"
+        ]
+      }
+    ],
+    "record_coverage": [
+      {
+        "account": "owned-corrected-format-account",
+        "replica": "d5d25281004bf85bacba67d9fc1873fb7d45d3dd",
+        "sequence": 12
+      }
+    ]
+  },
+  "ownedFiles": [
+    {
+      "name": "./6e77037279b3ed8815e61412910550407ddb105ca44648ada6b7c14173375256/record.json",
+      "bytes": 266,
+      "sha256": "0745ef1a78ddc71a3d973c27a8a1ff47fff18a48e9cf699b2bce958ad405355b"
+    },
+    {
+      "name": "./6e77037279b3ed8815e61412910550407ddb105ca44648ada6b7c14173375256/complete",
+      "bytes": 85781,
+      "sha256": "7b0c1a9fdfc67218b8ba2098f448c100c27070db91736b3c87fed63bfa21d418"
+    }
+  ]
+}

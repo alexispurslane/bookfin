@@ -1,0 +1,13 @@
+- STREAM_MUSIC:
+   Muted: true
+   Muted Internally: false
+   Min: 0
+   Max: 15
+   streamVolume:0
+   Current: 2 (speaker): 5, 40000000 (default): 5
+   Devices: speaker(2)
+   Volume Group: AUDIO_STREAM_MUSIC
+0
+1
+1
+host-17 tcp:7365 tcp:7364

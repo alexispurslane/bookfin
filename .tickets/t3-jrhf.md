@@ -41,3 +41,7 @@ integration with no actionable finding. The corrected normal APK and matching
 source are prepared from exactly 44d53af; verification records are under
 missing-container/android/. Prior 4ae8c6c rejection remains valid baseline
 evidence. Corrected runtime acceptance and ticket closure are still pending.
+
+**2026-11-03T15:44:19Z**
+
+Corrected exact 44d53af normal APK now opens genuine ordinary Jellyfin Book downloads with neither Container nor MediaSources: intact NIST PDF, plain MOBI6, PalmDOC MOBI6 and pinned Alice KF8. Installed APK hashes verified. No forged DTO/private-state substitute. Finite acceptance report docs/evidence/reader/android-corrected-formats-20261103.md. Distinct visible KF8 place failure t2-42og and pending sync t2-00a4 remain; no closure by acceptance lane.

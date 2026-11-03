@@ -1,0 +1,8 @@
+Tapped @e17 (95, 2253)
+settled after 668ms: +3 -3 (~16 unchanged)
+- @e8 [group] "River chapter 2 The river follows the old road. A reader can change the text size without changing the saved source location."
++ @e8~s300030 [group] "River chapter 1 The river follows the old road. A reader can change the text size without changing the saved source location."
+- @e16 [progressbar] "100, Current document page progress. Page 2 of 2"
++ @e16~s300030 [progressbar] "50, Current document page progress. Page 1 of 2"
+- @e18 [group] "Source page 2 · Page 2 of 2"
++ @e18~s300030 [group] "Source page 1 · Page 1 of 2"

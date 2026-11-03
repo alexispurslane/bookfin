@@ -1,5 +1,9 @@
 # Normal Android format and single-device sync acceptance
 
+Corrected-build follow-up: `android-corrected-formats-20261103.md` records the
+separate November 3 attempt on exact source `44d53af`. The rejection results
+and earlier EPUB/sync proof in this report remain unchanged baseline evidence.
+
 Date: November 3, 2026, America/New_York. This is a bounded acceptance attempt,
 not full product acceptance. No production file changed. No production optical
 character recognition (OCR), engine selection, coverage campaign, mutation

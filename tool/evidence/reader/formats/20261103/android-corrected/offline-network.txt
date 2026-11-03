@@ -1,0 +1,23 @@
+1
+0
+0
+NetworkProviders for:
+  9: OemPaidWifiNetworkFactory
+  2: VcnNetworkProvider
+  10: MultiInternetWifiNetworkFactory
+  7: UntrustedWifiNetworkFactory
+  3: L2capNetworkProvider
+  6: WifiNetworkFactory
+  8: RestrictedWifiNetworkFactory
+  5: TelephonyNetworkProvider
+  1: ThreadNetworkProvider
+  4: VpnNetworkProvider:0
+
+Active default network: none
+
+Current network preferences:
+  Default requests:
+    Request: [uid/pid:1000/670] - Satisfier: [no service network] Preference order: 40 Tracked UIDs: {10146-10146}
+
+
+12413

@@ -1,0 +1,24 @@
+Tapped @e5 (713, 1477)
+settled after 975ms: +12 -5 (~1 unchanged)
+- @e2 [group] "Remove download?"
+- @e3 [group] "Remove this edition’s local files and unfinished transfers. Your Jellyfin files will not change."
+- @e4 [button] "Keep download"
+- @e5 [button] "Remove download"
+- @e6 [group] "Dismiss"
++ @e2~s326596 [group] "BOOKFIN"
++ @e3~s326596 [button] "Book libraries"
++ @e4~s326596 [button] "Appearance"
++ @e5~s326596 [button] "Account"
++ @e6~s326596 [group] "Downloads"
++ @e7~s326596 [group] "Wi-Fi · Media transfers allowed"
++ @e8~s326596 [group] "No downloads yet."
++ @e9~s326596 [group] "Retained storage
+Local files outside this account’s current catalog. They do not count as downloaded editions. Files stay here until you explicitly remove them.
+No retained files."
++ @e10~s326596 [button] "Refresh storage"
++ @e11~s326596 [button] "Library
+Tab 1 of 3"
++ @e12~s326596 [button] "Downloads
+Tab 2 of 3" [selected]
++ @e13~s326596 [button] "Listening
+Tab 3 of 3"

@@ -2,7 +2,7 @@
 id: boo-3oq0
 status: in_progress
 deps: [boo-p58t, boo-6h8w, boo-9wgg, tb-5fyd, tb-887c]
-links: [t6-t9po, t6-il6y]
+links: [t6-t9po, t6-il6y, boo-mx5i, t2-00a4]
 created: 2026-11-01T21:37:34Z
 type: task
 priority: 2

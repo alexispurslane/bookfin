@@ -1,0 +1,14 @@
+Page: dev.bookfin.bookfin
+App: dev.bookfin.bookfin
+Snapshot: 12 nodes
+@e2 [button] "Dismiss"
+@e3 [group] "Account"
+@e4 [group] "research-alice"
+@e5 [group] "http://127.0.0.1:7365"
+@e6 [group] "Personal-record sync"
+@e7 [group] "Personal records remain on this device. Sync needs a connection and the compatible Bookfin Storage plugin on Jellyfin. No other storage is used. Retry after checking the server."
+@e8 [button] "Sync now"
+@e9 [button] "Software licenses"
+@e10 [button] "Reset catalog corrections"
+@e11 [button] "Sign out"
+@e12 [group] "Scrim"

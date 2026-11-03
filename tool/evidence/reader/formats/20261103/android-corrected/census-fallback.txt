@@ -1,0 +1,3 @@
+Tapped @e6 (701, 346)
+settled after 669ms: +1 -0 (~18 unchanged)
++ @e7~s300086 [group] "Text order or character mapping is unreliable on this source page. Read the original page instead."

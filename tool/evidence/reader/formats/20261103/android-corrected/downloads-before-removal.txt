@@ -1,0 +1,36 @@
+Page: dev.bookfin.bookfin
+App: dev.bookfin.bookfin
+Snapshot: 18 visible nodes
+@e2 [group] "BOOKFIN"
+@e3 [button] "Book libraries"
+@e4 [button] "Appearance"
+@e5 [button] "Account"
+@e6 [scroll-area] [scrollable]
+  [content below scroll-area hidden]
+@e7 [group] "Downloads"
+@e8 [group] "Wi-Fi · Media transfers allowed"
+@e9 [group] "01 NIST PDF
+Ebook · Text
+Downloaded
+85781 bytes · 1 / 1 files"
+@e10 [button] "Remove"
+@e11 [group] "02 Census PDF
+Ebook · Text
+Downloaded
+186352 bytes · 1 / 1 files"
+@e12 [button] "Remove"
+@e13 [group] "04 Plain MOBI
+Ebook · Text
+Downloaded
+604 bytes · 1 / 1 files"
+@e14 [button] "Remove"
+@e15 [group] "05 PalmDOC MOBI
+Ebook · Text
+Downloaded
+604 bytes · 1 / 1 files"
+@e16 [button] "Library
+Tab 1 of 3"
+@e17 [button] "Downloads
+Tab 2 of 3" [selected]
+@e18 [button] "Listening
+Tab 3 of 3"

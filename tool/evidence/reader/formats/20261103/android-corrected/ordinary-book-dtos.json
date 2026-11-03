@@ -1,0 +1,50 @@
+[
+  {
+    "Id": "a187a7a29eaffbfee5b54f1694ef99dd",
+    "Name": "01 NIST PDF",
+    "Type": "Book",
+    "Path": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-26bda766/.cache/sync/runtime/media/formats/01 NIST PDF/01 NIST PDF.pdf"
+  },
+  {
+    "Id": "7fcd639b5392c3844dbf5a943dcec93d",
+    "Name": "02 Census PDF",
+    "Type": "Book",
+    "Path": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-26bda766/.cache/sync/runtime/media/formats/02 Census PDF/02 Census PDF.pdf"
+  },
+  {
+    "Id": "e7a56f0e23d44cecb51ff92c184f84ce",
+    "Name": "03 Raven PDF",
+    "Type": "Book",
+    "Path": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-26bda766/.cache/sync/runtime/media/formats/03 Raven PDF/03 Raven PDF.pdf"
+  },
+  {
+    "Id": "73f0108fef4b1f8db6a08e181b457c7a",
+    "Name": "04 Plain MOBI",
+    "Type": "Book",
+    "Path": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-26bda766/.cache/sync/runtime/media/formats/04 Plain MOBI/04 Plain MOBI.mobi"
+  },
+  {
+    "Id": "e2903c7d45913696e257a096e0a19679",
+    "Name": "05 PalmDOC MOBI",
+    "Type": "Book",
+    "Path": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-26bda766/.cache/sync/runtime/media/formats/05 PalmDOC MOBI/05 PalmDOC MOBI.mobi"
+  },
+  {
+    "Id": "99a7f6bef1bf26db46656b21ca6bb52b",
+    "Name": "06 Alice KF8",
+    "Type": "Book",
+    "Path": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-26bda766/.cache/sync/runtime/media/formats/06 Alice KF8/06 Alice KF8.mobi"
+  },
+  {
+    "Id": "b61131ee2fc24abe0a2b7057c0b62e3f",
+    "Name": "08 Short PDF",
+    "Type": "Book",
+    "Path": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-26bda766/.cache/sync/runtime/media/formats/08 Short PDF/08 Short PDF.pdf"
+  },
+  {
+    "Id": "32c77f360bad1974db89d7ed75922ab3",
+    "Name": "09 Scan PDF",
+    "Type": "Book",
+    "Path": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-26bda766/.cache/sync/runtime/media/formats/09 Scan PDF/09 Scan PDF.pdf"
+  }
+]

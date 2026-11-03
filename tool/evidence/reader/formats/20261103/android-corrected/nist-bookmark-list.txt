@@ -1,0 +1,9 @@
+Page: dev.bookfin.bookfin
+App: dev.bookfin.bookfin
+Snapshot: 6 nodes
+@e2 [button] "Dismiss"
+@e3 [group] "Reading bookmarks"
+@e4 [button] "Saved reading place
+2026-11-03 09:45:06.059040"
+@e5 [button] "Edit reading bookmark"
+@e6 [group] "Scrim"

@@ -43,3 +43,7 @@ Integrated reviewed 7498e52; independent static review passed host ownership pro
 **2026-11-03T14:16:49Z**
 
 Exact normal Android attempt on 4ae8c6c is blocked before PDF native entry by t3-jrhf. Ordinary Jellyfin NIST original downloads intact but is routed to EPUB and rejected. Do not infer Android callback/font/disposal/reopen acceptance from the host proof or the empty normal-app error log. No production edit or closure. See docs/evidence/reader/android-normal-formats-20261103.md.
+
+**2026-11-03T15:44:19Z**
+
+Finite corrected normal 44d53af Android sequence succeeds: original PDF raster/fonts, NIST extracted text, original/reflow and close/reopen, short PDF, scan, Census, full process close, fresh true-offline process and NIST original/reflow. No observed native abort. This does not claim simultaneous documents, exact callback counts, explicit worker shutdown or stress/physical-device coverage. Evidence docs/evidence/reader/android-corrected-formats-20261103.md; crash buffer and audited screenshots retained. No closure.

@@ -1,0 +1,24 @@
+Page: dev.bookfin.bookfin
+App: dev.bookfin.bookfin
+Snapshot: 22 visible nodes (25 total)
+Collapsed 3 Android helper nodes from the agent-facing text snapshot; use --raw or --json for the full hierarchy.
+@e1 [group] "River chapter, The river follows the old road., resource00000" [focused]
+@e2 [button] "Back"
+@e3 [group] "04 Plain MOBI"
+@e4 [button] "Hide reader controls"
+@e7 [webview] "Bookfin reading viewport" [focused]
+@e8 [group] "Book text"
+@e9 [group] "epubjs-container-27a5ffcb-882a-4565-a760-05433688af9e"
+@e10 [group] "epubjs-view-76c1de1a-3fbb-472c-ecf1-f8c3f3d286d4"
+@e11 [group] "Generated river" [focused]
+@e15 [button] "Contents"
+@e16 [button] "Search book"
+@e17 [button] "Smaller text"
+@e18 [button] "Larger text"
+@e19 [button] "Bookmark this place"
+@e20 [button] "Reading bookmarks"
+@e21 [button] "Night reading theme"
+@e22 [progressbar] "100, Current document page progress. Page 1 of 1"
+@e23 [button] "Previous page"
+@e24 [group] "Generated river · Page 1 of 1"
+@e25 [button] "Next page"

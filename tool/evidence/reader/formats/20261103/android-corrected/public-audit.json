@@ -1,0 +1,8 @@
+{
+  "screenshotCount": 19,
+  "allScreenshotsVisuallyAudited": true,
+  "privateCredentialByteScanPassed": true,
+  "filesScanned": 85,
+  "scope": "Only synthetic fixture identities, owned app data and public originals; no credentials or other account payloads exported",
+  "allModifiedAndNewFilesCredentialByteScanPassed": true
+}

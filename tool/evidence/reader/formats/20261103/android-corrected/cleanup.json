@@ -1,0 +1,33 @@
+{
+  "appProcessAbsent": true,
+  "mediaMuted": true,
+  "effectiveMediaStreamVolume": 0,
+  "settings": {
+    "airplane_mode_on": "0",
+    "wifi_on": "1",
+    "mobile_data": "1"
+  },
+  "ownedReverseRouteRemoved": true,
+  "remainingReverseRoutes": "",
+  "ownedServerExited": true,
+  "ownedPortsClosed": [
+    7364,
+    7365
+  ],
+  "serverShutdownMethod": "Recognized fixture /System/Shutdown; exec session 11645 finished with exit 0",
+  "hostAudioChanged": false,
+  "dataResetOrUninstall": false,
+  "ownedDownloadBytesRemaining": 0,
+  "retainedActions": 44,
+  "priorRetainedActionsPreserved": 7,
+  "newSyntheticRetainedActions": 37,
+  "newSyntheticPendingActions": 28,
+  "readerTextSizeRestoredByUi": 20,
+  "deviceReleased": false,
+  "ownedPrivateFixturesRemoved": true,
+  "ownedPrivateDatabaseCopiesRemoved": true,
+  "ownedCredentialFilesRemoved": true,
+  "ownedProcessesAbsent": true,
+  "artifactHashesUnchangedAfterAcceptance": true,
+  "deviceReleasePendingFinalTool": true
+}

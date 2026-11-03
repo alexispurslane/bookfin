@@ -1,0 +1,32 @@
+Tapped @e4 (540, 878)
+settled after 926ms: +24 -5 (~1 unchanged)
+- @e2 [button] "Dismiss"
+- @e3 [group] "Reading bookmarks"
+- @e4 [button] "Saved reading place
+2026-11-03 09:52:01.441284"
+- @e5 [button] "Edit reading bookmark"
+- @e6 [group] "Scrim"
++ @e2~s326520 [button] "Back"
++ @e3~s326520 [group] "04 Plain MOBI"
++ @e4~s326520 [button] "Hide reader controls"
++ @e5~s326520 [group]
++ @e6~s326520 [group] [disabled]
++ @e7~s326520 [webview] "Bookfin reading viewport"
++ @e8~s326520 [group] "Book text"
++ @e9~s326520 [group] "epubjs-container-30fba7f1-5051-4167-f029-aba757b2d632"
++ @e10~s326520 [group] "epubjs-view-b23d753f-27a3-4d45-fd7c-eda8adbbcdac"
++ @e11~s326520 [group] "Generated river"
++ @e12~s326520 [text] "River chapter"
++ @e13~s326520 [text] "The river follows the old road."
++ @e14~s326520 [image] "resource00000"
++ @e15~s326520 [button] "Contents"
++ @e16~s326520 [button] "Search book"
++ @e17~s326520 [button] "Smaller text"
++ @e18~s326520 [button] "Larger text"
++ @e19~s326520 [button] "Bookmark this place"
++ @e20~s326520 [button] "Reading bookmarks"
++ @e21~s326520 [button] "Night reading theme"
++ @e22~s326520 [progressbar] "100, Current document page progress. Page 1 of 1"
++ @e23~s326520 [button] "Previous page"
++ @e24~s326520 [group] "Generated river · Page 1 of 1"
++ @e25~s326520 [button] "Next page"

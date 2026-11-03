@@ -1,0 +1,40 @@
+{
+  "scope": "Evidence consistency checks, not coverage, mutation testing, a second Android client, or complete acceptance",
+  "priorActionsRetainedUnchanged": 7,
+  "allRetainedActions": 44,
+  "ownedRetainedActions": 37,
+  "ownedPendingActions": 28,
+  "serverObjectsMatchingLocalPayloads": 9,
+  "inPlaceReplacementPayloadsUnchanged": true,
+  "downloadRemovalPersonalTablesUnchanged": true,
+  "plainRemovalBytesReclaimedIncludingManifests": 2725,
+  "plainRemovalFilesReclaimed": [
+    {
+      "name": "./e5e4558ec3ae41864ddc24daae875895e48bf4052e24a66df14c79efe4006ae9/.bookfin-mobi/42a14c07f1acc6b530dc6fff2b8eadac3a4b08306c2dcee6d8a0558738d39d83-libmobi-0.12-v1/manifest.json",
+      "bytes": 232,
+      "sha256": "d45fbe6842db8f0aa41d91d64dc91bd1ca4ee13d83165f46575d59cd665aec6f"
+    },
+    {
+      "name": "./e5e4558ec3ae41864ddc24daae875895e48bf4052e24a66df14c79efe4006ae9/.bookfin-mobi/42a14c07f1acc6b530dc6fff2b8eadac3a4b08306c2dcee6d8a0558738d39d83-libmobi-0.12-v1/book.epub",
+      "bytes": 1626,
+      "sha256": "04cbe6bf89b05bfb2a1cb196b27bd32d7af9c12610dabe3c9c6497d6b1a6c9e7"
+    },
+    {
+      "name": "./e5e4558ec3ae41864ddc24daae875895e48bf4052e24a66df14c79efe4006ae9/record.json",
+      "bytes": 263,
+      "sha256": "c8b69b77548931ae8d0c9deea42860a69cac8cfdf4f6f3f3b282a86724cdaea7"
+    },
+    {
+      "name": "./e5e4558ec3ae41864ddc24daae875895e48bf4052e24a66df14c79efe4006ae9/complete",
+      "bytes": 604,
+      "sha256": "42a14c07f1acc6b530dc6fff2b8eadac3a4b08306c2dcee6d8a0558738d39d83"
+    }
+  ],
+  "freshPlainConversionAfterVerifiedCacheAbsence": true,
+  "modifiedLibraryExecutableMappingVerified": true,
+  "finalOwnedDownloadBytes": 0,
+  "cleanupReclaimedBytesIncludingManifests": 748449,
+  "completeDownloadedOriginalsHashVerified": 7,
+  "visibleKf8ResumeAndBookmark": "failed; t2-42og",
+  "explicitSyncRetry": "failed; t2-00a4"
+}

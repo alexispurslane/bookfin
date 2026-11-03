@@ -1,0 +1,19 @@
+Page: dev.bookfin.bookfin
+App: dev.bookfin.bookfin
+Snapshot: 19 nodes
+@e2 [button] "Back"
+@e3 [group] "06 Alice KF8"
+@e4 [button] "Hide reader controls"
+@e5 [group] "Some images are unsupported. Their descriptions remain in the text."
+@e8 [webview]
+@e9 [button] "Contents"
+@e10 [button] "Search book"
+@e11 [button] "Smaller text"
+@e12 [button] "Larger text"
+@e13 [button] "Bookmark this place"
+@e14 [button] "Reading bookmarks"
+@e15 [button] "Night reading theme"
+@e16 [progressbar] "5, Current document page progress. Page 1 of 21"
+@e17 [button] "Previous page"
+@e18 [group] "CHAPTER I. Down the Rabbit-Hole · Page 1 of 21"
+@e19 [button] "Next page"

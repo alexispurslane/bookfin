@@ -1,0 +1,38 @@
+{
+  "source": "44d53afbe491f28cec0205584ba7f023ec8a10b6",
+  "sourceExport": "/Users/alexispurslane/Development/bookfin/.cache/artifacts/bookfin-44d53af-source",
+  "sourceExportManifestHashesVerified": true,
+  "manifest": {
+    "sourceCommit": "44d53afbe491f28cec0205584ba7f023ec8a10b6",
+    "files": {
+      "LGPL-3.0.txt": "da7eabb7bafdf7d3ae5e9f223aa5bdc1eece45ac569dc21b3b037520b4464768",
+      "libmobi-0.12-source.tar.gz": "74e270e186c37f206ec383f35787be348ba89de3031183eb33f30a15af46b223",
+      "bookfin-source.tar": "699c9625bf4fbe6f1138636b1bcc4ca0f52d7d07bd0264f7311d3edfb3ee7b70",
+      "GPL-3.0.txt": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+      "BUILD-AND-INSTALL.md": "f10ebfd8e269e13a0291ccec198a9ea55b0b1e4e9e76f4a96f1eb99b78a215c7"
+    }
+  },
+  "device": {
+    "hostId": "local",
+    "id": "emulator-5554",
+    "binding": "t3-24e09b5660eb05f1e8411513",
+    "platform": "Android API 36 ARM64 emulator",
+    "physical": false
+  },
+  "normalApk": {
+    "file": "/Users/alexispurslane/Development/bookfin/.cache/artifacts/bookfin-44d53af-formats.apk",
+    "bytes": 159289190,
+    "sha256": "f062456644d1c6e8829b289d130e6047e582eb7fd67b139b1b7263be926615e7",
+    "libmobiSha256": "9c641b51da2a96f7d40cc6ce9fc69514ef98eae92074358c838d74310da444bf",
+    "installedInPlace": true,
+    "installedApkReadbackVerified": true
+  },
+  "companionApk": {
+    "file": "/Users/alexispurslane/Development/bookfin/.cache/artifacts/bookfin-44d53af-replacement/bookfin-replacement.apk",
+    "bytes": 114387933,
+    "sha256": "e5bdcd3bacfe9f06233c4f845fa56af54e24d19cd0c0cfce9d2479a5506d44f9",
+    "libmobiSha256": "657b3a35ffa263b42899e48585163e9e5dd32d5c20bf76c4102d3f34516ee56c",
+    "installedInPlace": true,
+    "installedApkReadbackVerified": true
+  }
+}
