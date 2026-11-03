@@ -1,6 +1,6 @@
 ---
 id: t3-ipk1
-status: open
+status: in_progress
 deps: [boo-73yj]
 links: [boo-73yj, boo-mx5i]
 created: 2026-11-02T10:46:17Z
@@ -20,3 +20,9 @@ docs/plans/bookfin.md; docs/research/reader-formats.md and the November 2 Androi
 ## Acceptance Criteria
 
 Archive exact libmobi source, bridge modifications, toolchain pins and build scripts with LGPL and GPL texts. Provide applicable corresponding source/application code and required installation information. Demonstrate replacing/relinking an interface-compatible modified library, rebuilding/re-signing and installing the Android package without blocking ordinary reader operation. Review store/signing/reverse-engineering terms and retain PDFium/transitive license notices. Record a qualified compliance review before release.
+
+## Notes
+
+**2026-11-03T00:39:14Z**
+
+Bounded packaging preparation starts after b81b472 while parent handles final sync R1/R2. Native notice test fails meaningfully before registry implementation; 29 exact upstream/native notice assets now load through the real Flutter license stream, including Latin-1 PDFium notices. Normal APK build pins/verifies Android PDFium bytes and all notice assets. Replacement preparation changes mobi_version marker in copied source, builds host/Android interface-compatible libraries, converts real pinned KF8 on host, and replaces only ARM64 libmobi.so in APK; v2/v3 signature and 16KB ZIP alignment verify. No device connection or install. Source export/build/install instructions prepared. Android ordinary reading after replacement and qualified compliance/distribution review remain mandatory, not bypassed.

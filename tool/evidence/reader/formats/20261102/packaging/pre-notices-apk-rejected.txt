@@ -1,0 +1,63 @@
+Prepared 29 native notices from pinned source inputs.
+Resolving dependencies...
+Downloading packages...
+  archive 4.0.9 (4.6.0 available)
+  code_assets 1.2.1 (2.1.0 available)
+  crypto 3.0.7 (3.0.8 available)
+  flutter_cache_manager 3.4.6 (3.4.8 available)
+  flutter_secure_storage 9.2.4 (11.2.0 available)
+  flutter_secure_storage_linux 1.2.3 (3.0.3 available)
+  flutter_secure_storage_macos 3.1.3 (4.0.0 available)
+  flutter_secure_storage_platform_interface 1.1.2 (2.1.1 available)
+  flutter_secure_storage_web 1.2.1 (2.1.1 available)
+  flutter_secure_storage_windows 3.1.2 (4.2.2 available)
+  hooks 2.0.2 (2.2.0 available)
+  image 4.8.0 (4.12.0 available)
+  js 0.6.7 (0.7.2 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  meta 1.18.3 (1.19.0 available)
+  native_toolchain_c 0.19.2 (0.19.5 available)
+  objective_c 9.5.0 (9.6.2 available)
+  petitparser 7.0.2 (7.1.0 available)
+  record_use 0.6.0 (1.1.1 available)
+  shared_preferences_foundation 2.5.7 (2.6.1 available)
+  sqflite_common_ffi 2.4.0+2 (2.4.5 available)
+  sqlite3 3.5.2 (3.8.0 available)
+  test_api 0.7.12 (0.7.15 available)
+  vector_math 2.4.0 (2.4.4 available)
+  win32 5.15.0 (6.4.0 available)
+  xml 6.6.1 (7.1.0 available)
+Got dependencies!
+26 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+xcrun: error: SDK cannot be located: error: unable to find sdk: 'iphoneos'
+
+
+SDK iphoneos not installed.
+
+xcrun: error: SDK cannot be located: error: unable to find sdk: 'iphonesimulator'
+
+
+SDK iphonesimulator not installed.
+
+00:00 +0: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-6bcb40a5/test/reader/licenses_test.dart
+00:00 +0: reader notices expose the bundled native licenses including non-UTF8 notices
+00:00 +1: All tests passed!
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-6bcb40a5/tool/reader/native_package.py", line 76, in <module>
+    main()
+    ~~~~^^
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-6bcb40a5/tool/reader/native_package.py", line 70, in main
+    verify(args.apk)
+    ~~~~~~^^^^^^^^^^
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-6bcb40a5/tool/reader/native_package.py", line 32, in verify
+    payload = archive.read('assets/flutter_assets/assets/licenses/reader/' + name)
+  File "/nix/store/0kcws5blwbdyxqxjd1w8hjipz61xny3k-python3-3.14.7/lib/python3.14/zipfile/__init__.py", line 1690, in read
+    with self.open(name, "r", pwd) as fp:
+         ~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/nix/store/0kcws5blwbdyxqxjd1w8hjipz61xny3k-python3-3.14.7/lib/python3.14/zipfile/__init__.py", line 1727, in open
+    zinfo = self.getinfo(name)
+  File "/nix/store/0kcws5blwbdyxqxjd1w8hjipz61xny3k-python3-3.14.7/lib/python3.14/zipfile/__init__.py", line 1655, in getinfo
+    raise KeyError(
+        'There is no item named %r in the archive' % name)
+KeyError: "There is no item named 'assets/flutter_assets/assets/licenses/reader/Bookfin-native-NOTICE.txt' in the archive"

@@ -26,7 +26,9 @@ case "$command" in
     flutter build web "$@"
     ;;
   build-android)
+    python3 tool/reader/native_package.py prepare
     flutter build apk --debug --target-platform android-arm64 "$@"
+    python3 tool/reader/native_package.py verify build/app/outputs/flutter-apk/app-debug.apk
     ;;
   build-probe-android)
     flutter build apk --debug --target-platform android-arm64 --target tool/reload_probe.dart "$@"

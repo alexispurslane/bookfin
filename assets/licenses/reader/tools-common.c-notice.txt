@@ -1,0 +1,13 @@
+/** @file common.c
+ *
+ * @brief common tools functions
+ *
+ * @example common.c
+ * Common functions for tools
+ *
+ * Copyright (c) 2016 Bartek Fabiszewski
+ * http://www.fabiszewski.net
+ *
+ * Licensed under LGPL, either version 3, or any later.
+ * See <http://www.gnu.org/licenses/>
+ */

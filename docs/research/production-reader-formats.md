@@ -78,3 +78,23 @@ nix develop --command flutter analyze
 ```
 
 The host native-asset hook warns that iOS SDKs are absent. This candidate does not claim iOS validation.
+
+## Android packaging follow-up
+
+After the safe reader checkpoint and sync correction commit `b81b472`, the normal
+application builds with its actual native reader libraries. The first packaging
+check passes APK signature and 16 KB ZIP alignment verification. A subsequent
+candidate adds all 29 native notice files, a software-license page, and an APK
+verifier against the pinned Android PDFium archive and notice manifest.
+
+`docs/research/native-reader-packaging.md` describes source export and a bounded
+library-replacement preparation. The modified library builds on the host and
+Android. Host KF8 conversion works, and the replacement APK changes only
+`lib/arm64-v8a/libmobi.so` outside signing metadata. Its signature and 16 KB ZIP
+alignment verify. No Android installation or replacement-runtime claim follows.
+This advances `t3-ipk1`; it does not satisfy its qualified review or installation
+acceptance gates.
+
+The parent owns the final two sync re-review corrections R1/R2 on top of
+`b81b472`. Packaging work does not edit those sites or turn a pre-correction APK
+into an accepted sync build. Android format/runtime acceptance remains separate.

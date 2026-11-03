@@ -1,0 +1,15 @@
+Bookfin uses libmobi 0.12 by Bartek Fabiszewski under the GNU Lesser
+General Public License version 3 or later. The Bookfin converter includes
+the upstream mobitool.c and common.c code and uses the same license.
+The complete LGPL version 3 and GPL version 3 texts accompany this notice.
+The included miniz and XML writer retain their own upstream notices.
+
+Exact libmobi sources are pinned in nix/reader-native.nix. The converter
+source is native/mobi/convert.c. Build flags are in native/mobi/CMakeLists.txt.
+The source bundle and replacement preparation are documented in
+docs/research/native-reader-packaging.md in the matching Bookfin checkout.
+This development candidate is not an approved production distribution.
+
+Bookfin uses PDFium chromium/8125 through pdfrx. The PDFium binary archive's
+complete license bundle accompanies this notice. Flutter's software-license
+registry also supplies the Flutter and Dart dependency notices.

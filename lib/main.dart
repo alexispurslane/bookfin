@@ -20,12 +20,14 @@ import 'playback/store.dart';
 import 'playback/database.dart';
 import 'reader/session.dart';
 import 'reader/platform.dart';
+import 'reader/licenses.dart';
 import 'sync/coordinator.dart';
 
 Future<void> main() => runBookfin();
 
 Future<void> runBookfin({bool gallery = false}) async {
   WidgetsFlutterBinding.ensureInitialized();
+  LicenseRegistry.addLicense(readerLicenses);
   LicenseRegistry.addLicense(() async* {
     for (final font in ['Outfit', 'Source-Serif-4']) {
       yield LicenseEntryWithLineBreaks([

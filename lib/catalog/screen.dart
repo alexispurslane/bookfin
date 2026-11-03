@@ -468,6 +468,11 @@ class _CatalogHomeState extends State<CatalogHome> {
             Text(_catalog.session!.scope.server.toString()),
             if (widget.sync != null)
               RecordSyncView(sync: widget.sync!, books: _catalog.books),
+            TextButton(
+              onPressed: () =>
+                  showLicensePage(context: context, applicationName: 'Bookfin'),
+              child: const Text('Software licenses'),
+            ),
             const SizedBox(height: 20),
             TextButton(
               onPressed: _catalog.cache == null || _catalog.accessBlocked

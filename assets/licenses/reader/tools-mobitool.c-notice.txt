@@ -1,0 +1,13 @@
+/** @file mobitool.c
+ *
+ * @brief mobitool
+ *
+ * @example mobitool.c
+ * Program for testing libmobi library
+ *
+ * Copyright (c) 2020 Bartek Fabiszewski
+ * http://www.fabiszewski.net
+ *
+ * Licensed under LGPL, either version 3, or any later.
+ * See <http://www.gnu.org/licenses/>
+ */

@@ -1,0 +1,17 @@
+Verifies
+Verified using v1 scheme (JAR signing): false
+Verified using v2 scheme (APK Signature Scheme v2): true
+Verified using v3 scheme (APK Signature Scheme v3): false
+Verified using v3.1 scheme (APK Signature Scheme v3.1): false
+Verified using v4 scheme (APK Signature Scheme v4): false
+Verified for SourceStamp: false
+Number of signers: 1
+APK 179671441 c4ca7c41520d67f6ef5ccf50f06d580f3ccc68587bf2c5e555395cc3f6a93db6
+lib/arm64-v8a/libbookfin_mobi.so 138752 39673f951ae4f5540538e9daf1237e1ece11fdfb7ce80e57eeb60843c906ff21
+lib/arm64-v8a/libmobi.so 260904 6faa87416e66196e1ecde7ceaf7f049a9d47d424fff2e9331452d38036192f52
+lib/arm64-v8a/libpdfium.so 6598376 de19db1c0fb33579bca6ace903af7ccb9d03ad1d3f6c5202970d8d79d7538303
+lib/arm64-v8a/libpdfrx_pdfium_gate.so 5080 0f03859b7c72400547d73a4e22a10988236a3c4f8e42a51797f22dc88aaa1b74
+lib/armeabi-v7a/libbookfin_mobi.so 85644 d72d73684840c45b41342a48a14e6ae568d814c04ca7e63b08e3020a51f3cc32
+lib/armeabi-v7a/libmobi.so 143296 afeca9b71ce3d3fb479d3462be9e5b07577ef18420edb1c326c6f8f22f5284da
+lib/x86_64/libbookfin_mobi.so 149816 0009fc1f5e1d630984df763815d9aa5b3a86b7ff96ef9773727c3262e73fdf5b
+lib/x86_64/libmobi.so 267512 4266d317901a7fe1f479f17ac6907f31abfc32bce4b34f0042d404ad19780e53

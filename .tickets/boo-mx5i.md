@@ -59,3 +59,6 @@ address with larger text and narrower width. Three focused tests and 406 full
 Flutter tests pass (one optional plugin skip); analysis clean. Evidence:
 tool/evidence/reader/formats/20261102/short-page-correction/. Independent review
 and exact combined Android acceptance remain pending; ticket stays open.
+**2026-11-03T00:39:14Z**
+
+Android normal-app packaging now succeeds with native MOBI/PDF libraries; separate native notice/source/replacement preparation is under t3-ipk1. Source before final sync R1/R2 remains pre-acceptance. No device use. 398 full Flutter tests pass with one optional plugin skip, SDK checks pass, analysis clean; subsequent host production MOBI importer is checked against interface-compatible modified library. Packaging/evidence milestone follows separately from b81b472. Android format/runtime gates remain open.

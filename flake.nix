@@ -74,6 +74,8 @@
           pkgs.nodejs_22
           pkgs.curl
           pkgs.python3
+          pkgs.cmake
+          pkgs.ninja
           android.androidsdk
           nativeTools
         ];
@@ -86,6 +88,8 @@
         PDFIUM_LIBRARY = "${readerNative.pdfium}/lib/libpdfium.dylib";
         BOOKFIN_LIBMOBI_SOURCE = readerNative.libmobiSource;
         BOOKFIN_MOBI_LIBRARY = "${readerNative.mobi}/lib/libbookfin_mobi.dylib";
+        BOOKFIN_PDFIUM_ANDROID = readerNative.pdfiumAndroid;
+        BOOKFIN_GPL3_TEXT = readerNative.gplText;
         BOOKFIN_NIX_SHELL = "1";
         shellHook = ''
           export PUB_CACHE="$PWD/.cache/pub"

@@ -1,0 +1,118 @@
+{
+  "Bookfin-native-NOTICE.txt": {
+    "package": "libmobi 0.12 and Bookfin converter (LGPL-3.0-or-later)",
+    "sha256": "25c38bef14eb96eab243c0b857fa38dffb63015dd8c272e5914ce6f48e11ec96"
+  },
+  "GPL-3.0.txt": {
+    "package": "libmobi 0.12 and Bookfin converter (LGPL-3.0-or-later)",
+    "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
+  },
+  "LGPL-3.0.txt": {
+    "package": "libmobi 0.12 and Bookfin converter (LGPL-3.0-or-later)",
+    "sha256": "da7eabb7bafdf7d3ae5e9f223aa5bdc1eece45ac569dc21b3b037520b4464768"
+  },
+  "PDFium-LICENSE.txt": {
+    "package": "PDFium chromium/8125",
+    "sha256": "ba26c1263131696b86c10496b5066b918a20b7161822a80c274d0080105f6c93"
+  },
+  "PDFium-abseil.txt": {
+    "package": "PDFium chromium/8125: abseil",
+    "sha256": "c79a7fea0e3cac04cd43f20e7b648e5a0ff8fa5344e644b0ee09ca1162b62747"
+  },
+  "PDFium-agg23.txt": {
+    "package": "PDFium chromium/8125: agg23",
+    "sha256": "c110d3ea2ad77467ce0dcff7d3337e6c8be8049a5103f4b9bd5fd911a77972e5"
+  },
+  "PDFium-catapult.txt": {
+    "package": "PDFium chromium/8125: catapult",
+    "sha256": "f0df289ba9d03d857ad1c2f5918861376b1510b71588ffc60eff5c7a7bfedb09"
+  },
+  "PDFium-cpu_features.txt": {
+    "package": "PDFium chromium/8125: cpu_features",
+    "sha256": "af272c1b4dd08dd61d43e001d3134119d03ca7a2b057a64f7355fdf27fbea3dd"
+  },
+  "PDFium-dragonbox-Apache2-LLVM.txt": {
+    "package": "PDFium chromium/8125: dragonbox-Apache2-LLVM",
+    "sha256": "9e45e856bedccee9f67254082ca11851d954de2fed7448c4bed19ad9aab99a91"
+  },
+  "PDFium-dragonbox-Boost.txt": {
+    "package": "PDFium chromium/8125: dragonbox-Boost",
+    "sha256": "c9bff75738922193e67fa726fa225535870d2aa1059f91452c411736284ad566"
+  },
+  "PDFium-fast_float.txt": {
+    "package": "PDFium chromium/8125: fast_float",
+    "sha256": "e562f3f974ced7e69dd1db77b820b36bcf8f30377f1aa105723fba449c53c4e6"
+  },
+  "PDFium-freetype.txt": {
+    "package": "PDFium chromium/8125: freetype",
+    "sha256": "f4b133e25df1f86ad3ffea453aa0e613f0474f34778dbbb3e437e7b2724937d8"
+  },
+  "PDFium-harfbuzz.txt": {
+    "package": "PDFium chromium/8125: harfbuzz",
+    "sha256": "ba8f810f2455c2f08e2d56bb49b72f37fcf68f1f4fade38977cfd7372050ad64"
+  },
+  "PDFium-highway.txt": {
+    "package": "PDFium chromium/8125: highway",
+    "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+  },
+  "PDFium-icu.txt": {
+    "package": "PDFium chromium/8125: icu",
+    "sha256": "e55522d81edc687a341a4411e0776e54ca654e90147f354a90458aaced4116af"
+  },
+  "PDFium-lcms.txt": {
+    "package": "PDFium chromium/8125: lcms",
+    "sha256": "7312b68c5b25e9bf2b828706fb4e29588f22705112f411fd42e1f7d84c3d139a"
+  },
+  "PDFium-libjpeg_turbo.ijg": {
+    "package": "PDFium chromium/8125: libjpeg_turbo",
+    "sha256": "75815e3bf6484201a3c3d17a1bbf10f2e8e3237f84df10a2357ea896db2a81d6"
+  },
+  "PDFium-libjpeg_turbo.md": {
+    "package": "PDFium chromium/8125: libjpeg_turbo",
+    "sha256": "96f5b328adbb78eeaaec6980d73fd558cb1e4d62560ed615646bc3cf5e532430"
+  },
+  "PDFium-libopenjpeg.txt": {
+    "package": "PDFium chromium/8125: libopenjpeg",
+    "sha256": "c5ab0890a737c2dfa7ba675036554f6d17741d98629b0c2a145354d00617e6b2"
+  },
+  "PDFium-libpng.txt": {
+    "package": "PDFium chromium/8125: libpng",
+    "sha256": "bdb0a645ea18c60507d0368379b1ac5474b92255fcc2d115e07486a7672ba526"
+  },
+  "PDFium-libunwind.txt": {
+    "package": "PDFium chromium/8125: libunwind",
+    "sha256": "b5efebcaca80879234098e52d1725e6d9eb8fb96a19fce625d39184b705f7b6d"
+  },
+  "PDFium-llvm-libc.txt": {
+    "package": "PDFium chromium/8125: llvm-libc",
+    "sha256": "ebcd9bbf783a73d05c53ba4d586b8d5813dcdf3bbec50265860ccc885e606f47"
+  },
+  "PDFium-pdfium.txt": {
+    "package": "PDFium chromium/8125: pdfium",
+    "sha256": "961eacd9633fff6d051db7208b755e9210e30efac7adec3e6a6d52798f0ccf0e"
+  },
+  "PDFium-simdutf.txt": {
+    "package": "PDFium chromium/8125: simdutf",
+    "sha256": "fc8dbc04e03ad4efc08a647ffe7f995b811a95bc04c0e85a56d5277c6593fa5f"
+  },
+  "PDFium-zlib.txt": {
+    "package": "PDFium chromium/8125: zlib",
+    "sha256": "33fd641c9f3b0e0be64bc78fea9e94807674cdd70c48477599226cb8956565fe"
+  },
+  "miniz-notice.txt": {
+    "package": "miniz 1.15",
+    "sha256": "90cc6607cdfd1b37be04d69012d0764e8943a63b37f17aea2cc30f37c7748a7a"
+  },
+  "src-xmlwriter.c-notice.txt": {
+    "package": "libmobi 0.12 and Bookfin converter (LGPL-3.0-or-later)",
+    "sha256": "9fcfda26b15758e9c7917093a30866bd2419b0b19fa127a2d842031489fa7cc7"
+  },
+  "tools-common.c-notice.txt": {
+    "package": "libmobi 0.12 and Bookfin converter (LGPL-3.0-or-later)",
+    "sha256": "7457652db1000bd6afe6ee63a479b49159cbcc58a15eda389d2f89fc8803cbf2"
+  },
+  "tools-mobitool.c-notice.txt": {
+    "package": "libmobi 0.12 and Bookfin converter (LGPL-3.0-or-later)",
+    "sha256": "45e8a90cc5cb08790b0dc044bf1b5e6d5919fa1af78fb93d376d99cec940903d"
+  }
+}
