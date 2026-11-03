@@ -1,0 +1,71 @@
+Applications Memory Usage (in Kilobytes):
+Uptime: 164859257 Realtime: 164859257
+
+** MEMINFO in pid 14018 [dev.bookfin.bookfin] **
+                   Pss  Private  Private  SwapPss      Rss     Heap     Heap     Heap
+                 Total    Dirty    Clean    Dirty    Total     Size    Alloc     Free
+                ------   ------   ------   ------   ------   ------   ------   ------
+  Native Heap    46657    46592       28    22644    47392   143300    68674    70243
+  Dalvik Heap    34568    34528        0      198    34920     7612     3838     3774
+ Dalvik Other     7215     3040        0      115    11712
+        Stack      852      852        0      476      860
+       Ashmem       10        0        0        0       88
+    Other dev        7        0        4        0      284
+     .so mmap     2513      148      180      166    21600
+    .jar mmap     3279        0      440        0    26280
+    .apk mmap    18653      624    17920      184    18928
+    .ttf mmap       80        0       12        0      196
+    .dex mmap       53        0        0        0      776
+    .oat mmap       53        0        0        0      924
+    .art mmap     4715     3788      216     5343    15740
+   Other mmap     8968      344     5940        0    12292
+      Unknown   122612   121164     1352    94145   122976
+        TOTAL   373506   211080    26092   123271   314968   150912    72512    74017
+
+ App Summary
+                       Pss(KB)                        Rss(KB)
+                        ------                         ------
+           Java Heap:    38532                          50660
+         Native Heap:    46592                          47392
+                Code:    19488                          77212
+               Stack:      852                            860
+            Graphics:        0                              0
+       Private Other:   131708
+              System:   136334
+             Unknown:                                  138844
+
+           TOTAL PSS:   373506            TOTAL RSS:   314968       TOTAL SWAP PSS:   123271
+
+ Objects
+               Views:        6         ViewRootImpl:        1
+         AppContexts:        6           Activities:        1
+              Assets:       24        AssetManagers:        0
+       Local Binders:       34        Proxy Binders:       70
+       Parcel memory:        9         Parcel count:       38
+    Death Recipients:        0             WebViews:        0
+
+ Native Allocations
+                         Count                       Total(kB)
+                        ------                         ------
+    Other (malloced):      325                             29
+ Other (nonmalloced):      131                             88
+
+ SQL
+         MEMORY_USED:      202
+  PAGECACHE_OVERFLOW:       80          MALLOC_SIZE:       46
+
+ DATABASES
+      pgsz     dbsz   Lookaside(b) cache hits cache misses cache size  Dbname
+PER CONNECTION STATS
+         4       16             17     0    15     1  /data/user/0/dev.bookfin.bookfin/files/libCachedImageData.db
+         4      192             97    44    61     9  /data/user/0/dev.bookfin.bookfin/databases/bookfin-personal-records-v1.sqlite
+POOL STATS
+     cache hits  cache misses    cache size  Dbname
+              0            16            16  /data/user/0/dev.bookfin.bookfin/files/libCachedImageData.db
+             44            62           106  /data/user/0/dev.bookfin.bookfin/databases/bookfin-personal-records-v1.sqlite
+
+ Asset Allocations
+    : 17K
+    : 1607K
+    : 108K
+    : 1181K

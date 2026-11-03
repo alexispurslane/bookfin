@@ -1,0 +1,9 @@
+{
+  "date": "2026-11-03",
+  "hostId": "local",
+  "listedAndroidDevices": [
+    {"id": "emulator-5554", "name": "bookfin-api36", "booted": true, "physical": false}
+  ],
+  "separateDisposableAndroidTargetExposed": false,
+  "scope": "T3 device_list exposed only the retained emulator; it does not prove that another target cannot be created. No device or profile was created, wiped, reset, or uninstalled."
+}

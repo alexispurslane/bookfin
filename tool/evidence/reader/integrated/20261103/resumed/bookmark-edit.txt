@@ -1,0 +1,23 @@
+Tapped @e21 (912, 878)
+settled after 811ms: +3 -16 (~1 unchanged)
+- @e7 [group]
+- @e8 [group]
+- @e9 [group]
+- @e11 [group]
+- @e12 [group]
+- @e13 [group]
+- @e14 [group]
+- @e15 [group]
+- @e16 [button] "Dismiss"
+- @e17 [group]
+- @e18 [group]
+- @e19 [group] "Reading bookmarks"
+- @e20 [button] "Saved reading place
+2026-11-03 15:19:37.945616"
+- @e21 [button] "Edit reading bookmark"
+- @e22 [group]
+- @e23 [group] "Scrim"
++ @e2~s571263 [menu-item] "Edit title and note"
++ @e3~s571263 [menu-item] "Delete"
++ @e4~s571263 [group] "Dismiss menu"
+hint: Settled on a nearly-empty tree — the app may still be loading. Wait for specific content (wait text ...) before interacting.

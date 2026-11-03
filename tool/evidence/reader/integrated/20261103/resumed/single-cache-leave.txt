@@ -1,0 +1,42 @@
+Tapped @e16 (74, 210)
+settled after 1261ms: +12 -27 (~3 unchanged)
+- @e7 [group]
+- @e8 [group]
+- @e9 [group]
+- @e11 [group]
+- @e12 [group]
+- @e13 [group]
+- @e14 [group]
+- @e15 [group]
++ @e3~s571411 [group] "Book details"
++ @e4~s571411 [button] "Correct book details"
+- @e18 [button] "Hide reader controls"
+- @e19 [button] "Original page"
+- @e20 [button] "Reflow text"
+- @e21 [group] "English scans only. Other languages are not supported."
+- @e22 [group] "Extracted text is not checked against the page. Pictures and page layout stay in the original page."
+- @e23 [scroll-area]
+- @e24 [group] "The quiet garden A reader opened the book beside the window. Three birds crossed the pale morning sky. The next page held a map, a letter, and a promise. Original pages remain available when words are unclear. The quiet garden A reader opened the book beside the window. Three birds crossed the pale morning sky. The next page held a map, a letter, and a promise. Original pages remain available when words are unclear. The quiet garden A reader opened the book beside the window. Three birds crossed the pale morning sky. The next page held a map, a letter, and a promise. Original pages remain available when words are unclear. The quiet garden A reader opened the book beside the window. Three birds crossed the pale morning sky. The next page held a map, a letter, and a promise. Original pages remain available when words are unclear. The quiet garden A reader opened the book beside the window. Three birds crossed the pale morning sky. The next page held a map, a letter, and a promise. Original pages remain available when words are unclear. The quiet garden A reader opened the book beside the window. Three birds crossed the pale morning sky. The next page held a map, a letter, and a promise. Original pages remain available when words are unclear. The quiet garden A reader opened the book beside the window. Three birds crossed the pale morning sky. The next page held a map, a letter, and a promise. Original pages remain available when words are unclear. The quiet garden A reader opened the book beside the window. Three birds crossed the pale morning sky. The next page held a map, a letter, and a promise. Original pages remain available when words are unclear. The quiet garden A reader opened the book beside the window. Three birds crossed the pale morning sky. The next page held a map, a letter, and a promise. Original pages remain available when words are unclear. The quiet garden A reader opened the book beside the window. Three birds crossed the pale morning sky. The next page held a map, a letter, and a promise. Original pages remain available when words are unclear. The quiet garden A reader opened the book beside the window. Three birds crossed the pale morning sky. The next page held a map, a letter, and a promise. Original pages remain available when words are unclear."
+- @e25 [group]
+- @e26 [button] "Contents"
+- @e27 [button] "Search book"
+- @e28 [button] "Smaller text"
+- @e29 [button] "Larger text"
+- @e30 [button] "Bookmark this place"
+- @e31 [button] "Reading bookmarks"
+- @e32 [button] "Night reading theme"
+- @e33 [progressbar] "50, Current document page progress. Page 1 of 2"
+- @e34 [button] "Previous page"
+- @e35 [group] "Source page 1 · Page 1 of 2"
+- @e36 [button] "Next page"
++ @e6~s571411 [group] "Ebook editions"
++ @e7~s571411 [group] "Text"
++ @e8~s571411 [group] "1 file"
++ @e9~s571411 [group] "Downloaded"
++ @e10~s571411 [group] "72831 bytes · 1 / 1 files"
++ @e11~s571411 [button] "Remove"
++ @e12~s571411 [button] "Read"
++ @e13~s571411 [group] "Collapsed"
++ @e14~s571411 [group] "Acceptance single column
+0.0 minutes, Collapsed"
++ @e15~s571411 [button] "Link another book or ebook"

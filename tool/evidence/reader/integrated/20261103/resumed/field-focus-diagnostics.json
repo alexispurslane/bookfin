@@ -1,0 +1,19 @@
+{
+  "diagnosticId": "mw14lr9j-e2f696ba",
+  "requestLogPresent": true,
+  "entriesInspected": 10,
+  "phases": [
+    "android_snapshot_helper_artifact_resolution",
+    "android_snapshot_helper_install",
+    "android_snapshot_helper_install_decision",
+    "android_snapshot_helper_session_capture",
+    "android_touch_helper_install",
+    "android_touch_helper_install_decision",
+    "request_failed",
+    "request_start"
+  ],
+  "reportedFailure": "Field focus was refused",
+  "advice": "Retry with --debug and inspect diagnostics log for details.",
+  "oneDebugRetry": "Succeeded with fresh complete snapshot and exact server-field reference",
+  "rawLogCopied": false
+}

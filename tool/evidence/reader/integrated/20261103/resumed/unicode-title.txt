@@ -1,0 +1,23 @@
+Filled 11 chars
+settled after 547ms: +1 -13 (~6 unchanged)
+- @e7 [group]
+- @e8 [group]
+- @e9 [group]
+- @e11 [group]
+- @e12 [group]
+- @e13 [group]
+- @e14 [group]
+- @e15 [group]
+- @e16 [group]
+- @e17 [group]
+- @e19 [group]
+- @e20 [group]
++ @e3~s571273 [text-field] "“Café” 中文 🐟"
+- @e22 [text-field]
+unchanged interactive (6):
+= @e1~s571273 [group]
+= @e2~s571273 [group] "Reading bookmark"
+= @e4~s571273 [text-field]
+= @e5~s571273 [button] "Cancel"
+= @e6~s571273 [button] "Save"
+= @e7~s571273 [group] "Dismiss"

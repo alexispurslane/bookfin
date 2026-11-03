@@ -1,0 +1,36 @@
+Tapped @e26 (131, 2117)
+settled after 966ms: +5 -29 (~1 unchanged)
+- @e7 [group]
+- @e8 [group]
+- @e9 [group]
+- @e11 [group]
+- @e12 [group]
+- @e13 [group]
+- @e14 [group]
+- @e15 [group]
+- @e16 [button] "Back"
+- @e17 [group] "Acceptance dense English"
+- @e18 [button] "Hide reader controls"
+- @e19 [button] "Original page"
+- @e20 [button] "Reflow text"
+- @e21 [group] "English scans only. Other languages are not supported."
+- @e22 [button] "Retry recognition"
+- @e23 [group] "No English text was recognized. Read the original page."
+- @e24 [image] "Original source page 2"
+- @e25 [group]
+- @e26 [button] "Contents"
+- @e27 [button] "Search book"
+- @e28 [button] "Smaller text"
+- @e29 [button] "Larger text"
+- @e30 [button] "Bookmark this place"
+- @e31 [button] "Reading bookmarks"
+- @e32 [button] "Night reading theme"
+- @e33 [progressbar] "100, Current document page progress. Page 2 of 2"
+- @e34 [button] "Previous page"
+- @e35 [group] "Source page 2 · Page 2 of 2"
+- @e36 [button] "Next page"
++ @e2~s571306 [button] "Dismiss"
++ @e3~s571306 [group] "Contents"
++ @e4~s571306 [button] "Source page 1"
++ @e5~s571306 [button] "Source page 2"
++ @e6~s571306 [group] "Scrim"

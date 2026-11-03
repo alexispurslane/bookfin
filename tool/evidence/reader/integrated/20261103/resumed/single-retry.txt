@@ -1,0 +1,18 @@
+Tapped @e22 (540, 527)
+settled after 829ms: +3 -13 (~16 unchanged)
+- @e7 [group]
+- @e8 [group]
+- @e9 [group]
+- @e11 [group]
+- @e12 [group]
+- @e13 [group]
+- @e14 [group]
+- @e15 [group]
+- @e20 [button] "Reflow text"
+- @e21 [group] "English scans only. Other languages are not supported."
+- @e22 [button] "Retry recognition"
+- @e23 [group] "Recognition canceled. The current page can finish in the background. The original page is available."
++ @e6~s571389 [button] "Reflow text" [disabled]
++ @e7~s571389 [group] "Recognizing English text…"
++ @e8~s571389 [button] "Cancel recognition"
+- @e25 [group]

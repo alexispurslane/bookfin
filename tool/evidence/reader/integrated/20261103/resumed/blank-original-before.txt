@@ -1,0 +1,29 @@
+Page: dev.bookfin.bookfin
+App: dev.bookfin.bookfin
+Snapshot: 35 nodes
+@e1 [text] "3:25"
+@e2 [image] "Phone notification:"
+@e3 [image] "Android System notification:"
+@e4 [image] "Airplane mode."
+@e5 [group] "Battery charging, 100 percent."
+  @e6 [image]
+    @e9 [group]
+      @e16 [button] "Back"
+      @e17 [group] "Acceptance blank"
+      @e18 [button] "Hide reader controls"
+      @e19 [button] "Original page"
+      @e20 [button] "Reflow text"
+      @e21 [group] "English scans only. Other languages are not supported."
+      @e22 [button] "Retry recognition"
+      @e23 [group] "No English text was recognized. Read the original page."
+      @e24 [image] "Original source page 1"
+        @e26 [button] "Contents"
+        @e27 [button] "Search book"
+        @e28 [button] "Smaller text"
+        @e29 [button] "Larger text"
+        @e30 [button] "Bookmark this place"
+        @e31 [button] "Reading bookmarks"
+        @e32 [button] "Night reading theme"
+        @e33 [button] "Previous page"
+        @e34 [group] "Source page 1 · Page 1"
+        @e35 [button] "Next page"

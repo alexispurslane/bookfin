@@ -1,0 +1,15 @@
+Page: dev.bookfin.bookfin
+App: dev.bookfin.bookfin
+Snapshot: 23 nodes
+@e1 [text] "3:41"
+@e2 [image] "Phone notification:"
+@e3 [image] "Android System notification:"
+@e4 [image] "Airplane mode."
+@e5 [group] "Battery charging, 100 percent."
+  @e6 [image]
+    @e9 [group]
+      @e18 [group] "Remove download?"
+        @e20 [group] "Remove this edition’s local files and unfinished transfers. Your Jellyfin files will not change."
+      @e21 [button] "Keep download"
+      @e22 [button] "Remove download"
+      @e23 [group] "Dismiss"

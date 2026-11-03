@@ -1,0 +1,33 @@
+Tapped @e26 (540, 554)
+settled after 699ms: +1 -15 (~11 unchanged)
+- @e9 [group]
+- @e10 [group]
+- @e11 [group]
+- @e13 [group]
+- @e14 [group]
+- @e15 [group]
+- @e16 [group]
+- @e17 [group]
+- @e22 [group]
+- @e23 [group]
+- @e25 [group]
+- @e26 [checkbox] "Remaining acceptance scans" [unchecked]
+- @e27 [group]
++ @e7~s571174 [checkbox] "Remaining acceptance scans" [checked]
+- @e29 [group]
+- @e31 [group]
+unchanged interactive (11):
+= @e1~s571174 [group]
+= @e2~s571174 [group] "BOOKFIN"
+= @e3~s571174 [button] "Book libraries"
+= @e4~s571174 [button] "Appearance"
+= @e5~s571174 [button] "Account"
+= @e6~s571174 [group] "Choose book libraries"
+= @e8~s571174 [button] "Save libraries"
+= @e9~s571174 [button] "Refresh libraries"
+= @e10~s571174 [button] "Library
+Tab 1 of 3"
+= @e11~s571174 [button] "Downloads
+Tab 2 of 3"
+= @e12~s571174 [button] "Listening
+Tab 3 of 3"

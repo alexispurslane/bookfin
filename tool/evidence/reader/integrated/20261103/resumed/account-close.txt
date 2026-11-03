@@ -1,0 +1,50 @@
+Back
+settled after 905ms: +19 -21 (~1 unchanged)
+- @e7 [group]
+- @e8 [group]
+- @e9 [group]
+- @e11 [group]
+- @e12 [group]
+- @e13 [group]
+- @e14 [group]
+- @e15 [group]
+- @e16 [button] "Dismiss"
+- @e17 [group]
+- @e18 [group] "Account"
+- @e19 [group] "research-alice"
+- @e20 [group] "http://127.0.0.1:7364"
+- @e21 [group] "Personal-record sync"
+- @e22 [group] "Personal records are synced."
+- @e23 [button] "Sync now"
+- @e24 [button] "Software licenses"
+- @e25 [button] "Reset catalog corrections"
+- @e26 [button] "Sign out"
+- @e27 [group]
+- @e28 [group] "Scrim"
++ @e2~s571355 [group] "BOOKFIN"
++ @e3~s571355 [button] "Book libraries"
++ @e4~s571355 [button] "Appearance"
++ @e5~s571355 [button] "Account"
++ @e6~s571355 [group] "Cannot reach Jellyfin. Saved books are still available."
++ @e7~s571355 [group] "A little further
+into the story."
++ @e8~s571355 [button] "Refresh books"
++ @e9~s571355 [text-field]
++ @e10~s571355 [horizontalscrollview]
++ @e11~s571355 [button] "All" [selected]
++ @e12~s571355 [button] "Audio"
++ @e13~s571355 [button] "Ebooks"
++ @e14~s571355 [button] "Downloaded"
++ @e15~s571355 [group] "Saved library · 2026-11-03 15:15:26"
++ @e16~s571355 [group] "Acceptance blank
+1 ebook
+Ebook · Downloaded"
++ @e17~s571355 [group] "Acceptance dense English
+1 ebook
+Ebook · Downloaded"
++ @e18~s571355 [button] "Library
+Tab 1 of 3" [selected]
++ @e19~s571355 [button] "Downloads
+Tab 2 of 3"
++ @e20~s571355 [button] "Listening
+Tab 3 of 3"

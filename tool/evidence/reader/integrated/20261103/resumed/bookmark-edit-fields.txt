@@ -1,0 +1,19 @@
+Tapped @e16 (755, 899)
+settled after 699ms: +6 -11 (~1 unchanged)
+- @e7 [group]
+- @e8 [group]
+- @e9 [group]
+- @e11 [group]
+- @e12 [group]
+- @e13 [group]
+- @e14 [spinner]
+- @e15 [group]
+- @e16 [menu-item] "Edit title and note"
+- @e17 [menu-item] "Delete"
+- @e18 [group] "Dismiss menu"
++ @e2~s571268 [group] "Reading bookmark"
++ @e3~s571268 [text-field]
++ @e4~s571268 [text-field]
++ @e5~s571268 [button] "Cancel"
++ @e6~s571268 [button] "Save"
++ @e7~s571268 [group] "Dismiss"

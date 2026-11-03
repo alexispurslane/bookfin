@@ -1,0 +1,37 @@
+Tapped @e21 (540, 1004)
+settled after 1432ms: +19 -16 (~1 unchanged)
+- @e7 [group]
+- @e8 [group]
+- @e9 [group]
+- @e11 [group]
+- @e12 [group]
+- @e13 [group]
+- @e14 [group]
+- @e15 [group]
+- @e16 [button] "Dismiss"
+- @e17 [group]
+- @e18 [group]
+- @e19 [group] "Contents"
+- @e20 [button] "Source page 1"
+- @e21 [button] "Source page 2"
+- @e22 [group]
+- @e23 [group] "Scrim"
++ @e2~s571247 [button] "Back"
++ @e3~s571247 [group] "Acceptance dense English"
++ @e4~s571247 [button] "Hide reader controls"
++ @e5~s571247 [button] "Original page"
++ @e6~s571247 [button] "Reflow text"
++ @e7~s571247 [group] "English scans only. Other languages are not supported."
++ @e8~s571247 [button] "Retry recognition"
++ @e9~s571247 [group] "No English text was recognized. Read the original page."
++ @e10~s571247 [image] "Original source page 2"
++ @e11~s571247 [button] "Contents"
++ @e12~s571247 [button] "Search book"
++ @e13~s571247 [button] "Smaller text"
++ @e14~s571247 [button] "Larger text"
++ @e15~s571247 [button] "Bookmark this place"
++ @e16~s571247 [button] "Reading bookmarks"
++ @e17~s571247 [button] "Night reading theme"
++ @e18~s571247 [button] "Previous page"
++ @e19~s571247 [group] "Source page 2 · Page 2"
++ @e20~s571247 [button] "Next page"

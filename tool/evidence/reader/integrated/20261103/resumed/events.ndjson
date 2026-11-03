@@ -1,0 +1,285 @@
+{"start": 1793736735.9410481, "end": 1793736736.63699, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "initial.txt"}
+{"start": 1793736778.387809, "end": 1793736778.8303869, "arguments": ["screenshot", "/Users/alexispurslane/.t3/worktrees/bookfin/t3-8d79fd15/tool/evidence/reader/integrated/20261103/resumed/signin.png"], "exit": 0, "evidence": "signin-screen.txt"}
+{"start": 1793736843.960858, "end": 1793736844.325484, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "server-before.txt"}
+{"start": 1793736844.325713, "end": 1793736845.065365, "arguments": ["fill", "@e25", "http://127.0.0.1:7364", "--settle"], "exit": 1, "evidence": "server.txt"}
+{"start": 1793736845.1088152, "end": 1793736845.5831301, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "user-before.txt"}
+{"start": 1793736845.583206, "end": 1793736847.2436328, "arguments": ["fill", "@e26", "research-alice", "--settle"], "exit": 0, "evidence": "user.txt"}
+{"start": 1793736847.2883542, "end": 1793736847.6341949, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "password-before.txt"}
+{"start": 1793736849.046562, "end": 1793736849.412072, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "login-before.txt"}
+{"start": 1793736849.412398, "end": 1793736850.598609, "arguments": ["press", "@e28", "--settle"], "exit": 0, "evidence": "login.txt"}
+{"start": 1793736850.598769, "end": 1793736851.039333, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "login-after.txt"}
+{"start": 1793736868.997968, "end": 1793736869.298065, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "server-retry-before.txt"}
+{"start": 1793736869.298145, "end": 1793736870.532935, "arguments": ["fill", "@e25", "http://127.0.0.1:7364", "--settle", "--debug"], "exit": 0, "evidence": "server-retry.txt"}
+{"start": 1793736899.0132391, "end": 1793736899.327264, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "signin-retry-before.txt"}
+{"start": 1793736899.327701, "end": 1793736901.1146948, "arguments": ["press", "@e29", "--settle"], "exit": 0, "evidence": "signin-retry.txt"}
+{"start": 1793736901.114778, "end": 1793736901.405229, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "signin-retry-after.txt"}
+{"start": 1793736923.867897, "end": 1793736924.118119, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "choose-library-before.txt"}
+{"start": 1793736924.118389, "end": 1793736925.0923252, "arguments": ["press", "@e26", "--settle"], "exit": 0, "evidence": "choose-library.txt"}
+{"start": 1793736925.092397, "end": 1793736925.3414552, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "choose-library-after.txt"}
+{"start": 1793736925.372685, "end": 1793736925.6225421, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "save-library-before.txt"}
+{"start": 1793736925.622824, "end": 1793736927.3395991, "arguments": ["press", "@e28", "--settle"], "exit": 0, "evidence": "save-library.txt"}
+{"start": 1793736927.339681, "end": 1793736927.5974422, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "save-library-after.txt"}
+{"start": 1793736975.67915, "end": 1793736975.992547, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "dense-details-before.txt"}
+{"start": 1793736975.992832, "end": 1793736977.334999, "arguments": ["press", "@e33", "--settle"], "exit": 0, "evidence": "dense-details.txt"}
+{"start": 1793736977.335086, "end": 1793736977.6068401, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "dense-details-after.txt"}
+{"start": 1793736977.6427488, "end": 1793736977.914809, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "dense-download-before.txt"}
+{"start": 1793736977.9150589, "end": 1793736979.265541, "arguments": ["press", "@e29", "--settle"], "exit": 0, "evidence": "dense-download.txt"}
+{"start": 1793736979.26561, "end": 1793736979.5466921, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "dense-download-after.txt"}
+{"start": 1793737006.333174, "end": 1793737006.684758, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "dense-back-before.txt"}
+{"start": 1793737006.685044, "end": 1793737008.038708, "arguments": ["press", "@e18", "--settle"], "exit": 0, "evidence": "dense-back.txt"}
+{"start": 1793737008.038795, "end": 1793737008.321114, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "dense-back-after.txt"}
+{"start": 1793737008.3594382, "end": 1793737008.640098, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "blank-details-before.txt"}
+{"start": 1793737008.64038, "end": 1793737010.0862458, "arguments": ["press", "@e32", "--settle"], "exit": 0, "evidence": "blank-details.txt"}
+{"start": 1793737010.0863302, "end": 1793737010.372565, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "blank-details-after.txt"}
+{"start": 1793737010.411807, "end": 1793737010.7023208, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "blank-download-before.txt"}
+{"start": 1793737010.702592, "end": 1793737012.091847, "arguments": ["press", "@e29", "--settle"], "exit": 0, "evidence": "blank-download.txt"}
+{"start": 1793737012.0919309, "end": 1793737012.3617148, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "blank-download-after.txt"}
+{"start": 1793737012.397496, "end": 1793737012.671849, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "blank-back-before.txt"}
+{"start": 1793737012.672087, "end": 1793737013.990516, "arguments": ["press", "@e18", "--settle"], "exit": 0, "evidence": "blank-back.txt"}
+{"start": 1793737013.990602, "end": 1793737014.2687528, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "blank-back-after.txt"}
+{"start": 1793737014.352799, "end": 1793737014.7464142, "arguments": ["settings", "airplane", "on"], "exit": 0, "evidence": "airplane-on.txt"}
+{"start": 1793737014.7993548, "end": 1793737015.184489, "arguments": ["settings", "wifi", "off"], "exit": 0, "evidence": "wifi-off.txt"}
+{"start": 1793737015.2256691, "end": 1793737015.613756, "arguments": ["settings", "mobile-data", "off"], "exit": 0, "evidence": "mobile-off.txt"}
+{"start": 1793737036.218734, "end": 1793737036.467274, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "dense-offline-details-before.txt"}
+{"start": 1793737036.4675589, "end": 1793737037.6907241, "arguments": ["press", "@e31", "--settle"], "exit": 0, "evidence": "dense-offline-details.txt"}
+{"start": 1793737037.690805, "end": 1793737037.944562, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "dense-offline-details-after.txt"}
+{"start": 1793737037.976129, "end": 1793737038.224084, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "dense-active-read-before.txt"}
+{"start": 1793737038.224339, "end": 1793737039.9296541, "arguments": ["press", "@e29", "--settle"], "exit": 0, "evidence": "dense-active-read.txt"}
+{"start": 1793737039.929735, "end": 1793737040.1725702, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "dense-active-read-after.txt"}
+{"start": 1793737040.205694, "end": 1793737040.4638872, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "dense-active-cancel-before.txt"}
+{"start": 1793737040.46414, "end": 1793737041.544224, "arguments": ["press", "@e22", "--settle"], "exit": 0, "evidence": "dense-active-cancel.txt"}
+{"start": 1793737041.54431, "end": 1793737041.80701, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "dense-active-cancel-after.txt"}
+{"start": 1793737041.8417878, "end": 1793737042.233533, "arguments": ["screenshot", "/Users/alexispurslane/.t3/worktrees/bookfin/t3-8d79fd15/tool/evidence/reader/integrated/20261103/resumed/cancel.png"], "exit": 0, "evidence": "dense-after-cancel.txt"}
+{"start": 1793737069.601001, "end": 1793737069.845432, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "cancel-late-check.txt"}
+{"start": 1793737070.507552, "end": 1793737070.7536068, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "dense-retry-before.txt"}
+{"start": 1793737070.753858, "end": 1793737072.117169, "arguments": ["press", "@e22", "--settle"], "exit": 0, "evidence": "dense-retry.txt"}
+{"start": 1793737072.1172748, "end": 1793737072.369465, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "dense-retry-after.txt"}
+{"start": 1793737104.742047, "end": 1793737104.9950662, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "retry-observed.txt"}
+{"start": 1793737134.141354, "end": 1793737134.4155982, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "fallback-contents-before.txt"}
+{"start": 1793737134.415851, "end": 1793737135.734665, "arguments": ["press", "@e26", "--settle"], "exit": 0, "evidence": "fallback-contents.txt"}
+{"start": 1793737135.73475, "end": 1793737136.05159, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "fallback-contents-after.txt"}
+{"start": 1793737173.644146, "end": 1793737173.972702, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "fallback-page2-before.txt"}
+{"start": 1793737173.972975, "end": 1793737175.8047118, "arguments": ["press", "@e21", "--settle"], "exit": 0, "evidence": "fallback-page2.txt"}
+{"start": 1793737175.804812, "end": 1793737176.1282601, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "fallback-page2-after.txt"}
+{"start": 1793737176.1646552, "end": 1793737176.551643, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "fallback-page2-observed.txt"}
+{"start": 1793737176.5892859, "end": 1793737177.050102, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "bookmark-dialog-before.txt"}
+{"start": 1793737177.050433, "end": 1793737178.243401, "arguments": ["press", "@e30", "--settle"], "exit": 0, "evidence": "bookmark-dialog.txt"}
+{"start": 1793737178.243479, "end": 1793737178.537303, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "bookmark-dialog-after.txt"}
+{"start": 1793737189.5935209, "end": 1793737189.89311, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "bookmarks-open-before.txt"}
+{"start": 1793737189.893458, "end": 1793737191.236591, "arguments": ["press", "@e31", "--settle"], "exit": 0, "evidence": "bookmarks-open.txt"}
+{"start": 1793737191.23668, "end": 1793737191.523773, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "bookmarks-open-after.txt"}
+{"start": 1793737203.995668, "end": 1793737204.272976, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "bookmark-edit-before.txt"}
+{"start": 1793737204.273279, "end": 1793737205.443508, "arguments": ["press", "@e21", "--settle"], "exit": 0, "evidence": "bookmark-edit.txt"}
+{"start": 1793737205.443594, "end": 1793737205.7294562, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "bookmark-edit-after.txt"}
+{"start": 1793737272.246867, "end": 1793737272.509088, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "bookmark-edit-fields-before.txt"}
+{"start": 1793737272.509357, "end": 1793737273.5335639, "arguments": ["press", "@e16", "--settle"], "exit": 0, "evidence": "bookmark-edit-fields.txt"}
+{"start": 1793737273.533649, "end": 1793737273.7979689, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "bookmark-edit-fields-after.txt"}
+{"start": 1793737305.8504431, "end": 1793737306.09307, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "unicode-title-before.txt"}
+{"start": 1793737306.093157, "end": 1793737307.343287, "arguments": ["fill", "@e21", "\u201cCaf\u00e9\u201d \u4e2d\u6587 \ud83d\udc1f", "--settle"], "exit": 0, "evidence": "unicode-title.txt"}
+{"start": 1793737307.3944, "end": 1793737307.758544, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "unicode-note-before.txt"}
+{"start": 1793737307.758634, "end": 1793737308.94228, "arguments": ["fill", "@e22", "D\u00e9j\u00e0 vu \u2014 \u2018na\u00efve\u2019 \u4e2d\u6587 \ud83d\udc1f", "--settle"], "exit": 0, "evidence": "unicode-note.txt"}
+{"start": 1793737308.974253, "end": 1793737309.234043, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "unicode-save-before.txt"}
+{"start": 1793737309.234325, "end": 1793737310.5317929, "arguments": ["press", "@e24", "--settle"], "exit": 0, "evidence": "unicode-save.txt"}
+{"start": 1793737310.5318882, "end": 1793737310.781215, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "unicode-save-after.txt"}
+{"start": 1793737427.918737, "end": 1793737428.1945758, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "bookmark-dismiss-before.txt"}
+{"start": 1793737428.194838, "end": 1793737429.054589, "arguments": ["press", "@e16", "--settle"], "exit": 0, "evidence": "bookmark-dismiss.txt"}
+{"start": 1793737429.054687, "end": 1793737429.3163772, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "bookmark-dismiss-after.txt"}
+{"start": 1793737429.3520331, "end": 1793737429.6097732, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "saved-fallback-leave-before.txt"}
+{"start": 1793737468.5616589, "end": 1793737469.04184, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "sheet-before-back.txt"}
+{"start": 1793737472.650883, "end": 1793737473.096937, "arguments": ["back"], "exit": 0, "evidence": "sheet-back.txt"}
+{"start": 1793737497.415031, "end": 1793737497.894349, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "sheet-back-observed.txt"}
+{"start": 1793737512.502437, "end": 1793737512.815281, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "saved-fallback-leave2-before.txt"}
+{"start": 1793737512.8155541, "end": 1793737514.098707, "arguments": ["press", "@e16", "--settle"], "exit": 0, "evidence": "saved-fallback-leave2.txt"}
+{"start": 1793737514.098799, "end": 1793737514.407073, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "saved-fallback-leave2-after.txt"}
+{"start": 1793737514.45011, "end": 1793737514.761089, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "saved-fallback-reopen-before.txt"}
+{"start": 1793737514.761406, "end": 1793737516.5761962, "arguments": ["press", "@e29", "--settle"], "exit": 0, "evidence": "saved-fallback-reopen.txt"}
+{"start": 1793737516.5763001, "end": 1793737516.887733, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "saved-fallback-reopen-after.txt"}
+{"start": 1793737516.927285, "end": 1793737517.237278, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "departure-contents-before.txt"}
+{"start": 1793737517.2375512, "end": 1793737518.579865, "arguments": ["press", "@e26", "--settle"], "exit": 0, "evidence": "departure-contents.txt"}
+{"start": 1793737518.579957, "end": 1793737518.882914, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "departure-contents-after.txt"}
+{"start": 1793737518.925091, "end": 1793737519.245802, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "departure-start-before.txt"}
+{"start": 1793737519.246101, "end": 1793737520.5051148, "arguments": ["press", "@e20", "--settle"], "exit": 0, "evidence": "departure-start.txt"}
+{"start": 1793737520.5052018, "end": 1793737520.7915452, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "departure-start-after.txt"}
+{"start": 1793737520.832545, "end": 1793737521.117253, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "active-departure-before.txt"}
+{"start": 1793737521.1175559, "end": 1793737522.6222348, "arguments": ["press", "@e16", "--settle"], "exit": 0, "evidence": "active-departure.txt"}
+{"start": 1793737522.622323, "end": 1793737522.914461, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "active-departure-after.txt"}
+{"start": 1793737542.3104808, "end": 1793737542.5948448, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "departure-back-library-before.txt"}
+{"start": 1793737542.595098, "end": 1793737543.890661, "arguments": ["press", "@e16", "--settle"], "exit": 0, "evidence": "departure-back-library.txt"}
+{"start": 1793737543.8907552, "end": 1793737544.1727428, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "departure-back-library-after.txt"}
+{"start": 1793737544.209951, "end": 1793737544.5024178, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "blank-offline-details-before.txt"}
+{"start": 1793737544.502827, "end": 1793737545.818503, "arguments": ["press", "@e30", "--settle"], "exit": 0, "evidence": "blank-offline-details.txt"}
+{"start": 1793737545.81859, "end": 1793737546.1107478, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "blank-offline-details-after.txt"}
+{"start": 1793737546.150229, "end": 1793737546.438402, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "blank-offline-read-before.txt"}
+{"start": 1793737546.4386592, "end": 1793737548.100798, "arguments": ["press", "@e29", "--settle"], "exit": 0, "evidence": "blank-offline-read.txt"}
+{"start": 1793737548.1008818, "end": 1793737548.382539, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "blank-offline-read-after.txt"}
+{"start": 1793737548.419871, "end": 1793737548.708135, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "blank-fallback-observed.txt"}
+{"start": 1793737548.74541, "end": 1793737549.023277, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "blank-original-before.txt"}
+{"start": 1793737549.023541, "end": 1793737549.998091, "arguments": ["press", "@e19", "--settle"], "exit": 0, "evidence": "blank-original.txt"}
+{"start": 1793737549.9981701, "end": 1793737550.279868, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "blank-original-after.txt"}
+{"start": 1793737550.317052, "end": 1793737550.6858618, "arguments": ["screenshot", "/Users/alexispurslane/.t3/worktrees/bookfin/t3-8d79fd15/tool/evidence/reader/integrated/20261103/resumed/blank.png"], "exit": 0, "evidence": "blank-fallback-shot.txt"}
+{"start": 1793737610.6552699, "end": 1793737615.9206522, "arguments": ["open", "dev.bookfin.bookfin", "--relaunch"], "exit": 0, "evidence": "unicode-sync-relaunch.txt"}
+{"start": 1793737615.920733, "end": 1793737616.344918, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "unicode-sync-account-before.txt"}
+{"start": 1793737616.345185, "end": 1793737617.646828, "arguments": ["press", "@e19", "--settle"], "exit": 0, "evidence": "unicode-sync-account.txt"}
+{"start": 1793737617.6469, "end": 1793737617.89279, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "unicode-sync-account-state.txt"}
+{"start": 1793737618.725753, "end": 1793737618.985025, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "unicode-sync-button-before.txt"}
+{"start": 1793737618.985255, "end": 1793737620.4645078, "arguments": ["press", "@e23", "--settle"], "exit": 0, "evidence": "unicode-sync-button.txt"}
+{"start": 1793737620.464582, "end": 1793737620.714196, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "unicode-sync-result.txt"}
+{"start": 1793737664.099118, "end": 1793737664.467391, "arguments": ["screenshot", "/Users/alexispurslane/.t3/worktrees/bookfin/t3-8d79fd15/tool/evidence/reader/integrated/20261103/resumed/unicode-sync.png"], "exit": 0, "evidence": "sync-shot.txt"}
+{"start": 1793737664.4996989, "end": 1793737664.742338, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "account-before-close.txt"}
+{"start": 1793737664.777046, "end": 1793737666.165482, "arguments": ["back", "--system", "--settle"], "exit": 0, "evidence": "account-close.txt"}
+{"start": 1793737666.210119, "end": 1793737666.5005288, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "library-for-refresh.txt"}
+{"start": 1793737666.538122, "end": 1793737666.826379, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "refreshed-with-single-before.txt"}
+{"start": 1793737666.826695, "end": 1793737668.296603, "arguments": ["press", "@e22", "--settle"], "exit": 0, "evidence": "refreshed-with-single.txt"}
+{"start": 1793737668.296714, "end": 1793737668.582679, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "refreshed-with-single-after.txt"}
+{"start": 1793737681.2812212, "end": 1793737681.649319, "arguments": ["settings", "airplane", "off"], "exit": 0, "evidence": "airplane-restore.txt"}
+{"start": 1793737681.688399, "end": 1793737682.059455, "arguments": ["settings", "wifi", "on"], "exit": 0, "evidence": "wifi-restore.txt"}
+{"start": 1793737682.097321, "end": 1793737682.4432158, "arguments": ["settings", "mobile-data", "on"], "exit": 0, "evidence": "mobile-restore.txt"}
+{"start": 1793737718.5730739, "end": 1793737718.834862, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "single-details-before.txt"}
+{"start": 1793737718.835168, "end": 1793737720.119622, "arguments": ["press", "@e34", "--settle"], "exit": 0, "evidence": "single-details.txt"}
+{"start": 1793737720.119736, "end": 1793737720.370432, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "single-details-after.txt"}
+{"start": 1793737720.403906, "end": 1793737720.652833, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "single-download-before.txt"}
+{"start": 1793737720.653131, "end": 1793737722.163409, "arguments": ["press", "@e29", "--settle"], "exit": 0, "evidence": "single-download.txt"}
+{"start": 1793737722.163488, "end": 1793737722.426945, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "single-download-after.txt"}
+{"start": 1793737722.514168, "end": 1793737722.862059, "arguments": ["settings", "airplane", "on"], "exit": 0, "evidence": "single-airplane.txt"}
+{"start": 1793737722.898713, "end": 1793737723.237783, "arguments": ["settings", "wifi", "off"], "exit": 0, "evidence": "single-wifi.txt"}
+{"start": 1793737723.272605, "end": 1793737723.712598, "arguments": ["settings", "mobile-data", "off"], "exit": 0, "evidence": "single-mobile.txt"}
+{"start": 1793737723.746675, "end": 1793737724.034461, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "single-read-before.txt"}
+{"start": 1793737724.034744, "end": 1793737726.062269, "arguments": ["press", "@e29", "--settle"], "exit": 0, "evidence": "single-read.txt"}
+{"start": 1793737726.062366, "end": 1793737726.309016, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "single-read-after.txt"}
+{"start": 1793737726.342443, "end": 1793737726.5856571, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "single-cancel-before.txt"}
+{"start": 1793737726.586004, "end": 1793737727.621226, "arguments": ["press", "@e22", "--settle"], "exit": 0, "evidence": "single-cancel.txt"}
+{"start": 1793737727.62136, "end": 1793737727.873319, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "single-cancel-after.txt"}
+{"start": 1793737727.907407, "end": 1793737728.152118, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "single-retry-before.txt"}
+{"start": 1793737728.152447, "end": 1793737729.2724721, "arguments": ["press", "@e22", "--settle"], "exit": 0, "evidence": "single-retry.txt"}
+{"start": 1793737729.2725708, "end": 1793737729.5184488, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "single-retry-after.txt"}
+{"start": 1793737750.7302, "end": 1793737751.00318, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "single-retry-complete.txt"}
+{"start": 1793737812.57761, "end": 1793737813.1654882, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "single-reflow-before.txt"}
+{"start": 1793737813.166909, "end": 1793737814.406019, "arguments": ["press", "@e20", "--settle"], "exit": 0, "evidence": "single-reflow.txt"}
+{"start": 1793737814.4060988, "end": 1793737814.784553, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "single-reflow-after.txt"}
+{"start": 1793737814.823173, "end": 1793737815.158517, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "single-text-next-before.txt"}
+{"start": 1793737815.158827, "end": 1793737816.3563662, "arguments": ["press", "@e36", "--settle"], "exit": 0, "evidence": "single-text-next.txt"}
+{"start": 1793737816.356454, "end": 1793737816.833448, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "single-text-next-after.txt"}
+{"start": 1793737817.785044, "end": 1793737818.25459, "arguments": ["screenshot", "/Users/alexispurslane/.t3/worktrees/bookfin/t3-8d79fd15/tool/evidence/reader/integrated/20261103/resumed/retry-reflow.png"], "exit": 0, "evidence": "single-success-shot.txt"}
+{"start": 1793737909.267613, "end": 1793737909.512366, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "single-nonzero-bookmark-before.txt"}
+{"start": 1793737909.512647, "end": 1793737910.453287, "arguments": ["press", "@e30", "--settle"], "exit": 0, "evidence": "single-nonzero-bookmark.txt"}
+{"start": 1793737910.453374, "end": 1793737910.700963, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "single-nonzero-bookmark-after.txt"}
+{"start": 1793737911.388461, "end": 1793737911.6457589, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "single-cache-leave-before.txt"}
+{"start": 1793737911.6460328, "end": 1793737913.2398, "arguments": ["press", "@e16", "--settle"], "exit": 0, "evidence": "single-cache-leave.txt"}
+{"start": 1793737913.2398982, "end": 1793737913.491625, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "single-cache-leave-after.txt"}
+{"start": 1793737913.527298, "end": 1793737913.78304, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "single-cache-reopen-before.txt"}
+{"start": 1793737913.783315, "end": 1793737915.31478, "arguments": ["press", "@e29", "--settle"], "exit": 0, "evidence": "single-cache-reopen.txt"}
+{"start": 1793737915.314867, "end": 1793737915.671726, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "single-cache-reopen-after.txt"}
+{"start": 1793737915.710859, "end": 1793737915.9920561, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "single-cache-reflow-before.txt"}
+{"start": 1793737915.992348, "end": 1793737917.0548391, "arguments": ["press", "@e20", "--settle"], "exit": 0, "evidence": "single-cache-reflow.txt"}
+{"start": 1793737917.0549362, "end": 1793737917.337755, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "single-cache-reflow-after.txt"}
+{"start": 1793737918.1041121, "end": 1793737918.512537, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "single-remove-back-before.txt"}
+{"start": 1793737918.512827, "end": 1793737919.9259672, "arguments": ["press", "@e16", "--settle"], "exit": 0, "evidence": "single-remove-back.txt"}
+{"start": 1793737919.926065, "end": 1793737920.2204459, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "single-remove-back-after.txt"}
+{"start": 1793737920.257781, "end": 1793737920.539718, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "single-remove-before.txt"}
+{"start": 1793737920.539989, "end": 1793737921.600449, "arguments": ["press", "@e28", "--settle"], "exit": 0, "evidence": "single-remove.txt"}
+{"start": 1793737921.600561, "end": 1793737921.8774452, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "single-remove-after.txt"}
+{"start": 1793737962.999423, "end": 1793737963.269599, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "single-remove-confirm-before.txt"}
+{"start": 1793737963.269887, "end": 1793737964.715916, "arguments": ["press", "@e22", "--settle"], "exit": 0, "evidence": "single-remove-confirm.txt"}
+{"start": 1793737964.716019, "end": 1793737965.111028, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "single-remove-confirm-after.txt"}
+{"start": 1793737965.7946439, "end": 1793737966.1334138, "arguments": ["settings", "airplane", "off"], "exit": 0, "evidence": "redownload-airplane.txt"}
+{"start": 1793737966.169257, "end": 1793737966.4936352, "arguments": ["settings", "wifi", "on"], "exit": 0, "evidence": "redownload-wifi.txt"}
+{"start": 1793737966.528693, "end": 1793737966.845106, "arguments": ["settings", "mobile-data", "on"], "exit": 0, "evidence": "redownload-mobile.txt"}
+{"start": 1793737966.881043, "end": 1793737967.171951, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "single-redownload-before.txt"}
+{"start": 1793737967.1721978, "end": 1793737968.421193, "arguments": ["press", "@e28", "--settle"], "exit": 0, "evidence": "single-redownload.txt"}
+{"start": 1793737968.4212968, "end": 1793737968.685899, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "single-redownload-after.txt"}
+{"start": 1793737968.737623, "end": 1793737969.080106, "arguments": ["settings", "airplane", "on"], "exit": 0, "evidence": "fallback-again-airplane.txt"}
+{"start": 1793737969.1172469, "end": 1793737969.474754, "arguments": ["settings", "wifi", "off"], "exit": 0, "evidence": "fallback-again-wifi.txt"}
+{"start": 1793737969.507415, "end": 1793737969.785153, "arguments": ["settings", "mobile-data", "off"], "exit": 0, "evidence": "fallback-again-mobile.txt"}
+{"start": 1793737969.817426, "end": 1793737970.069077, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "nonzero-active-read-before.txt"}
+{"start": 1793737970.0693471, "end": 1793737971.3472152, "arguments": ["press", "@e29", "--settle"], "exit": 0, "evidence": "nonzero-active-read.txt"}
+{"start": 1793737971.347307, "end": 1793737971.587658, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "nonzero-active-read-after.txt"}
+{"start": 1793737971.62015, "end": 1793737971.859924, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "nonzero-active-cancel-before.txt"}
+{"start": 1793738019.49685, "end": 1793738019.743364, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "redownload-retry-back-before.txt"}
+{"start": 1793738019.743637, "end": 1793738021.020521, "arguments": ["press", "@e16", "--settle"], "exit": 0, "evidence": "redownload-retry-back.txt"}
+{"start": 1793738021.020619, "end": 1793738021.263307, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "redownload-retry-back-after.txt"}
+{"start": 1793738021.295274, "end": 1793738021.604336, "arguments": ["settings", "airplane", "off"], "exit": 0, "evidence": "redownload-retry-airplane.txt"}
+{"start": 1793738021.638453, "end": 1793738021.9732218, "arguments": ["settings", "wifi", "on"], "exit": 0, "evidence": "redownload-retry-wifi.txt"}
+{"start": 1793738022.005461, "end": 1793738022.299833, "arguments": ["settings", "mobile-data", "on"], "exit": 0, "evidence": "redownload-retry-mobile.txt"}
+{"start": 1793738022.3503108, "end": 1793738022.612737, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "redownload-retry-network.txt"}
+{"start": 1793738071.246115, "end": 1793738071.550009, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "redownload-ready-observed.txt"}
+{"start": 1793738112.100629, "end": 1793738112.44367, "arguments": ["settings", "airplane", "on"], "exit": 0, "evidence": "nonzero-offline-airplane.txt"}
+{"start": 1793738112.483495, "end": 1793738112.837278, "arguments": ["settings", "wifi", "off"], "exit": 0, "evidence": "nonzero-offline-wifi.txt"}
+{"start": 1793738112.8760571, "end": 1793738113.193255, "arguments": ["settings", "mobile-data", "off"], "exit": 0, "evidence": "nonzero-offline-mobile.txt"}
+{"start": 1793738113.2321699, "end": 1793738113.493723, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "nonzero-read-retry-before.txt"}
+{"start": 1793738113.493983, "end": 1793738115.075517, "arguments": ["press", "@e29", "--settle"], "exit": 0, "evidence": "nonzero-read-retry.txt"}
+{"start": 1793738115.075617, "end": 1793738115.326952, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "nonzero-read-retry-after.txt"}
+{"start": 1793738115.360534, "end": 1793738115.604962, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "nonzero-cancel-retry-before.txt"}
+{"start": 1793738115.605243, "end": 1793738116.683146, "arguments": ["press", "@e22", "--settle"], "exit": 0, "evidence": "nonzero-cancel-retry.txt"}
+{"start": 1793738116.683241, "end": 1793738116.9455118, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "nonzero-cancel-retry-after.txt"}
+{"start": 1793738117.8274162, "end": 1793738118.1870441, "arguments": ["screenshot", "/Users/alexispurslane/.t3/worktrees/bookfin/t3-8d79fd15/tool/evidence/reader/integrated/20261103/resumed/nonzero-fallback.png"], "exit": 0, "evidence": "nonzero-fallback-shot.txt"}
+{"start": 1793738118.219371, "end": 1793738118.470763, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "nonzero-bookmarks-before.txt"}
+{"start": 1793738118.471021, "end": 1793738119.7220259, "arguments": ["press", "@e31", "--settle"], "exit": 0, "evidence": "nonzero-bookmarks.txt"}
+{"start": 1793738119.722108, "end": 1793738119.9736462, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "nonzero-bookmarks-after.txt"}
+{"start": 1793738165.696933, "end": 1793738165.963731, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "nonzero-bookmark-restore-before.txt"}
+{"start": 1793738165.964032, "end": 1793738167.210716, "arguments": ["press", "@e20", "--settle"], "exit": 0, "evidence": "nonzero-bookmark-restore.txt"}
+{"start": 1793738167.210809, "end": 1793738167.4777951, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "nonzero-bookmark-restore-after.txt"}
+{"start": 1793738167.514189, "end": 1793738167.782264, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "single-active-departure-before.txt"}
+{"start": 1793738167.782509, "end": 1793738169.065247, "arguments": ["press", "@e16", "--settle"], "exit": 0, "evidence": "single-active-departure.txt"}
+{"start": 1793738169.06533, "end": 1793738169.335967, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "single-active-departure-after.txt"}
+{"start": 1793738294.091469, "end": 1793738294.382475, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "single-departure-late-screen.txt"}
+{"start": 1793738405.043909, "end": 1793738405.293579, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "nonzero-recovery-read-before.txt"}
+{"start": 1793738405.293903, "end": 1793738406.752287, "arguments": ["press", "@e29", "--settle"], "exit": 0, "evidence": "nonzero-recovery-read.txt"}
+{"start": 1793738406.752387, "end": 1793738407.023227, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "nonzero-recovery-read-after.txt"}
+{"start": 1793738407.060726, "end": 1793738407.337745, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "nonzero-recovery-reflow-before.txt"}
+{"start": 1793738407.338007, "end": 1793738408.4472241, "arguments": ["press", "@e20", "--settle"], "exit": 0, "evidence": "nonzero-recovery-reflow.txt"}
+{"start": 1793738408.447306, "end": 1793738408.761163, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "nonzero-recovery-reflow-after.txt"}
+{"start": 1793738409.512516, "end": 1793738409.887699, "arguments": ["screenshot", "/Users/alexispurslane/.t3/worktrees/bookfin/t3-8d79fd15/tool/evidence/reader/integrated/20261103/resumed/nonzero-recovered.png"], "exit": 0, "evidence": "nonzero-recovery-shot.txt"}
+{"start": 1793738490.957889, "end": 1793738491.2527459, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "cleanup-reader-back-before.txt"}
+{"start": 1793738491.252991, "end": 1793738492.557884, "arguments": ["press", "@e16", "--settle"], "exit": 0, "evidence": "cleanup-reader-back.txt"}
+{"start": 1793738492.557974, "end": 1793738492.815995, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "cleanup-reader-back-after.txt"}
+{"start": 1793738492.849636, "end": 1793738493.0888581, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "cleanup-single-remove-before.txt"}
+{"start": 1793738493.089094, "end": 1793738494.019781, "arguments": ["press", "@e28", "--settle"], "exit": 0, "evidence": "cleanup-single-remove.txt"}
+{"start": 1793738494.019885, "end": 1793738494.264014, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "cleanup-single-remove-after.txt"}
+{"start": 1793738494.2987368, "end": 1793738494.545703, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "cleanup-single-confirm-before.txt"}
+{"start": 1793738494.545968, "end": 1793738495.940955, "arguments": ["press", "@e22", "--settle"], "exit": 0, "evidence": "cleanup-single-confirm.txt"}
+{"start": 1793738495.941037, "end": 1793738496.187263, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "cleanup-single-confirm-after.txt"}
+{"start": 1793738496.220851, "end": 1793738496.46283, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "cleanup-single-back-before.txt"}
+{"start": 1793738496.4630961, "end": 1793738497.732647, "arguments": ["press", "@e16", "--settle"], "exit": 0, "evidence": "cleanup-single-back.txt"}
+{"start": 1793738497.7327318, "end": 1793738497.970052, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "cleanup-single-back-after.txt"}
+{"start": 1793738498.002064, "end": 1793738498.2549179, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "cleanup-dense-details-before.txt"}
+{"start": 1793738498.2552252, "end": 1793738499.56396, "arguments": ["press", "@e31", "--settle"], "exit": 0, "evidence": "cleanup-dense-details.txt"}
+{"start": 1793738499.564047, "end": 1793738499.802241, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "cleanup-dense-details-after.txt"}
+{"start": 1793738499.836344, "end": 1793738500.199039, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "cleanup-dense-remove-before.txt"}
+{"start": 1793738500.199305, "end": 1793738501.132077, "arguments": ["press", "@e28", "--settle"], "exit": 0, "evidence": "cleanup-dense-remove.txt"}
+{"start": 1793738501.132166, "end": 1793738501.364901, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "cleanup-dense-remove-after.txt"}
+{"start": 1793738501.396886, "end": 1793738501.629476, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "cleanup-dense-confirm-before.txt"}
+{"start": 1793738501.629762, "end": 1793738502.6655529, "arguments": ["press", "@e22", "--settle"], "exit": 0, "evidence": "cleanup-dense-confirm.txt"}
+{"start": 1793738502.665641, "end": 1793738502.900414, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "cleanup-dense-confirm-after.txt"}
+{"start": 1793738502.931423, "end": 1793738503.164176, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "cleanup-dense-back-before.txt"}
+{"start": 1793738503.164434, "end": 1793738504.432996, "arguments": ["press", "@e16", "--settle"], "exit": 0, "evidence": "cleanup-dense-back.txt"}
+{"start": 1793738504.433082, "end": 1793738504.672226, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "cleanup-dense-back-after.txt"}
+{"start": 1793738504.705379, "end": 1793738504.9646661, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "cleanup-blank-details-before.txt"}
+{"start": 1793738504.964965, "end": 1793738506.248144, "arguments": ["press", "@e30", "--settle"], "exit": 0, "evidence": "cleanup-blank-details.txt"}
+{"start": 1793738506.24823, "end": 1793738506.487515, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "cleanup-blank-details-after.txt"}
+{"start": 1793738506.5185869, "end": 1793738506.75839, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "cleanup-blank-remove-before.txt"}
+{"start": 1793738506.7586508, "end": 1793738507.7428658, "arguments": ["press", "@e28", "--settle"], "exit": 0, "evidence": "cleanup-blank-remove.txt"}
+{"start": 1793738507.742987, "end": 1793738507.97908, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "cleanup-blank-remove-after.txt"}
+{"start": 1793738508.012429, "end": 1793738508.364853, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "cleanup-blank-confirm-before.txt"}
+{"start": 1793738508.3651211, "end": 1793738509.679498, "arguments": ["press", "@e22", "--settle"], "exit": 0, "evidence": "cleanup-blank-confirm.txt"}
+{"start": 1793738509.679583, "end": 1793738510.033762, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "cleanup-blank-confirm-after.txt"}
+{"start": 1793738510.074582, "end": 1793738510.3562062, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "cleanup-blank-back-before.txt"}
+{"start": 1793738510.356459, "end": 1793738511.667239, "arguments": ["press", "@e16", "--settle"], "exit": 0, "evidence": "cleanup-blank-back.txt"}
+{"start": 1793738511.667341, "end": 1793738511.942792, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "cleanup-blank-back-after.txt"}
+{"start": 1793738588.112882, "end": 1793738588.35863, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "cleanup-downloads-tab-before.txt"}
+{"start": 1793738588.358906, "end": 1793738589.385003, "arguments": ["press", "@e35", "--settle"], "exit": 0, "evidence": "cleanup-downloads-tab.txt"}
+{"start": 1793738589.385089, "end": 1793738589.6219678, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "cleanup-downloads-tab-after.txt"}
+{"start": 1793738589.6538491, "end": 1793738589.971033, "arguments": ["screenshot", "/Users/alexispurslane/.t3/worktrees/bookfin/t3-8d79fd15/tool/evidence/reader/integrated/20261103/resumed/downloads-empty.png"], "exit": 0, "evidence": "cleanup-downloads-shot.txt"}
+{"start": 1793738590.0024781, "end": 1793738590.239548, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "cleanup-library-tab-before.txt"}
+{"start": 1793738590.239807, "end": 1793738591.1983519, "arguments": ["press", "@e28", "--settle"], "exit": 0, "evidence": "cleanup-library-tab.txt"}
+{"start": 1793738591.1984372, "end": 1793738591.444027, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "cleanup-library-tab-after.txt"}
+{"start": 1793738591.476449, "end": 1793738591.780819, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "cleanup-account-before.txt"}
+{"start": 1793738591.781643, "end": 1793738592.9974961, "arguments": ["press", "@e19", "--settle"], "exit": 0, "evidence": "cleanup-account.txt"}
+{"start": 1793738592.997592, "end": 1793738593.2330828, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "cleanup-account-after.txt"}
+{"start": 1793738593.265024, "end": 1793738593.516206, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "cleanup-signout-before.txt"}
+{"start": 1793738593.51648, "end": 1793738594.655168, "arguments": ["press", "@e26", "--settle"], "exit": 0, "evidence": "cleanup-signout.txt"}
+{"start": 1793738594.655259, "end": 1793738594.88918, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "cleanup-signout-after.txt"}
+{"start": 1793738594.920913, "end": 1793738595.235185, "arguments": ["screenshot", "/Users/alexispurslane/.t3/worktrees/bookfin/t3-8d79fd15/tool/evidence/reader/integrated/20261103/resumed/signed-out.png"], "exit": 0, "evidence": "cleanup-signedout-shot.txt"}
+{"start": 1793738595.2659929, "end": 1793738595.5615711, "arguments": ["settings", "airplane", "off"], "exit": 0, "evidence": "cleanup-airplane.txt"}
+{"start": 1793738595.59986, "end": 1793738595.935122, "arguments": ["settings", "wifi", "on"], "exit": 0, "evidence": "cleanup-wifi.txt"}
+{"start": 1793738595.96915, "end": 1793738596.274372, "arguments": ["settings", "mobile-data", "on"], "exit": 0, "evidence": "cleanup-mobile.txt"}
+{"start": 1793738596.309866, "end": 1793738597.999228, "arguments": ["close", "dev.bookfin.bookfin"], "exit": 0, "evidence": "cleanup-close.txt"}

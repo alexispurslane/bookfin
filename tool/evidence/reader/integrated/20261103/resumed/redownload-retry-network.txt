@@ -1,0 +1,26 @@
+Page: dev.bookfin.bookfin
+App: dev.bookfin.bookfin
+Snapshot: 34 nodes
+@e1 [text] "3:33"
+@e2 [image] "Phone notification:"
+@e3 [image] "Android System notification:"
+@e4 [group] "No service, no signal."
+  @e5 [image]
+@e6 [group] "Battery charging, 100 percent."
+  @e7 [image]
+    @e10 [group]
+      @e17 [button] "Back"
+      @e18 [group] "Book details"
+      @e19 [button] "Correct book details"
+        @e22 [group] "Acceptance single column"
+        @e23 [group] "Ebook editions"
+          @e25 [group] "Text"
+          @e26 [group] "1 file"
+          @e27 [group] "Waiting for Wi-Fi"
+          @e28 [group] "0 bytes · 0 / 1 files"
+          @e29 [button] "Cancel"
+          @e30 [button] "Read"
+          @e31 [group] "Collapsed"
+            @e32 [group] "Acceptance single column
+0.0 minutes, Collapsed"
+          @e34 [button] "Link another book or ebook"

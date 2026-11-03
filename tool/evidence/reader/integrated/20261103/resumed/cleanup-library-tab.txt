@@ -1,0 +1,47 @@
+Tapped @e28 (180, 2232)
+settled after 680ms: +14 -18 (~6 unchanged)
+- @e7 [group]
+- @e8 [group]
+- @e9 [group]
+- @e11 [group]
+- @e12 [group]
+- @e13 [group]
+- @e14 [group]
+- @e15 [group]
+- @e20 [group]
+- @e21 [group]
+- @e22 [group] "Downloads"
+- @e23 [group] "Network unknown · Waiting for Wi-Fi"
+- @e24 [group] "No downloads yet."
+- @e25 [group] "Retained storage
+Local files outside this account’s current catalog. They do not count as downloaded editions. Files stay here until you explicitly remove them.
+No retained files."
+- @e26 [button] "Refresh storage"
+- @e27 [group]
+- @e28 [button] "Library
+Tab 1 of 3"
+- @e29 [button] "Downloads
+Tab 2 of 3" [selected]
++ @e6~s571564 [group] "A little further
+into the story."
++ @e7~s571564 [button] "Refresh books"
++ @e8~s571564 [text-field]
++ @e9~s571564 [horizontalscrollview]
++ @e10~s571564 [button] "All" [selected]
++ @e11~s571564 [button] "Audio"
++ @e12~s571564 [button] "Ebooks"
++ @e13~s571564 [button] "Downloaded"
++ @e14~s571564 [scroll-area]
++ @e15~s571564 [group] "Acceptance blank
+1 ebook
+Ebook · Not downloaded"
++ @e16~s571564 [group] "Acceptance dense English
+1 ebook
+Ebook · Not downloaded"
++ @e17~s571564 [group] "Acceptance single column
+1 ebook
+Ebook · Not downloaded"
++ @e18~s571564 [button] "Library
+Tab 1 of 3" [selected]
++ @e19~s571564 [button] "Downloads
+Tab 2 of 3"

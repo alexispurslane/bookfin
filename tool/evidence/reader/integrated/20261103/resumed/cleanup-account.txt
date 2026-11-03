@@ -1,0 +1,52 @@
+Tapped @e19 (1017, 210)
+settled after 877ms: +11 -29 (~1 unchanged)
+- @e7 [group]
+- @e8 [group]
+- @e9 [group]
+- @e11 [group]
+- @e12 [group]
+- @e13 [group]
+- @e14 [group]
+- @e15 [group]
+- @e16 [group] "BOOKFIN"
+- @e17 [button] "Book libraries"
+- @e18 [button] "Appearance"
+- @e19 [button] "Account"
+- @e20 [group] "A little further
+into the story."
+- @e21 [button] "Refresh books"
+- @e22 [text-field]
+- @e23 [horizontalscrollview]
+- @e24 [button] "All" [selected]
+- @e25 [button] "Audio"
+- @e26 [button] "Ebooks"
+- @e27 [button] "Downloaded"
+- @e28 [group]
+- @e29 [scroll-area]
+- @e30 [group] "Acceptance blank
+1 ebook
+Ebook · Not downloaded"
+- @e31 [group] "Acceptance dense English
+1 ebook
+Ebook · Not downloaded"
+- @e32 [group] "Acceptance single column
+1 ebook
+Ebook · Not downloaded"
+- @e33 [group]
+- @e34 [button] "Library
+Tab 1 of 3" [selected]
+- @e35 [button] "Downloads
+Tab 2 of 3"
+- @e36 [button] "Listening
+Tab 3 of 3"
++ @e2~s571569 [button] "Dismiss"
++ @e3~s571569 [group] "Account"
++ @e4~s571569 [group] "research-alice"
++ @e5~s571569 [group] "http://127.0.0.1:7364"
++ @e6~s571569 [group] "Personal-record sync"
++ @e7~s571569 [group] "Personal records remain on this device. Sync needs a connection and the compatible Bookfin Storage plugin on Jellyfin. No other storage is used. Retry after checking the server."
++ @e8~s571569 [button] "Sync now"
++ @e9~s571569 [button] "Software licenses"
++ @e10~s571569 [button] "Reset catalog corrections"
++ @e11~s571569 [button] "Sign out"
++ @e12~s571569 [group] "Scrim"

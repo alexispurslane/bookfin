@@ -1,0 +1,4 @@
+Error (COMMAND_FAILED): Field focus was refused
+Hint: Retry with --debug and inspect diagnostics log for details.
+Diagnostic ID: mw14lr9j-e2f696ba
+Diagnostics Log: /Users/alexispurslane/.agent-device/remote-diagnostics/t3-0c9013b2a0e9ae3418ba219d/requests/242e9db3a5b76e70.ndjson

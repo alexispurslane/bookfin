@@ -1,0 +1,19 @@
+Tapped @e28 (242, 1000)
+settled after 675ms: +3 -14 (~12 unchanged)
+- @e8 [group]
+- @e9 [group]
+- @e10 [group]
+- @e12 [group]
+- @e13 [group]
+- @e14 [group]
+- @e15 [group]
+- @e16 [group]
+- @e20 [group]
+- @e21 [group]
+- @e24 [group]
+- @e27 [group] "Not downloaded"
+- @e28 [button] "Download"
++ @e9~s571443 [group] "Waiting for Wi-Fi"
++ @e10~s571443 [group] "0 bytes · 0 / 1 files"
++ @e11~s571443 [button] "Cancel"
+- @e32 [group]

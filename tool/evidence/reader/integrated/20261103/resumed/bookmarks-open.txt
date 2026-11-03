@@ -1,0 +1,36 @@
+Tapped @e31 (813, 2127)
+settled after 982ms: +5 -28 (~1 unchanged)
+- @e7 [group]
+- @e8 [group]
+- @e9 [group]
+- @e11 [group]
+- @e12 [group]
+- @e13 [group]
+- @e14 [group]
+- @e15 [group]
+- @e16 [button] "Back"
+- @e17 [group] "Acceptance dense English"
+- @e18 [button] "Hide reader controls"
+- @e19 [button] "Original page"
+- @e20 [button] "Reflow text"
+- @e21 [group] "English scans only. Other languages are not supported."
+- @e22 [button] "Retry recognition"
+- @e23 [group] "No English text was recognized. Read the original page."
+- @e24 [image] "Original source page 2"
+- @e25 [group]
+- @e26 [button] "Contents"
+- @e27 [button] "Search book"
+- @e28 [button] "Smaller text"
+- @e29 [button] "Larger text"
+- @e30 [button] "Bookmark this place"
+- @e31 [button] "Reading bookmarks"
+- @e32 [button] "Night reading theme"
+- @e33 [button] "Previous page"
+- @e34 [group] "Source page 2 · Page 2"
+- @e35 [button] "Next page"
++ @e2~s571258 [button] "Dismiss"
++ @e3~s571258 [group] "Reading bookmarks"
++ @e4~s571258 [button] "Saved reading place
+2026-11-03 15:19:37.945616"
++ @e5~s571258 [button] "Edit reading bookmark"
++ @e6~s571258 [group] "Scrim"

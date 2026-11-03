@@ -1,0 +1,38 @@
+Tapped @e16 (74, 210)
+settled after 981ms: +12 -23 (~3 unchanged)
+- @e7 [group]
+- @e8 [group]
+- @e9 [group]
+- @e11 [group]
+- @e12 [group]
+- @e13 [group]
+- @e14 [group]
+- @e15 [group]
++ @e3~s571454 [group] "Book details"
++ @e4~s571454 [button] "Correct book details"
+- @e18 [button] "Hide reader controls"
+- @e19 [group] "Download this ebook before reading. Only verified local files can open."
+- @e20 [button] "Retry opening"
+- @e21 [group] "This EPUB is not open. Use the message above to retry."
+- @e22 [group]
+- @e23 [button] "Contents" [disabled]
+- @e24 [button] "Search book" [disabled]
+- @e25 [button] "Smaller text" [disabled]
+- @e26 [button] "Larger text" [disabled]
+- @e27 [button] "Bookmark this place" [disabled]
+- @e28 [button] "Reading bookmarks" [disabled]
+- @e29 [button] "Night reading theme"
+- @e30 [button] "Previous page" [disabled]
+- @e31 [group] "Current chapter unavailable · Page progress unavailable"
+- @e32 [button] "Next page" [disabled]
++ @e6~s571454 [group] "Ebook editions"
++ @e7~s571454 [group] "Text"
++ @e8~s571454 [group] "1 file"
++ @e9~s571454 [group] "Waiting for Wi-Fi"
++ @e10~s571454 [group] "0 bytes · 0 / 1 files"
++ @e11~s571454 [button] "Cancel"
++ @e12~s571454 [button] "Read"
++ @e13~s571454 [group] "Collapsed"
++ @e14~s571454 [group] "Acceptance single column
+0.0 minutes, Collapsed"
++ @e15~s571454 [button] "Link another book or ebook"

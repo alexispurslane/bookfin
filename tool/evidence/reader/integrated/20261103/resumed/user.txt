@@ -1,0 +1,31 @@
+Filled 14 chars
+settled after 636ms: +1 -14 (~10 unchanged)
+- @e9 [group]
+- @e10 [group]
+- @e11 [group]
+- @e13 [group]
+- @e14 [group]
+- @e15 [group]
+- @e16 [group]
+- @e17 [group]
+- @e20 [group]
+- @e21 [group]
+- @e23 [group]
+- @e24 [group]
++ @e6~s571151 [text-field] "research-alice"
+- @e27 [text-field]
+- @e29 [group]
+unchanged interactive (10):
+= @e1~s571151 [group]
+= @e2~s571151 [group] "BOOKFIN"
+= @e3~s571151 [button] "Appearance"
+= @e4~s571151 [group] "Your library starts here."
+= @e5~s571151 [text-field]
+= @e7~s571151 [text-field]
+= @e8~s571151 [button] "Sign in"
+= @e9~s571151 [button] "Library
+Tab 1 of 3"
+= @e10~s571151 [button] "Downloads
+Tab 2 of 3"
+= @e11~s571151 [button] "Listening
+Tab 3 of 3"

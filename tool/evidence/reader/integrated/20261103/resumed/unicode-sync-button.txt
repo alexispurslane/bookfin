@@ -1,0 +1,14 @@
+Tapped @e23 (222, 1844)
+settled after 1159ms: +1 -11 (~11 unchanged)
+- @e7 [group]
+- @e8 [group]
+- @e9 [group]
+- @e11 [group]
+- @e12 [group]
+- @e13 [group]
+- @e14 [group]
+- @e15 [group]
+- @e17 [group]
+- @e22 [group] "Sync bookmarks, listening history, and saved places through the Bookfin Storage Jellyfin plugin. Local reading and listening work without the plugin."
++ @e7~s571350 [group] "Personal records are synced."
+- @e27 [group]

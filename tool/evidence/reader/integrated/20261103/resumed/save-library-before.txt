@@ -1,0 +1,26 @@
+Page: dev.bookfin.bookfin
+App: dev.bookfin.bookfin
+Snapshot: 34 nodes
+@e1 [text] "3:15"
+@e2 [image] "Phone notification:"
+@e3 [image] "Android System notification:"
+@e4 [image] "Wifi signal full."
+@e5 [group] "T-Mobile, signal full."
+  @e6 [image]
+@e7 [group] "Battery charging, 100 percent."
+  @e8 [image]
+    @e11 [group]
+      @e18 [group] "BOOKFIN"
+      @e19 [button] "Book libraries"
+      @e20 [button] "Appearance"
+      @e21 [button] "Account"
+        @e24 [group] "Choose book libraries"
+          @e26 [checkbox] "Remaining acceptance scans" [checked]
+          @e28 [button] "Save libraries"
+          @e30 [button] "Refresh libraries"
+      @e32 [button] "Library
+Tab 1 of 3" [selected]
+      @e33 [button] "Downloads
+Tab 2 of 3"
+      @e34 [button] "Listening
+Tab 3 of 3"

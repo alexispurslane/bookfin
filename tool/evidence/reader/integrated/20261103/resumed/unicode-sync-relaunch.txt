@@ -1,0 +1,2 @@
+Opened: dev.bookfin.bookfin
+Session state: /Users/alexispurslane/.t3/userdata/device/agent-device/sessions/t3-0c9013b2a0e9ae3418ba219d

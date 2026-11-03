@@ -1,0 +1,15 @@
+Tapped @e20 (701, 346)
+settled after 701ms: +3 -10 (~18 unchanged)
+- @e7 [group]
+- @e8 [group]
+- @e9 [group]
+- @e11 [group]
+- @e12 [group]
+- @e13 [group]
+- @e14 [group]
+- @e15 [group]
+- @e22 [image] "Original source page 1"
+- @e23 [group]
++ @e8~s571422 [group] "Extracted text is not checked against the page. Pictures and page layout stay in the original page."
++ @e9~s571422 [scroll-area]
++ @e10~s571422 [group] "The quiet garden A reader opened the book beside the window. Three birds crossed the pale morning sky. The next page held a map, a letter, and a promise. Original pages remain available when words are unclear. The quiet garden A reader opened the book beside the window. Three birds crossed the pale morning sky. The next page held a map, a letter, and a promise. Original pages remain available when words are unclear. The quiet garden A reader opened the book beside the window. Three birds crossed the pale morning sky. The next page held a map, a letter, and a promise. Original pages remain available when words are unclear. The quiet garden A reader opened the book beside the window. Three birds crossed the pale morning sky. The next page held a map, a letter, and a promise. Original pages remain available when words are unclear. The quiet garden A reader opened the book beside the window. Three birds crossed the pale morning sky. The next page held a map, a letter, and a promise. Original pages remain available when words are unclear. The quiet garden A reader opened the book beside the window. Three birds crossed the pale morning sky. The next page held a map, a letter, and a promise. Original pages remain available when words are unclear. The quiet garden A reader opened the book beside the window. Three birds crossed the pale morning sky. The next page held a map, a letter, and a promise. Original pages remain available when words are unclear. The quiet garden A reader opened the book beside the window. Three birds crossed the pale morning sky. The next page held a map, a letter, and a promise. Original pages remain available when words are unclear. The quiet garden A reader opened the book beside the window. Three birds crossed the pale morning sky. The next page held a map, a letter, and a promise. Original pages remain available when words are unclear. The quiet garden A reader opened the book beside the window. Three birds crossed the pale morning sky. The next page held a map, a letter, and a promise. Original pages remain available when words are unclear. The quiet garden A reader opened the book beside the window. Three birds crossed the pale morning sky. The next page held a map, a letter, and a promise. Original pages remain available when words are unclear."

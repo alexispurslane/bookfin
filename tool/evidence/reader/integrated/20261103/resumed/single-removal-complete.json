@@ -1,0 +1,1951 @@
+{
+  "case": "single-removal-complete",
+  "timeUnix": 1793737965.7390752,
+  "all70Unchanged": true,
+  "integrity": "ok",
+  "actions": [
+    {
+      "accountSha256": "57f2cd2bf725579f45937e973845f8dce6ca010fa7cb5fad7c1e036cef7fedc2",
+      "identity": "action.93bc9ec7ef6b11a63af440e92d275bd1acaee9c4.1",
+      "payloadSha256": "7889b42695bb0817efc4002a9102b9106df685b3a0dcf302a9fe28d3273460e1",
+      "pending": 0,
+      "action": {
+        "version": 1,
+        "account": "57f2cd2bf725579f45937e973845f8dce6ca010fa7cb5fad7c1e036cef7fedc2",
+        "replica": "93bc9ec7ef6b11a63af440e92d275bd1acaee9c4",
+        "sequence": 1,
+        "context": {},
+        "record": "[\"reading\",\"resumes\",\"[\\\"ba080d618839cb8c1ce6fcdbb4673ac1:\\\",\\\"ba080d618839cb8c1ce6fcdbb4673ac1:\\\",\\\"[null,\\\\\\\"399e312f5fbe0ebad73d91b371bc1328\\\\\\\",null,null,20000]\\\"]\"]",
+        "value": {
+          "edition": "ba080d618839cb8c1ce6fcdbb4673ac1:",
+          "source": "ba080d618839cb8c1ce6fcdbb4673ac1:",
+          "revision": "[null,\"399e312f5fbe0ebad73d91b371bc1328\",null,null,20000]",
+          "anchor": "{\"version\":1,\"processed\":\"617c96a765c588fdf5261d8e369dbb05b126185b854fee7037aeec6da941ba55\",\"original\":\"c931753b6c88b4c2e5a464488297c4bc6bf19604f69500d730ba2b908e204da1\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":0,\"quote\":\"\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "5168431d0014d05e30b429c0c30a564865b3092eefab402665edd8c6c89a0e69",
+      "identity": "action.6f8a2b36f6d98c666770cefc4bcdb60735899aab.1",
+      "payloadSha256": "39311b3565f9f2a623b55ca6c68de19b792a2f8f421dd031c3d111e1818d2225",
+      "pending": 0,
+      "action": {
+        "version": 1,
+        "account": "5168431d0014d05e30b429c0c30a564865b3092eefab402665edd8c6c89a0e69",
+        "replica": "6f8a2b36f6d98c666770cefc4bcdb60735899aab",
+        "sequence": 1,
+        "context": {},
+        "record": "[\"reading\",\"resumes\",\"[\\\"f9be0c9f2c15965dfc14cc7713537181:\\\",\\\"f9be0c9f2c15965dfc14cc7713537181:\\\",\\\"[null,\\\\\\\"5c133be22e38a0b2eb6817037c7c387b\\\\\\\",null,null,20000]\\\"]\"]",
+        "value": {
+          "edition": "f9be0c9f2c15965dfc14cc7713537181:",
+          "source": "f9be0c9f2c15965dfc14cc7713537181:",
+          "revision": "[null,\"5c133be22e38a0b2eb6817037c7c387b\",null,null,20000]",
+          "anchor": "{\"version\":1,\"processed\":\"617c96a765c588fdf5261d8e369dbb05b126185b854fee7037aeec6da941ba55\",\"original\":\"c931753b6c88b4c2e5a464488297c4bc6bf19604f69500d730ba2b908e204da1\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":0,\"quote\":\"\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "5168431d0014d05e30b429c0c30a564865b3092eefab402665edd8c6c89a0e69",
+      "identity": "action.6f8a2b36f6d98c666770cefc4bcdb60735899aab.2",
+      "payloadSha256": "fa807e3f8e3dd4322463e58ead88c3985ed78515b662a5fa7b08bd7744e9ed98",
+      "pending": 0,
+      "action": {
+        "version": 1,
+        "account": "5168431d0014d05e30b429c0c30a564865b3092eefab402665edd8c6c89a0e69",
+        "replica": "6f8a2b36f6d98c666770cefc4bcdb60735899aab",
+        "sequence": 2,
+        "context": {
+          "6f8a2b36f6d98c666770cefc4bcdb60735899aab": 1
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"f9be0c9f2c15965dfc14cc7713537181:\\\",\\\"f9be0c9f2c15965dfc14cc7713537181:\\\",\\\"[null,\\\\\\\"5c133be22e38a0b2eb6817037c7c387b\\\\\\\",null,null,20000]\\\"]\"]",
+        "value": {
+          "edition": "f9be0c9f2c15965dfc14cc7713537181:",
+          "source": "f9be0c9f2c15965dfc14cc7713537181:",
+          "revision": "[null,\"5c133be22e38a0b2eb6817037c7c387b\",null,null,20000]",
+          "anchor": "{\"version\":1,\"processed\":\"617c96a765c588fdf5261d8e369dbb05b126185b854fee7037aeec6da941ba55\",\"original\":\"c931753b6c88b4c2e5a464488297c4bc6bf19604f69500d730ba2b908e204da1\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":2,\"character\":0,\"quote\":\"\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "5168431d0014d05e30b429c0c30a564865b3092eefab402665edd8c6c89a0e69",
+      "identity": "action.6f8a2b36f6d98c666770cefc4bcdb60735899aab.3",
+      "payloadSha256": "9a362573a1f7f7fafdf04e776e2e9dcb18795ef147f9712a23e99fa324316c5c",
+      "pending": 0,
+      "action": {
+        "version": 1,
+        "account": "5168431d0014d05e30b429c0c30a564865b3092eefab402665edd8c6c89a0e69",
+        "replica": "6f8a2b36f6d98c666770cefc4bcdb60735899aab",
+        "sequence": 3,
+        "context": {
+          "6f8a2b36f6d98c666770cefc4bcdb60735899aab": 2
+        },
+        "record": "[\"reading\",\"bookmarks\",\"243aa263c2cb58eeb5cdc43d10c9db6b\"]",
+        "value": {
+          "id": "243aa263c2cb58eeb5cdc43d10c9db6b",
+          "position": {
+            "edition": "f9be0c9f2c15965dfc14cc7713537181:",
+            "source": "f9be0c9f2c15965dfc14cc7713537181:",
+            "revision": "[null,\"5c133be22e38a0b2eb6817037c7c387b\",null,null,20000]",
+            "anchor": "{\"version\":1,\"processed\":\"617c96a765c588fdf5261d8e369dbb05b126185b854fee7037aeec6da941ba55\",\"original\":\"c931753b6c88b4c2e5a464488297c4bc6bf19604f69500d730ba2b908e204da1\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":2,\"character\":0,\"quote\":\"\"}"
+          },
+          "createdAt": "2026-11-03T20:19:37.945616Z",
+          "title": null,
+          "note": null
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "5168431d0014d05e30b429c0c30a564865b3092eefab402665edd8c6c89a0e69",
+      "identity": "action.6f8a2b36f6d98c666770cefc4bcdb60735899aab.4",
+      "payloadSha256": "0fd7a238fba573bcc0b89a2ac5e47d894a5fb5c6c0f2af69a09425bfd810d140",
+      "pending": 0,
+      "action": {
+        "version": 1,
+        "account": "5168431d0014d05e30b429c0c30a564865b3092eefab402665edd8c6c89a0e69",
+        "replica": "6f8a2b36f6d98c666770cefc4bcdb60735899aab",
+        "sequence": 4,
+        "context": {
+          "6f8a2b36f6d98c666770cefc4bcdb60735899aab": 3
+        },
+        "record": "[\"reading\",\"bookmarks\",\"243aa263c2cb58eeb5cdc43d10c9db6b\"]",
+        "value": {
+          "id": "243aa263c2cb58eeb5cdc43d10c9db6b",
+          "position": {
+            "edition": "f9be0c9f2c15965dfc14cc7713537181:",
+            "source": "f9be0c9f2c15965dfc14cc7713537181:",
+            "revision": "[null,\"5c133be22e38a0b2eb6817037c7c387b\",null,null,20000]",
+            "anchor": "{\"version\":1,\"processed\":\"617c96a765c588fdf5261d8e369dbb05b126185b854fee7037aeec6da941ba55\",\"original\":\"c931753b6c88b4c2e5a464488297c4bc6bf19604f69500d730ba2b908e204da1\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":2,\"character\":0,\"quote\":\"\"}"
+          },
+          "createdAt": "2026-11-03T20:19:37.945616Z",
+          "title": "“Café” 中文 🐟",
+          "note": "Déjà vu — ‘naïve’ 中文 🐟"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "5168431d0014d05e30b429c0c30a564865b3092eefab402665edd8c6c89a0e69",
+      "identity": "action.6f8a2b36f6d98c666770cefc4bcdb60735899aab.5",
+      "payloadSha256": "de257d8b9123da1f32c62b00ac655c4a75298e5631d535f09b4733f5259f9e42",
+      "pending": 0,
+      "action": {
+        "version": 1,
+        "account": "5168431d0014d05e30b429c0c30a564865b3092eefab402665edd8c6c89a0e69",
+        "replica": "6f8a2b36f6d98c666770cefc4bcdb60735899aab",
+        "sequence": 5,
+        "context": {
+          "6f8a2b36f6d98c666770cefc4bcdb60735899aab": 4
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"38644e035533ebeb614e3777ae481a48:\\\",\\\"38644e035533ebeb614e3777ae481a48:\\\",\\\"[null,\\\\\\\"ddafdc45f7d4eae02bf564027d1d8266\\\\\\\",null,null,20000]\\\"]\"]",
+        "value": {
+          "edition": "38644e035533ebeb614e3777ae481a48:",
+          "source": "38644e035533ebeb614e3777ae481a48:",
+          "revision": "[null,\"ddafdc45f7d4eae02bf564027d1d8266\",null,null,20000]",
+          "anchor": "{\"version\":1,\"processed\":\"78c58e5d94f675bb4f76e1916d2aa4f7798a96e89447bd5b4abeda6e9d876cab\",\"original\":\"fe5149e7d965a3229af11e3e38f63e3957d10d7718c4a42d9749a4ab2a4c9744\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":0,\"quote\":\"\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "5168431d0014d05e30b429c0c30a564865b3092eefab402665edd8c6c89a0e69",
+      "identity": "action.6f8a2b36f6d98c666770cefc4bcdb60735899aab.6",
+      "payloadSha256": "5b1f956f51ee570ffb450dd338003cdc56383cf93039bd69450f9d88d8779a8e",
+      "pending": 1,
+      "action": {
+        "version": 1,
+        "account": "5168431d0014d05e30b429c0c30a564865b3092eefab402665edd8c6c89a0e69",
+        "replica": "6f8a2b36f6d98c666770cefc4bcdb60735899aab",
+        "sequence": 6,
+        "context": {
+          "6f8a2b36f6d98c666770cefc4bcdb60735899aab": 5
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"04259394520c4d2f97f9ae47ad0c41ba:\\\",\\\"04259394520c4d2f97f9ae47ad0c41ba:\\\",\\\"[null,\\\\\\\"571181324242d8aad928bcb687cf229b\\\\\\\",null,null,20000]\\\"]\"]",
+        "value": {
+          "edition": "04259394520c4d2f97f9ae47ad0c41ba:",
+          "source": "04259394520c4d2f97f9ae47ad0c41ba:",
+          "revision": "[null,\"571181324242d8aad928bcb687cf229b\",null,null,20000]",
+          "anchor": "{\"version\":1,\"processed\":\"8e209383c9747160c664bd13976e9207dce3cdd8a781916af9816de94ce51571\",\"original\":\"c06b75aca75f9e332d57f6f2d5c9cd8f518d781dde72b775359803fbbb0445a3\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":0,\"quote\":\"\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "5168431d0014d05e30b429c0c30a564865b3092eefab402665edd8c6c89a0e69",
+      "identity": "action.6f8a2b36f6d98c666770cefc4bcdb60735899aab.7",
+      "payloadSha256": "87db1193175a712a5b55c344aa4eb6b90cbfb9a9469affada5ecdc9a2cf30118",
+      "pending": 1,
+      "action": {
+        "version": 1,
+        "account": "5168431d0014d05e30b429c0c30a564865b3092eefab402665edd8c6c89a0e69",
+        "replica": "6f8a2b36f6d98c666770cefc4bcdb60735899aab",
+        "sequence": 7,
+        "context": {
+          "6f8a2b36f6d98c666770cefc4bcdb60735899aab": 6
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"04259394520c4d2f97f9ae47ad0c41ba:\\\",\\\"04259394520c4d2f97f9ae47ad0c41ba:\\\",\\\"[null,\\\\\\\"571181324242d8aad928bcb687cf229b\\\\\\\",null,null,20000]\\\"]\"]",
+        "value": {
+          "edition": "04259394520c4d2f97f9ae47ad0c41ba:",
+          "source": "04259394520c4d2f97f9ae47ad0c41ba:",
+          "revision": "[null,\"571181324242d8aad928bcb687cf229b\",null,null,20000]",
+          "anchor": "{\"version\":1,\"processed\":\"8e209383c9747160c664bd13976e9207dce3cdd8a781916af9816de94ce51571\",\"original\":\"c06b75aca75f9e332d57f6f2d5c9cd8f518d781dde72b775359803fbbb0445a3\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":0,\"quote\":\"The quiet garden\\nA reader opened the book beside the window.\\nThree birds crossed the pale morning sky.\\nThe next page held a map, a letter, and a promise.\\nOrigin\",\"representation\":\"bookfin-pdf-source-pages-1/pdfrx-0.9.0-pdfium-8125/bookfin-ocr-2/tesseract4android-4.9.0/tesseract-5.5.1/leptonica-1.85.0/tessdata_fast-4.1.0-eng-7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2/121cbf95ba2fc43fff7d42ee5d4cfcae063ff22106cd49c325355b6575ada6f5\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "5168431d0014d05e30b429c0c30a564865b3092eefab402665edd8c6c89a0e69",
+      "identity": "action.6f8a2b36f6d98c666770cefc4bcdb60735899aab.8",
+      "payloadSha256": "c415974f356caf9e1ae26b4d14278908850bf32736098c94c1545c191681b048",
+      "pending": 1,
+      "action": {
+        "version": 1,
+        "account": "5168431d0014d05e30b429c0c30a564865b3092eefab402665edd8c6c89a0e69",
+        "replica": "6f8a2b36f6d98c666770cefc4bcdb60735899aab",
+        "sequence": 8,
+        "context": {
+          "6f8a2b36f6d98c666770cefc4bcdb60735899aab": 7
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"04259394520c4d2f97f9ae47ad0c41ba:\\\",\\\"04259394520c4d2f97f9ae47ad0c41ba:\\\",\\\"[null,\\\\\\\"571181324242d8aad928bcb687cf229b\\\\\\\",null,null,20000]\\\"]\"]",
+        "value": {
+          "edition": "04259394520c4d2f97f9ae47ad0c41ba:",
+          "source": "04259394520c4d2f97f9ae47ad0c41ba:",
+          "revision": "[null,\"571181324242d8aad928bcb687cf229b\",null,null,20000]",
+          "anchor": "{\"version\":1,\"processed\":\"8e209383c9747160c664bd13976e9207dce3cdd8a781916af9816de94ce51571\",\"original\":\"c06b75aca75f9e332d57f6f2d5c9cd8f518d781dde72b775359803fbbb0445a3\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":574,\"quote\":\"Original pages remain available when words are unclear.\\nThe quiet garden\\nA reader opened the book beside the window.\\nThree birds crossed the pale morning sky.\\nT\",\"representation\":\"bookfin-pdf-source-pages-1/pdfrx-0.9.0-pdfium-8125/bookfin-ocr-2/tesseract4android-4.9.0/tesseract-5.5.1/leptonica-1.85.0/tessdata_fast-4.1.0-eng-7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2/121cbf95ba2fc43fff7d42ee5d4cfcae063ff22106cd49c325355b6575ada6f5\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "5168431d0014d05e30b429c0c30a564865b3092eefab402665edd8c6c89a0e69",
+      "identity": "action.6f8a2b36f6d98c666770cefc4bcdb60735899aab.9",
+      "payloadSha256": "851d41a447e1be224c72f072a942c8bb604d218b642c4de67fed8a2e93846875",
+      "pending": 1,
+      "action": {
+        "version": 1,
+        "account": "5168431d0014d05e30b429c0c30a564865b3092eefab402665edd8c6c89a0e69",
+        "replica": "6f8a2b36f6d98c666770cefc4bcdb60735899aab",
+        "sequence": 9,
+        "context": {
+          "6f8a2b36f6d98c666770cefc4bcdb60735899aab": 8
+        },
+        "record": "[\"reading\",\"bookmarks\",\"6336603f4af53f3a65b4b19c476bc73d\"]",
+        "value": {
+          "id": "6336603f4af53f3a65b4b19c476bc73d",
+          "position": {
+            "edition": "04259394520c4d2f97f9ae47ad0c41ba:",
+            "source": "04259394520c4d2f97f9ae47ad0c41ba:",
+            "revision": "[null,\"571181324242d8aad928bcb687cf229b\",null,null,20000]",
+            "anchor": "{\"version\":1,\"processed\":\"8e209383c9747160c664bd13976e9207dce3cdd8a781916af9816de94ce51571\",\"original\":\"c06b75aca75f9e332d57f6f2d5c9cd8f518d781dde72b775359803fbbb0445a3\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":574,\"quote\":\"Original pages remain available when words are unclear.\\nThe quiet garden\\nA reader opened the book beside the window.\\nThree birds crossed the pale morning sky.\\nT\",\"representation\":\"bookfin-pdf-source-pages-1/pdfrx-0.9.0-pdfium-8125/bookfin-ocr-2/tesseract4android-4.9.0/tesseract-5.5.1/leptonica-1.85.0/tessdata_fast-4.1.0-eng-7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2/121cbf95ba2fc43fff7d42ee5d4cfcae063ff22106cd49c325355b6575ada6f5\"}"
+          },
+          "createdAt": "2026-11-03T20:31:50.264158Z",
+          "title": null,
+          "note": null
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+      "identity": "action.052422df7e9c489daa13216fa0aa1aab18a9c175.1",
+      "payloadSha256": "7737ef76e85b067887ec21bc614faf705dba5520efa0c052af222742e028d5e7",
+      "pending": 0,
+      "action": {
+        "version": 1,
+        "account": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+        "replica": "052422df7e9c489daa13216fa0aa1aab18a9c175",
+        "sequence": 1,
+        "context": {},
+        "record": "[\"reading\",\"resumes\",\"[\\\"524a77af86a6feea9906f9e7b9a2649f:\\\",\\\"524a77af86a6feea9906f9e7b9a2649f:\\\",\\\"[null,\\\\\\\"f643cf93caa59c30042a6371e2cf8df5\\\\\\\",null,null,10000]\\\"]\"]",
+        "value": {
+          "edition": "524a77af86a6feea9906f9e7b9a2649f:",
+          "source": "524a77af86a6feea9906f9e7b9a2649f:",
+          "revision": "[null,\"f643cf93caa59c30042a6371e2cf8df5\",null,null,10000]",
+          "anchor": "{\"version\":1,\"processed\":\"7eb2490758f8b527fc65ad99661198419a345b46983a715e18b0bd069cd3f0a3\",\"original\":\"16027709b0a8b3f79d06d189e5cda463b36b921e34cfc02e965ef33fb521d4a7\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":0,\"quote\":\"The quiet garden\\nA reader opened the book beside the window.\\nThree birds crossed the pale morning sky.\\nThe next page held a map, a letter, and a promise.\\nOrigin\",\"representation\":\"bookfin-pdf-source-pages-1/pdfrx-0.9.0-pdfium-8125/bookfin-ocr-2/tesseract4android-4.9.0/tesseract-5.5.1/leptonica-1.85.0/tessdata_fast-4.1.0-eng-7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2/1f8e5200a3360a65cbc93098ae4443bab289a6cd84b31d7594cd151cf7fad82f\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+      "identity": "action.052422df7e9c489daa13216fa0aa1aab18a9c175.10",
+      "payloadSha256": "75245d2681f5ce9d1be752a2f0f51029fb8e4b31fc3f8279d97cf0351d5ab9e7",
+      "pending": 0,
+      "action": {
+        "version": 1,
+        "account": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+        "replica": "052422df7e9c489daa13216fa0aa1aab18a9c175",
+        "sequence": 10,
+        "context": {
+          "052422df7e9c489daa13216fa0aa1aab18a9c175": 9
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"ed86d1a55b1c2751a637a293a5478c70:\\\",\\\"ed86d1a55b1c2751a637a293a5478c70:\\\",\\\"[null,\\\\\\\"94e72eac233ad5ef3834882217f1ebe6\\\\\\\",null,null,10000]\\\"]\"]",
+        "value": {
+          "edition": "ed86d1a55b1c2751a637a293a5478c70:",
+          "source": "ed86d1a55b1c2751a637a293a5478c70:",
+          "revision": "[null,\"94e72eac233ad5ef3834882217f1ebe6\",null,null,10000]",
+          "anchor": "{\"version\":1,\"processed\":\"2b3a43210da563478e31c91b3bf89f8a829fdbbeebb9b70c243643e0543d0e5f\",\"original\":\"545e5843794bc0138fb397412bef477ad33c92935eb5babd1ccfed65ab53c54f\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":611,\"quote\":\"words are unclear.\\nThe quiet garden\\nA reader opened the book beside the window.\\nThree birds crossed the pale morning sky.\\nThe next page held a map, a letter, an\",\"representation\":\"bookfin-pdf-source-pages-1/pdfrx-0.9.0-pdfium-8125/bookfin-ocr-2/tesseract4android-4.9.0/tesseract-5.5.1/leptonica-1.85.0/tessdata_fast-4.1.0-eng-7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2/f06d76758705a3efcada97dc41ce09e3401807c1f34ec3d7388d3a6edc1b6c5a\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+      "identity": "action.052422df7e9c489daa13216fa0aa1aab18a9c175.11",
+      "payloadSha256": "107d3bacd7c01b880a8ba61ce75fd0989bf5924e97daad12324627274e0ede3a",
+      "pending": 0,
+      "action": {
+        "version": 1,
+        "account": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+        "replica": "052422df7e9c489daa13216fa0aa1aab18a9c175",
+        "sequence": 11,
+        "context": {
+          "052422df7e9c489daa13216fa0aa1aab18a9c175": 10
+        },
+        "record": "[\"reading\",\"bookmarks\",\"e9e2314495594e4ab679f28c62ef58b7\"]",
+        "value": {
+          "id": "e9e2314495594e4ab679f28c62ef58b7",
+          "position": {
+            "edition": "ed86d1a55b1c2751a637a293a5478c70:",
+            "source": "ed86d1a55b1c2751a637a293a5478c70:",
+            "revision": "[null,\"94e72eac233ad5ef3834882217f1ebe6\",null,null,10000]",
+            "anchor": "{\"version\":1,\"processed\":\"2b3a43210da563478e31c91b3bf89f8a829fdbbeebb9b70c243643e0543d0e5f\",\"original\":\"545e5843794bc0138fb397412bef477ad33c92935eb5babd1ccfed65ab53c54f\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":611,\"quote\":\"words are unclear.\\nThe quiet garden\\nA reader opened the book beside the window.\\nThree birds crossed the pale morning sky.\\nThe next page held a map, a letter, an\",\"representation\":\"bookfin-pdf-source-pages-1/pdfrx-0.9.0-pdfium-8125/bookfin-ocr-2/tesseract4android-4.9.0/tesseract-5.5.1/leptonica-1.85.0/tessdata_fast-4.1.0-eng-7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2/f06d76758705a3efcada97dc41ce09e3401807c1f34ec3d7388d3a6edc1b6c5a\"}"
+          },
+          "createdAt": "2026-11-03T17:22:39.736013Z",
+          "title": null,
+          "note": null
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+      "identity": "action.052422df7e9c489daa13216fa0aa1aab18a9c175.12",
+      "payloadSha256": "810c7d0abd86ca4af47bd9b73b422d1e629b28656cb1c618c5ea950fafc41f56",
+      "pending": 0,
+      "action": {
+        "version": 1,
+        "account": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+        "replica": "052422df7e9c489daa13216fa0aa1aab18a9c175",
+        "sequence": 12,
+        "context": {
+          "052422df7e9c489daa13216fa0aa1aab18a9c175": 11
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"ed86d1a55b1c2751a637a293a5478c70:\\\",\\\"ed86d1a55b1c2751a637a293a5478c70:\\\",\\\"[null,\\\\\\\"94e72eac233ad5ef3834882217f1ebe6\\\\\\\",null,null,10000]\\\"]\"]",
+        "value": {
+          "edition": "ed86d1a55b1c2751a637a293a5478c70:",
+          "source": "ed86d1a55b1c2751a637a293a5478c70:",
+          "revision": "[null,\"94e72eac233ad5ef3834882217f1ebe6\",null,null,10000]",
+          "anchor": "{\"version\":1,\"processed\":\"2b3a43210da563478e31c91b3bf89f8a829fdbbeebb9b70c243643e0543d0e5f\",\"original\":\"545e5843794bc0138fb397412bef477ad33c92935eb5babd1ccfed65ab53c54f\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":0,\"quote\":\"The quiet garden\\nA reader opened the book beside the window.\\nThree birds crossed the pale morning sky.\\nThe next page held a map, a letter, and a promise.\\nOrigin\",\"representation\":\"bookfin-pdf-source-pages-1/pdfrx-0.9.0-pdfium-8125/bookfin-ocr-2/tesseract4android-4.9.0/tesseract-5.5.1/leptonica-1.85.0/tessdata_fast-4.1.0-eng-7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2/f06d76758705a3efcada97dc41ce09e3401807c1f34ec3d7388d3a6edc1b6c5a\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+      "identity": "action.052422df7e9c489daa13216fa0aa1aab18a9c175.13",
+      "payloadSha256": "f99e50023f31021f12ff74ed4f4f17630ea7166baa9237dcfea2d053dcba33c8",
+      "pending": 0,
+      "action": {
+        "version": 1,
+        "account": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+        "replica": "052422df7e9c489daa13216fa0aa1aab18a9c175",
+        "sequence": 13,
+        "context": {
+          "052422df7e9c489daa13216fa0aa1aab18a9c175": 12
+        },
+        "record": "[\"reading\",\"bookmarks\",\"e9e2314495594e4ab679f28c62ef58b7\"]",
+        "value": {
+          "id": "e9e2314495594e4ab679f28c62ef58b7",
+          "position": {
+            "edition": "ed86d1a55b1c2751a637a293a5478c70:",
+            "source": "ed86d1a55b1c2751a637a293a5478c70:",
+            "revision": "[null,\"94e72eac233ad5ef3834882217f1ebe6\",null,null,10000]",
+            "anchor": "{\"version\":1,\"processed\":\"2b3a43210da563478e31c91b3bf89f8a829fdbbeebb9b70c243643e0543d0e5f\",\"original\":\"545e5843794bc0138fb397412bef477ad33c92935eb5babd1ccfed65ab53c54f\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":611,\"quote\":\"words are unclear.\\nThe quiet garden\\nA reader opened the book beside the window.\\nThree birds crossed the pale morning sky.\\nThe next page held a map, a letter, an\",\"representation\":\"bookfin-pdf-source-pages-1/pdfrx-0.9.0-pdfium-8125/bookfin-ocr-2/tesseract4android-4.9.0/tesseract-5.5.1/leptonica-1.85.0/tessdata_fast-4.1.0-eng-7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2/f06d76758705a3efcada97dc41ce09e3401807c1f34ec3d7388d3a6edc1b6c5a\"}"
+          },
+          "createdAt": "2026-11-03T17:22:39.736013Z",
+          "title": "“Café 中文”",
+          "note": "Offline English recognition: “déjà vu”, 中文, 🐟."
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+      "identity": "action.052422df7e9c489daa13216fa0aa1aab18a9c175.14",
+      "payloadSha256": "595834c2eea1ac295d33b298cbe28ce938cdac42faba7ca6e73818d6af17e27c",
+      "pending": 0,
+      "action": {
+        "version": 1,
+        "account": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+        "replica": "052422df7e9c489daa13216fa0aa1aab18a9c175",
+        "sequence": 14,
+        "context": {
+          "052422df7e9c489daa13216fa0aa1aab18a9c175": 13
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"ed86d1a55b1c2751a637a293a5478c70:\\\",\\\"ed86d1a55b1c2751a637a293a5478c70:\\\",\\\"[null,\\\\\\\"94e72eac233ad5ef3834882217f1ebe6\\\\\\\",null,null,10000]\\\"]\"]",
+        "value": {
+          "edition": "ed86d1a55b1c2751a637a293a5478c70:",
+          "source": "ed86d1a55b1c2751a637a293a5478c70:",
+          "revision": "[null,\"94e72eac233ad5ef3834882217f1ebe6\",null,null,10000]",
+          "anchor": "{\"version\":1,\"processed\":\"2b3a43210da563478e31c91b3bf89f8a829fdbbeebb9b70c243643e0543d0e5f\",\"original\":\"545e5843794bc0138fb397412bef477ad33c92935eb5babd1ccfed65ab53c54f\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":611,\"quote\":\"words are unclear.\\nThe quiet garden\\nA reader opened the book beside the window.\\nThree birds crossed the pale morning sky.\\nThe next page held a map, a letter, an\",\"representation\":\"bookfin-pdf-source-pages-1/pdfrx-0.9.0-pdfium-8125/bookfin-ocr-2/tesseract4android-4.9.0/tesseract-5.5.1/leptonica-1.85.0/tessdata_fast-4.1.0-eng-7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2/f06d76758705a3efcada97dc41ce09e3401807c1f34ec3d7388d3a6edc1b6c5a\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+      "identity": "action.052422df7e9c489daa13216fa0aa1aab18a9c175.15",
+      "payloadSha256": "8d449db71e50927ba28fb1b0b94e5ad83ad1b3e9d306baf3a0e060a991464adb",
+      "pending": 0,
+      "action": {
+        "version": 1,
+        "account": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+        "replica": "052422df7e9c489daa13216fa0aa1aab18a9c175",
+        "sequence": 15,
+        "context": {
+          "052422df7e9c489daa13216fa0aa1aab18a9c175": 14
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"7f499e405fb4a1e7d45b0a48455af2c0:\\\",\\\"7f499e405fb4a1e7d45b0a48455af2c0:\\\",\\\"[null,\\\\\\\"95bb6da0e577215e2ccbde1b68438453\\\\\\\",null,null,10000]\\\"]\"]",
+        "value": {
+          "edition": "7f499e405fb4a1e7d45b0a48455af2c0:",
+          "source": "7f499e405fb4a1e7d45b0a48455af2c0:",
+          "revision": "[null,\"95bb6da0e577215e2ccbde1b68438453\",null,null,10000]",
+          "anchor": "{\"version\":1,\"processed\":\"8148ddfbd34366ebe641eda000849c5740be04740fb15de5062587db74418fb9\",\"original\":\"aabcc4e96d10424532ab651369f3f14df60aff086d13178f605e5f731c4a9a55\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":0,\"quote\":\"re upon a midnight dreary. while I pondered, weak and weary,\\nOver many a quaint and curious volume of forgotten lore—\\nWhile I nodded, nearly napping, suddenly t\",\"representation\":\"bookfin-pdf-source-pages-1/pdfrx-0.9.0-pdfium-8125/bookfin-ocr-2/tesseract4android-4.9.0/tesseract-5.5.1/leptonica-1.85.0/tessdata_fast-4.1.0-eng-7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2/0ccb5cfa71f228edc9d9bfdee172cd6317a285c3d9e094bba834d59b86a23327\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+      "identity": "action.052422df7e9c489daa13216fa0aa1aab18a9c175.16",
+      "payloadSha256": "4902ace9de8268d0cc7115626e09e81f3f4c77cb761d79e3e3aedf39ac82be67",
+      "pending": 0,
+      "action": {
+        "version": 1,
+        "account": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+        "replica": "052422df7e9c489daa13216fa0aa1aab18a9c175",
+        "sequence": 16,
+        "context": {
+          "052422df7e9c489daa13216fa0aa1aab18a9c175": 15
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"5956cf0120ebdfb08556912bab5639e8:\\\",\\\"5956cf0120ebdfb08556912bab5639e8:\\\",\\\"[null,\\\\\\\"39809f2785fcffe6bb64b36050ae8b49\\\\\\\",null,null,10000]\\\"]\"]",
+        "value": {
+          "edition": "5956cf0120ebdfb08556912bab5639e8:",
+          "source": "5956cf0120ebdfb08556912bab5639e8:",
+          "revision": "[null,\"39809f2785fcffe6bb64b36050ae8b49\",null,null,10000]",
+          "anchor": "{\"version\":1,\"processed\":\"c179d22a95785b282e8a64e177b03313e2b2107772e26c4a05265ca206494c14\",\"original\":\"7edfa36f57337ceeb7af6c58b87b68e6ebc25dfb0200593e415150a5d2052c06\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":0,\"quote\":\"This page has pixels, not a PDF text layer.\",\"representation\":\"bookfin-pdf-source-pages-1/pdfrx-0.9.0-pdfium-8125/bookfin-ocr-2/tesseract4android-4.9.0/tesseract-5.5.1/leptonica-1.85.0/tessdata_fast-4.1.0-eng-7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2/b6275ffa30fb621c9abaab4c58046d45206770b820dd0781a31abef31639b897\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+      "identity": "action.052422df7e9c489daa13216fa0aa1aab18a9c175.17",
+      "payloadSha256": "8813443c429ba010101b97fe17b79475f9f9ab93d1535fb17e24c8fa8bd4515c",
+      "pending": 0,
+      "action": {
+        "version": 1,
+        "account": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+        "replica": "052422df7e9c489daa13216fa0aa1aab18a9c175",
+        "sequence": 17,
+        "context": {
+          "052422df7e9c489daa13216fa0aa1aab18a9c175": 16
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"6e06196e2d4cc51d3d454b7df5888409:\\\",\\\"6e06196e2d4cc51d3d454b7df5888409:\\\",\\\"[null,\\\\\\\"7fba67a066a0b50d2fbda63dec9e4c35\\\\\\\",null,null,null]\\\"]\"]",
+        "value": {
+          "edition": "6e06196e2d4cc51d3d454b7df5888409:",
+          "source": "6e06196e2d4cc51d3d454b7df5888409:",
+          "revision": "[null,\"7fba67a066a0b50d2fbda63dec9e4c35\",null,null,null]",
+          "anchor": "{\"version\":1,\"processed\":\"3d0b0318cf5d0455722a2b8ccf93ac5ec0be08e0c198a831d41d4990be1f10d7\",\"original\":\"d8211269aed55ded8302f289950936db8368b4d4d384c463b722034152f8f1d2\",\"policy\":\"bookfin-mobi-epub-1-libmobi-0.12/bookfin-passive-epub-1\",\"engine\":\"epubjs-0.3.93-bookfin.1\",\"cfi\":\"epubcfi(/6/2!/4/2[calibre_pb_0]/2/1:0)\",\"resource\":\"OEBPS/part00000.html\",\"quote\":\"[Unsupported image]\\n  \\n\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+      "identity": "action.052422df7e9c489daa13216fa0aa1aab18a9c175.18",
+      "payloadSha256": "056c87ec89d079ce71f0ffe6a8e6e393eff160ab32118a0796d306220e80c673",
+      "pending": 0,
+      "action": {
+        "version": 1,
+        "account": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+        "replica": "052422df7e9c489daa13216fa0aa1aab18a9c175",
+        "sequence": 18,
+        "context": {
+          "052422df7e9c489daa13216fa0aa1aab18a9c175": 17
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"6e06196e2d4cc51d3d454b7df5888409:\\\",\\\"6e06196e2d4cc51d3d454b7df5888409:\\\",\\\"[null,\\\\\\\"7fba67a066a0b50d2fbda63dec9e4c35\\\\\\\",null,null,null]\\\"]\"]",
+        "value": {
+          "edition": "6e06196e2d4cc51d3d454b7df5888409:",
+          "source": "6e06196e2d4cc51d3d454b7df5888409:",
+          "revision": "[null,\"7fba67a066a0b50d2fbda63dec9e4c35\",null,null,null]",
+          "anchor": "{\"version\":1,\"processed\":\"3d0b0318cf5d0455722a2b8ccf93ac5ec0be08e0c198a831d41d4990be1f10d7\",\"original\":\"d8211269aed55ded8302f289950936db8368b4d4d384c463b722034152f8f1d2\",\"policy\":\"bookfin-mobi-epub-1-libmobi-0.12/bookfin-passive-epub-1\",\"engine\":\"epubjs-0.3.93-bookfin.1\",\"cfi\":\"epubcfi(/6/10!/4/2[pgepubid00003]/1:0)\",\"resource\":\"OEBPS/part00004.html\",\"quote\":\"\\nCHAPTER I.\\nDown the Rabbit-Hole\\n\\nAlice was beginning to get very tired of sitting by her sister on the bank, and\\nof hav\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+      "identity": "action.052422df7e9c489daa13216fa0aa1aab18a9c175.19",
+      "payloadSha256": "ac1ed1521c5c732db187f7fbf81e5e05bfced35fb8c72ecb707d3cfded755e83",
+      "pending": 0,
+      "action": {
+        "version": 1,
+        "account": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+        "replica": "052422df7e9c489daa13216fa0aa1aab18a9c175",
+        "sequence": 19,
+        "context": {
+          "052422df7e9c489daa13216fa0aa1aab18a9c175": 18
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"6e06196e2d4cc51d3d454b7df5888409:\\\",\\\"6e06196e2d4cc51d3d454b7df5888409:\\\",\\\"[null,\\\\\\\"7fba67a066a0b50d2fbda63dec9e4c35\\\\\\\",null,null,null]\\\"]\"]",
+        "value": {
+          "edition": "6e06196e2d4cc51d3d454b7df5888409:",
+          "source": "6e06196e2d4cc51d3d454b7df5888409:",
+          "revision": "[null,\"7fba67a066a0b50d2fbda63dec9e4c35\",null,null,null]",
+          "anchor": "{\"version\":1,\"processed\":\"3d0b0318cf5d0455722a2b8ccf93ac5ec0be08e0c198a831d41d4990be1f10d7\",\"original\":\"d8211269aed55ded8302f289950936db8368b4d4d384c463b722034152f8f1d2\",\"policy\":\"bookfin-mobi-epub-1-libmobi-0.12/bookfin-passive-epub-1\",\"engine\":\"epubjs-0.3.93-bookfin.1\",\"cfi\":\"epubcfi(/6/10!/4/2[pgepubid00003]/6/1:83)\",\"resource\":\"OEBPS/part00004.html\",\"quote\":\" her feel very sleepy and stupid), whether the pleasure of making a\\ndaisy-chain would be worth the trouble of getting up\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+      "identity": "action.052422df7e9c489daa13216fa0aa1aab18a9c175.2",
+      "payloadSha256": "43f9112e4e56f13f34e84d4710b88c580ef13774ce635f2ded5580b75b9ee376",
+      "pending": 0,
+      "action": {
+        "version": 1,
+        "account": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+        "replica": "052422df7e9c489daa13216fa0aa1aab18a9c175",
+        "sequence": 2,
+        "context": {
+          "052422df7e9c489daa13216fa0aa1aab18a9c175": 1
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"524a77af86a6feea9906f9e7b9a2649f:\\\",\\\"524a77af86a6feea9906f9e7b9a2649f:\\\",\\\"[null,\\\\\\\"f643cf93caa59c30042a6371e2cf8df5\\\\\\\",null,null,10000]\\\"]\"]",
+        "value": {
+          "edition": "524a77af86a6feea9906f9e7b9a2649f:",
+          "source": "524a77af86a6feea9906f9e7b9a2649f:",
+          "revision": "[null,\"f643cf93caa59c30042a6371e2cf8df5\",null,null,10000]",
+          "anchor": "{\"version\":1,\"processed\":\"7eb2490758f8b527fc65ad99661198419a345b46983a715e18b0bd069cd3f0a3\",\"original\":\"16027709b0a8b3f79d06d189e5cda463b36b921e34cfc02e965ef33fb521d4a7\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":145,\"quote\":\"promise.\\nOriginal pages remain available when words are unclear.\",\"representation\":\"bookfin-pdf-source-pages-1/pdfrx-0.9.0-pdfium-8125/bookfin-ocr-2/tesseract4android-4.9.0/tesseract-5.5.1/leptonica-1.85.0/tessdata_fast-4.1.0-eng-7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2/1f8e5200a3360a65cbc93098ae4443bab289a6cd84b31d7594cd151cf7fad82f\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+      "identity": "action.052422df7e9c489daa13216fa0aa1aab18a9c175.20",
+      "payloadSha256": "aa41efa49c1c245423ae39bdd32a29a228666e7223af568b7f2ac3b5383c0a81",
+      "pending": 0,
+      "action": {
+        "version": 1,
+        "account": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+        "replica": "052422df7e9c489daa13216fa0aa1aab18a9c175",
+        "sequence": 20,
+        "context": {
+          "052422df7e9c489daa13216fa0aa1aab18a9c175": 19
+        },
+        "record": "[\"reading\",\"bookmarks\",\"038fb2ebc63cdef5162393c1fa08f84d\"]",
+        "value": {
+          "id": "038fb2ebc63cdef5162393c1fa08f84d",
+          "position": {
+            "edition": "6e06196e2d4cc51d3d454b7df5888409:",
+            "source": "6e06196e2d4cc51d3d454b7df5888409:",
+            "revision": "[null,\"7fba67a066a0b50d2fbda63dec9e4c35\",null,null,null]",
+            "anchor": "{\"version\":1,\"processed\":\"3d0b0318cf5d0455722a2b8ccf93ac5ec0be08e0c198a831d41d4990be1f10d7\",\"original\":\"d8211269aed55ded8302f289950936db8368b4d4d384c463b722034152f8f1d2\",\"policy\":\"bookfin-mobi-epub-1-libmobi-0.12/bookfin-passive-epub-1\",\"engine\":\"epubjs-0.3.93-bookfin.1\",\"cfi\":\"epubcfi(/6/10!/4/2[pgepubid00003]/6/1:83)\",\"resource\":\"OEBPS/part00004.html\",\"quote\":\" her feel very sleepy and stupid), whether the pleasure of making a\\ndaisy-chain would be worth the trouble of getting up\"}"
+          },
+          "createdAt": "2026-11-03T17:34:00.565772Z",
+          "title": null,
+          "note": null
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+      "identity": "action.052422df7e9c489daa13216fa0aa1aab18a9c175.21",
+      "payloadSha256": "912f59a3bb6e361e9dc51c3b6198a06a95e04d25f5e5e0d6f42062b74b7896e9",
+      "pending": 0,
+      "action": {
+        "version": 1,
+        "account": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+        "replica": "052422df7e9c489daa13216fa0aa1aab18a9c175",
+        "sequence": 21,
+        "context": {
+          "052422df7e9c489daa13216fa0aa1aab18a9c175": 20
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"6e06196e2d4cc51d3d454b7df5888409:\\\",\\\"6e06196e2d4cc51d3d454b7df5888409:\\\",\\\"[null,\\\\\\\"7fba67a066a0b50d2fbda63dec9e4c35\\\\\\\",null,null,null]\\\"]\"]",
+        "value": {
+          "edition": "6e06196e2d4cc51d3d454b7df5888409:",
+          "source": "6e06196e2d4cc51d3d454b7df5888409:",
+          "revision": "[null,\"7fba67a066a0b50d2fbda63dec9e4c35\",null,null,null]",
+          "anchor": "{\"version\":1,\"processed\":\"3d0b0318cf5d0455722a2b8ccf93ac5ec0be08e0c198a831d41d4990be1f10d7\",\"original\":\"d8211269aed55ded8302f289950936db8368b4d4d384c463b722034152f8f1d2\",\"policy\":\"bookfin-mobi-epub-1-libmobi-0.12/bookfin-passive-epub-1\",\"engine\":\"epubjs-0.3.93-bookfin.1\",\"cfi\":\"epubcfi(/6/10!/4/2[pgepubid00003]/1:0)\",\"resource\":\"OEBPS/part00004.html\",\"quote\":\"\\nCHAPTER I.\\nDown the Rabbit-Hole\\n\\nAlice was beginning to get very tired of sitting by her sister on the bank, and\\nof hav\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+      "identity": "action.052422df7e9c489daa13216fa0aa1aab18a9c175.22",
+      "payloadSha256": "3ceff248c13ea164f8fa43da52cfe79e88d46acbd207cd94a8b3d7994dab3770",
+      "pending": 0,
+      "action": {
+        "version": 1,
+        "account": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+        "replica": "052422df7e9c489daa13216fa0aa1aab18a9c175",
+        "sequence": 22,
+        "context": {
+          "052422df7e9c489daa13216fa0aa1aab18a9c175": 21
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"6e06196e2d4cc51d3d454b7df5888409:\\\",\\\"6e06196e2d4cc51d3d454b7df5888409:\\\",\\\"[null,\\\\\\\"7fba67a066a0b50d2fbda63dec9e4c35\\\\\\\",null,null,null]\\\"]\"]",
+        "value": {
+          "edition": "6e06196e2d4cc51d3d454b7df5888409:",
+          "source": "6e06196e2d4cc51d3d454b7df5888409:",
+          "revision": "[null,\"7fba67a066a0b50d2fbda63dec9e4c35\",null,null,null]",
+          "anchor": "{\"version\":1,\"processed\":\"3d0b0318cf5d0455722a2b8ccf93ac5ec0be08e0c198a831d41d4990be1f10d7\",\"original\":\"d8211269aed55ded8302f289950936db8368b4d4d384c463b722034152f8f1d2\",\"policy\":\"bookfin-mobi-epub-1-libmobi-0.12/bookfin-passive-epub-1\",\"engine\":\"epubjs-0.3.93-bookfin.1\",\"cfi\":\"epubcfi(/6/10!/4/2[pgepubid00003]/4/1:260)\",\"resource\":\"OEBPS/part00004.html\",\"quote\":\" Alice “without pictures or conversations?”\\n\\n\\nSo she was considering in her own mind (as well as she could, for the hot \"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+      "identity": "action.052422df7e9c489daa13216fa0aa1aab18a9c175.23",
+      "payloadSha256": "d56d122e554206315c583d64a017caa9e5241cb883ac81778db111e9df7c7614",
+      "pending": 0,
+      "action": {
+        "version": 1,
+        "account": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+        "replica": "052422df7e9c489daa13216fa0aa1aab18a9c175",
+        "sequence": 23,
+        "context": {
+          "052422df7e9c489daa13216fa0aa1aab18a9c175": 22
+        },
+        "record": "[\"reading\",\"bookmarks\",\"877f0b8021ecf86f201784c59f28eb89\"]",
+        "value": {
+          "id": "877f0b8021ecf86f201784c59f28eb89",
+          "position": {
+            "edition": "6e06196e2d4cc51d3d454b7df5888409:",
+            "source": "6e06196e2d4cc51d3d454b7df5888409:",
+            "revision": "[null,\"7fba67a066a0b50d2fbda63dec9e4c35\",null,null,null]",
+            "anchor": "{\"version\":1,\"processed\":\"3d0b0318cf5d0455722a2b8ccf93ac5ec0be08e0c198a831d41d4990be1f10d7\",\"original\":\"d8211269aed55ded8302f289950936db8368b4d4d384c463b722034152f8f1d2\",\"policy\":\"bookfin-mobi-epub-1-libmobi-0.12/bookfin-passive-epub-1\",\"engine\":\"epubjs-0.3.93-bookfin.1\",\"cfi\":\"epubcfi(/6/10!/4/2[pgepubid00003]/4/1:260)\",\"resource\":\"OEBPS/part00004.html\",\"quote\":\" Alice “without pictures or conversations?”\\n\\n\\nSo she was considering in her own mind (as well as she could, for the hot \"}"
+          },
+          "createdAt": "2026-11-03T17:35:19.598798Z",
+          "title": null,
+          "note": null
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+      "identity": "action.052422df7e9c489daa13216fa0aa1aab18a9c175.24",
+      "payloadSha256": "1e84d9b42d923f271fe34b49c4b937c28506f5e6a7949353e846c266b2064715",
+      "pending": 0,
+      "action": {
+        "version": 1,
+        "account": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+        "replica": "052422df7e9c489daa13216fa0aa1aab18a9c175",
+        "sequence": 24,
+        "context": {
+          "052422df7e9c489daa13216fa0aa1aab18a9c175": 23
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"6e06196e2d4cc51d3d454b7df5888409:\\\",\\\"6e06196e2d4cc51d3d454b7df5888409:\\\",\\\"[null,\\\\\\\"7fba67a066a0b50d2fbda63dec9e4c35\\\\\\\",null,null,null]\\\"]\"]",
+        "value": {
+          "edition": "6e06196e2d4cc51d3d454b7df5888409:",
+          "source": "6e06196e2d4cc51d3d454b7df5888409:",
+          "revision": "[null,\"7fba67a066a0b50d2fbda63dec9e4c35\",null,null,null]",
+          "anchor": "{\"version\":1,\"processed\":\"3d0b0318cf5d0455722a2b8ccf93ac5ec0be08e0c198a831d41d4990be1f10d7\",\"original\":\"d8211269aed55ded8302f289950936db8368b4d4d384c463b722034152f8f1d2\",\"policy\":\"bookfin-mobi-epub-1-libmobi-0.12/bookfin-passive-epub-1\",\"engine\":\"epubjs-0.3.93-bookfin.1\",\"cfi\":\"epubcfi(/6/10!/4/2[pgepubid00003]/8/5:141)\",\"resource\":\"OEBPS/part00004.html\",\"quote\":\" to\\nher that she ought to have wondered at this, but at the time it all seemed\\nquite natural); but when the Rabbit actua\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+      "identity": "action.052422df7e9c489daa13216fa0aa1aab18a9c175.25",
+      "payloadSha256": "e9d4fef274a597a863ae43b4d32b23d3c36040317e780992989dee5dd714cd84",
+      "pending": 0,
+      "action": {
+        "version": 1,
+        "account": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+        "replica": "052422df7e9c489daa13216fa0aa1aab18a9c175",
+        "sequence": 25,
+        "context": {
+          "052422df7e9c489daa13216fa0aa1aab18a9c175": 24
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"6e06196e2d4cc51d3d454b7df5888409:\\\",\\\"6e06196e2d4cc51d3d454b7df5888409:\\\",\\\"[null,\\\\\\\"7fba67a066a0b50d2fbda63dec9e4c35\\\\\\\",null,null,null]\\\"]\"]",
+        "value": {
+          "edition": "6e06196e2d4cc51d3d454b7df5888409:",
+          "source": "6e06196e2d4cc51d3d454b7df5888409:",
+          "revision": "[null,\"7fba67a066a0b50d2fbda63dec9e4c35\",null,null,null]",
+          "anchor": "{\"version\":1,\"processed\":\"3d0b0318cf5d0455722a2b8ccf93ac5ec0be08e0c198a831d41d4990be1f10d7\",\"original\":\"d8211269aed55ded8302f289950936db8368b4d4d384c463b722034152f8f1d2\",\"policy\":\"bookfin-mobi-epub-1-libmobi-0.12/bookfin-passive-epub-1\",\"engine\":\"epubjs-0.3.93-bookfin.1\",\"cfi\":\"epubcfi(/6/10!/4/2[pgepubid00003]/4/1:260)\",\"resource\":\"OEBPS/part00004.html\",\"quote\":\" Alice “without pictures or conversations?”\\n\\n\\nSo she was considering in her own mind (as well as she could, for the hot \"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+      "identity": "action.052422df7e9c489daa13216fa0aa1aab18a9c175.3",
+      "payloadSha256": "a851611cea03ba813f17ffb1f3c6ae76ed593eaf7a16ab4d483bc01291fad839",
+      "pending": 0,
+      "action": {
+        "version": 1,
+        "account": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+        "replica": "052422df7e9c489daa13216fa0aa1aab18a9c175",
+        "sequence": 3,
+        "context": {
+          "052422df7e9c489daa13216fa0aa1aab18a9c175": 2
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"524a77af86a6feea9906f9e7b9a2649f:\\\",\\\"524a77af86a6feea9906f9e7b9a2649f:\\\",\\\"[null,\\\\\\\"f643cf93caa59c30042a6371e2cf8df5\\\\\\\",null,null,10000]\\\"]\"]",
+        "value": {
+          "edition": "524a77af86a6feea9906f9e7b9a2649f:",
+          "source": "524a77af86a6feea9906f9e7b9a2649f:",
+          "revision": "[null,\"f643cf93caa59c30042a6371e2cf8df5\",null,null,10000]",
+          "anchor": "{\"version\":1,\"processed\":\"7eb2490758f8b527fc65ad99661198419a345b46983a715e18b0bd069cd3f0a3\",\"original\":\"16027709b0a8b3f79d06d189e5cda463b36b921e34cfc02e965ef33fb521d4a7\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":0,\"quote\":\"The quiet garden\\nA reader opened the book beside the window.\\nThree birds crossed the pale morning sky.\\nThe next page held a map, a letter, and a promise.\\nOrigin\",\"representation\":\"bookfin-pdf-source-pages-1/pdfrx-0.9.0-pdfium-8125/bookfin-ocr-2/tesseract4android-4.9.0/tesseract-5.5.1/leptonica-1.85.0/tessdata_fast-4.1.0-eng-7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2/1f8e5200a3360a65cbc93098ae4443bab289a6cd84b31d7594cd151cf7fad82f\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+      "identity": "action.052422df7e9c489daa13216fa0aa1aab18a9c175.4",
+      "payloadSha256": "5423cd2796d0f701aec991c13eefa1de93aea40b46ea09dae99dacbf3834dbc3",
+      "pending": 0,
+      "action": {
+        "version": 1,
+        "account": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+        "replica": "052422df7e9c489daa13216fa0aa1aab18a9c175",
+        "sequence": 4,
+        "context": {
+          "052422df7e9c489daa13216fa0aa1aab18a9c175": 3
+        },
+        "record": "[\"reading\",\"bookmarks\",\"826725d63062cd0beadeeeaddaf7f3a3\"]",
+        "value": {
+          "id": "826725d63062cd0beadeeeaddaf7f3a3",
+          "position": {
+            "edition": "524a77af86a6feea9906f9e7b9a2649f:",
+            "source": "524a77af86a6feea9906f9e7b9a2649f:",
+            "revision": "[null,\"f643cf93caa59c30042a6371e2cf8df5\",null,null,10000]",
+            "anchor": "{\"version\":1,\"processed\":\"7eb2490758f8b527fc65ad99661198419a345b46983a715e18b0bd069cd3f0a3\",\"original\":\"16027709b0a8b3f79d06d189e5cda463b36b921e34cfc02e965ef33fb521d4a7\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":0,\"quote\":\"The quiet garden\\nA reader opened the book beside the window.\\nThree birds crossed the pale morning sky.\\nThe next page held a map, a letter, and a promise.\\nOrigin\",\"representation\":\"bookfin-pdf-source-pages-1/pdfrx-0.9.0-pdfium-8125/bookfin-ocr-2/tesseract4android-4.9.0/tesseract-5.5.1/leptonica-1.85.0/tessdata_fast-4.1.0-eng-7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2/1f8e5200a3360a65cbc93098ae4443bab289a6cd84b31d7594cd151cf7fad82f\"}"
+          },
+          "createdAt": "2026-11-03T17:13:21.719580Z",
+          "title": null,
+          "note": null
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+      "identity": "action.052422df7e9c489daa13216fa0aa1aab18a9c175.5",
+      "payloadSha256": "3a4a282a21fec26b31d05037576ae712c1848ed7dd9b288495c5bde24372d310",
+      "pending": 0,
+      "action": {
+        "version": 1,
+        "account": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+        "replica": "052422df7e9c489daa13216fa0aa1aab18a9c175",
+        "sequence": 5,
+        "context": {
+          "052422df7e9c489daa13216fa0aa1aab18a9c175": 4
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"ed86d1a55b1c2751a637a293a5478c70:\\\",\\\"ed86d1a55b1c2751a637a293a5478c70:\\\",\\\"[null,\\\\\\\"94e72eac233ad5ef3834882217f1ebe6\\\\\\\",null,null,10000]\\\"]\"]",
+        "value": {
+          "edition": "ed86d1a55b1c2751a637a293a5478c70:",
+          "source": "ed86d1a55b1c2751a637a293a5478c70:",
+          "revision": "[null,\"94e72eac233ad5ef3834882217f1ebe6\",null,null,10000]",
+          "anchor": "{\"version\":1,\"processed\":\"2b3a43210da563478e31c91b3bf89f8a829fdbbeebb9b70c243643e0543d0e5f\",\"original\":\"545e5843794bc0138fb397412bef477ad33c92935eb5babd1ccfed65ab53c54f\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":0,\"quote\":\"The quiet garden\\nA reader opened the book beside the window.\\nThree birds crossed the pale morning sky.\\nThe next page held a map, a letter, and a promise.\\nOrigin\",\"representation\":\"bookfin-pdf-source-pages-1/pdfrx-0.9.0-pdfium-8125/bookfin-ocr-2/tesseract4android-4.9.0/tesseract-5.5.1/leptonica-1.85.0/tessdata_fast-4.1.0-eng-7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2/f06d76758705a3efcada97dc41ce09e3401807c1f34ec3d7388d3a6edc1b6c5a\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+      "identity": "action.052422df7e9c489daa13216fa0aa1aab18a9c175.6",
+      "payloadSha256": "9d66ee08be8a6e6a6d372684fbadc158e7ba606be8136bb68f0306da45ce2a0e",
+      "pending": 0,
+      "action": {
+        "version": 1,
+        "account": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+        "replica": "052422df7e9c489daa13216fa0aa1aab18a9c175",
+        "sequence": 6,
+        "context": {
+          "052422df7e9c489daa13216fa0aa1aab18a9c175": 5
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"ed86d1a55b1c2751a637a293a5478c70:\\\",\\\"ed86d1a55b1c2751a637a293a5478c70:\\\",\\\"[null,\\\\\\\"94e72eac233ad5ef3834882217f1ebe6\\\\\\\",null,null,10000]\\\"]\"]",
+        "value": {
+          "edition": "ed86d1a55b1c2751a637a293a5478c70:",
+          "source": "ed86d1a55b1c2751a637a293a5478c70:",
+          "revision": "[null,\"94e72eac233ad5ef3834882217f1ebe6\",null,null,10000]",
+          "anchor": "{\"version\":1,\"processed\":\"2b3a43210da563478e31c91b3bf89f8a829fdbbeebb9b70c243643e0543d0e5f\",\"original\":\"545e5843794bc0138fb397412bef477ad33c92935eb5babd1ccfed65ab53c54f\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":73,\"quote\":\"crossed the pale morning sky.\\nThe next page held a map, a letter, and a promise.\\nOriginal pages remain available when words are unclear.\\nThe quiet garden\\nA read\",\"representation\":\"bookfin-pdf-source-pages-1/pdfrx-0.9.0-pdfium-8125/bookfin-ocr-2/tesseract4android-4.9.0/tesseract-5.5.1/leptonica-1.85.0/tessdata_fast-4.1.0-eng-7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2/f06d76758705a3efcada97dc41ce09e3401807c1f34ec3d7388d3a6edc1b6c5a\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+      "identity": "action.052422df7e9c489daa13216fa0aa1aab18a9c175.7",
+      "payloadSha256": "48b0700c61312d7508eca50cfcfbf1cc32d96bebbd3633a4963f2743b0d2f65c",
+      "pending": 0,
+      "action": {
+        "version": 1,
+        "account": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+        "replica": "052422df7e9c489daa13216fa0aa1aab18a9c175",
+        "sequence": 7,
+        "context": {
+          "052422df7e9c489daa13216fa0aa1aab18a9c175": 6
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"ed86d1a55b1c2751a637a293a5478c70:\\\",\\\"ed86d1a55b1c2751a637a293a5478c70:\\\",\\\"[null,\\\\\\\"94e72eac233ad5ef3834882217f1ebe6\\\\\\\",null,null,10000]\\\"]\"]",
+        "value": {
+          "edition": "ed86d1a55b1c2751a637a293a5478c70:",
+          "source": "ed86d1a55b1c2751a637a293a5478c70:",
+          "revision": "[null,\"94e72eac233ad5ef3834882217f1ebe6\",null,null,10000]",
+          "anchor": "{\"version\":1,\"processed\":\"2b3a43210da563478e31c91b3bf89f8a829fdbbeebb9b70c243643e0543d0e5f\",\"original\":\"545e5843794bc0138fb397412bef477ad33c92935eb5babd1ccfed65ab53c54f\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":300,\"quote\":\"morning sky.\\nThe next page held a map, a letter, and a promise.\\nOriginal pages remain available when words are unclear.\\nThe quiet garden\\nA reader opened the boo\",\"representation\":\"bookfin-pdf-source-pages-1/pdfrx-0.9.0-pdfium-8125/bookfin-ocr-2/tesseract4android-4.9.0/tesseract-5.5.1/leptonica-1.85.0/tessdata_fast-4.1.0-eng-7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2/f06d76758705a3efcada97dc41ce09e3401807c1f34ec3d7388d3a6edc1b6c5a\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+      "identity": "action.052422df7e9c489daa13216fa0aa1aab18a9c175.8",
+      "payloadSha256": "e20266e5738a43bb99f4136df2aae751a17b77bbe3e5ee808e8c4dd8f96bf0a6",
+      "pending": 0,
+      "action": {
+        "version": 1,
+        "account": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+        "replica": "052422df7e9c489daa13216fa0aa1aab18a9c175",
+        "sequence": 8,
+        "context": {
+          "052422df7e9c489daa13216fa0aa1aab18a9c175": 7
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"ed86d1a55b1c2751a637a293a5478c70:\\\",\\\"ed86d1a55b1c2751a637a293a5478c70:\\\",\\\"[null,\\\\\\\"94e72eac233ad5ef3834882217f1ebe6\\\\\\\",null,null,10000]\\\"]\"]",
+        "value": {
+          "edition": "ed86d1a55b1c2751a637a293a5478c70:",
+          "source": "ed86d1a55b1c2751a637a293a5478c70:",
+          "revision": "[null,\"94e72eac233ad5ef3834882217f1ebe6\",null,null,10000]",
+          "anchor": "{\"version\":1,\"processed\":\"2b3a43210da563478e31c91b3bf89f8a829fdbbeebb9b70c243643e0543d0e5f\",\"original\":\"545e5843794bc0138fb397412bef477ad33c92935eb5babd1ccfed65ab53c54f\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":420,\"quote\":\"The quiet garden\\nA reader opened the book beside the window.\\nThree birds crossed the pale morning sky.\\nThe next page held a map, a letter, and a promise.\\nOrigin\",\"representation\":\"bookfin-pdf-source-pages-1/pdfrx-0.9.0-pdfium-8125/bookfin-ocr-2/tesseract4android-4.9.0/tesseract-5.5.1/leptonica-1.85.0/tessdata_fast-4.1.0-eng-7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2/f06d76758705a3efcada97dc41ce09e3401807c1f34ec3d7388d3a6edc1b6c5a\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+      "identity": "action.052422df7e9c489daa13216fa0aa1aab18a9c175.9",
+      "payloadSha256": "7bf79322f25e7103ada739a51757c341197634ef7dbc39edde952abe65f218b9",
+      "pending": 0,
+      "action": {
+        "version": 1,
+        "account": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+        "replica": "052422df7e9c489daa13216fa0aa1aab18a9c175",
+        "sequence": 9,
+        "context": {
+          "052422df7e9c489daa13216fa0aa1aab18a9c175": 8
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"ed86d1a55b1c2751a637a293a5478c70:\\\",\\\"ed86d1a55b1c2751a637a293a5478c70:\\\",\\\"[null,\\\\\\\"94e72eac233ad5ef3834882217f1ebe6\\\\\\\",null,null,10000]\\\"]\"]",
+        "value": {
+          "edition": "ed86d1a55b1c2751a637a293a5478c70:",
+          "source": "ed86d1a55b1c2751a637a293a5478c70:",
+          "revision": "[null,\"94e72eac233ad5ef3834882217f1ebe6\",null,null,10000]",
+          "anchor": "{\"version\":1,\"processed\":\"2b3a43210da563478e31c91b3bf89f8a829fdbbeebb9b70c243643e0543d0e5f\",\"original\":\"545e5843794bc0138fb397412bef477ad33c92935eb5babd1ccfed65ab53c54f\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":532,\"quote\":\"page held a map, a letter, and a promise.\\nOriginal pages remain available when words are unclear.\\nThe quiet garden\\nA reader opened the book beside the window.\\nT\",\"representation\":\"bookfin-pdf-source-pages-1/pdfrx-0.9.0-pdfium-8125/bookfin-ocr-2/tesseract4android-4.9.0/tesseract-5.5.1/leptonica-1.85.0/tessdata_fast-4.1.0-eng-7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2/f06d76758705a3efcada97dc41ce09e3401807c1f34ec3d7388d3a6edc1b6c5a\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "ed79ea2cd237513c7b399e71da1817181ad4fea19a4f197b29a95fdb1a7b95f8",
+      "identity": "action.8d31aa3d7d17dc5555511d584433feb8e7ed22bd.1",
+      "payloadSha256": "becd5a84d51ba1c383718eca5a8d0e84fa03fc0233550fa754292ce22aaf997d",
+      "pending": 0,
+      "action": {
+        "version": 1,
+        "account": "ed79ea2cd237513c7b399e71da1817181ad4fea19a4f197b29a95fdb1a7b95f8",
+        "replica": "8d31aa3d7d17dc5555511d584433feb8e7ed22bd",
+        "sequence": 1,
+        "context": {},
+        "record": "[\"reading\",\"resumes\",\"[\\\"2c77a07f7a02f2e8008f973402c96788:\\\",\\\"2c77a07f7a02f2e8008f973402c96788:\\\",\\\"[null,\\\\\\\"543b6ca4c9f21c87d81daf7a932499c0\\\\\\\",null,null,null]\\\"]\"]",
+        "value": {
+          "edition": "2c77a07f7a02f2e8008f973402c96788:",
+          "source": "2c77a07f7a02f2e8008f973402c96788:",
+          "revision": "[null,\"543b6ca4c9f21c87d81daf7a932499c0\",null,null,null]",
+          "anchor": "{\"version\":1,\"processed\":\"89321e4371854478eec763a73fe14e25fc1bc0e0eef046fbaa139f1fcc708735\",\"original\":\"6efe84b320af9a0f9997dfc6c54b172bc982e6b06978a2c3d75359161da0ce96\",\"policy\":\"bookfin-passive-epub-1\",\"engine\":\"epubjs-0.3.93-bookfin.1\",\"cfi\":\"epubcfi(/6/2!/4/2[heading]/1:0)\",\"resource\":\"OEBPS/Text/one.xhtml\",\"quote\":\"The quiet harbourThis book was written for a disposable Bookfin reading test. No private library or published story is u\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "ed79ea2cd237513c7b399e71da1817181ad4fea19a4f197b29a95fdb1a7b95f8",
+      "identity": "action.8d31aa3d7d17dc5555511d584433feb8e7ed22bd.2",
+      "payloadSha256": "b205595e19d83f259809c89f00d85c93f652584b97fca2d0985cae3d3070c121",
+      "pending": 0,
+      "action": {
+        "version": 1,
+        "account": "ed79ea2cd237513c7b399e71da1817181ad4fea19a4f197b29a95fdb1a7b95f8",
+        "replica": "8d31aa3d7d17dc5555511d584433feb8e7ed22bd",
+        "sequence": 2,
+        "context": {
+          "8d31aa3d7d17dc5555511d584433feb8e7ed22bd": 1
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"2c77a07f7a02f2e8008f973402c96788:\\\",\\\"2c77a07f7a02f2e8008f973402c96788:\\\",\\\"[null,\\\\\\\"543b6ca4c9f21c87d81daf7a932499c0\\\\\\\",null,null,null]\\\"]\"]",
+        "value": {
+          "edition": "2c77a07f7a02f2e8008f973402c96788:",
+          "source": "2c77a07f7a02f2e8008f973402c96788:",
+          "revision": "[null,\"543b6ca4c9f21c87d81daf7a932499c0\",null,null,null]",
+          "anchor": "{\"version\":1,\"processed\":\"89321e4371854478eec763a73fe14e25fc1bc0e0eef046fbaa139f1fcc708735\",\"original\":\"6efe84b320af9a0f9997dfc6c54b172bc982e6b06978a2c3d75359161da0ce96\",\"policy\":\"bookfin-passive-epub-1\",\"engine\":\"epubjs-0.3.93-bookfin.1\",\"cfi\":\"epubcfi(/6/2!/4/16/2/1:0)\",\"resource\":\"OEBPS/Text/one.xhtml\",\"quote\":\"Visit the lantern roomHarbour passage 1. The reader followed the shoreline and watched the small boats return. A bookmar\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "ed79ea2cd237513c7b399e71da1817181ad4fea19a4f197b29a95fdb1a7b95f8",
+      "identity": "action.8d31aa3d7d17dc5555511d584433feb8e7ed22bd.3",
+      "payloadSha256": "b423d731f40fd4cdb93b2b7c3f9b5c3b3cbbdba2f386a64d762a51be89a4dbc3",
+      "pending": 0,
+      "action": {
+        "version": 1,
+        "account": "ed79ea2cd237513c7b399e71da1817181ad4fea19a4f197b29a95fdb1a7b95f8",
+        "replica": "8d31aa3d7d17dc5555511d584433feb8e7ed22bd",
+        "sequence": 3,
+        "context": {
+          "8d31aa3d7d17dc5555511d584433feb8e7ed22bd": 2
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"2c77a07f7a02f2e8008f973402c96788:\\\",\\\"2c77a07f7a02f2e8008f973402c96788:\\\",\\\"[null,\\\\\\\"543b6ca4c9f21c87d81daf7a932499c0\\\\\\\",null,null,null]\\\"]\"]",
+        "value": {
+          "edition": "2c77a07f7a02f2e8008f973402c96788:",
+          "source": "2c77a07f7a02f2e8008f973402c96788:",
+          "revision": "[null,\"543b6ca4c9f21c87d81daf7a932499c0\",null,null,null]",
+          "anchor": "{\"version\":1,\"processed\":\"89321e4371854478eec763a73fe14e25fc1bc0e0eef046fbaa139f1fcc708735\",\"original\":\"6efe84b320af9a0f9997dfc6c54b172bc982e6b06978a2c3d75359161da0ce96\",\"policy\":\"bookfin-passive-epub-1\",\"engine\":\"epubjs-0.3.93-bookfin.1\",\"cfi\":\"epubcfi(/6/2!/4/26/1:0)\",\"resource\":\"OEBPS/Text/one.xhtml\",\"quote\":\"Harbour passage 5. The reader followed the shoreline and watched the small boats return. A bookmark could keep this plac\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "ed79ea2cd237513c7b399e71da1817181ad4fea19a4f197b29a95fdb1a7b95f8",
+      "identity": "action.8d31aa3d7d17dc5555511d584433feb8e7ed22bd.4",
+      "payloadSha256": "6447eeb799cd2f6ccba7d7e0e4fec93d4880e37108c80efc13943862af1b1a67",
+      "pending": 0,
+      "action": {
+        "version": 1,
+        "account": "ed79ea2cd237513c7b399e71da1817181ad4fea19a4f197b29a95fdb1a7b95f8",
+        "replica": "8d31aa3d7d17dc5555511d584433feb8e7ed22bd",
+        "sequence": 4,
+        "context": {
+          "8d31aa3d7d17dc5555511d584433feb8e7ed22bd": 3
+        },
+        "record": "[\"reading\",\"bookmarks\",\"5f6d2b792c91cde8971ee79f2afe45b0\"]",
+        "value": {
+          "id": "5f6d2b792c91cde8971ee79f2afe45b0",
+          "position": {
+            "edition": "2c77a07f7a02f2e8008f973402c96788:",
+            "source": "2c77a07f7a02f2e8008f973402c96788:",
+            "revision": "[null,\"543b6ca4c9f21c87d81daf7a932499c0\",null,null,null]",
+            "anchor": "{\"version\":1,\"processed\":\"89321e4371854478eec763a73fe14e25fc1bc0e0eef046fbaa139f1fcc708735\",\"original\":\"6efe84b320af9a0f9997dfc6c54b172bc982e6b06978a2c3d75359161da0ce96\",\"policy\":\"bookfin-passive-epub-1\",\"engine\":\"epubjs-0.3.93-bookfin.1\",\"cfi\":\"epubcfi(/6/2!/4/26/1:0)\",\"resource\":\"OEBPS/Text/one.xhtml\",\"quote\":\"Harbour passage 5. The reader followed the shoreline and watched the small boats return. A bookmark could keep this plac\"}"
+          },
+          "createdAt": "2026-11-03T13:43:46.790736Z",
+          "title": null,
+          "note": null
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "ed79ea2cd237513c7b399e71da1817181ad4fea19a4f197b29a95fdb1a7b95f8",
+      "identity": "action.8d31aa3d7d17dc5555511d584433feb8e7ed22bd.5",
+      "payloadSha256": "e7d8a42e88484b80ff4d1c4f2b793165d6b6f59d2a2eb7417c53faf5e4be7dee",
+      "pending": 0,
+      "action": {
+        "version": 1,
+        "account": "ed79ea2cd237513c7b399e71da1817181ad4fea19a4f197b29a95fdb1a7b95f8",
+        "replica": "8d31aa3d7d17dc5555511d584433feb8e7ed22bd",
+        "sequence": 5,
+        "context": {
+          "8d31aa3d7d17dc5555511d584433feb8e7ed22bd": 4
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"2c77a07f7a02f2e8008f973402c96788:\\\",\\\"2c77a07f7a02f2e8008f973402c96788:\\\",\\\"[null,\\\\\\\"543b6ca4c9f21c87d81daf7a932499c0\\\\\\\",null,null,null]\\\"]\"]",
+        "value": {
+          "edition": "2c77a07f7a02f2e8008f973402c96788:",
+          "source": "2c77a07f7a02f2e8008f973402c96788:",
+          "revision": "[null,\"543b6ca4c9f21c87d81daf7a932499c0\",null,null,null]",
+          "anchor": "{\"version\":1,\"processed\":\"89321e4371854478eec763a73fe14e25fc1bc0e0eef046fbaa139f1fcc708735\",\"original\":\"6efe84b320af9a0f9997dfc6c54b172bc982e6b06978a2c3d75359161da0ce96\",\"policy\":\"bookfin-passive-epub-1\",\"engine\":\"epubjs-0.3.93-bookfin.1\",\"cfi\":\"epubcfi(/6/2!/4/30/1:0)\",\"resource\":\"OEBPS/Text/one.xhtml\",\"quote\":\"Harbour passage 7. The reader followed the shoreline and watched the small boats return. A bookmark could keep this plac\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "ed79ea2cd237513c7b399e71da1817181ad4fea19a4f197b29a95fdb1a7b95f8",
+      "identity": "action.8d31aa3d7d17dc5555511d584433feb8e7ed22bd.6",
+      "payloadSha256": "06ad3ee6eb2e88b9ad701c2a8c18e5cee5f8eec820fc8f67eddd73a669ae81b5",
+      "pending": 0,
+      "action": {
+        "version": 1,
+        "account": "ed79ea2cd237513c7b399e71da1817181ad4fea19a4f197b29a95fdb1a7b95f8",
+        "replica": "8d31aa3d7d17dc5555511d584433feb8e7ed22bd",
+        "sequence": 6,
+        "context": {
+          "8d31aa3d7d17dc5555511d584433feb8e7ed22bd": 5
+        },
+        "record": "[\"reading\",\"bookmarks\",\"6e434cdecfa3b681aa91404985b68945\"]",
+        "value": {
+          "id": "6e434cdecfa3b681aa91404985b68945",
+          "position": {
+            "edition": "2c77a07f7a02f2e8008f973402c96788:",
+            "source": "2c77a07f7a02f2e8008f973402c96788:",
+            "revision": "[null,\"543b6ca4c9f21c87d81daf7a932499c0\",null,null,null]",
+            "anchor": "{\"version\":1,\"processed\":\"89321e4371854478eec763a73fe14e25fc1bc0e0eef046fbaa139f1fcc708735\",\"original\":\"6efe84b320af9a0f9997dfc6c54b172bc982e6b06978a2c3d75359161da0ce96\",\"policy\":\"bookfin-passive-epub-1\",\"engine\":\"epubjs-0.3.93-bookfin.1\",\"cfi\":\"epubcfi(/6/2!/4/30/1:0)\",\"resource\":\"OEBPS/Text/one.xhtml\",\"quote\":\"Harbour passage 7. The reader followed the shoreline and watched the small boats return. A bookmark could keep this plac\"}"
+          },
+          "createdAt": "2026-11-03T13:50:06.194390Z",
+          "title": null,
+          "note": null
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "ed79ea2cd237513c7b399e71da1817181ad4fea19a4f197b29a95fdb1a7b95f8",
+      "identity": "action.8d31aa3d7d17dc5555511d584433feb8e7ed22bd.7",
+      "payloadSha256": "e1bc70a3a5390f52426b9ae3bba637143da31bfef6228de2a3a2746c7730834b",
+      "pending": 0,
+      "action": {
+        "version": 1,
+        "account": "ed79ea2cd237513c7b399e71da1817181ad4fea19a4f197b29a95fdb1a7b95f8",
+        "replica": "8d31aa3d7d17dc5555511d584433feb8e7ed22bd",
+        "sequence": 7,
+        "context": {
+          "8d31aa3d7d17dc5555511d584433feb8e7ed22bd": 6
+        },
+        "record": "[\"reading\",\"bookmarks\",\"5f6d2b792c91cde8971ee79f2afe45b0\"]",
+        "value": null,
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+      "identity": "action.d5d25281004bf85bacba67d9fc1873fb7d45d3dd.1",
+      "payloadSha256": "4395577a18febd0166ce8125f835675106dabd53f06cd3afca3556c70fa73148",
+      "pending": 0,
+      "action": {
+        "version": 1,
+        "account": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+        "replica": "d5d25281004bf85bacba67d9fc1873fb7d45d3dd",
+        "sequence": 1,
+        "context": {},
+        "record": "[\"reading\",\"resumes\",\"[\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"[null,\\\\\\\"3325a637b5e313a1d8ba378d92362636\\\\\\\",null,null,70000]\\\"]\"]",
+        "value": {
+          "edition": "a187a7a29eaffbfee5b54f1694ef99dd:",
+          "source": "a187a7a29eaffbfee5b54f1694ef99dd:",
+          "revision": "[null,\"3325a637b5e313a1d8ba378d92362636\",null,null,70000]",
+          "anchor": "{\"version\":1,\"processed\":\"4956206bede66b49f0f36e2d13086a13872e43f79b86c1ce280005e1352034f7\",\"original\":\"7b0c1a9fdfc67218b8ba2098f448c100c27070db91736b3c87fed63bfa21d418\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":0,\"quote\":\"The NIST Definition of Cloud \\r\\nComputing\\r\\nRecommendations of the National Institute \\r\\nof Standards and Technology\\r\\nPeter Mell\\r\\nTimothy Grance\\r\\nSpecial Publicati\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+      "identity": "action.d5d25281004bf85bacba67d9fc1873fb7d45d3dd.10",
+      "payloadSha256": "c7b39b4209f44fe212dc6cd5813e0e963c51d72721789087e9f42042b8140750",
+      "pending": 1,
+      "action": {
+        "version": 1,
+        "account": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+        "replica": "d5d25281004bf85bacba67d9fc1873fb7d45d3dd",
+        "sequence": 10,
+        "context": {
+          "d5d25281004bf85bacba67d9fc1873fb7d45d3dd": 9
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"[null,\\\\\\\"3325a637b5e313a1d8ba378d92362636\\\\\\\",null,null,70000]\\\"]\"]",
+        "value": {
+          "edition": "a187a7a29eaffbfee5b54f1694ef99dd:",
+          "source": "a187a7a29eaffbfee5b54f1694ef99dd:",
+          "revision": "[null,\"3325a637b5e313a1d8ba378d92362636\",null,null,70000]",
+          "anchor": "{\"version\":1,\"processed\":\"4956206bede66b49f0f36e2d13086a13872e43f79b86c1ce280005e1352034f7\",\"original\":\"7b0c1a9fdfc67218b8ba2098f448c100c27070db91736b3c87fed63bfa21d418\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":5,\"character\":492,\"quote\":\"to national security systems. This guideline is consistent with the requirements \\r\\nof the Office of Management and Budget (OMB) Circular A-130, Section 8b(3), “\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+      "identity": "action.d5d25281004bf85bacba67d9fc1873fb7d45d3dd.11",
+      "payloadSha256": "1b5c1709e85cb2527655d89aa5a899f3b23f19638278b841a47fbac73579957b",
+      "pending": 1,
+      "action": {
+        "version": 1,
+        "account": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+        "replica": "d5d25281004bf85bacba67d9fc1873fb7d45d3dd",
+        "sequence": 11,
+        "context": {
+          "d5d25281004bf85bacba67d9fc1873fb7d45d3dd": 10
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"[null,\\\\\\\"3325a637b5e313a1d8ba378d92362636\\\\\\\",null,null,70000]\\\"]\"]",
+        "value": {
+          "edition": "a187a7a29eaffbfee5b54f1694ef99dd:",
+          "source": "a187a7a29eaffbfee5b54f1694ef99dd:",
+          "revision": "[null,\"3325a637b5e313a1d8ba378d92362636\",null,null,70000]",
+          "anchor": "{\"version\":1,\"processed\":\"4956206bede66b49f0f36e2d13086a13872e43f79b86c1ce280005e1352034f7\",\"original\":\"7b0c1a9fdfc67218b8ba2098f448c100c27070db91736b3c87fed63bfa21d418\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":5,\"character\":560,\"quote\":\"requirements \\r\\nof the Office of Management and Budget (OMB) Circular A-130, Section 8b(3), “Securing Agency \\r\\nInformation Systems,” as analyzed in A-130, Append\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+      "identity": "action.d5d25281004bf85bacba67d9fc1873fb7d45d3dd.12",
+      "payloadSha256": "f78cd750ea78f19319664bdaf1e96923fd60908a350eef09f0303ce49998ebe7",
+      "pending": 1,
+      "action": {
+        "version": 1,
+        "account": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+        "replica": "d5d25281004bf85bacba67d9fc1873fb7d45d3dd",
+        "sequence": 12,
+        "context": {
+          "d5d25281004bf85bacba67d9fc1873fb7d45d3dd": 11
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"[null,\\\\\\\"3325a637b5e313a1d8ba378d92362636\\\\\\\",null,null,70000]\\\"]\"]",
+        "value": {
+          "edition": "a187a7a29eaffbfee5b54f1694ef99dd:",
+          "source": "a187a7a29eaffbfee5b54f1694ef99dd:",
+          "revision": "[null,\"3325a637b5e313a1d8ba378d92362636\",null,null,70000]",
+          "anchor": "{\"version\":1,\"processed\":\"4956206bede66b49f0f36e2d13086a13872e43f79b86c1ce280005e1352034f7\",\"original\":\"7b0c1a9fdfc67218b8ba2098f448c100c27070db91736b3c87fed63bfa21d418\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":5,\"character\":592,\"quote\":\"Management and Budget (OMB) Circular A-130, Section 8b(3), “Securing Agency \\r\\nInformation Systems,” as analyzed in A-130, Appendix IV: Analysis of Key Sections.\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+      "identity": "action.d5d25281004bf85bacba67d9fc1873fb7d45d3dd.13",
+      "payloadSha256": "143b860f5a672887b1e6defc9cdfca5e7766c178df630aed50da09e01ff77d7a",
+      "pending": 1,
+      "action": {
+        "version": 1,
+        "account": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+        "replica": "d5d25281004bf85bacba67d9fc1873fb7d45d3dd",
+        "sequence": 13,
+        "context": {
+          "d5d25281004bf85bacba67d9fc1873fb7d45d3dd": 12
+        },
+        "record": "[\"reading\",\"bookmarks\",\"b2fa3724749d75729e55a04fc4331b3c\"]",
+        "value": {
+          "id": "b2fa3724749d75729e55a04fc4331b3c",
+          "position": {
+            "edition": "a187a7a29eaffbfee5b54f1694ef99dd:",
+            "source": "a187a7a29eaffbfee5b54f1694ef99dd:",
+            "revision": "[null,\"3325a637b5e313a1d8ba378d92362636\",null,null,70000]",
+            "anchor": "{\"version\":1,\"processed\":\"4956206bede66b49f0f36e2d13086a13872e43f79b86c1ce280005e1352034f7\",\"original\":\"7b0c1a9fdfc67218b8ba2098f448c100c27070db91736b3c87fed63bfa21d418\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":5,\"character\":592,\"quote\":\"Management and Budget (OMB) Circular A-130, Section 8b(3), “Securing Agency \\r\\nInformation Systems,” as analyzed in A-130, Appendix IV: Analysis of Key Sections.\"}"
+          },
+          "createdAt": "2026-11-03T14:45:06.059040Z",
+          "title": null,
+          "note": null
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+      "identity": "action.d5d25281004bf85bacba67d9fc1873fb7d45d3dd.14",
+      "payloadSha256": "d44f22877ca279405fbade06222b812de59e967a92b08c4afcd36cadf4db8f14",
+      "pending": 1,
+      "action": {
+        "version": 1,
+        "account": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+        "replica": "d5d25281004bf85bacba67d9fc1873fb7d45d3dd",
+        "sequence": 14,
+        "context": {
+          "d5d25281004bf85bacba67d9fc1873fb7d45d3dd": 13
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"[null,\\\\\\\"3325a637b5e313a1d8ba378d92362636\\\\\\\",null,null,70000]\\\"]\"]",
+        "value": {
+          "edition": "a187a7a29eaffbfee5b54f1694ef99dd:",
+          "source": "a187a7a29eaffbfee5b54f1694ef99dd:",
+          "revision": "[null,\"3325a637b5e313a1d8ba378d92362636\",null,null,70000]",
+          "anchor": "{\"version\":1,\"processed\":\"4956206bede66b49f0f36e2d13086a13872e43f79b86c1ce280005e1352034f7\",\"original\":\"7b0c1a9fdfc67218b8ba2098f448c100c27070db91736b3c87fed63bfa21d418\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":5,\"character\":560,\"quote\":\"requirements \\r\\nof the Office of Management and Budget (OMB) Circular A-130, Section 8b(3), “Securing Agency \\r\\nInformation Systems,” as analyzed in A-130, Append\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+      "identity": "action.d5d25281004bf85bacba67d9fc1873fb7d45d3dd.15",
+      "payloadSha256": "29afb32da7af36570d6e3f93ee0522c872f40365540c386a2d5ae0f40f97bbaf",
+      "pending": 1,
+      "action": {
+        "version": 1,
+        "account": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+        "replica": "d5d25281004bf85bacba67d9fc1873fb7d45d3dd",
+        "sequence": 15,
+        "context": {
+          "d5d25281004bf85bacba67d9fc1873fb7d45d3dd": 14
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"[null,\\\\\\\"3325a637b5e313a1d8ba378d92362636\\\\\\\",null,null,70000]\\\"]\"]",
+        "value": {
+          "edition": "a187a7a29eaffbfee5b54f1694ef99dd:",
+          "source": "a187a7a29eaffbfee5b54f1694ef99dd:",
+          "revision": "[null,\"3325a637b5e313a1d8ba378d92362636\",null,null,70000]",
+          "anchor": "{\"version\":1,\"processed\":\"4956206bede66b49f0f36e2d13086a13872e43f79b86c1ce280005e1352034f7\",\"original\":\"7b0c1a9fdfc67218b8ba2098f448c100c27070db91736b3c87fed63bfa21d418\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":5,\"character\":592,\"quote\":\"Management and Budget (OMB) Circular A-130, Section 8b(3), “Securing Agency \\r\\nInformation Systems,” as analyzed in A-130, Appendix IV: Analysis of Key Sections.\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+      "identity": "action.d5d25281004bf85bacba67d9fc1873fb7d45d3dd.16",
+      "payloadSha256": "b8489c984f25dcbaf7f3469d098c6a0b684c7f5c9904701df526227e4fc391b9",
+      "pending": 1,
+      "action": {
+        "version": 1,
+        "account": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+        "replica": "d5d25281004bf85bacba67d9fc1873fb7d45d3dd",
+        "sequence": 16,
+        "context": {
+          "d5d25281004bf85bacba67d9fc1873fb7d45d3dd": 15
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"[null,\\\\\\\"3325a637b5e313a1d8ba378d92362636\\\\\\\",null,null,70000]\\\"]\"]",
+        "value": {
+          "edition": "a187a7a29eaffbfee5b54f1694ef99dd:",
+          "source": "a187a7a29eaffbfee5b54f1694ef99dd:",
+          "revision": "[null,\"3325a637b5e313a1d8ba378d92362636\",null,null,70000]",
+          "anchor": "{\"version\":1,\"processed\":\"4956206bede66b49f0f36e2d13086a13872e43f79b86c1ce280005e1352034f7\",\"original\":\"7b0c1a9fdfc67218b8ba2098f448c100c27070db91736b3c87fed63bfa21d418\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":5,\"character\":560,\"quote\":\"requirements \\r\\nof the Office of Management and Budget (OMB) Circular A-130, Section 8b(3), “Securing Agency \\r\\nInformation Systems,” as analyzed in A-130, Append\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+      "identity": "action.d5d25281004bf85bacba67d9fc1873fb7d45d3dd.17",
+      "payloadSha256": "4f14f568c1991f255ae877252ad1c20d13a608716acaebea881735e468196f8f",
+      "pending": 1,
+      "action": {
+        "version": 1,
+        "account": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+        "replica": "d5d25281004bf85bacba67d9fc1873fb7d45d3dd",
+        "sequence": 17,
+        "context": {
+          "d5d25281004bf85bacba67d9fc1873fb7d45d3dd": 16
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"[null,\\\\\\\"3325a637b5e313a1d8ba378d92362636\\\\\\\",null,null,70000]\\\"]\"]",
+        "value": {
+          "edition": "a187a7a29eaffbfee5b54f1694ef99dd:",
+          "source": "a187a7a29eaffbfee5b54f1694ef99dd:",
+          "revision": "[null,\"3325a637b5e313a1d8ba378d92362636\",null,null,70000]",
+          "anchor": "{\"version\":1,\"processed\":\"4956206bede66b49f0f36e2d13086a13872e43f79b86c1ce280005e1352034f7\",\"original\":\"7b0c1a9fdfc67218b8ba2098f448c100c27070db91736b3c87fed63bfa21d418\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":5,\"character\":522,\"quote\":\"This guideline is consistent with the requirements \\r\\nof the Office of Management and Budget (OMB) Circular A-130, Section 8b(3), “Securing Agency \\r\\nInformation \"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+      "identity": "action.d5d25281004bf85bacba67d9fc1873fb7d45d3dd.18",
+      "payloadSha256": "6a6ae26908399942e5d427ceda090f72fb3b63fae894936c5a400d176288bd57",
+      "pending": 1,
+      "action": {
+        "version": 1,
+        "account": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+        "replica": "d5d25281004bf85bacba67d9fc1873fb7d45d3dd",
+        "sequence": 18,
+        "context": {
+          "d5d25281004bf85bacba67d9fc1873fb7d45d3dd": 17
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"[null,\\\\\\\"3325a637b5e313a1d8ba378d92362636\\\\\\\",null,null,70000]\\\"]\"]",
+        "value": {
+          "edition": "a187a7a29eaffbfee5b54f1694ef99dd:",
+          "source": "a187a7a29eaffbfee5b54f1694ef99dd:",
+          "revision": "[null,\"3325a637b5e313a1d8ba378d92362636\",null,null,70000]",
+          "anchor": "{\"version\":1,\"processed\":\"4956206bede66b49f0f36e2d13086a13872e43f79b86c1ce280005e1352034f7\",\"original\":\"7b0c1a9fdfc67218b8ba2098f448c100c27070db91736b3c87fed63bfa21d418\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":5,\"character\":1041,\"quote\":\"should be taken to contradict standards and guidelines made mandatory and \\r\\nbinding on Federal agencies by the Secretary of Commerce under statutory authority, \"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+      "identity": "action.d5d25281004bf85bacba67d9fc1873fb7d45d3dd.19",
+      "payloadSha256": "963c4482f6082cda408f1d3968eb57a0802c40636adf068b179375e21055326c",
+      "pending": 1,
+      "action": {
+        "version": 1,
+        "account": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+        "replica": "d5d25281004bf85bacba67d9fc1873fb7d45d3dd",
+        "sequence": 19,
+        "context": {
+          "d5d25281004bf85bacba67d9fc1873fb7d45d3dd": 18
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"[null,\\\\\\\"3325a637b5e313a1d8ba378d92362636\\\\\\\",null,null,70000]\\\"]\"]",
+        "value": {
+          "edition": "a187a7a29eaffbfee5b54f1694ef99dd:",
+          "source": "a187a7a29eaffbfee5b54f1694ef99dd:",
+          "revision": "[null,\"3325a637b5e313a1d8ba378d92362636\",null,null,70000]",
+          "anchor": "{\"version\":1,\"processed\":\"4956206bede66b49f0f36e2d13086a13872e43f79b86c1ce280005e1352034f7\",\"original\":\"7b0c1a9fdfc67218b8ba2098f448c100c27070db91736b3c87fed63bfa21d418\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":6,\"character\":0,\"quote\":\"2\\r\\n2. The NIST Definition of Cloud Computing\\r\\nCloud computing is a model for enabling ubiquitous, convenient, on-demand network access to a shared \\r\\npool of con\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+      "identity": "action.d5d25281004bf85bacba67d9fc1873fb7d45d3dd.2",
+      "payloadSha256": "fd20ee053986b02df8e4624bbf717c3af0c81e5cc247c257cc22b8c019a7ed0f",
+      "pending": 0,
+      "action": {
+        "version": 1,
+        "account": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+        "replica": "d5d25281004bf85bacba67d9fc1873fb7d45d3dd",
+        "sequence": 2,
+        "context": {
+          "d5d25281004bf85bacba67d9fc1873fb7d45d3dd": 1
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"[null,\\\\\\\"3325a637b5e313a1d8ba378d92362636\\\\\\\",null,null,70000]\\\"]\"]",
+        "value": {
+          "edition": "a187a7a29eaffbfee5b54f1694ef99dd:",
+          "source": "a187a7a29eaffbfee5b54f1694ef99dd:",
+          "revision": "[null,\"3325a637b5e313a1d8ba378d92362636\",null,null,70000]",
+          "anchor": "{\"version\":1,\"processed\":\"4956206bede66b49f0f36e2d13086a13872e43f79b86c1ce280005e1352034f7\",\"original\":\"7b0c1a9fdfc67218b8ba2098f448c100c27070db91736b3c87fed63bfa21d418\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":5,\"character\":0,\"quote\":\"1\\r\\n1. Introduction\\r\\n1.1 Authority\\r\\nThe National Institute of Standards and Technology (NIST) developed this document in furtherance of its \\r\\nstatutory responsib\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+      "identity": "action.d5d25281004bf85bacba67d9fc1873fb7d45d3dd.20",
+      "payloadSha256": "2acaa23be2028d627cb8cef12d60e1dcdb3627b212ce2dae3b08f6e6929c4e5b",
+      "pending": 1,
+      "action": {
+        "version": 1,
+        "account": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+        "replica": "d5d25281004bf85bacba67d9fc1873fb7d45d3dd",
+        "sequence": 20,
+        "context": {
+          "d5d25281004bf85bacba67d9fc1873fb7d45d3dd": 19
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"[null,\\\\\\\"3325a637b5e313a1d8ba378d92362636\\\\\\\",null,null,70000]\\\"]\"]",
+        "value": {
+          "edition": "a187a7a29eaffbfee5b54f1694ef99dd:",
+          "source": "a187a7a29eaffbfee5b54f1694ef99dd:",
+          "revision": "[null,\"3325a637b5e313a1d8ba378d92362636\",null,null,70000]",
+          "anchor": "{\"version\":1,\"processed\":\"4956206bede66b49f0f36e2d13086a13872e43f79b86c1ce280005e1352034f7\",\"original\":\"7b0c1a9fdfc67218b8ba2098f448c100c27070db91736b3c87fed63bfa21d418\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":5,\"character\":2114,\"quote\":\"\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+      "identity": "action.d5d25281004bf85bacba67d9fc1873fb7d45d3dd.21",
+      "payloadSha256": "9eba381b5cb4e51ae0edddfc4bd0999ea2111d65dd42f2b2b6f7f7d6f987bdaa",
+      "pending": 1,
+      "action": {
+        "version": 1,
+        "account": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+        "replica": "d5d25281004bf85bacba67d9fc1873fb7d45d3dd",
+        "sequence": 21,
+        "context": {
+          "d5d25281004bf85bacba67d9fc1873fb7d45d3dd": 20
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"[null,\\\\\\\"3325a637b5e313a1d8ba378d92362636\\\\\\\",null,null,70000]\\\"]\"]",
+        "value": {
+          "edition": "a187a7a29eaffbfee5b54f1694ef99dd:",
+          "source": "a187a7a29eaffbfee5b54f1694ef99dd:",
+          "revision": "[null,\"3325a637b5e313a1d8ba378d92362636\",null,null,70000]",
+          "anchor": "{\"version\":1,\"processed\":\"4956206bede66b49f0f36e2d13086a13872e43f79b86c1ce280005e1352034f7\",\"original\":\"7b0c1a9fdfc67218b8ba2098f448c100c27070db91736b3c87fed63bfa21d418\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":5,\"character\":1581,\"quote\":\"cloud services and deployment \\r\\nstrategies, and to provide a baseline for discussion from what is cloud computing to how to best use cloud \\r\\ncomputing. The serv\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+      "identity": "action.d5d25281004bf85bacba67d9fc1873fb7d45d3dd.22",
+      "payloadSha256": "1af10c6d4f4e67ed5e280d9ba752e216a09c4d2b1ee0fa0a65bd5c1fa2952db0",
+      "pending": 1,
+      "action": {
+        "version": 1,
+        "account": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+        "replica": "d5d25281004bf85bacba67d9fc1873fb7d45d3dd",
+        "sequence": 22,
+        "context": {
+          "d5d25281004bf85bacba67d9fc1873fb7d45d3dd": 21
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"73f0108fef4b1f8db6a08e181b457c7a:\\\",\\\"73f0108fef4b1f8db6a08e181b457c7a:\\\",\\\"[null,\\\\\\\"880469d927cd611b64e78be777cfa387\\\\\\\",null,null,null]\\\"]\"]",
+        "value": {
+          "edition": "73f0108fef4b1f8db6a08e181b457c7a:",
+          "source": "73f0108fef4b1f8db6a08e181b457c7a:",
+          "revision": "[null,\"880469d927cd611b64e78be777cfa387\",null,null,null]",
+          "anchor": "{\"version\":1,\"processed\":\"cf1f9b99aa3c080098632f16109eaae47a72e12aa352fa2c6e32ac568cada411\",\"original\":\"42a14c07f1acc6b530dc6fff2b8eadac3a4b08306c2dcee6d8a0558738d39d83\",\"policy\":\"bookfin-mobi-epub-1-libmobi-0.12/bookfin-passive-epub-1\",\"engine\":\"epubjs-0.3.93-bookfin.1\",\"cfi\":\"epubcfi(/6/2!/4/2/1:0)\",\"resource\":\"OEBPS/part00000.html\",\"quote\":\"River chapterThe river follows the old road.\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+      "identity": "action.d5d25281004bf85bacba67d9fc1873fb7d45d3dd.23",
+      "payloadSha256": "d8db5ec7e80f7bd6fbfccdb0bd350d109bdfed3405eabbe8f155462c831e9e86",
+      "pending": 1,
+      "action": {
+        "version": 1,
+        "account": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+        "replica": "d5d25281004bf85bacba67d9fc1873fb7d45d3dd",
+        "sequence": 23,
+        "context": {
+          "d5d25281004bf85bacba67d9fc1873fb7d45d3dd": 22
+        },
+        "record": "[\"reading\",\"bookmarks\",\"6608df94cd7eff27ab781d3c744d9877\"]",
+        "value": {
+          "id": "6608df94cd7eff27ab781d3c744d9877",
+          "position": {
+            "edition": "73f0108fef4b1f8db6a08e181b457c7a:",
+            "source": "73f0108fef4b1f8db6a08e181b457c7a:",
+            "revision": "[null,\"880469d927cd611b64e78be777cfa387\",null,null,null]",
+            "anchor": "{\"version\":1,\"processed\":\"cf1f9b99aa3c080098632f16109eaae47a72e12aa352fa2c6e32ac568cada411\",\"original\":\"42a14c07f1acc6b530dc6fff2b8eadac3a4b08306c2dcee6d8a0558738d39d83\",\"policy\":\"bookfin-mobi-epub-1-libmobi-0.12/bookfin-passive-epub-1\",\"engine\":\"epubjs-0.3.93-bookfin.1\",\"cfi\":\"epubcfi(/6/2!/4/2/1:0)\",\"resource\":\"OEBPS/part00000.html\",\"quote\":\"River chapterThe river follows the old road.\"}"
+          },
+          "createdAt": "2026-11-03T14:52:01.441284Z",
+          "title": null,
+          "note": null
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+      "identity": "action.d5d25281004bf85bacba67d9fc1873fb7d45d3dd.24",
+      "payloadSha256": "6950a583db56bf1bc8161294cfade744a7154466ab577539ff712880c2346567",
+      "pending": 1,
+      "action": {
+        "version": 1,
+        "account": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+        "replica": "d5d25281004bf85bacba67d9fc1873fb7d45d3dd",
+        "sequence": 24,
+        "context": {
+          "d5d25281004bf85bacba67d9fc1873fb7d45d3dd": 23
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"e2903c7d45913696e257a096e0a19679:\\\",\\\"e2903c7d45913696e257a096e0a19679:\\\",\\\"[null,\\\\\\\"e9ef40d87a0390c985df848a8c06bd47\\\\\\\",null,null,null]\\\"]\"]",
+        "value": {
+          "edition": "e2903c7d45913696e257a096e0a19679:",
+          "source": "e2903c7d45913696e257a096e0a19679:",
+          "revision": "[null,\"e9ef40d87a0390c985df848a8c06bd47\",null,null,null]",
+          "anchor": "{\"version\":1,\"processed\":\"6cfcbb5cd01270ee3248c9835aa383b86571ecec52cced18b2347619e57b38e8\",\"original\":\"6a74ec880895caf41cbdda7d8ee7e1e5455db757022fa23b6c1af1185696bdc1\",\"policy\":\"bookfin-mobi-epub-1-libmobi-0.12/bookfin-passive-epub-1\",\"engine\":\"epubjs-0.3.93-bookfin.1\",\"cfi\":\"epubcfi(/6/2!/4/2/1:0)\",\"resource\":\"OEBPS/part00000.html\",\"quote\":\"River chapterThe river follows the old road.\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+      "identity": "action.d5d25281004bf85bacba67d9fc1873fb7d45d3dd.25",
+      "payloadSha256": "4a046f0fcda48c15833cf9b667ac70ce7ca7ce09d2c0dd693ca2f5c52738d4bc",
+      "pending": 1,
+      "action": {
+        "version": 1,
+        "account": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+        "replica": "d5d25281004bf85bacba67d9fc1873fb7d45d3dd",
+        "sequence": 25,
+        "context": {
+          "d5d25281004bf85bacba67d9fc1873fb7d45d3dd": 24
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"99a7f6bef1bf26db46656b21ca6bb52b:\\\",\\\"99a7f6bef1bf26db46656b21ca6bb52b:\\\",\\\"[null,\\\\\\\"c7cd346f3a4daf3dda1b8da8b6ed2d56\\\\\\\",null,null,null]\\\"]\"]",
+        "value": {
+          "edition": "99a7f6bef1bf26db46656b21ca6bb52b:",
+          "source": "99a7f6bef1bf26db46656b21ca6bb52b:",
+          "revision": "[null,\"c7cd346f3a4daf3dda1b8da8b6ed2d56\",null,null,null]",
+          "anchor": "{\"version\":1,\"processed\":\"3d0b0318cf5d0455722a2b8ccf93ac5ec0be08e0c198a831d41d4990be1f10d7\",\"original\":\"d8211269aed55ded8302f289950936db8368b4d4d384c463b722034152f8f1d2\",\"policy\":\"bookfin-mobi-epub-1-libmobi-0.12/bookfin-passive-epub-1\",\"engine\":\"epubjs-0.3.93-bookfin.1\",\"cfi\":\"epubcfi(/6/2!/4/2[calibre_pb_0]/2/1:0)\",\"resource\":\"OEBPS/part00000.html\",\"quote\":\"[Unsupported image]\\n  \\n\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+      "identity": "action.d5d25281004bf85bacba67d9fc1873fb7d45d3dd.26",
+      "payloadSha256": "e2ba68d5bb7c0f8d182a91c8cf5937d340336f2da9020834131294a86914ce73",
+      "pending": 1,
+      "action": {
+        "version": 1,
+        "account": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+        "replica": "d5d25281004bf85bacba67d9fc1873fb7d45d3dd",
+        "sequence": 26,
+        "context": {
+          "d5d25281004bf85bacba67d9fc1873fb7d45d3dd": 25
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"99a7f6bef1bf26db46656b21ca6bb52b:\\\",\\\"99a7f6bef1bf26db46656b21ca6bb52b:\\\",\\\"[null,\\\\\\\"c7cd346f3a4daf3dda1b8da8b6ed2d56\\\\\\\",null,null,null]\\\"]\"]",
+        "value": {
+          "edition": "99a7f6bef1bf26db46656b21ca6bb52b:",
+          "source": "99a7f6bef1bf26db46656b21ca6bb52b:",
+          "revision": "[null,\"c7cd346f3a4daf3dda1b8da8b6ed2d56\",null,null,null]",
+          "anchor": "{\"version\":1,\"processed\":\"3d0b0318cf5d0455722a2b8ccf93ac5ec0be08e0c198a831d41d4990be1f10d7\",\"original\":\"d8211269aed55ded8302f289950936db8368b4d4d384c463b722034152f8f1d2\",\"policy\":\"bookfin-mobi-epub-1-libmobi-0.12/bookfin-passive-epub-1\",\"engine\":\"epubjs-0.3.93-bookfin.1\",\"cfi\":\"epubcfi(/6/10!/4/2[pgepubid00003]/1:0)\",\"resource\":\"OEBPS/part00004.html\",\"quote\":\"\\nCHAPTER I.\\nDown the Rabbit-Hole\\n\\nAlice was beginning to get very tired of sitting by her sister on the bank, and\\nof hav\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+      "identity": "action.d5d25281004bf85bacba67d9fc1873fb7d45d3dd.27",
+      "payloadSha256": "015812905601a19c565f7fa1d4f43dfcf948bbd5be6692ff5b9f29ed85a3327b",
+      "pending": 1,
+      "action": {
+        "version": 1,
+        "account": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+        "replica": "d5d25281004bf85bacba67d9fc1873fb7d45d3dd",
+        "sequence": 27,
+        "context": {
+          "d5d25281004bf85bacba67d9fc1873fb7d45d3dd": 26
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"99a7f6bef1bf26db46656b21ca6bb52b:\\\",\\\"99a7f6bef1bf26db46656b21ca6bb52b:\\\",\\\"[null,\\\\\\\"c7cd346f3a4daf3dda1b8da8b6ed2d56\\\\\\\",null,null,null]\\\"]\"]",
+        "value": {
+          "edition": "99a7f6bef1bf26db46656b21ca6bb52b:",
+          "source": "99a7f6bef1bf26db46656b21ca6bb52b:",
+          "revision": "[null,\"c7cd346f3a4daf3dda1b8da8b6ed2d56\",null,null,null]",
+          "anchor": "{\"version\":1,\"processed\":\"3d0b0318cf5d0455722a2b8ccf93ac5ec0be08e0c198a831d41d4990be1f10d7\",\"original\":\"d8211269aed55ded8302f289950936db8368b4d4d384c463b722034152f8f1d2\",\"policy\":\"bookfin-mobi-epub-1-libmobi-0.12/bookfin-passive-epub-1\",\"engine\":\"epubjs-0.3.93-bookfin.1\",\"cfi\":\"epubcfi(/6/10!/4/2[pgepubid00003]/4/1:260)\",\"resource\":\"OEBPS/part00004.html\",\"quote\":\" Alice “without pictures or conversations?”\\n\\n\\nSo she was considering in her own mind (as well as she could, for the hot \"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+      "identity": "action.d5d25281004bf85bacba67d9fc1873fb7d45d3dd.28",
+      "payloadSha256": "038f2f85f37328e02180aa3fa569de19fa8ca8c338fa1452067bd88ebf8c9172",
+      "pending": 1,
+      "action": {
+        "version": 1,
+        "account": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+        "replica": "d5d25281004bf85bacba67d9fc1873fb7d45d3dd",
+        "sequence": 28,
+        "context": {
+          "d5d25281004bf85bacba67d9fc1873fb7d45d3dd": 27
+        },
+        "record": "[\"reading\",\"bookmarks\",\"d901a95c23af46d6aff279a65d7b3bd9\"]",
+        "value": {
+          "id": "d901a95c23af46d6aff279a65d7b3bd9",
+          "position": {
+            "edition": "99a7f6bef1bf26db46656b21ca6bb52b:",
+            "source": "99a7f6bef1bf26db46656b21ca6bb52b:",
+            "revision": "[null,\"c7cd346f3a4daf3dda1b8da8b6ed2d56\",null,null,null]",
+            "anchor": "{\"version\":1,\"processed\":\"3d0b0318cf5d0455722a2b8ccf93ac5ec0be08e0c198a831d41d4990be1f10d7\",\"original\":\"d8211269aed55ded8302f289950936db8368b4d4d384c463b722034152f8f1d2\",\"policy\":\"bookfin-mobi-epub-1-libmobi-0.12/bookfin-passive-epub-1\",\"engine\":\"epubjs-0.3.93-bookfin.1\",\"cfi\":\"epubcfi(/6/10!/4/2[pgepubid00003]/4/1:260)\",\"resource\":\"OEBPS/part00004.html\",\"quote\":\" Alice “without pictures or conversations?”\\n\\n\\nSo she was considering in her own mind (as well as she could, for the hot \"}"
+          },
+          "createdAt": "2026-11-03T14:58:18.509778Z",
+          "title": null,
+          "note": null
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+      "identity": "action.d5d25281004bf85bacba67d9fc1873fb7d45d3dd.29",
+      "payloadSha256": "f37fa5ea30e14b9995001af5edbc5fe4bafdcc36bbfbbcda1c44cc270b275580",
+      "pending": 1,
+      "action": {
+        "version": 1,
+        "account": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+        "replica": "d5d25281004bf85bacba67d9fc1873fb7d45d3dd",
+        "sequence": 29,
+        "context": {
+          "d5d25281004bf85bacba67d9fc1873fb7d45d3dd": 28
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"b61131ee2fc24abe0a2b7057c0b62e3f:\\\",\\\"b61131ee2fc24abe0a2b7057c0b62e3f:\\\",\\\"[null,\\\\\\\"c4231a34b5811b66666703cb79b08f93\\\\\\\",null,null,20000]\\\"]\"]",
+        "value": {
+          "edition": "b61131ee2fc24abe0a2b7057c0b62e3f:",
+          "source": "b61131ee2fc24abe0a2b7057c0b62e3f:",
+          "revision": "[null,\"c4231a34b5811b66666703cb79b08f93\",null,null,20000]",
+          "anchor": "{\"version\":1,\"processed\":\"39cd1ab8b3cd4b412994d1e5bfd7174075542b35c2a7866b9978d48edaf4a823\",\"original\":\"51d05de2a89dd83fb8f04301ac254419b2d616d48f6e8bb9fbe0938745bc04ce\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":0,\"quote\":\"River chapter 1\\r\\nThe river follows the old road.\\r\\nA reader can change the text size without changing\\r\\nthe saved source location.\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+      "identity": "action.d5d25281004bf85bacba67d9fc1873fb7d45d3dd.3",
+      "payloadSha256": "7f479121ec566d667786d15d29887998c20277dd22c69736a10c5811e6790881",
+      "pending": 0,
+      "action": {
+        "version": 1,
+        "account": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+        "replica": "d5d25281004bf85bacba67d9fc1873fb7d45d3dd",
+        "sequence": 3,
+        "context": {
+          "d5d25281004bf85bacba67d9fc1873fb7d45d3dd": 2
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"[null,\\\\\\\"3325a637b5e313a1d8ba378d92362636\\\\\\\",null,null,70000]\\\"]\"]",
+        "value": {
+          "edition": "a187a7a29eaffbfee5b54f1694ef99dd:",
+          "source": "a187a7a29eaffbfee5b54f1694ef99dd:",
+          "revision": "[null,\"3325a637b5e313a1d8ba378d92362636\",null,null,70000]",
+          "anchor": "{\"version\":1,\"processed\":\"4956206bede66b49f0f36e2d13086a13872e43f79b86c1ce280005e1352034f7\",\"original\":\"7b0c1a9fdfc67218b8ba2098f448c100c27070db91736b3c87fed63bfa21d418\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":5,\"character\":75,\"quote\":\"Technology (NIST) developed this document in furtherance of its \\r\\nstatutory responsibilities under the Federal Information Security Management Act (FISMA) of 20\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+      "identity": "action.d5d25281004bf85bacba67d9fc1873fb7d45d3dd.30",
+      "payloadSha256": "696523e4b60c2c4ae9f6f360297d471846363f27dae8247203bb2d4febefc209",
+      "pending": 1,
+      "action": {
+        "version": 1,
+        "account": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+        "replica": "d5d25281004bf85bacba67d9fc1873fb7d45d3dd",
+        "sequence": 30,
+        "context": {
+          "d5d25281004bf85bacba67d9fc1873fb7d45d3dd": 29
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"b61131ee2fc24abe0a2b7057c0b62e3f:\\\",\\\"b61131ee2fc24abe0a2b7057c0b62e3f:\\\",\\\"[null,\\\\\\\"c4231a34b5811b66666703cb79b08f93\\\\\\\",null,null,20000]\\\"]\"]",
+        "value": {
+          "edition": "b61131ee2fc24abe0a2b7057c0b62e3f:",
+          "source": "b61131ee2fc24abe0a2b7057c0b62e3f:",
+          "revision": "[null,\"c4231a34b5811b66666703cb79b08f93\",null,null,20000]",
+          "anchor": "{\"version\":1,\"processed\":\"39cd1ab8b3cd4b412994d1e5bfd7174075542b35c2a7866b9978d48edaf4a823\",\"original\":\"51d05de2a89dd83fb8f04301ac254419b2d616d48f6e8bb9fbe0938745bc04ce\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":2,\"character\":0,\"quote\":\"River chapter 2\\r\\nThe river follows the old road.\\r\\nA reader can change the text size without changing\\r\\nthe saved source location.\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+      "identity": "action.d5d25281004bf85bacba67d9fc1873fb7d45d3dd.31",
+      "payloadSha256": "b2b7024e50bc6fddd3bcfca59acb0c644ec7a754369910b8dd05ae94fa71256b",
+      "pending": 1,
+      "action": {
+        "version": 1,
+        "account": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+        "replica": "d5d25281004bf85bacba67d9fc1873fb7d45d3dd",
+        "sequence": 31,
+        "context": {
+          "d5d25281004bf85bacba67d9fc1873fb7d45d3dd": 30
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"b61131ee2fc24abe0a2b7057c0b62e3f:\\\",\\\"b61131ee2fc24abe0a2b7057c0b62e3f:\\\",\\\"[null,\\\\\\\"c4231a34b5811b66666703cb79b08f93\\\\\\\",null,null,20000]\\\"]\"]",
+        "value": {
+          "edition": "b61131ee2fc24abe0a2b7057c0b62e3f:",
+          "source": "b61131ee2fc24abe0a2b7057c0b62e3f:",
+          "revision": "[null,\"c4231a34b5811b66666703cb79b08f93\",null,null,20000]",
+          "anchor": "{\"version\":1,\"processed\":\"39cd1ab8b3cd4b412994d1e5bfd7174075542b35c2a7866b9978d48edaf4a823\",\"original\":\"51d05de2a89dd83fb8f04301ac254419b2d616d48f6e8bb9fbe0938745bc04ce\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":128,\"quote\":\"\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+      "identity": "action.d5d25281004bf85bacba67d9fc1873fb7d45d3dd.32",
+      "payloadSha256": "e33a3f61e9f289cfc008c1057edd4309443f269bc25bad35e98e3e7c43b6666b",
+      "pending": 1,
+      "action": {
+        "version": 1,
+        "account": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+        "replica": "d5d25281004bf85bacba67d9fc1873fb7d45d3dd",
+        "sequence": 32,
+        "context": {
+          "d5d25281004bf85bacba67d9fc1873fb7d45d3dd": 31
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"b61131ee2fc24abe0a2b7057c0b62e3f:\\\",\\\"b61131ee2fc24abe0a2b7057c0b62e3f:\\\",\\\"[null,\\\\\\\"c4231a34b5811b66666703cb79b08f93\\\\\\\",null,null,20000]\\\"]\"]",
+        "value": {
+          "edition": "b61131ee2fc24abe0a2b7057c0b62e3f:",
+          "source": "b61131ee2fc24abe0a2b7057c0b62e3f:",
+          "revision": "[null,\"c4231a34b5811b66666703cb79b08f93\",null,null,20000]",
+          "anchor": "{\"version\":1,\"processed\":\"39cd1ab8b3cd4b412994d1e5bfd7174075542b35c2a7866b9978d48edaf4a823\",\"original\":\"51d05de2a89dd83fb8f04301ac254419b2d616d48f6e8bb9fbe0938745bc04ce\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":0,\"quote\":\"River chapter 1\\r\\nThe river follows the old road.\\r\\nA reader can change the text size without changing\\r\\nthe saved source location.\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+      "identity": "action.d5d25281004bf85bacba67d9fc1873fb7d45d3dd.33",
+      "payloadSha256": "1307b8ed902363f3eb66474ff3cbda62961255fa9d445193d61a273763816c99",
+      "pending": 1,
+      "action": {
+        "version": 1,
+        "account": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+        "replica": "d5d25281004bf85bacba67d9fc1873fb7d45d3dd",
+        "sequence": 33,
+        "context": {
+          "d5d25281004bf85bacba67d9fc1873fb7d45d3dd": 32
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"32c77f360bad1974db89d7ed75922ab3:\\\",\\\"32c77f360bad1974db89d7ed75922ab3:\\\",\\\"[null,\\\\\\\"3a05a264c5166359e4e40b7e0b67a637\\\\\\\",null,null,10000]\\\"]\"]",
+        "value": {
+          "edition": "32c77f360bad1974db89d7ed75922ab3:",
+          "source": "32c77f360bad1974db89d7ed75922ab3:",
+          "revision": "[null,\"3a05a264c5166359e4e40b7e0b67a637\",null,null,10000]",
+          "anchor": "{\"version\":1,\"processed\":\"c179d22a95785b282e8a64e177b03313e2b2107772e26c4a05265ca206494c14\",\"original\":\"7edfa36f57337ceeb7af6c58b87b68e6ebc25dfb0200593e415150a5d2052c06\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":0,\"quote\":\"\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+      "identity": "action.d5d25281004bf85bacba67d9fc1873fb7d45d3dd.34",
+      "payloadSha256": "727b8b3d30fe79a316c000ce4fd703706ec28664e148b16981f92febd4cc5bf2",
+      "pending": 1,
+      "action": {
+        "version": 1,
+        "account": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+        "replica": "d5d25281004bf85bacba67d9fc1873fb7d45d3dd",
+        "sequence": 34,
+        "context": {
+          "d5d25281004bf85bacba67d9fc1873fb7d45d3dd": 33
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"7fcd639b5392c3844dbf5a943dcec93d:\\\",\\\"7fcd639b5392c3844dbf5a943dcec93d:\\\",\\\"[null,\\\\\\\"161eeefab21c6ebf88ef88a4735199fe\\\\\\\",null,null,20000]\\\"]\"]",
+        "value": {
+          "edition": "7fcd639b5392c3844dbf5a943dcec93d:",
+          "source": "7fcd639b5392c3844dbf5a943dcec93d:",
+          "revision": "[null,\"161eeefab21c6ebf88ef88a4735199fe\",null,null,20000]",
+          "anchor": "{\"version\":1,\"processed\":\"5ed36e4bb2379d2eea108c9f677d0582c5da37913c07098f47474bbfca02d019\",\"original\":\"4a696b3ccf264093326663176e45b93e336ec024fd88447ab56d39e5e9b9e5f8\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":0,\"quote\":\"56 Federal Register / Vol. 89, No. 1 / Tuesday, January 2, 2024 / Notices \\r\\nnational origin, religion, sex, gender \\r\\nidentity (including gender expression), \\r\\ns\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+      "identity": "action.d5d25281004bf85bacba67d9fc1873fb7d45d3dd.35",
+      "payloadSha256": "63511c570661fda658ff6976ebc4769fb6626d936fe1dc10b4f62cfb52e070d7",
+      "pending": 1,
+      "action": {
+        "version": 1,
+        "account": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+        "replica": "d5d25281004bf85bacba67d9fc1873fb7d45d3dd",
+        "sequence": 35,
+        "context": {
+          "d5d25281004bf85bacba67d9fc1873fb7d45d3dd": 34
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"[null,\\\\\\\"3325a637b5e313a1d8ba378d92362636\\\\\\\",null,null,70000]\\\"]\"]",
+        "value": {
+          "edition": "a187a7a29eaffbfee5b54f1694ef99dd:",
+          "source": "a187a7a29eaffbfee5b54f1694ef99dd:",
+          "revision": "[null,\"3325a637b5e313a1d8ba378d92362636\",null,null,70000]",
+          "anchor": "{\"version\":1,\"processed\":\"4956206bede66b49f0f36e2d13086a13872e43f79b86c1ce280005e1352034f7\",\"original\":\"7b0c1a9fdfc67218b8ba2098f448c100c27070db91736b3c87fed63bfa21d418\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":5,\"character\":1545,\"quote\":\"as a means for broad comparisons of cloud services and deployment \\r\\nstrategies, and to provide a baseline for discussion from what is cloud computing to how to \"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+      "identity": "action.d5d25281004bf85bacba67d9fc1873fb7d45d3dd.36",
+      "payloadSha256": "c94f90fd268d74dceabcd0dbeb89fefd5e72fcb7a3e6ca5edfaca44f35715ae3",
+      "pending": 1,
+      "action": {
+        "version": 1,
+        "account": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+        "replica": "d5d25281004bf85bacba67d9fc1873fb7d45d3dd",
+        "sequence": 36,
+        "context": {
+          "d5d25281004bf85bacba67d9fc1873fb7d45d3dd": 35
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"[null,\\\\\\\"3325a637b5e313a1d8ba378d92362636\\\\\\\",null,null,70000]\\\"]\"]",
+        "value": {
+          "edition": "a187a7a29eaffbfee5b54f1694ef99dd:",
+          "source": "a187a7a29eaffbfee5b54f1694ef99dd:",
+          "revision": "[null,\"3325a637b5e313a1d8ba378d92362636\",null,null,70000]",
+          "anchor": "{\"version\":1,\"processed\":\"4956206bede66b49f0f36e2d13086a13872e43f79b86c1ce280005e1352034f7\",\"original\":\"7b0c1a9fdfc67218b8ba2098f448c100c27070db91736b3c87fed63bfa21d418\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":5,\"character\":592,\"quote\":\"Management and Budget (OMB) Circular A-130, Section 8b(3), “Securing Agency \\r\\nInformation Systems,” as analyzed in A-130, Appendix IV: Analysis of Key Sections.\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+      "identity": "action.d5d25281004bf85bacba67d9fc1873fb7d45d3dd.37",
+      "payloadSha256": "9d3c08936075340bc13064830a74f5f612a24b92a897f988c07bfa8e9d479b35",
+      "pending": 1,
+      "action": {
+        "version": 1,
+        "account": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+        "replica": "d5d25281004bf85bacba67d9fc1873fb7d45d3dd",
+        "sequence": 37,
+        "context": {
+          "d5d25281004bf85bacba67d9fc1873fb7d45d3dd": 36
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"[null,\\\\\\\"3325a637b5e313a1d8ba378d92362636\\\\\\\",null,null,70000]\\\"]\"]",
+        "value": {
+          "edition": "a187a7a29eaffbfee5b54f1694ef99dd:",
+          "source": "a187a7a29eaffbfee5b54f1694ef99dd:",
+          "revision": "[null,\"3325a637b5e313a1d8ba378d92362636\",null,null,70000]",
+          "anchor": "{\"version\":1,\"processed\":\"4956206bede66b49f0f36e2d13086a13872e43f79b86c1ce280005e1352034f7\",\"original\":\"7b0c1a9fdfc67218b8ba2098f448c100c27070db91736b3c87fed63bfa21d418\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":5,\"character\":560,\"quote\":\"requirements \\r\\nof the Office of Management and Budget (OMB) Circular A-130, Section 8b(3), “Securing Agency \\r\\nInformation Systems,” as analyzed in A-130, Append\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+      "identity": "action.d5d25281004bf85bacba67d9fc1873fb7d45d3dd.4",
+      "payloadSha256": "f7232f7e7fa08de1a6b186958898d68296a88e9dcc4ed85f53105599e3ccc7a2",
+      "pending": 0,
+      "action": {
+        "version": 1,
+        "account": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+        "replica": "d5d25281004bf85bacba67d9fc1873fb7d45d3dd",
+        "sequence": 4,
+        "context": {
+          "d5d25281004bf85bacba67d9fc1873fb7d45d3dd": 3
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"[null,\\\\\\\"3325a637b5e313a1d8ba378d92362636\\\\\\\",null,null,70000]\\\"]\"]",
+        "value": {
+          "edition": "a187a7a29eaffbfee5b54f1694ef99dd:",
+          "source": "a187a7a29eaffbfee5b54f1694ef99dd:",
+          "revision": "[null,\"3325a637b5e313a1d8ba378d92362636\",null,null,70000]",
+          "anchor": "{\"version\":1,\"processed\":\"4956206bede66b49f0f36e2d13086a13872e43f79b86c1ce280005e1352034f7\",\"original\":\"7b0c1a9fdfc67218b8ba2098f448c100c27070db91736b3c87fed63bfa21d418\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":5,\"character\":151,\"quote\":\"responsibilities under the Federal Information Security Management Act (FISMA) of 2002, \\r\\nPublic Law 107-347. \\r\\nNIST is responsible for developing standards and\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+      "identity": "action.d5d25281004bf85bacba67d9fc1873fb7d45d3dd.5",
+      "payloadSha256": "a9613d595f4c2a4337431f3cd7ba9b875d28c877b2d7c16e2feea416fcee3849",
+      "pending": 0,
+      "action": {
+        "version": 1,
+        "account": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+        "replica": "d5d25281004bf85bacba67d9fc1873fb7d45d3dd",
+        "sequence": 5,
+        "context": {
+          "d5d25281004bf85bacba67d9fc1873fb7d45d3dd": 4
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"[null,\\\\\\\"3325a637b5e313a1d8ba378d92362636\\\\\\\",null,null,70000]\\\"]\"]",
+        "value": {
+          "edition": "a187a7a29eaffbfee5b54f1694ef99dd:",
+          "source": "a187a7a29eaffbfee5b54f1694ef99dd:",
+          "revision": "[null,\"3325a637b5e313a1d8ba378d92362636\",null,null,70000]",
+          "anchor": "{\"version\":1,\"processed\":\"4956206bede66b49f0f36e2d13086a13872e43f79b86c1ce280005e1352034f7\",\"original\":\"7b0c1a9fdfc67218b8ba2098f448c100c27070db91736b3c87fed63bfa21d418\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":5,\"character\":186,\"quote\":\"Information Security Management Act (FISMA) of 2002, \\r\\nPublic Law 107-347. \\r\\nNIST is responsible for developing standards and guidelines, including minimum requ\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+      "identity": "action.d5d25281004bf85bacba67d9fc1873fb7d45d3dd.6",
+      "payloadSha256": "b995c4e7f6d49c616f6b990c27136b093a4ed5d148d3fd1d65767c34678469fb",
+      "pending": 0,
+      "action": {
+        "version": 1,
+        "account": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+        "replica": "d5d25281004bf85bacba67d9fc1873fb7d45d3dd",
+        "sequence": 6,
+        "context": {
+          "d5d25281004bf85bacba67d9fc1873fb7d45d3dd": 5
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"[null,\\\\\\\"3325a637b5e313a1d8ba378d92362636\\\\\\\",null,null,70000]\\\"]\"]",
+        "value": {
+          "edition": "a187a7a29eaffbfee5b54f1694ef99dd:",
+          "source": "a187a7a29eaffbfee5b54f1694ef99dd:",
+          "revision": "[null,\"3325a637b5e313a1d8ba378d92362636\",null,null,70000]",
+          "anchor": "{\"version\":1,\"processed\":\"4956206bede66b49f0f36e2d13086a13872e43f79b86c1ce280005e1352034f7\",\"original\":\"7b0c1a9fdfc67218b8ba2098f448c100c27070db91736b3c87fed63bfa21d418\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":5,\"character\":222,\"quote\":\"(FISMA) of 2002, \\r\\nPublic Law 107-347. \\r\\nNIST is responsible for developing standards and guidelines, including minimum requirements, for \\r\\nproviding adequate i\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+      "identity": "action.d5d25281004bf85bacba67d9fc1873fb7d45d3dd.7",
+      "payloadSha256": "bfb099848d235da6d6776187ca5c10b9c156c3bfa85c5473a3363886aac825a8",
+      "pending": 0,
+      "action": {
+        "version": 1,
+        "account": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+        "replica": "d5d25281004bf85bacba67d9fc1873fb7d45d3dd",
+        "sequence": 7,
+        "context": {
+          "d5d25281004bf85bacba67d9fc1873fb7d45d3dd": 6
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"[null,\\\\\\\"3325a637b5e313a1d8ba378d92362636\\\\\\\",null,null,70000]\\\"]\"]",
+        "value": {
+          "edition": "a187a7a29eaffbfee5b54f1694ef99dd:",
+          "source": "a187a7a29eaffbfee5b54f1694ef99dd:",
+          "revision": "[null,\"3325a637b5e313a1d8ba378d92362636\",null,null,70000]",
+          "anchor": "{\"version\":1,\"processed\":\"4956206bede66b49f0f36e2d13086a13872e43f79b86c1ce280005e1352034f7\",\"original\":\"7b0c1a9fdfc67218b8ba2098f448c100c27070db91736b3c87fed63bfa21d418\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":5,\"character\":298,\"quote\":\"standards and guidelines, including minimum requirements, for \\r\\nproviding adequate information security for all agency operations and assets; but such standards\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+      "identity": "action.d5d25281004bf85bacba67d9fc1873fb7d45d3dd.8",
+      "payloadSha256": "efd7d1fd3f27cc4fe10cbb6f216059d6370aea88a0f63ca81bfda0e471e95c90",
+      "pending": 0,
+      "action": {
+        "version": 1,
+        "account": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+        "replica": "d5d25281004bf85bacba67d9fc1873fb7d45d3dd",
+        "sequence": 8,
+        "context": {
+          "d5d25281004bf85bacba67d9fc1873fb7d45d3dd": 7
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"[null,\\\\\\\"3325a637b5e313a1d8ba378d92362636\\\\\\\",null,null,70000]\\\"]\"]",
+        "value": {
+          "edition": "a187a7a29eaffbfee5b54f1694ef99dd:",
+          "source": "a187a7a29eaffbfee5b54f1694ef99dd:",
+          "revision": "[null,\"3325a637b5e313a1d8ba378d92362636\",null,null,70000]",
+          "anchor": "{\"version\":1,\"processed\":\"4956206bede66b49f0f36e2d13086a13872e43f79b86c1ce280005e1352034f7\",\"original\":\"7b0c1a9fdfc67218b8ba2098f448c100c27070db91736b3c87fed63bfa21d418\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":5,\"character\":334,\"quote\":\"minimum requirements, for \\r\\nproviding adequate information security for all agency operations and assets; but such standards and \\r\\nguidelines shall not apply to\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "accountSha256": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+      "identity": "action.d5d25281004bf85bacba67d9fc1873fb7d45d3dd.9",
+      "payloadSha256": "d99df630c7462e3afa9acc1d0d9e3b50c3ca613b225695d7ec91d086cb11ba51",
+      "pending": 0,
+      "action": {
+        "version": 1,
+        "account": "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3",
+        "replica": "d5d25281004bf85bacba67d9fc1873fb7d45d3dd",
+        "sequence": 9,
+        "context": {
+          "d5d25281004bf85bacba67d9fc1873fb7d45d3dd": 8
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"a187a7a29eaffbfee5b54f1694ef99dd:\\\",\\\"[null,\\\\\\\"3325a637b5e313a1d8ba378d92362636\\\\\\\",null,null,70000]\\\"]\"]",
+        "value": {
+          "edition": "a187a7a29eaffbfee5b54f1694ef99dd:",
+          "source": "a187a7a29eaffbfee5b54f1694ef99dd:",
+          "revision": "[null,\"3325a637b5e313a1d8ba378d92362636\",null,null,70000]",
+          "anchor": "{\"version\":1,\"processed\":\"4956206bede66b49f0f36e2d13086a13872e43f79b86c1ce280005e1352034f7\",\"original\":\"7b0c1a9fdfc67218b8ba2098f448c100c27070db91736b3c87fed63bfa21d418\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":5,\"character\":372,\"quote\":\"adequate information security for all agency operations and assets; but such standards and \\r\\nguidelines shall not apply to national security systems. This guide\"}"
+        },
+        "preserve": []
+      }
+    }
+  ],
+  "files": [
+    {
+      "name": "./libCachedImageData.db",
+      "bytes": 16384,
+      "sha256": "1cfd1af65895c7ec7c66fda685544496b5a400cd4c882296f20505ccb6723ed5",
+      "modified": 1793610675
+    },
+    {
+      "name": "./libCachedImageData.db-journal",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "modified": 1793610675
+    },
+    {
+      "name": "./profileInstalled",
+      "bytes": 24,
+      "sha256": "504eea2d359d69fca3ad8f78aa84ca671d3f12ac57e3b048c65f3dc3310aa2ca",
+      "modified": 1793737619
+    },
+    {
+      "name": "./bookfin-media/5168431d0014d05e30b429c0c30a564865b3092eefab402665edd8c6c89a0e69/020377f5304ce34f1a40c29e62b3ce57000ae19b14f4f74726f7a9a634d970a6/record.json",
+      "bytes": 266,
+      "sha256": "c2ee37ba504ba485291157679fa93796056d9553c59fa7d10303360694402461",
+      "modified": 1793737011
+    },
+    {
+      "name": "./bookfin-media/5168431d0014d05e30b429c0c30a564865b3092eefab402665edd8c6c89a0e69/020377f5304ce34f1a40c29e62b3ce57000ae19b14f4f74726f7a9a634d970a6/complete",
+      "bytes": 72417,
+      "sha256": "fe5149e7d965a3229af11e3e38f63e3957d10d7718c4a42d9749a4ab2a4c9744",
+      "modified": 1793737011
+    },
+    {
+      "name": "./bookfin-media/5168431d0014d05e30b429c0c30a564865b3092eefab402665edd8c6c89a0e69/3c9a5a80965fd5ada25aa9abfa15624f47912140832539994e1c9a9017b484c5/record.json",
+      "bytes": 266,
+      "sha256": "7e0f2d4eddab3d34f2a1252dd84cd76640f73ef9ab3214d7d09ae918fa62c6b1",
+      "modified": 1793736979
+    },
+    {
+      "name": "./bookfin-media/5168431d0014d05e30b429c0c30a564865b3092eefab402665edd8c6c89a0e69/3c9a5a80965fd5ada25aa9abfa15624f47912140832539994e1c9a9017b484c5/complete",
+      "bytes": 73200,
+      "sha256": "c931753b6c88b4c2e5a464488297c4bc6bf19604f69500d730ba2b908e204da1",
+      "modified": 1793736978
+    },
+    {
+      "name": "./datastore/FlutterSharedPreferences.preferences_pb",
+      "bytes": 47387,
+      "sha256": "7b853ccae21f76aba74d0220e798dad983bfe2fdc794003c39a5cd7a573ffa7f",
+      "modified": 1793737667
+    },
+    {
+      "name": "./bookfin-ocr-engine/tessdata/eng.traineddata",
+      "bytes": 4113088,
+      "sha256": "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2",
+      "modified": 1793725860
+    }
+  ],
+  "mediaMuted": true,
+  "network": {
+    "airplane_mode_on": "1",
+    "wifi_on": "0",
+    "mobile_data": "0"
+  },
+  "appProcessAbsent": false
+}

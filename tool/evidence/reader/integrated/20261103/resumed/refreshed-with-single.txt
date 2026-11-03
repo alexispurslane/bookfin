@@ -1,0 +1,19 @@
+Tapped @e22 (965, 475)
+settled after 1123ms: +2 -13 (~18 unchanged)
+- @e7 [group]
+- @e8 [group]
+- @e9 [group]
+- @e11 [group]
+- @e12 [group]
+- @e13 [group]
+- @e14 [group]
+- @e15 [group]
+- @e20 [group] "Cannot reach Jellyfin. Saved books are still available."
+- @e29 [group] "Saved library · 2026-11-03 15:15:26"
+- @e30 [group]
+- @e31 [group]
++ @e14~s571361 [scroll-area]
+- @e34 [group]
++ @e17~s571361 [group] "Acceptance single column
+1 ebook
+Ebook · Not downloaded"

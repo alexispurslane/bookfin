@@ -1,0 +1,26 @@
+{
+  "timeUnix": 1793737618.678051,
+  "serverVersion": "12.4.0",
+  "cursor": 0,
+  "objects": [],
+  "ordinaryOriginals": [
+    {
+      "name": "Acceptance blank",
+      "id": "38644e035533ebeb614e3777ae481a48",
+      "containerOmitted": true,
+      "mediaSourcesOmitted": true
+    },
+    {
+      "name": "Acceptance dense English",
+      "id": "f9be0c9f2c15965dfc14cc7713537181",
+      "containerOmitted": true,
+      "mediaSourcesOmitted": true
+    },
+    {
+      "name": "Acceptance single column",
+      "id": "04259394520c4d2f97f9ae47ad0c41ba",
+      "containerOmitted": true,
+      "mediaSourcesOmitted": true
+    }
+  ]
+}

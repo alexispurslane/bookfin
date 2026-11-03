@@ -1,0 +1,10 @@
+{
+  "date": "2026-11-03",
+  "tool": "device_close",
+  "hostId": "local",
+  "deviceId": "emulator-5554",
+  "shutdown": false,
+  "result": {},
+  "after": "Ordinary download removal, sign-out, app close, restored network settings, retained-record audit, owned fixture shutdown and private-data removal",
+  "furtherDeviceActions": false
+}

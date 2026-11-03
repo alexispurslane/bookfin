@@ -1,0 +1,23 @@
+Tapped @e22 (760, 472)
+settled after 705ms: +7 -14 (~14 unchanged)
+- @e7 [group]
+- @e8 [group]
+- @e9 [group]
+- @e11 [group]
+- @e12 [group]
+- @e13 [group]
+- @e14 [group]
+- @e15 [group]
+- @e20 [button] "Reflow text" [disabled]
+- @e21 [group] "Recognizing English text…"
+- @e22 [button] "Cancel recognition"
++ @e6~s571466 [button] "Reflow text"
++ @e7~s571466 [group] "English scans only. Other languages are not supported."
++ @e8~s571466 [button] "Retry recognition"
++ @e9~s571466 [group] "Recognition canceled. The current page can finish in the background. The original page is available."
+- @e24 [group]
+- @e29 [button] "Bookmark this place" [disabled]
++ @e15~s571466 [button] "Bookmark this place"
++ @e18~s571466 [progressbar] "50, Current document page progress. Page 1 of 2"
+- @e33 [group] "Current chapter unavailable · Page progress unavailable"
++ @e20~s571466 [group] "Source page 1 · Page 1 of 2"

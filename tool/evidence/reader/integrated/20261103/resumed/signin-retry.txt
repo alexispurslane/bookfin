@@ -1,0 +1,35 @@
+Tapped @e29 (540, 1351)
+settled after 1437ms: +8 -21 (~4 unchanged)
+- @e9 [group]
+- @e10 [group]
+- @e11 [group]
+- @e13 [group]
+- @e14 [group]
+- @e15 [group]
+- @e16 [group]
+- @e17 [group]
++ @e3~s571169 [button] "Book libraries"
+- @e20 [group]
+- @e21 [group]
+- @e22 [group] "Your library starts here."
+- @e23 [group]
+- @e24 [group]
+- @e25 [text-field] "http://127.0.0.1:7364"
+- @e26 [group] "Use an HTTPS server address without a password, query, or fragment."
+- @e27 [text-field] "research-alice"
+- @e28 [text-field] "••••••••••••••••••••••••••••••••"
+- @e29 [button] "Sign in"
+- @e30 [group]
++ @e5~s571169 [button] "Account"
++ @e6~s571169 [group] "Choose book libraries"
++ @e7~s571169 [checkbox] "Remaining acceptance scans" [unchecked]
++ @e8~s571169 [button] "Save libraries"
++ @e9~s571169 [button] "Refresh libraries"
+- @e32 [button] "Downloads
+Tab 2 of 3" [disabled]
+- @e33 [button] "Listening
+Tab 3 of 3" [disabled]
++ @e11~s571169 [button] "Downloads
+Tab 2 of 3"
++ @e12~s571169 [button] "Listening
+Tab 3 of 3"

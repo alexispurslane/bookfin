@@ -1,0 +1,8 @@
+{
+  "pid": "17563",
+  "scope": "Read-only log buffer for the current app process, not every earlier process in this lane",
+  "linesRead": 70,
+  "nullCheckErrorLines": 0,
+  "fatalExceptionLines": 0,
+  "rawLogsRetained": false
+}

@@ -1,0 +1,241 @@
+{
+  "timeUnix": 1793738512.75584,
+  "serverVersion": "12.4.0",
+  "cursor": 9,
+  "objects": [
+    {
+      "identity": "action.6f8a2b36f6d98c666770cefc4bcdb60735899aab.1",
+      "sequence": 1,
+      "payloadSha256": "39311b3565f9f2a623b55ca6c68de19b792a2f8f421dd031c3d111e1818d2225",
+      "action": {
+        "version": 1,
+        "account": "5168431d0014d05e30b429c0c30a564865b3092eefab402665edd8c6c89a0e69",
+        "replica": "6f8a2b36f6d98c666770cefc4bcdb60735899aab",
+        "sequence": 1,
+        "context": {},
+        "record": "[\"reading\",\"resumes\",\"[\\\"f9be0c9f2c15965dfc14cc7713537181:\\\",\\\"f9be0c9f2c15965dfc14cc7713537181:\\\",\\\"[null,\\\\\\\"5c133be22e38a0b2eb6817037c7c387b\\\\\\\",null,null,20000]\\\"]\"]",
+        "value": {
+          "edition": "f9be0c9f2c15965dfc14cc7713537181:",
+          "source": "f9be0c9f2c15965dfc14cc7713537181:",
+          "revision": "[null,\"5c133be22e38a0b2eb6817037c7c387b\",null,null,20000]",
+          "anchor": "{\"version\":1,\"processed\":\"617c96a765c588fdf5261d8e369dbb05b126185b854fee7037aeec6da941ba55\",\"original\":\"c931753b6c88b4c2e5a464488297c4bc6bf19604f69500d730ba2b908e204da1\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":0,\"quote\":\"\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "identity": "action.6f8a2b36f6d98c666770cefc4bcdb60735899aab.2",
+      "sequence": 2,
+      "payloadSha256": "fa807e3f8e3dd4322463e58ead88c3985ed78515b662a5fa7b08bd7744e9ed98",
+      "action": {
+        "version": 1,
+        "account": "5168431d0014d05e30b429c0c30a564865b3092eefab402665edd8c6c89a0e69",
+        "replica": "6f8a2b36f6d98c666770cefc4bcdb60735899aab",
+        "sequence": 2,
+        "context": {
+          "6f8a2b36f6d98c666770cefc4bcdb60735899aab": 1
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"f9be0c9f2c15965dfc14cc7713537181:\\\",\\\"f9be0c9f2c15965dfc14cc7713537181:\\\",\\\"[null,\\\\\\\"5c133be22e38a0b2eb6817037c7c387b\\\\\\\",null,null,20000]\\\"]\"]",
+        "value": {
+          "edition": "f9be0c9f2c15965dfc14cc7713537181:",
+          "source": "f9be0c9f2c15965dfc14cc7713537181:",
+          "revision": "[null,\"5c133be22e38a0b2eb6817037c7c387b\",null,null,20000]",
+          "anchor": "{\"version\":1,\"processed\":\"617c96a765c588fdf5261d8e369dbb05b126185b854fee7037aeec6da941ba55\",\"original\":\"c931753b6c88b4c2e5a464488297c4bc6bf19604f69500d730ba2b908e204da1\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":2,\"character\":0,\"quote\":\"\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "identity": "action.6f8a2b36f6d98c666770cefc4bcdb60735899aab.3",
+      "sequence": 3,
+      "payloadSha256": "9a362573a1f7f7fafdf04e776e2e9dcb18795ef147f9712a23e99fa324316c5c",
+      "action": {
+        "version": 1,
+        "account": "5168431d0014d05e30b429c0c30a564865b3092eefab402665edd8c6c89a0e69",
+        "replica": "6f8a2b36f6d98c666770cefc4bcdb60735899aab",
+        "sequence": 3,
+        "context": {
+          "6f8a2b36f6d98c666770cefc4bcdb60735899aab": 2
+        },
+        "record": "[\"reading\",\"bookmarks\",\"243aa263c2cb58eeb5cdc43d10c9db6b\"]",
+        "value": {
+          "id": "243aa263c2cb58eeb5cdc43d10c9db6b",
+          "position": {
+            "edition": "f9be0c9f2c15965dfc14cc7713537181:",
+            "source": "f9be0c9f2c15965dfc14cc7713537181:",
+            "revision": "[null,\"5c133be22e38a0b2eb6817037c7c387b\",null,null,20000]",
+            "anchor": "{\"version\":1,\"processed\":\"617c96a765c588fdf5261d8e369dbb05b126185b854fee7037aeec6da941ba55\",\"original\":\"c931753b6c88b4c2e5a464488297c4bc6bf19604f69500d730ba2b908e204da1\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":2,\"character\":0,\"quote\":\"\"}"
+          },
+          "createdAt": "2026-11-03T20:19:37.945616Z",
+          "title": null,
+          "note": null
+        },
+        "preserve": []
+      }
+    },
+    {
+      "identity": "action.6f8a2b36f6d98c666770cefc4bcdb60735899aab.4",
+      "sequence": 4,
+      "payloadSha256": "0fd7a238fba573bcc0b89a2ac5e47d894a5fb5c6c0f2af69a09425bfd810d140",
+      "action": {
+        "version": 1,
+        "account": "5168431d0014d05e30b429c0c30a564865b3092eefab402665edd8c6c89a0e69",
+        "replica": "6f8a2b36f6d98c666770cefc4bcdb60735899aab",
+        "sequence": 4,
+        "context": {
+          "6f8a2b36f6d98c666770cefc4bcdb60735899aab": 3
+        },
+        "record": "[\"reading\",\"bookmarks\",\"243aa263c2cb58eeb5cdc43d10c9db6b\"]",
+        "value": {
+          "id": "243aa263c2cb58eeb5cdc43d10c9db6b",
+          "position": {
+            "edition": "f9be0c9f2c15965dfc14cc7713537181:",
+            "source": "f9be0c9f2c15965dfc14cc7713537181:",
+            "revision": "[null,\"5c133be22e38a0b2eb6817037c7c387b\",null,null,20000]",
+            "anchor": "{\"version\":1,\"processed\":\"617c96a765c588fdf5261d8e369dbb05b126185b854fee7037aeec6da941ba55\",\"original\":\"c931753b6c88b4c2e5a464488297c4bc6bf19604f69500d730ba2b908e204da1\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":2,\"character\":0,\"quote\":\"\"}"
+          },
+          "createdAt": "2026-11-03T20:19:37.945616Z",
+          "title": "“Café” 中文 🐟",
+          "note": "Déjà vu — ‘naïve’ 中文 🐟"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "identity": "action.6f8a2b36f6d98c666770cefc4bcdb60735899aab.5",
+      "sequence": 5,
+      "payloadSha256": "de257d8b9123da1f32c62b00ac655c4a75298e5631d535f09b4733f5259f9e42",
+      "action": {
+        "version": 1,
+        "account": "5168431d0014d05e30b429c0c30a564865b3092eefab402665edd8c6c89a0e69",
+        "replica": "6f8a2b36f6d98c666770cefc4bcdb60735899aab",
+        "sequence": 5,
+        "context": {
+          "6f8a2b36f6d98c666770cefc4bcdb60735899aab": 4
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"38644e035533ebeb614e3777ae481a48:\\\",\\\"38644e035533ebeb614e3777ae481a48:\\\",\\\"[null,\\\\\\\"ddafdc45f7d4eae02bf564027d1d8266\\\\\\\",null,null,20000]\\\"]\"]",
+        "value": {
+          "edition": "38644e035533ebeb614e3777ae481a48:",
+          "source": "38644e035533ebeb614e3777ae481a48:",
+          "revision": "[null,\"ddafdc45f7d4eae02bf564027d1d8266\",null,null,20000]",
+          "anchor": "{\"version\":1,\"processed\":\"78c58e5d94f675bb4f76e1916d2aa4f7798a96e89447bd5b4abeda6e9d876cab\",\"original\":\"fe5149e7d965a3229af11e3e38f63e3957d10d7718c4a42d9749a4ab2a4c9744\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":0,\"quote\":\"\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "identity": "action.6f8a2b36f6d98c666770cefc4bcdb60735899aab.6",
+      "sequence": 6,
+      "payloadSha256": "5b1f956f51ee570ffb450dd338003cdc56383cf93039bd69450f9d88d8779a8e",
+      "action": {
+        "version": 1,
+        "account": "5168431d0014d05e30b429c0c30a564865b3092eefab402665edd8c6c89a0e69",
+        "replica": "6f8a2b36f6d98c666770cefc4bcdb60735899aab",
+        "sequence": 6,
+        "context": {
+          "6f8a2b36f6d98c666770cefc4bcdb60735899aab": 5
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"04259394520c4d2f97f9ae47ad0c41ba:\\\",\\\"04259394520c4d2f97f9ae47ad0c41ba:\\\",\\\"[null,\\\\\\\"571181324242d8aad928bcb687cf229b\\\\\\\",null,null,20000]\\\"]\"]",
+        "value": {
+          "edition": "04259394520c4d2f97f9ae47ad0c41ba:",
+          "source": "04259394520c4d2f97f9ae47ad0c41ba:",
+          "revision": "[null,\"571181324242d8aad928bcb687cf229b\",null,null,20000]",
+          "anchor": "{\"version\":1,\"processed\":\"8e209383c9747160c664bd13976e9207dce3cdd8a781916af9816de94ce51571\",\"original\":\"c06b75aca75f9e332d57f6f2d5c9cd8f518d781dde72b775359803fbbb0445a3\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":0,\"quote\":\"\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "identity": "action.6f8a2b36f6d98c666770cefc4bcdb60735899aab.7",
+      "sequence": 7,
+      "payloadSha256": "87db1193175a712a5b55c344aa4eb6b90cbfb9a9469affada5ecdc9a2cf30118",
+      "action": {
+        "version": 1,
+        "account": "5168431d0014d05e30b429c0c30a564865b3092eefab402665edd8c6c89a0e69",
+        "replica": "6f8a2b36f6d98c666770cefc4bcdb60735899aab",
+        "sequence": 7,
+        "context": {
+          "6f8a2b36f6d98c666770cefc4bcdb60735899aab": 6
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"04259394520c4d2f97f9ae47ad0c41ba:\\\",\\\"04259394520c4d2f97f9ae47ad0c41ba:\\\",\\\"[null,\\\\\\\"571181324242d8aad928bcb687cf229b\\\\\\\",null,null,20000]\\\"]\"]",
+        "value": {
+          "edition": "04259394520c4d2f97f9ae47ad0c41ba:",
+          "source": "04259394520c4d2f97f9ae47ad0c41ba:",
+          "revision": "[null,\"571181324242d8aad928bcb687cf229b\",null,null,20000]",
+          "anchor": "{\"version\":1,\"processed\":\"8e209383c9747160c664bd13976e9207dce3cdd8a781916af9816de94ce51571\",\"original\":\"c06b75aca75f9e332d57f6f2d5c9cd8f518d781dde72b775359803fbbb0445a3\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":0,\"quote\":\"The quiet garden\\nA reader opened the book beside the window.\\nThree birds crossed the pale morning sky.\\nThe next page held a map, a letter, and a promise.\\nOrigin\",\"representation\":\"bookfin-pdf-source-pages-1/pdfrx-0.9.0-pdfium-8125/bookfin-ocr-2/tesseract4android-4.9.0/tesseract-5.5.1/leptonica-1.85.0/tessdata_fast-4.1.0-eng-7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2/121cbf95ba2fc43fff7d42ee5d4cfcae063ff22106cd49c325355b6575ada6f5\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "identity": "action.6f8a2b36f6d98c666770cefc4bcdb60735899aab.8",
+      "sequence": 8,
+      "payloadSha256": "c415974f356caf9e1ae26b4d14278908850bf32736098c94c1545c191681b048",
+      "action": {
+        "version": 1,
+        "account": "5168431d0014d05e30b429c0c30a564865b3092eefab402665edd8c6c89a0e69",
+        "replica": "6f8a2b36f6d98c666770cefc4bcdb60735899aab",
+        "sequence": 8,
+        "context": {
+          "6f8a2b36f6d98c666770cefc4bcdb60735899aab": 7
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"04259394520c4d2f97f9ae47ad0c41ba:\\\",\\\"04259394520c4d2f97f9ae47ad0c41ba:\\\",\\\"[null,\\\\\\\"571181324242d8aad928bcb687cf229b\\\\\\\",null,null,20000]\\\"]\"]",
+        "value": {
+          "edition": "04259394520c4d2f97f9ae47ad0c41ba:",
+          "source": "04259394520c4d2f97f9ae47ad0c41ba:",
+          "revision": "[null,\"571181324242d8aad928bcb687cf229b\",null,null,20000]",
+          "anchor": "{\"version\":1,\"processed\":\"8e209383c9747160c664bd13976e9207dce3cdd8a781916af9816de94ce51571\",\"original\":\"c06b75aca75f9e332d57f6f2d5c9cd8f518d781dde72b775359803fbbb0445a3\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":574,\"quote\":\"Original pages remain available when words are unclear.\\nThe quiet garden\\nA reader opened the book beside the window.\\nThree birds crossed the pale morning sky.\\nT\",\"representation\":\"bookfin-pdf-source-pages-1/pdfrx-0.9.0-pdfium-8125/bookfin-ocr-2/tesseract4android-4.9.0/tesseract-5.5.1/leptonica-1.85.0/tessdata_fast-4.1.0-eng-7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2/121cbf95ba2fc43fff7d42ee5d4cfcae063ff22106cd49c325355b6575ada6f5\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "identity": "action.6f8a2b36f6d98c666770cefc4bcdb60735899aab.9",
+      "sequence": 9,
+      "payloadSha256": "851d41a447e1be224c72f072a942c8bb604d218b642c4de67fed8a2e93846875",
+      "action": {
+        "version": 1,
+        "account": "5168431d0014d05e30b429c0c30a564865b3092eefab402665edd8c6c89a0e69",
+        "replica": "6f8a2b36f6d98c666770cefc4bcdb60735899aab",
+        "sequence": 9,
+        "context": {
+          "6f8a2b36f6d98c666770cefc4bcdb60735899aab": 8
+        },
+        "record": "[\"reading\",\"bookmarks\",\"6336603f4af53f3a65b4b19c476bc73d\"]",
+        "value": {
+          "id": "6336603f4af53f3a65b4b19c476bc73d",
+          "position": {
+            "edition": "04259394520c4d2f97f9ae47ad0c41ba:",
+            "source": "04259394520c4d2f97f9ae47ad0c41ba:",
+            "revision": "[null,\"571181324242d8aad928bcb687cf229b\",null,null,20000]",
+            "anchor": "{\"version\":1,\"processed\":\"8e209383c9747160c664bd13976e9207dce3cdd8a781916af9816de94ce51571\",\"original\":\"c06b75aca75f9e332d57f6f2d5c9cd8f518d781dde72b775359803fbbb0445a3\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":574,\"quote\":\"Original pages remain available when words are unclear.\\nThe quiet garden\\nA reader opened the book beside the window.\\nThree birds crossed the pale morning sky.\\nT\",\"representation\":\"bookfin-pdf-source-pages-1/pdfrx-0.9.0-pdfium-8125/bookfin-ocr-2/tesseract4android-4.9.0/tesseract-5.5.1/leptonica-1.85.0/tessdata_fast-4.1.0-eng-7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2/121cbf95ba2fc43fff7d42ee5d4cfcae063ff22106cd49c325355b6575ada6f5\"}"
+          },
+          "createdAt": "2026-11-03T20:31:50.264158Z",
+          "title": null,
+          "note": null
+        },
+        "preserve": []
+      }
+    }
+  ],
+  "ordinaryOriginals": [
+    {
+      "name": "Acceptance blank",
+      "id": "38644e035533ebeb614e3777ae481a48",
+      "containerOmitted": true,
+      "mediaSourcesOmitted": true
+    },
+    {
+      "name": "Acceptance dense English",
+      "id": "f9be0c9f2c15965dfc14cc7713537181",
+      "containerOmitted": true,
+      "mediaSourcesOmitted": true
+    },
+    {
+      "name": "Acceptance single column",
+      "id": "04259394520c4d2f97f9ae47ad0c41ba",
+      "containerOmitted": true,
+      "mediaSourcesOmitted": true
+    }
+  ]
+}

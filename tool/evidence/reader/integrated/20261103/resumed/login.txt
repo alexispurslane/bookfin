@@ -1,0 +1,16 @@
+Tapped @e28 (540, 1291)
+settled after 709ms: +1 -13 (~11 unchanged)
+- @e9 [group]
+- @e10 [group]
+- @e11 [group]
+- @e13 [group]
+- @e14 [group]
+- @e15 [group]
+- @e16 [group]
+- @e17 [group]
+- @e20 [group]
+- @e21 [group]
+- @e23 [group]
+- @e24 [group]
++ @e6~s571159 [group] "Use an HTTPS server address without a password, query, or fragment."
+- @e29 [group]

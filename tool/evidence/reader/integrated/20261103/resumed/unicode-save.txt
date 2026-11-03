@@ -1,0 +1,26 @@
+Tapped @e24 (758, 1510)
+settled after 986ms: +5 -18 (~1 unchanged)
+- @e7 [group]
+- @e8 [group]
+- @e9 [group]
+- @e11 [group]
+- @e12 [group]
+- @e13 [group]
+- @e14 [group]
+- @e15 [group]
+- @e16 [group]
+- @e17 [group]
+- @e18 [group] "Reading bookmark"
+- @e19 [group]
+- @e20 [group]
+- @e21 [text-field] "“Café” 中文 🐟"
+- @e22 [text-field] "Déjà vu — ‘naïve’ 中文 🐟"
+- @e23 [button] "Cancel"
+- @e24 [button] "Save"
+- @e25 [group] "Dismiss"
++ @e2~s571282 [button] "Dismiss"
++ @e3~s571282 [group] "Reading bookmarks"
++ @e4~s571282 [button] "“Café” 中文 🐟
+Déjà vu — ‘naïve’ 中文 🐟"
++ @e5~s571282 [button] "Edit reading bookmark"
++ @e6~s571282 [group] "Scrim"

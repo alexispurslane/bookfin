@@ -1,0 +1,21 @@
+Tapped @e16 (540, 594)
+settled after 541ms: +0 -11 (~6 unchanged)
+- @e7 [group]
+- @e8 [group]
+- @e9 [group]
+- @e11 [group]
+- @e12 [group]
+- @e13 [group]
+- @e14 [group]
+- @e15 [group]
+- @e17 [group]
+- @e18 [group]
+- @e22 [group]
+unchanged interactive (6):
+= @e1~s571287 [group]
+= @e2~s571287 [button] "Dismiss"
+= @e3~s571287 [group] "Reading bookmarks"
+= @e4~s571287 [button] "“Café” 中文 🐟
+Déjà vu — ‘naïve’ 中文 🐟"
+= @e5~s571287 [button] "Edit reading bookmark"
+= @e6~s571287 [group] "Scrim"

@@ -1,0 +1,43 @@
+Tapped @e29 (234, 1176)
+settled after 1076ms: +16 -24 (~3 unchanged)
+- @e7 [group]
+- @e8 [group]
+- @e9 [group]
+- @e11 [group]
+- @e12 [group]
+- @e13 [group]
+- @e14 [group]
+- @e15 [group]
+- @e17 [group] "Book details"
+- @e18 [button] "Correct book details"
+- @e19 [group]
+- @e20 [group]
+- @e22 [group] "Ebook editions"
+- @e23 [group]
+- @e24 [group] "Text"
+- @e25 [group] "1 file"
+- @e26 [group] "Downloaded"
+- @e27 [group] "72831 bytes · 1 / 1 files"
+- @e28 [button] "Remove"
+- @e29 [button] "Read"
+- @e30 [group] "Collapsed"
+- @e31 [group] "Acceptance single column
+0.0 minutes, Collapsed"
+- @e32 [group]
+- @e33 [button] "Link another book or ebook"
++ @e4~s571461 [button] "Hide reader controls"
++ @e5~s571461 [button] "Original page"
++ @e6~s571461 [button] "Reflow text" [disabled]
++ @e7~s571461 [group] "Recognizing English text…"
++ @e8~s571461 [button] "Cancel recognition"
++ @e9~s571461 [image] "Original source page 1"
++ @e10~s571461 [button] "Contents"
++ @e11~s571461 [button] "Search book"
++ @e12~s571461 [button] "Smaller text"
++ @e13~s571461 [button] "Larger text"
++ @e14~s571461 [button] "Bookmark this place" [disabled]
++ @e15~s571461 [button] "Reading bookmarks"
++ @e16~s571461 [button] "Night reading theme"
++ @e17~s571461 [button] "Previous page"
++ @e18~s571461 [group] "Current chapter unavailable · Page progress unavailable"
++ @e19~s571461 [button] "Next page"

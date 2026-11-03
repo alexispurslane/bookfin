@@ -1,0 +1,14 @@
+Page: dev.bookfin.bookfin
+App: dev.bookfin.bookfin
+Snapshot: 18 nodes
+@e1 [text] "3:20"
+@e2 [image] "Phone notification:"
+@e3 [image] "Android System notification:"
+@e4 [image] "Airplane mode."
+@e5 [group] "Battery charging, 100 percent."
+  @e6 [image]
+    @e9 [group]
+      @e14 [spinner]
+        @e16 [menu-item] "Edit title and note"
+        @e17 [menu-item] "Delete"
+      @e18 [group] "Dismiss menu"

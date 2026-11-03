@@ -1,0 +1,35 @@
+Filled 21 chars
+settled after 568ms: +1 -14 (~11 unchanged)
+- @e9 [group]
+- @e10 [group]
+- @e11 [group]
+- @e13 [group]
+- @e14 [group]
+- @e15 [group]
+- @e16 [group]
+- @e17 [group]
+- @e20 [group]
+- @e21 [group]
+- @e23 [group]
+- @e24 [group]
+- @e25 [text-field]
++ @e5~s571164 [text-field] "http://127.0.0.1:7364"
+- @e30 [group]
+unchanged interactive (11):
+= @e1~s571164 [group]
+= @e2~s571164 [group] "BOOKFIN"
+= @e3~s571164 [button] "Appearance"
+= @e4~s571164 [group] "Your library starts here."
+= @e6~s571164 [group] "Use an HTTPS server address without a password, query, or fragment."
+= @e7~s571164 [text-field] "research-alice"
+= @e8~s571164 [text-field] "••••••••••••••••••••••••••••••••"
+= @e9~s571164 [button] "Sign in"
+= @e10~s571164 [button] "Library
+Tab 1 of 3"
+= @e11~s571164 [button] "Downloads
+Tab 2 of 3"
+= @e12~s571164 [button] "Listening
+Tab 3 of 3"
+[agent-device][diag] {"ts":"2026-11-03T20:14:29.515Z","level":"info","phase":"daemon_startup","session":"t3-0c9013b2a0e9ae3418ba219d","requestId":"38c2a244e5b9835b","command":"fill","durationMs":13,"data":{"requestId":"38c2a244e5b9835b","session":"t3-0c9013b2a0e9ae3418ba219d"}}
+[agent-device][diag] {"ts":"2026-11-03T20:14:29.516Z","level":"info","phase":"daemon_request_prepare","session":"t3-0c9013b2a0e9ae3418ba219d","requestId":"38c2a244e5b9835b","command":"fill","data":{"requestId":"38c2a244e5b9835b","command":"fill","session":"t3-0c9013b2a0e9ae3418ba219d"}}
+[agent-device][diag] {"ts":"2026-11-03T20:14:30.493Z","level":"info","phase":"daemon_request","session":"t3-0c9013b2a0e9ae3418ba219d","requestId":"38c2a244e5b9835b","command":"fill","durationMs":977,"data":{"requestId":"38c2a244e5b9835b","command":"fill"}}

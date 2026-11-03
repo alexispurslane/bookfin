@@ -1,0 +1,27 @@
+Page: dev.bookfin.bookfin
+App: dev.bookfin.bookfin
+Snapshot: 30 nodes
+@e1 [text] "3:43"
+@e2 [image] "Phone notification:"
+@e3 [image] "Android System notification:"
+@e4 [image] "Airplane mode."
+@e5 [group] "Battery charging, 100 percent."
+  @e6 [image]
+    @e9 [group]
+      @e16 [group] "BOOKFIN"
+      @e17 [button] "Book libraries"
+      @e18 [button] "Appearance"
+      @e19 [button] "Account"
+        @e22 [group] "Downloads"
+        @e23 [group] "Network unknown · Waiting for Wi-Fi"
+        @e24 [group] "No downloads yet."
+        @e25 [group] "Retained storage
+Local files outside this account’s current catalog. They do not count as downloaded editions. Files stay here until you explicitly remove them.
+No retained files."
+          @e26 [button] "Refresh storage"
+      @e28 [button] "Library
+Tab 1 of 3"
+      @e29 [button] "Downloads
+Tab 2 of 3" [selected]
+      @e30 [button] "Listening
+Tab 3 of 3"

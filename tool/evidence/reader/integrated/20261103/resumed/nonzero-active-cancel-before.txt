@@ -1,0 +1,26 @@
+Page: dev.bookfin.bookfin
+App: dev.bookfin.bookfin
+Snapshot: 32 nodes
+@e1 [text] "3:32"
+@e2 [image] "Phone notification:"
+@e3 [image] "Android System notification:"
+@e4 [image] "Airplane mode."
+@e5 [group] "Battery charging, 100 percent."
+  @e6 [image]
+    @e9 [group]
+      @e16 [button] "Back"
+      @e17 [group] "Acceptance single column"
+      @e18 [button] "Hide reader controls"
+      @e19 [group] "Download this ebook before reading. Only verified local files can open."
+      @e20 [button] "Retry opening"
+      @e21 [group] "This EPUB is not open. Use the message above to retry."
+        @e23 [button] "Contents" [disabled]
+        @e24 [button] "Search book" [disabled]
+        @e25 [button] "Smaller text" [disabled]
+        @e26 [button] "Larger text" [disabled]
+        @e27 [button] "Bookmark this place" [disabled]
+        @e28 [button] "Reading bookmarks" [disabled]
+        @e29 [button] "Night reading theme"
+        @e30 [button] "Previous page" [disabled]
+        @e31 [group] "Current chapter unavailable · Page progress unavailable"
+        @e32 [button] "Next page" [disabled]

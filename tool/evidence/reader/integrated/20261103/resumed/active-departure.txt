@@ -1,0 +1,41 @@
+Tapped @e16 (74, 210)
+settled after 1155ms: +12 -26 (~3 unchanged)
+- @e7 [group]
+- @e8 [group]
+- @e9 [group]
+- @e11 [group]
+- @e12 [group]
+- @e13 [group]
+- @e14 [group]
+- @e15 [group]
++ @e3~s571317 [group] "Book details"
++ @e4~s571317 [button] "Correct book details"
+- @e18 [button] "Hide reader controls"
+- @e19 [button] "Original page"
+- @e20 [button] "Reflow text" [disabled]
+- @e21 [group] "Recognizing English text…"
+- @e22 [button] "Cancel recognition"
+- @e23 [image] "Original source page 1"
+- @e24 [group]
+- @e25 [button] "Contents"
+- @e26 [button] "Search book"
+- @e27 [button] "Smaller text"
+- @e28 [button] "Larger text"
+- @e29 [button] "Bookmark this place"
+- @e30 [button] "Reading bookmarks"
+- @e31 [button] "Night reading theme"
+- @e32 [progressbar] "100, Current document page progress. Page 2 of 2"
+- @e33 [button] "Previous page"
+- @e34 [group] "Source page 2 · Page 2 of 2"
+- @e35 [button] "Next page"
++ @e6~s571317 [group] "Ebook editions"
++ @e7~s571317 [group] "Text"
++ @e8~s571317 [group] "1 file"
++ @e9~s571317 [group] "Downloaded"
++ @e10~s571317 [group] "73200 bytes · 1 / 1 files"
++ @e11~s571317 [button] "Remove"
++ @e12~s571317 [button] "Read"
++ @e13~s571317 [group] "Collapsed"
++ @e14~s571317 [group] "Acceptance dense English
+0.0 minutes, Collapsed"
++ @e15~s571317 [button] "Link another book or ebook"
