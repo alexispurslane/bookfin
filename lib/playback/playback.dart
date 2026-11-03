@@ -38,6 +38,7 @@ abstract class AudioEngine {
 abstract class ResumeStore {
   Future<Map<String, dynamic>?> read(String accountKey);
   Future<void> write(String accountKey, Map<String, dynamic> value);
+  void acceptSnapshot(String accountKey, Map<String, dynamic>? value) {}
 }
 
 // The revision is a gesture-cancellation counter, not a media-source revision.
@@ -103,6 +104,8 @@ class Playback extends ChangeNotifier {
   ListeningAction? _commandAction;
   final _pendingWrites = <String, Map<String, dynamic>>{};
   final _failedAccounts = <String>{};
+  int _recordRevision = 0;
+  String? _recordedDecoderAnchor;
   AudioReplacement? _replacementStart;
 
   List<ListeningEvent> get history => List.unmodifiable(_history.reversed);
@@ -251,6 +254,52 @@ class Playback extends ChangeNotifier {
     if (!_restored) return;
     _bookmarks.removeWhere((bookmark) => bookmark.id == id);
     await _saveRecords();
+  });
+
+  Future<void> deleteHistory(String id) => _enqueue(() async {
+    if (!_restored) return;
+    _history.removeWhere((event) => event.id == id);
+    if (_undo?.id == id) _undo = null;
+    await _saveRecords();
+  });
+
+  Future<void> refreshPersonalRecords() => _enqueue(() async {
+    final account = _session?.scope.key;
+    await _writes;
+    if (account == null || !_restored || _pendingWrites.containsKey(account)) {
+      return;
+    }
+    final revision = _recordRevision;
+    final saved = await store.read(account);
+    if (saved == null ||
+        account != _session?.scope.key ||
+        revision != _recordRevision) {
+      return;
+    }
+    final history = (saved['history'] as List)
+        .map(
+          (value) =>
+              ListeningEvent.fromJson(Map<String, dynamic>.from(value as Map)),
+        )
+        .toList();
+    final bookmarks = (saved['bookmarks'] as List)
+        .map(
+          (value) =>
+              AudioBookmark.fromJson(Map<String, dynamic>.from(value as Map)),
+        )
+        .toList();
+    final resumes = <String, List<Map<String, dynamic>>>{
+      for (final entry in (saved['resumes'] as Map<String, dynamic>).entries)
+        entry.key: (entry.value as List).cast<Map<String, dynamic>>(),
+    };
+    _history = history;
+    _bookmarks = bookmarks;
+    _resumes = resumes;
+    store.acceptSnapshot(account, saved);
+    if (_undo != null && !_history.any((event) => event.id == _undo!.id)) {
+      _undo = null;
+    }
+    _notify();
   });
 
   Future<void> restoreBookmark(String id) => _enqueue(() async {
@@ -459,6 +508,7 @@ class Playback extends ChangeNotifier {
     _book = null;
     _edition = null;
     _position = null;
+    _recordedDecoderAnchor = null;
     _playing = false;
     _active = false;
     _decoderReady = false;
@@ -485,9 +535,8 @@ class Playback extends ChangeNotifier {
       await _writes;
       if (session == null || generation != _generation) return;
       try {
-        final saved =
-            _pendingWrites[session.scope.key] ??
-            await store.read(session.scope.key);
+        final pending = _pendingWrites[session.scope.key];
+        final saved = pending ?? await store.read(session.scope.key);
         if (generation != _generation) return;
         if (saved != null &&
             saved['version'] != 1 &&
@@ -541,6 +590,7 @@ class Playback extends ChangeNotifier {
           if (backward > 0 && backward <= 300) _backward = backward;
           if (forward > 0 && forward <= 300) _forward = forward;
         }
+        if (pending == null) store.acceptSnapshot(session.scope.key, saved);
         _restored = true;
         final book = _books
             .where(
@@ -1023,11 +1073,17 @@ class Playback extends ChangeNotifier {
     _sleepDeadline = null;
   }
 
+  String? get _decoderAnchor => _position == null || _edition == null
+      ? null
+      : jsonEncode([_editionSources(_edition!), encodePosition(_position!)]);
+
   void _save() {
     final accountKey = _session?.scope.key;
     if (accountKey == null || !_restored) return;
+    ++_recordRevision;
     final position = _position;
-    if (position != null) {
+    final decoderAnchor = _decoderAnchor;
+    if (position != null && decoderAnchor != _recordedDecoderAnchor) {
       final records = _resumes.putIfAbsent(position.editionId, () => []);
       // A legacy file-relative position can be read but cannot establish
       // ownership of a whole recording. Keep it when saving a known recording.
@@ -1049,6 +1105,7 @@ class Playback extends ChangeNotifier {
       } else {
         records[index] = value;
       }
+      _recordedDecoderAnchor = decoderAnchor;
     }
     final value = <String, dynamic>{
       'version': 3,
@@ -1066,28 +1123,34 @@ class Playback extends ChangeNotifier {
       'forward': _forward,
     };
     _pendingWrites[accountKey] = value;
-    _writes = _writes.then((_) async {
-      try {
-        await store.write(accountKey, value);
-        if (identical(_pendingWrites[accountKey], value)) {
-          _pendingWrites.remove(accountKey);
-          _failedAccounts.remove(accountKey);
-          if (_session?.scope.key == accountKey) {
-            if (_message ==
-                'Personal records could not be saved. Free storage and try again.') {
-              _message = null;
-            }
-            _notify();
-          }
-        }
-      } catch (_) {
-        _failedAccounts.add(accountKey);
+    _writes = _writes.then((_) => _persistSnapshot(accountKey, value));
+  }
+
+  Future<void> _persistSnapshot(
+    String accountKey,
+    Map<String, dynamic> value,
+  ) async {
+    try {
+      await store.write(accountKey, value);
+      if (identical(_pendingWrites[accountKey], value)) {
+        _pendingWrites.remove(accountKey);
+        _failedAccounts.remove(accountKey);
         if (_session?.scope.key == accountKey) {
-          _message = 'Personal records could not be saved. Free storage and try again.';
+          if (_message ==
+              'Personal records could not be saved. Free storage and try again.') {
+            _message = null;
+          }
           _notify();
         }
       }
-    });
+    } on Exception {
+      _failedAccounts.add(accountKey);
+      if (_session?.scope.key == accountKey) {
+        _message =
+            'Personal records could not be saved. Free storage and try again.';
+        _notify();
+      }
+    }
   }
 
   Future<void> flush() async {
@@ -1095,8 +1158,14 @@ class Playback extends ChangeNotifier {
     await _binding;
     await _operations;
     if (generation != _generation) return;
-    _save();
+    if (_decoderAnchor != _recordedDecoderAnchor) _save();
     await _writes;
+    final accountKey = _session?.scope.key;
+    final pending = _pendingWrites[accountKey];
+    if (accountKey != null && pending != null && generation == _generation) {
+      _writes = _writes.then((_) => _persistSnapshot(accountKey, pending));
+      await _writes;
+    }
     await reports?.idle;
   }
 

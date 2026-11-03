@@ -11,7 +11,7 @@ dependencies:
   archive: 4.0.9
   crypto: 3.0.7
   xml: 6.6.1
-  image: 4.5.4
+  image: 4.8.0
 flutter:
   assets:
     - assets/

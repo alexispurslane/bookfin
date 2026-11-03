@@ -60,6 +60,7 @@
         ln -s 19.0 "$out/cmdline-tools/latest"
       '';
       nativeTools = import ./nix/darwin-native-tools.nix { inherit pkgs; };
+      readerNative = import ./nix/reader-native.nix { inherit pkgs; };
     in
     {
       devShells.${system}.default = pkgs.mkShell {
@@ -71,6 +72,8 @@
           pkgs.jq
           pkgs.nixfmt
           pkgs.nodejs_22
+          pkgs.curl
+          pkgs.python3
           android.androidsdk
           nativeTools
         ];
@@ -80,6 +83,9 @@
         FLUTTER_ROOT = "${flutter}";
         FLUTTER_SUPPRESS_ANALYTICS = "true";
         DART_SUPPRESS_ANALYTICS = "true";
+        PDFIUM_LIBRARY = "${readerNative.pdfium}/lib/libpdfium.dylib";
+        BOOKFIN_LIBMOBI_SOURCE = readerNative.libmobiSource;
+        BOOKFIN_MOBI_LIBRARY = "${readerNative.mobi}/lib/libbookfin_mobi.dylib";
         BOOKFIN_NIX_SHELL = "1";
         shellHook = ''
           export PUB_CACHE="$PWD/.cache/pub"

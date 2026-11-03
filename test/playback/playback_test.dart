@@ -421,7 +421,7 @@ void main() {
   });
 }
 
-class MemoryResume implements ResumeStore {
+class MemoryResume extends ResumeStore {
   final values = <String, Map<String, dynamic>>{};
   Completer<void>? readGate;
   bool failRead = false;

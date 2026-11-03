@@ -50,18 +50,38 @@ void main() {
     await Future.wait([
       records.write('account', {
         'version': 3,
-        'resumes': {'audio': 123},
+        'resumes': {
+          'audio': [
+            {'source': 'file-a', 'revision': 'v1', 'milliseconds': 123},
+          ],
+        },
       }),
       records.reading.write('account', {
         'version': 1,
-        'resumes': {'text': 'anchor'},
+        'resumes': [
+          {
+            'edition': 'text',
+            'source': 'file-t',
+            'revision': 'v1',
+            'anchor': 'anchor',
+          },
+        ],
       }),
     ]);
     final restarted = LocalResumeStore();
-    expect((await restarted.read('account'))!['resumes'], {'audio': 123});
-    expect((await restarted.reading.read('account'))!['resumes'], {
-      'text': 'anchor',
+    expect((await restarted.read('account'))!['resumes'], {
+      'audio': [
+        {'source': 'file-a', 'revision': 'v1', 'milliseconds': 123},
+      ],
     });
+    expect((await restarted.reading.read('account'))!['resumes'], [
+      {
+        'edition': 'text',
+        'source': 'file-t',
+        'revision': 'v1',
+        'anchor': 'anchor',
+      },
+    ]);
     expect(await restarted.reading.read('other account'), isNull);
   });
 }

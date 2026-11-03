@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:bookfin/playback/playback.dart';
 import 'package:bookfin/playback/store.dart';
@@ -11,13 +12,16 @@ import '../playback/playback_test.dart' show account, LocalFiles;
 import 'publication_test.dart' show epub;
 import 'session_test.dart' show source, edition, book, visible;
 
-class FailingRecords implements ResumeStore {
+class FailingRecords extends ResumeStore {
   FailingRecords(this.records);
   final ResumeStore records;
   bool writable = false;
   Completer<void>? gate;
   @override
   Future<Map<String, dynamic>?> read(String key) => records.read(key);
+  @override
+  void acceptSnapshot(String key, Map<String, dynamic>? value) =>
+      records.acceptSnapshot(key, value);
   @override
   Future<void> write(String key, Map<String, dynamic> value) async {
     await gate?.future;
@@ -111,7 +115,11 @@ void main() {
       () async {
         reader.dispose();
         await reader.flush();
-        await records.reading.write(account().scope.key, damaged);
+        final preferences = await SharedPreferences.getInstance();
+        await preferences.setString(
+          'bookfin.playback.v1.${account().scope.key}',
+          jsonEncode({'reading': damaged}),
+        );
         reader = ReaderSession(
           downloads: downloads,
           store: storage,
@@ -123,7 +131,14 @@ void main() {
         await reader.addBookmark();
         expect(reader.canBookmark, isFalse);
         expect(reader.message, contains('could not be opened'));
-        expect(await records.reading.read(account().scope.key), damaged);
+        expect(
+          jsonDecode(
+            preferences.getString(
+              'bookfin.playback.v1.${account().scope.key}',
+            )!,
+          ),
+          {'reading': damaged},
+        );
       },
     );
   }

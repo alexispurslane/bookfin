@@ -1,0 +1,178 @@
+
+> bookfin-epub-runtime@0.3.93-bookfin.1 test
+> node --test test/*.test.cjs
+
+TAP version 13
+# final layout {"visibleX":17,"visibleY":1,"text":"Harbour passage 5. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark.","saved":{"cfi":"epubcfi(/6/2!/4/26/1:0)","resource":"OPS/one.xhtml","quote":"Harbour passage 5. The reader followed the shoreline and watched the small boats return. A bookmark could keep this plac","chapter":"Harbour","page":3,"pages":5},"frameWidth":2060,"page":{"page":3,"total":5}}
+# render trace [{"method":"display","args":["epubcfi(/6/2!/4/26/1:0)"]},{"event":"readerLocation","value":{"cfi":"epubcfi(/6/2!/4/26/1:0)","resource":"OPS/one.xhtml","quote":"Harbour passage 5. The reader followed the shoreline and watched the small boats return. A bookmark could keep this plac","chapter":"Harbour","page":2,"pages":5}},{"method":"onResized","args":[{"width":412,"height":667},null],"location":{"start":{"index":0,"href":"one.xhtml","cfi":"epubcfi(/6/2!/4/26/1:0)","displayed":{"page":2,"total":5},"location":-1,"percentage":0},"end":{"index":0,"href":"one.xhtml","cfi":"epubcfi(/6/2!/4/26/1:80)","displayed":{"page":2,"total":5},"location":-1,"percentage":0}}},{"event":"readerLocation","value":{"cfi":"epubcfi(/6/2!/4/26/1:0)","resource":"OPS/one.xhtml","quote":"Harbour passage 5. The reader followed the shoreline and watched the small boats return. A bookmark could keep this plac","chapter":"Harbour","page":3,"pages":5}},{"method":"reportLocation","args":[],"location":{"start":{"index":0,"href":"one.xhtml","cfi":"epubcfi(/6/2!/4/26/1:0)","displayed":{"page":3,"total":5},"location":-1,"percentage":0},"end":{"index":0,"href":"one.xhtml","cfi":"epubcfi(/6/2!/4/34/1:80)","displayed":{"page":3,"total":5},"location":-1,"percentage":0}}},{"event":"readerLocation","value":{"cfi":"epubcfi(/6/2!/4/26/1:0)","resource":"OPS/one.xhtml","quote":"Harbour passage 5. The reader followed the shoreline and watched the small boats return. A bookmark could keep this plac","chapter":"Harbour","page":3,"pages":5}}]
+# Subtest: reopening retains the visible passage and saved anchor after delayed publication layout
+ok 1 - reopening retains the visible passage and saved anchor after delayed publication layout
+  ---
+  duration_ms: 1467.070875
+  type: 'test'
+  ...
+# Subtest: fractional-pixel column geometry does not change the page label for the same visible text
+ok 2 - fractional-pixel column geometry does not change the page label for the same visible text
+  ---
+  duration_ms: 1057.720583
+  type: 'test'
+  ...
+# Subtest: intentional page navigation replaces the restoration anchor and survives the next resize
+ok 3 - intentional page navigation replaces the restoration anchor and survives the next resize
+  ---
+  duration_ms: 1292.490417
+  type: 'test'
+  ...
+# Subtest: bookmark restore and 22-pixel appearance changes retain the requested passage
+ok 4 - bookmark restore and 22-pixel appearance changes retain the requested passage
+  ---
+  duration_ms: 1185.364292
+  type: 'test'
+  ...
+# Subtest: an appearance change queued after Next preserves the new reading place instead of the old one
+ok 5 - an appearance change queued after Next preserves the new reading place instead of the old one
+  ---
+  duration_ms: 1102.926166
+  type: 'test'
+  ...
+# Subtest: a failed publication stylesheet rejects opening and reports the real display failure
+ok 6 - a failed publication stylesheet rejects opening and reports the real display failure
+  ---
+  duration_ms: 788.784458
+  type: 'test'
+  ...
+# Subtest: resize during blocked initial resource loading keeps the requested passage attached
+ok 7 - resize during blocked initial resource loading keeps the requested passage attached
+  ---
+  duration_ms: 1138.213542
+  type: 'test'
+  ...
+# Subtest: failed neighboring chapter resource rejects Next
+ok 8 - failed neighboring chapter resource rejects Next
+  ---
+  duration_ms: 912.727667
+  type: 'test'
+  ...
+# Subtest: failed neighboring chapter resource rejects Previous
+ok 9 - failed neighboring chapter resource rejects Previous
+  ---
+  duration_ms: 885.85525
+  type: 'test'
+  ...
+# Subtest: automatic viewport resize waits for a loading neighboring chapter
+ok 10 - automatic viewport resize waits for a loading neighboring chapter
+  ---
+  duration_ms: 884.055667
+  type: 'test'
+  ...
+# Subtest: contents navigation cannot release a resize restoration before its resources finish
+ok 11 - contents navigation cannot release a resize restoration before its resources finish
+  ---
+  duration_ms: 958.971333
+  type: 'test'
+  ...
+# Subtest: bookmark navigation cannot release a resize restoration before its resources finish
+ok 12 - bookmark navigation cannot release a resize restoration before its resources finish
+  ---
+  duration_ms: 947.644875
+  type: 'test'
+  ...
+# Subtest: search finds an exact phrase across inline nodes, including more than five nodes
+ok 13 - search finds an exact phrase across inline nodes, including more than five nodes
+  ---
+  duration_ms: 66.242416
+  type: 'test'
+  ...
+# Subtest: short documents and repeated occurrences are not omitted
+ok 14 - short documents and repeated occurrences are not omitted
+  ---
+  duration_ms: 23.221708
+  type: 'test'
+  ...
+# Subtest: Unicode lowercase expansion does not silently discard an admitted query
+ok 15 - Unicode lowercase expansion does not silently discard an admitted query
+  ---
+  duration_ms: 15.921792
+  type: 'test'
+  ...
+# Subtest: search excludes headings in the head and explicitly hidden text
+ok 16 - search excludes headings in the head and explicitly hidden text
+  ---
+  duration_ms: 8.752792
+  type: 'test'
+  ...
+# Subtest: Unicode lowercase expansion cannot shift the returned original range
+ok 17 - Unicode lowercase expansion cannot shift the returned original range
+  ---
+  duration_ms: 11.851667
+  type: 'test'
+  ...
+# Subtest: an encoded contents fragment resolves to the actual heading, not the chapter start
+ok 18 - an encoded contents fragment resolves to the actual heading, not the chapter start
+  ---
+  duration_ms: 11.354334
+  type: 'test'
+  ...
+# Subtest: saved locations collapse to the visible start and reject a mismatched quote
+ok 19 - saved locations collapse to the visible start and reject a mismatched quote
+  ---
+  duration_ms: 11.094416
+  type: 'test'
+  ...
+# Subtest: a failed chapter yields a visible incomplete-search error
+ok 20 - a failed chapter yields a visible incomplete-search error
+  ---
+  duration_ms: 11.692625
+  type: 'test'
+  ...
+# Subtest: reader appearance preserves an edition font while applying the selected text size
+ok 21 - reader appearance preserves an edition font while applying the selected text size
+  ---
+  duration_ms: 78.2755
+  type: 'test'
+  ...
+# Subtest: a final scaled appearance restores the same visible-start CFI through the engine display boundary
+ok 22 - a final scaled appearance restores the same visible-start CFI through the engine display boundary
+  ---
+  duration_ms: 57.28025
+  type: 'test'
+  ...
+# Subtest: visible locations carry the current contents chapter and actual displayed-page progress
+ok 23 - visible locations carry the current contents chapter and actual displayed-page progress
+  ---
+  duration_ms: 15.160541
+  type: 'test'
+  ...
+# Subtest: source and actual iframe share locations for table rows without a source tbody
+ok 24 - source and actual iframe share locations for table rows without a source tbody
+  ---
+  duration_ms: 23.582875
+  type: 'test'
+  ...
+# Subtest: source and actual iframe share locations for nested paragraph blocks
+ok 25 - source and actual iframe share locations for nested paragraph blocks
+  ---
+  duration_ms: 18.640916
+  type: 'test'
+  ...
+# Subtest: source and actual iframe share locations for table foster parenting
+ok 26 - source and actual iframe share locations for table foster parenting
+  ---
+  duration_ms: 20.926167
+  type: 'test'
+  ...
+# Subtest: an obsolete location failure cannot replace a newer valid reading place
+ok 27 - an obsolete location failure cannot replace a newer valid reading place
+  ---
+  duration_ms: 10.169959
+  type: 'test'
+  ...
+1..27
+# tests 27
+# suites 0
+# pass 27
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 12682.932709

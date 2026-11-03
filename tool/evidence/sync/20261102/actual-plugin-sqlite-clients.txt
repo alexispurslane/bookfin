@@ -1,0 +1,12 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Bookfin.Storage -> /Users/alexispurslane/.t3/worktrees/bookfin/t3-6bcb40a5/.cache/plugin/build/Bookfin.Storage.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.84
+00:00 +0: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-6bcb40a5/test/sync/plugin_integration_test.dart
+00:00 +0: two durable ordinary-account clients merge offline edits through the actual plugin
+00:00 +1: All tests passed!

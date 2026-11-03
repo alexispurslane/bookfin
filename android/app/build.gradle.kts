@@ -19,6 +19,18 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        externalNativeBuild {
+            cmake {
+                targets += listOf("bookfin_mobi")
+            }
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path = file("../../native/mobi/CMakeLists.txt")
+            version = "3.22.1"
+        }
     }
 
 }

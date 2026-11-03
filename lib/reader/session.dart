@@ -9,10 +9,15 @@ import '../catalog/jellyfin.dart';
 import '../catalog/model.dart';
 import '../downloads/downloads.dart';
 import '../playback/playback.dart';
+import 'document.dart';
 
 export 'package:flutter_epub_viewer/navigation.dart';
 
 typedef PublicationLoader = Future<Publication> Function(Uri uri);
+typedef DocumentLoader = Future<ReaderDocument> Function(
+  Uri uri,
+  SourceFile source,
+);
 typedef VisibleLocation = ReadingLocation;
 
 class ReaderSession extends ChangeNotifier {
@@ -20,30 +25,42 @@ class ReaderSession extends ChangeNotifier {
     required this.downloads,
     required this.store,
     required this.load,
+    this.loadDocument,
   });
   final Downloads downloads;
   final ResumeStore store;
   final PublicationLoader load;
-  Publication? _publication;
+  final DocumentLoader? loadDocument;
+  ReaderDocument? _document;
+  ReaderDocument? get document => _document;
   Book? _book;
   Edition? _edition;
   TextPosition? _position;
-  VisibleLocation? _visibleLocation;
-  VisibleLocation? _initialLocation;
+  ReaderAddress? _visibleAddress;
+  ReaderAddress? _initialAddress;
+  Future<void> _closing = Future.value();
+  bool _releaseFailed = false;
   int _token = 0;
   String? _message;
   bool _loading = false;
   bool _searching = false;
   double _fontSize = 20;
   String? _searchError;
-  List<SearchHit> _hits = const [];
+  List<ReaderHit> _hits = const [];
   List<ContentsEntry> _contents = const [];
-  Publication? get publication => _publication;
+  Publication? get publication =>
+      document is EpubDocument ? (document as EpubDocument).publication : null;
   Book? get book => _book;
   Edition? get edition => _edition;
   TextPosition? get position => _position;
-  VisibleLocation? get visibleLocation => _visibleLocation;
-  VisibleLocation? get initialLocation => _initialLocation;
+  ReaderAddress? get visibleAddress => _visibleAddress;
+  ReaderAddress? get initialAddress => _initialAddress;
+  VisibleLocation? get visibleLocation => _visibleAddress is EpubAddress
+      ? (_visibleAddress as EpubAddress).location
+      : null;
+  VisibleLocation? get initialLocation => _initialAddress is EpubAddress
+      ? (_initialAddress as EpubAddress).location
+      : null;
   int get token => _token;
   String? get message =>
       _message ??
@@ -54,9 +71,9 @@ class ReaderSession extends ChangeNotifier {
   bool get searching => _searching;
   double get fontSize => _fontSize;
   String? get searchError => _searchError;
-  List<SearchHit> get hits => _hits;
+  List<ReaderHit> get hits => _hits;
   List<ContentsEntry> get contents => _contents;
-  NavigatorPort? _navigator;
+  DocumentNavigator? _navigator;
   String? _account;
   String? _credential;
   List<Book> _books = [];
@@ -70,8 +87,9 @@ class ReaderSession extends ChangeNotifier {
   final _pendingWrites = <String, Map<String, dynamic>>{};
   final _failedAccounts = <String>{};
   int _search = 0;
+  int _recordRevision = 0;
 
-  bool get ready => publication != null && _navigator != null;
+  bool get ready => document != null && _navigator != null;
   bool get canBookmark => _recordsReady && position != null;
   List<TextBookmark> get bookmarks => List.unmodifiable(
     _bookmarks.where((mark) => mark.position.editionId == edition?.id),
@@ -107,7 +125,8 @@ class ReaderSession extends ChangeNotifier {
       await _retryPending();
       if (!_liveAccount(generation) || key == null) return;
       try {
-        final saved = _pendingWrites[key] ?? await store.read(key);
+        final pending = _pendingWrites[key];
+        final saved = pending ?? await store.read(key);
         if (!_liveAccount(generation)) return;
         if (saved != null) {
           if (saved['version'] != 1 ||
@@ -140,6 +159,7 @@ class ReaderSession extends ChangeNotifier {
             _fontSize = size.toDouble().clamp(14, 40);
           }
         }
+        if (pending == null) store.acceptSnapshot(key, saved);
         _recordsReady = true;
       } on Exception {
         if (_liveAccount(generation)) _message = 'Reading records could not be opened. Existing records were kept. Restart before saving new places.';
@@ -172,12 +192,21 @@ class ReaderSession extends ChangeNotifier {
     ++_token;
     ++_search;
     _navigator = null;
-    _publication = null;
+    final previous = _document;
+    _document = null;
+    if (previous != null) {
+      _closing = _closing.then((_) => previous.dispose()).onError<Exception>((
+        error,
+        stack,
+      ) {
+        _releaseFailed = true;
+      });
+    }
     _edition = null;
     _book = null;
     _position = null;
-    _visibleLocation = null;
-    _initialLocation = null;
+    _visibleAddress = null;
+    _initialAddress = null;
     _loading = false;
     _searching = false;
     _hits = const [];
@@ -197,21 +226,38 @@ class ReaderSession extends ChangeNotifier {
     await _binding;
     if (!_live(generation) || !_current(selected)) return;
     try {
+      await _closing;
+      if (_releaseFailed) {
+        throw const FormatException(
+          'A previous document could not be released. Restart Bookfin before opening another ebook.',
+        );
+      }
       if (selected.kind != EditionKind.text || selected.files.length != 1) {
+        throw const FormatException('Choose a single-file ebook edition.');
+      }
+      final admitted = await downloads.readLocalFile<ReaderDocument>(
+        selected.files.single,
+        (uri) async {
+          if (uri.scheme != 'file') {
+            throw const FormatException(
+              'The reader requires a verified local download.',
+            );
+          }
+          return loadDocument == null
+              ? EpubDocument(await load(uri))
+              : await loadDocument!(uri, selected.files.single);
+        },
+      );
+      if (admitted == null) {
         throw const FormatException(
-          'Choose a single-file EPUB edition. Other formats are not supported by this reader.',
+          'Download this ebook before reading. Only verified local files can open.',
         );
       }
-      final uri = await downloads.localFile(selected.files.single);
-      if (!_live(generation)) return;
-      if (uri == null || uri.scheme != 'file') {
-        throw const FormatException(
-          'Download this EPUB before reading. Only verified local files can open.',
-        );
+      if (!_live(generation) || !_current(selected)) {
+        await admitted.dispose();
+        return;
       }
-      final admitted = await load(uri);
-      if (!_live(generation) || !_current(selected)) return;
-      _publication = admitted;
+      _document = admitted;
       final candidates = _resumes
           .where((value) => value.editionId == selected.id)
           .toList();
@@ -219,8 +265,8 @@ class ReaderSession extends ChangeNotifier {
           candidates.where((value) => _compatible(value) != null).lastOrNull ??
           candidates.lastOrNull;
       if (saved != null) {
-        _initialLocation = _compatible(saved);
-        if (initialLocation == null) {
+        _initialAddress = _compatible(saved);
+        if (initialAddress == null) {
           _message = 'The saved place belongs to different source or processed content. The old place and bookmarks were kept. Reading starts at the beginning.';
         }
       }
@@ -228,7 +274,7 @@ class ReaderSession extends ChangeNotifier {
     } on FormatException catch (error) {
       if (_live(generation)) _message = error.message;
     } catch (_) {
-      if (_live(generation)) _message = 'The downloaded EPUB could not be opened. Check the download, then retry.';
+      if (_live(generation)) _message = 'The downloaded ebook could not be opened. Check the download, then retry.';
     } finally {
       if (_live(generation)) {
         _loading = false;
@@ -237,22 +283,14 @@ class ReaderSession extends ChangeNotifier {
     }
   }
 
-  VisibleLocation? _compatible(TextPosition saved) {
-    final admitted = publication;
+  ReaderAddress? _compatible(TextPosition saved) {
+    final admitted = document;
     if (edition == null || admitted == null || !saved.fits(edition!)) {
       return null;
     }
     try {
       final anchor = jsonDecode(saved.anchor) as Map<String, dynamic>;
-      if (anchor['version'] != 1 ||
-          anchor['processed'] != admitted.identity ||
-          anchor['original'] != admitted.originalDigest ||
-          anchor['policy'] != Publication.policy ||
-          anchor['engine'] != 'epubjs-0.3.93-bookfin.1') {
-        return null;
-      }
-      final location = ReadingLocation.fromJson(anchor);
-      return admitted.spine.contains(location.resource) ? location : null;
+      return admitted.restore(anchor);
     } catch (_) {
       return null;
     }
@@ -263,7 +301,15 @@ class ReaderSession extends ChangeNotifier {
     NavigatorPort navigator,
     List<ContentsEntry> entries,
   ) {
-    if (!_live(eventToken) || publication == null) return;
+    attachDocument(eventToken, EpubNavigator(navigator), entries);
+  }
+
+  void attachDocument(
+    int eventToken,
+    DocumentNavigator navigator,
+    List<ContentsEntry> entries,
+  ) {
+    if (!_live(eventToken) || document == null) return;
     _navigator = navigator;
     _contents = List.unmodifiable(entries);
     _emit();
@@ -286,32 +332,29 @@ class ReaderSession extends ChangeNotifier {
     if (_live(eventToken)) _clear();
   }
 
-  void acceptVisible(int eventToken, VisibleLocation location) {
-    final admitted = publication;
+  void acceptVisible(int eventToken, VisibleLocation location) =>
+      acceptAddress(eventToken, EpubAddress(location));
+
+  void acceptAddress(int eventToken, ReaderAddress address) {
+    final admitted = document;
     if (!_live(eventToken) ||
         admitted == null ||
         edition == null ||
-        !admitted.spine.contains(location.resource)) {
+        !admitted.accepts(address)) {
       return;
     }
     try {
-      ReadingLocation.fromJson(location.toJson());
+      admitted.decodeAddress(address.toJson());
     } catch (_) {
       return;
     }
-    _visibleLocation = location;
+    _visibleAddress = address;
     _position = TextPosition(
       editionId: edition!.id,
       sourceKey: edition!.files.single.key,
       revision: edition!.files.single.revision,
-      anchor: jsonEncode({
-        'version': 1,
-        'processed': admitted.identity,
-        'original': admitted.originalDigest,
-        'policy': Publication.policy,
-        'engine': 'epubjs-0.3.93-bookfin.1',
-        ...location.toJson(),
-      }),
+      anchor: jsonEncode(admitted.save(address)),
+      sourcePage: address is PdfAddress ? address.sourcePage : null,
     );
     _resumes.removeWhere(
       (saved) =>
@@ -436,16 +479,17 @@ class ReaderSession extends ChangeNotifier {
     _emit();
   }
 
-  Future<void> openHit(SearchHit hit) async {
+  Future<void> openHit(ReaderHit hit) async {
     final navigator = _navigator;
     if (navigator != null && hits.contains(hit)) {
-      await _navigate(() => navigator.display(hit.location));
+      await _navigate(() => navigator.display(hit.address));
     }
   }
 
   Future<void> _save() async {
     final key = _account;
     if (key == null || !_recordsReady || _disposed) return;
+    ++_recordRevision;
     final value = <String, dynamic>{
       'version': 1,
       'fontSize': fontSize,
@@ -479,16 +523,56 @@ class ReaderSession extends ChangeNotifier {
     await _retryPending();
   }
 
+  Future<void> refreshPersonalRecords() async {
+    await flush();
+    final account = _account;
+    if (account == null ||
+        !_recordsReady ||
+        _pendingWrites.containsKey(account)) {
+      return;
+    }
+    final revision = _recordRevision;
+    final generation = _accountGeneration;
+    final saved = await store.read(account);
+    if (saved == null ||
+        !_liveAccount(generation) ||
+        account != _account ||
+        revision != _recordRevision) {
+      return;
+    }
+    final resumes = (saved['resumes'] as List)
+        .map(
+          (value) =>
+              decodeTextPosition(Map<String, dynamic>.from(value as Map)),
+        )
+        .toList();
+    final bookmarks = (saved['bookmarks'] as List)
+        .map(
+          (value) =>
+              TextBookmark.fromJson(Map<String, dynamic>.from(value as Map)),
+        )
+        .toList();
+    _resumes
+      ..clear()
+      ..addAll(resumes);
+    _bookmarks
+      ..clear()
+      ..addAll(bookmarks);
+    store.acceptSnapshot(account, saved);
+    _emit();
+  }
+
   void checkInvariants() {
     if ((_account == null &&
-            (publication != null ||
+            (document != null ||
                 _bookmarks.isNotEmpty ||
                 _resumes.isNotEmpty)) ||
-        (publication != null && (edition == null || !_current(edition!))) ||
+        (document != null && (edition == null || !_current(edition!))) ||
         (position != null && _compatible(position!) == null) ||
-        ((_visibleLocation == null) != (position == null)) ||
-        (_visibleLocation != null &&
-            _compatible(position!)?.cfi != _visibleLocation!.cfi) ||
+        ((_visibleAddress == null) != (position == null)) ||
+        (_visibleAddress != null &&
+            jsonEncode(_compatible(position!)?.toJson()) !=
+                jsonEncode(_visibleAddress!.toJson())) ||
         _failedAccounts.any((key) => !_pendingWrites.containsKey(key))) {
       throw StateError(
         'Reading state must belong to one current account, source, and processed publication.',
@@ -503,8 +587,7 @@ class ReaderSession extends ChangeNotifier {
   @override
   void dispose() {
     _disposed = true;
-    ++_token;
-    ++_search;
+    _clear();
     unawaited(_retryPending());
     super.dispose();
   }

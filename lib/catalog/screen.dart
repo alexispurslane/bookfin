@@ -9,6 +9,8 @@ import '../playback/playback.dart';
 import '../playback/screen.dart';
 import '../reader/session.dart';
 import '../reader/screen.dart';
+import '../sync/coordinator.dart';
+import '../sync/screen.dart';
 import 'controller.dart';
 import 'jellyfin.dart';
 import 'model.dart';
@@ -22,6 +24,7 @@ class CatalogHome extends StatefulWidget {
     this.downloads,
     this.playback,
     this.reader,
+    this.sync,
   });
   final CatalogController catalog;
   final VoidCallback onAppearance;
@@ -29,6 +32,7 @@ class CatalogHome extends StatefulWidget {
   final Downloads? downloads;
   final Playback? playback;
   final ReaderSession? reader;
+  final RecordSync? sync;
   @override
   State<CatalogHome> createState() => _CatalogHomeState();
 }
@@ -451,48 +455,53 @@ class _CatalogHomeState extends State<CatalogHome> {
   Future<void> _account(BuildContext context) => showModalBottomSheet<void>(
     context: context,
     useSafeArea: true,
-    builder: (context) => Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Account', style: Theme.of(context).textTheme.headlineSmall),
-          Text(_catalog.session!.username),
-          Text(_catalog.session!.scope.server.toString()),
-          const SizedBox(height: 20),
-          TextButton(
-            onPressed: _catalog.cache == null || _catalog.accessBlocked
-                ? null
-                : () async {
-                    final account = _catalog.session!.scope.key;
-                    if (await _confirm(
-                      context,
-                      'Reset catalog corrections?',
-                      'Remove your book links, file groups, file order, and book details for this account. Jellyfin will not change.',
-                      'Reset corrections',
-                    )) {
-                      if (_catalog.session?.scope.key != account) return;
-                      await _catalog.resetCorrections();
-                      if (context.mounted && _catalog.message == null) {
-                        Navigator.pop(context);
+    isScrollControlled: true,
+    builder: (context) => SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Account', style: Theme.of(context).textTheme.headlineSmall),
+            Text(_catalog.session!.username),
+            Text(_catalog.session!.scope.server.toString()),
+            if (widget.sync != null)
+              RecordSyncView(sync: widget.sync!, books: _catalog.books),
+            const SizedBox(height: 20),
+            TextButton(
+              onPressed: _catalog.cache == null || _catalog.accessBlocked
+                  ? null
+                  : () async {
+                      final account = _catalog.session!.scope.key;
+                      if (await _confirm(
+                        context,
+                        'Reset catalog corrections?',
+                        'Remove your book links, file groups, file order, and book details for this account. Jellyfin will not change.',
+                        'Reset corrections',
+                      )) {
+                        if (_catalog.session?.scope.key != account) return;
+                        await _catalog.resetCorrections();
+                        if (context.mounted && _catalog.message == null) {
+                          Navigator.pop(context);
+                        }
                       }
-                    }
-                  },
-            child: const Text('Reset catalog corrections'),
-          ),
-          OutlinedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              setState(() {
-                _query = '';
-                _filter = 'All';
-              });
-              unawaited(_catalog.signOut());
-            },
-            child: const Text('Sign out'),
-          ),
-        ],
+                    },
+              child: const Text('Reset catalog corrections'),
+            ),
+            OutlinedButton(
+              onPressed: () {
+                Navigator.pop(context);
+                setState(() {
+                  _query = '';
+                  _filter = 'All';
+                });
+                unawaited(_catalog.signOut());
+              },
+              child: const Text('Sign out'),
+            ),
+          ],
+        ),
       ),
     ),
   );

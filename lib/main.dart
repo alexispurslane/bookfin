@@ -17,8 +17,10 @@ import 'downloads/platform.dart';
 import 'playback/native.dart';
 import 'playback/playback.dart';
 import 'playback/store.dart';
+import 'playback/database.dart';
 import 'reader/session.dart';
 import 'reader/platform.dart';
+import 'sync/coordinator.dart';
 
 Future<void> main() => runBookfin();
 
@@ -44,7 +46,11 @@ Future<void> runBookfin({bool gallery = false}) async {
   final appearance = AppearanceController(LocalAppearanceStore());
   await appearance.restore();
   final downloads = gallery ? null : await createDownloads(MediaPolicy());
-  final records = LocalResumeStore();
+  final records = LocalResumeStore(
+    openDatabase: !kIsWeb && defaultTargetPlatform == TargetPlatform.android
+        ? () => RecordDatabase.open()
+        : null,
+  );
   final playback = downloads == null
       ? null
       : await createPlayback(downloads, store: records);
@@ -54,6 +60,7 @@ Future<void> runBookfin({bool gallery = false}) async {
           downloads: downloads,
           store: records.reading,
           load: loadPublication,
+          loadDocument: loadReadingDocument,
         );
   runApp(
     BookfinApp(
@@ -62,6 +69,9 @@ Future<void> runBookfin({bool gallery = false}) async {
       downloads: downloads,
       playback: playback,
       reader: reader,
+      sync: gallery
+          ? null
+          : RecordSync(records: records, playback: playback, reader: reader),
     ),
   );
 }
@@ -76,6 +86,7 @@ class BookfinApp extends StatefulWidget {
     this.downloads,
     this.playback,
     this.reader,
+    this.sync,
   });
 
   final AppearanceController appearance;
@@ -85,6 +96,7 @@ class BookfinApp extends StatefulWidget {
   final Downloads? downloads;
   final Playback? playback;
   final ReaderSession? reader;
+  final RecordSync? sync;
 
   @override
   State<BookfinApp> createState() => _BookfinAppState();
@@ -108,6 +120,8 @@ class _BookfinAppState extends State<BookfinApp> with WidgetsBindingObserver {
       unawaited(_catalog.restore().then((_) => _catalog.refresh()));
     }
     WidgetsBinding.instance.addObserver(this);
+    _catalog.addListener(_syncAccount);
+    _syncAccount();
     _appearance.addListener(_refresh);
     _startClock();
   }
@@ -139,6 +153,7 @@ class _BookfinAppState extends State<BookfinApp> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
+      unawaited(widget.sync?.synchronize());
       unawaited(widget.downloads?.refresh());
       _startClock();
       _refresh();
@@ -152,10 +167,17 @@ class _BookfinAppState extends State<BookfinApp> with WidgetsBindingObserver {
   @override
   void dispose() {
     _clock?.cancel();
+    _catalog.removeListener(_syncAccount);
+    widget.sync?.dispose();
     if (widget.catalog == null) _catalog.dispose();
     _appearance.removeListener(_refresh);
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+  }
+
+  void _syncAccount() {
+    widget.sync?.bind(_catalog.accessBlocked ? null : _catalog.session);
+    if (_catalog.verified) unawaited(widget.sync?.synchronize());
   }
 
   AppearanceDecision _decision() => resolveAppearance(
@@ -196,6 +218,7 @@ class _BookfinAppState extends State<BookfinApp> with WidgetsBindingObserver {
                 downloads: widget.downloads,
                 playback: widget.playback,
                 reader: widget.reader,
+                sync: widget.sync,
                 onReaderNightChanged: (night) => unawaited(
                   _appearance.selectMode(
                     night ? AppearanceMode.night : AppearanceMode.day,

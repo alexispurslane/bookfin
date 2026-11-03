@@ -1,0 +1,3 @@
+verified nist-cloud.pdf: 7b0c1a9fdfc67218b8ba2098f448c100c27070db91736b3c87fed63bfa21d418
+verified census-notice.pdf: 4a696b3ccf264093326663176e45b93e336ec024fd88447ab56d39e5e9b9e5f8
+verified raven-1873.pdf: 25dc58e363e02a442a25174fe9fcd21d3a2f78ac4511731accaaeba326c3d8e8

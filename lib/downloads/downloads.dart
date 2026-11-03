@@ -54,7 +54,7 @@ class EditionDownload {
   final int totalFiles;
   final int bytes;
 
-  /// Saved complete-file bytes that are not available for playback.
+  /// Saved original and derived-file bytes unavailable for local use.
   final int unavailableBytes;
   final int? totalBytes;
   final String? message;
@@ -99,6 +99,17 @@ abstract class Downloads extends ChangeNotifier {
   Future<void> removeRetained(RetainedDownload download) async =>
       throw UnsupportedError('Retained storage is unavailable.');
   Future<Uri?> localFile(SourceFile source);
+
+  /// Keep a verified original and its derived files owned until loading ends.
+  /// A null result means the source is no longer locally available.
+  Future<T?> readLocalFile<T>(
+    SourceFile source,
+    Future<T> Function(Uri original) read,
+  ) async {
+    final uri = await localFile(source);
+    return uri == null ? null : read(uri);
+  }
+
   Future<void> get idle;
   Future<void> refresh() async {}
   void checkInvariants();

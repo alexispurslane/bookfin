@@ -1,0 +1,47 @@
+xcrun: error: SDK cannot be located: error: unable to find sdk: 'iphoneos'
+
+
+SDK iphoneos not installed.
+
+xcrun: error: SDK cannot be located: error: unable to find sdk: 'iphonesimulator'
+
+
+SDK iphonesimulator not installed.
+
+00:00 +0: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-6bcb40a5/test/reader/pdf_document_test.dart
+00:00 +0: the production importer opens the verified PDF as original source pages
+00:00 +1: a scanned source page keeps its visible original without inventing text
+00:00 +2: columns pages keep the original instead of offering misleading text order
+00:00 +2 -1: columns pages keep the original instead of offering misleading text order [E]
+  Expected: PdfTextStatus:<PdfTextStatus.unreliable>
+    Actual: PdfTextStatus:<PdfTextStatus.candidate>
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/reader/pdf_document_test.dart 44:7             main.<fn>
+  
+00:00 +2 -1: table pages keep the original instead of offering misleading text order
+00:00 +2 -2: table pages keep the original instead of offering misleading text order [E]
+  Expected: PdfTextStatus:<PdfTextStatus.unreliable>
+    Actual: PdfTextStatus:<PdfTextStatus.candidate>
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/reader/pdf_document_test.dart 44:7             main.<fn>
+  
+00:00 +2 -2: closing drains admitted page work and the shared engine can restart
+00:00 +2 -3: closing drains admitted page work and the shared engine can restart [E]
+  Expected: contains 'River 2'
+    Actual: 'River chapter 2 The river follows the old road. A reader can change the text size without changing the saved source location.'
+     Which: does not contain 'River 2'
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/reader/pdf_document_test.dart 57:5             main.<fn>
+  
+00:00 +2 -3: Some tests failed.
+
+Failing tests:
+  /Users/alexispurslane/.t3/worktrees/bookfin/t3-6bcb40a5/test/reader/pdf_document_test.dart: closing drains admitted page work and the shared engine can restart
+  /Users/alexispurslane/.t3/worktrees/bookfin/t3-6bcb40a5/test/reader/pdf_document_test.dart: columns pages keep the original instead of offering misleading text order
+  /Users/alexispurslane/.t3/worktrees/bookfin/t3-6bcb40a5/test/reader/pdf_document_test.dart: table pages keep the original instead of offering misleading text order
