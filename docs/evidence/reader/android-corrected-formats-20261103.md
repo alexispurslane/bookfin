@@ -308,7 +308,7 @@ Every build and test command used the pinned Nix development shell.
 | `encoding_probe.dart`, `encoding-probe.txt` | Reproduced the original writer: actions 1–9 reached the server; action 10 failed in Latin-1 encoding. |
 | `red.txt` | All three new behavior tests failed before the correction, through the generic transport error rather than a missing symbol or syntax error. |
 | `focused-green.txt` | All 23 focused transport, retry, database, saved-journal and coordinator checks passed. |
-| `plugin-green.txt` | Plugin build had zero warnings and errors; all four checks passed, including the captured retry and existing two-client integration. |
+| `plugin-green.txt` | Plugin build had zero warnings and errors; all four checks passed. Only the captured retry and existing two-client integration contacted the actual plugin; the two single-record checks used local HTTP fixtures. |
 | `full-host.txt` | SDK link/platform/native-hook checks and all 434 Flutter tests passed; three optional checks were skipped. |
 | `analysis.txt` | Flutter analysis reported no issues. |
 
