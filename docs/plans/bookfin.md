@@ -248,3 +248,14 @@ Keep the current action format and plugin API. Do not implement checkpoints,
 compaction, coalescing or automatic expiry. Storage continues growing by design;
 this choice reduces repeated save work and does not promise fixed lifetime
 storage. Track implementation and migration proof in t6-t9po.
+
+## Bundled OCR selection — November 3, 2026
+
+After the offline Android comparison, the user selected Tesseract English-fast
+for an English-first implementation. Bundle the engine and pinned English model
+so fresh-install recognition works offline. Other languages are unsupported;
+no optional language download, ML Kit or larger model is selected. Preserve the
+original PDF page, source-page positions, cached recognition, cancellation and
+failure fallback through the existing reader model. Recognition supports reflow
+and search but does not guarantee correct columns, tables or reading order.
+Production Android acceptance and dependency distribution review remain required.

@@ -15,7 +15,7 @@ User approved OCR for the ultimate feature set. Recognize text in scanned PDF pa
 
 ## Design
 
-docs/plans/bookfin.md. Engine selection remains open; measure Android speed, memory, app size and recognition quality before choosing. Identify bundled language coverage and any optional language downloads explicitly.
+docs/plans/bookfin.md. User selected fully bundled Tesseract English-fast on November 3, 2026 after the Android comparison. English is the supported OCR language; other languages remain unsupported. No first-use model download or cloud service.
 
 ## Acceptance Criteria
 
@@ -31,3 +31,15 @@ Partial research-only Android measurement evidence is in tool/evidence/reader/oc
 **2026-11-03T13:23:25Z**
 
 Renewed explicitly authorized Android attempt: tool/evidence/reader/ocr/20261103/android-renewed/README.md. Exact 838d8a4 probes/source verified; English-best, Latin-fast and bundled ML Kit each completed 14 fresh-install offline recognitions. 12 distinct completed reports/168 recognitions retained including bounded lifecycle recovery work; prior English-fast 28 recognitions unchanged and reused for comparison. Fresh initialization ms 467.225/1063.776/196.940; sampled maximum PSS KiB 281440/358416/280438. Crop word edits /31: 4/4/6; generated French /40: 6/0/4 (ML Kit two punctuation-space character deletions). English-fast/English-best/Latin-fast active Cancel and active departure preserved previous report, and reopen/new run completed. ML Kit 2.710–3.295-second runs finished before next inspected Cancel/Back, so active cancellation/stale-publication/active departure remain unproved, tracked t6-h28u. One old-reference refusal followed exact advice once; fresh snapshot/retry succeeded. No timeout or engine failure. Ten pinned scorer/quality tests plus raw/scored identity and preservation validation pass. Owned probes/processes removed, original network 0/1/1 restored, media remained muted; no normal-app changes or production engine/terms/language decision. Ticket stays in progress.
+
+## User selection — November 3, 2026
+
+Use the measured Tesseract English-fast candidate for production integration:
+Tesseract4Android 4.9.0 / Tesseract 5.5.1 with the pinned English-fast model
+from probe source 838d8a4. Preserve exact model/source/license provenance.
+Do not add English-best, Latin-fast, ML Kit or language downloads. This choice
+approves implementation, not production runtime or distribution compliance.
+The shared PDF reader owns page positions, reflow/search and original access;
+recognition supplies cached page text. Follow existing source identity and
+download ownership for cache lifetime and cancellation. Normal Android format
+acceptance runs separately and remains a prerequisite to overall closure.
