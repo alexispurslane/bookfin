@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const http = require('node:http');
 const os = require('node:os');
-const { spawn } = require('node:child_process');
+const { spawn, spawnSync } = require('node:child_process');
 const { once } = require('node:events');
 
 const engine = path.resolve(__dirname, '../..');
@@ -14,7 +14,7 @@ const assets = process.env.BOOKFIN_TEST_ASSETS || path.join(engine, 'assets');
 const passageFive = { cfi: 'epubcfi(/6/2!/4/26/1:0)', resource: 'OPS/one.xhtml',
   quote: 'Harbour passage 5.' };
 
-async function browser() {
+async function browser({ bookfinFont = false } = {}) {
   if (!fs.existsSync(chrome)) throw Error('Set CHROME_BIN to an installed Chromium executable for real-layout tests');
   const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'bookfin-layout-'));
   const process = spawn(chrome, ['--headless=new', '--no-first-run', '--no-default-browser-check',
@@ -34,6 +34,11 @@ async function browser() {
   socket.addEventListener('message', event => {
     const message = JSON.parse(event.data);
     if (message.id) { pending.get(message.id)(message); pending.delete(message.id); }
+    if (message.method === 'Fetch.requestPaused') {
+      call('Fetch.fulfillRequest', { requestId: message.params.requestId, responseCode: 200,
+        responseHeaders: [{ name: 'Content-Type', value: 'font/ttf' }, { name: 'Access-Control-Allow-Origin', value: '*' }],
+        body: fs.readFileSync(path.join(root, 'assets/fonts/SourceSerif4.ttf')).toString('base64') });
+    }
   });
   async function call(method, params = {}) {
     const request = ++identifier;
@@ -43,6 +48,7 @@ async function browser() {
     if (message.error || message.result.exceptionDetails) throw Error(JSON.stringify(message));
     return message.result;
   }
+  if (bookfinFont) await call('Fetch.enable', { patterns: [{ urlPattern: 'https://bookfin-runtime.invalid/SourceSerif4.ttf' }] });
   return { call, async evaluate(expression) {
     return (await call('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true })).result.value;
   }, async close() {
@@ -52,7 +58,7 @@ async function browser() {
   } };
 }
 
-async function fixture({ failStyles = false, failedChapter, delayedChapter } = {}) {
+async function fixture({ failStyles = false, failedChapter, delayedChapter, publication, width = 412, height = 671 } = {}) {
   let releaseStyles;
   let styles = new Promise(resolve => { releaseStyles = resolve; });
   let requestedStyles;
@@ -84,7 +90,7 @@ async function fixture({ failStyles = false, failedChapter, delayedChapter } = {
   const server = http.createServer(async (request, response) => {
     if (request.url === '/') {
       response.setHeader('Content-Type', 'text/html');
-      response.end('<!doctype html><style>html,body,#viewer{width:412px;height:671px;margin:0;overflow:hidden}</style><div id="viewer"></div><script src="/epub.js"></script><script src="/reader.js"></script>');
+      response.end(`<!doctype html><style>html,body,#viewer{width:${width}px;height:${height}px;margin:0;overflow:hidden}</style><div id="viewer"></div><script src="/epub.js"></script><script src="/reader.js"></script>`);
     } else if (request.url === '/OPS/book.css') {
       response.setHeader('Cache-Control', 'no-store');
       requestedStyles(); await styles;
@@ -100,7 +106,12 @@ async function fixture({ failStyles = false, failedChapter, delayedChapter } = {
     } else if (request.url === '/epub.js' || request.url === '/reader.js') {
       response.setHeader('Content-Type', 'application/javascript');
       response.end(fs.readFileSync(path.join(assets, request.url.slice(1))));
-    } else if (files[request.url]) {
+    } else if (publication && fs.existsSync(path.join(publication, request.url))) {
+      const resource = path.join(publication, request.url);
+      response.setHeader('Content-Type', /\.(?:html|xhtml|xml|opf|ncx)$/.test(resource) ? 'application/xhtml+xml' :
+        resource.endsWith('.css') ? 'text/css' : 'application/octet-stream');
+      response.end(fs.readFileSync(resource));
+    } else if (files[request.url] && !publication) {
       response.setHeader('Content-Type', 'application/xhtml+xml'); response.end(files[request.url]);
     } else { response.writeHead(404); response.end(); }
   });
@@ -109,6 +120,100 @@ async function fixture({ failStyles = false, failedChapter, delayedChapter } = {
     holdStyles() { styles = new Promise(resolve => { releaseStyles = resolve; }); return new Promise(resolve => { requestedStyles = resolve; }); },
     close() { releaseStyles(); releaseFont(); server.closeAllConnections(); return new Promise(resolve => server.close(resolve)); } };
 }
+
+test('converted Alice retains the recorded character passage', { timeout: 180000 }, async context => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'bookfin-kf8-layout-'));
+  let source;
+  let page;
+  try {
+    const prepared = spawnSync('flutter', ['test', '--no-pub', 'tool/reader/kf8_layout_fixture_test.dart', '--reporter', 'expanded'], {
+      cwd: root, env: { ...process.env, BOOKFIN_KF8_LAYOUT_DIRECTORY: directory }, encoding: 'utf8', timeout: 90000
+    });
+    assert.equal(prepared.status, 0, prepared.stdout + prepared.stderr);
+    const publication = JSON.parse(fs.readFileSync(path.join(directory, 'publication.json')));
+    source = await fixture({ publication: path.join(directory, 'publication'), width: 412, height: 630 });
+    page = await browser({ bookfinFont: true });
+    const location = { cfi: 'epubcfi(/6/10!/4/2[pgepubid00003]/4/1:260)', resource: 'OEBPS/part00004.html',
+      quote: ' Alice “without pictures or conversations?”\n\n\nSo she was considering in her own mind (as well as she could, for the hot ' };
+    const serialized = JSON.stringify(location);
+    async function open(initial = location, height = 630) {
+      await page.call('Page.navigate', { url: source.url });
+      await page.evaluate("new Promise(resolve => { if (window.bookfinReader) resolve(); else addEventListener('load', resolve, {once:true}); })");
+      await page.evaluate(`window.saved=[];window.failures=[];window.flutter_inappwebview={callHandler:(name,value)=>{if(name==='readerLocation')saved.push(value);if(name==='readerWarning'||name==='readerFailure')failures.push(value)}};
+        const create=ePub;window.ePub=Object.assign((...args)=>{const book=create(...args);const render=book.renderTo.bind(book);book.renderTo=(...args)=>(window.viewport=render(...args));return book},create);
+        document.querySelector('#viewer').style.height='${height}px';
+        bookfinReader.openBook({base:${JSON.stringify(source.url)},packagePath:${JSON.stringify(publication.packagePath)},fontSize:22,night:false,initial:${JSON.stringify(initial)}})`);
+    }
+    async function assertPassage(label) {
+      const visible = await page.evaluate(`(()=>{const frame=document.querySelector('iframe');const doc=frame.contentDocument;
+        const paragraph=doc.querySelector('#pgepubid00003 > p');const text=paragraph.firstChild;
+        const word=doc.createRange();word.setStart(text,261);word.setEnd(text,266);
+        const consideration=[...doc.querySelectorAll('p')].find(element=>element.textContent.trimStart().startsWith('So she was considering'));
+        const phrase=doc.createRange();phrase.setStart(consideration.firstChild,1);phrase.setEnd(consideration.firstChild,21);
+        const heading=doc.querySelector('h2').getBoundingClientRect();const left=frame.getBoundingClientRect().left;
+        return {word:{text:word.toString(),left:word.getBoundingClientRect().left+left,top:word.getBoundingClientRect().top},
+          phrase:{text:phrase.toString(),left:phrase.getBoundingClientRect().left+left,top:phrase.getBoundingClientRect().top},
+          headingLeft:heading.left+left,saved:saved.at(-1),failures,page:viewport.location.start.displayed}})()`);
+      console.log(label, JSON.stringify(visible));
+      assert.equal(visible.word.text, 'Alice');
+      assert.equal(visible.phrase.text, 'So she was consideri');
+      for (const target of [visible.word, visible.phrase]) {
+        assert.ok(target.left >= 0 && target.left < 412, label + ': the saved passage must be in the visible column');
+        assert.ok(target.top >= 0 && target.top < 630, label + ': the saved passage must be inside the viewport');
+      }
+      assert.ok(visible.headingLeft < 0, label + ': the chapter heading must be on the preceding page');
+      assert.equal(visible.page.page, 2);
+      assert.equal(visible.page.total, 21);
+      assert.equal(visible.saved.cfi, location.cfi);
+      assert.equal(visible.saved.quote, location.quote);
+      assert.deepEqual(visible.failures, []);
+      await page.evaluate('viewport.checkInvariants()');
+    }
+    await context.test('ordinary Next saves the recorded space before the visible word', async () => {
+      await open(null);
+      await page.evaluate("bookfinReader.go('part00004.html')");
+      await page.evaluate('bookfinReader.move(true)');
+      await assertPassage('ordinary Next');
+    });
+    await context.test('cached reopen shows the saved passage instead of the heading', async () => {
+      await open();
+      await assertPassage('cached reopen');
+    });
+    await context.test('bookmark return within a chapter shows the saved passage', async () => {
+      await open(null);
+      await page.evaluate("bookfinReader.go('part00004.html')");
+      await page.evaluate('bookfinReader.move(true).then(()=>bookfinReader.move(true))');
+      await page.evaluate(`bookfinReader.display(${serialized})`);
+      await assertPassage('same-chapter bookmark');
+    });
+    await context.test('bookmark return from another chapter shows the saved passage', async () => {
+      await open(null);
+      await page.evaluate("bookfinReader.go('part00005.html')");
+      await page.evaluate(`bookfinReader.display(${serialized})`);
+      await assertPassage('other-chapter bookmark');
+    });
+    await context.test('a new browser process shows the retained passage', async () => {
+      await page.close();
+      page = await browser({ bookfinFont: true });
+      await open(JSON.parse(serialized));
+      await assertPassage('fresh browser process');
+    });
+    await context.test('height changes keep the saved passage visible', async () => {
+      await open(location, 600);
+      await page.evaluate("document.querySelector('#viewer').style.height='630px';viewport.resize(412,630);viewport.q.enqueue(()=>{})");
+      await assertPassage('height restoration');
+    });
+    await context.test('text-size changes retain the saved passage and stored CFI', async () => {
+      await open();
+      await page.evaluate('bookfinReader.configure(24,false).then(()=>bookfinReader.configure(22,false))');
+      await assertPassage('text-size restoration');
+    });
+  } finally {
+    if (page) await page.close();
+    if (source) await source.close();
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+});
 
 async function withReader(action, resizeWhileLoading = false) {
   const source = await fixture();

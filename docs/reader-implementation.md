@@ -73,6 +73,15 @@ nix develop --command bash -c 'cd packages/flutter_epub_viewer/engine && node --
 
 ## Acceptance still required
 
+The `t2-42og` candidate adds an exact converted Alice KF8 regression for a
+saved character position at a column boundary. See
+`docs/evidence/reader/kf8-character-restoration.md` for the cause, byte-exact
+corpus reconstruction, six meaningful restoration failures, and host results.
+The existing layout test command now also needs the project Flutter
+dependencies, because its fixture uses the production importer and admission.
+Run `nix develop --command flutter pub get` before the engine tests.
+Android visible-passage acceptance remains separate.
+
 The `t8-jj2s` candidate adds real Chromium iframe layout tests for delayed local
 styles/fonts, initial height changes, intentional navigation, bookmark restore,
 appearance ordering, and fractional-pixel page labels. The current reading

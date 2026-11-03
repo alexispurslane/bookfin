@@ -1,0 +1,73 @@
+import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
+
+import 'package:bookfin/reader/mobi.dart';
+import 'package:crypto/crypto.dart';
+import 'package:flutter_epub_viewer/publication.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+void main() {
+  test('the Alice layout fixture retains the recorded Android edition', () async {
+    final output = Platform.environment['BOOKFIN_KF8_LAYOUT_DIRECTORY'];
+    if (output == null) {
+      throw StateError('Run this fixture through engine/test/layout.test.cjs.');
+    }
+    final original = await File('tool/research/readers/fixtures/pg11-kf8.mobi')
+        .copy('$output/original.mobi');
+    final document = await importMobi(original);
+    addTearDown(document.dispose);
+    expect(
+      document.originalDigest,
+      'd8211269aed55ded8302f289950936db8368b4d4d384c463b722034152f8f1d2',
+    );
+    expect(
+      document.identity,
+      '3d0b0318cf5d0455722a2b8ccf93ac5ec0be08e0c198a831d41d4990be1f10d7',
+    );
+    final converted = await File(
+      '$output/.bookfin-mobi/${document.originalDigest}-libmobi-0.12-v1/book.epub',
+    ).readAsBytes();
+    final headers = ByteData.sublistView(converted);
+    expect(headers.getUint32(converted.length - 22, Endian.little), 0x06054b50);
+    var central = headers.getUint32(converted.length - 6, Endian.little);
+    final androidTime = (9 << 11) | (56 << 5) | (26 ~/ 2);
+    final androidDate = ((2026 - 1980) << 9) | (11 << 5) | 3;
+    while (headers.getUint32(central, Endian.little) == 0x02014b50) {
+      final local = headers.getUint32(central + 42, Endian.little);
+      expect(headers.getUint32(local, Endian.little), 0x04034b50);
+      for (final offset in [local + 10, central + 12]) {
+        headers.setUint16(offset, androidTime, Endian.little);
+        headers.setUint16(offset + 2, androidDate, Endian.little);
+      }
+      central +=
+          46 +
+          headers.getUint16(central + 28, Endian.little) +
+          headers.getUint16(central + 30, Endian.little) +
+          headers.getUint16(central + 32, Endian.little);
+    }
+    expect(
+      sha256.convert(converted).toString(),
+      '2f6de175d5f69498afb7d8e941dfed0253e11881cfd1628556f959db71ec8fa8',
+    );
+    final publication = Publication.admit(converted);
+    expect(publication.resources, document.publication.resources);
+    final cached = await importMobi(original);
+    addTearDown(cached.dispose);
+    expect(cached.identity, document.identity);
+    expect(cached.publication.resources, publication.resources);
+    for (final entry in publication.resources.entries) {
+      final file = File('$output/publication/${entry.key}');
+      await file.parent.create(recursive: true);
+      await file.writeAsBytes(entry.value);
+    }
+    await File('$output/publication.json').writeAsString(
+      jsonEncode({
+        'packagePath': publication.packagePath,
+        'original': document.originalDigest,
+        'processed': document.identity,
+        'converted': publication.originalDigest,
+      }),
+    );
+  });
+}

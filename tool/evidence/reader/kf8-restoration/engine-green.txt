@@ -1,0 +1,234 @@
+
+> bookfin-epub-runtime@0.3.93-bookfin.1 test
+> node --test test/*.test.cjs
+
+TAP version 13
+# ordinary Next {"word":{"text":"Alice","left":17,"top":3},"phrase":{"text":"So she was consideri","left":39,"top":81.09375},"headingLeft":-395,"saved":{"cfi":"epubcfi(/6/10!/4/2[pgepubid00003]/4/1:260)","resource":"OEBPS/part00004.html","quote":" Alice “without pictures or conversations?”\\n\\n\\nSo she was considering in her own mind (as well as she could, for the hot ","chapter":"CHAPTER I. Down the Rabbit-Hole","page":2,"pages":21},"failures":[],"page":{"page":2,"total":21}}
+# Subtest: converted Alice retains the recorded character passage
+    # Subtest: ordinary Next saves the recorded space before the visible word
+    ok 1 - ordinary Next saves the recorded space before the visible word
+      ---
+      duration_ms: 384.111708
+      type: 'test'
+      ...
+# cached reopen {"word":{"text":"Alice","left":17,"top":3},"phrase":{"text":"So she was consideri","left":39,"top":81.09375},"headingLeft":-395,"saved":{"cfi":"epubcfi(/6/10!/4/2[pgepubid00003]/4/1:260)","resource":"OEBPS/part00004.html","quote":" Alice “without pictures or conversations?”\\n\\n\\nSo she was considering in her own mind (as well as she could, for the hot ","chapter":"CHAPTER I. Down the Rabbit-Hole","page":2,"pages":21},"failures":[],"page":{"page":2,"total":21}}
+    # Subtest: cached reopen shows the saved passage instead of the heading
+    ok 2 - cached reopen shows the saved passage instead of the heading
+      ---
+      duration_ms: 203.831791
+      type: 'test'
+      ...
+# same-chapter bookmark {"word":{"text":"Alice","left":17,"top":3},"phrase":{"text":"So she was consideri","left":39,"top":81.09375},"headingLeft":-395,"saved":{"cfi":"epubcfi(/6/10!/4/2[pgepubid00003]/4/1:260)","resource":"OEBPS/part00004.html","quote":" Alice “without pictures or conversations?”\\n\\n\\nSo she was considering in her own mind (as well as she could, for the hot ","chapter":"CHAPTER I. Down the Rabbit-Hole","page":2,"pages":21},"failures":[],"page":{"page":2,"total":21}}
+    # Subtest: bookmark return within a chapter shows the saved passage
+    ok 3 - bookmark return within a chapter shows the saved passage
+      ---
+      duration_ms: 411.815166
+      type: 'test'
+      ...
+# other-chapter bookmark {"word":{"text":"Alice","left":17,"top":3},"phrase":{"text":"So she was consideri","left":39,"top":81.09375},"headingLeft":-395,"saved":{"cfi":"epubcfi(/6/10!/4/2[pgepubid00003]/4/1:260)","resource":"OEBPS/part00004.html","quote":" Alice “without pictures or conversations?”\\n\\n\\nSo she was considering in her own mind (as well as she could, for the hot ","chapter":"CHAPTER I. Down the Rabbit-Hole","page":2,"pages":21},"failures":[],"page":{"page":2,"total":21}}
+    # Subtest: bookmark return from another chapter shows the saved passage
+    ok 4 - bookmark return from another chapter shows the saved passage
+      ---
+      duration_ms: 373.364042
+      type: 'test'
+      ...
+# fresh browser process {"word":{"text":"Alice","left":17,"top":3},"phrase":{"text":"So she was consideri","left":39,"top":81.09375},"headingLeft":-395,"saved":{"cfi":"epubcfi(/6/10!/4/2[pgepubid00003]/4/1:260)","resource":"OEBPS/part00004.html","quote":" Alice “without pictures or conversations?”\\n\\n\\nSo she was considering in her own mind (as well as she could, for the hot ","chapter":"CHAPTER I. Down the Rabbit-Hole","page":2,"pages":21},"failures":[],"page":{"page":2,"total":21}}
+    # Subtest: a new browser process shows the retained passage
+    ok 5 - a new browser process shows the retained passage
+      ---
+      duration_ms: 861.343625
+      type: 'test'
+      ...
+# height restoration {"word":{"text":"Alice","left":17,"top":3},"phrase":{"text":"So she was consideri","left":39,"top":81.09375},"headingLeft":-395,"saved":{"cfi":"epubcfi(/6/10!/4/2[pgepubid00003]/4/1:260)","resource":"OEBPS/part00004.html","quote":" Alice “without pictures or conversations?”\\n\\n\\nSo she was considering in her own mind (as well as she could, for the hot ","chapter":"CHAPTER I. Down the Rabbit-Hole","page":2,"pages":21},"failures":[],"page":{"page":2,"total":21}}
+    # Subtest: height changes keep the saved passage visible
+    ok 6 - height changes keep the saved passage visible
+      ---
+      duration_ms: 331.639042
+      type: 'test'
+      ...
+# text-size restoration {"word":{"text":"Alice","left":17,"top":3},"phrase":{"text":"So she was consideri","left":39,"top":81.09375},"headingLeft":-395,"saved":{"cfi":"epubcfi(/6/10!/4/2[pgepubid00003]/4/1:260)","resource":"OEBPS/part00004.html","quote":" Alice “without pictures or conversations?”\\n\\n\\nSo she was considering in her own mind (as well as she could, for the hot ","chapter":"CHAPTER I. Down the Rabbit-Hole","page":2,"pages":21},"failures":[],"page":{"page":2,"total":21}}
+    # Subtest: text-size changes retain the saved passage and stored CFI
+    ok 7 - text-size changes retain the saved passage and stored CFI
+      ---
+      duration_ms: 266.595667
+      type: 'test'
+      ...
+    1..7
+ok 1 - converted Alice retains the recorded character passage
+  ---
+  duration_ms: 8604.092166
+  type: 'test'
+  ...
+# final layout {"visibleX":17,"visibleY":1,"text":"Harbour passage 5. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark.","saved":{"cfi":"epubcfi(/6/2!/4/26/1:0)","resource":"OPS/one.xhtml","quote":"Harbour passage 5. The reader followed the shoreline and watched the small boats return. A bookmark could keep this plac","chapter":"Harbour","page":3,"pages":5},"frameWidth":2060,"page":{"page":3,"total":5}}
+# render trace [{"method":"display","args":["epubcfi(/6/2!/4/26/1:0)"]},{"event":"readerLocation","value":{"cfi":"epubcfi(/6/2!/4/26/1:0)","resource":"OPS/one.xhtml","quote":"Harbour passage 5. The reader followed the shoreline and watched the small boats return. A bookmark could keep this plac","chapter":"Harbour","page":2,"pages":5}},{"method":"onResized","args":[{"width":412,"height":667},null],"location":{"start":{"index":0,"href":"one.xhtml","cfi":"epubcfi(/6/2!/4/26/1:0)","displayed":{"page":2,"total":5},"location":-1,"percentage":0},"end":{"index":0,"href":"one.xhtml","cfi":"epubcfi(/6/2!/4/26/1:80)","displayed":{"page":2,"total":5},"location":-1,"percentage":0}}},{"event":"readerLocation","value":{"cfi":"epubcfi(/6/2!/4/26/1:0)","resource":"OPS/one.xhtml","quote":"Harbour passage 5. The reader followed the shoreline and watched the small boats return. A bookmark could keep this plac","chapter":"Harbour","page":3,"pages":5}},{"method":"reportLocation","args":[],"location":{"start":{"index":0,"href":"one.xhtml","cfi":"epubcfi(/6/2!/4/26/1:0)","displayed":{"page":3,"total":5},"location":-1,"percentage":0},"end":{"index":0,"href":"one.xhtml","cfi":"epubcfi(/6/2!/4/34/1:80)","displayed":{"page":3,"total":5},"location":-1,"percentage":0}}},{"event":"readerLocation","value":{"cfi":"epubcfi(/6/2!/4/26/1:0)","resource":"OPS/one.xhtml","quote":"Harbour passage 5. The reader followed the shoreline and watched the small boats return. A bookmark could keep this plac","chapter":"Harbour","page":3,"pages":5}}]
+# Subtest: reopening retains the visible passage and saved anchor after delayed publication layout
+ok 2 - reopening retains the visible passage and saved anchor after delayed publication layout
+  ---
+  duration_ms: 949.233917
+  type: 'test'
+  ...
+# Subtest: fractional-pixel column geometry does not change the page label for the same visible text
+ok 3 - fractional-pixel column geometry does not change the page label for the same visible text
+  ---
+  duration_ms: 951.306916
+  type: 'test'
+  ...
+# Subtest: intentional page navigation replaces the restoration anchor and survives the next resize
+ok 4 - intentional page navigation replaces the restoration anchor and survives the next resize
+  ---
+  duration_ms: 1133.798417
+  type: 'test'
+  ...
+# Subtest: bookmark restore and 22-pixel appearance changes retain the requested passage
+ok 5 - bookmark restore and 22-pixel appearance changes retain the requested passage
+  ---
+  duration_ms: 1105.703125
+  type: 'test'
+  ...
+# Subtest: an appearance change queued after Next preserves the new reading place instead of the old one
+ok 6 - an appearance change queued after Next preserves the new reading place instead of the old one
+  ---
+  duration_ms: 1080.306959
+  type: 'test'
+  ...
+# Subtest: a failed publication stylesheet rejects opening and reports the real display failure
+ok 7 - a failed publication stylesheet rejects opening and reports the real display failure
+  ---
+  duration_ms: 763.2515
+  type: 'test'
+  ...
+# Subtest: resize during blocked initial resource loading keeps the requested passage attached
+ok 8 - resize during blocked initial resource loading keeps the requested passage attached
+  ---
+  duration_ms: 1047.387042
+  type: 'test'
+  ...
+# Subtest: failed neighboring chapter resource rejects Next
+ok 9 - failed neighboring chapter resource rejects Next
+  ---
+  duration_ms: 868.47875
+  type: 'test'
+  ...
+# Subtest: failed neighboring chapter resource rejects Previous
+ok 10 - failed neighboring chapter resource rejects Previous
+  ---
+  duration_ms: 832.875584
+  type: 'test'
+  ...
+# Subtest: automatic viewport resize waits for a loading neighboring chapter
+ok 11 - automatic viewport resize waits for a loading neighboring chapter
+  ---
+  duration_ms: 939.049417
+  type: 'test'
+  ...
+# Subtest: contents navigation cannot release a resize restoration before its resources finish
+ok 12 - contents navigation cannot release a resize restoration before its resources finish
+  ---
+  duration_ms: 964.7435
+  type: 'test'
+  ...
+# Subtest: bookmark navigation cannot release a resize restoration before its resources finish
+ok 13 - bookmark navigation cannot release a resize restoration before its resources finish
+  ---
+  duration_ms: 994.09475
+  type: 'test'
+  ...
+# Subtest: search finds an exact phrase across inline nodes, including more than five nodes
+ok 14 - search finds an exact phrase across inline nodes, including more than five nodes
+  ---
+  duration_ms: 64.356875
+  type: 'test'
+  ...
+# Subtest: short documents and repeated occurrences are not omitted
+ok 15 - short documents and repeated occurrences are not omitted
+  ---
+  duration_ms: 23.344125
+  type: 'test'
+  ...
+# Subtest: Unicode lowercase expansion does not silently discard an admitted query
+ok 16 - Unicode lowercase expansion does not silently discard an admitted query
+  ---
+  duration_ms: 15.439042
+  type: 'test'
+  ...
+# Subtest: search excludes headings in the head and explicitly hidden text
+ok 17 - search excludes headings in the head and explicitly hidden text
+  ---
+  duration_ms: 7.725375
+  type: 'test'
+  ...
+# Subtest: Unicode lowercase expansion cannot shift the returned original range
+ok 18 - Unicode lowercase expansion cannot shift the returned original range
+  ---
+  duration_ms: 8.991917
+  type: 'test'
+  ...
+# Subtest: an encoded contents fragment resolves to the actual heading, not the chapter start
+ok 19 - an encoded contents fragment resolves to the actual heading, not the chapter start
+  ---
+  duration_ms: 13.226667
+  type: 'test'
+  ...
+# Subtest: saved locations collapse to the visible start and reject a mismatched quote
+ok 20 - saved locations collapse to the visible start and reject a mismatched quote
+  ---
+  duration_ms: 9.817375
+  type: 'test'
+  ...
+# Subtest: a failed chapter yields a visible incomplete-search error
+ok 21 - a failed chapter yields a visible incomplete-search error
+  ---
+  duration_ms: 9.139417
+  type: 'test'
+  ...
+# Subtest: reader appearance preserves an edition font while applying the selected text size
+ok 22 - reader appearance preserves an edition font while applying the selected text size
+  ---
+  duration_ms: 81.365708
+  type: 'test'
+  ...
+# Subtest: a final scaled appearance restores the same visible-start CFI through the engine display boundary
+ok 23 - a final scaled appearance restores the same visible-start CFI through the engine display boundary
+  ---
+  duration_ms: 99.131583
+  type: 'test'
+  ...
+# Subtest: visible locations carry the current contents chapter and actual displayed-page progress
+ok 24 - visible locations carry the current contents chapter and actual displayed-page progress
+  ---
+  duration_ms: 13.588917
+  type: 'test'
+  ...
+# Subtest: source and actual iframe share locations for table rows without a source tbody
+ok 25 - source and actual iframe share locations for table rows without a source tbody
+  ---
+  duration_ms: 22.040334
+  type: 'test'
+  ...
+# Subtest: source and actual iframe share locations for nested paragraph blocks
+ok 26 - source and actual iframe share locations for nested paragraph blocks
+  ---
+  duration_ms: 15.133666
+  type: 'test'
+  ...
+# Subtest: source and actual iframe share locations for table foster parenting
+ok 27 - source and actual iframe share locations for table foster parenting
+  ---
+  duration_ms: 19.160541
+  type: 'test'
+  ...
+# Subtest: an obsolete location failure cannot replace a newer valid reading place
+ok 28 - an obsolete location failure cannot replace a newer valid reading place
+  ---
+  duration_ms: 9.566375
+  type: 'test'
+  ...
+1..28
+# tests 35
+# suites 0
+# pass 35
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 20297.609833

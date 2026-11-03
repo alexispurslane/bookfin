@@ -677,7 +677,7 @@ var epubEngine = (() => {
       var NodeType = {};
       var ELEMENT_NODE4 = NodeType.ELEMENT_NODE = 1;
       var ATTRIBUTE_NODE = NodeType.ATTRIBUTE_NODE = 2;
-      var TEXT_NODE3 = NodeType.TEXT_NODE = 3;
+      var TEXT_NODE4 = NodeType.TEXT_NODE = 3;
       var CDATA_SECTION_NODE = NodeType.CDATA_SECTION_NODE = 4;
       var ENTITY_REFERENCE_NODE = NodeType.ENTITY_REFERENCE_NODE = 5;
       var ENTITY_NODE = NodeType.ENTITY_NODE = 6;
@@ -1015,7 +1015,7 @@ var epubEngine = (() => {
           var child = this.firstChild;
           while (child) {
             var next = child.nextSibling;
-            if (next && next.nodeType == TEXT_NODE3 && child.nodeType == TEXT_NODE3) {
+            if (next && next.nodeType == TEXT_NODE4 && child.nodeType == TEXT_NODE4) {
               this.removeChild(next);
               child.appendData(next.data);
             } else {
@@ -1672,7 +1672,7 @@ var epubEngine = (() => {
       }
       Text.prototype = {
         nodeName: "#text",
-        nodeType: TEXT_NODE3,
+        nodeType: TEXT_NODE4,
         splitText: function(offset) {
           var text = this.data;
           var newText = text.substring(offset);
@@ -1879,7 +1879,7 @@ var epubEngine = (() => {
             return;
           case ATTRIBUTE_NODE:
             return addSerializedAttribute(buf, node.name, node.value);
-          case TEXT_NODE3:
+          case TEXT_NODE4:
             return buf.push(
               node.data.replace(/[<&>]/g, _xmlEncoder)
             );
@@ -20174,6 +20174,7 @@ var epubEngine = (() => {
   var isChrome = hasNavigator && /Chrome/.test(navigator.userAgent);
   var isWebkit = hasNavigator && !isChrome && /AppleWebKit/.test(navigator.userAgent);
   var ELEMENT_NODE3 = 1;
+  var TEXT_NODE3 = 3;
   var Contents = class {
     constructor(doc, content, cfiBase, sectionIndex) {
       this.epubcfi = new epubcfi_default();
@@ -20641,6 +20642,12 @@ var epubEngine = (() => {
         if (range) {
           try {
             if (!range.endContainer || range.startContainer == range.endContainer && range.startOffset == range.endOffset) {
+              if (range.startContainer.nodeType === TEXT_NODE3) {
+                const followingCharacterOffset = range.startContainer.textContent.slice(range.startOffset).search(/\S/);
+                if (followingCharacterOffset >= 0) {
+                  range.setStart(range.startContainer, range.startOffset + followingCharacterOffset);
+                }
+              }
               let pos = range.startContainer.textContent.indexOf(" ", range.startOffset);
               if (pos == -1) {
                 pos = range.startContainer.textContent.length;

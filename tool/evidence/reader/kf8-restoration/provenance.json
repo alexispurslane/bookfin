@@ -1,0 +1,29 @@
+{
+  "parent": "a22e0b865a4fe70848849bdd539bad0b9bd4f224",
+  "date": "2026-11-03",
+  "browser": "Chromium 138.0.7180.0",
+  "browserPath": "/Applications/Chromium.app/Contents/MacOS/Chromium",
+  "layoutCssPixels": {
+    "width": 412,
+    "height": 630,
+    "fontSize": 22
+  },
+  "corpus": {
+    "packagePath": "OEBPS/content.opf",
+    "original": "d8211269aed55ded8302f289950936db8368b4d4d384c463b722034152f8f1d2",
+    "processed": "3d0b0318cf5d0455722a2b8ccf93ac5ec0be08e0c198a831d41d4990be1f10d7",
+    "converted": "2f6de175d5f69498afb7d8e941dfed0253e11881cfd1628556f959db71ec8fa8"
+  },
+  "sha256": {
+    "packages/flutter_epub_viewer/engine/src/contents.js": "a8373533bc189a6057066945048bcc9c2b97e5499b68e8190d17169271d7dc3c",
+    "packages/flutter_epub_viewer/engine/test/layout.test.cjs": "e724faa8c68858651451a3468c7486ba857468eec49aa22f378028a1ffafec6f",
+    "tool/reader/kf8_layout_fixture_test.dart": "b885e326a71c3791d655b1d3ef156e302cc539574c8e3ea504a1c69acff67202",
+    "tool/research/readers/fixtures/pg11-kf8.mobi": "d8211269aed55ded8302f289950936db8368b4d4d384c463b722034152f8f1d2",
+    "assets/fonts/SourceSerif4.ttf": "97b2d4da6e3cb494b5a1e66ae176914d852ccabef49e0c02c0df25f3e39aca0b",
+    "packages/flutter_epub_viewer/assets/epub.js": "037df5e55c61a2901af5a65ace6aed7e07135c6db143f54afb7e7fe9b20a718c",
+    "packages/flutter_epub_viewer/assets/reader.js": "b111f45f376f1bda973529000d4ff50597e1ffdef44af7d2ddfca241428d41d1",
+    "packages/flutter_epub_viewer/assets/index.html": "92bb3293ae49fd6567940681a1f2eed43574442377a3d3172b0e26436ea461d4",
+    "packages/flutter_epub_viewer/assets/THIRD-PARTY-LICENSES.txt": "b3a60a3f8f65aedaac4c9a4d5eb138ad6cc2b53cbb40553d2203ddc510de255b"
+  },
+  "acceptance": "Host only. Android and same-key replacement acceptance remain with the parent."
+}

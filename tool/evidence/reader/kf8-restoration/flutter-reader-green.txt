@@ -1,0 +1,89 @@
+xcrun: error: SDK cannot be located: error: unable to find sdk: 'iphoneos'
+
+
+SDK iphoneos not installed.
+
+xcrun: error: SDK cannot be located: error: unable to find sdk: 'iphonesimulator'
+
+
+SDK iphonesimulator not installed.
+
+00:00 +0: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/pdf_navigation_test.dart
+00:00 +0: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/pdf_navigation_test.dart: repeated original-page requests share one pending draw and release its image
+00:00 +1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/pdf_navigation_test.dart: Previous from a reflow page boundary returns to the preceding final viewport
+00:00 +2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/pdf_navigation_test.dart: Previous onto a short page saves its visible beginning for larger-text restoration
+00:01 +3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/appearance_test.dart: appearance changes during attachment wait for the renderer to open (variant: TargetPlatform.android)
+
+
+🚀 Hi, flutter_inappwebview here, thank you for using it! If you like this plugin → 💙 Support development https://inappwebview.dev/donate ⭐ Star on GitHub https://github.com/pichillilorenzo/flutter_inappwebview 📱 Showcase your app https://inappwebview.dev/showcase
+
+00:01 +4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/appearance_test.dart: appearance changes during attachment wait for the renderer to open (variant: TargetPlatform.android)
+00:01 +5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/appearance_test.dart: appearance changes during attachment wait for the renderer to open (variant: TargetPlatform.android)
+00:01 +6: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/appearance_test.dart: appearance changes during attachment wait for the renderer to open (variant: TargetPlatform.android)
+00:01 +7: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/appearance_test.dart: appearance changes during attachment wait for the renderer to open (variant: TargetPlatform.android)
+00:01 +8: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/appearance_test.dart: appearance changes during attachment wait for the renderer to open (variant: TargetPlatform.android)
+00:01 +9: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/appearance_test.dart: appearance changes during attachment wait for the renderer to open (variant: TargetPlatform.android)
+00:01 +10: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/appearance_test.dart: appearance changes during attachment wait for the renderer to open (variant: TargetPlatform.android)
+00:01 +11: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/appearance_test.dart: appearance changes during attachment wait for the renderer to open (variant: TargetPlatform.android)
+00:01 +12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/appearance_test.dart: appearance changes during attachment wait for the renderer to open (variant: TargetPlatform.android)
+00:01 +13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/appearance_test.dart: appearance changes during attachment wait for the renderer to open (variant: TargetPlatform.android)
+00:01 +14: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/appearance_test.dart: appearance changes during attachment wait for the renderer to open (variant: TargetPlatform.android)
+00:01 +15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/appearance_test.dart: appearance changes during attachment wait for the renderer to open (variant: TargetPlatform.android)
+00:01 +16: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/appearance_test.dart: appearance changes during attachment wait for the renderer to open (variant: TargetPlatform.android)
+00:02 +17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/appearance_test.dart: appearance changes during attachment wait for the renderer to open (variant: TargetPlatform.android)
+00:02 +18: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/appearance_test.dart: appearance changes during attachment wait for the renderer to open (variant: TargetPlatform.android)
+00:02 +19: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/appearance_test.dart: appearance changes during attachment wait for the renderer to open (variant: TargetPlatform.android)
+00:02 +20: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/appearance_test.dart: appearance changes during attachment wait for the renderer to open (variant: TargetPlatform.android)
+00:02 +21: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/appearance_test.dart: appearance changes during attachment wait for the renderer to open (variant: TargetPlatform.android)
+00:02 +22: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/publication_test.dart: rewritten wrapper references cannot bypass processed resource limits
+00:02 +23: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/publication_test.dart: rewritten wrapper references cannot bypass processed resource limits
+00:03 +24: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/pdf_screen_test.dart: PDF controls reflow real extracted text and keep source-page bookmarks (variant: TargetPlatform.linux)
+00:03 +25: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/pdf_screen_test.dart: PDF controls reflow real extracted text and keep source-page bookmarks (variant: TargetPlatform.linux)
+00:03 +26: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/pdf_screen_test.dart: PDF controls reflow real extracted text and keep source-page bookmarks (variant: TargetPlatform.linux)
+00:03 +27: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/pdf_screen_test.dart: PDF controls reflow real extracted text and keep source-page bookmarks (variant: TargetPlatform.linux)
+00:03 +28: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/pdf_screen_test.dart: PDF controls reflow real extracted text and keep source-page bookmarks (variant: TargetPlatform.linux)
+00:03 +29: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/pdf_screen_test.dart: PDF controls reflow real extracted text and keep source-page bookmarks (variant: TargetPlatform.linux)
+00:03 +30: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/pdf_screen_test.dart: PDF controls reflow real extracted text and keep source-page bookmarks (variant: TargetPlatform.linux)
+00:03 +31: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/pdf_screen_test.dart: PDF controls reflow real extracted text and keep source-page bookmarks (variant: TargetPlatform.linux)
+00:03 +32: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/pdf_screen_test.dart: PDF controls reflow real extracted text and keep source-page bookmarks (variant: TargetPlatform.linux)
+00:03 +33: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/pdf_screen_test.dart: PDF controls reflow real extracted text and keep source-page bookmarks (variant: TargetPlatform.linux)
+00:03 +34: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/pdf_screen_test.dart: PDF controls reflow real extracted text and keep source-page bookmarks (variant: TargetPlatform.linux)
+00:03 +35: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/pdf_screen_test.dart: PDF controls reflow real extracted text and keep source-page bookmarks (variant: TargetPlatform.linux)
+00:03 +36: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/pdf_screen_test.dart: PDF controls reflow real extracted text and keep source-page bookmarks (variant: TargetPlatform.linux)
+00:03 +37: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/pdf_screen_test.dart: PDF controls reflow real extracted text and keep source-page bookmarks (variant: TargetPlatform.linux)
+00:03 +38: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/pdf_screen_test.dart: PDF controls reflow real extracted text and keep source-page bookmarks (variant: TargetPlatform.linux)
+00:04 +39: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/pdf_screen_test.dart: PDF controls reflow real extracted text and keep source-page bookmarks (variant: TargetPlatform.linux)
+00:04 +40: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/pdf_screen_test.dart: PDF controls reflow real extracted text and keep source-page bookmarks (variant: TargetPlatform.linux)
+00:04 +41: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/pdf_screen_test.dart: PDF controls reflow real extracted text and keep source-page bookmarks (variant: TargetPlatform.linux)
+00:04 +41: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/shared_appearance_test.dart: reader night changes the app and survives reopen and controller restart (variant: TargetPlatform.android)
+
+
+🚀 Hi, flutter_inappwebview here, thank you for using it! If you like this plugin → 💙 Support development https://inappwebview.dev/donate ⭐ Star on GitHub https://github.com/pichillilorenzo/flutter_inappwebview 📱 Showcase your app https://inappwebview.dev/showcase
+
+00:04 +42: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/shared_appearance_test.dart: reader night changes the app and survives reopen and controller restart (variant: TargetPlatform.android)
+00:05 +43: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/shared_appearance_test.dart: reader night changes the app and survives reopen and controller restart (variant: TargetPlatform.android)
+00:05 +44: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/shared_appearance_test.dart: reader night changes the app and survives reopen and controller restart (variant: TargetPlatform.android)
+00:05 +45: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/shared_appearance_test.dart: reader night changes the app and survives reopen and controller restart (variant: TargetPlatform.android)
+00:05 +46: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/shared_appearance_test.dart: reader night changes the app and survives reopen and controller restart (variant: TargetPlatform.android)
+00:05 +47: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/shared_appearance_test.dart: reader night changes the app and survives reopen and controller restart (variant: TargetPlatform.android)
+00:05 +48: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/shared_appearance_test.dart: reader night changes the app and survives reopen and controller restart (variant: TargetPlatform.android)
+00:05 +49: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/shared_appearance_test.dart: reader night changes the app and survives reopen and controller restart (variant: TargetPlatform.android)
+00:05 +50: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/shared_appearance_test.dart: reader night changes the app and survives reopen and controller restart (variant: TargetPlatform.android)
+00:05 +51: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/shared_appearance_test.dart: reader night changes the app and survives reopen and controller restart (variant: TargetPlatform.android)
+00:05 +52: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/shared_appearance_test.dart: reader night changes the app and survives reopen and controller restart (variant: TargetPlatform.android)
+00:05 +53: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/shared_appearance_test.dart: reader night changes the app and survives reopen and controller restart (variant: TargetPlatform.android)
+00:05 +54: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/shared_appearance_test.dart: reader night changes the app and survives reopen and controller restart (variant: TargetPlatform.android)
+00:05 +55: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/shared_appearance_test.dart: reader night changes the app and survives reopen and controller restart (variant: TargetPlatform.android)
+00:05 +56: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/shared_appearance_test.dart: reader night changes the app and survives reopen and controller restart (variant: TargetPlatform.android)
+00:05 +57: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/shared_appearance_test.dart: reader night changes the app and survives reopen and controller restart (variant: TargetPlatform.android)
+00:05 +58: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/shared_appearance_test.dart: reader night changes the app and survives reopen and controller restart (variant: TargetPlatform.android)
+00:05 +59: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/shared_appearance_test.dart: reader night changes the app and survives reopen and controller restart (variant: TargetPlatform.android)
+00:05 +60: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/shared_appearance_test.dart: reader night changes the app and survives reopen and controller restart (variant: TargetPlatform.android)
+00:05 +61: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/shared_appearance_test.dart: reader night changes the app and survives reopen and controller restart (variant: TargetPlatform.android)
+00:05 +62: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/shared_appearance_test.dart: reader night changes the app and survives reopen and controller restart (variant: TargetPlatform.android)
+00:05 +63: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/shared_appearance_test.dart: reader night changes the app and survives reopen and controller restart (variant: TargetPlatform.android)
+00:05 +64: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/shared_appearance_test.dart: reader night changes the app and survives reopen and controller restart (variant: TargetPlatform.android)
+00:05 +65: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/shared_appearance_test.dart: reader night changes the app and survives reopen and controller restart (variant: TargetPlatform.android)
+00:06 +66: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/shared_appearance_test.dart: reader day changes the app and survives reopen and controller restart (variant: TargetPlatform.android)
+00:07 +67: /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/test/reader/shared_appearance_test.dart: global modes and Automatic follow system changes in an open reader after a reader selection (variant: TargetPlatform.android)
+00:08 +68: All tests passed!

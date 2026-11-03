@@ -1,0 +1,13 @@
+xcrun: error: SDK cannot be located: error: unable to find sdk: 'iphoneos'
+
+
+SDK iphoneos not installed.
+
+xcrun: error: SDK cannot be located: error: unable to find sdk: 'iphonesimulator'
+
+
+SDK iphonesimulator not installed.
+
+00:00 +0: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-8e4f40f6/tool/reader/kf8_layout_fixture_test.dart
+00:00 +0: the Alice layout fixture retains the recorded Android edition
+00:00 +1: All tests passed!

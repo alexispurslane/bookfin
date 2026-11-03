@@ -627,6 +627,12 @@ class Contents {
 					if (!range.endContainer ||
 						(range.startContainer == range.endContainer
 						&& range.startOffset == range.endOffset)) {
+						if (range.startContainer.nodeType === TEXT_NODE) {
+							const followingCharacterOffset = range.startContainer.textContent.slice(range.startOffset).search(/\S/);
+							if (followingCharacterOffset >= 0) {
+								range.setStart(range.startContainer, range.startOffset + followingCharacterOffset);
+							}
+						}
 						// If the end for the range is not set, it results in collapsed becoming
 						// true. This in turn leads to inconsistent behaviour when calling
 						// getBoundingRect. Wrong bounds lead to the wrong page being displayed.
