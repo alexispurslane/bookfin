@@ -1,0 +1,1 @@
+Bookfin process absent. Network remains airplane=1, wifi=0, mobile=0; reverse route absent.

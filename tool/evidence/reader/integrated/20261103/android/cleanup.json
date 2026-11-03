@@ -1,0 +1,40 @@
+{
+  "ownedFixtureStopped": true,
+  "ownedPidsAbsent": [
+    95362,
+    95399
+  ],
+  "ports": {
+    "7364": "free",
+    "7365": "free"
+  },
+  "credentialModesBeforeRemoval": {
+    "accounts.json": "0o600",
+    "passwords.json": "0o600",
+    "fixture.json": "0o600"
+  },
+  "ownedCredentialsAndServerDataRemoved": true,
+  "ownedPrivateDeviceCopiesRemoved": true,
+  "backupRetained": false,
+  "reasonNoBackup": "All 25 new-account actions match real plugin readback and have no pending membership. Original 28 pending actions belong to the deleted earlier server, not this fixture.",
+  "uiCleanupCompleted": false,
+  "signOutCompleted": false,
+  "bookfinClosed": false,
+  "ownedDownloadsRemaining": 5,
+  "lastObservedNetwork": {
+    "airplane_mode_on": "1",
+    "wifi_on": "0",
+    "mobile_data": "0"
+  },
+  "priorNetwork": {
+    "airplane_mode_on": "0",
+    "wifi_on": "1",
+    "mobile_data": "1"
+  },
+  "lastObservedMediaMuted": true,
+  "systemTextSize": "large, unchanged",
+  "ownedAliceReaderTextSize": "22 logical pixels, not restored after stop",
+  "remainingDeviceState": "Signed-in Bookfin in an unsaved Reading bookmark dialog. No further UI or settings command after failed retry.",
+  "ownedReverseRoute": "Removed before stop, not recreated",
+  "bindingRelease": "Pending final T3 device_close with shutdown:false after evidence commit."
+}

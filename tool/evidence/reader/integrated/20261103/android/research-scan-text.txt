@@ -1,0 +1,22 @@
+Page: dev.bookfin.bookfin
+App: dev.bookfin.bookfin
+Snapshot: 20 nodes
+@e2 [button] "Back"
+@e3 [group] "Empty scan"
+@e4 [button] "Hide reader controls"
+@e5 [button] "Original page"
+@e6 [button] "Reflow text"
+@e7 [group] "English scans only. Other languages are not supported."
+@e8 [group] "Extracted text is not checked against the page. Pictures and page layout stay in the original page."
+@e9 [group] "This page has pixels, not a PDF text layer."
+@e10 [button] "Contents"
+@e11 [button] "Search book"
+@e12 [button] "Smaller text"
+@e13 [button] "Larger text"
+@e14 [button] "Bookmark this place"
+@e15 [button] "Reading bookmarks"
+@e16 [button] "Night reading theme"
+@e17 [progressbar] "100, Current document page progress. Page 1 of 1"
+@e18 [button] "Previous page"
+@e19 [group] "Source page 1 · Page 1 of 1"
+@e20 [button] "Next page"

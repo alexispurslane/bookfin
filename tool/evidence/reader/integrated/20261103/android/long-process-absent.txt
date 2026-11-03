@@ -1,0 +1,1 @@
+Bookfin process absent after owned close; device remains offline.

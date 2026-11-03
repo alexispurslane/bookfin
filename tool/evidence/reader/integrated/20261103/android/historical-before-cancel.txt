@@ -1,0 +1,21 @@
+Page: dev.bookfin.bookfin
+App: dev.bookfin.bookfin
+Snapshot: 19 nodes
+@e2 [button] "Back"
+@e3 [group] "Historical scan"
+@e4 [button] "Hide reader controls"
+@e5 [button] "Original page"
+@e6 [button] "Reflow text" [disabled]
+@e7 [group] "Recognizing English text…"
+@e8 [button] "Cancel recognition"
+@e9 [image] "Original source page 1"
+@e10 [button] "Contents"
+@e11 [button] "Search book"
+@e12 [button] "Smaller text"
+@e13 [button] "Larger text"
+@e14 [button] "Bookmark this place" [disabled]
+@e15 [button] "Reading bookmarks"
+@e16 [button] "Night reading theme"
+@e17 [button] "Previous page"
+@e18 [group] "Current chapter unavailable · Page progress unavailable"
+@e19 [button] "Next page"

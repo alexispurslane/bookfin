@@ -1,0 +1,160 @@
+{
+  "sourceCommit": "71af2886e722b7366d4d335622e55e18a151a3e0",
+  "snapshots": [
+    {
+      "case": "baseline",
+      "retained": 44,
+      "original44Unchanged": true,
+      "originalPending": 28
+    },
+    {
+      "case": "before-companion",
+      "retained": 69,
+      "original44Unchanged": true,
+      "originalPending": 28
+    },
+    {
+      "case": "before-first-ocr",
+      "retained": 44,
+      "original44Unchanged": true,
+      "originalPending": 28
+    },
+    {
+      "case": "companion-alice-files-removed",
+      "retained": 69,
+      "original44Unchanged": true,
+      "originalPending": 28
+    },
+    {
+      "case": "companion-alice-removed",
+      "retained": 69,
+      "original44Unchanged": true,
+      "originalPending": 28
+    },
+    {
+      "case": "companion-cached-reopen",
+      "retained": 69,
+      "original44Unchanged": true,
+      "originalPending": 28
+    },
+    {
+      "case": "companion-fresh-conversion",
+      "retained": 69,
+      "original44Unchanged": true,
+      "originalPending": 28
+    },
+    {
+      "case": "companion-installed",
+      "retained": 69,
+      "original44Unchanged": true,
+      "originalPending": 28
+    },
+    {
+      "case": "english-bookmarked",
+      "retained": 48,
+      "original44Unchanged": true,
+      "originalPending": 28
+    },
+    {
+      "case": "first-ocr",
+      "retained": 45,
+      "original44Unchanged": true,
+      "originalPending": 28
+    },
+    {
+      "case": "kf8-22px-bookmarked",
+      "retained": 67,
+      "original44Unchanged": true,
+      "originalPending": 28
+    },
+    {
+      "case": "kf8-bookmarked",
+      "retained": 64,
+      "original44Unchanged": true,
+      "originalPending": 28
+    },
+    {
+      "case": "kf8-restart-after-resize",
+      "retained": 69,
+      "original44Unchanged": true,
+      "originalPending": 28
+    },
+    {
+      "case": "long-bookmarked",
+      "retained": 55,
+      "original44Unchanged": true,
+      "originalPending": 28
+    },
+    {
+      "case": "long-offline-restart",
+      "retained": 58,
+      "original44Unchanged": true,
+      "originalPending": 28
+    },
+    {
+      "case": "long-reopen",
+      "retained": 58,
+      "original44Unchanged": true,
+      "originalPending": 28
+    },
+    {
+      "case": "normal-installed",
+      "retained": 44,
+      "original44Unchanged": true,
+      "originalPending": 28
+    },
+    {
+      "case": "offline-ocr-restart",
+      "retained": 48,
+      "original44Unchanged": true,
+      "originalPending": 28
+    },
+    {
+      "case": "stop-audit",
+      "retained": 69,
+      "original44Unchanged": true,
+      "originalPending": 28
+    }
+  ],
+  "all69ActionsUnchangedImmediatelyAcrossCompanionInstall": true,
+  "normalInstalledSha256": "129a9a82a338a2e7b5cf1abd154c729866a328295c241063fabd26e38353c270",
+  "companionInstalledSha256": "d00f1abbcbe58acecbc7627c2ee22b3771c04ad1a73fba9f3214c74f3be26e84",
+  "changedNonSignatureApkEntries": [
+    "lib/arm64-v8a/libmobi.so"
+  ],
+  "ownedAccountRetained": 25,
+  "ownedAccountPending": 0,
+  "actualPluginObjectsMatchingExactPayloadsAndCausalActions": 25,
+  "ownedActionsContainingNonAsciiValues": 5,
+  "explicitSyncNowPerformed": false,
+  "originalAccountRecoveryProved": false,
+  "originalRetained": 44,
+  "originalPending": 28,
+  "finalFilesDirectoryBytes": 5576167,
+  "beforeFirstOcrFilesDirectoryBytes": 133251,
+  "firstOcrFilesDirectoryBytes": 4251585,
+  "finalOcrCacheBytes": 41641,
+  "modelBytes": 4113088,
+  "firstCacheBytes": 5246,
+  "filesDirectoryLimit": "Logical file lengths under the application files directory only. Excludes databases, cache directory, APK, compiled code and system StorageStats.",
+  "companionRemovalFiles": [
+    "./bookfin-media/aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a/9634bd9a9fa0742f6556011a24fd56381449d8757c5f18a4efa6a7125907b0ad/.bookfin-mobi/d8211269aed55ded8302f289950936db8368b4d4d384c463b722034152f8f1d2-libmobi-0.12-v1/book.epub",
+    "./bookfin-media/aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a/9634bd9a9fa0742f6556011a24fd56381449d8757c5f18a4efa6a7125907b0ad/.bookfin-mobi/d8211269aed55ded8302f289950936db8368b4d4d384c463b722034152f8f1d2-libmobi-0.12-v1/manifest.json",
+    "./bookfin-media/aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a/9634bd9a9fa0742f6556011a24fd56381449d8757c5f18a4efa6a7125907b0ad/complete",
+    "./bookfin-media/aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a/9634bd9a9fa0742f6556011a24fd56381449d8757c5f18a4efa6a7125907b0ad/record.json"
+  ],
+  "companionRemovalBytes": 460427,
+  "endState": {
+    "signedIn": true,
+    "foreground": "Unsaved Reading bookmark dialog",
+    "ownedDownloadsRemain": 5,
+    "network": {
+      "airplane_mode_on": "1",
+      "wifi_on": "0",
+      "mobile_data": "0"
+    },
+    "musicMuted": true,
+    "uiCleanupCompleted": false,
+    "reason": "Required stop after a failed field-entry retry."
+  }
+}

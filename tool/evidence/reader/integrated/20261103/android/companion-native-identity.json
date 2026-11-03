@@ -1,0 +1,31 @@
+{
+  "installedApkSha256": "d00f1abbcbe58acecbc7627c2ee22b3771c04ad1a73fba9f3214c74f3be26e84",
+  "libraries": [
+    {
+      "entry": "lib/arm64-v8a/libmobi.so",
+      "sha256": "5c776afa7cb1df14c6ac23050304b7996619eca78d2061b6152975de3b0ab42b",
+      "apkDataOffset": 66420736,
+      "bytes": 561384,
+      "replacementMarkerInLibrary": true,
+      "executableMappingVerified": true,
+      "maps": [
+        "76b4373000-76b43ae000 r-xp 03f58000 00:44 319497                         /data/app/~~Ik8d-x-THoVydRgcrUKksw==/dev.bookfin.bookfin-dZIFFzG-PD_q7uUgAKKsEA==/base.apk",
+        "76b43b1000-76b43b3000 r--p 03f92000 00:44 319497                         /data/app/~~Ik8d-x-THoVydRgcrUKksw==/dev.bookfin.bookfin-dZIFFzG-PD_q7uUgAKKsEA==/base.apk",
+        "76b43b6000-76b43bb000 rw-p 03f93000 00:44 319497                         /data/app/~~Ik8d-x-THoVydRgcrUKksw==/dev.bookfin.bookfin-dZIFFzG-PD_q7uUgAKKsEA==/base.apk"
+      ]
+    },
+    {
+      "entry": "lib/arm64-v8a/libbookfin_mobi.so",
+      "sha256": "4c3f66a79bc3e4f85cb136f6ace79e30235d603315c4009ed835bbac8e7d0dd0",
+      "apkDataOffset": 24182784,
+      "bytes": 138752,
+      "replacementMarkerInLibrary": false,
+      "executableMappingVerified": true,
+      "maps": [
+        "76b8449000-76b846a000 r-xp 01710000 00:44 319497                         /data/app/~~Ik8d-x-THoVydRgcrUKksw==/dev.bookfin.bookfin-dZIFFzG-PD_q7uUgAKKsEA==/base.apk",
+        "76b846d000-76b846f000 r--p 01730000 00:44 319497                         /data/app/~~Ik8d-x-THoVydRgcrUKksw==/dev.bookfin.bookfin-dZIFFzG-PD_q7uUgAKKsEA==/base.apk",
+        "76b8472000-76b8473000 rw-p 01731000 00:44 319497                         /data/app/~~Ik8d-x-THoVydRgcrUKksw==/dev.bookfin.bookfin-dZIFFzG-PD_q7uUgAKKsEA==/base.apk"
+      ]
+    }
+  ]
+}

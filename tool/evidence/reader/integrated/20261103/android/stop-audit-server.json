@@ -1,0 +1,585 @@
+{
+  "case": "stop-audit",
+  "serverVersion": "12.4.0",
+  "cursor": 25,
+  "objects": [
+    {
+      "identity": "action.052422df7e9c489daa13216fa0aa1aab18a9c175.1",
+      "sequence": 1,
+      "payloadSha256": "7737ef76e85b067887ec21bc614faf705dba5520efa0c052af222742e028d5e7",
+      "action": {
+        "version": 1,
+        "account": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+        "replica": "052422df7e9c489daa13216fa0aa1aab18a9c175",
+        "sequence": 1,
+        "context": {},
+        "record": "[\"reading\",\"resumes\",\"[\\\"524a77af86a6feea9906f9e7b9a2649f:\\\",\\\"524a77af86a6feea9906f9e7b9a2649f:\\\",\\\"[null,\\\\\\\"f643cf93caa59c30042a6371e2cf8df5\\\\\\\",null,null,10000]\\\"]\"]",
+        "value": {
+          "edition": "524a77af86a6feea9906f9e7b9a2649f:",
+          "source": "524a77af86a6feea9906f9e7b9a2649f:",
+          "revision": "[null,\"f643cf93caa59c30042a6371e2cf8df5\",null,null,10000]",
+          "anchor": "{\"version\":1,\"processed\":\"7eb2490758f8b527fc65ad99661198419a345b46983a715e18b0bd069cd3f0a3\",\"original\":\"16027709b0a8b3f79d06d189e5cda463b36b921e34cfc02e965ef33fb521d4a7\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":0,\"quote\":\"The quiet garden\\nA reader opened the book beside the window.\\nThree birds crossed the pale morning sky.\\nThe next page held a map, a letter, and a promise.\\nOrigin\",\"representation\":\"bookfin-pdf-source-pages-1/pdfrx-0.9.0-pdfium-8125/bookfin-ocr-2/tesseract4android-4.9.0/tesseract-5.5.1/leptonica-1.85.0/tessdata_fast-4.1.0-eng-7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2/1f8e5200a3360a65cbc93098ae4443bab289a6cd84b31d7594cd151cf7fad82f\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "identity": "action.052422df7e9c489daa13216fa0aa1aab18a9c175.2",
+      "sequence": 2,
+      "payloadSha256": "43f9112e4e56f13f34e84d4710b88c580ef13774ce635f2ded5580b75b9ee376",
+      "action": {
+        "version": 1,
+        "account": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+        "replica": "052422df7e9c489daa13216fa0aa1aab18a9c175",
+        "sequence": 2,
+        "context": {
+          "052422df7e9c489daa13216fa0aa1aab18a9c175": 1
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"524a77af86a6feea9906f9e7b9a2649f:\\\",\\\"524a77af86a6feea9906f9e7b9a2649f:\\\",\\\"[null,\\\\\\\"f643cf93caa59c30042a6371e2cf8df5\\\\\\\",null,null,10000]\\\"]\"]",
+        "value": {
+          "edition": "524a77af86a6feea9906f9e7b9a2649f:",
+          "source": "524a77af86a6feea9906f9e7b9a2649f:",
+          "revision": "[null,\"f643cf93caa59c30042a6371e2cf8df5\",null,null,10000]",
+          "anchor": "{\"version\":1,\"processed\":\"7eb2490758f8b527fc65ad99661198419a345b46983a715e18b0bd069cd3f0a3\",\"original\":\"16027709b0a8b3f79d06d189e5cda463b36b921e34cfc02e965ef33fb521d4a7\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":145,\"quote\":\"promise.\\nOriginal pages remain available when words are unclear.\",\"representation\":\"bookfin-pdf-source-pages-1/pdfrx-0.9.0-pdfium-8125/bookfin-ocr-2/tesseract4android-4.9.0/tesseract-5.5.1/leptonica-1.85.0/tessdata_fast-4.1.0-eng-7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2/1f8e5200a3360a65cbc93098ae4443bab289a6cd84b31d7594cd151cf7fad82f\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "identity": "action.052422df7e9c489daa13216fa0aa1aab18a9c175.3",
+      "sequence": 3,
+      "payloadSha256": "a851611cea03ba813f17ffb1f3c6ae76ed593eaf7a16ab4d483bc01291fad839",
+      "action": {
+        "version": 1,
+        "account": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+        "replica": "052422df7e9c489daa13216fa0aa1aab18a9c175",
+        "sequence": 3,
+        "context": {
+          "052422df7e9c489daa13216fa0aa1aab18a9c175": 2
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"524a77af86a6feea9906f9e7b9a2649f:\\\",\\\"524a77af86a6feea9906f9e7b9a2649f:\\\",\\\"[null,\\\\\\\"f643cf93caa59c30042a6371e2cf8df5\\\\\\\",null,null,10000]\\\"]\"]",
+        "value": {
+          "edition": "524a77af86a6feea9906f9e7b9a2649f:",
+          "source": "524a77af86a6feea9906f9e7b9a2649f:",
+          "revision": "[null,\"f643cf93caa59c30042a6371e2cf8df5\",null,null,10000]",
+          "anchor": "{\"version\":1,\"processed\":\"7eb2490758f8b527fc65ad99661198419a345b46983a715e18b0bd069cd3f0a3\",\"original\":\"16027709b0a8b3f79d06d189e5cda463b36b921e34cfc02e965ef33fb521d4a7\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":0,\"quote\":\"The quiet garden\\nA reader opened the book beside the window.\\nThree birds crossed the pale morning sky.\\nThe next page held a map, a letter, and a promise.\\nOrigin\",\"representation\":\"bookfin-pdf-source-pages-1/pdfrx-0.9.0-pdfium-8125/bookfin-ocr-2/tesseract4android-4.9.0/tesseract-5.5.1/leptonica-1.85.0/tessdata_fast-4.1.0-eng-7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2/1f8e5200a3360a65cbc93098ae4443bab289a6cd84b31d7594cd151cf7fad82f\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "identity": "action.052422df7e9c489daa13216fa0aa1aab18a9c175.4",
+      "sequence": 4,
+      "payloadSha256": "5423cd2796d0f701aec991c13eefa1de93aea40b46ea09dae99dacbf3834dbc3",
+      "action": {
+        "version": 1,
+        "account": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+        "replica": "052422df7e9c489daa13216fa0aa1aab18a9c175",
+        "sequence": 4,
+        "context": {
+          "052422df7e9c489daa13216fa0aa1aab18a9c175": 3
+        },
+        "record": "[\"reading\",\"bookmarks\",\"826725d63062cd0beadeeeaddaf7f3a3\"]",
+        "value": {
+          "id": "826725d63062cd0beadeeeaddaf7f3a3",
+          "position": {
+            "edition": "524a77af86a6feea9906f9e7b9a2649f:",
+            "source": "524a77af86a6feea9906f9e7b9a2649f:",
+            "revision": "[null,\"f643cf93caa59c30042a6371e2cf8df5\",null,null,10000]",
+            "anchor": "{\"version\":1,\"processed\":\"7eb2490758f8b527fc65ad99661198419a345b46983a715e18b0bd069cd3f0a3\",\"original\":\"16027709b0a8b3f79d06d189e5cda463b36b921e34cfc02e965ef33fb521d4a7\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":0,\"quote\":\"The quiet garden\\nA reader opened the book beside the window.\\nThree birds crossed the pale morning sky.\\nThe next page held a map, a letter, and a promise.\\nOrigin\",\"representation\":\"bookfin-pdf-source-pages-1/pdfrx-0.9.0-pdfium-8125/bookfin-ocr-2/tesseract4android-4.9.0/tesseract-5.5.1/leptonica-1.85.0/tessdata_fast-4.1.0-eng-7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2/1f8e5200a3360a65cbc93098ae4443bab289a6cd84b31d7594cd151cf7fad82f\"}"
+          },
+          "createdAt": "2026-11-03T17:13:21.719580Z",
+          "title": null,
+          "note": null
+        },
+        "preserve": []
+      }
+    },
+    {
+      "identity": "action.052422df7e9c489daa13216fa0aa1aab18a9c175.5",
+      "sequence": 5,
+      "payloadSha256": "3a4a282a21fec26b31d05037576ae712c1848ed7dd9b288495c5bde24372d310",
+      "action": {
+        "version": 1,
+        "account": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+        "replica": "052422df7e9c489daa13216fa0aa1aab18a9c175",
+        "sequence": 5,
+        "context": {
+          "052422df7e9c489daa13216fa0aa1aab18a9c175": 4
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"ed86d1a55b1c2751a637a293a5478c70:\\\",\\\"ed86d1a55b1c2751a637a293a5478c70:\\\",\\\"[null,\\\\\\\"94e72eac233ad5ef3834882217f1ebe6\\\\\\\",null,null,10000]\\\"]\"]",
+        "value": {
+          "edition": "ed86d1a55b1c2751a637a293a5478c70:",
+          "source": "ed86d1a55b1c2751a637a293a5478c70:",
+          "revision": "[null,\"94e72eac233ad5ef3834882217f1ebe6\",null,null,10000]",
+          "anchor": "{\"version\":1,\"processed\":\"2b3a43210da563478e31c91b3bf89f8a829fdbbeebb9b70c243643e0543d0e5f\",\"original\":\"545e5843794bc0138fb397412bef477ad33c92935eb5babd1ccfed65ab53c54f\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":0,\"quote\":\"The quiet garden\\nA reader opened the book beside the window.\\nThree birds crossed the pale morning sky.\\nThe next page held a map, a letter, and a promise.\\nOrigin\",\"representation\":\"bookfin-pdf-source-pages-1/pdfrx-0.9.0-pdfium-8125/bookfin-ocr-2/tesseract4android-4.9.0/tesseract-5.5.1/leptonica-1.85.0/tessdata_fast-4.1.0-eng-7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2/f06d76758705a3efcada97dc41ce09e3401807c1f34ec3d7388d3a6edc1b6c5a\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "identity": "action.052422df7e9c489daa13216fa0aa1aab18a9c175.6",
+      "sequence": 6,
+      "payloadSha256": "9d66ee08be8a6e6a6d372684fbadc158e7ba606be8136bb68f0306da45ce2a0e",
+      "action": {
+        "version": 1,
+        "account": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+        "replica": "052422df7e9c489daa13216fa0aa1aab18a9c175",
+        "sequence": 6,
+        "context": {
+          "052422df7e9c489daa13216fa0aa1aab18a9c175": 5
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"ed86d1a55b1c2751a637a293a5478c70:\\\",\\\"ed86d1a55b1c2751a637a293a5478c70:\\\",\\\"[null,\\\\\\\"94e72eac233ad5ef3834882217f1ebe6\\\\\\\",null,null,10000]\\\"]\"]",
+        "value": {
+          "edition": "ed86d1a55b1c2751a637a293a5478c70:",
+          "source": "ed86d1a55b1c2751a637a293a5478c70:",
+          "revision": "[null,\"94e72eac233ad5ef3834882217f1ebe6\",null,null,10000]",
+          "anchor": "{\"version\":1,\"processed\":\"2b3a43210da563478e31c91b3bf89f8a829fdbbeebb9b70c243643e0543d0e5f\",\"original\":\"545e5843794bc0138fb397412bef477ad33c92935eb5babd1ccfed65ab53c54f\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":73,\"quote\":\"crossed the pale morning sky.\\nThe next page held a map, a letter, and a promise.\\nOriginal pages remain available when words are unclear.\\nThe quiet garden\\nA read\",\"representation\":\"bookfin-pdf-source-pages-1/pdfrx-0.9.0-pdfium-8125/bookfin-ocr-2/tesseract4android-4.9.0/tesseract-5.5.1/leptonica-1.85.0/tessdata_fast-4.1.0-eng-7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2/f06d76758705a3efcada97dc41ce09e3401807c1f34ec3d7388d3a6edc1b6c5a\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "identity": "action.052422df7e9c489daa13216fa0aa1aab18a9c175.7",
+      "sequence": 7,
+      "payloadSha256": "48b0700c61312d7508eca50cfcfbf1cc32d96bebbd3633a4963f2743b0d2f65c",
+      "action": {
+        "version": 1,
+        "account": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+        "replica": "052422df7e9c489daa13216fa0aa1aab18a9c175",
+        "sequence": 7,
+        "context": {
+          "052422df7e9c489daa13216fa0aa1aab18a9c175": 6
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"ed86d1a55b1c2751a637a293a5478c70:\\\",\\\"ed86d1a55b1c2751a637a293a5478c70:\\\",\\\"[null,\\\\\\\"94e72eac233ad5ef3834882217f1ebe6\\\\\\\",null,null,10000]\\\"]\"]",
+        "value": {
+          "edition": "ed86d1a55b1c2751a637a293a5478c70:",
+          "source": "ed86d1a55b1c2751a637a293a5478c70:",
+          "revision": "[null,\"94e72eac233ad5ef3834882217f1ebe6\",null,null,10000]",
+          "anchor": "{\"version\":1,\"processed\":\"2b3a43210da563478e31c91b3bf89f8a829fdbbeebb9b70c243643e0543d0e5f\",\"original\":\"545e5843794bc0138fb397412bef477ad33c92935eb5babd1ccfed65ab53c54f\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":300,\"quote\":\"morning sky.\\nThe next page held a map, a letter, and a promise.\\nOriginal pages remain available when words are unclear.\\nThe quiet garden\\nA reader opened the boo\",\"representation\":\"bookfin-pdf-source-pages-1/pdfrx-0.9.0-pdfium-8125/bookfin-ocr-2/tesseract4android-4.9.0/tesseract-5.5.1/leptonica-1.85.0/tessdata_fast-4.1.0-eng-7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2/f06d76758705a3efcada97dc41ce09e3401807c1f34ec3d7388d3a6edc1b6c5a\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "identity": "action.052422df7e9c489daa13216fa0aa1aab18a9c175.8",
+      "sequence": 8,
+      "payloadSha256": "e20266e5738a43bb99f4136df2aae751a17b77bbe3e5ee808e8c4dd8f96bf0a6",
+      "action": {
+        "version": 1,
+        "account": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+        "replica": "052422df7e9c489daa13216fa0aa1aab18a9c175",
+        "sequence": 8,
+        "context": {
+          "052422df7e9c489daa13216fa0aa1aab18a9c175": 7
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"ed86d1a55b1c2751a637a293a5478c70:\\\",\\\"ed86d1a55b1c2751a637a293a5478c70:\\\",\\\"[null,\\\\\\\"94e72eac233ad5ef3834882217f1ebe6\\\\\\\",null,null,10000]\\\"]\"]",
+        "value": {
+          "edition": "ed86d1a55b1c2751a637a293a5478c70:",
+          "source": "ed86d1a55b1c2751a637a293a5478c70:",
+          "revision": "[null,\"94e72eac233ad5ef3834882217f1ebe6\",null,null,10000]",
+          "anchor": "{\"version\":1,\"processed\":\"2b3a43210da563478e31c91b3bf89f8a829fdbbeebb9b70c243643e0543d0e5f\",\"original\":\"545e5843794bc0138fb397412bef477ad33c92935eb5babd1ccfed65ab53c54f\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":420,\"quote\":\"The quiet garden\\nA reader opened the book beside the window.\\nThree birds crossed the pale morning sky.\\nThe next page held a map, a letter, and a promise.\\nOrigin\",\"representation\":\"bookfin-pdf-source-pages-1/pdfrx-0.9.0-pdfium-8125/bookfin-ocr-2/tesseract4android-4.9.0/tesseract-5.5.1/leptonica-1.85.0/tessdata_fast-4.1.0-eng-7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2/f06d76758705a3efcada97dc41ce09e3401807c1f34ec3d7388d3a6edc1b6c5a\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "identity": "action.052422df7e9c489daa13216fa0aa1aab18a9c175.9",
+      "sequence": 9,
+      "payloadSha256": "7bf79322f25e7103ada739a51757c341197634ef7dbc39edde952abe65f218b9",
+      "action": {
+        "version": 1,
+        "account": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+        "replica": "052422df7e9c489daa13216fa0aa1aab18a9c175",
+        "sequence": 9,
+        "context": {
+          "052422df7e9c489daa13216fa0aa1aab18a9c175": 8
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"ed86d1a55b1c2751a637a293a5478c70:\\\",\\\"ed86d1a55b1c2751a637a293a5478c70:\\\",\\\"[null,\\\\\\\"94e72eac233ad5ef3834882217f1ebe6\\\\\\\",null,null,10000]\\\"]\"]",
+        "value": {
+          "edition": "ed86d1a55b1c2751a637a293a5478c70:",
+          "source": "ed86d1a55b1c2751a637a293a5478c70:",
+          "revision": "[null,\"94e72eac233ad5ef3834882217f1ebe6\",null,null,10000]",
+          "anchor": "{\"version\":1,\"processed\":\"2b3a43210da563478e31c91b3bf89f8a829fdbbeebb9b70c243643e0543d0e5f\",\"original\":\"545e5843794bc0138fb397412bef477ad33c92935eb5babd1ccfed65ab53c54f\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":532,\"quote\":\"page held a map, a letter, and a promise.\\nOriginal pages remain available when words are unclear.\\nThe quiet garden\\nA reader opened the book beside the window.\\nT\",\"representation\":\"bookfin-pdf-source-pages-1/pdfrx-0.9.0-pdfium-8125/bookfin-ocr-2/tesseract4android-4.9.0/tesseract-5.5.1/leptonica-1.85.0/tessdata_fast-4.1.0-eng-7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2/f06d76758705a3efcada97dc41ce09e3401807c1f34ec3d7388d3a6edc1b6c5a\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "identity": "action.052422df7e9c489daa13216fa0aa1aab18a9c175.10",
+      "sequence": 10,
+      "payloadSha256": "75245d2681f5ce9d1be752a2f0f51029fb8e4b31fc3f8279d97cf0351d5ab9e7",
+      "action": {
+        "version": 1,
+        "account": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+        "replica": "052422df7e9c489daa13216fa0aa1aab18a9c175",
+        "sequence": 10,
+        "context": {
+          "052422df7e9c489daa13216fa0aa1aab18a9c175": 9
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"ed86d1a55b1c2751a637a293a5478c70:\\\",\\\"ed86d1a55b1c2751a637a293a5478c70:\\\",\\\"[null,\\\\\\\"94e72eac233ad5ef3834882217f1ebe6\\\\\\\",null,null,10000]\\\"]\"]",
+        "value": {
+          "edition": "ed86d1a55b1c2751a637a293a5478c70:",
+          "source": "ed86d1a55b1c2751a637a293a5478c70:",
+          "revision": "[null,\"94e72eac233ad5ef3834882217f1ebe6\",null,null,10000]",
+          "anchor": "{\"version\":1,\"processed\":\"2b3a43210da563478e31c91b3bf89f8a829fdbbeebb9b70c243643e0543d0e5f\",\"original\":\"545e5843794bc0138fb397412bef477ad33c92935eb5babd1ccfed65ab53c54f\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":611,\"quote\":\"words are unclear.\\nThe quiet garden\\nA reader opened the book beside the window.\\nThree birds crossed the pale morning sky.\\nThe next page held a map, a letter, an\",\"representation\":\"bookfin-pdf-source-pages-1/pdfrx-0.9.0-pdfium-8125/bookfin-ocr-2/tesseract4android-4.9.0/tesseract-5.5.1/leptonica-1.85.0/tessdata_fast-4.1.0-eng-7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2/f06d76758705a3efcada97dc41ce09e3401807c1f34ec3d7388d3a6edc1b6c5a\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "identity": "action.052422df7e9c489daa13216fa0aa1aab18a9c175.11",
+      "sequence": 11,
+      "payloadSha256": "107d3bacd7c01b880a8ba61ce75fd0989bf5924e97daad12324627274e0ede3a",
+      "action": {
+        "version": 1,
+        "account": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+        "replica": "052422df7e9c489daa13216fa0aa1aab18a9c175",
+        "sequence": 11,
+        "context": {
+          "052422df7e9c489daa13216fa0aa1aab18a9c175": 10
+        },
+        "record": "[\"reading\",\"bookmarks\",\"e9e2314495594e4ab679f28c62ef58b7\"]",
+        "value": {
+          "id": "e9e2314495594e4ab679f28c62ef58b7",
+          "position": {
+            "edition": "ed86d1a55b1c2751a637a293a5478c70:",
+            "source": "ed86d1a55b1c2751a637a293a5478c70:",
+            "revision": "[null,\"94e72eac233ad5ef3834882217f1ebe6\",null,null,10000]",
+            "anchor": "{\"version\":1,\"processed\":\"2b3a43210da563478e31c91b3bf89f8a829fdbbeebb9b70c243643e0543d0e5f\",\"original\":\"545e5843794bc0138fb397412bef477ad33c92935eb5babd1ccfed65ab53c54f\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":611,\"quote\":\"words are unclear.\\nThe quiet garden\\nA reader opened the book beside the window.\\nThree birds crossed the pale morning sky.\\nThe next page held a map, a letter, an\",\"representation\":\"bookfin-pdf-source-pages-1/pdfrx-0.9.0-pdfium-8125/bookfin-ocr-2/tesseract4android-4.9.0/tesseract-5.5.1/leptonica-1.85.0/tessdata_fast-4.1.0-eng-7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2/f06d76758705a3efcada97dc41ce09e3401807c1f34ec3d7388d3a6edc1b6c5a\"}"
+          },
+          "createdAt": "2026-11-03T17:22:39.736013Z",
+          "title": null,
+          "note": null
+        },
+        "preserve": []
+      }
+    },
+    {
+      "identity": "action.052422df7e9c489daa13216fa0aa1aab18a9c175.12",
+      "sequence": 12,
+      "payloadSha256": "810c7d0abd86ca4af47bd9b73b422d1e629b28656cb1c618c5ea950fafc41f56",
+      "action": {
+        "version": 1,
+        "account": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+        "replica": "052422df7e9c489daa13216fa0aa1aab18a9c175",
+        "sequence": 12,
+        "context": {
+          "052422df7e9c489daa13216fa0aa1aab18a9c175": 11
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"ed86d1a55b1c2751a637a293a5478c70:\\\",\\\"ed86d1a55b1c2751a637a293a5478c70:\\\",\\\"[null,\\\\\\\"94e72eac233ad5ef3834882217f1ebe6\\\\\\\",null,null,10000]\\\"]\"]",
+        "value": {
+          "edition": "ed86d1a55b1c2751a637a293a5478c70:",
+          "source": "ed86d1a55b1c2751a637a293a5478c70:",
+          "revision": "[null,\"94e72eac233ad5ef3834882217f1ebe6\",null,null,10000]",
+          "anchor": "{\"version\":1,\"processed\":\"2b3a43210da563478e31c91b3bf89f8a829fdbbeebb9b70c243643e0543d0e5f\",\"original\":\"545e5843794bc0138fb397412bef477ad33c92935eb5babd1ccfed65ab53c54f\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":0,\"quote\":\"The quiet garden\\nA reader opened the book beside the window.\\nThree birds crossed the pale morning sky.\\nThe next page held a map, a letter, and a promise.\\nOrigin\",\"representation\":\"bookfin-pdf-source-pages-1/pdfrx-0.9.0-pdfium-8125/bookfin-ocr-2/tesseract4android-4.9.0/tesseract-5.5.1/leptonica-1.85.0/tessdata_fast-4.1.0-eng-7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2/f06d76758705a3efcada97dc41ce09e3401807c1f34ec3d7388d3a6edc1b6c5a\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "identity": "action.052422df7e9c489daa13216fa0aa1aab18a9c175.13",
+      "sequence": 13,
+      "payloadSha256": "f99e50023f31021f12ff74ed4f4f17630ea7166baa9237dcfea2d053dcba33c8",
+      "action": {
+        "version": 1,
+        "account": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+        "replica": "052422df7e9c489daa13216fa0aa1aab18a9c175",
+        "sequence": 13,
+        "context": {
+          "052422df7e9c489daa13216fa0aa1aab18a9c175": 12
+        },
+        "record": "[\"reading\",\"bookmarks\",\"e9e2314495594e4ab679f28c62ef58b7\"]",
+        "value": {
+          "id": "e9e2314495594e4ab679f28c62ef58b7",
+          "position": {
+            "edition": "ed86d1a55b1c2751a637a293a5478c70:",
+            "source": "ed86d1a55b1c2751a637a293a5478c70:",
+            "revision": "[null,\"94e72eac233ad5ef3834882217f1ebe6\",null,null,10000]",
+            "anchor": "{\"version\":1,\"processed\":\"2b3a43210da563478e31c91b3bf89f8a829fdbbeebb9b70c243643e0543d0e5f\",\"original\":\"545e5843794bc0138fb397412bef477ad33c92935eb5babd1ccfed65ab53c54f\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":611,\"quote\":\"words are unclear.\\nThe quiet garden\\nA reader opened the book beside the window.\\nThree birds crossed the pale morning sky.\\nThe next page held a map, a letter, an\",\"representation\":\"bookfin-pdf-source-pages-1/pdfrx-0.9.0-pdfium-8125/bookfin-ocr-2/tesseract4android-4.9.0/tesseract-5.5.1/leptonica-1.85.0/tessdata_fast-4.1.0-eng-7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2/f06d76758705a3efcada97dc41ce09e3401807c1f34ec3d7388d3a6edc1b6c5a\"}"
+          },
+          "createdAt": "2026-11-03T17:22:39.736013Z",
+          "title": "“Café 中文”",
+          "note": "Offline English recognition: “déjà vu”, 中文, 🐟."
+        },
+        "preserve": []
+      }
+    },
+    {
+      "identity": "action.052422df7e9c489daa13216fa0aa1aab18a9c175.14",
+      "sequence": 14,
+      "payloadSha256": "595834c2eea1ac295d33b298cbe28ce938cdac42faba7ca6e73818d6af17e27c",
+      "action": {
+        "version": 1,
+        "account": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+        "replica": "052422df7e9c489daa13216fa0aa1aab18a9c175",
+        "sequence": 14,
+        "context": {
+          "052422df7e9c489daa13216fa0aa1aab18a9c175": 13
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"ed86d1a55b1c2751a637a293a5478c70:\\\",\\\"ed86d1a55b1c2751a637a293a5478c70:\\\",\\\"[null,\\\\\\\"94e72eac233ad5ef3834882217f1ebe6\\\\\\\",null,null,10000]\\\"]\"]",
+        "value": {
+          "edition": "ed86d1a55b1c2751a637a293a5478c70:",
+          "source": "ed86d1a55b1c2751a637a293a5478c70:",
+          "revision": "[null,\"94e72eac233ad5ef3834882217f1ebe6\",null,null,10000]",
+          "anchor": "{\"version\":1,\"processed\":\"2b3a43210da563478e31c91b3bf89f8a829fdbbeebb9b70c243643e0543d0e5f\",\"original\":\"545e5843794bc0138fb397412bef477ad33c92935eb5babd1ccfed65ab53c54f\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":611,\"quote\":\"words are unclear.\\nThe quiet garden\\nA reader opened the book beside the window.\\nThree birds crossed the pale morning sky.\\nThe next page held a map, a letter, an\",\"representation\":\"bookfin-pdf-source-pages-1/pdfrx-0.9.0-pdfium-8125/bookfin-ocr-2/tesseract4android-4.9.0/tesseract-5.5.1/leptonica-1.85.0/tessdata_fast-4.1.0-eng-7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2/f06d76758705a3efcada97dc41ce09e3401807c1f34ec3d7388d3a6edc1b6c5a\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "identity": "action.052422df7e9c489daa13216fa0aa1aab18a9c175.15",
+      "sequence": 15,
+      "payloadSha256": "8d449db71e50927ba28fb1b0b94e5ad83ad1b3e9d306baf3a0e060a991464adb",
+      "action": {
+        "version": 1,
+        "account": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+        "replica": "052422df7e9c489daa13216fa0aa1aab18a9c175",
+        "sequence": 15,
+        "context": {
+          "052422df7e9c489daa13216fa0aa1aab18a9c175": 14
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"7f499e405fb4a1e7d45b0a48455af2c0:\\\",\\\"7f499e405fb4a1e7d45b0a48455af2c0:\\\",\\\"[null,\\\\\\\"95bb6da0e577215e2ccbde1b68438453\\\\\\\",null,null,10000]\\\"]\"]",
+        "value": {
+          "edition": "7f499e405fb4a1e7d45b0a48455af2c0:",
+          "source": "7f499e405fb4a1e7d45b0a48455af2c0:",
+          "revision": "[null,\"95bb6da0e577215e2ccbde1b68438453\",null,null,10000]",
+          "anchor": "{\"version\":1,\"processed\":\"8148ddfbd34366ebe641eda000849c5740be04740fb15de5062587db74418fb9\",\"original\":\"aabcc4e96d10424532ab651369f3f14df60aff086d13178f605e5f731c4a9a55\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":0,\"quote\":\"re upon a midnight dreary. while I pondered, weak and weary,\\nOver many a quaint and curious volume of forgotten lore—\\nWhile I nodded, nearly napping, suddenly t\",\"representation\":\"bookfin-pdf-source-pages-1/pdfrx-0.9.0-pdfium-8125/bookfin-ocr-2/tesseract4android-4.9.0/tesseract-5.5.1/leptonica-1.85.0/tessdata_fast-4.1.0-eng-7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2/0ccb5cfa71f228edc9d9bfdee172cd6317a285c3d9e094bba834d59b86a23327\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "identity": "action.052422df7e9c489daa13216fa0aa1aab18a9c175.16",
+      "sequence": 16,
+      "payloadSha256": "4902ace9de8268d0cc7115626e09e81f3f4c77cb761d79e3e3aedf39ac82be67",
+      "action": {
+        "version": 1,
+        "account": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+        "replica": "052422df7e9c489daa13216fa0aa1aab18a9c175",
+        "sequence": 16,
+        "context": {
+          "052422df7e9c489daa13216fa0aa1aab18a9c175": 15
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"5956cf0120ebdfb08556912bab5639e8:\\\",\\\"5956cf0120ebdfb08556912bab5639e8:\\\",\\\"[null,\\\\\\\"39809f2785fcffe6bb64b36050ae8b49\\\\\\\",null,null,10000]\\\"]\"]",
+        "value": {
+          "edition": "5956cf0120ebdfb08556912bab5639e8:",
+          "source": "5956cf0120ebdfb08556912bab5639e8:",
+          "revision": "[null,\"39809f2785fcffe6bb64b36050ae8b49\",null,null,10000]",
+          "anchor": "{\"version\":1,\"processed\":\"c179d22a95785b282e8a64e177b03313e2b2107772e26c4a05265ca206494c14\",\"original\":\"7edfa36f57337ceeb7af6c58b87b68e6ebc25dfb0200593e415150a5d2052c06\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":0,\"quote\":\"This page has pixels, not a PDF text layer.\",\"representation\":\"bookfin-pdf-source-pages-1/pdfrx-0.9.0-pdfium-8125/bookfin-ocr-2/tesseract4android-4.9.0/tesseract-5.5.1/leptonica-1.85.0/tessdata_fast-4.1.0-eng-7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2/b6275ffa30fb621c9abaab4c58046d45206770b820dd0781a31abef31639b897\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "identity": "action.052422df7e9c489daa13216fa0aa1aab18a9c175.17",
+      "sequence": 17,
+      "payloadSha256": "8813443c429ba010101b97fe17b79475f9f9ab93d1535fb17e24c8fa8bd4515c",
+      "action": {
+        "version": 1,
+        "account": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+        "replica": "052422df7e9c489daa13216fa0aa1aab18a9c175",
+        "sequence": 17,
+        "context": {
+          "052422df7e9c489daa13216fa0aa1aab18a9c175": 16
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"6e06196e2d4cc51d3d454b7df5888409:\\\",\\\"6e06196e2d4cc51d3d454b7df5888409:\\\",\\\"[null,\\\\\\\"7fba67a066a0b50d2fbda63dec9e4c35\\\\\\\",null,null,null]\\\"]\"]",
+        "value": {
+          "edition": "6e06196e2d4cc51d3d454b7df5888409:",
+          "source": "6e06196e2d4cc51d3d454b7df5888409:",
+          "revision": "[null,\"7fba67a066a0b50d2fbda63dec9e4c35\",null,null,null]",
+          "anchor": "{\"version\":1,\"processed\":\"3d0b0318cf5d0455722a2b8ccf93ac5ec0be08e0c198a831d41d4990be1f10d7\",\"original\":\"d8211269aed55ded8302f289950936db8368b4d4d384c463b722034152f8f1d2\",\"policy\":\"bookfin-mobi-epub-1-libmobi-0.12/bookfin-passive-epub-1\",\"engine\":\"epubjs-0.3.93-bookfin.1\",\"cfi\":\"epubcfi(/6/2!/4/2[calibre_pb_0]/2/1:0)\",\"resource\":\"OEBPS/part00000.html\",\"quote\":\"[Unsupported image]\\n  \\n\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "identity": "action.052422df7e9c489daa13216fa0aa1aab18a9c175.18",
+      "sequence": 18,
+      "payloadSha256": "056c87ec89d079ce71f0ffe6a8e6e393eff160ab32118a0796d306220e80c673",
+      "action": {
+        "version": 1,
+        "account": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+        "replica": "052422df7e9c489daa13216fa0aa1aab18a9c175",
+        "sequence": 18,
+        "context": {
+          "052422df7e9c489daa13216fa0aa1aab18a9c175": 17
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"6e06196e2d4cc51d3d454b7df5888409:\\\",\\\"6e06196e2d4cc51d3d454b7df5888409:\\\",\\\"[null,\\\\\\\"7fba67a066a0b50d2fbda63dec9e4c35\\\\\\\",null,null,null]\\\"]\"]",
+        "value": {
+          "edition": "6e06196e2d4cc51d3d454b7df5888409:",
+          "source": "6e06196e2d4cc51d3d454b7df5888409:",
+          "revision": "[null,\"7fba67a066a0b50d2fbda63dec9e4c35\",null,null,null]",
+          "anchor": "{\"version\":1,\"processed\":\"3d0b0318cf5d0455722a2b8ccf93ac5ec0be08e0c198a831d41d4990be1f10d7\",\"original\":\"d8211269aed55ded8302f289950936db8368b4d4d384c463b722034152f8f1d2\",\"policy\":\"bookfin-mobi-epub-1-libmobi-0.12/bookfin-passive-epub-1\",\"engine\":\"epubjs-0.3.93-bookfin.1\",\"cfi\":\"epubcfi(/6/10!/4/2[pgepubid00003]/1:0)\",\"resource\":\"OEBPS/part00004.html\",\"quote\":\"\\nCHAPTER I.\\nDown the Rabbit-Hole\\n\\nAlice was beginning to get very tired of sitting by her sister on the bank, and\\nof hav\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "identity": "action.052422df7e9c489daa13216fa0aa1aab18a9c175.19",
+      "sequence": 19,
+      "payloadSha256": "ac1ed1521c5c732db187f7fbf81e5e05bfced35fb8c72ecb707d3cfded755e83",
+      "action": {
+        "version": 1,
+        "account": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+        "replica": "052422df7e9c489daa13216fa0aa1aab18a9c175",
+        "sequence": 19,
+        "context": {
+          "052422df7e9c489daa13216fa0aa1aab18a9c175": 18
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"6e06196e2d4cc51d3d454b7df5888409:\\\",\\\"6e06196e2d4cc51d3d454b7df5888409:\\\",\\\"[null,\\\\\\\"7fba67a066a0b50d2fbda63dec9e4c35\\\\\\\",null,null,null]\\\"]\"]",
+        "value": {
+          "edition": "6e06196e2d4cc51d3d454b7df5888409:",
+          "source": "6e06196e2d4cc51d3d454b7df5888409:",
+          "revision": "[null,\"7fba67a066a0b50d2fbda63dec9e4c35\",null,null,null]",
+          "anchor": "{\"version\":1,\"processed\":\"3d0b0318cf5d0455722a2b8ccf93ac5ec0be08e0c198a831d41d4990be1f10d7\",\"original\":\"d8211269aed55ded8302f289950936db8368b4d4d384c463b722034152f8f1d2\",\"policy\":\"bookfin-mobi-epub-1-libmobi-0.12/bookfin-passive-epub-1\",\"engine\":\"epubjs-0.3.93-bookfin.1\",\"cfi\":\"epubcfi(/6/10!/4/2[pgepubid00003]/6/1:83)\",\"resource\":\"OEBPS/part00004.html\",\"quote\":\" her feel very sleepy and stupid), whether the pleasure of making a\\ndaisy-chain would be worth the trouble of getting up\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "identity": "action.052422df7e9c489daa13216fa0aa1aab18a9c175.20",
+      "sequence": 20,
+      "payloadSha256": "aa41efa49c1c245423ae39bdd32a29a228666e7223af568b7f2ac3b5383c0a81",
+      "action": {
+        "version": 1,
+        "account": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+        "replica": "052422df7e9c489daa13216fa0aa1aab18a9c175",
+        "sequence": 20,
+        "context": {
+          "052422df7e9c489daa13216fa0aa1aab18a9c175": 19
+        },
+        "record": "[\"reading\",\"bookmarks\",\"038fb2ebc63cdef5162393c1fa08f84d\"]",
+        "value": {
+          "id": "038fb2ebc63cdef5162393c1fa08f84d",
+          "position": {
+            "edition": "6e06196e2d4cc51d3d454b7df5888409:",
+            "source": "6e06196e2d4cc51d3d454b7df5888409:",
+            "revision": "[null,\"7fba67a066a0b50d2fbda63dec9e4c35\",null,null,null]",
+            "anchor": "{\"version\":1,\"processed\":\"3d0b0318cf5d0455722a2b8ccf93ac5ec0be08e0c198a831d41d4990be1f10d7\",\"original\":\"d8211269aed55ded8302f289950936db8368b4d4d384c463b722034152f8f1d2\",\"policy\":\"bookfin-mobi-epub-1-libmobi-0.12/bookfin-passive-epub-1\",\"engine\":\"epubjs-0.3.93-bookfin.1\",\"cfi\":\"epubcfi(/6/10!/4/2[pgepubid00003]/6/1:83)\",\"resource\":\"OEBPS/part00004.html\",\"quote\":\" her feel very sleepy and stupid), whether the pleasure of making a\\ndaisy-chain would be worth the trouble of getting up\"}"
+          },
+          "createdAt": "2026-11-03T17:34:00.565772Z",
+          "title": null,
+          "note": null
+        },
+        "preserve": []
+      }
+    },
+    {
+      "identity": "action.052422df7e9c489daa13216fa0aa1aab18a9c175.21",
+      "sequence": 21,
+      "payloadSha256": "912f59a3bb6e361e9dc51c3b6198a06a95e04d25f5e5e0d6f42062b74b7896e9",
+      "action": {
+        "version": 1,
+        "account": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+        "replica": "052422df7e9c489daa13216fa0aa1aab18a9c175",
+        "sequence": 21,
+        "context": {
+          "052422df7e9c489daa13216fa0aa1aab18a9c175": 20
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"6e06196e2d4cc51d3d454b7df5888409:\\\",\\\"6e06196e2d4cc51d3d454b7df5888409:\\\",\\\"[null,\\\\\\\"7fba67a066a0b50d2fbda63dec9e4c35\\\\\\\",null,null,null]\\\"]\"]",
+        "value": {
+          "edition": "6e06196e2d4cc51d3d454b7df5888409:",
+          "source": "6e06196e2d4cc51d3d454b7df5888409:",
+          "revision": "[null,\"7fba67a066a0b50d2fbda63dec9e4c35\",null,null,null]",
+          "anchor": "{\"version\":1,\"processed\":\"3d0b0318cf5d0455722a2b8ccf93ac5ec0be08e0c198a831d41d4990be1f10d7\",\"original\":\"d8211269aed55ded8302f289950936db8368b4d4d384c463b722034152f8f1d2\",\"policy\":\"bookfin-mobi-epub-1-libmobi-0.12/bookfin-passive-epub-1\",\"engine\":\"epubjs-0.3.93-bookfin.1\",\"cfi\":\"epubcfi(/6/10!/4/2[pgepubid00003]/1:0)\",\"resource\":\"OEBPS/part00004.html\",\"quote\":\"\\nCHAPTER I.\\nDown the Rabbit-Hole\\n\\nAlice was beginning to get very tired of sitting by her sister on the bank, and\\nof hav\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "identity": "action.052422df7e9c489daa13216fa0aa1aab18a9c175.22",
+      "sequence": 22,
+      "payloadSha256": "3ceff248c13ea164f8fa43da52cfe79e88d46acbd207cd94a8b3d7994dab3770",
+      "action": {
+        "version": 1,
+        "account": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+        "replica": "052422df7e9c489daa13216fa0aa1aab18a9c175",
+        "sequence": 22,
+        "context": {
+          "052422df7e9c489daa13216fa0aa1aab18a9c175": 21
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"6e06196e2d4cc51d3d454b7df5888409:\\\",\\\"6e06196e2d4cc51d3d454b7df5888409:\\\",\\\"[null,\\\\\\\"7fba67a066a0b50d2fbda63dec9e4c35\\\\\\\",null,null,null]\\\"]\"]",
+        "value": {
+          "edition": "6e06196e2d4cc51d3d454b7df5888409:",
+          "source": "6e06196e2d4cc51d3d454b7df5888409:",
+          "revision": "[null,\"7fba67a066a0b50d2fbda63dec9e4c35\",null,null,null]",
+          "anchor": "{\"version\":1,\"processed\":\"3d0b0318cf5d0455722a2b8ccf93ac5ec0be08e0c198a831d41d4990be1f10d7\",\"original\":\"d8211269aed55ded8302f289950936db8368b4d4d384c463b722034152f8f1d2\",\"policy\":\"bookfin-mobi-epub-1-libmobi-0.12/bookfin-passive-epub-1\",\"engine\":\"epubjs-0.3.93-bookfin.1\",\"cfi\":\"epubcfi(/6/10!/4/2[pgepubid00003]/4/1:260)\",\"resource\":\"OEBPS/part00004.html\",\"quote\":\" Alice “without pictures or conversations?”\\n\\n\\nSo she was considering in her own mind (as well as she could, for the hot \"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "identity": "action.052422df7e9c489daa13216fa0aa1aab18a9c175.23",
+      "sequence": 23,
+      "payloadSha256": "d56d122e554206315c583d64a017caa9e5241cb883ac81778db111e9df7c7614",
+      "action": {
+        "version": 1,
+        "account": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+        "replica": "052422df7e9c489daa13216fa0aa1aab18a9c175",
+        "sequence": 23,
+        "context": {
+          "052422df7e9c489daa13216fa0aa1aab18a9c175": 22
+        },
+        "record": "[\"reading\",\"bookmarks\",\"877f0b8021ecf86f201784c59f28eb89\"]",
+        "value": {
+          "id": "877f0b8021ecf86f201784c59f28eb89",
+          "position": {
+            "edition": "6e06196e2d4cc51d3d454b7df5888409:",
+            "source": "6e06196e2d4cc51d3d454b7df5888409:",
+            "revision": "[null,\"7fba67a066a0b50d2fbda63dec9e4c35\",null,null,null]",
+            "anchor": "{\"version\":1,\"processed\":\"3d0b0318cf5d0455722a2b8ccf93ac5ec0be08e0c198a831d41d4990be1f10d7\",\"original\":\"d8211269aed55ded8302f289950936db8368b4d4d384c463b722034152f8f1d2\",\"policy\":\"bookfin-mobi-epub-1-libmobi-0.12/bookfin-passive-epub-1\",\"engine\":\"epubjs-0.3.93-bookfin.1\",\"cfi\":\"epubcfi(/6/10!/4/2[pgepubid00003]/4/1:260)\",\"resource\":\"OEBPS/part00004.html\",\"quote\":\" Alice “without pictures or conversations?”\\n\\n\\nSo she was considering in her own mind (as well as she could, for the hot \"}"
+          },
+          "createdAt": "2026-11-03T17:35:19.598798Z",
+          "title": null,
+          "note": null
+        },
+        "preserve": []
+      }
+    },
+    {
+      "identity": "action.052422df7e9c489daa13216fa0aa1aab18a9c175.24",
+      "sequence": 24,
+      "payloadSha256": "1e84d9b42d923f271fe34b49c4b937c28506f5e6a7949353e846c266b2064715",
+      "action": {
+        "version": 1,
+        "account": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+        "replica": "052422df7e9c489daa13216fa0aa1aab18a9c175",
+        "sequence": 24,
+        "context": {
+          "052422df7e9c489daa13216fa0aa1aab18a9c175": 23
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"6e06196e2d4cc51d3d454b7df5888409:\\\",\\\"6e06196e2d4cc51d3d454b7df5888409:\\\",\\\"[null,\\\\\\\"7fba67a066a0b50d2fbda63dec9e4c35\\\\\\\",null,null,null]\\\"]\"]",
+        "value": {
+          "edition": "6e06196e2d4cc51d3d454b7df5888409:",
+          "source": "6e06196e2d4cc51d3d454b7df5888409:",
+          "revision": "[null,\"7fba67a066a0b50d2fbda63dec9e4c35\",null,null,null]",
+          "anchor": "{\"version\":1,\"processed\":\"3d0b0318cf5d0455722a2b8ccf93ac5ec0be08e0c198a831d41d4990be1f10d7\",\"original\":\"d8211269aed55ded8302f289950936db8368b4d4d384c463b722034152f8f1d2\",\"policy\":\"bookfin-mobi-epub-1-libmobi-0.12/bookfin-passive-epub-1\",\"engine\":\"epubjs-0.3.93-bookfin.1\",\"cfi\":\"epubcfi(/6/10!/4/2[pgepubid00003]/8/5:141)\",\"resource\":\"OEBPS/part00004.html\",\"quote\":\" to\\nher that she ought to have wondered at this, but at the time it all seemed\\nquite natural); but when the Rabbit actua\"}"
+        },
+        "preserve": []
+      }
+    },
+    {
+      "identity": "action.052422df7e9c489daa13216fa0aa1aab18a9c175.25",
+      "sequence": 25,
+      "payloadSha256": "e9d4fef274a597a863ae43b4d32b23d3c36040317e780992989dee5dd714cd84",
+      "action": {
+        "version": 1,
+        "account": "aca94de3355130b575c81220e89ee874f44ef65ef5032c865fda6b9f0b1bdb6a",
+        "replica": "052422df7e9c489daa13216fa0aa1aab18a9c175",
+        "sequence": 25,
+        "context": {
+          "052422df7e9c489daa13216fa0aa1aab18a9c175": 24
+        },
+        "record": "[\"reading\",\"resumes\",\"[\\\"6e06196e2d4cc51d3d454b7df5888409:\\\",\\\"6e06196e2d4cc51d3d454b7df5888409:\\\",\\\"[null,\\\\\\\"7fba67a066a0b50d2fbda63dec9e4c35\\\\\\\",null,null,null]\\\"]\"]",
+        "value": {
+          "edition": "6e06196e2d4cc51d3d454b7df5888409:",
+          "source": "6e06196e2d4cc51d3d454b7df5888409:",
+          "revision": "[null,\"7fba67a066a0b50d2fbda63dec9e4c35\",null,null,null]",
+          "anchor": "{\"version\":1,\"processed\":\"3d0b0318cf5d0455722a2b8ccf93ac5ec0be08e0c198a831d41d4990be1f10d7\",\"original\":\"d8211269aed55ded8302f289950936db8368b4d4d384c463b722034152f8f1d2\",\"policy\":\"bookfin-mobi-epub-1-libmobi-0.12/bookfin-passive-epub-1\",\"engine\":\"epubjs-0.3.93-bookfin.1\",\"cfi\":\"epubcfi(/6/10!/4/2[pgepubid00003]/4/1:260)\",\"resource\":\"OEBPS/part00004.html\",\"quote\":\" Alice “without pictures or conversations?”\\n\\n\\nSo she was considering in her own mind (as well as she could, for the hot \"}"
+        },
+        "preserve": []
+      }
+    }
+  ]
+}

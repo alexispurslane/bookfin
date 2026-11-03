@@ -11,3 +11,12 @@ The companion changes only lib/arm64-v8a/libmobi.so; modified host library conve
 artifacts.json binds both APKs and matching source archive. Source export also includes pinned OCR/native source, selected model/license, libmobi source and build/terms documents. This is preparation, not qualified distribution approval.
 
 Actual Android OCR, corrected KF8 visible-position restoration, and Unicode sync acceptance remain to be performed. Preserve the device's existing44retained actions. The earlier fixture account/server was deleted during cleanup: a new account's successful sync cannot establish recovery of the old account's28pending actions. Do not erase, rewrite or relabel those records. Fresh-app-install OCR acceptance must not be claimed from an in-place update.
+
+## Subsequent bounded Android evidence
+
+The exclusive November 3 lane recorded actual OCR, exact Alice passage restoration, companion conversion, and new-account Unicode background sync.
+See `android/README.md` and `docs/evidence/reader/android-combined-20261103.md` for observed results and exact limitations.
+All original 44 actions remain unchanged, including 28 still pending. New-account plugin readback matches 25 actions, with none pending.
+Explicit Sync now, fresh-install OCR, and several OCR lifecycle cases remain unverified.
+The failed field-entry recovery required a stop before device cleanup. Host cleanup completed, but sign-out, close, downloads, and networking restoration remain unfinished.
+This evidence does not close any ticket or establish overall acceptance.

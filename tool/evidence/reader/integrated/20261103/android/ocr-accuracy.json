@@ -1,0 +1,41 @@
+[
+  {
+    "originalSha256": "7edfa36f57337ceeb7af6c58b87b68e6ebc25dfb0200593e415150a5d2052c06",
+    "recognizedText": "This page has pixels, not a PDF text layer.",
+    "cacheBytes": 1488,
+    "cacheSha256": "07219274531b710ed890bf22c1a7d175bb8f727d93a84ffeeb43dafd903e59c8"
+  },
+  {
+    "originalSha256": "16027709b0a8b3f79d06d189e5cda463b36b921e34cfc02e965ef33fb521d4a7",
+    "recognizedText": "The quiet garden A reader opened the book beside the window. Three birds crossed the pale morning sky. The next page held a map, a letter, and a promise. Original pages remain available when words are unclear.",
+    "cacheBytes": 5246,
+    "cacheSha256": "6a3c3e7ee00d07927b9e23d32a4a6a0baa36950893cfb3e45b60944319b452f0",
+    "label": "Generated English",
+    "referenceWords": 37,
+    "wordEdits": 0,
+    "characterEdits": 0,
+    "comparison": "Unit-cost insertion/deletion/substitution. Whitespace folded. Punctuation and case preserved."
+  },
+  {
+    "originalSha256": "545e5843794bc0138fb397412bef477ad33c92935eb5babd1ccfed65ab53c54f",
+    "recognizedText": "The quiet garden A reader opened the book beside the window. Three birds crossed the pale morning sky. The next page held a map, a letter, and a promise. Original pages remain available when words are unclear. The quiet garden A reader opened the book beside the window. Three birds crossed the pale morning sky. The next page held a map, a letter, and a promise. Original pages remain available when words are unclear. The quiet garden A reader opened the book beside the window. Three birds crossed the pale morning sky. The next page held a map, a letter, and a promise. Original pages remain available when words are unclear. The quiet garden A reader opened the book beside the window. Three birds crossed the pale morning sky. The next page held a map, a letter, and a promise. Original pages remain available when words are unclear. The quiet garden A reader opened the book beside the window. Three birds crossed the pale morning sky. The next page held a map, a letter, and a promise. Original pages remain available when words are unclear. The quiet garden A reader opened the book beside the window. Three birds crossed the pale morning sky. The next page held a map, a letter, and a promise. Original pages remain available when words are unclear.",
+    "cacheBytes": 30741,
+    "cacheSha256": "922193146cc129dccc93d73a799c237add69151aef34ed215522e28bf244f7da",
+    "label": "Six unchanged English image draws",
+    "referenceWords": 222,
+    "wordEdits": 0,
+    "characterEdits": 0,
+    "comparison": "Unit-cost insertion/deletion/substitution. Whitespace folded. Punctuation and case preserved."
+  },
+  {
+    "originalSha256": "aabcc4e96d10424532ab651369f3f14df60aff086d13178f605e5f731c4a9a55",
+    "recognizedText": "re upon a midnight dreary. while I pondered, weak and weary, Over many a quaint and curious volume of forgotten lore— While I nodded, nearly napping, suddenly there came a tapping,",
+    "cacheBytes": 4166,
+    "cacheSha256": "698ed798c51831905b7b33f5429e6590b7f646b3071f6bda58606770cc2b9e5c",
+    "label": "Pinned historical crop",
+    "referenceWords": 31,
+    "wordEdits": 2,
+    "characterEdits": 4,
+    "comparison": "Unit-cost insertion/deletion/substitution. Whitespace folded. Punctuation and case preserved."
+  }
+]

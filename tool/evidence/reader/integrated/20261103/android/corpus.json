@@ -1,0 +1,30 @@
+{
+  "serverVersion": "12.4.0",
+  "pluginSha256": "3b0de5ca1df39baf67c786079898b1ee3b0b09d3bdb86d00ece8a7f5731a9105",
+  "ordinaryBooks": 5,
+  "allOmitContainerAndMediaSources": true,
+  "generatedImageSha256": "30fce43633b99aa18db29680ee9ed9ebd1733c97eca7ee6c3055eaeddd1d6af6",
+  "historicalCropSha256": "9e5164b5e06471c9fb1152bf1809a406f02c07d2d6bd823df3789969950d8331",
+  "files": {
+    "Historical scan.pdf": {
+      "bytes": 747570,
+      "sha256": "aabcc4e96d10424532ab651369f3f14df60aff086d13178f605e5f731c4a9a55"
+    },
+    "Alice KF8.mobi": {
+      "bytes": 255506,
+      "sha256": "d8211269aed55ded8302f289950936db8368b4d4d384c463b722034152f8f1d2"
+    },
+    "Empty scan.pdf": {
+      "bytes": 6683,
+      "sha256": "7edfa36f57337ceeb7af6c58b87b68e6ebc25dfb0200593e415150a5d2052c06"
+    },
+    "Ordinary PDF.pdf": {
+      "bytes": 2693,
+      "sha256": "51d05de2a89dd83fb8f04301ac254419b2d616d48f6e8bb9fbe0938745bc04ce"
+    },
+    "English scan.pdf": {
+      "bytes": 72221,
+      "sha256": "16027709b0a8b3f79d06d189e5cda463b36b921e34cfc02e965ef33fb521d4a7"
+    }
+  }
+}
