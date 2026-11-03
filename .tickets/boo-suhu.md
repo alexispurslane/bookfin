@@ -51,3 +51,7 @@ Production-source milestone: bundled English-fast now supplies the existing PDF 
 **2026-11-03T14:38:41Z**
 
 Final pre-build checks pass: 453 full Flutter tests with three existing opt-in skips; Android SDK/native hook checks and production Java worker test pass; Flutter analysis reports no issues. Meaningful red evidence covers actual PDF text supply, ownership revocation, native admission, explicit unreliable-text retry, retry during cancellation drain and close-failure native-owner cleanup. Next is the normal ARM64 app build and exact-source export, with no installation.
+
+**2026-11-03T14:46:15Z**
+
+The first committed-source APK attempt stopped at Gradle script compilation before packaging. Its java extension shadowed the java.security package. Explicit File and MessageDigest imports fix the namespace collision; this is a build-script correction, not a behavior-red claim. The failed log is preserved. Direct Gradle compile attempts cannot load the Nix included Flutter build; use the normal Flutter wrapper for final compilation/package verification. No APK from the failed source was handed off.

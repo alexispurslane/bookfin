@@ -1,3 +1,6 @@
+import java.io.File
+import java.security.MessageDigest
+
 plugins {
     id("com.android.application")
     id("dev.flutter.flutter-gradle-plugin")
@@ -6,8 +9,8 @@ plugins {
 val ocrAar = file(requireNotNull(System.getenv("BOOKFIN_OCR_ANDROID_AAR")) {
     "Build through the pinned project Nix shell."
 })
-fun verifyOcrFile(file: java.io.File, expected: String) {
-    val actual = java.security.MessageDigest.getInstance("SHA-256")
+fun verifyOcrFile(file: File, expected: String) {
+    val actual = MessageDigest.getInstance("SHA-256")
         .digest(file.readBytes()).joinToString("") { "%02x".format(it) }
     require(actual == expected) { "Pinned OCR dependency verification failed: $file" }
 }
