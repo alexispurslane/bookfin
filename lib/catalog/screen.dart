@@ -466,7 +466,8 @@ class _CatalogHomeState extends State<CatalogHome> {
             Text('Account', style: Theme.of(context).textTheme.headlineSmall),
             Text(_catalog.session!.username),
             Text(_catalog.session!.scope.server.toString()),
-            if (widget.sync != null) RecordSyncView(sync: widget.sync!),
+            if (widget.sync != null)
+              RecordSyncView(sync: widget.sync!, books: _catalog.books),
             const SizedBox(height: 20),
             TextButton(
               onPressed: _catalog.cache == null || _catalog.accessBlocked

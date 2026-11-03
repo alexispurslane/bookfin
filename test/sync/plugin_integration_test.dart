@@ -143,6 +143,7 @@ void main() {
 
       await secondStore.synchronize(session, client);
       final secondSaved = (await secondStore.read(account))!;
+      secondStore.acceptSnapshot(account, secondSaved);
       (secondSaved['bookmarks'] as List).removeWhere(
         (value) => value['id'] == 'first',
       );

@@ -125,7 +125,8 @@ class ReaderSession extends ChangeNotifier {
       await _retryPending();
       if (!_liveAccount(generation) || key == null) return;
       try {
-        final saved = _pendingWrites[key] ?? await store.read(key);
+        final pending = _pendingWrites[key];
+        final saved = pending ?? await store.read(key);
         if (!_liveAccount(generation)) return;
         if (saved != null) {
           if (saved['version'] != 1 ||
@@ -158,6 +159,7 @@ class ReaderSession extends ChangeNotifier {
             _fontSize = size.toDouble().clamp(14, 40);
           }
         }
+        if (pending == null) store.acceptSnapshot(key, saved);
         _recordsReady = true;
       } on Exception {
         if (_liveAccount(generation)) _message = 'Reading records could not be opened. Existing records were kept. Restart before saving new places.';
@@ -547,6 +549,7 @@ class ReaderSession extends ChangeNotifier {
     _bookmarks
       ..clear()
       ..addAll(bookmarks);
+    store.acceptSnapshot(account, saved);
     _emit();
   }
 

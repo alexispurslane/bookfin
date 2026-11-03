@@ -102,3 +102,55 @@ currently grow without collection, including superseded resume saves. t6-t9po
 blocks release hardening until a durable equivalent checkpoint or safe unsent
 resume representation is established. No lifetime storage or speed bound is
 claimed. Coverage and mutation testing remain parent-owned after acceptance.
+
+## Independent review corrections
+
+The original `ccff7dc` candidate is not approved for integration. The correction
+boundary starts after the safe reader milestone `94457bf`. Review findings F1–F4
+have separate controlled regressions, rather than a claim that static traces
+were observed on Android.
+
+An owner accepts a persisted snapshot only after its account and local record
+revision still match and all records decode successfully. `ResumeStore.read`
+does not change the store's accepted-record baseline. Playback and ReaderSession
+explicitly call `acceptSnapshot` at that accepted transition. A held refresh
+rejected after a local change cannot authorize deletion of a remote bookmark.
+Successful writes advance the same domain baseline to the owner's saved
+snapshot, not to every record merged from the journal. Records the owner has
+never accepted remain outside its deletion authority. An unpersisted pending
+snapshot restored after account switching does not advance that baseline.
+
+Playback tracks the last decoder address recorded locally, separately from the
+resume selected by synchronization. A flush waits for existing writes and
+retries pending writes. It creates a position update only after the decoder
+address changes. Choosing either a local or remote resume therefore does not
+move paused audio or let an unchanged decoder overwrite the choice. A later
+real decoder sample can update the selected resume. A choice whose identity is
+no longer current returns a recoverable message and reloads current choices.
+
+Persisted journal containers, action containers, pending identities, discovery
+cursors, and pending-to-action references are checked before casts or internal
+invariant checks. Invalid saved data raises `FormatException`, remains intact,
+and does not poison the reader's write queue. Pending snapshots and unsynced
+actions survive storage failures and later storage recovery. Internal invariant
+failures are not converted to storage recovery.
+
+Conflict headings and choices use the current catalog's book title, edition
+label, and source name. Audio choices show file-relative time, including
+milliseconds when needed to distinguish nearby places. Reading choices show a
+saved quotation and source page when available, not raw anchors or identifiers.
+Saved audio record labels provide a fallback for books outside the current
+library. Missing books, missing sources, changed sources, and unavailable
+reading previews are explicitly identified.
+
+The correction regressions include actual coordinator/player choices in both
+directions, delayed audio and reader refresh races, retry after damaged journal
+data is restored, pending account switches, and widget descriptions. Their HTTP
+fixtures use authenticated loopback transport on kernel-assigned ports. This
+does not replace actual-plugin integration or Android acceptance.
+
+Release gates remain unchanged: `t6-t9po` must address retained-journal growth
+and full parse/rewrite work during ordinary once-per-second playback saves and
+acknowledgments. No save-latency measurement or bound is claimed. `t6-il6y` must
+validate production plugin packaging, deployment, and upgrades. No fallback to
+ordinary Jellyfin playlists exists.

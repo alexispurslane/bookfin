@@ -97,10 +97,22 @@ class RecordSync extends ChangeNotifier {
     try {
       await playback?.flush();
       await reader?.flush();
-      await records.resolve(session.scope.key, record, identity);
+      final accepted = await records.resolve(
+        session.scope.key,
+        record,
+        identity,
+      );
       if (_disposed || generation != _generation) return;
       await playback?.refreshPersonalRecords();
       await reader?.refreshPersonalRecords();
+      if (_disposed || generation != _generation) return;
+      if (!accepted) {
+        final conflicts = await records.conflicts(session.scope.key);
+        if (_disposed || generation != _generation) return;
+        _conflicts = conflicts;
+        _message = 'This saved choice changed before it was selected. Review the current saved versions and choose again.';
+        return;
+      }
       resolved = true;
     } on Exception {
       if (!_disposed && generation == _generation) _message = 'The choice was not saved. Both versions were kept. Retry after checking device storage.';

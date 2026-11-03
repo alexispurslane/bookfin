@@ -5,11 +5,29 @@ import 'package:flutter/foundation.dart';
 class RecordJournal {
   RecordJournal(this.account, this.replica, [Map<String, dynamic>? saved]) {
     if (saved != null) {
-      if (saved['version'] != 1 || saved['replica'] != replica) {
+      if (saved['version'] != 1 ||
+          saved['replica'] != replica ||
+          !RegExp(r'^[a-zA-Z0-9_-]{1,80}$').hasMatch(replica) ||
+          saved['actions'] is! List ||
+          (saved['actions'] as List).any(
+            (action) => action is! Map<String, dynamic>,
+          ) ||
+          saved['pending'] is! List ||
+          (saved['pending'] as List).any((identity) => identity is! String) ||
+          saved['cursor'] is! int ||
+          (saved['cursor'] as int) < 0) {
         throw const FormatException('Unsupported personal-record journal.');
       }
       receive((saved['actions'] as List).cast<Map<String, dynamic>>());
-      pending.addAll((saved['pending'] as List).cast<String>());
+      final pendingIdentities = (saved['pending'] as List).cast<String>();
+      if (pendingIdentities.any(
+        (identity) => !_actions.containsKey(identity),
+      )) {
+        throw const FormatException(
+          'Pending personal records must reference retained actions.',
+        );
+      }
+      pending.addAll(pendingIdentities);
       cursor = saved['cursor'] as int;
       checkInvariants();
     }
