@@ -1,0 +1,90 @@
+{
+  "captures": [
+    {
+      "capture": "baseline",
+      "retained": 69,
+      "pending": 28,
+      "all69IdentitiesPayloadsAndPendingFlagsUnchanged": true
+    },
+    {
+      "capture": "normal-installed",
+      "retained": 69,
+      "pending": 28,
+      "all69IdentitiesPayloadsAndPendingFlagsUnchanged": true
+    },
+    {
+      "capture": "during-dense",
+      "retained": 70,
+      "pending": 29,
+      "all69IdentitiesPayloadsAndPendingFlagsUnchanged": true
+    },
+    {
+      "capture": "stop-audit",
+      "retained": 70,
+      "pending": 28,
+      "all69IdentitiesPayloadsAndPendingFlagsUnchanged": true
+    },
+    {
+      "capture": "final-retained",
+      "retained": 70,
+      "pending": 28,
+      "all69IdentitiesPayloadsAndPendingFlagsUnchanged": true
+    }
+  ],
+  "newActionPayloadIdentityAndCausalContextMatchRealPlugin": true,
+  "explicitSyncNowNotTested": true,
+  "activeRecognitionAndCancelDispatchObserved": true,
+  "postCancelStateNotInspectable": true,
+  "cancelDrainRetryAndDepartureNotAccepted": true,
+  "noOCRPageCacheAtStop": true,
+  "originalFilesMatchCorpus": true,
+  "noUICommandAfterFailedSnapshotRetry": true,
+  "deviceCleanupStillRequired": true,
+  "evidenceSha256": {
+    "README.md": "61f0c11a0a91b8873c06446b31a38d8edce5654189049f49738cbdb7e607d7a4",
+    "airplane-on.txt": "acbe4e09c4eba074ffb2bfbcd63b11e1f771bb69ae1919a277e0457c254b358d",
+    "artifact.json": "7f025663a1236067b27bdb882540e86b6d0a6f54b9e090181bbc3bcd13104f40",
+    "audit.py": "f9701a7c3294373ba4b5cc0d8ca06dded30d79a6ece83397730cc6068d69837a",
+    "baseline.json": "e0cf92f2e7d74544dddc06e9682ddb826db3e2076360898e37716730cdc33cb8",
+    "binding-release.json": "b2c7df97bc9fbd96f6ba5a62de7687c82087930405961015762be8f62502f1fd",
+    "blank-back-before.txt": "a43376dbee4b073fff1436d94959f956fb3d2d25e8ea8ea9273b95de1c5f4050",
+    "blank-back.txt": "225c0abf57e389eeecffc43275f97f960eed01500ab62fcce5cf01d25e32ece4",
+    "blank-details-before.txt": "c6cbf1a559f29793ae955711bf2a65c453cd4a8e3533ff12a29013c77a08e43f",
+    "blank-details.txt": "aae772a1cae1a7d62702c074c0d6bc711bf2853abd578ac7ecefd058d10e86ea",
+    "blank-download-before.txt": "b03e14e5efcdb1b177b4665bc98122e5c8d9fab5560074e74620694ecde2d110",
+    "blank-download.txt": "3defb348059a5c8abf5917293a29b2e09670b832e557aa153d5302c5cf95dc49",
+    "cancel-recovery.txt": "8a2a05b0fb708b50a69115490c054880fe1ea7ce8cbc0cbe5749b320ca3db749",
+    "capture.py": "449fa7aad60ab9946766ca48707e91af14ad48f8c52fcdf2d192468cb1483aee",
+    "catalog-downloaded.txt": "d98553ed3bbcca5a1b19f7995880f837ef1763c1ade64dfc3877c67745f34261",
+    "cleanup.json": "d03d7f02796dabb08e5311aea9e7bbdef049a7373dce1845b3caaba4bb6a9acc",
+    "corpus.json": "3f8a147ef8e9195625f7156207769df9d4610235dc15872bf7716d5c8e3999ce",
+    "dense-active-cancel-before.txt": "803b0dcccaff191fd51afc6f0210eb60b86f8466b131a20cce0f6531ac537155",
+    "dense-active-cancel.txt": "8b02f4305424fcf037e591194255bc570e0c6db60e803b55c28fd27d86d683db",
+    "dense-active-read-before.txt": "abeb2e4778397654193388ee5ad3964317bb25290577183f6b08e3438e49d761",
+    "dense-active-read.txt": "46cfb66f30013372204e0961a4677d6198450b72838a8273a111fc5a345f4cb5",
+    "dense-back-before.txt": "3ffbbd23ad8c1ac5be9042f2a092cffd8977f472b3db3fd1f631b8912bb04e7b",
+    "dense-back-complete-before.txt": "5ad92c17aeaa254c61da6f19dde3aff69995542e3a598ddf25e8520c10a8dcc8",
+    "dense-back-complete.txt": "65e1329272d048e04e32254c052235160f74d5547135bbd5aff93728a09944be",
+    "dense-canceled.txt": "9263abba95a17f1f7b5a9c40ac0a073666517a1039680f6d2eab4579464f5388",
+    "dense-download-after.txt": "c14a61572be566b7667ba84064f568b8cef3278413e0fa298afcf4c2ea21d574",
+    "dense-download-before.txt": "a04ee37772a2851787755b05649b849e3fb044edaa33ac9aa1fe6e75401752f0",
+    "dense-download.txt": "2340567b16ac2f822ee95dcee1f084f7323f2f4bf2d5848796631ea93c534a61",
+    "dense-offline-details-before.txt": "6284e72cc52b5ce456948da7550861d9b611cbb33445df13f78c12c52efd0653",
+    "dense-offline-details.txt": "695b0681c838d781dac173cd8fe20929da7d2783f8f34d2669e094e6a0cb492a",
+    "during-dense.json": "7dad91bf894eea3e10a1d246a484f68aafe9b6ee226e113c54caa8ce5cba8c36",
+    "events.ndjson": "31a3a5bbe6c8d5daca4410686490ce62d02a151524436c07612ba3419a52a39e",
+    "final-retained.json": "f7ef6f040a8c728303faf969b70a1907148d10a3b8691f2f2913675eefd81409",
+    "fixture.py": "9bd238651b32dbe7765bd22c5cd501d327419b9b723b2d29dd3b9d6b08879d87",
+    "mobile-off.txt": "ab1b763a0d5ed6ab71e1d45e9020294f7c2f077d474e15c3ad07447af24fab39",
+    "normal-installed.json": "e8b7b6b2cc858b55b75cfbedb60d99bd9681fda04c6705cfcf3963674be57b50",
+    "read-only-logs.json": "9d699589e7d87235923e6097369582b08600b73798dd1733b622dac694251347",
+    "recovery-inventory.json": "dbfee6e81522c9937aba1d83dd4f12c10d03733a3ca37ee43cca8dba1cb834df",
+    "recovery_inventory.py": "72aded3e8d7c9c9c12fa729d4d839004f437b583cf90c63f22893cb025d441aa",
+    "server_readback.py": "1673d107d9dcf4ef872181d63cb01ff68b5ddaac82b8b85b49b158652db6e913",
+    "snapshot-diagnostics.json": "85b67690a7cc8b5421f564a03f2e0f4a870da2a0f1389a1a5da532393af666b6",
+    "stop-audit.json": "7f841c6302e4c9c7eb8a009c6e781ef803d780a416f97d98ef6184785ea736eb",
+    "stop-server.json": "2e5b54ed7fe1fa186f6d54fa3bee8722f761b8b9a10de49d5b21c0a678a9c5ee",
+    "ui.py": "dc8e976a94bd4488b110e852399cc01b833be4e67bb2e2bd95a1aa943a818893",
+    "wifi-off.txt": "bf97db6273ccb5e5175187a82237e87a6ad688332decc8078927cf91b9c9c9ad"
+  }
+}

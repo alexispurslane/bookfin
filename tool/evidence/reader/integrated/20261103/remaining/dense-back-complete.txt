@@ -1,0 +1,54 @@
+Tapped @e18 (74, 210)
+settled after 962ms: +17 -26 (~1 unchanged)
+- @e9 [group]
+- @e10 [group]
+- @e11 [group]
+- @e13 [group]
+- @e14 [group]
+- @e15 [group]
+- @e16 [group]
+- @e17 [group]
+- @e18 [button] "Back"
+- @e19 [group] "Book details"
+- @e20 [button] "Correct book details"
+- @e21 [group]
+- @e22 [group]
+- @e23 [group] "Acceptance dense English"
+- @e24 [group] "Ebook editions"
+- @e25 [group]
+- @e26 [group] "Text"
+- @e27 [group] "1 file"
+- @e28 [group] "Downloaded"
+- @e29 [group] "73200 bytes · 1 / 1 files"
+- @e30 [button] "Remove"
+- @e31 [button] "Read"
+- @e32 [group] "Collapsed"
+- @e33 [group] "Acceptance dense English
+0.0 minutes, Collapsed"
+- @e34 [group]
+- @e35 [button] "Link another book or ebook"
++ @e2~s363863 [group] "BOOKFIN"
++ @e3~s363863 [button] "Book libraries"
++ @e4~s363863 [button] "Appearance"
++ @e5~s363863 [button] "Account"
++ @e6~s363863 [group] "A little further
+into the story."
++ @e7~s363863 [button] "Refresh books"
++ @e8~s363863 [text-field]
++ @e9~s363863 [horizontalscrollview]
++ @e10~s363863 [button] "All" [selected]
++ @e11~s363863 [button] "Audio"
++ @e12~s363863 [button] "Ebooks"
++ @e13~s363863 [button] "Downloaded"
++ @e14~s363863 [group] "Acceptance blank
+1 ebook
+Ebook · Not downloaded"
++ @e15~s363863 [group] "Acceptance dense English
+1 ebook
+Ebook · Downloaded"
++ @e16~s363863 [button] "Library
+Tab 1 of 3" [selected]
++ @e17~s363863 [button] "Downloads
+Tab 2 of 3"
++ @e18~s363863 [button] "Listening
+Tab 3 of 3"

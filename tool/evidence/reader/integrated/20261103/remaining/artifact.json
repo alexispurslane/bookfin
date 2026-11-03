@@ -1,0 +1,7 @@
+{
+  "source": "71af2886e722b7366d4d335622e55e18a151a3e0",
+  "evidenceBase": "772d8a50b64cafa99baf534f8f74274a9882126c",
+  "normalApkSha256": "129a9a82a338a2e7b5cf1abd154c729866a328295c241063fabd26e38353c270",
+  "installedApkSha256": "129a9a82a338a2e7b5cf1abd154c729866a328295c241063fabd26e38353c270",
+  "installation": "Successful in-place adb install -r; no rebuild, uninstall, reset, or private database write."
+}

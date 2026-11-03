@@ -1,0 +1,73 @@
+{
+  "scope": "Read-only existing conventional sync/plugin fixture backups in main and all local T3 worktrees; no identity creation or server startup.",
+  "targetPendingAccounts": [
+    "07b2f1cce6ecdb87b025a2fd13008c0053813f0fd7c9aff08c34151ca15d5bf3"
+  ],
+  "candidateFixtures": [
+    {
+      "fixture": ".cache/plugin/run-zmpkyi9l/accounts.json",
+      "checkout": "t3-0181c474",
+      "serverIdentityAvailable": true,
+      "serverDatabaseAvailable": true,
+      "privatePasswordFileAvailable": true,
+      "matchingOriginalPendingAccounts": []
+    },
+    {
+      "fixture": ".cache/sync/runtime/accounts.json",
+      "checkout": "t3-8e63dac1",
+      "serverIdentityAvailable": true,
+      "serverDatabaseAvailable": true,
+      "privatePasswordFileAvailable": true,
+      "matchingOriginalPendingAccounts": []
+    },
+    {
+      "fixture": ".cache/plugin/run-khe_dh1q/accounts.json",
+      "checkout": "t3-6bcb40a5",
+      "serverIdentityAvailable": true,
+      "serverDatabaseAvailable": true,
+      "privatePasswordFileAvailable": true,
+      "matchingOriginalPendingAccounts": []
+    },
+    {
+      "fixture": ".cache/plugin/run-l4b_2x1j/accounts.json",
+      "checkout": "t3-6bcb40a5",
+      "serverIdentityAvailable": true,
+      "serverDatabaseAvailable": true,
+      "privatePasswordFileAvailable": true,
+      "matchingOriginalPendingAccounts": []
+    },
+    {
+      "fixture": ".cache/plugin/run-udf5jxud/accounts.json",
+      "checkout": "t3-6bcb40a5",
+      "serverIdentityAvailable": true,
+      "serverDatabaseAvailable": true,
+      "privatePasswordFileAvailable": true,
+      "matchingOriginalPendingAccounts": []
+    },
+    {
+      "fixture": ".cache/plugin/run-rn1pjays/accounts.json",
+      "checkout": "t3-6bcb40a5",
+      "serverIdentityAvailable": true,
+      "serverDatabaseAvailable": true,
+      "privatePasswordFileAvailable": true,
+      "matchingOriginalPendingAccounts": []
+    },
+    {
+      "fixture": ".cache/plugin/run-yeapyo_l/accounts.json",
+      "checkout": "t3-6bcb40a5",
+      "serverIdentityAvailable": true,
+      "serverDatabaseAvailable": true,
+      "privatePasswordFileAvailable": true,
+      "matchingOriginalPendingAccounts": []
+    },
+    {
+      "fixture": ".cache/sync/runtime/accounts.json",
+      "checkout": "t3-b605449e",
+      "serverIdentityAvailable": true,
+      "serverDatabaseAvailable": true,
+      "privatePasswordFileAvailable": true,
+      "matchingOriginalPendingAccounts": []
+    }
+  ],
+  "matchingFixtures": 0
+}

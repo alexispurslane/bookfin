@@ -1,0 +1,3 @@
+Tapped @e22 (760, 472)
+not settled after 852ms
+hint: Settle observation unavailable (Android snapshot helper returned insufficient foreground app content). The action itself succeeded; take a snapshot to observe the result.

@@ -1,0 +1,25 @@
+{
+  "ownedControllerStopped": true,
+  "ownedServerStopped": true,
+  "ports7364And7365Free": true,
+  "ownedReverseRouteRemoved": true,
+  "ownedFixtureAndCredentialsRemoved": true,
+  "temporaryPrivateDatabaseCopiesRemoved": true,
+  "newActions": 1,
+  "newPendingActions": 0,
+  "newActionExactlyMatchesRealPlugin": true,
+  "backupRequiredForNewPendingActions": false,
+  "originalPendingActions": 28,
+  "deviceCleanupBlockedByRequiredStop": true,
+  "remainingOwnedDownloads": 2,
+  "signOutAndAppCloseNotPerformed": true,
+  "finalNetwork": {
+    "airplane_mode_on": "1",
+    "wifi_on": "0",
+    "mobile_data": "0"
+  },
+  "mediaMuted": true,
+  "systemTextSize": "large, unchanged",
+  "installed": "normal source 71af288 APK",
+  "appProcessAbsent": false
+}

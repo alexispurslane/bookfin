@@ -1,0 +1,88 @@
+[
+  {
+    "ts": "2026-11-03T19:04:06.183Z",
+    "phase": "android_snapshot_helper_content_invalid",
+    "requestId": "aba46c61896cd5ce",
+    "data": {
+      "reason": "content-poor-app-window",
+      "failureReason": "Android snapshot helper returned insufficient foreground app content",
+      "attempts": 3,
+      "helperNodeCount": 31,
+      "helperSystemUiNodeCount": 23,
+      "helperWindowRootCount": 2,
+      "helperApplicationWindowRootCount": 1,
+      "helperMeaningfulNodeCount": 21,
+      "helperApplicationMeaningfulNodeCount": 1,
+      "helperNonSystemMeaningfulNodeCount": 1,
+      "helperInputMethodMeaningfulNodeCount": 0,
+      "helperForegroundAppPackage": "dev.bookfin.bookfin",
+      "helperForegroundAppMeaningfulNodeCount": 1,
+      "helperForegroundAppMeaningfulNodeThreshold": 2,
+      "helperWindowTypes": [
+        1,
+        3
+      ],
+      "helperCaptureMode": "interactive-windows"
+    }
+  },
+  {
+    "ts": "2026-11-03T19:04:06.297Z",
+    "phase": "request_failed",
+    "requestId": "aba46c61896cd5ce",
+    "data": {
+      "error": "Android snapshot helper returned insufficient foreground app content"
+    }
+  },
+  {
+    "ts": "2026-11-03T19:04:06.298Z",
+    "phase": "request_failed",
+    "requestId": "aba46c61896cd5ce",
+    "data": {
+      "code": "COMMAND_FAILED",
+      "message": "Android snapshot helper returned insufficient foreground app content"
+    }
+  },
+  {
+    "ts": "2026-11-03T19:04:28.736Z",
+    "phase": "android_snapshot_helper_content_invalid",
+    "requestId": "c33d699bf23ca17c",
+    "data": {
+      "reason": "content-poor-app-window",
+      "failureReason": "Android snapshot helper returned insufficient foreground app content",
+      "attempts": 3,
+      "helperNodeCount": 31,
+      "helperSystemUiNodeCount": 23,
+      "helperWindowRootCount": 2,
+      "helperApplicationWindowRootCount": 1,
+      "helperMeaningfulNodeCount": 21,
+      "helperApplicationMeaningfulNodeCount": 1,
+      "helperNonSystemMeaningfulNodeCount": 1,
+      "helperInputMethodMeaningfulNodeCount": 0,
+      "helperForegroundAppPackage": "dev.bookfin.bookfin",
+      "helperForegroundAppMeaningfulNodeCount": 1,
+      "helperForegroundAppMeaningfulNodeThreshold": 2,
+      "helperWindowTypes": [
+        1,
+        3
+      ],
+      "helperCaptureMode": "interactive-windows"
+    }
+  },
+  {
+    "ts": "2026-11-03T19:04:28.830Z",
+    "phase": "request_failed",
+    "requestId": "c33d699bf23ca17c",
+    "data": {
+      "error": "Android snapshot helper returned insufficient foreground app content"
+    }
+  },
+  {
+    "ts": "2026-11-03T19:04:28.830Z",
+    "phase": "request_failed",
+    "requestId": "c33d699bf23ca17c",
+    "data": {
+      "code": "COMMAND_FAILED",
+      "message": "Android snapshot helper returned insufficient foreground app content"
+    }
+  }
+]

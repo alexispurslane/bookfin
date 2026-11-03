@@ -1,0 +1,41 @@
+{
+  "timeUnix": 1793732801.187587,
+  "serverVersion": "12.4.0",
+  "cursor": 1,
+  "objects": [
+    {
+      "identity": "action.93bc9ec7ef6b11a63af440e92d275bd1acaee9c4.1",
+      "sequence": 1,
+      "payloadSha256": "7889b42695bb0817efc4002a9102b9106df685b3a0dcf302a9fe28d3273460e1",
+      "action": {
+        "version": 1,
+        "account": "57f2cd2bf725579f45937e973845f8dce6ca010fa7cb5fad7c1e036cef7fedc2",
+        "replica": "93bc9ec7ef6b11a63af440e92d275bd1acaee9c4",
+        "sequence": 1,
+        "context": {},
+        "record": "[\"reading\",\"resumes\",\"[\\\"ba080d618839cb8c1ce6fcdbb4673ac1:\\\",\\\"ba080d618839cb8c1ce6fcdbb4673ac1:\\\",\\\"[null,\\\\\\\"399e312f5fbe0ebad73d91b371bc1328\\\\\\\",null,null,20000]\\\"]\"]",
+        "value": {
+          "edition": "ba080d618839cb8c1ce6fcdbb4673ac1:",
+          "source": "ba080d618839cb8c1ce6fcdbb4673ac1:",
+          "revision": "[null,\"399e312f5fbe0ebad73d91b371bc1328\",null,null,20000]",
+          "anchor": "{\"version\":1,\"processed\":\"617c96a765c588fdf5261d8e369dbb05b126185b854fee7037aeec6da941ba55\",\"original\":\"c931753b6c88b4c2e5a464488297c4bc6bf19604f69500d730ba2b908e204da1\",\"policy\":\"bookfin-pdf-source-pages-1\",\"engine\":\"pdfrx-0.9.0-pdfium-8125\",\"page\":1,\"character\":0,\"quote\":\"\"}"
+        },
+        "preserve": []
+      }
+    }
+  ],
+  "ordinaryOriginals": [
+    {
+      "name": "Acceptance blank",
+      "id": "84b062ce8b7c066cd2e509b3ab100553",
+      "containerOmitted": true,
+      "mediaSourcesOmitted": true
+    },
+    {
+      "name": "Acceptance dense English",
+      "id": "ba080d618839cb8c1ce6fcdbb4673ac1",
+      "containerOmitted": true,
+      "mediaSourcesOmitted": true
+    }
+  ]
+}

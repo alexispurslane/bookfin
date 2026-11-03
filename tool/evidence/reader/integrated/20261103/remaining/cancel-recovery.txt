@@ -1,0 +1,4 @@
+Error (COMMAND_FAILED): Android snapshot helper returned insufficient foreground app content
+Hint: Retry after the app UI stabilizes. If this persists, capture a screenshot and report the helper diagnostics; agent-device does not substitute a second snapshot engine.
+Diagnostic ID: mw1248f2-2610843c
+Diagnostics Log: /Users/alexispurslane/.agent-device/remote-diagnostics/t3-e7ee98e4e6483c63952df0a5/requests/c33d699bf23ca17c.ndjson

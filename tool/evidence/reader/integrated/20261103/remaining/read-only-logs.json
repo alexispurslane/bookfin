@@ -1,0 +1,5 @@
+{
+  "crashBufferBytes": 0,
+  "bookfinProcessPresent": true,
+  "scope": "Read-only logcat crash buffer empty at stop; no proof of absence of all native faults, UI hang, or successful cancellation."
+}

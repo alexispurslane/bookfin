@@ -1,0 +1,24 @@
+{"start": 1793732581.54627, "end": 1793732581.797143, "arguments": ["snapshot"], "exit": 0, "evidence": "dense-download-before.txt"}
+{"start": 1793732581.797365, "end": 1793732583.21865, "arguments": ["press", "@e29", "--settle"], "exit": 0, "evidence": "dense-download.txt"}
+{"start": 1793732583.218731, "end": 1793732583.465557, "arguments": ["snapshot"], "exit": 0, "evidence": "dense-download-after.txt"}
+{"start": 1793732601.038282, "end": 1793732601.2984152, "arguments": ["snapshot"], "exit": 0, "evidence": "dense-back-before.txt"}
+{"start": 1793732614.8607092, "end": 1793732615.125062, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "dense-back-complete-before.txt"}
+{"start": 1793732615.125334, "end": 1793732616.39244, "arguments": ["press", "@e18", "--settle"], "exit": 0, "evidence": "dense-back-complete.txt"}
+{"start": 1793732616.3925161, "end": 1793732616.65295, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "blank-details-before.txt"}
+{"start": 1793732616.6531992, "end": 1793732617.913976, "arguments": ["press", "@e32", "--settle"], "exit": 0, "evidence": "blank-details.txt"}
+{"start": 1793732617.914037, "end": 1793732618.1704488, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "blank-download-before.txt"}
+{"start": 1793732618.170652, "end": 1793732619.509949, "arguments": ["press", "@e29", "--settle"], "exit": 0, "evidence": "blank-download.txt"}
+{"start": 1793732619.510016, "end": 1793732619.773691, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "blank-back-before.txt"}
+{"start": 1793732619.7737758, "end": 1793732621.04442, "arguments": ["press", "@e18", "--settle"], "exit": 0, "evidence": "blank-back.txt"}
+{"start": 1793732621.044506, "end": 1793732621.3006232, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "catalog-downloaded.txt"}
+{"start": 1793732638.154696, "end": 1793732638.4085371, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "dense-offline-details-before.txt"}
+{"start": 1793732638.408819, "end": 1793732639.754454, "arguments": ["press", "@e33", "--settle"], "exit": 0, "evidence": "dense-offline-details.txt"}
+{"start": 1793732639.754532, "end": 1793732640.094205, "arguments": ["settings", "airplane", "on"], "exit": 0, "evidence": "airplane-on.txt"}
+{"start": 1793732640.0942771, "end": 1793732640.4460878, "arguments": ["settings", "wifi", "off"], "exit": 0, "evidence": "wifi-off.txt"}
+{"start": 1793732640.446151, "end": 1793732641.01772, "arguments": ["settings", "mobile-data", "off"], "exit": 0, "evidence": "mobile-off.txt"}
+{"start": 1793732641.017802, "end": 1793732641.284739, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "dense-active-read-before.txt"}
+{"start": 1793732641.284978, "end": 1793732642.943871, "arguments": ["press", "@e29", "--settle"], "exit": 0, "evidence": "dense-active-read.txt"}
+{"start": 1793732642.943938, "end": 1793732643.199292, "arguments": ["snapshot", "--force-full"], "exit": 0, "evidence": "dense-active-cancel-before.txt"}
+{"start": 1793732643.199543, "end": 1793732644.558625, "arguments": ["press", "@e22", "--settle"], "exit": 0, "evidence": "dense-active-cancel.txt"}
+{"start": 1793732644.5587158, "end": 1793732646.319804, "arguments": ["snapshot", "--force-full"], "exit": 1, "evidence": "dense-canceled.txt"}
+{"start": 1793732667.5874329, "end": 1793732668.8537412, "arguments": ["snapshot", "--force-full"], "exit": 1, "evidence": "cancel-recovery.txt"}
