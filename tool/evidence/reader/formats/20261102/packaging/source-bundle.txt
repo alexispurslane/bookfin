@@ -1,0 +1,11 @@
+{
+  "sourceCommit": "4ee30c6a0e28bcec9cfd3b117bea45c7bbd42855",
+  "directory": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-6bcb40a5/.cache/artifacts/native-reader-source",
+  "files": {
+    "LGPL-3.0.txt": "da7eabb7bafdf7d3ae5e9f223aa5bdc1eece45ac569dc21b3b037520b4464768",
+    "libmobi-0.12-source.tar.gz": "e3888addd4cb08d9af5582e7cf474eaa477e500a1eb87c8c3e09202ae46390b0",
+    "bookfin-source.tar": "3c296d8a7f8fb44ef8123307d6bbfc0d476edbad0b10bb71a9735ffd7fb05ad9",
+    "GPL-3.0.txt": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+    "BUILD-AND-INSTALL.md": "f10ebfd8e269e13a0291ccec198a9ea55b0b1e4e9e76f4a96f1eb99b78a215c7"
+  }
+}

@@ -13,6 +13,7 @@ No artifact here is an accepted final sync build or an approved distribution.
 | full-host-analysis-build.txt | SDK checks, 398 Flutter tests and clean analysis pass. One optional real-plugin test is skipped. Normal APK build includes all 29 checked native notice assets and pinned PDFium bytes. |
 | replacement-build.txt | Actual host and Android modified-library builds, host KF8 conversion, APK replacement, signature/alignment/notice verification and entry-by-entry comparison pass. No device installation. |
 | replacement-production-importer.txt | All four actual production MOBI import/cache/error tests pass with the modified host library, not the original pinned library. |
+| source-bundle.txt | Successful clean-tree source export tied to source commit `4ee30c6a0e28bcec9cfd3b117bea45c7bbd42855`, with hashes for the full application source archive, exact libmobi sources, full license texts, and build/install instructions. |
 
 The notice-complete original APK SHA-256 is
 `fd5879f0672b73f8c1a8ff774e427214de3a38a26b71d92f47c67f81540dcaf3`.
