@@ -1,0 +1,10 @@
+{
+  "sourceCommit": "44d53afbe491f28cec0205584ba7f023ec8a10b6",
+  "files": {
+    "LGPL-3.0.txt": "da7eabb7bafdf7d3ae5e9f223aa5bdc1eece45ac569dc21b3b037520b4464768",
+    "libmobi-0.12-source.tar.gz": "74e270e186c37f206ec383f35787be348ba89de3031183eb33f30a15af46b223",
+    "bookfin-source.tar": "699c9625bf4fbe6f1138636b1bcc4ca0f52d7d07bd0264f7311d3edfb3ee7b70",
+    "GPL-3.0.txt": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+    "BUILD-AND-INSTALL.md": "f10ebfd8e269e13a0291ccec198a9ea55b0b1e4e9e76f4a96f1eb99b78a215c7"
+  }
+}

@@ -35,3 +35,9 @@ EPUB/rejected invalid bytes/symlink controls pass. 17 focused and 431 full tests
 pass (three opt-in skips), analysis clean. Evidence:
 tool/evidence/reader/formats/20261103/missing-container/. Independent review,
 corrected-build Android format/native-replacement acceptance still required.
+
+Independent read-only review approves 2ece46b..44d53af for bounded source
+integration with no actionable finding. The corrected normal APK and matching
+source are prepared from exactly 44d53af; verification records are under
+missing-container/android/. Prior 4ae8c6c rejection remains valid baseline
+evidence. Corrected runtime acceptance and ticket closure are still pending.
