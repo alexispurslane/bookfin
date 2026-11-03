@@ -1,0 +1,74 @@
+{
+  "timeUnix": 1793741717.6916428,
+  "baseCommit": "2d11125e21066d15f0ff92cee1f29a44357cecad",
+  "artifactSourceCommit": "d8e1021fef2be69291d135594a45d556570c235f",
+  "ownedAvd": {
+    "name": "bookfin-accept-20261103-db111f95",
+    "path": "/Users/alexispurslane/.android/avd/bookfin-accept-20261103-db111f95.avd",
+    "files": [
+      {
+        "path": "config.ini",
+        "bytes": 3553,
+        "sha256": "e9f15eea0c2727cca03453d22023ba269667418c74eb813d5c9b71244473258a"
+      }
+    ],
+    "hostId": "local",
+    "deviceId": "bookfin-accept-20261103-db111f95",
+    "booted": false
+  },
+  "sdkMismatch": {
+    "hostEmulator": "/Users/alexispurslane/Library/Android/sdk/emulator/emulator",
+    "relativeImage": "system-images/android-36/google_apis/arm64-v8a/",
+    "hostImageExists": false,
+    "nixSdk": "/nix/store/in52zy1w2yv0197h7553n827h8f03x8k-bookfin-android-sdk",
+    "nixImageExists": true,
+    "nativeStderrAvailable": false,
+    "soleFailureCauseConfirmed": false
+  },
+  "artifacts": [
+    {
+      "path": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f29350e1/.cache/artifacts/bookfin-d8e1021-cancel/bookfin-d8e1021-arm64-debug.apk",
+      "sha256": "8b31c7448f746226453d4677f944c9ba4f5668f657bba8015f94973372744e09",
+      "bytes": 131215387
+    },
+    {
+      "path": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f29350e1/.cache/artifacts/bookfin-d8e1021-cancel/source/bookfin-source.tar",
+      "sha256": "3dd0c18fb2cdc3b94e8831f12b4ef92d573bccd73392a626b3c46de1dae45f60",
+      "bytes": 83968000
+    },
+    {
+      "path": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ef60719/.cache/plugin/package/Bookfin.Storage_0.1.1.0.zip",
+      "sha256": "3b0de5ca1df39baf67c786079898b1ee3b0b09d3bdb86d00ece8a7f5731a9105",
+      "bytes": 22278
+    }
+  ],
+  "runtimeAcceptance": {
+    "freshInstallOfflineOcr": "blocked-before-install",
+    "firstPrivateModelCopy": "unverified",
+    "reflowSearchOriginalBookmark": "unverified",
+    "cachedOfflineProcessRestart": "unverified",
+    "unicodePendingAndExplicitSync": "blocked-before-account-creation",
+    "lostAcknowledgmentRetry": "unverified",
+    "crossAccountOcrOwnership": "unverified"
+  },
+  "retainedDevice": {
+    "id": "emulator-5554",
+    "openedByThisLane": false,
+    "operatedByThisLane": false,
+    "previousEvidenceActions": 79,
+    "previousEvidencePending": 28,
+    "countsAreFreshlyMeasured": false,
+    "previousEvidenceSha256": "e34e3e1d7286deb9408c0df4a49b3391d235dd2c9191a5ebcb7c8ae0c062a006"
+  },
+  "cleanup": {
+    "newAvdUnbootedNoBinding": true,
+    "fixtureStarted": false,
+    "routeCreated": false,
+    "credentialsCreated": false,
+    "newPersonalActionsCreated": false,
+    "apkInstalled": false,
+    "settingsChanged": false,
+    "retainedAvdModified": false,
+    "newAvdDeleted": false
+  }
+}

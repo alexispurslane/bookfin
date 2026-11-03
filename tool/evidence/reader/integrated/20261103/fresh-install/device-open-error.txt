@@ -1,0 +1,13 @@
+T3 device_open request:
+{"hostId":"local","deviceId":"bookfin-accept-20261103-db111f95"}
+
+T3 device_open response:
+Device bookfin-accept-20261103-db111f95 failed to boot: The simulator or emulator could not start.
+
+The emulator process for "bookfin-accept-20261103-db111f95" exited with code 1 before coming online.
+
+For details, try running it manually:
+/Users/alexispurslane/Library/Android/sdk/emulator/emulator -avd bookfin-accept-20261103-db111f95 -no-audio -no-window -gpu auto -no-boot-anim -port 5556 -camera-back imagefile\:/Users/alexispurslane/.cache/serve-emu/camera/emulator-5556-back.png -camera-front imagefile\:/Users/alexispurslane/.cache/serve-emu/camera/emulator-5556-front.png -camera-front emulated -camera-back emulated
+
+Disposition:
+The suggested manual boot was not run. The task requires T3 for boot and explicitly restricts investigation after failed discovery/open to read-only host tooling. No bound command was returned, so no app, settings, screenshot, or input action was possible. No replacement binding or alternate UI tool was used. Native stderr was not included in this response.

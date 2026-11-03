@@ -1,0 +1,23 @@
+{
+  "source": "T3 device_list responses during this lane",
+  "hostId": "local",
+  "hostStatus": "ready",
+  "hubVersion": "0.19.0-canary-20261023-1357114",
+  "agentVersion": "0.21.31",
+  "beforeProvisioning": {
+    "devices": [
+      {"id": "emulator-5554", "name": "bookfin-api36", "booted": true, "physical": false}
+    ],
+    "open": []
+  },
+  "afterProvisioningAndAtFinish": {
+    "devices": [
+      {"id": "emulator-5554", "name": "bookfin-api36", "booted": true, "physical": false},
+      {"id": "bookfin-accept-20261103-db111f95", "name": "bookfin-accept-20261103-db111f95", "booted": false, "physical": false}
+    ],
+    "open": []
+  },
+  "deviceOpenAttempts": 1,
+  "boundCommandReturned": false,
+  "runtimeAcceptanceExecuted": false
+}
