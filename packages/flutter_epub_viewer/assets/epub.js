@@ -20643,9 +20643,12 @@ var epubEngine = (() => {
           try {
             if (!range.endContainer || range.startContainer == range.endContainer && range.startOffset == range.endOffset) {
               if (range.startContainer.nodeType === TEXT_NODE3) {
-                const followingCharacterOffset = range.startContainer.textContent.slice(range.startOffset).search(/\S/);
-                if (followingCharacterOffset >= 0) {
-                  range.setStart(range.startContainer, range.startOffset + followingCharacterOffset);
+                const whiteSpace = this.window.getComputedStyle(range.startContainer.parentElement).whiteSpace;
+                const collapsible = whiteSpace === "normal" || whiteSpace === "nowrap" ? /^[ \t\r\n\f]+/ : whiteSpace === "pre-line" ? /^[ \t]+/ : null;
+                const text = range.startContainer.textContent;
+                const prefix = collapsible && text.slice(range.startOffset).match(collapsible);
+                if (prefix && range.startOffset + prefix[0].length < text.length) {
+                  range.setStart(range.startContainer, range.startOffset + prefix[0].length);
                 }
               }
               let pos = range.startContainer.textContent.indexOf(" ", range.startOffset);

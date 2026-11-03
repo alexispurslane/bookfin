@@ -1,0 +1,6 @@
+{
+  "packages/flutter_epub_viewer/engine/src/contents.js": "dc38be2a4a2114adb7a069a66ddf2f97e7d338a1138937f3918f77cbbdb3028f",
+  "packages/flutter_epub_viewer/engine/test/layout.test.cjs": "7569ca4f70ff803debb4e3132adc65695d8dcf1b82a064ac5171bd37278c5aa1",
+  "packages/flutter_epub_viewer/assets/epub.js": "da9df9d4dd8b7edda1fdc1759acb56c61855698838ba4429632cd31b1dde0a45",
+  "packages/flutter_epub_viewer/ASSETS.sha256": "dea258f7c585d9f06f1cce3f8057b28d42160336228b5ef6714feb1dad42e9bb"
+}

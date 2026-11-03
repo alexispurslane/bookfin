@@ -628,9 +628,15 @@ class Contents {
 						(range.startContainer == range.endContainer
 						&& range.startOffset == range.endOffset)) {
 						if (range.startContainer.nodeType === TEXT_NODE) {
-							const followingCharacterOffset = range.startContainer.textContent.slice(range.startOffset).search(/\S/);
-							if (followingCharacterOffset >= 0) {
-								range.setStart(range.startContainer, range.startOffset + followingCharacterOffset);
+							const whiteSpace = this.window.getComputedStyle(range.startContainer.parentElement).whiteSpace;
+							// Only CSS-collapsible characters may yield to the following word.
+							// Preserved line breaks and nonbreaking spaces remain addressable.
+							const collapsible = whiteSpace === "normal" || whiteSpace === "nowrap"
+								? /^[ \t\r\n\f]+/ : whiteSpace === "pre-line" ? /^[ \t]+/ : null;
+							const text = range.startContainer.textContent;
+							const prefix = collapsible && text.slice(range.startOffset).match(collapsible);
+							if (prefix && range.startOffset + prefix[0].length < text.length) {
+								range.setStart(range.startContainer, range.startOffset + prefix[0].length);
 							}
 						}
 						// If the end for the range is not set, it results in collapsed becoming

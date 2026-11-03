@@ -58,7 +58,7 @@ async function browser({ bookfinFont = false } = {}) {
   } };
 }
 
-async function fixture({ failStyles = false, failedChapter, delayedChapter, publication, width = 412, height = 671 } = {}) {
+async function fixture({ failStyles = false, failedChapter, delayedChapter, publication, chapterMarkup, width = 412, height = 671 } = {}) {
   let releaseStyles;
   let styles = new Promise(resolve => { releaseStyles = resolve; });
   let requestedStyles;
@@ -68,7 +68,7 @@ async function fixture({ failStyles = false, failedChapter, delayedChapter, publ
   let requestedFont;
   const fontRequested = new Promise(resolve => { requestedFont = resolve; });
   const paragraphs = Array.from({ length: 16 }, (_, index) => `<p>Harbour passage ${index + 1}. The reader followed the shoreline and watched the small boats return. A bookmark could keep this place while the room grew dark.</p>`).join('');
-  const chapter = '<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Harbour</title><link rel="stylesheet" href="book.css"/></head><body>' +
+  const chapter = chapterMarkup || '<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Harbour</title><link rel="stylesheet" href="book.css"/></head><body>' +
     '<h1>The quiet harbour</h1><p>This book was written for a disposable Bookfin reading test. No private library or published story is used.</p>' +
     '<p>Morning light filled the quiet harbour. Mira carried a lantern to the old reading room, where every shelf held a different journey.</p>' +
     '<p>The sepia square below is a local PNG image.</p><img src="/image.png" alt="A sepia PNG square"/><p>The next square is a local JPEG image.</p><img src="/image.png" alt="A sepia JPEG square"/>' +
@@ -119,6 +119,38 @@ async function fixture({ failStyles = false, failedChapter, delayedChapter, publ
   return { url: `http://127.0.0.1:${server.address().port}/`, requested, releaseStyles: () => releaseStyles(), fontRequested, releaseFont,
     holdStyles() { styles = new Promise(resolve => { releaseStyles = resolve; }); return new Promise(resolve => { requestedStyles = resolve; }); },
     close() { releaseStyles(); releaseFont(); server.closeAllConnections(); return new Promise(resolve => server.close(resolve)); } };
+}
+
+for (const {name, tag, whiteSpace, text} of [
+  {name: 'preformatted blank lines', tag: 'pre', whiteSpace: 'pre', text: ' ' + '\n'.repeat(60) + 'Tail'},
+  {name: 'wrapped preserved blank lines', tag: 'div', whiteSpace: 'pre-wrap', text: ' ' + '\n'.repeat(60) + 'Tail'},
+  {name: 'nonbreaking spaces', tag: 'div', whiteSpace: 'normal', text: '\u00a0'.repeat(400) + 'Tail'},
+]) {
+  test('saved whitespace remains addressable: ' + name, {timeout: 30000}, async () => {
+    const source = await fixture({chapterMarkup: `<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Whitespace</title></head><body><${tag} id="target" style="white-space:${whiteSpace};line-height:30px;margin:0">${text}</${tag}></body></html>`});
+    const page = await browser({bookfinFont: true});
+    try {
+      await page.call('Page.navigate', {url: source.url});
+      await page.evaluate("new Promise(resolve => { if(window.bookfinReader)resolve();else addEventListener('load',resolve,{once:true});})");
+      await page.evaluate(`window.flutter_inappwebview={callHandler:()=>{}};
+        const create=ePub;window.ePub=Object.assign((...args)=>{const book=create(...args);const render=book.renderTo.bind(book);book.renderTo=(...args)=>(window.viewport=render(...args));return book},create);
+        bookfinReader.openBook({base:${JSON.stringify(source.url)},packagePath:'OPS/book.opf',fontSize:20,night:false,initial:null})`);
+      const before = await page.evaluate(`(()=>{const contents=viewport.getContents()[0];const node=contents.document.querySelector('#target').firstChild;
+        const range=contents.document.createRange();range.setStart(node,0);range.collapse(true);
+        window.whitespaceAddress={cfi:contents.cfiFromRange(range),resource:'OPS/one.xhtml',quote:node.textContent.slice(0,120)};
+        range.setEnd(node,1);const rect=range.getBoundingClientRect();
+        const measured=contents.locationOf(whitespaceAddress.cfi);
+        return {actualLeft:rect.left,actualTop:rect.top,measuredLeft:measured.left,measuredTop:measured.top,whiteSpace:contents.window.getComputedStyle(node.parentElement).whiteSpace};})()`);
+      assert.equal(before.whiteSpace, whiteSpace);
+      assert.ok(Math.abs(before.measuredLeft - before.actualLeft) < 1 && Math.abs(before.measuredTop - before.actualTop) < 1,
+        'destination must measure the addressed whitespace, not a later word: ' + JSON.stringify(before));
+      await page.evaluate('bookfinReader.display(whitespaceAddress)');
+      const left = await page.evaluate(`(()=>{const frame=document.querySelector('iframe');const doc=frame.contentDocument;
+        const range=doc.createRange();range.setStart(doc.querySelector('#target').firstChild,0);range.setEnd(range.startContainer,1);
+        return range.getBoundingClientRect().left+frame.getBoundingClientRect().left;})()`);
+      assert.ok(left >= 0 && left < 412, 'addressed whitespace must remain in the visible column');
+    } finally { await page.close(); await source.close(); }
+  });
 }
 
 test('converted Alice retains the recorded character passage', { timeout: 180000 }, async context => {

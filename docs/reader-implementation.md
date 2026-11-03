@@ -80,6 +80,9 @@ corpus reconstruction, six meaningful restoration failures, and host results.
 The existing layout test command now also needs the project Flutter
 dependencies, because its fixture uses the production importer and admission.
 Run `nix develop --command flutter pub get` before the engine tests.
+The whitespace follow-up preserves addressable spaces and line breaks under
+publication CSS, including preformatted content and nonbreaking spaces. Only
+CSS-collapsible whitespace may move the temporary destination measurement.
 Android visible-passage acceptance remains separate.
 
 The `t8-jj2s` candidate adds real Chromium iframe layout tests for delayed local

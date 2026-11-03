@@ -146,3 +146,20 @@ The candidate is not installed or observed on Android. No physical-device,
 TalkBack, WebKit, SVG-resource, or distribution acceptance is claimed.
 No coverage or mutation hardening runs in this task. All test HTTP listeners
 bind only to loopback and close with their owned headless browser processes.
+
+## Whitespace review correction
+
+Independent source review of 168b7af found that the initial suffix search also
+skipped addressable whitespace. The follow-up restricts advancement according to
+the publication's computed whitespace style. Preformatted spaces and line breaks,
+and nonbreaking spaces, remain valid destinations. Stored addresses and original
+book bytes remain unchanged. The original candidate's code excerpt and evidence
+above describe that earlier commit; this follow-up supersedes its broad rule.
+
+Three new actual-layout tests fail on the earlier candidate: `pre` and `pre-wrap`
+measure a later column at horizontal coordinate 841 CSS pixels instead of 17;
+normal-layout nonbreaking spaces measure vertical coordinate 121 instead of 1.
+The tests check the addressed character's real rectangle and its visibility after
+restoration. All three pass after the correction. Retained logs are under
+`tool/evidence/reader/kf8-restoration/whitespace/`. Exact-Alice and prior layout
+regressions remain in the full engine suite. Android acceptance is still pending.
