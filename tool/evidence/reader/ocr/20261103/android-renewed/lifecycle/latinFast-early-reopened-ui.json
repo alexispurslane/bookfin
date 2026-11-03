@@ -1,0 +1,153 @@
+{
+  "success": true,
+  "data": {
+    "nodes": [
+      {
+        "index": 0,
+        "type": "android.widget.Button",
+        "label": "RUN OFFLINE OCR MEASUREMENTS",
+        "enabled": true,
+        "selected": false,
+        "editable": false,
+        "password": false,
+        "hintShowing": false,
+        "bundleId": "dev.bookfin.ocr.probe.latinfast",
+        "rect": {
+          "x": 24,
+          "y": 24,
+          "width": 1032,
+          "height": 126
+        },
+        "visibleToUser": true,
+        "hittable": true,
+        "depth": 0,
+        "ref": "e1",
+        "kind": "button"
+      },
+      {
+        "index": 1,
+        "type": "android.widget.Button",
+        "label": "CANCEL AFTER CURRENT NATIVE PAGE",
+        "enabled": true,
+        "selected": false,
+        "editable": false,
+        "password": false,
+        "hintShowing": false,
+        "bundleId": "dev.bookfin.ocr.probe.latinfast",
+        "rect": {
+          "x": 24,
+          "y": 150,
+          "width": 1032,
+          "height": 126
+        },
+        "visibleToUser": true,
+        "hittable": true,
+        "depth": 0,
+        "ref": "e2",
+        "kind": "button"
+      },
+      {
+        "index": 2,
+        "type": "android.widget.ScrollView",
+        "enabled": true,
+        "selected": false,
+        "editable": false,
+        "password": false,
+        "hintShowing": false,
+        "bundleId": "dev.bookfin.ocr.probe.latinfast",
+        "rect": {
+          "x": 24,
+          "y": 276,
+          "width": 1032,
+          "height": 180
+        },
+        "visibleToUser": true,
+        "hittable": true,
+        "depth": 0,
+        "ref": "e3",
+        "kind": "scroll-area"
+      },
+      {
+        "index": 3,
+        "type": "android.widget.TextView",
+        "label": "Research only: latinFast\nFully bundled inputs. No Internet permission. Two passes per scan. Keep the app visible. Results: private files/report.json. Baseline is size-only.",
+        "enabled": true,
+        "selected": false,
+        "editable": false,
+        "password": false,
+        "hintShowing": false,
+        "selectionStart": 0,
+        "selectionEnd": 0,
+        "bundleId": "dev.bookfin.ocr.probe.latinfast",
+        "rect": {
+          "x": 24,
+          "y": 276,
+          "width": 1032,
+          "height": 180
+        },
+        "visibleToUser": true,
+        "hittable": true,
+        "depth": 1,
+        "parentIndex": 2,
+        "ref": "e4",
+        "kind": "text"
+      }
+    ],
+    "truncated": false,
+    "appName": "dev.bookfin.ocr.probe.latinfast",
+    "appBundleId": "dev.bookfin.ocr.probe.latinfast",
+    "visibility": {
+      "partial": false,
+      "visibleNodeCount": 4,
+      "totalNodeCount": 4,
+      "reasons": []
+    },
+    "keyboard": {
+      "kind": "absent"
+    },
+    "viewport": {
+      "width": 1080,
+      "height": 2400
+    },
+    "androidSnapshot": {
+      "backend": "android-helper",
+      "pixelDensity": 2.625,
+      "helperVersion": "0.21.31",
+      "helperApiVersion": "2",
+      "helperTransport": "persistent-session",
+      "helperSessionReused": true,
+      "installReason": "current",
+      "waitForIdleTimeoutMs": 500,
+      "waitForIdleQuietMs": 100,
+      "timeoutMs": 2000,
+      "maxDepth": 128,
+      "maxNodes": 5000,
+      "rootPresent": true,
+      "cacheInvalidated": true,
+      "captureMode": "interactive-windows",
+      "windowCount": 2,
+      "missingRootWindowTypes": [],
+      "nodeCount": 31,
+      "helperTruncated": false,
+      "elapsedMs": 9
+    },
+    "snapshotQuality": {
+      "state": "healthy",
+      "backend": "android-helper"
+    },
+    "snapshotDiagnostics": {
+      "stats": {
+        "count": 18,
+        "p50Ms": 18,
+        "p95Ms": 318,
+        "maxMs": 318,
+        "slowThresholdMs": 1500,
+        "platform": "android",
+        "backends": {
+          "android": 18
+        }
+      }
+    },
+    "refsGeneration": 778716
+  }
+}

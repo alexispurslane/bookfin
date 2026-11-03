@@ -1,0 +1,54 @@
+=== englishbest ===
+35632	/data/app/~~bjFFDcl5yMagkN2F8VLtMg==/dev.bookfin.ocr.probe.englishbest-WgyEmVj6tw5W2M4hChtoeg==/base.apk
+8	/data/app/~~bjFFDcl5yMagkN2F8VLtMg==/dev.bookfin.ocr.probe.englishbest-WgyEmVj6tw5W2M4hChtoeg==/lib/arm64
+16	/data/app/~~bjFFDcl5yMagkN2F8VLtMg==/dev.bookfin.ocr.probe.englishbest-WgyEmVj6tw5W2M4hChtoeg==/lib
+35656	/data/app/~~bjFFDcl5yMagkN2F8VLtMg==/dev.bookfin.ocr.probe.englishbest-WgyEmVj6tw5W2M4hChtoeg==
+8	./cache
+8	./code_cache
+15044	./files/tesseract/tessdata/eng.traineddata
+15052	./files/tesseract/tessdata
+15060	./files/tesseract
+36	./files/report.json
+15104	./files
+15128	.
+=== englishfast ===
+24608	/data/app/~~63bw24YJXySUMf12n7Cl0Q==/dev.bookfin.ocr.probe.englishfast-ZrxNqGb-746nEhUZKKwcow==/base.apk
+8	/data/app/~~63bw24YJXySUMf12n7Cl0Q==/dev.bookfin.ocr.probe.englishfast-ZrxNqGb-746nEhUZKKwcow==/lib/arm64
+16	/data/app/~~63bw24YJXySUMf12n7Cl0Q==/dev.bookfin.ocr.probe.englishfast-ZrxNqGb-746nEhUZKKwcow==/lib
+24632	/data/app/~~63bw24YJXySUMf12n7Cl0Q==/dev.bookfin.ocr.probe.englishfast-ZrxNqGb-746nEhUZKKwcow==
+8	./cache
+8	./code_cache
+4024	./files/tesseract/tessdata/eng.traineddata
+4032	./files/tesseract/tessdata
+4040	./files/tesseract
+36	./files/report.json
+4084	./files
+4108	.
+=== mlkit ===
+28492	/data/app/~~8WuVRJ2zpe-063Kv3ETWvw==/dev.bookfin.ocr.probe.mlkit-6A6wiJD4smNED_Dltylovg==/base.apk
+8	/data/app/~~8WuVRJ2zpe-063Kv3ETWvw==/dev.bookfin.ocr.probe.mlkit-6A6wiJD4smNED_Dltylovg==/lib/arm64
+16	/data/app/~~8WuVRJ2zpe-063Kv3ETWvw==/dev.bookfin.ocr.probe.mlkit-6A6wiJD4smNED_Dltylovg==/lib
+28516	/data/app/~~8WuVRJ2zpe-063Kv3ETWvw==/dev.bookfin.ocr.probe.mlkit-6A6wiJD4smNED_Dltylovg==
+8	./cache
+8	./code_cache
+44	./databases/com.google.android.datatransport.events
+4	./databases/com.google.android.datatransport.events-journal
+56	./databases
+8	./shared_prefs/com.google.mlkit.internal.xml
+16	./shared_prefs
+36	./files/report.json
+44	./files
+140	.
+=== latinfast ===
+107880	/data/app/~~f2E1IoiQ69UrzDMd0R-sWw==/dev.bookfin.ocr.probe.latinfast-x5gGaSp1YNWM5ja276qxBA==/base.apk
+8	/data/app/~~f2E1IoiQ69UrzDMd0R-sWw==/dev.bookfin.ocr.probe.latinfast-x5gGaSp1YNWM5ja276qxBA==/lib/arm64
+16	/data/app/~~f2E1IoiQ69UrzDMd0R-sWw==/dev.bookfin.ocr.probe.latinfast-x5gGaSp1YNWM5ja276qxBA==/lib
+107904	/data/app/~~f2E1IoiQ69UrzDMd0R-sWw==/dev.bookfin.ocr.probe.latinfast-x5gGaSp1YNWM5ja276qxBA==
+8	./cache
+8	./code_cache
+87296	./files/tesseract/tessdata/Latin.traineddata
+87304	./files/tesseract/tessdata
+87312	./files/tesseract
+36	./files/report.json
+87356	./files
+87380	.

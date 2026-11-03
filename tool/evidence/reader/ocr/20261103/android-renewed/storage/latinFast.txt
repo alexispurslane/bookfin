@@ -1,0 +1,25 @@
+Tue Nov  3 13:03:20 UTC 2026
+107880	/data/app/~~f2E1IoiQ69UrzDMd0R-sWw==/dev.bookfin.ocr.probe.latinfast-x5gGaSp1YNWM5ja276qxBA==/base.apk
+8	/data/app/~~f2E1IoiQ69UrzDMd0R-sWw==/dev.bookfin.ocr.probe.latinfast-x5gGaSp1YNWM5ja276qxBA==/lib/arm64
+16	/data/app/~~f2E1IoiQ69UrzDMd0R-sWw==/dev.bookfin.ocr.probe.latinfast-x5gGaSp1YNWM5ja276qxBA==/lib
+107904	/data/app/~~f2E1IoiQ69UrzDMd0R-sWw==/dev.bookfin.ocr.probe.latinfast-x5gGaSp1YNWM5ja276qxBA==
+8	./cache
+8	./code_cache
+87296	./files/tesseract/tessdata/Latin.traineddata
+87304	./files/tesseract/tessdata
+87312	./files/tesseract
+36	./files/report.json
+87356	./files
+87380	.
+files:
+total 44
+-rw------- 1 10224 10224 32598 2026-11-03 08:03 report.json
+drwx------ 3 10224 10224  4096 2026-11-03 07:54 tesseract
+
+files/tesseract:
+total 8
+drwx------ 2 10224 10224 4096 2026-11-03 07:54 tessdata
+
+files/tesseract/tessdata:
+total 87296
+-rw------- 1 10224 10224 89384811 2026-11-03 08:02 Latin.traineddata

@@ -1,0 +1,840 @@
+=== dev.bookfin.ocr.probe.englishbest ===
+pid=21954
+--------- beginning of main
+11-03 07:48:12.968 21954 21954 I obe.englishbest: Late-enabling -Xcheck:jni
+11-03 07:48:13.000 21954 21954 I obe.englishbest: Using CollectorTypeCMC GC.
+11-03 07:48:13.097 21954 21954 D nativeloader: Load libframework-connectivity-tiramisu-jni.so using APEX ns com_android_tethering for caller /apex/com.android.tethering/javalib/framework-connectivity-t.jar: ok
+11-03 07:48:13.378 21954 21954 D nativeloader: Configuring clns-9 for other apk /data/app/~~bjFFDcl5yMagkN2F8VLtMg==/dev.bookfin.ocr.probe.englishbest-WgyEmVj6tw5W2M4hChtoeg==/base.apk. target_sdk_version=36, uses_libraries=, library_path=/data/app/~~bjFFDcl5yMagkN2F8VLtMg==/dev.bookfin.ocr.probe.englishbest-WgyEmVj6tw5W2M4hChtoeg==/lib/arm64:/data/app/~~bjFFDcl5yMagkN2F8VLtMg==/dev.bookfin.ocr.probe.englishbest-WgyEmVj6tw5W2M4hChtoeg==/base.apk!/lib/arm64-v8a, permitted_path=/data:/mnt/expand:/data/user/0/dev.bookfin.ocr.probe.englishbest
+11-03 07:48:13.381 21954 21954 I obe.englishbest: AssetManager2(0xb4000076f5521758) locale list changing from [] to [en-US]
+11-03 07:48:13.393 21954 21954 V GraphicsEnvironment: Currently set values for:
+11-03 07:48:13.393 21954 21954 V GraphicsEnvironment:   angle_gl_driver_selection_pkgs=[]
+11-03 07:48:13.393 21954 21954 V GraphicsEnvironment:   angle_gl_driver_selection_values=[]
+11-03 07:48:13.393 21954 21954 V GraphicsEnvironment: dev.bookfin.ocr.probe.englishbest is not listed in per-application setting
+11-03 07:48:13.395 21954 21954 V GraphicsEnvironment: ANGLE allowlist from config: com.dreamgames.royalmatch com.dts.freefiremax com.dxx.firenow com.gramgames.mergedragons com.ludo.king com.mojang.minecraftpe com.my.defense com.nintendo.zaka com.os.airforce com.playrix.fishdomdd.gplay io.teslatech.callbreak jp.konami.prospia net.peakgames.toonblast
+11-03 07:48:13.395 21954 21954 V GraphicsEnvironment: dev.bookfin.ocr.probe.englishbest is not listed in ANGLE allowlist or settings, returning default
+11-03 07:48:13.395 21954 21954 V GraphicsEnvironment: Neither updatable production driver nor prerelease driver is supported.
+--------- beginning of system
+11-03 07:48:13.425 21954 21975 I DisplayManager: Choreographer implicitly registered for the refresh rate.
+11-03 07:48:13.439 21954 21954 I obe.englishbest: AssetManager2(0xb4000076f551b358) locale list changing from [] to [en-US]
+11-03 07:48:13.470 21954 21954 E ashmem  : Pinning is deprecated since Android Q. Please use trim or other methods.
+11-03 07:48:13.492 21954 21954 D CompatChangeReporter: Compat change id reported: 376561342; UID 10223; state: ENABLED
+11-03 07:48:13.514 21954 21975 I EGL_emulation: Opening libGLESv1_CM_emulation.so
+11-03 07:48:13.514 21954 21975 I EGL_emulation: Opening libGLESv2_emulation.so
+11-03 07:48:13.532 21954 21975 W HWUI    : Failed to choose config with EGL_SWAP_BEHAVIOR_PRESERVED, retrying without...
+11-03 07:48:13.533 21954 21975 W HWUI    : Failed to initialize 101010-2 format, error = EGL_SUCCESS
+11-03 07:48:13.535 21954 21954 D CompatChangeReporter: Compat change id reported: 377864165; UID 10223; state: ENABLED
+11-03 07:48:13.538 21954 21954 D DesktopModeFlags: Toggle override initialized to: OVERRIDE_UNSET
+11-03 07:48:13.611 21954 21954 W HWUI    : Unknown dataspace 0
+11-03 07:48:14.127 21954 21954 D InsetsController: hide(ime(), fromIme=false)
+11-03 07:48:14.127 21954 21954 I ImeTracker: dev.bookfin.ocr.probe.englishbest:97f3c7b9: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+11-03 07:48:14.232 21954 21965 I obe.englishbest: Compiler allocated 5111KB to compile void android.view.ViewRootImpl.performTraversals()
+11-03 07:49:22.761 21954 22291 I obe.englishbest: Using smaps_rollup for pss collection
+11-03 07:49:22.869 21954 22292 D CompatChangeReporter: Compat change id reported: 288912692; UID 10223; state: ENABLED
+11-03 07:49:22.992 21954 22291 D nativeloader: Load /data/app/~~bjFFDcl5yMagkN2F8VLtMg==/dev.bookfin.ocr.probe.englishbest-WgyEmVj6tw5W2M4hChtoeg==/base.apk!/lib/arm64-v8a/libjpeg.so using class loader ns clns-9 (caller=/data/app/~~bjFFDcl5yMagkN2F8VLtMg==/dev.bookfin.ocr.probe.englishbest-WgyEmVj6tw5W2M4hChtoeg==/base.apk): ok
+11-03 07:49:23.004 21954 22291 D nativeloader: Load /data/app/~~bjFFDcl5yMagkN2F8VLtMg==/dev.bookfin.ocr.probe.englishbest-WgyEmVj6tw5W2M4hChtoeg==/base.apk!/lib/arm64-v8a/libpngx.so using class loader ns clns-9 (caller=/data/app/~~bjFFDcl5yMagkN2F8VLtMg==/dev.bookfin.ocr.probe.englishbest-WgyEmVj6tw5W2M4hChtoeg==/base.apk): ok
+11-03 07:49:23.024 21954 22291 D nativeloader: Load /data/app/~~bjFFDcl5yMagkN2F8VLtMg==/dev.bookfin.ocr.probe.englishbest-WgyEmVj6tw5W2M4hChtoeg==/base.apk!/lib/arm64-v8a/libleptonica.so using class loader ns clns-9 (caller=/data/app/~~bjFFDcl5yMagkN2F8VLtMg==/dev.bookfin.ocr.probe.englishbest-WgyEmVj6tw5W2M4hChtoeg==/base.apk): ok
+11-03 07:49:23.077 21954 22291 D nativeloader: Load /data/app/~~bjFFDcl5yMagkN2F8VLtMg==/dev.bookfin.ocr.probe.englishbest-WgyEmVj6tw5W2M4hChtoeg==/base.apk!/lib/arm64-v8a/libtesseract.so using class loader ns clns-9 (caller=/data/app/~~bjFFDcl5yMagkN2F8VLtMg==/dev.bookfin.ocr.probe.englishbest-WgyEmVj6tw5W2M4hChtoeg==/base.apk): ok
+11-03 07:49:23.231 21954 22291 I Tesseract(native): Initialized Tesseract API with language=eng
+11-03 07:49:23.456 21954 22291 W HWUI    : Image decoding logging dropped!
+11-03 07:49:23.457 21954 22291 I obe.englishbest: hiddenapi: Accessing hidden field Landroid/graphics/Bitmap;->mNativePtr:J (runtime_flags=0, domain=platform, api=unsupported) from Lcom/googlecode/leptonica/android/ReadFile; (domain=app) using JNI: allowed
+11-03 07:49:24.548 21954 22291 W HWUI    : Image decoding logging dropped!
+11-03 07:49:25.398 21954 22291 W HWUI    : Image decoding logging dropped!
+11-03 07:49:25.785 21954 22291 W HWUI    : Image decoding logging dropped!
+11-03 07:49:26.365 21954 22291 W HWUI    : Image decoding logging dropped!
+11-03 07:49:29.850 21954 22291 W HWUI    : Image decoding logging dropped!
+11-03 07:49:33.225 21954 22291 W HWUI    : Image decoding logging dropped!
+11-03 07:49:35.745 21954 22291 W HWUI    : Image decoding logging dropped!
+11-03 07:49:38.242 21954 22291 W HWUI    : Image decoding logging dropped!
+11-03 07:49:46.352 21954 22291 W HWUI    : Image decoding logging dropped!
+11-03 07:49:54.390 21954 22291 W HWUI    : Image decoding logging dropped!
+11-03 07:49:54.668 21954 22291 W HWUI    : Image decoding logging dropped!
+11-03 07:49:54.937 21954 22291 W HWUI    : Image decoding logging dropped!
+11-03 07:49:55.208 21954 22291 W HWUI    : Image decoding logging dropped!
+11-03 07:50:20.204 21954 22291 I Tesseract(native): Initialized Tesseract API with language=eng
+11-03 07:50:20.381 21954 22291 W HWUI    : Image decoding logging dropped!
+11-03 07:50:21.448 21954 22291 W HWUI    : Image decoding logging dropped!
+11-03 07:50:22.254 21954 22291 W HWUI    : Image decoding logging dropped!
+11-03 07:50:22.631 21954 22291 W HWUI    : Image decoding logging dropped!
+11-03 07:50:23.132 21954 22291 W HWUI    : Image decoding logging dropped!
+11-03 07:50:26.492 21954 22291 W HWUI    : Image decoding logging dropped!
+11-03 07:50:29.748 21954 22291 W HWUI    : Image decoding logging dropped!
+11-03 07:50:32.161 21954 22291 W HWUI    : Image decoding logging dropped!
+11-03 07:51:04.156 21954 22291 I Tesseract(native): Initialized Tesseract API with language=eng
+11-03 07:51:04.355 21954 22291 W HWUI    : Image decoding logging dropped!
+11-03 07:51:05.507 21954 22291 W HWUI    : Image decoding logging dropped!
+11-03 07:51:06.351 21954 22291 W HWUI    : Image decoding logging dropped!
+11-03 07:51:06.736 21954 22291 W HWUI    : Image decoding logging dropped!
+11-03 07:51:07.250 21954 22291 W HWUI    : Image decoding logging dropped!
+11-03 07:51:10.735 21954 22291 W HWUI    : Image decoding logging dropped!
+11-03 07:51:14.079 21954 22291 W HWUI    : Image decoding logging dropped!
+11-03 07:51:16.572 21954 22291 W HWUI    : Image decoding logging dropped!
+11-03 07:51:17.825 21954 21954 W WindowOnBackDispatcher: sendCancelIfRunning: isInProgress=false callback=android.app.Activity$$ExternalSyntheticLambda0@5d5f92a
+11-03 07:51:17.836 21954 21954 D ViewRootImpl: Skipping stats log for color mode
+11-03 07:51:44.971 21954 21975 I EGL_emulation: Opening libGLESv1_CM_emulation.so
+11-03 07:51:44.971 21954 21975 I EGL_emulation: Opening libGLESv2_emulation.so
+11-03 07:51:44.978 21954 21975 W HWUI    : Failed to choose config with EGL_SWAP_BEHAVIOR_PRESERVED, retrying without...
+11-03 07:51:44.978 21954 21975 W HWUI    : Failed to initialize 101010-2 format, error = EGL_SUCCESS
+11-03 07:51:45.045 21954 21954 D AutofillManager: Fill dialog is enabled:false, hints=[]
+11-03 07:51:45.267 21954 21954 D InsetsController: hide(ime(), fromIme=false)
+11-03 07:51:45.277 21954 21954 I ImeTracker: dev.bookfin.ocr.probe.englishbest:f5353999: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+11-03 07:52:20.205 21954 22853 I Tesseract(native): Initialized Tesseract API with language=eng
+11-03 07:52:20.389 21954 22853 W HWUI    : Image decoding logging dropped!
+11-03 07:52:21.535 21954 22853 W HWUI    : Image decoding logging dropped!
+11-03 07:52:22.356 21954 22853 W HWUI    : Image decoding logging dropped!
+11-03 07:52:22.734 21954 22853 W HWUI    : Image decoding logging dropped!
+11-03 07:52:23.243 21954 22853 W HWUI    : Image decoding logging dropped!
+11-03 07:52:26.617 21954 22853 W HWUI    : Image decoding logging dropped!
+11-03 07:52:29.880 21954 22853 W HWUI    : Image decoding logging dropped!
+11-03 07:52:32.306 21954 22853 W HWUI    : Image decoding logging dropped!
+11-03 07:52:34.749 21954 22853 W HWUI    : Image decoding logging dropped!
+11-03 07:52:42.548 21954 22853 W HWUI    : Image decoding logging dropped!
+11-03 07:52:50.246 21954 22853 W HWUI    : Image decoding logging dropped!
+11-03 07:52:50.508 21954 22853 W HWUI    : Image decoding logging dropped!
+11-03 07:52:50.771 21954 22853 W HWUI    : Image decoding logging dropped!
+11-03 07:52:51.025 21954 22853 W HWUI    : Image decoding logging dropped!
+11-03 07:54:00.072 21954 21954 D VRI[MainActivity]: visibilityChanged oldVisibility=true newVisibility=false
+11-03 07:57:33.363 21954 21975 I EGL_emulation: Opening libGLESv1_CM_emulation.so
+11-03 07:57:33.363 21954 21975 I EGL_emulation: Opening libGLESv2_emulation.so
+11-03 07:57:33.388 21954 21975 W HWUI    : Failed to choose config with EGL_SWAP_BEHAVIOR_PRESERVED, retrying without...
+11-03 07:57:33.389 21954 21975 W HWUI    : Failed to initialize 101010-2 format, error = EGL_SUCCESS
+11-03 07:57:33.568 21954 21954 D InsetsController: hide(ime(), fromIme=false)
+11-03 07:57:33.568 21954 21954 I ImeTracker: dev.bookfin.ocr.probe.englishbest:db368ee: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+11-03 07:58:16.443 21954 21954 D VRI[MainActivity]: visibilityChanged oldVisibility=true newVisibility=false
+11-03 08:00:20.289 21954 21975 I EGL_emulation: Opening libGLESv1_CM_emulation.so
+11-03 08:00:20.289 21954 21975 I EGL_emulation: Opening libGLESv2_emulation.so
+11-03 08:00:20.298 21954 21975 W HWUI    : Failed to choose config with EGL_SWAP_BEHAVIOR_PRESERVED, retrying without...
+11-03 08:00:20.299 21954 21975 W HWUI    : Failed to initialize 101010-2 format, error = EGL_SUCCESS
+11-03 08:00:20.504 21954 21954 D InsetsController: hide(ime(), fromIme=false)
+11-03 08:00:20.504 21954 21954 I ImeTracker: dev.bookfin.ocr.probe.englishbest:bea6b91d: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+11-03 08:00:59.195 21954 21954 D VRI[MainActivity]: visibilityChanged oldVisibility=true newVisibility=false
+11-03 08:01:47.257 21954 21954 D InsetsController: hide(ime(), fromIme=false)
+11-03 08:01:47.257 21954 21954 I ImeTracker: dev.bookfin.ocr.probe.englishbest:5bcd589b: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+11-03 08:02:16.571 21954 21954 D VRI[MainActivity]: visibilityChanged oldVisibility=true newVisibility=false
+=== dev.bookfin.ocr.probe.englishfast ===
+pid=26392
+--------- beginning of main
+11-03 08:08:22.503 26392 26392 I obe.englishfast: Late-enabling -Xcheck:jni
+11-03 08:08:22.531 26392 26392 I obe.englishfast: Using CollectorTypeCMC GC.
+11-03 08:08:22.554 26392 26392 D nativeloader: Load libframework-connectivity-tiramisu-jni.so using APEX ns com_android_tethering for caller /apex/com.android.tethering/javalib/framework-connectivity-t.jar: ok
+11-03 08:08:22.684 26392 26392 D nativeloader: Configuring clns-9 for other apk /data/app/~~63bw24YJXySUMf12n7Cl0Q==/dev.bookfin.ocr.probe.englishfast-ZrxNqGb-746nEhUZKKwcow==/base.apk. target_sdk_version=36, uses_libraries=, library_path=/data/app/~~63bw24YJXySUMf12n7Cl0Q==/dev.bookfin.ocr.probe.englishfast-ZrxNqGb-746nEhUZKKwcow==/lib/arm64:/data/app/~~63bw24YJXySUMf12n7Cl0Q==/dev.bookfin.ocr.probe.englishfast-ZrxNqGb-746nEhUZKKwcow==/base.apk!/lib/arm64-v8a, permitted_path=/data:/mnt/expand:/data/user/0/dev.bookfin.ocr.probe.englishfast
+11-03 08:08:22.692 26392 26392 I obe.englishfast: AssetManager2(0xb4000076f5521758) locale list changing from [] to [en-US]
+11-03 08:08:22.706 26392 26392 V GraphicsEnvironment: Currently set values for:
+11-03 08:08:22.707 26392 26392 V GraphicsEnvironment:   angle_gl_driver_selection_pkgs=[]
+11-03 08:08:22.707 26392 26392 V GraphicsEnvironment:   angle_gl_driver_selection_values=[]
+11-03 08:08:22.707 26392 26392 V GraphicsEnvironment: dev.bookfin.ocr.probe.englishfast is not listed in per-application setting
+11-03 08:08:22.708 26392 26392 V GraphicsEnvironment: ANGLE allowlist from config: com.dreamgames.royalmatch com.dts.freefiremax com.dxx.firenow com.gramgames.mergedragons com.ludo.king com.mojang.minecraftpe com.my.defense com.nintendo.zaka com.os.airforce com.playrix.fishdomdd.gplay io.teslatech.callbreak jp.konami.prospia net.peakgames.toonblast
+11-03 08:08:22.708 26392 26392 V GraphicsEnvironment: dev.bookfin.ocr.probe.englishfast is not listed in ANGLE allowlist or settings, returning default
+11-03 08:08:22.708 26392 26392 V GraphicsEnvironment: Neither updatable production driver nor prerelease driver is supported.
+--------- beginning of system
+11-03 08:08:22.722 26392 26407 I DisplayManager: Choreographer implicitly registered for the refresh rate.
+11-03 08:08:22.722 26392 26392 I obe.englishfast: AssetManager2(0xb4000076f551b358) locale list changing from [] to [en-US]
+11-03 08:08:22.737 26392 26392 E ashmem  : Pinning is deprecated since Android Q. Please use trim or other methods.
+11-03 08:08:22.748 26392 26392 D CompatChangeReporter: Compat change id reported: 376561342; UID 10226; state: ENABLED
+11-03 08:08:22.774 26392 26407 I EGL_emulation: Opening libGLESv1_CM_emulation.so
+11-03 08:08:22.774 26392 26407 I EGL_emulation: Opening libGLESv2_emulation.so
+11-03 08:08:22.776 26392 26392 D CompatChangeReporter: Compat change id reported: 377864165; UID 10226; state: ENABLED
+11-03 08:08:22.777 26392 26392 D DesktopModeFlags: Toggle override initialized to: OVERRIDE_UNSET
+11-03 08:08:22.785 26392 26407 W HWUI    : Failed to choose config with EGL_SWAP_BEHAVIOR_PRESERVED, retrying without...
+11-03 08:08:22.785 26392 26407 W HWUI    : Failed to initialize 101010-2 format, error = EGL_SUCCESS
+11-03 08:08:22.807 26392 26392 W HWUI    : Unknown dataspace 0
+11-03 08:08:23.074 26392 26392 D InsetsController: hide(ime(), fromIme=false)
+11-03 08:08:23.075 26392 26392 I ImeTracker: dev.bookfin.ocr.probe.englishfast:b211899d: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+11-03 08:08:23.636 26392 26397 I obe.englishfast: Compiler allocated 5111KB to compile void android.view.ViewRootImpl.performTraversals()
+11-03 08:08:53.988 26392 26537 I obe.englishfast: Using smaps_rollup for pss collection
+11-03 08:08:54.025 26392 26537 D nativeloader: Load /data/app/~~63bw24YJXySUMf12n7Cl0Q==/dev.bookfin.ocr.probe.englishfast-ZrxNqGb-746nEhUZKKwcow==/base.apk!/lib/arm64-v8a/libjpeg.so using class loader ns clns-9 (caller=/data/app/~~63bw24YJXySUMf12n7Cl0Q==/dev.bookfin.ocr.probe.englishfast-ZrxNqGb-746nEhUZKKwcow==/base.apk): ok
+11-03 08:08:54.033 26392 26537 D nativeloader: Load /data/app/~~63bw24YJXySUMf12n7Cl0Q==/dev.bookfin.ocr.probe.englishfast-ZrxNqGb-746nEhUZKKwcow==/base.apk!/lib/arm64-v8a/libpngx.so using class loader ns clns-9 (caller=/data/app/~~63bw24YJXySUMf12n7Cl0Q==/dev.bookfin.ocr.probe.englishfast-ZrxNqGb-746nEhUZKKwcow==/base.apk): ok
+11-03 08:08:54.052 26392 26537 D nativeloader: Load /data/app/~~63bw24YJXySUMf12n7Cl0Q==/dev.bookfin.ocr.probe.englishfast-ZrxNqGb-746nEhUZKKwcow==/base.apk!/lib/arm64-v8a/libleptonica.so using class loader ns clns-9 (caller=/data/app/~~63bw24YJXySUMf12n7Cl0Q==/dev.bookfin.ocr.probe.englishfast-ZrxNqGb-746nEhUZKKwcow==/base.apk): ok
+11-03 08:08:54.096 26392 26540 D CompatChangeReporter: Compat change id reported: 288912692; UID 10226; state: ENABLED
+11-03 08:08:54.108 26392 26537 D nativeloader: Load /data/app/~~63bw24YJXySUMf12n7Cl0Q==/dev.bookfin.ocr.probe.englishfast-ZrxNqGb-746nEhUZKKwcow==/base.apk!/lib/arm64-v8a/libtesseract.so using class loader ns clns-9 (caller=/data/app/~~63bw24YJXySUMf12n7Cl0Q==/dev.bookfin.ocr.probe.englishfast-ZrxNqGb-746nEhUZKKwcow==/base.apk): ok
+11-03 08:08:54.254 26392 26537 I Tesseract(native): Initialized Tesseract API with language=eng
+11-03 08:08:54.463 26392 26537 W HWUI    : Image decoding logging dropped!
+11-03 08:08:54.464 26392 26537 I obe.englishfast: hiddenapi: Accessing hidden field Landroid/graphics/Bitmap;->mNativePtr:J (runtime_flags=0, domain=platform, api=unsupported) from Lcom/googlecode/leptonica/android/ReadFile; (domain=app) using JNI: allowed
+11-03 08:08:55.420 26392 26537 W HWUI    : Image decoding logging dropped!
+11-03 08:08:56.050 26392 26537 W HWUI    : Image decoding logging dropped!
+11-03 08:08:56.272 26392 26537 W HWUI    : Image decoding logging dropped!
+11-03 08:08:56.621 26392 26537 W HWUI    : Image decoding logging dropped!
+11-03 08:08:58.651 26392 26537 W HWUI    : Image decoding logging dropped!
+11-03 08:09:00.581 26392 26537 W HWUI    : Image decoding logging dropped!
+11-03 08:09:01.475 26392 26537 W HWUI    : Image decoding logging dropped!
+11-03 08:09:02.372 26392 26537 W HWUI    : Image decoding logging dropped!
+11-03 08:09:05.098 26392 26537 W HWUI    : Image decoding logging dropped!
+11-03 08:09:07.831 26392 26537 W HWUI    : Image decoding logging dropped!
+11-03 08:09:07.946 26392 26537 W HWUI    : Image decoding logging dropped!
+11-03 08:09:08.062 26392 26537 W HWUI    : Image decoding logging dropped!
+11-03 08:09:08.173 26392 26537 W HWUI    : Image decoding logging dropped!
+11-03 08:09:44.453 26392 26537 I Tesseract(native): Initialized Tesseract API with language=eng
+11-03 08:09:44.637 26392 26537 W HWUI    : Image decoding logging dropped!
+11-03 08:09:45.612 26392 26537 W HWUI    : Image decoding logging dropped!
+11-03 08:09:46.247 26392 26537 W HWUI    : Image decoding logging dropped!
+11-03 08:09:46.459 26392 26537 W HWUI    : Image decoding logging dropped!
+11-03 08:09:46.808 26392 26537 W HWUI    : Image decoding logging dropped!
+11-03 08:09:48.883 26392 26537 W HWUI    : Image decoding logging dropped!
+11-03 08:09:50.805 26392 26537 W HWUI    : Image decoding logging dropped!
+11-03 08:09:51.718 26392 26537 W HWUI    : Image decoding logging dropped!
+11-03 08:10:19.042 26392 26537 I Tesseract(native): Initialized Tesseract API with language=eng
+11-03 08:10:19.236 26392 26537 W HWUI    : Image decoding logging dropped!
+11-03 08:10:20.160 26392 26537 W HWUI    : Image decoding logging dropped!
+11-03 08:10:20.775 26392 26537 W HWUI    : Image decoding logging dropped!
+11-03 08:10:20.988 26392 26537 W HWUI    : Image decoding logging dropped!
+11-03 08:10:21.333 26392 26537 W HWUI    : Image decoding logging dropped!
+11-03 08:10:23.408 26392 26537 W HWUI    : Image decoding logging dropped!
+11-03 08:10:25.326 26392 26537 W HWUI    : Image decoding logging dropped!
+11-03 08:10:26.220 26392 26537 W HWUI    : Image decoding logging dropped!
+11-03 08:10:27.369 26392 26537 W HWUI    : Image decoding logging dropped!
+11-03 08:10:27.532 26392 26392 D VRI[MainActivity]: visibilityChanged oldVisibility=true newVisibility=false
+11-03 08:10:27.575 26392 26392 W WindowOnBackDispatcher: sendCancelIfRunning: isInProgress=false callback=android.app.Activity$$ExternalSyntheticLambda0@e82131b
+11-03 08:10:27.577 26392 26392 D ViewRootImpl: Skipping stats log for color mode
+11-03 08:10:45.864 26392 26407 I EGL_emulation: Opening libGLESv1_CM_emulation.so
+11-03 08:10:45.865 26392 26407 I EGL_emulation: Opening libGLESv2_emulation.so
+11-03 08:10:45.869 26392 26407 W HWUI    : Failed to choose config with EGL_SWAP_BEHAVIOR_PRESERVED, retrying without...
+11-03 08:10:45.870 26392 26407 W HWUI    : Failed to initialize 101010-2 format, error = EGL_SUCCESS
+11-03 08:10:45.887 26392 26392 D AutofillManager: Fill dialog is enabled:false, hints=[]
+11-03 08:10:46.154 26392 26392 D InsetsController: hide(ime(), fromIme=false)
+11-03 08:10:46.154 26392 26392 I ImeTracker: dev.bookfin.ocr.probe.englishfast:40b43d8: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+11-03 08:11:11.194 26392 27007 I Tesseract(native): Initialized Tesseract API with language=eng
+11-03 08:11:11.388 26392 27007 W HWUI    : Image decoding logging dropped!
+11-03 08:11:12.355 26392 27007 W HWUI    : Image decoding logging dropped!
+11-03 08:11:12.976 26392 27007 W HWUI    : Image decoding logging dropped!
+11-03 08:11:13.186 26392 27007 W HWUI    : Image decoding logging dropped!
+11-03 08:11:13.521 26392 27007 W HWUI    : Image decoding logging dropped!
+11-03 08:11:15.574 26392 27007 W HWUI    : Image decoding logging dropped!
+11-03 08:11:17.497 26392 27007 W HWUI    : Image decoding logging dropped!
+11-03 08:11:18.412 26392 27007 W HWUI    : Image decoding logging dropped!
+11-03 08:11:19.317 26392 27007 W HWUI    : Image decoding logging dropped!
+11-03 08:11:22.088 26392 27007 W HWUI    : Image decoding logging dropped!
+11-03 08:11:24.824 26392 27007 W HWUI    : Image decoding logging dropped!
+11-03 08:11:24.937 26392 27007 W HWUI    : Image decoding logging dropped!
+11-03 08:11:25.052 26392 27007 W HWUI    : Image decoding logging dropped!
+11-03 08:11:25.166 26392 27007 W HWUI    : Image decoding logging dropped!
+=== dev.bookfin.ocr.probe.mlkit ===
+    requested permissions:
+      dev.bookfin.ocr.probe.mlkit.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+    install permissions:
+      dev.bookfin.ocr.probe.mlkit.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION: granted=true
+    User 0: ceDataInode=385237 deDataInode=131111 installed=true hidden=false suspended=false distractionFlags=0 stopped=false notLaunched=false enabled=0 instant=false virtual=false quarantined=false
+      installReason=0
+      dataDir=/data/user/0/dev.bookfin.ocr.probe.mlkit
+      firstInstallTime=2026-11-03 07:47:39
+      uninstallReason=0
+      overlay paths:
+        /product/overlay/EmulationPixel7/EmulationPixel7Overlay.apk
+pid=25088
+--------- beginning of main
+11-03 08:04:07.280 25088 25088 I ocr.probe.mlkit: Late-enabling -Xcheck:jni
+11-03 08:04:07.306 25088 25088 I ocr.probe.mlkit: Using CollectorTypeCMC GC.
+11-03 08:04:07.456 25088 25088 D nativeloader: Load libframework-connectivity-tiramisu-jni.so using APEX ns com_android_tethering for caller /apex/com.android.tethering/javalib/framework-connectivity-t.jar: ok
+11-03 08:04:07.722 25088 25088 D nativeloader: Configuring clns-9 for other apk /data/app/~~8WuVRJ2zpe-063Kv3ETWvw==/dev.bookfin.ocr.probe.mlkit-6A6wiJD4smNED_Dltylovg==/base.apk. target_sdk_version=36, uses_libraries=, library_path=/data/app/~~8WuVRJ2zpe-063Kv3ETWvw==/dev.bookfin.ocr.probe.mlkit-6A6wiJD4smNED_Dltylovg==/lib/arm64:/data/app/~~8WuVRJ2zpe-063Kv3ETWvw==/dev.bookfin.ocr.probe.mlkit-6A6wiJD4smNED_Dltylovg==/base.apk!/lib/arm64-v8a, permitted_path=/data:/mnt/expand:/data/user/0/dev.bookfin.ocr.probe.mlkit
+11-03 08:04:07.732 25088 25088 I ocr.probe.mlkit: AssetManager2(0xb4000076f5521758) locale list changing from [] to [en-US]
+11-03 08:04:07.741 25088 25088 V GraphicsEnvironment: Currently set values for:
+11-03 08:04:07.741 25088 25088 V GraphicsEnvironment:   angle_gl_driver_selection_pkgs=[]
+11-03 08:04:07.741 25088 25088 V GraphicsEnvironment:   angle_gl_driver_selection_values=[]
+11-03 08:04:07.741 25088 25088 V GraphicsEnvironment: dev.bookfin.ocr.probe.mlkit is not listed in per-application setting
+11-03 08:04:07.741 25088 25088 V GraphicsEnvironment: ANGLE allowlist from config: com.dreamgames.royalmatch com.dts.freefiremax com.dxx.firenow com.gramgames.mergedragons com.ludo.king com.mojang.minecraftpe com.my.defense com.nintendo.zaka com.os.airforce com.playrix.fishdomdd.gplay io.teslatech.callbreak jp.konami.prospia net.peakgames.toonblast
+11-03 08:04:07.741 25088 25088 V GraphicsEnvironment: dev.bookfin.ocr.probe.mlkit is not listed in ANGLE allowlist or settings, returning default
+11-03 08:04:07.741 25088 25088 V GraphicsEnvironment: Neither updatable production driver nor prerelease driver is supported.
+--------- beginning of system
+11-03 08:04:07.789 25088 25108 I DisplayManager: Choreographer implicitly registered for the refresh rate.
+11-03 08:04:07.799 25088 25088 I ocr.probe.mlkit: AssetManager2(0xb4000076f5521118) locale list changing from [] to [en-US]
+11-03 08:04:07.813 25088 25088 E ashmem  : Pinning is deprecated since Android Q. Please use trim or other methods.
+11-03 08:04:07.839 25088 25088 D CompatChangeReporter: Compat change id reported: 376561342; UID 10225; state: ENABLED
+11-03 08:04:07.877 25088 25088 D CompatChangeReporter: Compat change id reported: 377864165; UID 10225; state: ENABLED
+11-03 08:04:07.879 25088 25088 D DesktopModeFlags: Toggle override initialized to: OVERRIDE_UNSET
+11-03 08:04:07.883 25088 25108 I EGL_emulation: Opening libGLESv1_CM_emulation.so
+11-03 08:04:07.883 25088 25108 I EGL_emulation: Opening libGLESv2_emulation.so
+11-03 08:04:07.888 25088 25108 W HWUI    : Failed to choose config with EGL_SWAP_BEHAVIOR_PRESERVED, retrying without...
+11-03 08:04:07.888 25088 25108 W HWUI    : Failed to initialize 101010-2 format, error = EGL_SUCCESS
+11-03 08:04:07.919 25088 25088 W HWUI    : Unknown dataspace 0
+11-03 08:04:08.203 25088 25088 D InsetsController: hide(ime(), fromIme=false)
+11-03 08:04:08.203 25088 25088 I ImeTracker: dev.bookfin.ocr.probe.mlkit:bc13aab1: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+11-03 08:04:08.539 25088 25093 I ocr.probe.mlkit: Compiler allocated 5111KB to compile void android.view.ViewRootImpl.performTraversals()
+11-03 08:04:41.434 25088 25251 I ocr.probe.mlkit: Using smaps_rollup for pss collection
+11-03 08:04:41.516 25088 25257 D DecoupledTextDelegate: Start loading thick OCR module.
+11-03 08:04:41.517 25088 25257 I DynamiteModule: Considering local module com.google.mlkit.dynamite.text.latin:10000 and remote module com.google.mlkit.dynamite.text.latin:0
+11-03 08:04:41.518 25088 25257 I DynamiteModule: Selected local version of com.google.mlkit.dynamite.text.latin
+11-03 08:04:41.564 25088 25253 D CompatChangeReporter: Compat change id reported: 288912692; UID 10225; state: ENABLED
+11-03 08:04:41.750 25088 25254 W TransportRuntime: Error scheduling event ConnectivityService: Neither user 10225 nor current process has android.permission.ACCESS_NETWORK_STATE.
+11-03 08:04:41.751 25088 25254 W TransportRuntime: Error scheduling event ConnectivityService: Neither user 10225 nor current process has android.permission.ACCESS_NETWORK_STATE.
+11-03 08:04:42.140 25088 25251 W HWUI    : Image decoding logging dropped!
+11-03 08:04:42.199 25088 25254 W TransportRuntime: Error scheduling event ConnectivityService: Neither user 10225 nor current process has android.permission.ACCESS_NETWORK_STATE.
+11-03 08:04:42.256 25088 25262 D nativeloader: Load /data/app/~~8WuVRJ2zpe-063Kv3ETWvw==/dev.bookfin.ocr.probe.mlkit-6A6wiJD4smNED_Dltylovg==/base.apk!/lib/arm64-v8a/libmlkit_google_ocr_pipeline.so using class loader ns clns-9 (caller=/data/app/~~8WuVRJ2zpe-063Kv3ETWvw==/dev.bookfin.ocr.probe.mlkit-6A6wiJD4smNED_Dltylovg==/base.apk): ok
+11-03 08:04:42.268 25088 25262 I native  : I0000 00:00:1793711082.259620   25262 asset_manager_util.cc:61] Created global reference to asset manager.
+11-03 08:04:42.335 25088 25262 I Manager : DeviceManager::DeviceManager
+11-03 08:04:42.337 25088 25262 W ServerFlag: Failed to parse result of GetServerConfigurableFlag, errno=34
+11-03 08:04:42.337 25088 25262 I Manager : findAvailableDevices
+11-03 08:04:42.353 25088 25262 W ocr.probe.mlkit: AIBinder_linkToDeath is being called with a non-null cookie and no onUnlink callback set. This might not be intended. AIBinder_DeathRecipient_setOnUnlinked should be called first.
+11-03 08:04:42.360 25088 25262 W ocr.probe.mlkit: AIBinder_linkToDeath is being called with a non-null cookie and no onUnlink callback set. This might not be intended. AIBinder_DeathRecipient_setOnUnlinked should be called first.
+11-03 08:04:42.363 25088 25262 I Manager : Found interface nnapi-sample_all (version = JUST_AN_EXAMPLE)
+11-03 08:04:42.363 25088 25262 I Manager : Found interface nnapi-sample_quant (version = JUST_AN_EXAMPLE)
+11-03 08:04:42.363 25088 25262 I Manager : Found interface nnapi-sample_sl_shim (version = JUST_AN_EXAMPLE)
+11-03 08:04:42.369 25088 25267 W libc    : Access denied finding property "ro.hardware.chipname"
+11-03 08:04:42.369 25088 25267 I native  : I0000 00:00:1793711082.369327   25267 resource_manager.cc:23] Number of optimal threads: 4
+11-03 08:04:42.371 25088 25268 I native  : I0000 00:00:1793711082.371009   25268 text_classifier.cc:32] Creating classifier TfliteTextClassifier
+11-03 08:04:42.371 25088 25268 I native  : I0000 00:00:1793711082.371205   25268 common_util.h:41] Resizing Thread Pool: ocr_segm to 3
+11-03 08:04:42.371 25088 25267 I native  : I0000 00:00:1793711082.371760   25267 text_detector_thread_pool_context.cc:38] Compute manager max in flight region detector overwrite: 1
+11-03 08:04:42.371 25088 25267 I native  : I0000 00:00:1793711082.371869   25267 common_util.h:41] Resizing Thread Pool: ocr_det_0 to 3
+11-03 08:04:42.373 25088 25268 I native  : I0000 00:00:1793711082.373732   25268 tflite_lstm_client_base.cc:371] Resizing interpreter pool to 4
+11-03 08:04:42.374 25088 25267 I native  : I0000 00:00:1793711082.374646   25267 tflite_detector_client_with_shape_cache.cc:76] Interpreter threads: 4
+11-03 08:04:42.378 25088 25268 I tflite  : Initialized TensorFlow Lite runtime.
+11-03 08:04:42.380 25088 25267 I tflite  : Created TensorFlow Lite XNNPACK delegate for CPU.
+11-03 08:04:42.380 25088 25268 I native  : I0000 00:00:1793711082.380151   25268 multi_pass_line_recognition_mutator.cc:342] Preloading recognizers.
+11-03 08:04:42.380 25088 25278 I native  : I0000 00:00:1793711082.380725   25278 tflite_model_pooled_runner.cc:625] Loading mlkit-google-ocr-models/gocr/gocr_models/line_recognition_legacy_mobile/Latn_ctc/optical/conv_model.fb
+11-03 08:04:42.380 25088 25267 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:04:42.381 25088 25278 I native  : I0000 00:00:1793711082.381089   25278 tflite_model_pooled_runner.cc:636] Loading mlkit-google-ocr-models/gocr/gocr_models/line_recognition_legacy_mobile/Latn_ctc/optical/lstm_model.fb
+11-03 08:04:42.382 25088 25267 I native  : I0000 00:00:1793711082.382684   25267 tflite_detector_client_with_shape_cache.cc:105] Caching size: 10
+11-03 08:04:42.382 25088 25278 I native  : I0000 00:00:1793711082.382987   25278 tflite_model_pooled_runner.cc:836] Resizing interpreter pool to 4
+11-03 08:04:42.383 25088 25267 I native  : I0000 00:00:1793711082.383322   25267 tflite_model_pooled_runner.cc:625] Loading mlkit-google-ocr-models/gocr/layout/line_splitting_custom_ops/model.tflite
+11-03 08:04:42.384 25088 25267 I native  : I0000 00:00:1793711082.384245   25267 tflite_model_pooled_runner.cc:836] Resizing interpreter pool to 1
+11-03 08:04:42.384 25088 25267 I native  : I0000 00:00:1793711082.384397   25267 tflite_model_pooled_runner.cc:625] Loading mlkit-google-ocr-models/gocr/layout/line_clustering_custom_ops/model.tflite
+11-03 08:04:42.384 25088 25278 I native  : I0000 00:00:1793711082.384752   25278 mobile_langid_v2.cc:58] MobileLangID V2 initialized.
+11-03 08:04:42.384 25088 25267 I native  : I0000 00:00:1793711082.384772   25267 tflite_model_pooled_runner.cc:836] Resizing interpreter pool to 1
+11-03 08:04:42.384 25088 25278 I native  : I0000 00:00:1793711082.384785   25278 multi_pass_line_recognition_mutator.cc:364] Finished preloading a recognizer for "Latn"
+11-03 08:04:42.384 25088 25268 I native  : I0000 00:00:1793711082.384867   25268 multi_pass_line_recognition_mutator.cc:398] Finished preloading recognizers.
+11-03 08:04:42.385 25088 25262 D PipelineManager: Start process bitmap
+11-03 08:04:42.386 25088 25262 I ocr.probe.mlkit: hiddenapi: Accessing hidden field Landroid/graphics/Bitmap;->mNativePtr:J (runtime_flags=0, domain=platform, api=unsupported) from Lcom/google/android/libraries/vision/visionkit/pipeline/alt/zbc; (domain=app) using JNI: allowed
+11-03 08:04:42.386 25088 25262 I native  : I0000 00:00:1793711082.386307   25262 scheduler.cc:693] ImageMetadata: 2737x4445
+11-03 08:04:42.412 25088 25268 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:04:42.424 25088 25268 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:04:42.429 25088 25268 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:04:42.468 25088 25268 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:04:42.469 25088 25268 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:04:42.471 25088 25268 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:04:42.514 25088 25262 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:04:42.523 25088 25254 W TransportRuntime: Error scheduling event ConnectivityService: Neither user 10225 nor current process has android.permission.ACCESS_NETWORK_STATE.
+11-03 08:04:42.527 25088 25254 W TransportRuntime: Error scheduling event ConnectivityService: Neither user 10225 nor current process has android.permission.ACCESS_NETWORK_STATE.
+11-03 08:04:42.675 25088 25251 W HWUI    : Image decoding logging dropped!
+11-03 08:04:42.676 25088 25305 D PipelineManager: Start process bitmap
+11-03 08:04:42.732 25088 25305 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:04:42.750 25088 25251 W HWUI    : Image decoding logging dropped!
+11-03 08:04:42.750 25088 25308 D PipelineManager: Start process bitmap
+11-03 08:04:42.754 25088 25267 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:04:42.756 25088 25267 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:04:42.759 25088 25267 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:04:42.765 25088 25267 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:04:42.767 25088 25267 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:04:42.768 25088 25267 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:04:42.792 25088 25308 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:04:42.807 25088 25251 W HWUI    : Image decoding logging dropped!
+11-03 08:04:42.807 25088 25257 D PipelineManager: Start process bitmap
+11-03 08:04:42.842 25088 25257 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:04:42.993 25088 25251 W HWUI    : Image decoding logging dropped!
+11-03 08:04:42.994 25088 25262 D PipelineManager: Start process bitmap
+11-03 08:04:43.020 25088 25267 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:04:43.025 25088 25267 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:04:43.029 25088 25267 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:04:43.042 25088 25267 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:04:43.047 25088 25267 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:04:43.048 25088 25267 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:04:43.142 25088 25262 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:04:43.309 25088 25251 W HWUI    : Image decoding logging dropped!
+11-03 08:04:43.310 25088 25305 D PipelineManager: Start process bitmap
+11-03 08:04:43.428 25088 25305 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:04:43.480 25088 25251 W HWUI    : Image decoding logging dropped!
+11-03 08:04:43.481 25088 25308 D PipelineManager: Start process bitmap
+11-03 08:04:43.494 25088 25267 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:04:43.499 25088 25267 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:04:43.506 25088 25267 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:04:43.521 25088 25267 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:04:43.524 25088 25267 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:04:43.526 25088 25267 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:04:43.612 25088 25308 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:04:43.665 25088 25251 W HWUI    : Image decoding logging dropped!
+11-03 08:04:43.665 25088 25257 D PipelineManager: Start process bitmap
+11-03 08:04:43.783 25088 25257 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:04:43.840 25088 25251 W HWUI    : Image decoding logging dropped!
+11-03 08:04:43.841 25088 25262 D PipelineManager: Start process bitmap
+11-03 08:04:44.142 25088 25262 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:04:44.248 25088 25251 W HWUI    : Image decoding logging dropped!
+11-03 08:04:44.249 25088 25305 D PipelineManager: Start process bitmap
+11-03 08:04:44.504 25088 25305 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:04:44.575 25088 25251 W HWUI    : Image decoding logging dropped!
+11-03 08:04:44.576 25088 25308 D PipelineManager: Start process bitmap
+11-03 08:04:44.579 25088 25267 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:04:44.583 25088 25267 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:04:44.586 25088 25267 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:04:44.604 25088 25267 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:04:44.605 25088 25267 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:04:44.617 25088 25308 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:04:44.627 25088 25251 W HWUI    : Image decoding logging dropped!
+11-03 08:04:44.628 25088 25257 D PipelineManager: Start process bitmap
+11-03 08:04:44.650 25088 25257 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:04:44.659 25088 25251 W HWUI    : Image decoding logging dropped!
+11-03 08:04:44.660 25088 25262 D PipelineManager: Start process bitmap
+11-03 08:04:44.680 25088 25262 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:04:44.689 25088 25251 W HWUI    : Image decoding logging dropped!
+11-03 08:04:44.690 25088 25305 D PipelineManager: Start process bitmap
+11-03 08:04:44.714 25088 25305 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:05:20.419 25088 25257 D DecoupledTextDelegate: Start loading thick OCR module.
+11-03 08:05:20.419 25088 25257 I DynamiteModule: Considering local module com.google.mlkit.dynamite.text.latin:10000 and remote module com.google.mlkit.dynamite.text.latin:0
+11-03 08:05:20.419 25088 25257 I DynamiteModule: Selected local version of com.google.mlkit.dynamite.text.latin
+11-03 08:05:20.424 25088 25254 W TransportRuntime: Error scheduling event ConnectivityService: Neither user 10225 nor current process has android.permission.ACCESS_NETWORK_STATE.
+11-03 08:05:20.424 25088 25254 W TransportRuntime: Error scheduling event ConnectivityService: Neither user 10225 nor current process has android.permission.ACCESS_NETWORK_STATE.
+11-03 08:05:20.680 25088 25251 W HWUI    : Image decoding logging dropped!
+11-03 08:05:20.688 25088 25254 W TransportRuntime: Error scheduling event ConnectivityService: Neither user 10225 nor current process has android.permission.ACCESS_NETWORK_STATE.
+11-03 08:05:20.690 25088 25262 I native  : I0000 00:00:1793711120.681868   25262 asset_manager_util.cc:61] Created global reference to asset manager.
+11-03 08:05:20.695 25088 25482 I native  : I0000 00:00:1793711120.694987   25482 resource_manager.cc:23] Number of optimal threads: 4
+11-03 08:05:20.695 25088 25482 I native  : I0000 00:00:1793711120.695561   25482 text_detector_thread_pool_context.cc:38] Compute manager max in flight region detector overwrite: 1
+11-03 08:05:20.695 25088 25482 I native  : I0000 00:00:1793711120.695658   25482 common_util.h:41] Resizing Thread Pool: ocr_det_0 to 3
+11-03 08:05:20.695 25088 25483 I native  : I0000 00:00:1793711120.695720   25483 text_classifier.cc:32] Creating classifier TfliteTextClassifier
+11-03 08:05:20.695 25088 25483 I native  : I0000 00:00:1793711120.695819   25483 common_util.h:41] Resizing Thread Pool: ocr_segm to 3
+11-03 08:05:20.695 25088 25482 I native  : I0000 00:00:1793711120.695958   25482 tflite_detector_client_with_shape_cache.cc:76] Interpreter threads: 4
+11-03 08:05:20.701 25088 25483 I native  : I0000 00:00:1793711120.701142   25483 tflite_lstm_client_base.cc:371] Resizing interpreter pool to 4
+11-03 08:05:20.701 25088 25483 I native  : I0000 00:00:1793711120.701705   25483 multi_pass_line_recognition_mutator.cc:342] Preloading recognizers.
+11-03 08:05:20.701 25088 25298 I native  : I0000 00:00:1793711120.701971   25298 tflite_model_pooled_runner.cc:625] Loading mlkit-google-ocr-models/gocr/gocr_models/line_recognition_legacy_mobile/Latn_ctc/optical/conv_model.fb
+11-03 08:05:20.702 25088 25298 I native  : I0000 00:00:1793711120.702232   25298 tflite_model_pooled_runner.cc:636] Loading mlkit-google-ocr-models/gocr/gocr_models/line_recognition_legacy_mobile/Latn_ctc/optical/lstm_model.fb
+11-03 08:05:20.702 25088 25482 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:05:20.703 25088 25482 I native  : I0000 00:00:1793711120.703385   25482 tflite_detector_client_with_shape_cache.cc:105] Caching size: 10
+11-03 08:05:20.704 25088 25298 I native  : I0000 00:00:1793711120.704949   25298 tflite_model_pooled_runner.cc:836] Resizing interpreter pool to 4
+11-03 08:05:20.706 25088 25482 I native  : I0000 00:00:1793711120.706431   25482 tflite_model_pooled_runner.cc:625] Loading mlkit-google-ocr-models/gocr/layout/line_splitting_custom_ops/model.tflite
+11-03 08:05:20.706 25088 25298 I native  : I0000 00:00:1793711120.706489   25298 mobile_langid_v2.cc:58] MobileLangID V2 initialized.
+11-03 08:05:20.706 25088 25298 I native  : I0000 00:00:1793711120.706519   25298 multi_pass_line_recognition_mutator.cc:364] Finished preloading a recognizer for "Latn"
+11-03 08:05:20.706 25088 25482 I native  : I0000 00:00:1793711120.706560   25482 tflite_model_pooled_runner.cc:836] Resizing interpreter pool to 1
+11-03 08:05:20.706 25088 25483 I native  : I0000 00:00:1793711120.706634   25483 multi_pass_line_recognition_mutator.cc:398] Finished preloading recognizers.
+11-03 08:05:20.706 25088 25482 I native  : I0000 00:00:1793711120.706684   25482 tflite_model_pooled_runner.cc:625] Loading mlkit-google-ocr-models/gocr/layout/line_clustering_custom_ops/model.tflite
+11-03 08:05:20.706 25088 25482 I native  : I0000 00:00:1793711120.706807   25482 tflite_model_pooled_runner.cc:836] Resizing interpreter pool to 1
+11-03 08:05:20.708 25088 25262 D PipelineManager: Start process bitmap
+11-03 08:05:20.796 25088 25482 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:05:20.870 25088 25482 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:05:20.888 25088 25482 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:05:20.925 25088 25482 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:05:20.942 25088 25482 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:05:20.944 25088 25482 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:05:20.968 25088 25262 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:05:20.973 25088 25254 W TransportRuntime: Error scheduling event ConnectivityService: Neither user 10225 nor current process has android.permission.ACCESS_NETWORK_STATE.
+11-03 08:05:20.973 25088 25254 W TransportRuntime: Error scheduling event ConnectivityService: Neither user 10225 nor current process has android.permission.ACCESS_NETWORK_STATE.
+11-03 08:05:20.973 25088 25254 W TransportRuntime: Error scheduling event ConnectivityService: Neither user 10225 nor current process has android.permission.ACCESS_NETWORK_STATE.
+11-03 08:05:21.170 25088 25251 W HWUI    : Image decoding logging dropped!
+11-03 08:05:21.171 25088 25305 D PipelineManager: Start process bitmap
+11-03 08:05:21.316 25088 25305 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:05:21.340 25088 25251 W HWUI    : Image decoding logging dropped!
+11-03 08:05:21.340 25088 25308 D PipelineManager: Start process bitmap
+11-03 08:05:21.344 25088 25482 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:05:21.351 25088 25482 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:05:21.353 25088 25482 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:05:21.356 25088 25482 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:05:21.363 25088 25482 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:05:21.367 25088 25482 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:05:21.379 25088 25308 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:05:21.391 25088 25251 W HWUI    : Image decoding logging dropped!
+11-03 08:05:21.391 25088 25257 D PipelineManager: Start process bitmap
+11-03 08:05:21.413 25088 25257 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:05:21.556 25088 25251 W HWUI    : Image decoding logging dropped!
+11-03 08:05:21.557 25088 25262 D PipelineManager: Start process bitmap
+11-03 08:05:21.583 25088 25483 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:05:21.589 25088 25483 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:05:21.594 25088 25483 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:05:21.605 25088 25483 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:05:21.607 25088 25483 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:05:21.609 25088 25483 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:05:21.684 25088 25262 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:05:21.838 25088 25251 W HWUI    : Image decoding logging dropped!
+11-03 08:05:21.838 25088 25305 D PipelineManager: Start process bitmap
+11-03 08:05:21.938 25088 25305 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:05:21.979 25088 25251 W HWUI    : Image decoding logging dropped!
+11-03 08:05:21.980 25088 25308 D PipelineManager: Start process bitmap
+11-03 08:05:21.994 25088 25483 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:05:22.000 25088 25483 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:05:22.006 25088 25483 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:05:22.024 25088 25483 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:05:22.027 25088 25483 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:05:22.029 25088 25483 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:05:22.101 25088 25308 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:05:22.148 25088 25251 W HWUI    : Image decoding logging dropped!
+11-03 08:05:22.148 25088 25257 D PipelineManager: Start process bitmap
+11-03 08:05:22.245 25088 25257 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:05:22.294 25088 25251 W HWUI    : Image decoding logging dropped!
+11-03 08:05:22.297 25088 25262 D PipelineManager: Start process bitmap
+11-03 08:05:22.570 25088 25262 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:05:22.658 25088 25251 W HWUI    : Image decoding logging dropped!
+11-03 08:05:22.658 25088 25305 D PipelineManager: Start process bitmap
+11-03 08:05:22.915 25088 25305 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:05:22.977 25088 25251 W HWUI    : Image decoding logging dropped!
+11-03 08:05:22.977 25088 25308 D PipelineManager: Start process bitmap
+11-03 08:05:22.980 25088 25482 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:05:22.983 25088 25482 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:05:22.986 25088 25482 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:05:23.004 25088 25482 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:05:23.007 25088 25482 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:05:23.019 25088 25308 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:05:23.028 25088 25251 W HWUI    : Image decoding logging dropped!
+11-03 08:05:23.029 25088 25257 D PipelineManager: Start process bitmap
+11-03 08:05:23.051 25088 25257 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:05:23.061 25088 25251 W HWUI    : Image decoding logging dropped!
+11-03 08:05:23.061 25088 25262 D PipelineManager: Start process bitmap
+11-03 08:05:23.082 25088 25262 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:05:23.091 25088 25251 W HWUI    : Image decoding logging dropped!
+11-03 08:05:23.092 25088 25305 D PipelineManager: Start process bitmap
+11-03 08:05:23.116 25088 25305 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:06:38.888 25088 25801 D DecoupledTextDelegate: Start loading thick OCR module.
+11-03 08:06:38.888 25088 25801 I DynamiteModule: Considering local module com.google.mlkit.dynamite.text.latin:10000 and remote module com.google.mlkit.dynamite.text.latin:0
+11-03 08:06:38.888 25088 25801 I DynamiteModule: Selected local version of com.google.mlkit.dynamite.text.latin
+11-03 08:06:38.889 25088 25254 W TransportRuntime: Error scheduling event ConnectivityService: Neither user 10225 nor current process has android.permission.ACCESS_NETWORK_STATE.
+11-03 08:06:38.894 25088 25254 W TransportRuntime: Error scheduling event ConnectivityService: Neither user 10225 nor current process has android.permission.ACCESS_NETWORK_STATE.
+11-03 08:06:39.085 25088 25251 W HWUI    : Image decoding logging dropped!
+11-03 08:06:39.087 25088 25808 I native  : I0000 00:00:1793711199.087235   25808 asset_manager_util.cc:61] Created global reference to asset manager.
+11-03 08:06:39.089 25088 25254 W TransportRuntime: Error scheduling event ConnectivityService: Neither user 10225 nor current process has android.permission.ACCESS_NETWORK_STATE.
+11-03 08:06:39.089 25088 25809 I native  : I0000 00:00:1793711199.089756   25809 resource_manager.cc:23] Number of optimal threads: 4
+11-03 08:06:39.092 25088 25809 I native  : I0000 00:00:1793711199.092917   25809 text_detector_thread_pool_context.cc:38] Compute manager max in flight region detector overwrite: 1
+11-03 08:06:39.093 25088 25809 I native  : I0000 00:00:1793711199.093041   25809 common_util.h:41] Resizing Thread Pool: ocr_det_0 to 3
+11-03 08:06:39.093 25088 25810 I native  : I0000 00:00:1793711199.093047   25810 text_classifier.cc:32] Creating classifier TfliteTextClassifier
+11-03 08:06:39.093 25088 25810 I native  : I0000 00:00:1793711199.093204   25810 common_util.h:41] Resizing Thread Pool: ocr_segm to 3
+11-03 08:06:39.093 25088 25809 I native  : I0000 00:00:1793711199.093307   25809 tflite_detector_client_with_shape_cache.cc:76] Interpreter threads: 4
+11-03 08:06:39.095 25088 25810 I native  : I0000 00:00:1793711199.095720   25810 tflite_lstm_client_base.cc:371] Resizing interpreter pool to 4
+11-03 08:06:39.097 25088 25810 I native  : I0000 00:00:1793711199.097183   25810 multi_pass_line_recognition_mutator.cc:342] Preloading recognizers.
+11-03 08:06:39.097 25088 25298 I native  : I0000 00:00:1793711199.097872   25298 tflite_model_pooled_runner.cc:625] Loading mlkit-google-ocr-models/gocr/gocr_models/line_recognition_legacy_mobile/Latn_ctc/optical/conv_model.fb
+11-03 08:06:39.098 25088 25809 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:06:39.103 25088 25298 I native  : I0000 00:00:1793711199.103231   25298 tflite_model_pooled_runner.cc:636] Loading mlkit-google-ocr-models/gocr/gocr_models/line_recognition_legacy_mobile/Latn_ctc/optical/lstm_model.fb
+11-03 08:06:39.104 25088 25809 I native  : I0000 00:00:1793711199.104109   25809 tflite_detector_client_with_shape_cache.cc:105] Caching size: 10
+11-03 08:06:39.105 25088 25809 I native  : I0000 00:00:1793711199.105645   25809 tflite_model_pooled_runner.cc:625] Loading mlkit-google-ocr-models/gocr/layout/line_splitting_custom_ops/model.tflite
+11-03 08:06:39.106 25088 25809 I native  : I0000 00:00:1793711199.106077   25809 tflite_model_pooled_runner.cc:836] Resizing interpreter pool to 1
+11-03 08:06:39.106 25088 25809 I native  : I0000 00:00:1793711199.106223   25809 tflite_model_pooled_runner.cc:625] Loading mlkit-google-ocr-models/gocr/layout/line_clustering_custom_ops/model.tflite
+11-03 08:06:39.106 25088 25298 I native  : I0000 00:00:1793711199.105651   25298 tflite_model_pooled_runner.cc:836] Resizing interpreter pool to 4
+11-03 08:06:39.106 25088 25809 I native  : I0000 00:00:1793711199.106660   25809 tflite_model_pooled_runner.cc:836] Resizing interpreter pool to 1
+11-03 08:06:39.107 25088 25298 I native  : I0000 00:00:1793711199.107591   25298 mobile_langid_v2.cc:58] MobileLangID V2 initialized.
+11-03 08:06:39.107 25088 25298 I native  : I0000 00:00:1793711199.107612   25298 multi_pass_line_recognition_mutator.cc:364] Finished preloading a recognizer for "Latn"
+11-03 08:06:39.107 25088 25810 I native  : I0000 00:00:1793711199.107690   25810 multi_pass_line_recognition_mutator.cc:398] Finished preloading recognizers.
+11-03 08:06:39.108 25088 25808 D PipelineManager: Start process bitmap
+11-03 08:06:39.148 25088 25810 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:06:39.156 25088 25810 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:06:39.193 25088 25810 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:06:39.269 25088 25810 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:06:39.322 25088 25810 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:06:39.391 25088 25810 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:06:39.453 25088 25808 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:06:39.457 25088 25254 W TransportRuntime: Error scheduling event ConnectivityService: Neither user 10225 nor current process has android.permission.ACCESS_NETWORK_STATE.
+11-03 08:06:39.466 25088 25254 W TransportRuntime: Error scheduling event ConnectivityService: Neither user 10225 nor current process has android.permission.ACCESS_NETWORK_STATE.
+11-03 08:06:39.466 25088 25254 W TransportRuntime: Error scheduling event ConnectivityService: Neither user 10225 nor current process has android.permission.ACCESS_NETWORK_STATE.
+11-03 08:06:39.653 25088 25251 W HWUI    : Image decoding logging dropped!
+11-03 08:06:39.655 25088 25843 D PipelineManager: Start process bitmap
+11-03 08:06:39.781 25088 25843 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:06:39.801 25088 25251 W HWUI    : Image decoding logging dropped!
+11-03 08:06:39.803 25088 25844 D PipelineManager: Start process bitmap
+11-03 08:06:39.809 25088 25810 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:06:39.816 25088 25810 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:06:39.819 25088 25810 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:06:39.823 25088 25810 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:06:39.824 25088 25810 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:06:39.827 25088 25810 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:06:39.842 25088 25844 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:06:39.854 25088 25251 W HWUI    : Image decoding logging dropped!
+11-03 08:06:39.855 25088 25801 D PipelineManager: Start process bitmap
+11-03 08:06:39.886 25088 25801 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:06:40.035 25088 25251 W HWUI    : Image decoding logging dropped!
+11-03 08:06:40.035 25088 25808 D PipelineManager: Start process bitmap
+11-03 08:06:40.063 25088 25809 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:06:40.068 25088 25809 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:06:40.074 25088 25809 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:06:40.085 25088 25809 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:06:40.090 25088 25809 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:06:40.092 25088 25809 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:06:40.161 25088 25808 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:06:40.314 25088 25251 W HWUI    : Image decoding logging dropped!
+11-03 08:06:40.314 25088 25843 D PipelineManager: Start process bitmap
+11-03 08:06:40.421 25088 25843 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:06:40.463 25088 25251 W HWUI    : Image decoding logging dropped!
+11-03 08:06:40.463 25088 25844 D PipelineManager: Start process bitmap
+11-03 08:06:40.478 25088 25810 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:06:40.483 25088 25810 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:06:40.492 25088 25810 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:06:40.506 25088 25810 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:06:40.509 25088 25810 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:06:40.511 25088 25810 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:06:40.581 25088 25844 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:06:40.623 25088 25251 W HWUI    : Image decoding logging dropped!
+11-03 08:06:40.623 25088 25801 D PipelineManager: Start process bitmap
+11-03 08:06:40.728 25088 25801 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:06:40.777 25088 25251 W HWUI    : Image decoding logging dropped!
+11-03 08:06:40.777 25088 25808 D PipelineManager: Start process bitmap
+11-03 08:06:41.037 25088 25808 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:06:41.120 25088 25251 W HWUI    : Image decoding logging dropped!
+11-03 08:06:41.120 25088 25843 D PipelineManager: Start process bitmap
+11-03 08:06:41.372 25088 25843 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:06:41.429 25088 25251 W HWUI    : Image decoding logging dropped!
+11-03 08:06:41.429 25088 25844 D PipelineManager: Start process bitmap
+11-03 08:06:41.432 25088 25810 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:06:41.435 25088 25810 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:06:41.437 25088 25810 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:06:41.444 25088 25810 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:06:41.448 25088 25810 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:06:41.468 25088 25844 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:06:41.478 25088 25251 W HWUI    : Image decoding logging dropped!
+11-03 08:06:41.479 25088 25801 D PipelineManager: Start process bitmap
+11-03 08:06:41.508 25088 25801 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:06:41.517 25088 25251 W HWUI    : Image decoding logging dropped!
+11-03 08:06:41.517 25088 25808 D PipelineManager: Start process bitmap
+11-03 08:06:41.540 25088 25808 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:06:41.552 25088 25251 W HWUI    : Image decoding logging dropped!
+11-03 08:06:41.553 25088 25843 D PipelineManager: Start process bitmap
+11-03 08:06:41.590 25088 25843 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:06:51.925 25088 25088 W WindowOnBackDispatcher: sendCancelIfRunning: isInProgress=false callback=android.app.Activity$$ExternalSyntheticLambda0@fe363de
+11-03 08:06:51.935 25088 25088 D ViewRootImpl: Skipping stats log for color mode
+11-03 08:07:14.657 25088 25108 I EGL_emulation: Opening libGLESv1_CM_emulation.so
+11-03 08:07:14.657 25088 25108 I EGL_emulation: Opening libGLESv2_emulation.so
+11-03 08:07:14.660 25088 25108 W HWUI    : Failed to choose config with EGL_SWAP_BEHAVIOR_PRESERVED, retrying without...
+11-03 08:07:14.661 25088 25108 W HWUI    : Failed to initialize 101010-2 format, error = EGL_SUCCESS
+11-03 08:07:14.673 25088 25088 D AutofillManager: Fill dialog is enabled:false, hints=[]
+11-03 08:07:14.889 25088 25088 D InsetsController: hide(ime(), fromIme=false)
+11-03 08:07:14.889 25088 25088 I ImeTracker: dev.bookfin.ocr.probe.mlkit:a9df841e: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+11-03 08:07:45.710 25088 26163 D DecoupledTextDelegate: Start loading thick OCR module.
+11-03 08:07:45.710 25088 26163 I DynamiteModule: Considering local module com.google.mlkit.dynamite.text.latin:10000 and remote module com.google.mlkit.dynamite.text.latin:0
+11-03 08:07:45.710 25088 26163 I DynamiteModule: Selected local version of com.google.mlkit.dynamite.text.latin
+11-03 08:07:45.711 25088 25254 W TransportRuntime: Error scheduling event ConnectivityService: Neither user 10225 nor current process has android.permission.ACCESS_NETWORK_STATE.
+11-03 08:07:45.712 25088 25254 W TransportRuntime: Error scheduling event ConnectivityService: Neither user 10225 nor current process has android.permission.ACCESS_NETWORK_STATE.
+11-03 08:07:45.911 25088 26158 W HWUI    : Image decoding logging dropped!
+11-03 08:07:45.915 25088 26164 I native  : I0000 00:00:1793711265.915161   26164 asset_manager_util.cc:61] Created global reference to asset manager.
+11-03 08:07:45.918 25088 25254 W TransportRuntime: Error scheduling event ConnectivityService: Neither user 10225 nor current process has android.permission.ACCESS_NETWORK_STATE.
+11-03 08:07:45.919 25088 26165 I native  : I0000 00:00:1793711265.919467   26165 resource_manager.cc:23] Number of optimal threads: 4
+11-03 08:07:45.919 25088 26165 I native  : I0000 00:00:1793711265.919638   26165 text_detector_thread_pool_context.cc:38] Compute manager max in flight region detector overwrite: 1
+11-03 08:07:45.920 25088 26166 I native  : I0000 00:00:1793711265.920386   26166 text_classifier.cc:32] Creating classifier TfliteTextClassifier
+11-03 08:07:45.920 25088 26166 I native  : I0000 00:00:1793711265.920530   26166 common_util.h:41] Resizing Thread Pool: ocr_segm to 3
+11-03 08:07:45.921 25088 26166 I native  : I0000 00:00:1793711265.921622   26166 tflite_lstm_client_base.cc:371] Resizing interpreter pool to 4
+11-03 08:07:45.922 25088 26166 I native  : I0000 00:00:1793711265.922474   26166 multi_pass_line_recognition_mutator.cc:342] Preloading recognizers.
+11-03 08:07:45.923 25088 25298 I native  : I0000 00:00:1793711265.923456   25298 tflite_model_pooled_runner.cc:625] Loading mlkit-google-ocr-models/gocr/gocr_models/line_recognition_legacy_mobile/Latn_ctc/optical/conv_model.fb
+11-03 08:07:45.923 25088 25298 I native  : I0000 00:00:1793711265.923960   25298 tflite_model_pooled_runner.cc:636] Loading mlkit-google-ocr-models/gocr/gocr_models/line_recognition_legacy_mobile/Latn_ctc/optical/lstm_model.fb
+11-03 08:07:45.924 25088 26165 I native  : I0000 00:00:1793711265.924200   26165 common_util.h:41] Resizing Thread Pool: ocr_det_0 to 3
+11-03 08:07:45.925 25088 26165 I native  : I0000 00:00:1793711265.925086   26165 tflite_detector_client_with_shape_cache.cc:76] Interpreter threads: 4
+11-03 08:07:45.927 25088 26165 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:07:45.928 25088 26165 I native  : I0000 00:00:1793711265.928351   26165 tflite_detector_client_with_shape_cache.cc:105] Caching size: 10
+11-03 08:07:45.933 25088 26165 I native  : I0000 00:00:1793711265.933555   26165 tflite_model_pooled_runner.cc:625] Loading mlkit-google-ocr-models/gocr/layout/line_splitting_custom_ops/model.tflite
+11-03 08:07:45.933 25088 25298 I native  : I0000 00:00:1793711265.933645   25298 tflite_model_pooled_runner.cc:836] Resizing interpreter pool to 4
+11-03 08:07:45.933 25088 26165 I native  : I0000 00:00:1793711265.933699   26165 tflite_model_pooled_runner.cc:836] Resizing interpreter pool to 1
+11-03 08:07:45.933 25088 26165 I native  : I0000 00:00:1793711265.933830   26165 tflite_model_pooled_runner.cc:625] Loading mlkit-google-ocr-models/gocr/layout/line_clustering_custom_ops/model.tflite
+11-03 08:07:45.934 25088 26165 I native  : I0000 00:00:1793711265.934131   26165 tflite_model_pooled_runner.cc:836] Resizing interpreter pool to 1
+11-03 08:07:45.934 25088 25298 I native  : I0000 00:00:1793711265.934918   25298 mobile_langid_v2.cc:58] MobileLangID V2 initialized.
+11-03 08:07:45.934 25088 25298 I native  : I0000 00:00:1793711265.934934   25298 multi_pass_line_recognition_mutator.cc:364] Finished preloading a recognizer for "Latn"
+11-03 08:07:45.935 25088 26166 I native  : I0000 00:00:1793711265.935195   26166 multi_pass_line_recognition_mutator.cc:398] Finished preloading recognizers.
+11-03 08:07:45.937 25088 26164 D PipelineManager: Start process bitmap
+11-03 08:07:45.999 25088 26165 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:07:46.040 25088 26165 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:07:46.125 25088 26165 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:07:46.215 25088 26165 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:07:46.221 25088 26165 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:07:46.224 25088 26165 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:07:46.257 25088 26164 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:07:46.261 25088 25254 W TransportRuntime: Error scheduling event ConnectivityService: Neither user 10225 nor current process has android.permission.ACCESS_NETWORK_STATE.
+11-03 08:07:46.262 25088 25254 W TransportRuntime: Error scheduling event ConnectivityService: Neither user 10225 nor current process has android.permission.ACCESS_NETWORK_STATE.
+11-03 08:07:46.264 25088 25254 W TransportRuntime: Error scheduling event ConnectivityService: Neither user 10225 nor current process has android.permission.ACCESS_NETWORK_STATE.
+11-03 08:07:46.449 25088 26158 W HWUI    : Image decoding logging dropped!
+11-03 08:07:46.450 25088 26197 D PipelineManager: Start process bitmap
+11-03 08:07:46.599 25088 26197 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:07:46.624 25088 26158 W HWUI    : Image decoding logging dropped!
+11-03 08:07:46.625 25088 26204 D PipelineManager: Start process bitmap
+11-03 08:07:46.630 25088 26166 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:07:46.634 25088 26166 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:07:46.636 25088 26166 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:07:46.645 25088 26166 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:07:46.662 25088 26166 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:07:46.664 25088 26166 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:07:46.676 25088 26204 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:07:46.687 25088 26158 W HWUI    : Image decoding logging dropped!
+11-03 08:07:46.688 25088 26163 D PipelineManager: Start process bitmap
+11-03 08:07:46.749 25088 26163 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:07:46.897 25088 26158 W HWUI    : Image decoding logging dropped!
+11-03 08:07:46.898 25088 26164 D PipelineManager: Start process bitmap
+11-03 08:07:46.926 25088 26166 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:07:46.931 25088 26166 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:07:46.936 25088 26166 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:07:46.956 25088 26166 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:07:46.959 25088 26166 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:07:46.961 25088 26166 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:07:47.030 25088 26164 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:07:47.179 25088 26158 W HWUI    : Image decoding logging dropped!
+11-03 08:07:47.180 25088 26197 D PipelineManager: Start process bitmap
+11-03 08:07:47.287 25088 26197 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:07:47.325 25088 26158 W HWUI    : Image decoding logging dropped!
+11-03 08:07:47.335 25088 26204 D PipelineManager: Start process bitmap
+11-03 08:07:47.349 25088 26166 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:07:47.354 25088 26166 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:07:47.360 25088 26166 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:07:47.374 25088 26166 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:07:47.376 25088 26166 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:07:47.379 25088 26166 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:07:47.450 25088 26204 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:07:47.489 25088 26158 W HWUI    : Image decoding logging dropped!
+11-03 08:07:47.491 25088 26163 D PipelineManager: Start process bitmap
+11-03 08:07:47.598 25088 26163 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:07:47.647 25088 26158 W HWUI    : Image decoding logging dropped!
+11-03 08:07:47.647 25088 26164 D PipelineManager: Start process bitmap
+11-03 08:07:47.909 25088 26164 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:07:47.988 25088 26158 W HWUI    : Image decoding logging dropped!
+11-03 08:07:47.988 25088 26197 D PipelineManager: Start process bitmap
+11-03 08:07:48.241 25088 26197 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:07:48.298 25088 26158 W HWUI    : Image decoding logging dropped!
+11-03 08:07:48.298 25088 26204 D PipelineManager: Start process bitmap
+11-03 08:07:48.300 25088 26166 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:07:48.304 25088 26166 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:07:48.314 25088 26166 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:07:48.320 25088 26166 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:07:48.322 25088 26166 I tflite  : Replacing 44 out of 46 node(s) with delegate (TfLiteXNNPackDelegate) node, yielding 3 partitions for the whole graph.
+11-03 08:07:48.343 25088 26204 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:07:48.352 25088 26158 W HWUI    : Image decoding logging dropped!
+11-03 08:07:48.352 25088 26163 D PipelineManager: Start process bitmap
+11-03 08:07:48.375 25088 26163 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:07:48.387 25088 26158 W HWUI    : Image decoding logging dropped!
+11-03 08:07:48.387 25088 26164 D PipelineManager: Start process bitmap
+11-03 08:07:48.418 25088 26164 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:07:48.433 25088 26158 W HWUI    : Image decoding logging dropped!
+11-03 08:07:48.433 25088 26197 D PipelineManager: Start process bitmap
+11-03 08:07:48.460 25088 26197 D PipelineManager: OCR process succeeded via visionkit pipeline.
+11-03 08:08:23.086 25088 25088 D VRI[MainActivity]: visibilityChanged oldVisibility=true newVisibility=false
+11-03 08:10:26.837 25088 25108 I EGL_emulation: Opening libGLESv1_CM_emulation.so
+11-03 08:10:26.837 25088 25108 I EGL_emulation: Opening libGLESv2_emulation.so
+11-03 08:10:26.852 25088 25108 W HWUI    : Failed to choose config with EGL_SWAP_BEHAVIOR_PRESERVED, retrying without...
+11-03 08:10:26.853 25088 25108 W HWUI    : Failed to initialize 101010-2 format, error = EGL_SUCCESS
+11-03 08:10:27.044 25088 25088 D InsetsController: hide(ime(), fromIme=false)
+11-03 08:10:27.044 25088 25088 I ImeTracker: dev.bookfin.ocr.probe.mlkit:f451fdf: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+11-03 08:10:46.417 25088 25088 D VRI[MainActivity]: visibilityChanged oldVisibility=true newVisibility=false
+=== dev.bookfin.ocr.probe.latinfast ===
+pid=23136
+--------- beginning of main
+11-03 07:53:59.579 23136 23136 I probe.latinfast: Late-enabling -Xcheck:jni
+11-03 07:53:59.642 23136 23136 I probe.latinfast: Using CollectorTypeCMC GC.
+11-03 07:53:59.765 23136 23136 D nativeloader: Load libframework-connectivity-tiramisu-jni.so using APEX ns com_android_tethering for caller /apex/com.android.tethering/javalib/framework-connectivity-t.jar: ok
+11-03 07:53:59.907 23136 23136 D nativeloader: Configuring clns-9 for other apk /data/app/~~f2E1IoiQ69UrzDMd0R-sWw==/dev.bookfin.ocr.probe.latinfast-x5gGaSp1YNWM5ja276qxBA==/base.apk. target_sdk_version=36, uses_libraries=, library_path=/data/app/~~f2E1IoiQ69UrzDMd0R-sWw==/dev.bookfin.ocr.probe.latinfast-x5gGaSp1YNWM5ja276qxBA==/lib/arm64:/data/app/~~f2E1IoiQ69UrzDMd0R-sWw==/dev.bookfin.ocr.probe.latinfast-x5gGaSp1YNWM5ja276qxBA==/base.apk!/lib/arm64-v8a, permitted_path=/data:/mnt/expand:/data/user/0/dev.bookfin.ocr.probe.latinfast
+11-03 07:53:59.920 23136 23136 I probe.latinfast: AssetManager2(0xb4000076f5521758) locale list changing from [] to [en-US]
+11-03 07:53:59.935 23136 23136 V GraphicsEnvironment: Currently set values for:
+11-03 07:53:59.935 23136 23136 V GraphicsEnvironment:   angle_gl_driver_selection_pkgs=[]
+11-03 07:53:59.935 23136 23136 V GraphicsEnvironment:   angle_gl_driver_selection_values=[]
+11-03 07:53:59.935 23136 23136 V GraphicsEnvironment: dev.bookfin.ocr.probe.latinfast is not listed in per-application setting
+11-03 07:53:59.936 23136 23136 V GraphicsEnvironment: ANGLE allowlist from config: com.dreamgames.royalmatch com.dts.freefiremax com.dxx.firenow com.gramgames.mergedragons com.ludo.king com.mojang.minecraftpe com.my.defense com.nintendo.zaka com.os.airforce com.playrix.fishdomdd.gplay io.teslatech.callbreak jp.konami.prospia net.peakgames.toonblast
+11-03 07:53:59.936 23136 23136 V GraphicsEnvironment: dev.bookfin.ocr.probe.latinfast is not listed in ANGLE allowlist or settings, returning default
+11-03 07:53:59.936 23136 23136 V GraphicsEnvironment: Neither updatable production driver nor prerelease driver is supported.
+--------- beginning of system
+11-03 07:53:59.960 23136 23152 I DisplayManager: Choreographer implicitly registered for the refresh rate.
+11-03 07:53:59.968 23136 23136 I probe.latinfast: AssetManager2(0xb4000076f5521118) locale list changing from [] to [en-US]
+11-03 07:53:59.991 23136 23136 E ashmem  : Pinning is deprecated since Android Q. Please use trim or other methods.
+11-03 07:54:00.004 23136 23136 D CompatChangeReporter: Compat change id reported: 376561342; UID 10224; state: ENABLED
+11-03 07:54:00.022 23136 23152 I EGL_emulation: Opening libGLESv1_CM_emulation.so
+11-03 07:54:00.022 23136 23152 I EGL_emulation: Opening libGLESv2_emulation.so
+11-03 07:54:00.033 23136 23152 W HWUI    : Failed to choose config with EGL_SWAP_BEHAVIOR_PRESERVED, retrying without...
+11-03 07:54:00.035 23136 23152 W HWUI    : Failed to initialize 101010-2 format, error = EGL_SUCCESS
+11-03 07:54:00.037 23136 23136 D CompatChangeReporter: Compat change id reported: 377864165; UID 10224; state: ENABLED
+11-03 07:54:00.039 23136 23136 D DesktopModeFlags: Toggle override initialized to: OVERRIDE_UNSET
+11-03 07:54:00.078 23136 23136 W HWUI    : Unknown dataspace 0
+11-03 07:54:00.438 23136 23136 D InsetsController: hide(ime(), fromIme=false)
+11-03 07:54:00.438 23136 23136 I ImeTracker: dev.bookfin.ocr.probe.latinfast:8b075c4c: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+11-03 07:54:00.802 23136 23140 I probe.latinfast: Compiler allocated 5111KB to compile void android.view.ViewRootImpl.performTraversals()
+11-03 07:54:36.070 23136 23301 I probe.latinfast: Using smaps_rollup for pss collection
+11-03 07:54:36.185 23136 23304 D CompatChangeReporter: Compat change id reported: 288912692; UID 10224; state: ENABLED
+11-03 07:54:36.803 23136 23301 D nativeloader: Load /data/app/~~f2E1IoiQ69UrzDMd0R-sWw==/dev.bookfin.ocr.probe.latinfast-x5gGaSp1YNWM5ja276qxBA==/base.apk!/lib/arm64-v8a/libjpeg.so using class loader ns clns-9 (caller=/data/app/~~f2E1IoiQ69UrzDMd0R-sWw==/dev.bookfin.ocr.probe.latinfast-x5gGaSp1YNWM5ja276qxBA==/base.apk): ok
+11-03 07:54:36.813 23136 23301 D nativeloader: Load /data/app/~~f2E1IoiQ69UrzDMd0R-sWw==/dev.bookfin.ocr.probe.latinfast-x5gGaSp1YNWM5ja276qxBA==/base.apk!/lib/arm64-v8a/libpngx.so using class loader ns clns-9 (caller=/data/app/~~f2E1IoiQ69UrzDMd0R-sWw==/dev.bookfin.ocr.probe.latinfast-x5gGaSp1YNWM5ja276qxBA==/base.apk): ok
+11-03 07:54:36.820 23136 23301 D nativeloader: Load /data/app/~~f2E1IoiQ69UrzDMd0R-sWw==/dev.bookfin.ocr.probe.latinfast-x5gGaSp1YNWM5ja276qxBA==/base.apk!/lib/arm64-v8a/libleptonica.so using class loader ns clns-9 (caller=/data/app/~~f2E1IoiQ69UrzDMd0R-sWw==/dev.bookfin.ocr.probe.latinfast-x5gGaSp1YNWM5ja276qxBA==/base.apk): ok
+11-03 07:54:36.851 23136 23301 D nativeloader: Load /data/app/~~f2E1IoiQ69UrzDMd0R-sWw==/dev.bookfin.ocr.probe.latinfast-x5gGaSp1YNWM5ja276qxBA==/base.apk!/lib/arm64-v8a/libtesseract.so using class loader ns clns-9 (caller=/data/app/~~f2E1IoiQ69UrzDMd0R-sWw==/dev.bookfin.ocr.probe.latinfast-x5gGaSp1YNWM5ja276qxBA==/base.apk): ok
+11-03 07:54:37.143 23136 23301 I Tesseract(native): Initialized Tesseract API with language=Latin
+11-03 07:54:37.313 23136 23301 W HWUI    : Image decoding logging dropped!
+11-03 07:54:37.315 23136 23301 I probe.latinfast: hiddenapi: Accessing hidden field Landroid/graphics/Bitmap;->mNativePtr:J (runtime_flags=0, domain=platform, api=unsupported) from Lcom/googlecode/leptonica/android/ReadFile; (domain=app) using JNI: allowed
+11-03 07:54:38.187 23136 23301 W HWUI    : Image decoding logging dropped!
+11-03 07:54:38.916 23136 23301 W HWUI    : Image decoding logging dropped!
+11-03 07:54:39.202 23136 23301 W HWUI    : Image decoding logging dropped!
+11-03 07:54:39.622 23136 23301 W HWUI    : Image decoding logging dropped!
+11-03 07:54:42.264 23136 23301 W HWUI    : Image decoding logging dropped!
+11-03 07:54:44.798 23136 23301 W HWUI    : Image decoding logging dropped!
+11-03 07:54:46.329 23136 23301 W HWUI    : Image decoding logging dropped!
+11-03 07:54:47.817 23136 23301 W HWUI    : Image decoding logging dropped!
+11-03 07:54:52.305 23136 23301 W HWUI    : Image decoding logging dropped!
+11-03 07:54:56.778 23136 23301 W HWUI    : Image decoding logging dropped!
+11-03 07:54:56.950 23136 23301 W HWUI    : Image decoding logging dropped!
+11-03 07:54:57.119 23136 23301 W HWUI    : Image decoding logging dropped!
+11-03 07:54:57.286 23136 23301 W HWUI    : Image decoding logging dropped!
+11-03 07:56:10.576 23136 23301 I Tesseract(native): Initialized Tesseract API with language=Latin
+11-03 07:56:10.776 23136 23301 W HWUI    : Image decoding logging dropped!
+11-03 07:56:11.673 23136 23301 W HWUI    : Image decoding logging dropped!
+11-03 07:56:12.370 23136 23301 W HWUI    : Image decoding logging dropped!
+11-03 07:56:12.649 23136 23301 W HWUI    : Image decoding logging dropped!
+11-03 07:56:13.061 23136 23301 W HWUI    : Image decoding logging dropped!
+11-03 07:56:15.619 23136 23301 W HWUI    : Image decoding logging dropped!
+11-03 07:56:18.060 23136 23301 W HWUI    : Image decoding logging dropped!
+11-03 07:56:19.531 23136 23301 W HWUI    : Image decoding logging dropped!
+11-03 07:56:21.050 23136 23301 W HWUI    : Image decoding logging dropped!
+11-03 07:56:25.619 23136 23301 W HWUI    : Image decoding logging dropped!
+11-03 07:57:09.620 23136 23301 I Tesseract(native): Initialized Tesseract API with language=Latin
+11-03 07:57:09.783 23136 23301 W HWUI    : Image decoding logging dropped!
+11-03 07:57:10.612 23136 23301 W HWUI    : Image decoding logging dropped!
+11-03 07:57:11.309 23136 23301 W HWUI    : Image decoding logging dropped!
+11-03 07:57:11.585 23136 23301 W HWUI    : Image decoding logging dropped!
+11-03 07:57:11.991 23136 23301 W HWUI    : Image decoding logging dropped!
+11-03 07:57:14.523 23136 23301 W HWUI    : Image decoding logging dropped!
+11-03 07:57:16.937 23136 23301 W HWUI    : Image decoding logging dropped!
+11-03 07:57:18.398 23136 23301 W HWUI    : Image decoding logging dropped!
+11-03 07:57:19.883 23136 23301 W HWUI    : Image decoding logging dropped!
+11-03 07:57:24.407 23136 23301 W HWUI    : Image decoding logging dropped!
+11-03 07:57:28.935 23136 23301 W HWUI    : Image decoding logging dropped!
+11-03 07:57:29.107 23136 23301 W HWUI    : Image decoding logging dropped!
+11-03 07:57:29.279 23136 23301 W HWUI    : Image decoding logging dropped!
+11-03 07:57:29.443 23136 23301 W HWUI    : Image decoding logging dropped!
+11-03 07:57:34.086 23136 23136 D VRI[MainActivity]: visibilityChanged oldVisibility=true newVisibility=false
+11-03 07:57:34.124 23136 23136 W WindowOnBackDispatcher: sendCancelIfRunning: isInProgress=false callback=android.app.Activity$$ExternalSyntheticLambda0@e82131b
+11-03 07:57:34.127 23136 23136 D ViewRootImpl: Skipping stats log for color mode
+11-03 07:58:15.851 23136 23152 I EGL_emulation: Opening libGLESv1_CM_emulation.so
+11-03 07:58:15.853 23136 23152 I EGL_emulation: Opening libGLESv2_emulation.so
+11-03 07:58:15.864 23136 23152 W HWUI    : Failed to choose config with EGL_SWAP_BEHAVIOR_PRESERVED, retrying without...
+11-03 07:58:15.864 23136 23152 W HWUI    : Failed to initialize 101010-2 format, error = EGL_SUCCESS
+11-03 07:58:15.866 23136 23136 D AutofillManager: Fill dialog is enabled:false, hints=[]
+11-03 07:58:16.182 23136 23136 D InsetsController: hide(ime(), fromIme=false)
+11-03 07:58:16.183 23136 23136 I ImeTracker: dev.bookfin.ocr.probe.latinfast:915d15da: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+11-03 07:59:56.032 23136 24243 I Tesseract(native): Initialized Tesseract API with language=Latin
+11-03 07:59:56.210 23136 24243 W HWUI    : Image decoding logging dropped!
+11-03 07:59:57.144 23136 24243 W HWUI    : Image decoding logging dropped!
+11-03 07:59:57.838 23136 24243 W HWUI    : Image decoding logging dropped!
+11-03 07:59:58.110 23136 24243 W HWUI    : Image decoding logging dropped!
+11-03 07:59:58.516 23136 24243 W HWUI    : Image decoding logging dropped!
+11-03 08:00:01.092 23136 24243 W HWUI    : Image decoding logging dropped!
+11-03 08:00:03.532 23136 24243 W HWUI    : Image decoding logging dropped!
+11-03 08:00:04.994 23136 24243 W HWUI    : Image decoding logging dropped!
+11-03 08:00:06.468 23136 24243 W HWUI    : Image decoding logging dropped!
+11-03 08:00:10.988 23136 24243 W HWUI    : Image decoding logging dropped!
+11-03 08:00:15.446 23136 24243 W HWUI    : Image decoding logging dropped!
+11-03 08:00:15.621 23136 24243 W HWUI    : Image decoding logging dropped!
+11-03 08:00:15.792 23136 24243 W HWUI    : Image decoding logging dropped!
+11-03 08:00:15.962 23136 24243 W HWUI    : Image decoding logging dropped!
+11-03 08:00:20.999 23136 23136 D VRI[MainActivity]: visibilityChanged oldVisibility=true newVisibility=false
+11-03 08:00:21.024 23136 23136 W WindowOnBackDispatcher: sendCancelIfRunning: isInProgress=false callback=android.app.Activity$$ExternalSyntheticLambda0@ac5d5b3
+11-03 08:00:21.031 23136 23136 D ViewRootImpl: Skipping stats log for color mode
+11-03 08:00:58.620 23136 23152 I EGL_emulation: Opening libGLESv1_CM_emulation.so
+11-03 08:00:58.621 23136 23152 I EGL_emulation: Opening libGLESv2_emulation.so
+11-03 08:00:58.624 23136 23152 W HWUI    : Failed to choose config with EGL_SWAP_BEHAVIOR_PRESERVED, retrying without...
+11-03 08:00:58.625 23136 23152 W HWUI    : Failed to initialize 101010-2 format, error = EGL_SUCCESS
+11-03 08:00:58.641 23136 23136 D AutofillManager: Fill dialog is enabled:false, hints=[]
+11-03 08:00:58.954 23136 23136 D InsetsController: hide(ime(), fromIme=false)
+11-03 08:00:58.954 23136 23136 I ImeTracker: dev.bookfin.ocr.probe.latinfast:b7559fcd: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+11-03 08:01:38.520 23136 24574 I Tesseract(native): Initialized Tesseract API with language=Latin
+11-03 08:01:38.694 23136 24574 W HWUI    : Image decoding logging dropped!
+11-03 08:01:39.548 23136 24574 W HWUI    : Image decoding logging dropped!
+11-03 08:01:40.229 23136 24574 W HWUI    : Image decoding logging dropped!
+11-03 08:01:40.501 23136 24574 W HWUI    : Image decoding logging dropped!
+11-03 08:01:40.910 23136 24574 W HWUI    : Image decoding logging dropped!
+11-03 08:01:43.466 23136 24574 W HWUI    : Image decoding logging dropped!
+11-03 08:01:45.909 23136 24574 W HWUI    : Image decoding logging dropped!
+11-03 08:01:47.551 23136 24574 W HWUI    : Image decoding logging dropped!
+11-03 08:01:47.748 23136 23136 D VRI[MainActivity]: visibilityChanged oldVisibility=true newVisibility=false
+11-03 08:01:47.771 23136 23136 W WindowOnBackDispatcher: sendCancelIfRunning: isInProgress=false callback=android.app.Activity$$ExternalSyntheticLambda0@f9b1084
+11-03 08:01:47.772 23136 23136 D ViewRootImpl: Skipping stats log for color mode
+11-03 08:02:15.935 23136 23152 I EGL_emulation: Opening libGLESv1_CM_emulation.so
+11-03 08:02:15.936 23136 23152 I EGL_emulation: Opening libGLESv2_emulation.so
+11-03 08:02:15.940 23136 23152 W HWUI    : Failed to choose config with EGL_SWAP_BEHAVIOR_PRESERVED, retrying without...
+11-03 08:02:15.940 23136 23152 W HWUI    : Failed to initialize 101010-2 format, error = EGL_SUCCESS
+11-03 08:02:15.942 23136 23136 D AutofillManager: Fill dialog is enabled:false, hints=[]
+11-03 08:02:16.235 23136 23136 D InsetsController: hide(ime(), fromIme=false)
+11-03 08:02:16.235 23136 23136 I ImeTracker: dev.bookfin.ocr.probe.latinfast:6a053eaf: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+11-03 08:02:46.384 23136 24827 I Tesseract(native): Initialized Tesseract API with language=Latin
+11-03 08:02:46.583 23136 24827 W HWUI    : Image decoding logging dropped!
+11-03 08:02:47.514 23136 24827 W HWUI    : Image decoding logging dropped!
+11-03 08:02:48.221 23136 24827 W HWUI    : Image decoding logging dropped!
+11-03 08:02:48.505 23136 24827 W HWUI    : Image decoding logging dropped!
+11-03 08:02:48.924 23136 24827 W HWUI    : Image decoding logging dropped!
+11-03 08:02:51.482 23136 24827 W HWUI    : Image decoding logging dropped!
+11-03 08:02:53.922 23136 24827 W HWUI    : Image decoding logging dropped!
+11-03 08:02:55.401 23136 24827 W HWUI    : Image decoding logging dropped!
+11-03 08:02:56.879 23136 24827 W HWUI    : Image decoding logging dropped!
+11-03 08:03:01.419 23136 24827 W HWUI    : Image decoding logging dropped!
+11-03 08:03:05.922 23136 24827 W HWUI    : Image decoding logging dropped!
+11-03 08:03:06.094 23136 24827 W HWUI    : Image decoding logging dropped!
+11-03 08:03:06.262 23136 24827 W HWUI    : Image decoding logging dropped!
+11-03 08:03:06.431 23136 24827 W HWUI    : Image decoding logging dropped!
+11-03 08:04:07.796 23136 23136 D VRI[MainActivity]: visibilityChanged oldVisibility=true newVisibility=false
+11-03 08:06:51.312 23136 23152 I EGL_emulation: Opening libGLESv1_CM_emulation.so
+11-03 08:06:51.312 23136 23152 I EGL_emulation: Opening libGLESv2_emulation.so
+11-03 08:06:51.315 23136 23152 W HWUI    : Failed to choose config with EGL_SWAP_BEHAVIOR_PRESERVED, retrying without...
+11-03 08:06:51.315 23136 23152 W HWUI    : Failed to initialize 101010-2 format, error = EGL_SUCCESS
+11-03 08:06:51.434 23136 23136 D InsetsController: hide(ime(), fromIme=false)
+11-03 08:06:51.434 23136 23136 I ImeTracker: dev.bookfin.ocr.probe.latinfast:af2c7ba2: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+11-03 08:07:15.194 23136 23136 D VRI[MainActivity]: visibilityChanged oldVisibility=true newVisibility=false

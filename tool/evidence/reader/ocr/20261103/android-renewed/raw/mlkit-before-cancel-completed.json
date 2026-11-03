@@ -1,0 +1,261 @@
+{
+  "schema": 1,
+  "flavor": "mlkit",
+  "startedWallTimeMs": 1793711120415,
+  "manufacturer": "Google",
+  "model": "sdk_gphone64_arm64",
+  "sdk": 36,
+  "abis": [
+    "arm64-v8a"
+  ],
+  "scope": "Actual Android process, bundled research engine; no production reader integration. Memory sampled every 100ms with sampling overhead. Recognition does not repair reading order.",
+  "initializationMs": 0.121291,
+  "engine": "ML Kit bundled Latin text-recognition 16.0.1",
+  "scanManifest": {
+    "schema": 1,
+    "samples": [
+      {
+        "id": "raven-1873-page-9",
+        "file": "raven-1873-page-9.png",
+        "sha256": "34855abb79acfa2ff09156b1f889b41547c21770d1515ef4716a40f9ebea2b7a",
+        "width": 2737,
+        "height": 4445,
+        "dpi": 200,
+        "sourceFile": "raven-1873.pdf",
+        "sourceSha256": "25dc58e363e02a442a25174fe9fcd21d3a2f78ac4511731accaaeba326c3d8e8",
+        "sourcePage": 9,
+        "rights": "LOC item rights: The books in this collection are in the public domain and are free to use and reuse. Credit Line: Library of Congress.",
+        "territory": "LOC public-domain declaration recorded; no independent worldwide determination is claimed.",
+        "reference": null,
+        "referenceProvenance": "No quality score without independently checked transcription."
+      },
+      {
+        "id": "raven-1873-page-9-poem-crop",
+        "file": "raven-1873-page-9-poem-crop.png",
+        "sha256": "9e5164b5e06471c9fb1152bf1809a406f02c07d2d6bd823df3789969950d8331",
+        "width": 2162,
+        "height": 320,
+        "dpi": 200,
+        "sourceFile": "raven-1873.pdf",
+        "sourceSha256": "25dc58e363e02a442a25174fe9fcd21d3a2f78ac4511731accaaeba326c3d8e8",
+        "sourcePage": 9,
+        "cropFractionsLeftTopRightBottom": [
+          0.06,
+          0.79,
+          0.85,
+          0.862
+        ],
+        "rights": "LOC item rights: The books in this collection are in the public domain and are free to use and reuse. Credit Line: Library of Congress.",
+        "territory": "LOC public-domain declaration recorded; no independent worldwide determination is claimed.",
+        "reference": "raven-1873-page-9-poem-crop.txt",
+        "referenceSha256": "0f788773d79da7f2567df41063cfc7de0fe16ef36cef5704eb637eccf2c3af74",
+        "referenceProvenance": "Builder visually transcribed the three visible poem lines from the rendered 1873 scan; not its defective existing OCR layer. Crop excludes title, byline, illustration, and page number. Independent acceptance transcription check remains required."
+      },
+      {
+        "id": "raven-1873-page-10",
+        "file": "raven-1873-page-10.png",
+        "sha256": "510acfc405cf61a231ecfafe0497306bb53d73ceb7f6ee9b16880b63adf6b60a",
+        "width": 2737,
+        "height": 4445,
+        "dpi": 200,
+        "sourceFile": "raven-1873.pdf",
+        "sourceSha256": "25dc58e363e02a442a25174fe9fcd21d3a2f78ac4511731accaaeba326c3d8e8",
+        "sourcePage": 10,
+        "rights": "LOC item rights: The books in this collection are in the public domain and are free to use and reuse. Credit Line: Library of Congress.",
+        "territory": "LOC public-domain declaration recorded; no independent worldwide determination is claimed.",
+        "reference": null,
+        "referenceProvenance": "No quality score without independently checked transcription."
+      },
+      {
+        "id": "nist-cloud-page-5",
+        "file": "nist-cloud-page-5.png",
+        "sha256": "6e0f0dc96c9074c6cabc4ae71a5d330f0eb063ba1a9dfe6cf018e83fbf944df6",
+        "width": 1700,
+        "height": 2200,
+        "dpi": 200,
+        "sourceFile": "nist-cloud.pdf",
+        "sourceSha256": "7b0c1a9fdfc67218b8ba2098f448c100c27070db91736b3c87fed63bfa21d418",
+        "sourcePage": 5,
+        "rights": "NIST policy describes employee-authored publications as not subject to copyright protection in the United States; this report names two NIST authors.",
+        "territory": "US federal employee work basis in the USA. No worldwide or third-party material clearance is claimed.",
+        "reference": null,
+        "referenceProvenance": "No quality score without independently checked transcription."
+      },
+      {
+        "id": "census-notice-page-1",
+        "file": "census-notice-page-1.png",
+        "sha256": "db7f6beec469ad39247b22d83883d4986f3304137801996dc6f7955630dba972",
+        "width": 1700,
+        "height": 2200,
+        "dpi": 200,
+        "sourceFile": "census-notice.pdf",
+        "sourceSha256": "4a696b3ccf264093326663176e45b93e336ec024fd88447ab56d39e5e9b9e5f8",
+        "sourcePage": 1,
+        "rights": "Official Census Bureau notice in the Federal Register. GovInfo policy warns that some hosted material has separate rights; this item is a US government-authored notice, not a blanket assertion about the collection.",
+        "territory": "US government work basis in the USA. No worldwide clearance is claimed.",
+        "reference": null,
+        "referenceProvenance": "No quality score without independently checked transcription."
+      },
+      {
+        "id": "generated-english",
+        "file": "generated-english.png",
+        "sha256": "30fce43633b99aa18db29680ee9ed9ebd1733c97eca7ee6c3055eaeddd1d6af6",
+        "width": 1400,
+        "height": 600,
+        "fontSha256": "97b2d4da6e3cb494b5a1e66ae176914d852ccabef49e0c02c0df25f3e39aca0b",
+        "rights": "Generated Bookfin fixture; font under assets\/fonts\/OFL-Source-Serif-4.txt.",
+        "reference": "generated-english.txt",
+        "referenceSha256": "723d33dff412736715fc684a7393469a200e86f58fc4042df3bf0142010c564d",
+        "referenceProvenance": "Exact input text, generated scan; not a historic scan accuracy claim."
+      },
+      {
+        "id": "generated-french",
+        "file": "generated-french.png",
+        "sha256": "bcd1edeefdb38b0e7e504d955ec124f07afc11fe948a5f47ed3016a5fb301b53",
+        "width": 1400,
+        "height": 600,
+        "fontSha256": "97b2d4da6e3cb494b5a1e66ae176914d852ccabef49e0c02c0df25f3e39aca0b",
+        "rights": "Generated Bookfin fixture; font under assets\/fonts\/OFL-Source-Serif-4.txt.",
+        "reference": "generated-french.txt",
+        "referenceSha256": "0ea8cda35f0ad4b57e124949f0c733d873a6b6f3da0908afe22c21467074e377",
+        "referenceProvenance": "Exact input text, generated scan; not a historic scan accuracy claim."
+      }
+    ]
+  },
+  "measurements": [
+    {
+      "sample": "raven-1873-page-9",
+      "repetition": 1,
+      "width": 2737,
+      "height": 4445,
+      "recognitionMs": 291.631959,
+      "decodeAndRecognitionMs": 551.972209,
+      "text": "BY EDGAR A. POE.\nnpon a midnight drenry, while I pondered, ; weak and wenry,\nOver many a quaint and curions volune of forgotten lore-\nWhile I nodded, nearly napping, suddenly there came a tapping,\n1"
+    },
+    {
+      "sample": "raven-1873-page-9",
+      "repetition": 2,
+      "width": 2737,
+      "height": 4445,
+      "recognitionMs": 149.457875,
+      "decodeAndRecognitionMs": 339.728667,
+      "text": "BY EDGAR A. POE.\nnpon a midnight drenry, while I pondered, ; weak and wenry,\nOver many a quaint and curions volune of forgotten lore-\nWhile I nodded, nearly napping, suddenly there came a tapping,\n1"
+    },
+    {
+      "sample": "raven-1873-page-9-poem-crop",
+      "repetition": 1,
+      "width": 2162,
+      "height": 320,
+      "recognitionMs": 41.078166,
+      "decodeAndRecognitionMs": 57.963,
+      "text": "npon a midnight dreary. while I pondered, weak and weary,\nOver many a quaint and curions volume of forgotten lore-\nWhile I nodded, nearly napping, suddenly there came a tapping,\nONCE"
+    },
+    {
+      "sample": "raven-1873-page-9-poem-crop",
+      "repetition": 2,
+      "width": 2162,
+      "height": 320,
+      "recognitionMs": 25.53075,
+      "decodeAndRecognitionMs": 34.7455,
+      "text": "npon a midnight dreary. while I pondered, weak and weary,\nOver many a quaint and curions volume of forgotten lore-\nWhile I nodded, nearly napping, suddenly there came a tapping,\nONCE"
+    },
+    {
+      "sample": "raven-1873-page-10",
+      "repetition": 1,
+      "width": 2737,
+      "height": 4445,
+      "recognitionMs": 141.021916,
+      "decodeAndRecognitionMs": 280.716708,
+      "text": "THE RA VEN.\nPS ZGO9\n(873\nAs of some one gently rapping, rapping at my chamber door ;\nTis some visitor,\" I muttered, tapping at my chamber door-\nOnly this, and nothing more.\"\"\nAh ! distinctly I remember it was in the bleak December,\nAnd each separate dying ember wrought its ghost upon the floor.\nEagerly I wished the morrow;-vainly I had sought to borrow\nfrom my books surcease of sorrow-sorrow for the lost Lenore-\nFor the rare and radiant maiden whom the angels name Lenore-\nNameless here for evermore.\nAnd the silken sad uncertain rustling of cach purple curtain\nThrilled me-filled me with fantastic terrorS never felt before ;\nSo that now, to still the beating of my heart, I stood repeating\n4Tis some visitor entreating entrance at my chamber door:\nSome late visitor entreating entrance at my chamber door,\nThis it is, and nothing more,\"\nPresently my soul grew stronger ; hesitating then no longer,\nSir,'\" said I, *or Madam, truly your forgiveness I implore\nBut the fact is I was napping, and so gently you came rapping,\nAnd so faintly you came tapping, tapping at my chamber door,\nThat I scarce was sure I heard you\"here I opened wide the door:\nDarkness there, and nothing more.\nDeep into that darkness peering, long I stood there, wondering, fearing,\nDonbting, dreaming dreams no mortal ever dared to dream before:\nBut the silence was unbroken, and the stillness gave no token,\nAnd the only word there spoken 'was the whispered word Lenore !\"\nThis I whispered, and an echo murmured back the word Lenore !\"\nMerely this, and nothing more."
+    },
+    {
+      "sample": "raven-1873-page-10",
+      "repetition": 2,
+      "width": 2737,
+      "height": 4445,
+      "recognitionMs": 114.149334,
+      "decodeAndRecognitionMs": 252.178542,
+      "text": "THE RA VEN.\nPS ZGO9\n(873\nAs of some one gently rapping, rapping at my chamber door ;\nTis some visitor,\" I muttered, tapping at my chamber door-\nOnly this, and nothing more.\"\"\nAh ! distinctly I remember it was in the bleak December,\nAnd each separate dying ember wrought its ghost upon the floor.\nEagerly I wished the morrow;-vainly I had sought to borrow\nfrom my books surcease of sorrow-sorrow for the lost Lenore-\nFor the rare and radiant maiden whom the angels name Lenore-\nNameless here for evermore.\nAnd the silken sad uncertain rustling of cach purple curtain\nThrilled me-filled me with fantastic terrorS never felt before ;\nSo that now, to still the beating of my heart, I stood repeating\n4Tis some visitor entreating entrance at my chamber door:\nSome late visitor entreating entrance at my chamber door,\nThis it is, and nothing more,\"\nPresently my soul grew stronger ; hesitating then no longer,\nSir,'\" said I, *or Madam, truly your forgiveness I implore\nBut the fact is I was napping, and so gently you came rapping,\nAnd so faintly you came tapping, tapping at my chamber door,\nThat I scarce was sure I heard you\"here I opened wide the door:\nDarkness there, and nothing more.\nDeep into that darkness peering, long I stood there, wondering, fearing,\nDonbting, dreaming dreams no mortal ever dared to dream before:\nBut the silence was unbroken, and the stillness gave no token,\nAnd the only word there spoken 'was the whispered word Lenore !\"\nThis I whispered, and an echo murmured back the word Lenore !\"\nMerely this, and nothing more."
+    },
+    {
+      "sample": "nist-cloud-page-5",
+      "repetition": 1,
+      "width": 1700,
+      "height": 2200,
+      "recognitionMs": 138.280792,
+      "decodeAndRecognitionMs": 162.91875,
+      "text": "1. Introduction\n1.1 Authority\nThe National Institute of Standards and Technology (NIST) developed this document in furtherance of its\nstatutory responsibilities under the Federal Information Security Management Act (FISMA) of 2002,\nPublic Law 107-347.\nNIST is responsible for developing standards and guidelines, including minimum requirements, for\nproviding adequate information security for all agency operations and assets; but such standards and\nguidelines shall not apply to national security systems. This guideline is consistent with the requirements\nof the Office of Management and Budget (OMB) Circular A-130, Section 8b(3), \"Securing Agency\nInformation Systems,\" as analyzed in A-130, Appendix IV: Analysis of Key Sections. Supplemental\ninformation is provided in A-130, Appendix III.\nThis guideline has been prepared for use by Federal agencies. It may be used by nongovernmental\norganizations on a voluntary basis and is not subject to copyright, though attribution is desired.\nNothing in this document should be taken to contradict standards and guidelines made mandatory and\nbinding on Federal agencies by the Secretary of Commerce under statutory authority, nor should these\nguidelines be interpreted as altering or superseding the existing authorities of the Secretary of Commerce,\nDirector of the OMB, or any other Federal official.\n1.2 Purpose and Scope\nCloud computing is an evolving paradigm. The NIST definition characterizes important aspects of cloud\ncomputing and is intended to serve as a means for broad comparisons of cloud services and deployment\nstrategies, and to provide a baseline for discussion from what is cloud computing to how to best use cloud\ncomputing. The service and deployment models defined form a simple taxonomy that is not intended to\nprescribe or constrain any particular method of deployment, service delivery, or business operation.\n1.3\nAudience\nThe intended audience of this document is system planners, program managers, technologists, and others\nadopting cloud computing as consumers or providers of cloud services."
+    },
+    {
+      "sample": "nist-cloud-page-5",
+      "repetition": 2,
+      "width": 1700,
+      "height": 2200,
+      "recognitionMs": 113.659167,
+      "decodeAndRecognitionMs": 142.381625,
+      "text": "1. Introduction\n1.1 Authority\nThe National Institute of Standards and Technology (NIST) developed this document in furtherance of its\nstatutory responsibilities under the Federal Information Security Management Act (FISMA) of 2002,\nPublic Law 107-347.\nNIST is responsible for developing standards and guidelines, including minimum requirements, for\nproviding adequate information security for all agency operations and assets; but such standards and\nguidelines shall not apply to national security systems. This guideline is consistent with the requirements\nof the Office of Management and Budget (OMB) Circular A-130, Section 8b(3), \"Securing Agency\nInformation Systems,\" as analyzed in A-130, Appendix IV: Analysis of Key Sections. Supplemental\ninformation is provided in A-130, Appendix III.\nThis guideline has been prepared for use by Federal agencies. It may be used by nongovernmental\norganizations on a voluntary basis and is not subject to copyright, though attribution is desired.\nNothing in this document should be taken to contradict standards and guidelines made mandatory and\nbinding on Federal agencies by the Secretary of Commerce under statutory authority, nor should these\nguidelines be interpreted as altering or superseding the existing authorities of the Secretary of Commerce,\nDirector of the OMB, or any other Federal official.\n1.2 Purpose and Scope\nCloud computing is an evolving paradigm. The NIST definition characterizes important aspects of cloud\ncomputing and is intended to serve as a means for broad comparisons of cloud services and deployment\nstrategies, and to provide a baseline for discussion from what is cloud computing to how to best use cloud\ncomputing. The service and deployment models defined form a simple taxonomy that is not intended to\nprescribe or constrain any particular method of deployment, service delivery, or business operation.\n1.3\nAudience\nThe intended audience of this document is system planners, program managers, technologists, and others\nadopting cloud computing as consumers or providers of cloud services."
+    },
+    {
+      "sample": "census-notice-page-1",
+      "repetition": 1,
+      "width": 1700,
+      "height": 2200,
+      "recognitionMs": 324.7955,
+      "decodeAndRecognitionMs": 356.397542,
+      "text": "56\nnational origin, religion, sex, gender\nidentity (incuding gender expression),\nsexual orientation, disability, age,\nmarital status, family\/parental status,\nincome derived from a public assistance\nprogram, political beliefs, or reprisal or\nretaliation for prior civil rights activity,\nin any program or activity conducted or\nfunded by USDA (not all bases apply to\nall programs). Remedies and complaint\nfiling deadlines vary by program or\nincident. Program information may be\nmade available in languages other than\nEnglish. Persons with disabilities who\nrequire alternative means of\ncommunication to obtain program\ninformation (e.g., Braille, large print,\naudiotape, American Sign Language)\nshould contact the responsible Mission\nArea, agency, or staff office; or the 711\nRelay Service.\nFederal Register \/ Vol. 89, No. 1\/Tuesday, January 2, 2024\/Notices\nTo file a program discrimination\ncomplaint, a complainant should\ncomplete a Form AD-3027, USDA\nProgram Discrimination Complaint\nForm, which can be obtained online at\nhttps:\/\/www.usda.gov\/sites\/default\/\nfiles\/documents\/ad-3027.pdf, from any\nUSDA office, by calling (866) 632-9992,\nor by writing a letter addressed to\nUSDA. The letter must contain the\ncomplainant's name, address, telephone\nnumber, and a written description of the\nalleged discriminatory action in\nsufficient detail to inform the Assistant\nSecretary for Civil Rights (ASCR) about\nthe nature and date of an alleged civil\nrights violation.\nThe completed AD-3027 form or\nletter must be submitted to USDA by:\n(1) Mail: U.S. Department of\nAgriculture, Office of the Assistant\nSecretary for Civil Rights, 1400\nIndependence Avenue SW, Washington,\nDC 20250-9410; or\n(2) Fax: (833) 256-1665 or (202) 690–\n7442: or\n(3) Email: program.intake@usda.gov.\nUSDA is an equal opportunity\nprovider, employer, and lender.\nAndrew Berke,\nAdministrator, Rural Utilities Service, USDA\nRural Development.\n[FR Doc. 2023-27901 Filed 12-29-23; 8:45 am]\nBILLING CODE 3410-15-p\nDEPARTMENT OF COMMERCE\nCensus Bureau\nSUMMARY: The Bureau of the Census\n(Census Bureau) requests nominations\nof individuals to the Census Scientific\nAdvisory Committee (CSAC or\nCommittee). The Census Bureau will\nconsider nominations received in\nresponse to this notice, as well as from\nother sources. The SUPPLEMENTARY\nINFORMATION section of this notice\nprovides Committee and membership\ncriteria.\nAGENCY: Census Bureau, Commerce.\nACTION: Notice of request for\nnominations.\nDATES: Please submit nominations by\nFebruary 2, 2024. The Census Bureau\nwill retain nominations received after\nthis date for consideration should\nadditional vacancies occur.\nADDRESSES: Please submit nominations\nto the census.scientific.advisory\n.committee@census.gov (subject line\n\"2024 CSAC Nominations\").\nFOR FURTHER INFORMATION CONTACT:\nShana Banks, Chief, Advisory\nCommittee Branch, Office of Program,\nPerformance and Stakeholder\nIntegration (PPSI), Census Bureau, by\ntelephone at 301-763-3815 or by email\nat Shana.J.Banks@census.gov.\nIndividuals who use telecommunication\ndevices for the deaf (TDD) may call the\nFederal Information Relay Service\nIRS) at 1-800-877-8339 between 8\na.m. and 8 p.m., eastern standard time,\nMonday through Friday.\n2. The Census Scientific Advisory\nCommittee will address census policies,\nresearch and methodology, tests,\noperations, commumications\/messaging,\nand other activities to ascertain needs\nand best practices to improve censuses,\nsurveys,\n3. The Ceneand programs.\nScientific Advisory\nCommittee will provide formal review\nand feedback on internal and external\nCensus Scientific Advisory Committee; working papers, reports, and other\nRequest for Nominations\ndocuments related to the design and\nimplementation of census programs and\nSUPPLEMENTARY INFORMATION: The\nCensus Scientific Advisory Committee\nwas established in accordance with the\nFederal Advisory Committee Act\n(FACA) title 5, United States Code\n(U.S.C.), app. The following provides\ninformation about the Committee,\nmembership, and the nomination\nprocess.\nObjectives and Duties\n1. The Census Scientific Advisory\nCommittee advises the Director of the\nU.S. Census Bureau on the full range of\nCensus Bureau programs and activities\nincluding communications,\ndemographic, economic, field\noperations, geography, information\ntechnology, and statistics.\nsurveyS.\n4. The Census Scientific Advisory\nCommittee will function solely as an\nadvisory body and shall comply fully\nwith the provisions of the FACA.\n5. The Census Scientific Advisory\nCommittee reports to the Director of the\nCensus Bureau.\nMembership\n1. The Census Scientific Advisory\nCommittee consists of up to 21 members\nwho are appointed by and serve at the\ndiscretion of the Director of the Census\nBureau.\n2. Members will serve for a three-year\nterm. All members will be evaluated at\nthe conclusion of their first term with\nthe prospect of renewal, pending\nCommittee needs. Active attendance\nand participation in meetings and\nactivities will be factors considered\nwhen determining term renewal or\nmembership continuance. Members may\nbe appointed for a second three-year\nterm at the discretion of the Director.\n3. Members shall serve as Special\nGovernment Employees (SGEs) and will\nbe subject to the ethics rules applicable\nto SGEs.\n4. The Census Scientific Advisory\nCommittee aims to have balanced\nrepresentation among its members,\nconsidering such factors as geography,\nscientific expertise, community\ninvolvement, and knowledge of census\nprograms and\/or activities, and, where\npossible the Census Bureau will\nconsider the ethnic, racial, and gender\ndiversity and various abilities of the\nUnited States population.\n5. No employee of the Federal\nGovernment can serve as a member of\nthe Census Scientific Advisory\nCommittee.\nMiscellaneous\n1. The Census Bureau will not\ncompensate members of the Committee\nfor their services, but shall, upon\nrequest, reimburse travel expenses as\nauthorized by 5 U.S.C. 5703.\n2. The Census Scientific Advisory\nCommittee will convene twice per year,\nbudget and environmental conditions\npermitting. The Committee will use\nformal advisory committee meetings,\nwebinars, working groups, and other\nmeans of review to accomplish its goals,\nconsistent with the requirements of\nFACA.\nNomination Information\n1. Nominations are requested as\ndescribed above.\n2. Nominees must have scientific and\ntechnical expertise in such areas as\ncommunications, demographic,\neconomic, field operations, geography,\ninformation technology, and statistics.\nSuch knowledge and expertise are\nneeded to provide advice and"
+    },
+    {
+      "sample": "census-notice-page-1",
+      "repetition": 2,
+      "width": 1700,
+      "height": 2200,
+      "recognitionMs": 309.531084,
+      "decodeAndRecognitionMs": 344.900333,
+      "text": "56\nnational origin, religion, sex, gender\nidentity (incuding gender expression),\nsexual orientation, disability, age,\nmarital status, family\/parental status,\nincome derived from a public assistance\nprogram, political beliefs, or reprisal or\nretaliation for prior civil rights activity,\nin any program or activity conducted or\nfunded by USDA (not all bases apply to\nall programs). Remedies and complaint\nfiling deadlines vary by program or\nincident. Program information may be\nmade available in languages other than\nEnglish. Persons with disabilities who\nrequire alternative means of\ncommunication to obtain program\ninformation (e.g., Braille, large print,\naudiotape, American Sign Language)\nshould contact the responsible Mission\nArea, agency, or staff office; or the 711\nRelay Service.\nFederal Register \/ Vol. 89, No. 1\/Tuesday, January 2, 2024\/Notices\nTo file a program discrimination\ncomplaint, a complainant should\ncomplete a Form AD-3027, USDA\nProgram Discrimination Complaint\nForm, which can be obtained online at\nhttps:\/\/www.usda.gov\/sites\/default\/\nfiles\/documents\/ad-3027.pdf, from any\nUSDA office, by calling (866) 632-9992,\nor by writing a letter addressed to\nUSDA. The letter must contain the\ncomplainant's name, address, telephone\nnumber, and a written description of the\nalleged discriminatory action in\nsufficient detail to inform the Assistant\nSecretary for Civil Rights (ASCR) about\nthe nature and date of an alleged civil\nrights violation.\nThe completed AD-3027 form or\nletter must be submitted to USDA by:\n(1) Mail: U.S. Department of\nAgriculture, Office of the Assistant\nSecretary for Civil Rights, 1400\nIndependence Avenue SW, Washington,\nDC 20250-9410; or\n(2) Fax: (833) 256-1665 or (202) 690–\n7442: or\n(3) Email: program.intake@usda.gov.\nUSDA is an equal opportunity\nprovider, employer, and lender.\nAndrew Berke,\nAdministrator, Rural Utilities Service, USDA\nRural Development.\n[FR Doc. 2023-27901 Filed 12-29-23; 8:45 am]\nBILLING CODE 3410-15-p\nDEPARTMENT OF COMMERCE\nCensus Bureau\nSUMMARY: The Bureau of the Census\n(Census Bureau) requests nominations\nof individuals to the Census Scientific\nAdvisory Committee (CSAC or\nCommittee). The Census Bureau will\nconsider nominations received in\nresponse to this notice, as well as from\nother sources. The SUPPLEMENTARY\nINFORMATION section of this notice\nprovides Committee and membership\ncriteria.\nAGENCY: Census Bureau, Commerce.\nACTION: Notice of request for\nnominations.\nDATES: Please submit nominations by\nFebruary 2, 2024. The Census Bureau\nwill retain nominations received after\nthis date for consideration should\nadditional vacancies occur.\nADDRESSES: Please submit nominations\nto the census.scientific.advisory\n.committee@census.gov (subject line\n\"2024 CSAC Nominations\").\nFOR FURTHER INFORMATION CONTACT:\nShana Banks, Chief, Advisory\nCommittee Branch, Office of Program,\nPerformance and Stakeholder\nIntegration (PPSI), Census Bureau, by\ntelephone at 301-763-3815 or by email\nat Shana.J.Banks@census.gov.\nIndividuals who use telecommunication\ndevices for the deaf (TDD) may call the\nFederal Information Relay Service\nIRS) at 1-800-877-8339 between 8\na.m. and 8 p.m., eastern standard time,\nMonday through Friday.\n2. The Census Scientific Advisory\nCommittee will address census policies,\nresearch and methodology, tests,\noperations, commumications\/messaging,\nand other activities to ascertain needs\nand best practices to improve censuses,\nsurveys,\n3. The Ceneand programs.\nScientific Advisory\nCommittee will provide formal review\nand feedback on internal and external\nCensus Scientific Advisory Committee; working papers, reports, and other\nRequest for Nominations\ndocuments related to the design and\nimplementation of census programs and\nSUPPLEMENTARY INFORMATION: The\nCensus Scientific Advisory Committee\nwas established in accordance with the\nFederal Advisory Committee Act\n(FACA) title 5, United States Code\n(U.S.C.), app. The following provides\ninformation about the Committee,\nmembership, and the nomination\nprocess.\nObjectives and Duties\n1. The Census Scientific Advisory\nCommittee advises the Director of the\nU.S. Census Bureau on the full range of\nCensus Bureau programs and activities\nincluding communications,\ndemographic, economic, field\noperations, geography, information\ntechnology, and statistics.\nsurveyS.\n4. The Census Scientific Advisory\nCommittee will function solely as an\nadvisory body and shall comply fully\nwith the provisions of the FACA.\n5. The Census Scientific Advisory\nCommittee reports to the Director of the\nCensus Bureau.\nMembership\n1. The Census Scientific Advisory\nCommittee consists of up to 21 members\nwho are appointed by and serve at the\ndiscretion of the Director of the Census\nBureau.\n2. Members will serve for a three-year\nterm. All members will be evaluated at\nthe conclusion of their first term with\nthe prospect of renewal, pending\nCommittee needs. Active attendance\nand participation in meetings and\nactivities will be factors considered\nwhen determining term renewal or\nmembership continuance. Members may\nbe appointed for a second three-year\nterm at the discretion of the Director.\n3. Members shall serve as Special\nGovernment Employees (SGEs) and will\nbe subject to the ethics rules applicable\nto SGEs.\n4. The Census Scientific Advisory\nCommittee aims to have balanced\nrepresentation among its members,\nconsidering such factors as geography,\nscientific expertise, community\ninvolvement, and knowledge of census\nprograms and\/or activities, and, where\npossible the Census Bureau will\nconsider the ethnic, racial, and gender\ndiversity and various abilities of the\nUnited States population.\n5. No employee of the Federal\nGovernment can serve as a member of\nthe Census Scientific Advisory\nCommittee.\nMiscellaneous\n1. The Census Bureau will not\ncompensate members of the Committee\nfor their services, but shall, upon\nrequest, reimburse travel expenses as\nauthorized by 5 U.S.C. 5703.\n2. The Census Scientific Advisory\nCommittee will convene twice per year,\nbudget and environmental conditions\npermitting. The Committee will use\nformal advisory committee meetings,\nwebinars, working groups, and other\nmeans of review to accomplish its goals,\nconsistent with the requirements of\nFACA.\nNomination Information\n1. Nominations are requested as\ndescribed above.\n2. Nominees must have scientific and\ntechnical expertise in such areas as\ncommunications, demographic,\neconomic, field operations, geography,\ninformation technology, and statistics.\nSuch knowledge and expertise are\nneeded to provide advice and"
+    },
+    {
+      "sample": "generated-english",
+      "repetition": 1,
+      "width": 1400,
+      "height": 600,
+      "recognitionMs": 43.783208,
+      "decodeAndRecognitionMs": 50.847083,
+      "text": "The quiet garden\nA reader opened the book beside the window.\nThree birds crossed the pale morning sky.\nThe next page held a map, a letter, and a promise.\nOriginal pages remain available when words are unclear."
+    },
+    {
+      "sample": "generated-english",
+      "repetition": 2,
+      "width": 1400,
+      "height": 600,
+      "recognitionMs": 25.911,
+      "decodeAndRecognitionMs": 32.518,
+      "text": "The quiet garden\nA reader opened the book beside the window.\nThree birds crossed the pale morning sky.\nThe next page held a map, a letter, and a promise.\nOriginal pages remain available when words are unclear."
+    },
+    {
+      "sample": "generated-french",
+      "repetition": 1,
+      "width": 1400,
+      "height": 600,
+      "recognitionMs": 24.109916,
+      "decodeAndRecognitionMs": 30.724084,
+      "text": "Le jardin tranquille\nUne lectrice ouvre le livre près de la fenêtre.\nTrois oiseaux traversent le ciel du matin.\nLa page suivante contient une carte et une lettre.\nÉcoutez: où sont les élèves, le café et la forêt?"
+    },
+    {
+      "sample": "generated-french",
+      "repetition": 2,
+      "width": 1400,
+      "height": 600,
+      "recognitionMs": 26.752416,
+      "decodeAndRecognitionMs": 32.986958,
+      "text": "Le jardin tranquille\nUne lectrice ouvre le livre près de la fenêtre.\nTrois oiseaux traversent le ciel du matin.\nLa page suivante contient une carte et une lettre.\nÉcoutez: où sont les élèves, le café et la forêt?"
+    }
+  ],
+  "memory": {
+    "baselineProcessPssKiB": 111960,
+    "sampledPeakProcessPssKiB": 281968,
+    "sampledPeakNativeAllocatedBytes": 226650320,
+    "sampledPeakJavaUsedBytes": 12950672,
+    "samples": 29
+  },
+  "completedWallTimeMs": 1793711123125
+}

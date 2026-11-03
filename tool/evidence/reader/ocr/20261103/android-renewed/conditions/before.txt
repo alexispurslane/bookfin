@@ -1,0 +1,32 @@
+Tue Nov  3 12:46:28 UTC 2026
+google/sdk_gphone64_arm64/emu64a:16/BE2A.250530.026.F3/13894323:userdebug/dev-keys
+0
+1
+1
+- STREAM_MUSIC:
+   Muted: true
+   Muted Internally: false
+   Min: 0
+   Max: 15
+   streamVolume:0
+   Current: 2 (speaker): 5, 40000000 (default): 5
+   Devices: speaker(2)
+   Volume Group: AUDIO_STREAM_MUSIC
+
+- STREAM_ALARM:
+- VOLUME GROUP AUDIO_STREAM_MUSIC:
+   Muted: true
+   Min: 0
+   Max: 15
+   Current: 2 (speaker): 5, 40000000 (default): 5
+   Devices: speaker
+   Streams: STREAM_MUSIC 
+- VOLUME GROUP AUDIO_STREAM_NOTIFICATION:
+   Muted: false
+   Min: 0
+   Max: 7
+ 07:46:28  up 38 days 19:20,  4 users,  load average: 4.22, 4.31, 3.53
+Pageins: 269438425 
+Pageouts: 8330 
+
+System-wide memory free percentage: 62%

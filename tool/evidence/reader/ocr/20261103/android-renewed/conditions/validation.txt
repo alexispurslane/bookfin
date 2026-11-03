@@ -1,0 +1,19 @@
+PASS raw/scored identity, 14 recognitions, unique completed times: englishBest-fresh.json
+PASS raw/scored identity, 14 recognitions, unique completed times: englishBest-recovery.json
+PASS raw/scored identity, 14 recognitions, unique completed times: englishFast-lifecycle-recovery.json
+PASS raw/scored identity, 14 recognitions, unique completed times: englishFast-lifecycle-seed.json
+PASS raw/scored identity, 14 recognitions, unique completed times: latinFast-first-post-cancel.json
+PASS raw/scored identity, 14 recognitions, unique completed times: latinFast-fresh.json
+PASS raw/scored identity, 14 recognitions, unique completed times: latinFast-post-cancel.json
+PASS raw/scored identity, 14 recognitions, unique completed times: latinFast-recovery.json
+PASS raw/scored identity, 14 recognitions, unique completed times: mlkit-before-cancel-completed.json
+PASS raw/scored identity, 14 recognitions, unique completed times: mlkit-fresh.json
+PASS raw/scored identity, 14 recognitions, unique completed times: mlkit-post-cancel-recovery.json
+PASS raw/scored identity, 14 recognitions, unique completed times: mlkit-recovery.json
+PASS previous-report bytes preserved after active cancel and departure: englishBest
+PASS previous-report bytes preserved after active cancel and departure: latinFast
+PASS previous-report bytes preserved after active cancel and departure: englishFast
+PASS quality scores unchanged across each engine supplemental report
+PASS 168 renewed completed recognitions plus 28 retained previous recognitions
+PASS ML Kit active-work gates remain explicitly unproved
+PASS cleanup: four owned uninstalls, no packages/processes; restored 0/1/1 and media mute are in conditions/cleanup.txt

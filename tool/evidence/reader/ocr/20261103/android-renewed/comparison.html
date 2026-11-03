@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root { color: var(--foreground); font-family: var(--font-sans); }
+html, body { margin: 0; }
+section { margin-bottom: 20px; }
+h3 { font-size: 15px; font-weight: 500; margin: 0 0 14px; }
+.chart { height: 208px; }
+.row { display: grid; grid-template-columns: minmax(105px, 155px) minmax(0, 1fr) 78px; align-items: center; gap: 8px; margin-bottom: 17px; font-size: 13px; }
+.track { height: 22px; background: var(--secondary); border-radius: 3px; }
+.bar { height: 22px; background: var(--chart-1); border-radius: 3px; }
+.memory .bar { background: var(--chart-2); }
+.value { text-align: right; font-variant-numeric: tabular-nums; }
+small { color: var(--muted-foreground); }
+</style>
+</head>
+<body>
+<section>
+<h3>Mean page recognition time · milliseconds</h3>
+<div class="chart" role="img" aria-label="Mean page recognition time over the same seven scans, two passes per scan: retained English-fast 944.4 milliseconds; English-best 2243.3; Latin-fast 1394.0; bundled ML Kit 140.3.">
+<div class="row"><span>English-fast¹</span><div class="track"><div class="bar" style="width:42.1%"></div></div><span class="value">944.4</span></div>
+<div class="row"><span>English-best</span><div class="track"><div class="bar" style="width:100%"></div></div><span class="value">2,243.3</span></div>
+<div class="row"><span>Latin-fast</span><div class="track"><div class="bar" style="width:62.1%"></div></div><span class="value">1,394.0</span></div>
+<div class="row"><span>Bundled ML Kit</span><div class="track"><div class="bar" style="width:6.3%"></div></div><span class="value">140.3</span></div>
+<small>0 at the left edge. Recognition only; initialization and decoding excluded.</small>
+</div>
+</section>
+<section class="memory">
+<h3>Fresh-run sampled maximum process PSS · KiB</h3>
+<div class="chart" role="img" aria-label="Fresh-run sampled maximum proportional-set process memory: retained English-fast 269055 KiB; English-best 281440; Latin-fast 358416; bundled ML Kit 280438. Samples every 100 milliseconds, not exact peaks.">
+<div class="row"><span>English-fast¹</span><div class="track"><div class="bar" style="width:75.1%"></div></div><span class="value">269,055</span></div>
+<div class="row"><span>English-best</span><div class="track"><div class="bar" style="width:78.5%"></div></div><span class="value">281,440</span></div>
+<div class="row"><span>Latin-fast</span><div class="track"><div class="bar" style="width:100%"></div></div><span class="value">358,416</span></div>
+<div class="row"><span>Bundled ML Kit</span><div class="track"><div class="bar" style="width:78.2%"></div></div><span class="value">280,438</span></div>
+<small>0 at the left edge. KiB = 1,024 bytes. Shared memory is proportionally counted.</small>
+</div>
+</section>
+<small>¹ Retained previous fresh report. Same pinned APKs/scans and emulator, different shared-host conditions. Research observations, not phone/release predictions. Later Latin-fast PSS reached 414,998 KiB.</small>
+</body>
+</html>

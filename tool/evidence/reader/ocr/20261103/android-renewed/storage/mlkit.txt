@@ -1,0 +1,18 @@
+Tue Nov  3 13:09:12 UTC 2026
+28492	/data/app/~~8WuVRJ2zpe-063Kv3ETWvw==/dev.bookfin.ocr.probe.mlkit-6A6wiJD4smNED_Dltylovg==/base.apk
+8	/data/app/~~8WuVRJ2zpe-063Kv3ETWvw==/dev.bookfin.ocr.probe.mlkit-6A6wiJD4smNED_Dltylovg==/lib/arm64
+16	/data/app/~~8WuVRJ2zpe-063Kv3ETWvw==/dev.bookfin.ocr.probe.mlkit-6A6wiJD4smNED_Dltylovg==/lib
+28516	/data/app/~~8WuVRJ2zpe-063Kv3ETWvw==/dev.bookfin.ocr.probe.mlkit-6A6wiJD4smNED_Dltylovg==
+8	./cache
+8	./code_cache
+44	./databases/com.google.android.datatransport.events
+4	./databases/com.google.android.datatransport.events-journal
+56	./databases
+8	./shared_prefs/com.google.mlkit.internal.xml
+16	./shared_prefs
+36	./files/report.json
+44	./files
+140	.
+files:
+total 36
+-rw------- 1 10225 10225 32058 2026-11-03 08:07 report.json

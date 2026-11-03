@@ -1,0 +1,10 @@
+c944f885cd856216552fb1625b6c3b756e433c8be09c1744c212b5491d8e7099  /Users/alexispurslane/.t3/worktrees/bookfin/t3-6bcb40a5/.cache/artifacts/ocr-20261102/bookfin-ocr-englishFast-research-1.apk
+package: dev.bookfin.ocr.probe.englishfast
+1eb727116b606381d2f90384908082d3a431ce87e669678cf5ac853d8a25d052  /Users/alexispurslane/.t3/worktrees/bookfin/t3-6bcb40a5/.cache/artifacts/ocr-20261102/bookfin-ocr-englishBest-research-1.apk
+package: dev.bookfin.ocr.probe.englishbest
+0ac5bb8be95d9a56b359b15799c723352822fb57a789e372e8ecca982ea52862  /Users/alexispurslane/.t3/worktrees/bookfin/t3-6bcb40a5/.cache/artifacts/ocr-20261102/bookfin-ocr-latinFast-research-1.apk
+package: dev.bookfin.ocr.probe.latinfast
+77403f3e6cb407293f31a4b7e5603c6fe462823858aec7c3a80ad4e4003e80a5  /Users/alexispurslane/.t3/worktrees/bookfin/t3-6bcb40a5/.cache/artifacts/ocr-20261102/bookfin-ocr-mlkit-research-1.apk
+package: dev.bookfin.ocr.probe.mlkit
+permission: dev.bookfin.ocr.probe.mlkit.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+uses-permission: name='dev.bookfin.ocr.probe.mlkit.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION'

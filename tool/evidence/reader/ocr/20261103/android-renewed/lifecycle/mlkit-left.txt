@@ -1,0 +1,3 @@
+Tue Nov  3 13:07:03 UTC 2026
+    topResumedActivity=ActivityRecord{165657278 u0 dev.bookfin.ocr.probe.latinfast/dev.bookfin.ocr.probe.MainActivity t116}
+25088

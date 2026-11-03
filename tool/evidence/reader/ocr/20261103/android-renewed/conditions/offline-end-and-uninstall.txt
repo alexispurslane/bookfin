@@ -1,0 +1,18 @@
+Tue Nov  3 13:14:06 UTC 2026
+1
+0
+0
+Active default network: none
+- STREAM_MUSIC:
+   Muted: true
+   Muted Internally: false
+   Min: 0
+   Max: 15
+   streamVolume:0
+   Current: 2 (speaker): 5, 40000000 (default): 5
+   Devices: speaker(2)
+   Volume Group: AUDIO_STREAM_MUSIC
+Success
+Success
+Success
+Success

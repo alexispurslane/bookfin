@@ -1,0 +1,1117 @@
+{
+  "sourceCommit": "838d8a4a0b6f2a55f0042df042ab5f5b97df51df",
+  "sourceArchiveSha256": "d723f7bc35de18ef92ec727957dd591a8d42690a9eb58602c124f5009feae0a7",
+  "scope": "Separate offline emulator research, not production acceptance or engine selection",
+  "renewedCompletedRecognitions": 168,
+  "retainedPreviousRecognitions": 28,
+  "mlkitActiveCancellationProved": false,
+  "mlkitActiveDepartureProved": false,
+  "reports": [
+    {
+      "report": "tool/evidence/reader/ocr/20261103/android-renewed/scored/englishBest-fresh.json",
+      "flavor": "englishBest",
+      "startedWallTimeMs": 1793710162757,
+      "completedWallTimeMs": 1793710195474,
+      "durationMs": 32717,
+      "initializationMs": 467.224584,
+      "recognitions": 14,
+      "meanRecognitionMs": 2243.340977357143,
+      "memory": {
+        "baselineProcessPssKiB": 51225,
+        "sampledPeakProcessPssKiB": 281440,
+        "sampledPeakNativeAllocatedBytes": 231172816,
+        "sampledPeakJavaUsedBytes": 2422032,
+        "samples": 329
+      },
+      "quality": [
+        {
+          "sample": "raven-1873-page-9-poem-crop",
+          "repetition": 1,
+          "quality": {
+            "referenceWords": 31,
+            "wordErrors": 4,
+            "referenceCharacters": 182,
+            "characterErrors": 4
+          }
+        },
+        {
+          "sample": "raven-1873-page-9-poem-crop",
+          "repetition": 2,
+          "quality": {
+            "referenceWords": 31,
+            "wordErrors": 4,
+            "referenceCharacters": 182,
+            "characterErrors": 4
+          }
+        },
+        {
+          "sample": "generated-english",
+          "repetition": 1,
+          "quality": {
+            "referenceWords": 37,
+            "wordErrors": 0,
+            "referenceCharacters": 209,
+            "characterErrors": 0
+          }
+        },
+        {
+          "sample": "generated-english",
+          "repetition": 2,
+          "quality": {
+            "referenceWords": 37,
+            "wordErrors": 0,
+            "referenceCharacters": 209,
+            "characterErrors": 0
+          }
+        },
+        {
+          "sample": "generated-french",
+          "repetition": 1,
+          "quality": {
+            "referenceWords": 40,
+            "wordErrors": 6,
+            "referenceCharacters": 214,
+            "characterErrors": 6
+          }
+        },
+        {
+          "sample": "generated-french",
+          "repetition": 2,
+          "quality": {
+            "referenceWords": 40,
+            "wordErrors": 6,
+            "referenceCharacters": 214,
+            "characterErrors": 6
+          }
+        }
+      ]
+    },
+    {
+      "report": "tool/evidence/reader/ocr/20261103/android-renewed/scored/englishBest-recovery.json",
+      "flavor": "englishBest",
+      "startedWallTimeMs": 1793710340069,
+      "completedWallTimeMs": 1793710371273,
+      "durationMs": 31204,
+      "initializationMs": 133.599834,
+      "recognitions": 14,
+      "meanRecognitionMs": 2162.9654059285713,
+      "memory": {
+        "baselineProcessPssKiB": 77993,
+        "sampledPeakProcessPssKiB": 286409,
+        "sampledPeakNativeAllocatedBytes": 228927504,
+        "sampledPeakJavaUsedBytes": 2981424,
+        "samples": 313
+      },
+      "quality": [
+        {
+          "sample": "raven-1873-page-9-poem-crop",
+          "repetition": 1,
+          "quality": {
+            "referenceWords": 31,
+            "wordErrors": 4,
+            "referenceCharacters": 182,
+            "characterErrors": 4
+          }
+        },
+        {
+          "sample": "raven-1873-page-9-poem-crop",
+          "repetition": 2,
+          "quality": {
+            "referenceWords": 31,
+            "wordErrors": 4,
+            "referenceCharacters": 182,
+            "characterErrors": 4
+          }
+        },
+        {
+          "sample": "generated-english",
+          "repetition": 1,
+          "quality": {
+            "referenceWords": 37,
+            "wordErrors": 0,
+            "referenceCharacters": 209,
+            "characterErrors": 0
+          }
+        },
+        {
+          "sample": "generated-english",
+          "repetition": 2,
+          "quality": {
+            "referenceWords": 37,
+            "wordErrors": 0,
+            "referenceCharacters": 209,
+            "characterErrors": 0
+          }
+        },
+        {
+          "sample": "generated-french",
+          "repetition": 1,
+          "quality": {
+            "referenceWords": 40,
+            "wordErrors": 6,
+            "referenceCharacters": 214,
+            "characterErrors": 6
+          }
+        },
+        {
+          "sample": "generated-french",
+          "repetition": 2,
+          "quality": {
+            "referenceWords": 40,
+            "wordErrors": 6,
+            "referenceCharacters": 214,
+            "characterErrors": 6
+          }
+        }
+      ]
+    },
+    {
+      "report": "tool/evidence/reader/ocr/20261103/android-renewed/scored/englishFast-lifecycle-recovery.json",
+      "flavor": "englishFast",
+      "startedWallTimeMs": 1793711471099,
+      "completedWallTimeMs": 1793711485274,
+      "durationMs": 14175,
+      "initializationMs": 92.47575,
+      "recognitions": 14,
+      "meanRecognitionMs": 949.5548276428572,
+      "memory": {
+        "baselineProcessPssKiB": 84863,
+        "sampledPeakProcessPssKiB": 279771,
+        "sampledPeakNativeAllocatedBytes": 217957792,
+        "sampledPeakJavaUsedBytes": 3034768,
+        "samples": 143
+      },
+      "quality": [
+        {
+          "sample": "raven-1873-page-9-poem-crop",
+          "repetition": 1,
+          "quality": {
+            "referenceWords": 31,
+            "wordErrors": 2,
+            "referenceCharacters": 182,
+            "characterErrors": 2
+          }
+        },
+        {
+          "sample": "raven-1873-page-9-poem-crop",
+          "repetition": 2,
+          "quality": {
+            "referenceWords": 31,
+            "wordErrors": 2,
+            "referenceCharacters": 182,
+            "characterErrors": 2
+          }
+        },
+        {
+          "sample": "generated-english",
+          "repetition": 1,
+          "quality": {
+            "referenceWords": 37,
+            "wordErrors": 0,
+            "referenceCharacters": 209,
+            "characterErrors": 0
+          }
+        },
+        {
+          "sample": "generated-english",
+          "repetition": 2,
+          "quality": {
+            "referenceWords": 37,
+            "wordErrors": 0,
+            "referenceCharacters": 209,
+            "characterErrors": 0
+          }
+        },
+        {
+          "sample": "generated-french",
+          "repetition": 1,
+          "quality": {
+            "referenceWords": 40,
+            "wordErrors": 6,
+            "referenceCharacters": 214,
+            "characterErrors": 7
+          }
+        },
+        {
+          "sample": "generated-french",
+          "repetition": 2,
+          "quality": {
+            "referenceWords": 40,
+            "wordErrors": 6,
+            "referenceCharacters": 214,
+            "characterErrors": 7
+          }
+        }
+      ]
+    },
+    {
+      "report": "tool/evidence/reader/ocr/20261103/android-renewed/scored/englishFast-lifecycle-seed.json",
+      "flavor": "englishFast",
+      "startedWallTimeMs": 1793711333987,
+      "completedWallTimeMs": 1793711348281,
+      "durationMs": 14294,
+      "initializationMs": 261.323542,
+      "recognitions": 14,
+      "meanRecognitionMs": 943.4266999285715,
+      "memory": {
+        "baselineProcessPssKiB": 49233,
+        "sampledPeakProcessPssKiB": 272127,
+        "sampledPeakNativeAllocatedBytes": 216638288,
+        "sampledPeakJavaUsedBytes": 2385168,
+        "samples": 144
+      },
+      "quality": [
+        {
+          "sample": "raven-1873-page-9-poem-crop",
+          "repetition": 1,
+          "quality": {
+            "referenceWords": 31,
+            "wordErrors": 2,
+            "referenceCharacters": 182,
+            "characterErrors": 2
+          }
+        },
+        {
+          "sample": "raven-1873-page-9-poem-crop",
+          "repetition": 2,
+          "quality": {
+            "referenceWords": 31,
+            "wordErrors": 2,
+            "referenceCharacters": 182,
+            "characterErrors": 2
+          }
+        },
+        {
+          "sample": "generated-english",
+          "repetition": 1,
+          "quality": {
+            "referenceWords": 37,
+            "wordErrors": 0,
+            "referenceCharacters": 209,
+            "characterErrors": 0
+          }
+        },
+        {
+          "sample": "generated-english",
+          "repetition": 2,
+          "quality": {
+            "referenceWords": 37,
+            "wordErrors": 0,
+            "referenceCharacters": 209,
+            "characterErrors": 0
+          }
+        },
+        {
+          "sample": "generated-french",
+          "repetition": 1,
+          "quality": {
+            "referenceWords": 40,
+            "wordErrors": 6,
+            "referenceCharacters": 214,
+            "characterErrors": 7
+          }
+        },
+        {
+          "sample": "generated-french",
+          "repetition": 2,
+          "quality": {
+            "referenceWords": 40,
+            "wordErrors": 6,
+            "referenceCharacters": 214,
+            "characterErrors": 7
+          }
+        }
+      ]
+    },
+    {
+      "report": "tool/evidence/reader/ocr/20261103/android-renewed/scored/latinFast-first-post-cancel.json",
+      "flavor": "latinFast",
+      "startedWallTimeMs": 1793710628781,
+      "completedWallTimeMs": 1793710649608,
+      "durationMs": 20827,
+      "initializationMs": 832.8355,
+      "recognitions": 14,
+      "meanRecognitionMs": 1373.7405094285714,
+      "memory": {
+        "baselineProcessPssKiB": 164777,
+        "sampledPeakProcessPssKiB": 363189,
+        "sampledPeakNativeAllocatedBytes": 307786336,
+        "sampledPeakJavaUsedBytes": 2565344,
+        "samples": 210
+      },
+      "quality": [
+        {
+          "sample": "raven-1873-page-9-poem-crop",
+          "repetition": 1,
+          "quality": {
+            "referenceWords": 31,
+            "wordErrors": 4,
+            "referenceCharacters": 182,
+            "characterErrors": 5
+          }
+        },
+        {
+          "sample": "raven-1873-page-9-poem-crop",
+          "repetition": 2,
+          "quality": {
+            "referenceWords": 31,
+            "wordErrors": 4,
+            "referenceCharacters": 182,
+            "characterErrors": 5
+          }
+        },
+        {
+          "sample": "generated-english",
+          "repetition": 1,
+          "quality": {
+            "referenceWords": 37,
+            "wordErrors": 0,
+            "referenceCharacters": 209,
+            "characterErrors": 0
+          }
+        },
+        {
+          "sample": "generated-english",
+          "repetition": 2,
+          "quality": {
+            "referenceWords": 37,
+            "wordErrors": 0,
+            "referenceCharacters": 209,
+            "characterErrors": 0
+          }
+        },
+        {
+          "sample": "generated-french",
+          "repetition": 1,
+          "quality": {
+            "referenceWords": 40,
+            "wordErrors": 0,
+            "referenceCharacters": 214,
+            "characterErrors": 0
+          }
+        },
+        {
+          "sample": "generated-french",
+          "repetition": 2,
+          "quality": {
+            "referenceWords": 40,
+            "wordErrors": 0,
+            "referenceCharacters": 214,
+            "characterErrors": 0
+          }
+        }
+      ]
+    },
+    {
+      "report": "tool/evidence/reader/ocr/20261103/android-renewed/scored/latinFast-fresh.json",
+      "flavor": "latinFast",
+      "startedWallTimeMs": 1793710476070,
+      "completedWallTimeMs": 1793710497447,
+      "durationMs": 21377,
+      "initializationMs": 1063.7765,
+      "recognitions": 14,
+      "meanRecognitionMs": 1394.0142952857143,
+      "memory": {
+        "baselineProcessPssKiB": 50510,
+        "sampledPeakProcessPssKiB": 358416,
+        "sampledPeakNativeAllocatedBytes": 306220784,
+        "sampledPeakJavaUsedBytes": 2385168,
+        "samples": 215
+      },
+      "quality": [
+        {
+          "sample": "raven-1873-page-9-poem-crop",
+          "repetition": 1,
+          "quality": {
+            "referenceWords": 31,
+            "wordErrors": 4,
+            "referenceCharacters": 182,
+            "characterErrors": 5
+          }
+        },
+        {
+          "sample": "raven-1873-page-9-poem-crop",
+          "repetition": 2,
+          "quality": {
+            "referenceWords": 31,
+            "wordErrors": 4,
+            "referenceCharacters": 182,
+            "characterErrors": 5
+          }
+        },
+        {
+          "sample": "generated-english",
+          "repetition": 1,
+          "quality": {
+            "referenceWords": 37,
+            "wordErrors": 0,
+            "referenceCharacters": 209,
+            "characterErrors": 0
+          }
+        },
+        {
+          "sample": "generated-english",
+          "repetition": 2,
+          "quality": {
+            "referenceWords": 37,
+            "wordErrors": 0,
+            "referenceCharacters": 209,
+            "characterErrors": 0
+          }
+        },
+        {
+          "sample": "generated-french",
+          "repetition": 1,
+          "quality": {
+            "referenceWords": 40,
+            "wordErrors": 0,
+            "referenceCharacters": 214,
+            "characterErrors": 0
+          }
+        },
+        {
+          "sample": "generated-french",
+          "repetition": 2,
+          "quality": {
+            "referenceWords": 40,
+            "wordErrors": 0,
+            "referenceCharacters": 214,
+            "characterErrors": 0
+          }
+        }
+      ]
+    },
+    {
+      "report": "tool/evidence/reader/ocr/20261103/android-renewed/scored/latinFast-post-cancel.json",
+      "flavor": "latinFast",
+      "startedWallTimeMs": 1793710795686,
+      "completedWallTimeMs": 1793710816129,
+      "durationMs": 20443,
+      "initializationMs": 346.872791,
+      "recognitions": 14,
+      "meanRecognitionMs": 1379.920223857143,
+      "memory": {
+        "baselineProcessPssKiB": 150006,
+        "sampledPeakProcessPssKiB": 391240,
+        "sampledPeakNativeAllocatedBytes": 376748704,
+        "sampledPeakJavaUsedBytes": 2965136,
+        "samples": 206
+      },
+      "quality": [
+        {
+          "sample": "raven-1873-page-9-poem-crop",
+          "repetition": 1,
+          "quality": {
+            "referenceWords": 31,
+            "wordErrors": 4,
+            "referenceCharacters": 182,
+            "characterErrors": 5
+          }
+        },
+        {
+          "sample": "raven-1873-page-9-poem-crop",
+          "repetition": 2,
+          "quality": {
+            "referenceWords": 31,
+            "wordErrors": 4,
+            "referenceCharacters": 182,
+            "characterErrors": 5
+          }
+        },
+        {
+          "sample": "generated-english",
+          "repetition": 1,
+          "quality": {
+            "referenceWords": 37,
+            "wordErrors": 0,
+            "referenceCharacters": 209,
+            "characterErrors": 0
+          }
+        },
+        {
+          "sample": "generated-english",
+          "repetition": 2,
+          "quality": {
+            "referenceWords": 37,
+            "wordErrors": 0,
+            "referenceCharacters": 209,
+            "characterErrors": 0
+          }
+        },
+        {
+          "sample": "generated-french",
+          "repetition": 1,
+          "quality": {
+            "referenceWords": 40,
+            "wordErrors": 0,
+            "referenceCharacters": 214,
+            "characterErrors": 0
+          }
+        },
+        {
+          "sample": "generated-french",
+          "repetition": 2,
+          "quality": {
+            "referenceWords": 40,
+            "wordErrors": 0,
+            "referenceCharacters": 214,
+            "characterErrors": 0
+          }
+        }
+      ]
+    },
+    {
+      "report": "tool/evidence/reader/ocr/20261103/android-renewed/scored/latinFast-recovery.json",
+      "flavor": "latinFast",
+      "startedWallTimeMs": 1793710966097,
+      "completedWallTimeMs": 1793710986593,
+      "durationMs": 20496,
+      "initializationMs": 284.279834,
+      "recognitions": 14,
+      "meanRecognitionMs": 1385.2070332142857,
+      "memory": {
+        "baselineProcessPssKiB": 158420,
+        "sampledPeakProcessPssKiB": 414998,
+        "sampledPeakNativeAllocatedBytes": 307607264,
+        "sampledPeakJavaUsedBytes": 2968592,
+        "samples": 206
+      },
+      "quality": [
+        {
+          "sample": "raven-1873-page-9-poem-crop",
+          "repetition": 1,
+          "quality": {
+            "referenceWords": 31,
+            "wordErrors": 4,
+            "referenceCharacters": 182,
+            "characterErrors": 5
+          }
+        },
+        {
+          "sample": "raven-1873-page-9-poem-crop",
+          "repetition": 2,
+          "quality": {
+            "referenceWords": 31,
+            "wordErrors": 4,
+            "referenceCharacters": 182,
+            "characterErrors": 5
+          }
+        },
+        {
+          "sample": "generated-english",
+          "repetition": 1,
+          "quality": {
+            "referenceWords": 37,
+            "wordErrors": 0,
+            "referenceCharacters": 209,
+            "characterErrors": 0
+          }
+        },
+        {
+          "sample": "generated-english",
+          "repetition": 2,
+          "quality": {
+            "referenceWords": 37,
+            "wordErrors": 0,
+            "referenceCharacters": 209,
+            "characterErrors": 0
+          }
+        },
+        {
+          "sample": "generated-french",
+          "repetition": 1,
+          "quality": {
+            "referenceWords": 40,
+            "wordErrors": 0,
+            "referenceCharacters": 214,
+            "characterErrors": 0
+          }
+        },
+        {
+          "sample": "generated-french",
+          "repetition": 2,
+          "quality": {
+            "referenceWords": 40,
+            "wordErrors": 0,
+            "referenceCharacters": 214,
+            "characterErrors": 0
+          }
+        }
+      ]
+    },
+    {
+      "report": "tool/evidence/reader/ocr/20261103/android-renewed/scored/mlkit-before-cancel-completed.json",
+      "flavor": "mlkit",
+      "startedWallTimeMs": 1793711120415,
+      "completedWallTimeMs": 1793711123125,
+      "durationMs": 2710,
+      "initializationMs": 0.121291,
+      "recognitions": 14,
+      "meanRecognitionMs": 126.40664878571428,
+      "memory": {
+        "baselineProcessPssKiB": 111960,
+        "sampledPeakProcessPssKiB": 281968,
+        "sampledPeakNativeAllocatedBytes": 226650320,
+        "sampledPeakJavaUsedBytes": 12950672,
+        "samples": 29
+      },
+      "quality": [
+        {
+          "sample": "raven-1873-page-9-poem-crop",
+          "repetition": 1,
+          "quality": {
+            "referenceWords": 31,
+            "wordErrors": 6,
+            "referenceCharacters": 182,
+            "characterErrors": 13
+          }
+        },
+        {
+          "sample": "raven-1873-page-9-poem-crop",
+          "repetition": 2,
+          "quality": {
+            "referenceWords": 31,
+            "wordErrors": 6,
+            "referenceCharacters": 182,
+            "characterErrors": 13
+          }
+        },
+        {
+          "sample": "generated-english",
+          "repetition": 1,
+          "quality": {
+            "referenceWords": 37,
+            "wordErrors": 0,
+            "referenceCharacters": 209,
+            "characterErrors": 0
+          }
+        },
+        {
+          "sample": "generated-english",
+          "repetition": 2,
+          "quality": {
+            "referenceWords": 37,
+            "wordErrors": 0,
+            "referenceCharacters": 209,
+            "characterErrors": 0
+          }
+        },
+        {
+          "sample": "generated-french",
+          "repetition": 1,
+          "quality": {
+            "referenceWords": 40,
+            "wordErrors": 4,
+            "referenceCharacters": 214,
+            "characterErrors": 2
+          }
+        },
+        {
+          "sample": "generated-french",
+          "repetition": 2,
+          "quality": {
+            "referenceWords": 40,
+            "wordErrors": 4,
+            "referenceCharacters": 214,
+            "characterErrors": 2
+          }
+        }
+      ]
+    },
+    {
+      "report": "tool/evidence/reader/ocr/20261103/android-renewed/scored/mlkit-fresh.json",
+      "flavor": "mlkit",
+      "startedWallTimeMs": 1793711081425,
+      "completedWallTimeMs": 1793711084720,
+      "durationMs": 3295,
+      "initializationMs": 196.939667,
+      "recognitions": 14,
+      "meanRecognitionMs": 140.26540185714285,
+      "memory": {
+        "baselineProcessPssKiB": 66175,
+        "sampledPeakProcessPssKiB": 280438,
+        "sampledPeakNativeAllocatedBytes": 221315232,
+        "sampledPeakJavaUsedBytes": 11123760,
+        "samples": 34
+      },
+      "quality": [
+        {
+          "sample": "raven-1873-page-9-poem-crop",
+          "repetition": 1,
+          "quality": {
+            "referenceWords": 31,
+            "wordErrors": 6,
+            "referenceCharacters": 182,
+            "characterErrors": 13
+          }
+        },
+        {
+          "sample": "raven-1873-page-9-poem-crop",
+          "repetition": 2,
+          "quality": {
+            "referenceWords": 31,
+            "wordErrors": 6,
+            "referenceCharacters": 182,
+            "characterErrors": 13
+          }
+        },
+        {
+          "sample": "generated-english",
+          "repetition": 1,
+          "quality": {
+            "referenceWords": 37,
+            "wordErrors": 0,
+            "referenceCharacters": 209,
+            "characterErrors": 0
+          }
+        },
+        {
+          "sample": "generated-english",
+          "repetition": 2,
+          "quality": {
+            "referenceWords": 37,
+            "wordErrors": 0,
+            "referenceCharacters": 209,
+            "characterErrors": 0
+          }
+        },
+        {
+          "sample": "generated-french",
+          "repetition": 1,
+          "quality": {
+            "referenceWords": 40,
+            "wordErrors": 4,
+            "referenceCharacters": 214,
+            "characterErrors": 2
+          }
+        },
+        {
+          "sample": "generated-french",
+          "repetition": 2,
+          "quality": {
+            "referenceWords": 40,
+            "wordErrors": 4,
+            "referenceCharacters": 214,
+            "characterErrors": 2
+          }
+        }
+      ]
+    },
+    {
+      "report": "tool/evidence/reader/ocr/20261103/android-renewed/scored/mlkit-post-cancel-recovery.json",
+      "flavor": "mlkit",
+      "startedWallTimeMs": 1793711198880,
+      "completedWallTimeMs": 1793711201595,
+      "durationMs": 2715,
+      "initializationMs": 0.141166,
+      "recognitions": 14,
+      "meanRecognitionMs": 131.8179525,
+      "memory": {
+        "baselineProcessPssKiB": 109806,
+        "sampledPeakProcessPssKiB": 281918,
+        "sampledPeakNativeAllocatedBytes": 225795760,
+        "sampledPeakJavaUsedBytes": 13860080,
+        "samples": 29
+      },
+      "quality": [
+        {
+          "sample": "raven-1873-page-9-poem-crop",
+          "repetition": 1,
+          "quality": {
+            "referenceWords": 31,
+            "wordErrors": 6,
+            "referenceCharacters": 182,
+            "characterErrors": 13
+          }
+        },
+        {
+          "sample": "raven-1873-page-9-poem-crop",
+          "repetition": 2,
+          "quality": {
+            "referenceWords": 31,
+            "wordErrors": 6,
+            "referenceCharacters": 182,
+            "characterErrors": 13
+          }
+        },
+        {
+          "sample": "generated-english",
+          "repetition": 1,
+          "quality": {
+            "referenceWords": 37,
+            "wordErrors": 0,
+            "referenceCharacters": 209,
+            "characterErrors": 0
+          }
+        },
+        {
+          "sample": "generated-english",
+          "repetition": 2,
+          "quality": {
+            "referenceWords": 37,
+            "wordErrors": 0,
+            "referenceCharacters": 209,
+            "characterErrors": 0
+          }
+        },
+        {
+          "sample": "generated-french",
+          "repetition": 1,
+          "quality": {
+            "referenceWords": 40,
+            "wordErrors": 4,
+            "referenceCharacters": 214,
+            "characterErrors": 2
+          }
+        },
+        {
+          "sample": "generated-french",
+          "repetition": 2,
+          "quality": {
+            "referenceWords": 40,
+            "wordErrors": 4,
+            "referenceCharacters": 214,
+            "characterErrors": 2
+          }
+        }
+      ]
+    },
+    {
+      "report": "tool/evidence/reader/ocr/20261103/android-renewed/scored/mlkit-recovery.json",
+      "flavor": "mlkit",
+      "startedWallTimeMs": 1793711265700,
+      "completedWallTimeMs": 1793711268466,
+      "durationMs": 2766,
+      "initializationMs": 0.128041,
+      "recognitions": 14,
+      "meanRecognitionMs": 135.02004764285715,
+      "memory": {
+        "baselineProcessPssKiB": 98624,
+        "sampledPeakProcessPssKiB": 285251,
+        "sampledPeakNativeAllocatedBytes": 225413472,
+        "sampledPeakJavaUsedBytes": 11012560,
+        "samples": 29
+      },
+      "quality": [
+        {
+          "sample": "raven-1873-page-9-poem-crop",
+          "repetition": 1,
+          "quality": {
+            "referenceWords": 31,
+            "wordErrors": 6,
+            "referenceCharacters": 182,
+            "characterErrors": 13
+          }
+        },
+        {
+          "sample": "raven-1873-page-9-poem-crop",
+          "repetition": 2,
+          "quality": {
+            "referenceWords": 31,
+            "wordErrors": 6,
+            "referenceCharacters": 182,
+            "characterErrors": 13
+          }
+        },
+        {
+          "sample": "generated-english",
+          "repetition": 1,
+          "quality": {
+            "referenceWords": 37,
+            "wordErrors": 0,
+            "referenceCharacters": 209,
+            "characterErrors": 0
+          }
+        },
+        {
+          "sample": "generated-english",
+          "repetition": 2,
+          "quality": {
+            "referenceWords": 37,
+            "wordErrors": 0,
+            "referenceCharacters": 209,
+            "characterErrors": 0
+          }
+        },
+        {
+          "sample": "generated-french",
+          "repetition": 1,
+          "quality": {
+            "referenceWords": 40,
+            "wordErrors": 4,
+            "referenceCharacters": 214,
+            "characterErrors": 2
+          }
+        },
+        {
+          "sample": "generated-french",
+          "repetition": 2,
+          "quality": {
+            "referenceWords": 40,
+            "wordErrors": 4,
+            "referenceCharacters": 214,
+            "characterErrors": 2
+          }
+        }
+      ]
+    },
+    {
+      "report": "tool/evidence/reader/ocr/20261102/android-device/scored/englishFast-fresh.json",
+      "flavor": "englishFast",
+      "startedWallTimeMs": 1793668890083,
+      "completedWallTimeMs": 1793668904650,
+      "durationMs": 14567,
+      "initializationMs": 356.795334,
+      "recognitions": 14,
+      "meanRecognitionMs": 944.3696999285714,
+      "memory": {
+        "baselineProcessPssKiB": 52935,
+        "sampledPeakProcessPssKiB": 269055,
+        "sampledPeakNativeAllocatedBytes": 216281600,
+        "sampledPeakJavaUsedBytes": 4345328,
+        "samples": 147
+      },
+      "quality": [
+        {
+          "sample": "raven-1873-page-9-poem-crop",
+          "repetition": 1,
+          "quality": {
+            "referenceWords": 31,
+            "wordErrors": 2,
+            "referenceCharacters": 182,
+            "characterErrors": 2
+          }
+        },
+        {
+          "sample": "raven-1873-page-9-poem-crop",
+          "repetition": 2,
+          "quality": {
+            "referenceWords": 31,
+            "wordErrors": 2,
+            "referenceCharacters": 182,
+            "characterErrors": 2
+          }
+        },
+        {
+          "sample": "generated-english",
+          "repetition": 1,
+          "quality": {
+            "referenceWords": 37,
+            "wordErrors": 0,
+            "referenceCharacters": 209,
+            "characterErrors": 0
+          }
+        },
+        {
+          "sample": "generated-english",
+          "repetition": 2,
+          "quality": {
+            "referenceWords": 37,
+            "wordErrors": 0,
+            "referenceCharacters": 209,
+            "characterErrors": 0
+          }
+        },
+        {
+          "sample": "generated-french",
+          "repetition": 1,
+          "quality": {
+            "referenceWords": 40,
+            "wordErrors": 6,
+            "referenceCharacters": 214,
+            "characterErrors": 7
+          }
+        },
+        {
+          "sample": "generated-french",
+          "repetition": 2,
+          "quality": {
+            "referenceWords": 40,
+            "wordErrors": 6,
+            "referenceCharacters": 214,
+            "characterErrors": 7
+          }
+        }
+      ]
+    },
+    {
+      "report": "tool/evidence/reader/ocr/20261102/android-device/scored/englishFast-repeat.json",
+      "flavor": "englishFast",
+      "startedWallTimeMs": 1793669267552,
+      "completedWallTimeMs": 1793669281910,
+      "durationMs": 14358,
+      "initializationMs": 107.698917,
+      "recognitions": 14,
+      "meanRecognitionMs": 961.2605121428571,
+      "memory": {
+        "baselineProcessPssKiB": 76548,
+        "sampledPeakProcessPssKiB": 274751,
+        "sampledPeakNativeAllocatedBytes": 218108864,
+        "sampledPeakJavaUsedBytes": 2475216,
+        "samples": 145
+      },
+      "quality": [
+        {
+          "sample": "raven-1873-page-9-poem-crop",
+          "repetition": 1,
+          "quality": {
+            "referenceWords": 31,
+            "wordErrors": 2,
+            "referenceCharacters": 182,
+            "characterErrors": 2
+          }
+        },
+        {
+          "sample": "raven-1873-page-9-poem-crop",
+          "repetition": 2,
+          "quality": {
+            "referenceWords": 31,
+            "wordErrors": 2,
+            "referenceCharacters": 182,
+            "characterErrors": 2
+          }
+        },
+        {
+          "sample": "generated-english",
+          "repetition": 1,
+          "quality": {
+            "referenceWords": 37,
+            "wordErrors": 0,
+            "referenceCharacters": 209,
+            "characterErrors": 0
+          }
+        },
+        {
+          "sample": "generated-english",
+          "repetition": 2,
+          "quality": {
+            "referenceWords": 37,
+            "wordErrors": 0,
+            "referenceCharacters": 209,
+            "characterErrors": 0
+          }
+        },
+        {
+          "sample": "generated-french",
+          "repetition": 1,
+          "quality": {
+            "referenceWords": 40,
+            "wordErrors": 6,
+            "referenceCharacters": 214,
+            "characterErrors": 7
+          }
+        },
+        {
+          "sample": "generated-french",
+          "repetition": 2,
+          "quality": {
+            "referenceWords": 40,
+            "wordErrors": 6,
+            "referenceCharacters": 214,
+            "characterErrors": 7
+          }
+        }
+      ]
+    }
+  ]
+}

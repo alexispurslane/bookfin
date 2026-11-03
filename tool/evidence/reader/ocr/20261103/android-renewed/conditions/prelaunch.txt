@@ -1,0 +1,17 @@
+englishbest
+ls: files: No such file or directory
+latinfast
+ls: files: No such file or directory
+mlkit
+ls: files: No such file or directory
+    requested permissions:
+      dev.bookfin.ocr.probe.mlkit.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+    install permissions:
+      dev.bookfin.ocr.probe.mlkit.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION: granted=true
+englishfast
+ls: files: No such file or directory
+Tue Nov  3 12:47:55 UTC 2026
+1
+0
+0
+Active default network: none

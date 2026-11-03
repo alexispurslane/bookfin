@@ -1,0 +1,37 @@
+Tue Nov  3 12:47:19 UTC 2026
+1
+0
+0
+Active default network: none
+- STREAM_MUSIC:
+   Muted: true
+   Muted Internally: false
+   Min: 0
+   Max: 15
+   streamVolume:0
+   Current: 2 (speaker): 5, 40000000 (default): 5
+   Devices: speaker(2)
+   Volume Group: AUDIO_STREAM_MUSIC
+Physical size: 1080x2400
+Physical density: 420
+MemTotal:        2021944 kB
+MemFree:          159760 kB
+MemAvailable:     621788 kB
+Current Battery Service state:
+  AC powered: true
+  USB powered: false
+  Wireless powered: false
+  Dock powered: false
+  Max charging current: 5000000
+ Time when the latest updated value of the Max charging current was sent via battery changed broadcast: +54s469ms
+  Max charging voltage: 5000000
+  Charge counter: 10000
+  status: 2
+  health: 2
+  present: true
+  level: 100
+  scale: 100
+  voltage: 5000
+ Time when the latest updated value of the voltage was sent via battery changed broadcast: +54s469ms
+ The last voltage value sent via the battery changed broadcast: 5000
+  temperature: 250
