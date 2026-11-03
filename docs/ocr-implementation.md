@@ -39,9 +39,12 @@ the viewport do not choose different text layers. An unreliable extracted layer
 stays selected until the user requests recognition or verified recognition already
 exists for that source page. The explicit request remains in effect for the open
 document. Successful recognition stays selected for later requests and reopening.
-The document keeps at most sixteen successful recognized pages in memory.
-This also preserves the chosen text when saving its cache fails. Each reuse still
-enters the existing download ownership interval and verifies the original bytes.
+The document keeps at most sixteen disk-backed recognized pages in memory.
+Selections whose cache could not be saved remain in memory until document close;
+this memory grows with unsaved selections rather than discarding their only copy.
+Text reuse precedes native-work admission. It uses the active download ownership
+interval when one exists, or enters a new interval, and verifies original bytes.
+Cancellation of native work does not revoke download ownership by itself.
 
 ## Text coordinates and compatibility
 
@@ -138,8 +141,8 @@ retry. Ordinary `IOException` failures can retry after successful engine cleanup
 The process-wide engine permit is released on initialization, operation and close
 failure paths. Native invariant failures remain errors, not successful fallbacks.
 
-The coordinator's invariants are bounded page admission, at most sixteen selected
-readable pages, and no live recognition status after close.
+The coordinator's invariants are bounded page admission, at most sixteen disk-backed selected
+readable pages plus retained unsaved selections, and no live recognition status after close.
 `BundledEnglishText.checkInvariants()` checks them on demand.
 The PDF and download owners retain their existing invariant checkers.
 

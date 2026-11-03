@@ -20,6 +20,30 @@ import 'pdf_session_test.dart' show book, edition;
 const englishPage =
     '''<div class="ocr_page"><span class="ocr_line" title="bbox 10 10 500 40"><span class="ocrx_word" title="bbox 10 10 100 40">The</span> <span class="ocrx_word" title="bbox 110 10 300 40">quiet</span> <span class="ocrx_word" title="bbox 310 10 500 40">garden.</span></span></div>''';
 
+// A real blank PDF keeps native rendering in the coordinator regressions.
+List<int> blankPages(int count) {
+  final objects = <String>[
+    '<< /Type /Catalog /Pages 2 0 R >>',
+    '<< /Type /Pages /Count $count /Kids [${List.generate(count, (i) => '${i + 3} 0 R').join(' ')}] >>',
+    for (var i = 0; i < count; i++) '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 100 100] /Resources << >> >>',
+  ];
+  final output = StringBuffer('%PDF-1.4\n');
+  final offsets = <int>[];
+  for (var i = 0; i < objects.length; i++) {
+    offsets.add(output.length);
+    output.write('${i + 1} 0 obj\n${objects[i]}\nendobj\n');
+  }
+  final xref = output.length;
+  output.write('xref\n0 ${objects.length + 1}\n0000000000 65535 f \n');
+  for (final offset in offsets) {
+    output.write('${offset.toString().padLeft(10, '0')} 00000 n \n');
+  }
+  output.write(
+    'trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n$xref\n%%EOF\n',
+  );
+  return ascii.encode(output.toString());
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   Pdfrx.pdfiumModulePath = Platform.environment['PDFIUM_LIBRARY'];
@@ -213,6 +237,62 @@ void main() {
     expect((await pdf.text(1)).text, selected.text);
     expect(calls, 1);
   });
+
+  test(
+    'unsaved selected text survives recognition of sixteen later pages',
+    () async {
+      await File('${root.path}/complete').writeAsBytes(blankPages(17));
+      final pdf = await open();
+      recognize = () async {
+        if (calls == 1) {
+          final key = sha256.convert(
+            utf8.encode(
+              '${BundledEnglishText.version}/${pdf.originalDigest}/1',
+            ),
+          );
+          await Directory('${root.path}/.bookfin-ocr/$key.json')
+              .create(recursive: true);
+        }
+        return englishPage;
+      };
+      expect((await pdf.text(1)).reason, contains('could not be cached'));
+      for (var page = 2; page <= 17; page++) {
+        expect((await pdf.text(page)).text, 'The quiet garden.');
+      }
+      recognize = () async => throw PlatformException(code: 'recognition');
+      expect((await pdf.text(1)).text, 'The quiet garden.');
+      expect(calls, 17);
+      (pdf.textSupply! as BundledEnglishText).checkInvariants();
+    },
+  );
+
+  test(
+    'selected text stays available while two other recognition requests drain',
+    () async {
+      await File('${root.path}/complete').writeAsBytes(blankPages(3));
+      final pdf = await open();
+      expect((await pdf.text(1)).text, 'The quiet garden.');
+      final held = Completer<String>();
+      final started = Completer<void>();
+      recognize = () {
+        if (!started.isCompleted) started.complete();
+        return held.future;
+      };
+      final second = pdf.text(2);
+      await started.future;
+      final third = pdf.text(3);
+      try {
+        expect(
+          (await pdf.text(1).timeout(const Duration(seconds: 3))).text,
+          'The quiet garden.',
+        );
+        expect(calls, 2);
+      } finally {
+        held.complete(englishPage);
+        await Future.wait([second, third]);
+      }
+    },
+  );
 
   test('a recognition-close failure is reported without retaining the PDF native owner', () async {
     final pdf = await open();

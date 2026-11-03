@@ -16,7 +16,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:pdfrx_engine/pdfrx_engine.dart';
 
 import '../playback/playback_test.dart' show account, MemoryResume;
-import 'ocr_test.dart' show englishPage;
+import 'ocr_test.dart' show englishPage, blankPages;
 
 const _source = SourceFile(
   itemId: 'scan',
@@ -44,10 +44,15 @@ const _book = Book(
 
 String _hash(String value) => sha256.convert(utf8.encode(value)).toString();
 
-Future<Directory> _savedScan(Directory root, String accountKey) async {
+Future<Directory> _savedScan(
+  Directory root,
+  String accountKey, {
+  List<int>? contents,
+}) async {
   const source = _source;
-  final bytes = await File('tool/research/readers/fixtures/scanned.pdf')
-      .readAsBytes();
+  final bytes =
+      contents ??
+      await File('tool/research/readers/fixtures/scanned.pdf').readAsBytes();
   final directory = Directory(
     '${root.path}/${_hash(accountKey)}/${_hash(jsonEncode([source.key, source.revision]))}',
   );
@@ -131,6 +136,73 @@ void main() {
       await root.delete(recursive: true);
     }
   });
+  test('selected text reuses the live download read while canceled native work drains', () async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.android;
+    final root = await Directory.systemTemp.createTemp('bookfin-reuse-ocr-');
+    final policy = MediaPolicy()..network = MediaNetwork.disconnected;
+    final downloads = LocalDownloads(
+      root: root,
+      freeBytes: () async => 100000000,
+      policy: policy,
+    );
+    await _savedScan(root, account().scope.key, contents: blankPages(3));
+    await downloads.bind(account(), [_book]);
+    final reader = ReaderSession(
+      downloads: downloads,
+      store: MemoryResume(),
+      load: loadPublication,
+      loadDocument: (uri, source) =>
+          loadReadingDocument(uri, source, textSupply: BundledEnglishText()),
+    );
+    final held = Completer<String>();
+    final started = Completer<void>();
+    var calls = 0;
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, (call) async {
+          if (call.method != 'recognize') return null;
+          calls++;
+          if (calls == 1) return englishPage;
+          if (!started.isCompleted) started.complete();
+          return held.future;
+        });
+    try {
+      await reader.bind(account(), [_book]);
+      await reader.open(_book, _edition);
+      final pdf = reader.document! as PdfBook;
+      expect((await pdf.text(1)).text, 'The quiet garden.');
+      final pending = pdf.text(2);
+      await started.future;
+      pdf.textSupply!.cancel();
+      try {
+        expect(
+          (await pdf.text(1).timeout(const Duration(seconds: 3))).text,
+          'The quiet garden.',
+        );
+        expect(calls, 2);
+        final removal = downloads.remove(_edition);
+        expect(
+          (await pdf.text(1).timeout(const Duration(seconds: 3))).status,
+          PdfTextStatus.absent,
+        );
+        held.complete(englishPage);
+        await removal;
+      } finally {
+        if (!held.isCompleted) held.complete(englishPage);
+        await pending;
+      }
+    } finally {
+      reader.dispose();
+      await PdfRuntime.instance.shutdown();
+      downloads.dispose();
+      await downloads.idle;
+      policy.dispose();
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, null);
+      debugDefaultTargetPlatformOverride = null;
+      await root.delete(recursive: true);
+    }
+  });
+
   for (final change in ['removal', 'account', 'source']) {
     test(
       '$change during recognition revokes publication through the download owner',

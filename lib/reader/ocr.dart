@@ -20,7 +20,8 @@ class BundledEnglishText implements PdfTextSupply {
   Future<void> _draining = Future.value();
   final Map<({int page, int generation}), Future<PdfText>> _pending = {};
   final Set<int> _requested = {};
-  final Map<int, PdfText> _selected = {};
+  final Map<int, ({PdfText text, bool saved})> _selected = {};
+  ({Uri original, bool Function() live})? _activeLease;
   final _recognizing = ValueNotifier(false);
   @override
   ValueListenable<bool> get recognizing => _recognizing;
@@ -38,11 +39,49 @@ class BundledEnglishText implements PdfTextSupply {
   }
 
   @override
-  Future<PdfText> text(PdfBook book, int page, PdfText extracted) {
+  Future<PdfText> text(PdfBook book, int page, PdfText extracted) async {
     if (extracted.status == PdfTextStatus.candidate || _closed) {
       return Future.value(extracted);
     }
-    if (_fatal) return Future.value(_fatalFallback);
+    final generation = _generation;
+    final key = sha256
+        .convert(utf8.encode('$version/${book.originalDigest}/$page'))
+        .toString();
+    Future<PdfText?> reuse(Uri original, bool Function() owned) async {
+      bool live() => !_closed && generation == _generation && owned();
+      if (!live()) return _canceled;
+      // Cache access also verifies original bytes before reusing selected text.
+      final cached = await readOcrCache(original, book.originalDigest, key);
+      if (!live()) return _canceled;
+      final selected = _selected[page];
+      if (selected != null) return selected.text;
+      final saved = _cachedPage(cached);
+      return saved == null ? null : _select(page, saved);
+    }
+
+    try {
+      final active = _activeLease;
+      final PdfText? reused;
+      if (active != null) {
+        reused = await reuse(active.original, active.live);
+      } else {
+        // A null result from the lease means ownership ended, not a cache miss.
+        var available = false;
+        PdfText? found;
+        await _lease?.call((original, owned) async {
+          available = true;
+          found = await reuse(original, owned);
+          return found ?? extracted;
+        });
+        if (!available) return _canceled;
+        reused = found;
+      }
+      if (reused != null) return reused;
+    } on Exception {
+      return _recognitionFailure;
+    }
+    if (_closed || generation != _generation) return _canceled;
+    if (_fatal) return _fatalFallback;
     final request = (page: page, generation: _generation);
     if (_pending.containsKey(request)) return _pending[request]!;
     if (_pending.length >= 2) {
@@ -50,7 +89,6 @@ class BundledEnglishText implements PdfTextSupply {
         _fallback('Recognition is busy. Retry this source page.'),
       );
     }
-    final generation = _generation;
     final previous = _draining;
     final operation = () async {
       await previous;
@@ -67,58 +105,54 @@ class BundledEnglishText implements PdfTextSupply {
         return await lease((original, owned) async {
               bool live() => requestLive() && owned();
               if (!live()) return _canceled;
-              final key = sha256
-                  .convert(utf8.encode('$version/${book.originalDigest}/$page'))
-                  .toString();
-              final cached = await readOcrCache(
-                original,
-                book.originalDigest,
-                key,
-              );
-              if (!live()) return _canceled;
-              final selected = _selected[page];
-              if (selected != null) return selected;
-              final saved = _cachedPage(cached);
-              if (saved != null) return _select(page, saved);
+              final reused = await reuse(original, owned);
+              if (reused != null) return reused;
               if (extracted.status == PdfTextStatus.unreliable &&
                   !_requested.contains(page)) {
                 return extracted;
               }
-              _recognizing.value = true;
-              final raster = await book.render(page, 1600);
-              if (!live()) return _canceled;
-              final hocr = await _channel.invokeMethod<String>('recognize', {
-                'width': raster.width,
-                'height': raster.height,
-                'bgra': raster.bgra,
-              });
-              if (!live()) return _canceled;
-              final result = decodeRecognizedPage(hocr ?? '');
-              if (result.status == PdfTextStatus.candidate) {
-                try {
-                  await writeOcrCache(
-                    original,
-                    book.originalDigest,
-                    key,
-                    hocr!,
-                    live,
-                  );
-                } on Exception {
-                  if (!live()) return _canceled;
-                  return _select(
-                    page,
-                    PdfText(
-                      source: result.source,
-                      text: result.text,
-                      sourceOffsets: result.sourceOffsets,
-                      status: result.status,
-                      recognition: result.recognition,
-                      reason: 'English text is available, but could not be cached. Free storage to save recognition.',
-                    ),
-                  );
+              final active = (original: original, live: owned);
+              _activeLease = active;
+              try {
+                _recognizing.value = true;
+                final raster = await book.render(page, 1600);
+                if (!live()) return _canceled;
+                final hocr = await _channel.invokeMethod<String>('recognize', {
+                  'width': raster.width,
+                  'height': raster.height,
+                  'bgra': raster.bgra,
+                });
+                if (!live()) return _canceled;
+                final result = decodeRecognizedPage(hocr ?? '');
+                if (result.status == PdfTextStatus.candidate) {
+                  try {
+                    await writeOcrCache(
+                      original,
+                      book.originalDigest,
+                      key,
+                      hocr!,
+                      live,
+                    );
+                  } on Exception {
+                    if (!live()) return _canceled;
+                    return _select(
+                      page,
+                      PdfText(
+                        source: result.source,
+                        text: result.text,
+                        sourceOffsets: result.sourceOffsets,
+                        status: result.status,
+                        recognition: result.recognition,
+                        reason: 'English text is available, but could not be cached. Free storage to save recognition.',
+                      ),
+                      saved: false,
+                    );
+                  }
                 }
+                return live() ? _select(page, result) : _canceled;
+              } finally {
+                _activeLease = null;
               }
-              return live() ? _select(page, result) : _canceled;
             }) ??
             _fallback(
               'The download is no longer available. The original page remains open.',
@@ -141,12 +175,16 @@ class BundledEnglishText implements PdfTextSupply {
     return operation;
   }
 
-  PdfText _select(int page, PdfText text) {
+  PdfText _select(int page, PdfText text, {bool saved = true}) {
     if (text.status == PdfTextStatus.candidate) {
-      if (_selected.length >= 16 && !_selected.containsKey(page)) {
-        _selected.remove(_selected.keys.first);
-      }
-      _selected[page] = text;
+      // Only verified disk-backed results may leave the in-memory selection.
+      // Failed publications keep their sole successful copy until close.
+      _selected[page] = (text: text, saved: saved);
+      final cachedPages = _selected.entries
+          .where((entry) => entry.value.saved)
+          .map((entry) => entry.key)
+          .toList();
+      if (cachedPages.length > 16) _selected.remove(cachedPages.first);
     }
     return text;
   }
@@ -159,19 +197,20 @@ class BundledEnglishText implements PdfTextSupply {
     try {
       await _channel.invokeMethod<void>('close');
     } finally {
+      _selected.clear();
       _recognizing.dispose();
     }
   }
 
   void checkInvariants() {
     if (_pending.length > 2 ||
-        _selected.length > 16 ||
+        _selected.values.where((value) => value.saved).length > 16 ||
         _selected.values.any(
-          (text) => text.status != PdfTextStatus.candidate,
+          (value) => value.text.status != PdfTextStatus.candidate,
         ) ||
         _closed && _recognizing.value) {
       throw StateError(
-        'Recognition must have at most one active page, one waiting page, and sixteen selected readable pages.',
+        'Recognition must have at most one active page, one waiting page, and sixteen disk-backed selected pages; unsaved selections remain until close.',
       );
     }
   }
