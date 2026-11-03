@@ -1,6 +1,6 @@
 ---
 id: t3-jrhf
-status: in_progress
+status: closed
 deps: []
 links: [boo-mx5i, t0-ebxa, t3-ipk1]
 created: 2026-11-03T13:38:32Z
@@ -45,3 +45,6 @@ evidence. Corrected runtime acceptance and ticket closure are still pending.
 **2026-11-03T15:44:19Z**
 
 Corrected exact 44d53af normal APK now opens genuine ordinary Jellyfin Book downloads with neither Container nor MediaSources: intact NIST PDF, plain MOBI6, PalmDOC MOBI6 and pinned Alice KF8. Installed APK hashes verified. No forged DTO/private-state substitute. Finite acceptance report docs/evidence/reader/android-corrected-formats-20261103.md. Distinct visible KF8 place failure t2-42og and pending sync t2-00a4 remain; no closure by acceptance lane.
+
+
+2026-11-03 parent acceptance: close the bounded missing-format-admission bug. Reviewed correction 44d53af is integrated and actual corrected normal Android evidence verifies genuine metadata-absent PDF/plain MOBI/PalmDOC/KF8 originals open through their readers without forged DTOs or private-state edits. Existing EPUB/integrity/ownership host controls remain. This closure does not close boo-mx5i, t2-42og, t2-00a4, OCR, or distribution acceptance. See docs/evidence/reader/android-corrected-formats-20261103.md.
