@@ -1,6 +1,6 @@
 ---
 id: t8-ld5q
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-02T05:35:06Z
@@ -54,3 +54,7 @@ Fresh explicitly renewed authorized Android acceptance from fc4531c4ff9cf38d8531
 **2026-11-03T00:53:19Z**
 
 Fresh renewed-authorized normal Android run from fc4531c passed replacement confirmation and Cancel (entire playback payload unchanged), then confirmed actual replacement playback from0. Original resume24298ms/history/bookmark retained separately from replacement25864ms. Named relaunchPID22749->26011 retained all records exactly; incompatible original bookmark restore was refused without remapping. Later final record still retains original resume and records. Installed APK readbackSHA2568e4f386e79a0446a9ae2c51f0f157d07d9953b4aa4cf5f23ed3c3957b5be534b, no runtime source differences from17c9e6b. Evidence docs/evidence/playback/android-authorized-retest.md and numbered bounded readbacks/screenshots. No production edit, hardening or closure. Parent owns integration and acceptance.
+
+**2026-11-03T00:59:05Z**
+
+Parent integrated authorized Android retest evidence. Normal unchanged-runtime APK proves confirmation and Cancel, fresh replacement playback from zero, two retained revision-scoped resumes, unchanged original history/bookmark, exact records after process restart, incompatible original bookmark refusal and valid replacement restore. Implementation previously independently reviewed and integrated. Bounded replacement recovery acceptance fulfilled; closing t8-ld5q only. Remaining native controls and sync acceptance stay separate.
