@@ -185,3 +185,28 @@ Public artifacts were checked against the private fixture passwords and tokens.
 Private raw preferences, pulled APK, fixture credentials, and runtime state were
 removed after the audit. No child, production edit, PR, ticket closure, coverage,
 or mutation campaign occurred.
+
+## User-requested mute after acceptance cleanup
+
+After the acceptance evidence commit `62b6fcce788957177e5218c4a28ec4c246f32a09`,
+the user explicitly requested emulator audio mute. Bookfin had already been
+signed out and stopped. This follow-up changed only the emulator's media mute
+state, not host volume or unrelated host applications. No acceptance case or
+playback was rerun.
+
+The worker reacquired its supported device binding. Its first bound
+`hardware-button mute` returned `Error (SESSION_NOT_FOUND): No active session.
+Run open first.`, diagnostic `mvzz8fp5-2cf34ad4`. The advised open of signed-out
+Bookfin succeeded. The single mute retry returned `Pressed hardware button mute`.
+Allowed Android audio readback then showed media stream `STREAM_MUSIC` with
+`Muted: true` and `streamVolume:0`. The stored speaker volume index remained 5
+on the 0–15 scale; the mute flag, rather than a stored index change, silences it.
+This verifies Android's mute state, not perceived audio audibility.
+
+The worker closed named Bookfin again and verified no process before release.
+The final audio readback at `2026-11-03T00:57:24Z` still showed media muted.
+Reverse routes remained empty, no fixture service was restarted, and the device
+was released with `shutdown: false`. Media mute is deliberately left enabled,
+as requested; this user preference overrides restoring prior audible volume.
+The other settings listed in the acceptance cleanup remain unchanged. The
+bounded follow-up is `27-user-requested-media-mute.json` in the evidence directory.

@@ -84,3 +84,7 @@ Exclusive Android lane from1f1b1c6 verified existing normal APK by exact install
 **2026-11-03T00:53:19Z**
 
 Fresh fc4531c normal Android acceptance observed real-Jellyfin replacement playback, native notification Pause, +30s/-10s controls and retained Undo history. Simulated incoming call paused actual playback and created Interrupted124140->124309ms; call end resumed near124489ms. Credential-locked controls remain unobserved: existing lockscreen disabled=true and sleep/wake returned directly to app; no PIN/settings changed. This does not verify explicit pause during call, permanent focus loss, native Stop, physical routing or timer soak. Full evidence docs/evidence/playback/android-authorized-retest.md. Own resources cleaned, signed out, named close verified noPID before shutdown:false release. No closure.
+
+**2026-11-03T00:58:11Z**
+
+Immediate explicit user mute follow-up after acceptance cleanup: reacquired supported device binding, first mute required open; opened signed-out Bookfin and single advised mute retry succeeded. Android STREAM_MUSIC readback Muted:true and streamVolume:0 before and after named close. No playback restarted, no audibility claim, no host audio changed. Media mute deliberately left enabled per user preference; noPID and empty routes verified before shutdown:false release. Evidence docs/evidence/playback/android-authorized-retest.md follow-up and 27-user-requested-media-mute.json.

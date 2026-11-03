@@ -1,0 +1,30 @@
+{
+  "verifiedAt": "2026-11-03T00:57:24Z",
+  "host": "local",
+  "device": "emulator-5554",
+  "userRequestedMute": true,
+  "firstCommandError": {
+    "code": "SESSION_NOT_FOUND",
+    "message": "No active session. Run open first.",
+    "diagnosticId": "mvzz8fp5-2cf34ad4"
+  },
+  "singleAdvisedRetry": "Opened already signed-out Bookfin, then bound hardware-button mute succeeded",
+  "mediaStream": "STREAM_MUSIC",
+  "muted": true,
+  "mutedInternally": false,
+  "streamVolume": 0,
+  "storedSpeakerVolumeIndex": 5,
+  "volumeIndexMinimum": 0,
+  "volumeIndexMaximum": 15,
+  "playbackStarted": false,
+  "audibilityAcceptanceClaimed": false,
+  "hostAudioChanged": false,
+  "namedBookfinClosedBeforeRelease": true,
+  "namedAppPidAfterClose": null,
+  "muteVerifiedAfterNamedClose": true,
+  "muteLeftEnabled": true,
+  "reverseRoutes": [],
+  "fixtureServicesRestarted": false,
+  "deviceReleased": true,
+  "shutdown": false
+}

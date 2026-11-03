@@ -70,7 +70,12 @@
     "wifiOn": "1",
     "enabledAccessibilityServices": "",
     "lockScreenDisabled": true,
-    "settingsChanged": false,
+    "settingsChanged": true,
+    "changedSettings": [
+      "Emulator media mute enabled by explicit user follow-up request"
+    ],
+    "mediaMuteVerifiedAfterFinalNamedClose": true,
+    "mediaMuteLeftEnabled": true,
     "ownSimulatedCallEnded": true,
     "syntheticMissedCallLogMayRemain": true,
     "originalSourceBytesAndTitleRestored": true,
