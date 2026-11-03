@@ -1,0 +1,11 @@
+{
+  "originalApk": "129a9a82a338a2e7b5cf1abd154c729866a328295c241063fabd26e38353c270",
+  "replacementApk": "d00f1abbcbe58acecbc7627c2ee22b3771c04ad1a73fba9f3214c74f3be26e84",
+  "modifiedLibrary": "5c776afa7cb1df14c6ac23050304b7996619eca78d2061b6152975de3b0ab42b",
+  "changedEntries": [
+    "lib/arm64-v8a/libmobi.so"
+  ],
+  "hostVersion": "bookfin-interface-compatible-replacement",
+  "hostKf8Conversion": "passed",
+  "androidInstalled": false
+}

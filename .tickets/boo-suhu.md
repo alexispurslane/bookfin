@@ -80,3 +80,6 @@ Corrected APK/source handoff: clean source 0f4084f7c670a1b6866f9543ac7af9f1949ba
 
 
 2026-11-03 parent source integration: independent review approves 07814af for bounded source integration with no new blocker. OCR stack cherry-picked cleanly onto main through c45c0f9, retaining main's reviewed UTF-8 sync correction and existing format admission. Production lib/android/nix/flake/pubspec files match reviewed OCR head except the separate native UTF-8 transport fix. Twenty-five focused integrated tests pass across OCR read lifetime, real download ownership, durable positions, and Unicode sync retry. Evidence: tool/evidence/reader/ocr/20261103/main-integration/. No repeated full suite for an unchanged clean cherry-pick. No current combined APK or Android OCR acceptance; boo-suhu remains in progress.
+
+
+2026-11-03 combined candidate prepared from 71af288. 483 full Flutter passes, three opt-in skips, analysis and package/source checks pass. Reviewed KF8, OCR and UTF-8 sync corrections included. Evidence: tool/evidence/reader/integrated/20261103/. Normal and modified-lib companion ready; no Android install/acceptance claim yet.

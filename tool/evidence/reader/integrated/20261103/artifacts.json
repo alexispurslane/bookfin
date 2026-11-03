@@ -1,0 +1,22 @@
+{
+  "sourceCommit": "71af2886e722b7366d4d335622e55e18a151a3e0",
+  "artifactDirectory": "/Users/alexispurslane/Development/bookfin/.cache/artifacts/bookfin-71af288-combined",
+  "files": {
+    "bookfin-71af288-arm64-debug.apk": {
+      "bytes": 131217623,
+      "sha256": "129a9a82a338a2e7b5cf1abd154c729866a328295c241063fabd26e38353c270"
+    },
+    "replacement/bookfin-replacement.apk": {
+      "bytes": 125218463,
+      "sha256": "d00f1abbcbe58acecbc7627c2ee22b3771c04ad1a73fba9f3214c74f3be26e84"
+    },
+    "source/bookfin-source.tar": {
+      "bytes": 74178560,
+      "sha256": "7a73558f74c625f834f70e49bdb2e3ad3686619ad799eaf58842091c90ff4b64"
+    },
+    "source/manifest.json": {
+      "bytes": 958,
+      "sha256": "7e95eef52b83a6f1c3435ba6a0f6cd2f701037b667a032f404219890b573e805"
+    }
+  }
+}
