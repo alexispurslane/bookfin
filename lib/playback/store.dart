@@ -25,6 +25,7 @@ class LocalResumeStore implements ResumeStore {
   late final ResumeStore reading = _ReadingRecords(this);
   Future<void> _writes = Future.value();
   final Map<String, Map<String, Map<String, dynamic>>> _observed = {};
+  final Map<String, _StoredAccount> _accounts = {};
   String _key(String accountKey) => 'bookfin.playback.v1.$accountKey';
 
   Future<T> _update<T>(
@@ -32,18 +33,37 @@ class LocalResumeStore implements ResumeStore {
     T Function(Map<String, dynamic>, RecordJournal) change,
   ) {
     final operation = _writes.then((_) async {
-      final stored = await _readAccount(account);
-      final combined = stored?.snapshot ?? <String, dynamic>{};
-      final journal = stored?.journal ?? _journal(account, combined);
-      final result = change(combined, journal);
-      journal.checkInvariants();
-      _materialize(combined, journal);
-      await _persist(account, combined);
-      return result;
+      var completed = false;
+      try {
+        final stored = await _readAccount(account);
+        final combined = stored?.snapshot ?? <String, dynamic>{};
+        final journal = stored?.journal ?? _journal(account, combined);
+        final result = change(combined, journal);
+        _materialize(combined, journal);
+        await _persist(account, combined, journal);
+        completed = true;
+        return result;
+      } finally {
+        if (!completed) _accounts.remove(account);
+      }
     });
     _writes = operation.then<void>((_) {}, onError: (Object _) {});
     return operation;
   }
+
+  Future<T> _access<T>(String account, T Function(_StoredAccount?) query) {
+    final operation = _writes.then(
+      (_) async => query(await _readAccount(account)),
+    );
+    _writes = operation.then<void>((_) {}, onError: (Object _) {});
+    return operation;
+  }
+
+  Future<T> _query<T>(String account, T Function(RecordJournal) query) =>
+      _access(
+        account,
+        (stored) => query(stored?.journal ?? _journal(account, {})),
+      );
 
   Future<void> synchronize(
     JellyfinSession session,
@@ -51,7 +71,7 @@ class LocalResumeStore implements ResumeStore {
   ) async {
     await client.validate(session);
     final account = session.scope.key;
-    final uploads = await _update(account, (_, journal) => journal.uploads);
+    final uploads = await _query(account, (journal) => journal.uploads);
     for (final action in uploads) {
       final identity = RecordJournal.identity(action);
       final payload = jsonEncode(action);
@@ -69,10 +89,10 @@ class LocalResumeStore implements ResumeStore {
           'The server did not confirm the pending personal record.',
         );
       }
-      await _update(account, (_, journal) => journal.pending.remove(identity));
+      await _update(account, (_, journal) => journal.acknowledge(identity));
     }
     for (var request = 0; request < 128; request++) {
-      final after = await _update(account, (_, journal) => journal.cursor);
+      final after = await _query(account, (journal) => journal.cursor);
       final page = await client.personalRecordChanges(session, after);
       if (page['Objects'] is! List ||
           page['Cursor'] is! int ||
@@ -112,9 +132,6 @@ class LocalResumeStore implements ResumeStore {
       }
       await _update(account, (_, journal) {
         journal.receive(actions);
-        for (final action in actions) {
-          _validateActionValue(action);
-        }
         journal.cursor = previous;
       });
       if (page['HasMore'] == false) return;
@@ -181,12 +198,16 @@ class LocalResumeStore implements ResumeStore {
     }
   }
 
-  Future<Map<String, List<Map<String, dynamic>>>> conflicts(
-    String account,
-  ) async {
-    await _writes;
-    return (await _readAccount(account))?.journal.conflicts ?? {};
-  }
+  Future<Map<String, List<Map<String, dynamic>>>> conflicts(String account) =>
+      _access(account, (stored) {
+        final conflicts = jsonDecode(
+          jsonEncode(stored?.journal.conflicts ?? {}),
+        ) as Map<String, dynamic>;
+        return {
+          for (final entry in conflicts.entries)
+            entry.key: (entry.value as List).cast<Map<String, dynamic>>(),
+        };
+      });
 
   Future<bool> resolve(String account, String record, String identity) =>
       _update(account, (_, journal) {
@@ -229,18 +250,47 @@ class LocalResumeStore implements ResumeStore {
         return true;
       });
   @override
-  Future<Map<String, dynamic>?> read(String accountKey) async {
-    await _writes;
-    final combined = (await _readAccount(accountKey))?.snapshot;
-    if (combined == null) return null;
-    final audio = Map<String, dynamic>.from(combined)
-      ..remove('reading')
-      ..remove('sync');
-    return audio.isEmpty ? null : audio;
-  }
+  Future<Map<String, dynamic>?> read(String accountKey) =>
+      _access(accountKey, (stored) {
+        final combined = stored?.snapshot;
+        if (combined == null) return null;
+        final audio = Map<String, dynamic>.from(combined)
+          ..remove('reading')
+          ..remove('sync');
+        return audio.isEmpty
+            ? null
+            : jsonDecode(jsonEncode(audio)) as Map<String, dynamic>;
+      });
 
   Future<_StoredAccount?> _readAccount(String accountKey) async {
     final database = await _storage();
+    if (database != null) {
+      final cached = _accounts[accountKey];
+      if (cached != null) return cached;
+      final rows = await database.load(accountKey);
+      if (rows != null) {
+        final combined = <String, dynamic>{
+          ...rows['snapshot'] as Map<String, dynamic>,
+          'sync': rows['sync'],
+        };
+        final journal = _journal(accountKey, combined);
+        if (!const DeepCollectionEquality().equals(
+              journal.current,
+              rows['current'],
+            ) ||
+            !const DeepCollectionEquality().equals(
+              journal.coverage,
+              rows['coverage'],
+            )) {
+          throw const FormatException(
+            'Stored personal-record state does not match retained actions.',
+          );
+        }
+        journal.persisted();
+        _materialize(combined, journal);
+        return _accounts[accountKey] = (snapshot: combined, journal: journal);
+      }
+    }
     final preferences = await SharedPreferences.getInstance();
     final stored = await database?.read(accountKey);
     final raw = stored ?? preferences.getString(_key(accountKey));
@@ -254,25 +304,102 @@ class LocalResumeStore implements ResumeStore {
       throw const FormatException('Reading records must be an object.');
     }
     final journal = _journal(accountKey, decoded);
-    if (stored == null && database != null) {
-      await database.write(accountKey, raw);
+    _materialize(decoded, journal);
+    if (database != null) {
+      await database.commit(
+        accountKey,
+        _metadata(decoded),
+        journal,
+        initialize: true,
+      );
+      journal.persisted();
+      _accounts[accountKey] = (snapshot: decoded, journal: journal);
     }
     return (snapshot: decoded, journal: journal);
   }
 
-  Future<void> _persist(String account, Map<String, dynamic> value) async {
-    final payload = jsonEncode(value);
+  Future<void> _persist(
+    String account,
+    Map<String, dynamic> value,
+    RecordJournal journal,
+  ) async {
     final database = await _storage();
     if (database != null) {
-      await database.write(account, payload);
+      await database.commit(
+        account,
+        _metadata(value),
+        journal,
+        initialize: !_accounts.containsKey(account),
+      );
+      journal.persisted();
+      _accounts[account] = (snapshot: value, journal: journal);
     } else {
       final preferences = await SharedPreferences.getInstance();
-      if (!await preferences.setString(_key(account), payload)) {
+      if (!await preferences.setString(_key(account), jsonEncode(value))) {
         throw Exception(
           'Personal records were not saved. Free storage, then retry.',
         );
       }
     }
+  }
+
+  Map<String, dynamic> _metadata(Map<String, dynamic> snapshot) {
+    Map<String, dynamic> withoutRecords(Map<String, dynamic> value) =>
+        Map<String, dynamic>.from(value)
+          ..remove('sync')
+          ..remove('bookmarks')
+          ..remove('history')
+          ..remove('resumes')
+          ..remove('reading');
+    return {
+      ...withoutRecords(snapshot),
+      if (snapshot['reading'] != null)
+        'reading': withoutRecords(snapshot['reading'] as Map<String, dynamic>),
+    };
+  }
+
+  Future<void> checkInvariants() {
+    final operation = _writes.then((_) async {
+      final database = await _storage();
+      for (final entry in _accounts.entries) {
+        final journal = entry.value.journal;
+        journal.checkInvariants();
+        final rows = await database!.load(entry.key);
+        final savedSync = rows?['sync'] as Map<String, dynamic>?;
+        final encoded = journal.encode();
+        if (savedSync != null) {
+          savedSync['pending'] = (savedSync['pending'] as List).cast<String>()
+            ..sort();
+          encoded['pending'] = (encoded['pending'] as List).cast<String>()
+            ..sort();
+        }
+        if (rows == null ||
+            !const DeepCollectionEquality().equals(savedSync, encoded) ||
+            !const DeepCollectionEquality().equals({
+              ..._flatten(entry.value.snapshot, reading: false),
+              ..._flatten(entry.value.snapshot, reading: true),
+            }, journal.values) ||
+            !const DeepCollectionEquality().equals(
+              rows['current'],
+              journal.current,
+            ) ||
+            !const DeepCollectionEquality().equals(
+              rows['coverage'],
+              journal.coverage,
+            ) ||
+            !const DeepCollectionEquality().equals(
+              rows['snapshot'],
+              _metadata(entry.value.snapshot),
+            )) {
+          throw StateError(
+            'The personal-record owner and durable state must agree.',
+          );
+        }
+      }
+      await database?.checkInvariants();
+    });
+    _writes = operation.then<void>((_) {}, onError: (Object _) {});
+    return operation;
   }
 
   @override
@@ -290,31 +417,37 @@ class LocalResumeStore implements ResumeStore {
   }) {
     final snapshot = jsonDecode(jsonEncode(value)) as Map<String, dynamic>;
     final operation = _writes.then((_) async {
-      final stored = await _readAccount(accountKey);
-      final existing = stored?.snapshot ?? <String, dynamic>{};
-      final journal = stored?.journal ?? _journal(accountKey, existing);
-      final previous =
-          _observed['$accountKey/${reading ? 'reading' : 'audio'}'] ??
-          <String, Map<String, dynamic>>{};
-      final combined = reading
-          ? <String, dynamic>{...existing, 'reading': snapshot}
-          : <String, dynamic>{
-              ...snapshot,
-              if (existing['reading'] != null) 'reading': existing['reading'],
-            };
-      final next = _flatten(combined, reading: reading);
-      final retained = journal.values;
-      for (final record in {...previous.keys, ...next.keys}) {
-        if (!const DeepCollectionEquality().equals(
-          previous[record] ?? retained[record],
-          next[record],
-        )) {
-          journal.change(record, next[record]);
+      var completed = false;
+      try {
+        final stored = await _readAccount(accountKey);
+        final existing = stored?.snapshot ?? <String, dynamic>{};
+        final journal = stored?.journal ?? _journal(accountKey, existing);
+        final previous =
+            _observed['$accountKey/${reading ? 'reading' : 'audio'}'] ??
+            <String, Map<String, dynamic>>{};
+        final combined = reading
+            ? <String, dynamic>{...existing, 'reading': snapshot}
+            : <String, dynamic>{
+                ...snapshot,
+                if (existing['reading'] != null) 'reading': existing['reading'],
+              };
+        final next = _flatten(combined, reading: reading);
+        final retained = journal.values;
+        for (final record in {...previous.keys, ...next.keys}) {
+          if (!const DeepCollectionEquality().equals(
+            previous[record] ?? retained[record],
+            next[record],
+          )) {
+            journal.change(record, next[record]);
+          }
         }
+        _materialize(combined, journal);
+        await _persist(accountKey, combined, journal);
+        _observed['$accountKey/${reading ? 'reading' : 'audio'}'] = next;
+        completed = true;
+      } finally {
+        if (!completed) _accounts.remove(accountKey);
       }
-      _materialize(combined, journal);
-      await _persist(accountKey, combined);
-      _observed['$accountKey/${reading ? 'reading' : 'audio'}'] = next;
     });
     _writes = operation.catchError((Object _) {});
     return operation;
@@ -339,19 +472,18 @@ class LocalResumeStore implements ResumeStore {
           20,
           (_) => Random.secure().nextInt(256).toRadixString(16).padLeft(2, '0'),
         ).join();
-    final journal = RecordJournal(account, replica, saved);
+    final journal = RecordJournal(
+      account,
+      replica,
+      saved,
+      _validateActionValue,
+    );
     if (saved == null) {
       for (final reading in [false, true]) {
         for (final entry in _flatten(combined, reading: reading).entries) {
           journal.change(entry.key, entry.value);
         }
       }
-    }
-    // Saved and downloaded actions share the same record schema, including
-    // superseded actions that can still be uploaded or used in conflicts.
-    for (final action
-        in journal.encode()['actions'] as List<Map<String, dynamic>>) {
-      _validateActionValue(action);
     }
     return journal;
   }
@@ -463,7 +595,11 @@ class LocalResumeStore implements ResumeStore {
       ..clear()
       ..addAll(audio);
     combined['reading'] = reading;
-    combined['sync'] = journal.encode();
+    if (openDatabase == null) {
+      combined['sync'] = journal.encode();
+    } else {
+      combined.remove('sync');
+    }
   }
 
   void _acceptSnapshot(
@@ -484,9 +620,12 @@ class _ReadingRecords implements ResumeStore {
   final LocalResumeStore owner;
   @override
   Future<Map<String, dynamic>?> read(String accountKey) async {
-    await owner._writes;
-    final combined = (await owner._readAccount(accountKey))?.snapshot;
-    return combined?['reading'] as Map<String, dynamic>?;
+    return owner._access(accountKey, (stored) {
+      final reading = stored?.snapshot['reading'];
+      return reading == null
+          ? null
+          : jsonDecode(jsonEncode(reading)) as Map<String, dynamic>;
+    });
   }
 
   @override

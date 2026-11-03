@@ -13,6 +13,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import '../playback/playback_test.dart'
     show LocalFiles, TestEngine, account, title, recording;
+import '../sync/fixture.dart';
 
 const samples = 8;
 
@@ -62,8 +63,9 @@ String resumeAddress(String edition) => jsonEncode([
 Map<String, dynamic> seededState(
   int resumeActions, {
   required bool allPending,
+  String account = 'growth',
 }) {
-  final journal = RecordJournal('growth', 'local');
+  final journal = RecordJournal(account, 'local');
   for (var index = 0; index < 32; index++) {
     journal.change(
       jsonEncode(['audio', 'history', 'history-$index']),
@@ -100,7 +102,7 @@ Map<String, dynamic> seededState(
     final sequence = baseSequence + index;
     actions.add({
       'version': 1,
-      'account': 'growth',
+      'account': account,
       'replica': 'local',
       'sequence': sequence,
       'context': {'local': sequence - 1},
@@ -113,7 +115,7 @@ Map<String, dynamic> seededState(
   for (final entry in [('other_a', 500), ('other_b', 900)]) {
     actions.add({
       'version': 1,
-      'account': 'growth',
+      'account': account,
       'replica': entry.$1,
       'sequence': 1,
       'context': <String, int>{},
@@ -124,7 +126,7 @@ Map<String, dynamic> seededState(
   }
   actions.add({
     'version': 1,
-    'account': 'growth',
+    'account': account,
     'replica': 'gap',
     'sequence': 2,
     'context': {'gap': 1},
@@ -138,7 +140,7 @@ Map<String, dynamic> seededState(
               : localActions.skip(max(0, localActions.length - 16)))
           .map(RecordJournal.identity)
           .toList();
-  RecordJournal('growth', 'local', encoded).checkInvariants();
+  RecordJournal(account, 'local', encoded).checkInvariants();
   return {
     'version': 3,
     'history': [],
@@ -236,6 +238,9 @@ Future<Map<String, dynamic>> measure(
   final state = seededState(retainedResumes, allPending: allPending);
   await database.write('growth', jsonEncode(state));
   final store = LocalResumeStore(openDatabase: () async => database);
+  final startup = Stopwatch()..start();
+  await store.read('growth');
+  startup.stop();
   await store.write('growth', {
     'version': 3,
     'history': [],
@@ -248,9 +253,10 @@ Future<Map<String, dynamic>> measure(
   final initialPending = (initial['sync']['pending'] as List).cast<String>();
   var snapshot = (await store.read('growth'))!;
   store.acceptSnapshot('growth', snapshot);
+  final sql = await databaseFactoryFfi.openDatabase(path);
+  await auditWrites(sql);
   var milliseconds = retainedResumes * 1000;
   final writeTimes = <double>[];
-  var rewrittenPayloadBytes = 0;
   for (var iteration = 0; iteration < samples + 2; iteration++) {
     milliseconds += 1000;
     ((snapshot['resumes'] as Map)['book'] as List).single['milliseconds'] =
@@ -260,11 +266,23 @@ Future<Map<String, dynamic>> measure(
     watch.stop();
     if (iteration >= 2) {
       writeTimes.add(watch.elapsedMicroseconds / 1000);
-      rewrittenPayloadBytes += utf8
-          .encode((await database.read('growth'))!)
-          .length;
     }
   }
+  final work = await sql.rawQuery(
+    'SELECT kind, count(*) AS rows, sum(bytes) AS bytes FROM measured_row_writes GROUP BY kind',
+  );
+  expect(
+    work.singleWhere((row) => row['kind'] == 'record_actions.insert')['rows'],
+    samples + 2,
+  );
+  expect(
+    work.where(
+      (row) =>
+          (row['kind'] as String).startsWith('record_actions.') &&
+          row['kind'] != 'record_actions.insert',
+    ),
+    isEmpty,
+  );
   final saved = (await database.read('growth'))!;
   final decodeTimes = <double>[];
   for (var iteration = 0; iteration < samples; iteration++) {
@@ -283,6 +301,7 @@ Future<Map<String, dynamic>> measure(
     decodeTimes.add(watch.elapsedMicroseconds / 1000);
   }
   await database.checkInvariants();
+  await store.checkInvariants();
   await database.close();
   final reopened = await RecordDatabase.open(
     factory: databaseFactoryFfi,
@@ -290,6 +309,9 @@ Future<Map<String, dynamic>> measure(
   );
   try {
     final restarted = LocalResumeStore(openDatabase: () async => reopened);
+    final restartWatch = Stopwatch()..start();
+    snapshot = (await restarted.read('growth'))!;
+    restartWatch.stop();
     final restartedRaw = jsonDecode((await reopened.read('growth'))!) as Map;
     final journal = RecordJournal(
       'growth',
@@ -331,14 +353,20 @@ Future<Map<String, dynamic>> measure(
       'retainedResumeActionsAtStart': retainedResumes,
       'totalRetainedActionsAtStart': initialActions.length,
       'pendingActionsAtStart': initialPending.length,
-      'payloadUtf8BytesAtStart': utf8.encode(jsonEncode(initial)).length,
-      'payloadUtf8BytesAfterSamples': utf8.encode(saved).length,
-      'logicalRowPayloadBytesWrittenAcrossEightSamples': rewrittenPayloadBytes,
+      'journalAndMetadataExportUtf8BytesAtStart': utf8
+          .encode(jsonEncode(initial))
+          .length,
+      'journalAndMetadataExportUtf8BytesAfterSamples': utf8
+          .encode(saved)
+          .length,
+      'logicalRowWritesAcrossTenSavesIncludingWarmup': work,
       'closedSqliteFileBytes': await File(path).length(),
-      'writeIncludingReplayValidationSerializationAndSqliteCommit': statistics(
+      'ordinarySaveIncludingNewActionValidationAndSqliteCommit': statistics(
         writeTimes,
       ),
-      'jsonDecodeAndJournalReplayOnly': statistics(decodeTimes),
+      'migrationStartupMilliseconds': startup.elapsedMicroseconds / 1000,
+      'normalizedRestartMilliseconds': restartWatch.elapsedMicroseconds / 1000,
+      'explicitWholeHistoryExportDecodeAndReplayOnly': statistics(decodeTimes),
       'allOriginalActionsAndPendingRetainedAfterRestart': true,
       'historyDeletionsReadingConflictsAndCausalGapRetainedAfterRestart': true,
       'preconditioningWrites': 1,
@@ -350,12 +378,124 @@ Future<Map<String, dynamic>> measure(
   }
 }
 
+Future<void> auditWrites(Database database) async {
+  await database.execute(
+    'CREATE TABLE measured_row_writes (kind TEXT NOT NULL, bytes INTEGER NOT NULL)',
+  );
+  for (final table in [
+    'record_accounts',
+    'record_actions',
+    'record_versions',
+    'record_coverage',
+  ]) {
+    final column = switch (table) {
+      'record_accounts' => 'metadata',
+      'record_actions' => 'payload',
+      'record_versions' => 'identities',
+      _ => 'sequence',
+    };
+    for (final operation in ['INSERT', 'UPDATE']) {
+      final bytes = table == 'record_actions' && operation == 'UPDATE'
+          ? '1'
+          : 'length(CAST(NEW.$column AS BLOB))';
+      await database.execute(
+        '''CREATE TRIGGER measured_${table}_${operation.toLowerCase()}
+        AFTER $operation ON $table BEGIN
+          INSERT INTO measured_row_writes VALUES ('$table.${operation.toLowerCase()}', $bytes);
+        END''',
+      );
+    }
+  }
+  await database.execute(
+    "CREATE TRIGGER immutable_payload BEFORE UPDATE OF payload ON record_actions BEGIN SELECT RAISE(ABORT, 'measurement forbids rewriting retained payloads'); END",
+  );
+  await database.execute(
+    "CREATE TRIGGER immutable_action BEFORE DELETE ON record_actions BEGIN SELECT RAISE(ABORT, 'measurement forbids deleting retained actions'); END",
+  );
+}
+
+Future<Map<String, dynamic>> measureAcknowledgments(
+  Directory directory,
+  int retainedResumes,
+) async {
+  final fixture = await SyncFixture.open();
+  final account = fixture.session.scope.key;
+  final path = '${directory.path}/$retainedResumes-ack.sqlite';
+  var database = await RecordDatabase.open(
+    factory: databaseFactoryFfi,
+    path: path,
+  );
+  try {
+    await database.write(
+      account,
+      jsonEncode(
+        seededState(retainedResumes, allPending: false, account: account),
+      ),
+    );
+    var store = LocalResumeStore(openDatabase: () async => database);
+    await store.synchronize(fixture.session, fixture.client);
+    final sql = await databaseFactoryFfi.openDatabase(path);
+    await auditWrites(sql);
+    final times = <double>[];
+    var snapshot = (await store.read(account))!;
+    for (var iteration = 0; iteration < samples; iteration++) {
+      ((snapshot['resumes'] as Map)['book'] as List).single['milliseconds'] =
+          (retainedResumes + iteration + 1) * 1000;
+      await store.write(account, snapshot);
+      final watch = Stopwatch()..start();
+      await store.synchronize(fixture.session, fixture.client);
+      watch.stop();
+      times.add(watch.elapsedMicroseconds / 1000);
+    }
+    final work = await sql.rawQuery(
+      'SELECT kind, count(*) AS rows, sum(bytes) AS bytes FROM measured_row_writes GROUP BY kind',
+    );
+    expect(
+      work.singleWhere((row) => row['kind'] == 'record_actions.update')['rows'],
+      samples,
+    );
+    final saved = jsonDecode((await database.read(account))!) as Map;
+    expect(saved['sync']['pending'], isEmpty);
+    final actions = saved['sync']['actions'];
+    await store.checkInvariants();
+    await database.close();
+    database = await RecordDatabase.open(
+      factory: databaseFactoryFfi,
+      path: path,
+    );
+    store = LocalResumeStore(openDatabase: () async => database);
+    snapshot = (await store.read(account))!;
+    expect(
+      (jsonDecode((await database.read(account))!) as Map)['sync']['actions'],
+      actions,
+    );
+    expect(
+      (jsonDecode((await database.read(account))!) as Map)['sync']['pending'],
+      isEmpty,
+    );
+    expect(snapshot['history'], hasLength(31));
+    await store.checkInvariants();
+    return {
+      'retainedResumeActionsAtStart': retainedResumes,
+      'singlePendingUploadAckAndDiscoveryIncludingLoopbackHttp': statistics(
+        times,
+      ),
+      'logicalRowWritesAcrossEightSavesAndSyncs': work,
+      'acknowledgedActionsAndEmptyPendingSurviveRestart': true,
+    };
+  } finally {
+    await database.close();
+    await fixture.close();
+  }
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   sqfliteFfiInit();
+  HttpOverrides.global = null;
   final destination = Platform.environment['BOOKFIN_JOURNAL_GROWTH_EVIDENCE'];
   test(
-    'measure retained journal cost without removing records or changing production behavior',
+    'measure incremental saves and acknowledgments while retaining every original action',
     () async {
       SharedPreferences.setMockInitialValues({});
       final directory = await Directory.systemTemp.createTemp(
@@ -368,6 +508,10 @@ void main() {
         profiles.add(await measure(directory, size, true));
       }
       profiles.add(await measure(directory, 21600, false));
+      final acknowledgments = <Map<String, dynamic>>[];
+      for (final size in [60, 600, 3600, 21600]) {
+        acknowledgments.add(await measureAcknowledgments(directory, size));
+      }
       final evidence = {
         'ticket': 't6-t9po',
         'measuredAtUtc': DateTime.now().toUtc().toIso8601String(),
@@ -379,6 +523,7 @@ void main() {
         ])).stdout.toString().trim(),
         'cadence': cadenceResult,
         'profiles': profiles,
+        'acknowledgments': acknowledgments,
         'sourcesSha256': {
           for (final name in [
             'lib/playback/playback.dart',
@@ -391,9 +536,12 @@ void main() {
         },
         'limits': [
           'Synthetic host fixtures, not Android performance or real-time listening',
-          'Eight measured writes after two warmups per profile, not a soak or hardening campaign',
-          'Logical row payload bytes are not filesystem, flash, or WAL write amplification',
-          'No network synchronization, compaction, checkpoints, pruning, or production code changes',
+          'Eight measured saves after two warmups per profile, not a soak or hardening campaign',
+          'Test-owned SQLite audit triggers count logical changed rows and field bytes, not filesystem, flash, or WAL write amplification; totals include warmups',
+          'Acknowledgment samples include loopback HTTP validation, one upload, its durable acknowledgment, and discovery; initial pending uploads are cleared before timing',
+          'Startup validates and replays all retained actions once per account; the owner caches every decoded action until its lifetime ends or a failed operation evicts that account',
+          'Restart timing uses a new owner and reopened SQLite with a warm host filesystem, not a cold process or device launch',
+          'Startup and memory remain proportional to retained history; storage continues growing without compaction, checkpoints, pruning, or expiry',
         ],
       };
       await File(destination!).parent.create(recursive: true);

@@ -1,0 +1,448 @@
+{
+  "ticket": "t6-t9po",
+  "measuredAtUtc": "2026-11-03T12:24:45.395253Z",
+  "host": "macos",
+  "dart": "3.13.3 (stable) (Tue Sep 1 01:07:17 2026 -0700) on \"macos_arm64\"",
+  "baseCommit": "d69cfb3c63146939fc120454216fd0977059e645",
+  "cadence": {
+    "syntheticDecoderSamples": 20,
+    "sourcePositionStepMilliseconds": 100,
+    "sourcePositionDurationMilliseconds": 2000,
+    "databaseWrites": 2,
+    "newImmutableResumeActions": 2,
+    "newPendingActions": 2,
+    "realTimeListeningMeasured": false
+  },
+  "profiles": [
+    {
+      "profile": "60-offline",
+      "retainedResumeActionsAtStart": 60,
+      "totalRetainedActionsAtStart": 106,
+      "pendingActionsAtStart": 103,
+      "journalAndMetadataExportUtf8BytesAtStart": 38899,
+      "journalAndMetadataExportUtf8BytesAfterSamples": 42439,
+      "logicalRowWritesAcrossTenSavesIncludingWarmup": [
+        {
+          "kind": "record_accounts.update",
+          "rows": 10,
+          "bytes": 370
+        },
+        {
+          "kind": "record_actions.insert",
+          "rows": 10,
+          "bytes": 3340
+        },
+        {
+          "kind": "record_coverage.insert",
+          "rows": 10,
+          "bytes": 30
+        },
+        {
+          "kind": "record_versions.insert",
+          "rows": 10,
+          "bytes": 200
+        }
+      ],
+      "closedSqliteFileBytes": 126976,
+      "ordinarySaveIncludingNewActionValidationAndSqliteCommit": {
+        "samples": 8,
+        "minimumMilliseconds": 1.415,
+        "medianMilliseconds": 1.5885,
+        "maximumMilliseconds": 1.886,
+        "meanMilliseconds": 1.5871250000000001
+      },
+      "migrationStartupMilliseconds": 16.07,
+      "normalizedRestartMilliseconds": 5.762,
+      "explicitWholeHistoryExportDecodeAndReplayOnly": {
+        "samples": 8,
+        "minimumMilliseconds": 1.893,
+        "medianMilliseconds": 2.1494999999999997,
+        "maximumMilliseconds": 2.901,
+        "meanMilliseconds": 2.25375
+      },
+      "allOriginalActionsAndPendingRetainedAfterRestart": true,
+      "historyDeletionsReadingConflictsAndCausalGapRetainedAfterRestart": true,
+      "preconditioningWrites": 1,
+      "warmupWrites": 2,
+      "measuredWrites": 8
+    },
+    {
+      "profile": "600-offline",
+      "retainedResumeActionsAtStart": 600,
+      "totalRetainedActionsAtStart": 646,
+      "pendingActionsAtStart": 643,
+      "journalAndMetadataExportUtf8BytesAtStart": 217600,
+      "journalAndMetadataExportUtf8BytesAfterSamples": 221150,
+      "logicalRowWritesAcrossTenSavesIncludingWarmup": [
+        {
+          "kind": "record_accounts.update",
+          "rows": 10,
+          "bytes": 370
+        },
+        {
+          "kind": "record_actions.insert",
+          "rows": 10,
+          "bytes": 3350
+        },
+        {
+          "kind": "record_coverage.insert",
+          "rows": 10,
+          "bytes": 30
+        },
+        {
+          "kind": "record_versions.insert",
+          "rows": 10,
+          "bytes": 200
+        }
+      ],
+      "closedSqliteFileBytes": 532480,
+      "ordinarySaveIncludingNewActionValidationAndSqliteCommit": {
+        "samples": 8,
+        "minimumMilliseconds": 1.106,
+        "medianMilliseconds": 1.2605,
+        "maximumMilliseconds": 1.932,
+        "meanMilliseconds": 1.353375
+      },
+      "migrationStartupMilliseconds": 33.5,
+      "normalizedRestartMilliseconds": 17.815,
+      "explicitWholeHistoryExportDecodeAndReplayOnly": {
+        "samples": 8,
+        "minimumMilliseconds": 7.82,
+        "medianMilliseconds": 8.959,
+        "maximumMilliseconds": 12.863,
+        "meanMilliseconds": 9.297249999999998
+      },
+      "allOriginalActionsAndPendingRetainedAfterRestart": true,
+      "historyDeletionsReadingConflictsAndCausalGapRetainedAfterRestart": true,
+      "preconditioningWrites": 1,
+      "warmupWrites": 2,
+      "measuredWrites": 8
+    },
+    {
+      "profile": "3600-offline",
+      "retainedResumeActionsAtStart": 3600,
+      "totalRetainedActionsAtStart": 3646,
+      "pendingActionsAtStart": 3643,
+      "journalAndMetadataExportUtf8BytesAtStart": 1221132,
+      "journalAndMetadataExportUtf8BytesAfterSamples": 1224722,
+      "logicalRowWritesAcrossTenSavesIncludingWarmup": [
+        {
+          "kind": "record_accounts.update",
+          "rows": 10,
+          "bytes": 370
+        },
+        {
+          "kind": "record_actions.insert",
+          "rows": 10,
+          "bytes": 3380
+        },
+        {
+          "kind": "record_coverage.insert",
+          "rows": 10,
+          "bytes": 40
+        },
+        {
+          "kind": "record_versions.insert",
+          "rows": 10,
+          "bytes": 210
+        }
+      ],
+      "closedSqliteFileBytes": 2756608,
+      "ordinarySaveIncludingNewActionValidationAndSqliteCommit": {
+        "samples": 8,
+        "minimumMilliseconds": 1.109,
+        "medianMilliseconds": 1.4495,
+        "maximumMilliseconds": 3.258,
+        "meanMilliseconds": 1.64175
+      },
+      "migrationStartupMilliseconds": 130.497,
+      "normalizedRestartMilliseconds": 79.888,
+      "explicitWholeHistoryExportDecodeAndReplayOnly": {
+        "samples": 8,
+        "minimumMilliseconds": 46.313,
+        "medianMilliseconds": 50.2535,
+        "maximumMilliseconds": 55.925,
+        "meanMilliseconds": 50.64725
+      },
+      "allOriginalActionsAndPendingRetainedAfterRestart": true,
+      "historyDeletionsReadingConflictsAndCausalGapRetainedAfterRestart": true,
+      "preconditioningWrites": 1,
+      "warmupWrites": 2,
+      "measuredWrites": 8
+    },
+    {
+      "profile": "21600-offline",
+      "retainedResumeActionsAtStart": 21600,
+      "totalRetainedActionsAtStart": 21646,
+      "pendingActionsAtStart": 21643,
+      "journalAndMetadataExportUtf8BytesAtStart": 7297664,
+      "journalAndMetadataExportUtf8BytesAfterSamples": 7301294,
+      "logicalRowWritesAcrossTenSavesIncludingWarmup": [
+        {
+          "kind": "record_accounts.update",
+          "rows": 10,
+          "bytes": 370
+        },
+        {
+          "kind": "record_actions.insert",
+          "rows": 10,
+          "bytes": 3410
+        },
+        {
+          "kind": "record_coverage.insert",
+          "rows": 10,
+          "bytes": 50
+        },
+        {
+          "kind": "record_versions.insert",
+          "rows": 10,
+          "bytes": 220
+        }
+      ],
+      "closedSqliteFileBytes": 16207872,
+      "ordinarySaveIncludingNewActionValidationAndSqliteCommit": {
+        "samples": 8,
+        "minimumMilliseconds": 0.912,
+        "medianMilliseconds": 1.2414999999999998,
+        "maximumMilliseconds": 1.709,
+        "meanMilliseconds": 1.3005
+      },
+      "migrationStartupMilliseconds": 666.868,
+      "normalizedRestartMilliseconds": 427.561,
+      "explicitWholeHistoryExportDecodeAndReplayOnly": {
+        "samples": 8,
+        "minimumMilliseconds": 292.278,
+        "medianMilliseconds": 304.1725,
+        "maximumMilliseconds": 323.974,
+        "meanMilliseconds": 306.07812499999994
+      },
+      "allOriginalActionsAndPendingRetainedAfterRestart": true,
+      "historyDeletionsReadingConflictsAndCausalGapRetainedAfterRestart": true,
+      "preconditioningWrites": 1,
+      "warmupWrites": 2,
+      "measuredWrites": 8
+    },
+    {
+      "profile": "21600-mostly-acknowledged",
+      "retainedResumeActionsAtStart": 21600,
+      "totalRetainedActionsAtStart": 21646,
+      "pendingActionsAtStart": 16,
+      "journalAndMetadataExportUtf8BytesAtStart": 6854603,
+      "journalAndMetadataExportUtf8BytesAfterSamples": 6858233,
+      "logicalRowWritesAcrossTenSavesIncludingWarmup": [
+        {
+          "kind": "record_accounts.update",
+          "rows": 10,
+          "bytes": 370
+        },
+        {
+          "kind": "record_actions.insert",
+          "rows": 10,
+          "bytes": 3410
+        },
+        {
+          "kind": "record_coverage.insert",
+          "rows": 10,
+          "bytes": 50
+        },
+        {
+          "kind": "record_versions.insert",
+          "rows": 10,
+          "bytes": 220
+        }
+      ],
+      "closedSqliteFileBytes": 15765504,
+      "ordinarySaveIncludingNewActionValidationAndSqliteCommit": {
+        "samples": 8,
+        "minimumMilliseconds": 1.605,
+        "medianMilliseconds": 1.7534999999999998,
+        "maximumMilliseconds": 5.017,
+        "meanMilliseconds": 2.3365
+      },
+      "migrationStartupMilliseconds": 636.091,
+      "normalizedRestartMilliseconds": 410.095,
+      "explicitWholeHistoryExportDecodeAndReplayOnly": {
+        "samples": 8,
+        "minimumMilliseconds": 293.613,
+        "medianMilliseconds": 300.399,
+        "maximumMilliseconds": 312.854,
+        "meanMilliseconds": 301.068
+      },
+      "allOriginalActionsAndPendingRetainedAfterRestart": true,
+      "historyDeletionsReadingConflictsAndCausalGapRetainedAfterRestart": true,
+      "preconditioningWrites": 1,
+      "warmupWrites": 2,
+      "measuredWrites": 8
+    }
+  ],
+  "acknowledgments": [
+    {
+      "retainedResumeActionsAtStart": 60,
+      "singlePendingUploadAckAndDiscoveryIncludingLoopbackHttp": {
+        "samples": 8,
+        "minimumMilliseconds": 5.675,
+        "medianMilliseconds": 5.897,
+        "maximumMilliseconds": 6.566,
+        "meanMilliseconds": 5.95175
+      },
+      "logicalRowWritesAcrossEightSavesAndSyncs": [
+        {
+          "kind": "record_accounts.update",
+          "rows": 24,
+          "bytes": 888
+        },
+        {
+          "kind": "record_actions.insert",
+          "rows": 8,
+          "bytes": 3016
+        },
+        {
+          "kind": "record_actions.update",
+          "rows": 8,
+          "bytes": 8
+        },
+        {
+          "kind": "record_coverage.insert",
+          "rows": 8,
+          "bytes": 24
+        },
+        {
+          "kind": "record_versions.insert",
+          "rows": 8,
+          "bytes": 160
+        }
+      ],
+      "acknowledgedActionsAndEmptyPendingSurviveRestart": true
+    },
+    {
+      "retainedResumeActionsAtStart": 600,
+      "singlePendingUploadAckAndDiscoveryIncludingLoopbackHttp": {
+        "samples": 8,
+        "minimumMilliseconds": 5.669,
+        "medianMilliseconds": 5.9285,
+        "maximumMilliseconds": 6.654,
+        "meanMilliseconds": 6.012374999999999
+      },
+      "logicalRowWritesAcrossEightSavesAndSyncs": [
+        {
+          "kind": "record_accounts.update",
+          "rows": 24,
+          "bytes": 888
+        },
+        {
+          "kind": "record_actions.insert",
+          "rows": 8,
+          "bytes": 3024
+        },
+        {
+          "kind": "record_actions.update",
+          "rows": 8,
+          "bytes": 8
+        },
+        {
+          "kind": "record_coverage.insert",
+          "rows": 8,
+          "bytes": 24
+        },
+        {
+          "kind": "record_versions.insert",
+          "rows": 8,
+          "bytes": 160
+        }
+      ],
+      "acknowledgedActionsAndEmptyPendingSurviveRestart": true
+    },
+    {
+      "retainedResumeActionsAtStart": 3600,
+      "singlePendingUploadAckAndDiscoveryIncludingLoopbackHttp": {
+        "samples": 8,
+        "minimumMilliseconds": 5.219,
+        "medianMilliseconds": 5.713,
+        "maximumMilliseconds": 6.539,
+        "meanMilliseconds": 5.787625
+      },
+      "logicalRowWritesAcrossEightSavesAndSyncs": [
+        {
+          "kind": "record_accounts.update",
+          "rows": 24,
+          "bytes": 888
+        },
+        {
+          "kind": "record_actions.insert",
+          "rows": 8,
+          "bytes": 3048
+        },
+        {
+          "kind": "record_actions.update",
+          "rows": 8,
+          "bytes": 8
+        },
+        {
+          "kind": "record_coverage.insert",
+          "rows": 8,
+          "bytes": 32
+        },
+        {
+          "kind": "record_versions.insert",
+          "rows": 8,
+          "bytes": 168
+        }
+      ],
+      "acknowledgedActionsAndEmptyPendingSurviveRestart": true
+    },
+    {
+      "retainedResumeActionsAtStart": 21600,
+      "singlePendingUploadAckAndDiscoveryIncludingLoopbackHttp": {
+        "samples": 8,
+        "minimumMilliseconds": 4.592,
+        "medianMilliseconds": 5.208,
+        "maximumMilliseconds": 5.839,
+        "meanMilliseconds": 5.154999999999999
+      },
+      "logicalRowWritesAcrossEightSavesAndSyncs": [
+        {
+          "kind": "record_accounts.update",
+          "rows": 24,
+          "bytes": 888
+        },
+        {
+          "kind": "record_actions.insert",
+          "rows": 8,
+          "bytes": 3072
+        },
+        {
+          "kind": "record_actions.update",
+          "rows": 8,
+          "bytes": 8
+        },
+        {
+          "kind": "record_coverage.insert",
+          "rows": 8,
+          "bytes": 40
+        },
+        {
+          "kind": "record_versions.insert",
+          "rows": 8,
+          "bytes": 176
+        }
+      ],
+      "acknowledgedActionsAndEmptyPendingSurviveRestart": true
+    }
+  ],
+  "sourcesSha256": {
+    "lib/playback/playback.dart": "8eef615fd4a21acfb99073fe8f032f6b2b79365b7ef91715d358a896186c6ed5",
+    "lib/playback/store.dart": "2df39ff86536ae01192ff4e677e79fa140cfe5eaa38ed7a9e5b27c1ad028d46f",
+    "lib/playback/database.dart": "0ff1c41e91cae31331fdf5fdef681bc3481f9327028e72bb8451e0b08f33044d",
+    "lib/sync/journal.dart": "f528d1fa22272e4afe188e0cf3f712625f7be1ed83fe847ef18d0c232859ef2a",
+    "test/research/journal_growth_measurement_test.dart": "670e6a192d697769644f817aecacc78886d25afdab559daf19971e18d6282f43"
+  },
+  "limits": [
+    "Synthetic host fixtures, not Android performance or real-time listening",
+    "Eight measured saves after two warmups per profile, not a soak or hardening campaign",
+    "Test-owned SQLite audit triggers count logical changed rows and field bytes, not filesystem, flash, or WAL write amplification; totals include warmups",
+    "Acknowledgment samples include loopback HTTP validation, one upload, its durable acknowledgment, and discovery; initial pending uploads are cleared before timing",
+    "Startup validates and replays all retained actions once per account; the owner caches every decoded action until its lifetime ends or a failed operation evicts that account",
+    "Restart timing uses a new owner and reopened SQLite with a warm host filesystem, not a cold process or device launch",
+    "Startup and memory remain proportional to retained history; storage continues growing without compaction, checkpoints, pruning, or expiry"
+  ]
+}

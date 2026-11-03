@@ -1,0 +1,12 @@
+{
+  "ticket": "t6-t9po",
+  "existingPackage": "Bookfin.Storage_0.1.1.0.zip",
+  "packageSha256": "3b0de5ca1df39baf67c786079898b1ee3b0b09d3bdb86d00ece8a7f5731a9105",
+  "durableOrdinaryAccountRegressionPassed": true,
+  "ownedProcessStopped": true,
+  "portsFreeAfterOwnedCleanup": {
+    "7464": true,
+    "7465": true
+  },
+  "scope": "Disposable loopback Jellyfin 12.4.0 and unchanged plugin 0.1.1.0. No device or acceptance ports."
+}

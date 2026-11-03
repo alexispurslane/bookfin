@@ -1,9 +1,18 @@
 import 'dart:convert';
+import 'dart:collection';
 
 import 'package:flutter/foundation.dart';
 
 class RecordJournal {
-  RecordJournal(this.account, this.replica, [Map<String, dynamic>? saved]) {
+  RecordJournal(
+    this.account,
+    this.replica, [
+    Map<String, dynamic>? saved,
+    this.validateValue,
+  ]) {
+    if (!RegExp(r'^[a-zA-Z0-9_-]{1,80}$').hasMatch(replica)) {
+      throw const FormatException('Invalid installation identity.');
+    }
     if (saved != null) {
       if (saved['version'] != 1 ||
           saved['replica'] != replica ||
@@ -27,19 +36,43 @@ class RecordJournal {
           'Pending personal records must reference retained actions.',
         );
       }
-      pending.addAll(pendingIdentities);
+      _pending.addAll(pendingIdentities);
       cursor = saved['cursor'] as int;
-      checkInvariants();
     }
   }
 
   final String account;
   final String replica;
+  final void Function(Map<String, dynamic>)? validateValue;
   final Map<String, Map<String, dynamic>> _actions = {};
   final Map<String, int> _coverage = {};
   final Map<String, List<Map<String, dynamic>>> _records = {};
-  final Set<String> pending = {};
+  final Set<String> _pending = {};
+  Set<String> get pending => UnmodifiableSetView(_pending);
   int cursor = 0;
+  final Map<String, SplayTreeMap<int, Set<String>>> _waiting = {};
+  final Map<String, Map<String, dynamic>> additions = {};
+  final Set<String> changedRecords = {};
+  final Map<String, int> changedCoverage = {};
+  final Set<String> acknowledged = {};
+
+  Map<String, int> get coverage => Map.unmodifiable(_coverage);
+  Map<String, List<String>> get current => {
+    for (final entry in _records.entries) entry.key: versions(entry.key),
+  };
+  List<String> versions(String record) =>
+      (_records[record] ?? []).map(identity).toList()..sort();
+
+  void acknowledge(String identity) {
+    if (_pending.remove(identity)) acknowledged.add(identity);
+  }
+
+  void persisted() {
+    additions.clear();
+    changedRecords.clear();
+    changedCoverage.clear();
+    acknowledged.clear();
+  }
 
   static String identity(Map<String, dynamic> action) =>
       'action.${action['replica']}.${action['sequence']}';
@@ -98,60 +131,79 @@ class RecordJournal {
       ],
     };
     receive([action]);
-    pending.add(identity(action));
+    _pending.add(identity(action));
   }
 
   void receive(Iterable<Map<String, dynamic>> actions) {
+    final candidates = Queue<String>();
     for (final original in actions) {
       final action = jsonDecode(jsonEncode(original)) as Map<String, dynamic>;
       _validate(action);
+      validateValue?.call(action);
       final id = identity(action);
       final previous = _actions[id];
       if (previous != null &&
           !const DeepCollectionEquality().equals(previous, action)) {
         throw const FormatException('An immutable sync action changed.');
       }
-      _actions[id] = action;
-    }
-    bool advanced;
-    do {
-      advanced = false;
-      for (final action in _actions.values) {
-        final author = action['replica'] as String;
-        final sequence = action['sequence'] as int;
-        final context = Map<String, int>.from(action['context'] as Map);
-        if (sequence != (_coverage[author] ?? 0) + 1 ||
-            context.entries.any(
-              (entry) => entry.value > (_coverage[entry.key] ?? 0),
-            )) {
-          continue;
-        }
-        final versions = _records.putIfAbsent(
-          action['record'] as String,
-          () => [],
-        );
-        final preserved = (action['preserve'] as List).cast<String>();
-        for (final id in preserved) {
-          final previous = _actions[id];
-          if (previous == null ||
-              previous['record'] != action['record'] ||
-              (previous['sequence'] as int) >
-                  (context[previous['replica']] ?? 0)) {
-            throw const FormatException(
-              'A preserved conflict must be an observed version of the same record.',
-            );
-          }
-        }
-        versions.removeWhere(
-          (old) =>
-              (old['sequence'] as int) <= (context[old['replica']] ?? 0) &&
-              !preserved.contains(identity(old)),
-        );
-        versions.add(action);
-        _coverage[author] = sequence;
-        advanced = true;
+      if (previous == null) {
+        _actions[id] = action;
+        additions[id] = action;
+        candidates.add(id);
       }
-    } while (advanced);
+    }
+    while (candidates.isNotEmpty) {
+      final action = _actions[candidates.removeFirst()]!;
+      final author = action['replica'] as String;
+      final sequence = action['sequence'] as int;
+      final context = Map<String, int>.from(action['context'] as Map);
+      if (sequence <= (_coverage[author] ?? 0)) continue;
+      var blocked = false;
+      for (final dependency in context.entries) {
+        if (dependency.value <= (_coverage[dependency.key] ?? 0)) continue;
+        _waiting
+            .putIfAbsent(dependency.key, () => SplayTreeMap())
+            .putIfAbsent(dependency.value, () => {})
+            .add(identity(action));
+        blocked = true;
+      }
+      if (blocked) {
+        continue;
+      }
+      assert(sequence == (_coverage[author] ?? 0) + 1);
+      final versions = _records.putIfAbsent(
+        action['record'] as String,
+        () => [],
+      );
+      final preserved = (action['preserve'] as List).cast<String>();
+      for (final id in preserved) {
+        final previous = _actions[id];
+        if (previous == null ||
+            previous['record'] != action['record'] ||
+            (previous['sequence'] as int) >
+                (context[previous['replica']] ?? 0)) {
+          throw const FormatException(
+            'A preserved conflict must be an observed version of the same record.',
+          );
+        }
+      }
+      versions.removeWhere(
+        (old) =>
+            (old['sequence'] as int) <= (context[old['replica']] ?? 0) &&
+            !preserved.contains(identity(old)),
+      );
+      versions.add(action);
+      _coverage[author] = sequence;
+      changedRecords.add(action['record'] as String);
+      changedCoverage[author] = sequence;
+      assert(identical(_actions[identity(action)], action));
+      final waiting = _waiting[author];
+      while (waiting != null &&
+          waiting.isNotEmpty &&
+          waiting.firstKey()! <= sequence) {
+        candidates.addAll(waiting.remove(waiting.firstKey())!);
+      }
+    }
   }
 
   void _validate(Map<String, dynamic> action) {
@@ -192,15 +244,41 @@ class RecordJournal {
   }
 
   void checkInvariants() {
+    final held = <String>{};
+    for (final entry in _waiting.entries) {
+      for (final threshold in entry.value.entries) {
+        if (threshold.key <= (_coverage[entry.key] ?? 0)) {
+          throw StateError(
+            'Waiting actions must need unapplied causal coverage.',
+          );
+        }
+        held.addAll(threshold.value);
+      }
+    }
     if (cursor < 0 ||
         pending.any((id) => !_actions.containsKey(id)) ||
+        held.any((id) => !_actions.containsKey(id)) ||
+        _coverage.entries.any(
+          (entry) =>
+              Iterable<int>.generate(entry.value, (index) => index + 1).any(
+                (sequence) =>
+                    !_actions.containsKey('action.${entry.key}.$sequence'),
+              ),
+        ) ||
+        _actions.entries.any(
+          (entry) =>
+              (entry.value['sequence'] as int) >
+                  (_coverage[entry.value['replica']] ?? 0) &&
+              !held.contains(entry.key),
+        ) ||
         _records.values.any(
           (versions) =>
               versions.isEmpty ||
               versions.any(
                 (action) =>
+                    !identical(_actions[identity(action)], action) ||
                     (action['sequence'] as int) >
-                    (_coverage[action['replica']] ?? 0),
+                        (_coverage[action['replica']] ?? 0),
               ),
         )) {
       throw StateError(

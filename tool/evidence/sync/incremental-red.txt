@@ -1,0 +1,87 @@
+copying path '/nix/store/h5xw0scfps9fk3s5xwaajq1cz258nx57-curl-8.22.0-man' from 'https://cache.nixos.org'...
+copying path '/nix/store/c2c90dgr2bpj1bbnmai86icwnwmv12y4-nghttp2-1.70.0-lib' from 'https://cache.nixos.org'...
+copying path '/nix/store/blc1fs6j4l5017r6pwjh5s5grkn3jggc-openssl-3.5.8' from 'https://cache.nixos.org'...
+copying path '/nix/store/z2rx6ysq91sll9fkdm56zd9hpd87k2vn-nghttp2-1.70.0' from 'https://cache.nixos.org'...
+copying path '/nix/store/9w7180x9zhy6f7acldggqra45jxgjnvc-stdenv-darwin-no-cc' from 'https://cache.nixos.org'...
+copying path '/nix/store/k4afvabg8hin4w2m7i277wasyjic6a3z-nghttp2-1.70.0-dev' from 'https://cache.nixos.org'...
+copying path '/nix/store/q1dd5rqqk94dj206jxa6syi8p5kz7m2f-libssh2-1.11.1' from 'https://cache.nixos.org'...
+copying path '/nix/store/lml481yybq18qvdjixwbi7g3grbvhbpi-openssl-3.5.8-bin' from 'https://cache.nixos.org'...
+copying path '/nix/store/bs010bvm4dff940k06rrz42hli7sz0p5-curl-8.22.0' from 'https://cache.nixos.org'...
+copying path '/nix/store/scy3wrgjzks4gvj30rx73bqm82nvfqii-openssl-3.5.8-dev' from 'https://cache.nixos.org'...
+copying path '/nix/store/fz0sv28hjnjb7bk8yqdn9dq28yz12nwn-curl-8.22.0-bin' from 'https://cache.nixos.org'...
+copying path '/nix/store/4a6k27b9sri39hw3wyybaan4li2fvvwn-libssh2-1.11.1-dev' from 'https://cache.nixos.org'...
+copying path '/nix/store/xasw4wxyh9bwjh40fps3yb195qkpvk1l-curl-8.22.0-dev' from 'https://cache.nixos.org'...
+building '/nix/store/r4llf15a0ragcxm6mkv6g50sx2zgmsvk-gpl-3.0.txt.drv'...
+building '/nix/store/m6q6xd6fg4wvxgfqrrl2arg1liy6b47m-pdfium-android-arm64.tgz.drv'...
+building '/nix/store/ppcjp8zqvsyiqk4ajx6lsqnilm2hmipz-pdfium-mac-arm64.tgz.drv'...
+building '/nix/store/cdskwap58c781bjra6a4m50596cgrc9i-source.drv'...
+building '/nix/store/rps4sghzjn428cs4hwzvj3jcv75n3yj1-bookfin-pdfium-8125-macos-arm64.drv'...
+building '/nix/store/f83gd2vyrlf3vlm4ycsv6v4r2w5mcscv-bookfin-pdfium-8125-android-arm64.drv'...
+building '/nix/store/83jimsf21dgjian3szlymg8jkick0ch9-bookfin-libmobi-converter-0.12.drv'...
+building '/nix/store/8r4hyfwg6zfzvrbzq95phr293x5k2x0h-nix-shell-env.drv'...
+this path will be fetched (107.5 KiB download, 107.4 KiB unpacked):
+  /nix/store/kakn9yyj2h86hqalm14wvfnxwaivs650-bash-interactive-5.3p15-man
+copying path '/nix/store/kakn9yyj2h86hqalm14wvfnxwaivs650-bash-interactive-5.3p15-man' from 'https://cache.nixos.org'...
+Resolving dependencies...
+Downloading packages...
+  archive 4.0.9 (4.6.0 available)
+  code_assets 1.2.1 (2.1.0 available)
+  crypto 3.0.7 (3.0.8 available)
+  flutter_cache_manager 3.4.6 (3.4.8 available)
+  flutter_secure_storage 9.2.4 (11.2.0 available)
+  flutter_secure_storage_linux 1.2.3 (3.0.3 available)
+  flutter_secure_storage_macos 3.1.3 (4.0.0 available)
+  flutter_secure_storage_platform_interface 1.1.2 (2.1.1 available)
+  flutter_secure_storage_web 1.2.1 (2.1.1 available)
+  flutter_secure_storage_windows 3.1.2 (4.2.2 available)
+  hooks 2.0.2 (2.2.0 available)
+  image 4.8.0 (4.12.0 available)
+  js 0.6.7 (0.7.2 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  meta 1.18.3 (1.19.0 available)
+  native_toolchain_c 0.19.2 (0.19.5 available)
+  objective_c 9.5.0 (9.6.2 available)
+  petitparser 7.0.2 (7.1.0 available)
+  record_use 0.6.0 (1.1.1 available)
+  shared_preferences_foundation 2.5.7 (2.6.1 available)
+  sqflite_common_ffi 2.4.0+2 (2.4.5 available)
+  sqlite3 3.5.2 (3.8.0 available)
+  test_api 0.7.12 (0.7.15 available)
+  vector_math 2.4.0 (2.4.4 available)
+  win32 5.15.0 (6.4.0 available)
+  xml 6.6.1 (7.1.0 available)
+Got dependencies!
+26 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+xcrun: error: SDK cannot be located: error: unable to find sdk: 'iphoneos'
+
+
+SDK iphoneos not installed.
+
+xcrun: error: SDK cannot be located: error: unable to find sdk: 'iphonesimulator'
+
+
+SDK iphonesimulator not installed.
+
+00:00 +0: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-97756a71/test/sync/incremental_store_test.dart
+00:00 +0: ordinary saves retain every position without replacing the whole account payload
+00:00 +0 -1: ordinary saves retain every position without replacing the whole account payload [E]
+  SqfliteFfiException(sqlite_error: 1811, , SqliteException(1811): while executing statement, retained account payload must not be rewritten, constraint failed (code 1811)
+    Causing statement: INSERT OR REPLACE INTO accounts (account, payload) VALUES (?, ?), parameters: alice, {"version":3,"bookmarks":[],"history":[],"resumes":{"edition":[{"source":"source","revision":"revision","milliseconds":2000}]},"reading":{"version":1,"bookmarks":[],"resumes":[]},"sync":{"version":1,"replica":"de7cdd1d36a854706ac03be9a1e102776bad68b9","actions":[{"version":1,"account":"alice","replica":"de7cdd1d36a854706ac03be9a1e102776bad68b9","sequence":1,"context":{},"record":"[\"audio\",\"resumes\",\"[\\\"edition\\\",\\\"source\\\",\\\"revision\\\"]\"]","value":{"source":"source","revision":"revision","milliseconds":1000,"edition":"edition"},"preserve":[]},{"version":1,"account":"alice","replica":"de7cdd1d36a854706ac03be9a1e102776bad68b9","sequence":2,"context":{"de7cdd1d36a854706ac03be9a1e102776bad68b9":1},"record":"[\"audio\",\"resumes\",\"[\\\"edition\\\",\\\"source\\\",\\\"revision\\\"]\"]","value":{"source":"source","revision":"revision","milliseconds":2000,"edition":"edition"},"preserve":[]}],"pending":["action.de7cdd1d36a854706ac03be9a1e102776bad68b9.1","action.de7cdd1d36a854706ac03be9a1e102776bad68b9.2"],"cursor":0}}}) DatabaseException(SqliteException(1811): while executing statement, retained account payload must not be rewritten, constraint failed (code 1811)
+    Causing statement: INSERT OR REPLACE INTO accounts (account, payload) VALUES (?, ?), parameters: alice, {"version":3,"bookmarks":[],"history":[],"resumes":{"edition":[{"source":"source","revision":"revision","milliseconds":2000}]},"reading":{"version":1,"bookmarks":[],"resumes":[]},"sync":{"version":1,"replica":"de7cdd1d36a854706ac03be9a1e102776bad68b9","actions":[{"version":1,"account":"alice","replica":"de7cdd1d36a854706ac03be9a1e102776bad68b9","sequence":1,"context":{},"record":"[\"audio\",\"resumes\",\"[\\\"edition\\\",\\\"source\\\",\\\"revision\\\"]\"]","value":{"source":"source","revision":"revision","milliseconds":1000,"edition":"edition"},"preserve":[]},{"version":1,"account":"alice","replica":"de7cdd1d36a854706ac03be9a1e102776bad68b9","sequence":2,"context":{"de7cdd1d36a854706ac03be9a1e102776bad68b9":1},"record":"[\"audio\",\"resumes\",\"[\\\"edition\\\",\\\"source\\\",\\\"revision\\\"]\"]","value":{"source":"source","revision":"revision","milliseconds":2000,"edition":"edition"},"preserve":[]}],"pending":["action.de7cdd1d36a854706ac03be9a1e102776bad68b9.1","action.de7cdd1d36a854706ac03be9a1e102776bad68b9.2"],"cursor":0}}) sql 'INSERT OR REPLACE INTO accounts (account, payload) VALUES (?, ?)' args [alice, {"version":3,"bookmarks":[],"history":[],"resumes"...] {details: {database: {path: /tmp/nix-shell.ajlGJj/bookfin-rows-OEzDjQ/records.sqlite, id: 1, readOnly: false, singleInstance: true}}}
+  package:sqflite_common_ffi/src/method_call.dart 125:9  responseToResultOrThrow
+  package:sqflite_common_ffi/src/isolate.dart 35:12      SqfliteIsolate.handle
+
+00:00 +0 -1: acknowledgments survive restart without replacing retained payloads
+00:00 +0 -2: acknowledgments survive restart without replacing retained payloads [E]
+  SqfliteFfiException(sqlite_error: 1811, , SqliteException(1811): while executing statement, retained account payload must not be rewritten, constraint failed (code 1811)
+    Causing statement: INSERT OR REPLACE INTO accounts (account, payload) VALUES (?, ?), parameters: ["http://127.0.0.1:52772","server","alice"], {"version":3,"bookmarks":[],"history":[],"resumes":{"edition":[{"source":"source","revision":"revision","milliseconds":2000}]},"reading":{"version":1,"bookmarks":[],"resumes":[]},"sync":{"version":1,"replica":"cbd5337ea827e9137efff458bc26da3ae3618ff8","actions":[{"version":1,"account":"[\"http://127.0.0.1:52772\",\"server\",\"alice\"]","replica":"cbd5337ea827e9137efff458bc26da3ae3618ff8","sequence":1,"context":{},"record":"[\"audio\",\"resumes\",\"[\\\"edition\\\",\\\"source\\\",\\\"revision\\\"]\"]","value":{"source":"source","revision":"revision","milliseconds":1000,"edition":"edition"},"preserve":[]},{"version":1,"account":"[\"http://127.0.0.1:52772\",\"server\",\"alice\"]","replica":"cbd5337ea827e9137efff458bc26da3ae3618ff8","sequence":2,"context":{"cbd5337ea827e9137efff458bc26da3ae3618ff8":1},"record":"[\"audio\",\"resumes\",\"[\\\"edition\\\",\\\"source\\\",\\\"revision\\\"]\"]","value":{"source":"source","revision":"revision","milliseconds":2000,"edition":"edition"},"preserve":[]}],"pending":["action.cbd5337ea827e9137efff458bc26da3ae3618ff8.1","action.cbd5337ea827e9137efff458bc26da3ae3618ff8.2"],"cursor":0}}}) DatabaseException(SqliteException(1811): while executing statement, retained account payload must not be rewritten, constraint failed (code 1811)
+    Causing statement: INSERT OR REPLACE INTO accounts (account, payload) VALUES (?, ?), parameters: ["http://127.0.0.1:52772","server","alice"], {"version":3,"bookmarks":[],"history":[],"resumes":{"edition":[{"source":"source","revision":"revision","milliseconds":2000}]},"reading":{"version":1,"bookmarks":[],"resumes":[]},"sync":{"version":1,"replica":"cbd5337ea827e9137efff458bc26da3ae3618ff8","actions":[{"version":1,"account":"[\"http://127.0.0.1:52772\",\"server\",\"alice\"]","replica":"cbd5337ea827e9137efff458bc26da3ae3618ff8","sequence":1,"context":{},"record":"[\"audio\",\"resumes\",\"[\\\"edition\\\",\\\"source\\\",\\\"revision\\\"]\"]","value":{"source":"source","revision":"revision","milliseconds":1000,"edition":"edition"},"preserve":[]},{"version":1,"account":"[\"http://127.0.0.1:52772\",\"server\",\"alice\"]","replica":"cbd5337ea827e9137efff458bc26da3ae3618ff8","sequence":2,"context":{"cbd5337ea827e9137efff458bc26da3ae3618ff8":1},"record":"[\"audio\",\"resumes\",\"[\\\"edition\\\",\\\"source\\\",\\\"revision\\\"]\"]","value":{"source":"source","revision":"revision","milliseconds":2000,"edition":"edition"},"preserve":[]}],"pending":["action.cbd5337ea827e9137efff458bc26da3ae3618ff8.1","action.cbd5337ea827e9137efff458bc26da3ae3618ff8.2"],"cursor":0}}) sql 'INSERT OR REPLACE INTO accounts (account, payload) VALUES (?, ?)' args [["http://127.0.0.1:52772","server","alice"], {"version":3,"bookmarks":[],"history":[],"resumes"...] {details: {database: {path: /tmp/nix-shell.ajlGJj/bookfin-rows-2CohYW/records.sqlite, id: 2, readOnly: false, singleInstance: true}}}
+  package:sqflite_common_ffi/src/method_call.dart 125:9  responseToResultOrThrow
+  package:sqflite_common_ffi/src/isolate.dart 35:12      SqfliteIsolate.handle
+
+00:00 +0 -2: Some tests failed.
+
+Failing tests:
+  /Users/alexispurslane/.t3/worktrees/bookfin/t3-97756a71/test/sync/incremental_store_test.dart: acknowledgments survive restart without replacing retained payloads
+  /Users/alexispurslane/.t3/worktrees/bookfin/t3-97756a71/test/sync/incremental_store_test.dart: ordinary saves retain every position without replacing the whole account payload

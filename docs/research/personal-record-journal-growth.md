@@ -3,7 +3,9 @@
 Ticket: `t6-t9po`. Read-only production investigation after plugin milestone `96d69c1`.
 Measured on November 2, 2026 local time, November 3 UTC.
 No production source, storage schema, HTTP contract, or retention rule changes here.
-Neither design below is selected or implemented.
+Neither design below was selected or implemented during this baseline investigation.
+On November 3, 2026, the user selected Design A.
+The implementation and its costs are recorded in `docs/research/personal-record-incremental-storage.md`.
 
 ## What the measurement establishes
 
