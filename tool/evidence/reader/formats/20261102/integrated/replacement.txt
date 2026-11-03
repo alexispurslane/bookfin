@@ -1,0 +1,117 @@
+-- The C compiler identification is Clang 21.1.8
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /nix/store/v1zb8pqd25hsj0wd748nfczsa8ygciba-clang-wrapper-21.1.8/bin/clang - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- libmobi version 0.12
+-- Looking for unistd.h
+-- Looking for unistd.h - found
+-- Looking for getopt
+-- Looking for getopt - found
+-- Looking for strdup
+-- Looking for strdup - found
+-- Looking for sys/resource.h
+-- Looking for sys/resource.h - found
+-- Performing Test HAVE_INLINE
+-- Performing Test HAVE_INLINE - Success
+-- Performing Test HAVE_ATTRIBUTE_NORETURN
+-- Performing Test HAVE_ATTRIBUTE_NORETURN - Success
+-- Configuring done (2.3s)
+-- Generating done (0.0s)
+-- Build files have been written to: /Users/alexispurslane/Development/bookfin/.cache/artifacts/bookfin-27bf44e-replacement/host
+[  5%] Building C object libmobi/src/CMakeFiles/miniz.dir/miniz.c.o
+[  5%] Built target miniz
+[ 15%] Building C object libmobi/src/CMakeFiles/mobi.dir/buffer.c.o
+[ 15%] Building C object libmobi/src/CMakeFiles/mobi.dir/compression.c.o
+[ 21%] Building C object libmobi/src/CMakeFiles/mobi.dir/debug.c.o
+[ 26%] Building C object libmobi/src/CMakeFiles/mobi.dir/index.c.o
+[ 31%] Building C object libmobi/src/CMakeFiles/mobi.dir/memory.c.o
+[ 36%] Building C object libmobi/src/CMakeFiles/mobi.dir/meta.c.o
+[ 42%] Building C object libmobi/src/CMakeFiles/mobi.dir/parse_rawml.c.o
+[ 47%] Building C object libmobi/src/CMakeFiles/mobi.dir/read.c.o
+[ 57%] Building C object libmobi/src/CMakeFiles/mobi.dir/structure.c.o
+[ 57%] Building C object libmobi/src/CMakeFiles/mobi.dir/util.c.o
+[ 63%] Building C object libmobi/src/CMakeFiles/mobi.dir/write.c.o
+[ 68%] Building C object libmobi/src/CMakeFiles/mobi.dir/xmlwriter.c.o
+[ 73%] Building C object libmobi/src/CMakeFiles/mobi.dir/opf.c.o
+[ 78%] Linking C shared library libmobi.dylib
+[ 78%] Built target mobi
+[ 89%] Building C object CMakeFiles/bookfin_mobi.dir/convert.c.o
+[ 89%] Building C object CMakeFiles/bookfin_mobi.dir/Users/alexispurslane/Development/bookfin/.cache/artifacts/bookfin-27bf44e-replacement/libmobi/tools/common.c.o
+[ 94%] Building C object CMakeFiles/bookfin_mobi.dir/Users/alexispurslane/Development/bookfin/.cache/artifacts/bookfin-27bf44e-replacement/libmobi/src/miniz.c.o
+[100%] Linking C shared library libbookfin_mobi.dylib
+[100%] Built target bookfin_mobi
+-- The C compiler identification is Clang 19.0.1
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /nix/store/in52zy1w2yv0197h7553n827h8f03x8k-bookfin-android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- libmobi version 0.12
+-- Looking for unistd.h
+-- Looking for unistd.h - found
+-- Looking for getopt
+-- Looking for getopt - found
+-- Looking for strdup
+-- Looking for strdup - found
+-- Looking for sys/resource.h
+-- Looking for sys/resource.h - found
+-- Performing Test HAVE_INLINE
+-- Performing Test HAVE_INLINE - Success
+-- Performing Test HAVE_ATTRIBUTE_NORETURN
+-- Performing Test HAVE_ATTRIBUTE_NORETURN - Success
+-- Configuring done (0.8s)
+-- Generating done (0.0s)
+-- Build files have been written to: /Users/alexispurslane/Development/bookfin/.cache/artifacts/bookfin-27bf44e-replacement/android
+[1/19] Building C object libmobi/src/CMakeFiles/mobi.dir/compression.c.o
+[2/19] Building C object libmobi/src/CMakeFiles/mobi.dir/buffer.c.o
+[3/19] Building C object libmobi/src/CMakeFiles/mobi.dir/debug.c.o
+[4/19] Building C object libmobi/src/CMakeFiles/mobi.dir/index.c.o
+[5/19] Building C object libmobi/src/CMakeFiles/mobi.dir/memory.c.o
+[6/19] Building C object libmobi/src/CMakeFiles/mobi.dir/meta.c.o
+[7/19] Building C object libmobi/src/CMakeFiles/mobi.dir/parse_rawml.c.o
+[8/19] Building C object libmobi/src/CMakeFiles/mobi.dir/read.c.o
+[9/19] Building C object libmobi/src/CMakeFiles/mobi.dir/structure.c.o
+[10/19] Building C object libmobi/src/CMakeFiles/mobi.dir/write.c.o
+[11/19] Building C object libmobi/src/CMakeFiles/mobi.dir/util.c.o
+[12/19] Building C object libmobi/src/CMakeFiles/mobi.dir/xmlwriter.c.o
+[13/19] Building C object libmobi/src/CMakeFiles/mobi.dir/opf.c.o
+[14/19] Building C object CMakeFiles/bookfin_mobi.dir/convert.c.o
+[15/19] Building C object libmobi/src/CMakeFiles/miniz.dir/miniz.c.o
+[16/19] Building C object CMakeFiles/bookfin_mobi.dir/Users/alexispurslane/Development/bookfin/.cache/artifacts/bookfin-27bf44e-replacement/libmobi/tools/common.c.o
+[17/19] Linking C shared library libmobi/src/libmobi.so
+[18/19] Building C object CMakeFiles/bookfin_mobi.dir/Users/alexispurslane/Development/bookfin/.cache/artifacts/bookfin-27bf44e-replacement/libmobi/src/miniz.c.o
+[19/19] Linking C shared library libbookfin_mobi.so
+Verifies
+Verified using v1 scheme (JAR signing): false
+Verified using v2 scheme (APK Signature Scheme v2): true
+Verified using v3 scheme (APK Signature Scheme v3): true
+Verified using v3.1 scheme (APK Signature Scheme v3.1): false
+Verified using v4 scheme (APK Signature Scheme v4): false
+Verified for SourceStamp: false
+Number of signers: 1
+{
+  "apk": "/Users/alexispurslane/Development/bookfin/.cache/artifacts/bookfin-27bf44e-sync-formats.apk",
+  "sha256": "3382fa6d182edc634bb288b7fc45f57c2edd53df0d970461ee768a454f35b97a",
+  "noticeFiles": 29,
+  "pdfiumSha256": "de19db1c0fb33579bca6ace903af7ccb9d03ad1d3f6c5202970d8d79d7538303"
+}
+{
+  "apk": "/Users/alexispurslane/Development/bookfin/.cache/artifacts/bookfin-27bf44e-replacement/bookfin-replacement.apk",
+  "sha256": "144de4e96677170c1537d00df0ba9d0c64fe6693cf8b9487ce8d5d8f83ad02af",
+  "noticeFiles": 29,
+  "pdfiumSha256": "de19db1c0fb33579bca6ace903af7ccb9d03ad1d3f6c5202970d8d79d7538303"
+}
+{
+  "originalApk": "3382fa6d182edc634bb288b7fc45f57c2edd53df0d970461ee768a454f35b97a",
+  "replacementApk": "144de4e96677170c1537d00df0ba9d0c64fe6693cf8b9487ce8d5d8f83ad02af",
+  "modifiedLibrary": "1e535e4b9efa7f36512b22bc00ab6a7f25b8e24889fbc8e1ec20ddb3fd0fca25",
+  "changedEntries": [
+    "lib/arm64-v8a/libmobi.so"
+  ],
+  "hostVersion": "bookfin-interface-compatible-replacement",
+  "hostKf8Conversion": "passed",
+  "androidInstalled": false
+}
+Saving EPUB to /Users/alexispurslane/Development/bookfin/.cache/artifacts/bookfin-27bf44e-replacement/replacement.epub

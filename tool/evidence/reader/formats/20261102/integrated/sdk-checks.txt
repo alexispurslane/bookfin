@@ -1,0 +1,16 @@
+Linked T3 command-line tools: /tmp/nix-shell.rPQBpT/tmp.VOEVIH33BQ/existing-sdk/cmdline-tools/latest -> /nix/store/in52zy1w2yv0197h7553n827h8f03x8k-bookfin-android-sdk/cmdline-tools/latest
+T3 already uses the project command-line tools: /tmp/nix-shell.rPQBpT/tmp.VOEVIH33BQ/existing-sdk/cmdline-tools/latest
+Refusing to replace existing command-line tools: /tmp/nix-shell.rPQBpT/tmp.VOEVIH33BQ/existing-sdk/cmdline-tools/latest
+The host SDK or project command-line tools are missing. No link was created.
+PASS: SDK discovery link is additive, repeatable, and refuses existing tools or a missing SDK.
+PASS: Android reader file access compiles against shared SDK platforms 35 and 36.
+PASS: Native hooks discover the macOS SDK without inherited SDK variables, in either argument order.
+/tmp/nix-shell.rPQBpT/tmp.qeoRYbwipO/reader.dylib: code object is not signed at all
+In architecture: arm64
+--timestamp:  not in {none}
+Run with --help for more information.
+The following argument was not expected: --unsupported-option
+Run with --help for more information.
+/tmp/nix-shell.rPQBpT/tmp.qeoRYbwipO/reader.dylib: invalid signature (code or signature have been modified)
+In architecture: arm64
+PASS: Native hooks compile Objective-C and produce a real, verifiable ad-hoc signature without timestamps.

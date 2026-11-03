@@ -1,6 +1,6 @@
 ---
 id: t6-il6y
-status: open
+status: in_progress
 deps: []
 links: [boo-3oq0]
 created: 2026-11-02T23:19:27Z
