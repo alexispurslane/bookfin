@@ -43,3 +43,11 @@ The shared PDF reader owns page positions, reflow/search and original access;
 recognition supplies cached page text. Follow existing source identity and
 download ownership for cache lifetime and cancellation. Normal Android format
 acceptance runs separately and remains a prerequisite to overall closure.
+
+**2026-11-03T14:37:57Z**
+
+Production-source milestone: bundled English-fast now supplies the existing PDF text/reflow/search path. Account/source-owned OCR cache uses existing download read/removal ordering and revocation. Original-page fallback, explicit unreliable-text retry, cancellation with native drain, retry during drain, and close-failure PDF cleanup have behavior tests. Parent 44d53af admission correction integrated as 78ce699 with both byte detection and OCR wiring. Evidence: tool/evidence/reader/ocr/20261103/production; implementation and terms gates: docs/ocr-implementation.md. Final project checks and clean-source APK/source handoff follow. No Android OCR acceptance, distribution approval, coverage/mutation campaign or ticket closure.
+
+**2026-11-03T14:38:41Z**
+
+Final pre-build checks pass: 453 full Flutter tests with three existing opt-in skips; Android SDK/native hook checks and production Java worker test pass; Flutter analysis reports no issues. Meaningful red evidence covers actual PDF text supply, ownership revocation, native admission, explicit unreliable-text retry, retry during cancellation drain and close-failure native-owner cleanup. Next is the normal ARM64 app build and exact-source export, with no installation.

@@ -48,6 +48,7 @@ flutter:
         - asset: assets/fonts/SourceSerif4.ttf
   assets:
     - assets/licenses/reader/
+    - assets/licenses/ocr/
     - assets/cities/cities.tsv
     - assets/cities/CC-BY-4.0.txt
     - assets/cities/NOTICE.txt

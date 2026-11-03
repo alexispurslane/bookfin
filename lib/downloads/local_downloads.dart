@@ -30,6 +30,7 @@ class LocalDownloads extends Downloads {
   Future<void> _writes = Future.value();
   Future<void> _commands = Future.value();
   final Set<Future<void>> _operations = {};
+  final Map<String, Object> _reading = {};
   HttpClient? _client;
   String? _active;
   Completer<void>? _activeStopped;
@@ -376,7 +377,18 @@ class LocalDownloads extends Downloads {
   }
 
   @override
-  Future<void> remove(Edition edition) => _command(() => _remove(edition));
+  Future<void> remove(Edition edition) {
+    if (_reading.isNotEmpty) {
+      try {
+        for (final source in _current(edition).files) {
+          _reading.remove(_id(source));
+        }
+      } on StateError {
+        return _command(() => _remove(edition));
+      }
+    }
+    return _command(() => _remove(edition));
+  }
 
   Future<void> _remove(Edition edition) async {
     _current(edition);
@@ -564,14 +576,30 @@ class LocalDownloads extends Downloads {
   @override
   Future<T?> readLocalFile<T>(
     SourceFile source,
-    Future<T> Function(Uri original) read,
-  ) async {
+    Future<T> Function(Uri original) read, {
+    void Function(bool Function() live)? onOwnership,
+  }) async {
     T? result;
     // The existing command owner also orders removal and account restoration.
     // A converter must settle before either can reclaim its source directory.
     await _command(() async {
       final uri = await localFile(source);
-      if (uri != null) result = await read(uri);
+      if (uri == null) return;
+      final generation = _generation;
+      final token = Object();
+      final id = _id(source);
+      _reading[id] = token;
+      onOwnership?.call(
+        () =>
+            !_disposed &&
+            generation == _generation &&
+            identical(_reading[id], token),
+      );
+      try {
+        result = await read(uri);
+      } finally {
+        if (identical(_reading[id], token)) _reading.remove(id);
+      }
     });
     return result;
   }

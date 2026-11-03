@@ -1,0 +1,4 @@
+Bookfin bundles Tesseract4Android 4.9.0, Tesseract 5.5.1, Leptonica 1.85.0, and the tessdata_fast 4.1.0 English model.
+This software is based in part on the work of the Independent JPEG Group.
+Original engine, model, libpng, Leptonica and IJG notices accompany this acknowledgement.
+English is the only supported recognition language. No model download or cloud recognition is used.

@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'dart:ui' show RootIsolateToken;
 
 import 'package:crypto/crypto.dart';
+import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:pdfrx_engine/pdfrx_engine.dart' as native;
 import 'package:pdfrx/pdfrx.dart' show pdfrxFlutterInitialize;
 
@@ -34,9 +35,23 @@ class PdfRaster {
 }
 
 abstract class PdfBook extends ReaderDocument {
+  PdfTextSupply? get textSupply => null;
   int get pageCount;
   Future<PdfText> text(int sourcePage);
   Future<PdfRaster> render(int sourcePage, double width);
+}
+
+typedef PdfTextLease = Future<PdfText?> Function(
+  Future<PdfText> Function(Uri original, bool Function() owned) read,
+);
+
+abstract class PdfTextSupply {
+  ValueListenable<bool> get recognizing;
+  void bind(PdfTextLease lease);
+  void cancel();
+  void retry(int page);
+  Future<PdfText> text(PdfBook book, int page, PdfText extracted);
+  Future<void> close();
 }
 
 class PdfRuntime {
@@ -55,26 +70,28 @@ class PdfRuntime {
     return operation;
   }
 
-  Future<PdfBook> open(Uint8List bytes) => _admit(() async {
-    await (_initialization ??= pdfrxFlutterInitialize());
-    final document = await native.PdfDocument.openData(
-      bytes,
-      sourceName: sha256.convert(bytes).toString(),
-    );
-    if (document.isEncrypted || document.pages.isEmpty) {
-      await document.dispose();
-      throw const FormatException(
-        'Encrypted or empty PDFs are not supported. The original download was kept.',
-      );
-    }
-    final book = _NativePdfBook(
-      this,
-      document,
-      sha256.convert(bytes).toString(),
-    );
-    _books.add(book);
-    return book;
-  });
+  Future<PdfBook> open(Uint8List bytes, {PdfTextSupply? textSupply}) =>
+      _admit(() async {
+        await (_initialization ??= pdfrxFlutterInitialize());
+        final document = await native.PdfDocument.openData(
+          bytes,
+          sourceName: sha256.convert(bytes).toString(),
+        );
+        if (document.isEncrypted || document.pages.isEmpty) {
+          await document.dispose();
+          throw const FormatException(
+            'Encrypted or empty PDFs are not supported. The original download was kept.',
+          );
+        }
+        final book = _NativePdfBook(
+          this,
+          document,
+          sha256.convert(bytes).toString(),
+          textSupply,
+        );
+        _books.add(book);
+        return book;
+      });
 
   Future<void> shutdown() => _admit(() async {
     await Future.wait(_books.toList().map((book) => book.dispose()));
@@ -98,7 +115,14 @@ class PdfRuntime {
 }
 
 class _NativePdfBook extends PdfBook {
-  _NativePdfBook(this.owner, this._document, this.originalDigest);
+  _NativePdfBook(
+    this.owner,
+    this._document,
+    this.originalDigest,
+    this.textSupply,
+  );
+  @override
+  final PdfTextSupply? textSupply;
   final PdfRuntime owner;
   final native.PdfDocument _document;
   final Set<Future<void>> _work = {};
@@ -162,7 +186,13 @@ class _NativePdfBook extends PdfBook {
   }
 
   @override
-  Future<PdfText> text(int sourcePage) {
+  Future<PdfText> text(int sourcePage) => _run(() async {
+    final extracted = await _extractedText(sourcePage);
+    if (_closing != null) return extracted;
+    return textSupply?.text(this, sourcePage, extracted) ?? extracted;
+  });
+
+  Future<PdfText> _extractedText(int sourcePage) {
     if (_closing != null) {
       return Future.error(StateError('This PDF is closed.'));
     }
@@ -251,12 +281,20 @@ class _NativePdfBook extends PdfBook {
   });
 
   @override
-  Future<void> dispose() => _closing ??= _dispose();
+  Future<void> dispose() {
+    textSupply?.cancel();
+    return _closing ??= _dispose();
+  }
+
   Future<void> _dispose() async {
     await Future.wait(_work.toList());
-    await _document.dispose();
-    _disposed = true;
-    owner._release(this);
+    try {
+      await textSupply?.close();
+    } finally {
+      await _document.dispose();
+      _disposed = true;
+      owner._release(this);
+    }
   }
 }
 

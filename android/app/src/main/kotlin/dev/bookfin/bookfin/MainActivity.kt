@@ -45,6 +45,9 @@ class MainActivity : AudioServiceActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        if (!flutterEngine.plugins.has(OcrPlugin::class.java)) {
+            flutterEngine.plugins.add(OcrPlugin())
+        }
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "bookfin/media")
             .setMethodCallHandler { call, result ->
                 when (call.method) {

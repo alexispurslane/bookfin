@@ -61,6 +61,7 @@
       '';
       nativeTools = import ./nix/darwin-native-tools.nix { inherit pkgs; };
       readerNative = import ./nix/reader-native.nix { inherit pkgs; };
+      ocr = import ./nix/ocr.nix { inherit pkgs; };
     in
     {
       devShells.${system}.default = pkgs.mkShell {
@@ -78,6 +79,7 @@
           pkgs.ninja
           android.androidsdk
           nativeTools
+          ocr.hostEngine
         ];
         JAVA_HOME = "${pkgs.jdk21}";
         ANDROID_HOME = sdk;
@@ -90,6 +92,10 @@
         BOOKFIN_MOBI_LIBRARY = "${readerNative.mobi}/lib/libbookfin_mobi.dylib";
         BOOKFIN_PDFIUM_ANDROID = readerNative.pdfiumAndroid;
         BOOKFIN_GPL3_TEXT = readerNative.gplText;
+        BOOKFIN_OCR_MODEL = ocr.model;
+        BOOKFIN_OCR_ANDROID_AAR = ocr.aar;
+        BOOKFIN_OCR_ANDROID_SOURCE = ocr.source;
+        BOOKFIN_OCR_MODEL_LICENSE = ocr.modelLicense;
         BOOKFIN_NIX_SHELL = "1";
         shellHook = ''
           export PUB_CACHE="$PWD/.cache/pub"

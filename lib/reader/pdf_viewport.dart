@@ -57,6 +57,7 @@ class _PdfViewportState extends State<PdfViewport>
 
   @override
   void dispose() {
+    widget.book.textSupply?.cancel();
     _generation++;
     _search++;
     _scroll.dispose();
@@ -69,6 +70,8 @@ class _PdfViewportState extends State<PdfViewport>
     if (!widget.book.accepts(address)) {
       throw ArgumentError('Choose a source page in this PDF.');
     }
+    _search++;
+    widget.book.textSupply?.cancel();
     final generation = ++_generation;
     setState(() {
       _page = address.sourcePage;
@@ -81,7 +84,18 @@ class _PdfViewportState extends State<PdfViewport>
       _layoutWidth = null;
     });
     try {
-      final text = await widget.book.text(_page);
+      final pendingText = widget.book.text(_page);
+      await Future<void>.value();
+      if (!mounted || generation != _generation) {
+        await pendingText;
+        return;
+      }
+      widget.onReady(this, [
+        for (var page = 1; page <= widget.book.pageCount; page++)
+          ContentsEntry('Source page $page', 'page:$page'),
+      ]);
+      unawaited(_draw(generation));
+      final text = await pendingText;
       if (!mounted || generation != _generation) return;
       setState(() {
         _text = text;
@@ -183,7 +197,6 @@ class _PdfViewportState extends State<PdfViewport>
 
   @override
   Future<void> move(bool forward) async {
-    if (_loading) return;
     if (_usingText && _scroll.hasClients) {
       final target =
           (_scroll.offset +
@@ -342,21 +355,69 @@ class _PdfViewportState extends State<PdfViewport>
           ),
         ],
       ),
+      if (widget.book.textSupply != null)
+        ValueListenableBuilder<bool>(
+          valueListenable: widget.book.textSupply!.recognizing,
+          builder: (context, recognizing, _) => Wrap(
+            alignment: WrapAlignment.center,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              Text(
+                recognizing
+                    ? 'Recognizing English text…'
+                    : 'English scans only. Other languages are not supported.',
+              ),
+              if (recognizing)
+                TextButton(
+                  onPressed: () {
+                    widget.book.textSupply!.cancel();
+                    _search++;
+                    _generation++;
+                    setState(() {
+                      _loading = false;
+                      _failure = 'Recognition canceled. The current page can finish in the background. The original page is available.';
+                    });
+                    _publish();
+                    unawaited(_draw(_generation));
+                  },
+                  child: const Text('Cancel recognition'),
+                ),
+              if (!recognizing &&
+                  !_loading &&
+                  _text?.status != PdfTextStatus.candidate)
+                TextButton(
+                  onPressed: () {
+                    widget.book.textSupply!.retry(_page);
+                    unawaited(_load(PdfAddress(_page, _character)));
+                  },
+                  child: Text(
+                    _text?.status == PdfTextStatus.unreliable
+                        ? 'Try English recognition'
+                        : 'Retry recognition',
+                  ),
+                ),
+            ],
+          ),
+        ),
       if (_reflow)
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
-            _usingText
-                ? 'Extracted text is not checked against the page. Pictures and page layout stay in the original page.'
-                : _text?.reason ?? _failure ?? 'Checking source-page text.',
+            _text?.reason ??
+                (_usingText
+                    ? 'Extracted text is not checked against the page. Pictures and page layout stay in the original page.'
+                    : _failure ?? 'Checking source-page text.'),
           ),
+        ),
+      if (!_reflow && widget.book.textSupply != null && _text?.reason != null)
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Text(_text!.reason!),
         ),
       if (_failure != null)
         Padding(padding: const EdgeInsets.all(8), child: Text(_failure!)),
       Expanded(
-        child: _loading
-            ? const Center(child: CircularProgressIndicator())
-            : _usingText
+        child: _usingText
             ? _reflowText()
             : _image == null
             ? Center(

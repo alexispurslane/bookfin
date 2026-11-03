@@ -3,6 +3,23 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+val ocrAar = file(requireNotNull(System.getenv("BOOKFIN_OCR_ANDROID_AAR")) {
+    "Build through the pinned project Nix shell."
+})
+fun verifyOcrFile(file: java.io.File, expected: String) {
+    val actual = java.security.MessageDigest.getInstance("SHA-256")
+        .digest(file.readBytes()).joinToString("") { "%02x".format(it) }
+    require(actual == expected) { "Pinned OCR dependency verification failed: $file" }
+}
+verifyOcrFile(ocrAar, "bce5d6413a1a5ae3d7240033fbbc851ba3217d0a08d9769400e17a077f42cb2a")
+val verifyBundledOcr by tasks.registering {
+    doLast {
+        verifyOcrFile(file("../../.cache/ocr/bundle/bookfin-ocr/eng.traineddata"),
+            "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2")
+    }
+}
+tasks.named("preBuild") { dependsOn(verifyBundledOcr) }
+
 android {
     namespace = "dev.bookfin.bookfin"
     compileSdk = flutter.compileSdkVersion
@@ -33,7 +50,13 @@ android {
         }
     }
 
+    sourceSets["main"].assets.srcDir("../../.cache/ocr/bundle")
+    androidResources { noCompress += "traineddata" }
+    packaging.jniLibs.keepDebugSymbols += setOf("**/libtesseract.so", "**/libleptonica.so", "**/libpngx.so", "**/libjpeg.so")
+
 }
+
+dependencies { implementation(files(ocrAar)) }
 
 kotlin {
     compilerOptions {

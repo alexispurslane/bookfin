@@ -104,9 +104,11 @@ abstract class Downloads extends ChangeNotifier {
   /// A null result means the source is no longer locally available.
   Future<T?> readLocalFile<T>(
     SourceFile source,
-    Future<T> Function(Uri original) read,
-  ) async {
+    Future<T> Function(Uri original) read, {
+    void Function(bool Function() live)? onOwnership,
+  }) async {
     final uri = await localFile(source);
+    onOwnership?.call(() => true);
     return uri == null ? null : read(uri);
   }
 

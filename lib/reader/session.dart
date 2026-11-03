@@ -10,6 +10,7 @@ import '../catalog/model.dart';
 import '../downloads/downloads.dart';
 import '../playback/playback.dart';
 import 'document.dart';
+import 'pdf.dart';
 
 export 'package:flutter_epub_viewer/navigation.dart';
 
@@ -193,6 +194,7 @@ class ReaderSession extends ChangeNotifier {
     ++_search;
     _navigator = null;
     final previous = _document;
+    if (previous is PdfBook) previous.textSupply?.cancel();
     _document = null;
     if (previous != null) {
       _closing = _closing.then((_) => previous.dispose()).onError<Exception>((
@@ -258,6 +260,28 @@ class ReaderSession extends ChangeNotifier {
         return;
       }
       _document = admitted;
+      if (admitted is PdfBook) {
+        admitted.textSupply?.bind((read) async {
+          if (!_live(generation) || !_current(selected)) return null;
+          bool Function() owned = () => true;
+          return downloads.readLocalFile<PdfText>(selected.files.single, (
+            uri,
+          ) async {
+            if (!_live(generation) || !_current(selected)) {
+              return const PdfText(
+                source: '',
+                text: '',
+                sourceOffsets: [],
+                status: PdfTextStatus.absent,
+              );
+            }
+            return read(
+              uri,
+              () => owned() && _live(generation) && _current(selected),
+            );
+          }, onOwnership: (live) => owned = live);
+        });
+      }
       final candidates = _resumes
           .where((value) => value.editionId == selected.id)
           .toList();

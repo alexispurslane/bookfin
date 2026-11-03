@@ -1,0 +1,1 @@
+PASS: production worker bounds admission, prevents parallel engine owners, rejects closing work, drains, releases exactly once, and retries initialization failure

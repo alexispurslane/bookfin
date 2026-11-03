@@ -7,8 +7,13 @@ import '../catalog/model.dart';
 import 'document.dart';
 import 'pdf.dart';
 import 'mobi.dart';
+import 'ocr.dart';
 
-Future<ReaderDocument> loadReadingDocument(Uri uri, SourceFile source) async {
+Future<ReaderDocument> loadReadingDocument(
+  Uri uri,
+  SourceFile source, {
+  PdfTextSupply? textSupply,
+}) async {
   final file = await _verifiedFile(uri);
   var container = source.container.trim().toLowerCase();
   if (container.isEmpty) {
@@ -31,7 +36,11 @@ Future<ReaderDocument> loadReadingDocument(Uri uri, SourceFile source) async {
     return importMobi(file);
   }
   if (container == 'pdf') {
-    return PdfRuntime.instance.open(await file.readAsBytes());
+    return PdfRuntime.instance.open(
+      await file.readAsBytes(),
+      textSupply:
+          textSupply ?? (Platform.isAndroid ? BundledEnglishText() : null),
+    );
   }
   return EpubDocument(
     await compute(Publication.admit, await file.readAsBytes()),

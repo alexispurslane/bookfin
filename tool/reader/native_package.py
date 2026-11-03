@@ -7,6 +7,7 @@ import shutil
 import subprocess
 import tarfile
 from zipfile import ZipFile
+import ocr_package
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -17,6 +18,7 @@ def digest(path):
 
 
 def prepare():
+    ocr_package.prepare()
     source = Path(os.environ['BOOKFIN_PDFIUM_ANDROID']) / 'lib/libpdfium.so'
     destination = ROOT / '.dart_tool/hooks_runner/shared/pdfium_dart/build/chromium_8125/android-arm64/libpdfium.so'
     destination.parent.mkdir(parents=True, exist_ok=True)
@@ -52,6 +54,7 @@ def sources(output):
     shutil.copyfile(os.environ['BOOKFIN_GPL3_TEXT'], output / 'GPL-3.0.txt')
     shutil.copyfile(Path(os.environ['BOOKFIN_LIBMOBI_SOURCE']) / 'COPYING', output / 'LGPL-3.0.txt')
     shutil.copyfile(ROOT / 'docs/research/native-reader-packaging.md', output / 'BUILD-AND-INSTALL.md')
+    ocr_package.sources(output)
     inventory = {path.name: digest(path) for path in output.iterdir() if path.is_file()}
     (output / 'manifest.json').write_text(json.dumps({'sourceCommit': revision, 'files': inventory}, indent=2) + '\n')
     print(json.dumps({'sourceCommit': revision, 'directory': str(output), 'files': inventory}, indent=2))

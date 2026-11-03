@@ -17,6 +17,7 @@ case "$command" in
     bash test/sdk_link_test.sh
     bash test/sdk_platform_test.sh
     bash test/darwin_native_tools_test.sh
+    bash test/native/ocr_worker_test.sh
     flutter test --reporter expanded
     ;;
   analyze)
@@ -29,6 +30,7 @@ case "$command" in
     python3 tool/reader/native_package.py prepare
     flutter build apk --debug --target-platform android-arm64 "$@"
     python3 tool/reader/native_package.py verify build/app/outputs/flutter-apk/app-debug.apk
+    python3 tool/reader/ocr_package.py verify build/app/outputs/flutter-apk/app-debug.apk
     ;;
   build-probe-android)
     flutter build apk --debug --target-platform android-arm64 --target tool/reload_probe.dart "$@"

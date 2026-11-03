@@ -1,0 +1,2 @@
+Exception in thread "main" java.lang.AssertionError: production worker must actually admit recognition
+	at OcrWorkerTest.main(OcrWorkerTest.java:31)
