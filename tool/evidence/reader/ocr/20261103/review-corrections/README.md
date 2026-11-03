@@ -55,6 +55,9 @@ This does not establish historical-scan accuracy or Android recognition behavior
 
 ## Packaging and remaining gates
 
+`HANDOFF.md` records the completed package verification, exact artifacts and the
+distinction between the clean APK source commit and the later evidence commit.
+
 Commit the corrected source before exporting its exact source and building the normal APK.
 The later package verification and provenance identify the APK source commit separately
 from the commit that records packaging evidence. They bind the APK, exact Git archive,

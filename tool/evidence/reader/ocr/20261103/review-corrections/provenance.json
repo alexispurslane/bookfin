@@ -1,0 +1,146 @@
+{
+  "correctionBase": "acd233323d06b7ea5e23969278c46c44bfd6758c",
+  "apkSourceCommit": "0f4084f7c670a1b6866f9543ac7af9f1949ba8a3",
+  "evidenceCommit": "The containing later Git commit records evidence only, not rebuilt APK source.",
+  "supersededApkSource": "5fca4a23843c57d4ba162d94500e700bd036266f",
+  "originalBase": "2d43820a179ad0e8e433fd5f3eb83ce66c9bdd33",
+  "preservedAdmission": "78ce699d27a36da5046768639fb8b17667e68361",
+  "artifactDirectory": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-7b2e5fcf/.cache/artifacts/ocr-20261103-review-corrections",
+  "apk": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-7b2e5fcf/.cache/artifacts/ocr-20261103-review-corrections/bookfin-0f4084f-arm64-debug.apk",
+  "apkBytes": 170179115,
+  "apkSha256": "8be5a98d9201436fd2d6e7499f48f658471e3ed1ac6f777f5b6404e024f13cea",
+  "exactSourceDirectory": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-7b2e5fcf/.cache/artifacts/ocr-20261103-review-corrections/source-0f4084f",
+  "sourceArchiveSha256": "ee44e6050136f1395f25baeacbfcfaeb6148ab6070c98eacfd468fdc3fddce47",
+  "checks": {
+    "focusedTestsPassed": 53,
+    "fullTestsPassed": 474,
+    "expectedOptInSkips": 3,
+    "analysisIssues": 0,
+    "actualHostRecognition": "Tesseract 5.5.3 / Leptonica 1.87.0; exact selected English-fast model; generated English reference matches",
+    "androidEngine": "Tesseract 5.5.1 / Leptonica 1.85.0; no Android OCR acceptance",
+    "nativeLibraries": 13,
+    "ocrLibraries": 4,
+    "readerNoticeFiles": 29,
+    "ocrNoticeFiles": 7,
+    "modelBytes": 4113088,
+    "modelSha256": "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2",
+    "elfMinimumLoadAlignmentBytes": 16384,
+    "zipAlignmentBytes": 16384,
+    "apkV2SignatureVerified": true,
+    "permissions": [
+      "android.permission.ACCESS_NETWORK_STATE",
+      "android.permission.FOREGROUND_SERVICE",
+      "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK",
+      "android.permission.INTERNET",
+      "android.permission.WAKE_LOCK",
+      "dev.bookfin.bookfin.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+    ],
+    "permissionsUnchangedFromSupersededApk": true,
+    "ownedGradleDaemons": "stopped; final status reports no Gradle daemons running",
+    "standaloneGradleLimitation": "Auxiliary direct Gradle compile invocation failed: The settings are not yet available for build. Normal Flutter Android builds succeeded twice; their compiler tasks and APK verification pass. No source change for this extra invocation.",
+    "androidOcrAcceptance": false,
+    "distributionApproval": false
+  },
+  "files": {
+    "android-compile.txt": {
+      "sha256": "4482afe952bd41592097f394b1a431f98b984d66e56f043991d32d6ba37d74ee",
+      "bytes": 213
+    },
+    "badging.txt": {
+      "sha256": "ffe8df067c82b6202f12f0f7ba8d2b6e15ea5b4d2da0f0565041ec2d064b6747",
+      "bytes": 4741
+    },
+    "bookfin-0f4084f-arm64-debug.apk": {
+      "sha256": "8be5a98d9201436fd2d6e7499f48f658471e3ed1ac6f777f5b6404e024f13cea",
+      "bytes": 170179115
+    },
+    "build-verified.txt": {
+      "sha256": "8938d39e0e8db91a830ed5afbf6a3e6b31a536c005678ed887915929b1659c96",
+      "bytes": 404731
+    },
+    "build.txt": {
+      "sha256": "be24dc99891b78ea21302dde685a243e9b9f68751f79fcf9f4c35f54675f9c8b",
+      "bytes": 6391
+    },
+    "daemon-status-final.txt": {
+      "sha256": "91c46682141c1e398d2ccd1773d53b2332961935428e309387b5136e33195bbb",
+      "bytes": 325
+    },
+    "daemon-stop-final.txt": {
+      "sha256": "fa35640e019e1822cbae53923c032427ff502263ac8bea1bededc399474649a3",
+      "bytes": 36
+    },
+    "daemon-stop.txt": {
+      "sha256": "fa35640e019e1822cbae53923c032427ff502263ac8bea1bededc399474649a3",
+      "bytes": 36
+    },
+    "final-analysis.txt": {
+      "sha256": "78dd6e26edd0a31ccc2098085b7a5a84c36763722271bdd33e52685a1037b9ac",
+      "bytes": 1434
+    },
+    "final-tests.txt": {
+      "sha256": "87895b3e5a2d8e850db584a8689e53014b6cd0c3d7b3ed3529af68610029fbc5",
+      "bytes": 91167
+    },
+    "package-verification.json": {
+      "sha256": "be93e4840b7ba348dcc12f516afea26cf6814714749558bff6702a62329f923c",
+      "bytes": 4612
+    },
+    "reader-package-verification.json": {
+      "sha256": "653f1c3318c887cb09d2c7f822a822256dbcb7fb3b0faa4aaba277a795d7db5f",
+      "bytes": 339
+    },
+    "signatures.txt": {
+      "sha256": "e4974a69d8a04dd9d583d03bf23f40e10cd55742cf31cb49b4f6fe8588496ff9",
+      "bytes": 955
+    },
+    "source-0f4084f/BUILD-AND-INSTALL.md": {
+      "sha256": "f10ebfd8e269e13a0291ccec198a9ea55b0b1e4e9e76f4a96f1eb99b78a215c7",
+      "bytes": 5312
+    },
+    "source-0f4084f/GPL-3.0.txt": {
+      "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+      "bytes": 35149
+    },
+    "source-0f4084f/LGPL-3.0.txt": {
+      "sha256": "da7eabb7bafdf7d3ae5e9f223aa5bdc1eece45ac569dc21b3b037520b4464768",
+      "bytes": 7651
+    },
+    "source-0f4084f/OCR-BUILD-AND-TERMS.md": {
+      "sha256": "04ff5614b8939a366bcc62668509d86711440cae2991779c94950cf1ac6a7288",
+      "bytes": 15808
+    },
+    "source-0f4084f/Tesseract4Android-4.9.0-source.tar.gz": {
+      "sha256": "4569f9093d641d13188ba2dd36a74396661eaa3f9e44637ff1cac9a36076a20e",
+      "bytes": 41337000
+    },
+    "source-0f4084f/bookfin-source.tar": {
+      "sha256": "ee44e6050136f1395f25baeacbfcfaeb6148ab6070c98eacfd468fdc3fddce47",
+      "bytes": 64931840
+    },
+    "source-0f4084f/eng.traineddata": {
+      "sha256": "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2",
+      "bytes": 4113088
+    },
+    "source-0f4084f/libmobi-0.12-source.tar.gz": {
+      "sha256": "676a977e28f3c1ed157eafbf41ddc3ead2ef2fff01b93b5b43547fd533e50f5a",
+      "bytes": 5023344
+    },
+    "source-0f4084f/manifest.json": {
+      "sha256": "fb4d78725909d887edc3338094b7e649a97d964163aba818004e340f3a906e8f",
+      "bytes": 958
+    },
+    "source-0f4084f/tessdata-fast-4.1.0-LICENSE.txt": {
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "bytes": 11358
+    },
+    "source-export.txt": {
+      "sha256": "fa045f60d66f83dcefb2e0c48d9ab0fa31eb36e623b99e0e05e799b5b1fb49a8",
+      "bytes": 1096
+    },
+    "standalone-gradle-limitation.txt": {
+      "sha256": "3da1755e36f17f455dcd49f09d13fa073185ac6b3362b5c921541b75022b07a4",
+      "bytes": 380
+    }
+  }
+}

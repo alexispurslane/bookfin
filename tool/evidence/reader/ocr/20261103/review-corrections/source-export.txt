@@ -1,0 +1,15 @@
+{
+  "sourceCommit": "0f4084f7c670a1b6866f9543ac7af9f1949ba8a3",
+  "directory": "/Users/alexispurslane/.t3/worktrees/bookfin/t3-7b2e5fcf/.cache/artifacts/ocr-20261103-review-corrections/source-0f4084f",
+  "files": {
+    "LGPL-3.0.txt": "da7eabb7bafdf7d3ae5e9f223aa5bdc1eece45ac569dc21b3b037520b4464768",
+    "libmobi-0.12-source.tar.gz": "676a977e28f3c1ed157eafbf41ddc3ead2ef2fff01b93b5b43547fd533e50f5a",
+    "Tesseract4Android-4.9.0-source.tar.gz": "4569f9093d641d13188ba2dd36a74396661eaa3f9e44637ff1cac9a36076a20e",
+    "bookfin-source.tar": "ee44e6050136f1395f25baeacbfcfaeb6148ab6070c98eacfd468fdc3fddce47",
+    "eng.traineddata": "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2",
+    "tessdata-fast-4.1.0-LICENSE.txt": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+    "GPL-3.0.txt": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+    "BUILD-AND-INSTALL.md": "f10ebfd8e269e13a0291ccec198a9ea55b0b1e4e9e76f4a96f1eb99b78a215c7",
+    "OCR-BUILD-AND-TERMS.md": "04ff5614b8939a366bcc62668509d86711440cae2991779c94950cf1ac6a7288"
+  }
+}

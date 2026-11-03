@@ -1,0 +1,4 @@
+[ +102 ms] > Task :app:compileDebugKotlin UP-TO-DATE
+[        ] > Task :app:compileDebugJavaWithJavac UP-TO-DATE
+[        ] BUILD SUCCESSFUL in 19s
+[+1171 ms] ✓ Built build/app/outputs/flutter-apk/app-debug.apk

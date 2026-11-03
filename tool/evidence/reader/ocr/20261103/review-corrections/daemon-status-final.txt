@@ -1,0 +1,6 @@
+No Gradle daemons are running.
+   PID STATUS   INFO
+   604 STOPPED  (stop command received)
+  6130 STOPPED  (stop command received)
+
+Only Daemons for the current Gradle version are displayed. For more on this, please refer to https://docs.gradle.org/9.3.1/userguide/gradle_daemon.html#sec:status in the Gradle documentation.

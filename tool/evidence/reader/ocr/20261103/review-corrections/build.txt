@@ -1,0 +1,187 @@
+Verified and prepared the selected English-fast model and pinned OCR inputs.
+Prepared pinned PDFium chromium/8125 Android ARM64 library: de19db1c0fb33579bca6ace903af7ccb9d03ad1d3f6c5202970d8d79d7538303
+Resolving dependencies...
+Downloading packages...
+  archive 4.0.9 (4.6.0 available)
+  code_assets 1.2.1 (2.1.0 available)
+  crypto 3.0.7 (3.0.8 available)
+  flutter_cache_manager 3.4.6 (3.4.8 available)
+  flutter_secure_storage 9.2.4 (11.2.0 available)
+  flutter_secure_storage_linux 1.2.3 (3.0.3 available)
+  flutter_secure_storage_macos 3.1.3 (4.0.0 available)
+  flutter_secure_storage_platform_interface 1.1.2 (2.1.1 available)
+  flutter_secure_storage_web 1.2.1 (2.1.1 available)
+  flutter_secure_storage_windows 3.1.2 (4.2.2 available)
+  hooks 2.0.2 (2.2.0 available)
+  image 4.8.0 (4.12.0 available)
+  js 0.6.7 (0.7.2 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  meta 1.18.3 (1.19.0 available)
+  native_toolchain_c 0.19.2 (0.19.5 available)
+  objective_c 9.5.0 (9.6.2 available)
+  petitparser 7.0.2 (7.1.0 available)
+  record_use 0.6.0 (1.1.1 available)
+  shared_preferences_foundation 2.5.7 (2.6.1 available)
+  sqflite_common_ffi 2.4.0+2 (2.4.5 available)
+  sqlite3 3.5.2 (3.8.0 available)
+  test_api 0.7.12 (0.7.15 available)
+  vector_math 2.4.0 (2.4.4 available)
+  win32 5.15.0 (6.4.0 available)
+  xml 6.6.1 (7.1.0 available)
+Got dependencies!
+26 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Running Gradle task 'assembleDebug'...                             29.3s
+✓ Built build/app/outputs/flutter-apk/app-debug.apk
+{
+  "apk": "build/app/outputs/flutter-apk/app-debug.apk",
+  "sha256": "8be5a98d9201436fd2d6e7499f48f658471e3ed1ac6f777f5b6404e024f13cea",
+  "noticeFiles": 29,
+  "pdfiumSha256": "de19db1c0fb33579bca6ace903af7ccb9d03ad1d3f6c5202970d8d79d7538303"
+}
+{
+  "apk": "build/app/outputs/flutter-apk/app-debug.apk",
+  "apkSha256": "8be5a98d9201436fd2d6e7499f48f658471e3ed1ac6f777f5b6404e024f13cea",
+  "modelBytes": 4113088,
+  "modelSha256": "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2",
+  "ocrLibraries": {
+    "lib/arm64-v8a/libjpeg.so": "0e751fcd26f2a60e8b87c2da274473c6c2a26352e5a9071033f1f88a93b39308",
+    "lib/arm64-v8a/libleptonica.so": "00436d8562bc833a22111a1451cf46147f05aecf8a257751e127689a1ee6e3c4",
+    "lib/arm64-v8a/libpngx.so": "e70d48e405b56f1df06921c4ebbee0612140a8f2c7b0a2641fbbf6fea53eda4c",
+    "lib/arm64-v8a/libtesseract.so": "bce8dcca1544d9f8708ac126c1e920bfa92481509672d8472470e8c2eebcd43c"
+  },
+  "native": [
+    {
+      "file": "lib/arm64-v8a/libVkLayer_khronos_validation.so",
+      "sha256": "ae445f7e74d402e3a367adb230b1edd9841899fcb3310166e5cc96a09ad37a3f",
+      "loadAlignments": [
+        65536,
+        65536,
+        65536
+      ]
+    },
+    {
+      "file": "lib/arm64-v8a/libbookfin_mobi.so",
+      "sha256": "1a18f9bda345220f61e391e5f3820b10b16cd6a4f8f8039fe692d80db38cbb48",
+      "loadAlignments": [
+        16384,
+        16384,
+        16384
+      ]
+    },
+    {
+      "file": "lib/arm64-v8a/libdartjni.so",
+      "sha256": "9fc7cf4108824526a5cbe49580e81993138eaddcaefdc67273d83421bff708a7",
+      "loadAlignments": [
+        16384,
+        16384,
+        16384
+      ]
+    },
+    {
+      "file": "lib/arm64-v8a/libdatastore_shared_counter.so",
+      "sha256": "178f89a2c6c9234ddf980dd4cd1f3616186a46b2b932aafa6707abd04c5fd76a",
+      "loadAlignments": [
+        16384,
+        16384,
+        16384,
+        16384
+      ]
+    },
+    {
+      "file": "lib/arm64-v8a/libflutter.so",
+      "sha256": "2cf5d86b8aa2b883aa4b40365380b5de97f6d42732520b7a750c185d524efd8d",
+      "loadAlignments": [
+        65536,
+        65536,
+        65536
+      ]
+    },
+    {
+      "file": "lib/arm64-v8a/libjpeg.so",
+      "sha256": "0e751fcd26f2a60e8b87c2da274473c6c2a26352e5a9071033f1f88a93b39308",
+      "loadAlignments": [
+        16384,
+        16384
+      ]
+    },
+    {
+      "file": "lib/arm64-v8a/libleptonica.so",
+      "sha256": "00436d8562bc833a22111a1451cf46147f05aecf8a257751e127689a1ee6e3c4",
+      "loadAlignments": [
+        16384,
+        16384,
+        16384
+      ]
+    },
+    {
+      "file": "lib/arm64-v8a/libmobi.so",
+      "sha256": "3af5f3d9c9e639dd8dc2030bffb857b09f729286b5a18bab58d646b9c17660d0",
+      "loadAlignments": [
+        16384,
+        16384,
+        16384
+      ]
+    },
+    {
+      "file": "lib/arm64-v8a/libpdfium.so",
+      "sha256": "de19db1c0fb33579bca6ace903af7ccb9d03ad1d3f6c5202970d8d79d7538303",
+      "loadAlignments": [
+        16384,
+        16384,
+        16384
+      ]
+    },
+    {
+      "file": "lib/arm64-v8a/libpdfrx_pdfium_gate.so",
+      "sha256": "0f03859b7c72400547d73a4e22a10988236a3c4f8e42a51797f22dc88aaa1b74",
+      "loadAlignments": [
+        16384,
+        16384,
+        16384,
+        16384
+      ]
+    },
+    {
+      "file": "lib/arm64-v8a/libpngx.so",
+      "sha256": "e70d48e405b56f1df06921c4ebbee0612140a8f2c7b0a2641fbbf6fea53eda4c",
+      "loadAlignments": [
+        16384,
+        16384
+      ]
+    },
+    {
+      "file": "lib/arm64-v8a/libsqlite3.so",
+      "sha256": "081df67ee9ab852daea6a0679427e90fc89a0245d06f93dafe2309875c609c5c",
+      "loadAlignments": [
+        16384,
+        16384,
+        16384
+      ]
+    },
+    {
+      "file": "lib/arm64-v8a/libtesseract.so",
+      "sha256": "bce8dcca1544d9f8708ac126c1e920bfa92481509672d8472470e8c2eebcd43c",
+      "loadAlignments": [
+        16384,
+        16384,
+        16384
+      ]
+    }
+  ],
+  "permissions": [
+    "android.permission.ACCESS_NETWORK_STATE",
+    "android.permission.FOREGROUND_SERVICE",
+    "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK",
+    "android.permission.INTERNET",
+    "android.permission.WAKE_LOCK",
+    "dev.bookfin.bookfin.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+  ],
+  "source": {
+    "sourceCommit": "0f4084f7c670a1b6866f9543ac7af9f1949ba8a3",
+    "clean": true,
+    "sourceArchiveSha256": "ee44e6050136f1395f25baeacbfcfaeb6148ab6070c98eacfd468fdc3fddce47"
+  },
+  "signature": "Verifies\nVerified using v1 scheme (JAR signing): false\nVerified using v2 scheme (APK Signature Scheme v2): true\nVerified using v3 scheme (APK Signature Scheme v3): false\nVerified using v3.1 scheme (APK Signature Scheme v3.1): false\nVerified using v4 scheme (APK Signature Scheme v4): false\nVerified for SourceStamp: false\nNumber of signers: 1\n",
+  "zipAlignmentBytes": 16384
+}
