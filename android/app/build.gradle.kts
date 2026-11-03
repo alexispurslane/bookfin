@@ -39,6 +39,20 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        val requestedPlatforms = providers.gradleProperty("target-platform").orNull
+        if (requestedPlatforms != null && providers.gradleProperty("split-per-abi").orNull != "true") {
+            ndk {
+                abiFilters.clear()
+                abiFilters += requestedPlatforms.split(",").map { platform ->
+                    when (platform) {
+                        "android-arm" -> "armeabi-v7a"
+                        "android-arm64" -> "arm64-v8a"
+                        "android-x64" -> "x86_64"
+                        else -> error("Unsupported Flutter Android target: $platform")
+                    }
+                }
+            }
+        }
         externalNativeBuild {
             cmake {
                 targets += listOf("bookfin_mobi")

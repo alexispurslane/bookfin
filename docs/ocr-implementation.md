@@ -185,6 +185,8 @@ rejects a dirty source stamp. It checks the exact model, all selected AAR native
 bytes, every OCR notice, ARM64-only native contents, 16 KiB ELF load alignment,
 16 KiB package alignment, the APK signature, and the allowed application
 permissions. Existing Internet access serves Jellyfin. It is not added for OCR.
+Gradle filters dependency native libraries to the requested Flutter Android
+targets. The normal ARM64 handoff does not carry unusable 32-bit or x86 libraries.
 The evidence manifest binds the APK hash to the source export and build logs.
 This is recorded build provenance, not a claim of reproducible debug signing.
 

@@ -55,3 +55,7 @@ Final pre-build checks pass: 453 full Flutter tests with three existing opt-in s
 **2026-11-03T14:46:15Z**
 
 The first committed-source APK attempt stopped at Gradle script compilation before packaging. Its java extension shadowed the java.security package. Explicit File and MessageDigest imports fix the namespace collision; this is a build-script correction, not a behavior-red claim. The failed log is preserved. Direct Gradle compile attempts cannot load the Nix included Flutter build; use the normal Flutter wrapper for final compilation/package verification. No APK from the failed source was handed off.
+
+**2026-11-03T14:52:31Z**
+
+Normal app compilation succeeds after the import correction, including Android Java/Kotlin and native libraries. Exact package verification meaningfully rejects the candidate because Flutter default ABI filters include dependency libraries for unrequested architectures despite --target-platform android-arm64. Gradle now derives dependency ABI filters from the requested Flutter targets (and leaves split-APK filtering to Flutter), rather than hard-coding a product-wide ARM64-only restriction. Package-architecture-red.txt records the observed incompatible native entries. Rebuild and verification follow from a new clean source commit.
