@@ -1,0 +1,26 @@
+Ticket t6-il6y: package behavior tests before packaging implementation.
+Command: nix develop ./tool/research/sync --command bash -c 'PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tool/plugin -p "test_*.py" -v'
+
+Ran 3 tests. FAILED (failures=3), with no import, fixture, or syntax errors.
+
+test_an_install_contains_the_assembly_and_matching_jellyfin_identity
+FAIL: the assembled package lacked meta.json and manifest.json.
+
+test_archives_are_identical_despite_input_order_and_host_timestamps
+FAIL: reversing the same archive inputs produced different ZIP bytes.
+
+test_the_manifest_identifies_every_source_byte_and_the_installed_assembly
+FAIL: the assembled package had no exact source and binary manifest.
+
+The implementation added metadata, source and binary hashes, and deterministic ZIP assembly.
+All three tests then passed. The storage/controller logic did not change.
+
+Proof correction, not a product red:
+The first disposable upgrade run preserved reading bookmarks but the new test
+compared their list order. Record collection order is not part of the contract.
+The test now compares membership without imposing an order. No product fix was made.
+
+The next run passed both upgrade phases. Its existing app regression then failed
+because the harness reused Alice, whose records it had just proved were retained.
+That regression assumes an empty account. The harness now creates a separate
+ordinary account for the unchanged regression. No existing records are deleted.

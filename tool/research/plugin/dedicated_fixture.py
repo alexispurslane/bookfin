@@ -8,11 +8,14 @@ import subprocess
 import sys
 import tempfile
 import time
+import zipfile
 
 
 SYNC = Path(__file__).resolve().parents[1] / "sync"
 sys.path.insert(0, str(SYNC))
 from fixture import Api, private_json
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "plugin"))
+from package import metadata
 
 
 ORIGIN = "http://127.0.0.1:7464"
@@ -20,7 +23,7 @@ CACHE = Path(__file__).resolve().parents[3] / ".cache/plugin"
 
 
 class Server:
-    def __init__(self):
+    def __init__(self, plugin_archive=None):
         if os.environ.get("BOOKFIN_SYNC_SHELL") != "1":
             raise RuntimeError("Run through nix develop ./tool/research/sync")
         os.umask(0o077)
@@ -45,15 +48,37 @@ class Server:
   <EnableRemoteAccess>false</EnableRemoteAccess><EnableUPnP>false</EnableUPnP><AutoDiscovery>false</AutoDiscovery>
   <LocalNetworkAddresses><string>127.0.0.1</string></LocalNetworkAddresses>
 </NetworkConfiguration>''')
-        plugin = self.root / "data/plugins/Bookfin Storage Research_0.1.0.0"
-        plugin.mkdir(parents=True)
-        shutil.copy2(CACHE / "build/Bookfin.Storage.dll", plugin)
-        private_json(plugin / "meta.json", {
-            "name": "Bookfin Storage Research", "guid": "55fb5a92-7fbd-411c-9838-6ee4c88d168b",
-            "version": "0.1.0.0", "targetAbi": "12.0.0.0", "status": "Active",
-            "description": "Disposable dedicated-storage proof", "owner": "Bookfin research",
-        })
+        self.plugin_directory = None
+        plugin_archive = plugin_archive or os.environ.get("BOOKFIN_STORAGE_FIXTURE_PACKAGE")
+        if plugin_archive:
+            self.install_package(Path(plugin_archive))
+        else:
+            details = metadata()
+            self.plugin_directory = self.root / "data/plugins" / (details["name"] + "_" + details["version"])
+            self.plugin_directory.mkdir(parents=True)
+            shutil.copy2(CACHE / "build/Bookfin.Storage.dll", self.plugin_directory)
+            private_json(self.plugin_directory / "meta.json", details)
         private_json(self.root / "fixture.json", {"origin": ORIGIN, "purpose": "boo-dez0 synthetic only"})
+
+    def install_package(self, archive):
+        if self.process is not None and self.process.poll() is None:
+            raise RuntimeError("Stop the owned disposable server before replacing its plugin")
+        with zipfile.ZipFile(archive) as package:
+            if set(package.namelist()) not in (
+                {"Bookfin.Storage.dll", "meta.json"},
+                {"Bookfin.Storage.dll", "meta.json", "manifest.json"},
+            ):
+                raise ValueError("Unexpected disposable fixture package contents")
+            details = json.loads(package.read("meta.json"))
+            if details["guid"] != metadata()["guid"] or details["version"] not in ("0.1.0.0", "0.1.1.0"):
+                raise ValueError("Unexpected disposable fixture plugin identity")
+            if details["name"] not in ("Bookfin Storage Research", "Bookfin Storage"):
+                raise ValueError("Unexpected disposable fixture plugin name")
+            if self.plugin_directory is not None:
+                shutil.rmtree(self.plugin_directory)
+            self.plugin_directory = self.root / "data/plugins" / (details["name"] + "_" + details["version"])
+            self.plugin_directory.mkdir(parents=True)
+            package.extractall(self.plugin_directory)
 
     def start(self):
         executable = str(Path(os.environ["BOOKFIN_SYNC_SERVER"]) / "jellyfin")

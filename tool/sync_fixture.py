@@ -8,16 +8,13 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'tool/research/plugin'))
 from dedicated_fixture import Server
+sys.path.insert(0, str(ROOT / 'tool/plugin'))
+from package import build
 
 
 def main():
-    build = ROOT / '.cache/plugin/build'
-    subprocess.run([
-        'dotnet', 'build', 'tool/research/plugin/Bookfin.Storage.csproj',
-        '-c', 'Release', '-p:JellyfinDir=' + os.environ['BOOKFIN_SYNC_SERVER'],
-        '-o', str(build), '--nologo',
-    ], cwd=ROOT, check=True)
-    server = Server()
+    archive = build(ROOT / '.cache/plugin/package')
+    server = Server(archive)
     try:
         server.start()
         server.seed()

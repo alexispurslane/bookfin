@@ -1,0 +1,46 @@
+t6-il6y verified milestone: reproducible Bookfin Storage local deployment candidate
+Base: a0b3155bb850db6def19cfd5e8ad435a561a410c
+Measured on Apple Silicon macOS, November 2, 2026 local / November 3 UTC.
+
+PASS: nix develop ./tool/research/sync --command bash -c 'PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tool/plugin -p "test_*.py" -v'
+3 package tests. Meaningful initial assertion failures are summarized in red-tests.txt.
+
+PASS: nix develop ./tool/research/sync --command bash -c 'PYTHONDONTWRITEBYTECODE=1 python3 tool/plugin/prove.py'
+21 existing Python storage/pending-action tests with the extracted candidate package.
+2 phased Flutter tests with durable ordinary-account clients across plugin replacement.
+1 unchanged Flutter integration test with a separate fresh ordinary account after restart.
+Jellyfin 12.4.0 observed, SDK 10.0.401, candidate 0.1.1.0, baseline research 0.1.0.0.
+Fresh-install suite: 5 starts and stops, including a forced process stop.
+Upgrade/backup proof: 4 starts and stops.
+Whole stopped-server backup restore recovered the original plugin and inventory.
+Both owned servers stopped. No listeners remained on 7464 or 7465.
+Every C# release build completed with 0 warnings and 0 errors.
+
+PASS: two clean independent output/intermediate builds produced identical ZIP bytes.
+PASS: rebuilding from only the extracted source ZIP produced the same package bytes.
+The source reconstruction used the existing pinned Nix shell and no original C# source files.
+See source-rebuild.json for exact comparison hashes.
+
+PASS: nix develop ./tool/research/sync --command bash -c 'PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tool/research/sync -p "test_*.py" -v'
+40 research regression tests. Mock HTTP servers used automatic loopback ports, not 7364/7365.
+
+PASS: nix develop --command bash tool/bookfin test
+407 Flutter tests passed. The 2 real-server fixture tests skipped without fixture environment variables.
+SDK discovery, SDK platform, and native-tools shell tests passed.
+The host reports missing iOS SDKs during Flutter discovery. These warnings did not fail host tests.
+
+PASS: nix develop --command flutter analyze
+No issues found.
+
+PASS: git diff --check
+PASS: byte-for-byte source comparison for relocated ObjectStore.cs and StorageController.cs.
+ObjectStore SHA-256: 21352d93ca60ea941260b945708be593134179e9e3d835a0267fc74b276045e4
+StorageController SHA-256: 13c354882fe7a0d5ffc38b3ceb5dba58c73e2d688fcc1490d399b07cc6e9955a
+
+Package SHA-256: 3b0de5ca1df39baf67c786079898b1ee3b0b09d3bdb86d00ece8a7f5731a9105
+DLL SHA-256: 42d323311e58300ed32d67b52d70e08ba7ba3cad22196beee38af5c47de44be6
+Source ZIP SHA-256: 6d6f5a1db9d64865c008e48033f31486102a17f948a62003d3c2322e2e9d56d9
+
+No Android device, emulator, APK build, live-server installation, server-version upgrade,
+release publication, signing, coverage/mutation campaign, or deployment acceptance.
+No ticket closure. Parent integration, review and approval remain required.

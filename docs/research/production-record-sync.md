@@ -13,12 +13,13 @@ Without the plugin, local reading, listening, bookmarks, and history remain
 available. The app retains pending records and reports that sync did not finish;
 it never tries custom preferences or playlists instead.
 
-The candidate plugin source remains under `tool/research/plugin/`. Its current
-name and description explicitly identify it as a research candidate. It is
-tested only against the pinned disposable Jellyfin 12.4.0 in this repository.
-Do not install this candidate on a live server. Deployment packaging, supported
-server versions, backups, upgrades, and release approval are tracked by
-t6-il6y. The app does not claim that a production plugin release exists.
+The shared plugin source now lives under `plugin/Bookfin.Storage/`.
+`plugin/Bookfin.Storage/README.md` documents the installable local candidate,
+exact build inputs, stopped backups, installation, and the tested upgrade.
+It is tested only against pinned disposable Jellyfin 12.4.0 on macOS ARM64.
+Do not install this candidate on a live server without parent and user approval.
+Packaging and disposable-server proof remain separate from deployment approval
+and Android acceptance. The app does not claim that a production plugin release exists.
 
 ## State ownership and invariants
 

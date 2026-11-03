@@ -1,0 +1,234 @@
+{
+  "baseline": {
+    "commit": "a0b3155bb850db6def19cfd5e8ad435a561a410c",
+    "dllSha256": "b962659b8935ad4b504d383a3d3102c126cf7fea0e4a65ceaa549372f01d2799",
+    "sourceSha256": {
+      "tool/research/plugin/Bookfin.Storage.csproj": "eff95a6b277a57a3f2349d64536fc83577a3b3515d52fb3da5151b680fda51b9",
+      "tool/research/plugin/Directory.Build.props": "597d46a17e428ac67e406b0e6f21c3c3ccf4cb2bf3926cca67c45e9e20980bf6",
+      "tool/research/plugin/ObjectStore.cs": "21352d93ca60ea941260b945708be593134179e9e3d835a0267fc74b276045e4",
+      "tool/research/plugin/Plugin.cs": "4f756e730f42acca9d083bc7769a19169f67552d4a6acc81e3d1b32536773859",
+      "tool/research/plugin/StorageController.cs": "13c354882fe7a0d5ffc38b3ceb5dba58c73e2d688fcc1490d399b07cc6e9955a"
+    }
+  },
+  "cleanup": {
+    "ownedServersStopped": true,
+    "port7464HasListener": false,
+    "port7465HasListener": false
+  },
+  "elapsedSeconds": 84.607,
+  "limits": [
+    "Only Jellyfin 12.4.0 on macOS ARM64 was run",
+    "No Android device or UI acceptance",
+    "No public release, signatures, repository publication, live-server install or deployment acceptance",
+    "No server-version migration, disk-full, host power-loss, lifetime bounds or hardening campaign",
+    "Backup restoration is a whole stopped-server snapshot, not merging later client activity"
+  ],
+  "measuredAtUtc": "2026-11-03T01:54:29.000076+00:00",
+  "milestone": "Reproducible local candidate, fresh install, research-to-package upgrade, restart and stopped backup restore",
+  "package": {
+    "dllSha256": "42d323311e58300ed32d67b52d70e08ba7ba3cad22196beee38af5c47de44be6",
+    "independentCleanBuildsByteIdentical": true,
+    "manifest": {
+      "api": "/BookfinStorage/v1/objects",
+      "database": "bookfin-storage-v1.sqlite",
+      "filesSha256": {
+        "Bookfin.Storage.dll": "42d323311e58300ed32d67b52d70e08ba7ba3cad22196beee38af5c47de44be6",
+        "meta.json": "337b4661a0a45a2fecbac002cd5603dc2d13c97a34db9f902fac4bd837f4c348"
+      },
+      "format": 1,
+      "plugin": {
+        "description": "Private per-user immutable storage for Bookfin personal records",
+        "guid": "55fb5a92-7fbd-411c-9838-6ee4c88d168b",
+        "name": "Bookfin Storage",
+        "owner": "Bookfin",
+        "status": "Active",
+        "targetAbi": "12.0.0.0",
+        "version": "0.1.1.0"
+      },
+      "runtime": {
+        "buildHost": "aarch64-darwin",
+        "referenceAssemblySha256": {
+          "Jellyfin.Api.dll": "6a960ae661b4cd9a902395889892217fecb18a9eca1ed724a7deeb2067964fe5",
+          "MediaBrowser.Common.dll": "bc67f246c750cf1b106b5dd1cb283273a5485ec77ddc3121e64baf30943edf09",
+          "MediaBrowser.Controller.dll": "ee148a49831f97c5dea8d3e96a6920c2cc7bc11ca9508fb9f437cd02ad978985",
+          "MediaBrowser.Model.dll": "720cbe8663baaab85de7ee91e2c868f464ddca547696a60a2a76b279087194ee",
+          "Microsoft.Data.Sqlite.dll": "5a0627964721a7acdf5d242fa59db4e8452305d23789dd30c5d03227a370518b",
+          "jellyfin.dll": "c553ef86f47d4de0399be5cb13d3623b9df017bb5d655a4622c8e58334f0b39c"
+        },
+        "referenceServerVersion": "12.4.0",
+        "sdk": "10.0.401",
+        "serverArchive": "https://repo.jellyfin.org/files/server/macos/stable/v12.4/arm64/jellyfin_12.4-arm64.tar.xz",
+        "serverArchiveHash": "sha256-wQfU4Nhei6EpJMkRTSqK1D6dg1QKZ5I9vveIuTMR/i0="
+      },
+      "sourceSha256": {
+        "plugin/Bookfin.Storage/Bookfin.Storage.csproj": "9253cbecc96ee246fcefd19ccce3415472b8e72eb27e2b042cd0b910d2c63469",
+        "plugin/Bookfin.Storage/Directory.Build.props": "7e809a03addb2892c0a8ed7ab6c7db7cf950108de0a13fd41baa96b896008cc9",
+        "plugin/Bookfin.Storage/ObjectStore.cs": "21352d93ca60ea941260b945708be593134179e9e3d835a0267fc74b276045e4",
+        "plugin/Bookfin.Storage/Plugin.cs": "78a6592b47b0a7df4029c49de7675f0656ce2a47fd7ab80da067bf61ccc6fc6b",
+        "plugin/Bookfin.Storage/README.md": "3869724d06b0fa09d29248a080d912d4913229f19b61070cc60e68cf4e29406b",
+        "plugin/Bookfin.Storage/StorageController.cs": "13c354882fe7a0d5ffc38b3ceb5dba58c73e2d688fcc1490d399b07cc6e9955a",
+        "tool/plugin/package.py": "f176435b75f4cea458d39a357d28cd7e310af50ae19ac94425dd59051a380bb8",
+        "tool/research/sync/flake.lock": "620ebda96a2f73ba0777e3f4f093baeb9d15dd69681c59b0b83610fbce1be2a1",
+        "tool/research/sync/flake.nix": "b5c2c18c5db1b654b09079868be5863ae4b4896757e3575ac7a28bd9ff24e93b",
+        "tool/research/sync/sources.json": "99f1e96972102936908722cf52064bbceb4bd55ac557d3e8980b38bb9fd455e1"
+      },
+      "status": "Local deployment candidate; not a published or signed release"
+    },
+    "name": "Bookfin.Storage_0.1.1.0.zip",
+    "sha256": "3b0de5ca1df39baf67c786079898b1ee3b0b09d3bdb86d00ece8a7f5731a9105",
+    "sourcesZipSha256": "6d6f5a1db9d64865c008e48033f31486102a17f948a62003d3c2322e2e9d56d9"
+  },
+  "proofSourceSha256": {
+    "test/sync/plugin_integration_test.dart": "beb8fa3451b5ec12458419e55f26adc84c80fb80fa4fe822a4cb03a1728e60e9",
+    "test/sync/plugin_upgrade_integration_test.dart": "773382ce47c64716ae14afd111fcdd1103f8c7db7a6bcdb966169258f8ae7991",
+    "tool/plugin/prove.py": "07d0ea4c5db52f1ac274dab446013239acafa022627a252f391bf2f203c9e29c",
+    "tool/plugin/test_package.py": "9c445f29452b3f7fdd1d7ecd28c7c9423fd40d29826fc398e32be4ec8d9627ab",
+    "tool/research/plugin/dedicated_fixture.py": "24fe864e197e5343c765f6f3ebbcde68772d220f021c3364293f7f552cea35c0"
+  },
+  "regressions": {
+    "freshInstallStarts": 5,
+    "freshInstallStops": 5,
+    "outcomes": [
+      {
+        "outcome": "passed",
+        "test": "test_outbox.PendingActions.test_a_new_database_is_claimed_by_only_one_concurrent_account"
+      },
+      {
+        "outcome": "passed",
+        "test": "test_outbox.PendingActions.test_a_pending_action_survives_closing_and_reopening_its_account"
+      },
+      {
+        "outcome": "passed",
+        "test": "test_outbox.PendingActions.test_an_action_identity_cannot_silently_change_while_offline"
+      },
+      {
+        "outcome": "passed",
+        "test": "test_outbox.PendingActions.test_another_account_cannot_open_the_pending_actions"
+      },
+      {
+        "outcome": "passed",
+        "test": "test_outbox.PendingActions.test_concurrent_conflicting_actions_cannot_both_be_accepted"
+      },
+      {
+        "outcome": "passed",
+        "test": "test_storage.DedicatedStorage.test_01_independent_concurrent_writes_are_all_discoverable"
+      },
+      {
+        "outcome": "passed",
+        "test": "test_storage.DedicatedStorage.test_02_retries_do_not_duplicate_or_overwrite_an_identity"
+      },
+      {
+        "outcome": "passed",
+        "test": "test_storage.DedicatedStorage.test_03_normal_accounts_cannot_read_write_or_delete_each_others_objects"
+      },
+      {
+        "outcome": "passed",
+        "test": "test_storage.DedicatedStorage.test_04_explicit_delete_is_discoverable_and_blocks_delayed_uploads"
+      },
+      {
+        "outcome": "passed",
+        "test": "test_storage.DedicatedStorage.test_05_known_request_limits_fail_without_changing_history"
+      },
+      {
+        "outcome": "passed",
+        "test": "test_storage.DedicatedStorage.test_06_clean_and_forced_restarts_preserve_acknowledged_objects_and_deletions"
+      },
+      {
+        "outcome": "passed",
+        "test": "test_storage.DedicatedStorage.test_07_bookfin_retains_concurrent_versions_despite_clock_skew"
+      },
+      {
+        "outcome": "passed",
+        "test": "test_storage.DedicatedStorage.test_08_missing_earlier_actions_remain_waiting_across_restart"
+      },
+      {
+        "outcome": "passed",
+        "test": "test_storage.DedicatedStorage.test_09_pending_actions_survive_lost_acknowledgments_and_rejected_retries"
+      },
+      {
+        "outcome": "passed",
+        "test": "test_storage.DedicatedStorage.test_10_uploads_racing_with_deletion_cannot_restore_the_deleted_identity"
+      },
+      {
+        "outcome": "passed",
+        "test": "test_storage.DedicatedStorage.test_11_dedicated_objects_are_not_ordinary_playlist_items"
+      },
+      {
+        "outcome": "passed",
+        "test": "test_storage.DedicatedStorage.test_12_a_cursor_discovers_changes_made_between_pages"
+      },
+      {
+        "outcome": "passed",
+        "test": "test_storage.DedicatedStorage.test_13_history_events_remain_independent_until_one_is_explicitly_deleted"
+      },
+      {
+        "outcome": "passed",
+        "test": "test_storage.DedicatedStorage.test_14_a_genuinely_concurrent_edit_remains_a_conflict_with_deletion"
+      },
+      {
+        "outcome": "passed",
+        "test": "test_storage.DedicatedStorage.test_15_plugin_remains_active_after_its_restart_exercises"
+      },
+      {
+        "outcome": "passed",
+        "test": "test_storage.DedicatedStorage.test_16_opaque_payloads_preserve_leading_null_characters"
+      }
+    ],
+    "testsRun": 21
+  },
+  "runtime": {
+    "buildHost": "aarch64-darwin",
+    "observedServerVersion": "12.4.0",
+    "referenceAssemblySha256": {
+      "Jellyfin.Api.dll": "6a960ae661b4cd9a902395889892217fecb18a9eca1ed724a7deeb2067964fe5",
+      "MediaBrowser.Common.dll": "bc67f246c750cf1b106b5dd1cb283273a5485ec77ddc3121e64baf30943edf09",
+      "MediaBrowser.Controller.dll": "ee148a49831f97c5dea8d3e96a6920c2cc7bc11ca9508fb9f437cd02ad978985",
+      "MediaBrowser.Model.dll": "720cbe8663baaab85de7ee91e2c868f464ddca547696a60a2a76b279087194ee",
+      "Microsoft.Data.Sqlite.dll": "5a0627964721a7acdf5d242fa59db4e8452305d23789dd30c5d03227a370518b",
+      "jellyfin.dll": "c553ef86f47d4de0399be5cb13d3623b9df017bb5d655a4622c8e58334f0b39c"
+    },
+    "referenceServerVersion": "12.4.0",
+    "sdk": "10.0.401",
+    "serverArchive": "https://repo.jellyfin.org/files/server/macos/stable/v12.4/arm64/jellyfin_12.4-arm64.tar.xz",
+    "serverArchiveHash": "sha256-wQfU4Nhei6EpJMkRTSqK1D6dg1QKZ5I9vveIuTMR/i0="
+  },
+  "ticket": "t6-il6y",
+  "upgrade": {
+    "conflictsDeletionsAudioReadingAndHistoryPreserved": true,
+    "databaseAfterAppVerification": {
+      "bytes": 36864,
+      "relativePath": "data/bookfin-storage-v1.sqlite",
+      "rows": 30,
+      "sha256": "0ed784dc77540f583954a9344720a139313f597ed57885a22041ec3c193b1758"
+    },
+    "databaseBefore": {
+      "bytes": 24576,
+      "relativePath": "data/bookfin-storage-v1.sqlite",
+      "rows": 13,
+      "sha256": "1cbf0c0c76564018e76e4cc1efac7c7721b6ce8c7295eb1a0ce93d76552766c5"
+    },
+    "databaseBeforeBackupRestore": {
+      "bytes": 36864,
+      "relativePath": "data/bookfin-storage-v1.sqlite",
+      "rows": 30,
+      "sha256": "0ed784dc77540f583954a9344720a139313f597ed57885a22041ec3c193b1758"
+    },
+    "durableClientFilesUnchangedAcrossUpgrade": true,
+    "existingProductionTransportRegressionPassed": true,
+    "from": "0.1.0.0",
+    "objectsAfterAppVerification": {
+      "alice": 14,
+      "bob": 3
+    },
+    "objectsBefore": {
+      "alice": 10,
+      "bob": 3
+    },
+    "offlinePendingActionReopenedAndUploaded": true,
+    "ordinaryAccountIsolationAndUnauthorizedMethods": true,
+    "starts": 4,
+    "stoppedServerBackupRestored": true,
+    "stops": 4,
+    "to": "0.1.1.0"
+  }
+}

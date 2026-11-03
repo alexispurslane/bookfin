@@ -1,6 +1,9 @@
 # Dedicated Jellyfin storage experiment
 
 This disposable experiment supports boo-dez0, not production installation.
+The one shared C# source now lives in `plugin/Bookfin.Storage/`.
+Read `plugin/Bookfin.Storage/README.md` for candidate packaging and upgrade proof.
+Historical evidence below describes the earlier research build, not a released plugin.
 Read `docs/research/jellyfin-dedicated-storage.md` for results and limits.
 Do not install this DLL on a production server.
 
@@ -10,7 +13,7 @@ Run from the checkout root on Apple Silicon macOS:
 nix develop ./tool/research/sync --command bash -c '
   set -e
   mkdir -p .cache/plugin
-  dotnet build tool/research/plugin/Bookfin.Storage.csproj \
+  dotnet build plugin/Bookfin.Storage/Bookfin.Storage.csproj \
     -c Release -p:JellyfinDir="$BOOKFIN_SYNC_SERVER" \
     -o .cache/plugin/build --nologo
   PYTHONDONTWRITEBYTECODE=1 python3 tool/research/plugin/run.py

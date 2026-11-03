@@ -1,0 +1,10 @@
+{
+  "ticket": "t6-il6y",
+  "packageSha256": "3b0de5ca1df39baf67c786079898b1ee3b0b09d3bdb86d00ece8a7f5731a9105",
+  "sourceZipSha256": "6d6f5a1db9d64865c008e48033f31486102a17f948a62003d3c2322e2e9d56d9",
+  "rebuiltPackageSha256": "3b0de5ca1df39baf67c786079898b1ee3b0b09d3bdb86d00ece8a7f5731a9105",
+  "byteIdenticalFromExtractedSourceArchive": true,
+  "toolchain": "Existing pinned tool/research/sync Nix shell",
+  "freshSourceAndBuildDirectory": true,
+  "otherSourceCopiesUsed": false
+}

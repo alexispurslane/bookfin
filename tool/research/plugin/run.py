@@ -66,8 +66,7 @@ def collect(result, elapsed):
                 FROM objects WHERE owner=?""", (owner,)).fetchone()
             accounts[name] = {"objects": rows, "deletionMarkers": deleted, "livePayloadUtf8Bytes": payload_bytes,
                               "lastSequence": sequence}
-    source_files = list(HERE.glob("*.py")) + list(HERE.glob("*.cs")) + list(HERE.glob("*.csproj"))
-    source_files += list(HERE.glob("*.props"))
+    source_files = list(HERE.glob("*.py")) + list((ROOT / "plugin/Bookfin.Storage").glob("*"))
     source_files += [HERE.parent / "sync" / name for name in
                      ("flake.nix", "flake.lock", "sources.json", "finite_journal.py", "fixture.py")]
     red_phases = {}

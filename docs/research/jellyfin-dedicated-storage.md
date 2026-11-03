@@ -18,7 +18,9 @@ The fixture reserved 7465 but disabled HTTPS. Ports 7364 and 7365 were untouched
 No production account, server, plugin, device, or browser was used.
 Earlier stopped fixtures were not opened or changed.
 
-Source and reproduction commands are in `tool/research/plugin/`.
+Research tests and reproduction commands are in `tool/research/plugin/`.
+The shared C# source moved to `plugin/Bookfin.Storage/` under `t6-il6y`.
+Its README documents candidate packaging and upgrade proof separately from this historical experiment.
 Sanitized evidence is in `tool/research/plugin/evidence/runtime.json`.
 The existing research flake pins the official server archive and nixpkgs.
 Its `sources.json` records the archive hash. The same pinned nixpkgs supplies
