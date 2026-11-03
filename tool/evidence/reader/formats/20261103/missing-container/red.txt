@@ -1,0 +1,78 @@
+Resolving dependencies...
+Downloading packages...
+  archive 4.0.9 (4.6.0 available)
+  code_assets 1.2.1 (2.1.0 available)
+  crypto 3.0.7 (3.0.8 available)
+  flutter_secure_storage 9.2.4 (11.2.0 available)
+  flutter_secure_storage_linux 1.2.3 (3.0.3 available)
+  flutter_secure_storage_macos 3.1.3 (4.0.0 available)
+  flutter_secure_storage_platform_interface 1.1.2 (2.1.1 available)
+  flutter_secure_storage_web 1.2.1 (2.1.1 available)
+  flutter_secure_storage_windows 3.1.2 (4.2.2 available)
+  hooks 2.0.2 (2.2.0 available)
+  image 4.8.0 (4.12.0 available)
+  js 0.6.7 (0.7.2 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  meta 1.18.3 (1.19.0 available)
+  native_toolchain_c 0.19.2 (0.19.5 available)
+  objective_c 9.5.0 (9.6.2 available)
+  petitparser 7.0.2 (7.1.0 available)
+  record_use 0.6.0 (1.1.1 available)
+  shared_preferences_foundation 2.5.7 (2.6.1 available)
+  sqflite_common_ffi 2.4.0+2 (2.4.5 available)
+  sqlite3 3.5.2 (3.8.0 available)
+  test_api 0.7.12 (0.7.15 available)
+  vector_math 2.4.0 (2.4.4 available)
+  win32 5.15.0 (6.4.0 available)
+  xml 6.6.1 (7.1.0 available)
+Got dependencies!
+25 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+xcrun: error: SDK cannot be located: error: unable to find sdk: 'iphoneos'
+
+
+SDK iphoneos not installed.
+
+xcrun: error: SDK cannot be located: error: unable to find sdk: 'iphonesimulator'
+
+
+SDK iphonesimulator not installed.
+
+00:00 +0: loading /Users/alexispurslane/Development/bookfin/test/reader/unknown_format_test.dart
+00:00 +0: ordinary Book without Container opens simple.pdf from an extensionless download
+00:00 +0 -1: ordinary Book without Container opens simple.pdf from an extensionless download [E]
+  FormatException: Unsupported EPUB ZIP directory.
+  package:flutter_epub_viewer/publication.dart 182:5      _unpack
+  package:flutter_epub_viewer/publication.dart 45:25      Publication.admit
+  package:flutter/src/foundation/_isolates_io.dart 23:20  compute.<fn>
+  
+00:00 +0 -1: ordinary Book without Container opens mobi6-plain.mobi from an extensionless download
+00:00 +0 -2: ordinary Book without Container opens mobi6-plain.mobi from an extensionless download [E]
+  FormatException: Unsupported EPUB ZIP directory.
+  package:flutter_epub_viewer/publication.dart 182:5      _unpack
+  package:flutter_epub_viewer/publication.dart 45:25      Publication.admit
+  package:flutter/src/foundation/_isolates_io.dart 23:20  compute.<fn>
+  
+00:00 +0 -2: ordinary Book without Container opens mobi6-palmdoc.mobi from an extensionless download
+00:00 +0 -3: ordinary Book without Container opens mobi6-palmdoc.mobi from an extensionless download [E]
+  FormatException: Unsupported EPUB ZIP directory.
+  package:flutter_epub_viewer/publication.dart 182:5      _unpack
+  package:flutter_epub_viewer/publication.dart 45:25      Publication.admit
+  package:flutter/src/foundation/_isolates_io.dart 23:20  compute.<fn>
+  
+00:00 +0 -3: ordinary Book without Container opens pg11-kf8.mobi from an extensionless download
+00:00 +0 -4: ordinary Book without Container opens pg11-kf8.mobi from an extensionless download [E]
+  FormatException: Unsupported EPUB ZIP directory.
+  package:flutter_epub_viewer/publication.dart 182:5      _unpack
+  package:flutter_epub_viewer/publication.dart 45:25      Publication.admit
+  package:flutter/src/foundation/_isolates_io.dart 23:20  compute.<fn>
+  
+00:00 +0 -4: ordinary Book without Container opens river.epub from an extensionless download
+00:00 +1 -4: unknown bytes and linked originals remain rejected without format metadata
+00:00 +2 -4: Some tests failed.
+
+Failing tests:
+  /Users/alexispurslane/Development/bookfin/test/reader/unknown_format_test.dart: ordinary Book without Container opens mobi6-palmdoc.mobi from an extensionless download
+  /Users/alexispurslane/Development/bookfin/test/reader/unknown_format_test.dart: ordinary Book without Container opens mobi6-plain.mobi from an extensionless download
+  /Users/alexispurslane/Development/bookfin/test/reader/unknown_format_test.dart: ordinary Book without Container opens pg11-kf8.mobi from an extensionless download
+  /Users/alexispurslane/Development/bookfin/test/reader/unknown_format_test.dart: ordinary Book without Container opens simple.pdf from an extensionless download

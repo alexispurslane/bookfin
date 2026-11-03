@@ -1,6 +1,6 @@
 ---
 id: t3-jrhf
-status: open
+status: in_progress
 deps: []
 links: [boo-mx5i, t0-ebxa, t3-ipk1]
 created: 2026-11-03T13:38:32Z
@@ -23,3 +23,15 @@ Actual unchanged ordinary Jellyfin Book download opens the matching PDF or MOBI 
 **2026-11-03T14:16:49Z**
 
 Confirmed independently with ordinary generated plain MOBI after the NIST PDF failure. Both original files match pinned/generated corpus hashes in app-private completed downloads. Both Read produce the same EPUB ZIP rejection, and no derived MOBI directory is present. Generated EPUB opens with actual font/image/native reading evidence, isolating the missing-format admission issue from a general reader failure. Parent must fix with red-green tests and repeat the blocked PDF/MOBI/native-replacement gates; acceptance lane makes no production edit. Exact report and raw evidence now prepared.
+
+## Parent correction
+
+Reproduced four meaningful host failures through real buildBooks ordinary-Book
+DTO admission, extensionless downloaded-file paths and native importers: PDF,
+plain MOBI, PalmDOC MOBI and KF8 all reached EPUB. Existing verified local-file
+loader now selects PDF/MOBI by bounded header inspection when Container is
+absent; parser validation and explicit metadata behavior remain intact.
+EPUB/rejected invalid bytes/symlink controls pass. 17 focused and 431 full tests
+pass (three opt-in skips), analysis clean. Evidence:
+tool/evidence/reader/formats/20261103/missing-container/. Independent review,
+corrected-build Android format/native-replacement acceptance still required.

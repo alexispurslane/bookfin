@@ -9,15 +9,33 @@ import 'pdf.dart';
 import 'mobi.dart';
 
 Future<ReaderDocument> loadReadingDocument(Uri uri, SourceFile source) async {
-  if (source.container.toLowerCase() == 'mobi' ||
-      source.container.toLowerCase() == 'azw3') {
-    return importMobi(await _verifiedFile(uri));
-  }
-  if (source.container.toLowerCase() != 'pdf') {
-    return EpubDocument(await loadPublication(uri));
-  }
   final file = await _verifiedFile(uri);
-  return PdfRuntime.instance.open(await file.readAsBytes());
+  var container = source.container.trim().toLowerCase();
+  if (container.isEmpty) {
+    // Jellyfin Book originals can omit both Container and MediaSources.
+    // Signatures select a parser; that parser still validates the full book.
+    final input = await file.open();
+    try {
+      final header = String.fromCharCodes(await input.read(1024));
+      if (header.startsWith('%PDF-')) {
+        container = 'pdf';
+      } else if (header.length >= 68 &&
+          header.substring(60, 68) == 'BOOKMOBI') {
+        container = 'mobi';
+      }
+    } finally {
+      await input.close();
+    }
+  }
+  if (container == 'mobi' || container == 'azw3') {
+    return importMobi(file);
+  }
+  if (container == 'pdf') {
+    return PdfRuntime.instance.open(await file.readAsBytes());
+  }
+  return EpubDocument(
+    await compute(Publication.admit, await file.readAsBytes()),
+  );
 }
 
 Future<Publication> loadPublication(Uri uri) async {
