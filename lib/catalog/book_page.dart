@@ -581,12 +581,7 @@ class _DownloadButton extends StatelessWidget {
         Icons.check_rounded,
         'Downloaded. Remove download',
         () async {
-          if (await confirmAction(
-            context,
-            title: 'Remove download?',
-            message: 'The files leave this phone. You can download them again later.',
-            action: 'Remove',
-          )) {
+          if (await confirmRemoveDownload(context)) {
             await downloads.remove(edition);
           }
         },
