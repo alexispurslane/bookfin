@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:crypto/crypto.dart';
+import 'package:flutter/foundation.dart';
 
 import '../catalog/jellyfin.dart';
 import '../catalog/model.dart';
@@ -14,12 +16,14 @@ class LocalDownloads extends Downloads {
     required this.root,
     required this.freeBytes,
     required MediaPolicy policy,
+    this.clock = DateTime.now,
   }) : super(policy) {
     policy.addListener(_networkChanged);
   }
 
   final Directory root;
   final Future<int> Function() freeBytes;
+  final DateTime Function() clock;
   JellyfinSession? _session;
   Map<String, SourceFile> _sources = {};
   Map<String, Edition> _editions = {};
@@ -41,9 +45,12 @@ class LocalDownloads extends Downloads {
   bool _disposed = false;
   String? _storageError;
   Object _retainedBinding = Object();
+  final ChangeNotifier _phases = ChangeNotifier();
 
   @override
   bool get supported => true;
+  @override
+  Listenable get phases => _phases;
 
   static String _hash(String value) =>
       sha256.convert(utf8.encode(value)).toString();
@@ -894,6 +901,15 @@ class LocalDownloads extends Downloads {
     final output = await partial.open(
       mode: offset == 0 ? FileMode.write : FileMode.append,
     );
+    // Free storage is read before the first write and then once per 4 MiB.
+    // Each read must cover every byte written until the next read, plus the
+    // 64 KiB reserve, so a transfer fails before it can fill the storage.
+    var checkedThrough = record.bytes;
+    // Progress notifies listeners when the first bytes arrive, when the last
+    // bytes arrive, and between them only after both 250 ms and 1 % of the
+    // file passed since the previous progress notification.
+    DateTime? notifiedAt;
+    var notifiedBytes = record.bytes;
     try {
       await for (final chunk in response.timeout(const Duration(seconds: 20))) {
         guard();
@@ -902,15 +918,29 @@ class LocalDownloads extends Downloads {
             'The downloaded file is longer than expected.',
           );
         }
-        if (await freeBytes() < chunk.length + 65536) {
-          throw const _MediaError(
-            'Storage filled during download. Free storage, then retry.',
-          );
+        if (record.bytes + chunk.length > checkedThrough) {
+          final next = max(chunk.length, min(4 << 20, length - record.bytes));
+          if (await freeBytes() < next + 65536) {
+            throw const _MediaError(
+              'Storage filled during download. Free storage, then retry.',
+            );
+          }
+          checkedThrough = record.bytes + next;
         }
         guard();
         await output.writeFrom(chunk);
         record.bytes += chunk.length;
-        _emit();
+        final now = clock();
+        if (notifiedAt == null ||
+            record.bytes == length ||
+            (record.bytes - notifiedBytes >= length / 100 &&
+                // A clock moved backward also counts as time passed.
+                now.difference(notifiedAt).abs() >=
+                    const Duration(milliseconds: 250))) {
+          notifiedAt = now;
+          notifiedBytes = record.bytes;
+          if (!_disposed) notifyListeners();
+        }
       }
     } finally {
       try {
@@ -1091,8 +1121,11 @@ class LocalDownloads extends Downloads {
     }
   }
 
+  /// Notifies a change other than byte progress to both kinds of listeners.
   void _emit() {
-    if (!_disposed) notifyListeners();
+    if (_disposed) return;
+    notifyListeners();
+    _phases.notifyListeners();
   }
 
   @override
@@ -1101,6 +1134,7 @@ class LocalDownloads extends Downloads {
     ++_generation;
     policy.removeListener(_networkChanged);
     _client?.close(force: true);
+    _phases.dispose();
     super.dispose();
   }
 }

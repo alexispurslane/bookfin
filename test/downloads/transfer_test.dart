@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:bookfin/catalog/jellyfin.dart';
 import 'package:bookfin/catalog/model.dart';
@@ -745,24 +747,116 @@ void main() {
   });
 
   test(
-    'disk space exhausted after the prefix never publishes a complete file',
+    'storage taken during a transfer stops it before the disk fills',
     () async {
-      fixture.holdItem = 'text';
-      await downloads.request(fixture.text);
-      await fixture.firstChunk.future;
-      await waitForBytes(downloads, fixture.text, 3);
-      capacity = 0;
-      fixture.release();
+      fixture.payload = Uint8List(12 << 20);
+      fixture.pieceBytes = 48 << 10;
+      Future<int> written() async {
+        final partial = await root
+            .list(recursive: true)
+            .where((entry) => entry.path.endsWith('/partial'))
+            .toList();
+        return partial.isEmpty ? 0 : await File(partial.single.path).length();
+      }
+
+      // A simulated disk: another app leaves only 1 MiB once 2 MiB arrived.
+      var disk = 64 << 20;
+      var taken = false;
+      downloads.dispose();
       await downloads.idle;
+      downloads = LocalDownloads(
+        root: root,
+        policy: policy,
+        freeBytes: () async {
+          final bytes = await written();
+          if (!taken && bytes >= 2 << 20) {
+            taken = true;
+            disk = bytes + (1 << 20);
+          }
+          return disk - bytes;
+        },
+      );
+      await downloads.bind(fixture.session(), fixture.books);
+      await downloads.request(fixture.text);
+      await downloads.idle;
+      expect(taken, isTrue);
       expect(downloads.status(fixture.text).phase, DownloadPhase.failed);
+      expect(
+        downloads.status(fixture.text).message,
+        'Storage filled during download. Free storage, then retry.',
+      );
+      expect(await written(), lessThanOrEqualTo(disk));
       expect(await downloads.localFile(fixture.text.files.single), isNull);
-      capacity = 1000000;
-      fixture.holdItem = null;
+      disk = 64 << 20;
+      fixture.ignoreRange = true;
       await downloads.request(fixture.text);
       await downloads.idle;
       expect(downloads.status(fixture.text).phase, DownloadPhase.downloaded);
     },
   );
+
+  group('progress of a 12 MiB transfer', () {
+    late List<int> shown;
+    late int checks;
+    Future<void> transfer(DateTime Function() clock) async {
+      fixture.payload = Uint8List(12 << 20);
+      fixture.pieceBytes = 48 << 10;
+      checks = 0;
+      downloads.dispose();
+      await downloads.idle;
+      downloads = LocalDownloads(
+        root: root,
+        policy: policy,
+        clock: clock,
+        freeBytes: () async {
+          checks++;
+          return 64 << 20;
+        },
+      );
+      await downloads.bind(fixture.session(), fixture.books);
+      shown = [];
+      downloads.addListener(
+        () => shown.add(downloads.status(fixture.text).bytes),
+      );
+      await downloads.request(fixture.text);
+      await downloads.idle;
+      expect(downloads.status(fixture.text).phase, DownloadPhase.downloaded);
+    }
+
+    List<int> partway() => [
+      for (final bytes in shown)
+        if (bytes > 0 && bytes < fixture.payload.length) bytes,
+    ];
+
+    test(
+      'a transfer within 250 ms shows progress only when bytes start arriving',
+      () async {
+        final instant = DateTime(2026);
+        await transfer(() => instant);
+        expect(partway(), hasLength(1));
+        expect(shown.last, fixture.payload.length);
+      },
+    );
+
+    test('a slow transfer shows progress at most once per percent', () async {
+      var now = DateTime(2026);
+      await transfer(() => now = now.add(const Duration(seconds: 1)));
+      final progress = partway();
+      expect(progress.length, greaterThan(10));
+      for (var index = 1; index < progress.length; index++) {
+        expect(
+          progress[index] - progress[index - 1],
+          greaterThanOrEqualTo(fixture.payload.length ~/ 100),
+        );
+      }
+      expect(shown.last, fixture.payload.length);
+    });
+
+    test('free storage is read about once per few megabytes', () async {
+      await transfer(DateTime.now);
+      expect(checks, lessThanOrEqualTo(12));
+    });
+  });
 
   test(
     'a server that ignores Range replaces rather than duplicates the prefix',
@@ -974,6 +1068,9 @@ class MediaFixture {
   String revision = 'source-v1';
   String serverId = 'fixture-server';
   bool ignoreRange = false;
+
+  /// When set, media arrives in pieces of this many bytes, like a slow network.
+  int? pieceBytes;
   String authenticatedUser = 'alice';
   bool existingAuthorizationRoutesOnly = false;
   final firstChunk = Completer<void>();
@@ -1005,7 +1102,7 @@ class MediaFixture {
     'Type': 'Default',
     'IsRemote': false,
     'ETag': revision,
-    'Size': 6,
+    'Size': payload.length,
     'Container': id.endsWith('text') ? 'epub' : 'm4b',
   };
   SourceFile file(String id) =>
@@ -1121,7 +1218,7 @@ class MediaFixture {
           invalidRange ? 'bytes 0-2/6' : 'bytes 3-5/6',
         );
       }
-      response.contentLength = 6 - offset;
+      response.contentLength = payload.length - offset;
       response.bufferOutput = false;
       if (id == holdItem && offset == 0) {
         response.add([1, 2, 3]);
@@ -1130,6 +1227,14 @@ class MediaFixture {
         if (!firstChunk.isCompleted) firstChunk.complete();
         await _released.future;
         response.add([4, 5, 6]);
+      } else if (pieceBytes case final piece?) {
+        for (var start = offset; start < payload.length; start += piece) {
+          response.add(
+            payload.sublist(start, min(start + piece, payload.length)),
+          );
+          await response.flush();
+          await Future<void>.delayed(const Duration(milliseconds: 1));
+        }
       } else {
         response.add(payload.sublist(offset));
       }
