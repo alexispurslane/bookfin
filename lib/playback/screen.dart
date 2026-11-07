@@ -344,11 +344,18 @@ class PlayerView extends StatelessWidget {
                           ),
                         ],
                       ),
+                      // The Undo pill comes and goes in a slot that keeps
+                      // its height, so the tool row below never moves.
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(18, 8, 18, 0),
-                        child: _undoNotice(playback),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 8,
+                        ),
+                        child: SizedBox(
+                          height: UndoNotice.height,
+                          child: _undoNotice(playback),
+                        ),
                       ),
-                      const SizedBox(height: 14),
                       _tools(context),
                     ],
                   ),
@@ -1150,8 +1157,8 @@ class _PositionMarks extends CustomPainter {
 String _rate(double value) =>
     value.toStringAsFixed(2).replaceFirst(RegExp(r'\.?0+$'), '');
 
-/// Says that the position changed, and offers to go back to the previous
-/// place.
+/// A one-line pill that says that the position changed, and offers to go
+/// back to the previous place.
 class UndoNotice extends StatelessWidget {
   const UndoNotice({
     super.key,
@@ -1165,26 +1172,60 @@ class UndoNotice extends StatelessWidget {
   final VoidCallback onUndo;
   final VoidCallback onDismiss;
 
+  /// The height of the pill. The player keeps a slot of this height under
+  /// its transport controls, whether the pill shows or not.
+  static const height = 44.0;
+
   @override
-  Widget build(BuildContext context) => BookfinPanel(
-    child: Wrap(
-      crossAxisAlignment: WrapCrossAlignment.center,
-      spacing: 12,
-      children: [
-        Text(
-          unsaved
-              ? 'Position changed. The previous place is not saved yet.'
-              : 'Position changed. Your previous place is saved.',
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return Container(
+      height: height,
+      padding: const EdgeInsetsDirectional.only(start: 16, end: 2),
+      decoration: ShapeDecoration(
+        color: scheme.surfaceContainer,
+        shape: StadiumBorder(side: BorderSide(color: scheme.outlineVariant)),
+      ),
+      child: Material(
+        type: MaterialType.transparency,
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                unsaved
+                    ? 'Saving your previous place'
+                    : 'Your previous place is saved',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: scheme.onSurface,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            FilledButton(
+              onPressed: onUndo,
+              style: FilledButton.styleFrom(
+                minimumSize: const Size(0, 32),
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                visualDensity: VisualDensity.compact,
+              ),
+              child: const Text('Undo'),
+            ),
+            IconButton(
+              tooltip: 'Dismiss Undo',
+              onPressed: onDismiss,
+              iconSize: 18,
+              visualDensity: VisualDensity.compact,
+              icon: const Icon(Icons.close),
+            ),
+          ],
         ),
-        TextButton(onPressed: onUndo, child: const Text('Undo')),
-        IconButton(
-          tooltip: 'Dismiss Undo',
-          onPressed: onDismiss,
-          icon: const Icon(Icons.close),
-        ),
-      ],
-    ),
-  );
+      ),
+    );
+  }
 }
 
 /// The open book on glass at the foot of a page: its cover, title and
