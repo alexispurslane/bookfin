@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:bookfin/catalog/jellyfin.dart';
 import 'package:bookfin/playback/playback.dart';
+import 'package:bookfin/reader/session.dart' show ReadingChanges, ReadingStore;
 import 'package:bookfin/sync/journal.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -105,7 +106,7 @@ class SyncFixture {
   }
 }
 
-class HeldRecords extends ResumeStore implements ListeningStore {
+class HeldRecords extends ResumeStore implements ListeningStore, ReadingStore {
   HeldRecords(this.delegate);
   final ResumeStore delegate;
   @override
@@ -153,5 +154,11 @@ class HeldRecords extends ResumeStore implements ListeningStore {
   Future<void> save(String accountKey, ListeningChanges changes) async {
     await _heldWrite();
     await (delegate as ListeningStore).save(accountKey, changes);
+  }
+
+  @override
+  Future<void> saveReading(String accountKey, ReadingChanges changes) async {
+    await _heldWrite();
+    await (delegate as ReadingStore).saveReading(accountKey, changes);
   }
 }

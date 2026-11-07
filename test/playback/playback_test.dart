@@ -4,6 +4,7 @@ import 'package:bookfin/catalog/jellyfin.dart';
 import 'package:bookfin/catalog/model.dart';
 import 'package:bookfin/downloads/downloads.dart';
 import 'package:bookfin/playback/playback.dart';
+import 'package:bookfin/reader/session.dart' show ReadingChanges, ReadingStore;
 import 'package:flutter_test/flutter_test.dart';
 
 const first = SourceFile(
@@ -455,7 +456,7 @@ void main() {
   });
 }
 
-class MemoryResume extends ResumeStore implements ListeningStore {
+class MemoryResume extends ResumeStore implements ListeningStore, ReadingStore {
   final values = <String, Map<String, dynamic>>{};
   Completer<void>? readGate;
   bool failRead = false;
@@ -473,6 +474,11 @@ class MemoryResume extends ResumeStore implements ListeningStore {
 
   @override
   Future<void> save(String accountKey, ListeningChanges changes) async {
+    values[accountKey] = changes.applyTo(values[accountKey]);
+  }
+
+  @override
+  Future<void> saveReading(String accountKey, ReadingChanges changes) async {
     values[accountKey] = changes.applyTo(values[accountKey]);
   }
 }

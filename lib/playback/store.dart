@@ -8,6 +8,7 @@ import 'playback.dart';
 import '../sync/journal.dart';
 import '../catalog/jellyfin.dart';
 import 'database.dart';
+import '../reader/session.dart' show ReadingChanges, ReadingStore;
 
 /// Runs [work] on [input] in another isolate and completes with its result,
 /// which comes back without a copy. [compute] is the default.
@@ -630,7 +631,7 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
 }
 
 /// The reading records of a [LocalResumeStore], as the reader uses them.
-class ReadingRecords implements ResumeStore {
+class ReadingRecords implements ResumeStore, ReadingStore {
   ReadingRecords._(this.owner);
   final LocalResumeStore owner;
   @override
@@ -640,6 +641,30 @@ class ReadingRecords implements ResumeStore {
   @override
   Future<void> write(String accountKey, Map<String, dynamic> value) =>
       owner._write(accountKey, value, reading: true);
+
+  @override
+  Future<void> saveReading(String accountKey, ReadingChanges changes) {
+    // NOTE: Engine rule 1. A change set holds the few records that one
+    // action changed, which copy faster than a hop.
+    final copied = _copy({
+      'settings': changes.settings,
+      'resumes': changes.resumes,
+      'bookmarks': changes.bookmarks,
+    });
+    return owner._change(
+      accountKey,
+      copied['settings'] as Map<String, dynamic>,
+      reading: true,
+      records: (_) => {
+        for (final entry in (copied['bookmarks'] as Map).entries)
+          jsonEncode(['reading', 'bookmarks', entry.key]):
+              entry.value as Map<String, dynamic>?,
+        ..._flatten({
+          'reading': {'resumes': copied['resumes']},
+        }, reading: true),
+      },
+    );
+  }
 
   @override
   void acceptSnapshot(String accountKey, Map<String, dynamic>? value) =>
