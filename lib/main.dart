@@ -167,11 +167,14 @@ class _BookfinAppState extends State<BookfinApp> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      unawaited(widget.sync?.synchronize());
+      widget.sync?.resume();
       unawaited(widget.downloads?.refresh());
       _startClock();
       _refresh();
     } else {
+      // An inactive app stays visible, for example under the notification
+      // shade, so record sync keeps its period until the app is hidden.
+      if (state != AppLifecycleState.inactive) widget.sync?.suspend();
       unawaited(widget.playback?.flush());
       unawaited(widget.reader?.flush());
       _clock?.cancel();

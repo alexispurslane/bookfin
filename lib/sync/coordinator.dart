@@ -7,14 +7,30 @@ import '../playback/playback.dart';
 import '../playback/store.dart';
 import '../reader/session.dart';
 
+/// Synchronizes personal records with Jellyfin for the signed-in account.
+///
+/// While the app is in front, a periodic sync runs every [_period]. While it
+/// is in the background ([suspend]), no periodic sync runs. On [resume], a
+/// sync that came due in the background runs at once, and the period restarts.
 class RecordSync extends ChangeNotifier {
-  RecordSync({required this.records, this.playback, this.reader});
+  static const _period = Duration(seconds: 30);
+
+  RecordSync({
+    required this.records,
+    this.playback,
+    this.reader,
+    this.now = DateTime.now,
+  });
   final LocalResumeStore records;
+  final DateTime Function() now;
   final Playback? playback;
   final ReaderSession? reader;
   JellyfinSession? _session;
   JellyfinClient? _client;
   Timer? _timer;
+  // When the current period began: at sign-in or at the latest sync start.
+  DateTime? _periodStart;
+  bool _suspended = false;
   int _generation = 0;
   bool _disposed = false;
   bool _busy = false;
@@ -40,13 +56,34 @@ class RecordSync extends ChangeNotifier {
     _client = session == null
         ? null
         : JellyfinClient(session.scope.server, deviceId: 'bookfin-record-sync');
-    if (session != null) {
-      _timer = Timer.periodic(
-        const Duration(seconds: 30),
-        (_) => unawaited(synchronize()),
-      );
-    }
+    _periodStart = session == null ? null : now();
+    _schedule();
     _emit();
+  }
+
+  /// Stops the periodic sync while the app is in the background.
+  void suspend() {
+    _suspended = true;
+    _timer?.cancel();
+  }
+
+  /// Restarts the periodic sync when the app returns to the front, and syncs
+  /// at once if a sync came due in the background.
+  void resume() {
+    if (!_suspended) return;
+    _suspended = false;
+    final start = _periodStart;
+    if (start != null && now().difference(start) >= _period) {
+      unawaited(synchronize());
+    }
+    _schedule();
+  }
+
+  void _schedule() {
+    _timer?.cancel();
+    _timer = _session == null || _suspended || _disposed
+        ? null
+        : Timer.periodic(_period, (_) => unawaited(synchronize()));
   }
 
   Future<void> synchronize() async {
@@ -54,6 +91,7 @@ class RecordSync extends ChangeNotifier {
     final client = _client;
     if (_disposed || _busy || session == null || client == null) return;
     final generation = _generation;
+    _periodStart = now();
     _busy = true;
     _message = null;
     _emit();
