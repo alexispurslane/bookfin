@@ -20,7 +20,9 @@ void openBook(BuildContext context, LibraryServices services, Book book) =>
       Navigator.push<void>(
         context,
         MaterialPageRoute(
-          builder: (_) => BookPage(services: services, bookId: book.id),
+          builder: (_) => services.coverScope(
+            BookPage(services: services, bookId: book.id),
+          ),
         ),
       ),
     );
@@ -604,6 +606,12 @@ class _Actions extends StatelessWidget {
                   ),
                 )
               : FilledButton.tonalIcon(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Theme.of(context)
+                        .colorScheme
+                        .surfaceContainer,
+                    foregroundColor: Theme.of(context).colorScheme.onSurface,
+                  ),
                   onPressed: read,
                   icon: const Icon(Icons.menu_book_outlined),
                   label: const Text('Read'),
@@ -676,7 +684,12 @@ class _DownloadButton extends StatelessWidget {
                   : null,
             ),
           ),
-        IconButton.filledTonal(
+        IconButton.filled(
+          style: IconButton.styleFrom(
+            backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
+            foregroundColor: Theme.of(context).colorScheme.onSurface,
+            minimumSize: const Size(52, 52),
+          ),
           tooltip: tooltip,
           onPressed: () => unawaited(action()),
           icon: Icon(icon),
@@ -727,7 +740,13 @@ class _DescriptionState extends State<_Description> {
                 onPressed: () => setState(() => _open = !_open),
                 style: TextButton.styleFrom(
                   padding: EdgeInsets.zero,
-                  minimumSize: const Size(48, 36),
+                  minimumSize: const Size(48, 40),
+                  alignment: Alignment.centerLeft,
+                  textStyle: const TextStyle(
+                    fontFamily: 'Outfit',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 child: Text(_open ? 'Less' : 'More'),
               ),

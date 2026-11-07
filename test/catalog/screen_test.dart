@@ -1,4 +1,7 @@
+import 'dart:typed_data';
+
 import 'package:bookfin/catalog/controller.dart';
+import 'package:bookfin/catalog/covers.dart';
 import 'package:bookfin/catalog/layout.dart';
 import 'package:bookfin/catalog/jellyfin.dart';
 import 'package:bookfin/catalog/model.dart';
@@ -17,8 +20,10 @@ void main() {
   late CatalogController controller;
   late FixtureClient client;
   late LibraryLayout layout;
+  Covers? covers;
   setUp(() {
     layout = LibraryLayout(MemoryLayoutStore());
+    covers = null;
     client = FixtureClient(Uri.parse('https://books.example'));
     controller = CatalogController(
       credentials: MemoryCredentials(),
@@ -36,6 +41,7 @@ void main() {
       home: CatalogHome(
         catalog: controller,
         layout: layout,
+        covers: covers,
         onAppearance: () {},
         onReaderNightChanged: (_) {},
       ),
@@ -99,14 +105,14 @@ void main() {
     await controller.connect('https://books.example', 'alice', 'password');
     await controller.refresh(selected: {'books'});
     await show(tester);
-    expect(find.byType(SliverGrid), findsOneWidget);
+    expect(find.byType(SliverLayoutBuilder), findsOneWidget);
     await tester.tap(find.byTooltip('Show as list'));
     await tester.pumpAndSettle();
-    expect(find.byType(SliverGrid), findsNothing);
+    expect(find.byType(SliverLayoutBuilder), findsNothing);
     expect(layout.view, LibraryView.list);
     await tester.tap(find.byTooltip('Show as grid'));
     await tester.pumpAndSettle();
-    expect(find.byType(SliverGrid), findsOneWidget);
+    expect(find.byType(SliverLayoutBuilder), findsOneWidget);
   });
 
   testWidgets('settings make the library compact', (tester) async {
@@ -122,6 +128,32 @@ void main() {
     await tester.tap(find.text('Library'));
     await tester.pumpAndSettle();
     expect(tester.getSize(find.byType(BookCover)).width, lessThan(spacious));
+  });
+
+  testWidgets('pages opened from the library show Jellyfin covers too', (
+    tester,
+  ) async {
+    covers = _NoCovers();
+    client.entries = [
+      for (final entry in orchardCycle())
+        CatalogEntry.fromJson({
+          ...entry.json,
+          'ImageTags': {'Primary': 'tag'},
+        }, libraryId: 'books'),
+    ];
+    await controller.connect('https://books.example', 'alice', 'password');
+    await controller.refresh(selected: {'books'});
+    await show(tester);
+    final coverImages = find.byWidgetPredicate(
+      (widget) => widget is Image && widget.image is CoverImage,
+    );
+    expect(coverImages, findsWidgets);
+    await tester.tap(find.text('The Orchard Cycle'));
+    await tester.pumpAndSettle();
+    expect(coverImages, findsWidgets, reason: 'the series page');
+    await tester.tap(find.text('Graft'));
+    await tester.pumpAndSettle();
+    expect(coverImages, findsWidgets, reason: 'the book page');
   });
 
   testWidgets('permission recovery closes only the library selector', (
@@ -470,4 +502,12 @@ void main() {
       expect(controller.books.single.title, 'The Orchard');
     },
   );
+}
+
+class _NoCovers implements Covers {
+  @override
+  Future<Uint8List?> load(JellyfinSession session, CoverRef cover) async =>
+      null;
+  @override
+  Future<void> clear() async {}
 }

@@ -321,8 +321,15 @@ ThemeData bookfinTheme(Brightness brightness, {bool reduceMotion = false}) {
         visualDensity: VisualDensity.compact,
         side: const WidgetStatePropertyAll(BorderSide.none),
         backgroundColor: WidgetStateProperty.resolveWith(
-          (states) => states.contains(WidgetState.selected) ? sheet : wash,
+          (states) => states.contains(WidgetState.selected)
+              ? sheet
+              : Colors.transparent,
         ),
+        shape: const WidgetStatePropertyAll(StadiumBorder()),
+        elevation: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.selected) ? 1 : 0,
+        ),
+        shadowColor: const WidgetStatePropertyAll(Color(0x33000000)),
         foregroundColor: WidgetStatePropertyAll(ink),
         textStyle: const WidgetStatePropertyAll(
           TextStyle(fontFamily: 'Outfit', fontSize: 13),

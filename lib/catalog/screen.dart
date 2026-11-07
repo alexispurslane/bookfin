@@ -71,6 +71,7 @@ class _CatalogHomeState extends State<CatalogHome> {
     catalog: _catalog,
     layout: _layout,
     onReaderNightChanged: widget.onReaderNightChanged,
+    covers: widget.covers,
     downloads: widget.downloads,
     playback: widget.playback,
     reader: widget.reader,

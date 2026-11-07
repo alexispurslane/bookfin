@@ -162,7 +162,7 @@ class BookCover extends StatelessWidget {
               ])
                 Positioned.fill(
                   child: Transform.translate(
-                    offset: Offset(step * width * 0.035, -step * width * 0.03),
+                    offset: Offset(step * width * 0.022, -step * width * 0.026),
                     child: DecoratedBox(
                       decoration: BoxDecoration(
                         color: Color(shade),

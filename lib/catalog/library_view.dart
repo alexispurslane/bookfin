@@ -123,34 +123,29 @@ class ShelfEntries extends StatelessWidget {
                         ((compact ? 112 : 168) + spacing))
                     .floor()
                     .clamp(compact ? 3 : 2, 8);
-            final width =
-                (constraints.crossAxisExtent - spacing * (columns - 1)) /
-                columns;
-            final scale = MediaQuery.textScalerOf(context);
-            // The cover, the room a series stack needs above it, and the text
-            // below it: a position label, two title lines, the author line,
-            // and the progress line.
-            final text =
-                scale.scale(compact ? 11 : 12) * 1.5 +
-                scale.scale(compact ? 13 : 15) * 1.2 * 2 +
-                scale.scale(compact ? 10.5 : 12) * 1.5 +
-                (compact ? 6 : 8) +
-                9;
-            return SliverGrid(
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: columns,
-                mainAxisSpacing: compact ? 14 : 20,
-                crossAxisSpacing: spacing,
-                mainAxisExtent: width * 1.5 + 6 + text,
-              ),
-              delegate: SliverChildBuilderDelegate(
-                (context, index) => _GridTile(
-                  services: services,
-                  item: items[index],
-                  compact: compact,
-                  showSeriesPosition: showSeriesPosition,
-                ),
-                childCount: items.length,
+            final rows = (items.length / columns).ceil();
+            // Rows rather than a fixed-extent grid: each row is as tall as
+            // its tallest tile, so short titles leave no empty band.
+            return SliverList.separated(
+              itemCount: rows,
+              separatorBuilder: (_, _) => SizedBox(height: compact ? 14 : 20),
+              itemBuilder: (context, row) => Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (var column = 0; column < columns; column++) ...[
+                    if (column > 0) SizedBox(width: spacing),
+                    Expanded(
+                      child: row * columns + column < items.length
+                          ? _GridTile(
+                              services: services,
+                              item: items[row * columns + column],
+                              compact: compact,
+                              showSeriesPosition: showSeriesPosition,
+                            )
+                          : const SizedBox.shrink(),
+                    ),
+                  ],
+                ],
               ),
             );
           },
@@ -432,7 +427,9 @@ class LayoutToggle extends StatelessWidget {
 void openSearch(BuildContext context, LibraryServices services) => unawaited(
   Navigator.push<void>(
     context,
-    MaterialPageRoute(builder: (_) => SearchPage(services: services)),
+    MaterialPageRoute(
+      builder: (_) => services.coverScope(SearchPage(services: services)),
+    ),
   ),
 );
 
@@ -525,7 +522,9 @@ void openSeries(
   Navigator.push<void>(
     context,
     MaterialPageRoute(
-      builder: (_) => SeriesPage(services: services, name: series.name),
+      builder: (_) => services.coverScope(
+        SeriesPage(services: services, name: series.name),
+      ),
     ),
   ),
 );

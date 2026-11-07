@@ -1,5 +1,8 @@
 import 'package:flutter/widgets.dart';
 
+import 'book_cover.dart';
+import 'covers.dart';
+
 import '../downloads/downloads.dart';
 import '../playback/playback.dart';
 import '../reader/session.dart';
@@ -15,6 +18,7 @@ class LibraryServices {
     required this.catalog,
     required this.layout,
     required this.onReaderNightChanged,
+    this.covers,
     this.downloads,
     this.playback,
     this.reader,
@@ -22,6 +26,7 @@ class LibraryServices {
   final CatalogController catalog;
   final LibraryLayout layout;
   final ValueChanged<bool> onReaderNightChanged;
+  final Covers? covers;
   final Downloads? downloads;
   final Playback? playback;
   final ReaderSession? reader;
@@ -29,6 +34,19 @@ class LibraryServices {
   /// Changes whenever a library screen can look different.
   Listenable get changes =>
       Listenable.merge([catalog, layout, ?downloads, ?playback]);
+
+  /// Gives covers below [child] the cover store and the current account.
+  /// A page pushed on the navigator needs this, because the library's own
+  /// scope sits below the navigator.
+  Widget coverScope(Widget child) => ListenableBuilder(
+    listenable: catalog,
+    builder: (context, child) => CoverScope(
+      covers: covers,
+      session: catalog.accessBlocked ? null : catalog.session,
+      child: child!,
+    ),
+    child: child,
+  );
 
   bool editionDownloaded(Edition edition) =>
       downloads?.status(edition).phase == DownloadPhase.downloaded;

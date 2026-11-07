@@ -37,25 +37,37 @@ bool bookDownloaded(Book book, bool Function(Edition) downloaded) {
 }
 
 /// Series position first, then publication year, then title. Books without a
-/// value for a key follow the books that have one.
-List<Book> readingOrder(Iterable<Book> books) =>
-    books.toList()..sort((left, right) {
-      int? missingLast(Object? left, Object? right) => left == null
-          ? (right == null ? null : 1)
-          : right == null
-          ? -1
-          : null;
-      final order =
-          missingLast(left.seriesOrder, right.seriesOrder) ??
-          (left.seriesOrder == null
-              ? 0
-              : left.seriesOrder!.compareTo(right.seriesOrder!));
-      if (order != 0) return order;
-      final year =
-          missingLast(left.year, right.year) ??
-          (left.year == null ? 0 : left.year!.compareTo(right.year!));
-      return year != 0 ? year : naturalCompare(left.title, right.title);
-    });
+/// value for a key follow the books that have one. A book without a position
+/// takes the position of a book with the same title, so an audiobook sits
+/// next to its ebook.
+List<Book> readingOrder(Iterable<Book> books) {
+  final positions = <String, double>{
+    for (final book in books)
+      if (book.seriesOrder != null) _titleKey(book.title): book.seriesOrder!,
+  };
+  double? position(Book book) =>
+      book.seriesOrder ?? positions[_titleKey(book.title)];
+  int? missingLast(Object? left, Object? right) => left == null
+      ? (right == null ? null : 1)
+      : right == null
+      ? -1
+      : null;
+  return books.toList()..sort((left, right) {
+    final leftPosition = position(left), rightPosition = position(right);
+    final order =
+        missingLast(leftPosition, rightPosition) ??
+        (leftPosition == null ? 0 : leftPosition.compareTo(rightPosition!));
+    if (order != 0) return order;
+    final explicit = missingLast(left.seriesOrder, right.seriesOrder) ?? 0;
+    if (explicit != 0) return explicit;
+    final year =
+        missingLast(left.year, right.year) ??
+        (left.year == null ? 0 : left.year!.compareTo(right.year!));
+    return year != 0 ? year : naturalCompare(left.title, right.title);
+  });
+}
+
+String _titleKey(String title) => title.trim().toLowerCase();
 
 List<ShelfItem> shelf(
   List<Book> books,

@@ -100,6 +100,21 @@ void main() {
     ]);
   });
 
+  test('an edition without a position sits next to its same-titled edition in the series', () {
+    final ordered = readingOrder([
+      _book('Windfall', series: 'S', order: 3, text: true, audio: false),
+      _book('First Frost', series: 'S'),
+      _book('First Frost', series: 'S', order: 1, text: true, audio: false),
+      _book('Graft', series: 'S'),
+    ]);
+    expect(ordered.map((book) => (book.title, book.seriesOrder)), [
+      ('First Frost', 1),
+      ('First Frost', null),
+      ('Windfall', 3),
+      ('Graft', null),
+    ]);
+  });
+
   test('a filter applies to books before they are grouped', () {
     expect(_names(shelf(books, ShelfFilter.ebooks, isDownloaded)), [
       'Graft',

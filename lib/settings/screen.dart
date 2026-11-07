@@ -101,21 +101,7 @@ class SettingsPage extends StatelessWidget {
               listenable: layout,
               builder: (context, _) => ListTile(
                 title: const Text('Layout density'),
-                trailing: SegmentedButton<LibraryDensity>(
-                  showSelectedIcon: false,
-                  segments: const [
-                    ButtonSegment(
-                      value: LibraryDensity.compact,
-                      label: Text('Compact'),
-                    ),
-                    ButtonSegment(
-                      value: LibraryDensity.spacious,
-                      label: Text('Spacious'),
-                    ),
-                  ],
-                  selected: {layout.density},
-                  onSelectionChanged: (value) => layout.density = value.single,
-                ),
+                trailing: DensitySwitch(layout: layout),
               ),
             ),
             ListTile(
@@ -202,6 +188,29 @@ class SettingsGroup extends StatelessWidget {
           ],
         ],
       ),
+    ),
+  );
+}
+
+/// Compact or spacious, as a light track with a white pill on the choice.
+class DensitySwitch extends StatelessWidget {
+  const DensitySwitch({super.key, required this.layout});
+  final LibraryLayout layout;
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.all(3),
+    decoration: BoxDecoration(
+      color: Theme.of(context).colorScheme.surfaceContainer,
+      borderRadius: BorderRadius.circular(99),
+    ),
+    child: SegmentedButton<LibraryDensity>(
+      showSelectedIcon: false,
+      segments: const [
+        ButtonSegment(value: LibraryDensity.compact, label: Text('Compact')),
+        ButtonSegment(value: LibraryDensity.spacious, label: Text('Spacious')),
+      ],
+      selected: {layout.density},
+      onSelectionChanged: (value) => layout.density = value.single,
     ),
   );
 }
