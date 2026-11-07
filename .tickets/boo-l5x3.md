@@ -1,6 +1,6 @@
 ---
 id: boo-l5x3
-status: open
+status: in_progress
 deps: []
 links: []
 created: 2026-11-07T21:30:01Z
