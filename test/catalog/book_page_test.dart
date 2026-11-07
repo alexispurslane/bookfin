@@ -3,10 +3,12 @@ import 'package:bookfin/catalog/controller.dart';
 import 'package:bookfin/catalog/jellyfin.dart';
 import 'package:bookfin/catalog/layout.dart';
 import 'package:bookfin/catalog/library_services.dart';
+import 'package:bookfin/catalog/library_view.dart' show SearchPage;
 import 'package:bookfin/catalog/model.dart';
 import 'package:bookfin/downloads/downloads.dart';
 import 'package:bookfin/downloads/screen.dart';
 import 'package:bookfin/foundation/theme.dart';
+import 'package:bookfin/playback/playback.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -14,6 +16,8 @@ import 'controller_test.dart'
     show MemoryCatalogStore, MemoryCredentials, FixtureClient;
 import 'layout_test.dart' show MemoryLayoutStore;
 import 'model_test.dart' show entry;
+import '../playback/playback_test.dart'
+    show LocalFiles, MemoryResume, TestEngine, account, title, recording;
 
 void main() {
   late CatalogController catalog;
@@ -164,6 +168,63 @@ void main() {
       ),
       findsOneWidget,
     );
+  });
+
+  group('a player opened from a library page', () {
+    late LocalFiles files;
+    late Playback playback;
+    setUp(() async {
+      files = LocalFiles();
+      playback = Playback(
+        downloads: files,
+        engine: TestEngine(),
+        store: MemoryResume(),
+      );
+      await playback.bind(account(), [title]);
+      await playback.open(title, recording, autoplay: false);
+    });
+    tearDown(() async {
+      await playback.close();
+      files.dispose();
+    });
+
+    /// Opens the player from the mini player on [page] and its More menu.
+    Future<void> openMore(WidgetTester tester, Widget page) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 2.625;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(
+        MaterialApp(theme: bookfinTheme(Brightness.light), home: page),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Open player'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('More player actions'));
+      await tester.pumpAndSettle();
+    }
+
+    LibraryServices services() => LibraryServices(
+      catalog: catalog,
+      layout: LibraryLayout(MemoryLayoutStore()),
+      onReaderNightChanged: (_) {},
+      playback: playback,
+    );
+
+    testWidgets('on search offers the book details', (tester) async {
+      await catalog.connect('https://books.example', 'alice', 'password');
+      await openMore(tester, SearchPage(services: services()));
+      expect(find.text('Book details'), findsOneWidget);
+    });
+
+    testWidgets('on a book page offers the book details', (tester) async {
+      await catalog.connect('https://books.example', 'alice', 'password');
+      await catalog.refresh(selected: {'books'});
+      await openMore(
+        tester,
+        BookPage(services: services(), bookId: catalog.books.single.id),
+      );
+      expect(find.text('Book details'), findsOneWidget);
+    });
   });
 }
 
