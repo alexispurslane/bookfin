@@ -267,7 +267,7 @@ List<Book> buildBooks(List<CatalogEntry> entries, {CatalogEdits? edits}) {
         final trackOrder = _index(left.entry.json['IndexNumber'])
             .compareTo(_index(right.entry.json['IndexNumber']));
         if (trackOrder != 0) return trackOrder;
-        final nameOrder = _naturalCompare(
+        final nameOrder = naturalCompare(
           left.entry.json['Name'] as String? ?? '',
           right.entry.json['Name'] as String? ?? '',
         );
@@ -337,7 +337,7 @@ List<Book> buildBooks(List<CatalogEntry> entries, {CatalogEdits? edits}) {
       ),
     );
   }
-  books.sort((left, right) => _naturalCompare(left.title, right.title));
+  books.sort((left, right) => naturalCompare(left.title, right.title));
   return List.unmodifiable(books);
 }
 
@@ -408,7 +408,7 @@ String _author(Map<String, dynamic> item) {
       (item['Artists'] as List? ?? []).join(', ');
 }
 
-int _naturalCompare(String left, String right) {
+int naturalCompare(String left, String right) {
   final parts = RegExp(r'\d+|\D+');
   final leftParts = parts
       .allMatches(left.toLowerCase())
