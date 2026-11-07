@@ -1,6 +1,6 @@
 ---
 id: boo-petv
-status: in_progress
+status: closed
 deps: [boo-y6fb]
 links: []
 created: 2026-11-07T19:02:10Z

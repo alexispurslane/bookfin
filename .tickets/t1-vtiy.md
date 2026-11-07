@@ -1,6 +1,6 @@
 ---
 id: t1-vtiy
-status: open
+status: in_progress
 deps: [t9-4jqk]
 links: []
 created: 2026-11-07T22:33:51Z
@@ -26,3 +26,9 @@ Owned files: lib/downloads/local_downloads.dart and its tests. Order: after t9-4
 
 With a downloaded edition, a localFile lookup that overlaps a Downloads.bind with a smaller book list that still holds the edition returns the file URI. A lookup that overlaps a bind without the edition, or with another account, returns null.
 
+
+## Notes
+
+**2026-11-07T22:35:52Z**
+
+Handed to the running t9-4jqk agent, which owns lib/downloads/local_downloads.dart; it lands with t9-4jqk's branch.
