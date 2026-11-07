@@ -276,7 +276,9 @@ void main() {
         await playback.flush();
       });
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Bookmarked'));
+      // The editor returns its text, and the code that opened it saves
+      // after it closes, so the opening tap runs on real time.
+      await tester.runAsync(() => tester.tap(find.text('Bookmarked')));
       await tester.pumpAndSettle();
       await save('Remember');
       expect(playback.bookmarks.single.title, 'Remember');
@@ -285,7 +287,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Remember'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Rename'));
+      await tester.runAsync(() => tester.tap(find.text('Rename')));
       await tester.pumpAndSettle();
       await save('Revised');
       expect(find.text('Revised'), findsOneWidget);

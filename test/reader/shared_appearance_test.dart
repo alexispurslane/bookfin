@@ -32,6 +32,7 @@ class ReadingApp {
   );
   AppearanceController appearance = AppearanceController(
     LocalAppearanceStore(),
+    clock: () => DateTime.utc(2026, 11, 2, 12),
   );
   late ReaderSession reader = newReader();
 
@@ -46,7 +47,6 @@ class ReadingApp {
     catalog: catalog,
     downloads: downloads,
     reader: reader,
-    clock: () => DateTime.utc(2026, 11, 2, 12),
   );
 
   Future<void> prepare(WidgetTester tester, AppearanceMode mode) async {
@@ -158,7 +158,10 @@ void main() {
         app.reader.dispose();
         await app.reader.flush();
         app.appearance.dispose();
-        app.appearance = AppearanceController(LocalAppearanceStore());
+        app.appearance = AppearanceController(
+          LocalAppearanceStore(),
+          clock: () => DateTime.utc(2026, 11, 2, 12),
+        );
         await app.appearance.restore();
         expect(app.appearance.settings.mode, choice.mode);
         expect(app.appearance.settings.location?.name, 'Tokyo');

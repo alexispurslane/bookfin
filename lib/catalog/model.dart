@@ -171,7 +171,14 @@ class Book {
   final int? year;
 }
 
+/// How many times this isolate ran [buildBooks]. Each isolate counts its own
+/// builds, so a test reads it to prove that the catalog builds its books in
+/// another isolate.
+int get booksBuilt => _booksBuilt;
+int _booksBuilt = 0;
+
 List<Book> buildBooks(List<CatalogEntry> entries, {CatalogEdits? edits}) {
+  _booksBuilt++;
   edits ??= CatalogEdits();
   final automatic = _seriesEditionLinks(entries);
   final byBook = <String, List<_SourceEdition>>{};
@@ -359,7 +366,7 @@ List<Book> possibleMatches(Book book, List<Book> books) => books
     .where(
       (candidate) =>
           candidate.id != book.id &&
-          (_title(candidate.title) == _title(book.title) ||
+          (titleMatchKey(candidate.title) == titleMatchKey(book.title) ||
               book.providerIds.entries.any(
                 (identifier) =>
                     identifier.value.isNotEmpty &&
@@ -368,7 +375,9 @@ List<Book> possibleMatches(Book book, List<Book> books) => books
     )
     .toList();
 
-String _title(String title) =>
+/// The form of a title that [possibleMatches] compares: lowercase, with only
+/// its letters and digits.
+String titleMatchKey(String title) =>
     title.toLowerCase().replaceAll(RegExp(r'[^\p{L}\p{N}]', unicode: true), '');
 
 /// Ebook items that join an audiobook automatically, by item id, mapped to

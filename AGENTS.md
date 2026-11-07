@@ -45,7 +45,8 @@ These are hard rules for all new and changed code under the UI. When you touch c
 2. Start from the cache, then backfill silently. The fastest possible start is a product goal.
    - At launch, show the last known state from local storage first: the library, the shelf, the open book, and its position. Network requests are never on the path to the first useful frame.
    - Cached information is fully usable. The user can browse, open, play, and read from it before any refresh finishes.
-   - Refresh in the background and replace the shown data in place when the new data arrives. Do not show spinners, banners, or "saved" labels for a background refresh. Report a failure only when the user asked for the refresh or when it blocks something the user is doing.
+   - Refresh in the background and replace the shown data in place when the new data arrives. Do not show banners or "saved" labels for a background refresh. Show a thin progress line only after a refresh runs longer than 1.5 seconds.
+   - If Jellyfin cannot be reached (a network error, a timeout, or a server error), the library shows only downloaded books and a short message that says so. A later refresh that reaches Jellyfin brings the full library back. Report other failures only when the user asked for the refresh or when the failure blocks something the user is doing.
    - A data source owns its cache and its refresh. Widgets do not know whether a value came from disk or from the server.
 3. Never lose listening history or a place in a book. Losing either is discouraging, so it counts as data loss.
    - Write position, history, and bookmark changes to local storage first, then sync. A failed or slow sync never discards a local change.

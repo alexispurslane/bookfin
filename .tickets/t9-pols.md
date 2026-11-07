@@ -1,6 +1,6 @@
 ---
 id: t9-pols
-status: open
+status: closed
 deps: [t9-se8f, t9-dcld]
 links: []
 created: 2026-11-07T22:09:38Z
@@ -25,7 +25,9 @@ Target design:
 - A RecordSyncPage controller owns Sync now and resolve. RecordSyncView becomes a leaf that gets the sync state and the catalog's library listenable and reports onSync and onResolve(record, identity).
 - RecordSync tells a user-started sync from a background sync. It exposes narrow listenables: the status of a user-started sync or resolve (busy and message), and the conflicts. A background sync changes the conflicts. What else it shows is the open decision below.
 
-Open decision: what the sync page shows after a background sync.
+Decided by the user on November 7, 2026: Option B. The Sync page shows a quiet line such as "Last synced 4:29 PM" or "Last sync failed. Tap Sync now to retry.", with no busy state during a background sync.
+
+Former open decision: what the sync page shows after a background sync.
 - Option A: nothing. Only Sync now and resolve show busy and a result. Cost: the user cannot see when the last background sync ran or that it failed, unless the user taps Sync now.
 - Option B: a quiet line such as "Last synced 4:29 PM" or "Last sync failed. Tap Sync now to retry.", with no busy state during a background sync. Cost: a status line that a strict reading of engine rule 2 forbids, shown only on this page.
 

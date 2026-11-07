@@ -187,7 +187,9 @@ void main() {
   ) async {
     await tester.runAsync(() => playback.addBookmark());
     await showPlayer(tester);
-    await tester.tap(find.text('Bookmarked'));
+    // The editor returns its text, and the code that opened it saves
+    // after it closes, so the opening tap runs on real time.
+    await tester.runAsync(() => tester.tap(find.text('Bookmarked')));
     await tester.pumpAndSettle();
     await tester.enterText(
       find.widgetWithText(TextField, 'Title (optional)'),

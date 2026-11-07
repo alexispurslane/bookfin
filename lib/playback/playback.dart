@@ -137,6 +137,23 @@ class AudioReplacement {
 
 typedef RecentListening = ({Book book, Edition edition, DateTime at});
 
+/// The open book and edition, and whether their audio plays. [active] is
+/// true from a play command until a pause, a stop or the end of the
+/// edition; [playing] is true while the decoder reports sound.
+typedef PlaybackSelection = ({
+  Book? book,
+  Edition? edition,
+  bool playing,
+  bool active,
+});
+
+/// The listening settings: the speed, and the short jump lengths in seconds.
+typedef PlaybackSettings = ({double speed, int backward, int forward});
+
+/// The message to show about listening, if any, and whether the personal
+/// records of the bound account failed to save.
+typedef PlaybackStatus = ({String? message, bool saveFailed});
+
 class Playback extends ChangeNotifier {
   Playback({
     required this.downloads,
@@ -177,6 +194,8 @@ class Playback extends ChangeNotifier {
   Map<String, List<Map<String, dynamic>>> _resumes = {};
   String? _selected;
   Timer? _sleep;
+  // Ticks once a second while [_sleep] runs, to count the time left down.
+  Timer? _sleepCountdown;
   DateTime? _sleepDeadline;
   Duration? _sleepTimer;
   Future<void> _operations = Future.value();
@@ -226,6 +245,45 @@ class Playback extends ChangeNotifier {
   int _recordRevision = 0;
   String? _recordedDecoderAnchor;
   AudioReplacement? _replacementStart;
+  late final _positionSignal = ValueNotifier<AudioPosition?>(_position);
+  late final _selectionSignal = ValueNotifier<PlaybackSelection>(_selection);
+  late final _sleepSignal = ValueNotifier<Duration?>(_sleepLeft);
+  late final _recordsSignal = ValueNotifier<Object>(_records);
+  late final _settingsSignal = ValueNotifier<PlaybackSettings>(_settings);
+  late final _statusSignal = ValueNotifier<PlaybackStatus>(_status);
+
+  // Playback notifies through itself for every change, and through these
+  // narrow signals for one kind of change each. A widget that shows one
+  // value follows the signal of that value. Every signal holds the state
+  // that [_publish] last read, so it notifies only when its own value
+  // changed. Positions and records compare by identity: each new decoder
+  // report is a new position, and a records change replaces its list.
+
+  /// The position of the open edition, or null when none is open. It
+  /// notifies on each decoder report while audio plays, a seek, a restore,
+  /// and when another edition opens. A report that repeats the same place
+  /// also notifies, so that a follower such as the media session can tell
+  /// that the player stalled.
+  ValueListenable<AudioPosition?> get positionNotifier => _positionSignal;
+
+  /// The open book and edition, and whether they play.
+  ValueListenable<PlaybackSelection> get selectionNotifier => _selectionSignal;
+
+  /// The time left on the sleep timer in whole seconds, or null when no
+  /// sleep timer runs. It counts down once a second while the timer runs.
+  ValueListenable<Duration?> get sleepNotifier => _sleepSignal;
+
+  /// Notifies when the history, the bookmarks or the saved resumes change:
+  /// an added or deleted record, a recorded action, a refresh from storage,
+  /// or another account. The resume of the open edition follows its
+  /// position on each save, so [positionNotifier] carries that change.
+  Listenable get recordsNotifier => _recordsSignal;
+
+  /// The listening speed and the short jump lengths.
+  ValueListenable<PlaybackSettings> get settingsNotifier => _settingsSignal;
+
+  /// The message to show, and whether the records failed to save.
+  ValueListenable<PlaybackStatus> get statusNotifier => _statusSignal;
 
   /// The listening actions, newest first. The list stays the same object
   /// until the history changes.
@@ -324,10 +382,7 @@ class Playback extends ChangeNotifier {
   }
 
   String sourceName(AudioPosition position) =>
-      _books
-          .expand((book) => book.editions)
-          .where((edition) => edition.id == position.editionId)
-          .expand((edition) => edition.files)
+      _editions[position.editionId]?.$2.files
           .where((file) => file.key == position.sourceKey)
           .firstOrNull
           ?.displayName ??
@@ -535,15 +590,7 @@ class Playback extends ChangeNotifier {
     ListeningAction kind,
   ) async {
     if (!_restored) return false;
-    final book = _books
-        .where(
-          (book) =>
-              book.editions.any((edition) => edition.id == target.editionId),
-        )
-        .firstOrNull;
-    final edition = book?.editions
-        .where((edition) => edition.id == target.editionId)
-        .firstOrNull;
+    final (book, edition) = _editions[target.editionId] ?? (null, null);
     if (edition == null || !target.fits(edition)) {
       _message = 'The saved audio source changed or is unavailable. Its personal records were kept but were not applied.';
       _notify();
@@ -602,13 +649,10 @@ class Playback extends ChangeNotifier {
   /// The length chosen for the running sleep timer, or null when none runs.
   Duration? get sleepTimer => _sleepTimer;
 
-  int? get durationMilliseconds {
-    final files = _edition?.files;
-    if (files == null || files.any((file) => file.durationMs == null)) {
-      return null;
-    }
-    return files.fold<int>(0, (total, file) => total + file.durationMs!);
-  }
+  /// The length of the open edition in milliseconds, or null when none is
+  /// open or a file has no known length.
+  int? get durationMilliseconds =>
+      _edition == null ? null : _layout(_edition!).totalMs;
 
   /// Where [position] is in its audio edition, in milliseconds from the
   /// edition's start. Null when the edition is not in the library, or when a
@@ -621,27 +665,26 @@ class Playback extends ChangeNotifier {
   }
 
   static int? _editionTime(Edition edition, AudioPosition position) {
-    final start = _fileStarts(edition)[position.sourceKey];
+    final start = _layout(edition).starts[position.sourceKey];
     return start == null ? null : start + position.milliseconds;
   }
 
-  static final _starts = Expando<Map<String, int?>>();
+  static final _layouts = Expando<_EditionLayout>();
 
-  /// Where each file of [edition] starts in the edition, in milliseconds, by
-  /// file key. A start is null when an earlier file has no known length. An
-  /// edition never changes, so its starts are found once.
-  static Map<String, int?> _fileStarts(Edition edition) =>
-      _starts[edition] ??= () {
-        final starts = <String, int?>{};
-        int? offset = 0;
-        for (final file in edition.files) {
-          starts.putIfAbsent(file.key, () => offset);
-          offset = offset == null || file.durationMs == null
-              ? null
-              : offset + file.durationMs!;
-        }
-        return starts;
-      }();
+  /// Where each file of [edition] starts in the edition, and how long the
+  /// edition is, in milliseconds. An edition never changes, so its layout is
+  /// found once.
+  static _EditionLayout _layout(Edition edition) => _layouts[edition] ??= () {
+    final starts = <String, int?>{};
+    int? offset = 0;
+    for (final file in edition.files) {
+      starts.putIfAbsent(file.key, () => offset);
+      offset = offset == null || file.durationMs == null
+          ? null
+          : offset + file.durationMs!;
+    }
+    return (starts: starts, totalMs: offset);
+  }();
 
   /// The bookmarks of the open edition, newest first, each with where it is
   /// in the edition. A bookmark whose place cannot be measured is left out.
@@ -691,16 +734,11 @@ class Playback extends ChangeNotifier {
         ? _position
         : _readPosition(edition);
     if (position == null || !position.fits(edition)) return null;
-    int? elapsed;
-    var total = 0;
-    for (final file in edition.files) {
-      if (file.key == position.sourceKey) {
-        elapsed = total + position.milliseconds;
-      }
-      if (file.durationMs == null) return null;
-      total += file.durationMs!;
-    }
-    return elapsed == null ? null : (elapsedMs: elapsed, totalMs: total);
+    final total = _layout(edition).totalMs;
+    final elapsed = _editionTime(edition, position);
+    return total == null || elapsed == null
+        ? null
+        : (elapsedMs: elapsed, totalMs: total);
   }
 
   /// The chapters of the open edition in order. A file without a chapter at
@@ -710,7 +748,7 @@ class Playback extends ChangeNotifier {
     final edition = _edition;
     if (edition == null) return const [];
     final chapters = <PlaybackChapter>[];
-    final starts = _fileStarts(edition);
+    final starts = _layout(edition).starts;
     for (final file in edition.files) {
       final offset = starts[file.key];
       if (!file.chapters.any((chapter) => chapter.startMs == 0)) {
@@ -789,22 +827,15 @@ class Playback extends ChangeNotifier {
       final generation = _generation;
       _session = session;
       if (_edition != null) {
-        final current = books
-            .expand((book) => book.editions)
-            .where((edition) => edition.id == _edition!.id)
-            .firstOrNull;
+        final current = _editions[_edition!.id];
         if (current == null ||
-            _position?.fits(current) != true ||
-            !listEquals(
-              current.files.map((file) => file.key).toList(),
-              _edition!.files.map((file) => file.key).toList(),
-            ) ||
-            _editionSources(current) != _editionSources(_edition!)) {
+            _position?.fits(current.$2) != true ||
+            !_sameEdition(current.$2, _edition!)) {
           await bind(null, []);
           await bind(session, books);
         } else {
-          _edition = current;
-          _book = books.firstWhere((book) => book.editions.contains(current));
+          _book = current.$1;
+          _edition = current.$2;
           _notify();
         }
       }
@@ -813,8 +844,7 @@ class Playback extends ChangeNotifier {
       // The library can arrive after the account, so the saved book may
       // only now be in [books].
       if (_edition == null && _restored) {
-        final (book, edition) = _selectedEdition();
-        if (book != null && edition != null) {
+        if (_selectedEdition() case (final book, final edition)) {
           final resume = _readPosition(edition);
           if (resume != null && !_resumeFits(edition, _resumeRecord(edition))) {
             _offerReplacement(book, edition, resume);
@@ -950,24 +980,16 @@ class Playback extends ChangeNotifier {
   }
 
   /// The bound book and edition that were open when this account last saved.
-  (Book?, Edition?) _selectedEdition() {
-    final book = _books
-        .where(
-          (book) => book.editions.any((edition) => edition.id == _selected),
-        )
-        .firstOrNull;
-    return (
-      book,
-      book?.editions.where((edition) => edition.id == _selected).firstOrNull,
-    );
-  }
+  (Book, Edition)? _selectedEdition() =>
+      _selected == null ? null : _editions[_selected];
 
   /// Reopens the edition that was open when this account last saved, paused
   /// at its saved position. Does nothing while that edition is not in the
   /// bound books.
   Future<void> _restoreSelected() async {
-    final (book, edition) = _selectedEdition();
-    if (book == null || edition == null) return;
+    final selected = _selectedEdition();
+    if (selected == null) return;
+    final (book, edition) = selected;
     final resume = _readPosition(edition);
     if (resume == null || !_resumeFits(edition, _resumeRecord(edition))) {
       _message = 'The saved audio source changed. Its resume is kept but was not applied.';
@@ -984,12 +1006,35 @@ class Playback extends ChangeNotifier {
     return jsonEncode(sources);
   }
 
-  bool _currentEdition(Book book, Edition edition) =>
-      _session != null &&
-      _books.any(
-        (candidate) =>
-            candidate.id == book.id && candidate.editions.contains(edition),
+  /// Whether [a] and [b] describe the same audio: the same edition id, and
+  /// the same source files in the same order at the same revisions. A library
+  /// refresh rebuilds every book and edition as new objects, so identity
+  /// cannot tell whether the audio changed.
+  bool _sameEdition(Edition a, Edition b) =>
+      a.id == b.id &&
+      listEquals(
+        [for (final file in a.files) (file.key, file.revision)],
+        [for (final file in b.files) (file.key, file.revision)],
       );
+
+  /// The bound objects of [edition] in [book], or null when the bound
+  /// account's library no longer has that book with the same audio. Work
+  /// that waits uses this after each wait, so a library refresh that
+  /// replaces equal objects neither stops it nor leaves it holding the old
+  /// objects.
+  (Book, Edition)? _bound(Book book, Edition edition) {
+    if (_session == null) return null;
+    final found = _editions[edition.id];
+    if (found == null ||
+        found.$1.id != book.id ||
+        !_sameEdition(found.$2, edition)) {
+      return null;
+    }
+    return found;
+  }
+
+  bool _currentEdition(Book book, Edition edition) =>
+      _bound(book, edition) != null;
 
   void _offerReplacement(Book book, Edition edition, AudioPosition resume) {
     if (!_restored || !_currentEdition(book, edition)) return;
@@ -1040,11 +1085,13 @@ class Playback extends ChangeNotifier {
     ListeningAction? action,
     AudioReplacement? replacement,
   }) async {
-    if (!_currentEdition(book, edition) ||
+    var bound = _bound(book, edition);
+    if (bound == null ||
         edition.kind != EditionKind.audio ||
         edition.files.isEmpty) {
       throw ArgumentError('Choose an audio edition from the current account.');
     }
+    (book, edition) = bound;
     if (!_restored) {
       _message = 'Cannot restore listening records. Restart Bookfin before listening. Saved listening data was not removed.';
       _notify();
@@ -1054,9 +1101,10 @@ class Playback extends ChangeNotifier {
     final files = <Uri>[];
     for (final file in edition.files) {
       final uri = await downloads.localFile(file);
-      if (generation != _generation || !_currentEdition(book, edition)) {
-        return false;
-      }
+      if (generation != _generation) return false;
+      bound = _bound(book, edition);
+      if (bound == null) return false;
+      (book, edition) = bound;
       if (uri == null || uri.scheme != 'file') {
         _message =
             'Download every file in this audio edition before listening.';
@@ -1090,7 +1138,8 @@ class Playback extends ChangeNotifier {
       final confirmed = target == null
           ? AudioSample(fileIndex, resume?.milliseconds ?? 0)
           : await engine.seek(fileIndex, target.milliseconds);
-      if (generation != _generation ||
+      bound = generation == _generation ? _bound(book, edition) : null;
+      if (bound == null ||
           replacement != null && !identical(replacement, _replacementStart)) {
         await engine.pause();
         if (generation == _generation) {
@@ -1100,6 +1149,7 @@ class Playback extends ChangeNotifier {
         }
         return false;
       }
+      (book, edition) = bound;
       if (confirmed.fileIndex < 0 ||
           confirmed.fileIndex >= edition.files.length) {
         throw const FormatException(
@@ -1410,8 +1460,13 @@ class Playback extends ChangeNotifier {
       _sleepTimer = duration;
       _sleep = Timer(duration, () {
         _cancelSleep();
+        _publishSleep();
         unawaited(pause());
       });
+      _sleepCountdown = Timer.periodic(
+        const Duration(seconds: 1),
+        (_) => _publishSleep(),
+      );
     }
     _notify();
   });
@@ -1419,10 +1474,24 @@ class Playback extends ChangeNotifier {
   void _cancelSleep() {
     _sleep?.cancel();
     _sleep = null;
+    _sleepCountdown?.cancel();
+    _sleepCountdown = null;
     _sleepDeadline = null;
     _sleepTimer = null;
   }
 
+  /// The time left on the sleep timer, counted on the timers' own clock.
+  Duration? get _sleepLeft => _sleepTimer == null
+      ? null
+      : _sleepTimer! - Duration(seconds: _sleepCountdown!.tick);
+
+  void _publishSleep() {
+    if (!_closed) _sleepSignal.value = _sleepLeft;
+  }
+
+  // NOTE: This encode stays on the UI isolate. It encodes a few short
+  // strings once per save, about once a second, which costs far less than
+  // the fixed cost of a hop to another isolate.
   String? get _decoderAnchor => _position == null || _edition == null
       ? null
       : jsonEncode([_editionSources(_edition!), encodePosition(_position!)]);
@@ -1535,27 +1604,90 @@ class Playback extends ChangeNotifier {
     _cancelSleep();
     await _samples.cancel();
     await engine.close();
+    for (final signal in _signals) {
+      signal.dispose();
+    }
     super.dispose();
   }
 
+  List<ChangeNotifier> get _signals => [
+    _positionSignal,
+    _selectionSignal,
+    _sleepSignal,
+    _recordsSignal,
+    _settingsSignal,
+    _statusSignal,
+  ];
+
+  /// Publishes the current state to the narrow signals, then to the broad
+  /// listeners.
   void _notify() {
-    if (!_closed) notifyListeners();
+    if (_closed) return;
+    _publish();
+    notifyListeners();
   }
 
+  /// Shows the current state in each narrow signal. A signal notifies only
+  /// when its own value changed.
+  void _publish() {
+    _positionSignal.value = _position;
+    _selectionSignal.value = _selection;
+    _sleepSignal.value = _sleepLeft;
+    _recordsSignal.value = _records;
+    _settingsSignal.value = _settings;
+    _statusSignal.value = _status;
+  }
+
+  PlaybackSelection get _selection =>
+      (book: _book, edition: _edition, playing: _playing, active: _active);
+
+  PlaybackSettings get _settings =>
+      (speed: _speed, backward: _backward, forward: _forward);
+
+  PlaybackStatus get _status => (message: _message, saveFailed: saveFailed);
+
+  // The record lists and the resume map are replaced, never changed in
+  // place, when records change, so their identities tell whether they
+  // changed. [_save] changes the open edition's resume in place.
+  Object get _records => (_historyList, _bookmarkList, _resumes);
+
+  /// Throws a [StateError] when an invariant fails. Run it on demand from a
+  /// test or a debug switch, when no command is in flight:
+  /// - The selection, the position and the account agree, and the open book
+  ///   and edition are the bound library's own objects.
+  /// - A sleep timer, its length, its deadline and its countdown agree.
+  /// - Each narrow signal shows the state that it names.
+  /// - The personal records, the pending writes and the replacement offer
+  ///   agree.
   void checkInvariants() {
     if ((_edition == null) != (_position == null) ||
         (_edition == null) != (_book == null) ||
         _decoderReady && _edition == null ||
         _playing && _position == null ||
         _position != null &&
-            (!_position!.fits(_edition!) || _session == null)) {
+            (!_position!.fits(_edition!) || _session == null) ||
+        _edition != null &&
+            (!identical(_editions[_edition!.id]?.$1, _book) ||
+                !identical(_editions[_edition!.id]?.$2, _edition))) {
       throw StateError(
         'Playback selection, source position, and account must agree.',
       );
     }
     if ((_sleep == null) != (_sleepTimer == null) ||
-        (_sleepTimer == null) != (_sleepDeadline == null)) {
-      throw StateError('A sleep timer, its length and its deadline agree.');
+        (_sleepTimer == null) != (_sleepDeadline == null) ||
+        (_sleepTimer == null) != (_sleepCountdown == null)) {
+      throw StateError(
+        'A sleep timer, its length, its deadline and its countdown agree.',
+      );
+    }
+    if (!_closed &&
+        (!identical(_positionSignal.value, _position) ||
+            _selectionSignal.value != _selection ||
+            _sleepSignal.value != _sleepLeft ||
+            _recordsSignal.value != _records ||
+            _settingsSignal.value != _settings ||
+            _statusSignal.value != _status)) {
+      throw StateError('Each narrow signal shows the state that it names.');
     }
     if (_history.map((event) => event.id).toSet().length != _history.length ||
         _bookmarks.map((bookmark) => bookmark.id).toSet().length !=
@@ -1582,6 +1714,11 @@ class Playback extends ChangeNotifier {
     }
   }
 }
+
+/// Where each file of an edition starts in it, by file key, and the edition's
+/// length, in milliseconds. A start is null when an earlier file has no
+/// known length, and the length is null when any file has none.
+typedef _EditionLayout = ({Map<String, int?> starts, int? totalMs});
 
 /// A bookmark of the open edition, and where it is in the edition, in
 /// milliseconds from the edition's start.

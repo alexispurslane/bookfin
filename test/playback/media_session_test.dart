@@ -9,6 +9,17 @@ import 'package:flutter_test/flutter_test.dart';
 import 'playback_test.dart'
     show LocalFiles, TestEngine, MemoryResume, account, title, recording;
 
+/// A playback that tells whether anything follows its broad notifications,
+/// which fire for every change, including each player tick.
+class WatchedPlayback extends Playback {
+  WatchedPlayback({
+    required super.downloads,
+    required super.engine,
+    required super.store,
+  });
+  bool get followedBroadly => hasListeners;
+}
+
 // Android's media session projects the shown position from the last published
 // position, its update time and its speed. These tests run in fake time, so
 // the projection and the player ticks share one clock.
@@ -110,6 +121,42 @@ void main() {
       expect(handler.playbackState.value.playing, isFalse);
       expect(handler.playbackState.value.controls, contains(MediaControl.play));
       await finish(tester, playback.close());
+    },
+  );
+
+  testWidgets('a pause from the player reaches the session at once', (
+    tester,
+  ) async {
+    final (playback, engine, handler) = await listen(tester);
+    await play(tester, engine, ticks: 2);
+    expect(handler.playbackState.value.playing, isTrue);
+    // An interruption: the decoder stops without a pause command.
+    engine.emit(0, engine.milliseconds);
+    expect(handler.playbackState.value.playing, isFalse);
+    expect(handler.playbackState.value.controls, contains(MediaControl.play));
+    await finish(tester, playback.close());
+  });
+
+  test(
+    'the session follows only the selection, the position and the settings',
+    () async {
+      final downloads = LocalFiles();
+      final playback = WatchedPlayback(
+        downloads: downloads,
+        engine: TestEngine(),
+        store: MemoryResume(),
+      );
+      addTearDown(() async {
+        await playback.close();
+        downloads.dispose();
+      });
+      await playback.bind(account(), [title]);
+      await playback.open(title, recording, autoplay: false);
+      final handler = PlaybackHandler()..attach(playback);
+      expect(playback.followedBroadly, isFalse);
+      final state = handler.playbackState.value;
+      await playback.addBookmark(title: 'Here');
+      expect(handler.playbackState.value, same(state));
     },
   );
 

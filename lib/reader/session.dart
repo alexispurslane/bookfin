@@ -21,13 +21,40 @@ typedef DocumentLoader = Future<ReaderDocument> Function(
 );
 typedef VisibleLocation = ReadingLocation;
 
+/// The open book, its place, and the account's reading records.
+///
+/// The session notifies its own listeners once for each change of any part
+/// of its visible state. Each part also has its own signal, so a widget can
+/// follow only the part that it shows. A change that leaves every part as it
+/// was, such as a finished write, notifies nothing.
 class ReaderSession extends ChangeNotifier {
   ReaderSession({
     required this.downloads,
     required this.store,
     required this.load,
     this.loadDocument,
-  });
+  }) {
+    _signals = [
+      _placeChanges = _Signal(() => (_visibleAddress, _position)),
+      _documentChanges = _Signal(
+        () => (
+          _token,
+          _book,
+          _edition,
+          _document,
+          _navigator,
+          _loading,
+          _message,
+          _contents,
+          _initialAddress,
+        ),
+      ),
+      _bookmarkChanges = _Signal(() => (_bookmarks, _edition, _recordsReady)),
+      _searchChanges = _Signal(() => (_searching, _hits, _searchError)),
+      _fontSizeChanges = _Signal(() => _fontSize),
+      _saveStatusChanges = _Signal(() => saveFailed),
+    ];
+  }
   final Downloads downloads;
   final ResumeStore store;
   final PublicationLoader load;
@@ -79,7 +106,9 @@ class ReaderSession extends ChangeNotifier {
   String? _credential;
   List<Book> _books = [];
   final List<TextPosition> _resumes = [];
-  final List<TextBookmark> _bookmarks = [];
+  // NOTE: Replace this list on each change, never change it in place.
+  // [bookmarkChanges] compares lists by identity.
+  List<TextBookmark> _bookmarks = const [];
   bool _disposed = false;
   bool _recordsReady = false;
   int _accountGeneration = 0;
@@ -89,6 +118,41 @@ class ReaderSession extends ChangeNotifier {
   final _failedAccounts = <String>{};
   int _search = 0;
   int _recordRevision = 0;
+
+  /// Notifies when the visible place changes: [visibleAddress],
+  /// [visibleLocation] and [position]. A page turn notifies only this signal.
+  Listenable get placeChanges => _placeChanges;
+
+  /// Notifies when the open book changes: [book], [edition], [document],
+  /// [publication], [ready], [loading], [token], [contents],
+  /// [initialAddress] and the opening part of [message]. [message] also
+  /// follows [saveStatusChanges].
+  Listenable get documentChanges => _documentChanges;
+
+  /// Notifies when [bookmarks] changes, which includes opening another
+  /// edition and loading the account's records. [canBookmark] follows this
+  /// signal and [placeChanges].
+  Listenable get bookmarkChanges => _bookmarkChanges;
+
+  /// Notifies when [searching], [hits] or [searchError] changes.
+  Listenable get searchChanges => _searchChanges;
+
+  /// Notifies when [fontSize] changes.
+  Listenable get fontSizeChanges => _fontSizeChanges;
+
+  /// Notifies when [saveFailed] changes.
+  Listenable get saveStatusChanges => _saveStatusChanges;
+
+  /// Whether the account has reading records that the store did not accept.
+  /// The session keeps them and retries on each later write or [flush].
+  bool get saveFailed => _failedAccounts.contains(_account);
+  late final _Signal _placeChanges;
+  late final _Signal _documentChanges;
+  late final _Signal _bookmarkChanges;
+  late final _Signal _searchChanges;
+  late final _Signal _fontSizeChanges;
+  late final _Signal _saveStatusChanges;
+  late final List<_Signal> _signals;
 
   bool get ready => document != null && _navigator != null;
   bool get canBookmark => _recordsReady && position != null;
@@ -115,7 +179,7 @@ class ReaderSession extends ChangeNotifier {
     _credential = account?.token;
     _clear();
     _resumes.clear();
-    _bookmarks.clear();
+    _bookmarks = const [];
     _recordsReady = false;
     _fontSize = 20;
     final generation = ++_accountGeneration;
@@ -154,7 +218,7 @@ class ReaderSession extends ChangeNotifier {
             throw const FormatException('Duplicate reading bookmarks.');
           }
           _resumes.addAll(resumes);
-          _bookmarks.addAll(bookmarks);
+          _bookmarks = bookmarks;
           final size = saved['fontSize'];
           if (size is num && size.isFinite) {
             _fontSize = size.toDouble().clamp(14, 40);
@@ -395,7 +459,8 @@ class ReaderSession extends ChangeNotifier {
   Future<void> addBookmark({String? title, String? note}) async {
     final current = position;
     if (current == null || !_recordsReady) return;
-    _bookmarks.add(
+    _bookmarks = [
+      ..._bookmarks,
       TextBookmark(
         id: recordId(),
         position: current,
@@ -403,7 +468,7 @@ class ReaderSession extends ChangeNotifier {
         title: title,
         note: note,
       ),
-    );
+    ];
     await _save();
     _emit();
   }
@@ -412,19 +477,20 @@ class ReaderSession extends ChangeNotifier {
     final index = _bookmarks.indexWhere((value) => value.id == id);
     if (index < 0) return;
     final old = _bookmarks[index];
-    _bookmarks[index] = TextBookmark(
-      id: old.id,
-      position: old.position,
-      createdAt: old.createdAt,
-      title: title,
-      note: note,
-    );
+    _bookmarks = List.of(_bookmarks)
+      ..[index] = TextBookmark(
+        id: old.id,
+        position: old.position,
+        createdAt: old.createdAt,
+        title: title,
+        note: note,
+      );
     await _save();
     _emit();
   }
 
   Future<void> deleteBookmark(String id) async {
-    _bookmarks.removeWhere((value) => value.id == id);
+    _bookmarks = _bookmarks.where((value) => value.id != id).toList();
     await _save();
     _emit();
   }
@@ -579,9 +645,7 @@ class ReaderSession extends ChangeNotifier {
     _resumes
       ..clear()
       ..addAll(resumes);
-    _bookmarks
-      ..clear()
-      ..addAll(bookmarks);
+    _bookmarks = bookmarks;
     store.acceptSnapshot(account, saved);
     _emit();
   }
@@ -604,8 +668,15 @@ class ReaderSession extends ChangeNotifier {
     }
   }
 
+  /// Notifies each signal whose part changed, then the session once if any
+  /// part changed.
   void _emit() {
-    if (!_disposed) notifyListeners();
+    if (_disposed) return;
+    var changed = false;
+    for (final signal in _signals) {
+      if (signal.publish()) changed = true;
+    }
+    if (changed) notifyListeners();
   }
 
   @override
@@ -613,6 +684,29 @@ class ReaderSession extends ChangeNotifier {
     _disposed = true;
     _clear();
     unawaited(_retryPending());
+    for (final signal in _signals) {
+      signal.dispose();
+    }
     super.dispose();
+  }
+}
+
+/// The change signal of one part of the session's visible state.
+class _Signal extends ChangeNotifier {
+  _Signal(this._read) : _published = _read();
+
+  /// Reads the part's state as a value that is `==` to an earlier value
+  /// exactly when the part did not change.
+  final Object? Function() _read;
+  Object? _published;
+
+  /// Notifies if the part changed since the last call, and says whether it
+  /// did.
+  bool publish() {
+    final state = _read();
+    if (state == _published) return false;
+    _published = state;
+    notifyListeners();
+    return true;
   }
 }

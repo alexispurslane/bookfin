@@ -1,6 +1,6 @@
 ---
 id: t9-se8f
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-07T22:09:38Z
@@ -41,3 +41,9 @@ Owned files: lib/catalog/controller.dart, lib/catalog/store.dart, lib/catalog/mo
 - search and shelfOf give the same results as today's functions for a fixture library. The existing shelf tests pass.
 - checkInvariants also proves that the library view matches the books.
 
+
+## Notes
+
+**2026-11-07T22:26:04Z**
+
+User decision (see boo-0km1): the catalog's status signal must say whether the last refresh could not reach Jellyfin (network error, timeout or server error), separately from auth expiry and revoked access, and when a later refresh succeeds. The shelf shows only downloaded books while unreachable. The 1.5 s delay before the progress line is UI state, not catalog state.

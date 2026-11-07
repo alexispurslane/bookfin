@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -23,21 +24,71 @@ class LocalAppearanceStore implements AppearanceStore {
 
 enum PreferenceSaveState { saved, saving, failed }
 
+/// The saved appearance choice, and the theme that it gives now.
+///
+/// Listeners hear every change of the choice, its save state and its
+/// warning. [decision] changes only when the theme changes: at a sunrise or a
+/// sunset, on a new choice, or on a new platform brightness.
+///
+/// Invariants, checked by [checkInvariants]:
+/// - A pending save has no warning, and a failed save has one.
+/// - A timer for the next theme change runs only while the app is in front.
 class AppearanceController extends ChangeNotifier {
-  AppearanceController(this._store);
+  AppearanceController(this._store, {this.clock = DateTime.now});
 
   final AppearanceStore _store;
+
+  /// The current instant, for sunrise and sunset.
+  final DateTime Function() clock;
   AppearanceSettings _settings = const AppearanceSettings();
   PreferenceSaveState _saveState = PreferenceSaveState.saved;
   String? _warning;
   Future<void> _writes = Future.value();
   bool _disposed = false;
+  Brightness _platformBrightness = Brightness.light;
+
+  /// Whether the app is in front, so that the theme must follow the sun.
+  bool _inFront = false;
+
+  /// Fires when [decision] must be worked out again.
+  Timer? _nextCheck;
+
+  late final _decision = ValueNotifier(_resolve(clock()));
+
+  /// The theme of the app now. It changes only when its brightness or its
+  /// description changes.
+  ValueListenable<AppearanceDecision> get decision => _decision;
 
   AppearanceSettings get settings => _settings;
   PreferenceSaveState get saveState => _saveState;
   String? get warning => _warning;
 
+  /// Tells the controller the brightness that the phone's own appearance
+  /// asks for. Automatic appearance without a location follows it.
+  void platformBrightnessChanged(Brightness brightness) {
+    _platformBrightness = brightness;
+    _decide();
+  }
+
+  /// The app came to the front. The theme follows the sun again, and catches
+  /// up at once with any sunrise or sunset that passed in the background.
+  void resume() {
+    _inFront = true;
+    _decide();
+  }
+
+  /// The app left the front. No timer wakes the phone for the theme until
+  /// [resume].
+  void suspend() {
+    _inFront = false;
+    _nextCheck?.cancel();
+    _nextCheck = null;
+  }
+
   void checkInvariants() {
+    if (!_inFront && _nextCheck != null) {
+      throw StateError('Only an app in front waits for the next theme.');
+    }
     if (_saveState == PreferenceSaveState.saving && _warning != null) {
       throw StateError('A pending save cannot already have a save warning.');
     }
@@ -56,6 +107,7 @@ class AppearanceController extends ChangeNotifier {
       _warning =
           'Saved appearance could not be read. Using automatic appearance.';
     }
+    _decide();
     _notify();
   }
 
@@ -69,6 +121,7 @@ class AppearanceController extends ChangeNotifier {
     _settings = next;
     _saveState = PreferenceSaveState.saving;
     _warning = null;
+    _decide();
     _notify();
     _writes = _writes.then((_) async {
       try {
@@ -85,6 +138,23 @@ class AppearanceController extends ChangeNotifier {
     return _writes;
   }
 
+  AppearanceDecision _resolve(DateTime now) =>
+      resolveAppearance(_settings, now, _platformBrightness);
+
+  /// Works out the theme now, and sets a timer for its next change while the
+  /// app is in front.
+  void _decide() {
+    if (_disposed) return;
+    final now = clock();
+    _decision.value = _resolve(now);
+    _nextCheck?.cancel();
+    _nextCheck = null;
+    if (!_inFront) return;
+    if (nextAppearanceCheck(_settings, now) case final next?) {
+      _nextCheck = Timer(next.difference(now), _decide);
+    }
+  }
+
   void _notify() {
     assert(() {
       checkInvariants();
@@ -96,6 +166,8 @@ class AppearanceController extends ChangeNotifier {
   @override
   void dispose() {
     _disposed = true;
+    suspend();
+    _decision.dispose();
     super.dispose();
   }
 }

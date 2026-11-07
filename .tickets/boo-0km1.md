@@ -1,7 +1,7 @@
 ---
 id: boo-0km1
 status: open
-deps: [t9-se8f, t9-dcld, t9-sspn, boo-petv]
+deps: [t9-se8f, t9-dcld, t9-sspn, boo-petv, t6-2ghu, t6-epwo, t4-lvhh, tc-y4ij]
 links: []
 created: 2026-11-07T21:20:29Z
 type: feature
@@ -24,7 +24,13 @@ Breaks (verified at f388307):
 
 Target design: the status listenable from t9-se8f carries a visible status only for a refresh that the user asked for (pull-to-refresh, Save libraries, Refresh libraries) and for the failures that the first paragraph names. The background refresh at launch is silent. AccountBinding from t9-dcld binds Downloads and Playback to the saved books at once. The shelf keeps its scroll position when the view changes in place.
 
-Open decision: what counts as an old saved library for the failure notice.
+Replaced by the user later on November 7, 2026 (supersedes the 7-day decision):
+- At launch the library shows the saved library and refreshes in the background. The progress line in _CatalogStatus appears only after the refresh runs longer than 1.5 seconds; a faster refresh shows nothing. The delay is ephemeral UI state in the widget that shows the line.
+- If Jellyfin cannot be reached (network error, timeout or server error; the catalog's status signal from t9-se8f says which), the library shows only downloaded books, with a short message such as "Cannot reach Jellyfin. Showing downloaded books." and a Retry action. The user's chosen filter (ShelfFilter) does not change; the shelf derives the offline view from the status. With no downloads, the empty state says so.
+- The next refresh that reaches Jellyfin (app resume, pull to refresh, Retry) brings the full library back. An expired sign-in and revoked access keep their own messages.
+- No "Saved library" label.
+
+Former open decision: what counts as an old saved library for the failure notice.
 - Option A: a fixed age, for example 7 days after completedAt. Cost: a limit that the user did not choose.
 - Option B: never speak about a failed background refresh. Speak only for a user refresh, an expired sign-in and revoked access. Cost: a user whose library is very old gets no hint that refreshes fail.
 

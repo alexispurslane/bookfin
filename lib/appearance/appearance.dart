@@ -39,6 +39,15 @@ class AppearanceDecision {
 
   final Brightness brightness;
   final String description;
+
+  @override
+  bool operator ==(Object other) =>
+      other is AppearanceDecision &&
+      other.brightness == brightness &&
+      other.description == description;
+
+  @override
+  int get hashCode => Object.hash(brightness, description);
 }
 
 SolarPeriod solarPeriod(DateTime instant, SelectedLocation location) {
@@ -150,4 +159,44 @@ AppearanceDecision resolveAppearance(
       'Polar night · ${location.name}',
     ),
   };
+}
+
+/// The instant after [from] when [resolveAppearance] must run again for
+/// [settings]: the next sunrise or sunset, or the next start or end of a
+/// polar day or night, to the second. If none comes within [horizon], the end
+/// of [horizon], when the caller looks again. Null when the answer does not
+/// change with time: a manual mode, or no location.
+///
+/// The search steps five minutes at a time, so a day or a night shorter than
+/// five minutes can pass unseen. Six hours take about 80 [solarPeriod] calls,
+/// tens of microseconds, so the search runs on the calling isolate.
+DateTime? nextAppearanceCheck(
+  AppearanceSettings settings,
+  DateTime from, {
+  Duration horizon = const Duration(hours: 6),
+}) {
+  final location = settings.location;
+  if (settings.mode != AppearanceMode.automatic || location == null) {
+    return null;
+  }
+  final period = solarPeriod(from, location);
+  final end = from.add(horizon);
+  var before = from;
+  while (before.isBefore(end)) {
+    var after = before.add(const Duration(minutes: 5));
+    if (after.isAfter(end)) after = end;
+    if (solarPeriod(after, location) != period) {
+      while (after.difference(before) > const Duration(seconds: 1)) {
+        final middle = before.add(after.difference(before) ~/ 2);
+        if (solarPeriod(middle, location) == period) {
+          before = middle;
+        } else {
+          after = middle;
+        }
+      }
+      return after;
+    }
+    before = after;
+  }
+  return end;
 }

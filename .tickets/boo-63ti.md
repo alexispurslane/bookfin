@@ -1,6 +1,6 @@
 ---
 id: boo-63ti
-status: open
+status: closed
 deps: [boo-petv]
 links: []
 created: 2026-11-07T21:36:12Z

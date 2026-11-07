@@ -308,3 +308,14 @@ The user chose design A of `docs/mockups/glass-places.html`, with the tint of de
 - A tap on an entry shows its choices: go back to where an action began, go to where it ended, go to or name a bookmark, and Delete. A choice that goes to a place closes the timeline.
 - In the player and on a book page, the timeline shows that book only. From the Listening tab with nothing open, it shows every book and names the book of each entry.
 - When another layer opens over a glass sheet, the sheet steps back: it shrinks a little and darkens, like a stack of cards. The user chose design A of `docs/mockups/glass-stacking.html`.
+
+## Conformance decisions — November 7, 2026
+
+The user settled four open points of the conformance epic (boo-bquq):
+
+- The Sync page shows a quiet line about the last background sync, such as "Last synced 4:29 PM" or "Last sync failed. Tap Sync now to retry." It shows no busy state during a background sync (t9-pols).
+- The PDF reflow choice lasts until the app restarts. The reader session keeps it, and it is not saved in the reading records (t9-3n2m).
+- A failed background library refresh stays silent unless the saved library is older than 7 days. Then a quiet notice appears (boo-0km1). The next decision replaces this one.
+- Later the same day, the user replaced the decision above. At launch the library shows the saved library at once and refreshes in the background. A thin progress line appears only if the refresh runs longer than 1.5 seconds. If Jellyfin cannot be reached (a network error, a timeout, or a server error), the library shows only downloaded books and a short message, for example "Cannot reach Jellyfin. Showing downloaded books." The library filter that the user chose does not change. The next refresh that reaches Jellyfin, for example on app resume or pull to refresh, brings the full library back. An expired sign-in and revoked access keep their own messages (boo-0km1).
+- The mini player, the replacement notice and the record save status each keep one public widget that acts as the controller for its own surface. Each one wraps a pure leaf that only draws and reports events (t9-xj41).
+- If the record store cannot be read, the app renames the damaged data and keeps it, starts a new store at once, and copies every record that still parses into the new store. Most history and places show at once, even offline, and the next sync refills the rest (td-rvpm).
