@@ -410,6 +410,26 @@ class Playback extends ChangeNotifier {
     return null;
   }
 
+  /// Where the open or saved position is in the edition, in milliseconds
+  /// from its start. Null before any listening, or when a file length is
+  /// unknown.
+  ({int elapsedMs, int totalMs})? progress(Edition edition) {
+    final position = _edition?.id == edition.id
+        ? _position
+        : _readPosition(edition);
+    if (position == null || !position.fits(edition)) return null;
+    int? elapsed;
+    var total = 0;
+    for (final file in edition.files) {
+      if (file.key == position.sourceKey) {
+        elapsed = total + position.milliseconds;
+      }
+      if (file.durationMs == null) return null;
+      total += file.durationMs!;
+    }
+    return elapsed == null ? null : (elapsedMs: elapsed, totalMs: total);
+  }
+
   List<PlaybackChapter> get chapters => [
     for (final file in _edition?.files ?? <SourceFile>[]) ...[
       if (!file.chapters.any((chapter) => chapter.startMs == 0))

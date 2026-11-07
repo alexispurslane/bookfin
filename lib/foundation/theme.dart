@@ -138,6 +138,7 @@ ThemeData bookfinTheme(Brightness brightness, {bool reduceMotion = false}) {
   final ink = Color(night ? 0xFFDCC9A9 : 0xFF39291F);
   final subtle = Color(night ? 0xFFB09A7F : 0xFF715D4B);
   final sepia = Color(night ? 0xFFC5A079 : 0xFF775035);
+  final line = Color(night ? 0xFF504234 : 0xFFD9CCB6);
   final scheme = ColorScheme(
     brightness: brightness,
     primary: sepia,
@@ -155,7 +156,7 @@ ThemeData bookfinTheme(Brightness brightness, {bool reduceMotion = false}) {
     surfaceContainerHighest: wash,
     onSurfaceVariant: subtle,
     outline: Color(night ? 0xFFAC9377 : 0xFF90735B),
-    outlineVariant: Color(night ? 0xFF504234 : 0xFFD9CCB6),
+    outlineVariant: line,
     shadow: const Color(0xFF39291F),
     surfaceTint: Colors.transparent,
   );
@@ -233,7 +234,115 @@ ThemeData bookfinTheme(Brightness brightness, {bool reduceMotion = false}) {
       side: BorderSide.none,
       backgroundColor: wash,
       selectedColor: sepia,
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      showCheckmark: false,
+      labelStyle: TextStyle(fontFamily: 'Outfit', fontSize: 13, color: ink),
+      secondaryLabelStyle: TextStyle(
+        fontFamily: 'Outfit',
+        fontSize: 13,
+        color: night ? paper : sheet,
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+    ),
+    navigationBarTheme: NavigationBarThemeData(
+      backgroundColor: paper,
+      surfaceTintColor: Colors.transparent,
+      elevation: 0,
+      height: 68,
+      indicatorColor: wash,
+      indicatorShape: const StadiumBorder(),
+      iconTheme: WidgetStateProperty.resolveWith(
+        (states) => IconThemeData(
+          size: 22,
+          color: states.contains(WidgetState.selected) ? sepia : subtle,
+        ),
+      ),
+      labelTextStyle: WidgetStateProperty.resolveWith(
+        (states) => TextStyle(
+          fontFamily: 'Outfit',
+          fontSize: 12,
+          fontWeight: states.contains(WidgetState.selected)
+              ? FontWeight.w600
+              : FontWeight.w400,
+          color: states.contains(WidgetState.selected) ? sepia : subtle,
+        ),
+      ),
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: sheet,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide(color: line),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide(color: line),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide(color: sepia, width: 1.5),
+      ),
+      labelStyle: TextStyle(color: subtle),
+      floatingLabelStyle: TextStyle(color: sepia),
+    ),
+    cardTheme: CardThemeData(
+      color: sheet,
+      surfaceTintColor: Colors.transparent,
+      elevation: 0,
+      margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(color: line),
+      ),
+    ),
+    dialogTheme: DialogThemeData(
+      backgroundColor: sheet,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      titleTextStyle: TextStyle(
+        fontFamily: 'Source Serif 4',
+        fontSize: 22,
+        fontWeight: FontWeight.w500,
+        color: ink,
+      ),
+    ),
+    listTileTheme: ListTileThemeData(
+      iconColor: subtle,
+      titleTextStyle: TextStyle(fontFamily: 'Outfit', fontSize: 15, color: ink),
+      subtitleTextStyle: TextStyle(
+        fontFamily: 'Outfit',
+        fontSize: 12,
+        color: subtle,
+      ),
+    ),
+    segmentedButtonTheme: SegmentedButtonThemeData(
+      style: ButtonStyle(
+        visualDensity: VisualDensity.compact,
+        side: const WidgetStatePropertyAll(BorderSide.none),
+        backgroundColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.selected) ? sheet : wash,
+        ),
+        foregroundColor: WidgetStatePropertyAll(ink),
+        textStyle: const WidgetStatePropertyAll(
+          TextStyle(fontFamily: 'Outfit', fontSize: 13),
+        ),
+      ),
+    ),
+    switchTheme: SwitchThemeData(
+      thumbColor: WidgetStateProperty.resolveWith(
+        (states) => states.contains(WidgetState.selected) ? sheet : subtle,
+      ),
+      trackColor: WidgetStateProperty.resolveWith(
+        (states) => states.contains(WidgetState.selected) ? sepia : wash,
+      ),
+      trackOutlineColor: WidgetStatePropertyAll(line),
+    ),
+    snackBarTheme: SnackBarThemeData(
+      backgroundColor: ink,
+      contentTextStyle: TextStyle(fontFamily: 'Outfit', color: paper),
+      behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
     ),
     dividerTheme: DividerThemeData(
       color: scheme.outlineVariant,
@@ -251,6 +360,15 @@ ThemeData bookfinTheme(Brightness brightness, {bool reduceMotion = false}) {
       backgroundColor: paper,
       foregroundColor: ink,
       surfaceTintColor: Colors.transparent,
+      scrolledUnderElevation: 0,
+      centerTitle: false,
+      titleTextStyle: TextStyle(
+        fontFamily: 'Outfit',
+        fontSize: 24,
+        fontWeight: FontWeight.w700,
+        letterSpacing: -0.6,
+        color: ink,
+      ),
     ),
     progressIndicatorTheme: ProgressIndicatorThemeData(
       color: sepia,
@@ -312,8 +430,9 @@ class BookfinPanel extends StatelessWidget {
     width: double.infinity,
     padding: const EdgeInsets.all(18),
     decoration: BoxDecoration(
-      color: Theme.of(context).colorScheme.surfaceContainer,
+      color: Theme.of(context).colorScheme.surfaceContainerLowest,
       borderRadius: BorderRadius.circular(20),
+      border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
     ),
     child: child,
   );

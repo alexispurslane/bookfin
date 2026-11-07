@@ -128,6 +128,21 @@ void main() {
     );
   }
 
+  test('a recording shows how far the saved position is into it', () async {
+    expect(playback.progress(recording), isNull);
+    await playback.open(title, recording);
+    await playback.seekEdition(75000);
+    await playback.flush();
+    expect(playback.progress(recording), (elapsedMs: 75000, totalMs: 150000));
+    await playback.bind(null, []);
+    await playback.bind(account(), [title]);
+    expect(
+      playback.progress(recording),
+      (elapsedMs: 75000, totalMs: 150000),
+      reason: 'a saved position counts without opening the recording',
+    );
+  });
+
   test('failed resume read cannot be overwritten by later saves', () async {
     await playback.open(title, recording);
     await playback.seekEdition(75000);
