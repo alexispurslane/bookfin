@@ -5,6 +5,7 @@ import 'package:bookfin/foundation/theme.dart';
 import 'package:bookfin/playback/playback.dart';
 import 'package:bookfin/playback/screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'playback_test.dart'
@@ -243,5 +244,81 @@ void main() {
       isSemantics(isButton: true),
     );
     semantics.dispose();
+  });
+
+  /// Whether a repaint of [ticking] also repaints [blur]: the nearest repaint
+  /// boundary above [ticking] holds [blur] too.
+  bool repaintsWith(WidgetTester tester, Finder ticking, Finder blur) {
+    var boundary = tester.renderObject(ticking);
+    while (!boundary.isRepaintBoundary) {
+      boundary = boundary.parent!;
+    }
+    for (
+      RenderObject? node = tester.renderObject(blur);
+      node != null;
+      node = node.parent
+    ) {
+      if (node == boundary) return true;
+    }
+    return false;
+  }
+
+  testWidgets('the ticking position repaints apart from the blurred stage', (
+    tester,
+  ) async {
+    await showPlayer(tester);
+    final stage = find.byType(CoverBlur);
+    expect(repaintsWith(tester, find.byType(Slider), stage), isFalse);
+    expect(
+      repaintsWith(tester, find.text('chapter 40 s left'), stage),
+      isFalse,
+    );
+    expect(repaintsWith(tester, find.byTooltip('Play'), stage), isFalse);
+  });
+
+  testWidgets('in the popup the ticking position repaints apart from the '
+      'glass', (tester) async {
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 2.625;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: bookfinTheme(Brightness.light),
+        home: Scaffold(
+          body: Builder(
+            builder: (context) => TextButton(
+              onPressed: () => openPlayer(context, playback),
+              child: const Text('Open'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
+    final glass = find.byType(BackdropFilter);
+    expect(repaintsWith(tester, find.byType(Slider), glass), isFalse);
+    expect(
+      repaintsWith(tester, find.text('chapter 40 s left'), glass),
+      isFalse,
+    );
+  });
+
+  testWidgets('the mini player\'s progress repaints apart from its glass', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: bookfinTheme(Brightness.light),
+        home: Scaffold(
+          bottomNavigationBar: PlaybackMiniPlayer(playback: playback),
+        ),
+      ),
+    );
+    final glass = find.byType(BackdropFilter);
+    expect(
+      repaintsWith(tester, find.byType(LinearProgressIndicator), glass),
+      isFalse,
+    );
   });
 }
