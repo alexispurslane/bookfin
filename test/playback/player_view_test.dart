@@ -127,6 +127,21 @@ void main() {
     expect(find.text('Bookmarked'), findsOneWidget);
   });
 
+  testWidgets('every tool label stays on one line, even Bookmarked', (
+    tester,
+  ) async {
+    await showPlayer(tester);
+    await tester.runAsync(() async {
+      await tester.tap(find.text('Bookmark'));
+      await playback.flush();
+    });
+    await tester.pumpAndSettle();
+    final line = tester.getSize(find.text('Sleep')).height;
+    for (final label in ['Chapters', 'Bookmarked', 'Speed', 'History']) {
+      expect(tester.getSize(find.text(label)).height, line, reason: label);
+    }
+  });
+
   testWidgets('a tap on Bookmarked names the bookmark at this place', (
     tester,
   ) async {

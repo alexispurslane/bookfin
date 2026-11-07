@@ -492,11 +492,17 @@ class PlayerView extends StatelessWidget {
               children: [
                 SizedBox(height: 22, child: Center(child: top)),
                 const SizedBox(height: 3),
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: scheme.onSurfaceVariant,
+                // Five tools share the row, so a long label shrinks a little
+                // instead of wrapping onto a second line.
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: scheme.onSurfaceVariant,
+                    ),
                   ),
                 ),
               ],
