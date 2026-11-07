@@ -97,8 +97,34 @@ class Playback extends ChangeNotifier {
   Future<void> _operations = Future.value();
   Future<void> _writes = Future.value();
   Future<void> _binding = Future.value();
-  List<ListeningEvent> _history = [];
-  List<AudioBookmark> _bookmarks = [];
+  // The personal records. A change replaces a whole list, never changes it
+  // in place, so the lists derived from them can be cached by the identity
+  // of these lists (see [_Memo]). Debug builds enforce this contract with
+  // unmodifiable lists. Release builds skip it, so that a broken contract
+  // can only show a stale list, never throw in a path that saves records.
+  List<ListeningEvent> _historyList = const [];
+  List<AudioBookmark> _bookmarkList = const [];
+  List<ListeningEvent> get _history => _historyList;
+  set _history(List<ListeningEvent> value) =>
+      _historyList = kDebugMode ? List.unmodifiable(value) : value;
+  List<AudioBookmark> get _bookmarks => _bookmarkList;
+  set _bookmarks(List<AudioBookmark> value) =>
+      _bookmarkList = kDebugMode ? List.unmodifiable(value) : value;
+  final _historyNewestFirst =
+      _Memo<List<ListeningEvent>, List<ListeningEvent>>();
+  final _bookmarksNewestFirst =
+      _Memo<List<AudioBookmark>, List<AudioBookmark>>();
+  final _editionIndex = _Memo<List<Book>, Map<String, (Book, Edition)>>();
+  final _recent =
+      _Memo<(List<ListeningEvent>, List<Book>), List<RecentListening>>();
+  final _chapters = _Memo<Edition?, List<PlaybackChapter>>();
+  final _timeline =
+      _Memo<
+        (List<ListeningEvent>, List<AudioBookmark>, Book?),
+        List<TimelineEntry>
+      >();
+  final _editionBookmarks =
+      _Memo<(List<AudioBookmark>, Edition?), List<EditionBookmark>>();
   ListeningEvent? _undo;
   _SliderGesture? _sliderStart;
   int _sliderRevision = 0;
@@ -110,27 +136,72 @@ class Playback extends ChangeNotifier {
   String? _recordedDecoderAnchor;
   AudioReplacement? _replacementStart;
 
-  List<ListeningEvent> get history => List.unmodifiable(_history.reversed);
+  /// The listening actions, newest first. The list stays the same object
+  /// until the history changes.
+  List<ListeningEvent> get history => _historyNewestFirst.of(
+    _history,
+    () => List.unmodifiable(_history.reversed),
+  );
 
   /// The books of this account that were listened to, newest first, each with
-  /// the audio edition and time of its latest listening.
-  List<RecentListening> get recent {
-    final editions = {
-      for (final book in _books)
-        for (final edition in book.editions) edition.id: (book, edition),
-    };
-    final events = [..._history]..sort((a, b) => b.at.compareTo(a.at));
-    final seen = <String>{};
-    final recent = <RecentListening>[];
-    for (final event in events) {
-      final found = editions[event.after.editionId];
-      if (found == null || !seen.add(found.$1.id)) continue;
-      recent.add((book: found.$1, edition: found.$2, at: event.at));
+  /// the audio edition and time of its latest listening. The list stays the
+  /// same object until the history or the library changes.
+  List<RecentListening> get recent => _recent.of((_history, _books), () {
+    // One pass over the history finds each book's latest listening, so only
+    // the few listened books are sorted.
+    final latest = <String, RecentListening>{};
+    for (final event in _history) {
+      final found = _editions[event.after.editionId];
+      if (found == null) continue;
+      final (book, edition) = found;
+      if (latest[book.id] case final known? when !event.at.isAfter(known.at)) {
+        continue;
+      }
+      latest[book.id] = (book: book, edition: edition, at: event.at);
     }
-    return recent;
-  }
+    return List.unmodifiable(
+      latest.values.toList()..sort((a, b) => b.at.compareTo(a.at)),
+    );
+  });
 
-  List<AudioBookmark> get bookmarks => List.unmodifiable(_bookmarks.reversed);
+  /// The actions and bookmarks of [book], or of every book, newest first.
+  /// The list stays the same object until the records change or another
+  /// book is asked for.
+  List<TimelineEntry> timeline(Book? book) =>
+      _timeline.of((_history, _bookmarks, book), () {
+        bool belongs(AudioPosition place) =>
+            book == null ||
+            book.editions.any((edition) => edition.id == place.editionId);
+        final entries = <TimelineEntry>[
+          for (final event in history)
+            if (belongs(event.after)) ActionEntry(event),
+          for (final bookmark in bookmarks)
+            if (belongs(bookmark.position)) BookmarkEntry(bookmark),
+        ];
+        // NOTE: This sort stays on the UI isolate. It runs once per records
+        // change, and an isolate hop copies every entry there and back,
+        // which measured about ten times the cost of the sort itself.
+        entries.sort((a, b) => b.at.compareTo(a.at));
+        return List.unmodifiable(entries);
+      });
+
+  /// Each bound edition by its id, with its book.
+  Map<String, (Book, Edition)> get _editions => _editionIndex.of(_books, () {
+    final editions = <String, (Book, Edition)>{};
+    for (final book in _books) {
+      for (final edition in book.editions) {
+        editions.putIfAbsent(edition.id, () => (book, edition));
+      }
+    }
+    return editions;
+  });
+
+  /// The bookmarks, newest first. The list stays the same object until a
+  /// bookmark changes.
+  List<AudioBookmark> get bookmarks => _bookmarksNewestFirst.of(
+    _bookmarks,
+    () => List.unmodifiable(_bookmarks.reversed),
+  );
   ListeningEvent? get undoAction => _undo;
   bool get unsavedChanges => _pendingWrites.containsKey(_session?.scope.key);
   bool get saveFailed => _failedAccounts.contains(_session?.scope.key);
@@ -237,7 +308,8 @@ class Playback extends ChangeNotifier {
     if (!target.fits(_edition!)) {
       throw ArgumentError('Choose a bookmark position in this audio edition.');
     }
-    _bookmarks.add(
+    _bookmarks = [
+      ..._bookmarks,
       AudioBookmark(
         id: recordId(),
         position: target,
@@ -247,7 +319,7 @@ class Playback extends ChangeNotifier {
         title: _optionalText(title),
         note: _optionalText(note),
       ),
-    );
+    ];
     await _saveRecords();
   });
 
@@ -259,27 +331,28 @@ class Playback extends ChangeNotifier {
           throw ArgumentError('Choose a bookmark from the current account.');
         }
         final bookmark = _bookmarks[index];
-        _bookmarks[index] = AudioBookmark(
-          id: bookmark.id,
-          position: bookmark.position,
-          createdAt: bookmark.createdAt,
-          bookTitle: bookmark.bookTitle,
-          editionLabel: bookmark.editionLabel,
-          title: _optionalText(title),
-          note: _optionalText(note),
-        );
+        _bookmarks = [..._bookmarks]
+          ..[index] = AudioBookmark(
+            id: bookmark.id,
+            position: bookmark.position,
+            createdAt: bookmark.createdAt,
+            bookTitle: bookmark.bookTitle,
+            editionLabel: bookmark.editionLabel,
+            title: _optionalText(title),
+            note: _optionalText(note),
+          );
         await _saveRecords();
       });
 
   Future<void> deleteBookmark(String id) => _enqueue(() async {
     if (!_restored) return;
-    _bookmarks.removeWhere((bookmark) => bookmark.id == id);
+    _bookmarks = [..._bookmarks]..removeWhere((bookmark) => bookmark.id == id);
     await _saveRecords();
   });
 
   Future<void> deleteHistory(String id) => _enqueue(() async {
     if (!_restored) return;
-    _history.removeWhere((event) => event.id == id);
+    _history = [..._history]..removeWhere((event) => event.id == id);
     if (_undo?.id == id) _undo = null;
     await _saveRecords();
   });
@@ -425,22 +498,48 @@ class Playback extends ChangeNotifier {
   int? editionTime(AudioPosition position) {
     final edition = _edition?.id == position.editionId
         ? _edition
-        : _books
-              .expand((book) => book.editions)
-              .where((edition) => edition.id == position.editionId)
-              .firstOrNull;
+        : _editions[position.editionId]?.$2;
     return edition == null ? null : _editionTime(edition, position);
   }
 
   static int? _editionTime(Edition edition, AudioPosition position) {
-    var total = 0;
-    for (final file in edition.files) {
-      if (file.key == position.sourceKey) return total + position.milliseconds;
-      if (file.durationMs == null) return null;
-      total += file.durationMs!;
-    }
-    return null;
+    final start = _fileStarts(edition)[position.sourceKey];
+    return start == null ? null : start + position.milliseconds;
   }
+
+  static final _starts = Expando<Map<String, int?>>();
+
+  /// Where each file of [edition] starts in the edition, in milliseconds, by
+  /// file key. A start is null when an earlier file has no known length. An
+  /// edition never changes, so its starts are found once.
+  static Map<String, int?> _fileStarts(Edition edition) =>
+      _starts[edition] ??= () {
+        final starts = <String, int?>{};
+        int? offset = 0;
+        for (final file in edition.files) {
+          starts.putIfAbsent(file.key, () => offset);
+          offset = offset == null || file.durationMs == null
+              ? null
+              : offset + file.durationMs!;
+        }
+        return starts;
+      }();
+
+  /// The bookmarks of the open edition, newest first, each with where it is
+  /// in the edition. A bookmark whose place cannot be measured is left out.
+  /// The list stays the same object until a bookmark or the open edition
+  /// changes.
+  List<EditionBookmark> get editionBookmarks =>
+      _editionBookmarks.of((_bookmarks, _edition), () {
+        final edition = _edition;
+        return List.unmodifiable([
+          if (edition != null)
+            for (final bookmark in bookmarks)
+              if (bookmark.position.editionId == edition.id)
+                if (_editionTime(edition, bookmark.position) case final at?)
+                  (bookmark: bookmark, at: at),
+        ]);
+      });
 
   /// How long after a bookmark the open place still counts as at it.
   static const bookmarkReach = Duration(seconds: 15);
@@ -451,10 +550,10 @@ class Playback extends ChangeNotifier {
     final edition = _edition;
     final now = editionMilliseconds;
     if (edition == null || now == null) return null;
-    for (final bookmark in bookmarks) {
-      if (!bookmark.position.fits(edition)) continue;
-      final at = _editionTime(edition, bookmark.position);
-      if (at != null && now >= at && now - at < bookmarkReach.inMilliseconds) {
+    for (final (:bookmark, :at) in editionBookmarks) {
+      if (bookmark.position.fits(edition) &&
+          now >= at &&
+          now - at < bookmarkReach.inMilliseconds) {
         return bookmark;
       }
     }
@@ -486,12 +585,16 @@ class Playback extends ChangeNotifier {
     return elapsed == null ? null : (elapsedMs: elapsed, totalMs: total);
   }
 
-  List<PlaybackChapter> get chapters {
+  /// The chapters of the open edition in order. A file without a chapter at
+  /// its start counts as a chapter named after the file. The list stays the
+  /// same object until the open edition changes.
+  List<PlaybackChapter> get chapters => _chapters.of(_edition, () {
+    final edition = _edition;
+    if (edition == null) return const [];
     final chapters = <PlaybackChapter>[];
-    // Where the current file starts in the edition, while every earlier file
-    // has a known duration.
-    int? offset = 0;
-    for (final file in _edition?.files ?? <SourceFile>[]) {
+    final starts = _fileStarts(edition);
+    for (final file in edition.files) {
+      final offset = starts[file.key];
       if (!file.chapters.any((chapter) => chapter.startMs == 0)) {
         chapters.add(PlaybackChapter(file.displayName, file.key, 0, offset));
       }
@@ -508,12 +611,9 @@ class Playback extends ChangeNotifier {
           );
         }
       }
-      offset = offset == null || file.durationMs == null
-          ? null
-          : offset + file.durationMs!;
     }
-    return chapters;
-  }
+    return List.unmodifiable(chapters);
+  });
 
   /// The index in [chapters] of the chapter that holds the position.
   int? get chapterIndex {
@@ -566,7 +666,7 @@ class Playback extends ChangeNotifier {
     if (_closed) return;
     _replacementStart = null;
     final changed = _session?.scope.key != session?.scope.key;
-    _books = books;
+    _books = List.unmodifiable(books);
     if (!changed) {
       final generation = _generation;
       _session = session;
@@ -1109,7 +1209,7 @@ class Playback extends ChangeNotifier {
       bookTitle: _book!.title,
       editionLabel: _edition!.label,
     );
-    _history.add(event);
+    _history = [..._history, event];
     if (event.changesPosition) _undo = event;
   }
 
@@ -1344,6 +1444,27 @@ class Playback extends ChangeNotifier {
         'Personal records, pending writes, and recovery selection must agree.',
       );
     }
+  }
+}
+
+/// A bookmark of the open edition, and where it is in the edition, in
+/// milliseconds from the edition's start.
+typedef EditionBookmark = ({AudioBookmark bookmark, int at});
+
+/// The value last derived from a key. It is derived again only when the key
+/// differs from the last key. A key holds the inputs of the value. Lists,
+/// books and editions compare by identity, so an input must be replaced,
+/// never changed in place, when it changes.
+class _Memo<K, V> {
+  ({K key, V value})? _last;
+
+  V of(K key, V Function() derive) {
+    if (_last case (key: final last, :final value) when last == key) {
+      return value;
+    }
+    final value = derive();
+    _last = (key: key, value: value);
+    return value;
   }
 }
 

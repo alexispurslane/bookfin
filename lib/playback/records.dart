@@ -212,3 +212,33 @@ class TextBookmark {
     );
   }
 }
+
+/// One moment in listening: an action or a bookmark.
+sealed class TimelineEntry {
+  const TimelineEntry();
+  String get id;
+  DateTime get at;
+  String get bookTitle;
+}
+
+final class ActionEntry extends TimelineEntry {
+  const ActionEntry(this.event);
+  final ListeningEvent event;
+  @override
+  String get id => event.id;
+  @override
+  DateTime get at => event.at;
+  @override
+  String get bookTitle => event.bookTitle;
+}
+
+final class BookmarkEntry extends TimelineEntry {
+  const BookmarkEntry(this.bookmark);
+  final AudioBookmark bookmark;
+  @override
+  String get id => bookmark.id;
+  @override
+  DateTime get at => bookmark.createdAt;
+  @override
+  String get bookTitle => bookmark.bookTitle;
+}
