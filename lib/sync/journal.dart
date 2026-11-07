@@ -99,13 +99,28 @@ class RecordJournal {
     for (final record in _records.keys) record: ?value(record),
   };
 
+  /// The current versions of every record, by address, in the order in
+  /// which the records first appeared. [currentValue] reads a record's value
+  /// from its versions. Do not change the lists.
+  Map<String, List<Map<String, dynamic>>> get versionsByRecord =>
+      UnmodifiableMapView(_records);
+
   /// A copy of the current value of [record], or null when the record is
   /// absent or deleted, or is a resume with conflicting versions. Other
   /// conflicting records show their version with the lowest identity.
   Map<String, dynamic>? value(String record) {
     final versions = _records[record];
-    if (versions == null ||
-        versions.any((action) => action['value'] == null) ||
+    return versions == null ? null : currentValue(record, versions);
+  }
+
+  /// A copy of the value of [record] whose current versions are
+  /// [versions], as [value] defines it. It reads no journal, so a hop can
+  /// derive values from [versionsByRecord].
+  static Map<String, dynamic>? currentValue(
+    String record,
+    List<Map<String, dynamic>> versions,
+  ) {
+    if (versions.any((action) => action['value'] == null) ||
         versions.length > 1 && _isResume(record)) {
       return null;
     }
@@ -116,7 +131,8 @@ class RecordJournal {
     return Map<String, dynamic>.from(first['value'] as Map);
   }
 
-  bool _isResume(String record) => (jsonDecode(record) as List)[1] == 'resumes';
+  static bool _isResume(String record) =>
+      (jsonDecode(record) as List)[1] == 'resumes';
 
   void change(
     String record,
