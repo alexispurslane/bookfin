@@ -6,7 +6,9 @@ import 'package:bookfin/catalog/jellyfin.dart';
 import 'package:bookfin/catalog/model.dart';
 import 'package:bookfin/downloads/downloads.dart';
 import 'package:bookfin/playback/playback.dart';
+import 'package:bookfin/playback/store.dart';
 import 'package:bookfin/reader/session.dart';
+import 'package:bookfin/sync/coordinator.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../catalog/controller_test.dart'
@@ -84,17 +86,50 @@ class _Reader extends ReaderSession {
       log.bind('reader', account, books);
 }
 
+/// Records each bind and each sync request, and contacts no server.
+class _Sync extends RecordSync {
+  _Sync() : super(records: LocalResumeStore());
+
+  /// `bind <account>` and `synchronize`, in the order they came.
+  final calls = <String>[];
+  @override
+  void bind(JellyfinSession? session) =>
+      calls.add('bind ${session?.scope.key}');
+  @override
+  Future<void> synchronize() async => calls.add('synchronize');
+}
+
+/// Like the real client, it answers each validation with a new session
+/// object that equals the one it checked. A test can hold validation open
+/// with [validateGate].
+class _Client extends FixtureClient {
+  _Client(super.server);
+  Completer<void>? validateGate;
+  @override
+  Future<JellyfinSession> validate(JellyfinSession session) async {
+    await validateGate?.future;
+    final checked = await super.validate(session);
+    return JellyfinSession(
+      scope: checked.scope,
+      token: checked.token,
+      username: checked.username,
+      canDownload: checked.canDownload,
+    );
+  }
+}
+
 void main() {
-  late FixtureClient client;
+  late _Client client;
   late CatalogController catalog;
   late _Log log;
   late _Downloads downloads;
   late _Playback playback;
   late _Reader reader;
+  late _Sync sync;
   AccountBinding? binding;
 
   setUp(() async {
-    client = FixtureClient(Uri.parse('https://books.example'))
+    client = _Client(Uri.parse('https://books.example'))
       ..entries = [entry('frost', title: 'First Frost')];
     catalog = CatalogController(
       credentials: MemoryCredentials(),
@@ -107,12 +142,14 @@ void main() {
     downloads = _Downloads(log);
     playback = _Playback(log, downloads);
     reader = _Reader(log, downloads);
+    sync = _Sync();
   });
   tearDown(() async {
     binding?.dispose();
     binding = null;
     await playback.close();
     reader.dispose();
+    sync.dispose();
     downloads.dispose();
     catalog.dispose();
     client.close();
@@ -123,7 +160,17 @@ void main() {
     downloads: downloads,
     playback: playback,
     reader: reader,
+    sync: sync,
   );
+
+  /// Binds, lets the first binding finish, and forgets what it did.
+  Future<void> bound() async {
+    bind();
+    await pumpEventQueue();
+    log.binds.clear();
+    log.events.clear();
+    sync.calls.clear();
+  }
 
   test('a new book list binds Downloads and the reader at once, and Playback once Downloads is bound', () async {
     log.downloadsGate = Completer();
@@ -258,4 +305,109 @@ void main() {
     await pumpEventQueue();
     expect(log.binds, isEmpty);
   });
+  test(
+    'the start of a refresh binds nothing and synchronizes nothing',
+    () async {
+      await bound();
+      client.validateGate = Completer();
+      final refreshing = catalog.refresh();
+      await pumpEventQueue();
+      expect(catalog.statusNotifier.value.refreshing, isTrue);
+      expect(log.binds, isEmpty);
+      expect(sync.calls, isEmpty);
+      client.validateGate!.complete();
+      await refreshing;
+    },
+  );
+
+  test('a new status message binds nothing and synchronizes nothing', () async {
+    await bound();
+    client.validateGate = Completer();
+    final refreshing = catalog.refresh();
+    await pumpEventQueue();
+    log.binds.clear();
+    sync.calls.clear();
+    catalog.cancel();
+    await pumpEventQueue();
+    expect(catalog.statusNotifier.value.message, 'Refresh cancelled.');
+    expect(log.binds, isEmpty);
+    expect(sync.calls, isEmpty);
+    client.validateGate!.complete();
+    await refreshing;
+  });
+
+  test('a refresh that brings the same books binds nothing and synchronizes records once', () async {
+    await bound();
+    final books = catalog.books;
+    await catalog.refresh();
+    await pumpEventQueue();
+    expect(catalog.verified, isTrue);
+    expect(catalog.books, same(books));
+    expect(log.binds, isEmpty);
+    expect(sync.calls, ['synchronize']);
+  });
+
+  test(
+    'new books rebind Downloads and then Playback with the new books',
+    () async {
+      await bound();
+      client.entries = [
+        entry('frost', title: 'First Frost'),
+        entry('ember', title: 'Ember'),
+      ];
+      await catalog.refresh();
+      await pumpEventQueue();
+      expect(log.events.where((event) => event.endsWith('started')), [
+        'reader started',
+        'downloads started',
+        'playback started',
+      ]);
+      for (final bind in log.binds) {
+        expect(bind.account, catalog.session!.scope.key);
+        expect(bind.books, same(catalog.books));
+      }
+      expect(catalog.books.map((book) => book.title), contains('Ember'));
+      expect(sync.calls.where((call) => call.startsWith('bind')), isEmpty);
+    },
+  );
+
+  test('blocked access unbinds Playback and the reader before it binds again without an account', () async {
+    await bound();
+    client.failure = const CatalogFailure(CatalogFailureKind.forbidden);
+    await catalog.refresh();
+    await pumpEventQueue();
+    expect(catalog.accessBlocked, isTrue);
+    expect(log.sources().take(2), ['playback', 'reader']);
+    expect(log.sources().skip(2), containsAll(['downloads', 'reader']));
+    for (final bind in log.binds) {
+      expect(bind.account, isNull);
+      expect(bind.books, isEmpty);
+    }
+    expect(sync.calls, ['bind null']);
+  });
+
+  test('a refresh that cannot reach Jellyfin binds nothing and keeps record sync on the account', () async {
+    await bound();
+    client.failure = const CatalogFailure(CatalogFailureKind.unavailable);
+    await catalog.refresh();
+    await pumpEventQueue();
+    expect(catalog.statusNotifier.value.reach, CatalogReach.unreachable);
+    expect(log.binds, isEmpty);
+    expect(sync.calls, isEmpty);
+  });
+
+  test(
+    'signing in binds record sync to the new account before it synchronizes',
+    () async {
+      await catalog.signOut();
+      await bound();
+      await catalog.connect('https://books.example', 'bob', 'password');
+      await pumpEventQueue();
+      final key = catalog.session!.scope.key;
+      expect(sync.calls, ['bind $key', 'synchronize']);
+      final accounts = [for (final bind in log.binds) bind.account];
+      expect(accounts.take(2), [null, null]);
+      expect(accounts.skip(2), everyElement(key));
+    },
+  );
 }
