@@ -18,6 +18,7 @@ import 'jellyfin.dart';
 import 'layout.dart';
 import 'library_services.dart';
 import 'library_view.dart';
+import 'book_page.dart' show openBook;
 
 class CatalogHome extends StatefulWidget {
   const CatalogHome({
@@ -270,6 +271,10 @@ class _CatalogHomeState extends State<CatalogHome> {
                               _Tab.downloads => DownloadsPage(
                                 downloads: widget.downloads,
                                 books: _catalog.books,
+                                compact:
+                                    _layout.density == LibraryDensity.compact,
+                                onOpen: (context, book) =>
+                                    openBook(context, services, book),
                               ),
                               _Tab.listening when widget.playback != null =>
                                 PlayerView(playback: widget.playback!),

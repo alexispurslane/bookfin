@@ -268,7 +268,7 @@ class _GridTile extends StatelessWidget {
             if (progress != null && progress.totalMs > 0)
               Padding(
                 padding: const EdgeInsets.only(top: 6),
-                child: _ProgressLine(
+                child: ProgressLine(
                   value: progress.elapsedMs / progress.totalMs,
                 ),
               ),
@@ -293,7 +293,6 @@ class _ListRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final (title, author, detail, position) = switch (item) {
       ShelfBook(:final book) => (
         book.title,
@@ -311,75 +310,139 @@ class _ListRow extends StatelessWidget {
         null,
       ),
     };
-    return Semantics(
-      button: true,
-      label: item is ShelfSeries ? 'Series $title' : title,
-      excludeSemantics: true,
-      child: InkWell(
-        onTap: () => _open(context, services, item),
-        borderRadius: BorderRadius.circular(10),
-        child: Padding(
-          padding: EdgeInsets.symmetric(vertical: compact ? 8 : 12),
-          child: Row(
-            children: [
-              SizedBox(
-                width: compact ? 42 : 56,
-                child: Padding(
-                  padding: EdgeInsets.only(
-                    top: item is ShelfSeries ? 5 : 0,
-                    right: item is ShelfSeries ? 6 : 0,
-                  ),
-                  child: _cover(services, item, small: true),
-                ),
-              ),
-              SizedBox(width: compact ? 12 : 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+    return BookRow(
+      cover: _cover(services, item, small: true),
+      stacked: item is ShelfSeries,
+      title: title,
+      author: author,
+      position: position,
+      detail: detail,
+      compact: compact,
+      semanticLabel: item is ShelfSeries ? 'Series $title' : title,
+      onTap: () => _open(context, services, item),
+    );
+  }
+}
+
+/// One library entry as a list row: a small cover, the title, the author, and
+/// a detail line. A screen can add a widget below the text, such as a
+/// progress bar, and controls at the end of the row. Tapping the cover or the
+/// text runs [onTap]. The end controls stay separate from that tap.
+class BookRow extends StatelessWidget {
+  const BookRow({
+    super.key,
+    required this.cover,
+    required this.title,
+    required this.onTap,
+    this.author = '',
+    this.position,
+    this.detail = '',
+    this.below,
+    this.trailing,
+    this.stacked = false,
+    this.compact = false,
+    this.semanticLabel,
+  });
+  final Widget cover;
+  final String title;
+  final VoidCallback onTap;
+  final String author;
+
+  /// A label above the title, for example "BOOK 2". It replaces the author.
+  final String? position;
+  final String detail;
+  final Widget? below;
+  final Widget? trailing;
+
+  /// Leaves room above and right of the cover for a series stack.
+  final bool stacked;
+  final bool compact;
+  final String? semanticLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Row(
+      children: [
+        Expanded(
+          child: Semantics(
+            button: true,
+            label: semanticLabel ?? title,
+            excludeSemantics: true,
+            child: InkWell(
+              onTap: onTap,
+              borderRadius: BorderRadius.circular(10),
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: compact ? 8 : 12),
+                child: Row(
                   children: [
-                    if (position != null)
-                      Text(position, style: _positionStyle(theme)),
-                    Text(
-                      title,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontFamily: 'Source Serif 4',
-                        fontSize: compact ? 15 : 17,
-                        height: 1.2,
-                        color: theme.colorScheme.onSurface,
+                    SizedBox(
+                      width: compact ? 42 : 56,
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                          top: stacked ? 5 : 0,
+                          right: stacked ? 6 : 0,
+                        ),
+                        child: cover,
                       ),
                     ),
-                    if (author.isNotEmpty && position == null)
-                      Text(
-                        author,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    if (detail.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 3),
-                        child: Text(
-                          detail,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 11.5,
-                            color: theme.colorScheme.primary,
+                    SizedBox(width: compact ? 12 : 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (position != null)
+                            Text(position!, style: _positionStyle(theme)),
+                          Text(
+                            title,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontFamily: 'Source Serif 4',
+                              fontSize: compact ? 15 : 17,
+                              height: 1.2,
+                              color: theme.colorScheme.onSurface,
+                            ),
                           ),
-                        ),
+                          if (author.isNotEmpty && position == null)
+                            Text(
+                              author,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          if (detail.isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 3),
+                              child: Text(
+                                detail,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 11.5,
+                                  color: theme.colorScheme.primary,
+                                ),
+                              ),
+                            ),
+                          if (below != null)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 6),
+                              child: below,
+                            ),
+                        ],
                       ),
+                    ),
                   ],
                 ),
               ),
-            ],
+            ),
           ),
         ),
-      ),
+        if (trailing != null) ...[const SizedBox(width: 4), trailing!],
+      ],
     );
   }
 }
@@ -391,8 +454,9 @@ TextStyle _positionStyle(ThemeData theme) => TextStyle(
   color: theme.colorScheme.primary,
 );
 
-class _ProgressLine extends StatelessWidget {
-  const _ProgressLine({required this.value});
+/// A thin progress line, as under a book in the library.
+class ProgressLine extends StatelessWidget {
+  const ProgressLine({super.key, required this.value});
   final double value;
   @override
   Widget build(BuildContext context) => ClipRRect(

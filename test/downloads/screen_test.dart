@@ -107,21 +107,27 @@ void main() {
     );
     await showDownloads();
     await settleStorage(tester);
-    expect(find.text('Remove'), findsOneWidget);
-    expect(find.text('6 B saved but unavailable for playback'), findsOneWidget);
+    expect(find.byTooltip('Remove download'), findsOneWidget);
+    expect(
+      find.textContaining('6 B saved but unavailable for playback'),
+      findsOneWidget,
+    );
     await tester.runAsync(() async {
-      await tester.tap(find.text('Retry'));
+      await tester.tap(find.byTooltip('Retry download'));
       await downloads.idle;
     });
     await settleStorage(tester);
-    expect(find.text('Waiting for Wi-Fi'), findsOneWidget);
+    expect(find.textContaining('Waiting for Wi-Fi'), findsOneWidget);
     await tester.runAsync(() async {
-      await tester.tap(find.text('Cancel'));
+      await tester.tap(find.byTooltip('Cancel download'));
       await downloads.idle;
     });
     await settleStorage(tester);
-    expect(find.text('Remove'), findsOneWidget);
-    expect(find.text('6 B saved but unavailable for playback'), findsOneWidget);
+    expect(find.byTooltip('Remove download'), findsOneWidget);
+    expect(
+      find.textContaining('6 B saved but unavailable for playback'),
+      findsOneWidget,
+    );
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.runAsync(() async {
       downloads.dispose();
@@ -137,9 +143,12 @@ void main() {
     });
     await showDownloads();
     await settleStorage(tester);
-    expect(find.text('Remove'), findsOneWidget);
-    expect(find.text('6 B saved but unavailable for playback'), findsOneWidget);
-    await tester.runAsync(() => tester.tap(find.text('Remove')));
+    expect(find.byTooltip('Remove download'), findsOneWidget);
+    expect(
+      find.textContaining('6 B saved but unavailable for playback'),
+      findsOneWidget,
+    );
+    await tester.runAsync(() => tester.tap(find.byTooltip('Remove download')));
     await tester.pumpAndSettle();
     expect(find.text('Remove download?'), findsOneWidget);
     await tester.runAsync(() async {
@@ -148,7 +157,7 @@ void main() {
       expect(await saved.exists(), isFalse);
     });
     await tester.pumpAndSettle();
-    expect(find.text('Remove'), findsNothing);
+    expect(find.byTooltip('Remove download'), findsNothing);
   });
 
   testWidgets('a book with audio shows as downloaded only when its audio is', (
@@ -171,6 +180,49 @@ void main() {
     expect(find.text('No downloaded books yet.'), findsOneWidget);
   });
 
+  testWidgets('Downloads totals the saved size and names the network', (
+    tester,
+  ) async {
+    final text = catalog.books
+        .expand((book) => book.editions)
+        .firstWhere((edition) => edition.kind == EditionKind.text);
+    await tester.runAsync(() async {
+      await downloads.request(text);
+      await downloads.idle;
+    });
+    await show(tester);
+    await tester.tap(find.text('Downloads'));
+    await tester.pumpAndSettle();
+    expect(find.text('6 B'), findsOneWidget);
+    expect(find.text('saved on this phone · 1 ebook'), findsOneWidget);
+    expect(find.textContaining('Wi-Fi'), findsWidgets);
+  });
+
+  testWidgets(
+    'a downloaded book opens its details, but its remove button only removes',
+    (tester) async {
+      final text = catalog.books
+          .expand((book) => book.editions)
+          .firstWhere((edition) => edition.kind == EditionKind.text);
+      await tester.runAsync(() async {
+        await downloads.request(text);
+        await downloads.idle;
+      });
+      await show(tester);
+      await tester.tap(find.text('Downloads'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Remove download'));
+      await tester.pumpAndSettle();
+      expect(find.text('Remove download?'), findsOneWidget);
+      expect(find.byTooltip('More actions'), findsNothing);
+      await tester.tap(find.widgetWithText(TextButton, 'Keep download'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('audio1'));
+      await tester.pumpAndSettle();
+      expect(find.byTooltip('More actions'), findsOneWidget);
+    },
+  );
+
   testWidgets('Downloads lists real status and removes a verified local copy', (
     tester,
   ) async {
@@ -185,10 +237,8 @@ void main() {
     await show(tester);
     await tester.tap(find.text('Downloads'));
     await tester.pumpAndSettle();
-    expect(find.text('6 B of 6 B · 1 of 1 files'), findsOneWidget);
-    await tester.runAsync(
-      () => tester.tap(find.widgetWithText(TextButton, 'Remove')),
-    );
+    expect(find.text('EPUB · 6 B'), findsOneWidget);
+    await tester.runAsync(() => tester.tap(find.byTooltip('Remove download')));
     await tester.pumpAndSettle();
     await tester.runAsync(() async {
       await tester.tap(find.widgetWithText(FilledButton, 'Remove download'));
@@ -226,7 +276,7 @@ void main() {
     await tester.tap(find.text('Downloads'));
     await tester.pumpAndSettle();
     await tester.runAsync(() async {
-      await tester.tap(find.widgetWithText(TextButton, 'Cancel'));
+      await tester.tap(find.byTooltip('Cancel download'));
       await downloads.idle;
     });
     await tester.pumpAndSettle();

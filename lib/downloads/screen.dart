@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../catalog/book_cover.dart';
+import '../catalog/library_view.dart' show BookRow, ProgressLine;
 import '../catalog/model.dart';
 import '../foundation/theme.dart';
 import 'downloads.dart';
@@ -75,26 +77,8 @@ class DownloadControls extends StatelessWidget {
                   state.phase == DownloadPhase.failed)
                 TextButton(
                   onPressed: () async {
-                    final confirmed = await showDialog<bool>(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text('Remove download?'),
-                        content: const Text(
-                          'Remove this edition’s local files and unfinished transfers. Your Jellyfin files will not change.',
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context, false),
-                            child: const Text('Keep download'),
-                          ),
-                          FilledButton(
-                            onPressed: () => Navigator.pop(context, true),
-                            child: const Text('Remove download'),
-                          ),
-                        ],
-                      ),
-                    );
-                    if (confirmed == true && context.mounted) {
+                    if (await confirmRemoveDownload(context) &&
+                        context.mounted) {
                       _act(context, () => owner!.remove(edition));
                     }
                   },
@@ -125,107 +109,382 @@ class DownloadControls extends StatelessWidget {
   }
 }
 
+/// Every edition with local files or a transfer: a summary of the space they
+/// use and of the network, then one library row per edition. Tapping a row
+/// opens its book. The controls at the end of a row only change the download.
 class DownloadsPage extends StatelessWidget {
   const DownloadsPage({
     super.key,
     required this.downloads,
     required this.books,
+    this.onOpen,
+    this.compact = false,
   });
   final Downloads? downloads;
   final List<Book> books;
+  final void Function(BuildContext context, Book book)? onOpen;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     final owner = downloads;
-    final editions = [
+    if (owner?.supported != true) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(32),
+          child: Text('Local downloads are available in the Android app.'),
+        ),
+      );
+    }
+    final entries = [
       for (final book in books)
         for (final edition in book.editions)
-          if ((owner?.status(edition).phase ?? DownloadPhase.none) !=
-                  DownloadPhase.none ||
-              (owner?.status(edition).bytes ?? 0) > 0 ||
-              (owner?.status(edition).unavailableBytes ?? 0) > 0)
-            (book, edition),
+          if (owner!.status(edition) case final state
+              when state.phase != DownloadPhase.none ||
+                  state.bytes > 0 ||
+                  state.unavailableBytes > 0)
+            (book: book, edition: edition, state: state),
     ];
+    final saved = entries
+        .where((entry) => entry.state.phase == DownloadPhase.downloaded)
+        .toList();
+    final pending = entries
+        .where((entry) => entry.state.phase != DownloadPhase.downloaded)
+        .toList();
+    final theme = Theme.of(context);
+    Widget section(String label) => Padding(
+      padding: const EdgeInsets.fromLTRB(2, 22, 2, 2),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 11,
+          letterSpacing: 1.2,
+          fontWeight: FontWeight.w500,
+          color: theme.colorScheme.onSurfaceVariant,
+        ),
+      ),
+    );
     return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
+      padding: const EdgeInsets.fromLTRB(18, 4, 18, 24),
       children: [
-        if (owner?.supported != true)
-          const Text('Local downloads are available in the Android app.')
-        else ...[
-          Text(switch (owner!.policy.network) {
-            MediaNetwork.wifi => 'Wi-Fi · Media transfers allowed',
-            MediaNetwork.mobile =>
-              owner.policy.mobileAllowed
-                  ? 'Mobile data allowed for this session'
-                  : 'Mobile data · Waiting for Wi-Fi',
-            MediaNetwork.disconnected => 'Offline · Waiting for Wi-Fi',
-            MediaNetwork.unknown => 'Network unknown · Waiting for Wi-Fi',
-          }),
-          if (owner.policy.network == MediaNetwork.mobile &&
-              !owner.policy.mobileAllowed)
-            TextButton(
-              onPressed: () async {
-                final allow = await showDialog<bool>(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text('Allow mobile data?'),
-                    content: const Text(
-                      'Allow media transfers for this account session. Your carrier may charge for mobile data. Signing out or restarting ends this permission.',
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context, false),
-                        child: const Text('Wait for Wi-Fi'),
-                      ),
-                      FilledButton(
-                        onPressed: () => Navigator.pop(context, true),
-                        child: const Text('Allow this session'),
-                      ),
-                    ],
-                  ),
-                );
-                if (allow == true && context.mounted) {
-                  owner.policy.allowMobileForSession();
-                }
-              },
-              child: const Text('Allow mobile data this session'),
-            ),
-          if (owner.policy.mobileAllowed)
-            TextButton(
-              onPressed: owner.policy.resetSession,
-              child: const Text('Use Wi-Fi only'),
-            ),
-        ],
-        const SizedBox(height: 16),
-        if (editions.isEmpty) const Text('No downloads yet.'),
-        for (final (book, edition) in editions)
+        _Summary(downloads: owner!, saved: saved),
+        if (entries.isEmpty)
           Padding(
-            padding: const EdgeInsets.only(bottom: 16),
-            child: BookfinPanel(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    book.title,
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  Text(
-                    '${edition.kind == EditionKind.audio ? 'Audio' : 'Ebook'} · ${edition.label}',
-                  ),
-                  const SizedBox(height: 8),
-                  DownloadControls(downloads: owner, edition: edition),
-                ],
-              ),
+            padding: const EdgeInsets.symmetric(vertical: 32),
+            child: Column(
+              children: [
+                const Text('No downloads yet.'),
+                Text(
+                  'Download a book from its details page.',
+                  style: theme.textTheme.bodySmall,
+                ),
+              ],
             ),
           ),
-        if (owner?.supported == true) _RetainedStorageView(downloads: owner!),
+        if (pending.isNotEmpty) section('IN PROGRESS'),
+        for (final (index, entry) in pending.indexed) ...[
+          if (index > 0) const Divider(),
+          _DownloadRow(
+            downloads: owner,
+            book: entry.book,
+            edition: entry.edition,
+            state: entry.state,
+            onOpen: onOpen,
+            compact: compact,
+          ),
+        ],
+        if (saved.isNotEmpty) section('ON THIS PHONE'),
+        for (final (index, entry) in saved.indexed) ...[
+          if (index > 0) const Divider(),
+          _DownloadRow(
+            downloads: owner,
+            book: entry.book,
+            edition: entry.edition,
+            state: entry.state,
+            onOpen: onOpen,
+            compact: compact,
+          ),
+        ],
+        const SizedBox(height: 24),
+        // A stable key keeps one storage scan while rows above it change.
+        _RetainedStorageView(
+          key: const ValueKey('retained storage'),
+          downloads: owner,
+        ),
       ],
     );
   }
 }
 
+class _Summary extends StatelessWidget {
+  const _Summary({required this.downloads, required this.saved});
+  final Downloads downloads;
+  final List<({Book book, Edition edition, EditionDownload state})> saved;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final policy = downloads.policy;
+    final audio = saved
+        .where((entry) => entry.edition.kind == EditionKind.audio)
+        .length;
+    final text = saved.length - audio;
+    final bytes = saved.fold<int>(
+      0,
+      (total, entry) => total + entry.state.bytes,
+    );
+    final audioBytes = saved
+        .where((entry) => entry.edition.kind == EditionKind.audio)
+        .fold<int>(0, (total, entry) => total + entry.state.bytes);
+    final (icon, network) = switch (policy.network) {
+      MediaNetwork.wifi => (
+        Icons.wifi_rounded,
+        'Connected to Wi-Fi · downloads run now',
+      ),
+      MediaNetwork.mobile when policy.mobileAllowed => (
+        Icons.signal_cellular_alt_rounded,
+        'On mobile data · allowed for this session',
+      ),
+      MediaNetwork.mobile => (
+        Icons.signal_cellular_alt_rounded,
+        'On mobile data · downloads wait for Wi-Fi',
+      ),
+      MediaNetwork.disconnected => (
+        Icons.cloud_off_rounded,
+        'Offline · downloaded books still play',
+      ),
+      MediaNetwork.unknown => (
+        Icons.help_outline_rounded,
+        'Network unknown · downloads wait for Wi-Fi',
+      ),
+    };
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(18, 16, 12, 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              formatBytes(bytes),
+              style: TextStyle(
+                fontFamily: 'Outfit',
+                fontSize: 34,
+                height: 1.1,
+                fontWeight: FontWeight.w700,
+                letterSpacing: -1,
+                color: theme.colorScheme.onSurface,
+              ),
+            ),
+            Text(
+              [
+                'saved on this phone',
+                if (audio > 0)
+                  '$audio ${audio == 1 ? 'audiobook' : 'audiobooks'}',
+                if (text > 0) '$text ${text == 1 ? 'ebook' : 'ebooks'}',
+              ].join(' · '),
+              style: theme.textTheme.bodySmall,
+            ),
+            if (audio > 0 && text > 0)
+              Text(
+                'Audiobooks ${formatBytes(audioBytes)} · ebooks ${formatBytes(bytes - audioBytes)}',
+                style: theme.textTheme.bodySmall,
+              ),
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 10),
+              child: Divider(),
+            ),
+            Row(
+              children: [
+                Icon(icon, size: 20, color: theme.colorScheme.primary),
+                const SizedBox(width: 10),
+                Expanded(child: Text(network)),
+              ],
+            ),
+            if (policy.network == MediaNetwork.mobile && !policy.mobileAllowed)
+              TextButton(
+                onPressed: () async {
+                  final allow = await showDialog<bool>(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('Allow mobile data?'),
+                      content: const Text(
+                        'Allow media transfers for this account session. Your carrier may charge for mobile data. Signing out or restarting ends this permission.',
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, false),
+                          child: const Text('Wait for Wi-Fi'),
+                        ),
+                        FilledButton(
+                          onPressed: () => Navigator.pop(context, true),
+                          child: const Text('Allow this session'),
+                        ),
+                      ],
+                    ),
+                  );
+                  if (allow == true && context.mounted) {
+                    policy.allowMobileForSession();
+                  }
+                },
+                child: const Text('Allow mobile data this session'),
+              ),
+            if (policy.mobileAllowed)
+              TextButton(
+                onPressed: policy.resetSession,
+                child: const Text('Use Wi-Fi only'),
+              ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DownloadRow extends StatelessWidget {
+  const _DownloadRow({
+    required this.downloads,
+    required this.book,
+    required this.edition,
+    required this.state,
+    required this.onOpen,
+    required this.compact,
+  });
+  final Downloads downloads;
+  final Book book;
+  final Edition edition;
+  final EditionDownload state;
+  final void Function(BuildContext context, Book book)? onOpen;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    final kind = edition.kind == EditionKind.audio
+        ? 'Audiobook'
+        : edition.files.firstOrNull?.container.toUpperCase().nonEmpty ??
+              'Ebook';
+    final total = state.totalBytes;
+    final detail = [
+      switch (state.phase) {
+        DownloadPhase.downloaded => '$kind · ${formatBytes(state.bytes)}',
+        DownloadPhase.downloading =>
+          '$kind · ${formatBytes(state.bytes)}${total == null ? '' : ' of ${formatBytes(total)}'} · ${state.completeFiles} of ${state.totalFiles} files',
+        DownloadPhase.waiting => '$kind · Waiting for Wi-Fi',
+        DownloadPhase.failed => '$kind · Download failed',
+        DownloadPhase.partial =>
+          '$kind · Partial · ${formatBytes(state.bytes)} saved',
+        DownloadPhase.none => '$kind · Not downloaded',
+      },
+      if (state.unavailableBytes > 0)
+        '${formatBytes(state.unavailableBytes)} saved but unavailable for playback',
+      ?state.message,
+    ].join(' · ');
+    final active =
+        state.phase == DownloadPhase.downloading ||
+        state.phase == DownloadPhase.waiting;
+    final removable =
+        state.bytes > 0 ||
+        state.unavailableBytes > 0 ||
+        state.completeFiles > 0 ||
+        state.phase == DownloadPhase.failed;
+    return BookRow(
+      cover: BookCover.book(
+        book,
+        downloaded: state.phase == DownloadPhase.downloaded,
+        showText: false,
+      ),
+      title: book.title,
+      author: book.author,
+      detail: detail,
+      compact: compact,
+      onTap: () => onOpen?.call(context, book),
+      below: state.phase == DownloadPhase.downloading
+          ? ProgressLine(
+              value: total != null && total > 0 ? state.bytes / total : 0,
+            )
+          : null,
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (!active &&
+              state.phase != DownloadPhase.downloaded &&
+              (state.phase == DownloadPhase.failed || state.bytes > 0))
+            IconButton(
+              tooltip: 'Retry download',
+              onPressed: () =>
+                  _change(context, () => downloads.request(edition)),
+              icon: const Icon(Icons.refresh_rounded),
+            ),
+          if (active)
+            IconButton(
+              tooltip: 'Cancel download',
+              onPressed: () =>
+                  _change(context, () => downloads.cancel(edition)),
+              icon: const Icon(Icons.close_rounded),
+            ),
+          if (!active && removable)
+            IconButton(
+              tooltip: 'Remove download',
+              onPressed: () async {
+                if (await confirmRemoveDownload(context) && context.mounted) {
+                  _change(context, () => downloads.remove(edition));
+                }
+              },
+              icon: const Icon(Icons.delete_outline_rounded),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+extension on String {
+  String? get nonEmpty => isEmpty ? null : this;
+}
+
+/// Asks before removing an edition's local files.
+Future<bool> confirmRemoveDownload(BuildContext context) async =>
+    await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Remove download?'),
+        content: const Text(
+          'Remove this edition’s local files and unfinished transfers. Your Jellyfin files will not change.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Keep download'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Remove download'),
+          ),
+        ],
+      ),
+    ) ??
+    false;
+
+void _change(BuildContext context, Future<void> Function() operation) {
+  unawaited(() async {
+    try {
+      await operation();
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'The download could not be changed. Check your account and available storage.',
+            ),
+          ),
+        );
+      }
+    }
+  }());
+}
+
 class _RetainedStorageView extends StatefulWidget {
-  const _RetainedStorageView({required this.downloads});
+  const _RetainedStorageView({super.key, required this.downloads});
   final Downloads downloads;
 
   @override
