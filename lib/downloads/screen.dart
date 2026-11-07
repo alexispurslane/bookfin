@@ -3,6 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../catalog/book_cover.dart';
+import '../catalog/book_page.dart' show openBook;
+import '../catalog/layout.dart';
+import '../catalog/library_services.dart';
 import '../catalog/library_view.dart' show BookRow;
 import '../catalog/model.dart';
 import '../foundation/theme.dart';
@@ -138,6 +141,28 @@ class DownloadButton extends StatelessWidget {
 /// Every edition with local files or a transfer: a summary of the space they
 /// use and of the network, then one library row per edition. Tapping a row
 /// opens its book. The controls at the end of a row only change the download.
+/// The Downloads tab's page. It shows the catalog's books at the layout's
+/// density, and follows download state. A tapped book opens its page.
+class DownloadsTab extends StatelessWidget {
+  const DownloadsTab({super.key, required this.services});
+  final LibraryServices services;
+
+  @override
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: Listenable.merge([
+      services.catalog,
+      services.layout,
+      ?services.downloads,
+    ]),
+    builder: (context, _) => DownloadsPage(
+      downloads: services.downloads,
+      books: services.catalog.books,
+      compact: services.layout.density == LibraryDensity.compact,
+      onOpen: (context, book) => openBook(context, services, book),
+    ),
+  );
+}
+
 class DownloadsPage extends StatelessWidget {
   const DownloadsPage({
     super.key,

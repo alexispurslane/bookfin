@@ -156,4 +156,48 @@ void main() {
     expect(() => SelectedLocation('Invalid', 91, 0), throwsArgumentError);
     expect(() => SelectedLocation('Invalid', 0, -181), throwsArgumentError);
   });
+
+  group('the next appearance check', () {
+    final newYork = SelectedLocation('New York', 40.7128, -74.0060);
+    final tromso = SelectedLocation('Tromsø', 69.6492, 18.9553);
+
+    test('a manual mode or a missing location never needs a check', () {
+      final noon = DateTime.utc(2026, 3, 20, 16);
+      expect(
+        nextAppearanceCheck(
+          AppearanceSettings(mode: AppearanceMode.night, location: newYork),
+          noon,
+        ),
+        isNull,
+      );
+      expect(nextAppearanceCheck(const AppearanceSettings(), noon), isNull);
+    });
+
+    test('the check falls on the second that the sun sets', () {
+      final from = DateTime.utc(2026, 3, 20, 22, 55);
+      final settings = AppearanceSettings(location: newYork);
+      final sunset = nextAppearanceCheck(settings, from)!;
+      expect(sunset.difference(from), lessThan(const Duration(minutes: 30)));
+      expect(
+        resolveAppearance(settings, sunset, Brightness.light).brightness,
+        Brightness.dark,
+      );
+      expect(
+        resolveAppearance(
+          settings,
+          sunset.subtract(const Duration(seconds: 1)),
+          Brightness.light,
+        ).brightness,
+        Brightness.light,
+      );
+    });
+
+    test('a polar night looks again after the horizon, not sooner', () {
+      final from = DateTime.utc(2026, 12, 21, 12);
+      expect(
+        nextAppearanceCheck(AppearanceSettings(location: tromso), from),
+        from.add(const Duration(hours: 6)),
+      );
+    });
+  });
 }

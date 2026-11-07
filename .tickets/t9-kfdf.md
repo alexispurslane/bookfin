@@ -40,3 +40,9 @@ Owned files: lib/catalog/book_page.dart, lib/catalog/library_services.dart, and 
 - Separate source reports onSeparate(file). The page confirms, then calls separateEdition.
 - The page finds its series and matches through the catalog's indexes and groups no library.
 
+
+## Notes
+
+**2026-11-07T22:25:14Z**
+
+boo-y6fb merged: Playback has positionNotifier (AudioPosition?, fires on every decoder report), selectionNotifier ((book, edition, playing, active)), sleepNotifier (Duration? left, once a second), recordsNotifier (history, bookmarks or resumes replaced), settingsNotifier ((speed, backward, forward)) and statusNotifier ((message, saveFailed)). Undo, the replacement offer and unsavedChanges have no narrow signal; those widgets stay on the broad notification, which stops firing on ticks after t9-cx1u.

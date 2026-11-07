@@ -10,6 +10,32 @@ import '../foundation/theme.dart';
 import '../sync/coordinator.dart';
 import '../sync/screen.dart';
 
+/// The Settings tab's page. It follows the catalog and the layout.
+class SettingsTab extends StatelessWidget {
+  const SettingsTab({
+    super.key,
+    required this.catalog,
+    required this.layout,
+    required this.onAppearance,
+    this.sync,
+  });
+  final CatalogController catalog;
+  final LibraryLayout layout;
+  final VoidCallback onAppearance;
+  final RecordSync? sync;
+
+  @override
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: Listenable.merge([catalog, layout]),
+    builder: (context, _) => SettingsPage(
+      catalog: catalog,
+      layout: layout,
+      onAppearance: onAppearance,
+      sync: sync,
+    ),
+  );
+}
+
 /// The Settings tab: account, libraries, layout, appearance, and records.
 class SettingsPage extends StatelessWidget {
   const SettingsPage({

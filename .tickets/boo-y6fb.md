@@ -1,6 +1,6 @@
 ---
 id: boo-y6fb
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-07T21:36:12Z

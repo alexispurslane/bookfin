@@ -1,3 +1,4 @@
+import 'package:bookfin/app/account_binding.dart';
 import 'package:bookfin/catalog/controller.dart';
 import 'package:bookfin/catalog/screen.dart';
 import 'package:bookfin/foundation/theme.dart';
@@ -47,6 +48,12 @@ void main() {
   testWidgets(
     'root Listening opens the history timeline and sign-out dismisses it',
     (tester) async {
+      final binding = AccountBinding(
+        catalog: catalog,
+        downloads: downloads,
+        playback: playback,
+      );
+      addTearDown(binding.dispose);
       await tester.pumpWidget(
         MaterialApp(
           theme: bookfinTheme(Brightness.light),

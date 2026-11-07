@@ -46,3 +46,13 @@ Owned files: lib/catalog/library_view.dart, lib/catalog/library_services.dart, l
 - A change of the playing book rebuilds no cover face outside glass panes.
 - A typed query reaches results through catalog.search, and a stale result does not replace a newer one.
 
+
+## Notes
+
+**2026-11-07T22:25:14Z**
+
+boo-y6fb merged: Playback has positionNotifier (AudioPosition?, fires on every decoder report), selectionNotifier ((book, edition, playing, active)), sleepNotifier (Duration? left, once a second), recordsNotifier (history, bookmarks or resumes replaced), settingsNotifier ((speed, backward, forward)) and statusNotifier ((message, saveFailed)). Undo, the replacement offer and unsavedChanges have no narrow signal; those widgets stay on the broad notification, which stops firing on ticks after t9-cx1u.
+
+**2026-11-07T22:26:04Z**
+
+User decision (see boo-0km1): when the catalog status says Jellyfin cannot be reached, LibraryShelf shows only downloaded books without changing the user's ShelfFilter. Build the shelf so the effective filter can come from the catalog status; boo-0km1 adds the message and Retry.
