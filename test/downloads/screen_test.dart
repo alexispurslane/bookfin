@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
 
@@ -409,6 +410,41 @@ void main() {
     expect(find.text('Leftover files'), findsNothing);
   });
 
+  testWidgets('byte progress alone does not reread leftover files', (
+    tester,
+  ) async {
+    late _CountedLeftovers counted;
+    var notifications = 0;
+    await tester.runAsync(() async {
+      downloads.dispose();
+      await downloads.idle;
+      fixture.payload = Uint8List(12 << 20);
+      fixture.pieceBytes = 48 << 10;
+      var now = DateTime(2026);
+      downloads = counted = _CountedLeftovers(
+        root: root,
+        freeBytes: () async => 64 << 20,
+        policy: policy,
+        clock: () => now = now.add(const Duration(seconds: 1)),
+      );
+      await downloads.bind(fixture.session(), fixture.books);
+      await tester.pumpWidget(
+        MaterialApp(home: LeftoverFilesPage(downloads: downloads)),
+      );
+    });
+    await settleStorage(tester);
+    final before = counted.reads;
+    downloads.addListener(() => notifications++);
+    await tester.runAsync(() async {
+      await downloads.request(fixture.text);
+      await downloads.idle;
+    });
+    await settleStorage(tester);
+    expect(downloads.status(fixture.text).phase, DownloadPhase.downloaded);
+    expect(notifications, greaterThan(20));
+    expect(counted.reads - before, lessThanOrEqualTo(3));
+  });
+
   testWidgets('unreadable identities have no removal action', (tester) async {
     await showRetained(tester);
     await openLeftovers(tester);
@@ -532,6 +568,21 @@ class _CatalogFixture extends JellyfinClient {
       for (final id in ['audio1', 'audio2', 'text'])
         CatalogEntry.fromJson(fixture.dto(id), libraryId: 'books'),
   ];
+}
+
+class _CountedLeftovers extends LocalDownloads {
+  _CountedLeftovers({
+    required super.root,
+    required super.freeBytes,
+    required super.policy,
+    super.clock,
+  });
+  int reads = 0;
+  @override
+  Future<List<RetainedDownload>> retainedStorage() {
+    reads++;
+    return super.retainedStorage();
+  }
 }
 
 class _RealHttp extends HttpOverrides {}

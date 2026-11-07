@@ -5,6 +5,7 @@ import 'package:bookfin/foundation/theme.dart';
 import 'package:bookfin/playback/playback.dart';
 import 'package:bookfin/playback/screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'playback_test.dart'
@@ -98,6 +99,45 @@ void main() {
     expect(find.text('Arrival'), findsOneWidget);
   });
 
+  testWidgets('every player sheet titles itself in the same style', (
+    tester,
+  ) async {
+    await showPlayer(tester);
+    final styles = <String, TextStyle?>{};
+    for (final (tool, title) in [
+      ('Chapters', 'Chapters'),
+      ('Speed', 'Playback speed'),
+      ('Sleep', 'Sleep timer'),
+      ('History', 'History'),
+    ]) {
+      await tester.tap(find.text(tool));
+      await tester.pumpAndSettle();
+      final heading = find.descendant(
+        of: find.byType(CoverGlass),
+        matching: find.text(title),
+      );
+      styles[title] = tester.renderObject<RenderParagraph>(heading).text.style;
+      await tester.tapAt(const Offset(20, 20));
+      await tester.pumpAndSettle();
+    }
+    expect(styles.values.toSet(), hasLength(1), reason: '$styles');
+    expect(styles['Chapters']?.fontFamily, 'Source Serif 4');
+  });
+
+  testWidgets('the sleep sheet marks the running timer', (tester) async {
+    await tester.runAsync(() => playback.setSleep(const Duration(minutes: 30)));
+    await showPlayer(tester);
+    await tester.tap(find.text('Sleep'));
+    await tester.pumpAndSettle();
+    bool marked(String label) =>
+        tester.widget<ListTile>(find.widgetWithText(ListTile, label)).selected;
+    playback.checkInvariants();
+    expect(marked('30 minutes'), isTrue);
+    for (final label in ['5 minutes', '15 minutes', '60 minutes', 'Turn off']) {
+      expect(marked(label), isFalse, reason: label);
+    }
+  });
+
   testWidgets('the chapters sheet floats on glass over the open book', (
     tester,
   ) async {
@@ -170,16 +210,17 @@ void main() {
       await playback.seekEdition(0);
     });
     await showPlayer(tester);
-    final mark = find.byWidgetPredicate(
-      (widget) => switch (widget.key) {
-        ValueKey<String>(:final value) => value.startsWith('bookmark mark'),
-        _ => false,
-      },
+    final marks = find.byKey(const ValueKey('position marks'));
+    expect(
+      tester.getRect(marks).width,
+      tester.getRect(find.byType(Slider)).width,
     );
-    expect(mark, findsOneWidget);
-    final bar = tester.getRect(find.byType(Slider));
-    // 75 s of 150 s is halfway along the bar.
-    expect(tester.getCenter(mark).dx, closeTo(bar.center.dx, 12));
+    // 75 s of 150 s is halfway along the bar. The chapter starts are drawn as
+    // rectangles, so the one circle is the bookmark.
+    expect(
+      tester.renderObject(marks),
+      paints..circle(x: tester.getSize(marks).width / 2),
+    );
   });
 
   testWidgets('a long press on a jump button sets the jump lengths', (
@@ -243,5 +284,81 @@ void main() {
       isSemantics(isButton: true),
     );
     semantics.dispose();
+  });
+
+  /// Whether a repaint of [ticking] also repaints [blur]: the nearest repaint
+  /// boundary above [ticking] holds [blur] too.
+  bool repaintsWith(WidgetTester tester, Finder ticking, Finder blur) {
+    var boundary = tester.renderObject(ticking);
+    while (!boundary.isRepaintBoundary) {
+      boundary = boundary.parent!;
+    }
+    for (
+      RenderObject? node = tester.renderObject(blur);
+      node != null;
+      node = node.parent
+    ) {
+      if (node == boundary) return true;
+    }
+    return false;
+  }
+
+  testWidgets('the ticking position repaints apart from the blurred stage', (
+    tester,
+  ) async {
+    await showPlayer(tester);
+    final stage = find.byType(CoverBlur);
+    expect(repaintsWith(tester, find.byType(Slider), stage), isFalse);
+    expect(
+      repaintsWith(tester, find.text('chapter 40 s left'), stage),
+      isFalse,
+    );
+    expect(repaintsWith(tester, find.byTooltip('Play'), stage), isFalse);
+  });
+
+  testWidgets('in the popup the ticking position repaints apart from the '
+      'glass', (tester) async {
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 2.625;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: bookfinTheme(Brightness.light),
+        home: Scaffold(
+          body: Builder(
+            builder: (context) => TextButton(
+              onPressed: () => openPlayer(context, playback),
+              child: const Text('Open'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
+    final glass = find.byType(BackdropFilter);
+    expect(repaintsWith(tester, find.byType(Slider), glass), isFalse);
+    expect(
+      repaintsWith(tester, find.text('chapter 40 s left'), glass),
+      isFalse,
+    );
+  });
+
+  testWidgets('the mini player\'s progress repaints apart from its glass', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: bookfinTheme(Brightness.light),
+        home: Scaffold(
+          bottomNavigationBar: PlaybackMiniPlayer(playback: playback),
+        ),
+      ),
+    );
+    final glass = find.byType(BackdropFilter);
+    expect(
+      repaintsWith(tester, find.byType(LinearProgressIndicator), glass),
+      isFalse,
+    );
   });
 }

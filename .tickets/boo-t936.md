@@ -1,6 +1,6 @@
 ---
 id: boo-t936
-status: open
+status: in_progress
 deps: []
 links: []
 created: 2026-11-07T20:55:42Z

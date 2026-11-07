@@ -4,8 +4,7 @@ import 'package:bookfin/catalog/book_cover.dart';
 import 'package:bookfin/catalog/controller.dart';
 import 'package:bookfin/catalog/jellyfin.dart';
 import 'package:bookfin/catalog/layout.dart';
-import 'package:bookfin/catalog/library_view.dart'
-    show LibraryShelf, ProgressLine;
+import 'package:bookfin/catalog/library_view.dart' show LibraryShelf;
 import 'package:bookfin/catalog/model.dart';
 import 'package:bookfin/catalog/screen.dart';
 import 'package:bookfin/downloads/downloads.dart';
@@ -217,8 +216,14 @@ void main() {
 
   testApp('the playing book’s library tile follows the player', (tester) async {
     await showListening(tester);
-    double progress() =>
-        tester.widget<ProgressLine>(find.byType(ProgressLine)).value;
+    double progress() => tester
+        .widget<ProgressLine>(
+          find.descendant(
+            of: find.byType(LibraryShelf),
+            matching: find.byType(ProgressLine),
+          ),
+        )
+        .value!;
     final before = progress();
     engine.emit(0, 45000, playing: true);
     await tester.pump();

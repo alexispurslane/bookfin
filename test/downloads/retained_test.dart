@@ -67,6 +67,7 @@ void main() {
       await cache.create(recursive: true);
       await File('${cache.path}/book.epub').writeAsBytes([7, 8, 9]);
       await file.delete();
+      await downloads.refresh();
       expect(downloads.status(fixture.text).unavailableBytes, 3);
       await downloads.bind(fixture.session(), []);
       final retained = await downloads.retainedStorage();

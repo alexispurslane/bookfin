@@ -14,7 +14,7 @@ import 'store.dart';
 
 Future<Playback?> createPlayback(
   Downloads downloads, {
-  ResumeStore? store,
+  ListeningStore? store,
 }) async {
   if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return null;
   final engine = LocalAudioEngine();
@@ -162,8 +162,20 @@ class LocalAudioEngine implements AudioEngine {
   }
 }
 
+/// Publishes the open book and its playback state to Android's media session,
+/// which drives the notification and the lock screen.
+///
+/// Each published value costs a platform call, and Playback notifies on every
+/// player tick. The session projects the shown position from the last
+/// published position, its update time and its speed. So a state is published
+/// only when a shown field changes or when that projection drifts from the
+/// player by more than [_drift]: after a seek, a jump, a stall or a restore.
 class PlaybackHandler extends BaseAudioHandler {
+  static const _drift = Duration(seconds: 1);
   Playback? _playback;
+  ({String id, String title, String artist, String album, int? duration})?
+  _shown;
+
   void attach(Playback playback) {
     _playback?.removeListener(_publish);
     _playback = playback;
@@ -174,47 +186,66 @@ class PlaybackHandler extends BaseAudioHandler {
   void _publish() {
     final playback = _playback!;
     final book = playback.book;
-    mediaItem.add(
-      book == null
-          ? null
-          : MediaItem(
-              id: playback.edition!.id,
-              title: book.title,
-              artist: book.author,
-              album: playback.edition!.label,
-              duration: playback.durationMilliseconds == null
-                  ? null
-                  : Duration(milliseconds: playback.durationMilliseconds!),
-            ),
-    );
-    playbackState.add(
-      PlaybackState(
-        controls: [
-          MediaControl.rewind,
-          playback.playing ? MediaControl.pause : MediaControl.play,
-          MediaControl.fastForward,
-          MediaControl.stop,
-        ],
-        systemActions: const {
-          MediaAction.seek,
-          MediaAction.seekForward,
-          MediaAction.seekBackward,
-          MediaAction.setSpeed,
-        },
-        androidCompactActionIndices: const [0, 1, 2],
-        processingState: book == null || !playback.active
-            ? AudioProcessingState.idle
-            : AudioProcessingState.ready,
-        playing: playback.playing,
-        updatePosition: Duration(
-          milliseconds:
-              playback.editionMilliseconds ??
-              playback.position?.milliseconds ??
-              0,
-        ),
-        speed: playback.playbackSpeed,
+    final shown = book == null
+        ? null
+        : (
+            id: playback.edition!.id,
+            title: book.title,
+            artist: book.author,
+            album: playback.edition!.label,
+            duration: playback.durationMilliseconds,
+          );
+    if (shown != _shown) {
+      _shown = shown;
+      mediaItem.add(
+        shown == null
+            ? null
+            : MediaItem(
+                id: shown.id,
+                title: shown.title,
+                artist: shown.artist,
+                album: shown.album,
+                duration: shown.duration == null
+                    ? null
+                    : Duration(milliseconds: shown.duration!),
+              ),
+      );
+    }
+    final next = PlaybackState(
+      controls: [
+        MediaControl.rewind,
+        playback.playing ? MediaControl.pause : MediaControl.play,
+        MediaControl.fastForward,
+        MediaControl.stop,
+      ],
+      systemActions: const {
+        MediaAction.seek,
+        MediaAction.seekForward,
+        MediaAction.seekBackward,
+        MediaAction.setSpeed,
+      },
+      androidCompactActionIndices: const [0, 1, 2],
+      processingState: book == null || !playback.active
+          ? AudioProcessingState.idle
+          : AudioProcessingState.ready,
+      playing: playback.playing,
+      updatePosition: Duration(
+        milliseconds:
+            playback.editionMilliseconds ??
+            playback.position?.milliseconds ??
+            0,
       ),
+      speed: playback.playbackSpeed,
     );
+    final last = playbackState.value;
+    if (next.playing == last.playing &&
+        next.processingState == last.processingState &&
+        next.speed == last.speed &&
+        listEquals(next.controls, last.controls) &&
+        (next.updatePosition - last.position).abs() <= _drift) {
+      return;
+    }
+    playbackState.add(next);
   }
 
   @override

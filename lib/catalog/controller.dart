@@ -37,6 +37,9 @@ class CatalogController extends ChangeNotifier {
 
   JellyfinSession? get session => _session;
   CatalogCache? get cache => _cache;
+
+  /// The visible books. A change replaces the list, so callers can compare
+  /// lists by identity to see whether the books changed.
   List<Book> get books =>
       _session == null || _accessBlocked ? const [] : _books;
   List<BookLibrary> get libraries => List.unmodifiable(_libraries);

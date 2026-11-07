@@ -8,6 +8,7 @@ import 'package:bookfin/catalog/model.dart';
 import 'package:bookfin/catalog/screen.dart';
 import 'package:bookfin/catalog/book_cover.dart';
 import 'package:bookfin/catalog/glass.dart';
+import 'package:bookfin/downloads/downloads.dart';
 import 'package:bookfin/foundation/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -36,18 +37,20 @@ void main() {
     controller.dispose();
     client.close();
   });
-  Future<void> show(WidgetTester tester) => tester.pumpWidget(
-    MaterialApp(
-      theme: bookfinTheme(Brightness.light),
-      home: CatalogHome(
-        catalog: controller,
-        layout: layout,
-        covers: covers,
-        onAppearance: () {},
-        onReaderNightChanged: (_) {},
-      ),
-    ),
-  );
+  Future<void> show(WidgetTester tester, {Downloads? downloads}) =>
+      tester.pumpWidget(
+        MaterialApp(
+          theme: bookfinTheme(Brightness.light),
+          home: CatalogHome(
+            catalog: controller,
+            layout: layout,
+            covers: covers,
+            downloads: downloads,
+            onAppearance: () {},
+            onReaderNightChanged: (_) {},
+          ),
+        ),
+      );
 
   List<CatalogEntry> orchardCycle() => [
     for (final (index, title) in ['First Frost', 'Graft', 'Windfall'].indexed)
@@ -98,6 +101,35 @@ void main() {
     await tester.pageBack();
     await tester.pumpAndSettle();
     expect(find.text('The Orchard Cycle'), findsOneWidget);
+  });
+
+  testWidgets('a saved library names the day and time it was read', (
+    tester,
+  ) async {
+    final credentials = MemoryCredentials();
+    final store = MemoryCatalogStore();
+    final first = CatalogController(
+      credentials: credentials,
+      store: store,
+      clientFactory: (server, device) => client,
+    );
+    await first.connect('https://books.example', 'alice', 'password');
+    await first.refresh(selected: {'books'});
+    first.dispose();
+    controller.dispose();
+    controller = CatalogController(
+      credentials: credentials,
+      store: store,
+      clientFactory: (server, device) => client,
+    );
+    await controller.restore();
+    expect(controller.verified, isFalse);
+    await show(tester);
+    final read = controller.cache!.completedAt!.toLocal();
+    final time = const DefaultMaterialLocalizations().formatTimeOfDay(
+      TimeOfDay.fromDateTime(read),
+    );
+    expect(find.text('Saved library · Today, $time'), findsOneWidget);
   });
 
   testWidgets('the top bar switches the library between a grid and a list', (
@@ -527,6 +559,81 @@ void main() {
       expect(controller.books.single.title, 'The Orchard');
     },
   );
+
+  group('downloads binding', () {
+    late _BindCounter downloads;
+    setUp(() => downloads = _BindCounter());
+    tearDown(() => downloads.dispose());
+
+    Future<void> showSignedIn(WidgetTester tester) async {
+      client.entries = orchardCycle();
+      await controller.connect('https://books.example', 'alice', 'password');
+      await controller.refresh(selected: {'books'});
+      await show(tester, downloads: downloads);
+      await tester.pump();
+    }
+
+    testWidgets(
+      'a catalog notice that keeps the account and books does not rebind downloads',
+      (tester) async {
+        await showSignedIn(tester);
+        expect(downloads.binds, hasLength(1));
+        controller.cancel();
+        await tester.pump();
+        expect(controller.message, 'Refresh cancelled.');
+        expect(downloads.binds, hasLength(1));
+      },
+    );
+
+    testWidgets('a refreshed library rebinds downloads with its new books', (
+      tester,
+    ) async {
+      await showSignedIn(tester);
+      client.entries = [...orchardCycle(), entry('ember', title: 'Ember')];
+      await controller.refresh();
+      await tester.pump();
+      expect(downloads.binds, hasLength(2));
+      expect(
+        downloads.binds.last.books.map((book) => book.title),
+        contains('Ember'),
+      );
+    });
+
+    testWidgets('signing out rebinds downloads without an account', (
+      tester,
+    ) async {
+      await showSignedIn(tester);
+      await controller.signOut();
+      await tester.pump();
+      expect(downloads.binds, hasLength(2));
+      expect(downloads.binds.last.session, isNull);
+      expect(downloads.binds.last.books, isEmpty);
+    });
+  });
+}
+
+class _BindCounter extends Downloads {
+  _BindCounter() : super(MediaPolicy());
+  final binds = <({JellyfinSession? session, List<Book> books})>[];
+  @override
+  bool get supported => true;
+  @override
+  Future<void> bind(JellyfinSession? session, List<Book> books) async =>
+      binds.add((session: session, books: books));
+  @override
+  EditionDownload status(Edition edition) => const EditionDownload();
+  @override
+  Future<void> request(Edition edition) async {}
+  @override
+  Future<void> cancel(Edition edition) async {}
+  @override
+  Future<void> remove(Edition edition) async {}
+  @override
+  Future<Uri?> localFile(SourceFile source) async => null;
+  @override
+  Future<void> get idle async {}
+  @override
+  void checkInvariants() {}
 }
 
 class _NoCovers implements Covers {

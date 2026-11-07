@@ -2,9 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../downloads/downloads.dart';
+import '../downloads/downloads.dart' show DownloadAction;
 import '../downloads/screen.dart';
 import '../foundation/theme.dart';
+import '../foundation/time.dart';
 import '../playback/screen.dart';
 import '../playback/timeline.dart';
 import '../reader/screen.dart';
@@ -84,12 +85,9 @@ class BookPage extends StatelessWidget {
         book: book,
         // Actions below use this context, so layers they open find the book.
         child: Builder(
-          builder: (context) => Scaffold(
+          builder: (context) => services.page(
+            context,
             extendBodyBehindAppBar: true,
-            extendBody: true,
-            bottomNavigationBar: playback == null
-                ? null
-                : PlaybackMiniPlayer(playback: playback),
             appBar: AppBar(
               backgroundColor: Colors.transparent,
               actions: [
@@ -114,227 +112,207 @@ class BookPage extends StatelessWidget {
                 ),
               ],
             ),
-            body: BookfinSurface(
-              child: Material(
-                type: MaterialType.transparency,
-                child: ListenableBuilder(
-                  listenable: services.activity,
-                  builder: (context, _) {
-                    final theme = Theme.of(context);
-                    final listening =
-                        audio
-                            .where(
-                              (edition) => playback?.progress(edition) != null,
-                            )
-                            .firstOrNull ??
-                        audio.firstOrNull;
-                    final progress = services.progress(book);
-                    final audioMs = listening == null
-                        ? null
-                        : _length(listening);
-                    return ListView(
-                      padding: EdgeInsets.only(
-                        bottom: floatingBarInset(context),
-                      ),
-                      children: [
-                        _Header(
-                          book: book,
-                          downloaded: services.downloaded(book),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24),
-                          child: Column(
-                            children: [
-                              const SizedBox(height: 18),
-                              Text(
-                                book.title,
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontFamily: 'Source Serif 4',
-                                  fontSize: 28,
-                                  height: 1.12,
-                                  fontWeight: FontWeight.w500,
-                                  letterSpacing: -0.3,
-                                  color: theme.colorScheme.onSurface,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                [
-                                  if (book.author.isNotEmpty) book.author,
-                                  if (narrator != null) 'read by $narrator',
-                                ].join(' · '),
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: theme.colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                              if (book.series != null)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 4),
-                                  child: TextButton(
-                                    onPressed: series == null
-                                        ? null
-                                        : () => openSeries(
-                                            context,
-                                            services,
-                                            series,
-                                          ),
-                                    style: TextButton.styleFrom(
-                                      minimumSize: const Size(48, 36),
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                      ),
-                                    ),
-                                    child: Text(
-                                      [
-                                            book.series!,
-                                            if (book.seriesOrder != null)
-                                              'Book ${seriesPosition(book.seriesOrder!)}',
-                                          ].join(' · ') +
-                                          (series != null ? '  ›' : ''),
-                                      style: const TextStyle(fontSize: 13),
-                                    ),
+            body: ListenableBuilder(
+              listenable: services.activity,
+              builder: (context, _) {
+                final theme = Theme.of(context);
+                final listening =
+                    audio
+                        .where((edition) => playback?.progress(edition) != null)
+                        .firstOrNull ??
+                    audio.firstOrNull;
+                final progress = services.progress(book);
+                final audioMs = listening == null ? null : _length(listening);
+                return ListView(
+                  padding: EdgeInsets.only(bottom: floatingBarInset(context)),
+                  children: [
+                    _Header(book: book, downloaded: services.downloaded(book)),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Column(
+                        children: [
+                          const SizedBox(height: 18),
+                          Text(
+                            book.title,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontFamily: 'Source Serif 4',
+                              fontSize: 28,
+                              height: 1.12,
+                              fontWeight: FontWeight.w500,
+                              letterSpacing: -0.3,
+                              color: theme.colorScheme.onSurface,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            [
+                              if (book.author.isNotEmpty) book.author,
+                              if (narrator != null) 'read by $narrator',
+                            ].join(' · '),
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                          if (book.series != null)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 4),
+                              child: TextButton(
+                                onPressed: series == null
+                                    ? null
+                                    : () =>
+                                          openSeries(context, services, series),
+                                style: TextButton.styleFrom(
+                                  minimumSize: const Size(48, 36),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
                                   ),
                                 ),
-                              const SizedBox(height: 14),
-                              _Facts(
-                                facts: [
-                                  if (audioMs != null)
-                                    (duration(audioMs), 'audio'),
-                                  if (formats.isNotEmpty)
-                                    (formats.join(' + '), 'ebook')
-                                  else if (text.isNotEmpty)
-                                    ('Ebook', 'edition'),
-                                  if (book.year != null)
-                                    ('${book.year}', 'published'),
-                                ],
-                              ),
-                              const SizedBox(height: 18),
-                              _Actions(
-                                services: services,
-                                book: book,
-                                listening: listening,
-                                reading: text.firstOrNull,
-                              ),
-                              if (progress != null && progress.totalMs > 0) ...[
-                                const SizedBox(height: 14),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        progress.totalMs - progress.elapsedMs <
-                                                60000
-                                            ? 'Finished'
-                                            : '${(progress.elapsedMs * 100 / progress.totalMs).floor()}% · ${duration(progress.totalMs - progress.elapsedMs)} left',
-                                        style: theme.textTheme.bodySmall,
-                                      ),
-                                    ),
-                                    if (playback != null)
-                                      TextButton(
-                                        onPressed: () => openListeningTimeline(
-                                          context,
-                                          playback,
-                                          book: book,
-                                        ),
-                                        style: TextButton.styleFrom(
-                                          minimumSize: const Size(48, 32),
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 8,
-                                          ),
-                                        ),
-                                        child: const Text(
-                                          'History',
-                                          style: TextStyle(fontSize: 12),
-                                        ),
-                                      ),
-                                  ],
+                                child: Text(
+                                  [
+                                        book.series!,
+                                        if (book.seriesOrder != null)
+                                          'Book ${seriesPosition(book.seriesOrder!)}',
+                                      ].join(' · ') +
+                                      (series != null ? '  ›' : ''),
+                                  style: const TextStyle(fontSize: 13),
                                 ),
-                                const SizedBox(height: 4),
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(3),
-                                  child: LinearProgressIndicator(
-                                    value:
-                                        progress.elapsedMs / progress.totalMs,
-                                    minHeight: 3,
-                                    backgroundColor:
-                                        theme.colorScheme.outlineVariant,
-                                  ),
-                                ),
-                              ],
-                              if (catalog.message != null)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 12),
+                              ),
+                            ),
+                          const SizedBox(height: 14),
+                          _Facts(
+                            facts: [
+                              if (audioMs != null) (duration(audioMs), 'audio'),
+                              if (formats.isNotEmpty)
+                                (formats.join(' + '), 'ebook')
+                              else if (text.isNotEmpty)
+                                ('Ebook', 'edition'),
+                              if (book.year != null)
+                                ('${book.year}', 'published'),
+                            ],
+                          ),
+                          const SizedBox(height: 18),
+                          _Actions(
+                            services: services,
+                            onDownload: (edition, action) => changeDownload(
+                              context,
+                              services.downloads!,
+                              edition,
+                              action,
+                            ),
+                            book: book,
+                            listening: listening,
+                            reading: text.firstOrNull,
+                          ),
+                          if (progress != null && progress.totalMs > 0) ...[
+                            const SizedBox(height: 14),
+                            Row(
+                              children: [
+                                Expanded(
                                   child: Text(
-                                    catalog.message!,
-                                    style: TextStyle(
-                                      color: theme.colorScheme.error,
+                                    progress.totalMs - progress.elapsedMs <
+                                            60000
+                                        ? 'Finished'
+                                        : '${(progress.elapsedMs * 100 / progress.totalMs).floor()}% · ${duration(progress.totalMs - progress.elapsedMs)} left',
+                                    style: theme.textTheme.bodySmall,
+                                  ),
+                                ),
+                                if (playback != null)
+                                  TextButton(
+                                    onPressed: () => openListeningTimeline(
+                                      context,
+                                      playback,
+                                      book: book,
+                                    ),
+                                    style: TextButton.styleFrom(
+                                      minimumSize: const Size(48, 32),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                      ),
+                                    ),
+                                    child: const Text(
+                                      'History',
+                                      style: TextStyle(fontSize: 12),
                                     ),
                                   ),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+                            ProgressLine(
+                              value: progress.elapsedMs / progress.totalMs,
+                            ),
+                          ],
+                          if (catalog.message != null)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 12),
+                              child: StatusMessage(catalog.message!),
+                            ),
+                          if (playback?.message != null)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 12),
+                              child: StatusMessage(playback!.message!),
+                            ),
+                          if (playback != null &&
+                              playback.replacementStart?.book.id == bookId)
+                            ReplacementStartNotice(
+                              playback: playback,
+                              onStarted: () => openPlayer(context, playback),
+                            ),
+                        ],
+                      ),
+                    ),
+                    if (book.description != null)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(24, 22, 24, 0),
+                        child: _Description(text: book.description!),
+                      ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 18, 24, 0),
+                      child: _Metadata(
+                        rows: [
+                          if (book.genres.isNotEmpty)
+                            ('Genre', book.genres.join(', ')),
+                          if (book.publisher != null)
+                            ('Publisher', book.publisher!),
+                          if (_files(book).isNotEmpty) ('Files', _files(book)),
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 28, 24, 32),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SectionLabel('EDITIONS'),
+                          const SizedBox(height: 10),
+                          for (final edition in book.editions)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: _EditionPanel(
+                                services: services,
+                                onDownload: (action) => changeDownload(
+                                  context,
+                                  services.downloads!,
+                                  edition,
+                                  action,
                                 ),
-                              if (playback?.message != null)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 12),
-                                  child: Text(playback!.message!),
-                                ),
-                              if (playback != null &&
-                                  playback.replacementStart?.book.id == bookId)
-                                ReplacementStartNotice(
-                                  playback: playback,
-                                  onStarted: () =>
-                                      openPlayer(context, playback),
-                                ),
-                            ],
-                          ),
-                        ),
-                        if (book.description != null)
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(24, 22, 24, 0),
-                            child: _Description(text: book.description!),
-                          ),
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(24, 18, 24, 0),
-                          child: _Metadata(
-                            rows: [
-                              if (book.genres.isNotEmpty)
-                                ('Genre', book.genres.join(', ')),
-                              if (book.publisher != null)
-                                ('Publisher', book.publisher!),
-                              if (_files(book).isNotEmpty)
-                                ('Files', _files(book)),
-                            ],
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(24, 28, 24, 32),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('EDITIONS', style: _sectionStyle(theme)),
-                              const SizedBox(height: 10),
-                              for (final edition in book.editions)
-                                Padding(
-                                  padding: const EdgeInsets.only(bottom: 12),
-                                  child: _EditionPanel(
-                                    services: services,
-                                    book: book,
-                                    edition: edition,
-                                  ),
-                                ),
-                              if (matches > 0)
-                                Text(
-                                  '$matches possible ${matches == 1 ? 'match' : 'matches'} · Confirmation required',
-                                  style: theme.textTheme.bodySmall,
-                                ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                ),
-              ),
+                                book: book,
+                                edition: edition,
+                              ),
+                            ),
+                          if (matches > 0)
+                            Text(
+                              '$matches possible ${matches == 1 ? 'match' : 'matches'} · Confirmation required',
+                              style: theme.textTheme.bodySmall,
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
           ),
         ),
@@ -356,15 +334,17 @@ class BookPage extends StatelessWidget {
   Future<void> _link(BuildContext context, Book book) async {
     final candidate = await showGlassSheet<Book>(
       context,
+      title: 'Link editions',
       isScrollControlled: true,
       builder: (_) => _BookPicker(book: book, books: catalog.books),
     );
     if (candidate == null || !context.mounted) return;
     if (await confirmAction(
       context,
-      'Link editions?',
-      'Keep “${candidate.title}” by ${candidate.author.isEmpty ? 'an unknown author' : candidate.author} as the book details. Recordings and ebook editions stay separate. Jellyfin will not change.',
-      'Link editions',
+      title: 'Link editions?',
+      message:
+          'Keep “${candidate.title}” by ${candidate.author.isEmpty ? 'an unknown author' : candidate.author} as the book details. Recordings and ebook editions stay separate. Jellyfin will not change.',
+      action: 'Link editions',
     )) {
       if (!catalog.books.any((candidate) => candidate.id == book.id) ||
           !catalog.books.any((book) => book.id == candidate.id)) {
@@ -383,9 +363,9 @@ class BookPage extends StatelessWidget {
     if (selected == null || !context.mounted) return;
     if (await confirmAction(
       context,
-      'Combine as one recording?',
-      'Use this only for consecutive files of the same recording, not different narrators or abridged versions. You can correct the file order afterward.',
-      'Combine files',
+      title: 'Combine as one recording?',
+      message: 'Use this only for consecutive files of the same recording, not different narrators or abridged versions. You can correct the file order afterward.',
+      action: 'Combine files',
     )) {
       try {
         await catalog.combineAudio(book.id, selected);
@@ -419,13 +399,6 @@ String _files(Book book) => [
         ),
       ].where((part) => part.isNotEmpty).join(' '),
 ].join(' · ');
-
-TextStyle _sectionStyle(ThemeData theme) => TextStyle(
-  fontSize: 11,
-  letterSpacing: 1.2,
-  fontWeight: FontWeight.w500,
-  color: theme.colorScheme.onSurfaceVariant,
-);
 
 class _Header extends StatelessWidget {
   const _Header({required this.book, required this.downloaded});
@@ -506,11 +479,15 @@ class _Actions extends StatelessWidget {
     required this.book,
     required this.listening,
     required this.reading,
+    required this.onDownload,
   });
   final LibraryServices services;
   final Book book;
   final Edition? listening;
   final Edition? reading;
+
+  /// Reports a tap on the download button: the edition and its action.
+  final void Function(Edition edition, DownloadAction action) onDownload;
 
   @override
   Widget build(BuildContext context) {
@@ -575,81 +552,12 @@ class _Actions extends StatelessWidget {
         ],
         if (saved != null && services.downloads?.supported == true) ...[
           const SizedBox(width: 8),
-          _DownloadButton(downloads: services.downloads!, edition: saved),
+          DownloadButton(
+            downloads: services.downloads!,
+            edition: saved,
+            onAction: (action) => onDownload(saved, action),
+          ),
         ],
-      ],
-    );
-  }
-}
-
-class _DownloadButton extends StatelessWidget {
-  const _DownloadButton({required this.downloads, required this.edition});
-  final Downloads downloads;
-  final Edition edition;
-  @override
-  Widget build(BuildContext context) {
-    final state = downloads.status(edition);
-    final (icon, tooltip, action) = switch (state.phase) {
-      DownloadPhase.downloaded => (
-        Icons.check_rounded,
-        'Downloaded. Remove download',
-        () async {
-          if (await confirmAction(
-            context,
-            'Remove download?',
-            'The files leave this phone. You can download them again later.',
-            'Remove',
-          )) {
-            await downloads.remove(edition);
-          }
-        },
-      ),
-      DownloadPhase.downloading => (
-        Icons.close_rounded,
-        'Cancel download',
-        () => downloads.cancel(edition),
-      ),
-      DownloadPhase.waiting => (
-        Icons.wifi_off_rounded,
-        'Waiting for Wi-Fi. Cancel download',
-        () => downloads.cancel(edition),
-      ),
-      DownloadPhase.failed => (
-        Icons.refresh_rounded,
-        'Download failed. Try again',
-        () => downloads.request(edition),
-      ),
-      _ => (
-        Icons.download_rounded,
-        'Download',
-        () => downloads.request(edition),
-      ),
-    };
-    final downloading = state.phase == DownloadPhase.downloading;
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        if (downloading)
-          SizedBox(
-            width: 44,
-            height: 44,
-            child: CircularProgressIndicator(
-              strokeWidth: 2.5,
-              value: state.totalBytes != null && state.totalBytes! > 0
-                  ? (state.bytes / state.totalBytes!).clamp(0, 1)
-                  : null,
-            ),
-          ),
-        IconButton.filled(
-          style: IconButton.styleFrom(
-            backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
-            foregroundColor: Theme.of(context).colorScheme.onSurface,
-            minimumSize: const Size(52, 52),
-          ),
-          tooltip: tooltip,
-          onPressed: () => unawaited(action()),
-          icon: Icon(icon),
-        ),
       ],
     );
   }
@@ -762,10 +670,14 @@ class _EditionPanel extends StatelessWidget {
     required this.services,
     required this.book,
     required this.edition,
+    required this.onDownload,
   });
   final LibraryServices services;
   final Book book;
   final Edition edition;
+
+  /// Reports a tap on one of the edition's download actions.
+  final ValueChanged<DownloadAction> onDownload;
 
   CatalogController get catalog => services.catalog;
 
@@ -780,115 +692,116 @@ class _EditionPanel extends StatelessWidget {
     final choice =
         book.editions.where((other) => other.kind == edition.kind).length > 1;
     return BookfinPanel(
-      child: Material(
-        type: MaterialType.transparency,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(audio ? 'Audiobook' : 'Ebook', style: _sectionStyle(theme)),
-            const SizedBox(height: 4),
-            Text(
-              audio && edition.narrator != null
-                  ? 'Read by ${edition.narrator}'
-                  : edition.label,
-              style: theme.textTheme.titleMedium,
-            ),
-            Text(
-              [
-                '${edition.files.length} ${edition.files.length == 1 ? 'file' : 'files'}',
-                if (length != null) duration(length),
-              ].join(' · '),
-              style: theme.textTheme.bodySmall,
-            ),
-            const SizedBox(height: 8),
-            DownloadControls(downloads: services.downloads, edition: edition),
-            Wrap(
-              spacing: 8,
-              children: [
-                if (choice && audio && playback != null)
-                  FilledButton.tonalIcon(
-                    onPressed: () async {
-                      await playback.open(book, edition);
-                      if (context.mounted && playback.edition == edition) {
-                        openPlayer(context, playback);
-                      }
-                    },
-                    icon: const Icon(Icons.play_arrow_rounded),
-                    label: const Text('Listen'),
-                  ),
-                if (choice && !audio && reader != null)
-                  FilledButton.tonalIcon(
-                    onPressed: () {
-                      unawaited(reader.open(book, edition));
-                      Navigator.push<void>(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ReaderScreen(
-                            reader: reader,
-                            onNightChanged: services.onReaderNightChanged,
-                            playback: playback,
-                          ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SectionLabel(audio ? 'Audiobook' : 'Ebook'),
+          const SizedBox(height: 4),
+          Text(
+            audio && edition.narrator != null
+                ? 'Read by ${edition.narrator}'
+                : edition.label,
+            style: theme.textTheme.titleMedium,
+          ),
+          Text(
+            [
+              '${edition.files.length} ${edition.files.length == 1 ? 'file' : 'files'}',
+              if (length != null) duration(length),
+            ].join(' · '),
+            style: theme.textTheme.bodySmall,
+          ),
+          const SizedBox(height: 8),
+          DownloadControls(
+            downloads: services.downloads,
+            edition: edition,
+            onAction: onDownload,
+          ),
+          Wrap(
+            spacing: 8,
+            children: [
+              if (choice && audio && playback != null)
+                FilledButton.tonalIcon(
+                  onPressed: () async {
+                    await playback.open(book, edition);
+                    if (context.mounted && playback.edition == edition) {
+                      openPlayer(context, playback);
+                    }
+                  },
+                  icon: const Icon(Icons.play_arrow_rounded),
+                  label: const Text('Listen'),
+                ),
+              if (choice && !audio && reader != null)
+                FilledButton.tonalIcon(
+                  onPressed: () {
+                    unawaited(reader.open(book, edition));
+                    Navigator.push<void>(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ReaderScreen(
+                          reader: reader,
+                          onNightChanged: services.onReaderNightChanged,
+                          playback: playback,
                         ),
-                      );
-                    },
-                    icon: const Icon(Icons.menu_book_outlined),
-                    label: const Text('Read'),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.menu_book_outlined),
+                  label: const Text('Read'),
+                ),
+              if (edition.files.length > 1)
+                TextButton(
+                  onPressed: () => _orderFiles(context, edition),
+                  child: const Text('Correct file order'),
+                ),
+            ],
+          ),
+          for (final file in edition.files)
+            ExpansionTile(
+              tilePadding: EdgeInsets.zero,
+              shape: const Border(),
+              collapsedShape: const Border(),
+              title: Text(file.displayName),
+              subtitle: Text(
+                [
+                  if (file.container.isNotEmpty) file.container.toUpperCase(),
+                  if (file.durationMs != null) duration(file.durationMs!),
+                  if (file.sizeBytes != null) formatBytes(file.sizeBytes!),
+                ].join(' · '),
+              ),
+              children: [
+                ListTile(
+                  title: const Text('Jellyfin item'),
+                  subtitle: SelectableText(file.itemId),
+                ),
+                ListTile(
+                  title: const Text('Media source'),
+                  subtitle: SelectableText(
+                    file.mediaSourceId.isEmpty
+                        ? 'Not provided by Jellyfin'
+                        : file.mediaSourceId,
                   ),
-                if (edition.files.length > 1)
-                  TextButton(
-                    onPressed: () => _orderFiles(context, edition),
-                    child: const Text('Correct file order'),
+                ),
+                for (final chapter in file.chapters)
+                  ListTile(
+                    title: Text(chapter.name),
+                    trailing: Text(audioTime(chapter.startMs)),
                   ),
+                TextButton(
+                  onPressed: () async {
+                    if (await confirmAction(
+                      context,
+                      title: 'Separate this source?',
+                      message: 'This source becomes a separate book. Its Jellyfin item will not change.',
+                      action: 'Separate',
+                    )) {
+                      await catalog.separateEdition(file.key);
+                    }
+                  },
+                  child: const Text('Separate source'),
+                ),
               ],
             ),
-            for (final file in edition.files)
-              ExpansionTile(
-                tilePadding: EdgeInsets.zero,
-                shape: const Border(),
-                collapsedShape: const Border(),
-                title: Text(file.displayName),
-                subtitle: Text(
-                  [
-                    if (file.container.isNotEmpty) file.container.toUpperCase(),
-                    if (file.durationMs != null) duration(file.durationMs!),
-                    if (file.sizeBytes != null) formatBytes(file.sizeBytes!),
-                  ].join(' · '),
-                ),
-                children: [
-                  ListTile(
-                    title: const Text('Jellyfin item'),
-                    subtitle: SelectableText(file.itemId),
-                  ),
-                  ListTile(
-                    title: const Text('Media source'),
-                    subtitle: SelectableText(
-                      file.mediaSourceId.isEmpty
-                          ? 'Not provided by Jellyfin'
-                          : file.mediaSourceId,
-                    ),
-                  ),
-                  for (final chapter in file.chapters)
-                    ListTile(
-                      title: Text(chapter.name),
-                      trailing: Text(_time(chapter.startMs)),
-                    ),
-                  TextButton(
-                    onPressed: () async {
-                      if (await confirmAction(
-                        context,
-                        'Separate this source?',
-                        'This source becomes a separate book. Its Jellyfin item will not change.',
-                        'Separate',
-                      )) {
-                        await catalog.separateEdition(file.key);
-                      }
-                    },
-                    child: const Text('Separate source'),
-                  ),
-                ],
-              ),
-          ],
-        ),
+        ],
       ),
     );
   }
@@ -896,6 +809,7 @@ class _EditionPanel extends StatelessWidget {
   Future<void> _orderFiles(BuildContext context, Edition edition) async {
     final keys = await showGlassSheet<List<String>>(
       context,
+      title: 'Correct file order',
       isScrollControlled: true,
       builder: (_) => _FileOrder(edition: edition),
     );
@@ -907,31 +821,6 @@ class _EditionPanel extends StatelessWidget {
     }
   }
 }
-
-Future<bool> confirmAction(
-  BuildContext context,
-  String title,
-  String message,
-  String action,
-) async =>
-    await showDialog<bool>(
-      context: context,
-      builder: (context) => GlassDialog(
-        title: Text(title),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(action),
-          ),
-        ],
-      ),
-    ) ??
-    false;
 
 class _BookCorrection extends StatefulWidget {
   const _BookCorrection({required this.book});
@@ -1067,14 +956,10 @@ class _BookPickerState extends State<_BookPicker> {
     return FractionallySizedBox(
       heightFactor: 0.85,
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Link editions',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
             TextField(
               decoration: const InputDecoration(labelText: 'Search for a book'),
               onChanged: (value) => setState(() => _query = value),
@@ -1165,13 +1050,9 @@ class _FileOrderState extends State<_FileOrder> {
   Widget build(BuildContext context) => FractionallySizedBox(
     heightFactor: 0.85,
     child: Padding(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
       child: Column(
         children: [
-          Text(
-            'Correct file order',
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
           Expanded(
             child: ListView.builder(
               itemCount: _files.length,
@@ -1214,9 +1095,4 @@ class _FileOrderState extends State<_FileOrder> {
       ),
     ),
   );
-}
-
-String _time(int milliseconds) {
-  final seconds = milliseconds ~/ 1000;
-  return '${seconds ~/ 60}:${(seconds % 60).toString().padLeft(2, '0')}';
 }

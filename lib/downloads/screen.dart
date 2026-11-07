@@ -3,20 +3,25 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../catalog/book_cover.dart';
-import '../catalog/library_view.dart' show BookRow, ProgressLine;
+import '../catalog/library_view.dart' show BookRow;
 import '../catalog/model.dart';
 import '../foundation/theme.dart';
 import 'downloads.dart';
 import '../catalog/glass.dart';
 
+/// An edition's download state in words, with a button for each of its
+/// download actions. A tap reports the action through [onAction]; the page
+/// performs it.
 class DownloadControls extends StatelessWidget {
   const DownloadControls({
     super.key,
     required this.downloads,
     required this.edition,
+    required this.onAction,
   });
   final Downloads? downloads;
   final Edition edition;
+  final ValueChanged<DownloadAction> onAction;
 
   @override
   Widget build(BuildContext context) {
@@ -41,69 +46,92 @@ class DownloadControls extends StatelessWidget {
         if (state.phase == DownloadPhase.downloading)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
-            child: LinearProgressIndicator(
-              value: state.totalBytes != null && state.totalBytes! > 0
-                  ? (state.bytes / state.totalBytes!).clamp(0, 1)
-                  : null,
-            ),
+            child: ProgressLine(value: _share(state)),
           ),
-        if (state.message != null)
-          Text(
-            state.message!,
-            style: TextStyle(color: Theme.of(context).colorScheme.error),
-          ),
+        if (state.message != null) StatusMessage(state.message!),
         if (owner?.supported != true)
           const Text('Local downloads are available in the Android app.'),
         if (owner?.supported == true)
           Wrap(
             spacing: 8,
             children: [
-              if (!active && state.phase != DownloadPhase.downloaded)
-                OutlinedButton(
-                  onPressed: () => _act(context, () => owner!.request(edition)),
-                  child: Text(
-                    state.phase == DownloadPhase.failed || state.bytes > 0
-                        ? 'Retry'
-                        : 'Download',
+              for (final action in state.actions)
+                switch (action) {
+                  DownloadAction.request ||
+                  DownloadAction.retry => OutlinedButton(
+                    onPressed: () => onAction(action),
+                    child: Text(
+                      action == DownloadAction.retry ? 'Retry' : 'Download',
+                    ),
                   ),
-                ),
-              if (active)
-                TextButton(
-                  onPressed: () => _act(context, () => owner!.cancel(edition)),
-                  child: const Text('Cancel'),
-                ),
-              if (state.bytes > 0 ||
-                  state.unavailableBytes > 0 ||
-                  state.completeFiles > 0 ||
-                  state.phase == DownloadPhase.failed)
-                TextButton(
-                  onPressed: () async {
-                    if (await confirmRemoveDownload(context) &&
-                        context.mounted) {
-                      _act(context, () => owner!.remove(edition));
-                    }
-                  },
-                  child: const Text('Remove'),
-                ),
+                  DownloadAction.cancel || DownloadAction.remove => TextButton(
+                    onPressed: () => onAction(action),
+                    child: Text(
+                      action == DownloadAction.cancel ? 'Cancel' : 'Remove',
+                    ),
+                  ),
+                },
             ],
           ),
       ],
     );
   }
+}
 
-  void _act(BuildContext context, Future<void> Function() operation) {
-    unawaited(() async {
-      try {
-        await operation();
-      } catch (_) {
-        if (context.mounted) {
-          showGlassMessage(
-            context,
-            'The download could not be changed. Check your account and available storage.',
-          );
-        }
-      }
-    }());
+/// The book page's round download button. A tap reports the first of the
+/// edition's download actions through [onAction]. Its icon shows a finished
+/// or waiting download, and a ring shows a running transfer.
+class DownloadButton extends StatelessWidget {
+  const DownloadButton({
+    super.key,
+    required this.downloads,
+    required this.edition,
+    required this.onAction,
+  });
+  final Downloads downloads;
+  final Edition edition;
+  final ValueChanged<DownloadAction> onAction;
+
+  @override
+  Widget build(BuildContext context) {
+    final state = downloads.status(edition);
+    final action = state.actions.first;
+    final icon = switch (state.phase) {
+      DownloadPhase.downloaded => Icons.check_rounded,
+      DownloadPhase.waiting => Icons.wifi_off_rounded,
+      _ => _icon(action),
+    };
+    final tooltip = switch (state.phase) {
+      DownloadPhase.downloaded ||
+      DownloadPhase.waiting ||
+      DownloadPhase.failed => '${state.label}. ${_tooltip(action)}',
+      _ => _tooltip(action),
+    };
+    final downloading = state.phase == DownloadPhase.downloading;
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        if (downloading)
+          SizedBox(
+            width: 44,
+            height: 44,
+            child: CircularProgressIndicator(
+              strokeWidth: 2.5,
+              value: _share(state),
+            ),
+          ),
+        IconButton.filled(
+          style: IconButton.styleFrom(
+            backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
+            foregroundColor: Theme.of(context).colorScheme.onSurface,
+            minimumSize: const Size(52, 52),
+          ),
+          tooltip: tooltip,
+          onPressed: () => onAction(action),
+          icon: Icon(icon),
+        ),
+      ],
+    );
   }
 }
 
@@ -152,15 +180,7 @@ class DownloadsPage extends StatelessWidget {
     final theme = Theme.of(context);
     Widget section(String label) => Padding(
       padding: const EdgeInsets.fromLTRB(2, 22, 2, 2),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 11,
-          letterSpacing: 1.2,
-          fontWeight: FontWeight.w500,
-          color: theme.colorScheme.onSurfaceVariant,
-        ),
-      ),
+      child: SectionLabel(label),
     );
     return ListView(
       padding: EdgeInsets.fromLTRB(18, 4, 18, 24 + floatingBarInset(context)),
@@ -183,7 +203,8 @@ class DownloadsPage extends StatelessWidget {
         for (final (index, entry) in pending.indexed) ...[
           if (index > 0) const Divider(),
           _DownloadRow(
-            downloads: owner,
+            onAction: (action) =>
+                changeDownload(context, owner, entry.edition, action),
             book: entry.book,
             edition: entry.edition,
             state: entry.state,
@@ -195,7 +216,8 @@ class DownloadsPage extends StatelessWidget {
         for (final (index, entry) in saved.indexed) ...[
           if (index > 0) const Divider(),
           _DownloadRow(
-            downloads: owner,
+            onAction: (action) =>
+                changeDownload(context, owner, entry.edition, action),
             book: entry.book,
             edition: entry.edition,
             state: entry.state,
@@ -251,89 +273,75 @@ class _Summary extends StatelessWidget {
         'Network unknown · downloads wait for Wi-Fi',
       ),
     };
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(18, 16, 12, 8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              formatBytes(bytes),
-              style: TextStyle(
-                fontFamily: 'Outfit',
-                fontSize: 34,
-                height: 1.1,
-                fontWeight: FontWeight.w700,
-                letterSpacing: -1,
-                color: theme.colorScheme.onSurface,
-              ),
+    return BookfinPanel(
+      padding: const EdgeInsets.fromLTRB(18, 16, 12, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            formatBytes(bytes),
+            style: TextStyle(
+              fontFamily: 'Outfit',
+              fontSize: 34,
+              height: 1.1,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -1,
+              color: theme.colorScheme.onSurface,
             ),
+          ),
+          Text(
+            [
+              'saved on this phone',
+              if (audio > 0)
+                '$audio ${audio == 1 ? 'audiobook' : 'audiobooks'}',
+              if (text > 0) '$text ${text == 1 ? 'ebook' : 'ebooks'}',
+            ].join(' · '),
+            style: theme.textTheme.bodySmall,
+          ),
+          if (audio > 0 && text > 0)
             Text(
-              [
-                'saved on this phone',
-                if (audio > 0)
-                  '$audio ${audio == 1 ? 'audiobook' : 'audiobooks'}',
-                if (text > 0) '$text ${text == 1 ? 'ebook' : 'ebooks'}',
-              ].join(' · '),
+              'Audiobooks ${formatBytes(audioBytes)} · ebooks ${formatBytes(bytes - audioBytes)}',
               style: theme.textTheme.bodySmall,
             ),
-            if (audio > 0 && text > 0)
-              Text(
-                'Audiobooks ${formatBytes(audioBytes)} · ebooks ${formatBytes(bytes - audioBytes)}',
-                style: theme.textTheme.bodySmall,
-              ),
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 10),
-              child: Divider(),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 10),
+            child: Divider(),
+          ),
+          Row(
+            children: [
+              Icon(icon, size: 20, color: theme.colorScheme.primary),
+              const SizedBox(width: 10),
+              Expanded(child: Text(network)),
+            ],
+          ),
+          if (policy.network == MediaNetwork.mobile && !policy.mobileAllowed)
+            TextButton(
+              onPressed: () async {
+                final allow = await confirmAction(
+                  context,
+                  title: 'Allow mobile data?',
+                  message: 'Allow media transfers for this account session. Your carrier may charge for mobile data. Signing out or restarting ends this permission.',
+                  action: 'Allow this session',
+                  cancel: 'Wait for Wi-Fi',
+                );
+                if (allow && context.mounted) {
+                  policy.allowMobileForSession();
+                }
+              },
+              child: const Text('Allow mobile data this session'),
             ),
-            Row(
-              children: [
-                Icon(icon, size: 20, color: theme.colorScheme.primary),
-                const SizedBox(width: 10),
-                Expanded(child: Text(network)),
-              ],
+          if (policy.mobileAllowed)
+            TextButton(
+              onPressed: policy.resetSession,
+              child: const Text('Use Wi-Fi only'),
             ),
-            if (policy.network == MediaNetwork.mobile && !policy.mobileAllowed)
-              TextButton(
-                onPressed: () async {
-                  final allow = await showDialog<bool>(
-                    context: context,
-                    builder: (context) => GlassDialog(
-                      title: const Text('Allow mobile data?'),
-                      content: const Text(
-                        'Allow media transfers for this account session. Your carrier may charge for mobile data. Signing out or restarting ends this permission.',
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context, false),
-                          child: const Text('Wait for Wi-Fi'),
-                        ),
-                        FilledButton(
-                          onPressed: () => Navigator.pop(context, true),
-                          child: const Text('Allow this session'),
-                        ),
-                      ],
-                    ),
-                  );
-                  if (allow == true && context.mounted) {
-                    policy.allowMobileForSession();
-                  }
-                },
-                child: const Text('Allow mobile data this session'),
-              ),
-            if (policy.mobileAllowed)
-              TextButton(
-                onPressed: policy.resetSession,
-                child: const Text('Use Wi-Fi only'),
-              ),
-            // A stable key keeps one storage scan while the card rebuilds.
-            _LeftoverSummary(
-              key: const ValueKey('leftover files'),
-              downloads: downloads,
-            ),
-            const SizedBox(height: 8),
-          ],
-        ),
+          // A stable key keeps one storage scan while the card rebuilds.
+          _LeftoverSummary(
+            key: const ValueKey('leftover files'),
+            downloads: downloads,
+          ),
+          const SizedBox(height: 8),
+        ],
       ),
     );
   }
@@ -341,14 +349,14 @@ class _Summary extends StatelessWidget {
 
 class _DownloadRow extends StatelessWidget {
   const _DownloadRow({
-    required this.downloads,
+    required this.onAction,
     required this.book,
     required this.edition,
     required this.state,
     required this.onOpen,
     required this.compact,
   });
-  final Downloads downloads;
+  final ValueChanged<DownloadAction> onAction;
   final Book book;
   final Edition edition;
   final EditionDownload state;
@@ -377,14 +385,6 @@ class _DownloadRow extends StatelessWidget {
         '${formatBytes(state.unavailableBytes)} saved but unavailable for playback',
       ?state.message,
     ].join(' · ');
-    final active =
-        state.phase == DownloadPhase.downloading ||
-        state.phase == DownloadPhase.waiting;
-    final removable =
-        state.bytes > 0 ||
-        state.unavailableBytes > 0 ||
-        state.completeFiles > 0 ||
-        state.phase == DownloadPhase.failed;
     return BookRow(
       cover: BookCover.book(
         book,
@@ -397,38 +397,16 @@ class _DownloadRow extends StatelessWidget {
       compact: compact,
       onTap: () => onOpen?.call(context, book),
       below: state.phase == DownloadPhase.downloading
-          ? ProgressLine(
-              value: total != null && total > 0 ? state.bytes / total : 0,
-            )
+          ? ProgressLine(value: _share(state))
           : null,
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (!active &&
-              state.phase != DownloadPhase.downloaded &&
-              (state.phase == DownloadPhase.failed || state.bytes > 0))
+          for (final action in state.actions)
             IconButton(
-              tooltip: 'Retry download',
-              onPressed: () =>
-                  _change(context, () => downloads.request(edition)),
-              icon: const Icon(Icons.refresh_rounded),
-            ),
-          if (active)
-            IconButton(
-              tooltip: 'Cancel download',
-              onPressed: () =>
-                  _change(context, () => downloads.cancel(edition)),
-              icon: const Icon(Icons.close_rounded),
-            ),
-          if (!active && removable)
-            IconButton(
-              tooltip: 'Remove download',
-              onPressed: () async {
-                if (await confirmRemoveDownload(context) && context.mounted) {
-                  _change(context, () => downloads.remove(edition));
-                }
-              },
-              icon: const Icon(Icons.delete_outline_rounded),
+              tooltip: _tooltip(action),
+              onPressed: () => onAction(action),
+              icon: Icon(_icon(action)),
             ),
         ],
       ),
@@ -441,45 +419,68 @@ extension on String {
 }
 
 /// Asks before removing an edition's local files.
-Future<bool> confirmRemoveDownload(BuildContext context) async =>
-    await showDialog<bool>(
-      context: context,
-      builder: (context) => GlassDialog(
-        title: const Text('Remove download?'),
-        content: const Text(
-          'Remove this edition’s local files and unfinished transfers. Your Jellyfin files will not change.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Keep download'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Remove download'),
-          ),
-        ],
-      ),
-    ) ??
-    false;
+Future<bool> confirmRemoveDownload(BuildContext context) => confirmAction(
+  context,
+  title: 'Remove download?',
+  message: 'Remove this edition’s local files and unfinished transfers. Your Jellyfin files will not change.',
+  action: 'Remove download',
+  cancel: 'Keep download',
+);
 
-void _change(BuildContext context, Future<void> Function() operation) {
-  unawaited(() async {
-    try {
-      await operation();
-    } catch (_) {
-      if (context.mounted) {
-        showGlassMessage(
-          context,
-          'The download could not be changed. Check your account and available storage.',
-        );
-      }
+/// How much of a transfer is saved, from 0 to 1, or null when its size is
+/// unknown.
+double? _share(EditionDownload state) => switch (state.totalBytes) {
+  final total? when total > 0 => (state.bytes / total).clamp(0, 1),
+  _ => null,
+};
+
+String _tooltip(DownloadAction action) => switch (action) {
+  DownloadAction.request => 'Download',
+  DownloadAction.retry => 'Retry download',
+  DownloadAction.cancel => 'Cancel download',
+  DownloadAction.remove => 'Remove download',
+};
+
+IconData _icon(DownloadAction action) => switch (action) {
+  DownloadAction.request => Icons.download_rounded,
+  DownloadAction.retry => Icons.refresh_rounded,
+  DownloadAction.cancel => Icons.close_rounded,
+  DownloadAction.remove => Icons.delete_outline_rounded,
+};
+
+/// Asks [downloads] for [action] on [edition], for a page or tab that acts on
+/// a reported download action. Removal asks first. A failure shows a message
+/// instead of an error.
+void changeDownload(
+  BuildContext context,
+  Downloads downloads,
+  Edition edition,
+  DownloadAction action,
+) => unawaited(() async {
+  if (action == DownloadAction.remove &&
+      !(await confirmRemoveDownload(context) && context.mounted)) {
+    return;
+  }
+  try {
+    await switch (action) {
+      DownloadAction.request ||
+      DownloadAction.retry => downloads.request(edition),
+      DownloadAction.cancel => downloads.cancel(edition),
+      DownloadAction.remove => downloads.remove(edition),
+    };
+  } catch (_) {
+    if (context.mounted) {
+      showGlassMessage(
+        context,
+        'The download could not be changed. Check your account and available storage.',
+      );
     }
-  }());
-}
+  }
+}());
 
 /// Reads the leftover files of the bound account, and reads them again when
-/// the downloads change. [builder] gets the latest read and a way to repeat it.
+/// [Downloads.phases] notifies, so byte progress never starts a new read.
+/// [builder] gets the latest read and a way to repeat it.
 class _LeftoverInventory extends StatefulWidget {
   const _LeftoverInventory({required this.downloads, required this.builder});
   final Downloads downloads;
@@ -500,7 +501,7 @@ class _LeftoverInventoryState extends State<_LeftoverInventory> {
   @override
   void initState() {
     super.initState();
-    widget.downloads.addListener(_reload);
+    widget.downloads.phases.addListener(_reload);
     _inventory = _read();
   }
 
@@ -508,8 +509,8 @@ class _LeftoverInventoryState extends State<_LeftoverInventory> {
   void didUpdateWidget(_LeftoverInventory oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.downloads != widget.downloads) {
-      oldWidget.downloads.removeListener(_reload);
-      widget.downloads.addListener(_reload);
+      oldWidget.downloads.phases.removeListener(_reload);
+      widget.downloads.phases.addListener(_reload);
       _inventory = _read();
     }
   }
@@ -528,7 +529,7 @@ class _LeftoverInventoryState extends State<_LeftoverInventory> {
 
   @override
   void dispose() {
-    widget.downloads.removeListener(_reload);
+    widget.downloads.phases.removeListener(_reload);
     super.dispose();
   }
 
@@ -623,29 +624,14 @@ class LeftoverFilesPage extends StatelessWidget {
   const LeftoverFilesPage({super.key, required this.downloads});
   final Downloads downloads;
 
-  Future<bool> _confirm(
-    BuildContext context,
-    String title,
-    String body,
-  ) async =>
-      await showDialog<bool>(
-        context: context,
-        builder: (context) => GlassDialog(
-          title: Text(title),
-          content: Text(body),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Keep files'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('Remove files'),
-            ),
-          ],
-        ),
-      ) ==
-      true;
+  Future<bool> _confirm(BuildContext context, String title, String body) =>
+      confirmAction(
+        context,
+        title: title,
+        message: body,
+        action: 'Remove files',
+        cancel: 'Keep files',
+      );
 
   Future<void> _remove(
     BuildContext context,
@@ -723,45 +709,38 @@ class LeftoverFilesPage extends StatelessWidget {
               else if (entries.isEmpty)
                 const Text('No leftover files.')
               else
-                Card(
-                  clipBehavior: Clip.antiAlias,
-                  child: Column(
-                    children: [
-                      for (final (index, entry) in entries.indexed) ...[
-                        if (index > 0) const Divider(),
-                        ListTile(
-                          leading: const Icon(Icons.insert_drive_file_outlined),
-                          title: Text(
-                            entry.removable
-                                ? 'Source ${entry.sourceKey}'
-                                : 'Unidentified files',
-                          ),
-                          subtitle: Text(formatBytes(entry.bytes)),
-                          trailing: entry.removable
-                              ? IconButton(
-                                  tooltip: 'Remove leftover files',
-                                  onPressed: () async {
-                                    if (await _confirm(
-                                          context,
-                                          'Remove leftover files?',
-                                          'Remove ${formatBytes(entry.bytes)} kept from a book that is no longer in your library? Your Jellyfin files will not change.',
-                                        ) &&
-                                        context.mounted) {
-                                      await _remove(context, [entry], reload);
-                                    }
-                                  },
-                                  icon: const Icon(
-                                    Icons.delete_outline_rounded,
-                                  ),
-                                )
-                              : const Tooltip(
-                                  message: 'These files cannot be identified, so they stay.',
-                                  child: Icon(Icons.lock_outline_rounded),
-                                ),
+                SettingsGroup(
+                  children: [
+                    for (final entry in entries)
+                      ListTile(
+                        leading: const Icon(Icons.insert_drive_file_outlined),
+                        title: Text(
+                          entry.removable
+                              ? 'Source ${entry.sourceKey}'
+                              : 'Unidentified files',
                         ),
-                      ],
-                    ],
-                  ),
+                        subtitle: Text(formatBytes(entry.bytes)),
+                        trailing: entry.removable
+                            ? IconButton(
+                                tooltip: 'Remove leftover files',
+                                onPressed: () async {
+                                  if (await _confirm(
+                                        context,
+                                        'Remove leftover files?',
+                                        'Remove ${formatBytes(entry.bytes)} kept from a book that is no longer in your library? Your Jellyfin files will not change.',
+                                      ) &&
+                                      context.mounted) {
+                                    await _remove(context, [entry], reload);
+                                  }
+                                },
+                                icon: const Icon(Icons.delete_outline_rounded),
+                              )
+                            : const Tooltip(
+                                message: 'These files cannot be identified, so they stay.',
+                                child: Icon(Icons.lock_outline_rounded),
+                              ),
+                      ),
+                  ],
                 ),
             ],
           ),

@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 
 import '../catalog/model.dart';
-import '../playback/records_screen.dart' show audioTime;
+import '../foundation/time.dart' show audioTime;
 import 'coordinator.dart';
 import 'journal.dart';
 

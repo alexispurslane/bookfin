@@ -7,7 +7,7 @@ import 'package:bookfin/catalog/model.dart';
 import 'package:bookfin/catalog/screen.dart';
 import 'package:bookfin/foundation/theme.dart';
 import 'package:bookfin/playback/playback.dart';
-import 'package:bookfin/playback/recent.dart' show listenedWhen;
+import 'package:bookfin/foundation/time.dart' show listenedWhen;
 import 'package:bookfin/playback/screen.dart' show PlaybackMiniPlayer;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';

@@ -167,11 +167,14 @@ class _BookfinAppState extends State<BookfinApp> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      unawaited(widget.sync?.synchronize());
+      widget.sync?.resume();
       unawaited(widget.downloads?.refresh());
       _startClock();
       _refresh();
     } else {
+      // An inactive app stays visible, for example under the notification
+      // shade, so record sync keeps its period until the app is hidden.
+      if (state != AppLifecycleState.inactive) widget.sync?.suspend();
       unawaited(widget.playback?.flush());
       unawaited(widget.reader?.flush());
       _clock?.cancel();
@@ -243,6 +246,7 @@ class _BookfinAppState extends State<BookfinApp> with WidgetsBindingObserver {
                 onAppearance: () => showGlassSheet<void>(
                   context,
                   book: widget.playback?.book,
+                  title: 'Appearance',
                   isScrollControlled: true,
                   builder: (_) => _AppearanceSheet(
                     appearance: _appearance,
@@ -283,6 +287,7 @@ class _BookfinHome extends StatelessWidget {
             icon: const Icon(Icons.contrast_rounded),
             onPressed: () => showGlassSheet<void>(
               context,
+              title: 'Appearance',
               isScrollControlled: true,
               sheetAnimationStyle: MediaQuery.disableAnimationsOf(context)
                   ? AnimationStyle.noAnimation
@@ -375,11 +380,6 @@ class _AppearanceSheet extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                'Appearance',
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
-              const SizedBox(height: 16),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,

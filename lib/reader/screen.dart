@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_epub_viewer/flutter_epub_viewer.dart';
 
+import '../catalog/glass.dart' show confirmAction;
+import '../foundation/time.dart';
 import '../playback/playback.dart';
 import '../playback/screen.dart';
 import 'session.dart';
@@ -42,6 +44,19 @@ class _ReaderScreenState extends State<ReaderScreen> {
       showDragHandle: true,
       builder: (_) => child,
     );
+  }
+
+  /// Deletes [bookmark] after the person confirms it.
+  Future<void> _deleteBookmark(TextBookmark bookmark) async {
+    if (await confirmAction(
+      context,
+      title: 'Delete reading bookmark?',
+      message: 'Remove this bookmark on synced devices. Your reading place and other bookmarks stay.',
+      action: 'Delete',
+      glass: false,
+    )) {
+      await reader.deleteBookmark(bookmark.id);
+    }
   }
 
   @override
@@ -259,7 +274,12 @@ class _ReaderScreenState extends State<ReaderScreen> {
                                 tooltip: 'Reading bookmarks',
                                 onPressed: document == null
                                     ? null
-                                    : () => _panel(_BookmarksPanel(reader)),
+                                    : () => _panel(
+                                        _BookmarksPanel(
+                                          reader,
+                                          onDelete: _deleteBookmark,
+                                        ),
+                                      ),
                                 icon: const Icon(Icons.bookmarks_outlined),
                               ),
                               IconButton(
@@ -450,8 +470,11 @@ class _SearchPanelState extends State<_SearchPanel> {
 }
 
 class _BookmarksPanel extends StatelessWidget {
-  const _BookmarksPanel(this.reader);
+  const _BookmarksPanel(this.reader, {required this.onDelete});
   final ReaderSession reader;
+
+  /// Reports that the person chose Delete for a bookmark.
+  final ValueChanged<TextBookmark> onDelete;
   @override
   Widget build(BuildContext context) => SafeArea(
     child: SizedBox(
@@ -479,7 +502,7 @@ class _BookmarksPanel extends StatelessWidget {
                 subtitle: Text(
                   bookmark.note?.isNotEmpty == true
                       ? bookmark.note!
-                      : bookmark.createdAt.toLocal().toString(),
+                      : dayAndTime(context, bookmark.createdAt),
                 ),
                 onTap: () {
                   unawaited(reader.restoreBookmark(bookmark.id));
@@ -489,7 +512,7 @@ class _BookmarksPanel extends StatelessWidget {
                   tooltip: 'Edit reading bookmark',
                   onSelected: (action) async {
                     if (action == 'delete') {
-                      await reader.deleteBookmark(bookmark.id);
+                      onDelete(bookmark);
                       return;
                     }
                     final title = TextEditingController(text: bookmark.title);

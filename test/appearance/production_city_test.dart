@@ -39,11 +39,25 @@ Widget productionApp(
   ),
 );
 
+/// Waits in real time while the city list is parsed off the UI isolate.
+Future<void> waitForCities(WidgetTester tester) async {
+  final loading = find.byType(CircularProgressIndicator);
+  for (var step = 0; step < 500 && loading.evaluate().isNotEmpty; step++) {
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 20)),
+    );
+    await tester.pump();
+  }
+  expect(loading, findsNothing);
+}
+
 Future<void> openCitySearch(WidgetTester tester) async {
   await tester.tap(find.byTooltip('Appearance'));
   await tester.pumpAndSettle();
   expect(find.text('Choose city'), findsOneWidget);
   await tester.tap(find.text('Choose city'));
+  await tester.pump();
+  await waitForCities(tester);
   await tester.pumpAndSettle();
 }
 
@@ -100,6 +114,7 @@ void main() {
             greaterThanOrEqualTo(4.5),
           );
         }
+        if (!exiting) await waitForCities(tester);
         await tester.pumpAndSettle();
       }
       await tester.ensureVisible(find.text('Done'));
@@ -129,6 +144,7 @@ void main() {
     final initialPosition = tester.getTopLeft(title);
     await tester.pump(const Duration(milliseconds: 100));
     expect(tester.getTopLeft(title), initialPosition);
+    await waitForCities(tester);
     await tester.pumpAndSettle();
     expect(tester.getTopLeft(title), initialPosition);
   });
@@ -156,6 +172,7 @@ void main() {
           ),
         ),
       );
+      await waitForCities(tester);
       await tester.pumpAndSettle();
       await search(tester, 'Tokyo');
       expect(tester.takeException(), isNull);
@@ -168,6 +185,25 @@ void main() {
       await tester.tap(find.text('Tokyo, Tokyo, Japan'));
       await tester.pumpAndSettle();
       expect(controller.settings.location?.name, 'Tokyo, Tokyo, Japan');
+    },
+  );
+
+  testWidgets(
+    'city search shows its loading state while the city list is read, then finds a city',
+    (tester) async {
+      await tester.pumpWidget(
+        productionApp(AppearanceController(MemoryAppearanceStore())),
+      );
+      await tester.tap(find.byTooltip('Appearance'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Choose city'));
+      await tester.pump();
+      // The UI isolate keeps drawing frames while the city list is parsed.
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      await waitForCities(tester);
+      await tester.pumpAndSettle();
+      await search(tester, 'nairobi');
+      expect(find.text('Nairobi, Nairobi County, Kenya'), findsOneWidget);
     },
   );
 

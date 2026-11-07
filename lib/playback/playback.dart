@@ -41,6 +41,90 @@ abstract class ResumeStore {
   void acceptSnapshot(String accountKey, Map<String, dynamic>? value) {}
 }
 
+/// The owner of each account's saved listening records, as [Playback] uses
+/// it.
+abstract class ListeningStore {
+  /// The saved listening snapshot of [accountKey], or null when the account
+  /// has none: the settings plus `history`, `bookmarks` and `resumes`.
+  Future<Map<String, dynamic>?> read(String accountKey);
+
+  /// Saves [changes] to the listening records of [accountKey].
+  ///
+  /// A record that [changes] does not name keeps its saved value. A named
+  /// record that equals the value this writer last saved or accepted adds no
+  /// sync action, so a retry can resend changes that were already saved.
+  Future<void> save(String accountKey, ListeningChanges changes);
+
+  /// Records [value] as the snapshot that the writer of [accountKey] now
+  /// shows, so later saves compare their records with it.
+  void acceptSnapshot(String accountKey, Map<String, dynamic>? value) {}
+}
+
+/// The listening records that one save changes.
+///
+/// A save carries the whole small [settings], but only the history events,
+/// bookmarks and edition resumes that changed.
+class ListeningChanges {
+  ListeningChanges(
+    this.settings, {
+    this.history = const {},
+    this.bookmarks = const {},
+    this.resumes = const {},
+  });
+
+  /// The version, selected edition, speed and jump lengths.
+  final Map<String, dynamic> settings;
+
+  /// The changed history events as JSON, by id. A null value deletes it.
+  final Map<String, Map<String, dynamic>?> history;
+
+  /// The changed bookmarks as JSON, by id. A null value deletes it.
+  final Map<String, Map<String, dynamic>?> bookmarks;
+
+  /// The whole resume list of each changed edition, by edition id. Resumes
+  /// are never deleted.
+  final Map<String, List<Map<String, dynamic>>> resumes;
+
+  /// These changes followed by [later]: the later value of each record and
+  /// the later settings win.
+  ListeningChanges followedBy(ListeningChanges later) => ListeningChanges(
+    later.settings,
+    history: {...history, ...later.history},
+    bookmarks: {...bookmarks, ...later.bookmarks},
+    resumes: {...resumes, ...later.resumes},
+  );
+
+  /// The listening snapshot that results when these changes apply to
+  /// [snapshot]. A changed record keeps its place, a new one goes last, and
+  /// a deleted one is removed.
+  Map<String, dynamic> applyTo(Map<String, dynamic>? snapshot) {
+    List<Map<String, dynamic>> apply(
+      List<dynamic>? saved,
+      Map<String, Map<String, dynamic>?> changed,
+    ) {
+      final unplaced = Map.of(changed);
+      return [
+        for (final value in saved ?? const [])
+          if (!unplaced.containsKey(value['id']))
+            Map<String, dynamic>.from(value as Map)
+          else
+            ?unplaced.remove(value['id']),
+        ...unplaced.values.nonNulls,
+      ];
+    }
+
+    return {
+      ...settings,
+      'history': apply(snapshot?['history'] as List?, history),
+      'bookmarks': apply(snapshot?['bookmarks'] as List?, bookmarks),
+      'resumes': <String, dynamic>{
+        ...?(snapshot?['resumes'] as Map?)?.cast<String, dynamic>(),
+        ...resumes,
+      },
+    };
+  }
+}
+
 // The revision is a gesture-cancellation counter, not a media-source revision.
 typedef _SliderGesture = ({AudioPosition origin, int revision});
 
@@ -69,7 +153,7 @@ class Playback extends ChangeNotifier {
   }
   final Downloads downloads;
   final AudioEngine engine;
-  final ResumeStore store;
+  final ListeningStore store;
   final LiveReports? reports;
   late final StreamSubscription<AudioSample> _samples;
   JellyfinSession? _session;
@@ -94,43 +178,121 @@ class Playback extends ChangeNotifier {
   String? _selected;
   Timer? _sleep;
   DateTime? _sleepDeadline;
+  Duration? _sleepTimer;
   Future<void> _operations = Future.value();
   Future<void> _writes = Future.value();
   Future<void> _binding = Future.value();
-  List<ListeningEvent> _history = [];
-  List<AudioBookmark> _bookmarks = [];
+  // The personal records. A change replaces a whole list, never changes it
+  // in place, so the lists derived from them can be cached by the identity
+  // of these lists (see [_Memo]). Debug builds enforce this contract with
+  // unmodifiable lists. Release builds skip it, so that a broken contract
+  // can only show a stale list, never throw in a path that saves records.
+  List<ListeningEvent> _historyList = const [];
+  List<AudioBookmark> _bookmarkList = const [];
+  List<ListeningEvent> get _history => _historyList;
+  set _history(List<ListeningEvent> value) =>
+      _historyList = kDebugMode ? List.unmodifiable(value) : value;
+  List<AudioBookmark> get _bookmarks => _bookmarkList;
+  set _bookmarks(List<AudioBookmark> value) =>
+      _bookmarkList = kDebugMode ? List.unmodifiable(value) : value;
+  final _historyNewestFirst =
+      _Memo<List<ListeningEvent>, List<ListeningEvent>>();
+  final _bookmarksNewestFirst =
+      _Memo<List<AudioBookmark>, List<AudioBookmark>>();
+  final _editionIndex = _Memo<List<Book>, Map<String, (Book, Edition)>>();
+  final _recent =
+      _Memo<(List<ListeningEvent>, List<Book>), List<RecentListening>>();
+  final _chapters = _Memo<Edition?, List<PlaybackChapter>>();
+  final _timeline =
+      _Memo<
+        (List<ListeningEvent>, List<AudioBookmark>, Book?),
+        List<TimelineEntry>
+      >();
+  final _editionBookmarks =
+      _Memo<(List<AudioBookmark>, Edition?), List<EditionBookmark>>();
   ListeningEvent? _undo;
   _SliderGesture? _sliderStart;
   int _sliderRevision = 0;
   bool _seeking = false;
   ListeningAction? _commandAction;
-  final _pendingWrites = <String, Map<String, dynamic>>{};
+  // The changes of each account that the store did not yet confirm, merged
+  // into one change set. A retry resends all of them.
+  final _pendingWrites = <String, ListeningChanges>{};
+  // History events and bookmarks changed since the last _save, by id, as
+  // JSON. A null value is a deletion.
+  final _changedHistory = <String, Map<String, dynamic>?>{};
+  final _changedBookmarks = <String, Map<String, dynamic>?>{};
   final _failedAccounts = <String>{};
   int _recordRevision = 0;
   String? _recordedDecoderAnchor;
   AudioReplacement? _replacementStart;
 
-  List<ListeningEvent> get history => List.unmodifiable(_history.reversed);
+  /// The listening actions, newest first. The list stays the same object
+  /// until the history changes.
+  List<ListeningEvent> get history => _historyNewestFirst.of(
+    _history,
+    () => List.unmodifiable(_history.reversed),
+  );
 
   /// The books of this account that were listened to, newest first, each with
-  /// the audio edition and time of its latest listening.
-  List<RecentListening> get recent {
-    final editions = {
-      for (final book in _books)
-        for (final edition in book.editions) edition.id: (book, edition),
-    };
-    final events = [..._history]..sort((a, b) => b.at.compareTo(a.at));
-    final seen = <String>{};
-    final recent = <RecentListening>[];
-    for (final event in events) {
-      final found = editions[event.after.editionId];
-      if (found == null || !seen.add(found.$1.id)) continue;
-      recent.add((book: found.$1, edition: found.$2, at: event.at));
+  /// the audio edition and time of its latest listening. The list stays the
+  /// same object until the history or the library changes.
+  List<RecentListening> get recent => _recent.of((_history, _books), () {
+    // One pass over the history finds each book's latest listening, so only
+    // the few listened books are sorted.
+    final latest = <String, RecentListening>{};
+    for (final event in _history) {
+      final found = _editions[event.after.editionId];
+      if (found == null) continue;
+      final (book, edition) = found;
+      if (latest[book.id] case final known? when !event.at.isAfter(known.at)) {
+        continue;
+      }
+      latest[book.id] = (book: book, edition: edition, at: event.at);
     }
-    return recent;
-  }
+    return List.unmodifiable(
+      latest.values.toList()..sort((a, b) => b.at.compareTo(a.at)),
+    );
+  });
 
-  List<AudioBookmark> get bookmarks => List.unmodifiable(_bookmarks.reversed);
+  /// The actions and bookmarks of [book], or of every book, newest first.
+  /// The list stays the same object until the records change or another
+  /// book is asked for.
+  List<TimelineEntry> timeline(Book? book) =>
+      _timeline.of((_history, _bookmarks, book), () {
+        bool belongs(AudioPosition place) =>
+            book == null ||
+            book.editions.any((edition) => edition.id == place.editionId);
+        final entries = <TimelineEntry>[
+          for (final event in history)
+            if (belongs(event.after)) ActionEntry(event),
+          for (final bookmark in bookmarks)
+            if (belongs(bookmark.position)) BookmarkEntry(bookmark),
+        ];
+        // NOTE: This sort stays on the UI isolate. It runs once per records
+        // change, and an isolate hop copies every entry there and back,
+        // which measured about ten times the cost of the sort itself.
+        entries.sort((a, b) => b.at.compareTo(a.at));
+        return List.unmodifiable(entries);
+      });
+
+  /// Each bound edition by its id, with its book.
+  Map<String, (Book, Edition)> get _editions => _editionIndex.of(_books, () {
+    final editions = <String, (Book, Edition)>{};
+    for (final book in _books) {
+      for (final edition in book.editions) {
+        editions.putIfAbsent(edition.id, () => (book, edition));
+      }
+    }
+    return editions;
+  });
+
+  /// The bookmarks, newest first. The list stays the same object until a
+  /// bookmark changes.
+  List<AudioBookmark> get bookmarks => _bookmarksNewestFirst.of(
+    _bookmarks,
+    () => List.unmodifiable(_bookmarks.reversed),
+  );
   ListeningEvent? get undoAction => _undo;
   bool get unsavedChanges => _pendingWrites.containsKey(_session?.scope.key);
   bool get saveFailed => _failedAccounts.contains(_session?.scope.key);
@@ -237,7 +399,7 @@ class Playback extends ChangeNotifier {
     if (!target.fits(_edition!)) {
       throw ArgumentError('Choose a bookmark position in this audio edition.');
     }
-    _bookmarks.add(
+    _putBookmark(
       AudioBookmark(
         id: recordId(),
         position: target,
@@ -259,27 +421,29 @@ class Playback extends ChangeNotifier {
           throw ArgumentError('Choose a bookmark from the current account.');
         }
         final bookmark = _bookmarks[index];
-        _bookmarks[index] = AudioBookmark(
-          id: bookmark.id,
-          position: bookmark.position,
-          createdAt: bookmark.createdAt,
-          bookTitle: bookmark.bookTitle,
-          editionLabel: bookmark.editionLabel,
-          title: _optionalText(title),
-          note: _optionalText(note),
+        _putBookmark(
+          AudioBookmark(
+            id: bookmark.id,
+            position: bookmark.position,
+            createdAt: bookmark.createdAt,
+            bookTitle: bookmark.bookTitle,
+            editionLabel: bookmark.editionLabel,
+            title: _optionalText(title),
+            note: _optionalText(note),
+          ),
         );
         await _saveRecords();
       });
 
   Future<void> deleteBookmark(String id) => _enqueue(() async {
     if (!_restored) return;
-    _bookmarks.removeWhere((bookmark) => bookmark.id == id);
+    _removeBookmark(id);
     await _saveRecords();
   });
 
   Future<void> deleteHistory(String id) => _enqueue(() async {
     if (!_restored) return;
-    _history.removeWhere((event) => event.id == id);
+    _removeHistory(id);
     if (_undo?.id == id) _undo = null;
     await _saveRecords();
   });
@@ -340,6 +504,30 @@ class Playback extends ChangeNotifier {
     _save();
     await _writes;
     _notify();
+  }
+
+  /// Adds [bookmark], or replaces the bookmark with its id, for the next save.
+  void _putBookmark(AudioBookmark bookmark) {
+    final index = _bookmarks.indexWhere((saved) => saved.id == bookmark.id);
+    _bookmarks = index < 0
+        ? [..._bookmarks, bookmark]
+        : ([..._bookmarks]..[index] = bookmark);
+    _changedBookmarks[bookmark.id] = bookmark.toJson();
+  }
+
+  /// Deletes the bookmark [id] for the next save, if this account shows it.
+  void _removeBookmark(String id) {
+    final count = _bookmarks.length;
+    _bookmarks = [..._bookmarks]..removeWhere((bookmark) => bookmark.id == id);
+    if (_bookmarks.length != count) _changedBookmarks[id] = null;
+  }
+
+  /// Deletes the history event [id] for the next save, if this account shows
+  /// it.
+  void _removeHistory(String id) {
+    final count = _history.length;
+    _history = [..._history]..removeWhere((event) => event.id == id);
+    if (_history.length != count) _changedHistory[id] = null;
   }
 
   Future<bool> _restorePosition(
@@ -411,6 +599,9 @@ class Playback extends ChangeNotifier {
   int get forwardSeconds => _forward;
   DateTime? get sleepDeadline => _sleepDeadline;
 
+  /// The length chosen for the running sleep timer, or null when none runs.
+  Duration? get sleepTimer => _sleepTimer;
+
   int? get durationMilliseconds {
     final files = _edition?.files;
     if (files == null || files.any((file) => file.durationMs == null)) {
@@ -425,22 +616,48 @@ class Playback extends ChangeNotifier {
   int? editionTime(AudioPosition position) {
     final edition = _edition?.id == position.editionId
         ? _edition
-        : _books
-              .expand((book) => book.editions)
-              .where((edition) => edition.id == position.editionId)
-              .firstOrNull;
+        : _editions[position.editionId]?.$2;
     return edition == null ? null : _editionTime(edition, position);
   }
 
   static int? _editionTime(Edition edition, AudioPosition position) {
-    var total = 0;
-    for (final file in edition.files) {
-      if (file.key == position.sourceKey) return total + position.milliseconds;
-      if (file.durationMs == null) return null;
-      total += file.durationMs!;
-    }
-    return null;
+    final start = _fileStarts(edition)[position.sourceKey];
+    return start == null ? null : start + position.milliseconds;
   }
+
+  static final _starts = Expando<Map<String, int?>>();
+
+  /// Where each file of [edition] starts in the edition, in milliseconds, by
+  /// file key. A start is null when an earlier file has no known length. An
+  /// edition never changes, so its starts are found once.
+  static Map<String, int?> _fileStarts(Edition edition) =>
+      _starts[edition] ??= () {
+        final starts = <String, int?>{};
+        int? offset = 0;
+        for (final file in edition.files) {
+          starts.putIfAbsent(file.key, () => offset);
+          offset = offset == null || file.durationMs == null
+              ? null
+              : offset + file.durationMs!;
+        }
+        return starts;
+      }();
+
+  /// The bookmarks of the open edition, newest first, each with where it is
+  /// in the edition. A bookmark whose place cannot be measured is left out.
+  /// The list stays the same object until a bookmark or the open edition
+  /// changes.
+  List<EditionBookmark> get editionBookmarks =>
+      _editionBookmarks.of((_bookmarks, _edition), () {
+        final edition = _edition;
+        return List.unmodifiable([
+          if (edition != null)
+            for (final bookmark in bookmarks)
+              if (bookmark.position.editionId == edition.id)
+                if (_editionTime(edition, bookmark.position) case final at?)
+                  (bookmark: bookmark, at: at),
+        ]);
+      });
 
   /// How long after a bookmark the open place still counts as at it.
   static const bookmarkReach = Duration(seconds: 15);
@@ -451,10 +668,10 @@ class Playback extends ChangeNotifier {
     final edition = _edition;
     final now = editionMilliseconds;
     if (edition == null || now == null) return null;
-    for (final bookmark in bookmarks) {
-      if (!bookmark.position.fits(edition)) continue;
-      final at = _editionTime(edition, bookmark.position);
-      if (at != null && now >= at && now - at < bookmarkReach.inMilliseconds) {
+    for (final (:bookmark, :at) in editionBookmarks) {
+      if (bookmark.position.fits(edition) &&
+          now >= at &&
+          now - at < bookmarkReach.inMilliseconds) {
         return bookmark;
       }
     }
@@ -486,12 +703,16 @@ class Playback extends ChangeNotifier {
     return elapsed == null ? null : (elapsedMs: elapsed, totalMs: total);
   }
 
-  List<PlaybackChapter> get chapters {
+  /// The chapters of the open edition in order. A file without a chapter at
+  /// its start counts as a chapter named after the file. The list stays the
+  /// same object until the open edition changes.
+  List<PlaybackChapter> get chapters => _chapters.of(_edition, () {
+    final edition = _edition;
+    if (edition == null) return const [];
     final chapters = <PlaybackChapter>[];
-    // Where the current file starts in the edition, while every earlier file
-    // has a known duration.
-    int? offset = 0;
-    for (final file in _edition?.files ?? <SourceFile>[]) {
+    final starts = _fileStarts(edition);
+    for (final file in edition.files) {
+      final offset = starts[file.key];
       if (!file.chapters.any((chapter) => chapter.startMs == 0)) {
         chapters.add(PlaybackChapter(file.displayName, file.key, 0, offset));
       }
@@ -508,12 +729,9 @@ class Playback extends ChangeNotifier {
           );
         }
       }
-      offset = offset == null || file.durationMs == null
-          ? null
-          : offset + file.durationMs!;
     }
-    return chapters;
-  }
+    return List.unmodifiable(chapters);
+  });
 
   /// The index in [chapters] of the chapter that holds the position.
   int? get chapterIndex {
@@ -566,7 +784,7 @@ class Playback extends ChangeNotifier {
     if (_closed) return;
     _replacementStart = null;
     final changed = _session?.scope.key != session?.scope.key;
-    _books = books;
+    _books = List.unmodifiable(books);
     if (!changed) {
       final generation = _generation;
       _session = session;
@@ -631,6 +849,8 @@ class Playback extends ChangeNotifier {
     _resumes = {};
     _history = [];
     _bookmarks = [];
+    _changedHistory.clear();
+    _changedBookmarks.clear();
     _undo = null;
     _invalidateSlider();
     _selected = null;
@@ -652,7 +872,8 @@ class Playback extends ChangeNotifier {
       if (session == null || generation != _generation) return;
       try {
         final pending = _pendingWrites[session.scope.key];
-        final saved = pending ?? await store.read(session.scope.key);
+        final stored = await store.read(session.scope.key);
+        final saved = pending == null ? stored : pending.applyTo(stored);
         if (generation != _generation) return;
         if (saved != null &&
             saved['version'] != 1 &&
@@ -1109,7 +1330,8 @@ class Playback extends ChangeNotifier {
       bookTitle: _book!.title,
       editionLabel: _edition!.label,
     );
-    _history.add(event);
+    _history = [..._history, event];
+    _changedHistory[event.id] = event.toJson();
     if (event.changesPosition) _undo = event;
   }
 
@@ -1185,6 +1407,7 @@ class Playback extends ChangeNotifier {
     _cancelSleep();
     if (duration != null) {
       _sleepDeadline = DateTime.now().add(duration);
+      _sleepTimer = duration;
       _sleep = Timer(duration, () {
         _cancelSleep();
         unawaited(pause());
@@ -1197,16 +1420,20 @@ class Playback extends ChangeNotifier {
     _sleep?.cancel();
     _sleep = null;
     _sleepDeadline = null;
+    _sleepTimer = null;
   }
 
   String? get _decoderAnchor => _position == null || _edition == null
       ? null
       : jsonEncode([_editionSources(_edition!), encodePosition(_position!)]);
 
+  /// Hands the store the records changed since the last save, with the
+  /// current settings. The changes stay pending until the store saves them.
   void _save() {
     final accountKey = _session?.scope.key;
     if (accountKey == null || !_restored) return;
     ++_recordRevision;
+    final resumes = <String, List<Map<String, dynamic>>>{};
     final position = _position;
     final decoderAnchor = _decoderAnchor;
     if (position != null && decoderAnchor != _recordedDecoderAnchor) {
@@ -1231,33 +1458,36 @@ class Playback extends ChangeNotifier {
       } else {
         records[index] = value;
       }
+      resumes[position.editionId] = [
+        for (final value in records) Map<String, dynamic>.from(value),
+      ];
       _recordedDecoderAnchor = decoderAnchor;
     }
-    final value = <String, dynamic>{
-      'version': 3,
-      'history': _history.map((event) => event.toJson()).toList(),
-      'bookmarks': _bookmarks.map((bookmark) => bookmark.toJson()).toList(),
-      'selected': _selected,
-      'resumes': {
-        for (final entry in _resumes.entries)
-          entry.key: [
-            for (final value in entry.value) Map<String, dynamic>.from(value),
-          ],
+    final changes = ListeningChanges(
+      {
+        'version': 3,
+        'selected': _selected,
+        'speed': _speed,
+        'backward': _backward,
+        'forward': _forward,
       },
-      'speed': _speed,
-      'backward': _backward,
-      'forward': _forward,
-    };
+      history: Map.of(_changedHistory),
+      bookmarks: Map.of(_changedBookmarks),
+      resumes: resumes,
+    );
+    _changedHistory.clear();
+    _changedBookmarks.clear();
+    final value = _pendingWrites[accountKey]?.followedBy(changes) ?? changes;
     _pendingWrites[accountKey] = value;
-    _writes = _writes.then((_) => _persistSnapshot(accountKey, value));
+    _writes = _writes.then((_) => _persistChanges(accountKey, value));
   }
 
-  Future<void> _persistSnapshot(
+  Future<void> _persistChanges(
     String accountKey,
-    Map<String, dynamic> value,
+    ListeningChanges value,
   ) async {
     try {
-      await store.write(accountKey, value);
+      await store.save(accountKey, value);
       if (identical(_pendingWrites[accountKey], value)) {
         _pendingWrites.remove(accountKey);
         _failedAccounts.remove(accountKey);
@@ -1289,7 +1519,7 @@ class Playback extends ChangeNotifier {
     final accountKey = _session?.scope.key;
     final pending = _pendingWrites[accountKey];
     if (accountKey != null && pending != null && generation == _generation) {
-      _writes = _writes.then((_) => _persistSnapshot(accountKey, pending));
+      _writes = _writes.then((_) => _persistChanges(accountKey, pending));
       await _writes;
     }
     await reports?.idle;
@@ -1323,6 +1553,10 @@ class Playback extends ChangeNotifier {
         'Playback selection, source position, and account must agree.',
       );
     }
+    if ((_sleep == null) != (_sleepTimer == null) ||
+        (_sleepTimer == null) != (_sleepDeadline == null)) {
+      throw StateError('A sleep timer, its length and its deadline agree.');
+    }
     if (_history.map((event) => event.id).toSet().length != _history.length ||
         _bookmarks.map((bookmark) => bookmark.id).toSet().length !=
             _bookmarks.length ||
@@ -1334,6 +1568,8 @@ class Playback extends ChangeNotifier {
         _failedAccounts.any(
           (account) => !_pendingWrites.containsKey(account),
         ) ||
+        _changedHistory.isNotEmpty ||
+        _changedBookmarks.isNotEmpty ||
         _replacementStart != null &&
             (!_restored ||
                 _session == null ||
@@ -1344,6 +1580,27 @@ class Playback extends ChangeNotifier {
         'Personal records, pending writes, and recovery selection must agree.',
       );
     }
+  }
+}
+
+/// A bookmark of the open edition, and where it is in the edition, in
+/// milliseconds from the edition's start.
+typedef EditionBookmark = ({AudioBookmark bookmark, int at});
+
+/// The value last derived from a key. It is derived again only when the key
+/// differs from the last key. A key holds the inputs of the value. Lists,
+/// books and editions compare by identity, so an input must be replaced,
+/// never changed in place, when it changes.
+class _Memo<K, V> {
+  ({K key, V value})? _last;
+
+  V of(K key, V Function() derive) {
+    if (_last case (key: final last, :final value) when last == key) {
+      return value;
+    }
+    final value = derive();
+    _last = (key: key, value: value);
+    return value;
   }
 }
 
