@@ -295,5 +295,7 @@ The user chose design A of `docs/mockups/glass-places.html`, with the tint of de
 
 - Every layer that floats over a page is a glass pane. A glass pane is a rounded, frosted panel that shows a blurred book cover behind a tinted surface. The floating layers are the mini player, the player popup, bottom sheets, dialogs, menus, and snackbars.
 - Pages and the cards inside them stay paper.
-- The book that owns the surface tints it. An example is the download sheet on a book page. If no book owns the surface, the playing book tints it. If nothing is playing, the pane is plain sepia frost.
+- A layer that names its own book shows that book. The player popup names the playing book.
+- Otherwise, a layer shows the book of the page that it opens over. The book page and the player stage declare their book once, and every layer opened on them shows it.
+- Otherwise, the playing book tints the layer. If nothing is playing, the pane is plain sepia frost.
 - The ebook reader keeps its own reading themes and gets no glass.
