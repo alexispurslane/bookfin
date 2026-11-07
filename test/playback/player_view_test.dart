@@ -5,6 +5,7 @@ import 'package:bookfin/foundation/theme.dart';
 import 'package:bookfin/playback/playback.dart';
 import 'package:bookfin/playback/screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'playback_test.dart'
@@ -96,6 +97,31 @@ void main() {
     await tester.tap(find.text('Chapters'));
     await tester.pumpAndSettle();
     expect(find.text('Arrival'), findsOneWidget);
+  });
+
+  testWidgets('every player sheet titles itself in the same style', (
+    tester,
+  ) async {
+    await showPlayer(tester);
+    final styles = <String, TextStyle?>{};
+    for (final (tool, title) in [
+      ('Chapters', 'Chapters'),
+      ('Speed', 'Playback speed'),
+      ('Sleep', 'Sleep timer'),
+      ('History', 'History'),
+    ]) {
+      await tester.tap(find.text(tool));
+      await tester.pumpAndSettle();
+      final heading = find.descendant(
+        of: find.byType(CoverGlass),
+        matching: find.text(title),
+      );
+      styles[title] = tester.renderObject<RenderParagraph>(heading).text.style;
+      await tester.tapAt(const Offset(20, 20));
+      await tester.pumpAndSettle();
+    }
+    expect(styles.values.toSet(), hasLength(1), reason: '$styles');
+    expect(styles['Chapters']?.fontFamily, 'Source Serif 4');
   });
 
   testWidgets('the chapters sheet floats on glass over the open book', (

@@ -349,6 +349,7 @@ class BookPage extends StatelessWidget {
   Future<void> _link(BuildContext context, Book book) async {
     final candidate = await showGlassSheet<Book>(
       context,
+      title: 'Link editions',
       isScrollControlled: true,
       builder: (_) => _BookPicker(book: book, books: catalog.books),
     );
@@ -823,6 +824,7 @@ class _EditionPanel extends StatelessWidget {
   Future<void> _orderFiles(BuildContext context, Edition edition) async {
     final keys = await showGlassSheet<List<String>>(
       context,
+      title: 'Correct file order',
       isScrollControlled: true,
       builder: (_) => _FileOrder(edition: edition),
     );
@@ -969,14 +971,10 @@ class _BookPickerState extends State<_BookPicker> {
     return FractionallySizedBox(
       heightFactor: 0.85,
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Link editions',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
             TextField(
               decoration: const InputDecoration(labelText: 'Search for a book'),
               onChanged: (value) => setState(() => _query = value),
@@ -1067,13 +1065,9 @@ class _FileOrderState extends State<_FileOrder> {
   Widget build(BuildContext context) => FractionallySizedBox(
     heightFactor: 0.85,
     child: Padding(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
       child: Column(
         children: [
-          Text(
-            'Correct file order',
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
           Expanded(
             child: ListView.builder(
               itemCount: _files.length,

@@ -243,6 +243,7 @@ class _BookfinAppState extends State<BookfinApp> with WidgetsBindingObserver {
                 onAppearance: () => showGlassSheet<void>(
                   context,
                   book: widget.playback?.book,
+                  title: 'Appearance',
                   isScrollControlled: true,
                   builder: (_) => _AppearanceSheet(
                     appearance: _appearance,
@@ -283,6 +284,7 @@ class _BookfinHome extends StatelessWidget {
             icon: const Icon(Icons.contrast_rounded),
             onPressed: () => showGlassSheet<void>(
               context,
+              title: 'Appearance',
               isScrollControlled: true,
               sheetAnimationStyle: MediaQuery.disableAnimationsOf(context)
                   ? AnimationStyle.noAnimation
@@ -375,11 +377,6 @@ class _AppearanceSheet extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                'Appearance',
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
-              const SizedBox(height: 16),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,

@@ -568,6 +568,7 @@ class PlayerView extends StatelessWidget {
 
   Future<void> _chapters(BuildContext context) => showGlassSheet<void>(
     context,
+    title: 'Chapters',
     isScrollControlled: true,
     builder: (context) {
       final theme = Theme.of(context);
@@ -585,16 +586,6 @@ class PlayerView extends StatelessWidget {
           controller: scroll,
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
           children: [
-            Padding(
-              padding: const EdgeInsets.only(bottom: 6),
-              child: Text(
-                'Chapters',
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  fontFamily: 'Source Serif 4',
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
             for (final (index, chapter) in chapters.indexed) ...[
               if (index > 0) Divider(height: 1, color: scheme.outlineVariant),
               InkWell(
@@ -691,16 +682,13 @@ class PlayerView extends StatelessWidget {
 
   Future<void> _speed(BuildContext context) => showGlassSheet<void>(
     context,
+    title: 'Playback speed',
     builder: (context) => SingleChildScrollView(
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              'Playback speed',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
             for (final speed in [
               0.5,
               0.75,
@@ -728,16 +716,13 @@ class PlayerView extends StatelessWidget {
 
   Future<void> _sleep(BuildContext context) => showGlassSheet<void>(
     context,
+    title: 'Sleep timer',
     builder: (context) => SingleChildScrollView(
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              'Sleep timer',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
             for (final minutes in [5, 15, 30, 45, 60])
               ListTile(
                 title: Text('$minutes minutes'),
@@ -764,17 +749,14 @@ class PlayerView extends StatelessWidget {
     var forward = playback.forwardSeconds;
     await showGlassSheet<void>(
       context,
+      title: 'Jump lengths',
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  'Jump lengths',
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
                 DropdownButtonFormField<int>(
                   initialValue: backward,
                   decoration: const InputDecoration(

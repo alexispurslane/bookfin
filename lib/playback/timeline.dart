@@ -19,6 +19,7 @@ void openListeningTimeline(
   showGlassSheet<void>(
     context,
     book: book,
+    title: 'History',
     isScrollControlled: true,
     builder: (_) => DraggableScrollableSheet(
       expand: false,
@@ -104,7 +105,6 @@ class _ListeningTimelineState extends State<ListeningTimeline> {
   Widget build(BuildContext context) => ListenableBuilder(
     listenable: playback,
     builder: (context, _) {
-      final theme = Theme.of(context);
       final entries = timelineOf(playback, widget.book);
       final now = DateTime.now();
       String? day;
@@ -112,16 +112,6 @@ class _ListeningTimelineState extends State<ListeningTimeline> {
         controller: widget.scroll,
         padding: EdgeInsets.fromLTRB(16, 0, 16, 16 + floatingBarInset(context)),
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(4, 0, 4, 4),
-            child: Text(
-              'History',
-              style: theme.textTheme.headlineSmall?.copyWith(
-                fontFamily: 'Source Serif 4',
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
           RecordSaveStatus(playback: playback),
           if (entries.isEmpty)
             const Padding(
