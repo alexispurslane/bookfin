@@ -19,3 +19,7 @@ AGENTS.md now has UI architecture rules: data down, actions up; one component pe
 **2026-11-07T21:34:40Z**
 
 From agent reports at 7fd0936: _BookfinAppState rebuilds the whole app on its 30-second clock and on every appearance change (boo-nxp8). PlayerView and PlaybackMiniPlayer subscribe to the whole Playback object, so the whole stage rebuilds at 5 Hz; the slider and time texts should subscribe to a narrow position signal (boo-jkf7). Check what boo-8dkw already changed before starting.
+
+**2026-11-07T21:36:12Z**
+
+boo-8dkw merged at its own merge commit after f47b367. The narrow position signal is now its own ticket, boo-y6fb; do it there, not here. The slider still calls beginSliderSeek and finishSliderSeek directly (rule 1).
