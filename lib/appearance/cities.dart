@@ -1,16 +1,14 @@
+import 'dart:async';
 import 'dart:convert';
-
-import 'package:flutter/foundation.dart' show compute;
+import 'dart:isolate';
 
 import 'appearance.dart';
 
+/// The parsed city list and its matching rules. [CityFinder] keeps one in
+/// its own isolate, because the bundled list is too large to parse or
+/// search on the UI isolate without dropping frames.
 class CityCatalog {
   CityCatalog.fromTsv(String source) : _cities = _readCities(source);
-
-  /// Parses [source] on a background isolate, because the bundled list is
-  /// too large to parse without dropping frames.
-  static Future<CityCatalog> parse(String source) =>
-      compute(CityCatalog.fromTsv, source);
 
   final List<_City> _cities;
 
@@ -32,6 +30,104 @@ class CityCatalog {
     });
     return matches.take(30).map((city) => city.location).toList();
   }
+}
+
+/// Searches [catalog] for [query]. It runs in the finder's isolate.
+typedef CitySearchWork = List<SelectedLocation> Function(
+  CityCatalog catalog,
+  String query,
+);
+
+List<SelectedLocation> searchCatalog(CityCatalog catalog, String query) =>
+    catalog.search(query);
+
+/// The city catalog of one search page, which lives in its own isolate
+/// and answers each search there, so a keystroke does not filter the
+/// catalog on the UI isolate.
+///
+/// Each search sends the query and receives at most 30 places, so a search
+/// copies little. [close] ends the isolate.
+class CityFinder {
+  CityFinder._(this._isolate, this._replies, this._requests);
+  final Isolate _isolate;
+  final ReceivePort _replies;
+  final SendPort _requests;
+  final Map<int, Completer<List<SelectedLocation>>> _answers = {};
+  int _asked = 0;
+
+  /// Parses [source] in a new isolate, which then answers searches with
+  /// [search]. Throws a [FormatException] when [source] is not a valid
+  /// city list.
+  static Future<CityFinder> start(
+    String source, {
+    CitySearchWork search = searchCatalog,
+  }) async {
+    final replies = ReceivePort();
+    final ready = Completer<CityFinder>();
+    final Isolate isolate;
+    try {
+      isolate = await Isolate.spawn(_serve, (
+        replies: replies.sendPort,
+        source: source,
+        search: search,
+      ), debugName: 'city finder');
+    } on Object {
+      replies.close();
+      rethrow;
+    }
+    replies.listen((message) {
+      switch (message) {
+        case SendPort requests:
+          ready.complete(CityFinder._(isolate, replies, requests));
+        case (int asked, List<SelectedLocation> places):
+          ready.future.then((finder) => finder._answer(asked, places));
+        case String failure:
+          replies.close();
+          isolate.kill();
+          ready.completeError(FormatException(failure));
+      }
+    });
+    return ready.future;
+  }
+
+  /// The places that match [query], best first. A blank query matches
+  /// nothing and asks no isolate.
+  Future<List<SelectedLocation>> search(String query) {
+    // NOTE: Engine rule 1. This splits one query of at most 120 characters,
+    // which costs less than a hop.
+    if (_words(query).isEmpty) return Future.value(const []);
+    final asked = _asked++;
+    final answer = _answers[asked] = Completer();
+    _requests.send((asked, query));
+    return answer.future;
+  }
+
+  void _answer(int asked, List<SelectedLocation> places) =>
+      _answers.remove(asked)?.complete(places);
+
+  /// Ends the isolate. A search that waits for an answer gets none.
+  void close() {
+    _replies.close();
+    _isolate.kill();
+    _answers.clear();
+  }
+}
+
+/// The finder isolate: parses the city list, then answers each search.
+void _serve(({SendPort replies, String source, CitySearchWork search}) start) {
+  final CityCatalog catalog;
+  try {
+    catalog = CityCatalog.fromTsv(start.source);
+  } on FormatException catch (error) {
+    start.replies.send(error.message);
+    return;
+  }
+  final requests = ReceivePort();
+  start.replies.send(requests.sendPort);
+  requests.listen((message) {
+    final (int asked, String query) = message as (int, String);
+    start.replies.send((asked, start.search(catalog, query)));
+  });
 }
 
 class _City {
