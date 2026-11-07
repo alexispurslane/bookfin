@@ -19,3 +19,7 @@ The library already loads from disk at launch. Hide the background refresh: no p
 **2026-11-07T21:47:00Z**
 
 From boo-5jzo: the 'Saved library · Today, 4:29 PM' line (now built with dayAndTime) and the catalog.busy progress bar in lib/catalog/screen.dart are the engine rule 2 breaks this ticket removes.
+
+**2026-11-07T21:55:32Z**
+
+From boo-um68: _CatalogStatus in lib/catalog/screen.dart is now the one place that shows the refresh progress line and the catalog error; it is the seam for this ticket. Pull-to-refresh in LibraryShelf is the other tell.
