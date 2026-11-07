@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../catalog/book_cover.dart';
-import '../catalog/library_view.dart' show BookRow, ProgressLine;
+import '../catalog/library_view.dart' show BookRow;
 import '../catalog/model.dart';
 import '../foundation/theme.dart';
 import 'downloads.dart';
@@ -46,11 +46,7 @@ class DownloadControls extends StatelessWidget {
         if (state.phase == DownloadPhase.downloading)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
-            child: LinearProgressIndicator(
-              value: state.totalBytes != null && state.totalBytes! > 0
-                  ? (state.bytes / state.totalBytes!).clamp(0, 1)
-                  : null,
-            ),
+            child: ProgressLine(value: _share(state)),
           ),
         if (state.message != null)
           Text(
@@ -125,9 +121,7 @@ class DownloadButton extends StatelessWidget {
             height: 44,
             child: CircularProgressIndicator(
               strokeWidth: 2.5,
-              value: state.totalBytes != null && state.totalBytes! > 0
-                  ? (state.bytes / state.totalBytes!).clamp(0, 1)
-                  : null,
+              value: _share(state),
             ),
           ),
         IconButton.filled(
@@ -407,9 +401,7 @@ class _DownloadRow extends StatelessWidget {
       compact: compact,
       onTap: () => onOpen?.call(context, book),
       below: state.phase == DownloadPhase.downloading
-          ? ProgressLine(
-              value: total != null && total > 0 ? state.bytes / total : 0,
-            )
+          ? ProgressLine(value: _share(state))
           : null,
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
@@ -438,6 +430,13 @@ Future<bool> confirmRemoveDownload(BuildContext context) => confirmAction(
   action: 'Remove download',
   cancel: 'Keep download',
 );
+
+/// How much of a transfer is saved, from 0 to 1, or null when its size is
+/// unknown.
+double? _share(EditionDownload state) => switch (state.totalBytes) {
+  final total? when total > 0 => (state.bytes / total).clamp(0, 1),
+  _ => null,
+};
 
 String _tooltip(DownloadAction action) => switch (action) {
   DownloadAction.request => 'Download',

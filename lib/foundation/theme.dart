@@ -466,6 +466,43 @@ class BookfinPanel extends StatelessWidget {
   );
 }
 
+/// A thin rounded line that fills with progress, as under a book in the
+/// library.
+class ProgressLine extends StatelessWidget {
+  const ProgressLine({
+    super.key,
+    required this.value,
+    this.height = 3,
+    this.color,
+    this.trackColor,
+  });
+
+  /// How much is done, from 0 to 1. Null means unknown, and the line moves
+  /// instead.
+  final double? value;
+
+  /// The thickness, in logical pixels.
+  final double height;
+
+  /// The filled part. The theme's progress color by default.
+  final Color? color;
+
+  /// The unfilled part. The theme's faint outline color by default.
+  final Color? trackColor;
+
+  @override
+  Widget build(BuildContext context) => ClipRRect(
+    borderRadius: BorderRadius.circular(height),
+    child: LinearProgressIndicator(
+      value: value?.clamp(0, 1),
+      minHeight: height,
+      color: color,
+      backgroundColor:
+          trackColor ?? Theme.of(context).colorScheme.outlineVariant,
+    ),
+  );
+}
+
 /// A paper panel of rows, separated by lines, with space below it.
 class SettingsGroup extends StatelessWidget {
   const SettingsGroup({super.key, required this.children});

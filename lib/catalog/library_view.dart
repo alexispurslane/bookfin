@@ -456,21 +456,6 @@ TextStyle _positionStyle(ThemeData theme) => TextStyle(
   color: theme.colorScheme.primary,
 );
 
-/// A thin progress line, as under a book in the library.
-class ProgressLine extends StatelessWidget {
-  const ProgressLine({super.key, required this.value});
-  final double value;
-  @override
-  Widget build(BuildContext context) => ClipRRect(
-    borderRadius: BorderRadius.circular(3),
-    child: LinearProgressIndicator(
-      value: value.clamp(0, 1),
-      minHeight: 3,
-      backgroundColor: Theme.of(context).colorScheme.outlineVariant,
-    ),
-  );
-}
-
 /// The top bar action that switches between grid and list.
 class LayoutToggle extends StatelessWidget {
   const LayoutToggle({super.key, required this.layout});

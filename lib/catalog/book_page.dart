@@ -249,14 +249,8 @@ class BookPage extends StatelessWidget {
                               ],
                             ),
                             const SizedBox(height: 4),
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(3),
-                              child: LinearProgressIndicator(
-                                value: progress.elapsedMs / progress.totalMs,
-                                minHeight: 3,
-                                backgroundColor:
-                                    theme.colorScheme.outlineVariant,
-                              ),
+                            ProgressLine(
+                              value: progress.elapsedMs / progress.totalMs,
                             ),
                           ],
                           if (catalog.message != null)

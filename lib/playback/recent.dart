@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../catalog/book_cover.dart';
 import '../catalog/library_services.dart' show duration;
-import '../catalog/library_view.dart' show BookRow, ProgressLine;
+import '../catalog/library_view.dart' show BookRow;
 import '../foundation/theme.dart';
 import 'playback.dart';
 

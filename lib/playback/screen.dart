@@ -124,16 +124,14 @@ class PlaybackMiniPlayer extends StatelessWidget {
                       if (total != null && total > 0)
                         Padding(
                           padding: const EdgeInsets.fromLTRB(14, 0, 14, 8),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(2),
-                            child: LinearProgressIndicator(
-                              minHeight: 2.5,
-                              value:
-                                  (playback.editionMilliseconds ?? 0) / total,
-                              color: scheme.primary,
-                              backgroundColor: scheme.onSurface.withValues(
-                                alpha: 0.12,
-                              ),
+                          // On glass a faint ink track reads better than
+                          // the paper outline.
+                          child: ProgressLine(
+                            height: 2.5,
+                            value: (playback.editionMilliseconds ?? 0) / total,
+                            color: scheme.primary,
+                            trackColor: scheme.onSurface.withValues(
+                              alpha: 0.12,
                             ),
                           ),
                         ),
@@ -639,17 +637,12 @@ class PlayerView extends StatelessWidget {
                               if (index == current)
                                 Padding(
                                   padding: const EdgeInsets.only(top: 6),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(3),
-                                    child: LinearProgressIndicator(
-                                      minHeight: 3,
-                                      color: accent,
-                                      backgroundColor: scheme.outlineVariant,
-                                      value: _chapterShare(
-                                        chapters,
-                                        index,
-                                        position,
-                                      ),
+                                  child: ProgressLine(
+                                    color: accent,
+                                    value: _chapterShare(
+                                      chapters,
+                                      index,
+                                      position,
                                     ),
                                   ),
                                 ),
