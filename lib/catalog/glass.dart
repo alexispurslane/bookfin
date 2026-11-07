@@ -273,27 +273,32 @@ class GlassMenuButton extends StatelessWidget {
       padding: WidgetStatePropertyAll(EdgeInsets.zero),
     ),
     menuChildren: [
-      CoverGlass(
-        book: book,
-        radius: 16,
-        tint: 0.75,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 6),
-          child: IntrinsicWidth(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                for (final item in items)
-                  MenuItemButton(
-                    leadingIcon: item.icon == null ? null : Icon(item.icon),
-                    onPressed: item.onSelected,
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: 24),
-                      child: Text(item.label),
+      // The margin keeps the pane clear of the screen edge, where the menu
+      // is pushed when the button sits near it.
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        child: CoverGlass(
+          book: book,
+          radius: 16,
+          tint: 0.75,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            child: IntrinsicWidth(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  for (final item in items)
+                    MenuItemButton(
+                      leadingIcon: item.icon == null ? null : Icon(item.icon),
+                      onPressed: item.onSelected,
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 24),
+                        child: Text(item.label),
+                      ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
