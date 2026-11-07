@@ -43,10 +43,16 @@ enum CatalogReach {
 ///   from storage is not a refresh.
 /// - [reach]: what the last request said about Jellyfin.
 /// - [message]: the text to show about the last operation, or null.
+/// - [verified]: the last sign-in or refresh succeeded. A new one, a
+///   cancel, a failure or a sign-out clears it, and a correction keeps it.
+///   It is its own field, because a refresh can reach Jellyfin and still
+///   fail: Jellyfin sends an incomplete catalog, or the catalog cannot be
+///   saved.
 typedef CatalogStatus = ({
   bool refreshing,
   CatalogReach reach,
   String? message,
+  bool verified,
 });
 
 /// The signed-in account and what it may read: its session, whether access
@@ -120,6 +126,33 @@ _Built _restoreCatalog(({AccountScope scope, String text}) saved) {
   return (cache: cache, text: saved.text, library: _libraryOf(cache));
 }
 
+/// A change to the saved catalog [text] of [scope]: it gets [edits] and
+/// [accessBlocked], and keeps its entries.
+typedef _Revision = ({
+  AccountScope scope,
+  String text,
+  CatalogEdits edits,
+  bool accessBlocked,
+});
+
+/// Decodes the saved catalog of [revision], applies the revision, and saves
+/// and builds the result. The saved text crosses to the worker as one block
+/// copy, so a correction or a denial copies no entries.
+_Built _reviseCatalog(_Revision revision) {
+  final saved = CatalogCache.decode(revision.scope, revision.text);
+  return _saveCatalog(
+    CatalogCache(
+      scope: saved.scope,
+      libraries: saved.libraries,
+      selected: saved.selected,
+      entries: saved.entries,
+      edits: revision.edits,
+      completedAt: saved.completedAt,
+      accessBlocked: revision.accessBlocked,
+    ),
+  );
+}
+
 /// Adds the content digest to [cache], encodes it and builds its library.
 _Built _saveCatalog(CatalogCache cache) {
   final sealed = cache.withContent();
@@ -152,13 +185,18 @@ CatalogLibrary _libraryOf(CatalogCache cache) {
 ///   [CatalogLibrary.matches].
 /// - [session], [accessBlocked], [libraries] and the selection in [cache]:
 ///   [accountNotifier].
-/// - [busy] and [message]: [statusNotifier]. [busy] also covers a restore.
+/// - [busy], [verified] and [message]: [statusNotifier]. [busy] also
+///   covers a restore.
 /// [readingOrder] stays: [CatalogLibrary] series are in reading order.
 ///
 /// Invariants, which [checkInvariants] proves:
 /// - A signed-out catalog holds no account data.
+/// - A verified catalog reached Jellyfin, and its access is not blocked.
+///   So the status never says [CatalogReach.accessRevoked] and verified.
 /// - The cache belongs to the active account, and each cached item belongs
 ///   to a selected book library.
+/// - The saved text is present exactly when the cache is, and it encodes the
+///   cache.
 /// - Each source belongs to exactly one edition, and a text edition has one
 ///   source.
 /// - The library view matches its books.
@@ -180,6 +218,10 @@ class CatalogController extends ChangeNotifier {
   JellyfinClient? _active;
   JellyfinSession? _session;
   CatalogCache? _cache;
+
+  /// The text that saves [_cache], or null without a cache. A revision sends
+  /// it to the worker instead of the entries.
+  String? _text;
   List<BookLibrary> _libraries = [];
 
   /// The library of [_cache], or the empty library without a cache.
@@ -244,6 +286,7 @@ class CatalogController extends ChangeNotifier {
     refreshing: _work == _Work.refresh,
     reach: _accessBlocked ? CatalogReach.accessRevoked : _reach,
     message: _message,
+    verified: _verified,
   );
 
   void checkInvariants() {
@@ -254,8 +297,20 @@ class CatalogController extends ChangeNotifier {
             _verified)) {
       throw StateError('A signed-out catalog must contain no account data.');
     }
+    final status = _status;
+    if (status.verified && status.reach != CatalogReach.reached) {
+      throw StateError(
+        'A verified catalog must have reached Jellyfin with access.',
+      );
+    }
     if (_cache != null && _cache!.scope.key != _session?.scope.key) {
       throw StateError('The cache must belong to the active account.');
+    }
+    if ((_cache == null) != (_text == null) ||
+        (_cache != null &&
+            CatalogCache.decode(_cache!.scope, _text!).content !=
+                _cache!.content)) {
+      throw StateError('The saved text must encode the cache.');
     }
     if (_cache != null &&
         _cache!.entries.any(
@@ -296,6 +351,11 @@ class CatalogController extends ChangeNotifier {
     required bool small,
   }) async => small ? work(input) : _hop(work, input);
 
+  /// Builds [revision] of the saved catalog with [_reviseCatalog], in
+  /// another isolate unless the text is small (see [_hopText]).
+  Future<_Built> _revise(_Revision revision) =>
+      _build(_reviseCatalog, revision, small: revision.text.length < _hopText);
+
   /// Adopts [built] as the cache. The library changes only when the books
   /// can differ: a cache with the content of the current one has the same
   /// books, so the current library, and its book objects, stay.
@@ -303,6 +363,7 @@ class CatalogController extends ChangeNotifier {
     assert(_session?.scope.key == built.cache.scope.key);
     final previous = _cache;
     _cache = built.cache;
+    _text = built.text;
     _accessBlocked = built.cache.accessBlocked;
     if (previous == null ||
         built.cache.content == null ||
@@ -344,6 +405,7 @@ class CatalogController extends ChangeNotifier {
     ++_accountGeneration;
     _session = null;
     _cache = null;
+    _text = null;
     _built = CatalogLibrary.empty;
     _libraries = [];
     _verified = false;
@@ -433,6 +495,15 @@ class CatalogController extends ChangeNotifier {
               .containsAll(_cache!.selected)) {
         throw const CatalogFailure(CatalogFailureKind.invalidSelection);
       }
+      try {
+        await _saveAccess(blocked: false, generation: generation);
+      } catch (_) {
+        if (_current(generation)) {
+          _message = 'Access is back, but your saved books could not be updated. Refresh your book libraries.';
+        }
+        return;
+      }
+      if (!_current(generation)) return;
       _verified = true;
     } catch (error) {
       if (_current(generation)) {
@@ -542,31 +613,9 @@ class CatalogController extends ChangeNotifier {
     } else if (failure.kind == CatalogFailureKind.forbidden ||
         failure.kind == CatalogFailureKind.invalidSelection) {
       _accessBlocked = true;
-      final scope = _session?.scope;
-      if (scope == null) return;
-      final write = (_cacheWrites ?? Future<void>.value()).then((_) async {
-        if (!_current(generation)) return;
-        final previous = _cache;
-        final denied = await _build(
-          _saveCatalog,
-          CatalogCache(
-            scope: scope,
-            libraries: previous?.libraries ?? _libraries,
-            selected: previous?.selected ?? const {},
-            entries: previous?.entries ?? const [],
-            edits: previous?.edits,
-            completedAt: previous?.completedAt,
-            accessBlocked: true,
-          ),
-          small: (previous?.entries.length ?? 0) < _hopEntries,
-        );
-        if (!_current(generation)) return;
-        await _store.write(scope, denied.text);
-        if (_current(generation)) _adopt(denied);
-      });
-      _cacheWrites = write.catchError((Object _) {});
+      if (_session == null) return;
       try {
-        await write;
+        await _saveAccess(blocked: true, generation: generation);
       } catch (_) {
         // Without a saved denial, prevent automatic restoration of this account.
         await _writeCredentials(null);
@@ -575,6 +624,41 @@ class CatalogController extends ChangeNotifier {
         }
       }
     }
+  }
+
+  /// Saves Jellyfin's latest answer about access, [blocked], in the saved
+  /// catalog after the writes before it, and adopts the result. A denial
+  /// and a sign-in that lists the selected libraries both answer it; a
+  /// refresh saves a whole new catalog, which is not blocked. The catalog
+  /// keeps its entries and corrections. Without a saved catalog, an allowed
+  /// account needs none, and a blocked one gets an empty one. Throws when
+  /// the catalog cannot be saved, and then adopts nothing.
+  Future<void> _saveAccess({required bool blocked, required int generation}) {
+    final scope = _session!.scope;
+    final write = (_cacheWrites ?? Future<void>.value()).then((_) async {
+      if (!_current(generation)) return;
+      final previous = _cache;
+      if ((previous?.accessBlocked ?? false) == blocked) return;
+      final saved = previous == null
+          ? _saveCatalog(
+              CatalogCache(
+                scope: scope,
+                libraries: _libraries,
+                accessBlocked: true,
+              ),
+            )
+          : await _revise((
+              scope: scope,
+              text: _text!,
+              edits: previous.edits,
+              accessBlocked: blocked,
+            ));
+      if (!_current(generation)) return;
+      await _store.write(scope, saved.text);
+      if (_current(generation)) _adopt(saved);
+    });
+    _cacheWrites = write.catchError((Object _) {});
+    return write;
   }
 
   Future<void> signOut() async {
@@ -622,18 +706,12 @@ class CatalogController extends ChangeNotifier {
       if (!currentAccount()) return;
       final previous = _cache!;
       try {
-        final built = await _build(
-          _saveCatalog,
-          CatalogCache(
-            scope: previous.scope,
-            libraries: previous.libraries,
-            selected: previous.selected,
-            entries: previous.entries,
-            edits: change(previous.edits),
-            completedAt: previous.completedAt,
-          ),
-          small: previous.entries.length < _hopEntries,
-        );
+        final built = await _revise((
+          scope: previous.scope,
+          text: _text!,
+          edits: change(previous.edits),
+          accessBlocked: false,
+        ));
         if (!currentAccount()) return;
         await _store.write(previous.scope, built.text);
         if (!currentAccount()) return;

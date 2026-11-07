@@ -4,6 +4,8 @@ import 'dart:isolate';
 import 'package:bookfin/catalog/controller.dart';
 import 'package:bookfin/catalog/jellyfin.dart';
 import 'package:bookfin/catalog/model.dart';
+import 'package:bookfin/catalog/store.dart';
+import 'package:bookfin/catalog/transport.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'controller_test.dart'
@@ -27,6 +29,62 @@ List<CatalogEntry> _largeLibrary({String prefix = 'Book'}) => [
     entry('item$index', title: '$prefix $index', source: 'source$index'),
 ];
 
+/// Whether [input], the value that a hop copies into its worker, holds
+/// catalog entries. A record shows its fields only through its text, so a
+/// record that names an entry or a cache counts as holding entries.
+bool _carriesEntries(Object? input) => switch (input) {
+  CatalogCache(:final entries) => entries.isNotEmpty,
+  CatalogEntry() => true,
+  Iterable() => input.any(_carriesEntries),
+  Record() => '$input'.contains(RegExp('CatalogEntry|CatalogCache')),
+  _ => false,
+};
+
+/// Answers with one book library, `books`, whose one catalog page holds
+/// [items], and with no collections.
+class _PageTransport implements JsonTransport {
+  _PageTransport(this.items);
+  final List<Map<String, dynamic>> items;
+  @override
+  Future<Map<String, dynamic>> send(
+    Uri uri, {
+    required String method,
+    required Map<String, String> headers,
+    Map<String, dynamic>? body,
+  }) async => switch (uri.pathSegments.last) {
+    'UserViews' => {
+      'Items': [
+        {'Id': 'books', 'Name': 'Books', 'CollectionType': 'books'},
+      ],
+    },
+    _ when uri.queryParameters['parentId'] == 'books' => {
+      'Items': items,
+      'TotalRecordCount': items.length,
+      'StartIndex': 0,
+    },
+    _ => {'Items': <Object>[]},
+  };
+  @override
+  void close() {}
+}
+
+/// A client whose catalog pages come from Jellyfin's JSON, so the catalog
+/// builds its entries from responses, as with a real server.
+class _PagedClient extends FixtureClient {
+  _PagedClient(super.server, List<Map<String, dynamic>> items)
+    : _pages = JellyfinClient(
+        server,
+        deviceId: 'test',
+        transport: _PageTransport(items),
+      );
+  final JellyfinClient _pages;
+  @override
+  Future<List<CatalogEntry>> catalog(
+    JellyfinSession session,
+    Set<String> selected,
+  ) => _pages.catalog(session, selected);
+}
+
 void main() {
   late MemoryCredentials credentials;
   late MemoryCatalogStore store;
@@ -35,12 +93,17 @@ void main() {
   late ReceivePort reports;
   late List<(String?, int)> builds;
 
+  /// Whether each hop copied entries into its worker, in hop order.
+  late List<bool> crossings;
+
   CatalogController newController() => CatalogController(
     credentials: credentials,
     store: store,
     clientFactory: (server, device) => client,
-    hop: <M, R>(R Function(M) work, M input) =>
-        _recordingHop(reports.sendPort, work, input),
+    hop: <M, R>(R Function(M) work, M input) {
+      crossings.add(_carriesEntries(input));
+      return _recordingHop(reports.sendPort, work, input);
+    },
   );
 
   /// Waits until the worker reports of earlier hops have arrived.
@@ -51,6 +114,7 @@ void main() {
     store = MemoryCatalogStore();
     client = FixtureClient(Uri.parse('https://books.example'));
     builds = [];
+    crossings = [];
     reports = ReceivePort()
       ..listen((report) => builds.add(report as (String?, int)));
     controller = newController();
@@ -276,6 +340,250 @@ void main() {
     });
   });
 
+  group('whether the last sign-in or refresh succeeded', () {
+    bool verified() => controller.statusNotifier.value.verified;
+
+    test('a sign-in that Jellyfin accepts succeeded', () async {
+      await controller.connect('https://books.example', 'alice', 'password');
+      expect(verified(), isTrue);
+    });
+
+    test(
+      'a refresh has not succeeded while it runs, and has when it ends',
+      () async {
+        await connectAndSelect();
+        client.pendingCatalog = Completer();
+        final refreshing = controller.refresh();
+        expect(verified(), isFalse);
+        client.pendingCatalog!.complete([entry('one')]);
+        await refreshing;
+        expect(verified(), isTrue);
+      },
+    );
+
+    test('a restore from storage has not reached Jellyfin, so it has not succeeded', () async {
+      await connectAndSelect();
+      final restarted = newController();
+      addTearDown(restarted.dispose);
+      await restarted.restore();
+      expect(restarted.books, hasLength(1));
+      expect(restarted.statusNotifier.value.verified, isFalse);
+    });
+
+    test('a refresh that cannot reach Jellyfin did not succeed', () async {
+      await connectAndSelect();
+      client.failure = const CatalogFailure(CatalogFailureKind.unavailable);
+      await controller.refresh();
+      expect(verified(), isFalse);
+    });
+
+    test('an expired sign-in did not succeed', () async {
+      await connectAndSelect();
+      client.failure = const CatalogFailure(CatalogFailureKind.unauthorized);
+      await controller.refresh();
+      expect(verified(), isFalse);
+    });
+
+    test('revoked access did not succeed', () async {
+      await connectAndSelect();
+      client.failure = const CatalogFailure(CatalogFailureKind.forbidden);
+      await controller.refresh();
+      expect(verified(), isFalse);
+    });
+
+    test('signing out forgets the last success', () async {
+      await connectAndSelect();
+      await controller.signOut();
+      expect(verified(), isFalse);
+    });
+
+    test('a cancelled refresh did not succeed', () async {
+      await connectAndSelect();
+      client.pendingCatalog = Completer();
+      final refreshing = controller.refresh();
+      controller.cancel();
+      client.pendingCatalog!.complete([entry('one')]);
+      await refreshing;
+      expect(verified(), isFalse);
+    });
+
+    test('a correction after a refresh keeps the refresh a success', () async {
+      await connectAndSelect();
+      await controller.correctBook(
+        'book:one',
+        const BookDetails(title: 'Corrected', author: 'Writer'),
+      );
+      expect(controller.books.single.title, 'Corrected');
+      expect(verified(), isTrue);
+    });
+
+    test(
+      'a correction that cannot be saved keeps the refresh a success',
+      () async {
+        await connectAndSelect();
+        store.failWrites = true;
+        await controller.correctBook(
+          'book:one',
+          const BookDetails(title: 'Corrected', author: 'Writer'),
+        );
+        expect(controller.statusNotifier.value.message, contains('correction'));
+        expect(verified(), isTrue);
+      },
+    );
+
+    // In the next two, Jellyfin answered, the refresh ended, and it still
+    // failed. So the reach and the refresh state cannot tell a success.
+    test('a refresh that Jellyfin answers with an incomplete catalog reached Jellyfin and did not succeed', () async {
+      await connectAndSelect();
+      client.failure = const CatalogFailure(CatalogFailureKind.incomplete);
+      await controller.refresh();
+      final status = controller.statusNotifier.value;
+      expect((status.refreshing, status.reach), (false, CatalogReach.reached));
+      expect(status.verified, isFalse);
+    });
+
+    test('a refresh whose catalog cannot be saved reached Jellyfin and did not succeed', () async {
+      await connectAndSelect();
+      store.failWrites = true;
+      await controller.refresh();
+      final status = controller.statusNotifier.value;
+      expect((status.refreshing, status.reach), (false, CatalogReach.reached));
+      expect(status.verified, isFalse);
+      expect(controller.books, hasLength(1));
+    });
+
+    test(
+      'the status and the catalog agree on success at every status notice',
+      () async {
+        final seen = <(bool, bool)>[];
+        // A notifier reports an error that its listener throws instead of
+        // failing the test, so the listener keeps the broken invariants.
+        final broken = <Object>[];
+        controller.statusNotifier.addListener(() {
+          seen.add((verified(), controller.verified));
+          try {
+            controller.checkInvariants();
+          } on StateError catch (error) {
+            broken.add(error);
+          }
+        });
+        await connectAndSelect();
+        await controller.correctBook(
+          'book:one',
+          const BookDetails(title: 'Corrected', author: 'Writer'),
+        );
+        client.failure = const CatalogFailure(CatalogFailureKind.unavailable);
+        await controller.refresh();
+        client.failure = null;
+        await controller.refresh();
+        client.failure = const CatalogFailure(CatalogFailureKind.forbidden);
+        await controller.refresh();
+        await controller.signOut();
+        client.failure = null;
+        await controller.connect('https://books.example', 'alice', 'password');
+        client.failure = const CatalogFailure(CatalogFailureKind.unauthorized);
+        await controller.refresh();
+        expect(
+          seen,
+          everyElement(predicate<(bool, bool)>((s) => s.$1 == s.$2)),
+        );
+        expect(seen.map((s) => s.$1), containsAllInOrder([true, false, true]));
+        expect(broken, isEmpty);
+      },
+    );
+  });
+
+  group('a sign-in over a saved denial', () {
+    /// Signs in, selects the book library, corrects its book, has Jellyfin
+    /// deny access, and signs out, so the account's saved catalog holds the
+    /// denial and the correction.
+    Future<void> deniedThenSignedOut() async {
+      await connectAndSelect();
+      await controller.correctBook(
+        'book:one',
+        const BookDetails(title: 'Corrected', author: 'Writer'),
+      );
+      client.failure = const CatalogFailure(CatalogFailureKind.forbidden);
+      await controller.refresh();
+      await controller.signOut();
+      client.failure = null;
+    }
+
+    Future<void> signInAgain() =>
+        controller.connect('https://books.example', 'alice', 'password');
+
+    test('a sign-in that lists the selected libraries ends the denial, so the saved books appear at once', () async {
+      await deniedThenSignedOut();
+      await signInAgain();
+      final status = controller.statusNotifier.value;
+      expect(status.reach, CatalogReach.reached);
+      expect(status.verified, isTrue);
+      expect(controller.accountNotifier.value.accessBlocked, isFalse);
+      expect(controller.libraryNotifier.value.books.single.title, 'Corrected');
+      controller.checkInvariants();
+    });
+
+    test('the status never says that access is revoked and that the sign-in succeeded', () async {
+      await deniedThenSignedOut();
+      final seen = <CatalogStatus>[];
+      controller.statusNotifier.addListener(
+        () => seen.add(controller.statusNotifier.value),
+      );
+      await signInAgain();
+      expect(
+        seen.where(
+          (status) =>
+              status.verified && status.reach == CatalogReach.accessRevoked,
+        ),
+        isEmpty,
+      );
+    });
+
+    test('after a sign-in ends the denial, a restart shows the library with its corrections', () async {
+      await deniedThenSignedOut();
+      await signInAgain();
+      final restarted = newController();
+      addTearDown(restarted.dispose);
+      await restarted.restore();
+      expect(restarted.accountNotifier.value.accessBlocked, isFalse);
+      expect(
+        restarted.statusNotifier.value.reach,
+        isNot(CatalogReach.accessRevoked),
+      );
+      expect(restarted.libraryNotifier.value.books.single.title, 'Corrected');
+      restarted.checkInvariants();
+    });
+
+    test('a sign-in whose end of the denial cannot be saved did not succeed and keeps the saved denial', () async {
+      await deniedThenSignedOut();
+      final saved = Map.of(store.values);
+      store.failWrites = true;
+      await signInAgain();
+      final status = controller.statusNotifier.value;
+      expect(status.verified, isFalse);
+      expect(status.reach, CatalogReach.accessRevoked);
+      expect(status.message, isNotNull);
+      expect(store.values, saved);
+      controller.checkInvariants();
+      store.failWrites = false;
+      await controller.refresh();
+      expect(controller.libraryNotifier.value.books.single.title, 'Corrected');
+    });
+
+    test(
+      'a sign-in whose libraries lack the selection keeps the denial',
+      () async {
+        await deniedThenSignedOut();
+        client.views = [const BookLibrary('other', 'Other')];
+        await signInAgain();
+        final status = controller.statusNotifier.value;
+        expect(status.reach, CatalogReach.accessRevoked);
+        expect(status.verified, isFalse);
+        expect(controller.libraryNotifier.value.books, isEmpty);
+      },
+    );
+  });
+
   group('the build of the books', () {
     test('a restore builds the books once, in another isolate', () async {
       client.entries = _largeLibrary();
@@ -329,6 +637,117 @@ void main() {
         await settleReports();
         expect(builds, isEmpty);
         expect(controller.books, hasLength(1));
+      },
+    );
+  });
+
+  group('what crosses to the worker', () {
+    test(
+      'a refresh hands the worker Jellyfin\'s responses, not built entries',
+      () async {
+        client = _PagedClient(Uri.parse('https://books.example'), [
+          for (final value in _largeLibrary()) {...value.json},
+        ]);
+        controller.dispose();
+        controller = newController();
+        await connectAndSelect();
+        await settleReports();
+        expect(crossings, [false]);
+        expect(builds, [('catalog worker', 1)]);
+        expect(controller.books, hasLength(40));
+      },
+      skip:
+          'ta-7oe6: the transport returns decoded maps on the UI isolate, so '
+          'the entries cross until it hands the worker page bytes.',
+    );
+
+    test(
+      'a correction hands the worker the saved text, not the entries',
+      () async {
+        client.entries = _largeLibrary();
+        await connectAndSelect();
+        crossings.clear();
+        await controller.correctBook(
+          'book:item1',
+          const BookDetails(title: 'Corrected', author: 'Writer'),
+        );
+        expect(crossings, [false]);
+        expect(
+          controller.books.map((book) => book.title),
+          contains('Corrected'),
+        );
+        final saved = CatalogCache.decode(
+          account('alice').scope,
+          store.values[account('alice').scope.key]!,
+        );
+        expect(saved.entries, hasLength(40));
+        expect(saved.edits.details['book:item1']!.title, 'Corrected');
+        controller.checkInvariants();
+      },
+    );
+
+    test(
+      'a saved denial hands the worker the saved text, not the entries',
+      () async {
+        client.entries = _largeLibrary();
+        await connectAndSelect();
+        crossings.clear();
+        client.failure = const CatalogFailure(CatalogFailureKind.forbidden);
+        await controller.refresh();
+        expect(crossings, [false]);
+        expect(
+          controller.statusNotifier.value.reach,
+          CatalogReach.accessRevoked,
+        );
+        final saved = CatalogCache.decode(
+          account('alice').scope,
+          store.values[account('alice').scope.key]!,
+        );
+        expect(saved.accessBlocked, isTrue);
+        expect(saved.entries, hasLength(40));
+        controller.checkInvariants();
+      },
+    );
+
+    test('corrections in a row each start from the last saved one', () async {
+      client.entries = _largeLibrary();
+      await connectAndSelect();
+      await Future.wait([
+        controller.correctBook(
+          'book:item1',
+          const BookDetails(title: 'First', author: 'Writer'),
+        ),
+        controller.correctBook(
+          'book:item2',
+          const BookDetails(title: 'Second', author: 'Writer'),
+        ),
+      ]);
+      expect(
+        controller.books.map((book) => book.title),
+        containsAll(['First', 'Second']),
+      );
+      final restarted = newController();
+      addTearDown(restarted.dispose);
+      await restarted.restore();
+      expect(
+        restarted.books.map((book) => book.title),
+        containsAll(['First', 'Second']),
+      );
+    });
+
+    test(
+      'access that returns after a saved denial brings the books back',
+      () async {
+        client.entries = _largeLibrary();
+        await connectAndSelect();
+        client.failure = const CatalogFailure(CatalogFailureKind.forbidden);
+        await controller.refresh();
+        expect(controller.books, isEmpty);
+        client.failure = null;
+        await controller.refresh();
+        expect(controller.books, hasLength(40));
+        expect(controller.statusNotifier.value.reach, CatalogReach.reached);
+        controller.checkInvariants();
       },
     );
   });
