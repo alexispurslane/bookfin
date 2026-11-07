@@ -557,19 +557,24 @@ class Playback extends ChangeNotifier {
       }
       await _binding;
       if (generation != _generation) return;
+      // The library can arrive after the account, so the saved book may
+      // only now be in [books].
       if (_edition == null && _restored) {
-        final book = books
-            .where(
-              (book) => book.editions.any((edition) => edition.id == _selected),
-            )
-            .firstOrNull;
-        final edition = book?.editions
-            .where((edition) => edition.id == _selected)
-            .firstOrNull;
+        final (book, edition) = _selectedEdition();
         if (book != null && edition != null) {
           final resume = _readPosition(edition);
           if (resume != null && !_resumeFits(edition, _resumeRecord(edition))) {
             _offerReplacement(book, edition, resume);
+          } else if (resume != null) {
+            unawaited(
+              _enqueue(() async {
+                if (_edition == null &&
+                    _selected == edition.id &&
+                    _currentEdition(book, edition)) {
+                  await _open(book, edition, autoplay: false);
+                }
+              }),
+            );
           }
         }
       }
@@ -668,25 +673,7 @@ class Playback extends ChangeNotifier {
         }
         if (pending == null) store.acceptSnapshot(session.scope.key, saved);
         _restored = true;
-        final book = _books
-            .where(
-              (book) => book.editions.any((edition) => edition.id == _selected),
-            )
-            .firstOrNull;
-        final edition = book?.editions
-            .where((edition) => edition.id == _selected)
-            .firstOrNull;
-        if (book != null && edition != null) {
-          final resume = _readPosition(edition);
-          if (resume == null || !_resumeFits(edition, _resumeRecord(edition))) {
-            _message = 'The saved audio source changed. Its resume is kept but was not applied.';
-            if (resume != null) {
-              _offerReplacement(book, edition, resume);
-            }
-          } else {
-            await _open(book, edition, autoplay: false);
-          }
-        }
+        await _restoreSelected();
       } on Exception {
         if (!_restored) {
           _history = [];
@@ -703,6 +690,34 @@ class Playback extends ChangeNotifier {
       _notify();
     } finally {
       ready.complete();
+    }
+  }
+
+  /// The bound book and edition that were open when this account last saved.
+  (Book?, Edition?) _selectedEdition() {
+    final book = _books
+        .where(
+          (book) => book.editions.any((edition) => edition.id == _selected),
+        )
+        .firstOrNull;
+    return (
+      book,
+      book?.editions.where((edition) => edition.id == _selected).firstOrNull,
+    );
+  }
+
+  /// Reopens the edition that was open when this account last saved, paused
+  /// at its saved position. Does nothing while that edition is not in the
+  /// bound books.
+  Future<void> _restoreSelected() async {
+    final (book, edition) = _selectedEdition();
+    if (book == null || edition == null) return;
+    final resume = _readPosition(edition);
+    if (resume == null || !_resumeFits(edition, _resumeRecord(edition))) {
+      _message = 'The saved audio source changed. Its resume is kept but was not applied.';
+      if (resume != null) _offerReplacement(book, edition, resume);
+    } else {
+      await _open(book, edition, autoplay: false);
     }
   }
 

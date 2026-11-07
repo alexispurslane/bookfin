@@ -441,19 +441,25 @@ class PlayerView extends StatelessWidget {
       color: scheme.onSurface,
     );
     Widget tool(String label, Widget top, VoidCallback onTap) => Expanded(
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(4, 10, 4, 9),
-          child: Column(
-            children: [
-              SizedBox(height: 22, child: Center(child: top)),
-              const SizedBox(height: 3),
-              Text(
-                label,
-                style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
-              ),
-            ],
+      child: Semantics(
+        button: true,
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(4, 10, 4, 9),
+            child: Column(
+              children: [
+                SizedBox(height: 22, child: Center(child: top)),
+                const SizedBox(height: 3),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -792,28 +798,34 @@ class _PlayButton extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     return Tooltip(
       message: label,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? const Color(0x73000000)
-                  : scheme.primary.withValues(alpha: 0.35),
-              blurRadius: 24,
-              offset: const Offset(0, 10),
-            ),
-          ],
-        ),
-        child: Material(
-          color: scheme.primary,
-          shape: const CircleBorder(),
-          child: InkWell(
-            customBorder: const CircleBorder(),
-            onTap: toggle,
-            child: SizedBox.square(
-              dimension: 72,
-              child: Icon(icon, size: 38, color: scheme.onPrimary),
+      excludeFromSemantics: true,
+      child: Semantics(
+        button: true,
+        label: label,
+        excludeSemantics: true,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? const Color(0x73000000)
+                    : scheme.primary.withValues(alpha: 0.35),
+                blurRadius: 24,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Material(
+            color: scheme.primary,
+            shape: const CircleBorder(),
+            child: InkWell(
+              customBorder: const CircleBorder(),
+              onTap: toggle,
+              child: SizedBox.square(
+                dimension: 72,
+                child: Icon(icon, size: 38, color: scheme.onPrimary),
+              ),
             ),
           ),
         ),
@@ -840,33 +852,40 @@ class _JumpButton extends StatelessWidget {
         ? playback.forwardSeconds
         : playback.backwardSeconds;
     final color = Theme.of(context).colorScheme.onSurface;
+    final label = '${forward ? 'Forward' : 'Back'} $seconds seconds';
     return Tooltip(
-      message: '${forward ? 'Forward' : 'Back'} $seconds seconds',
-      child: InkResponse(
-        radius: 30,
-        onTap: () => unawaited(playback.jump(forward: forward)),
-        onLongPress: onLongPress,
-        child: SizedBox.square(
-          dimension: 56,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Transform.flip(
-                flipX: forward,
-                child: Icon(Icons.replay_rounded, size: 42, color: color),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 3),
-                child: Text(
-                  '$seconds',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: color,
+      message: label,
+      excludeFromSemantics: true,
+      child: Semantics(
+        button: true,
+        label: label,
+        excludeSemantics: true,
+        child: InkResponse(
+          radius: 30,
+          onTap: () => unawaited(playback.jump(forward: forward)),
+          onLongPress: onLongPress,
+          child: SizedBox.square(
+            dimension: 56,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Transform.flip(
+                  flipX: forward,
+                  child: Icon(Icons.replay_rounded, size: 42, color: color),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 3),
+                  child: Text(
+                    '$seconds',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: color,
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

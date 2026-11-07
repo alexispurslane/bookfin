@@ -134,4 +134,28 @@ void main() {
         .colorScheme;
     expect(scheme.surface, bookfinTheme(Brightness.light).colorScheme.surface);
   });
+
+  testWidgets('the player controls are announced as named buttons', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    await showPlayer(tester);
+    for (final label in ['Back 10 seconds', 'Forward 30 seconds', 'Play']) {
+      expect(
+        tester.getSemantics(find.bySemanticsLabel(label)),
+        isSemantics(label: label, isButton: true),
+      );
+    }
+    for (final tool in ['Chapters', 'Bookmark', 'Sleep']) {
+      expect(
+        tester.getSemantics(find.bySemanticsLabel(tool)),
+        isSemantics(isButton: true),
+      );
+    }
+    expect(
+      tester.getSemantics(find.bySemanticsLabel(RegExp('Speed'))),
+      isSemantics(isButton: true),
+    );
+    semantics.dispose();
+  });
 }

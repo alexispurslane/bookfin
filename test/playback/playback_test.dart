@@ -231,6 +231,26 @@ void main() {
     expect(playback.forwardSeconds, 45);
   });
   test(
+    'restart reopens the saved book when the library loads after the account',
+    () async {
+      await playback.open(title, recording);
+      await playback.seekEdition(72000);
+      await playback.pause();
+      await playback.close();
+      engine = TestEngine();
+      playback = Playback(downloads: downloads, engine: engine, store: store);
+      await playback.bind(account(), []);
+      expect(playback.book, isNull);
+
+      await playback.bind(account(), [title]);
+      await playback.flush();
+
+      expect(playback.book, title);
+      expect(playback.editionMilliseconds, 72000);
+      expect(playback.playing, isFalse);
+    },
+  );
+  test(
     'sampled native position survives restart without an ordinary pause',
     () async {
       await playback.open(title, recording);
