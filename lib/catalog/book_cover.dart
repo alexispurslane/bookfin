@@ -532,3 +532,75 @@ class StageCover extends StatelessWidget {
     ),
   );
 }
+
+/// A rounded pane of frosted glass tinted by a book's cover. Whatever lies
+/// beneath it shows through, blurred, under the cover's colors and a tint of
+/// the page color.
+class CoverGlass extends StatelessWidget {
+  const CoverGlass({
+    super.key,
+    required this.book,
+    required this.child,
+    this.radius = 22,
+    this.tint = 0.55,
+  });
+  final Book book;
+  final Widget child;
+  final double radius;
+
+  /// How much of the page color covers the blurred cover, from 0 to 1.
+  final double tint;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final night = theme.brightness == Brightness.dark;
+    final shape = BorderRadius.circular(radius);
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: shape,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: night ? 0.4 : 0.16),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: shape,
+        child: BackdropFilter(
+          filter: ui.ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: Opacity(
+                  opacity: 0.6,
+                  child: CoverBlur(book: book, sigma: 22),
+                ),
+              ),
+              Positioned.fill(
+                child: ColoredBox(
+                  color: theme.colorScheme.surface.withValues(
+                    alpha: night ? tint - 0.05 : tint,
+                  ),
+                ),
+              ),
+              Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    borderRadius: shape,
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: night ? 0.1 : 0.4),
+                    ),
+                  ),
+                ),
+              ),
+              child,
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

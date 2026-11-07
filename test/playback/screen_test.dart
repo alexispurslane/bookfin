@@ -1,3 +1,4 @@
+import 'package:bookfin/catalog/book_cover.dart';
 import 'package:bookfin/foundation/theme.dart';
 import 'package:bookfin/playback/playback.dart';
 import 'package:bookfin/playback/screen.dart';
@@ -111,11 +112,41 @@ void main() {
       await tester.tap(find.byTooltip('Open player'));
       await tester.pumpAndSettle();
       expect(find.byType(PlayerView), findsOneWidget);
-      expect(find.byType(NavigationBar), findsNothing);
       await tester.scrollUntilVisible(find.text('Chapters'), 150);
       expect(find.text('Chapters'), findsOneWidget);
     },
   );
+  testWidgets(
+    'the mini player opens the player in a glass pane over the page',
+    (tester) async {
+      phone(tester);
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: bookfinTheme(Brightness.light),
+          home: Scaffold(
+            body: const Center(child: Text('Page beneath')),
+            bottomNavigationBar: PlaybackMiniPlayer(playback: playback),
+          ),
+        ),
+      );
+      await tester.tap(find.byTooltip('Open player'));
+      await tester.pumpAndSettle();
+      expect(
+        find.descendant(
+          of: find.byType(PlayerView),
+          matching: find.byType(CoverGlass),
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Page beneath'), findsOneWidget);
+
+      await tester.tap(find.byTooltip('Close player'));
+      await tester.pumpAndSettle();
+      expect(find.byType(PlayerView), findsNothing);
+      expect(find.text('Page beneath'), findsOneWidget);
+    },
+  );
+
   testWidgets(
     'chapter selection seeks to the actual source without losing playback',
     (tester) async {
