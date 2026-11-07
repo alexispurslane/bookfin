@@ -11,11 +11,13 @@ import '../sync/coordinator.dart';
 /// account: Downloads, Playback, the reader and record sync. It binds them
 /// when it starts, and again whenever the visible account or the book list
 /// changes. Blocked library access shows as no account. After each sign-in
-/// or refresh that succeeds, it asks record sync to run.
+/// or refresh that succeeds, it asks record sync to run once.
 ///
 /// It wakes only on the catalog's narrow signals: the account and the
 /// library for the binding, and the status for record sync. A refresh that
-/// brings the same account and books binds nothing.
+/// brings the same account and books binds nothing. A later status change
+/// that keeps the success, such as the message of a correction that failed,
+/// does not run record sync again.
 ///
 /// Only a new account or blocked access unbinds the sources. A refresh that
 /// cannot reach the server changes neither, so the saved library, saved
@@ -56,6 +58,11 @@ class AccountBinding {
   /// blocked, to tell a new account from blocked access.
   String? _accountKey;
 
+  /// Whether the status last seen said that the last sign-in or refresh
+  /// succeeded. Each sign-in or refresh starts with a status that clears it,
+  /// so record sync runs when it turns true, once for each success.
+  bool _verified = false;
+
   /// Counts bindings, so that a binding that a newer one replaced stops.
   int _generation = 0;
   bool _disposed = false;
@@ -63,7 +70,8 @@ class AccountBinding {
   // The catalog sets its signals one after another, so the listener of one
   // signal can see the old value of another: at sign-out, the empty library
   // comes before the account without a session. Its getters hold the new
-  // state of every signal, so the binding reads them.
+  // state of every signal, so the binding reads them for the account and
+  // the books. Record sync needs only the status, which is one value.
   CatalogAccount get _visibleAccount =>
       CatalogAccount(session: catalog.accessBlocked ? null : catalog.session);
 
@@ -106,10 +114,10 @@ class AccountBinding {
     }());
   }
 
-  /// Only a sign-in or a refresh that succeeds sets verified, and each one
-  /// ends with a status change.
   void _statusChanged() {
-    if (catalog.verified) unawaited(sync?.synchronize());
+    final verified = catalog.statusNotifier.value.verified;
+    if (verified && !_verified) unawaited(sync?.synchronize());
+    _verified = verified;
   }
 
   /// Binds Downloads and the reader at once, and Playback once Downloads is

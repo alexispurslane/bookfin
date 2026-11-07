@@ -120,6 +120,7 @@ class _Client extends FixtureClient {
 
 void main() {
   late _Client client;
+  late MemoryCatalogStore store;
   late CatalogController catalog;
   late _Log log;
   late _Downloads downloads;
@@ -131,9 +132,10 @@ void main() {
   setUp(() async {
     client = _Client(Uri.parse('https://books.example'))
       ..entries = [entry('frost', title: 'First Frost')];
+    store = MemoryCatalogStore();
     catalog = CatalogController(
       credentials: MemoryCredentials(),
-      store: MemoryCatalogStore(),
+      store: store,
       clientFactory: (_, _) => client,
     );
     await catalog.connect('https://books.example', 'alice', 'password');
@@ -410,4 +412,52 @@ void main() {
       expect(accounts.skip(2), everyElement(key));
     },
   );
+
+  test('a binding that starts after a refresh that succeeded synchronizes records once', () async {
+    bind();
+    await pumpEventQueue();
+    expect(sync.calls.where((call) => call == 'synchronize'), hasLength(1));
+  });
+
+  test('a correction after a refresh synchronizes records no second time, even when it cannot be saved', () async {
+    await bound();
+    await catalog.correctBook(
+      catalog.books.single.id,
+      const BookDetails(title: 'Corrected', author: 'Writer'),
+    );
+    store.failWrites = true;
+    await catalog.correctBook(
+      catalog.books.single.id,
+      const BookDetails(title: 'Again', author: 'Writer'),
+    );
+    await pumpEventQueue();
+    expect(catalog.statusNotifier.value.message, contains('correction'));
+    expect(sync.calls, isEmpty);
+  });
+
+  test('a refresh that Jellyfin answers but that fails does not synchronize records', () async {
+    await bound();
+    client.failure = const CatalogFailure(CatalogFailureKind.incomplete);
+    await catalog.refresh();
+    client.failure = null;
+    store.failWrites = true;
+    await catalog.refresh();
+    await pumpEventQueue();
+    expect(catalog.statusNotifier.value.reach, CatalogReach.reached);
+    expect(catalog.session, isNotNull);
+    expect(catalog.books, isNotEmpty);
+    expect(log.binds, isEmpty);
+    expect(sync.calls, isEmpty);
+  });
+
+  test('each refresh that succeeds synchronizes records once', () async {
+    await bound();
+    await catalog.refresh();
+    client.failure = const CatalogFailure(CatalogFailureKind.unavailable);
+    await catalog.refresh();
+    client.failure = null;
+    await catalog.refresh();
+    await pumpEventQueue();
+    expect(sync.calls, ['synchronize', 'synchronize']);
+  });
 }
