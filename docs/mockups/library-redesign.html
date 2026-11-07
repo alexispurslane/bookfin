@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bookfin library redesign</title>
+<style>
+:root{
+  --paper:#f6efe2;--sheet:#fff9ef;--wash:#eae0ce;--ink:#39291f;--subtle:#715d4b;--line:#d9ccb6;
+  --sepia:#775035;--copper:#95603c;
+  --serif:'Source Serif 4',Georgia,serif;--display:'Outfit',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:var(--display);color:var(--ink)}
+.title{text-align:center;font-size:13px;color:var(--muted-foreground,#715d4b);margin:0 0 20px}
+.board{display:flex;flex-wrap:wrap;gap:28px;justify-content:center}
+.frame{display:flex;flex-direction:column;align-items:center;gap:10px;zoom:.8}
+.label{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-foreground,#715d4b)}
+.phone{width:340px;height:720px;background:var(--paper);border:1px solid var(--line);border-radius:34px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 18px 50px rgba(57,41,31,.13);position:relative}
+.status{height:26px;flex:none}
+.bar{display:flex;align-items:center;gap:6px;padding:4px 14px 6px 20px;flex:none}
+.bar .t{flex:1;font-size:22px;font-weight:700;letter-spacing:-.6px}
+.icon{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;color:var(--ink)}
+.icon.on{background:var(--wash)}
+.icon svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.body{flex:1;overflow:hidden;padding:0 18px}
+.chips{display:flex;gap:7px;margin:4px 0 14px;overflow:hidden}
+.chip{font-size:12px;padding:7px 13px;border-radius:99px;background:var(--wash);white-space:nowrap}
+.chip.on{background:var(--sepia);color:var(--sheet)}
+.nav{flex:none;display:flex;justify-content:space-around;padding:8px 6px 14px;border-top:1px solid var(--line);background:var(--paper)}
+.nav div{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;color:var(--subtle);width:70px}
+.nav div span{width:52px;height:28px;border-radius:99px;display:grid;place-items:center}
+.nav div.sel{color:var(--sepia);font-weight:600}.nav div.sel span{background:var(--wash)}
+.nav svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.mini{flex:none;margin:0 12px 8px;background:var(--wash);border-radius:18px;padding:8px 10px;display:flex;align-items:center;gap:10px}
+.mini .c{width:34px;height:48px}.mini .m{flex:1;min-width:0}.mini .m b{font-family:var(--serif);font-weight:500;font-size:14px;display:block}.mini .m i{font-style:normal;font-size:11px;color:var(--subtle)}
+.mini .pp{width:36px;height:36px;border-radius:50%;background:var(--sepia);color:var(--sheet);display:grid;place-items:center;font-size:12px}
+
+/* covers */
+.c{position:relative;border-radius:3px 8px 8px 3px;overflow:hidden;color:#fff9ef;font-family:var(--serif);display:flex;flex-direction:column;justify-content:flex-end;padding:8px;box-shadow:2px 3px 8px rgba(57,41,31,.18),inset 3px 0 0 rgba(0,0,0,.12)}
+.c b{font-weight:600;font-size:13px;line-height:1.1}.c i{font-style:normal;font-family:var(--display);font-size:9px;opacity:.8;margin-top:3px}
+.c::after{content:'';position:absolute;width:120%;aspect-ratio:1;border-radius:50%;border:1px solid rgba(255,249,239,.25);top:-40%;right:-55%}
+.g1{background:linear-gradient(160deg,#4f6b5a,#2e3f35)}.g2{background:linear-gradient(160deg,#a8653a,#6b3b22)}
+.g3{background:linear-gradient(160deg,#3d4f73,#232d45)}.g4{background:linear-gradient(160deg,#8b6f9e,#4d3b5c)}
+.g5{background:linear-gradient(160deg,#c49a4b,#80602a)}.g6{background:linear-gradient(160deg,#7a3d3d,#472020)}
+.g7{background:linear-gradient(160deg,#5c7d8a,#2f4750)}.g8{background:linear-gradient(160deg,#6b5a45,#3d3226)}
+.dl{position:absolute;top:5px;right:5px;width:20px;height:20px;border-radius:50%;background:var(--sheet);display:grid;place-items:center;box-shadow:0 1px 4px rgba(0,0,0,.3);z-index:2}
+.dl svg{width:12px;height:12px;stroke:var(--sepia);stroke-width:3;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.dl.big{width:26px;height:26px;top:8px;right:8px}.dl.big svg{width:15px;height:15px}
+.stack{position:relative}
+.stack::before,.stack::after{content:'';position:absolute;inset:0;border-radius:3px 8px 8px 3px;background:#d4c3a6;box-shadow:1px 2px 5px rgba(57,41,31,.15)}
+.stack::before{transform:translate(7px,-6px)}.stack::after{transform:translate(3.5px,-3px);background:#c7b496}
+.stack .c{z-index:1}
+.count{position:absolute;left:6px;top:6px;z-index:2;font-size:9px;font-family:var(--display);background:rgba(37,30,25,.72);color:var(--sheet);padding:2px 7px;border-radius:99px}
+
+/* grid */
+.grid{display:grid;gap:18px 14px}
+.grid.spacious{grid-template-columns:repeat(2,1fr)}
+.grid.compact{grid-template-columns:repeat(3,1fr);gap:14px 10px}
+.tile .c{aspect-ratio:2/3;width:100%}
+.tile .n{font-family:var(--serif);font-size:14px;line-height:1.2;margin-top:8px}
+.tile .a{font-size:11px;color:var(--subtle);margin-top:2px}
+.grid.compact .tile .n{font-size:12px}.grid.compact .c b{font-size:10px}.grid.compact .c i{display:none}
+.grid.compact .tile .a{font-size:10px}
+.prog{height:3px;background:var(--line);border-radius:3px;margin-top:6px;overflow:hidden}.prog i{display:block;height:100%;background:var(--sepia)}
+
+/* list */
+.row{display:flex;gap:12px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+.row .c{width:46px;height:68px;flex:none;padding:4px}.row .c b{font-size:8px}.row .c i{display:none}
+.row .dl{width:16px;height:16px;top:3px;right:3px}.row .dl svg{width:10px;height:10px}
+.row .m{flex:1;min-width:0}.row .n{font-family:var(--serif);font-size:15px;line-height:1.2}.row .a{font-size:11px;color:var(--subtle);margin-top:2px}
+.row .k{font-size:10px;color:var(--sepia);margin-top:4px}
+.row.stack-row .c{box-shadow:4px -3px 0 #c7b496,8px -6px 0 #d4c3a6}
+
+/* search */
+.field{display:flex;align-items:center;gap:8px;background:var(--sheet);border:1px solid var(--line);border-radius:99px;padding:9px 14px;font-size:14px;margin:2px 0 12px}
+.field svg{width:16px;height:16px;stroke:var(--subtle);fill:none;stroke-width:2}
+.field u{text-decoration:none;flex:1}.field u::after{content:'';display:inline-block;width:1.5px;height:15px;background:var(--sepia);vertical-align:-2px;margin-left:1px}
+.sec{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--subtle);margin:12px 0 2px}
+.hl{background:#ecd9b8;border-radius:2px}
+
+/* series page */
+.sh{display:flex;gap:14px;align-items:flex-end;margin:4px 0 16px}
+.sh .c{width:84px;height:126px}
+.sh h2{font-family:var(--serif);font-weight:500;font-size:24px;line-height:1.1;margin:0 0 6px}
+.sh p{margin:0;font-size:12px;color:var(--subtle)}
+.num{font-size:10px;color:var(--sepia);font-weight:600;letter-spacing:.06em}
+
+/* details */
+.det{flex:1;overflow:hidden;position:relative}
+.backdrop{position:absolute;left:0;right:0;top:0;height:300px;background:linear-gradient(170deg,#a8653a,#6b3b22);filter:saturate(.8)}
+.backdrop::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,rgba(246,239,226,.35),var(--paper) 96%)}
+.dtop{position:relative;display:flex;justify-content:space-between;padding:2px 10px}
+.dtop .icon{background:rgba(255,249,239,.7)}
+.hero{position:relative;width:150px;height:225px;margin:4px auto 0;font-size:18px;padding:14px;box-shadow:6px 14px 30px rgba(57,41,31,.35),inset 4px 0 0 rgba(0,0,0,.12)}
+.hero b{font-size:20px}.hero i{font-size:11px}
+.dt{position:relative;text-align:center;padding:0 22px}
+.dt h2{font-family:var(--serif);font-weight:500;font-size:25px;line-height:1.1;margin:16px 0 4px;letter-spacing:-.3px}
+.dt .by{font-size:13px;color:var(--subtle)}
+.dt .ser{display:inline-block;font-size:11px;color:var(--sepia);margin-top:7px;border-bottom:1px solid var(--line)}
+.facts{display:flex;justify-content:center;gap:0;margin:14px 0 0;font-size:11px;color:var(--subtle)}
+.facts div{padding:0 12px;border-left:1px solid var(--line);text-align:center}.facts div:first-child{border:0}
+.facts b{display:block;font-size:13px;color:var(--ink);font-weight:600}
+.cta{display:flex;gap:8px;padding:0 18px;margin-top:16px;position:relative}
+.cta .p{flex:1;background:var(--sepia);color:var(--sheet);border-radius:99px;padding:12px;text-align:center;font-size:14px;font-weight:600}
+.cta .s{background:var(--wash);border-radius:99px;padding:12px 15px;font-size:13px;display:flex;align-items:center;gap:6px}
+.cta .s svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2}
+.resume{position:relative;margin:10px 18px 0;font-size:11px;color:var(--subtle);display:flex;justify-content:space-between}
+.prog2{position:relative;margin:5px 18px 0;height:3px;background:var(--line);border-radius:3px}.prog2 i{display:block;height:100%;width:38%;background:var(--sepia);border-radius:3px}
+.desc{position:relative;padding:0 18px;margin-top:14px;font-family:var(--serif);font-size:14px;line-height:1.55;color:var(--ink)}
+.desc .more{font-family:var(--display);font-size:12px;color:var(--sepia)}
+.meta{position:relative;margin:12px 18px 0;border-top:1px solid var(--line)}
+.meta div{display:flex;justify-content:space-between;font-size:12px;padding:7px 0;border-bottom:1px solid var(--line)}
+.meta span:first-child{color:var(--subtle)}
+
+/* settings */
+.group{background:var(--sheet);border:1px solid var(--line);border-radius:20px;margin-bottom:14px;overflow:hidden}
+.item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--line);font-size:14px}
+.item:last-child{border:0}.item .m{flex:1}.item small{display:block;font-size:11px;color:var(--subtle);margin-top:1px}
+.item.danger{color:#9a3b2b}
+.seg{display:flex;background:var(--wash);border-radius:99px;padding:3px;font-size:12px}
+.seg span{padding:5px 11px;border-radius:99px}.seg span.on{background:var(--sheet);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.tog{width:38px;height:22px;border-radius:99px;background:var(--sepia);position:relative}.tog::after{content:'';position:absolute;right:3px;top:3px;width:16px;height:16px;border-radius:50%;background:var(--sheet)}
+.tog.off{background:var(--line)}.tog.off::after{right:auto;left:3px}
+.avatar{width:40px;height:40px;border-radius:50%;background:var(--sepia);color:var(--sheet);display:grid;place-items:center;font-weight:600}
+</style>
+</head>
+<body>
+<p class="title">Bookfin library redesign · revision for review · sample books, no server connection</p>
+<div class="board">
+
+<!-- 1. Library, spacious grid -->
+<div class="frame"><div class="label">1 · Library, grid, spacious</div>
+<div class="phone">
+  <div class="status"></div>
+  <div class="bar"><div class="t">Library</div>
+    <div class="icon"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></div>
+    <div class="icon on"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg></div>
+  </div>
+  <div class="body">
+    <div class="chips"><span class="chip on">All</span><span class="chip">Audio</span><span class="chip">Ebooks</span><span class="chip">Downloaded</span></div>
+    <div class="grid spacious">
+      <div class="tile"><div class="stack"><span class="count">4 books</span><div class="c g2"><b>The Orchard Cycle</b><i>Mara Ellison</i></div></div><div class="n">The Orchard Cycle</div><div class="a">Mara Ellison · 4 books</div></div>
+      <div class="tile"><div class="c g1"><span class="dl"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><b>Salt and Lantern</b><i>J. Okafor</i></div><div class="n">Salt and Lantern</div><div class="a">J. Okafor</div><div class="prog"><i style="width:62%"></i></div></div>
+      <div class="tile"><div class="c g3"><b>A Map of Quiet Rooms</b><i>Ines Varga</i></div><div class="n">A Map of Quiet Rooms</div><div class="a">Ines Varga</div></div>
+      <div class="tile"><div class="stack"><span class="count">3 books</span><div class="c g4"><span class="dl"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><b>Tidewater</b><i>R. Hale</i></div></div><div class="n">Tidewater</div><div class="a">R. Hale · 3 books</div></div>
+    </div>
+  </div>
+  <div class="mini"><div class="c g1"></div><div class="m"><b>Salt and Lantern</b><i>Chapter 9 · 4 h 12 m left</i></div><div class="pp">❚❚</div></div>
+  <div class="nav">
+    <div class="sel"><span><svg viewBox="0 0 24 24"><path d="M4 5h5v14H4zM10 5h4v14h-4zM15.5 6l4-1 2.5 13.5-4 1z"/></svg></span>Library</div>
+    <div><span><svg viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg></span>Downloads</div>
+    <div><span><svg viewBox="0 0 24 24"><path d="M4 14v-2a8 8 0 0116 0v2M4 14h3v6H4zM17 14h3v6h-3z"/></svg></span>Listening</div>
+    <div><span><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg></span>Settings</div>
+  </div>
+</div></div>
+
+<!-- 2. Library, compact list -->
+<div class="frame"><div class="label">2 · Library, list, compact</div>
+<div class="phone">
+  <div class="status"></div>
+  <div class="bar"><div class="t">Library</div>
+    <div class="icon"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></div>
+    <div class="icon on"><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/></svg></div>
+  </div>
+  <div class="body">
+    <div class="chips"><span class="chip">All</span><span class="chip">Audio</span><span class="chip">Ebooks</span><span class="chip on">Downloaded</span></div>
+    <div class="row stack-row"><div class="c g4"><span class="dl"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><b>Tidewater</b></div><div class="m"><div class="n">Tidewater</div><div class="a">R. Hale</div><div class="k">Series · 3 books · 1 downloaded</div></div></div>
+    <div class="row"><div class="c g1"><span class="dl"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><b>Salt and Lantern</b></div><div class="m"><div class="n">Salt and Lantern</div><div class="a">J. Okafor</div><div class="k">Audio + EPUB · 62% · 4 h 12 m left</div></div></div>
+    <div class="row"><div class="c g6"><span class="dl"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><b>The Glass Ferry</b></div><div class="m"><div class="n">The Glass Ferry</div><div class="a">Petra Lind</div><div class="k">Audio · not started</div></div></div>
+    <div class="row"><div class="c g7"><span class="dl"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><b>Winter Ledger</b></div><div class="m"><div class="n">Winter Ledger</div><div class="a">S. Moreau</div><div class="k">PDF · page 88 of 240</div></div></div>
+  </div>
+  <div class="nav">
+    <div class="sel"><span><svg viewBox="0 0 24 24"><path d="M4 5h5v14H4zM10 5h4v14h-4zM15.5 6l4-1 2.5 13.5-4 1z"/></svg></span>Library</div>
+    <div><span><svg viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg></span>Downloads</div>
+    <div><span><svg viewBox="0 0 24 24"><path d="M4 14v-2a8 8 0 0116 0v2M4 14h3v6H4zM17 14h3v6h-3z"/></svg></span>Listening</div>
+    <div><span><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8"/></svg></span>Settings</div>
+  </div>
+</div></div>
+
+<!-- 3. Search -->
+<div class="frame"><div class="label">3 · Search, opened from the icon</div>
+<div class="phone">
+  <div class="status"></div>
+  <div class="bar" style="padding-left:10px">
+    <div class="icon"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></div>
+    <div class="field" style="flex:1;margin:0"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><u>orch</u></div>
+  </div>
+  <div class="body">
+    <div class="sec">Books, one per row · series not grouped</div>
+    <div class="row"><div class="c g2"><span class="dl"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><b>First Frost</b></div><div class="m"><div class="n">First Frost</div><div class="a">Mara Ellison</div><div class="k">The <span class="hl">Orch</span>ard Cycle · Book 1</div></div></div>
+    <div class="row"><div class="c g5"><b>Graft</b></div><div class="m"><div class="n">Graft</div><div class="a">Mara Ellison</div><div class="k">The <span class="hl">Orch</span>ard Cycle · Book 2</div></div></div>
+    <div class="row"><div class="c g8"><b>Windfall</b></div><div class="m"><div class="n">Windfall</div><div class="a">Mara Ellison</div><div class="k">The <span class="hl">Orch</span>ard Cycle · Book 3</div></div></div>
+    <div class="row"><div class="c g6"><b>Harvest Moon</b></div><div class="m"><div class="n">Harvest Moon</div><div class="a">Mara Ellison</div><div class="k">The <span class="hl">Orch</span>ard Cycle · Book 4</div></div></div>
+    <div class="row"><div class="c g3"><b>The <span>Orch</span>id Hour</b></div><div class="m"><div class="n">The <span class="hl">Orch</span>id Hour</div><div class="a">Lena Brooks</div><div class="k">Audio · not started</div></div></div>
+  </div>
+  <div class="nav">
+    <div class="sel"><span><svg viewBox="0 0 24 24"><path d="M4 5h5v14H4zM10 5h4v14h-4zM15.5 6l4-1 2.5 13.5-4 1z"/></svg></span>Library</div>
+    <div><span><svg viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg></span>Downloads</div>
+    <div><span><svg viewBox="0 0 24 24"><path d="M4 14v-2a8 8 0 0116 0v2M4 14h3v6H4zM17 14h3v6h-3z"/></svg></span>Listening</div>
+    <div><span><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8"/></svg></span>Settings</div>
+  </div>
+</div></div>
+
+<!-- 4. Series page -->
+<div class="frame"><div class="label">4 · Series page, from a stacked card</div>
+<div class="phone">
+  <div class="status"></div>
+  <div class="bar" style="padding-left:10px"><div class="icon"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></div><div class="t"></div>
+    <div class="icon on"><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/></svg></div></div>
+  <div class="body">
+    <div class="sh"><div class="stack"><div class="c g2"><b>The Orchard Cycle</b></div></div><div><h2>The Orchard Cycle</h2><p>Mara Ellison · 4 books</p><p>1 downloaded · 1 in progress</p></div></div>
+    <div class="row"><div class="c g2"><span class="dl"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><b>First Frost</b></div><div class="m"><div class="num">BOOK 1</div><div class="n">First Frost</div><div class="k">Audio + EPUB · finished</div></div></div>
+    <div class="row"><div class="c g5"><b>Graft</b></div><div class="m"><div class="num">BOOK 2</div><div class="n">Graft</div><div class="k">Audio · 38% · 6 h 2 m left</div></div></div>
+    <div class="row"><div class="c g8"><b>Windfall</b></div><div class="m"><div class="num">BOOK 3</div><div class="n">Windfall</div><div class="k">Audio + PDF · not started</div></div></div>
+    <div class="row"><div class="c g6"><b>Harvest Moon</b></div><div class="m"><div class="num">BOOK 4</div><div class="n">Harvest Moon</div><div class="k">EPUB · not started</div></div></div>
+  </div>
+  <div class="nav">
+    <div class="sel"><span><svg viewBox="0 0 24 24"><path d="M4 5h5v14H4zM10 5h4v14h-4zM15.5 6l4-1 2.5 13.5-4 1z"/></svg></span>Library</div>
+    <div><span><svg viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg></span>Downloads</div>
+    <div><span><svg viewBox="0 0 24 24"><path d="M4 14v-2a8 8 0 0116 0v2M4 14h3v6H4zM17 14h3v6h-3z"/></svg></span>Listening</div>
+    <div><span><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8"/></svg></span>Settings</div>
+  </div>
+</div></div>
+
+<!-- 5. Book details -->
+<div class="frame"><div class="label">5 · Book details</div>
+<div class="phone">
+  <div class="status" style="position:relative;z-index:1"></div>
+  <div class="det">
+    <div class="backdrop"></div>
+    <div class="dtop"><div class="icon"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></div><div class="icon"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></div></div>
+    <div class="c g5 hero"><span class="dl big"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><b>Graft</b><i>Mara Ellison</i></div>
+    <div class="dt"><h2>Graft</h2><div class="by">Mara Ellison · read by Tom Avery</div><div class="ser">The Orchard Cycle · Book 2 ›</div></div>
+    <div class="facts"><div><b>9 h 44 m</b>audio</div><div><b>EPUB</b>ebook</div><div><b>2021</b>published</div></div>
+    <div class="cta"><div class="p">▶&nbsp; Resume · Ch. 7</div><div class="s"><svg viewBox="0 0 24 24"><path d="M5 4h10l4 4v12H5z"/></svg>Read</div><div class="s" title="Downloaded"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div></div>
+    <div class="resume"><span>38% · 6 h 2 m left</span><span>Bookmarks 3 · History</span></div>
+    <div class="prog2"><i></i></div>
+    <div class="desc">Two winters after the frost, Wren returns to the orchard to find the old trees grafted with a stranger's stock, and the village quietly pretending not to notice… <span class="more">More</span></div>
+    <div class="meta"><div><span>Genre</span><span>Literary fantasy</span></div><div><span>Publisher</span><span>Halyard Press</span></div><div><span>Files</span><span>M4B 412 MB · EPUB 2 MB</span></div></div>
+  </div>
+</div></div>
+
+<!-- 6. Settings -->
+<div class="frame"><div class="label">6 · Settings tab</div>
+<div class="phone">
+  <div class="status"></div>
+  <div class="bar"><div class="t">Settings</div></div>
+  <div class="body">
+    <div class="group">
+      <div class="item"><div class="avatar">A</div><div class="m">alexis<small>books.example · Jellyfin 10.11</small></div></div>
+      <div class="item"><div class="m">Sign in to another account<small>Signs out of this account first</small></div></div>
+      <div class="item"><div class="m">Sign out</div></div>
+    </div>
+    <div class="group">
+      <div class="item"><div class="m">Libraries<small>Audiobooks, Ebooks · 2 of 4 shown</small></div>›</div>
+    </div>
+    <div class="group">
+      <div class="item"><div class="m">Layout density</div><div class="seg"><span>Compact</span><span class="on">Spacious</span></div></div>
+      <div class="item"><div class="m">Appearance<small>Switches at local sunset</small></div>›</div>
+    </div>
+    <div class="group">
+      <div class="item danger"><div class="m">Clear data<small>Removes downloads, covers and the saved library from this phone</small></div></div>
+    </div>
+  </div>
+  <div class="nav">
+    <div><span><svg viewBox="0 0 24 24"><path d="M4 5h5v14H4zM10 5h4v14h-4zM15.5 6l4-1 2.5 13.5-4 1z"/></svg></span>Library</div>
+    <div><span><svg viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg></span>Downloads</div>
+    <div><span><svg viewBox="0 0 24 24"><path d="M4 14v-2a8 8 0 0116 0v2M4 14h3v6H4zM17 14h3v6h-3z"/></svg></span>Listening</div>
+    <div class="sel"><span><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8"/></svg></span>Settings</div>
+  </div>
+</div></div>
+
+</div>
+</body>
+</html>
