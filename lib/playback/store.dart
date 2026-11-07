@@ -25,6 +25,14 @@ typedef _StoredAccount = ({
 /// differs from the value that this writer last saved or accepted, so a
 /// writer never undoes a change that it did not see.
 ///
+/// Durability: each write is one SQLite transaction, or one preference value
+/// without a database, so a kill keeps all of a write or none of it. Sync
+/// marks an upload done only after the server confirms it, and saves the
+/// records that it receives with their discovery cursor in one write.
+/// Versions from two devices that did not see each other stay side by side
+/// until [resolve]. A store that cannot be read is never written over: each
+/// read and write of its account fails, and the data stays as it was.
+///
 /// Invariants, checked on demand by [checkInvariants]:
 /// - The journal of each cached account satisfies
 ///   [RecordJournal.checkInvariants].
@@ -309,15 +317,13 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
       metadata: _metadata(decoded),
       journal: _journal(accountKey, decoded),
     );
-    if (database != null) {
-      await database.commit(
-        accountKey,
-        stored.metadata,
-        stored.journal,
-        initialize: true,
-      );
-      stored.journal.persisted();
-      _accounts[accountKey] = stored;
+    if (database != null || decoded['sync'] == null) {
+      // Records move from preferences into the database, or from a format
+      // without a journal into one, before anything reads them. A journal
+      // made here has a new installation identity, and a sync that read an
+      // unsaved one would upload each record under an identity that the
+      // next read replaces.
+      await _persist(accountKey, stored.metadata, stored.journal);
     }
     return stored;
   }
@@ -339,7 +345,12 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
       journal.persisted();
       _accounts[account] = stored;
     } else {
-      // Without a database the whole account is one preference value.
+      // Without a database the whole account is one preference value, so a
+      // kill leaves the old value or the new one if the platform writes one
+      // value atomically. Only the web runs this branch outside tests, and
+      // its plugin writes with one localStorage.setItem call. The Linux and
+      // Windows plugins rewrite one JSON file in place, so give a build for
+      // those platforms the database.
       final value = {
         ..._snapshot(stored, reading: false),
         'reading': _snapshot(stored, reading: true),
