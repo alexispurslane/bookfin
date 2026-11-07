@@ -7,6 +7,7 @@ import 'package:bookfin/catalog/jellyfin.dart';
 import 'package:bookfin/catalog/model.dart';
 import 'package:bookfin/catalog/screen.dart';
 import 'package:bookfin/catalog/book_cover.dart';
+import 'package:bookfin/catalog/glass.dart';
 import 'package:bookfin/foundation/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -346,6 +347,30 @@ void main() {
         tester.getTopLeft(find.text('Z first')).dy,
         lessThan(tester.getTopLeft(find.text('A side story')).dy),
       );
+    },
+  );
+
+  testWidgets(
+    'the correction dialog shows the corrected book behind its glass',
+    (tester) async {
+      await controller.connect('https://books.example', 'alice', 'password');
+      await controller.refresh(selected: {'books'});
+      await show(tester);
+      await tester.tap(find.text('The Orchard'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('More actions'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Correct book details'));
+      await tester.pumpAndSettle();
+      final behind = find.descendant(
+        of: find.ancestor(
+          of: find.text('Correct book details'),
+          matching: find.byType(CoverGlass),
+        ),
+        matching: find.byType(CoverBlur),
+      );
+      expect(behind, findsOneWidget);
+      expect(tester.widget<CoverBlur>(behind).book.title, 'The Orchard');
     },
   );
 

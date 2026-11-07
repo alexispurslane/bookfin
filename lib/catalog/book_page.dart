@@ -85,231 +85,238 @@ class BookPage extends StatelessWidget {
       // Sheets, dialogs, menus and messages opened here are about this book.
       return PageBook(
         book: book,
-        child: Scaffold(
-          extendBodyBehindAppBar: true,
-          extendBody: true,
-          bottomNavigationBar: playback == null
-              ? null
-              : PlaybackMiniPlayer(playback: playback),
-          appBar: AppBar(
-            backgroundColor: Colors.transparent,
-            actions: [
-              GlassMenuButton(
-                tooltip: 'More actions',
-                icon: const Icon(Icons.more_horiz_rounded),
-                items: [
-                  GlassMenuItem(
-                    'Correct book details',
-                    onSelected: () => unawaited(_correct(context, book)),
-                  ),
-                  GlassMenuItem(
-                    'Link another book or ebook',
-                    onSelected: () => unawaited(_link(context, book)),
-                  ),
-                  if (audio.length > 1)
+        // Actions below use this context, so layers they open find the book.
+        child: Builder(
+          builder: (context) => Scaffold(
+            extendBodyBehindAppBar: true,
+            extendBody: true,
+            bottomNavigationBar: playback == null
+                ? null
+                : PlaybackMiniPlayer(playback: playback),
+            appBar: AppBar(
+              backgroundColor: Colors.transparent,
+              actions: [
+                GlassMenuButton(
+                  tooltip: 'More actions',
+                  icon: const Icon(Icons.more_horiz_rounded),
+                  items: [
                     GlassMenuItem(
-                      'Combine files of one recording',
-                      onSelected: () => unawaited(_combine(context, book)),
+                      'Correct book details',
+                      onSelected: () => unawaited(_correct(context, book)),
                     ),
-                ],
-              ),
-            ],
-          ),
-          body: BookfinSurface(
-            child: Material(
-              type: MaterialType.transparency,
-              child: ListView(
-                padding: EdgeInsets.only(bottom: floatingBarInset(context)),
-                children: [
-                  _Header(book: book, downloaded: services.downloaded(book)),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Column(
-                      children: [
-                        const SizedBox(height: 18),
-                        Text(
-                          book.title,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontFamily: 'Source Serif 4',
-                            fontSize: 28,
-                            height: 1.12,
-                            fontWeight: FontWeight.w500,
-                            letterSpacing: -0.3,
-                            color: theme.colorScheme.onSurface,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          [
-                            if (book.author.isNotEmpty) book.author,
-                            if (narrator != null) 'read by $narrator',
-                          ].join(' · '),
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                        if (book.series != null)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 4),
-                            child: TextButton(
-                              onPressed: inSeries
-                                  ? () => openSeries(
-                                      context,
-                                      services,
-                                      shelf(
-                                        catalog.books,
-                                        ShelfFilter.all,
-                                        services.editionDownloaded,
-                                      ).whereType<ShelfSeries>().firstWhere(
-                                        (series) => series.books.any(
-                                          (member) => member.id == book.id,
-                                        ),
-                                      ),
-                                    )
-                                  : null,
-                              style: TextButton.styleFrom(
-                                minimumSize: const Size(48, 36),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                ),
-                              ),
-                              child: Text(
-                                [
-                                      book.series!,
-                                      if (book.seriesOrder != null)
-                                        'Book ${seriesPosition(book.seriesOrder!)}',
-                                    ].join(' · ') +
-                                    (inSeries ? '  ›' : ''),
-                                style: const TextStyle(fontSize: 13),
-                              ),
+                    GlassMenuItem(
+                      'Link another book or ebook',
+                      onSelected: () => unawaited(_link(context, book)),
+                    ),
+                    if (audio.length > 1)
+                      GlassMenuItem(
+                        'Combine files of one recording',
+                        onSelected: () => unawaited(_combine(context, book)),
+                      ),
+                  ],
+                ),
+              ],
+            ),
+            body: BookfinSurface(
+              child: Material(
+                type: MaterialType.transparency,
+                child: ListView(
+                  padding: EdgeInsets.only(bottom: floatingBarInset(context)),
+                  children: [
+                    _Header(book: book, downloaded: services.downloaded(book)),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Column(
+                        children: [
+                          const SizedBox(height: 18),
+                          Text(
+                            book.title,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontFamily: 'Source Serif 4',
+                              fontSize: 28,
+                              height: 1.12,
+                              fontWeight: FontWeight.w500,
+                              letterSpacing: -0.3,
+                              color: theme.colorScheme.onSurface,
                             ),
                           ),
-                        const SizedBox(height: 14),
-                        _Facts(
-                          facts: [
-                            if (audioMs != null) (duration(audioMs), 'audio'),
-                            if (formats.isNotEmpty)
-                              (formats.join(' + '), 'ebook')
-                            else if (text.isNotEmpty)
-                              ('Ebook', 'edition'),
-                            if (book.year != null)
-                              ('${book.year}', 'published'),
-                          ],
-                        ),
-                        const SizedBox(height: 18),
-                        _Actions(
-                          services: services,
-                          book: book,
-                          listening: listening,
-                          reading: text.firstOrNull,
-                        ),
-                        if (progress != null && progress.totalMs > 0) ...[
-                          const SizedBox(height: 14),
-                          Row(
-                            children: [
-                              Expanded(
+                          const SizedBox(height: 6),
+                          Text(
+                            [
+                              if (book.author.isNotEmpty) book.author,
+                              if (narrator != null) 'read by $narrator',
+                            ].join(' · '),
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                          if (book.series != null)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 4),
+                              child: TextButton(
+                                onPressed: inSeries
+                                    ? () => openSeries(
+                                        context,
+                                        services,
+                                        shelf(
+                                          catalog.books,
+                                          ShelfFilter.all,
+                                          services.editionDownloaded,
+                                        ).whereType<ShelfSeries>().firstWhere(
+                                          (series) => series.books.any(
+                                            (member) => member.id == book.id,
+                                          ),
+                                        ),
+                                      )
+                                    : null,
+                                style: TextButton.styleFrom(
+                                  minimumSize: const Size(48, 36),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                  ),
+                                ),
                                 child: Text(
-                                  progress.totalMs - progress.elapsedMs < 60000
-                                      ? 'Finished'
-                                      : '${(progress.elapsedMs * 100 / progress.totalMs).floor()}% · ${duration(progress.totalMs - progress.elapsedMs)} left',
-                                  style: theme.textTheme.bodySmall,
+                                  [
+                                        book.series!,
+                                        if (book.seriesOrder != null)
+                                          'Book ${seriesPosition(book.seriesOrder!)}',
+                                      ].join(' · ') +
+                                      (inSeries ? '  ›' : ''),
+                                  style: const TextStyle(fontSize: 13),
                                 ),
                               ),
-                              if (playback != null &&
-                                  playback.book?.id == book.id)
-                                TextButton(
-                                  onPressed: () =>
-                                      openListeningHistory(context, playback),
-                                  style: TextButton.styleFrom(
-                                    minimumSize: const Size(48, 32),
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                    ),
-                                  ),
-                                  child: const Text(
-                                    'Bookmarks and history',
-                                    style: TextStyle(fontSize: 12),
-                                  ),
-                                ),
+                            ),
+                          const SizedBox(height: 14),
+                          _Facts(
+                            facts: [
+                              if (audioMs != null) (duration(audioMs), 'audio'),
+                              if (formats.isNotEmpty)
+                                (formats.join(' + '), 'ebook')
+                              else if (text.isNotEmpty)
+                                ('Ebook', 'edition'),
+                              if (book.year != null)
+                                ('${book.year}', 'published'),
                             ],
                           ),
-                          const SizedBox(height: 4),
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(3),
-                            child: LinearProgressIndicator(
-                              value: progress.elapsedMs / progress.totalMs,
-                              minHeight: 3,
-                              backgroundColor: theme.colorScheme.outlineVariant,
-                            ),
+                          const SizedBox(height: 18),
+                          _Actions(
+                            services: services,
+                            book: book,
+                            listening: listening,
+                            reading: text.firstOrNull,
                           ),
+                          if (progress != null && progress.totalMs > 0) ...[
+                            const SizedBox(height: 14),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    progress.totalMs - progress.elapsedMs <
+                                            60000
+                                        ? 'Finished'
+                                        : '${(progress.elapsedMs * 100 / progress.totalMs).floor()}% · ${duration(progress.totalMs - progress.elapsedMs)} left',
+                                    style: theme.textTheme.bodySmall,
+                                  ),
+                                ),
+                                if (playback != null &&
+                                    playback.book?.id == book.id)
+                                  TextButton(
+                                    onPressed: () =>
+                                        openListeningHistory(context, playback),
+                                    style: TextButton.styleFrom(
+                                      minimumSize: const Size(48, 32),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                      ),
+                                    ),
+                                    child: const Text(
+                                      'Bookmarks and history',
+                                      style: TextStyle(fontSize: 12),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(3),
+                              child: LinearProgressIndicator(
+                                value: progress.elapsedMs / progress.totalMs,
+                                minHeight: 3,
+                                backgroundColor:
+                                    theme.colorScheme.outlineVariant,
+                              ),
+                            ),
+                          ],
+                          if (catalog.message != null)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 12),
+                              child: Text(
+                                catalog.message!,
+                                style: TextStyle(
+                                  color: theme.colorScheme.error,
+                                ),
+                              ),
+                            ),
+                          if (playback?.message != null)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 12),
+                              child: Text(playback!.message!),
+                            ),
+                          if (playback != null &&
+                              playback.replacementStart?.book.id == bookId)
+                            ReplacementStartNotice(
+                              playback: playback,
+                              onStarted: () => openPlayer(context, playback),
+                            ),
                         ],
-                        if (catalog.message != null)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 12),
-                            child: Text(
-                              catalog.message!,
-                              style: TextStyle(color: theme.colorScheme.error),
-                            ),
-                          ),
-                        if (playback?.message != null)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 12),
-                            child: Text(playback!.message!),
-                          ),
-                        if (playback != null &&
-                            playback.replacementStart?.book.id == bookId)
-                          ReplacementStartNotice(
-                            playback: playback,
-                            onStarted: () => openPlayer(context, playback),
-                          ),
-                      ],
+                      ),
                     ),
-                  ),
-                  if (book.description != null)
+                    if (book.description != null)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(24, 22, 24, 0),
+                        child: _Description(text: book.description!),
+                      ),
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 22, 24, 0),
-                      child: _Description(text: book.description!),
+                      padding: const EdgeInsets.fromLTRB(24, 18, 24, 0),
+                      child: _Metadata(
+                        rows: [
+                          if (book.genres.isNotEmpty)
+                            ('Genre', book.genres.join(', ')),
+                          if (book.publisher != null)
+                            ('Publisher', book.publisher!),
+                          if (_files(book).isNotEmpty) ('Files', _files(book)),
+                        ],
+                      ),
                     ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 18, 24, 0),
-                    child: _Metadata(
-                      rows: [
-                        if (book.genres.isNotEmpty)
-                          ('Genre', book.genres.join(', ')),
-                        if (book.publisher != null)
-                          ('Publisher', book.publisher!),
-                        if (_files(book).isNotEmpty) ('Files', _files(book)),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 28, 24, 32),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('EDITIONS', style: _sectionStyle(theme)),
-                        const SizedBox(height: 10),
-                        for (final edition in book.editions)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: _EditionPanel(
-                              services: services,
-                              book: book,
-                              edition: edition,
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 28, 24, 32),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('EDITIONS', style: _sectionStyle(theme)),
+                          const SizedBox(height: 10),
+                          for (final edition in book.editions)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: _EditionPanel(
+                                services: services,
+                                book: book,
+                                edition: edition,
+                              ),
                             ),
-                          ),
-                        if (possibleMatches(book, catalog.books).isNotEmpty)
-                          Text(
-                            '${possibleMatches(book, catalog.books).length} possible ${possibleMatches(book, catalog.books).length == 1 ? 'match' : 'matches'} · Confirmation required',
-                            style: theme.textTheme.bodySmall,
-                          ),
-                      ],
+                          if (possibleMatches(book, catalog.books).isNotEmpty)
+                            Text(
+                              '${possibleMatches(book, catalog.books).length} possible ${possibleMatches(book, catalog.books).length == 1 ? 'match' : 'matches'} · Confirmation required',
+                              style: theme.textTheme.bodySmall,
+                            ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
