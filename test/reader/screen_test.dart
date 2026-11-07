@@ -148,6 +148,30 @@ void main() {
     variant: TargetPlatformVariant.only(TargetPlatform.linux),
   );
 
+  testWidgets('deleting a reading bookmark asks first and Cancel keeps it', (
+    tester,
+  ) async {
+    final reader = await openBookmarks(tester);
+    Future<void> askToDelete() async {
+      await tester.tap(find.byTooltip('Edit reading bookmark'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Delete'));
+      await tester.pumpAndSettle();
+      expect(find.text('Delete reading bookmark?'), findsOneWidget);
+    }
+
+    await askToDelete();
+    await tester.tap(find.widgetWithText(TextButton, 'Cancel'));
+    await tester.pumpAndSettle();
+    expect(reader.bookmarks, hasLength(1));
+
+    await askToDelete();
+    await tester.tap(find.widgetWithText(FilledButton, 'Delete'));
+    await tester.pumpAndSettle();
+    expect(reader.bookmarks, isEmpty);
+    await tester.pumpWidget(const SizedBox());
+  }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
+
   testWidgets(
     'production reading controls save a bookmark and change text size',
     (tester) async {

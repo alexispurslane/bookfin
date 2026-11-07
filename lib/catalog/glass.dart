@@ -338,20 +338,22 @@ Future<void> showGlassChoices<T>(
 /// Asks the person to confirm [action] before it happens. The dialog shows
 /// [title] and [message], a [cancel] button, and a filled button labeled
 /// [action]. It is true only when the person chose [action]; Cancel and a tap
-/// outside the dialog are false. The dialog is a glass pane.
+/// outside the dialog are false.
+///
+/// The dialog is a glass pane, except with [glass] false, which draws a plain
+/// dialog for a screen that keeps its own look, such as the reader.
 Future<bool> confirmAction(
   BuildContext context, {
   required String title,
   required String message,
   required String action,
   String cancel = 'Cancel',
+  bool glass = true,
 }) async =>
     await showDialog<bool>(
       context: context,
-      builder: (context) => GlassDialog(
-        title: Text(title),
-        content: Text(message),
-        actions: [
+      builder: (context) {
+        final actions = [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
             child: Text(cancel),
@@ -360,8 +362,19 @@ Future<bool> confirmAction(
             onPressed: () => Navigator.pop(context, true),
             child: Text(action),
           ),
-        ],
-      ),
+        ];
+        return glass
+            ? GlassDialog(
+                title: Text(title),
+                content: Text(message),
+                actions: actions,
+              )
+            : AlertDialog(
+                title: Text(title),
+                content: Text(message),
+                actions: actions,
+              );
+      },
     ) ??
     false;
 
