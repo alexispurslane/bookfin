@@ -191,6 +191,37 @@ Uint8List _cover(_Book book) {
   return img.encodePng(image);
 }
 
+/// Two minutes of 8 kHz, 8-bit mono silence, so audio downloads can play.
+const _silenceBytes = 44 + 8000 * 120;
+
+Uint8List _silence() {
+  const rate = 8000, seconds = 120;
+  final data = ByteData(44 + rate * seconds);
+  void text(int at, String value) {
+    for (var i = 0; i < value.length; i++) {
+      data.setUint8(at + i, value.codeUnitAt(i));
+    }
+  }
+
+  text(0, 'RIFF');
+  data.setUint32(4, 36 + rate * seconds, Endian.little);
+  text(8, 'WAVE');
+  text(12, 'fmt ');
+  data.setUint32(16, 16, Endian.little);
+  data.setUint16(20, 1, Endian.little);
+  data.setUint16(22, 1, Endian.little);
+  data.setUint32(24, rate, Endian.little);
+  data.setUint32(28, rate, Endian.little);
+  data.setUint16(32, 1, Endian.little);
+  data.setUint16(34, 8, Endian.little);
+  text(36, 'data');
+  data.setUint32(40, rate * seconds, Endian.little);
+  for (var i = 44; i < data.lengthInBytes; i++) {
+    data.setUint8(i, 128);
+  }
+  return data.buffer.asUint8List();
+}
+
 Map<String, Object?> _item(_Book book, {required bool text}) => {
   'Id': text ? '${book.id}-text' : book.id,
   'Name': book.title,
@@ -225,7 +256,7 @@ Map<String, Object?> _item(_Book book, {required bool text}) => {
     {
       'Id': text ? '${book.id}-text' : book.id,
       'Container': text ? book.ebook : 'm4b',
-      'Size': text ? 2400000 : book.minutes * 720000,
+      'Size': text ? 8 : _silenceBytes,
       'RunTimeTicks': text ? null : book.minutes * 60 * 10000000,
       'ETag': 'showcase-${book.id}-${text ? 'text' : 'audio'}',
     },
@@ -241,6 +272,7 @@ Future<void> main(List<String> arguments) async {
     for (final book in _books)
       if (book.cover != null) book.id: _cover(book),
   };
+  final silence = _silence();
   final items = [
     for (final book in _books) ...[
       if (book.audio) _item(book, text: false),
@@ -286,11 +318,27 @@ Future<void> main(List<String> arguments) async {
           {'Id': 'books', 'Name': 'Audiobooks', 'CollectionType': 'books'},
         ],
       };
+    } else if (parts.length >= 2 && parts[parts.length - 2] == 'Items') {
+      data = {
+        ...items.firstWhere(
+          (item) => item['Id'] == parts.last,
+          orElse: () => {'Id': null},
+        ),
+        'CanDownload': true,
+      };
     } else if (parts.isNotEmpty && parts.last == 'Items') {
-      data = {'Items': items, 'TotalRecordCount': items.length, 'StartIndex': 0};
+      data = {
+        'Items': items,
+        'TotalRecordCount': items.length,
+        'StartIndex': 0,
+      };
     } else if (parts.isNotEmpty && parts.last == 'Download') {
       response.headers.contentType = ContentType.binary;
-      response.add(utf8.encode('showcase'));
+      final text =
+          parts.length >= 2 && parts[parts.length - 2].endsWith('-text');
+      final bytes = text ? utf8.encode('showcase') : silence;
+      response.contentLength = bytes.length;
+      response.add(bytes);
       await response.close();
       continue;
     } else {
