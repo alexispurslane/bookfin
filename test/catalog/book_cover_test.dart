@@ -303,4 +303,56 @@ void main() {
     expect(mean, lessThan(1), reason: 'largest difference $largest');
     expect(largest, lessThan(6), reason: 'mean difference $mean');
   });
+
+  testWidgets(
+    'a change of the playing book redraws glass panes and no cover face',
+    (tester) async {
+      const tide = Book(
+        id: 'tide',
+        title: 'Tidewater',
+        author: '',
+        editions: [],
+      );
+      const child = Column(
+        children: [
+          SizedBox(
+            width: 120,
+            child: BookCover(title: 'Graft', cover: ref),
+          ),
+          SizedBox(
+            width: 120,
+            height: 60,
+            child: CoverGlass(child: SizedBox.shrink()),
+          ),
+          SizedBox(width: 120, height: 60, child: CoverBlur(book: graft)),
+        ],
+      );
+      final covers = _FixedCovers();
+      Widget scoped(Book playing) => MaterialApp(
+        home: CoverScope(
+          covers: covers,
+          session: session,
+          playing: playing,
+          child: child,
+        ),
+      );
+      await tester.pumpWidget(scoped(graft));
+      // The names of the rebuilt widgets outside a glass pane, and the
+      // glass panes themselves.
+      final rebuilt = <String>[];
+      debugOnRebuildDirtyWidget = (element, _) {
+        if (element.findAncestorWidgetOfExactType<CoverGlass>() == null) {
+          rebuilt.add(element.widget.runtimeType.toString());
+        }
+      };
+      try {
+        await tester.pumpWidget(scoped(tide));
+      } finally {
+        debugOnRebuildDirtyWidget = null;
+      }
+      expect(rebuilt, contains('CoverGlass'));
+      expect(rebuilt, isNot(contains('_CoverFace')));
+      expect(rebuilt, isNot(contains('CoverBlur')));
+    },
+  );
 }

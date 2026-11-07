@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'book_cover.dart';
@@ -15,6 +16,9 @@ import 'controller.dart';
 import 'layout.dart';
 import 'model.dart';
 import 'shelf.dart';
+
+/// How the library arranges its entries: as a grid or a list, and how large.
+typedef ShelfLayout = ({LibraryView view, LibraryDensity density});
 
 /// What every library screen reads: the catalog, the saved layout, download
 /// state, and listening progress. The screens own no copy of this state.
@@ -36,28 +40,58 @@ class LibraryServices {
   final Playback? playback;
   final ReaderSession? reader;
 
+  /// The saved layout, read only.
+  ValueListenable<ShelfLayout> get shelfLayout => _ShelfLayoutView(layout);
+
   /// Changes when download state or listening progress changes. While a
   /// book plays or downloads, that is several times a second, so a part that
   /// shows either listens to this on its own, and selects what it shows.
+  /// A part that shows one book listens to [bookActivity] instead.
   Listenable get activity => Listenable.merge([?downloads, ?playback]);
+
+  /// Changes when what the library shows of [book] can change: the download
+  /// state of one of its editions, or the listening progress of one of its
+  /// audio editions. A player position tick reaches only the book open in
+  /// the player, so the parts that show other books do not hear it.
+  Listenable bookActivity(Book book) {
+    final downloads = this.downloads;
+    final playback = this.playback;
+    final audio = {
+      for (final edition in book.editions)
+        if (edition.kind == EditionKind.audio) edition.id,
+    };
+    return Listenable.merge([
+      if (downloads != null)
+        for (final edition in book.editions) downloads.watch(edition),
+      if (playback != null && audio.isNotEmpty) ...[
+        playback.selectionNotifier,
+        playback.recordsNotifier,
+        _OpenPosition(playback, audio),
+      ],
+    ]);
+  }
 
   /// Gives covers below [child] the cover store and the current account, and
   /// glass panes the book open in the player. A page pushed on the navigator
   /// needs this, because the library's own scope sits below the navigator.
-  Widget coverScope(Widget child) => ListenableSelector(
-    listenable: Listenable.merge([catalog, ?playback]),
-    select: () => (
-      session: catalog.accessBlocked ? null : catalog.session,
-      playing: playback?.book,
-    ),
-    builder: (context, scope, child) => CoverScope(
-      covers: covers,
-      session: scope.session,
-      playing: scope.playing,
-      child: child!,
-    ),
-    child: child,
-  );
+  Widget coverScope(Widget child) {
+    final account = catalog.accountNotifier;
+    final selection = playback?.selectionNotifier;
+    return ListenableSelector(
+      listenable: Listenable.merge([account, ?selection]),
+      select: () => (
+        session: account.value.accessBlocked ? null : account.value.session,
+        playing: selection?.value.book,
+      ),
+      builder: (context, scope, child) => CoverScope(
+        covers: covers,
+        session: scope.session,
+        playing: scope.playing,
+        child: child!,
+      ),
+      child: child,
+    );
+  }
 
   /// A page pushed over the library: [body] on the page surface, with the
   /// mini player floating over its bottom. The player opened from the mini
@@ -146,3 +180,55 @@ String formats(Book book) {
 String seriesPosition(double order) => order == order.truncateToDouble()
     ? order.toInt().toString()
     : order.toString();
+
+/// [LibraryLayout] seen as its view and density, with no way to change them.
+class _ShelfLayoutView implements ValueListenable<ShelfLayout> {
+  const _ShelfLayoutView(this.layout);
+  final LibraryLayout layout;
+
+  @override
+  ShelfLayout get value => (view: layout.view, density: layout.density);
+  @override
+  void addListener(VoidCallback listener) => layout.addListener(listener);
+  @override
+  void removeListener(VoidCallback listener) => layout.removeListener(listener);
+
+  @override
+  bool operator ==(Object other) =>
+      other is _ShelfLayoutView && identical(other.layout, layout);
+  @override
+  int get hashCode => identityHashCode(layout);
+}
+
+/// [Playback.positionNotifier], heard only while one of [editions] is open
+/// in the player.
+class _OpenPosition implements Listenable {
+  _OpenPosition(this.playback, this.editions);
+  final Playback playback;
+
+  /// Edition ids.
+  final Set<String> editions;
+
+  /// The listener that each added listener is wrapped in.
+  final _gates = <VoidCallback, VoidCallback>{};
+
+  @override
+  void addListener(VoidCallback listener) {
+    void gate() {
+      if (editions.contains(playback.selectionNotifier.value.edition?.id)) {
+        listener();
+      }
+    }
+
+    // One gate for each listener, so a second add leaks no gate.
+    removeListener(listener);
+    _gates[listener] = gate;
+    playback.positionNotifier.addListener(gate);
+  }
+
+  @override
+  void removeListener(VoidCallback listener) {
+    final gate = _gates.remove(listener);
+    if (gate != null) playback.positionNotifier.removeListener(gate);
+  }
+}
