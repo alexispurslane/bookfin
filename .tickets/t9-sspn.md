@@ -1,6 +1,6 @@
 ---
 id: t9-sspn
-status: in_progress
+status: closed
 deps: [t9-se8f, t9-4jqk, boo-y6fb, t9-dcld]
 links: []
 created: 2026-11-07T22:09:38Z
