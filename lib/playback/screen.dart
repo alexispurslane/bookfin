@@ -121,18 +121,22 @@ class PlaybackMiniPlayer extends StatelessWidget {
                           const SizedBox(width: 6),
                         ],
                       ),
+                      // The progress ticks while audio plays. Its own layer
+                      // keeps the glass behind it from repainting.
                       if (total != null && total > 0)
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(14, 0, 14, 8),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(2),
-                            child: LinearProgressIndicator(
-                              minHeight: 2.5,
-                              value:
-                                  (playback.editionMilliseconds ?? 0) / total,
-                              color: scheme.primary,
-                              backgroundColor: scheme.onSurface.withValues(
-                                alpha: 0.12,
+                        RepaintBoundary(
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(14, 0, 14, 8),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(2),
+                              child: LinearProgressIndicator(
+                                minHeight: 2.5,
+                                value:
+                                    (playback.editionMilliseconds ?? 0) / total,
+                                color: scheme.primary,
+                                backgroundColor: scheme.onSurface.withValues(
+                                  alpha: 0.12,
+                                ),
                               ),
                             ),
                           ),
@@ -377,15 +381,21 @@ class PlayerView extends StatelessWidget {
                       RecordSaveStatus(playback: playback),
                       ReplacementStartNotice(playback: playback),
                       const SizedBox(height: 10),
+                      // The position ticks while audio plays. Its own layer
+                      // keeps the cover and blur behind it from repainting.
                       if (total != null && total > 0 && position != null)
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 24),
-                          child: _PositionSlider(playback: playback),
+                          child: RepaintBoundary(
+                            child: _PositionSlider(playback: playback),
+                          ),
                         )
                       else
-                        Text(
-                          'File position · ${audioTime(playback.position!.milliseconds)}',
-                          textAlign: TextAlign.center,
+                        RepaintBoundary(
+                          child: Text(
+                            'File position · ${audioTime(playback.position!.milliseconds)}',
+                            textAlign: TextAlign.center,
+                          ),
                         ),
                       const SizedBox(height: 6),
                       Row(
@@ -397,7 +407,9 @@ class PlayerView extends StatelessWidget {
                             onLongPress: () => _jumps(context),
                           ),
                           const SizedBox(width: 30),
-                          _PlayButton(playback: playback, large: true),
+                          RepaintBoundary(
+                            child: _PlayButton(playback: playback, large: true),
+                          ),
                           const SizedBox(width: 30),
                           _JumpButton(
                             playback: playback,

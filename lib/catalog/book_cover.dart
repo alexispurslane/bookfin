@@ -43,12 +43,42 @@ class CoverScope extends InheritedTheme {
       oldWidget.session?.scope.key != session?.scope.key;
 }
 
-/// A cover image that Flutter's image cache keys by account and image version.
+/// How wide a cover image is decoded. Each class has its own place in the
+/// image cache, so a cover in a list row holds a small image, not one sized
+/// for a stage.
+enum CoverSize {
+  /// For blurred covers, where only the colors remain.
+  tiny(64),
+
+  /// For list rows.
+  small(224),
+
+  /// For compact grid tiles.
+  medium(360),
+
+  /// For stages and spacious grid tiles.
+  large(540);
+
+  const CoverSize(this.width);
+
+  /// The widest that a cover of this class is decoded, in image pixels.
+  final int width;
+
+  /// The smallest class that is at least [pixels] wide, else the largest.
+  static CoverSize fitting(double pixels) => values.firstWhere(
+    (size) => size.width >= pixels,
+    orElse: () => CoverSize.large,
+  );
+}
+
+/// A cover image that Flutter's image cache keys by account, image version
+/// and size class.
 class CoverImage extends ImageProvider<CoverImage> {
-  const CoverImage(this.covers, this.session, this.cover);
+  const CoverImage(this.covers, this.session, this.cover, this.size);
   final Covers covers;
   final JellyfinSession session;
   final CoverRef cover;
+  final CoverSize size;
 
   @override
   Future<CoverImage> obtainKey(ImageConfiguration configuration) =>
@@ -64,7 +94,7 @@ class CoverImage extends ImageProvider<CoverImage> {
     final codec = await decode(
       await ui.ImmutableBuffer.fromUint8List(bytes),
       getTargetSize: (width, height) =>
-          ui.TargetImageSize(width: math.min(width, 540)),
+          ui.TargetImageSize(width: math.min(width, size.width)),
     );
     return ImageInfo(image: (await codec.getNextFrame()).image);
   }
@@ -74,10 +104,11 @@ class CoverImage extends ImageProvider<CoverImage> {
       other is CoverImage &&
       other.covers == covers &&
       other.session.scope.key == session.scope.key &&
-      other.cover == cover;
+      other.cover == cover &&
+      other.size == size;
 
   @override
-  int get hashCode => Object.hash(covers, session.scope.key, cover);
+  int get hashCode => Object.hash(covers, session.scope.key, cover, size);
 }
 
 const _palettes = [
@@ -161,6 +192,9 @@ class BookCover extends StatelessWidget {
           title: title,
           author: author,
           cover: cover,
+          size: CoverSize.fitting(
+            width * MediaQuery.devicePixelRatioOf(context),
+          ),
           radius: radius,
           showText: showText && width >= 56,
         );
@@ -259,12 +293,14 @@ class _CoverFace extends StatelessWidget {
     required this.title,
     required this.author,
     required this.cover,
+    required this.size,
     required this.radius,
     required this.showText,
   });
   final String title;
   final String? author;
   final CoverRef? cover;
+  final CoverSize size;
   final BorderRadius radius;
   final bool showText;
 
@@ -308,7 +344,7 @@ class _CoverFace extends StatelessWidget {
                 scope?.session != null &&
                 cover != null)
               Image(
-                image: CoverImage(scope!.covers!, scope.session!, cover!),
+                image: CoverImage(scope!.covers!, scope.session!, cover!, size),
                 fit: BoxFit.cover,
                 gaplessPlayback: true,
                 excludeFromSemantics: true,
@@ -398,47 +434,268 @@ class _CoverTextPainter extends CustomPainter {
       oldDelegate.title != title || oldDelegate.author != author;
 }
 
-/// A book's cover blurred until only its colors remain. A book without a
-/// cover image uses its generated palette.
-class CoverBlur extends StatelessWidget {
-  const CoverBlur({super.key, required this.book, this.sigma = 28});
+/// A book's cover blurred until only its colors remain, drawn at [opacity]
+/// over what lies beneath. A book without a cover image uses its generated
+/// palette.
+///
+/// The blur is drawn once, into a bitmap a few pixels per [sigma] across,
+/// and stretched over the widget. Each frame then draws one small image
+/// instead of blurring a screen-sized layer again.
+class CoverBlur extends StatefulWidget {
+  const CoverBlur({
+    super.key,
+    required this.book,
+    this.sigma = 28,
+    this.opacity = 1,
+    this.mask,
+  });
   final Book book;
+
+  /// How far the blur spreads: the standard deviation of the Gaussian, in
+  /// logical pixels.
   final double sigma;
 
+  /// How much the blurred cover hides what lies beneath it, from 0 to 1.
+  final double opacity;
+
+  /// Shapes the blurred cover: each point keeps as much of it as the mask's
+  /// alpha there. The mask spans the whole widget.
+  final Gradient? mask;
+
   @override
-  Widget build(BuildContext context) {
+  State<CoverBlur> createState() => _CoverBlurState();
+}
+
+class _CoverBlurState extends State<CoverBlur> {
+  ImageStream? _stream;
+  ImageInfo? _cover;
+  late final _listener = ImageStreamListener(
+    (cover, _) => setState(() {
+      _cover?.dispose();
+      _cover = cover;
+    }),
+    // Without its image, the blur shows the generated palette.
+    onError: (_, _) {},
+  );
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _resolve();
+  }
+
+  @override
+  void didUpdateWidget(CoverBlur oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.book.cover != widget.book.cover) _resolve();
+  }
+
+  /// Listens for the tiny decode of the book's cover, the only size that a
+  /// blur needs.
+  void _resolve() {
     final scope = CoverScope.of(context);
-    return ClipRect(
-      child: ImageFiltered(
-        imageFilter: ui.ImageFilter.blur(sigmaX: sigma, sigmaY: sigma),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: coverPalette(book.title),
-            ),
-          ),
-          child:
-              scope?.covers != null &&
-                  scope?.session != null &&
-                  book.cover != null
-              ? Image(
-                  image: CoverImage(
-                    scope!.covers!,
-                    scope.session!,
-                    book.cover!,
-                  ),
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                  height: double.infinity,
-                  excludeFromSemantics: true,
-                  errorBuilder: (_, _, _) => const SizedBox.shrink(),
-                )
-              : null,
-        ),
-      ),
+    final cover = widget.book.cover;
+    final stream =
+        scope?.covers != null && scope?.session != null && cover != null
+        ? CoverImage(
+            scope!.covers!,
+            scope.session!,
+            cover,
+            CoverSize.tiny,
+          ).resolve(createLocalImageConfiguration(context))
+        : null;
+    if (stream?.key != null && stream?.key == _stream?.key) return;
+    _stream?.removeListener(_listener);
+    _cover?.dispose();
+    _cover = null;
+    _stream = stream?..addListener(_listener);
+  }
+
+  @override
+  void dispose() {
+    _stream?.removeListener(_listener);
+    _cover?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => _BlurredArt(
+    cover: _cover?.image,
+    palette: coverPalette(widget.book.title),
+    sigma: widget.sigma,
+    opacity: widget.opacity,
+    mask: widget.mask,
+  );
+}
+
+class _BlurredArt extends LeafRenderObjectWidget {
+  const _BlurredArt({
+    required this.cover,
+    required this.palette,
+    required this.sigma,
+    required this.opacity,
+    required this.mask,
+  });
+  final ui.Image? cover;
+  final List<Color> palette;
+  final double sigma;
+  final double opacity;
+  final Gradient? mask;
+
+  @override
+  _RenderBlurredArt createRenderObject(BuildContext context) =>
+      _RenderBlurredArt()
+        ..cover = cover
+        ..palette = palette
+        ..sigma = sigma
+        ..opacity = opacity
+        ..mask = mask;
+
+  @override
+  void updateRenderObject(BuildContext context, _RenderBlurredArt art) => art
+    ..cover = cover
+    ..palette = palette
+    ..sigma = sigma
+    ..opacity = opacity
+    ..mask = mask;
+}
+
+/// Fills its box with the blurred art, drawn from a bitmap that it keeps
+/// until the art or the box size changes.
+class _RenderBlurredArt extends RenderBox {
+  /// The blur's standard deviation in bitmap pixels. At six pixels per
+  /// sigma, the stretched bitmap differs from a full-size blur by at most a
+  /// few levels of 255.
+  static const _bitmapSigma = 6.0;
+
+  ui.Image? _cover;
+  set cover(ui.Image? value) {
+    if (value == _cover ||
+        (value != null && _cover != null && value.isCloneOf(_cover!))) {
+      return;
+    }
+    _cover = value;
+    _forgetBitmap();
+  }
+
+  List<Color> _palette = const [];
+  set palette(List<Color> value) {
+    if (listEquals(value, _palette)) return;
+    _palette = value;
+    _forgetBitmap();
+  }
+
+  double _sigma = 1;
+  set sigma(double value) {
+    if (value == _sigma) return;
+    _sigma = value;
+    _forgetBitmap();
+  }
+
+  double _opacity = 1;
+  set opacity(double value) {
+    if (value == _opacity) return;
+    _opacity = value;
+    markNeedsPaint();
+  }
+
+  Gradient? _mask;
+  set mask(Gradient? value) {
+    if (value == _mask) return;
+    _mask = value;
+    _forgetBitmap();
+  }
+
+  ui.Image? _bitmap;
+
+  /// The box size that [_bitmap] was drawn for.
+  Size? _bitmapSize;
+
+  void _forgetBitmap() {
+    _bitmap?.dispose();
+    _bitmap = null;
+    markNeedsPaint();
+  }
+
+  @override
+  bool get sizedByParent => true;
+
+  @override
+  Size computeDryLayout(BoxConstraints constraints) => constraints.biggest;
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    if (size.isEmpty || _opacity == 0) return;
+    if (_bitmapSize != size) {
+      _bitmap?.dispose();
+      _bitmap = null;
+    }
+    final bitmap = _bitmap ??= _drawBitmap();
+    _bitmapSize = size;
+    context.canvas.drawImageRect(
+      bitmap,
+      Offset.zero & Size(bitmap.width.toDouble(), bitmap.height.toDouble()),
+      offset & size,
+      Paint()
+        ..filterQuality = FilterQuality.low
+        ..color = Color.fromRGBO(0, 0, 0, _opacity),
     );
+  }
+
+  /// Draws the palette, the cover over it and the blur, then the mask, into a
+  /// bitmap of the box's shape at [_bitmapSigma] pixels per sigma.
+  ui.Image _drawBitmap() {
+    final scale = _bitmapSigma / _sigma;
+    final width = math.max(1, (size.width * scale).ceil());
+    final height = math.max(1, (size.height * scale).ceil());
+    final rect = Offset.zero & Size(width.toDouble(), height.toDouble());
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder, rect)
+      ..saveLayer(
+        rect,
+        Paint()
+          ..imageFilter = ui.ImageFilter.blur(
+            sigmaX: _bitmapSigma,
+            sigmaY: _bitmapSigma,
+          ),
+      )
+      ..drawRect(
+        rect,
+        Paint()
+          ..shader = LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: _palette,
+          ).createShader(rect),
+      );
+    if (_cover case final cover?) {
+      paintImage(
+        canvas: canvas,
+        rect: rect,
+        image: cover,
+        fit: BoxFit.cover,
+        filterQuality: FilterQuality.medium,
+      );
+    }
+    canvas.restore();
+    if (_mask case final mask?) {
+      canvas.drawRect(
+        rect,
+        Paint()
+          ..blendMode = BlendMode.dstIn
+          ..shader = mask.createShader(rect),
+      );
+    }
+    final picture = recorder.endRecording();
+    final bitmap = picture.toImageSync(width, height);
+    picture.dispose();
+    return bitmap;
+  }
+
+  @override
+  void dispose() {
+    _bitmap?.dispose();
+    super.dispose();
   }
 }
 
@@ -453,20 +710,18 @@ class CoverBackdrop extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final surface = theme.colorScheme.surface;
-    final art = CoverBlur(book: book);
     if (theme.brightness == Brightness.dark) {
       return Stack(
         fit: StackFit.expand,
         children: [
-          ShaderMask(
-            blendMode: BlendMode.dstIn,
-            shaderCallback: (bounds) => const RadialGradient(
+          CoverBlur(
+            book: book,
+            mask: const RadialGradient(
               center: Alignment(0, -0.15),
               radius: 0.8,
               colors: [Color(0xE6000000), Color(0x80000000), Color(0x00000000)],
               stops: [0, 0.5, 1],
-            ).createShader(bounds),
-            child: art,
+            ),
           ),
           DecoratedBox(
             decoration: BoxDecoration(
@@ -488,7 +743,7 @@ class CoverBackdrop extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: [
-        Positioned.fill(bottom: 40, child: art),
+        Positioned.fill(bottom: 40, child: CoverBlur(book: book)),
         DecoratedBox(
           decoration: BoxDecoration(
             gradient: LinearGradient(

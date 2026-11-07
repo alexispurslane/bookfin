@@ -55,10 +55,7 @@ class CoverGlass extends StatelessWidget {
             children: [
               if (shown != null)
                 Positioned.fill(
-                  child: Opacity(
-                    opacity: 0.6,
-                    child: CoverBlur(book: shown, sigma: 22),
-                  ),
+                  child: CoverBlur(book: shown, sigma: 22, opacity: 0.6),
                 ),
               Positioned.fill(
                 child: ColoredBox(
