@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
 
+import 'package:bookfin/app/account_binding.dart';
 import 'package:bookfin/catalog/controller.dart';
 import 'package:bookfin/catalog/jellyfin.dart';
 import 'package:bookfin/catalog/model.dart';
@@ -53,17 +54,21 @@ void main() {
     await fixture.close();
     await root.delete(recursive: true);
   });
-  Future<void> show(WidgetTester tester) => tester.pumpWidget(
-    MaterialApp(
-      theme: bookfinTheme(Brightness.light),
-      home: CatalogHome(
-        catalog: catalog,
-        downloads: downloads,
-        onAppearance: () {},
-        onReaderNightChanged: (_) {},
+  Future<void> show(WidgetTester tester) {
+    final binding = AccountBinding(catalog: catalog, downloads: downloads);
+    addTearDown(binding.dispose);
+    return tester.pumpWidget(
+      MaterialApp(
+        theme: bookfinTheme(Brightness.light),
+        home: CatalogHome(
+          catalog: catalog,
+          downloads: downloads,
+          onAppearance: () {},
+          onReaderNightChanged: (_) {},
+        ),
       ),
-    ),
-  );
+    );
+  }
 
   testWidgets('rejected saved recordings stay discoverable and removable', (
     tester,

@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:bookfin/appearance/city_search.dart';
 
+import '../app/app_shell_test.dart' show fakeClock;
 import '../contrast_test.dart' show contrast;
 
 import 'package:flutter/material.dart';
@@ -27,16 +28,9 @@ class BundledCities extends CachingAssetBundle {
       : rootBundle.loadString(key, cache: cache);
 }
 
-Widget productionApp(
-  AppearanceController controller, {
-  DateTime Function()? clock,
-}) => DefaultAssetBundle(
+Widget productionApp(AppearanceController controller) => DefaultAssetBundle(
   bundle: BundledCities(),
-  child: BookfinApp(
-    appearance: controller,
-    clock: clock,
-    catalog: disconnectedCatalog(),
-  ),
+  child: BookfinApp(appearance: controller, catalog: disconnectedCatalog()),
 );
 
 /// Waits in real time while the city list is parsed off the UI isolate.
@@ -251,11 +245,13 @@ void main() {
     tester,
   ) async {
     final store = MemoryAppearanceStore();
-    final controller = AppearanceController(store);
-    var instant = DateTime.utc(2026, 3, 20, 22, 55);
+    final controller = AppearanceController(
+      store,
+      clock: () => DateTime.utc(2026, 3, 20, 22, 55),
+    );
     tester.platformDispatcher.platformBrightnessTestValue = Brightness.dark;
     addTearDown(tester.platformDispatcher.clearPlatformBrightnessTestValue);
-    await tester.pumpWidget(productionApp(controller, clock: () => instant));
+    await tester.pumpWidget(productionApp(controller));
     await openCitySearch(tester);
     await search(tester, 'new york');
     await tester.tap(find.text('New York City, New York, United States'));
@@ -281,10 +277,12 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Done'));
     await tester.pumpAndSettle();
-    final reopened = AppearanceController(store);
+    final reopened = AppearanceController(
+      store,
+      clock: fakeClock(tester, DateTime.utc(2026, 3, 20, 23, 20)),
+    );
     await reopened.restore();
-    instant = DateTime.utc(2026, 3, 20, 23, 20);
-    await tester.pumpWidget(productionApp(reopened, clock: () => instant));
+    await tester.pumpWidget(productionApp(reopened));
     await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('Appearance'));
     await tester.pumpAndSettle();
@@ -296,8 +294,8 @@ void main() {
       Theme.of(tester.element(find.byType(Scaffold).first)).brightness,
       Brightness.dark,
     );
-    instant = DateTime.utc(2026, 3, 21, 11, 10);
-    await tester.pump(const Duration(seconds: 30));
+    // New York rises at about 10:57 UTC the next morning.
+    await tester.pump(const Duration(hours: 11, minutes: 50));
     await tester.pumpAndSettle();
     expect(
       find.text('Daylight · New York City, New York, United States'),
