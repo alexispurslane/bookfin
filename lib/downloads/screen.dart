@@ -165,7 +165,7 @@ class DownloadsPage extends StatelessWidget {
       ),
     );
     return ListView(
-      padding: const EdgeInsets.fromLTRB(18, 4, 18, 24),
+      padding: EdgeInsets.fromLTRB(18, 4, 18, 24 + floatingBarInset(context)),
       children: [
         _Summary(downloads: owner!, saved: saved),
         if (entries.isEmpty)
@@ -206,11 +206,6 @@ class DownloadsPage extends StatelessWidget {
           ),
         ],
         const SizedBox(height: 24),
-        // A stable key keeps one storage scan while rows above it change.
-        _RetainedStorageView(
-          key: const ValueKey('retained storage'),
-          downloads: owner,
-        ),
       ],
     );
   }
@@ -333,6 +328,11 @@ class _Summary extends StatelessWidget {
                 onPressed: policy.resetSession,
                 child: const Text('Use Wi-Fi only'),
               ),
+            // A stable key keeps one storage scan while the card rebuilds.
+            _LeftoverSummary(
+              key: const ValueKey('leftover files'),
+              downloads: downloads,
+            ),
             const SizedBox(height: 8),
           ],
         ),
@@ -483,41 +483,49 @@ void _change(BuildContext context, Future<void> Function() operation) {
   }());
 }
 
-class _RetainedStorageView extends StatefulWidget {
-  const _RetainedStorageView({super.key, required this.downloads});
+/// Reads the leftover files of the bound account, and reads them again when
+/// the downloads change. [builder] gets the latest read and a way to repeat it.
+class _LeftoverInventory extends StatefulWidget {
+  const _LeftoverInventory({required this.downloads, required this.builder});
   final Downloads downloads;
+  final Widget Function(
+    BuildContext context,
+    AsyncSnapshot<List<RetainedDownload>> inventory,
+    VoidCallback reload,
+  )
+  builder;
 
   @override
-  State<_RetainedStorageView> createState() => _RetainedStorageViewState();
+  State<_LeftoverInventory> createState() => _LeftoverInventoryState();
 }
 
-class _RetainedStorageViewState extends State<_RetainedStorageView> {
+class _LeftoverInventoryState extends State<_LeftoverInventory> {
   late Future<List<RetainedDownload>> _inventory;
 
   @override
   void initState() {
     super.initState();
     widget.downloads.addListener(_reload);
-    _inventory = _readStorage();
+    _inventory = _read();
   }
 
   @override
-  void didUpdateWidget(_RetainedStorageView oldWidget) {
+  void didUpdateWidget(_LeftoverInventory oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.downloads != widget.downloads) {
       oldWidget.downloads.removeListener(_reload);
       widget.downloads.addListener(_reload);
-      _inventory = _readStorage();
+      _inventory = _read();
     }
   }
 
   void _reload() {
     setState(() {
-      _inventory = _readStorage();
+      _inventory = _read();
     });
   }
 
-  Future<List<RetainedDownload>> _readStorage() {
+  Future<List<RetainedDownload>> _read() {
     final inventory = widget.downloads.retainedStorage();
     inventory.ignore();
     return inventory;
@@ -529,107 +537,245 @@ class _RetainedStorageViewState extends State<_RetainedStorageView> {
     super.dispose();
   }
 
-  Future<void> _remove(RetainedDownload download) async {
-    final owner = widget.downloads;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Remove retained files?'),
-        content: Text(
-          'Remove ${download.bytes} bytes stored for source ${download.sourceKey}? '
-          'These files are outside your current catalog. '
-          'Your Jellyfin files will not change.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Keep files'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Remove files'),
+  @override
+  Widget build(BuildContext context) => FutureBuilder<List<RetainedDownload>>(
+    future: _inventory,
+    builder: (context, snapshot) => widget.builder(context, snapshot, _reload),
+  );
+}
+
+/// The summary card's line about leftover files. It shows nothing while there
+/// are none.
+class _LeftoverSummary extends StatelessWidget {
+  const _LeftoverSummary({super.key, required this.downloads});
+  final Downloads downloads;
+
+  @override
+  Widget build(BuildContext context) => _LeftoverInventory(
+    downloads: downloads,
+    builder: (context, inventory, reload) {
+      final theme = Theme.of(context);
+      final entries = inventory.data ?? const <RetainedDownload>[];
+      final failed = inventory.hasError;
+      if (inventory.connectionState != ConnectionState.done ||
+          !failed && entries.isEmpty) {
+        return const SizedBox.shrink();
+      }
+      final bytes = entries.fold<int>(0, (total, entry) => total + entry.bytes);
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Padding(padding: EdgeInsets.only(top: 8), child: Divider()),
+          InkWell(
+            borderRadius: BorderRadius.circular(12),
+            onTap: failed
+                ? reload
+                : () => unawaited(
+                    Navigator.push<void>(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => LeftoverFilesPage(downloads: downloads),
+                      ),
+                    ),
+                  ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Row(
+                children: [
+                  Icon(
+                    failed
+                        ? Icons.error_outline_rounded
+                        : Icons.inventory_2_outlined,
+                    size: 20,
+                    color: theme.colorScheme.primary,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: failed
+                        ? const Text(
+                            'Cannot check leftover files. Tap to try again.',
+                          )
+                        : Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text('Leftover files'),
+                              Text(
+                                '${formatBytes(bytes)} from books no longer in your library',
+                                style: theme.textTheme.bodySmall,
+                              ),
+                            ],
+                          ),
+                  ),
+                  if (!failed)
+                    Icon(
+                      Icons.chevron_right_rounded,
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                ],
+              ),
+            ),
           ),
         ],
-      ),
-    );
-    if (confirmed != true || !mounted) return;
+      );
+    },
+  );
+}
+
+/// Files kept on the phone from books that are no longer in the library, for
+/// example after a library was deselected. They stay until the user removes
+/// them.
+class LeftoverFilesPage extends StatelessWidget {
+  const LeftoverFilesPage({super.key, required this.downloads});
+  final Downloads downloads;
+
+  Future<bool> _confirm(
+    BuildContext context,
+    String title,
+    String body,
+  ) async =>
+      await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text(title),
+          content: Text(body),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Keep files'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Remove files'),
+            ),
+          ],
+        ),
+      ) ==
+      true;
+
+  Future<void> _remove(
+    BuildContext context,
+    List<RetainedDownload> entries,
+    VoidCallback reload,
+  ) async {
     try {
-      await owner.removeRetained(download);
+      for (final entry in entries) {
+        await downloads.removeRetained(entry);
+      }
     } catch (_) {
-      if (mounted) {
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
-              'These files could not be removed. Check your account and refresh storage.',
+              'Some files could not be removed. Check your account and try again.',
             ),
           ),
         );
       }
     }
-    if (mounted) _reload();
+    if (context.mounted) reload();
   }
 
   @override
-  Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      const SizedBox(height: 16),
-      Text('Retained storage', style: Theme.of(context).textTheme.titleLarge),
-      const Text(
-        'Local files outside this account’s current catalog. '
-        'They do not count as downloaded editions. '
-        'Files stay here until you explicitly remove them.',
-      ),
-      TextButton(onPressed: _reload, child: const Text('Refresh storage')),
-      FutureBuilder<List<RetainedDownload>>(
-        future: _inventory,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState != ConnectionState.done) {
-            return const Text('Reading retained storage…');
-          }
-          if (snapshot.hasError) {
-            return const Text(
-              'Cannot read retained storage. No files were removed. Refresh storage to retry.',
-            );
-          }
-          final entries = snapshot.data ?? const [];
-          if (entries.isEmpty) return const Text('No retained files.');
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+  Widget build(BuildContext context) => _LeftoverInventory(
+    downloads: downloads,
+    builder: (context, inventory, reload) {
+      final theme = Theme.of(context);
+      final entries = inventory.hasError
+          ? const <RetainedDownload>[]
+          : inventory.data ?? const <RetainedDownload>[];
+      final removable = entries.where((entry) => entry.removable).toList();
+      final total = removable.fold<int>(0, (sum, entry) => sum + entry.bytes);
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Leftover files'),
+          actions: [
+            IconButton(
+              tooltip: 'Check again',
+              onPressed: reload,
+              icon: const Icon(Icons.refresh_rounded),
+            ),
+            if (removable.isNotEmpty)
+              TextButton(
+                onPressed: () async {
+                  if (await _confirm(
+                        context,
+                        'Remove all leftover files?',
+                        'Remove ${formatBytes(total)} kept from books that are no longer in your library? Your Jellyfin files will not change.',
+                      ) &&
+                      context.mounted) {
+                    await _remove(context, removable, reload);
+                  }
+                },
+                child: const Text('Remove all'),
+              ),
+            const SizedBox(width: 8),
+          ],
+        ),
+        body: BookfinSurface(
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(18, 4, 18, 24),
             children: [
-              for (final entry in entries)
-                Padding(
-                  padding: const EdgeInsets.only(top: 12),
-                  child: BookfinPanel(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          entry.removable
-                              ? 'Source ${entry.sourceKey}'
-                              : 'Unidentified stored files',
-                        ),
-                        if (entry.removable) Text('Revision ${entry.revision}'),
-                        Text('${entry.bytes} bytes'),
-                        if (entry.removable)
-                          TextButton(
-                            onPressed: () => _remove(entry),
-                            child: const Text('Remove retained files'),
-                          )
-                        else
-                          const Text(
-                            'The saved identity is unreadable or does not match. '
-                            'These files cannot be safely removed here.',
+              Padding(
+                padding: const EdgeInsets.fromLTRB(2, 0, 2, 14),
+                child: Text(
+                  'These files are from books that are no longer in your library, for example after you hide a library. They stay on this phone until you remove them.',
+                  style: theme.textTheme.bodySmall,
+                ),
+              ),
+              if (inventory.connectionState != ConnectionState.done)
+                const Center(child: CircularProgressIndicator())
+              else if (inventory.hasError)
+                const Text(
+                  'Cannot read leftover files. No files were removed. Check again to retry.',
+                )
+              else if (entries.isEmpty)
+                const Text('No leftover files.')
+              else
+                Card(
+                  clipBehavior: Clip.antiAlias,
+                  child: Column(
+                    children: [
+                      for (final (index, entry) in entries.indexed) ...[
+                        if (index > 0) const Divider(),
+                        ListTile(
+                          leading: const Icon(Icons.insert_drive_file_outlined),
+                          title: Text(
+                            entry.removable
+                                ? 'Source ${entry.sourceKey}'
+                                : 'Unidentified files',
                           ),
+                          subtitle: Text(formatBytes(entry.bytes)),
+                          trailing: entry.removable
+                              ? IconButton(
+                                  tooltip: 'Remove leftover files',
+                                  onPressed: () async {
+                                    if (await _confirm(
+                                          context,
+                                          'Remove leftover files?',
+                                          'Remove ${formatBytes(entry.bytes)} kept from a book that is no longer in your library? Your Jellyfin files will not change.',
+                                        ) &&
+                                        context.mounted) {
+                                      await _remove(context, [entry], reload);
+                                    }
+                                  },
+                                  icon: const Icon(
+                                    Icons.delete_outline_rounded,
+                                  ),
+                                )
+                              : const Tooltip(
+                                  message: 'These files cannot be identified, so they stay.',
+                                  child: Icon(Icons.lock_outline_rounded),
+                                ),
+                        ),
                       ],
-                    ),
+                    ],
                   ),
                 ),
             ],
-          );
-        },
-      ),
-    ],
+          ),
+        ),
+      );
+    },
   );
 }
 

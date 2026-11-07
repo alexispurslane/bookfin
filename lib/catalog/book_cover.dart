@@ -383,21 +383,19 @@ class _CoverTextPainter extends CustomPainter {
       oldDelegate.title != title || oldDelegate.author != author;
 }
 
-/// The blurred cover behind a book's stage. By day it is a cover-colored wash
-/// that fades into the page. At night it is a glow in the cover's colors
-/// around the cover, on a dark stage.
-class CoverBackdrop extends StatelessWidget {
-  const CoverBackdrop({super.key, required this.book});
+/// A book's cover blurred until only its colors remain. A book without a
+/// cover image uses its generated palette.
+class CoverBlur extends StatelessWidget {
+  const CoverBlur({super.key, required this.book, this.sigma = 28});
   final Book book;
+  final double sigma;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final surface = theme.colorScheme.surface;
     final scope = CoverScope.of(context);
-    final art = ClipRect(
+    return ClipRect(
       child: ImageFiltered(
-        imageFilter: ui.ImageFilter.blur(sigmaX: 28, sigmaY: 28),
+        imageFilter: ui.ImageFilter.blur(sigmaX: sigma, sigmaY: sigma),
         child: DecoratedBox(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -426,6 +424,21 @@ class CoverBackdrop extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+/// The blurred cover behind a book's stage. By day it is a cover-colored wash
+/// that fades into the page. At night it is a glow in the cover's colors
+/// around the cover, on a dark stage.
+class CoverBackdrop extends StatelessWidget {
+  const CoverBackdrop({super.key, required this.book});
+  final Book book;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final surface = theme.colorScheme.surface;
+    final art = CoverBlur(book: book);
     if (theme.brightness == Brightness.dark) {
       return Stack(
         fit: StackFit.expand,

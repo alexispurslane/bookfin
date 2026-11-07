@@ -310,35 +310,62 @@ void main() {
     await settleStorage(tester);
   }
 
-  testWidgets('retained files are separate from active edition availability', (
-    tester,
-  ) async {
-    await showRetained(tester);
-    expect(find.text('No downloads yet.'), findsOneWidget);
-    expect(find.text('Retained storage'), findsOneWidget);
-    expect(find.text('6 bytes'), findsOneWidget);
-    expect(find.text('Downloaded'), findsNothing);
-    expect(find.text('Download'), findsNothing);
-  });
+  Future<void> openLeftovers(WidgetTester tester) async {
+    await tester.tap(find.text('Leftover files'));
+    await settleStorage(tester);
+  }
 
   testWidgets(
-    'retained removal requires confirmation and Keep preserves files',
+    'leftover files show as one summary row that opens their own page',
     (tester) async {
       await showRetained(tester);
+      expect(find.text('No downloads yet.'), findsOneWidget);
+      expect(find.text('Retained storage'), findsNothing);
+      expect(
+        find.text('6 B from books no longer in your library'),
+        findsOneWidget,
+      );
+      await openLeftovers(tester);
+      expect(find.text('Source text:text'), findsOneWidget);
+      expect(find.text('Downloaded'), findsNothing);
+      expect(find.text('Download'), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'without leftover files the Downloads page does not mention them',
+    (tester) async {
       await tester.runAsync(
-        () => tester.tap(
-          find.widgetWithText(TextButton, 'Remove retained files'),
+        () => tester.pumpWidget(
+          MaterialApp(
+            theme: bookfinTheme(Brightness.light),
+            home: Scaffold(
+              body: DownloadsPage(downloads: downloads, books: const []),
+            ),
+          ),
         ),
       );
+      await settleStorage(tester);
+      expect(find.text('Leftover files'), findsNothing);
+      expect(find.textContaining('leftover'), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'leftover removal requires confirmation and Keep preserves files',
+    (tester) async {
+      await showRetained(tester);
+      await openLeftovers(tester);
+      await tester.runAsync(
+        () => tester.tap(find.byTooltip('Remove leftover files')),
+      );
       await tester.pumpAndSettle();
-      expect(find.text('Remove retained files?'), findsOneWidget);
+      expect(find.text('Remove leftover files?'), findsOneWidget);
       await tester.tap(find.widgetWithText(TextButton, 'Keep files'));
       await tester.pumpAndSettle();
       expect(await tester.runAsync(downloads.retainedStorage), hasLength(1));
       await tester.runAsync(
-        () => tester.tap(
-          find.widgetWithText(TextButton, 'Remove retained files'),
-        ),
+        () => tester.tap(find.byTooltip('Remove leftover files')),
       );
       await tester.pumpAndSettle();
       await tester.runAsync(() async {
@@ -347,25 +374,44 @@ void main() {
       });
       await settleStorage(tester);
       expect(await tester.runAsync(downloads.retainedStorage), isEmpty);
-      expect(find.text('No retained files.'), findsOneWidget);
+      expect(find.text('No leftover files.'), findsOneWidget);
+      await tester.pageBack();
+      await settleStorage(tester);
+      expect(find.text('Leftover files'), findsNothing);
     },
   );
+
+  testWidgets('remove all clears every removable leftover file', (
+    tester,
+  ) async {
+    await showRetained(tester);
+    await openLeftovers(tester);
+    await tester.runAsync(() => tester.tap(find.text('Remove all')));
+    await tester.pumpAndSettle();
+    expect(find.text('Remove all leftover files?'), findsOneWidget);
+    await tester.runAsync(() async {
+      await tester.tap(find.widgetWithText(FilledButton, 'Remove files'));
+      await downloads.idle;
+    });
+    await settleStorage(tester);
+    expect(await tester.runAsync(downloads.retainedStorage), isEmpty);
+  });
 
   testWidgets('switching accounts clears the previously displayed inventory', (
     tester,
   ) async {
     await showRetained(tester);
-    expect(find.text('Source text:text'), findsOneWidget);
+    expect(find.text('Leftover files'), findsOneWidget);
     await tester.runAsync(
       () => downloads.bind(fixture.session(user: 'bob'), []),
     );
     await settleStorage(tester);
-    expect(find.text('Source text:text'), findsNothing);
-    expect(find.text('No retained files.'), findsOneWidget);
+    expect(find.text('Leftover files'), findsNothing);
   });
 
   testWidgets('unreadable identities have no removal action', (tester) async {
     await showRetained(tester);
+    await openLeftovers(tester);
     await tester.runAsync(() async {
       final records = await root
           .list(recursive: true)
@@ -374,18 +420,19 @@ void main() {
           )
           .toList();
       await File(records.single.path).writeAsString('unreadable');
-      await tester.tap(find.text('Refresh storage'));
+      await tester.tap(find.byTooltip('Check again'));
     });
     await settleStorage(tester);
-    expect(find.text('Unidentified stored files'), findsOneWidget);
-    expect(find.text('6 bytes'), findsOneWidget);
-    expect(find.text('Remove retained files'), findsNothing);
+    expect(find.text('Unidentified files'), findsOneWidget);
+    expect(find.text('6 B'), findsOneWidget);
+    expect(find.byTooltip('Remove leftover files'), findsNothing);
   });
 
   testWidgets(
     'unavailable private storage shows an error without exposing old entries',
     (tester) async {
       await showRetained(tester);
+      await openLeftovers(tester);
       await tester.runAsync(() async {
         final records = await root
             .list(recursive: true)
@@ -396,18 +443,20 @@ void main() {
         final account = File(records.single.path).parent.parent;
         await account.rename('${root.path}/preserved-account');
         await File(account.path).writeAsString('not a directory');
-        await tester.tap(find.text('Refresh storage'));
+        await tester.tap(find.byTooltip('Check again'));
       });
       await tester.pump();
-      final view = tester.widget<FutureBuilder<List<RetainedDownload>>>(
-        find.byType(FutureBuilder<List<RetainedDownload>>),
-      );
+      final view = tester
+          .widgetList<FutureBuilder<List<RetainedDownload>>>(
+            find.byType(FutureBuilder<List<RetainedDownload>>),
+          )
+          .last;
       await tester.runAsync(() => expectLater(view.future, throwsStateError));
       await tester.pumpAndSettle();
       expect(find.text('Source text:text'), findsNothing);
-      expect(find.text('Remove retained files'), findsNothing);
+      expect(find.byTooltip('Remove leftover files'), findsNothing);
       expect(
-        find.textContaining('Cannot read retained storage.'),
+        find.textContaining('Cannot read leftover files.'),
         findsOneWidget,
       );
     },
@@ -430,27 +479,34 @@ void main() {
       });
       await settleStorage(tester);
       expect(catalog.books, isEmpty);
-      expect(find.text('Source text:text'), findsOneWidget);
+      expect(find.text('Leftover files'), findsOneWidget);
       await tester.runAsync(() async {
         await catalog.refresh(selected: {'books'});
         await downloads.idle;
       });
       await settleStorage(tester);
-      expect(find.text('Source text:text'), findsNothing);
-      expect(find.text('No retained files.'), findsOneWidget);
+      expect(find.text('Leftover files'), findsNothing);
       expect(downloads.status(text).phase, DownloadPhase.downloaded);
       expect(fixture.mediaRequests, ['text']);
     },
   );
 }
 
+/// Waits until every leftover file inventory on screen is read.
 Future<void> settleStorage(WidgetTester tester) async {
-  await tester.pump();
-  final view = tester.widget<FutureBuilder<List<RetainedDownload>>>(
+  // Frames built in real time let a pushed page start its storage read
+  // there, so the read can finish.
+  await tester.runAsync(() async {
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+  });
+  final views = tester.widgetList<FutureBuilder<List<RetainedDownload>>>(
     find.byType(FutureBuilder<List<RetainedDownload>>),
   );
   await tester.runAsync(() async {
-    await view.future;
+    for (final view in views) {
+      await view.future?.then((_) {}, onError: (Object _) {});
+    }
   });
   await tester.pumpAndSettle();
 }

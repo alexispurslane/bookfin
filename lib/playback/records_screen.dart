@@ -18,7 +18,12 @@ class PersonalRecordsView extends StatelessWidget {
       final bookmarks = playback.bookmarks;
       final history = playback.history;
       return ListView.builder(
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.fromLTRB(
+          24,
+          24,
+          24,
+          24 + floatingBarInset(context),
+        ),
         itemCount: 4 + bookmarks.length + history.length,
         itemBuilder: (context, index) {
           if (index == 0) return RecordSaveStatus(playback: playback);

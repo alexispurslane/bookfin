@@ -1,6 +1,6 @@
 ---
 id: boo-y4re
-status: open
+status: in_progress
 deps: []
 links: []
 created: 2026-11-07T18:34:07Z

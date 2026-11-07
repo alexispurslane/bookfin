@@ -532,3 +532,8 @@ ThemeData theaterTheme(ThemeData night) {
     iconTheme: night.iconTheme.copyWith(color: light),
   );
 }
+
+/// The bottom space that a floating bar covers. A scroll view adds it to its
+/// end when its page lets content run beneath the mini player.
+double floatingBarInset(BuildContext context) =>
+    MediaQuery.paddingOf(context).bottom;

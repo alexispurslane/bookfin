@@ -164,6 +164,8 @@ class _CatalogHomeState extends State<CatalogHome> {
         covers: widget.covers,
         session: _catalog.accessBlocked ? null : _catalog.session,
         child: Scaffold(
+          // Pages scroll beneath the floating mini player.
+          extendBody: true,
           // An open book's player draws its own stage up to the status bar.
           appBar: tab == _Tab.listening && widget.playback?.book != null
               ? null
@@ -199,9 +201,15 @@ class _CatalogHomeState extends State<CatalogHome> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (widget.playback != null && tab != _Tab.listening)
-                      PlaybackMiniPlayer(
-                        playback: widget.playback!,
-                        onOpenBook: (book) => openBook(context, services, book),
+                      // The navigation bar below keeps the system inset.
+                      MediaQuery.removePadding(
+                        context: context,
+                        removeBottom: true,
+                        child: PlaybackMiniPlayer(
+                          playback: widget.playback!,
+                          onOpenBook: (book) =>
+                              openBook(context, services, book),
+                        ),
                       ),
                     DecoratedBox(
                       decoration: BoxDecoration(
@@ -442,7 +450,7 @@ class _LibrarySelectorState extends State<LibrarySelector> {
   Widget build(BuildContext context) => ListenableBuilder(
     listenable: widget.catalog,
     builder: (context, _) => ListView(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + floatingBarInset(context)),
       children: [
         Text(
           'Choose book libraries',

@@ -1,6 +1,6 @@
 ---
 id: boo-8b6a
-status: open
+status: in_progress
 deps: []
 links: []
 created: 2026-11-07T18:34:08Z

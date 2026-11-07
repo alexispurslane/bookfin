@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -24,87 +25,186 @@ class PlaybackMiniPlayer extends StatelessWidget {
   @override
   Widget build(BuildContext context) => ListenableBuilder(
     listenable: playback,
-    builder: (context, _) => playback.book == null
-        ? const SizedBox.shrink()
-        : Material(
-            color: Theme.of(context).colorScheme.surfaceContainerHigh,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (playback.durationMilliseconds != null &&
-                    playback.durationMilliseconds! > 0)
-                  LinearProgressIndicator(
-                    minHeight: 2,
-                    value:
-                        (playback.editionMilliseconds ?? 0) /
-                        playback.durationMilliseconds!,
-                  ),
-                _UndoControl(playback: playback),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Tooltip(
-                        message: 'Open player',
-                        child: InkWell(
-                          onTap: () => openPlayer(
-                            context,
-                            playback,
-                            onOpenBook: onOpenBook,
+    builder: (context, _) {
+      final book = playback.book;
+      if (book == null) return const SizedBox.shrink();
+      final theme = Theme.of(context);
+      final scheme = theme.colorScheme;
+      final night = theme.brightness == Brightness.dark;
+      final total = playback.durationMilliseconds;
+      const shape = BorderRadius.all(Radius.circular(22));
+      return SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(10, 0, 10, 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _UndoControl(playback: playback),
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: shape,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: night ? 0.4 : 0.16),
+                      blurRadius: 24,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: shape,
+                  // Glass: whatever scrolls beneath shows through, blurred,
+                  // under the cover's colors.
+                  child: BackdropFilter(
+                    filter: ui.ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+                    child: Stack(
+                      children: [
+                        Positioned.fill(
+                          child: Opacity(
+                            opacity: 0.6,
+                            child: CoverBlur(book: book, sigma: 22),
                           ),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 14,
-                            ),
-                            child: Row(
-                              children: [
-                                const Icon(Icons.headphones_rounded),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        playback.book!.title,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .titleMedium
-                                            ?.copyWith(
-                                              fontFamily: 'Source Serif 4',
-                                            ),
-                                      ),
-                                      Text(
-                                        playback.book!.author,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodySmall,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
+                        ),
+                        Positioned.fill(
+                          child: ColoredBox(
+                            color: scheme.surface.withValues(
+                              alpha: night ? 0.5 : 0.55,
                             ),
                           ),
                         ),
-                      ),
+                        Positioned.fill(
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              borderRadius: shape,
+                              border: Border.all(
+                                color: Colors.white.withValues(
+                                  alpha: night ? 0.1 : 0.4,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Material(
+                          type: MaterialType.transparency,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Tooltip(
+                                      message: 'Open player',
+                                      child: InkWell(
+                                        onTap: () => openPlayer(
+                                          context,
+                                          playback,
+                                          onOpenBook: onOpenBook,
+                                        ),
+                                        child: Padding(
+                                          padding: const EdgeInsets.fromLTRB(
+                                            10,
+                                            10,
+                                            8,
+                                            8,
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              SizedBox(
+                                                width: 36,
+                                                child: BookCover.book(
+                                                  book,
+                                                  showText: false,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 12),
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      book.title,
+                                                      maxLines: 1,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                      style: theme
+                                                          .textTheme
+                                                          .titleMedium
+                                                          ?.copyWith(
+                                                            fontFamily: 'Source Serif 4',
+                                                            fontWeight:
+                                                                FontWeight.w600,
+                                                          ),
+                                                    ),
+                                                    Text(
+                                                      book.author,
+                                                      maxLines: 1,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                      style: theme
+                                                          .textTheme
+                                                          .bodySmall
+                                                          ?.copyWith(
+                                                            color: scheme
+                                                                .onSurface
+                                                                .withValues(
+                                                                  alpha: 0.75,
+                                                                ),
+                                                          ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  _PlayButton(playback: playback),
+                                  _JumpButton(
+                                    playback: playback,
+                                    forward: true,
+                                    compact: true,
+                                  ),
+                                  const SizedBox(width: 6),
+                                ],
+                              ),
+                              if (total != null && total > 0)
+                                Padding(
+                                  padding: const EdgeInsets.fromLTRB(
+                                    14,
+                                    0,
+                                    14,
+                                    8,
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(2),
+                                    child: LinearProgressIndicator(
+                                      minHeight: 2.5,
+                                      value:
+                                          (playback.editionMilliseconds ?? 0) /
+                                          total,
+                                      color: scheme.primary,
+                                      backgroundColor: scheme.onSurface
+                                          .withValues(alpha: 0.12),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                    _PlayButton(playback: playback),
-                    IconButton(
-                      tooltip: 'Forward ${playback.forwardSeconds} seconds',
-                      onPressed: () => unawaited(playback.jump(forward: true)),
-                      icon: const Icon(Icons.forward_rounded),
-                    ),
-                    const SizedBox(width: 8),
-                  ],
+                  ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
+        ),
+      );
+    },
   );
 }
 
@@ -112,12 +212,10 @@ void openListeningHistory(BuildContext context, Playback playback) => unawaited(
   Navigator.of(context).push<void>(
     MaterialPageRoute(
       builder: (_) => Scaffold(
+        extendBody: true,
         appBar: AppBar(title: const Text('Your listening history')),
         body: BookfinSurface(child: PersonalRecordsView(playback: playback)),
-        bottomNavigationBar: SafeArea(
-          top: false,
-          child: PlaybackMiniPlayer(playback: playback),
-        ),
+        bottomNavigationBar: PlaybackMiniPlayer(playback: playback),
       ),
     ),
   ),
@@ -224,7 +322,12 @@ class PlayerView extends StatelessWidget {
       final book = playback.book;
       if (book == null) {
         return ListView(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+          padding: EdgeInsets.fromLTRB(
+            20,
+            16,
+            20,
+            32 + floatingBarInset(context),
+          ),
           children: [
             RecordSaveStatus(playback: playback),
             ReplacementStartNotice(playback: playback),
@@ -379,7 +482,12 @@ class PlayerView extends StatelessWidget {
               ],
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 30, 20, 32),
+              padding: EdgeInsets.fromLTRB(
+                20,
+                30,
+                20,
+                32 + floatingBarInset(context),
+              ),
               child: RecentListeningList(playback: playback),
             ),
           ],
@@ -840,11 +948,15 @@ class _JumpButton extends StatelessWidget {
   const _JumpButton({
     required this.playback,
     required this.forward,
-    required this.onLongPress,
+    this.onLongPress,
+    this.compact = false,
   });
   final Playback playback;
   final bool forward;
-  final VoidCallback onLongPress;
+  final VoidCallback? onLongPress;
+
+  /// The mini player's smaller size.
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -861,24 +973,28 @@ class _JumpButton extends StatelessWidget {
         label: label,
         excludeSemantics: true,
         child: InkResponse(
-          radius: 30,
+          radius: compact ? 22 : 30,
           onTap: () => unawaited(playback.jump(forward: forward)),
           onLongPress: onLongPress,
           child: SizedBox.square(
-            dimension: 56,
+            dimension: compact ? 44 : 56,
             child: Stack(
               alignment: Alignment.center,
               children: [
                 Transform.flip(
                   flipX: forward,
-                  child: Icon(Icons.replay_rounded, size: 42, color: color),
+                  child: Icon(
+                    Icons.replay_rounded,
+                    size: compact ? 30 : 42,
+                    color: color,
+                  ),
                 ),
                 Padding(
                   padding: const EdgeInsets.only(top: 3),
                   child: Text(
                     '$seconds',
                     style: TextStyle(
-                      fontSize: 11,
+                      fontSize: compact ? 8.5 : 11,
                       fontWeight: FontWeight.w700,
                       color: color,
                     ),

@@ -86,7 +86,9 @@ class _LibraryShelfState extends State<LibraryShelf> {
             )
           else
             ShelfEntries(services: services, items: items),
-          const SliverToBoxAdapter(child: SizedBox(height: 24)),
+          SliverToBoxAdapter(
+            child: SizedBox(height: 24 + floatingBarInset(context)),
+          ),
         ],
       ),
     );
@@ -514,6 +516,7 @@ class _SearchPageState extends State<SearchPage> {
     builder: (context, _) {
       final results = search(widget.services.catalog.books, _query);
       return Scaffold(
+        extendBody: true,
         bottomNavigationBar: widget.services.playback == null
             ? null
             : PlaybackMiniPlayer(playback: widget.services.playback!),
@@ -569,6 +572,9 @@ class _SearchPageState extends State<SearchPage> {
                         items: [for (final book in results) ShelfBook(book)],
                         forceList: true,
                       ),
+                      SliverToBoxAdapter(
+                        child: SizedBox(height: floatingBarInset(context)),
+                      ),
                     ],
                   ),
           ),
@@ -611,6 +617,7 @@ class SeriesPage extends StatelessWidget {
       ).whereType<ShelfSeries>().where((item) => item.name == name).firstOrNull;
       final theme = Theme.of(context);
       return Scaffold(
+        extendBody: true,
         bottomNavigationBar: services.playback == null
             ? null
             : PlaybackMiniPlayer(playback: services.playback!),
@@ -689,7 +696,9 @@ class SeriesPage extends StatelessWidget {
                         ],
                         showSeriesPosition: true,
                       ),
-                      const SliverToBoxAdapter(child: SizedBox(height: 24)),
+                      SliverToBoxAdapter(
+                        child: SizedBox(height: 24 + floatingBarInset(context)),
+                      ),
                     ],
                   ),
           ),

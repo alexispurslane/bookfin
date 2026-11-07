@@ -36,7 +36,7 @@ class SettingsPage extends StatelessWidget {
         .map((library) => library.name)
         .toList();
     return ListView(
-      padding: const EdgeInsets.fromLTRB(18, 4, 18, 32),
+      padding: EdgeInsets.fromLTRB(18, 4, 18, 32 + floatingBarInset(context)),
       children: [
         SettingsGroup(
           children: [

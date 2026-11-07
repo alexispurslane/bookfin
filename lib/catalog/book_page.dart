@@ -83,6 +83,7 @@ class BookPage extends StatelessWidget {
           .firstOrNull;
       return Scaffold(
         extendBodyBehindAppBar: true,
+        extendBody: true,
         bottomNavigationBar: playback == null
             ? null
             : PlaybackMiniPlayer(playback: playback),
@@ -119,7 +120,7 @@ class BookPage extends StatelessWidget {
           child: Material(
             type: MaterialType.transparency,
             child: ListView(
-              padding: EdgeInsets.zero,
+              padding: EdgeInsets.only(bottom: floatingBarInset(context)),
               children: [
                 _Header(book: book, downloaded: services.downloaded(book)),
                 Padding(

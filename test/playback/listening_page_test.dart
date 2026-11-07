@@ -8,6 +8,7 @@ import 'package:bookfin/catalog/screen.dart';
 import 'package:bookfin/foundation/theme.dart';
 import 'package:bookfin/playback/playback.dart';
 import 'package:bookfin/playback/recent.dart' show listenedWhen;
+import 'package:bookfin/playback/screen.dart' show PlaybackMiniPlayer;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -38,6 +39,7 @@ void main() {
       await playback.pause();
     }
     await playback.flush();
+    playback.dismissUndo();
   }
 
   /// Starts the app again with the same records but nothing open.
@@ -194,4 +196,75 @@ void main() {
       await tester.pumpWidget(const SizedBox());
     },
   );
+
+  Future<void> showLibrary(WidgetTester tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: bookfinTheme(Brightness.light),
+        home: CatalogHome(
+          catalog: catalog,
+          onAppearance: () {},
+          onReaderNightChanged: (_) {},
+          downloads: downloads,
+          playback: playback,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+  }
+
+  /// The library's vertical list, not the horizontal row of filters.
+  final shelf = find
+      .byWidgetPredicate(
+        (widget) =>
+            widget is Scrollable && widget.axisDirection == AxisDirection.down,
+      )
+      .first;
+
+  Rect miniPlayer(WidgetTester tester) => tester.getRect(
+    find.descendant(
+      of: find.byType(PlaybackMiniPlayer),
+      matching: find.byTooltip('Open player'),
+    ),
+  );
+
+  testWidgets('the mini player shows the cover of the open book', (
+    tester,
+  ) async {
+    await tester.runAsync(() => listen(['First Frost']));
+    await showLibrary(tester);
+    expect(
+      find.descendant(
+        of: find.byType(PlaybackMiniPlayer),
+        matching: find.byType(BookCover),
+      ),
+      findsOneWidget,
+    );
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('the library continues beneath the floating mini player', (
+    tester,
+  ) async {
+    await tester.runAsync(() => listen(['First Frost']));
+    await showLibrary(tester);
+    final list = tester.getRect(shelf);
+    expect(list.bottom, greaterThan(miniPlayer(tester).bottom));
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('the end of the library scrolls clear of the mini player', (
+    tester,
+  ) async {
+    await tester.runAsync(() => listen(['First Frost']));
+    await showLibrary(tester);
+    await tester.drag(shelf, const Offset(0, -3000));
+    await tester.pumpAndSettle();
+    final last = find.text('Tidewater').last;
+    expect(
+      tester.getRect(last).bottom,
+      lessThanOrEqualTo(miniPlayer(tester).top),
+    );
+    await tester.pumpWidget(const SizedBox());
+  });
 }
