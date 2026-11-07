@@ -1,7 +1,7 @@
 ---
 id: boo-7al5
 status: open
-deps: []
+deps: [t9-xj41]
 links: []
 created: 2026-11-07T18:34:07Z
 type: task
