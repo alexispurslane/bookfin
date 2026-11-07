@@ -89,6 +89,28 @@ class EditionDownload {
         DownloadAction.remove,
     ];
   }
+
+  @override
+  bool operator ==(Object other) =>
+      other is EditionDownload &&
+      other.phase == phase &&
+      other.completeFiles == completeFiles &&
+      other.totalFiles == totalFiles &&
+      other.bytes == bytes &&
+      other.unavailableBytes == unavailableBytes &&
+      other.totalBytes == totalBytes &&
+      other.message == message;
+
+  @override
+  int get hashCode => Object.hash(
+    phase,
+    completeFiles,
+    totalFiles,
+    bytes,
+    unavailableBytes,
+    totalBytes,
+    message,
+  );
 }
 
 /// A change to an edition's download. [request] and [retry] both ask for the
@@ -113,12 +135,61 @@ class RetainedDownload {
   bool get removable => sourceKey != null && revision != null;
 }
 
+/// What Downloads last learned about the saved files of the bound account
+/// that no bound edition owns.
+class LeftoverFiles {
+  const LeftoverFiles({
+    this.entries = const [],
+    this.reading = false,
+    this.error,
+  });
+
+  /// The leftovers of the last read that succeeded, sorted by id.
+  final List<RetainedDownload> entries;
+
+  /// Whether the first read for the bound account runs, so no list is known.
+  final bool reading;
+
+  /// Why the last read failed, or null when it succeeded.
+  final Object? error;
+}
+
 abstract class Downloads extends ChangeNotifier {
   Downloads(this.policy);
   final MediaPolicy policy;
   bool get supported;
   Future<void> bind(JellyfinSession? session, List<Book> books);
   EditionDownload status(Edition edition);
+
+  /// The watched editions by id, each with the status that it last showed.
+  final Map<String, ({Edition edition, ValueNotifier<EditionDownload> state})>
+  _watches = {};
+
+  /// [status] of [edition], which notifies only when that status changes.
+  /// Byte progress of the edition notifies it. Changes of other editions do
+  /// not. Each call for one edition id returns the same listenable.
+  ValueListenable<EditionDownload> watch(Edition edition) {
+    final state = _watches[edition.id]?.state ?? ValueNotifier(status(edition));
+    _watches[edition.id] = (edition: edition, state: state);
+    return state;
+  }
+
+  /// Gives each watched edition its current [status]. A watch notifies only
+  /// when its status changed. [notifyListeners] calls this first, so a
+  /// subclass that only notifies broadly keeps every watch true.
+  @protected
+  void updateWatches() {
+    for (final watch in _watches.values.toList()) {
+      watch.state.value = status(watch.edition);
+    }
+  }
+
+  @override
+  void notifyListeners() {
+    updateWatches();
+    super.notifyListeners();
+  }
+
   Future<void> request(Edition edition);
   Future<void> cancel(Edition edition);
   Future<void> remove(Edition edition);
@@ -128,6 +199,17 @@ abstract class Downloads extends ChangeNotifier {
   /// this object, not of [phases].
   Listenable get phases => this;
   Future<List<RetainedDownload>> retainedStorage() async => const [];
+
+  /// The leftover files of the bound account. The first use starts a read.
+  /// After that, Downloads reads them again when [phases] notifies and when
+  /// [reloadLeftovers] runs, and notifies once when each read ends.
+  ValueListenable<LeftoverFiles> get leftovers => _noLeftovers;
+  late final _noLeftovers = ValueNotifier(const LeftoverFiles());
+
+  /// Reads the leftover files again. The future ends when [leftovers] holds
+  /// the result. A read that fails sets [LeftoverFiles.error] and keeps the
+  /// last list.
+  Future<void> reloadLeftovers() async {}
   Future<void> removeRetained(RetainedDownload download) async =>
       throw UnsupportedError('Retained storage is unavailable.');
   Future<Uri?> localFile(SourceFile source);
@@ -147,4 +229,13 @@ abstract class Downloads extends ChangeNotifier {
   Future<void> get idle;
   Future<void> refresh() async {}
   void checkInvariants();
+
+  @override
+  void dispose() {
+    for (final watch in _watches.values) {
+      watch.state.dispose();
+    }
+    _noLeftovers.dispose();
+    super.dispose();
+  }
 }
