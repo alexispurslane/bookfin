@@ -170,4 +170,53 @@ void main() {
     );
     expect(_names(items), ['The Orchard Cycle (2)']);
   });
+
+  test('an unchanged library gives back the same shelf without regrouping', () {
+    final first = shelf(books, ShelfFilter.all, isDownloaded);
+    expect(shelf(books, ShelfFilter.all, isDownloaded), same(first));
+  });
+
+  test('a download that leaves the filtered books alone keeps the shelf', () {
+    final first = shelf(books, ShelfFilter.audio, isDownloaded);
+    downloaded = {'First Frost:audio'};
+    expect(shelf(books, ShelfFilter.audio, isDownloaded), same(first));
+  });
+
+  test('a finished download regroups the downloaded shelf', () {
+    downloaded = {'First Frost:audio'};
+    final before = shelf(books, ShelfFilter.downloaded, isDownloaded);
+    expect(_names(before), ['First Frost']);
+    downloaded.add('Graft:audio');
+    expect(_names(shelf(books, ShelfFilter.downloaded, isDownloaded)), [
+      'The Orchard Cycle (2)',
+    ]);
+    downloaded.remove('Graft:audio');
+    expect(_names(shelf(books, ShelfFilter.downloaded, isDownloaded)), [
+      'First Frost',
+    ]);
+  });
+
+  test('a new catalog list regroups the shelf', () {
+    final first = shelf(books, ShelfFilter.all, isDownloaded);
+    final renamed = [...books.where((book) => book != salt), _book('Brine')];
+    expect(shelf(renamed, ShelfFilter.all, isDownloaded), isNot(same(first)));
+    expect(_names(shelf(renamed, ShelfFilter.all, isDownloaded)), [
+      'Brine',
+      'The Orchard Cycle (3)',
+      'Tidewater One',
+      'Winter Ledger',
+    ]);
+  });
+
+  test('titles sort by their numbers as numbers and ignore letter case', () {
+    final titles = ['book 10', 'Book 9', 'Book 9b', 'Apple', 'book 1'];
+    expect(
+      search([
+        for (final title in titles) _book(title),
+      ], 'BOOK').map((book) => book.title),
+      ['book 1', 'Book 9', 'Book 9b', 'book 10'],
+    );
+    titles.sort(naturalCompare);
+    expect(titles, ['Apple', 'book 1', 'Book 9', 'Book 9b', 'book 10']);
+  });
 }

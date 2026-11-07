@@ -69,6 +69,14 @@ List<Book> readingOrder(Iterable<Book> books) {
 
 String _titleKey(String title) => title.trim().toLowerCase();
 
+/// The library entries of the [books] that pass [filter]: single books, and
+/// series of two or more books, in natural order of their names.
+///
+/// The result is kept for this exact [books] list and [filter], and it is
+/// given back unchanged, the same list, while the same books pass the
+/// filter. So a caller can call this on every build, and a change of download
+/// state regroups only a shelf that it changes. [books] must not change in
+/// place after this call. The catalog publishes a new list on every change.
 List<ShelfItem> shelf(
   List<Book> books,
   ShelfFilter filter,
@@ -76,17 +84,41 @@ List<ShelfItem> shelf(
 ) {
   bool has(Book book, EditionKind kind) =>
       book.editions.any((edition) => edition.kind == kind);
-  final matching = books.where(
-    (book) => switch (filter) {
-      ShelfFilter.all => true,
-      ShelfFilter.audio => has(book, EditionKind.audio),
-      ShelfFilter.ebooks => has(book, EditionKind.text),
-      ShelfFilter.downloaded => bookDownloaded(book, downloaded),
-    },
-  );
+  final matching = books
+      .where(
+        (book) => switch (filter) {
+          ShelfFilter.all => true,
+          ShelfFilter.audio => has(book, EditionKind.audio),
+          ShelfFilter.ebooks => has(book, EditionKind.text),
+          ShelfFilter.downloaded => bookDownloaded(book, downloaded),
+        },
+      )
+      .toList();
+  final shelves = _shelves[books] ??= {};
+  final kept = shelves[filter];
+  if (kept != null && _sameBooks(kept.matching, matching)) return kept.items;
+  final items = _group(matching);
+  shelves[filter] = (matching: matching, items: items);
+  return items;
+}
+
+/// The last shelf of each filter, for each catalog book list. An entry goes
+/// away with its list.
+final _shelves =
+    Expando<Map<ShelfFilter, ({List<Book> matching, List<ShelfItem> items})>>();
+
+bool _sameBooks(List<Book> left, List<Book> right) {
+  if (left.length != right.length) return false;
+  for (var index = 0; index < left.length; index++) {
+    if (!identical(left[index], right[index])) return false;
+  }
+  return true;
+}
+
+List<ShelfItem> _group(List<Book> books) {
   final series = <String, List<Book>>{};
   final items = <ShelfItem>[];
-  for (final book in matching) {
+  for (final book in books) {
     if (book.series == null) {
       items.add(ShelfBook(book));
     } else {
@@ -101,24 +133,23 @@ List<ShelfItem> shelf(
       items.add(ShelfSeries(ordered.first.series!.trim(), ordered));
     }
   }
-  return items
-    ..sort((left, right) => naturalCompare(left.sortName, right.sortName));
+  return List.unmodifiable(sortedNaturally(items, (item) => item.sortName));
 }
 
 /// Books whose title, author, or series contains the query. Never grouped.
 List<Book> search(List<Book> books, String query) {
   final needle = query.trim().toLowerCase();
   if (needle.isEmpty) return const [];
-  return books
-      .where(
-        (book) => [
-          book.title,
-          book.author,
-          ?book.series,
-        ].any((field) => field.toLowerCase().contains(needle)),
-      )
-      .toList()
-    ..sort((left, right) => naturalCompare(left.title, right.title));
+  return sortedNaturally(
+    books.where(
+      (book) => [
+        book.title,
+        book.author,
+        ?book.series,
+      ].any((field) => field.toLowerCase().contains(needle)),
+    ),
+    (book) => book.title,
+  );
 }
 
 String _seriesKey(String name) =>
