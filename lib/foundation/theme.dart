@@ -417,6 +417,18 @@ class BookfinSurface extends StatelessWidget {
   );
 }
 
+/// A problem that a data source reports to the person, in the error color.
+class StatusMessage extends StatelessWidget {
+  const StatusMessage(this.message, {super.key});
+  final String message;
+
+  @override
+  Widget build(BuildContext context) => Text(
+    message,
+    style: TextStyle(color: Theme.of(context).colorScheme.error),
+  );
+}
+
 /// The small spaced capitals that name a section of a page, for example
 /// "EDITIONS" or "ON THIS PHONE".
 class SectionLabel extends StatelessWidget {

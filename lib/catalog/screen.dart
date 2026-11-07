@@ -264,18 +264,13 @@ class _CatalogHomeState extends State<CatalogHome> {
                     if (_catalog.message != null)
                       Padding(
                         padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
-                        child: Text(
-                          _catalog.message!,
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.error,
-                          ),
-                        ),
+                        child: StatusMessage(_catalog.message!),
                       ),
                     if (widget.playback?.message != null &&
                         tab != _Tab.listening)
                       Padding(
                         padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
-                        child: Text(widget.playback!.message!),
+                        child: StatusMessage(widget.playback!.message!),
                       ),
                     if (widget.playback != null && tab != _Tab.listening)
                       ReplacementStartNotice(playback: widget.playback!),

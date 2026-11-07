@@ -48,11 +48,7 @@ class DownloadControls extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 8),
             child: ProgressLine(value: _share(state)),
           ),
-        if (state.message != null)
-          Text(
-            state.message!,
-            style: TextStyle(color: Theme.of(context).colorScheme.error),
-          ),
+        if (state.message != null) StatusMessage(state.message!),
         if (owner?.supported != true)
           const Text('Local downloads are available in the Android app.'),
         if (owner?.supported == true)

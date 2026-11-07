@@ -10,6 +10,7 @@ import 'package:bookfin/downloads/screen.dart';
 import 'package:bookfin/foundation/theme.dart';
 import 'package:bookfin/playback/playback.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'controller_test.dart'
@@ -224,6 +225,31 @@ void main() {
         BookPage(services: services(), bookId: catalog.books.single.id),
       );
       expect(find.text('Book details'), findsOneWidget);
+    });
+
+    testWidgets('a playback problem reads as an error on the book page', (
+      tester,
+    ) async {
+      // Without local files, playing reports what to download first.
+      await tester.runAsync(() async {
+        files.files.clear();
+        await playback.play();
+      });
+      final problem = playback.message!;
+      await catalog.connect('https://books.example', 'alice', 'password');
+      await catalog.refresh(selected: {'books'});
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: bookfinTheme(Brightness.light),
+          home: BookPage(services: services(), bookId: catalog.books.single.id),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final shown = tester.renderObject<RenderParagraph>(find.text(problem));
+      expect(
+        shown.text.style?.color,
+        Theme.of(tester.element(find.text(problem))).colorScheme.error,
+      );
     });
   });
 }

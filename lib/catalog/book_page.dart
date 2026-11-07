@@ -249,15 +249,12 @@ class BookPage extends StatelessWidget {
                       if (catalog.message != null)
                         Padding(
                           padding: const EdgeInsets.only(top: 12),
-                          child: Text(
-                            catalog.message!,
-                            style: TextStyle(color: theme.colorScheme.error),
-                          ),
+                          child: StatusMessage(catalog.message!),
                         ),
                       if (playback?.message != null)
                         Padding(
                           padding: const EdgeInsets.only(top: 12),
-                          child: Text(playback!.message!),
+                          child: StatusMessage(playback!.message!),
                         ),
                       if (playback != null &&
                           playback.replacementStart?.book.id == bookId)

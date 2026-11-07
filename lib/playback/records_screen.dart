@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../catalog/model.dart';
+import '../foundation/theme.dart';
 import '../foundation/time.dart';
 import 'playback.dart';
 import '../catalog/glass.dart';
@@ -14,11 +15,7 @@ class RecordSaveStatus extends StatelessWidget {
   Widget build(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      if (playback.message != null)
-        Text(
-          playback.message!,
-          style: TextStyle(color: Theme.of(context).colorScheme.error),
-        ),
+      if (playback.message != null) StatusMessage(playback.message!),
       if (playback.saveFailed) ...[
         const Text(
           'Personal records are not saved to this device. Keep Bookfin open and retry.',
