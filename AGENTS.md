@@ -22,6 +22,17 @@ After user acceptance, the orchestrator coordinates coverage, mutation testing, 
 
 Use contracts only for core data structures, business logic, and orchestration that maintains related state. Public arguments use always-on guards. Internal preconditions/postconditions compile out in release. Document invariants and expose one on-demand invariant checker usable in every build. Never recover from contract failures. Tests, not contracts, check behavior.
 
+## UI architecture rules
+
+These are hard rules for all new and changed Flutter code. When you touch code that breaks them, fix the code you touch or record a ticket.
+
+1. Data down, actions up.
+   - Only controllers cause side effects. Controllers are the app-wide data sources (catalog, playback, downloads, reader, appearance, sync) and the tab or page widgets that act as controllers for their screen. Side effects include network and storage access, playback and download commands, record changes, navigation, and confirmation dialogs before an action.
+   - Every other widget reports what happened through a callback and causes no side effect. As an event bubbles up, it gains data and becomes more abstract. Example: a trash icon calls `onRemove(edition)`, and the tab confirms and then tells Downloads to remove the edition.
+   - Data that outlives one widget lives in a data source or a tab controller, never in a leaf widget's State. This includes fetched data, futures, caches, and anything that survives navigation or an app restart. Widgets receive that data through constructor parameters or through an `InheritedWidget` scope. A widget may keep only ephemeral UI state, such as an expanded row, a text controller, an animation, or a drag preview.
+2. One component for each kind of thing. When two widgets do relevantly similar things, one widget does both. Customize it through parameters, `child`, `children` or builder slots, and callbacks. Factor when the second copy appears, not for hypothetical callers.
+3. Depend on the minimum, and subscribe at the lowest level. Each widget depends on the least data that it needs. A controller passes data sources, or narrow listenables, down; it does not pass changing values that would force it to rebuild. The lowest widget that shows a value subscribes to it, for example with `ValueListenableBuilder`, a narrow `ListenableBuilder`, or an `InheritedModel` aspect. A data source exposes narrow change signals instead of one notification for everything. Example: the app shell depends only on the selected tab and on whether the user is signed in.
+
 ## Environment and devices
 
 Keep the project under `~/Development/bookfin`. Provide a pinned Nix flake with `devShells.<system>.default`. Run build and test commands through `nix develop`. Put required environment variables in the dev shell, never the user's shell profile. Do not install toolchains globally. Pin sources and hashes for native dependencies absent from nixpkgs. Stage new `.nix` files before a Git flake uses them.
