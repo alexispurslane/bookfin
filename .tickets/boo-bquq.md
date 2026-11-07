@@ -13,3 +13,9 @@ parent: boo-fs0n
 
 AGENTS.md now has UI architecture rules: data down, actions up; one component per kind of thing; minimal dependencies with low-level subscription. Known breaks: DownloadControls and row buttons call Downloads directly; the timeline calls Playback restore and delete; RecentListeningList calls playback.open; _LeftoverInventory owns a storage future in a leaf State. Audit and refactor after the current audit branches merge.
 
+
+## Notes
+
+**2026-11-07T21:34:40Z**
+
+From agent reports at 7fd0936: _BookfinAppState rebuilds the whole app on its 30-second clock and on every appearance change (boo-nxp8). PlayerView and PlaybackMiniPlayer subscribe to the whole Playback object, so the whole stage rebuilds at 5 Hz; the slider and time texts should subscribe to a narrow position signal (boo-jkf7). Check what boo-8dkw already changed before starting.
