@@ -23,3 +23,7 @@ From agent reports at 7fd0936: _BookfinAppState rebuilds the whole app on its 30
 **2026-11-07T21:36:12Z**
 
 boo-8dkw merged at its own merge commit after f47b367. The narrow position signal is now its own ticket, boo-y6fb; do it there, not here. The slider still calls beginSliderSeek and finishSliderSeek directly (rule 1).
+
+**2026-11-07T21:47:00Z**
+
+From boo-5jzo (merged 1fd38a5), rule breaks left in place: book page _Actions and _EditionPanel open playback and the reader, push routes, and confirm and run 'Separate source' themselves; Downloads _Summary asks about mobile data and changes the policy itself; _LeftoverInventory keeps a storage read in its own State; ListeningTimeline confirms and deletes inside its sheet; ReplacementStartNotice, RecordSaveStatus and the mini player buttons call Playback directly; the reader bookmarks panel edits a bookmark and restores a place itself; book, search and series pages rebuild on every services.changes. Shared pieces now exist to build on: confirmAction, EditionDownload.actions with onAction(DownloadAction), SectionLabel, BookfinPanel, SettingsGroup, ProgressLine, foundation/time.dart, showGlassSheet(title:), showGlassChoices, LibraryServices.page, StatusMessage.
