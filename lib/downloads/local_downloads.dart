@@ -236,19 +236,17 @@ class LocalDownloads extends Downloads {
     if (_disposed || generation != _generation) return;
     if (session != null) {
       try {
-        await _safeDirectory(root);
-        final account = Directory('${root.path}/${_hash(session.scope.key)}');
-        await _safeDirectory(account);
-        for (final entry in _sources.entries.toList()) {
+        // Only a source that saved something has a directory, so one listing
+        // of the account finds every record to restore.
+        final account = _accountDirectory(session.scope.key);
+        for (final directory in await _savedDirectories(account)) {
           if (_disposed || generation != _generation) return;
-          final directory = Directory('${account.path}/${entry.key}');
-          await _safeDirectory(directory);
-          final record = _Record(
-            entry.key,
-            entry.value,
-            directory,
-            session.scope.key,
-          );
+          final id = _name(directory);
+          // Earlier versions made a directory for every bound source.
+          if (await _removeIfEmpty(directory) || !_sources.containsKey(id)) {
+            continue;
+          }
+          final record = _blank(id);
           final manifest = record.file('record.json');
           if (await _regularFile(manifest)) {
             // Engine rule 1: a manifest is about 200 bytes and decodes in
@@ -280,9 +278,9 @@ class LocalDownloads extends Downloads {
                 : await _partialLength(record);
           }
           if (_disposed || generation != _generation) return;
-          _records[entry.key] = record;
+          _records[id] = record;
           if (record.requested && !record.complete && record.error == null) {
-            _queued.add(entry.key);
+            _queued.add(id);
           }
         }
       } catch (_) {
@@ -310,14 +308,59 @@ class LocalDownloads extends Downloads {
   Directory _accountDirectory(String accountKey) =>
       Directory('${root.path}/${_hash(accountKey)}');
 
+  static String _name(Directory directory) =>
+      directory.uri.pathSegments.where((part) => part.isNotEmpty).last;
+
+  /// The source directories under [account]. They are none when the root or
+  /// the account directory does not exist, because nothing was saved there.
+  /// Throws a [StateError] when either one is not a private directory.
+  Future<List<Directory>> _savedDirectories(Directory account) async {
+    for (final directory in [root, account]) {
+      switch (await FileSystemEntity.type(directory.path, followLinks: false)) {
+        case FileSystemEntityType.directory:
+          continue;
+        case FileSystemEntityType.notFound:
+          return const [];
+        default:
+          throw StateError('Cannot read private download storage.');
+      }
+    }
+    return [
+      await for (final entity in account.list(followLinks: false))
+        if (entity is Directory && _idPattern.hasMatch(_name(entity))) entity,
+    ];
+  }
+
+  /// Removes [directory] when it holds no entry, and reports whether it did.
+  /// The operating system refuses to remove a directory that holds any
+  /// entry, so this never deletes a saved file.
+  static Future<bool> _removeIfEmpty(Directory directory) async {
+    try {
+      await directory.delete();
+      return true;
+    } on FileSystemException {
+      return false;
+    }
+  }
+
+  /// A record of bound source [id] that saved nothing.
+  _Record _blank(String id) => _Record(
+    id,
+    _sources[id]!,
+    Directory('${_accountDirectory(_session!.scope.key).path}/$id'),
+    _session!.scope.key,
+  );
+
+  /// The record of bound source [id]. A source that saved nothing has none
+  /// until a command needs one, and gets its directory at its first write.
+  _Record _record(String id) => _records[id] ??= _blank(id);
+
   Future<bool> _containedDirectory(
     Directory directory,
     String accountKey,
   ) async {
     final account = _accountDirectory(accountKey);
-    final name = directory.uri.pathSegments
-        .where((part) => part.isNotEmpty)
-        .last;
+    final name = _name(directory);
     if (!_idPattern.hasMatch(name) ||
         directory.path != '${account.path}/$name') {
       return false;
@@ -510,7 +553,7 @@ class LocalDownloads extends Downloads {
       return;
     }
     for (final id in ids) {
-      final record = _records[id]!;
+      final record = _record(id);
       final verified = await _verified(record);
       if (_disposed || generation != _generation) return;
       if (verified) continue;
@@ -566,7 +609,8 @@ class LocalDownloads extends Downloads {
   Future<void> _remove(Edition edition) async {
     final ids = _current(edition);
     final generation = _generation;
-    final records = [for (final id in ids) ?_records[id]];
+    // Every source gets a record, so removal also finds its older revisions.
+    final records = [for (final id in ids) _record(id)];
     await _cancel(edition);
     void guard() {
       if (_disposed || generation != _generation) {
@@ -596,26 +640,23 @@ class LocalDownloads extends Downloads {
     }
   }
 
-  Future<List<Directory>> _savedVersions(_Record record) async {
-    final directories = [record.directory];
-    await for (final entity in record.directory.parent.list(
-      followLinks: false,
-    )) {
-      if (entity is! Directory || entity.path == record.directory.path) {
-        continue;
-      }
-      final identity = await _savedIdentity(entity, _session!.scope.key);
-      if (identity?.key == record.source.key) directories.add(entity);
-    }
-    return directories;
-  }
+  Future<List<Directory>> _savedVersions(_Record record) async => [
+    record.directory,
+    for (final directory in await _savedDirectories(
+      _accountDirectory(record.accountKey),
+    ))
+      if (directory.path != record.directory.path &&
+          (await _savedIdentity(directory, record.accountKey))?.key ==
+              record.source.key)
+        directory,
+  ];
 
   Future<({String key, String revision})?> _savedIdentity(
     Directory directory,
     String accountKey,
   ) async {
     if (!await _containedDirectory(directory, accountKey)) return null;
-    final id = directory.uri.pathSegments.where((part) => part.isNotEmpty).last;
+    final id = _name(directory);
     final manifest = File('${directory.path}/record.json');
     try {
       if (await _regularFile(manifest) && await manifest.length() <= 65536) {
@@ -642,7 +683,7 @@ class LocalDownloads extends Downloads {
     Object binding,
   ) async {
     if (!await _containedDirectory(directory, session.scope.key)) return null;
-    final id = directory.uri.pathSegments.where((part) => part.isNotEmpty).last;
+    final id = _name(directory);
     final identity = await _savedIdentity(directory, session.scope.key);
     var bytes = await DerivedBookFiles.bytes(directory);
     for (final name in ['complete', 'partial']) {
@@ -668,20 +709,12 @@ class LocalDownloads extends Downloads {
       return const [];
     }
     final account = _accountDirectory(session.scope.key);
-    for (final directory in [root, account]) {
-      if (await FileSystemEntity.type(directory.path, followLinks: false) !=
-          FileSystemEntityType.directory) {
-        throw StateError('Cannot read private download storage.');
-      }
-    }
     final retained = <RetainedDownload>[];
-    await for (final entity in account.list(followLinks: false)) {
+    for (final directory in await _savedDirectories(account)) {
       if (_disposed || generation != _generation) return const [];
-      if (entity is! Directory) continue;
-      final name = entity.uri.pathSegments.where((part) => part.isNotEmpty);
       // A bound source owns its directory, so it is never left over.
-      if (_sources.containsKey(name.last)) continue;
-      final saved = await _storedDownload(entity, session, _retainedBinding);
+      if (_sources.containsKey(_name(directory))) continue;
+      final saved = await _storedDownload(directory, session, _retainedBinding);
       if (saved != null && saved.bytes > 0 && !_sources.containsKey(saved.id)) {
         retained.add(saved);
       }
@@ -783,23 +816,32 @@ class LocalDownloads extends Downloads {
     void Function() guard,
   ) async {
     guard();
-    if (_session == null ||
-        !await _containedDirectory(directory, _session!.scope.key)) {
-      throw StateError('Download storage is no longer a private directory.');
+    // A source that saved nothing has no directory.
+    if (await FileSystemEntity.type(directory.path, followLinks: false) ==
+        FileSystemEntityType.notFound) {
+      return;
     }
-    await DerivedBookFiles.remove(directory);
-    for (final name in ['partial', 'complete', 'record.next', 'record.json']) {
+    Future<void> contain() async {
       guard();
       if (_session == null ||
           !await _containedDirectory(directory, _session!.scope.key)) {
         throw StateError('Download storage is no longer a private directory.');
       }
+    }
+
+    await contain();
+    await DerivedBookFiles.remove(directory);
+    for (final name in ['partial', 'complete', 'record.next', 'record.json']) {
+      await contain();
       final file = File('${directory.path}/$name');
       if (await _regularFile(file)) {
         guard();
         await file.delete();
       }
     }
+    // A directory that still holds a file that the app did not save stays.
+    await contain();
+    await _removeIfEmpty(directory);
   }
 
   @override
@@ -1310,7 +1352,25 @@ class LocalDownloads extends Downloads {
       'complete': record.complete,
       'error': record.error,
     });
+    final blank = record.blank;
     final write = _writes.then((_) async {
+      // A missing manifest restores as a blank record, so a blank record
+      // without a directory needs no write.
+      if (blank &&
+          await FileSystemEntity.type(
+                record.directory.path,
+                followLinks: false,
+              ) ==
+              FileSystemEntityType.notFound) {
+        return;
+      }
+      for (final directory in [
+        root,
+        _accountDirectory(record.accountKey),
+        record.directory,
+      ]) {
+        await _safeDirectory(directory);
+      }
       if (!await _containedDirectory(record.directory, record.accountKey)) {
         throw const _MediaError('Download storage is not a private directory.');
       }
@@ -1471,6 +1531,15 @@ class _Record {
   int diskVersion = 0;
 
   File file(String name) => File('${directory.path}/$name');
+
+  /// Whether the manifest would hold only what a missing manifest restores.
+  bool get blank =>
+      length == null &&
+      etag == null &&
+      digest == null &&
+      error == null &&
+      !requested &&
+      !complete;
 
   void wroteComplete(int length) {
     diskVersion++;
