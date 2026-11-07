@@ -91,6 +91,10 @@ class ListeningTimeline extends StatefulWidget {
   State<ListeningTimeline> createState() => _ListeningTimelineState();
 }
 
+/// The width of the time of day column, wide enough for "12:59 PM" on one
+/// line.
+const _timeWidth = 60.0;
+
 class _ListeningTimelineState extends State<ListeningTimeline> {
   /// The entry whose choices are shown, if any.
   String? _open;
@@ -162,7 +166,7 @@ class _ListeningTimelineState extends State<ListeningTimeline> {
       children: [
         // The rail that joins the entries of a day.
         Positioned(
-          left: 55,
+          left: _timeWidth + 11.25,
           top: 0,
           bottom: 0,
           child: Container(width: 1.5, color: scheme.outlineVariant),
@@ -174,14 +178,17 @@ class _ListeningTimelineState extends State<ListeningTimeline> {
               borderRadius: BorderRadius.circular(8),
               onTap: () => setState(() => _open = open ? null : entry.id),
               child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 5),
+                padding: const EdgeInsets.symmetric(vertical: 4),
                 child: Row(
                   children: [
                     SizedBox(
-                      width: 44,
+                      width: _timeWidth,
                       child: Text(
                         time,
                         style: small,
+                        maxLines: 1,
+                        softWrap: false,
+                        overflow: TextOverflow.fade,
                         textAlign: TextAlign.right,
                       ),
                     ),
@@ -231,7 +238,10 @@ class _ListeningTimelineState extends State<ListeningTimeline> {
             ),
             if (open)
               Padding(
-                padding: const EdgeInsets.only(left: 64, bottom: 4),
+                padding: const EdgeInsets.only(
+                  left: _timeWidth + 20,
+                  bottom: 4,
+                ),
                 child: Wrap(
                   crossAxisAlignment: WrapCrossAlignment.center,
                   spacing: 4,

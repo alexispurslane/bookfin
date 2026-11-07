@@ -109,6 +109,18 @@ void main() {
     expect(inTimeline(find.textContaining('A second story')), findsNothing);
   });
 
+  testWidgets('each time of day fits on one line, so entries stay dense', (
+    tester,
+  ) async {
+    await openHistory(tester);
+    final line = tester.getSize(inTimeline(find.text('Today'))).height;
+    final times = inTimeline(find.textContaining(RegExp(r'^\d{1,2}:\d\d')));
+    expect(times, findsWidgets);
+    for (final time in times.evaluate()) {
+      expect(tester.getSize(find.byWidget(time.widget)).height, line);
+    }
+  });
+
   testWidgets('a tap on an action offers going back to where it began', (
     tester,
   ) async {
