@@ -165,21 +165,28 @@ class LocalAudioEngine implements AudioEngine {
 /// Publishes the open book and its playback state to Android's media session,
 /// which drives the notification and the lock screen.
 ///
-/// Each published value costs a platform call, and Playback notifies on every
-/// player tick. The session projects the shown position from the last
-/// published position, its update time and its speed. So a state is published
-/// only when a shown field changes or when that projection drifts from the
-/// player by more than [_drift]: after a seek, a jump, a stall or a restore.
+/// The handler follows only Playback's selection, position and settings,
+/// which hold everything that it shows. Each published value costs a
+/// platform call, and the position notifies on every player tick. The
+/// session projects the shown position from the last published position, its
+/// update time and its speed. So a state is published only when a shown field
+/// changes or when that projection drifts from the player by more than
+/// [_drift]: after a seek, a jump, a stall or a restore.
 class PlaybackHandler extends BaseAudioHandler {
   static const _drift = Duration(seconds: 1);
   Playback? _playback;
+  Listenable? _changes;
   ({String id, String title, String artist, String album, int? duration})?
   _shown;
 
   void attach(Playback playback) {
-    _playback?.removeListener(_publish);
+    _changes?.removeListener(_publish);
     _playback = playback;
-    playback.addListener(_publish);
+    _changes = Listenable.merge([
+      playback.selectionNotifier,
+      playback.positionNotifier,
+      playback.settingsNotifier,
+    ])..addListener(_publish);
     _publish();
   }
 
