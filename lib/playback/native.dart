@@ -14,7 +14,7 @@ import 'store.dart';
 
 Future<Playback?> createPlayback(
   Downloads downloads, {
-  ResumeStore? store,
+  ListeningStore? store,
 }) async {
   if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return null;
   final engine = LocalAudioEngine();

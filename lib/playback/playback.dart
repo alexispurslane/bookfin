@@ -41,6 +41,90 @@ abstract class ResumeStore {
   void acceptSnapshot(String accountKey, Map<String, dynamic>? value) {}
 }
 
+/// The owner of each account's saved listening records, as [Playback] uses
+/// it.
+abstract class ListeningStore {
+  /// The saved listening snapshot of [accountKey], or null when the account
+  /// has none: the settings plus `history`, `bookmarks` and `resumes`.
+  Future<Map<String, dynamic>?> read(String accountKey);
+
+  /// Saves [changes] to the listening records of [accountKey].
+  ///
+  /// A record that [changes] does not name keeps its saved value. A named
+  /// record that equals the value this writer last saved or accepted adds no
+  /// sync action, so a retry can resend changes that were already saved.
+  Future<void> save(String accountKey, ListeningChanges changes);
+
+  /// Records [value] as the snapshot that the writer of [accountKey] now
+  /// shows, so later saves compare their records with it.
+  void acceptSnapshot(String accountKey, Map<String, dynamic>? value) {}
+}
+
+/// The listening records that one save changes.
+///
+/// A save carries the whole small [settings], but only the history events,
+/// bookmarks and edition resumes that changed.
+class ListeningChanges {
+  ListeningChanges(
+    this.settings, {
+    this.history = const {},
+    this.bookmarks = const {},
+    this.resumes = const {},
+  });
+
+  /// The version, selected edition, speed and jump lengths.
+  final Map<String, dynamic> settings;
+
+  /// The changed history events as JSON, by id. A null value deletes it.
+  final Map<String, Map<String, dynamic>?> history;
+
+  /// The changed bookmarks as JSON, by id. A null value deletes it.
+  final Map<String, Map<String, dynamic>?> bookmarks;
+
+  /// The whole resume list of each changed edition, by edition id. Resumes
+  /// are never deleted.
+  final Map<String, List<Map<String, dynamic>>> resumes;
+
+  /// These changes followed by [later]: the later value of each record and
+  /// the later settings win.
+  ListeningChanges followedBy(ListeningChanges later) => ListeningChanges(
+    later.settings,
+    history: {...history, ...later.history},
+    bookmarks: {...bookmarks, ...later.bookmarks},
+    resumes: {...resumes, ...later.resumes},
+  );
+
+  /// The listening snapshot that results when these changes apply to
+  /// [snapshot]. A changed record keeps its place, a new one goes last, and
+  /// a deleted one is removed.
+  Map<String, dynamic> applyTo(Map<String, dynamic>? snapshot) {
+    List<Map<String, dynamic>> apply(
+      List<dynamic>? saved,
+      Map<String, Map<String, dynamic>?> changed,
+    ) {
+      final unplaced = Map.of(changed);
+      return [
+        for (final value in saved ?? const [])
+          if (!unplaced.containsKey(value['id']))
+            Map<String, dynamic>.from(value as Map)
+          else
+            ?unplaced.remove(value['id']),
+        ...unplaced.values.nonNulls,
+      ];
+    }
+
+    return {
+      ...settings,
+      'history': apply(snapshot?['history'] as List?, history),
+      'bookmarks': apply(snapshot?['bookmarks'] as List?, bookmarks),
+      'resumes': <String, dynamic>{
+        ...?snapshot?['resumes'] as Map<String, dynamic>?,
+        ...resumes,
+      },
+    };
+  }
+}
+
 // The revision is a gesture-cancellation counter, not a media-source revision.
 typedef _SliderGesture = ({AudioPosition origin, int revision});
 
@@ -69,7 +153,7 @@ class Playback extends ChangeNotifier {
   }
   final Downloads downloads;
   final AudioEngine engine;
-  final ResumeStore store;
+  final ListeningStore store;
   final LiveReports? reports;
   late final StreamSubscription<AudioSample> _samples;
   JellyfinSession? _session;
@@ -104,7 +188,13 @@ class Playback extends ChangeNotifier {
   int _sliderRevision = 0;
   bool _seeking = false;
   ListeningAction? _commandAction;
-  final _pendingWrites = <String, Map<String, dynamic>>{};
+  // The changes of each account that the store did not yet confirm, merged
+  // into one change set. A retry resends all of them.
+  final _pendingWrites = <String, ListeningChanges>{};
+  // History events and bookmarks changed since the last _save, by id, as
+  // JSON. A null value is a deletion.
+  final _changedHistory = <String, Map<String, dynamic>?>{};
+  final _changedBookmarks = <String, Map<String, dynamic>?>{};
   final _failedAccounts = <String>{};
   int _recordRevision = 0;
   String? _recordedDecoderAnchor;
@@ -237,7 +327,7 @@ class Playback extends ChangeNotifier {
     if (!target.fits(_edition!)) {
       throw ArgumentError('Choose a bookmark position in this audio edition.');
     }
-    _bookmarks.add(
+    _putBookmark(
       AudioBookmark(
         id: recordId(),
         position: target,
@@ -259,27 +349,29 @@ class Playback extends ChangeNotifier {
           throw ArgumentError('Choose a bookmark from the current account.');
         }
         final bookmark = _bookmarks[index];
-        _bookmarks[index] = AudioBookmark(
-          id: bookmark.id,
-          position: bookmark.position,
-          createdAt: bookmark.createdAt,
-          bookTitle: bookmark.bookTitle,
-          editionLabel: bookmark.editionLabel,
-          title: _optionalText(title),
-          note: _optionalText(note),
+        _putBookmark(
+          AudioBookmark(
+            id: bookmark.id,
+            position: bookmark.position,
+            createdAt: bookmark.createdAt,
+            bookTitle: bookmark.bookTitle,
+            editionLabel: bookmark.editionLabel,
+            title: _optionalText(title),
+            note: _optionalText(note),
+          ),
         );
         await _saveRecords();
       });
 
   Future<void> deleteBookmark(String id) => _enqueue(() async {
     if (!_restored) return;
-    _bookmarks.removeWhere((bookmark) => bookmark.id == id);
+    _removeBookmark(id);
     await _saveRecords();
   });
 
   Future<void> deleteHistory(String id) => _enqueue(() async {
     if (!_restored) return;
-    _history.removeWhere((event) => event.id == id);
+    _removeHistory(id);
     if (_undo?.id == id) _undo = null;
     await _saveRecords();
   });
@@ -340,6 +432,32 @@ class Playback extends ChangeNotifier {
     _save();
     await _writes;
     _notify();
+  }
+
+  /// Adds [bookmark], or replaces the bookmark with its id, for the next save.
+  void _putBookmark(AudioBookmark bookmark) {
+    final index = _bookmarks.indexWhere((saved) => saved.id == bookmark.id);
+    if (index < 0) {
+      _bookmarks.add(bookmark);
+    } else {
+      _bookmarks[index] = bookmark;
+    }
+    _changedBookmarks[bookmark.id] = bookmark.toJson();
+  }
+
+  /// Deletes the bookmark [id] for the next save, if this account shows it.
+  void _removeBookmark(String id) {
+    final count = _bookmarks.length;
+    _bookmarks.removeWhere((bookmark) => bookmark.id == id);
+    if (_bookmarks.length != count) _changedBookmarks[id] = null;
+  }
+
+  /// Deletes the history event [id] for the next save, if this account shows
+  /// it.
+  void _removeHistory(String id) {
+    final count = _history.length;
+    _history.removeWhere((event) => event.id == id);
+    if (_history.length != count) _changedHistory[id] = null;
   }
 
   Future<bool> _restorePosition(
@@ -631,6 +749,8 @@ class Playback extends ChangeNotifier {
     _resumes = {};
     _history = [];
     _bookmarks = [];
+    _changedHistory.clear();
+    _changedBookmarks.clear();
     _undo = null;
     _invalidateSlider();
     _selected = null;
@@ -652,7 +772,8 @@ class Playback extends ChangeNotifier {
       if (session == null || generation != _generation) return;
       try {
         final pending = _pendingWrites[session.scope.key];
-        final saved = pending ?? await store.read(session.scope.key);
+        final stored = await store.read(session.scope.key);
+        final saved = pending == null ? stored : pending.applyTo(stored);
         if (generation != _generation) return;
         if (saved != null &&
             saved['version'] != 1 &&
@@ -1110,6 +1231,7 @@ class Playback extends ChangeNotifier {
       editionLabel: _edition!.label,
     );
     _history.add(event);
+    _changedHistory[event.id] = event.toJson();
     if (event.changesPosition) _undo = event;
   }
 
@@ -1203,10 +1325,13 @@ class Playback extends ChangeNotifier {
       ? null
       : jsonEncode([_editionSources(_edition!), encodePosition(_position!)]);
 
+  /// Hands the store the records changed since the last save, with the
+  /// current settings. The changes stay pending until the store saves them.
   void _save() {
     final accountKey = _session?.scope.key;
     if (accountKey == null || !_restored) return;
     ++_recordRevision;
+    final resumes = <String, List<Map<String, dynamic>>>{};
     final position = _position;
     final decoderAnchor = _decoderAnchor;
     if (position != null && decoderAnchor != _recordedDecoderAnchor) {
@@ -1231,33 +1356,36 @@ class Playback extends ChangeNotifier {
       } else {
         records[index] = value;
       }
+      resumes[position.editionId] = [
+        for (final value in records) Map<String, dynamic>.from(value),
+      ];
       _recordedDecoderAnchor = decoderAnchor;
     }
-    final value = <String, dynamic>{
-      'version': 3,
-      'history': _history.map((event) => event.toJson()).toList(),
-      'bookmarks': _bookmarks.map((bookmark) => bookmark.toJson()).toList(),
-      'selected': _selected,
-      'resumes': {
-        for (final entry in _resumes.entries)
-          entry.key: [
-            for (final value in entry.value) Map<String, dynamic>.from(value),
-          ],
+    final changes = ListeningChanges(
+      {
+        'version': 3,
+        'selected': _selected,
+        'speed': _speed,
+        'backward': _backward,
+        'forward': _forward,
       },
-      'speed': _speed,
-      'backward': _backward,
-      'forward': _forward,
-    };
+      history: Map.of(_changedHistory),
+      bookmarks: Map.of(_changedBookmarks),
+      resumes: resumes,
+    );
+    _changedHistory.clear();
+    _changedBookmarks.clear();
+    final value = _pendingWrites[accountKey]?.followedBy(changes) ?? changes;
     _pendingWrites[accountKey] = value;
-    _writes = _writes.then((_) => _persistSnapshot(accountKey, value));
+    _writes = _writes.then((_) => _persistChanges(accountKey, value));
   }
 
-  Future<void> _persistSnapshot(
+  Future<void> _persistChanges(
     String accountKey,
-    Map<String, dynamic> value,
+    ListeningChanges value,
   ) async {
     try {
-      await store.write(accountKey, value);
+      await store.save(accountKey, value);
       if (identical(_pendingWrites[accountKey], value)) {
         _pendingWrites.remove(accountKey);
         _failedAccounts.remove(accountKey);
@@ -1289,7 +1417,7 @@ class Playback extends ChangeNotifier {
     final accountKey = _session?.scope.key;
     final pending = _pendingWrites[accountKey];
     if (accountKey != null && pending != null && generation == _generation) {
-      _writes = _writes.then((_) => _persistSnapshot(accountKey, pending));
+      _writes = _writes.then((_) => _persistChanges(accountKey, pending));
       await _writes;
     }
     await reports?.idle;
@@ -1334,6 +1462,8 @@ class Playback extends ChangeNotifier {
         _failedAccounts.any(
           (account) => !_pendingWrites.containsKey(account),
         ) ||
+        _changedHistory.isNotEmpty ||
+        _changedBookmarks.isNotEmpty ||
         _replacementStart != null &&
             (!_restored ||
                 _session == null ||

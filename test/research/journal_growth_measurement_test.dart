@@ -150,7 +150,7 @@ Map<String, dynamic> seededState(
   };
 }
 
-class MeasuredRecords extends ResumeStore {
+class MeasuredRecords extends ListeningStore {
   MeasuredRecords(this.records);
   final LocalResumeStore records;
   int writes = 0;
@@ -162,9 +162,9 @@ class MeasuredRecords extends ResumeStore {
   void acceptSnapshot(String accountKey, Map<String, dynamic>? value) =>
       records.acceptSnapshot(accountKey, value);
   @override
-  Future<void> write(String accountKey, Map<String, dynamic> value) {
+  Future<void> save(String accountKey, ListeningChanges changes) {
     writes++;
-    return idle = records.write(accountKey, value);
+    return idle = records.save(accountKey, changes);
   }
 }
 

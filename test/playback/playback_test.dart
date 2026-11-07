@@ -455,7 +455,7 @@ void main() {
   });
 }
 
-class MemoryResume extends ResumeStore {
+class MemoryResume extends ResumeStore implements ListeningStore {
   final values = <String, Map<String, dynamic>>{};
   Completer<void>? readGate;
   bool failRead = false;
@@ -469,6 +469,11 @@ class MemoryResume extends ResumeStore {
   @override
   Future<void> write(String accountKey, Map<String, dynamic> value) async {
     values[accountKey] = value;
+  }
+
+  @override
+  Future<void> save(String accountKey, ListeningChanges changes) async {
+    values[accountKey] = changes.applyTo(values[accountKey]);
   }
 }
 
