@@ -173,6 +173,7 @@ class Book {
 
 List<Book> buildBooks(List<CatalogEntry> entries, {CatalogEdits? edits}) {
   edits ??= CatalogEdits();
+  final automatic = _seriesEditionLinks(entries);
   final byBook = <String, List<_SourceEdition>>{};
   for (final entry in entries) {
     final item = entry.json;
@@ -189,7 +190,10 @@ List<Book> buildBooks(List<CatalogEntry> entries, {CatalogEdits? edits}) {
     for (final source in sources) {
       final sourceId = source['Id'] as String? ?? '';
       final editionId = '${entry.id}:$sourceId';
-      final bookId = edits.bookLinks[editionId] ?? 'book:${entry.id}';
+      final bookId =
+          edits.bookLinks[editionId] ??
+          automatic[entry.id] ??
+          'book:${entry.id}';
       final file = SourceFile(
         itemId: entry.id,
         displayName: (item['Name'] as String?)?.trim().isNotEmpty == true
@@ -319,9 +323,18 @@ List<Book> buildBooks(List<CatalogEntry> entries, {CatalogEdits? edits}) {
         series: details != null ? details.series : jellyfinSeries,
         seriesOrder: details != null
             ? details.seriesOrder
-            : jellyfinSeries != null && item['Type'] == 'Book'
-            ? (item['IndexNumber'] as num?)?.toDouble()
-            : null,
+            : jellyfinSeries == null
+            ? null
+            : [seed, ...group.value]
+                  .map((source) => source.entry.json)
+                  .where(
+                    (member) =>
+                        member['Type'] == 'Book' &&
+                        _text(member['SeriesName']) == jellyfinSeries,
+                  )
+                  .map((member) => (member['IndexNumber'] as num?)?.toDouble())
+                  .nonNulls
+                  .firstOrNull,
         providerIds: Map.unmodifiable(
           Map<String, String>.from(item['ProviderIds'] as Map? ?? {}),
         ),
@@ -361,6 +374,35 @@ List<Book> possibleMatches(Book book, List<Book> books) => books
 
 String _title(String title) =>
     title.toLowerCase().replaceAll(RegExp(r'[^\p{L}\p{N}]', unicode: true), '');
+
+/// Ebook items that join an audiobook automatically, by item id, mapped to
+/// the audiobook's book id. They join when both carry the same Jellyfin
+/// series, title, and author, and exactly one audiobook item matches. Two
+/// matching recordings are ambiguous, so nothing joins them.
+Map<String, String> _seriesEditionLinks(List<CatalogEntry> entries) {
+  final audio = <String, List<String>>{};
+  final text = <String, List<String>>{};
+  for (final entry in entries) {
+    final item = entry.json;
+    final type = item['Type'];
+    if (type != 'AudioBook' && type != 'Book') continue;
+    final series = _text(item['SeriesName']);
+    final title = _text(item['Name']);
+    if (series == null || title == null) continue;
+    final key = jsonEncode([
+      series.toLowerCase().replaceAll(RegExp(r'\s+'), ' '),
+      title.toLowerCase(),
+      _author(item).trim().toLowerCase(),
+    ]);
+    (type == 'Book' ? text : audio).putIfAbsent(key, () => []).add(entry.id);
+  }
+  return {
+    for (final MapEntry(:key, value: ebooks) in text.entries)
+      if (audio[key]?.length == 1)
+        for (final id in ebooks) id: 'book:${audio[key]!.single}',
+  };
+}
+
 String? _text(dynamic value) =>
     value is String && value.trim().isNotEmpty ? value.trim() : null;
 

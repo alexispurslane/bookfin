@@ -196,6 +196,76 @@ void main() {
     );
   });
 
+  CatalogEntry seriesEntry(
+    String id, {
+    String title = 'Graft',
+    String type = 'AudioBook',
+    String series = 'The Orchard Cycle',
+    int? index,
+  }) => entry(
+    id,
+    title: title,
+    type: type,
+    container: type == 'Book' ? 'epub' : 'm4b',
+    fields: {'SeriesName': series, 'IndexNumber': ?index},
+  );
+
+  test(
+    'an audiobook and an ebook with the same title in one series are one book',
+    () {
+      final books = buildBooks([
+        seriesEntry('audio'),
+        seriesEntry('ebook', type: 'Book', index: 2),
+        seriesEntry('other', title: 'Windfall', type: 'Book', index: 3),
+      ]);
+      expect(books, hasLength(2));
+      final graft = books.singleWhere((book) => book.title == 'Graft');
+      expect(graft.editions.map((edition) => edition.kind), {
+        EditionKind.audio,
+        EditionKind.text,
+      });
+      expect(graft.seriesOrder, 2, reason: 'the ebook supplies the position');
+    },
+  );
+
+  test('same-titled editions outside a series still wait for confirmation', () {
+    final books = buildBooks([
+      entry('audio'),
+      entry('ebook', type: 'Book', container: 'epub'),
+    ]);
+    expect(books, hasLength(2));
+  });
+
+  test('same-titled editions in different series stay separate', () {
+    final books = buildBooks([
+      seriesEntry('audio'),
+      seriesEntry('ebook', type: 'Book', series: 'Another Cycle'),
+    ]);
+    expect(books, hasLength(2));
+  });
+
+  test(
+    'two recordings of one title in a series are never merged automatically',
+    () {
+      final books = buildBooks([
+        seriesEntry('first'),
+        seriesEntry('second'),
+        seriesEntry('ebook', type: 'Book'),
+      ]);
+      expect(books, hasLength(3));
+    },
+  );
+
+  test('a separated ebook stays separate from its same-titled audiobook', () {
+    final books = buildBooks(
+      [seriesEntry('audio'), seriesEntry('ebook', type: 'Book')],
+      edits: CatalogEdits(
+        bookLinks: {'ebook:source': 'book:edition:ebook:source'},
+      ),
+    );
+    expect(books, hasLength(2));
+  });
+
   test('a corrected series wins over the Jellyfin series', () {
     final book = buildBooks(
       [
