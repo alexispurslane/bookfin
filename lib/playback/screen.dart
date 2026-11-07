@@ -2,8 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../catalog/book_cover.dart';
 import '../foundation/theme.dart';
 import 'playback.dart';
+import 'recent.dart';
 import 'records_screen.dart';
 
 class PlaybackMiniPlayer extends StatelessWidget {
@@ -107,16 +109,24 @@ void openListeningHistory(BuildContext context, Playback playback) => unawaited(
   ),
 );
 
-void openPlayer(BuildContext context, Playback playback) => unawaited(
-  Navigator.of(context).push<void>(
-    MaterialPageRoute(
-      builder: (_) => Scaffold(
-        appBar: AppBar(title: const Text('Listening')),
-        body: BookfinSurface(child: PlayerView(playback: playback)),
+void openPlayer(BuildContext context, Playback playback) {
+  // The pushed route sits above the screen's cover scope, so carry it along.
+  final scope = CoverScope.of(context);
+  unawaited(
+    Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        builder: (_) => CoverScope(
+          covers: scope?.covers,
+          session: scope?.session,
+          child: Scaffold(
+            appBar: AppBar(title: const Text('Listening')),
+            body: BookfinSurface(child: PlayerView(playback: playback)),
+          ),
+        ),
       ),
     ),
-  ),
-);
+  );
+}
 
 class ReplacementStartNotice extends StatelessWidget {
   const ReplacementStartNotice({
@@ -192,24 +202,29 @@ class PlayerView extends StatelessWidget {
     builder: (context, _) {
       final book = playback.book;
       if (book == null) {
-        return Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
+        return ListView(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+          children: [
+            RecordSaveStatus(playback: playback),
+            ReplacementStartNotice(playback: playback),
+            if (playback.recent.isEmpty)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 48),
+                child: Text(
                   'Choose a downloaded audio edition to start listening.',
+                  textAlign: TextAlign.center,
                 ),
-                RecordSaveStatus(playback: playback),
-                ReplacementStartNotice(playback: playback),
-                TextButton(
-                  onPressed: () => openListeningHistory(context, playback),
-                  child: const Text('History'),
-                ),
-              ],
+              )
+            else
+              RecentListeningList(playback: playback),
+            const SizedBox(height: 12),
+            Center(
+              child: TextButton(
+                onPressed: () => openListeningHistory(context, playback),
+                child: const Text('History'),
+              ),
             ),
-          ),
+          ],
         );
       }
       final duration = playback.durationMilliseconds;
@@ -223,22 +238,7 @@ class PlayerView extends StatelessWidget {
             style: Theme.of(context).textTheme.labelSmall,
           ),
           const SizedBox(height: 20),
-          Center(
-            child: Container(
-              width: 170,
-              height: 195,
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceContainerHigh,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              alignment: Alignment.center,
-              child: Icon(
-                Icons.auto_stories_rounded,
-                size: 72,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-            ),
-          ),
+          Center(child: SizedBox(width: 168, child: BookCover.book(book))),
           const SizedBox(height: 24),
           Text(
             book.title,
@@ -330,6 +330,8 @@ class PlayerView extends StatelessWidget {
               ),
             ],
           ),
+          const SizedBox(height: 28),
+          RecentListeningList(playback: playback),
         ],
       );
     },

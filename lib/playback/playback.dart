@@ -51,6 +51,8 @@ class AudioReplacement {
   final AudioPosition previous;
 }
 
+typedef RecentListening = ({Book book, Edition edition, DateTime at});
+
 class Playback extends ChangeNotifier {
   Playback({
     required this.downloads,
@@ -109,6 +111,25 @@ class Playback extends ChangeNotifier {
   AudioReplacement? _replacementStart;
 
   List<ListeningEvent> get history => List.unmodifiable(_history.reversed);
+
+  /// The books of this account that were listened to, newest first, each with
+  /// the audio edition and time of its latest listening.
+  List<RecentListening> get recent {
+    final editions = {
+      for (final book in _books)
+        for (final edition in book.editions) edition.id: (book, edition),
+    };
+    final events = [..._history]..sort((a, b) => b.at.compareTo(a.at));
+    final seen = <String>{};
+    final recent = <RecentListening>[];
+    for (final event in events) {
+      final found = editions[event.after.editionId];
+      if (found == null || !seen.add(found.$1.id)) continue;
+      recent.add((book: found.$1, edition: found.$2, at: event.at));
+    }
+    return recent;
+  }
+
   List<AudioBookmark> get bookmarks => List.unmodifiable(_bookmarks.reversed);
   ListeningEvent? get undoAction => _undo;
   bool get unsavedChanges => _pendingWrites.containsKey(_session?.scope.key);

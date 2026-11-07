@@ -69,7 +69,7 @@ void main() {
           home: Scaffold(body: PlayerView(playback: playback)),
         ),
       );
-      await tester.ensureVisible(find.text('History'));
+      await tester.scrollUntilVisible(find.text('History'), 150);
       await tester.tap(find.text('History'));
       await tester.pumpAndSettle();
       expect(find.byTooltip('Pause'), findsOneWidget);
@@ -124,6 +124,7 @@ void main() {
           home: Scaffold(body: PlayerView(playback: playback)),
         ),
       );
+      await tester.scrollUntilVisible(find.text('Chapters'), 150);
       await tester.tap(find.widgetWithText(OutlinedButton, 'Chapters'));
       await tester.pumpAndSettle();
       await tester.runAsync(() async {
@@ -145,6 +146,7 @@ void main() {
           home: Scaffold(body: PlayerView(playback: playback)),
         ),
       );
+      await tester.scrollUntilVisible(find.text('1× speed'), 150);
       await tester.tap(find.text('1× speed'));
       await tester.pumpAndSettle();
       await tester.ensureVisible(find.text('1.5×'));
@@ -199,7 +201,7 @@ void main() {
         playback.history.where((event) => event.kind == ListeningAction.seek),
         hasLength(1),
       );
-      await tester.ensureVisible(find.text('Undo'));
+      await tester.scrollUntilVisible(find.text('Undo'), 150);
       await tester.pumpAndSettle();
       await tester.runAsync(() async {
         await tester.tap(find.text('Undo'));
@@ -219,7 +221,7 @@ void main() {
           home: Scaffold(body: PlayerView(playback: playback)),
         ),
       );
-      await tester.ensureVisible(find.text('Bookmark'));
+      await tester.scrollUntilVisible(find.text('Bookmark'), 150);
       await tester.pumpAndSettle();
       await tester.tap(find.text('Bookmark'));
       await tester.pumpAndSettle();
@@ -237,7 +239,7 @@ void main() {
       });
       await tester.pumpAndSettle();
       expect(playback.bookmarks.single.title, 'Remember');
-      await tester.ensureVisible(find.text('History'));
+      await tester.scrollUntilVisible(find.text('History'), 150);
       await tester.pumpAndSettle();
       await tester.tap(find.text('History'));
       await tester.pumpAndSettle();
