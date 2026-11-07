@@ -24,7 +24,9 @@ Breaks (verified at f388307):
 
 Target design: the status listenable from t9-se8f carries a visible status only for a refresh that the user asked for (pull-to-refresh, Save libraries, Refresh libraries) and for the failures that the first paragraph names. The background refresh at launch is silent. AccountBinding from t9-dcld binds Downloads and Playback to the saved books at once. The shelf keeps its scroll position when the view changes in place.
 
-Open decision: what counts as an old saved library for the failure notice.
+Decided by the user on November 7, 2026: Option A, with an age of 7 days after completedAt. A failed background refresh shows a quiet notice only when the saved library is older than that.
+
+Former open decision: what counts as an old saved library for the failure notice.
 - Option A: a fixed age, for example 7 days after completedAt. Cost: a limit that the user did not choose.
 - Option B: never speak about a failed background refresh. Speak only for a user refresh, an expired sign-in and revoked access. Cost: a user whose library is very old gets no hint that refreshes fail.
 

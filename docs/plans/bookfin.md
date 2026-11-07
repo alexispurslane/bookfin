@@ -308,3 +308,12 @@ The user chose design A of `docs/mockups/glass-places.html`, with the tint of de
 - A tap on an entry shows its choices: go back to where an action began, go to where it ended, go to or name a bookmark, and Delete. A choice that goes to a place closes the timeline.
 - In the player and on a book page, the timeline shows that book only. From the Listening tab with nothing open, it shows every book and names the book of each entry.
 - When another layer opens over a glass sheet, the sheet steps back: it shrinks a little and darkens, like a stack of cards. The user chose design A of `docs/mockups/glass-stacking.html`.
+
+## Conformance decisions — November 7, 2026
+
+The user settled four open points of the conformance epic (boo-bquq):
+
+- The Sync page shows a quiet line about the last background sync, such as "Last synced 4:29 PM" or "Last sync failed. Tap Sync now to retry." It shows no busy state during a background sync (t9-pols).
+- The PDF reflow choice lasts until the app restarts. The reader session keeps it, and it is not saved in the reading records (t9-3n2m).
+- A failed background library refresh stays silent unless the saved library is older than 7 days. Then a quiet notice appears (boo-0km1).
+- The mini player, the replacement notice and the record save status each keep one public widget that acts as the controller for its own surface. Each one wraps a pure leaf that only draws and reports events (t9-xj41).
