@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../catalog/book_page.dart' show confirmAction;
+import '../catalog/glass.dart' show confirmAction;
 import '../catalog/controller.dart';
 import '../catalog/layout.dart';
 import '../catalog/screen.dart' show LibrarySelector;
@@ -149,9 +149,9 @@ class SettingsPage extends StatelessWidget {
                 final account = catalog.session!.scope.key;
                 if (await confirmAction(
                   context,
-                  'Reset catalog corrections?',
-                  'Remove your book links, file groups, file order, and book details for this account. Jellyfin will not change.',
-                  'Reset corrections',
+                  title: 'Reset catalog corrections?',
+                  message: 'Remove your book links, file groups, file order, and book details for this account. Jellyfin will not change.',
+                  action: 'Reset corrections',
                 )) {
                   if (catalog.session?.scope.key != account) return;
                   await catalog.resetCorrections();

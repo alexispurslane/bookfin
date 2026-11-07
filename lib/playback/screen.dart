@@ -188,29 +188,17 @@ class ReplacementStartNotice extends StatelessWidget {
           ),
           TextButton(
             onPressed: () async {
-              final confirmed = await showDialog<bool>(
-                context: context,
-                builder: (context) => GlassDialog(
-                  title: const Text('Start replacement audio?'),
-                  content: Text(
+              final confirmed = await confirmAction(
+                context,
+                title: 'Start replacement audio?',
+                message:
                     'Start ${request.edition.label} from the beginning. '
                     'Your old position (${audioTime(request.previous.milliseconds)} within its original audio file), '
                     'history and bookmarks will be kept separately. '
                     'Old positions will not be applied to changed audio.',
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context, false),
-                      child: const Text('Cancel'),
-                    ),
-                    FilledButton(
-                      onPressed: () => Navigator.pop(context, true),
-                      child: const Text('Start from beginning'),
-                    ),
-                  ],
-                ),
+                action: 'Start from beginning',
               );
-              if (confirmed != true) {
+              if (!confirmed) {
                 playback.cancelReplacement(request);
                 return;
               }

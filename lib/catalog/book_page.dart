@@ -348,9 +348,10 @@ class BookPage extends StatelessWidget {
     if (candidate == null || !context.mounted) return;
     if (await confirmAction(
       context,
-      'Link editions?',
-      'Keep “${candidate.title}” by ${candidate.author.isEmpty ? 'an unknown author' : candidate.author} as the book details. Recordings and ebook editions stay separate. Jellyfin will not change.',
-      'Link editions',
+      title: 'Link editions?',
+      message:
+          'Keep “${candidate.title}” by ${candidate.author.isEmpty ? 'an unknown author' : candidate.author} as the book details. Recordings and ebook editions stay separate. Jellyfin will not change.',
+      action: 'Link editions',
     )) {
       if (!catalog.books.any((candidate) => candidate.id == book.id) ||
           !catalog.books.any((book) => book.id == candidate.id)) {
@@ -369,9 +370,9 @@ class BookPage extends StatelessWidget {
     if (selected == null || !context.mounted) return;
     if (await confirmAction(
       context,
-      'Combine as one recording?',
-      'Use this only for consecutive files of the same recording, not different narrators or abridged versions. You can correct the file order afterward.',
-      'Combine files',
+      title: 'Combine as one recording?',
+      message: 'Use this only for consecutive files of the same recording, not different narrators or abridged versions. You can correct the file order afterward.',
+      action: 'Combine files',
     )) {
       try {
         await catalog.combineAudio(book.id, selected);
@@ -582,9 +583,9 @@ class _DownloadButton extends StatelessWidget {
         () async {
           if (await confirmAction(
             context,
-            'Remove download?',
-            'The files leave this phone. You can download them again later.',
-            'Remove',
+            title: 'Remove download?',
+            message: 'The files leave this phone. You can download them again later.',
+            action: 'Remove',
           )) {
             await downloads.remove(edition);
           }
@@ -862,9 +863,9 @@ class _EditionPanel extends StatelessWidget {
                     onPressed: () async {
                       if (await confirmAction(
                         context,
-                        'Separate this source?',
-                        'This source becomes a separate book. Its Jellyfin item will not change.',
-                        'Separate',
+                        title: 'Separate this source?',
+                        message: 'This source becomes a separate book. Its Jellyfin item will not change.',
+                        action: 'Separate',
                       )) {
                         await catalog.separateEdition(file.key);
                       }
@@ -893,31 +894,6 @@ class _EditionPanel extends StatelessWidget {
     }
   }
 }
-
-Future<bool> confirmAction(
-  BuildContext context,
-  String title,
-  String message,
-  String action,
-) async =>
-    await showDialog<bool>(
-      context: context,
-      builder: (context) => GlassDialog(
-        title: Text(title),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(action),
-          ),
-        ],
-      ),
-    ) ??
-    false;
 
 class _BookCorrection extends StatefulWidget {
   const _BookCorrection({required this.book});

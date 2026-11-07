@@ -319,26 +319,14 @@ class _ListeningTimelineState extends State<ListeningTimeline> {
         () => playback.deleteBookmark(bookmark.id),
       ),
     };
-    await showDialog<void>(
-      context: context,
-      builder: (context) => GlassDialog(
-        title: Text(title),
-        content: Text(explanation),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () async {
-              await remove();
-              if (context.mounted) Navigator.pop(context);
-            },
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
-    );
+    if (await confirmAction(
+      context,
+      title: title,
+      message: explanation,
+      action: 'Delete',
+    )) {
+      await remove();
+    }
   }
 
   /// A place as a time in its edition, or in its file when the edition time

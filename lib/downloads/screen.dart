@@ -296,26 +296,14 @@ class _Summary extends StatelessWidget {
             if (policy.network == MediaNetwork.mobile && !policy.mobileAllowed)
               TextButton(
                 onPressed: () async {
-                  final allow = await showDialog<bool>(
-                    context: context,
-                    builder: (context) => GlassDialog(
-                      title: const Text('Allow mobile data?'),
-                      content: const Text(
-                        'Allow media transfers for this account session. Your carrier may charge for mobile data. Signing out or restarting ends this permission.',
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context, false),
-                          child: const Text('Wait for Wi-Fi'),
-                        ),
-                        FilledButton(
-                          onPressed: () => Navigator.pop(context, true),
-                          child: const Text('Allow this session'),
-                        ),
-                      ],
-                    ),
+                  final allow = await confirmAction(
+                    context,
+                    title: 'Allow mobile data?',
+                    message: 'Allow media transfers for this account session. Your carrier may charge for mobile data. Signing out or restarting ends this permission.',
+                    action: 'Allow this session',
+                    cancel: 'Wait for Wi-Fi',
                   );
-                  if (allow == true && context.mounted) {
+                  if (allow && context.mounted) {
                     policy.allowMobileForSession();
                   }
                 },
@@ -441,27 +429,13 @@ extension on String {
 }
 
 /// Asks before removing an edition's local files.
-Future<bool> confirmRemoveDownload(BuildContext context) async =>
-    await showDialog<bool>(
-      context: context,
-      builder: (context) => GlassDialog(
-        title: const Text('Remove download?'),
-        content: const Text(
-          'Remove this edition’s local files and unfinished transfers. Your Jellyfin files will not change.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Keep download'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Remove download'),
-          ),
-        ],
-      ),
-    ) ??
-    false;
+Future<bool> confirmRemoveDownload(BuildContext context) => confirmAction(
+  context,
+  title: 'Remove download?',
+  message: 'Remove this edition’s local files and unfinished transfers. Your Jellyfin files will not change.',
+  action: 'Remove download',
+  cancel: 'Keep download',
+);
 
 void _change(BuildContext context, Future<void> Function() operation) {
   unawaited(() async {
@@ -623,29 +597,14 @@ class LeftoverFilesPage extends StatelessWidget {
   const LeftoverFilesPage({super.key, required this.downloads});
   final Downloads downloads;
 
-  Future<bool> _confirm(
-    BuildContext context,
-    String title,
-    String body,
-  ) async =>
-      await showDialog<bool>(
-        context: context,
-        builder: (context) => GlassDialog(
-          title: Text(title),
-          content: Text(body),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Keep files'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('Remove files'),
-            ),
-          ],
-        ),
-      ) ==
-      true;
+  Future<bool> _confirm(BuildContext context, String title, String body) =>
+      confirmAction(
+        context,
+        title: title,
+        message: body,
+        action: 'Remove files',
+        cancel: 'Keep files',
+      );
 
   Future<void> _remove(
     BuildContext context,

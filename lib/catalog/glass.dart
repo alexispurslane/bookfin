@@ -267,6 +267,36 @@ class GlassDialog extends StatelessWidget {
   }
 }
 
+/// Asks the person to confirm [action] before it happens. The dialog shows
+/// [title] and [message], a [cancel] button, and a filled button labeled
+/// [action]. It is true only when the person chose [action]; Cancel and a tap
+/// outside the dialog are false. The dialog is a glass pane.
+Future<bool> confirmAction(
+  BuildContext context, {
+  required String title,
+  required String message,
+  required String action,
+  String cancel = 'Cancel',
+}) async =>
+    await showDialog<bool>(
+      context: context,
+      builder: (context) => GlassDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(action),
+          ),
+        ],
+      ),
+    ) ??
+    false;
+
 /// Shows a short message that floats on glass above the bottom of the page.
 void showGlassMessage(BuildContext context, String message) {
   final theme = Theme.of(context);
