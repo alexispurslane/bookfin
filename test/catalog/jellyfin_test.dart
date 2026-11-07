@@ -411,6 +411,9 @@ void main() {
       'Etag',
       'CanDownload',
       'SortName',
+      'Overview',
+      'Genres',
+      'Studios',
     };
     respond = (request) {
       if (request.uri.path.endsWith('UserViews')) {
@@ -457,6 +460,62 @@ void main() {
     );
     expect(requests.last.uri.queryParameters['parentId'], 'books');
   });
+
+  test(
+    'the catalog keeps the cover, series, and details of each book',
+    () async {
+      respond = (request) {
+        if (request.uri.path.endsWith('UserViews')) {
+          request.response.write(
+            jsonEncode({
+              'Items': [
+                {'Id': 'books', 'Name': 'Books', 'CollectionType': 'books'},
+              ],
+            }),
+          );
+        } else {
+          final fields = request.uri.queryParameters['fields']!.split(',');
+          request.response.write(
+            jsonEncode({
+              'Items': [
+                entry(
+                  'graft',
+                  title: 'Graft',
+                  type: 'Book',
+                  container: 'epub',
+                  fields: {
+                    'SeriesName': 'The Orchard Cycle',
+                    'IndexNumber': 2,
+                    'ImageTags': {'Primary': 'cover-tag'},
+                    'ProductionYear': 2021,
+                    if (fields.contains('Overview')) 'Overview': 'A return.',
+                    if (fields.contains('Genres')) 'Genres': ['Fantasy'],
+                    if (fields.contains('Studios'))
+                      'Studios': [
+                        {'Name': 'Halyard Press', 'Id': 'studio'},
+                      ],
+                    'UnrelatedSecret': 'dropped',
+                  },
+                ).json,
+              ],
+              'TotalRecordCount': 1,
+            }),
+          );
+        }
+        return request.response.close();
+      };
+      final items = await client.catalog(session, {'books'});
+      expect(items.single.json, isNot(contains('UnrelatedSecret')));
+      final book = buildBooks(items).single;
+      expect(book.series, 'The Orchard Cycle');
+      expect(book.seriesOrder, 2);
+      expect(book.cover, const CoverRef('graft', 'cover-tag'));
+      expect(book.description, 'A return.');
+      expect(book.genres, ['Fantasy']);
+      expect(book.publisher, 'Halyard Press');
+      expect(book.year, 2021);
+    },
+  );
 
   test('rejected sign-in explains credentials rather than claiming an expired session', () async {
     respond = (request) {

@@ -288,7 +288,7 @@ class JellyfinClient {
             'parentId': library,
             'recursive': 'true',
             'includeItemTypes': 'AudioBook,Book,Audio',
-            'fields': 'MediaSources,Chapters,People,ProviderIds,Etag,ParentId',
+            'fields': 'MediaSources,Chapters,People,ProviderIds,Etag,ParentId,Overview,Genres,Studios',
             'startIndex': '$start',
             'limit': '200',
             'enableTotalRecordCount': 'true',
@@ -339,6 +339,14 @@ class JellyfinClient {
                 'People',
                 'Chapters',
                 'Container',
+                'SeriesName',
+                'Overview',
+                'Genres',
+                'Studios',
+                'ProductionYear',
+                'ImageTags',
+                'AlbumId',
+                'AlbumPrimaryImageTag',
               ])
                 if (item.containsKey(field)) field: item[field],
             };

@@ -140,8 +140,12 @@ void main() {
     },
   );
 
-  test('explicit series order retains fractional side stories and ignores TV series fields', () {
-    final first = entry('one', fields: {'SeriesName': 'Not a book series'});
+  test('explicit series order retains fractional side stories and ignores series fields on plain audio files', () {
+    final first = entry(
+      'one',
+      type: 'Audio',
+      fields: {'SeriesName': 'Not a book series'},
+    );
     expect(buildBooks([first]).single.series, isNull);
     final books = buildBooks(
       [first, entry('two')],
@@ -163,6 +167,106 @@ void main() {
       ),
     );
     expect(books.map((book) => book.seriesOrder), containsAll([1.5, 2]));
+  });
+
+  test('books and audiobooks take their series from Jellyfin', () {
+    final books = buildBooks([
+      entry(
+        'ebook',
+        title: 'Graft',
+        type: 'Book',
+        container: 'epub',
+        fields: {'SeriesName': 'The Orchard Cycle', 'IndexNumber': 2},
+      ),
+      entry(
+        'audio',
+        title: 'First Frost',
+        fields: {'SeriesName': 'The Orchard Cycle'},
+      ),
+    ]);
+    final graft = books.singleWhere((book) => book.title == 'Graft');
+    final frost = books.singleWhere((book) => book.title == 'First Frost');
+    expect(graft.series, 'The Orchard Cycle');
+    expect(graft.seriesOrder, 2);
+    expect(frost.series, 'The Orchard Cycle');
+    expect(
+      frost.seriesOrder,
+      isNull,
+      reason: 'audio track numbers are not series positions',
+    );
+  });
+
+  test('a corrected series wins over the Jellyfin series', () {
+    final book = buildBooks(
+      [
+        entry('one', fields: {'SeriesName': 'Wrong'}),
+      ],
+      edits: CatalogEdits(
+        details: {
+          'book:one': const BookDetails(title: 'One', author: 'Writer'),
+        },
+      ),
+    ).single;
+    expect(book.series, isNull);
+  });
+
+  test('a book shows its own cover, or the album cover of its audio files', () {
+    final own = buildBooks([
+      entry(
+        'own',
+        fields: {
+          'ImageTags': {'Primary': 'tag-own'},
+        },
+      ),
+    ]).single;
+    expect(own.cover, const CoverRef('own', 'tag-own'));
+    final album = buildBooks([
+      entry(
+        'track',
+        type: 'Audio',
+        fields: {'AlbumId': 'album', 'AlbumPrimaryImageTag': 'tag-album'},
+      ),
+    ]).single;
+    expect(album.cover, const CoverRef('album', 'tag-album'));
+    expect(buildBooks([entry('bare')]).single.cover, isNull);
+  });
+
+  test('a linked book borrows a cover from any of its editions', () {
+    final book = buildBooks([
+      entry('audio'),
+      entry(
+        'ebook',
+        type: 'Book',
+        container: 'epub',
+        fields: {
+          'ImageTags': {'Primary': 'tag-ebook'},
+        },
+      ),
+    ], edits: CatalogEdits(bookLinks: {'ebook:source': 'book:audio'})).single;
+    expect(book.cover, const CoverRef('ebook', 'tag-ebook'));
+  });
+
+  test('book details come from Jellyfin metadata as plain text', () {
+    final book = buildBooks([
+      entry(
+        'one',
+        fields: {
+          'Overview': '<p>Two winters after the frost,</p><p>Wren returns &amp; waits.</p>',
+          'Genres': ['Literary fantasy', 'Fiction'],
+          'Studios': [
+            {'Name': 'Halyard Press', 'Id': 'studio'},
+          ],
+          'ProductionYear': 2021,
+        },
+      ),
+    ]).single;
+    expect(
+      book.description,
+      'Two winters after the frost,\n\nWren returns & waits.',
+    );
+    expect(book.genres, ['Literary fantasy', 'Fiction']);
+    expect(book.publisher, 'Halyard Press');
+    expect(book.year, 2021);
   });
 
   test('audio positions cannot cross editions or reuse replaced files', () {

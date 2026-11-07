@@ -120,6 +120,22 @@ class Edition {
   final List<String> memberIds;
 }
 
+/// The Jellyfin item whose primary image is a book cover, at one image version.
+class CoverRef {
+  const CoverRef(this.itemId, this.tag);
+  final String itemId;
+
+  /// Jellyfin's image tag. It changes when the image changes.
+  final String tag;
+  @override
+  bool operator ==(Object other) =>
+      other is CoverRef && other.itemId == itemId && other.tag == tag;
+  @override
+  int get hashCode => Object.hash(itemId, tag);
+  @override
+  String toString() => 'CoverRef($itemId, $tag)';
+}
+
 class Book {
   const Book({
     required this.id,
@@ -129,6 +145,11 @@ class Book {
     this.series,
     this.seriesOrder,
     this.providerIds = const {},
+    this.cover,
+    this.description,
+    this.genres = const [],
+    this.publisher,
+    this.year,
   });
   final String id;
   final String title;
@@ -137,6 +158,13 @@ class Book {
   final String? series;
   final double? seriesOrder;
   final Map<String, String> providerIds;
+  final CoverRef? cover;
+
+  /// Plain text. Paragraphs are separated by one blank line.
+  final String? description;
+  final List<String> genres;
+  final String? publisher;
+  final int? year;
 }
 
 List<Book> buildBooks(List<CatalogEntry> entries, {CatalogEdits? edits}) {
@@ -272,20 +300,40 @@ List<Book> buildBooks(List<CatalogEntry> entries, {CatalogEdits? edits}) {
       );
     }
     final details = edits.details[group.key];
+    final item = seed.entry.json;
+    // Plain audio files carry no book series. Their IndexNumber is a track.
+    final jellyfinSeries = item['Type'] == 'Audio'
+        ? null
+        : _text(item['SeriesName']);
     books.add(
       Book(
         id: group.key,
-        title:
-            details?.title ?? seed.entry.json['Name'] as String? ?? 'Untitled',
-        author: details?.author ?? _author(seed.entry.json),
+        title: details?.title ?? item['Name'] as String? ?? 'Untitled',
+        author: details?.author ?? _author(item),
         editions: List.unmodifiable(editions),
-        series: details?.series,
-        seriesOrder: details?.seriesOrder,
+        series: details != null ? details.series : jellyfinSeries,
+        seriesOrder: details != null
+            ? details.seriesOrder
+            : jellyfinSeries != null && item['Type'] == 'Book'
+            ? (item['IndexNumber'] as num?)?.toDouble()
+            : null,
         providerIds: Map.unmodifiable(
-          Map<String, String>.from(
-            seed.entry.json['ProviderIds'] as Map? ?? {},
-          ),
+          Map<String, String>.from(item['ProviderIds'] as Map? ?? {}),
         ),
+        cover: [
+          seed,
+          ...group.value,
+        ].map((source) => _cover(source.entry.json)).nonNulls.firstOrNull,
+        description: _plainText(item['Overview']),
+        genres: List.unmodifiable(
+          (item['Genres'] as List? ?? []).whereType<String>(),
+        ),
+        publisher: (item['Studios'] as List? ?? [])
+            .whereType<Map>()
+            .map((studio) => _text(studio['Name']))
+            .nonNulls
+            .firstOrNull,
+        year: (item['ProductionYear'] as num?)?.toInt(),
       ),
     );
   }
@@ -308,6 +356,44 @@ List<Book> possibleMatches(Book book, List<Book> books) => books
 
 String _title(String title) =>
     title.toLowerCase().replaceAll(RegExp(r'[^\p{L}\p{N}]', unicode: true), '');
+String? _text(dynamic value) =>
+    value is String && value.trim().isNotEmpty ? value.trim() : null;
+
+CoverRef? _cover(Map<String, dynamic> item) {
+  final own = (item['ImageTags'] as Map?)?['Primary'];
+  if (own is String && own.isNotEmpty) {
+    return CoverRef(item['Id'] as String, own);
+  }
+  final album = item['AlbumId'];
+  final albumTag = item['AlbumPrimaryImageTag'];
+  return album is String &&
+          album.isNotEmpty &&
+          albumTag is String &&
+          albumTag.isNotEmpty
+      ? CoverRef(album, albumTag)
+      : null;
+}
+
+/// Jellyfin overviews from ebook metadata often hold HTML.
+String? _plainText(dynamic value) {
+  if (value is! String) return null;
+  final text = value
+      .replaceAll(RegExp(r'<br\s*/?>', caseSensitive: false), '\n')
+      .replaceAll(RegExp(r'</p\s*>', caseSensitive: false), '\n\n')
+      .replaceAll(RegExp(r'<[^>]*>'), '')
+      .replaceAll('&nbsp;', ' ')
+      .replaceAll('&lt;', '<')
+      .replaceAll('&gt;', '>')
+      .replaceAll('&quot;', '"')
+      .replaceAll('&#39;', "'")
+      .replaceAll('&amp;', '&')
+      .replaceAll(RegExp(r'[ \t]+'), ' ')
+      .replaceAll(RegExp(r' *\n *'), '\n')
+      .replaceAll(RegExp(r'\n{3,}'), '\n\n')
+      .trim();
+  return text.isEmpty ? null : text;
+}
+
 int? _milliseconds(dynamic ticks) =>
     ticks is num ? ticks.toInt() ~/ 10000 : null;
 int _index(dynamic index) => index is num ? index.toInt() : 0x7fffffff;
