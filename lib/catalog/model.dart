@@ -112,10 +112,14 @@ class Edition {
     required this.label,
     required this.files,
     required this.memberIds,
+    this.narrator,
   });
   final String id;
   final EditionKind kind;
   final String label;
+
+  /// The Jellyfin narrators of an audio edition, joined with commas.
+  final String? narrator;
   final List<SourceFile> files;
   final List<String> memberIds;
 }
@@ -283,6 +287,7 @@ List<Book> buildBooks(List<CatalogEntry> entries, {CatalogEdits? edits}) {
         Edition(
           id: recording.key,
           kind: first.kind,
+          narrator: narrators.isEmpty ? null : narrators,
           label: narrators.isNotEmpty
               ? narrators
               : first.file.container.isNotEmpty

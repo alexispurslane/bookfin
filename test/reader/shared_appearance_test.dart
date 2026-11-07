@@ -220,7 +220,9 @@ void main() {
       await app.leaveReader(tester);
       await tester.pageBack();
       await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('Appearance'));
+      await tester.tap(find.text('Settings'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Appearance'));
       await tester.pumpAndSettle();
       expect(
         tester

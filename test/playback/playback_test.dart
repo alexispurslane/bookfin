@@ -136,11 +136,10 @@ void main() {
     expect(playback.progress(recording), (elapsedMs: 75000, totalMs: 150000));
     await playback.bind(null, []);
     await playback.bind(account(), [title]);
-    expect(
-      playback.progress(recording),
-      (elapsedMs: 75000, totalMs: 150000),
-      reason: 'a saved position counts without opening the recording',
-    );
+    expect(playback.progress(recording), (
+      elapsedMs: 75000,
+      totalMs: 150000,
+    ), reason: 'a saved position counts without opening the recording');
   });
 
   test('failed resume read cannot be overwritten by later saves', () async {

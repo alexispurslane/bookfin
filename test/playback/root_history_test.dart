@@ -72,7 +72,7 @@ void main() {
       });
       await tester.pumpAndSettle();
       expect(find.text('Alice private bookmark'), findsNothing);
-      expect(find.byType(NavigationBar), findsOneWidget);
+      expect(find.widgetWithText(FilledButton, 'Sign in'), findsOneWidget);
       expect(playback.bookmarks, isEmpty);
       expect(playback.history, isEmpty);
       await tester.pumpWidget(const SizedBox());

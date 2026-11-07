@@ -212,7 +212,9 @@ class BookCover extends StatelessWidget {
                     width: badge,
                     height: badge,
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surfaceContainerLowest,
+                      color: Theme.of(context)
+                          .colorScheme
+                          .surfaceContainerLowest,
                       shape: BoxShape.circle,
                       boxShadow: const [
                         BoxShadow(
@@ -264,60 +266,9 @@ class _CoverFace extends StatelessWidget {
         ),
       ),
       child: showText
-          ? LayoutBuilder(
-              builder: (context, size) => Stack(
-                children: [
-                  Positioned(
-                    top: -size.maxWidth * 0.4,
-                    right: -size.maxWidth * 0.55,
-                    child: Container(
-                      width: size.maxWidth * 1.2,
-                      height: size.maxWidth * 1.2,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: const Color(0x40FFF9EF)),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    left: size.maxWidth * 0.1,
-                    right: size.maxWidth * 0.08,
-                    bottom: size.maxWidth * 0.1,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          title,
-                          maxLines: 4,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontFamily: 'Source Serif 4',
-                            fontWeight: FontWeight.w600,
-                            fontSize: size.maxWidth * 0.11,
-                            height: 1.1,
-                            color: const Color(0xFFFFF9EF),
-                          ),
-                        ),
-                        if (author?.isNotEmpty == true &&
-                            size.maxWidth >= 100) ...[
-                          SizedBox(height: size.maxWidth * 0.03),
-                          Text(
-                            author!,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontFamily: 'Outfit',
-                              fontSize: size.maxWidth * 0.065,
-                              color: const Color(0xCCFFF9EF),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+          ? CustomPaint(
+              painter: _CoverTextPainter(title: title, author: author),
+              size: Size.infinite,
             )
           : null,
     );
@@ -366,4 +317,68 @@ class _CoverFace extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Paints the title and author of a generated cover. The cover is decoration:
+/// the title also appears as text next to it, so this text has no semantics.
+class _CoverTextPainter extends CustomPainter {
+  _CoverTextPainter({required this.title, required this.author});
+  final String title;
+  final String? author;
+
+  static const _ink = Color(0xFFFFF9EF);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final width = size.width;
+    final ring = Paint()
+      ..style = PaintingStyle.stroke
+      ..color = const Color(0x40FFF9EF);
+    canvas.drawCircle(Offset(width * 1.05, width * 0.2), width * 0.6, ring);
+    final left = width * 0.1;
+    final textWidth = width - left - width * 0.08;
+    final authorPainter = author?.isNotEmpty == true && width >= 100
+        ? (TextPainter(
+            text: TextSpan(
+              text: author,
+              style: TextStyle(
+                fontFamily: 'Outfit',
+                fontSize: width * 0.065,
+                color: const Color(0xCCFFF9EF),
+              ),
+            ),
+            maxLines: 1,
+            ellipsis: '…',
+            textDirection: TextDirection.ltr,
+          )..layout(maxWidth: textWidth))
+        : null;
+    final titlePainter = TextPainter(
+      text: TextSpan(
+        text: title,
+        style: TextStyle(
+          fontFamily: 'Source Serif 4',
+          fontWeight: FontWeight.w600,
+          fontSize: width * 0.11,
+          height: 1.1,
+          color: _ink,
+        ),
+      ),
+      maxLines: 4,
+      ellipsis: '…',
+      textDirection: TextDirection.ltr,
+    )..layout(maxWidth: textWidth);
+    var bottom = size.height - width * 0.1;
+    if (authorPainter != null) {
+      bottom -= authorPainter.height;
+      authorPainter.paint(canvas, Offset(left, bottom));
+      bottom -= width * 0.03;
+      authorPainter.dispose();
+    }
+    titlePainter.paint(canvas, Offset(left, bottom - titlePainter.height));
+    titlePainter.dispose();
+  }
+
+  @override
+  bool shouldRepaint(_CoverTextPainter oldDelegate) =>
+      oldDelegate.title != title || oldDelegate.author != author;
 }

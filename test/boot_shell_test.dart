@@ -23,7 +23,7 @@ void main() {
       ),
     );
 
-    expect(find.text('BOOKFIN'), findsOneWidget);
+    expect(find.text('Bookfin'), findsOneWidget);
     expect(find.text('Your library starts here.'), findsOneWidget);
   });
 

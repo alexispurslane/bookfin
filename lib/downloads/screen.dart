@@ -28,12 +28,12 @@ class DownloadControls extends StatelessWidget {
         Text(state.label),
         if (state.bytes > 0 || active || state.phase == DownloadPhase.failed)
           Text(
-            '${state.bytes}${state.totalBytes == null ? '' : ' / ${state.totalBytes}'} bytes · ${state.completeFiles} / ${state.totalFiles} files',
+            '${formatBytes(state.bytes)}${state.totalBytes == null ? '' : ' of ${formatBytes(state.totalBytes!)}'} · ${state.completeFiles} of ${state.totalFiles} files',
             style: Theme.of(context).textTheme.bodySmall,
           ),
         if (state.unavailableBytes > 0)
           Text(
-            '${state.unavailableBytes} saved bytes unavailable for playback',
+            '${formatBytes(state.unavailableBytes)} saved but unavailable for playback',
           ),
         if (state.phase == DownloadPhase.downloading)
           Padding(
@@ -147,10 +147,8 @@ class DownloadsPage extends StatelessWidget {
             (book, edition),
     ];
     return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+      padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
       children: [
-        Text('Downloads', style: Theme.of(context).textTheme.displaySmall),
-        const SizedBox(height: 12),
         if (owner?.supported != true)
           const Text('Local downloads are available in the Android app.')
         else ...[
@@ -395,4 +393,14 @@ String bookAvailability(Book book, EditionKind kind, Downloads? downloads) {
     }
   }
   return '$label · Not downloaded';
+}
+
+/// For example "412 MB", "2.4 MB", or "830 KB".
+String formatBytes(int bytes) {
+  if (bytes < 1000) return '$bytes B';
+  if (bytes < 1000 * 1000) return '${(bytes / 1000).round()} KB';
+  final megabytes = bytes / (1000 * 1000);
+  if (megabytes < 10) return '${megabytes.toStringAsFixed(1)} MB';
+  if (megabytes < 1000) return '${megabytes.round()} MB';
+  return '${(megabytes / 1000).toStringAsFixed(1)} GB';
 }

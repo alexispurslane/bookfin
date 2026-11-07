@@ -1,19 +1,24 @@
 import 'package:bookfin/catalog/controller.dart';
+import 'package:bookfin/catalog/layout.dart';
 import 'package:bookfin/catalog/jellyfin.dart';
 import 'package:bookfin/catalog/model.dart';
 import 'package:bookfin/catalog/screen.dart';
+import 'package:bookfin/catalog/book_cover.dart';
 import 'package:bookfin/foundation/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'controller_test.dart'
     show MemoryCatalogStore, MemoryCredentials, FixtureClient;
+import 'layout_test.dart' show MemoryLayoutStore;
 import 'model_test.dart' show entry;
 
 void main() {
   late CatalogController controller;
   late FixtureClient client;
+  late LibraryLayout layout;
   setUp(() {
+    layout = LibraryLayout(MemoryLayoutStore());
     client = FixtureClient(Uri.parse('https://books.example'));
     controller = CatalogController(
       credentials: MemoryCredentials(),
@@ -30,11 +35,94 @@ void main() {
       theme: bookfinTheme(Brightness.light),
       home: CatalogHome(
         catalog: controller,
+        layout: layout,
         onAppearance: () {},
         onReaderNightChanged: (_) {},
       ),
     ),
   );
+
+  List<CatalogEntry> orchardCycle() => [
+    for (final (index, title) in ['First Frost', 'Graft', 'Windfall'].indexed)
+      entry(
+        'cycle$index',
+        title: title,
+        type: 'Book',
+        container: 'epub',
+        fields: {'SeriesName': 'The Orchard Cycle', 'IndexNumber': index + 1},
+      ),
+    entry('salt', title: 'Salt and Lantern'),
+  ];
+
+  testWidgets(
+    'the library shows a series as one card that opens its books in order',
+    (tester) async {
+      client.entries = orchardCycle();
+      await controller.connect('https://books.example', 'alice', 'password');
+      await controller.refresh(selected: {'books'});
+      await show(tester);
+      expect(find.text('Salt and Lantern'), findsOneWidget);
+      expect(find.text('The Orchard Cycle'), findsOneWidget);
+      expect(find.text('Graft'), findsNothing);
+      await tester.tap(find.text('The Orchard Cycle'));
+      await tester.pumpAndSettle();
+      expect(find.text('BOOK 1'), findsOneWidget);
+      expect(find.text('Graft'), findsOneWidget);
+      expect(find.text('Salt and Lantern'), findsNothing);
+    },
+  );
+
+  testWidgets('search is its own screen and lists series books one by one', (
+    tester,
+  ) async {
+    client.entries = orchardCycle();
+    await controller.connect('https://books.example', 'alice', 'password');
+    await controller.refresh(selected: {'books'});
+    await show(tester);
+    expect(find.byType(TextField), findsNothing);
+    await tester.tap(find.byTooltip('Search'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), 'orchard');
+    await tester.pump();
+    expect(find.text('First Frost'), findsOneWidget);
+    expect(find.text('Graft'), findsOneWidget);
+    expect(find.text('Windfall'), findsOneWidget);
+    expect(find.text('The Orchard Cycle'), findsNothing);
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    expect(find.text('The Orchard Cycle'), findsOneWidget);
+  });
+
+  testWidgets('the top bar switches the library between a grid and a list', (
+    tester,
+  ) async {
+    await controller.connect('https://books.example', 'alice', 'password');
+    await controller.refresh(selected: {'books'});
+    await show(tester);
+    expect(find.byType(SliverGrid), findsOneWidget);
+    await tester.tap(find.byTooltip('Show as list'));
+    await tester.pumpAndSettle();
+    expect(find.byType(SliverGrid), findsNothing);
+    expect(layout.view, LibraryView.list);
+    await tester.tap(find.byTooltip('Show as grid'));
+    await tester.pumpAndSettle();
+    expect(find.byType(SliverGrid), findsOneWidget);
+  });
+
+  testWidgets('settings make the library compact', (tester) async {
+    await controller.connect('https://books.example', 'alice', 'password');
+    await controller.refresh(selected: {'books'});
+    await show(tester);
+    final spacious = tester.getSize(find.byType(BookCover)).width;
+    await tester.tap(find.text('Settings'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Compact'));
+    await tester.pumpAndSettle();
+    expect(layout.density, LibraryDensity.compact);
+    await tester.tap(find.text('Library'));
+    await tester.pumpAndSettle();
+    expect(tester.getSize(find.byType(BookCover)).width, lessThan(spacious));
+  });
 
   testWidgets('permission recovery closes only the library selector', (
     tester,
@@ -46,7 +134,9 @@ void main() {
     await controller.refresh();
     await tester.pumpAndSettle();
     client.failure = null;
-    await tester.tap(find.byTooltip('Book libraries'));
+    await tester.tap(find.text('Settings'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Libraries'));
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(FilledButton, 'Save libraries'));
     await tester.pumpAndSettle();
@@ -122,26 +212,32 @@ void main() {
     },
   );
 
-  testWidgets('the only main navigation stays at the bottom screen edge', (
-    tester,
-  ) async {
-    await show(tester);
-    expect(find.byType(NavigationBar), findsOneWidget);
-    final navigation = tester.getRect(find.byType(NavigationBar));
-    expect(
-      navigation.bottom,
-      tester.view.physicalSize.height / tester.view.devicePixelRatio,
-    );
-    final destinations = tester
-        .widgetList<NavigationDestination>(find.byType(NavigationDestination))
-        .toList();
-    expect(
-      destinations
-          .where((destination) => destination.enabled)
-          .map((destination) => destination.label),
-      ['Library'],
-    );
-  });
+  testWidgets(
+    'the main navigation appears only after sign-in, at the bottom screen edge',
+    (tester) async {
+      await show(tester);
+      expect(find.byType(NavigationBar), findsNothing);
+      await controller.connect('https://books.example', 'alice', 'password');
+      await controller.refresh(selected: {'books'});
+      await tester.pumpAndSettle();
+      expect(find.byType(NavigationBar), findsOneWidget);
+      final navigation = tester.getRect(find.byType(NavigationBar));
+      expect(
+        navigation.bottom,
+        tester.view.physicalSize.height / tester.view.devicePixelRatio,
+      );
+      final destinations = tester
+          .widgetList<NavigationDestination>(find.byType(NavigationDestination))
+          .toList();
+      expect(
+        destinations
+            .where((destination) => destination.enabled)
+            .map((destination) => destination.label),
+        ['Library', 'Downloads', 'Settings'],
+        reason: 'Listening needs a player',
+      );
+    },
+  );
 
   testWidgets(
     'selecting a book library reveals saved books and their real editions',
@@ -154,7 +250,8 @@ void main() {
       expect(find.text('The Orchard'), findsOneWidget);
       await tester.tap(find.text('The Orchard'));
       await tester.pumpAndSettle();
-      expect(find.text('Audio editions'), findsOneWidget);
+      await tester.scrollUntilVisible(find.text('Audiobook'), 300);
+      expect(find.text('Audiobook'), findsOneWidget);
       expect(find.text('Not downloaded'), findsOneWidget);
       expect(find.widgetWithText(FilledButton, 'Play'), findsNothing);
       expect(find.widgetWithText(FilledButton, 'Download'), findsNothing);
@@ -166,52 +263,59 @@ void main() {
     await controller.connect('https://books.example', 'alice', 'password');
     await controller.refresh(selected: {'books'});
     await show(tester);
-    await tester.enterText(
-      find.widgetWithText(TextField, 'Search books and authors'),
-      'river',
-    );
+    await tester.tap(find.byTooltip('Search'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), 'river');
     await tester.pump();
     expect(find.text('The River'), findsOneWidget);
     expect(find.text('The Orchard'), findsNothing);
   });
 
-  testWidgets('series use explicit fractional order rather than title order', (
-    tester,
-  ) async {
-    client.entries = [
-      entry('one', title: 'Z first'),
-      entry('two', title: 'A side story'),
-    ];
-    {
-      await controller.connect('https://books.example', 'alice', 'password');
-      await controller.refresh(selected: {'books'});
-      await controller.correctBook(
-        'book:one',
-        const BookDetails(
-          title: 'Z first',
-          author: 'Writer',
-          series: 'Garden',
-          seriesOrder: 1,
-        ),
+  testWidgets(
+    'a series opens its books in explicit fractional order rather than title order',
+    (tester) async {
+      client.entries = [
+        entry('one', title: 'Z first'),
+        entry('two', title: 'A side story'),
+      ];
+      {
+        await controller.connect('https://books.example', 'alice', 'password');
+        await controller.refresh(selected: {'books'});
+        await controller.correctBook(
+          'book:one',
+          const BookDetails(
+            title: 'Z first',
+            author: 'Writer',
+            series: 'Garden',
+            seriesOrder: 1,
+          ),
+        );
+        await controller.correctBook(
+          'book:two',
+          const BookDetails(
+            title: 'A side story',
+            author: 'Writer',
+            series: 'Garden',
+            seriesOrder: 1.5,
+          ),
+        );
+      }
+      await show(tester);
+      expect(
+        find.text('Z first'),
+        findsNothing,
+        reason: 'the series is grouped',
       );
-      await controller.correctBook(
-        'book:two',
-        const BookDetails(
-          title: 'A side story',
-          author: 'Writer',
-          series: 'Garden',
-          seriesOrder: 1.5,
-        ),
+      await tester.tap(find.text('Garden'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Show as list'));
+      await tester.pumpAndSettle();
+      expect(
+        tester.getTopLeft(find.text('Z first')).dy,
+        lessThan(tester.getTopLeft(find.text('A side story')).dy),
       );
-    }
-    await show(tester);
-    await tester.tap(find.widgetWithText(ChoiceChip, 'Series'));
-    await tester.pumpAndSettle();
-    expect(
-      tester.getTopLeft(find.text('Z first')).dy,
-      lessThan(tester.getTopLeft(find.text('A side story')).dy),
-    );
-  });
+    },
+  );
 
   testWidgets('sign-out dismisses open corrections from the previous account', (
     tester,
@@ -221,7 +325,9 @@ void main() {
     await show(tester);
     await tester.tap(find.text('The Orchard'));
     await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('Correct book details'));
+    await tester.tap(find.byTooltip('More actions'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Correct book details'));
     await tester.pumpAndSettle();
     expect(find.text('Correct book details'), findsOneWidget);
     await controller.signOut();
@@ -239,7 +345,9 @@ void main() {
     await show(tester);
     await tester.tap(find.text('The Orchard'));
     await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('Correct book details'));
+    await tester.tap(find.byTooltip('More actions'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Correct book details'));
     await tester.pumpAndSettle();
     client.failure = const CatalogFailure(CatalogFailureKind.forbidden);
     await controller.refresh();
@@ -262,10 +370,8 @@ void main() {
       await show(tester);
       await tester.tap(find.text('Orchard part 1'));
       await tester.pumpAndSettle();
-      await tester.scrollUntilVisible(
-        find.text('Combine files of one recording'),
-        300,
-      );
+      await tester.tap(find.byTooltip('More actions'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Combine files of one recording'));
       await tester.pumpAndSettle();
       final first = find.widgetWithText(CheckboxListTile, 'Orchard part 1');
@@ -282,6 +388,8 @@ void main() {
       await tester.tap(find.widgetWithText(TextButton, 'Cancel'));
       await tester.pumpAndSettle();
       expect(controller.books.single.editions, hasLength(2));
+      await tester.tap(find.byTooltip('More actions'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Combine files of one recording'));
       await tester.pumpAndSettle();
       await tester.tap(first);
@@ -312,7 +420,8 @@ void main() {
     await show(tester);
     await tester.tap(find.text('The Orchard').first);
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.text('Link another book or ebook'));
+    await tester.tap(find.byTooltip('More actions'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Link another book or ebook'));
     await tester.pumpAndSettle();
     await tester.tap(
@@ -323,6 +432,8 @@ void main() {
     await tester.tap(find.widgetWithText(TextButton, 'Cancel'));
     await tester.pumpAndSettle();
     expect(controller.books, hasLength(2));
+    await tester.tap(find.byTooltip('More actions'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Link another book or ebook'));
     await tester.pumpAndSettle();
     await tester.tap(
@@ -347,7 +458,9 @@ void main() {
         const BookDetails(title: 'My title', author: 'Writer'),
       );
       await show(tester);
-      await tester.tap(find.byTooltip('Account'));
+      await tester.tap(find.text('Settings'));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Reset catalog corrections'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Reset catalog corrections'));
       await tester.pumpAndSettle();

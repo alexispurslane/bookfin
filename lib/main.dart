@@ -9,6 +9,8 @@ import 'appearance/city_search.dart';
 import 'appearance/preferences.dart';
 import 'development/gallery.dart';
 import 'foundation/theme.dart';
+import 'catalog/covers.dart';
+import 'catalog/layout.dart';
 import 'catalog/controller.dart';
 import 'catalog/screen.dart';
 import 'catalog/store.dart';
@@ -64,10 +66,15 @@ Future<void> runBookfin({bool gallery = false}) async {
           load: loadPublication,
           loadDocument: loadReadingDocument,
         );
+  final layout = LibraryLayout(LocalLayoutStore());
+  await layout.restore();
+  final covers = gallery ? null : await createCovers();
   runApp(
     BookfinApp(
       appearance: appearance,
       gallery: gallery,
+      layout: layout,
+      covers: covers,
       downloads: downloads,
       playback: playback,
       reader: reader,
@@ -85,6 +92,8 @@ class BookfinApp extends StatefulWidget {
     this.gallery = false,
     this.clock,
     this.catalog,
+    this.layout,
+    this.covers,
     this.downloads,
     this.playback,
     this.reader,
@@ -92,6 +101,8 @@ class BookfinApp extends StatefulWidget {
   });
 
   final AppearanceController appearance;
+  final LibraryLayout? layout;
+  final Covers? covers;
   final bool gallery;
   final DateTime Function()? clock;
   final CatalogController? catalog;
@@ -217,6 +228,8 @@ class _BookfinAppState extends State<BookfinApp> with WidgetsBindingObserver {
           : Builder(
               builder: (context) => CatalogHome(
                 catalog: _catalog,
+                layout: widget.layout,
+                covers: widget.covers,
                 downloads: widget.downloads,
                 playback: widget.playback,
                 reader: widget.reader,

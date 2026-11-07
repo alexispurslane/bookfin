@@ -108,7 +108,7 @@ void main() {
     await showDownloads();
     await settleStorage(tester);
     expect(find.text('Remove'), findsOneWidget);
-    expect(find.text('6 saved bytes unavailable for playback'), findsOneWidget);
+    expect(find.text('6 B saved but unavailable for playback'), findsOneWidget);
     await tester.runAsync(() async {
       await tester.tap(find.text('Retry'));
       await downloads.idle;
@@ -121,7 +121,7 @@ void main() {
     });
     await settleStorage(tester);
     expect(find.text('Remove'), findsOneWidget);
-    expect(find.text('6 saved bytes unavailable for playback'), findsOneWidget);
+    expect(find.text('6 B saved but unavailable for playback'), findsOneWidget);
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.runAsync(() async {
       downloads.dispose();
@@ -138,7 +138,7 @@ void main() {
     await showDownloads();
     await settleStorage(tester);
     expect(find.text('Remove'), findsOneWidget);
-    expect(find.text('6 saved bytes unavailable for playback'), findsOneWidget);
+    expect(find.text('6 B saved but unavailable for playback'), findsOneWidget);
     await tester.runAsync(() => tester.tap(find.text('Remove')));
     await tester.pumpAndSettle();
     expect(find.text('Remove download?'), findsOneWidget);
@@ -151,7 +151,7 @@ void main() {
     expect(find.text('Remove'), findsNothing);
   });
 
-  testWidgets('the book list separates audio and ebook availability', (
+  testWidgets('a book with audio shows as downloaded only when its audio is', (
     tester,
   ) async {
     final text = catalog.books
@@ -163,12 +163,12 @@ void main() {
     });
     expect(downloads.status(text).phase, DownloadPhase.downloaded);
     await show(tester);
-    expect(find.text('Audio · Not downloaded'), findsNWidgets(2));
-    expect(find.text('Ebook · Downloaded'), findsOneWidget);
+    expect(find.text('audio1'), findsOneWidget);
+    expect(find.byIcon(Icons.check_rounded), findsNothing);
     await tester.tap(find.widgetWithText(ChoiceChip, 'Downloaded'));
     await tester.pumpAndSettle();
     expect(find.text('audio1'), findsNothing);
-    expect(find.text('No books found.'), findsOneWidget);
+    expect(find.text('No downloaded books yet.'), findsOneWidget);
   });
 
   testWidgets('Downloads lists real status and removes a verified local copy', (
@@ -185,7 +185,7 @@ void main() {
     await show(tester);
     await tester.tap(find.text('Downloads'));
     await tester.pumpAndSettle();
-    expect(find.text('6 / 6 bytes · 1 / 1 files'), findsOneWidget);
+    expect(find.text('6 B of 6 B · 1 of 1 files'), findsOneWidget);
     await tester.runAsync(
       () => tester.tap(find.widgetWithText(TextButton, 'Remove')),
     );
@@ -209,6 +209,11 @@ void main() {
     policy.network = MediaNetwork.unknown;
     await show(tester);
     await tester.tap(find.text('audio1'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.text('Audiobook'), 300);
+    await tester.ensureVisible(
+      find.widgetWithText(OutlinedButton, 'Download').first,
+    );
     await tester.pumpAndSettle();
     await tester.runAsync(() async {
       await tester.tap(find.widgetWithText(OutlinedButton, 'Download').first);

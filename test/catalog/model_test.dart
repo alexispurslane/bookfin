@@ -246,6 +246,22 @@ void main() {
     expect(book.cover, const CoverRef('ebook', 'tag-ebook'));
   });
 
+  test('an audio edition names its narrators', () {
+    final edition = buildBooks([
+      entry(
+        'one',
+        fields: {
+          'People': [
+            {'Name': 'Tom Avery', 'Type': 'Narrator'},
+            {'Name': 'Mara Ellison', 'Type': 'Author'},
+          ],
+        },
+      ),
+    ]).single.editions.single;
+    expect(edition.narrator, 'Tom Avery');
+    expect(buildBooks([entry('two')]).single.editions.single.narrator, isNull);
+  });
+
   test('book details come from Jellyfin metadata as plain text', () {
     final book = buildBooks([
       entry(

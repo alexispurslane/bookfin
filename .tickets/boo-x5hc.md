@@ -1,6 +1,6 @@
 ---
 id: boo-x5hc
-status: open
+status: in_progress
 deps: [boo-eg9h, boo-1lca]
 links: []
 created: 2026-11-07T15:30:28Z
@@ -11,3 +11,9 @@ parent: boo-fs0n
 ---
 # Browse the library as a grouped grid or list with download checkmarks and separate search
 
+
+## Notes
+
+**2026-11-07T15:53:58Z**
+
+LibraryShelf (filters All/Audio/Ebooks/Downloaded), grid sized from cover width and text scale, list rows, stacked series cards, checkmark badge, SearchPage route from the top bar, LayoutToggle saved in LibraryLayout. Widget tests cover series cards, separate search, view toggle, density.
