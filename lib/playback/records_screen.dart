@@ -92,10 +92,16 @@ Future<({String title, String note})?> showBookmarkEditor(
   String? title,
   String? note,
   required String place,
+  bool glass = true,
 }) => showDialog<({String title, String note})>(
   context: context,
-  builder: (context) =>
-      _BookmarkEditor(heading: heading, title: title, note: note, place: place),
+  builder: (context) => _BookmarkEditor(
+    heading: heading,
+    title: title,
+    note: note,
+    place: place,
+    glass: glass,
+  ),
 );
 
 class _BookmarkEditor extends StatefulWidget {
@@ -104,11 +110,15 @@ class _BookmarkEditor extends StatefulWidget {
     required this.title,
     required this.note,
     required this.place,
+    required this.glass,
   });
   final String heading;
   final String? title;
   final String? note;
   final String place;
+
+  /// False for a screen that keeps its own plain look, such as the reader.
+  final bool glass;
   @override
   State<_BookmarkEditor> createState() => _BookmarkEditorState();
 }
@@ -124,9 +134,9 @@ class _BookmarkEditorState extends State<_BookmarkEditor> {
   }
 
   @override
-  Widget build(BuildContext context) => GlassDialog(
-    title: Text(widget.heading),
-    content: SingleChildScrollView(
+  Widget build(BuildContext context) {
+    final title = Text(widget.heading);
+    final content = SingleChildScrollView(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -143,8 +153,8 @@ class _BookmarkEditorState extends State<_BookmarkEditor> {
           ),
         ],
       ),
-    ),
-    actions: [
+    );
+    final actions = [
       TextButton(
         onPressed: () => Navigator.pop(context),
         child: const Text('Cancel'),
@@ -154,6 +164,9 @@ class _BookmarkEditorState extends State<_BookmarkEditor> {
             Navigator.pop(context, (title: _title.text, note: _note.text)),
         child: const Text('Save bookmark'),
       ),
-    ],
-  );
+    ];
+    return widget.glass
+        ? GlassDialog(title: title, content: content, actions: actions)
+        : AlertDialog(title: title, content: content, actions: actions);
+  }
 }

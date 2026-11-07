@@ -12,7 +12,10 @@ import '../playback/playback_test.dart' show account, LocalFiles;
 import 'publication_test.dart' show epub;
 import 'session_test.dart' show source, edition, book, visible;
 
-class FailingRecords extends ResumeStore implements ListeningStore {
+/// A records store that fails each save until [writable]. [records] is the
+/// listening store or the reading records of a [LocalResumeStore].
+class FailingRecords extends ResumeStore
+    implements ListeningStore, ReadingStore {
   FailingRecords(this.records);
   final ResumeStore records;
   bool writable = false;
@@ -34,6 +37,13 @@ class FailingRecords extends ResumeStore implements ListeningStore {
     await gate?.future;
     if (!writable) throw Exception('Storage is unavailable');
     await (records as ListeningStore).save(key, changes);
+  }
+
+  @override
+  Future<void> saveReading(String key, ReadingChanges changes) async {
+    await gate?.future;
+    if (!writable) throw Exception('Storage is unavailable');
+    await (records as ReadingStore).saveReading(key, changes);
   }
 }
 

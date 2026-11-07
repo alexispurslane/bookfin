@@ -55,8 +55,18 @@ Future<void> openCitySearch(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
+/// Types [query] and waits in real time until the page shows the answer
+/// that the finder isolate gives for it.
 Future<void> search(WidgetTester tester, String query) async {
   await tester.enterText(find.byType(TextField), query);
+  final answered = find.byKey(ValueKey(('city results', query)));
+  for (var step = 0; step < 500 && answered.evaluate().isEmpty; step++) {
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 10)),
+    );
+    await tester.pump();
+  }
+  expect(answered, findsOneWidget);
   await tester.pumpAndSettle();
 }
 

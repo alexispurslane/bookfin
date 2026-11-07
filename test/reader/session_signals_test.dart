@@ -192,8 +192,8 @@ class Signals {
 class FailingWrites extends MemoryResume {
   bool fail = false;
   @override
-  Future<void> write(String accountKey, Map<String, dynamic> value) async {
+  Future<void> saveReading(String accountKey, ReadingChanges changes) async {
     if (fail) throw Exception('Storage is full.');
-    await super.write(accountKey, value);
+    await super.saveReading(accountKey, changes);
   }
 }
