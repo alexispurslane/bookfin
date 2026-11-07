@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../downloads/downloads.dart';
 import '../downloads/screen.dart';
 import '../foundation/theme.dart';
 import '../playback/screen.dart';
@@ -562,76 +561,8 @@ class _Actions extends StatelessWidget {
         ],
         if (saved != null && services.downloads?.supported == true) ...[
           const SizedBox(width: 8),
-          _DownloadButton(downloads: services.downloads!, edition: saved),
+          DownloadButton(downloads: services.downloads!, edition: saved),
         ],
-      ],
-    );
-  }
-}
-
-class _DownloadButton extends StatelessWidget {
-  const _DownloadButton({required this.downloads, required this.edition});
-  final Downloads downloads;
-  final Edition edition;
-  @override
-  Widget build(BuildContext context) {
-    final state = downloads.status(edition);
-    final (icon, tooltip, action) = switch (state.phase) {
-      DownloadPhase.downloaded => (
-        Icons.check_rounded,
-        'Downloaded. Remove download',
-        () async {
-          if (await confirmRemoveDownload(context)) {
-            await downloads.remove(edition);
-          }
-        },
-      ),
-      DownloadPhase.downloading => (
-        Icons.close_rounded,
-        'Cancel download',
-        () => downloads.cancel(edition),
-      ),
-      DownloadPhase.waiting => (
-        Icons.wifi_off_rounded,
-        'Waiting for Wi-Fi. Cancel download',
-        () => downloads.cancel(edition),
-      ),
-      DownloadPhase.failed => (
-        Icons.refresh_rounded,
-        'Download failed. Try again',
-        () => downloads.request(edition),
-      ),
-      _ => (
-        Icons.download_rounded,
-        'Download',
-        () => downloads.request(edition),
-      ),
-    };
-    final downloading = state.phase == DownloadPhase.downloading;
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        if (downloading)
-          SizedBox(
-            width: 44,
-            height: 44,
-            child: CircularProgressIndicator(
-              strokeWidth: 2.5,
-              value: state.totalBytes != null && state.totalBytes! > 0
-                  ? (state.bytes / state.totalBytes!).clamp(0, 1)
-                  : null,
-            ),
-          ),
-        IconButton.filled(
-          style: IconButton.styleFrom(
-            backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
-            foregroundColor: Theme.of(context).colorScheme.onSurface,
-            minimumSize: const Size(52, 52),
-          ),
-          tooltip: tooltip,
-          onPressed: () => unawaited(action()),
-          icon: Icon(icon),
-        ),
       ],
     );
   }

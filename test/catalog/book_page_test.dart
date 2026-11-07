@@ -5,6 +5,7 @@ import 'package:bookfin/catalog/layout.dart';
 import 'package:bookfin/catalog/library_services.dart';
 import 'package:bookfin/catalog/model.dart';
 import 'package:bookfin/downloads/downloads.dart';
+import 'package:bookfin/downloads/screen.dart';
 import 'package:bookfin/foundation/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -80,6 +81,52 @@ void main() {
       expect(downloads.calls, ['remove']);
     },
   );
+
+  testWidgets(
+    'a partial download offers Retry and Remove on the book page and in Downloads',
+    (tester) async {
+      downloads.state = const EditionDownload(
+        phase: DownloadPhase.partial,
+        bytes: 400,
+        totalBytes: 1000,
+        totalFiles: 1,
+      );
+      await showBook(tester);
+      // The main download button retries, as everywhere else.
+      expect(find.byTooltip('Retry download'), findsOneWidget);
+      expect(find.byTooltip('Download'), findsNothing);
+      // The edition's own controls.
+      expect(find.widgetWithText(OutlinedButton, 'Retry'), findsOneWidget);
+      expect(find.widgetWithText(TextButton, 'Remove'), findsOneWidget);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: bookfinTheme(Brightness.light),
+          home: Scaffold(
+            body: DownloadsPage(downloads: downloads, books: catalog.books),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byTooltip('Retry download'), findsOneWidget);
+      expect(find.byTooltip('Remove download'), findsOneWidget);
+      expect(find.byTooltip('Download'), findsNothing);
+    },
+  );
+
+  testWidgets('a failed download retries from the book page button', (
+    tester,
+  ) async {
+    downloads.state = const EditionDownload(
+      phase: DownloadPhase.failed,
+      totalFiles: 1,
+    );
+    await showBook(tester);
+    await tester.tap(find.byTooltip('Download failed. Retry download'));
+    await tester.pumpAndSettle();
+    expect(downloads.calls, ['request']);
+    expect(find.widgetWithText(TextButton, 'Remove'), findsOneWidget);
+  });
 }
 
 /// Downloads that report one fixed [state] for every edition and record the

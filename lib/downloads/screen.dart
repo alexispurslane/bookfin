@@ -58,52 +58,83 @@ class DownloadControls extends StatelessWidget {
           Wrap(
             spacing: 8,
             children: [
-              if (!active && state.phase != DownloadPhase.downloaded)
-                OutlinedButton(
-                  onPressed: () => _act(context, () => owner!.request(edition)),
-                  child: Text(
-                    state.phase == DownloadPhase.failed || state.bytes > 0
-                        ? 'Retry'
-                        : 'Download',
+              for (final action in state.actions)
+                switch (action) {
+                  DownloadAction.request ||
+                  DownloadAction.retry => OutlinedButton(
+                    onPressed: () => _perform(context, owner!, edition, action),
+                    child: Text(
+                      action == DownloadAction.retry ? 'Retry' : 'Download',
+                    ),
                   ),
-                ),
-              if (active)
-                TextButton(
-                  onPressed: () => _act(context, () => owner!.cancel(edition)),
-                  child: const Text('Cancel'),
-                ),
-              if (state.bytes > 0 ||
-                  state.unavailableBytes > 0 ||
-                  state.completeFiles > 0 ||
-                  state.phase == DownloadPhase.failed)
-                TextButton(
-                  onPressed: () async {
-                    if (await confirmRemoveDownload(context) &&
-                        context.mounted) {
-                      _act(context, () => owner!.remove(edition));
-                    }
-                  },
-                  child: const Text('Remove'),
-                ),
+                  DownloadAction.cancel || DownloadAction.remove => TextButton(
+                    onPressed: () => _perform(context, owner!, edition, action),
+                    child: Text(
+                      action == DownloadAction.cancel ? 'Cancel' : 'Remove',
+                    ),
+                  ),
+                },
             ],
           ),
       ],
     );
   }
+}
 
-  void _act(BuildContext context, Future<void> Function() operation) {
-    unawaited(() async {
-      try {
-        await operation();
-      } catch (_) {
-        if (context.mounted) {
-          showGlassMessage(
-            context,
-            'The download could not be changed. Check your account and available storage.',
-          );
-        }
-      }
-    }());
+/// The book page's round download button. It does the first of the edition's
+/// download actions. Its icon shows a finished or waiting download, and a
+/// ring shows a running transfer.
+class DownloadButton extends StatelessWidget {
+  const DownloadButton({
+    super.key,
+    required this.downloads,
+    required this.edition,
+  });
+  final Downloads downloads;
+  final Edition edition;
+
+  @override
+  Widget build(BuildContext context) {
+    final state = downloads.status(edition);
+    final action = state.actions.first;
+    final icon = switch (state.phase) {
+      DownloadPhase.downloaded => Icons.check_rounded,
+      DownloadPhase.waiting => Icons.wifi_off_rounded,
+      _ => _icon(action),
+    };
+    final tooltip = switch (state.phase) {
+      DownloadPhase.downloaded ||
+      DownloadPhase.waiting ||
+      DownloadPhase.failed => '${state.label}. ${_tooltip(action)}',
+      _ => _tooltip(action),
+    };
+    final downloading = state.phase == DownloadPhase.downloading;
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        if (downloading)
+          SizedBox(
+            width: 44,
+            height: 44,
+            child: CircularProgressIndicator(
+              strokeWidth: 2.5,
+              value: state.totalBytes != null && state.totalBytes! > 0
+                  ? (state.bytes / state.totalBytes!).clamp(0, 1)
+                  : null,
+            ),
+          ),
+        IconButton.filled(
+          style: IconButton.styleFrom(
+            backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
+            foregroundColor: Theme.of(context).colorScheme.onSurface,
+            minimumSize: const Size(52, 52),
+          ),
+          tooltip: tooltip,
+          onPressed: () => _perform(context, downloads, edition, action),
+          icon: Icon(icon),
+        ),
+      ],
+    );
   }
 }
 
@@ -365,14 +396,6 @@ class _DownloadRow extends StatelessWidget {
         '${formatBytes(state.unavailableBytes)} saved but unavailable for playback',
       ?state.message,
     ].join(' · ');
-    final active =
-        state.phase == DownloadPhase.downloading ||
-        state.phase == DownloadPhase.waiting;
-    final removable =
-        state.bytes > 0 ||
-        state.unavailableBytes > 0 ||
-        state.completeFiles > 0 ||
-        state.phase == DownloadPhase.failed;
     return BookRow(
       cover: BookCover.book(
         book,
@@ -392,31 +415,11 @@ class _DownloadRow extends StatelessWidget {
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (!active &&
-              state.phase != DownloadPhase.downloaded &&
-              (state.phase == DownloadPhase.failed || state.bytes > 0))
+          for (final action in state.actions)
             IconButton(
-              tooltip: 'Retry download',
-              onPressed: () =>
-                  _change(context, () => downloads.request(edition)),
-              icon: const Icon(Icons.refresh_rounded),
-            ),
-          if (active)
-            IconButton(
-              tooltip: 'Cancel download',
-              onPressed: () =>
-                  _change(context, () => downloads.cancel(edition)),
-              icon: const Icon(Icons.close_rounded),
-            ),
-          if (!active && removable)
-            IconButton(
-              tooltip: 'Remove download',
-              onPressed: () async {
-                if (await confirmRemoveDownload(context) && context.mounted) {
-                  _change(context, () => downloads.remove(edition));
-                }
-              },
-              icon: const Icon(Icons.delete_outline_rounded),
+              tooltip: _tooltip(action),
+              onPressed: () => _perform(context, downloads, edition, action),
+              icon: Icon(_icon(action)),
             ),
         ],
       ),
@@ -437,20 +440,48 @@ Future<bool> confirmRemoveDownload(BuildContext context) => confirmAction(
   cancel: 'Keep download',
 );
 
-void _change(BuildContext context, Future<void> Function() operation) {
-  unawaited(() async {
-    try {
-      await operation();
-    } catch (_) {
-      if (context.mounted) {
-        showGlassMessage(
-          context,
-          'The download could not be changed. Check your account and available storage.',
-        );
-      }
+String _tooltip(DownloadAction action) => switch (action) {
+  DownloadAction.request => 'Download',
+  DownloadAction.retry => 'Retry download',
+  DownloadAction.cancel => 'Cancel download',
+  DownloadAction.remove => 'Remove download',
+};
+
+IconData _icon(DownloadAction action) => switch (action) {
+  DownloadAction.request => Icons.download_rounded,
+  DownloadAction.retry => Icons.refresh_rounded,
+  DownloadAction.cancel => Icons.close_rounded,
+  DownloadAction.remove => Icons.delete_outline_rounded,
+};
+
+/// Asks [downloads] for [action] on [edition]. Removal asks first. A failure
+/// shows a message instead of an error.
+void _perform(
+  BuildContext context,
+  Downloads downloads,
+  Edition edition,
+  DownloadAction action,
+) => unawaited(() async {
+  if (action == DownloadAction.remove &&
+      !(await confirmRemoveDownload(context) && context.mounted)) {
+    return;
+  }
+  try {
+    await switch (action) {
+      DownloadAction.request ||
+      DownloadAction.retry => downloads.request(edition),
+      DownloadAction.cancel => downloads.cancel(edition),
+      DownloadAction.remove => downloads.remove(edition),
+    };
+  } catch (_) {
+    if (context.mounted) {
+      showGlassMessage(
+        context,
+        'The download could not be changed. Check your account and available storage.',
+      );
     }
-  }());
-}
+  }
+}());
 
 /// Reads the leftover files of the bound account, and reads them again when
 /// the downloads change. [builder] gets the latest read and a way to repeat it.
