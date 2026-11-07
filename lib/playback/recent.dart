@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../catalog/book_cover.dart';
 import '../catalog/library_services.dart' show duration;
 import '../catalog/library_view.dart' show BookRow, ProgressLine;
+import '../foundation/theme.dart';
 import 'playback.dart';
 
 /// Books listened to recently, newest first. A tap resumes a book where it
@@ -15,7 +16,6 @@ class RecentListeningList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final recent = [
       for (final entry in playback.recent)
         if (entry.book.id != playback.book?.id) entry,
@@ -27,7 +27,7 @@ class RecentListeningList extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.only(bottom: 6),
-          child: Text('RECENTLY LISTENED', style: theme.textTheme.labelSmall),
+          child: const SectionLabel('RECENTLY LISTENED'),
         ),
         for (final entry in recent)
           _RecentRow(playback: playback, entry: entry, now: now),

@@ -427,6 +427,24 @@ class BookfinSurface extends StatelessWidget {
   );
 }
 
+/// The small spaced capitals that name a section of a page, for example
+/// "EDITIONS" or "ON THIS PHONE".
+class SectionLabel extends StatelessWidget {
+  const SectionLabel(this.text, {super.key});
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => Text(
+    text,
+    style: TextStyle(
+      fontSize: 11,
+      letterSpacing: 1.2,
+      fontWeight: FontWeight.w500,
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
+    ),
+  );
+}
+
 class BookfinPanel extends StatelessWidget {
   const BookfinPanel({super.key, required this.child});
 

@@ -183,15 +183,7 @@ class DownloadsPage extends StatelessWidget {
     final theme = Theme.of(context);
     Widget section(String label) => Padding(
       padding: const EdgeInsets.fromLTRB(2, 22, 2, 2),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 11,
-          letterSpacing: 1.2,
-          fontWeight: FontWeight.w500,
-          color: theme.colorScheme.onSurfaceVariant,
-        ),
-      ),
+      child: SectionLabel(label),
     );
     return ListView(
       padding: EdgeInsets.fromLTRB(18, 4, 18, 24 + floatingBarInset(context)),

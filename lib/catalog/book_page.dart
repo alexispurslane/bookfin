@@ -298,7 +298,7 @@ class BookPage extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('EDITIONS', style: _sectionStyle(theme)),
+                          const SectionLabel('EDITIONS'),
                           const SizedBox(height: 10),
                           for (final edition in book.editions)
                             Padding(
@@ -405,13 +405,6 @@ String _files(Book book) => [
         ),
       ].where((part) => part.isNotEmpty).join(' '),
 ].join(' · ');
-
-TextStyle _sectionStyle(ThemeData theme) => TextStyle(
-  fontSize: 11,
-  letterSpacing: 1.2,
-  fontWeight: FontWeight.w500,
-  color: theme.colorScheme.onSurfaceVariant,
-);
 
 class _Header extends StatelessWidget {
   const _Header({required this.book, required this.downloaded});
@@ -698,7 +691,7 @@ class _EditionPanel extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(audio ? 'Audiobook' : 'Ebook', style: _sectionStyle(theme)),
+            SectionLabel(audio ? 'Audiobook' : 'Ebook'),
             const SizedBox(height: 4),
             Text(
               audio && edition.narrator != null
