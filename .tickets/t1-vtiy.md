@@ -1,6 +1,6 @@
 ---
 id: t1-vtiy
-status: in_progress
+status: closed
 deps: [t9-4jqk]
 links: []
 created: 2026-11-07T22:33:51Z
