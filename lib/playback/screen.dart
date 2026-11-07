@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../catalog/book_cover.dart';
+import '../catalog/glass.dart';
 import '../catalog/library_services.dart' show duration;
 import '../catalog/model.dart';
 import '../foundation/theme.dart';
@@ -165,38 +166,15 @@ void openPlayer(
   BuildContext context,
   Playback playback, {
   ValueChanged<Book>? onOpenBook,
-}) {
-  // The sheet's route sits above the screen's cover scope, so carry it along.
-  final scope = CoverScope.of(context);
-  unawaited(
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      // The pane has its own close chevron. A handle would float outside it.
-      showDragHandle: false,
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      barrierColor: Colors.black.withValues(alpha: 0.3),
-      constraints: const BoxConstraints.expand(),
-      builder: (_) => CoverScope(
-        covers: scope?.covers,
-        session: scope?.session,
-        child: SafeArea(
-          top: false,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
-            child: PlayerView(
-              playback: playback,
-              onOpenBook: onOpenBook,
-              pane: true,
-            ),
-          ),
-        ),
-      ),
-    ),
-  );
-}
+}) => unawaited(
+  showGlassSheet<void>(
+    context,
+    book: playback.book,
+    expand: true,
+    builder: (_) =>
+        PlayerView(playback: playback, onOpenBook: onOpenBook, pane: true),
+  ),
+);
 
 class ReplacementStartNotice extends StatelessWidget {
   const ReplacementStartNotice({
@@ -224,7 +202,7 @@ class ReplacementStartNotice extends StatelessWidget {
             onPressed: () async {
               final confirmed = await showDialog<bool>(
                 context: context,
-                builder: (context) => AlertDialog(
+                builder: (context) => GlassDialog(
                   title: const Text('Start replacement audio?'),
                   content: Text(
                     'Start ${request.edition.label} from the beginning. '
@@ -319,16 +297,7 @@ class PlayerView extends StatelessWidget {
       final night = base.brightness == Brightness.dark;
       return Theme(
         data: night ? theaterTheme(base) : base,
-        child: Builder(
-          builder: (context) => pane
-              ? CoverGlass(
-                  book: book,
-                  radius: 28,
-                  tint: 0.6,
-                  child: _stage(context, book, night),
-                )
-              : _stage(context, book, night),
-        ),
+        child: Builder(builder: (context) => _stage(context, book, night)),
       );
     },
   );
@@ -490,25 +459,21 @@ class PlayerView extends StatelessWidget {
           onPressed: () => openListeningHistory(context, playback),
           icon: const Icon(Icons.history_rounded),
         ),
-        PopupMenuButton<VoidCallback>(
+        GlassMenuButton(
           tooltip: 'More player actions',
           icon: const Icon(Icons.more_horiz_rounded),
-          onSelected: (action) => action(),
-          itemBuilder: (context) => [
-            PopupMenuItem(
-              value: () => unawaited(_jumps(context)),
-              child: const ListTile(
-                leading: Icon(Icons.replay_rounded),
-                title: Text('Jump lengths'),
-              ),
+          book: book,
+          items: [
+            GlassMenuItem(
+              'Jump lengths',
+              icon: Icons.replay_rounded,
+              onSelected: () => unawaited(_jumps(context)),
             ),
             if (onOpenBook != null)
-              PopupMenuItem(
-                value: () => onOpenBook!(book),
-                child: const ListTile(
-                  leading: Icon(Icons.article_outlined),
-                  title: Text('Book details'),
-                ),
+              GlassMenuItem(
+                'Book details',
+                icon: Icons.article_outlined,
+                onSelected: () => onOpenBook!(book),
               ),
           ],
         ),
@@ -602,11 +567,10 @@ class PlayerView extends StatelessWidget {
     );
   }
 
-  Future<void> _chapters(BuildContext context) => showModalBottomSheet<void>(
-    context: context,
-    useSafeArea: true,
+  Future<void> _chapters(BuildContext context) => showGlassSheet<void>(
+    context,
+    book: playback.book,
     isScrollControlled: true,
-    showDragHandle: true,
     builder: (context) {
       final theme = Theme.of(context);
       final scheme = theme.colorScheme;
@@ -732,9 +696,9 @@ class PlayerView extends StatelessWidget {
         .clamp(0, 1);
   }
 
-  Future<void> _speed(BuildContext context) => showModalBottomSheet<void>(
-    context: context,
-    useSafeArea: true,
+  Future<void> _speed(BuildContext context) => showGlassSheet<void>(
+    context,
+    book: playback.book,
     builder: (context) => SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -770,9 +734,9 @@ class PlayerView extends StatelessWidget {
     ),
   );
 
-  Future<void> _sleep(BuildContext context) => showModalBottomSheet<void>(
-    context: context,
-    useSafeArea: true,
+  Future<void> _sleep(BuildContext context) => showGlassSheet<void>(
+    context,
+    book: playback.book,
     builder: (context) => SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -807,9 +771,9 @@ class PlayerView extends StatelessWidget {
   Future<void> _jumps(BuildContext context) async {
     var backward = playback.backwardSeconds;
     var forward = playback.forwardSeconds;
-    await showModalBottomSheet<void>(
-      context: context,
-      useSafeArea: true,
+    await showGlassSheet<void>(
+      context,
+      book: playback.book,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => SingleChildScrollView(
           child: Padding(

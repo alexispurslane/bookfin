@@ -8,23 +8,38 @@ import 'covers.dart';
 import 'jellyfin.dart';
 import 'model.dart';
 
-/// Gives every cover below it the cover store and the signed-in account.
-class CoverScope extends InheritedWidget {
+/// Gives every cover below it the cover store and the signed-in account, and
+/// every glass pane below it the book open in the player.
+class CoverScope extends InheritedTheme {
   const CoverScope({
     super.key,
     required this.covers,
     required this.session,
+    this.playing,
     required super.child,
   });
   final Covers? covers;
   final JellyfinSession? session;
 
+  /// The book open in the player, if any.
+  final Book? playing;
+
   static CoverScope? of(BuildContext context) =>
       context.dependOnInheritedWidgetOfExactType<CoverScope>();
+
+  /// Sheets, dialogs and menus copy the scope, so covers show in them too.
+  @override
+  Widget wrap(BuildContext context, Widget child) => CoverScope(
+    covers: covers,
+    session: session,
+    playing: playing,
+    child: child,
+  );
 
   @override
   bool updateShouldNotify(CoverScope oldWidget) =>
       oldWidget.covers != covers ||
+      oldWidget.playing != playing ||
       oldWidget.session?.scope.key != session?.scope.key;
 }
 
@@ -531,76 +546,4 @@ class StageCover extends StatelessWidget {
       child: BookCover.book(book, downloaded: downloaded),
     ),
   );
-}
-
-/// A rounded pane of frosted glass tinted by a book's cover. Whatever lies
-/// beneath it shows through, blurred, under the cover's colors and a tint of
-/// the page color.
-class CoverGlass extends StatelessWidget {
-  const CoverGlass({
-    super.key,
-    required this.book,
-    required this.child,
-    this.radius = 22,
-    this.tint = 0.55,
-  });
-  final Book book;
-  final Widget child;
-  final double radius;
-
-  /// How much of the page color covers the blurred cover, from 0 to 1.
-  final double tint;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final night = theme.brightness == Brightness.dark;
-    final shape = BorderRadius.circular(radius);
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: shape,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: night ? 0.4 : 0.16),
-            blurRadius: 24,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: shape,
-        child: BackdropFilter(
-          filter: ui.ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: Opacity(
-                  opacity: 0.6,
-                  child: CoverBlur(book: book, sigma: 22),
-                ),
-              ),
-              Positioned.fill(
-                child: ColoredBox(
-                  color: theme.colorScheme.surface.withValues(
-                    alpha: night ? tint - 0.05 : tint,
-                  ),
-                ),
-              ),
-              Positioned.fill(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    borderRadius: shape,
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: night ? 0.1 : 0.4),
-                    ),
-                  ),
-                ),
-              ),
-              child,
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 }

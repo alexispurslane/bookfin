@@ -13,6 +13,7 @@ import 'library_services.dart';
 import 'library_view.dart';
 import 'model.dart';
 import 'shelf.dart';
+import 'glass.dart';
 
 void openBook(BuildContext context, LibraryServices services, Book book) =>
     unawaited(
@@ -90,27 +91,23 @@ class BookPage extends StatelessWidget {
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           actions: [
-            PopupMenuButton<String>(
+            GlassMenuButton(
               tooltip: 'More actions',
               icon: const Icon(Icons.more_horiz_rounded),
-              onSelected: (action) => switch (action) {
-                'correct' => _correct(context, book),
-                'link' => _link(context, book),
-                _ => _combine(context, book),
-              },
-              itemBuilder: (_) => [
-                const PopupMenuItem(
-                  value: 'correct',
-                  child: Text('Correct book details'),
+              book: book,
+              items: [
+                GlassMenuItem(
+                  'Correct book details',
+                  onSelected: () => unawaited(_correct(context, book)),
                 ),
-                const PopupMenuItem(
-                  value: 'link',
-                  child: Text('Link another book or ebook'),
+                GlassMenuItem(
+                  'Link another book or ebook',
+                  onSelected: () => unawaited(_link(context, book)),
                 ),
                 if (audio.length > 1)
-                  const PopupMenuItem(
-                    value: 'combine',
-                    child: Text('Combine files of one recording'),
+                  GlassMenuItem(
+                    'Combine files of one recording',
+                    onSelected: () => unawaited(_combine(context, book)),
                   ),
               ],
             ),
@@ -329,10 +326,10 @@ class BookPage extends StatelessWidget {
   }
 
   Future<void> _link(BuildContext context, Book book) async {
-    final candidate = await showModalBottomSheet<Book>(
-      context: context,
+    final candidate = await showGlassSheet<Book>(
+      context,
+      book: book,
       isScrollControlled: true,
-      useSafeArea: true,
       builder: (_) => _BookPicker(book: book, books: catalog.books),
     );
     if (candidate == null || !context.mounted) return;
@@ -367,12 +364,9 @@ class BookPage extends StatelessWidget {
         await catalog.combineAudio(book.id, selected);
       } on ArgumentError {
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Choose different source items, not alternate versions of the same file.',
-              ),
-            ),
+          showGlassMessage(
+            context,
+            'Choose different source items, not alternate versions of the same file.',
           );
         }
       }
@@ -873,9 +867,8 @@ class _EditionPanel extends StatelessWidget {
   }
 
   Future<void> _orderFiles(BuildContext context, Edition edition) async {
-    final keys = await showModalBottomSheet<List<String>>(
-      context: context,
-      useSafeArea: true,
+    final keys = await showGlassSheet<List<String>>(
+      context,
       isScrollControlled: true,
       builder: (_) => _FileOrder(edition: edition),
     );
@@ -896,7 +889,7 @@ Future<bool> confirmAction(
 ) async =>
     await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (context) => GlassDialog(
         title: Text(title),
         content: Text(message),
         actions: [
@@ -939,7 +932,7 @@ class _BookCorrectionState extends State<_BookCorrection> {
   }
 
   @override
-  Widget build(BuildContext context) => AlertDialog(
+  Widget build(BuildContext context) => GlassDialog(
     title: const Text('Correct book details'),
     content: SingleChildScrollView(
       child: Form(
@@ -1088,7 +1081,7 @@ class _RecordingPicker extends StatefulWidget {
 class _RecordingPickerState extends State<_RecordingPicker> {
   final _selected = <String>{};
   @override
-  Widget build(BuildContext context) => AlertDialog(
+  Widget build(BuildContext context) => GlassDialog(
     title: const Text('Files of one recording'),
     content: SizedBox(
       width: 400,

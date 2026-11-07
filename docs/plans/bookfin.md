@@ -288,3 +288,12 @@ The user chose design A of `docs/mockups/player-redesign.html` for the layout, a
 - One row holds Chapters, Bookmark, Speed, and Sleep. Speed shows its value, and Sleep shows the minutes left when it is on.
 - The top bar holds Bookmarks and history, and a More menu with Jump lengths and Book details.
 - By day the stage uses the paper colors. At night the stage is a dark theater: a glow in the cover's colors on a dark background, cream type, and a cream play button. The book details page shares the same backdrop and cover lighting.
+
+## Glass floating layers — November 7, 2026 decision
+
+The user chose design A of `docs/mockups/glass-places.html`, with the tint of design B's second choice.
+
+- Every layer that floats over a page is a glass pane. A glass pane is a rounded, frosted panel that shows a blurred book cover behind a tinted surface. The floating layers are the mini player, the player popup, bottom sheets, dialogs, menus, and snackbars.
+- Pages and the cards inside them stay paper.
+- The book that owns the surface tints it. An example is the download sheet on a book page. If no book owns the surface, the playing book tints it. If nothing is playing, the pane is plain sepia frost.
+- The ebook reader keeps its own reading themes and gets no glass.

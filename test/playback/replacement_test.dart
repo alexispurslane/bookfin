@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:bookfin/catalog/glass.dart';
 import 'package:bookfin/catalog/model.dart';
 import 'package:bookfin/foundation/theme.dart';
 import 'package:bookfin/playback/playback.dart';
@@ -550,12 +551,12 @@ void main() {
       );
       await tester.runAsync(() => tester.tap(find.text('Start replacement')));
       await tester.pumpAndSettle();
-      expect(find.byType(AlertDialog), findsOneWidget);
+      expect(find.byType(GlassDialog), findsOneWidget);
       expect(find.textContaining('history and bookmarks'), findsOneWidget);
       expect(playback.position, isNull);
       await tester.runAsync(() => tester.tap(find.text('Cancel')));
       await tester.pumpAndSettle();
-      expect(find.byType(AlertDialog), findsNothing);
+      expect(find.byType(GlassDialog), findsNothing);
       expect(playback.position, isNull);
       expect(playback.bookmarks.single.id, originalBookmark);
       await tester.runAsync(() => playback.open(revisedBook, replacement));

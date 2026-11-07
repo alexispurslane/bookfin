@@ -10,6 +10,7 @@ import 'appearance/preferences.dart';
 import 'development/gallery.dart';
 import 'foundation/theme.dart';
 import 'catalog/covers.dart';
+import 'catalog/glass.dart';
 import 'catalog/layout.dart';
 import 'catalog/controller.dart';
 import 'catalog/screen.dart';
@@ -239,10 +240,10 @@ class _BookfinAppState extends State<BookfinApp> with WidgetsBindingObserver {
                     night ? AppearanceMode.night : AppearanceMode.day,
                   ),
                 ),
-                onAppearance: () => showModalBottomSheet<void>(
-                  context: context,
+                onAppearance: () => showGlassSheet<void>(
+                  context,
+                  book: widget.playback?.book,
                   isScrollControlled: true,
-                  useSafeArea: true,
                   builder: (_) => _AppearanceSheet(
                     appearance: _appearance,
                     currentDecision: _decision,
@@ -280,10 +281,9 @@ class _BookfinHome extends StatelessWidget {
           IconButton(
             tooltip: 'Appearance',
             icon: const Icon(Icons.contrast_rounded),
-            onPressed: () => showModalBottomSheet<void>(
-              context: context,
+            onPressed: () => showGlassSheet<void>(
+              context,
               isScrollControlled: true,
-              useSafeArea: true,
               sheetAnimationStyle: MediaQuery.disableAnimationsOf(context)
                   ? AnimationStyle.noAnimation
                   : const AnimationStyle(duration: Duration(milliseconds: 360)),

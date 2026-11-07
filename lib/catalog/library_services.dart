@@ -35,14 +35,15 @@ class LibraryServices {
   Listenable get changes =>
       Listenable.merge([catalog, layout, ?downloads, ?playback]);
 
-  /// Gives covers below [child] the cover store and the current account.
-  /// A page pushed on the navigator needs this, because the library's own
-  /// scope sits below the navigator.
+  /// Gives covers below [child] the cover store and the current account, and
+  /// glass panes the book open in the player. A page pushed on the navigator
+  /// needs this, because the library's own scope sits below the navigator.
   Widget coverScope(Widget child) => ListenableBuilder(
-    listenable: catalog,
+    listenable: Listenable.merge([catalog, ?playback]),
     builder: (context, child) => CoverScope(
       covers: covers,
       session: catalog.accessBlocked ? null : catalog.session,
+      playing: playback?.book,
       child: child!,
     ),
     child: child,

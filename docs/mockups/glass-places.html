@@ -1,0 +1,61 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+body{margin:0;font:13px system-ui,sans-serif}
+h2{font:600 17px Georgia,serif;margin:0 0 4px}.sub{color:var(--muted-foreground);margin:0 0 12px;font-size:12px}
+.row{display:flex;gap:20px}.design{flex:1}.phones{display:flex;gap:10px}
+.phone{position:relative;width:165px;height:330px;color:#f3e6d2;border-radius:22px;overflow:hidden;background:#22170f;border:1px solid #3a2a1c}
+.cap{color:var(--muted-foreground);font-size:11px;margin-top:6px;width:165px}
+.bar{position:absolute;left:0;right:0;bottom:0;height:34px;background:#1b130c;border-top:1px solid #3a2a1c}
+.t{font:600 15px Georgia,serif;padding:12px 14px 6px}
+.paper{margin:6px 12px;padding:9px 10px;border-radius:12px;background:#2e2118;border:1px solid #3e2d1f}
+.glass{position:relative;overflow:hidden;border-radius:16px;border:1px solid rgba(255,255,255,.18);box-shadow:0 6px 18px rgba(0,0,0,.45)}
+.glass::before{content:"";position:absolute;inset:-20px;background:var(--tint);filter:blur(14px);opacity:.75}
+.glass::after{content:"";position:absolute;inset:0;background:rgba(34,23,15,.5)}
+.glass>*{position:relative;z-index:1}
+.cardglass{margin:6px 12px;padding:9px 10px}
+.blood{--tint:radial-gradient(circle at 30% 30%,#c0392b,transparent 60%),radial-gradient(circle at 75% 60%,#d4c21a,transparent 55%),#1d2a3a}
+.salem{--tint:radial-gradient(circle at 40% 40%,#2a7fb8,transparent 60%),radial-gradient(circle at 70% 70%,#e0c040,transparent 50%),#0b0b10}
+.neutral{--tint:linear-gradient(#5a4635,#2e2118)}
+.mini{position:absolute;left:8px;right:8px;bottom:40px;height:38px;padding:0 10px;display:flex;align-items:center;font-size:11px}
+.sheet{position:absolute;left:6px;right:6px;bottom:6px;height:150px;padding:10px 12px}
+.dialog{position:absolute;left:18px;right:18px;top:110px;height:110px;padding:12px}
+.scrim{position:absolute;inset:0;background:rgba(0,0,0,.35)}
+.line{height:7px;border-radius:4px;background:rgba(243,230,210,.25);margin:7px 0}.w60{width:60%}.w40{width:40%}.w80{width:80%}
+.cover{width:56px;height:84px;border-radius:5px;margin:8px auto 4px;background:var(--tint)}
+.chip{display:inline-block;margin:2px 3px 0 0;padding:3px 7px;border-radius:9px;background:rgba(243,230,210,.12);font-size:10px}
+.lbl{font-weight:600;font-size:11px;margin-bottom:4px}
+</style></head><body>
+<div class="row">
+<div class="design"><h2>Design A: glass for floating layers</h2><p class="sub">Anything that floats over a page becomes a glass pane. Pages stay paper.</p>
+<div class="phones">
+ <div><div class="phone"><div class="t">Downloads</div>
+  <div class="paper"><div class="lbl">On this phone · 2.1 GB</div><div class="line w80"></div><div class="line w40"></div></div>
+  <div class="paper"><div class="line w60"></div><div class="line w40"></div></div>
+  <div class="glass blood mini"><span>Blood Music</span></div><div class="bar"></div></div>
+  <div class="cap">Downloads summary stays a paper card.</div></div>
+ <div><div class="phone"><div class="t">'Salem's Lot</div><div class="cover salem"></div><div class="line w60" style="margin:6px auto"></div>
+  <div class="scrim"></div><div class="glass salem sheet"><div class="lbl">Download</div><span class="chip">Audiobook</span><span class="chip">EPUB</span><div class="line w80"></div><div class="line w60"></div></div></div>
+  <div class="cap">A sheet on the book page is glass over that book's cover.</div></div>
+</div></div>
+<div class="design"><h2>Design B: glass for floating layers and page cards</h2><p class="sub">Floating layers as in A. Cards inside pages also become glass.</p>
+<div class="phones">
+ <div><div class="phone"><div class="t">Downloads</div>
+  <div class="glass blood cardglass"><div class="lbl">On this phone · 2.1 GB</div><div class="line w80"></div><div class="line w40"></div></div>
+  <div class="glass blood cardglass"><div class="line w60"></div><div class="line w40"></div></div>
+  <div class="glass blood mini"><span>Blood Music</span></div><div class="bar"></div></div>
+  <div class="cap">The summary card is glass too, tinted by the playing book.</div></div>
+ <div><div class="phone"><div class="t">'Salem's Lot</div><div class="cover salem"></div>
+  <div class="glass salem cardglass"><div class="lbl">About</div><div class="line w80"></div><div class="line w60"></div></div>
+  <div class="glass salem cardglass"><div class="lbl">Editions</div><div class="line w60"></div></div></div>
+  <div class="cap">Book page panels are glass over that book's cover.</div></div>
+</div></div>
+</div>
+<h2 style="margin-top:22px">Second choice: the tint where no book owns the surface</h2><p class="sub">Example: the "Remove leftover files?" dialog on the Downloads page while Blood Music plays.</p>
+<div class="phones">
+ <div><div class="phone"><div class="t">Downloads</div><div class="paper"><div class="line w80"></div></div><div class="scrim"></div>
+  <div class="glass neutral dialog"><div class="lbl">Remove leftover files?</div><div class="line w80"></div><div class="line w60"></div></div><div class="bar"></div></div>
+  <div class="cap">Neutral: plain sepia frost.</div></div>
+ <div><div class="phone"><div class="t">Downloads</div><div class="paper"><div class="line w80"></div></div><div class="scrim"></div>
+  <div class="glass blood dialog"><div class="lbl">Remove leftover files?</div><div class="line w80"></div><div class="line w60"></div></div><div class="bar"></div></div>
+  <div class="cap">Playing book: the frost carries Blood Music's colors.</div></div>
+</div>
+</body></html>

@@ -1,3 +1,5 @@
+import 'package:bookfin/catalog/book_cover.dart';
+import 'package:bookfin/catalog/glass.dart';
 import 'package:bookfin/catalog/model.dart';
 import 'package:bookfin/foundation/theme.dart';
 import 'package:bookfin/playback/playback.dart';
@@ -94,6 +96,21 @@ void main() {
     await tester.tap(find.text('Chapters'));
     await tester.pumpAndSettle();
     expect(find.text('Arrival'), findsOneWidget);
+  });
+
+  testWidgets('the chapters sheet floats on glass over the open book', (
+    tester,
+  ) async {
+    await showPlayer(tester);
+    await tester.tap(find.text('Chapters'));
+    await tester.pumpAndSettle();
+    final glass = find.ancestor(
+      of: find.text('Arrival'),
+      matching: find.byType(CoverGlass),
+    );
+    expect(glass, findsOneWidget);
+    final behind = find.descendant(of: glass, matching: find.byType(CoverBlur));
+    expect(tester.widget<CoverBlur>(behind).book, book);
   });
 
   testWidgets('a long press on a jump button sets the jump lengths', (

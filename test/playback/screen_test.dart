@@ -1,4 +1,4 @@
-import 'package:bookfin/catalog/book_cover.dart';
+import 'package:bookfin/catalog/glass.dart';
 import 'package:bookfin/foundation/theme.dart';
 import 'package:bookfin/playback/playback.dart';
 import 'package:bookfin/playback/screen.dart';
@@ -132,7 +132,7 @@ void main() {
       await tester.tap(find.byTooltip('Open player'));
       await tester.pumpAndSettle();
       expect(
-        find.descendant(
+        find.ancestor(
           of: find.byType(PlayerView),
           matching: find.byType(CoverGlass),
         ),

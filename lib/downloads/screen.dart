@@ -7,6 +7,7 @@ import '../catalog/library_view.dart' show BookRow, ProgressLine;
 import '../catalog/model.dart';
 import '../foundation/theme.dart';
 import 'downloads.dart';
+import '../catalog/glass.dart';
 
 class DownloadControls extends StatelessWidget {
   const DownloadControls({
@@ -96,12 +97,9 @@ class DownloadControls extends StatelessWidget {
         await operation();
       } catch (_) {
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'The download could not be changed. Check your account and available storage.',
-              ),
-            ),
+          showGlassMessage(
+            context,
+            'The download could not be changed. Check your account and available storage.',
           );
         }
       }
@@ -300,7 +298,7 @@ class _Summary extends StatelessWidget {
                 onPressed: () async {
                   final allow = await showDialog<bool>(
                     context: context,
-                    builder: (context) => AlertDialog(
+                    builder: (context) => GlassDialog(
                       title: const Text('Allow mobile data?'),
                       content: const Text(
                         'Allow media transfers for this account session. Your carrier may charge for mobile data. Signing out or restarting ends this permission.',
@@ -446,7 +444,7 @@ extension on String {
 Future<bool> confirmRemoveDownload(BuildContext context) async =>
     await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (context) => GlassDialog(
         title: const Text('Remove download?'),
         content: const Text(
           'Remove this edition’s local files and unfinished transfers. Your Jellyfin files will not change.',
@@ -471,12 +469,9 @@ void _change(BuildContext context, Future<void> Function() operation) {
       await operation();
     } catch (_) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'The download could not be changed. Check your account and available storage.',
-            ),
-          ),
+        showGlassMessage(
+          context,
+          'The download could not be changed. Check your account and available storage.',
         );
       }
     }
@@ -635,7 +630,7 @@ class LeftoverFilesPage extends StatelessWidget {
   ) async =>
       await showDialog<bool>(
         context: context,
-        builder: (context) => AlertDialog(
+        builder: (context) => GlassDialog(
           title: Text(title),
           content: Text(body),
           actions: [
@@ -663,12 +658,9 @@ class LeftoverFilesPage extends StatelessWidget {
       }
     } catch (_) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Some files could not be removed. Check your account and try again.',
-            ),
-          ),
+        showGlassMessage(
+          context,
+          'Some files could not be removed. Check your account and try again.',
         );
       }
     }

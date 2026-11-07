@@ -163,6 +163,7 @@ class _CatalogHomeState extends State<CatalogHome> {
       return CoverScope(
         covers: widget.covers,
         session: _catalog.accessBlocked ? null : _catalog.session,
+        playing: widget.playback?.book,
         child: Scaffold(
           // Pages scroll beneath the floating mini player.
           extendBody: true,

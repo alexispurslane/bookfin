@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../catalog/model.dart';
 import '../foundation/theme.dart';
 import 'playback.dart';
+import '../catalog/glass.dart';
 
 class PersonalRecordsView extends StatelessWidget {
   const PersonalRecordsView({super.key, required this.playback});
@@ -177,7 +178,7 @@ class PersonalRecordsView extends StatelessWidget {
   ) async {
     await showDialog<void>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (context) => GlassDialog(
         title: Text(title),
         content: Text(explanation),
         actions: [
@@ -283,7 +284,7 @@ class _BookmarkEditorState extends State<_BookmarkEditor> {
   }
 
   @override
-  Widget build(BuildContext context) => AlertDialog(
+  Widget build(BuildContext context) => GlassDialog(
     title: Text(widget.bookmark == null ? 'Add bookmark' : 'Edit bookmark'),
     content: SingleChildScrollView(
       child: Column(
