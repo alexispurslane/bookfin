@@ -1,3 +1,4 @@
+import 'package:bookfin/catalog/glass.dart' show CoverGlass;
 import 'package:bookfin/reader/screen.dart';
 import 'package:bookfin/reader/session.dart';
 import 'package:bookfin/foundation/theme.dart';
@@ -106,7 +107,10 @@ void main() {
 
   /// Opens the reader on [book] at a visible place, with one untitled
   /// bookmark there, and shows its bookmarks panel.
-  Future<ReaderSession> openBookmarks(WidgetTester tester) async {
+  Future<ReaderSession> openBookmarks(
+    WidgetTester tester, {
+    ControlPort? port,
+  }) async {
     final downloads = LocalFiles()
       ..files[source.key] = Uri.file('/verified.epub');
     final reader = ReaderSession(
@@ -120,11 +124,12 @@ void main() {
     });
     await reader.bind(account(), [book]);
     await reader.open(book, edition);
-    reader.attach(reader.token, ControlPort(), []);
+    reader.attach(reader.token, port ?? ControlPort(), []);
     reader.acceptVisible(reader.token, visible);
     await reader.addBookmark();
     await tester.pumpWidget(
       MaterialApp(
+        navigatorObservers: [if (port != null) PopLog(port.log)],
         home: ReaderScreen(reader: reader, onNightChanged: (_) {}),
       ),
     );
@@ -171,6 +176,193 @@ void main() {
     expect(reader.bookmarks, isEmpty);
     await tester.pumpWidget(const SizedBox());
   }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
+
+  /// Opens the reader on [book] at a visible place, with [port] as its
+  /// navigator and the [contents] entries. [port]'s log also records each
+  /// closed route.
+  Future<ReaderSession> openReader(
+    WidgetTester tester,
+    ControlPort port, {
+    List<ContentsEntry> contents = const [],
+  }) async {
+    final downloads = LocalFiles()
+      ..files[source.key] = Uri.file('/verified.epub');
+    final reader = ReaderSession(
+      downloads: downloads,
+      store: MemoryResume(),
+      load: (_) async => Publication.admit(epub()),
+    );
+    addTearDown(() {
+      reader.dispose();
+      downloads.dispose();
+    });
+    await reader.bind(account(), [book]);
+    await reader.open(book, edition);
+    reader.attach(reader.token, port, contents);
+    reader.acceptVisible(reader.token, visible);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: bookfinTheme(Brightness.light),
+        navigatorObservers: [PopLog(port.log)],
+        home: ReaderScreen(reader: reader, onNightChanged: (_) {}),
+      ),
+    );
+    await tester.pumpAndSettle();
+    return reader;
+  }
+
+  testWidgets(
+    'choosing a contents entry closes the sheet, then goes to that place',
+    (tester) async {
+      final port = ControlPort();
+      await openReader(
+        tester,
+        port,
+        contents: const [
+          ContentsEntry('River heading', 'one.xhtml#start'),
+          ContentsEntry('The bridge', 'two.xhtml'),
+        ],
+      );
+      await tester.tap(find.byTooltip('Contents'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('The bridge'));
+      await tester.pumpAndSettle();
+      expect(port.log, ['closed a route', 'contents two.xhtml']);
+      expect(find.text('The bridge'), findsNothing);
+      await tester.pumpWidget(const SizedBox());
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.linux),
+  );
+
+  testWidgets(
+    'tapping a reading bookmark closes the sheet and returns to its place',
+    (tester) async {
+      final port = ControlPort();
+      await openBookmarks(tester, port: port);
+      await tester.tap(find.text('Saved reading place'));
+      await tester.pumpAndSettle();
+      expect(port.destinations.single.cfi, visible.cfi);
+      expect(port.log, contains('closed a route'));
+      expect(find.text('Saved reading place'), findsNothing);
+      await tester.pumpWidget(const SizedBox());
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.linux),
+  );
+
+  testWidgets(
+    'editing a reading bookmark opens the shared bookmark editor, and the '
+    'reader saves what it returns',
+    (tester) async {
+      final reader = await openBookmarks(tester);
+      Future<void> edit({required String title, required String button}) async {
+        await tester.tap(find.byTooltip('Edit reading bookmark'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Edit title and note'));
+        await tester.pumpAndSettle();
+        expect(find.text('Edit reading bookmark'), findsOneWidget);
+        await tester.enterText(
+          find.widgetWithText(TextField, 'Title (optional)'),
+          title,
+        );
+        await tester.enterText(
+          find.widgetWithText(TextField, 'Note (optional)'),
+          'Where the road bends',
+        );
+        await tester.tap(find.text(button));
+        await tester.pumpAndSettle();
+      }
+
+      await edit(title: 'River mark', button: 'Save bookmark');
+      expect(reader.bookmarks.single.title, 'River mark');
+      expect(reader.bookmarks.single.note, 'Where the road bends');
+      expect(find.text('River mark'), findsOneWidget, reason: 'the panel row');
+
+      await edit(title: 'Discarded', button: 'Cancel');
+      expect(reader.bookmarks.single.title, 'River mark');
+      await tester.pumpWidget(const SizedBox());
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.linux),
+  );
+
+  testWidgets(
+    'choosing a search hit goes to it, and the search ends with the sheet',
+    (tester) async {
+      final port = ControlPort()
+        ..report = const SearchReport([SearchHit(visible, 'river excerpt')]);
+      final reader = await openReader(tester, port);
+      await tester.tap(find.byTooltip('Search book'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), 'river');
+      await tester.testTextInput.receiveAction(TextInputAction.search);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('river excerpt'));
+      await tester.pumpAndSettle();
+      expect(port.destinations.single.cfi, visible.cfi);
+      expect(port.log, ['closed a route', 'cancel search']);
+      expect(reader.hits, isEmpty);
+      expect(find.text('river excerpt'), findsNothing);
+      await tester.pumpWidget(const SizedBox());
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.linux),
+  );
+
+  testWidgets(
+    'closing search with its button or a tap outside the sheet ends the '
+    'search',
+    (tester) async {
+      final port = ControlPort();
+      await openReader(tester, port);
+      await tester.tap(find.byTooltip('Search book'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Cancel search'));
+      await tester.pumpAndSettle();
+      expect(port.log, ['closed a route', 'cancel search']);
+
+      port.log.clear();
+      await tester.tap(find.byTooltip('Search book'));
+      await tester.pumpAndSettle();
+      await tester.tapAt(const Offset(20, 20));
+      await tester.pumpAndSettle();
+      expect(port.log, ['closed a route', 'cancel search']);
+      await tester.pumpWidget(const SizedBox());
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.linux),
+  );
+
+  testWidgets(
+    'the reader panels open on the plain sheet that the reader always had',
+    (tester) async {
+      await openReader(
+        tester,
+        ControlPort(),
+        contents: const [ContentsEntry('River heading', 'one.xhtml')],
+      );
+      final context = tester.element(find.byType(ReaderScreen));
+      final surface = Theme.of(context).bottomSheetTheme.backgroundColor;
+      for (final panel in ['Contents', 'Search book', 'Reading bookmarks']) {
+        await tester.tap(find.byTooltip(panel));
+        await tester.pumpAndSettle();
+        final sheet = find.byType(BottomSheet);
+        expect(tester.widget<BottomSheet>(sheet).showDragHandle, isTrue);
+        expect(
+          tester
+              .widget<Material>(
+                find
+                    .descendant(of: sheet, matching: find.byType(Material))
+                    .first,
+              )
+              .color,
+          surface,
+          reason: '$panel sheet surface',
+        );
+        expect(find.byType(CoverGlass), findsNothing, reason: panel);
+        await tester.tapAt(const Offset(20, 20));
+        await tester.pumpAndSettle();
+      }
+      await tester.pumpWidget(const SizedBox());
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.linux),
+  );
 
   testWidgets(
     'production reading controls save a bookmark and change text size',
@@ -252,17 +444,35 @@ void main() {
   );
 }
 
+/// Adds 'closed a route' to [log] each time a route closes.
+class PopLog extends NavigatorObserver {
+  PopLog(this.log);
+  final List<String> log;
+  @override
+  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) =>
+      log.add('closed a route');
+}
+
 class ControlPort implements NavigatorPort {
   final destinations = <ReadingLocation>[];
+
+  /// What the port did, in order, apart from [destinations].
+  final log = <String>[];
+
+  /// What a search finds.
+  SearchReport report = const SearchReport(
+    [],
+    error: 'Search is incomplete. Chapter failed.',
+  );
   @override
-  Future<void> cancelSearch(int request) async {}
+  Future<void> cancelSearch(int request) async => log.add('cancel search');
   @override
   Future<void> configure({
     required double fontSize,
     required bool night,
   }) async {}
   @override
-  Future<void> contents(String href) async {}
+  Future<void> contents(String href) async => log.add('contents $href');
   @override
   Future<void> display(ReadingLocation location) async {
     destinations.add(location);
@@ -271,6 +481,5 @@ class ControlPort implements NavigatorPort {
   @override
   Future<void> move(bool forward) async {}
   @override
-  Future<SearchReport> search(String query, int request) async =>
-      const SearchReport([], error: 'Search is incomplete. Chapter failed.');
+  Future<SearchReport> search(String query, int request) async => report;
 }

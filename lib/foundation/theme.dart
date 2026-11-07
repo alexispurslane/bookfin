@@ -208,10 +208,24 @@ ThemeData bookfinTheme(Brightness brightness, {bool reduceMotion = false}) {
         fontWeight: FontWeight.w500,
         color: ink,
       ),
-      bodyLarge: TextStyle(fontSize: 16, height: 1.5, color: ink),
-      bodyMedium: TextStyle(fontSize: 14, height: 1.5, color: ink),
-      bodySmall: TextStyle(fontSize: 12, height: 1.55, color: subtle),
-      labelSmall: TextStyle(
+      // Built on the base styles so that they keep the theme's Outfit face
+      // and its fallbacks. A bare TextStyle would draw in the platform font.
+      bodyLarge: base.textTheme.bodyLarge?.copyWith(
+        fontSize: 16,
+        height: 1.5,
+        color: ink,
+      ),
+      bodyMedium: base.textTheme.bodyMedium?.copyWith(
+        fontSize: 14,
+        height: 1.5,
+        color: ink,
+      ),
+      bodySmall: base.textTheme.bodySmall?.copyWith(
+        fontSize: 12,
+        height: 1.55,
+        color: subtle,
+      ),
+      labelSmall: base.textTheme.labelSmall?.copyWith(
         fontSize: 11,
         height: 1.5,
         letterSpacing: 1.5,
