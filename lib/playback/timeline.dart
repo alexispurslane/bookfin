@@ -93,7 +93,7 @@ class ListeningTimeline extends StatefulWidget {
 
 /// The width of the time of day column, wide enough for "12:59 PM" on one
 /// line.
-const _timeWidth = 60.0;
+const _timeWidth = 68.0;
 
 class _ListeningTimelineState extends State<ListeningTimeline> {
   /// The entry whose choices are shown, if any.
