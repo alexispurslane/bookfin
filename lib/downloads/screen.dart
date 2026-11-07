@@ -479,7 +479,8 @@ void _change(BuildContext context, Future<void> Function() operation) {
 }
 
 /// Reads the leftover files of the bound account, and reads them again when
-/// the downloads change. [builder] gets the latest read and a way to repeat it.
+/// [Downloads.phases] notifies, so byte progress never starts a new read.
+/// [builder] gets the latest read and a way to repeat it.
 class _LeftoverInventory extends StatefulWidget {
   const _LeftoverInventory({required this.downloads, required this.builder});
   final Downloads downloads;
@@ -500,7 +501,7 @@ class _LeftoverInventoryState extends State<_LeftoverInventory> {
   @override
   void initState() {
     super.initState();
-    widget.downloads.addListener(_reload);
+    widget.downloads.phases.addListener(_reload);
     _inventory = _read();
   }
 
@@ -508,8 +509,8 @@ class _LeftoverInventoryState extends State<_LeftoverInventory> {
   void didUpdateWidget(_LeftoverInventory oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.downloads != widget.downloads) {
-      oldWidget.downloads.removeListener(_reload);
-      widget.downloads.addListener(_reload);
+      oldWidget.downloads.phases.removeListener(_reload);
+      widget.downloads.phases.addListener(_reload);
       _inventory = _read();
     }
   }
@@ -528,7 +529,7 @@ class _LeftoverInventoryState extends State<_LeftoverInventory> {
 
   @override
   void dispose() {
-    widget.downloads.removeListener(_reload);
+    widget.downloads.phases.removeListener(_reload);
     super.dispose();
   }
 

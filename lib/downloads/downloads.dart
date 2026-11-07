@@ -95,6 +95,11 @@ abstract class Downloads extends ChangeNotifier {
   Future<void> request(Edition edition);
   Future<void> cancel(Edition edition);
   Future<void> remove(Edition edition);
+
+  /// Notifies when a download starts, finishes, fails, stops or waits, or
+  /// when saved files change. Byte progress notifies only the listeners of
+  /// this object, not of [phases].
+  Listenable get phases => this;
   Future<List<RetainedDownload>> retainedStorage() async => const [];
   Future<void> removeRetained(RetainedDownload download) async =>
       throw UnsupportedError('Retained storage is unavailable.');
