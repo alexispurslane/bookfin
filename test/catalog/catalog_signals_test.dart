@@ -340,6 +340,151 @@ void main() {
     });
   });
 
+  group('whether the last sign-in or refresh succeeded', () {
+    bool verified() => controller.statusNotifier.value.verified;
+
+    test('a sign-in that Jellyfin accepts succeeded', () async {
+      await controller.connect('https://books.example', 'alice', 'password');
+      expect(verified(), isTrue);
+    });
+
+    test(
+      'a refresh has not succeeded while it runs, and has when it ends',
+      () async {
+        await connectAndSelect();
+        client.pendingCatalog = Completer();
+        final refreshing = controller.refresh();
+        expect(verified(), isFalse);
+        client.pendingCatalog!.complete([entry('one')]);
+        await refreshing;
+        expect(verified(), isTrue);
+      },
+    );
+
+    test('a restore from storage has not reached Jellyfin, so it has not succeeded', () async {
+      await connectAndSelect();
+      final restarted = newController();
+      addTearDown(restarted.dispose);
+      await restarted.restore();
+      expect(restarted.books, hasLength(1));
+      expect(restarted.statusNotifier.value.verified, isFalse);
+    });
+
+    test('a refresh that cannot reach Jellyfin did not succeed', () async {
+      await connectAndSelect();
+      client.failure = const CatalogFailure(CatalogFailureKind.unavailable);
+      await controller.refresh();
+      expect(verified(), isFalse);
+    });
+
+    test('an expired sign-in did not succeed', () async {
+      await connectAndSelect();
+      client.failure = const CatalogFailure(CatalogFailureKind.unauthorized);
+      await controller.refresh();
+      expect(verified(), isFalse);
+    });
+
+    test('revoked access did not succeed', () async {
+      await connectAndSelect();
+      client.failure = const CatalogFailure(CatalogFailureKind.forbidden);
+      await controller.refresh();
+      expect(verified(), isFalse);
+    });
+
+    test('signing out forgets the last success', () async {
+      await connectAndSelect();
+      await controller.signOut();
+      expect(verified(), isFalse);
+    });
+
+    test('a cancelled refresh did not succeed', () async {
+      await connectAndSelect();
+      client.pendingCatalog = Completer();
+      final refreshing = controller.refresh();
+      controller.cancel();
+      client.pendingCatalog!.complete([entry('one')]);
+      await refreshing;
+      expect(verified(), isFalse);
+    });
+
+    test('a correction after a refresh keeps the refresh a success', () async {
+      await connectAndSelect();
+      await controller.correctBook(
+        'book:one',
+        const BookDetails(title: 'Corrected', author: 'Writer'),
+      );
+      expect(controller.books.single.title, 'Corrected');
+      expect(verified(), isTrue);
+    });
+
+    test(
+      'a correction that cannot be saved keeps the refresh a success',
+      () async {
+        await connectAndSelect();
+        store.failWrites = true;
+        await controller.correctBook(
+          'book:one',
+          const BookDetails(title: 'Corrected', author: 'Writer'),
+        );
+        expect(controller.statusNotifier.value.message, contains('correction'));
+        expect(verified(), isTrue);
+      },
+    );
+
+    // In the next two, Jellyfin answered, the refresh ended, and it still
+    // failed. So the reach and the refresh state cannot tell a success.
+    test('a refresh that Jellyfin answers with an incomplete catalog reached Jellyfin and did not succeed', () async {
+      await connectAndSelect();
+      client.failure = const CatalogFailure(CatalogFailureKind.incomplete);
+      await controller.refresh();
+      final status = controller.statusNotifier.value;
+      expect((status.refreshing, status.reach), (false, CatalogReach.reached));
+      expect(status.verified, isFalse);
+    });
+
+    test('a refresh whose catalog cannot be saved reached Jellyfin and did not succeed', () async {
+      await connectAndSelect();
+      store.failWrites = true;
+      await controller.refresh();
+      final status = controller.statusNotifier.value;
+      expect((status.refreshing, status.reach), (false, CatalogReach.reached));
+      expect(status.verified, isFalse);
+      expect(controller.books, hasLength(1));
+    });
+
+    test(
+      'the status and the catalog agree on success at every status notice',
+      () async {
+        final seen = <(bool, bool)>[];
+        controller.statusNotifier.addListener(() {
+          seen.add((verified(), controller.verified));
+          controller.checkInvariants();
+        });
+        await connectAndSelect();
+        await controller.correctBook(
+          'book:one',
+          const BookDetails(title: 'Corrected', author: 'Writer'),
+        );
+        client.failure = const CatalogFailure(CatalogFailureKind.unavailable);
+        await controller.refresh();
+        client.failure = null;
+        await controller.refresh();
+        client.failure = const CatalogFailure(CatalogFailureKind.forbidden);
+        await controller.refresh();
+        await controller.signOut();
+        client.failure = null;
+        await controller.connect('https://books.example', 'alice', 'password');
+        client.failure = const CatalogFailure(CatalogFailureKind.unauthorized);
+        await controller.refresh();
+        expect(
+          seen,
+          everyElement(predicate<(bool, bool)>((s) => s.$1 == s.$2)),
+        );
+        expect(seen.map((s) => s.$1), containsAllInOrder([true, false, true]));
+      },
+    );
+  });
+
   group('the build of the books', () {
     test('a restore builds the books once, in another isolate', () async {
       client.entries = _largeLibrary();

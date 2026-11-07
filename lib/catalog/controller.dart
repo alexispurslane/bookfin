@@ -43,10 +43,16 @@ enum CatalogReach {
 ///   from storage is not a refresh.
 /// - [reach]: what the last request said about Jellyfin.
 /// - [message]: the text to show about the last operation, or null.
+/// - [verified]: the last sign-in or refresh succeeded. A new one, a
+///   cancel, a failure or a sign-out clears it, and a correction keeps it.
+///   It is its own field, because a refresh can reach Jellyfin and still
+///   fail: Jellyfin sends an incomplete catalog, or the catalog cannot be
+///   saved.
 typedef CatalogStatus = ({
   bool refreshing,
   CatalogReach reach,
   String? message,
+  bool verified,
 });
 
 /// The signed-in account and what it may read: its session, whether access
@@ -179,11 +185,13 @@ CatalogLibrary _libraryOf(CatalogCache cache) {
 ///   [CatalogLibrary.matches].
 /// - [session], [accessBlocked], [libraries] and the selection in [cache]:
 ///   [accountNotifier].
-/// - [busy] and [message]: [statusNotifier]. [busy] also covers a restore.
+/// - [busy], [verified] and [message]: [statusNotifier]. [busy] also
+///   covers a restore.
 /// [readingOrder] stays: [CatalogLibrary] series are in reading order.
 ///
 /// Invariants, which [checkInvariants] proves:
 /// - A signed-out catalog holds no account data.
+/// - A verified catalog reached Jellyfin.
 /// - The cache belongs to the active account, and each cached item belongs
 ///   to a selected book library.
 /// - The saved text is present exactly when the cache is, and it encodes the
@@ -277,6 +285,7 @@ class CatalogController extends ChangeNotifier {
     refreshing: _work == _Work.refresh,
     reach: _accessBlocked ? CatalogReach.accessRevoked : _reach,
     message: _message,
+    verified: _verified,
   );
 
   void checkInvariants() {
@@ -286,6 +295,9 @@ class CatalogController extends ChangeNotifier {
             _libraries.isNotEmpty ||
             _verified)) {
       throw StateError('A signed-out catalog must contain no account data.');
+    }
+    if (_verified && _reach != CatalogReach.reached) {
+      throw StateError('A verified catalog must have reached Jellyfin.');
     }
     if (_cache != null && _cache!.scope.key != _session?.scope.key) {
       throw StateError('The cache must belong to the active account.');
