@@ -45,7 +45,7 @@ void main() {
     client.close();
   });
   testWidgets(
-    'root Listening opens personal records and sign-out dismisses the private route',
+    'root Listening opens the history timeline and sign-out dismisses it',
     (tester) async {
       await tester.pumpWidget(
         MaterialApp(
@@ -62,7 +62,9 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Listening'));
       await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('Bookmarks and history'));
+      await tester.ensureVisible(find.text('History'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('History'));
       await tester.pumpAndSettle();
       expect(find.text('Alice private bookmark'), findsOneWidget);
       await tester.runAsync(() async {

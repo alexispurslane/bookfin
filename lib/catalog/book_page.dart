@@ -6,6 +6,7 @@ import '../downloads/downloads.dart';
 import '../downloads/screen.dart';
 import '../foundation/theme.dart';
 import '../playback/screen.dart';
+import '../playback/timeline.dart';
 import '../reader/screen.dart';
 import 'book_cover.dart';
 import 'controller.dart';
@@ -221,11 +222,13 @@ class BookPage extends StatelessWidget {
                                     style: theme.textTheme.bodySmall,
                                   ),
                                 ),
-                                if (playback != null &&
-                                    playback.book?.id == book.id)
+                                if (playback != null)
                                   TextButton(
-                                    onPressed: () =>
-                                        openListeningHistory(context, playback),
+                                    onPressed: () => openListeningTimeline(
+                                      context,
+                                      playback,
+                                      book: book,
+                                    ),
                                     style: TextButton.styleFrom(
                                       minimumSize: const Size(48, 32),
                                       padding: const EdgeInsets.symmetric(
@@ -233,7 +236,7 @@ class BookPage extends StatelessWidget {
                                       ),
                                     ),
                                     child: const Text(
-                                      'Bookmarks and history',
+                                      'History',
                                       style: TextStyle(fontSize: 12),
                                     ),
                                   ),

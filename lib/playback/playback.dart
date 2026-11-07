@@ -419,16 +419,51 @@ class Playback extends ChangeNotifier {
     return files.fold<int>(0, (total, file) => total + file.durationMs!);
   }
 
-  int? get editionMilliseconds {
-    final position = _position;
-    if (position == null) return null;
+  /// Where [position] is in its audio edition, in milliseconds from the
+  /// edition's start. Null when the edition is not in the library, or when a
+  /// file before the position has no known length.
+  int? editionTime(AudioPosition position) {
+    final edition = _edition?.id == position.editionId
+        ? _edition
+        : _books
+              .expand((book) => book.editions)
+              .where((edition) => edition.id == position.editionId)
+              .firstOrNull;
+    return edition == null ? null : _editionTime(edition, position);
+  }
+
+  static int? _editionTime(Edition edition, AudioPosition position) {
     var total = 0;
-    for (final file in _edition!.files) {
+    for (final file in edition.files) {
       if (file.key == position.sourceKey) return total + position.milliseconds;
       if (file.durationMs == null) return null;
       total += file.durationMs!;
     }
     return null;
+  }
+
+  /// How long after a bookmark the open place still counts as at it.
+  static const bookmarkReach = Duration(seconds: 15);
+
+  /// The newest bookmark of the open edition that lies at most
+  /// [bookmarkReach] before the open place, if any.
+  AudioBookmark? get bookmarkHere {
+    final edition = _edition;
+    final now = editionMilliseconds;
+    if (edition == null || now == null) return null;
+    for (final bookmark in bookmarks) {
+      if (!bookmark.position.fits(edition)) continue;
+      final at = _editionTime(edition, bookmark.position);
+      if (at != null && now >= at && now - at < bookmarkReach.inMilliseconds) {
+        return bookmark;
+      }
+    }
+    return null;
+  }
+
+  int? get editionMilliseconds {
+    final position = _position;
+    return position == null ? null : _editionTime(_edition!, position);
   }
 
   /// Where the open or saved position is in the edition, in milliseconds

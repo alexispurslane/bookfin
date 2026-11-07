@@ -36,6 +36,16 @@ void main() {
     ),
   );
 
+  /// Opens the History tool and the choices of the bookmark named [name].
+  Future<void> openBookmark(WidgetTester tester, String name) async {
+    await tester.ensureVisible(find.text('History'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('History'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(name));
+    await tester.pumpAndSettle();
+  }
+
   Future<void> restart(WidgetTester tester) async {
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.runAsync(() async {
@@ -60,9 +70,8 @@ void main() {
       final bookmark = playback.bookmarks.single;
       final historyCount = playback.history.length;
       await showPlayer(tester);
-      await tester.tap(find.byTooltip('Bookmarks and history'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('Delete bookmark'));
+      await openBookmark(tester, 'Arrival');
+      await tester.tap(find.byTooltip('Delete'));
       await tester.pumpAndSettle();
       expect(find.text('Delete bookmark?'), findsOneWidget);
       await tester.tap(find.widgetWithText(TextButton, 'Cancel'));
@@ -94,19 +103,8 @@ void main() {
       );
       final historyIds = playback.history.map((event) => event.id).toList();
       await showPlayer(tester);
-      await tester.tap(find.byTooltip('Bookmarks and history'));
-      await tester.pumpAndSettle();
-      final row = find.ancestor(
-        of: find.text('Remove this'),
-        matching: find.byType(BookfinPanel),
-      );
-      final deleteButton = find.descendant(
-        of: row,
-        matching: find.byTooltip('Delete bookmark'),
-      );
-      await tester.ensureVisible(deleteButton);
-      await tester.pumpAndSettle();
-      await tester.tap(deleteButton);
+      await openBookmark(tester, 'Remove this');
+      await tester.tap(find.byTooltip('Delete'));
       await tester.pumpAndSettle();
       await tester.runAsync(() async {
         await tester.tap(find.widgetWithText(TextButton, 'Delete'));

@@ -71,14 +71,16 @@ void main() {
           home: Scaffold(body: PlayerView(playback: playback)),
         ),
       );
-      await tester.tap(find.byTooltip('Bookmarks and history'));
+      await tester.tap(find.text('History'));
       await tester.pumpAndSettle();
-      expect(find.byTooltip('Pause'), findsOneWidget);
+      await tester.tap(find.text('Beginning'));
+      await tester.pumpAndSettle();
       await tester.runAsync(() async {
-        await tester.tap(find.text('Restore bookmark'));
+        await tester.tap(find.text('Go to 00:00'));
         await playback.flush();
       });
       await tester.pumpAndSettle();
+      expect(find.byTooltip('Pause'), findsOneWidget);
       expect(find.text('Undo'), findsOneWidget);
       await tester.runAsync(() async {
         await tester.tap(find.text('Undo'));
@@ -201,7 +203,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(playback.sleepDeadline, isNotNull);
       expect(find.textContaining('sync complete'), findsNothing);
-      expect(find.byTooltip('Bookmarks and history'), findsOneWidget);
+      expect(find.text('History'), findsOneWidget);
     },
   );
 
@@ -248,7 +250,7 @@ void main() {
   );
 
   testWidgets(
-    'bookmarks can be added edited restored and deleted from listening history',
+    'bookmarks can be saved named restored and deleted from the history timeline',
     (tester) async {
       phone(tester);
       await tester.pumpWidget(
@@ -257,56 +259,59 @@ void main() {
           home: Scaffold(body: PlayerView(playback: playback)),
         ),
       );
-      await tester.scrollUntilVisible(find.text('Bookmark'), 150);
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Bookmark'));
-      await tester.pumpAndSettle();
-      await tester.enterText(
-        find.widgetWithText(TextField, 'Title (optional)'),
-        'Remember',
-      );
-      await tester.enterText(
-        find.widgetWithText(TextField, 'Note (optional)'),
-        'A note',
-      );
+      Future<void> save(String title) async {
+        await tester.enterText(
+          find.widgetWithText(TextField, 'Title (optional)'),
+          title,
+        );
+        await tester.runAsync(() async {
+          await tester.tap(find.text('Save bookmark'));
+          await playback.flush();
+        });
+        await tester.pumpAndSettle();
+      }
+
       await tester.runAsync(() async {
-        await tester.tap(find.text('Save bookmark'));
+        await tester.tap(find.text('Bookmark'));
         await playback.flush();
       });
       await tester.pumpAndSettle();
+      await tester.tap(find.text('Bookmarked'));
+      await tester.pumpAndSettle();
+      await save('Remember');
       expect(playback.bookmarks.single.title, 'Remember');
-      await tester.tap(find.byTooltip('Bookmarks and history'));
+
+      await tester.tap(find.text('History'));
       await tester.pumpAndSettle();
-      expect(find.text('Remember'), findsOneWidget);
-      await tester.tap(find.byTooltip('Edit bookmark'));
+      await tester.tap(find.text('Remember'));
       await tester.pumpAndSettle();
-      await tester.enterText(
-        find.widgetWithText(TextField, 'Title (optional)'),
-        'Revised',
-      );
-      await tester.runAsync(() async {
-        await tester.tap(find.text('Save bookmark'));
-        await playback.flush();
-      });
+      await tester.tap(find.text('Rename'));
       await tester.pumpAndSettle();
+      await save('Revised');
       expect(find.text('Revised'), findsOneWidget);
+
       await tester.runAsync(() async {
         await playback.seekEdition(70000);
-        await tester.tap(find.text('Restore bookmark'));
+        await tester.tap(find.text('Go to 00:00'));
         await playback.flush();
       });
       await tester.pumpAndSettle();
       expect(playback.editionMilliseconds, 0);
-      await tester.tap(find.byTooltip('Delete bookmark'));
+
+      await tester.tap(find.text('History'));
+      await tester.pumpAndSettle();
+      expect(find.text('Went to a bookmark'), findsOneWidget);
+      await tester.tap(find.text('Revised'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Delete'));
       await tester.pumpAndSettle();
       await tester.runAsync(() async {
-        await tester.tap(find.text('Delete'));
+        await tester.tap(find.widgetWithText(TextButton, 'Delete'));
         await playback.flush();
       });
       await tester.pumpAndSettle();
       expect(playback.bookmarks, isEmpty);
       expect(find.text('Revised'), findsNothing);
-      expect(find.text('Bookmark restore'), findsOneWidget);
     },
   );
 }

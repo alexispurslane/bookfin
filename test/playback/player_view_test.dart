@@ -113,6 +113,60 @@ void main() {
     expect(tester.widget<CoverBlur>(behind).book, book);
   });
 
+  testWidgets('tapping Bookmark saves an untitled bookmark at once', (
+    tester,
+  ) async {
+    await showPlayer(tester);
+    await tester.runAsync(() async {
+      await tester.tap(find.text('Bookmark'));
+      await playback.flush();
+    });
+    await tester.pumpAndSettle();
+    expect(playback.bookmarks.single.title, isNull);
+    expect(find.byType(GlassDialog), findsNothing);
+    expect(find.text('Bookmarked'), findsOneWidget);
+  });
+
+  testWidgets('a tap on Bookmarked names the bookmark at this place', (
+    tester,
+  ) async {
+    await tester.runAsync(() => playback.addBookmark());
+    await showPlayer(tester);
+    await tester.tap(find.text('Bookmarked'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Title (optional)'),
+      'The letter',
+    );
+    await tester.runAsync(() async {
+      await tester.tap(find.text('Save bookmark'));
+      await playback.flush();
+    });
+    await tester.pumpAndSettle();
+    expect(playback.bookmarks.single.title, 'The letter');
+  });
+
+  testWidgets('the position bar marks each bookmark where it is', (
+    tester,
+  ) async {
+    await tester.runAsync(() async {
+      await playback.seekEdition(75000);
+      await playback.addBookmark();
+      await playback.seekEdition(0);
+    });
+    await showPlayer(tester);
+    final mark = find.byWidgetPredicate(
+      (widget) => switch (widget.key) {
+        ValueKey<String>(:final value) => value.startsWith('bookmark mark'),
+        _ => false,
+      },
+    );
+    expect(mark, findsOneWidget);
+    final bar = tester.getRect(find.byType(Slider));
+    // 75 s of 150 s is halfway along the bar.
+    expect(tester.getCenter(mark).dx, closeTo(bar.center.dx, 12));
+  });
+
   testWidgets('a long press on a jump button sets the jump lengths', (
     tester,
   ) async {

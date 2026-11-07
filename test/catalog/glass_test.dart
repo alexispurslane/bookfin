@@ -172,6 +172,32 @@ void main() {
     expect(find.text('Remove files?'), findsNothing);
   });
 
+  testWidgets('a glass sheet steps back while another layer covers it', (
+    tester,
+  ) async {
+    late BuildContext lower;
+    await showPage(
+      tester,
+      open: (context) => showGlassSheet<void>(
+        context,
+        builder: (context) {
+          lower = context;
+          return const SizedBox(width: 300, height: 120, child: Text('Lower'));
+        },
+      ),
+    );
+    final alone = tester.getRect(find.byType(SizedBox).last);
+
+    showGlassSheet<void>(lower, builder: (_) => const Text('Upper'));
+    await tester.pumpAndSettle();
+    final covered = tester.getRect(find.byType(SizedBox).last);
+    expect(covered.width, lessThan(alone.width));
+
+    Navigator.of(lower).pop();
+    await tester.pumpAndSettle();
+    expect(tester.getRect(find.byType(SizedBox).last), alone);
+  });
+
   testWidgets('a message floats on glass with the playing book behind it', (
     tester,
   ) async {

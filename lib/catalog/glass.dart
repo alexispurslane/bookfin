@@ -130,35 +130,70 @@ Future<T?> showGlassSheet<T>(
       top: false,
       child: Padding(
         padding: const EdgeInsets.all(8),
-        child: CoverGlass(
-          book: book,
+        child: _StepBack(
           radius: 28,
-          tint: 0.65,
-          child: Material(
-            type: MaterialType.transparency,
-            child: expand
-                ? builder(context)
-                : Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 32,
-                        height: 4,
-                        margin: const EdgeInsets.symmetric(vertical: 12),
-                        decoration: BoxDecoration(
-                          color: handle.withValues(alpha: 0.4),
-                          borderRadius: BorderRadius.circular(2),
+          child: CoverGlass(
+            book: book,
+            radius: 28,
+            tint: 0.65,
+            child: Material(
+              type: MaterialType.transparency,
+              child: expand
+                  ? builder(context)
+                  : Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 32,
+                          height: 4,
+                          margin: const EdgeInsets.symmetric(vertical: 12),
+                          decoration: BoxDecoration(
+                            color: handle.withValues(alpha: 0.4),
+                            borderRadius: BorderRadius.circular(2),
+                          ),
                         ),
-                      ),
-                      Flexible(child: builder(context)),
-                    ],
-                  ),
+                        Flexible(child: builder(context)),
+                      ],
+                    ),
+            ),
           ),
         ),
       ),
     );
   },
 );
+
+/// Makes a glass pane step back, smaller and darker, while another route
+/// covers the route that shows it. Two lively panes then do not compete.
+class _StepBack extends StatelessWidget {
+  const _StepBack({required this.radius, required this.child});
+  final double radius;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final covered = ModalRoute.of(context)?.secondaryAnimation;
+    if (covered == null) return child;
+    return AnimatedBuilder(
+      animation: covered,
+      child: child,
+      builder: (context, child) {
+        final depth = Curves.easeOut.transform(covered.value);
+        return Transform.scale(
+          scale: 1 - 0.06 * depth,
+          child: DecoratedBox(
+            position: DecorationPosition.foreground,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(radius),
+              color: Colors.black.withValues(alpha: 0.35 * depth),
+            ),
+            child: child,
+          ),
+        );
+      },
+    );
+  }
+}
 
 /// An alert dialog drawn as a glass pane. It takes the same parts as
 /// [AlertDialog].

@@ -11,6 +11,7 @@ import '../foundation/theme.dart';
 import 'playback.dart';
 import 'recent.dart';
 import 'records_screen.dart';
+import 'timeline.dart';
 
 class PlaybackMiniPlayer extends StatelessWidget {
   const PlaybackMiniPlayer({
@@ -148,19 +149,6 @@ class PlaybackMiniPlayer extends StatelessWidget {
   );
 }
 
-void openListeningHistory(BuildContext context, Playback playback) => unawaited(
-  Navigator.of(context).push<void>(
-    MaterialPageRoute(
-      builder: (_) => Scaffold(
-        extendBody: true,
-        appBar: AppBar(title: const Text('Your listening history')),
-        body: BookfinSurface(child: PersonalRecordsView(playback: playback)),
-        bottomNavigationBar: PlaybackMiniPlayer(playback: playback),
-      ),
-    ),
-  ),
-);
-
 /// Opens the player as a glass pane that rises over the current page.
 void openPlayer(
   BuildContext context,
@@ -286,7 +274,7 @@ class PlayerView extends StatelessWidget {
             const SizedBox(height: 12),
             Center(
               child: TextButton(
-                onPressed: () => openListeningHistory(context, playback),
+                onPressed: () => openListeningTimeline(context, playback),
                 child: const Text('History'),
               ),
             ),
@@ -458,11 +446,6 @@ class PlayerView extends StatelessWidget {
         else if (Navigator.of(context).canPop())
           const BackButton(),
         const Spacer(),
-        IconButton(
-          tooltip: 'Bookmarks and history',
-          onPressed: () => openListeningHistory(context, playback),
-          icon: const Icon(Icons.history_rounded),
-        ),
         GlassMenuButton(
           tooltip: 'More player actions',
           icon: const Icon(Icons.more_horiz_rounded),
@@ -485,7 +468,7 @@ class PlayerView extends StatelessWidget {
     ),
   );
 
-  /// Chapters, Bookmark, Speed, and Sleep, in one rounded row.
+  /// Chapters, Bookmark, Speed, Sleep, and History, in one rounded row.
   Widget _tools(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
@@ -541,11 +524,22 @@ class PlayerView extends StatelessWidget {
                 () => unawaited(_chapters(context)),
               ),
               VerticalDivider(width: 1, color: scheme.outlineVariant),
-              tool(
-                'Bookmark',
-                Icon(Icons.bookmark_border_rounded, color: accent),
-                () => unawaited(editAudioBookmark(context, playback)),
-              ),
+              // One tap saves an untitled bookmark. Right after, the tool
+              // reads Bookmarked, and a tap names that bookmark.
+              if (playback.bookmarkHere case final here?)
+                tool(
+                  'Bookmarked',
+                  Icon(Icons.bookmark_rounded, color: accent),
+                  () => unawaited(
+                    editAudioBookmark(context, playback, bookmark: here),
+                  ),
+                )
+              else
+                tool(
+                  'Bookmark',
+                  Icon(Icons.bookmark_border_rounded, color: accent),
+                  () => unawaited(playback.addBookmark()),
+                ),
               VerticalDivider(width: 1, color: scheme.outlineVariant),
               tool(
                 'Speed',
@@ -562,6 +556,16 @@ class PlayerView extends StatelessWidget {
                         style: value,
                       ),
                 () => unawaited(_sleep(context)),
+              ),
+              VerticalDivider(width: 1, color: scheme.outlineVariant),
+              tool(
+                'History',
+                Icon(Icons.history_rounded, color: accent),
+                () => openListeningTimeline(
+                  context,
+                  playback,
+                  book: playback.book,
+                ),
               ),
             ],
           ),
@@ -975,6 +979,17 @@ class _PositionSliderState extends State<_PositionSlider> {
       total.toDouble(),
     );
     final chapters = playback.chapters;
+    // Where each bookmark of the open edition sits, in edition milliseconds.
+    final bookmarks = [
+      for (final bookmark in playback.bookmarks)
+        if (playback.editionTime(bookmark.position) case final at?
+            when bookmark.position.editionId == playback.edition?.id &&
+                at <= total)
+          (id: bookmark.id, at: at),
+    ];
+    final accent = Theme.of(context).brightness == Brightness.dark
+        ? theaterGlow
+        : scheme.primary;
     final index = playback.chapterIndex;
     final next = index != null && index + 1 < chapters.length
         ? chapters[index + 1].editionMilliseconds
@@ -1034,6 +1049,20 @@ class _PositionSliderState extends State<_PositionSlider> {
                                 color: scheme.surface,
                               ),
                             ),
+                        for (final (:id, :at) in bookmarks)
+                          Positioned(
+                            key: ValueKey('bookmark mark $id'),
+                            left: size.maxWidth * at / total - 3,
+                            top: size.maxHeight / 2 - 13,
+                            child: Container(
+                              width: 6,
+                              height: 6,
+                              decoration: BoxDecoration(
+                                color: accent,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          ),
                       ],
                     ),
                   ),

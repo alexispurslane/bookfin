@@ -1,0 +1,39 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Bookfin: glass over glass</title><style>
+body{margin:0;padding:18px;background:#18110b;color:#f3e6d2;font:13px system-ui,sans-serif}
+.row{display:flex;gap:16px;flex-wrap:wrap}
+.col{width:220px}
+h3{font:600 15px Georgia,serif;margin:0 0 4px}.sub{color:#c4ad91;font-size:11.5px;margin:0 0 8px;min-height:44px}
+.phone{position:relative;width:220px;height:440px;border-radius:24px;overflow:hidden;background:#22170f;border:1px solid #3a2a1c}
+.page{position:absolute;inset:0;padding:14px;font:600 15px Georgia,serif;color:#8a7560}
+.scrim{position:absolute;inset:0;background:rgba(0,0,0,.35)}
+.glass{position:absolute;overflow:hidden;border-radius:20px;border:1px solid rgba(255,255,255,.16);box-shadow:0 8px 22px rgba(0,0,0,.5)}
+.glass::before{content:"";position:absolute;inset:-20px;background:radial-gradient(circle at 30% 30%,#c0392b,transparent 60%),radial-gradient(circle at 75% 65%,#d4c21a,transparent 55%),#1d2a3a;filter:blur(16px);opacity:.7}
+.glass::after{content:"";position:absolute;inset:0;background:rgba(34,23,15,var(--t,.5))}
+.glass>*{position:relative;z-index:1}
+.player{left:6px;right:6px;top:22px;bottom:6px;transform-origin:50% 0}
+.sheet{left:6px;right:6px;bottom:6px;height:220px;padding:12px 14px}
+.cover{width:70px;height:100px;border-radius:5px;margin:24px auto 8px;background:linear-gradient(135deg,#1d2a3a,#c0392b 60%,#d4c21a)}
+.title{text-align:center;font:600 16px Georgia,serif}
+.line{height:7px;border-radius:4px;background:rgba(243,230,210,.25);margin:9px auto;width:70%}
+.tools{display:flex;gap:4px;margin:14px 12px}.tools div{flex:1;height:30px;border-radius:8px;background:rgba(243,230,210,.1)}
+.lbl{font:600 14px Georgia,serif;margin-bottom:6px}
+.ch{display:flex;justify-content:space-between;font-size:11px;padding:5px 0;border-bottom:1px solid rgba(243,230,210,.12)}
+.cap{color:#c4ad91;font-size:11px;margin-top:6px}
+.a .player{transform:scale(.92) translateY(-6px);filter:brightness(.6)}
+.b .player{--t:.88}.b .player .content{filter:blur(5px);opacity:.55}
+</style></head><body>
+<p>The user chose design A on November 7, 2026.</p>
+<div class="row">
+<div class="col"><h3>Before</h3><p class="sub">Both panes show the same lively glass, so the edges compete.</p>
+<div class="phone"><div class="page">Library</div><div class="scrim"></div>
+<div class="glass player"><div class="content"><div class="cover"></div><div class="title">Blood Music</div><div class="line"></div><div class="line"></div><div class="tools"><div></div><div></div><div></div><div></div><div></div></div></div></div>
+<div class="glass sheet"><div class="lbl">Chapters</div><div class="ch"><span>1  Blood Music 1-1</span><span>00:00</span></div><div class="ch"><span>2  Blood Music 1-2</span><span>40:30</span></div><div class="ch"><span>3  Blood Music 2-1</span><span>1:20:17</span></div></div></div></div>
+<div class="col a"><h3>A: the old pane steps back</h3><p class="sub">It shrinks a little and darkens, like a stack of cards. Its content stays readable.</p>
+<div class="phone"><div class="page">Library</div><div class="scrim"></div>
+<div class="glass player"><div class="content"><div class="cover"></div><div class="title">Blood Music</div><div class="line"></div><div class="line"></div><div class="tools"><div></div><div></div><div></div><div></div><div></div></div></div></div>
+<div class="glass sheet"><div class="lbl">Chapters</div><div class="ch"><span>1  Blood Music 1-1</span><span>00:00</span></div><div class="ch"><span>2  Blood Music 1-2</span><span>40:30</span></div><div class="ch"><span>3  Blood Music 2-1</span><span>1:20:17</span></div></div></div></div>
+<div class="col b"><h3>B: the old pane frosts over</h3><p class="sub">It stays in place, but its content blurs away and its glass turns almost solid.</p>
+<div class="phone"><div class="page">Library</div><div class="scrim"></div>
+<div class="glass player"><div class="content"><div class="cover"></div><div class="title">Blood Music</div><div class="line"></div><div class="line"></div><div class="tools"><div></div><div></div><div></div><div></div><div></div></div></div></div>
+<div class="glass sheet"><div class="lbl">Chapters</div><div class="ch"><span>1  Blood Music 1-1</span><span>00:00</span></div><div class="ch"><span>2  Blood Music 1-2</span><span>40:30</span></div><div class="ch"><span>3  Blood Music 2-1</span><span>1:20:17</span></div></div></div></div>
+</div></body></html>

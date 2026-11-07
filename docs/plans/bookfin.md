@@ -299,3 +299,12 @@ The user chose design A of `docs/mockups/glass-places.html`, with the tint of de
 - Otherwise, a layer shows the book of the page that it opens over. The book page and the player stage declare their book once, and every layer opened on them shows it.
 - Otherwise, the playing book tints the layer. If nothing is playing, the pane is plain sepia frost.
 - The ebook reader keeps its own reading themes and gets no glass.
+
+## Quick bookmarks, history timeline, and stacked glass — November 7, 2026 decision
+
+- A tap on Bookmark saves an untitled bookmark at once. For 15 seconds after a bookmark, the tool reads Bookmarked, and a tap names that bookmark.
+- The position bar shows a small mark at each bookmark of the open recording.
+- History is the fifth tool in the player row, after Sleep. It opens a glass sheet with a dense, vertical timeline: listening actions and bookmarks, newest first, grouped by day. Each entry is one line with the time of day, a dot on a rail, what happened, and the place in the book.
+- A tap on an entry shows its choices: go back to where an action began, go to where it ended, go to or name a bookmark, and Delete. A choice that goes to a place closes the timeline.
+- In the player and on a book page, the timeline shows that book only. From the Listening tab with nothing open, it shows every book and names the book of each entry.
+- When another layer opens over a glass sheet, the sheet steps back: it shrinks a little and darkens, like a stack of cards. The user chose design A of `docs/mockups/glass-stacking.html`.
