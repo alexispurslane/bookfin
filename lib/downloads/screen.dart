@@ -9,14 +9,19 @@ import '../foundation/theme.dart';
 import 'downloads.dart';
 import '../catalog/glass.dart';
 
+/// An edition's download state in words, with a button for each of its
+/// download actions. A tap reports the action through [onAction]; the page
+/// performs it.
 class DownloadControls extends StatelessWidget {
   const DownloadControls({
     super.key,
     required this.downloads,
     required this.edition,
+    required this.onAction,
   });
   final Downloads? downloads;
   final Edition edition;
+  final ValueChanged<DownloadAction> onAction;
 
   @override
   Widget build(BuildContext context) {
@@ -62,13 +67,13 @@ class DownloadControls extends StatelessWidget {
                 switch (action) {
                   DownloadAction.request ||
                   DownloadAction.retry => OutlinedButton(
-                    onPressed: () => _perform(context, owner!, edition, action),
+                    onPressed: () => onAction(action),
                     child: Text(
                       action == DownloadAction.retry ? 'Retry' : 'Download',
                     ),
                   ),
                   DownloadAction.cancel || DownloadAction.remove => TextButton(
-                    onPressed: () => _perform(context, owner!, edition, action),
+                    onPressed: () => onAction(action),
                     child: Text(
                       action == DownloadAction.cancel ? 'Cancel' : 'Remove',
                     ),
@@ -81,17 +86,19 @@ class DownloadControls extends StatelessWidget {
   }
 }
 
-/// The book page's round download button. It does the first of the edition's
-/// download actions. Its icon shows a finished or waiting download, and a
-/// ring shows a running transfer.
+/// The book page's round download button. A tap reports the first of the
+/// edition's download actions through [onAction]. Its icon shows a finished
+/// or waiting download, and a ring shows a running transfer.
 class DownloadButton extends StatelessWidget {
   const DownloadButton({
     super.key,
     required this.downloads,
     required this.edition,
+    required this.onAction,
   });
   final Downloads downloads;
   final Edition edition;
+  final ValueChanged<DownloadAction> onAction;
 
   @override
   Widget build(BuildContext context) {
@@ -130,7 +137,7 @@ class DownloadButton extends StatelessWidget {
             minimumSize: const Size(52, 52),
           ),
           tooltip: tooltip,
-          onPressed: () => _perform(context, downloads, edition, action),
+          onPressed: () => onAction(action),
           icon: Icon(icon),
         ),
       ],
@@ -206,7 +213,8 @@ class DownloadsPage extends StatelessWidget {
         for (final (index, entry) in pending.indexed) ...[
           if (index > 0) const Divider(),
           _DownloadRow(
-            downloads: owner,
+            onAction: (action) =>
+                changeDownload(context, owner, entry.edition, action),
             book: entry.book,
             edition: entry.edition,
             state: entry.state,
@@ -218,7 +226,8 @@ class DownloadsPage extends StatelessWidget {
         for (final (index, entry) in saved.indexed) ...[
           if (index > 0) const Divider(),
           _DownloadRow(
-            downloads: owner,
+            onAction: (action) =>
+                changeDownload(context, owner, entry.edition, action),
             book: entry.book,
             edition: entry.edition,
             state: entry.state,
@@ -352,14 +361,14 @@ class _Summary extends StatelessWidget {
 
 class _DownloadRow extends StatelessWidget {
   const _DownloadRow({
-    required this.downloads,
+    required this.onAction,
     required this.book,
     required this.edition,
     required this.state,
     required this.onOpen,
     required this.compact,
   });
-  final Downloads downloads;
+  final ValueChanged<DownloadAction> onAction;
   final Book book;
   final Edition edition;
   final EditionDownload state;
@@ -410,7 +419,7 @@ class _DownloadRow extends StatelessWidget {
           for (final action in state.actions)
             IconButton(
               tooltip: _tooltip(action),
-              onPressed: () => _perform(context, downloads, edition, action),
+              onPressed: () => onAction(action),
               icon: Icon(_icon(action)),
             ),
         ],
@@ -446,9 +455,10 @@ IconData _icon(DownloadAction action) => switch (action) {
   DownloadAction.remove => Icons.delete_outline_rounded,
 };
 
-/// Asks [downloads] for [action] on [edition]. Removal asks first. A failure
-/// shows a message instead of an error.
-void _perform(
+/// Asks [downloads] for [action] on [edition], for a page or tab that acts on
+/// a reported download action. Removal asks first. A failure shows a message
+/// instead of an error.
+void changeDownload(
   BuildContext context,
   Downloads downloads,
   Edition edition,

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../downloads/downloads.dart' show DownloadAction;
 import '../downloads/screen.dart';
 import '../foundation/theme.dart';
 import '../playback/screen.dart';
@@ -204,6 +205,12 @@ class BookPage extends StatelessWidget {
                           const SizedBox(height: 18),
                           _Actions(
                             services: services,
+                            onDownload: (edition, action) => changeDownload(
+                              context,
+                              services.downloads!,
+                              edition,
+                              action,
+                            ),
                             book: book,
                             listening: listening,
                             reading: text.firstOrNull,
@@ -305,6 +312,12 @@ class BookPage extends StatelessWidget {
                               padding: const EdgeInsets.only(bottom: 12),
                               child: _EditionPanel(
                                 services: services,
+                                onDownload: (action) => changeDownload(
+                                  context,
+                                  services.downloads!,
+                                  edition,
+                                  action,
+                                ),
                                 book: book,
                                 edition: edition,
                               ),
@@ -485,11 +498,15 @@ class _Actions extends StatelessWidget {
     required this.book,
     required this.listening,
     required this.reading,
+    required this.onDownload,
   });
   final LibraryServices services;
   final Book book;
   final Edition? listening;
   final Edition? reading;
+
+  /// Reports a tap on the download button: the edition and its action.
+  final void Function(Edition edition, DownloadAction action) onDownload;
 
   @override
   Widget build(BuildContext context) {
@@ -554,7 +571,11 @@ class _Actions extends StatelessWidget {
         ],
         if (saved != null && services.downloads?.supported == true) ...[
           const SizedBox(width: 8),
-          DownloadButton(downloads: services.downloads!, edition: saved),
+          DownloadButton(
+            downloads: services.downloads!,
+            edition: saved,
+            onAction: (action) => onDownload(saved, action),
+          ),
         ],
       ],
     );
@@ -668,10 +689,14 @@ class _EditionPanel extends StatelessWidget {
     required this.services,
     required this.book,
     required this.edition,
+    required this.onDownload,
   });
   final LibraryServices services;
   final Book book;
   final Edition edition;
+
+  /// Reports a tap on one of the edition's download actions.
+  final ValueChanged<DownloadAction> onDownload;
 
   CatalogController get catalog => services.catalog;
 
@@ -707,7 +732,11 @@ class _EditionPanel extends StatelessWidget {
               style: theme.textTheme.bodySmall,
             ),
             const SizedBox(height: 8),
-            DownloadControls(downloads: services.downloads, edition: edition),
+            DownloadControls(
+              downloads: services.downloads,
+              edition: edition,
+              onAction: onDownload,
+            ),
             Wrap(
               spacing: 8,
               children: [
