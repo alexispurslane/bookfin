@@ -283,77 +283,75 @@ class _Summary extends StatelessWidget {
         'Network unknown · downloads wait for Wi-Fi',
       ),
     };
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(18, 16, 12, 8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              formatBytes(bytes),
-              style: TextStyle(
-                fontFamily: 'Outfit',
-                fontSize: 34,
-                height: 1.1,
-                fontWeight: FontWeight.w700,
-                letterSpacing: -1,
-                color: theme.colorScheme.onSurface,
-              ),
+    return BookfinPanel(
+      padding: const EdgeInsets.fromLTRB(18, 16, 12, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            formatBytes(bytes),
+            style: TextStyle(
+              fontFamily: 'Outfit',
+              fontSize: 34,
+              height: 1.1,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -1,
+              color: theme.colorScheme.onSurface,
             ),
+          ),
+          Text(
+            [
+              'saved on this phone',
+              if (audio > 0)
+                '$audio ${audio == 1 ? 'audiobook' : 'audiobooks'}',
+              if (text > 0) '$text ${text == 1 ? 'ebook' : 'ebooks'}',
+            ].join(' · '),
+            style: theme.textTheme.bodySmall,
+          ),
+          if (audio > 0 && text > 0)
             Text(
-              [
-                'saved on this phone',
-                if (audio > 0)
-                  '$audio ${audio == 1 ? 'audiobook' : 'audiobooks'}',
-                if (text > 0) '$text ${text == 1 ? 'ebook' : 'ebooks'}',
-              ].join(' · '),
+              'Audiobooks ${formatBytes(audioBytes)} · ebooks ${formatBytes(bytes - audioBytes)}',
               style: theme.textTheme.bodySmall,
             ),
-            if (audio > 0 && text > 0)
-              Text(
-                'Audiobooks ${formatBytes(audioBytes)} · ebooks ${formatBytes(bytes - audioBytes)}',
-                style: theme.textTheme.bodySmall,
-              ),
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 10),
-              child: Divider(),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 10),
+            child: Divider(),
+          ),
+          Row(
+            children: [
+              Icon(icon, size: 20, color: theme.colorScheme.primary),
+              const SizedBox(width: 10),
+              Expanded(child: Text(network)),
+            ],
+          ),
+          if (policy.network == MediaNetwork.mobile && !policy.mobileAllowed)
+            TextButton(
+              onPressed: () async {
+                final allow = await confirmAction(
+                  context,
+                  title: 'Allow mobile data?',
+                  message: 'Allow media transfers for this account session. Your carrier may charge for mobile data. Signing out or restarting ends this permission.',
+                  action: 'Allow this session',
+                  cancel: 'Wait for Wi-Fi',
+                );
+                if (allow && context.mounted) {
+                  policy.allowMobileForSession();
+                }
+              },
+              child: const Text('Allow mobile data this session'),
             ),
-            Row(
-              children: [
-                Icon(icon, size: 20, color: theme.colorScheme.primary),
-                const SizedBox(width: 10),
-                Expanded(child: Text(network)),
-              ],
+          if (policy.mobileAllowed)
+            TextButton(
+              onPressed: policy.resetSession,
+              child: const Text('Use Wi-Fi only'),
             ),
-            if (policy.network == MediaNetwork.mobile && !policy.mobileAllowed)
-              TextButton(
-                onPressed: () async {
-                  final allow = await confirmAction(
-                    context,
-                    title: 'Allow mobile data?',
-                    message: 'Allow media transfers for this account session. Your carrier may charge for mobile data. Signing out or restarting ends this permission.',
-                    action: 'Allow this session',
-                    cancel: 'Wait for Wi-Fi',
-                  );
-                  if (allow && context.mounted) {
-                    policy.allowMobileForSession();
-                  }
-                },
-                child: const Text('Allow mobile data this session'),
-              ),
-            if (policy.mobileAllowed)
-              TextButton(
-                onPressed: policy.resetSession,
-                child: const Text('Use Wi-Fi only'),
-              ),
-            // A stable key keeps one storage scan while the card rebuilds.
-            _LeftoverSummary(
-              key: const ValueKey('leftover files'),
-              downloads: downloads,
-            ),
-            const SizedBox(height: 8),
-          ],
-        ),
+          // A stable key keeps one storage scan while the card rebuilds.
+          _LeftoverSummary(
+            key: const ValueKey('leftover files'),
+            downloads: downloads,
+          ),
+          const SizedBox(height: 8),
+        ],
       ),
     );
   }
@@ -715,45 +713,38 @@ class LeftoverFilesPage extends StatelessWidget {
               else if (entries.isEmpty)
                 const Text('No leftover files.')
               else
-                Card(
-                  clipBehavior: Clip.antiAlias,
-                  child: Column(
-                    children: [
-                      for (final (index, entry) in entries.indexed) ...[
-                        if (index > 0) const Divider(),
-                        ListTile(
-                          leading: const Icon(Icons.insert_drive_file_outlined),
-                          title: Text(
-                            entry.removable
-                                ? 'Source ${entry.sourceKey}'
-                                : 'Unidentified files',
-                          ),
-                          subtitle: Text(formatBytes(entry.bytes)),
-                          trailing: entry.removable
-                              ? IconButton(
-                                  tooltip: 'Remove leftover files',
-                                  onPressed: () async {
-                                    if (await _confirm(
-                                          context,
-                                          'Remove leftover files?',
-                                          'Remove ${formatBytes(entry.bytes)} kept from a book that is no longer in your library? Your Jellyfin files will not change.',
-                                        ) &&
-                                        context.mounted) {
-                                      await _remove(context, [entry], reload);
-                                    }
-                                  },
-                                  icon: const Icon(
-                                    Icons.delete_outline_rounded,
-                                  ),
-                                )
-                              : const Tooltip(
-                                  message: 'These files cannot be identified, so they stay.',
-                                  child: Icon(Icons.lock_outline_rounded),
-                                ),
+                SettingsGroup(
+                  children: [
+                    for (final entry in entries)
+                      ListTile(
+                        leading: const Icon(Icons.insert_drive_file_outlined),
+                        title: Text(
+                          entry.removable
+                              ? 'Source ${entry.sourceKey}'
+                              : 'Unidentified files',
                         ),
-                      ],
-                    ],
-                  ),
+                        subtitle: Text(formatBytes(entry.bytes)),
+                        trailing: entry.removable
+                            ? IconButton(
+                                tooltip: 'Remove leftover files',
+                                onPressed: () async {
+                                  if (await _confirm(
+                                        context,
+                                        'Remove leftover files?',
+                                        'Remove ${formatBytes(entry.bytes)} kept from a book that is no longer in your library? Your Jellyfin files will not change.',
+                                      ) &&
+                                      context.mounted) {
+                                    await _remove(context, [entry], reload);
+                                  }
+                                },
+                                icon: const Icon(Icons.delete_outline_rounded),
+                              )
+                            : const Tooltip(
+                                message: 'These files cannot be identified, so they stay.',
+                                child: Icon(Icons.lock_outline_rounded),
+                              ),
+                      ),
+                  ],
                 ),
             ],
           ),

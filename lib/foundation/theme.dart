@@ -286,16 +286,6 @@ ThemeData bookfinTheme(Brightness brightness, {bool reduceMotion = false}) {
       labelStyle: TextStyle(color: subtle),
       floatingLabelStyle: TextStyle(color: sepia),
     ),
-    cardTheme: CardThemeData(
-      color: sheet,
-      surfaceTintColor: Colors.transparent,
-      elevation: 0,
-      margin: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: line),
-      ),
-    ),
     dialogTheme: DialogThemeData(
       backgroundColor: sheet,
       surfaceTintColor: Colors.transparent,
@@ -445,21 +435,55 @@ class SectionLabel extends StatelessWidget {
   );
 }
 
+/// A rounded sheet of paper on the page, with a thin edge. It takes the
+/// colors of the theme around it, so it also fits the night stage. Ink from
+/// rows and buttons inside it shows on the paper.
 class BookfinPanel extends StatelessWidget {
-  const BookfinPanel({super.key, required this.child});
+  const BookfinPanel({
+    super.key,
+    this.padding = const EdgeInsets.all(18),
+    required this.child,
+  });
 
+  /// The space between the edge and [child]. Rows that reach the edge, such
+  /// as list tiles, use [EdgeInsets.zero].
+  final EdgeInsetsGeometry padding;
   final Widget child;
 
   @override
   Widget build(BuildContext context) => Container(
     width: double.infinity,
-    padding: const EdgeInsets.all(18),
+    clipBehavior: Clip.antiAlias,
     decoration: BoxDecoration(
       color: Theme.of(context).colorScheme.surfaceContainerLowest,
       borderRadius: BorderRadius.circular(20),
       border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
     ),
-    child: child,
+    child: Material(
+      type: MaterialType.transparency,
+      child: Padding(padding: padding, child: child),
+    ),
+  );
+}
+
+/// A paper panel of rows, separated by lines, with space below it.
+class SettingsGroup extends StatelessWidget {
+  const SettingsGroup({super.key, required this.children});
+  final List<Widget> children;
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(bottom: 14),
+    child: BookfinPanel(
+      padding: EdgeInsets.zero,
+      child: Column(
+        children: [
+          for (final (index, child) in children.indexed) ...[
+            if (index > 0) const Divider(),
+            child,
+          ],
+        ],
+      ),
+    ),
   );
 }
 

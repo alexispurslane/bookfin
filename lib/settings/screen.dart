@@ -171,27 +171,6 @@ class SettingsPage extends StatelessWidget {
   }
 }
 
-/// A rounded card of settings rows, separated by lines.
-class SettingsGroup extends StatelessWidget {
-  const SettingsGroup({super.key, required this.children});
-  final List<Widget> children;
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(bottom: 14),
-    child: Card(
-      clipBehavior: Clip.antiAlias,
-      child: Column(
-        children: [
-          for (final (index, child) in children.indexed) ...[
-            if (index > 0) const Divider(),
-            child,
-          ],
-        ],
-      ),
-    ),
-  );
-}
-
 /// Compact or spacious, as a light track with a white pill on the choice.
 class DensitySwitch extends StatelessWidget {
   const DensitySwitch({super.key, required this.layout});

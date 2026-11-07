@@ -711,119 +711,116 @@ class _EditionPanel extends StatelessWidget {
     final choice =
         book.editions.where((other) => other.kind == edition.kind).length > 1;
     return BookfinPanel(
-      child: Material(
-        type: MaterialType.transparency,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SectionLabel(audio ? 'Audiobook' : 'Ebook'),
-            const SizedBox(height: 4),
-            Text(
-              audio && edition.narrator != null
-                  ? 'Read by ${edition.narrator}'
-                  : edition.label,
-              style: theme.textTheme.titleMedium,
-            ),
-            Text(
-              [
-                '${edition.files.length} ${edition.files.length == 1 ? 'file' : 'files'}',
-                if (length != null) duration(length),
-              ].join(' · '),
-              style: theme.textTheme.bodySmall,
-            ),
-            const SizedBox(height: 8),
-            DownloadControls(
-              downloads: services.downloads,
-              edition: edition,
-              onAction: onDownload,
-            ),
-            Wrap(
-              spacing: 8,
-              children: [
-                if (choice && audio && playback != null)
-                  FilledButton.tonalIcon(
-                    onPressed: () async {
-                      await playback.open(book, edition);
-                      if (context.mounted && playback.edition == edition) {
-                        openPlayer(context, playback);
-                      }
-                    },
-                    icon: const Icon(Icons.play_arrow_rounded),
-                    label: const Text('Listen'),
-                  ),
-                if (choice && !audio && reader != null)
-                  FilledButton.tonalIcon(
-                    onPressed: () {
-                      unawaited(reader.open(book, edition));
-                      Navigator.push<void>(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ReaderScreen(
-                            reader: reader,
-                            onNightChanged: services.onReaderNightChanged,
-                            playback: playback,
-                          ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SectionLabel(audio ? 'Audiobook' : 'Ebook'),
+          const SizedBox(height: 4),
+          Text(
+            audio && edition.narrator != null
+                ? 'Read by ${edition.narrator}'
+                : edition.label,
+            style: theme.textTheme.titleMedium,
+          ),
+          Text(
+            [
+              '${edition.files.length} ${edition.files.length == 1 ? 'file' : 'files'}',
+              if (length != null) duration(length),
+            ].join(' · '),
+            style: theme.textTheme.bodySmall,
+          ),
+          const SizedBox(height: 8),
+          DownloadControls(
+            downloads: services.downloads,
+            edition: edition,
+            onAction: onDownload,
+          ),
+          Wrap(
+            spacing: 8,
+            children: [
+              if (choice && audio && playback != null)
+                FilledButton.tonalIcon(
+                  onPressed: () async {
+                    await playback.open(book, edition);
+                    if (context.mounted && playback.edition == edition) {
+                      openPlayer(context, playback);
+                    }
+                  },
+                  icon: const Icon(Icons.play_arrow_rounded),
+                  label: const Text('Listen'),
+                ),
+              if (choice && !audio && reader != null)
+                FilledButton.tonalIcon(
+                  onPressed: () {
+                    unawaited(reader.open(book, edition));
+                    Navigator.push<void>(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ReaderScreen(
+                          reader: reader,
+                          onNightChanged: services.onReaderNightChanged,
+                          playback: playback,
                         ),
-                      );
-                    },
-                    icon: const Icon(Icons.menu_book_outlined),
-                    label: const Text('Read'),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.menu_book_outlined),
+                  label: const Text('Read'),
+                ),
+              if (edition.files.length > 1)
+                TextButton(
+                  onPressed: () => _orderFiles(context, edition),
+                  child: const Text('Correct file order'),
+                ),
+            ],
+          ),
+          for (final file in edition.files)
+            ExpansionTile(
+              tilePadding: EdgeInsets.zero,
+              shape: const Border(),
+              collapsedShape: const Border(),
+              title: Text(file.displayName),
+              subtitle: Text(
+                [
+                  if (file.container.isNotEmpty) file.container.toUpperCase(),
+                  if (file.durationMs != null) duration(file.durationMs!),
+                  if (file.sizeBytes != null) formatBytes(file.sizeBytes!),
+                ].join(' · '),
+              ),
+              children: [
+                ListTile(
+                  title: const Text('Jellyfin item'),
+                  subtitle: SelectableText(file.itemId),
+                ),
+                ListTile(
+                  title: const Text('Media source'),
+                  subtitle: SelectableText(
+                    file.mediaSourceId.isEmpty
+                        ? 'Not provided by Jellyfin'
+                        : file.mediaSourceId,
                   ),
-                if (edition.files.length > 1)
-                  TextButton(
-                    onPressed: () => _orderFiles(context, edition),
-                    child: const Text('Correct file order'),
+                ),
+                for (final chapter in file.chapters)
+                  ListTile(
+                    title: Text(chapter.name),
+                    trailing: Text(_time(chapter.startMs)),
                   ),
+                TextButton(
+                  onPressed: () async {
+                    if (await confirmAction(
+                      context,
+                      title: 'Separate this source?',
+                      message: 'This source becomes a separate book. Its Jellyfin item will not change.',
+                      action: 'Separate',
+                    )) {
+                      await catalog.separateEdition(file.key);
+                    }
+                  },
+                  child: const Text('Separate source'),
+                ),
               ],
             ),
-            for (final file in edition.files)
-              ExpansionTile(
-                tilePadding: EdgeInsets.zero,
-                shape: const Border(),
-                collapsedShape: const Border(),
-                title: Text(file.displayName),
-                subtitle: Text(
-                  [
-                    if (file.container.isNotEmpty) file.container.toUpperCase(),
-                    if (file.durationMs != null) duration(file.durationMs!),
-                    if (file.sizeBytes != null) formatBytes(file.sizeBytes!),
-                  ].join(' · '),
-                ),
-                children: [
-                  ListTile(
-                    title: const Text('Jellyfin item'),
-                    subtitle: SelectableText(file.itemId),
-                  ),
-                  ListTile(
-                    title: const Text('Media source'),
-                    subtitle: SelectableText(
-                      file.mediaSourceId.isEmpty
-                          ? 'Not provided by Jellyfin'
-                          : file.mediaSourceId,
-                    ),
-                  ),
-                  for (final chapter in file.chapters)
-                    ListTile(
-                      title: Text(chapter.name),
-                      trailing: Text(_time(chapter.startMs)),
-                    ),
-                  TextButton(
-                    onPressed: () async {
-                      if (await confirmAction(
-                        context,
-                        title: 'Separate this source?',
-                        message: 'This source becomes a separate book. Its Jellyfin item will not change.',
-                        action: 'Separate',
-                      )) {
-                        await catalog.separateEdition(file.key);
-                      }
-                    },
-                    child: const Text('Separate source'),
-                  ),
-                ],
-              ),
-          ],
-        ),
+        ],
       ),
     );
   }
