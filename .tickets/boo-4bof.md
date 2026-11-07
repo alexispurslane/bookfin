@@ -48,3 +48,7 @@ From boo-xifx (merged 49edfd5): LocalResumeStore.read() still builds and deep-co
 **2026-11-07T21:55:32Z**
 
 From boo-um68: shelf grouping, the catalog sort in buildBooks and search() run on the UI isolate, now once per catalog list or per keystroke.
+
+**2026-11-07T22:25:14Z**
+
+t9-112h merged: ReaderSession._bookmarks is replaced on every change, never edited in place; bookmarkChanges compares by identity. Keep that when the save path moves to change sets.

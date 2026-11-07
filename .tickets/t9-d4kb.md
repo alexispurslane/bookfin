@@ -31,3 +31,9 @@ Owned files: lib/playback/timeline.dart and its tests.
 - Go back closes the sheet and restores the history action, as today.
 - ListeningTimeline calls no Playback method that changes records or position (a fake that throws on those calls).
 
+
+## Notes
+
+**2026-11-07T22:25:14Z**
+
+boo-y6fb merged: Playback has positionNotifier (AudioPosition?, fires on every decoder report), selectionNotifier ((book, edition, playing, active)), sleepNotifier (Duration? left, once a second), recordsNotifier (history, bookmarks or resumes replaced), settingsNotifier ((speed, backward, forward)) and statusNotifier ((message, saveFailed)). Undo, the replacement offer and unsavedChanges have no narrow signal; those widgets stay on the broad notification, which stops firing on ticks after t9-cx1u.
