@@ -17,8 +17,13 @@ void main() {
   >
   requests;
   late FutureOr<void> Function(HttpRequest request) respond;
+
+  /// Most tests are about one catalog request. They see no collections, and
+  /// collection requests are not recorded, unless a test answers them itself.
+  late bool answerCollections;
   setUp(() async {
     requests = [];
+    answerCollections = true;
     server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
     final base = Uri.parse('http://127.0.0.1:${server.port}/jellyfin');
     session = JellyfinSession(
@@ -34,6 +39,15 @@ void main() {
       return request.response.close();
     };
     server.listen((request) async {
+      if (answerCollections &&
+          request.uri.queryParameters['includeItemTypes'] == 'BoxSet') {
+        request.response.headers.contentType = ContentType.json;
+        request.response.write(
+          jsonEncode({'Items': [], 'TotalRecordCount': 0}),
+        );
+        await request.response.close();
+        return;
+      }
       final text = await utf8.decoder.bind(request).join();
       requests.add((
         method: request.method,
@@ -514,6 +528,80 @@ void main() {
       expect(book.genres, ['Fantasy']);
       expect(book.publisher, 'Halyard Press');
       expect(book.year, 2021);
+    },
+  );
+
+  Future<void> Function(HttpRequest) collectionServer({
+    bool failCollections = false,
+  }) => (request) {
+    final query = request.uri.queryParameters;
+    if (request.uri.path.endsWith('UserViews')) {
+      request.response.write(
+        jsonEncode({
+          'Items': [
+            {'Id': 'books', 'Name': 'Books', 'CollectionType': 'books'},
+          ],
+        }),
+      );
+    } else if (query['includeItemTypes'] == 'BoxSet') {
+      if (failCollections) {
+        request.response.statusCode = 500;
+      } else {
+        request.response.write(
+          jsonEncode({
+            'Items': [
+              {'Id': 'wot', 'Name': 'The Wheel of Time', 'Type': 'BoxSet'},
+              {'Id': 'films', 'Name': 'Alien Collection', 'Type': 'BoxSet'},
+            ],
+            'TotalRecordCount': 2,
+          }),
+        );
+      }
+    } else if (query['parentId'] == 'wot' || query['parentId'] == 'films') {
+      request.response.write(
+        jsonEncode({
+          'Items': [
+            {'Id': query['parentId'] == 'wot' ? 'crown' : 'alien'},
+          ],
+          'TotalRecordCount': 1,
+        }),
+      );
+    } else {
+      request.response.write(
+        jsonEncode({
+          'Items': [
+            entry('crown', title: 'A Crown of Swords').json,
+            entry('salem', title: "'Salem's Lot").json,
+          ],
+          'TotalRecordCount': 2,
+        }),
+      );
+    }
+    return request.response.close();
+  };
+
+  test('books in a Jellyfin collection belong to its series', () async {
+    answerCollections = false;
+    respond = collectionServer();
+    final books = buildBooks(await client.catalog(session, {'books'}));
+    expect(
+      books.singleWhere((book) => book.title == 'A Crown of Swords').series,
+      'The Wheel of Time',
+    );
+    expect(
+      books.singleWhere((book) => book.title == "'Salem's Lot").series,
+      isNull,
+    );
+  });
+
+  test(
+    'unreadable collections leave books without a series but still load',
+    () async {
+      answerCollections = false;
+      respond = collectionServer(failCollections: true);
+      final books = buildBooks(await client.catalog(session, {'books'}));
+      expect(books, hasLength(2));
+      expect(books.every((book) => book.series == null), isTrue);
     },
   );
 

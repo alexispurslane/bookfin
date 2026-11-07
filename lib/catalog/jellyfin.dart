@@ -376,7 +376,76 @@ class JellyfinClient {
         }
       }
     }
-    return List.unmodifiable(entries);
+    final collections = await _collections(
+      session,
+      entries.map((entry) => entry.id).toSet(),
+    );
+    return List.unmodifiable(
+      entries.map(
+        (entry) => collections[entry.id] == null
+            ? entry
+            : CatalogEntry.fromJson({
+                ...entry.json,
+                'BookfinCollections': collections[entry.id],
+              }, libraryId: entry.libraryId),
+      ),
+    );
+  }
+
+  /// The names of the Jellyfin collections that hold each catalog item, by
+  /// item id. Collections often name a book series. A collection that cannot
+  /// be read only removes series names, so it never fails the catalog.
+  Future<Map<String, List<String>>> _collections(
+    JellyfinSession session,
+    Set<String> ids,
+  ) async {
+    try {
+      final sets =
+          ((await _send(
+                    ['Items'],
+                    session: session,
+                    query: {
+                      'userId': session.scope.userId,
+                      'includeItemTypes': 'BoxSet',
+                      'recursive': 'true',
+                      'limit': '1000',
+                    },
+                  ))['Items']
+                  as List)
+              .whereType<Map<String, dynamic>>()
+              .where((set) => set['Id'] is String && set['Name'] is String)
+              .toList();
+      final result = <String, List<String>>{};
+      for (var start = 0; start < sets.length; start += 8) {
+        final batch = sets.skip(start).take(8).toList();
+        final children = await Future.wait([
+          for (final set in batch)
+            _send(
+              ['Items'],
+              session: session,
+              query: {
+                'userId': session.scope.userId,
+                'parentId': set['Id'] as String,
+                'limit': '2000',
+              },
+            ),
+        ]);
+        for (final (index, page) in children.indexed) {
+          for (final child in (page['Items'] as List? ?? []).whereType<Map>()) {
+            final id = child['Id'];
+            if (id is String && ids.contains(id)) {
+              result.putIfAbsent(id, () => []).add(batch[index]['Name']);
+            }
+          }
+        }
+      }
+      return result;
+    } on CatalogFailure catch (failure) {
+      if (failure.kind == CatalogFailureKind.cancelled) rethrow;
+      return const {};
+    } catch (_) {
+      return const {};
+    }
   }
 
   void _guard(JellyfinSession session) {

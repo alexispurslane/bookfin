@@ -310,31 +310,28 @@ List<Book> buildBooks(List<CatalogEntry> entries, {CatalogEdits? edits}) {
     }
     final details = edits.details[group.key];
     final item = seed.entry.json;
-    // Plain audio files carry no book series. Their IndexNumber is a track.
-    final jellyfinSeries = item['Type'] == 'Audio'
-        ? null
-        : _text(item['SeriesName']);
+    final own = _seriesOf(item);
     books.add(
       Book(
         id: group.key,
-        title: details?.title ?? item['Name'] as String? ?? 'Untitled',
+        title: details?.title ?? own.title,
         author: details?.author ?? _author(item),
         editions: List.unmodifiable(editions),
-        series: details != null ? details.series : jellyfinSeries,
+        series: details != null ? details.series : own.series,
         seriesOrder: details != null
             ? details.seriesOrder
-            : jellyfinSeries == null
+            : own.series == null
             ? null
-            : [seed, ...group.value]
-                  .map((source) => source.entry.json)
-                  .where(
-                    (member) =>
-                        member['Type'] == 'Book' &&
-                        _text(member['SeriesName']) == jellyfinSeries,
-                  )
-                  .map((member) => (member['IndexNumber'] as num?)?.toDouble())
-                  .nonNulls
-                  .firstOrNull,
+            : ([seed, ...group.value]
+                      .map((source) => _seriesOf(source.entry.json))
+                      .where(
+                        (member) =>
+                            member.series == own.series && member.order != null,
+                      )
+                      .toList()
+                    ..sort((left, right) => right.trust - left.trust))
+                  .firstOrNull
+                  ?.order,
         providerIds: Map.unmodifiable(
           Map<String, String>.from(item['ProviderIds'] as Map? ?? {}),
         ),
@@ -386,9 +383,8 @@ Map<String, String> _seriesEditionLinks(List<CatalogEntry> entries) {
     final item = entry.json;
     final type = item['Type'];
     if (type != 'AudioBook' && type != 'Book') continue;
-    final series = _text(item['SeriesName']);
-    final title = _text(item['Name']);
-    if (series == null || title == null) continue;
+    final (:title, :series, order: _, trust: _) = _seriesOf(item);
+    if (series == null || title.isEmpty) continue;
     final key = jsonEncode([
       series.toLowerCase().replaceAll(RegExp(r'\s+'), ' '),
       title.toLowerCase(),
@@ -401,6 +397,52 @@ Map<String, String> _seriesEditionLinks(List<CatalogEntry> entries) {
       if (audio[key]?.length == 1)
         for (final id in ebooks) id: 'book:${audio[key]!.single}',
   };
+}
+
+/// A title that ends in a series and a number, for example
+/// "A Crown of Swords (The Wheel of Time #7)".
+final _titledSeries = RegExp(
+  r'^(.*\S)\s*\(\s*([^()#]*[^()#\s])\s*#\s*(\d+(?:\.\d+)?)\s*\)\s*$',
+);
+
+/// The series of one Jellyfin item, its position, and its title without a
+/// series ending. Sources, strongest first: the Jellyfin series field, the one
+/// book collection that holds the item, and a "(Series #N)" title ending. The
+/// position comes from the title number, else from the item number. Plain
+/// audio files are tracks, so they have no series.
+({String title, String? series, double? order, int trust}) _seriesOf(
+  Map<String, dynamic> item,
+) {
+  final name = (item['Name'] as String?)?.trim() ?? '';
+  final title = name.isEmpty ? 'Untitled' : name;
+  if (item['Type'] == 'Audio') {
+    return (title: title, series: null, order: null, trust: 0);
+  }
+  final match = _titledSeries.firstMatch(name);
+  final collections = (item['BookfinCollections'] as List? ?? [])
+      .whereType<String>()
+      .toList();
+  final series =
+      _text(item['SeriesName']) ??
+      (collections.length == 1 ? _text(collections.single) : null) ??
+      match?.group(2)!.trim();
+  if (series == null) {
+    return (title: title, series: null, order: null, trust: 0);
+  }
+  return (
+    title: match?.group(1) ?? title,
+    series: series,
+    order: match != null
+        ? double.parse(match.group(3)!)
+        : (item['IndexNumber'] as num?)?.toDouble(),
+    // How much to trust the position: a title number, then an ebook's series
+    // index, then an audiobook's item number, which can be a track number.
+    trust: match != null
+        ? 2
+        : item['Type'] == 'Book'
+        ? 1
+        : 0,
+  );
 }
 
 String? _text(dynamic value) =>

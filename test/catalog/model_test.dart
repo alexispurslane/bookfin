@@ -189,11 +189,6 @@ void main() {
     expect(graft.series, 'The Orchard Cycle');
     expect(graft.seriesOrder, 2);
     expect(frost.series, 'The Orchard Cycle');
-    expect(
-      frost.seriesOrder,
-      isNull,
-      reason: 'audio track numbers are not series positions',
-    );
   });
 
   CatalogEntry seriesEntry(
@@ -264,6 +259,80 @@ void main() {
       ),
     );
     expect(books, hasLength(2));
+  });
+
+  test('a book in one Jellyfin collection belongs to that series', () {
+    final book = buildBooks([
+      entry(
+        'crown',
+        title: 'A Crown of Swords',
+        fields: {
+          'IndexNumber': 7,
+          'BookfinCollections': ['The Wheel of Time'],
+        },
+      ),
+    ]).single;
+    expect(book.series, 'The Wheel of Time');
+    expect(book.seriesOrder, 7, reason: 'the item number orders a collection');
+  });
+
+  test('a title ending in (Series #N) names the series and its position', () {
+    final book = buildBooks([
+      entry('crown', title: 'A Crown of Swords (The Wheel of Time #7)'),
+    ]).single;
+    expect(book.title, 'A Crown of Swords');
+    expect(book.series, 'The Wheel of Time');
+    expect(book.seriesOrder, 7);
+  });
+
+  test('a title number wins over the item number for the position', () {
+    final book = buildBooks([
+      entry(
+        'egg',
+        title: "Cuckoo's Egg (The Age of Exploration #5)",
+        fields: {
+          'IndexNumber': 1,
+          'BookfinCollections': ['Alliance-Union'],
+        },
+      ),
+    ]).single;
+    expect(book.series, 'Alliance-Union', reason: 'the collection is explicit');
+    expect(book.seriesOrder, 5);
+    expect(book.title, "Cuckoo's Egg");
+  });
+
+  test('a book in two collections takes its series from neither', () {
+    final book = buildBooks([
+      entry(
+        'one',
+        title: 'Mort (Discworld #4)',
+        fields: {
+          'BookfinCollections': ['Discworld', 'Favourites'],
+        },
+      ),
+    ]).single;
+    expect(book.series, 'Discworld', reason: 'the title still names it');
+  });
+
+  test('a title in parentheses without a number is not a series', () {
+    final book = buildBooks([
+      entry('cloud', title: 'Cloud Atlas (20th Anniversary Edition)'),
+    ]).single;
+    expect(book.series, isNull);
+    expect(book.title, 'Cloud Atlas (20th Anniversary Edition)');
+  });
+
+  test('plain audio files take no series from their collection', () {
+    final book = buildBooks([
+      entry(
+        'track',
+        type: 'Audio',
+        fields: {
+          'BookfinCollections': ['Mixtapes'],
+        },
+      ),
+    ]).single;
+    expect(book.series, isNull);
   });
 
   test('a corrected series wins over the Jellyfin series', () {
