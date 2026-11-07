@@ -111,10 +111,7 @@ void main() {
         onDismiss: () => dismissals++,
       ),
     );
-    expect(
-      find.text('Position changed. Your previous place is saved.'),
-      findsOneWidget,
-    );
+    expect(find.text('Your previous place is saved'), findsOneWidget);
     await tester.tap(find.text('Undo'));
     await tester.tap(find.byTooltip('Dismiss Undo'));
     expect((undos, dismissals), (1, 1));
