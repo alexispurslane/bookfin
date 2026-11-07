@@ -124,6 +124,20 @@ void main() {
     expect(styles['Chapters']?.fontFamily, 'Source Serif 4');
   });
 
+  testWidgets('the sleep sheet marks the running timer', (tester) async {
+    await tester.runAsync(() => playback.setSleep(const Duration(minutes: 30)));
+    await showPlayer(tester);
+    await tester.tap(find.text('Sleep'));
+    await tester.pumpAndSettle();
+    bool marked(String label) =>
+        tester.widget<ListTile>(find.widgetWithText(ListTile, label)).selected;
+    playback.checkInvariants();
+    expect(marked('30 minutes'), isTrue);
+    for (final label in ['5 minutes', '15 minutes', '60 minutes', 'Turn off']) {
+      expect(marked(label), isFalse, reason: label);
+    }
+  });
+
   testWidgets('the chapters sheet floats on glass over the open book', (
     tester,
   ) async {

@@ -680,68 +680,27 @@ class PlayerView extends StatelessWidget {
         .clamp(0, 1);
   }
 
-  Future<void> _speed(BuildContext context) => showGlassSheet<void>(
+  Future<void> _speed(BuildContext context) => showGlassChoices<double>(
     context,
     title: 'Playback speed',
-    builder: (context) => SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            for (final speed in [
-              0.5,
-              0.75,
-              1.0,
-              1.25,
-              1.5,
-              1.75,
-              2.0,
-              2.5,
-              3.0,
-            ])
-              ListTile(
-                title: Text('${_rate(speed)}×'),
-                selected: speed == playback.playbackSpeed,
-                onTap: () {
-                  unawaited(playback.setSpeed(speed));
-                  Navigator.pop(context);
-                },
-              ),
-          ],
-        ),
-      ),
-    ),
+    choices: [
+      for (final speed in [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0])
+        (speed, '${_rate(speed)}×'),
+    ],
+    current: playback.playbackSpeed,
+    onSelected: (speed) => unawaited(playback.setSpeed(speed)),
   );
 
-  Future<void> _sleep(BuildContext context) => showGlassSheet<void>(
+  Future<void> _sleep(BuildContext context) => showGlassChoices<Duration?>(
     context,
     title: 'Sleep timer',
-    builder: (context) => SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            for (final minutes in [5, 15, 30, 45, 60])
-              ListTile(
-                title: Text('$minutes minutes'),
-                onTap: () {
-                  unawaited(playback.setSleep(Duration(minutes: minutes)));
-                  Navigator.pop(context);
-                },
-              ),
-            ListTile(
-              title: const Text('Turn off'),
-              onTap: () {
-                unawaited(playback.setSleep(null));
-                Navigator.pop(context);
-              },
-            ),
-          ],
-        ),
-      ),
-    ),
+    choices: [
+      for (final minutes in [5, 15, 30, 45, 60])
+        (Duration(minutes: minutes), '$minutes minutes'),
+      (null, 'Turn off'),
+    ],
+    current: playback.sleepTimer,
+    onSelected: (timer) => unawaited(playback.setSleep(timer)),
   );
 
   Future<void> _jumps(BuildContext context) async {

@@ -302,6 +302,39 @@ class GlassDialog extends StatelessWidget {
   }
 }
 
+/// Shows [choices] as rows on a glass sheet headed [title], and marks the
+/// row whose value equals [current]. A tap on a row reports its value through
+/// [onSelected] and closes the sheet.
+Future<void> showGlassChoices<T>(
+  BuildContext context, {
+  required String title,
+  required List<(T value, String label)> choices,
+  required T current,
+  required ValueChanged<T> onSelected,
+}) => showGlassSheet<void>(
+  context,
+  title: title,
+  builder: (context) => SingleChildScrollView(
+    child: Padding(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (final (value, label) in choices)
+            ListTile(
+              title: Text(label),
+              selected: value == current,
+              onTap: () {
+                onSelected(value);
+                Navigator.pop(context);
+              },
+            ),
+        ],
+      ),
+    ),
+  ),
+);
+
 /// Asks the person to confirm [action] before it happens. The dialog shows
 /// [title] and [message], a [cancel] button, and a filled button labeled
 /// [action]. It is true only when the person chose [action]; Cancel and a tap
