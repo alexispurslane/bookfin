@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -14,9 +15,14 @@ abstract interface class CredentialStore {
   Future<String> deviceId();
 }
 
+/// Keeps the saved catalog text of each account. The catalog encodes and
+/// decodes the text, off the UI isolate, so the store only moves text.
 abstract interface class CatalogStore {
-  Future<CatalogCache?> read(AccountScope scope);
-  Future<void> write(AccountScope scope, CatalogCache cache);
+  /// The saved catalog text of [scope], or null when none is saved.
+  Future<String?> read(AccountScope scope);
+
+  /// Replaces the saved catalog text of [scope] with [text].
+  Future<void> write(AccountScope scope, String text);
 }
 
 class CatalogCache {
@@ -28,6 +34,7 @@ class CatalogCache {
     CatalogEdits? edits,
     this.completedAt,
     this.accessBlocked = false,
+    this.content,
   }) : libraries = List.unmodifiable(libraries),
        selected = Set.unmodifiable(selected),
        entries = List.unmodifiable(entries),
@@ -39,6 +46,33 @@ class CatalogCache {
   final CatalogEdits edits;
   final DateTime? completedAt;
   final bool accessBlocked;
+
+  /// A digest of [entries] and [edits], which decide the books, or null when
+  /// it is not known. Two caches with the same content have the same books.
+  final String? content;
+
+  /// This cache with its [content] digest. It encodes every entry, so it is
+  /// whole-catalog work for another isolate.
+  CatalogCache withContent() => CatalogCache(
+    scope: scope,
+    libraries: libraries,
+    selected: selected,
+    entries: entries,
+    edits: edits,
+    completedAt: completedAt,
+    accessBlocked: accessBlocked,
+    content: sha256
+        .convert(
+          utf8.encode(
+            jsonEncode([
+              for (final entry in entries) entry.toJson(),
+              edits.toJson(),
+            ]),
+          ),
+        )
+        .toString(),
+  );
+
   String encode() => jsonEncode({
     'version': 1,
     'accessBlocked': accessBlocked,
@@ -48,7 +82,13 @@ class CatalogCache {
     'entries': entries.map((entry) => entry.toJson()).toList(),
     'edits': edits.toJson(),
     'completedAt': completedAt?.toIso8601String(),
+    'content': content,
   });
+
+  /// The cache that [value] encodes. Throws a [FormatException] when the
+  /// text is not a catalog of [scope]. The catalog builds the books from the
+  /// result in the same isolate hop, and a failed build also counts as an
+  /// unreadable catalog there.
   static CatalogCache decode(AccountScope scope, String value) {
     try {
       final json = jsonDecode(value) as Map<String, dynamic>;
@@ -86,8 +126,8 @@ class CatalogCache {
         completedAt: json['completedAt'] == null
             ? null
             : DateTime.parse(json['completedAt'] as String),
+        content: json['content'] as String?,
       );
-      buildBooks(result.entries, edits: result.edits);
       return result;
     } catch (_) {
       throw const FormatException(
@@ -100,18 +140,12 @@ class CatalogCache {
 class LocalCatalogStore implements CatalogStore {
   late final _preferences = SharedPreferencesAsync();
   @override
-  Future<CatalogCache?> read(AccountScope scope) async {
-    final value = await _preferences.getString(_key(scope));
-    return value == null ? null : CatalogCache.decode(scope, value);
-  }
+  Future<String?> read(AccountScope scope) =>
+      _preferences.getString(_key(scope));
 
   @override
-  Future<void> write(AccountScope scope, CatalogCache cache) {
-    if (scope.key != cache.scope.key) {
-      throw ArgumentError('Cannot write another account catalog.');
-    }
-    return _preferences.setString(_key(scope), cache.encode());
-  }
+  Future<void> write(AccountScope scope, String text) =>
+      _preferences.setString(_key(scope), text);
 
   String _key(AccountScope scope) =>
       'bookfin.catalog.v1.${base64Url.encode(utf8.encode(scope.key))}';

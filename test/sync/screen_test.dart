@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:bookfin/catalog/shelf.dart';
 import 'package:bookfin/playback/store.dart';
 import 'package:bookfin/sync/coordinator.dart';
 import 'package:bookfin/sync/journal.dart';
@@ -11,13 +13,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../playback/playback_test.dart' as audio;
 import '../reader/session_test.dart' as reading;
+import '../playback/playback_test.dart' show account;
 import 'fixture.dart';
+import 'status_test.dart' show ControlledRecords;
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   HttpOverrides.global = null;
   late SyncFixture fixture;
-  late RecordSync sync;
+  late RefusingSync sync;
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
     fixture = await SyncFixture.open();
@@ -81,7 +85,7 @@ void main() {
       });
       fixture.publish(journal);
     }
-    sync = RecordSync(records: LocalResumeStore())..bind(fixture.session);
+    sync = RefusingSync(records: LocalResumeStore())..bind(fixture.session);
     await sync.synchronize();
     expect(sync.conflicts, hasLength(4));
   });
@@ -95,8 +99,9 @@ void main() {
     (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: SingleChildScrollView(child: RecordSyncView(sync: sync)),
+          home: RecordSyncPage(
+            sync: sync,
+            library: ValueNotifier(CatalogLibrary.empty),
           ),
         ),
       );
@@ -122,12 +127,10 @@ void main() {
     (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: SingleChildScrollView(
-              child: RecordSyncView(
-                sync: sync,
-                books: [audio.title, reading.book],
-              ),
+          home: RecordSyncPage(
+            sync: sync,
+            library: ValueNotifier(
+              CatalogLibrary.build([audio.title, reading.book]),
             ),
           ),
         ),
@@ -143,4 +146,155 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+
+  testWidgets(
+    'after a library refresh, the conflict list names the book from the new library',
+    (tester) async {
+      final library = ValueNotifier(CatalogLibrary.empty);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: RecordSyncPage(sync: sync, library: library),
+        ),
+      );
+      expect(find.textContaining('River · Reading bookmark'), findsNothing);
+      library.value = CatalogLibrary.build([audio.title, reading.book]);
+      await tester.pump();
+      expect(find.textContaining('River · Reading bookmark'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'the sync view reports Sync now and a choice and calls no record sync method',
+    (tester) async {
+      sync.refuse = true;
+      var syncs = 0;
+      final choices = <(String, String)>[];
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: RecordSyncView(
+                status: sync.statusNotifier,
+                lastSync: sync.lastSyncNotifier,
+                conflicts: sync.conflictsNotifier,
+                library: ValueNotifier(CatalogLibrary.empty),
+                onSync: () => syncs++,
+                onResolve: (record, identity) =>
+                    choices.add((record, identity)),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Sync now'));
+      final choice = find.textContaining('first audio note');
+      await tester.ensureVisible(choice);
+      await tester.tap(choice);
+      expect(syncs, 1);
+      final (record, identity) = choices.single;
+      final chosen = sync.conflicts[record]!.singleWhere(
+        (action) => RecordJournal.identity(action) == identity,
+      );
+      expect((chosen['value'] as Map)['title'], 'first audio note');
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'after a background sync the page quietly says when records last synced',
+    (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: RecordSyncPage(
+            sync: sync,
+            library: ValueNotifier(CatalogLibrary.empty),
+          ),
+        ),
+      );
+      expect(find.textContaining('Last synced · Today, '), findsOneWidget);
+      expect(find.text('Sync now'), findsOneWidget);
+      expect(find.textContaining('Choose between saved places'), findsNothing);
+    },
+  );
+
+  group('with a controlled sync', () {
+    late ControlledRecords records;
+    late RecordSync controlled;
+    setUp(() {
+      records = ControlledRecords();
+      controlled = RecordSync(records: records)..bind(account());
+    });
+    tearDown(() => controlled.dispose());
+
+    Future<void> showPage(WidgetTester tester) => tester.pumpWidget(
+      MaterialApp(
+        home: RecordSyncPage(
+          sync: controlled,
+          library: ValueNotifier(CatalogLibrary.empty),
+        ),
+      ),
+    );
+
+    testWidgets('a background sync shows no busy state on the page', (
+      tester,
+    ) async {
+      records.gate = Completer();
+      await showPage(tester);
+      unawaited(controlled.synchronize());
+      await tester.pump();
+      expect(find.text('Sync now'), findsOneWidget);
+      expect(find.text('Syncing personal records…'), findsNothing);
+      records.gate!.complete();
+      await tester.pump();
+      expect(find.text('Personal records are synced.'), findsNothing);
+    });
+
+    testWidgets(
+      'after a failed background sync the page says to tap Sync now to retry',
+      (tester) async {
+        records.failure = true;
+        await showPage(tester);
+        await controlled.synchronize();
+        await tester.pump();
+        expect(
+          find.text('Last sync failed. Tap Sync now to retry.'),
+          findsOneWidget,
+        );
+        expect(
+          find.textContaining('Personal records remain on this device'),
+          findsNothing,
+        );
+      },
+    );
+
+    testWidgets('tapping Sync now shows busy, then the result', (tester) async {
+      records.gate = Completer();
+      await showPage(tester);
+      await tester.tap(find.text('Sync now'));
+      await tester.pump();
+      expect(find.text('Syncing personal records…'), findsOneWidget);
+      records.gate!.complete();
+      await tester.pump();
+      expect(find.text('Personal records are synced.'), findsOneWidget);
+      expect(find.text('Sync now'), findsOneWidget);
+    });
+  });
+}
+
+/// A record sync that throws on every action once [refuse] is set.
+class RefusingSync extends RecordSync {
+  RefusingSync({required super.records});
+  bool refuse = false;
+
+  @override
+  Future<void> synchronize() =>
+      refuse ? throw StateError('synchronize') : super.synchronize();
+
+  @override
+  Future<void> syncNow() =>
+      refuse ? throw StateError('syncNow') : super.syncNow();
+
+  @override
+  Future<void> resolve(String record, String identity) =>
+      refuse ? throw StateError('resolve') : super.resolve(record, identity);
 }

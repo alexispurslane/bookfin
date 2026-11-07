@@ -59,6 +59,8 @@ class _WebTransport implements JsonTransport {
       if (text.length > 16 * 1024 * 1024) {
         throw const CatalogFailure(CatalogFailureKind.invalidResponse);
       }
+      // A web build has no other isolate: compute runs its work here, so the
+      // response decodes here too.
       final value = jsonDecode(text);
       if (value is! Map<String, dynamic>) {
         throw const CatalogFailure(CatalogFailureKind.invalidResponse);
