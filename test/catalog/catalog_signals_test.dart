@@ -456,9 +456,16 @@ void main() {
       'the status and the catalog agree on success at every status notice',
       () async {
         final seen = <(bool, bool)>[];
+        // A notifier reports an error that its listener throws instead of
+        // failing the test, so the listener keeps the broken invariants.
+        final broken = <Object>[];
         controller.statusNotifier.addListener(() {
           seen.add((verified(), controller.verified));
-          controller.checkInvariants();
+          try {
+            controller.checkInvariants();
+          } on StateError catch (error) {
+            broken.add(error);
+          }
         });
         await connectAndSelect();
         await controller.correctBook(
@@ -481,6 +488,98 @@ void main() {
           everyElement(predicate<(bool, bool)>((s) => s.$1 == s.$2)),
         );
         expect(seen.map((s) => s.$1), containsAllInOrder([true, false, true]));
+        expect(broken, isEmpty);
+      },
+    );
+  });
+
+  group('a sign-in over a saved denial', () {
+    /// Signs in, selects the book library, corrects its book, has Jellyfin
+    /// deny access, and signs out, so the account's saved catalog holds the
+    /// denial and the correction.
+    Future<void> deniedThenSignedOut() async {
+      await connectAndSelect();
+      await controller.correctBook(
+        'book:one',
+        const BookDetails(title: 'Corrected', author: 'Writer'),
+      );
+      client.failure = const CatalogFailure(CatalogFailureKind.forbidden);
+      await controller.refresh();
+      await controller.signOut();
+      client.failure = null;
+    }
+
+    Future<void> signInAgain() =>
+        controller.connect('https://books.example', 'alice', 'password');
+
+    test('a sign-in that lists the selected libraries ends the denial, so the saved books appear at once', () async {
+      await deniedThenSignedOut();
+      await signInAgain();
+      final status = controller.statusNotifier.value;
+      expect(status.reach, CatalogReach.reached);
+      expect(status.verified, isTrue);
+      expect(controller.accountNotifier.value.accessBlocked, isFalse);
+      expect(controller.libraryNotifier.value.books.single.title, 'Corrected');
+      controller.checkInvariants();
+    });
+
+    test('the status never says that access is revoked and that the sign-in succeeded', () async {
+      await deniedThenSignedOut();
+      final seen = <CatalogStatus>[];
+      controller.statusNotifier.addListener(
+        () => seen.add(controller.statusNotifier.value),
+      );
+      await signInAgain();
+      expect(
+        seen.where(
+          (status) =>
+              status.verified && status.reach == CatalogReach.accessRevoked,
+        ),
+        isEmpty,
+      );
+    });
+
+    test('after a sign-in ends the denial, a restart shows the library with its corrections', () async {
+      await deniedThenSignedOut();
+      await signInAgain();
+      final restarted = newController();
+      addTearDown(restarted.dispose);
+      await restarted.restore();
+      expect(restarted.accountNotifier.value.accessBlocked, isFalse);
+      expect(
+        restarted.statusNotifier.value.reach,
+        isNot(CatalogReach.accessRevoked),
+      );
+      expect(restarted.libraryNotifier.value.books.single.title, 'Corrected');
+      restarted.checkInvariants();
+    });
+
+    test('a sign-in whose end of the denial cannot be saved did not succeed and keeps the saved denial', () async {
+      await deniedThenSignedOut();
+      final saved = Map.of(store.values);
+      store.failWrites = true;
+      await signInAgain();
+      final status = controller.statusNotifier.value;
+      expect(status.verified, isFalse);
+      expect(status.reach, CatalogReach.accessRevoked);
+      expect(status.message, isNotNull);
+      expect(store.values, saved);
+      controller.checkInvariants();
+      store.failWrites = false;
+      await controller.refresh();
+      expect(controller.libraryNotifier.value.books.single.title, 'Corrected');
+    });
+
+    test(
+      'a sign-in whose libraries lack the selection keeps the denial',
+      () async {
+        await deniedThenSignedOut();
+        client.views = [const BookLibrary('other', 'Other')];
+        await signInAgain();
+        final status = controller.statusNotifier.value;
+        expect(status.reach, CatalogReach.accessRevoked);
+        expect(status.verified, isFalse);
+        expect(controller.libraryNotifier.value.books, isEmpty);
       },
     );
   });

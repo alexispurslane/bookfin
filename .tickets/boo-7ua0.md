@@ -19,3 +19,9 @@ Owned files: lib/playback/store.dart (the synchronize result), lib/sync/coordina
 ## Acceptance Criteria
 
 A sync that finds no remote change causes no notification and no re-parse. A catalog change that does not affect the account does not start a sync. Background syncs happen only through the RecordSync schedule.
+
+## Notes
+
+**2026-11-07T23:20:50Z**
+
+t9-pols merged: RecordSync no longer extends ChangeNotifier; it publishes statusNotifier ((busy, message), user actions only), lastSyncNotifier ((at, failed)) and conflictsNotifier, and serializes syncs and choices through _exclusive. A background synchronize() shows nothing. Build the no-change skip on that.

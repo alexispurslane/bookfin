@@ -26,3 +26,9 @@ Files: lib/playback/store.dart, lib/playback/database.dart (set-aside table or f
 
 A test for each: a damaged preference value, damaged SQLite rows and a SQLite file that cannot be opened keep the damaged data intact, report it to the user, and let new places survive a kill. Each test fails when its protection is removed.
 
+
+## Notes
+
+**2026-11-07T23:11:07Z**
+
+Decided by the user on November 7, 2026: Design A with salvage. When the record store cannot be read, the damaged data is renamed and kept (never deleted), a new store starts at once so new places survive a kill, and every record that still parses is copied from the damaged data into the new store, so most history and places show at once, even offline. The next sync refills the rest. The message names the real cause (a damaged store, not free storage). Tests: a damaged store keeps its file, salvages readable records, skips broken ones, saves new places that survive a restart, and syncs without duplicates.

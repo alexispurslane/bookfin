@@ -83,8 +83,9 @@ void main() {
         expect(reader.message, contains('not saved'));
         expect(preferences.getString(key), raw);
         final sync = RecordSync(records: records)..bind(fixture.session);
-        await expectLater(sync.synchronize(), completes);
+        await expectLater(sync.syncNow(), completes);
         expect(sync.message, contains('could not be read'));
+        expect(sync.lastSyncNotifier.value?.failed, isTrue);
         expect(preferences.getString(key), raw);
         sync.dispose();
         await preferences.setString(key, healthy);

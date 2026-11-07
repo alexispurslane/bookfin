@@ -1,11 +1,13 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../catalog/book_cover.dart';
 import '../catalog/glass.dart';
 import '../catalog/model.dart';
+import '../foundation/listenable_selector.dart';
 import '../foundation/theme.dart';
 import '../foundation/time.dart';
 import 'playback.dart';
@@ -13,6 +15,16 @@ import 'recent.dart';
 import 'records_screen.dart';
 import 'timeline.dart';
 
+// The player surfaces in this file are controllers: PlayerView for the
+// Listening page and the player pane, and PlaybackMiniPlayer and
+// ReplacementStartNotice for the surfaces that several screens show. Each
+// one wires pure controls, such as PlayPauseButton and PositionSlider, to
+// Playback. A control draws the values it gets and reports what the
+// listener did. Each value is followed by the lowest widget that shows it,
+// so a playing tick rebuilds only the position widgets.
+
+/// The open book floating over the page, with play and a forward jump. A tap
+/// on the book opens the player.
 class PlaybackMiniPlayer extends StatelessWidget {
   const PlaybackMiniPlayer({
     super.key,
@@ -24,129 +36,24 @@ class PlaybackMiniPlayer extends StatelessWidget {
   /// Lets the opened player offer the book details page.
   final ValueChanged<Book>? onOpenBook;
   @override
-  Widget build(BuildContext context) => ListenableBuilder(
-    listenable: playback,
-    builder: (context, _) {
-      final book = playback.book;
+  Widget build(BuildContext context) => ListenableSelector<(Book?, Edition?)>(
+    listenable: playback.selectionNotifier,
+    select: () => (playback.book, playback.edition),
+    builder: (context, open, _) {
+      final (book, _) = open;
       if (book == null) return const SizedBox.shrink();
-      final theme = Theme.of(context);
-      final scheme = theme.colorScheme;
       final total = playback.durationMilliseconds;
-      return SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(10, 0, 10, 8),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _UndoControl(playback: playback),
-              CoverGlass(
-                book: book,
-                child: Material(
-                  type: MaterialType.transparency,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Tooltip(
-                              message: 'Open player',
-                              child: InkWell(
-                                onTap: () => openPlayer(
-                                  context,
-                                  playback,
-                                  onOpenBook: onOpenBook,
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.fromLTRB(
-                                    10,
-                                    10,
-                                    8,
-                                    8,
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      SizedBox(
-                                        width: 36,
-                                        child: BookCover.book(
-                                          book,
-                                          showText: false,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              book.title,
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: theme.textTheme.titleMedium
-                                                  ?.copyWith(
-                                                    fontFamily:
-                                                        'Source Serif 4',
-                                                    fontWeight: FontWeight.w600,
-                                                  ),
-                                            ),
-                                            Text(
-                                              book.author,
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: theme.textTheme.bodySmall
-                                                  ?.copyWith(
-                                                    color: scheme.onSurface
-                                                        .withValues(
-                                                          alpha: 0.75,
-                                                        ),
-                                                  ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          _PlayButton(playback: playback),
-                          _JumpButton(
-                            playback: playback,
-                            forward: true,
-                            compact: true,
-                          ),
-                          const SizedBox(width: 6),
-                        ],
-                      ),
-                      // The progress ticks while audio plays. Its own layer
-                      // keeps the glass behind it from repainting.
-                      if (total != null && total > 0)
-                        RepaintBoundary(
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(14, 0, 14, 8),
-                            // On glass a faint ink track reads better than
-                            // the paper outline.
-                            child: ProgressLine(
-                              height: 2.5,
-                              value:
-                                  (playback.editionMilliseconds ?? 0) / total,
-                              color: scheme.primary,
-                              trackColor: scheme.onSurface.withValues(
-                                alpha: 0.12,
-                              ),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
+      return MiniPlayerCard(
+        book: book,
+        onOpen: () => openPlayer(context, playback, onOpenBook: onOpenBook),
+        notice: _undoNotice(playback),
+        controls: [
+          _playPause(playback),
+          _jump(playback, forward: true, compact: true),
+        ],
+        progress: total != null && total > 0
+            ? _EditionShare(playback, total)
+            : null,
       );
     },
   );
@@ -167,6 +74,8 @@ void openPlayer(
   ),
 );
 
+/// Offers to start the replacement of a changed recording from its
+/// beginning, after the listener confirms.
 class ReplacementStartNotice extends StatelessWidget {
   const ReplacementStartNotice({
     super.key,
@@ -174,52 +83,52 @@ class ReplacementStartNotice extends StatelessWidget {
     this.onStarted,
   });
   final Playback playback;
+
+  /// Runs after the replacement starts.
   final VoidCallback? onStarted;
 
   @override
-  Widget build(BuildContext context) => ListenableBuilder(
+  Widget build(BuildContext context) => ListenableSelector<AudioReplacement?>(
+    // The replacement offer has no narrow signal, so this follows every
+    // change of Playback and rebuilds only when the offer changes.
     listenable: playback,
-    builder: (context, _) {
-      final request = playback.replacementStart;
-      if (request == null) return const SizedBox.shrink();
-      return Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text('${request.book.title} · ${request.edition.label}'),
-          const Text(
-            'This recording changed. Start the replacement from the beginning?',
+    select: () => playback.replacementStart,
+    builder: (context, request, _) => request == null
+        ? const SizedBox.shrink()
+        : ReplacementOffer(
+            request: request,
+            onStartReplacement: (request) =>
+                unawaited(_start(context, request)),
           ),
-          TextButton(
-            onPressed: () async {
-              final confirmed = await confirmAction(
-                context,
-                title: 'Start replacement audio?',
-                message:
-                    'Start ${request.edition.label} from the beginning. '
-                    'Your old position (${audioTime(request.previous.milliseconds)} within its original audio file), '
-                    'history and bookmarks will be kept separately. '
-                    'Old positions will not be applied to changed audio.',
-                action: 'Start from beginning',
-              );
-              if (!confirmed) {
-                playback.cancelReplacement(request);
-                return;
-              }
-              await playback.confirmReplacement(request);
-              if (context.mounted &&
-                  playback.edition == request.edition &&
-                  playback.replacementStart == null) {
-                onStarted?.call();
-              }
-            },
-            child: const Text('Start replacement'),
-          ),
-        ],
-      );
-    },
   );
+
+  Future<void> _start(BuildContext context, AudioReplacement request) async {
+    final confirmed = await confirmAction(
+      context,
+      title: 'Start replacement audio?',
+      message:
+          'Start ${request.edition.label} from the beginning. '
+          'Your old position (${audioTime(request.previous.milliseconds)} within its original audio file), '
+          'history and bookmarks will be kept separately. '
+          'Old positions will not be applied to changed audio.',
+      action: 'Start from beginning',
+    );
+    if (!confirmed) {
+      playback.cancelReplacement(request);
+      return;
+    }
+    await playback.confirmReplacement(request);
+    if (context.mounted &&
+        playback.edition == request.edition &&
+        playback.replacementStart == null) {
+      onStarted?.call();
+    }
+  }
 }
 
+/// The Listening page, or the player pane over another page: the open book
+/// on its stage with the player controls, and the books listened to
+/// recently.
 class PlayerView extends StatelessWidget {
   const PlayerView({
     super.key,
@@ -237,41 +146,12 @@ class PlayerView extends StatelessWidget {
   final ValueChanged<Book>? onOpenBook;
 
   @override
-  Widget build(BuildContext context) => ListenableBuilder(
-    listenable: playback,
-    builder: (context, _) {
-      final book = playback.book;
-      if (book == null) {
-        return ListView(
-          padding: EdgeInsets.fromLTRB(
-            20,
-            16,
-            20,
-            32 + floatingBarInset(context),
-          ),
-          children: [
-            RecordSaveStatus(playback: playback),
-            ReplacementStartNotice(playback: playback),
-            if (playback.recent.isEmpty)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 48),
-                child: Text(
-                  'Choose a downloaded audio edition to start listening.',
-                  textAlign: TextAlign.center,
-                ),
-              )
-            else
-              RecentListeningList(playback: playback),
-            const SizedBox(height: 12),
-            Center(
-              child: TextButton(
-                onPressed: () => openListeningTimeline(context, playback),
-                child: const Text('History'),
-              ),
-            ),
-          ],
-        );
-      }
+  Widget build(BuildContext context) => ListenableSelector<(Book?, Edition?)>(
+    listenable: playback.selectionNotifier,
+    select: () => (playback.book, playback.edition),
+    builder: (context, open, _) {
+      final (book, _) = open;
+      if (book == null) return _nothingOpen(context);
       final base = Theme.of(context);
       final night = base.brightness == Brightness.dark;
       return Theme(
@@ -285,15 +165,42 @@ class PlayerView extends StatelessWidget {
     },
   );
 
+  void _resume(RecentListening entry) =>
+      unawaited(playback.open(entry.book, entry.edition));
+
+  Widget _nothingOpen(BuildContext context) => ListView(
+    padding: EdgeInsets.fromLTRB(20, 16, 20, 32 + floatingBarInset(context)),
+    children: [
+      RecordSaveStatus(playback: playback),
+      ReplacementStartNotice(playback: playback),
+      RecentListeningList(
+        playback: playback,
+        onResume: _resume,
+        empty: const Padding(
+          padding: EdgeInsets.symmetric(vertical: 48),
+          child: Text(
+            'Choose a downloaded audio edition to start listening.',
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ),
+      const SizedBox(height: 12),
+      Center(
+        child: TextButton(
+          onPressed: () => openListeningTimeline(context, playback),
+          child: const Text('History'),
+        ),
+      ),
+    ],
+  );
+
   Widget _stage(BuildContext context, Book book, bool night) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final top = pane ? 0.0 : MediaQuery.paddingOf(context).top;
     final narrator = playback.edition!.narrator;
     final chapters = playback.chapters;
-    final chapter = playback.chapterIndex;
     final total = playback.durationMilliseconds;
-    final position = playback.editionMilliseconds;
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: night ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
       child: ColoredBox(
@@ -351,65 +258,104 @@ class PlayerView extends StatelessWidget {
                           ),
                         ),
                       ),
-                      if (chapter != null && chapters.length > 1)
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(24, 10, 24, 0),
-                          child: Text(
-                            '${chapters[chapter].name} · ${chapter + 1} of ${chapters.length}',
-                            textAlign: TextAlign.center,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.labelLarge?.copyWith(
-                              color: night ? theaterGlow : scheme.primary,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
+                      if (chapters.length > 1)
+                        ListenableSelector<int?>(
+                          listenable: playback.positionNotifier,
+                          select: () => playback.chapterIndex,
+                          builder: (context, chapter, _) => chapter == null
+                              ? const SizedBox.shrink()
+                              : Padding(
+                                  padding: const EdgeInsets.fromLTRB(
+                                    24,
+                                    10,
+                                    24,
+                                    0,
+                                  ),
+                                  child: Text(
+                                    '${chapters[chapter].name} · ${chapter + 1} of ${chapters.length}',
+                                    textAlign: TextAlign.center,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: theme.textTheme.labelLarge?.copyWith(
+                                      color: night
+                                          ? theaterGlow
+                                          : scheme.primary,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
                         ),
                       RecordSaveStatus(playback: playback),
                       ReplacementStartNotice(playback: playback),
                       const SizedBox(height: 10),
                       // The position ticks while audio plays. Its own layer
                       // keeps the cover and blur behind it from repainting.
-                      if (total != null && total > 0 && position != null)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24),
-                          child: RepaintBoundary(
-                            child: _PositionSlider(playback: playback),
-                          ),
-                        )
-                      else
-                        RepaintBoundary(
-                          child: Text(
-                            'File position · ${audioTime(playback.position!.milliseconds)}',
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
+                      ListenableBuilder(
+                        // The bookmark marks on the slider follow the records.
+                        listenable: Listenable.merge([
+                          playback.positionNotifier,
+                          playback.recordsNotifier,
+                        ]),
+                        builder: (context, _) {
+                          final position = playback.editionMilliseconds;
+                          if (total == null || total <= 0 || position == null) {
+                            return RepaintBoundary(
+                              child: Text(
+                                'File position · ${audioTime(playback.position?.milliseconds ?? 0)}',
+                                textAlign: TextAlign.center,
+                              ),
+                            );
+                          }
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            child: RepaintBoundary(
+                              child: PositionSlider(
+                                position: position,
+                                total: total,
+                                chapters: chapters,
+                                chapterIndex: playback.chapterIndex,
+                                bookmarks: playback.editionBookmarks,
+                                onSeekStart: () =>
+                                    unawaited(playback.beginSliderSeek()),
+                                onSeekEnd: playback.finishSliderSeek,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
                       const SizedBox(height: 6),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          _JumpButton(
-                            playback: playback,
+                          _jump(
+                            playback,
                             forward: false,
                             onLongPress: () => _jumps(context),
                           ),
                           const SizedBox(width: 30),
                           RepaintBoundary(
-                            child: _PlayButton(playback: playback, large: true),
+                            child: _playPause(playback, large: true),
                           ),
                           const SizedBox(width: 30),
-                          _JumpButton(
-                            playback: playback,
+                          _jump(
+                            playback,
                             forward: true,
                             onLongPress: () => _jumps(context),
                           ),
                         ],
                       ),
+                      // The Undo pill comes and goes in a slot that keeps
+                      // its height, so the tool row below never moves.
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(18, 8, 18, 0),
-                        child: _UndoControl(playback: playback),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 8,
+                        ),
+                        child: SizedBox(
+                          height: UndoNotice.height,
+                          child: _undoNotice(playback),
+                        ),
                       ),
-                      const SizedBox(height: 14),
                       _tools(context),
                     ],
                   ),
@@ -423,7 +369,7 @@ class PlayerView extends StatelessWidget {
                 20,
                 32 + floatingBarInset(context),
               ),
-              child: RecentListeningList(playback: playback),
+              child: RecentListeningList(playback: playback, onResume: _resume),
             ),
           ],
         ),
@@ -467,49 +413,20 @@ class PlayerView extends StatelessWidget {
     ),
   );
 
-  /// Chapters, Bookmark, Speed, Sleep, and History, in one rounded row.
+  /// Chapters, Bookmark, Speed, Sleep, and History, in one rounded row. The
+  /// row itself follows nothing. Each tool that shows a value follows it.
   Widget _tools(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final accent = theme.brightness == Brightness.dark
         ? theaterGlow
         : scheme.primary;
-    final deadline = playback.sleepDeadline;
     final value = TextStyle(
       fontSize: 14,
       fontWeight: FontWeight.w600,
       color: scheme.onSurface,
     );
-    Widget tool(String label, Widget top, VoidCallback onTap) => Expanded(
-      child: Semantics(
-        button: true,
-        child: InkWell(
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(4, 10, 4, 9),
-            child: Column(
-              children: [
-                SizedBox(height: 22, child: Center(child: top)),
-                const SizedBox(height: 3),
-                // Five tools share the row, so a long label shrinks a little
-                // instead of wrapping onto a second line.
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    label,
-                    maxLines: 1,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: scheme.onSurfaceVariant,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
+    final divider = VerticalDivider(width: 1, color: scheme.outlineVariant);
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 18),
       decoration: BoxDecoration(
@@ -523,53 +440,85 @@ class PlayerView extends StatelessWidget {
         child: IntrinsicHeight(
           child: Row(
             children: [
-              tool(
-                'Chapters',
-                Icon(Icons.format_list_bulleted_rounded, color: accent),
-                () => unawaited(_chapters(context)),
-              ),
-              VerticalDivider(width: 1, color: scheme.outlineVariant),
-              // One tap saves an untitled bookmark. Right after, the tool
-              // reads Bookmarked, and a tap names that bookmark.
-              if (playback.bookmarkHere case final here?)
-                tool(
-                  'Bookmarked',
-                  Icon(Icons.bookmark_rounded, color: accent),
-                  () => unawaited(
-                    editAudioBookmark(context, playback, bookmark: here),
-                  ),
-                )
-              else
-                tool(
-                  'Bookmark',
-                  Icon(Icons.bookmark_border_rounded, color: accent),
-                  () => unawaited(playback.addBookmark()),
+              Expanded(
+                child: _Tool(
+                  label: 'Chapters',
+                  top: Icon(Icons.format_list_bulleted_rounded, color: accent),
+                  onTap: () => unawaited(_chapters(context)),
                 ),
-              VerticalDivider(width: 1, color: scheme.outlineVariant),
-              tool(
-                'Speed',
-                Text('${_rate(playback.playbackSpeed)}×', style: value),
-                () => unawaited(_speed(context)),
               ),
-              VerticalDivider(width: 1, color: scheme.outlineVariant),
-              tool(
-                'Sleep',
-                deadline == null
-                    ? Icon(Icons.bedtime_outlined, color: accent)
-                    : Text(
-                        '${(deadline.difference(DateTime.now()).inSeconds / 60).ceil()} m',
-                        style: value,
-                      ),
-                () => unawaited(_sleep(context)),
+              divider,
+              // One tap saves an untitled bookmark. Right after, the tool
+              // reads Bookmarked, and a tap names that bookmark. The place
+              // moves away from the bookmark as audio plays.
+              Expanded(
+                child: ListenableSelector<AudioBookmark?>(
+                  listenable: Listenable.merge([
+                    playback.positionNotifier,
+                    playback.recordsNotifier,
+                  ]),
+                  select: () => playback.bookmarkHere,
+                  builder: (context, here, _) => here == null
+                      ? _Tool(
+                          label: 'Bookmark',
+                          top: Icon(
+                            Icons.bookmark_border_rounded,
+                            color: accent,
+                          ),
+                          onTap: () => unawaited(playback.addBookmark()),
+                        )
+                      : _Tool(
+                          label: 'Bookmarked',
+                          top: Icon(Icons.bookmark_rounded, color: accent),
+                          onTap: () => unawaited(
+                            editAudioBookmark(
+                              context,
+                              playback,
+                              bookmark: here,
+                            ),
+                          ),
+                        ),
+                ),
               ),
-              VerticalDivider(width: 1, color: scheme.outlineVariant),
-              tool(
-                'History',
-                Icon(Icons.history_rounded, color: accent),
-                () => openListeningTimeline(
-                  context,
-                  playback,
-                  book: playback.book,
+              divider,
+              Expanded(
+                child: _Tool(
+                  label: 'Speed',
+                  top: ListenableSelector<double>(
+                    listenable: playback.settingsNotifier,
+                    select: () => playback.playbackSpeed,
+                    builder: (context, speed, _) =>
+                        Text('${_rate(speed)}×', style: value),
+                  ),
+                  onTap: () => unawaited(_speed(context)),
+                ),
+              ),
+              divider,
+              Expanded(
+                child: _Tool(
+                  label: 'Sleep',
+                  top: ValueListenableBuilder(
+                    valueListenable: playback.sleepNotifier,
+                    builder: (context, left, _) => left == null
+                        ? Icon(Icons.bedtime_outlined, color: accent)
+                        : Text(
+                            '${(left.inSeconds / 60).ceil()} m',
+                            style: value,
+                          ),
+                  ),
+                  onTap: () => unawaited(_sleep(context)),
+                ),
+              ),
+              divider,
+              Expanded(
+                child: _Tool(
+                  label: 'History',
+                  top: Icon(Icons.history_rounded, color: accent),
+                  onTap: () => openListeningTimeline(
+                    context,
+                    playback,
+                    book: playback.book,
+                  ),
                 ),
               ),
             ],
@@ -778,20 +727,140 @@ class PlayerView extends StatelessWidget {
   }
 }
 
-class _PlayButton extends StatelessWidget {
-  const _PlayButton({required this.playback, this.large = false});
+// The wiring that the controllers above share. Each function builds a
+// control that follows its own signal and commands Playback.
+
+/// The play button, following whether [playback] plays.
+Widget _playPause(Playback playback, {bool large = false}) =>
+    ListenableSelector<bool>(
+      listenable: playback.selectionNotifier,
+      select: () => playback.playing,
+      builder: (context, playing, _) => PlayPauseButton(
+        playing: playing,
+        large: large,
+        onPlayPause: () =>
+            unawaited(playback.playing ? playback.pause() : playback.play()),
+      ),
+    );
+
+/// A jump button, following the jump length of its direction.
+Widget _jump(
+  Playback playback, {
+  required bool forward,
+  bool compact = false,
+  VoidCallback? onLongPress,
+}) => ListenableSelector<int>(
+  listenable: playback.settingsNotifier,
+  select: () => forward ? playback.forwardSeconds : playback.backwardSeconds,
+  builder: (context, seconds, _) => JumpButton(
+    forward: forward,
+    seconds: seconds,
+    compact: compact,
+    onLongPress: onLongPress,
+    onJump: (forward) => unawaited(playback.jump(forward: forward)),
+  ),
+);
+
+/// The Undo offer after a position change, while there is one.
+Widget _undoNotice(Playback playback) => ListenableSelector<bool?>(
+  // Undo has no narrow signal, so this follows every change of Playback and
+  // rebuilds only when the offer or its saved state changes. The value is
+  // whether the previous place is still unsaved, or null without an offer.
+  listenable: playback,
+  select: () => playback.undoAction == null ? null : playback.unsavedChanges,
+  builder: (context, unsaved, _) => unsaved == null
+      ? const SizedBox.shrink()
+      : UndoNotice(
+          unsaved: unsaved,
+          onUndo: () => unawaited(playback.undoSeek()),
+          onDismiss: playback.dismissUndo,
+        ),
+);
+
+/// How far through its edition the open place is, from 0 to 1. It notifies
+/// through [Playback.positionNotifier], so it owns no listeners itself.
+class _EditionShare implements ValueListenable<double> {
+  _EditionShare(this.playback, this.total);
   final Playback playback;
+
+  /// The length of the open edition, in milliseconds. More than zero.
+  final int total;
+
+  @override
+  double get value => (playback.editionMilliseconds ?? 0) / total;
+
+  @override
+  void addListener(VoidCallback listener) =>
+      playback.positionNotifier.addListener(listener);
+
+  @override
+  void removeListener(VoidCallback listener) =>
+      playback.positionNotifier.removeListener(listener);
+}
+
+/// One tool of the player's tool row: [top] over a small [label].
+class _Tool extends StatelessWidget {
+  const _Tool({required this.label, required this.top, required this.onTap});
+  final String label;
+  final Widget top;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    child: InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(4, 10, 4, 9),
+        child: Column(
+          children: [
+            SizedBox(height: 22, child: Center(child: top)),
+            const SizedBox(height: 3),
+            // Five tools share the row, so a long label shrinks a little
+            // instead of wrapping onto a second line.
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                label,
+                maxLines: 1,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+/// Play while paused, Pause while audio plays. [large] is the stage's round
+/// button, and the default is the mini player's icon button.
+class PlayPauseButton extends StatelessWidget {
+  const PlayPauseButton({
+    super.key,
+    required this.playing,
+    required this.onPlayPause,
+    this.large = false,
+  });
+  final bool playing;
+
+  /// Reports a tap. The listener means Pause while [playing], else Play.
+  final VoidCallback onPlayPause;
   final bool large;
+
   @override
   Widget build(BuildContext context) {
-    final label = playback.playing ? 'Pause' : 'Play';
-    final icon = playback.playing
-        ? Icons.pause_rounded
-        : Icons.play_arrow_rounded;
-    void toggle() =>
-        unawaited(playback.playing ? playback.pause() : playback.play());
+    final label = playing ? 'Pause' : 'Play';
+    final icon = playing ? Icons.pause_rounded : Icons.play_arrow_rounded;
     if (!large) {
-      return IconButton(tooltip: label, onPressed: toggle, icon: Icon(icon));
+      return IconButton(
+        tooltip: label,
+        onPressed: onPlayPause,
+        icon: Icon(icon),
+      );
     }
     final scheme = Theme.of(context).colorScheme;
     return Tooltip(
@@ -819,7 +888,7 @@ class _PlayButton extends StatelessWidget {
             shape: const CircleBorder(),
             child: InkWell(
               customBorder: const CircleBorder(),
-              onTap: toggle,
+              onTap: onPlayPause,
               child: SizedBox.square(
                 dimension: 72,
                 child: Icon(icon, size: 38, color: scheme.onPrimary),
@@ -832,17 +901,27 @@ class _PlayButton extends StatelessWidget {
   }
 }
 
-/// A circular arrow with the jump length inside. A long press changes the
-/// jump lengths.
-class _JumpButton extends StatelessWidget {
-  const _JumpButton({
-    required this.playback,
+/// A circular arrow with the jump length inside.
+class JumpButton extends StatelessWidget {
+  const JumpButton({
+    super.key,
     required this.forward,
+    required this.seconds,
+    required this.onJump,
     this.onLongPress,
     this.compact = false,
   });
-  final Playback playback;
+
+  /// Whether the button jumps forward rather than back.
   final bool forward;
+
+  /// The jump length shown, in seconds.
+  final int seconds;
+
+  /// Reports a tap with [forward].
+  final ValueChanged<bool> onJump;
+
+  /// Reports a long press, which asks to change the jump lengths.
   final VoidCallback? onLongPress;
 
   /// The mini player's smaller size.
@@ -850,9 +929,6 @@ class _JumpButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final seconds = forward
-        ? playback.forwardSeconds
-        : playback.backwardSeconds;
     final color = Theme.of(context).colorScheme.onSurface;
     final label = '${forward ? 'Forward' : 'Back'} $seconds seconds';
     return Tooltip(
@@ -864,7 +940,7 @@ class _JumpButton extends StatelessWidget {
         excludeSemantics: true,
         child: InkResponse(
           radius: compact ? 22 : 30,
-          onTap: () => unawaited(playback.jump(forward: forward)),
+          onTap: () => onJump(forward),
           onLongPress: onLongPress,
           child: SizedBox.square(
             dimension: compact ? 44 : 56,
@@ -899,37 +975,60 @@ class _JumpButton extends StatelessWidget {
   }
 }
 
-/// The position slider with chapter marks, and the elapsed time, the time
-/// left in the chapter, and the time left in the book below it.
-class _PositionSlider extends StatefulWidget {
-  const _PositionSlider({required this.playback});
-  final Playback playback;
+/// The position slider with chapter and bookmark marks, and the elapsed
+/// time, the time left in the chapter, and the time left in the book below
+/// it. While the listener drags, it shows the dragged place instead of
+/// [position], until the seek that the drag reports lands.
+class PositionSlider extends StatefulWidget {
+  const PositionSlider({
+    super.key,
+    required this.position,
+    required this.total,
+    required this.chapters,
+    required this.chapterIndex,
+    required this.bookmarks,
+    required this.onSeekStart,
+    required this.onSeekEnd,
+  });
+
+  /// The open place, in milliseconds from the edition's start.
+  final int position;
+
+  /// The length of the edition, in milliseconds.
+  final int total;
+  final List<PlaybackChapter> chapters;
+
+  /// The index in [chapters] of the chapter that holds [position].
+  final int? chapterIndex;
+  final List<EditionBookmark> bookmarks;
+
+  /// Reports that a drag started, at the open place.
+  final VoidCallback onSeekStart;
+
+  /// Reports where a drag ended, in milliseconds from the edition's start.
+  /// The slider shows that place until the returned future completes.
+  final Future<void> Function(int milliseconds) onSeekEnd;
+
   @override
-  State<_PositionSlider> createState() => _PositionSliderState();
+  State<PositionSlider> createState() => _PositionSliderState();
 }
 
-class _PositionSliderState extends State<_PositionSlider> {
+class _PositionSliderState extends State<PositionSlider> {
+  /// The dragged place, in milliseconds, while a drag or its seek runs.
   double? _target;
   @override
   Widget build(BuildContext context) {
-    final playback = widget.playback;
+    final PositionSlider(:total, :chapters, :position) = widget;
     final scheme = Theme.of(context).colorScheme;
-    final total = playback.durationMilliseconds!;
-    final value = (_target ?? playback.editionMilliseconds!.toDouble()).clamp(
-      0.0,
-      total.toDouble(),
-    );
-    final chapters = playback.chapters;
+    final value = (_target ?? position.toDouble()).clamp(0.0, total.toDouble());
     final accent = Theme.of(context).brightness == Brightness.dark
         ? theaterGlow
         : scheme.primary;
-    final index = playback.chapterIndex;
+    final index = widget.chapterIndex;
     final next = index != null && index + 1 < chapters.length
         ? chapters[index + 1].editionMilliseconds
         : null;
-    final chapterLeft = index == null
-        ? null
-        : (next ?? total) - playback.editionMilliseconds!;
+    final chapterLeft = index == null ? null : (next ?? total) - position;
     final small = TextStyle(
       fontSize: 12,
       color: scheme.onSurfaceVariant,
@@ -954,10 +1053,10 @@ class _PositionSliderState extends State<_PositionSlider> {
                 semanticFormatterCallback: (value) => audioTime(value.round()),
                 value: value,
                 max: total.toDouble(),
-                onChangeStart: (_) => unawaited(playback.beginSliderSeek()),
+                onChangeStart: (_) => widget.onSeekStart(),
                 onChanged: (value) => setState(() => _target = value),
                 onChangeEnd: (value) async {
-                  await playback.finishSliderSeek(value.round());
+                  await widget.onSeekEnd(value.round());
                   if (mounted) setState(() => _target = null);
                 },
               ),
@@ -970,7 +1069,7 @@ class _PositionSliderState extends State<_PositionSlider> {
                       key: const ValueKey('position marks'),
                       painter: _PositionMarks(
                         chapters: chapters,
-                        bookmarks: playback.editionBookmarks,
+                        bookmarks: widget.bookmarks,
                         total: total,
                         chapterColor: scheme.surface,
                         bookmarkColor: accent,
@@ -1058,33 +1157,242 @@ class _PositionMarks extends CustomPainter {
 String _rate(double value) =>
     value.toStringAsFixed(2).replaceFirst(RegExp(r'\.?0+$'), '');
 
-class _UndoControl extends StatelessWidget {
-  const _UndoControl({required this.playback});
-  final Playback playback;
+/// A one-line pill that says that the position changed, and offers to go
+/// back to the previous place.
+class UndoNotice extends StatelessWidget {
+  const UndoNotice({
+    super.key,
+    required this.unsaved,
+    required this.onUndo,
+    required this.onDismiss,
+  });
+
+  /// Whether the previous place is not saved yet.
+  final bool unsaved;
+  final VoidCallback onUndo;
+  final VoidCallback onDismiss;
+
+  /// The height of the pill. The player keeps a slot of this height under
+  /// its transport controls, whether the pill shows or not.
+  static const height = 44.0;
 
   @override
-  Widget build(BuildContext context) => playback.undoAction == null
-      ? const SizedBox.shrink()
-      : BookfinPanel(
-          child: Wrap(
-            crossAxisAlignment: WrapCrossAlignment.center,
-            spacing: 12,
-            children: [
-              Text(
-                playback.unsavedChanges
-                    ? 'Position changed. The previous place is not saved yet.'
-                    : 'Position changed. Your previous place is saved.',
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return Container(
+      height: height,
+      padding: const EdgeInsetsDirectional.only(start: 16, end: 2),
+      decoration: ShapeDecoration(
+        color: scheme.surfaceContainer,
+        shape: StadiumBorder(side: BorderSide(color: scheme.outlineVariant)),
+      ),
+      child: Material(
+        type: MaterialType.transparency,
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                unsaved
+                    ? 'Saving your previous place'
+                    : 'Your previous place is saved',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: scheme.onSurface,
+                ),
               ),
-              TextButton(
-                onPressed: () => unawaited(playback.undoSeek()),
-                child: const Text('Undo'),
+            ),
+            const SizedBox(width: 8),
+            FilledButton(
+              onPressed: onUndo,
+              style: FilledButton.styleFrom(
+                minimumSize: const Size(0, 32),
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                visualDensity: VisualDensity.compact,
               ),
-              IconButton(
-                tooltip: 'Dismiss Undo',
-                onPressed: playback.dismissUndo,
-                icon: const Icon(Icons.close),
+              child: const Text('Undo'),
+            ),
+            IconButton(
+              tooltip: 'Dismiss Undo',
+              onPressed: onDismiss,
+              iconSize: 18,
+              visualDensity: VisualDensity.compact,
+              icon: const Icon(Icons.close),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// The open book on glass at the foot of a page: its cover, title and
+/// author, the [controls] beside them, and the [progress] line below.
+class MiniPlayerCard extends StatelessWidget {
+  const MiniPlayerCard({
+    super.key,
+    required this.book,
+    required this.onOpen,
+    required this.controls,
+    this.progress,
+    this.notice,
+  });
+  final Book book;
+
+  /// Reports a tap on the book, which asks to open the player.
+  final VoidCallback onOpen;
+
+  /// The buttons right of the book.
+  final List<Widget> controls;
+
+  /// How far through the book the place is, from 0 to 1. Only the line
+  /// that shows it follows it. Null when the length is unknown.
+  final ValueListenable<double>? progress;
+
+  /// Shown above the glass, such as the Undo offer.
+  final Widget? notice;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final progress = this.progress;
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(10, 0, 10, 8),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ?notice,
+            CoverGlass(
+              book: book,
+              child: Material(
+                type: MaterialType.transparency,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Tooltip(
+                            message: 'Open player',
+                            child: InkWell(
+                              onTap: onOpen,
+                              child: Padding(
+                                padding: const EdgeInsets.fromLTRB(
+                                  10,
+                                  10,
+                                  8,
+                                  8,
+                                ),
+                                child: Row(
+                                  children: [
+                                    SizedBox(
+                                      width: 36,
+                                      child: BookCover.book(
+                                        book,
+                                        showText: false,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            book.title,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: theme.textTheme.titleMedium
+                                                ?.copyWith(
+                                                  fontFamily: 'Source Serif 4',
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                          ),
+                                          Text(
+                                            book.author,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: theme.textTheme.bodySmall
+                                                ?.copyWith(
+                                                  color: scheme.onSurface
+                                                      .withValues(alpha: 0.75),
+                                                ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        ...controls,
+                        const SizedBox(width: 6),
+                      ],
+                    ),
+                    // The progress ticks while audio plays. Its own layer
+                    // keeps the glass behind it from repainting.
+                    if (progress != null)
+                      RepaintBoundary(
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(14, 0, 14, 8),
+                          child: ValueListenableBuilder(
+                            valueListenable: progress,
+                            // On glass a faint ink track reads better than
+                            // the paper outline.
+                            builder: (context, value, _) => ProgressLine(
+                              height: 2.5,
+                              value: value,
+                              color: scheme.primary,
+                              trackColor: scheme.onSurface.withValues(
+                                alpha: 0.12,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ),
-            ],
-          ),
-        );
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Says that the recording of [request] changed, and offers to start the
+/// replacement from its beginning.
+class ReplacementOffer extends StatelessWidget {
+  const ReplacementOffer({
+    super.key,
+    required this.request,
+    required this.onStartReplacement,
+  });
+  final AudioReplacement request;
+
+  /// Reports a tap on Start replacement, with [request].
+  final ValueChanged<AudioReplacement> onStartReplacement;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Text('${request.book.title} · ${request.edition.label}'),
+      const Text(
+        'This recording changed. Start the replacement from the beginning?',
+      ),
+      TextButton(
+        onPressed: () => onStartReplacement(request),
+        child: const Text('Start replacement'),
+      ),
+    ],
+  );
 }

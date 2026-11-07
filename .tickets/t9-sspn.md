@@ -1,6 +1,6 @@
 ---
 id: t9-sspn
-status: open
+status: in_progress
 deps: [t9-se8f, t9-4jqk, boo-y6fb, t9-dcld]
 links: []
 created: 2026-11-07T22:09:38Z
@@ -56,3 +56,7 @@ boo-y6fb merged: Playback has positionNotifier (AudioPosition?, fires on every d
 **2026-11-07T22:26:04Z**
 
 User decision (see boo-0km1): when the catalog status says Jellyfin cannot be reached, LibraryShelf shows only downloaded books without changing the user's ShelfFilter. Build the shelf so the effective filter can come from the catalog status; boo-0km1 adds the message and Retry.
+
+**2026-11-07T23:32:04Z**
+
+t9-4jqk merged: Downloads.watch(edition) returns a ValueListenable<EditionDownload> with value equality (a byte notice for one edition notifies only that edition); Downloads.leftovers is LeftoverFiles (list, reading, error), read lazily on first use and again on phase changes and reloadLeftovers(). Catalog (t9-se8f): libraryNotifier, accountNotifier, statusNotifier with reach (CatalogReach.unreachable means show only downloaded books, without changing the user's ShelfFilter).
