@@ -120,6 +120,33 @@ _Built _restoreCatalog(({AccountScope scope, String text}) saved) {
   return (cache: cache, text: saved.text, library: _libraryOf(cache));
 }
 
+/// A change to the saved catalog [text] of [scope]: it gets [edits] and
+/// [accessBlocked], and keeps its entries.
+typedef _Revision = ({
+  AccountScope scope,
+  String text,
+  CatalogEdits edits,
+  bool accessBlocked,
+});
+
+/// Decodes the saved catalog of [revision], applies the revision, and saves
+/// and builds the result. The saved text crosses to the worker as one block
+/// copy, so a correction or a denial copies no entries.
+_Built _reviseCatalog(_Revision revision) {
+  final saved = CatalogCache.decode(revision.scope, revision.text);
+  return _saveCatalog(
+    CatalogCache(
+      scope: saved.scope,
+      libraries: saved.libraries,
+      selected: saved.selected,
+      entries: saved.entries,
+      edits: revision.edits,
+      completedAt: saved.completedAt,
+      accessBlocked: revision.accessBlocked,
+    ),
+  );
+}
+
 /// Adds the content digest to [cache], encodes it and builds its library.
 _Built _saveCatalog(CatalogCache cache) {
   final sealed = cache.withContent();
@@ -159,6 +186,8 @@ CatalogLibrary _libraryOf(CatalogCache cache) {
 /// - A signed-out catalog holds no account data.
 /// - The cache belongs to the active account, and each cached item belongs
 ///   to a selected book library.
+/// - The saved text is present exactly when the cache is, and it encodes the
+///   cache.
 /// - Each source belongs to exactly one edition, and a text edition has one
 ///   source.
 /// - The library view matches its books.
@@ -180,6 +209,10 @@ class CatalogController extends ChangeNotifier {
   JellyfinClient? _active;
   JellyfinSession? _session;
   CatalogCache? _cache;
+
+  /// The text that saves [_cache], or null without a cache. A revision sends
+  /// it to the worker instead of the entries.
+  String? _text;
   List<BookLibrary> _libraries = [];
 
   /// The library of [_cache], or the empty library without a cache.
@@ -257,6 +290,12 @@ class CatalogController extends ChangeNotifier {
     if (_cache != null && _cache!.scope.key != _session?.scope.key) {
       throw StateError('The cache must belong to the active account.');
     }
+    if ((_cache == null) != (_text == null) ||
+        (_cache != null &&
+            CatalogCache.decode(_cache!.scope, _text!).content !=
+                _cache!.content)) {
+      throw StateError('The saved text must encode the cache.');
+    }
     if (_cache != null &&
         _cache!.entries.any(
           (entry) => !_cache!.selected.contains(entry.libraryId),
@@ -296,6 +335,11 @@ class CatalogController extends ChangeNotifier {
     required bool small,
   }) async => small ? work(input) : _hop(work, input);
 
+  /// Builds [revision] of the saved catalog with [_reviseCatalog], in
+  /// another isolate unless the text is small (see [_hopText]).
+  Future<_Built> _revise(_Revision revision) =>
+      _build(_reviseCatalog, revision, small: revision.text.length < _hopText);
+
   /// Adopts [built] as the cache. The library changes only when the books
   /// can differ: a cache with the content of the current one has the same
   /// books, so the current library, and its book objects, stay.
@@ -303,6 +347,7 @@ class CatalogController extends ChangeNotifier {
     assert(_session?.scope.key == built.cache.scope.key);
     final previous = _cache;
     _cache = built.cache;
+    _text = built.text;
     _accessBlocked = built.cache.accessBlocked;
     if (previous == null ||
         built.cache.content == null ||
@@ -344,6 +389,7 @@ class CatalogController extends ChangeNotifier {
     ++_accountGeneration;
     _session = null;
     _cache = null;
+    _text = null;
     _built = CatalogLibrary.empty;
     _libraries = [];
     _verified = false;
@@ -547,19 +593,20 @@ class CatalogController extends ChangeNotifier {
       final write = (_cacheWrites ?? Future<void>.value()).then((_) async {
         if (!_current(generation)) return;
         final previous = _cache;
-        final denied = await _build(
-          _saveCatalog,
-          CatalogCache(
-            scope: scope,
-            libraries: previous?.libraries ?? _libraries,
-            selected: previous?.selected ?? const {},
-            entries: previous?.entries ?? const [],
-            edits: previous?.edits,
-            completedAt: previous?.completedAt,
-            accessBlocked: true,
-          ),
-          small: (previous?.entries.length ?? 0) < _hopEntries,
-        );
+        final denied = previous == null
+            ? _saveCatalog(
+                CatalogCache(
+                  scope: scope,
+                  libraries: _libraries,
+                  accessBlocked: true,
+                ),
+              )
+            : await _revise((
+                scope: scope,
+                text: _text!,
+                edits: previous.edits,
+                accessBlocked: true,
+              ));
         if (!_current(generation)) return;
         await _store.write(scope, denied.text);
         if (_current(generation)) _adopt(denied);
@@ -622,18 +669,12 @@ class CatalogController extends ChangeNotifier {
       if (!currentAccount()) return;
       final previous = _cache!;
       try {
-        final built = await _build(
-          _saveCatalog,
-          CatalogCache(
-            scope: previous.scope,
-            libraries: previous.libraries,
-            selected: previous.selected,
-            entries: previous.entries,
-            edits: change(previous.edits),
-            completedAt: previous.completedAt,
-          ),
-          small: previous.entries.length < _hopEntries,
-        );
+        final built = await _revise((
+          scope: previous.scope,
+          text: _text!,
+          edits: change(previous.edits),
+          accessBlocked: false,
+        ));
         if (!currentAccount()) return;
         await _store.write(previous.scope, built.text);
         if (!currentAccount()) return;
