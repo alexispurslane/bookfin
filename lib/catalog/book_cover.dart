@@ -8,9 +8,19 @@ import 'covers.dart';
 import 'jellyfin.dart';
 import 'model.dart';
 
+/// The parts of a [CoverScope] that a widget can depend on alone.
+enum CoverAspect {
+  /// The cover store and the signed-in account, which covers read.
+  covers,
+
+  /// The book open in the player, which glass panes read.
+  playing,
+}
+
 /// Gives every cover below it the cover store and the signed-in account, and
-/// every glass pane below it the book open in the player.
-class CoverScope extends InheritedTheme {
+/// every glass pane below it the book open in the player. A widget that
+/// depends on one [CoverAspect] rebuilds only when that part changes.
+class CoverScope extends InheritedModel<CoverAspect> implements InheritedTheme {
   const CoverScope({
     super.key,
     required this.covers,
@@ -24,8 +34,10 @@ class CoverScope extends InheritedTheme {
   /// The book open in the player, if any.
   final Book? playing;
 
-  static CoverScope? of(BuildContext context) =>
-      context.dependOnInheritedWidgetOfExactType<CoverScope>();
+  /// The scope above [context]. [context] rebuilds when [aspect] changes, or
+  /// when any part changes without an [aspect].
+  static CoverScope? of(BuildContext context, [CoverAspect? aspect]) =>
+      InheritedModel.inheritFrom<CoverScope>(context, aspect: aspect);
 
   /// Sheets, dialogs and menus copy the scope, so covers show in them too.
   @override
@@ -36,11 +48,22 @@ class CoverScope extends InheritedTheme {
     child: child,
   );
 
+  bool _coversChanged(CoverScope old) =>
+      old.covers != covers || old.session?.scope.key != session?.scope.key;
+
   @override
   bool updateShouldNotify(CoverScope oldWidget) =>
-      oldWidget.covers != covers ||
-      oldWidget.playing != playing ||
-      oldWidget.session?.scope.key != session?.scope.key;
+      _coversChanged(oldWidget) || oldWidget.playing != playing;
+
+  @override
+  bool updateShouldNotifyDependent(
+    CoverScope oldWidget,
+    Set<CoverAspect> dependencies,
+  ) =>
+      (dependencies.contains(CoverAspect.covers) &&
+          _coversChanged(oldWidget)) ||
+      (dependencies.contains(CoverAspect.playing) &&
+          oldWidget.playing != playing);
 }
 
 /// How wide a cover image is decoded. Each class has its own place in the
@@ -306,7 +329,7 @@ class _CoverFace extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scope = CoverScope.of(context);
+    final scope = CoverScope.of(context, CoverAspect.covers);
     final palette = coverPalette(title);
     final generated = DecoratedBox(
       decoration: BoxDecoration(
@@ -493,7 +516,7 @@ class _CoverBlurState extends State<CoverBlur> {
   /// Listens for the tiny decode of the book's cover, the only size that a
   /// blur needs.
   void _resolve() {
-    final scope = CoverScope.of(context);
+    final scope = CoverScope.of(context, CoverAspect.covers);
     final cover = widget.book.cover;
     final stream =
         scope?.covers != null && scope?.session != null && cover != null
