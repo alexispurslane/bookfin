@@ -12,33 +12,31 @@ class DerivedBookFiles {
       mobiDirectory(File('${source.path}/complete'));
 
   /// Actual regular derived-file bytes; symbolic links never contribute.
-  static int bytes(Directory source) {
+  static Future<int> bytes(Directory source) async {
     try {
       var total = 0;
       for (final directory in [
         _directory(source),
         ocrDirectory(File('${source.path}/complete')),
       ]) {
-        if (FileSystemEntity.typeSync(directory.path, followLinks: false) !=
+        if (await FileSystemEntity.type(directory.path, followLinks: false) !=
             FileSystemEntityType.directory) {
           continue;
         }
-        var bytes = 0;
-        for (final entry in directory.listSync(
+        await for (final entry in directory.list(
           recursive: true,
           followLinks: false,
         )) {
           if (entry is File &&
-              FileSystemEntity.typeSync(entry.path, followLinks: false) ==
+              await FileSystemEntity.type(entry.path, followLinks: false) ==
                   FileSystemEntityType.file) {
-            bytes += entry.lengthSync();
+            total += await entry.length();
           }
         }
-        total += bytes;
       }
       return total;
     } on FileSystemException {
-      // A status query can overlap filesystem completion of an owned removal.
+      // A storage look can overlap filesystem completion of an owned removal.
       return 0;
     }
   }

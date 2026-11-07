@@ -23,6 +23,9 @@ class LocalDownloads extends Downloads {
   JellyfinSession? _session;
   Map<String, SourceFile> _sources = {};
   Map<String, Edition> _editions = {};
+
+  /// The source ids of each bound edition, hashed once per bind.
+  Map<String, List<String>> _editionSources = {};
   final Map<String, _Record> _records = {};
   final Set<String> _queued = {};
   Future<void>? _binding;
@@ -49,6 +52,7 @@ class LocalDownloads extends Downloads {
       sha256.convert(utf8.encode(value)).toString();
   static String _id(SourceFile source) =>
       _hash(jsonEncode([source.key, source.revision]));
+  static final _idPattern = RegExp(r'^[a-f0-9]{64}$');
   bool get _remoteAllowed =>
       policy.choose(verifiedLocal: false) == MediaLocation.remote;
 
@@ -58,9 +62,14 @@ class LocalDownloads extends Downloads {
       for (final book in books)
         for (final edition in book.editions) edition.id: edition,
     };
+    final editionSources = {
+      for (final edition in editions.values)
+        edition.id: [for (final source in edition.files) _id(source)],
+    };
     final sources = {
       for (final edition in editions.values)
-        for (final source in edition.files) _id(source): source,
+        for (final (index, source) in edition.files.indexed)
+          editionSources[edition.id]![index]: source,
     };
     final signature = jsonEncode([
       session?.scope.key,
@@ -69,6 +78,7 @@ class LocalDownloads extends Downloads {
         [entry.key, entry.value.sizeBytes, entry.value.isItemOriginal],
     ]);
     _editions = editions;
+    _editionSources = editionSources;
     if (_signature == signature) return _binding ?? Future.value();
     final accountChanged =
         _session?.scope.key != session?.scope.key ||
@@ -134,6 +144,7 @@ class LocalDownloads extends Downloads {
               record.error = 'The saved download record is unreadable. Retry this download.';
             }
           }
+          if (!record.complete) await _observe(record);
           if (record.complete && !await _verified(record)) {
             await _rejectComplete(record);
           } else {
@@ -172,48 +183,95 @@ class LocalDownloads extends Downloads {
   Directory _accountDirectory(String accountKey) =>
       Directory('${root.path}/${_hash(accountKey)}');
 
-  bool _containedDirectory(Directory directory, String accountKey) {
+  Future<bool> _containedDirectory(
+    Directory directory,
+    String accountKey,
+  ) async {
     final account = _accountDirectory(accountKey);
     final name = directory.uri.pathSegments
         .where((part) => part.isNotEmpty)
         .last;
-    return RegExp(r'^[a-f0-9]{64}$').hasMatch(name) &&
-        directory.path == '${account.path}/$name' &&
-        [root, account, directory].every(
-          (entry) =>
-              FileSystemEntity.typeSync(entry.path, followLinks: false) ==
-              FileSystemEntityType.directory,
-        );
+    if (!_idPattern.hasMatch(name) ||
+        directory.path != '${account.path}/$name') {
+      return false;
+    }
+    for (final entry in [root, account, directory]) {
+      if (await FileSystemEntity.type(entry.path, followLinks: false) !=
+          FileSystemEntityType.directory) {
+        return false;
+      }
+    }
+    return true;
   }
 
   Future<bool> _regularFile(File file) async =>
       _session != null &&
-      _containedDirectory(file.parent, _session!.scope.key) &&
+      await _containedDirectory(file.parent, _session!.scope.key) &&
       await FileSystemEntity.type(file.path, followLinks: false) ==
           FileSystemEntityType.file;
 
-  bool _present(_Record record) {
+  /// Whether the record is usable locally, by the last look at its storage.
+  bool _present(_Record record) =>
+      record.complete &&
+      record.source.isItemOriginal &&
+      record.length != null &&
+      record.length! > 0 &&
+      record.savedLength == record.length &&
+      (record.source.sizeBytes == null ||
+          record.source.sizeBytes == record.length);
+
+  /// Look at the record's saved files without blocking the UI isolate, and
+  /// report whether the facts changed. A look that a newer look or write
+  /// overtakes leaves the newer facts.
+  Future<bool> _observe(_Record record) async {
+    final version = ++record.diskVersion;
+    int? savedLength;
+    var derivedBytes = 0;
     try {
-      return record.complete &&
-          record.source.isItemOriginal &&
-          _session != null &&
-          _containedDirectory(record.directory, _session!.scope.key) &&
-          record.length != null &&
-          record.length! > 0 &&
-          FileSystemEntity.typeSync(
-                record.file('complete').path,
-                followLinks: false,
-              ) ==
-              FileSystemEntityType.file &&
-          record.file('complete').lengthSync() == record.length &&
-          (record.source.sizeBytes == null ||
-              record.source.sizeBytes == record.length);
+      if (await _containedDirectory(record.directory, record.accountKey)) {
+        final complete = record.file('complete');
+        if (await FileSystemEntity.type(complete.path, followLinks: false) ==
+            FileSystemEntityType.file) {
+          savedLength = await complete.length();
+        }
+        derivedBytes = await DerivedBookFiles.bytes(record.directory);
+      }
     } catch (_) {
+      savedLength = null;
+      derivedBytes = 0;
+    }
+    if (record.diskVersion != version ||
+        record.savedLength == savedLength &&
+            record.derivedBytes == derivedBytes) {
       return false;
+    }
+    record.savedLength = savedLength;
+    record.derivedBytes = derivedBytes;
+    return true;
+  }
+
+  /// The saved complete file's length, read synchronously for on-demand
+  /// invariant checks only.
+  int? _savedLength(_Record record) {
+    try {
+      final account = _accountDirectory(record.accountKey);
+      final complete = record.file('complete');
+      return [root, account, record.directory].every(
+                (entry) =>
+                    FileSystemEntity.typeSync(entry.path, followLinks: false) ==
+                    FileSystemEntityType.directory,
+              ) &&
+              FileSystemEntity.typeSync(complete.path, followLinks: false) ==
+                  FileSystemEntityType.file
+          ? complete.lengthSync()
+          : null;
+    } catch (_) {
+      return null;
     }
   }
 
   Future<bool> _verified(_Record record) async {
+    await _observe(record);
     if (!_present(record) || record.digest == null) return false;
     try {
       return (await sha256.bind(record.file('complete').openRead()).first)
@@ -233,49 +291,29 @@ class LocalDownloads extends Downloads {
     }
   }
 
-  int _savedCompleteLength(_Record record) {
-    try {
-      if (_session == null ||
-          !_containedDirectory(record.directory, record.accountKey) ||
-          record.accountKey != _session!.scope.key ||
-          FileSystemEntity.typeSync(
-                record.file('complete').path,
-                followLinks: false,
-              ) !=
-              FileSystemEntityType.file) {
-        return 0;
-      }
-      return record.file('complete').lengthSync();
-    } catch (_) {
-      return 0;
-    }
-  }
-
   Future<int> _partialLength(_Record record) async =>
       await _regularFile(record.file('partial'))
       ? await record.file('partial').length()
       : 0;
 
+  /// Reads only memory: storage facts come from the last look at each record.
   @override
   EditionDownload status(Edition edition) {
-    if (_session == null || !_editions.containsKey(edition.id)) {
-      return const EditionDownload();
-    }
+    final ids = _editionSources[edition.id];
+    if (_session == null || ids == null) return const EditionDownload();
+    final files = _editions[edition.id]!.files;
     var complete = 0;
     var bytes = 0;
     var unavailableBytes = 0;
     String? error = _storageError;
     var queued = false;
-    for (final source in edition.files) {
-      final record = _records[_id(source)];
+    for (final id in ids) {
+      final record = _records[id];
       if (record == null) continue;
       final present = _present(record);
       if (present) complete++;
       if (!present) {
-        unavailableBytes += _savedCompleteLength(record);
-        if (_containedDirectory(record.directory, record.accountKey)) {
-          unavailableBytes += DerivedBookFiles.bytes(record.directory);
-        }
+        unavailableBytes += (record.savedLength ?? 0) + record.derivedBytes;
       }
       bytes += present
           ? record.length!
@@ -285,7 +323,7 @@ class LocalDownloads extends Downloads {
       error ??= record.error;
       queued |= _queued.contains(record.id);
     }
-    final all = edition.files.isNotEmpty && complete == edition.files.length;
+    final all = files.isNotEmpty && complete == files.length;
     final phase = all
         ? DownloadPhase.downloaded
         : queued
@@ -298,26 +336,29 @@ class LocalDownloads extends Downloads {
     return EditionDownload(
       phase: phase,
       completeFiles: complete,
-      totalFiles: edition.files.length,
+      totalFiles: files.length,
       bytes: bytes,
       unavailableBytes: unavailableBytes,
-      totalBytes: edition.files.every((source) => source.sizeBytes != null)
-          ? edition.files.fold(0, (total, source) => total! + source.sizeBytes!)
+      totalBytes: files.every((source) => source.sizeBytes != null)
+          ? files.fold(0, (total, source) => total! + source.sizeBytes!)
           : null,
       message: error,
     );
   }
 
-  Edition _current(Edition edition) {
+  /// The bound source ids of [edition], which must match the active catalog.
+  List<String> _current(Edition edition) {
     final current = _editions[edition.id];
+    String identity(Edition edition) => jsonEncode([
+      for (final source in edition.files) [source.key, source.revision],
+    ]);
     if (_disposed ||
         _session == null ||
         current == null ||
-        jsonEncode(current.files.map(_id).toList()) !=
-            jsonEncode(edition.files.map(_id).toList())) {
+        identity(current) != identity(edition)) {
       throw StateError('This edition is not in the active account catalog.');
     }
-    return current;
+    return _editionSources[edition.id]!;
   }
 
   @override
@@ -325,13 +366,13 @@ class LocalDownloads extends Downloads {
 
   Future<void> _request(Edition edition) async {
     final generation = _generation;
-    _current(edition);
+    final ids = _current(edition);
     if (_storageError != null) {
       _emit();
       return;
     }
-    for (final source in edition.files) {
-      final record = _records[_id(source)]!;
+    for (final id in ids) {
+      final record = _records[id]!;
       final verified = await _verified(record);
       if (_disposed || generation != _generation) return;
       if (verified) continue;
@@ -353,11 +394,7 @@ class LocalDownloads extends Downloads {
   Future<void> cancel(Edition edition) => _command(() => _cancel(edition));
 
   Future<void> _cancel(Edition edition) async {
-    _current(edition);
-    final records = [
-      for (final source in edition.files)
-        if (_records[_id(source)] != null) _records[_id(source)]!,
-    ];
+    final records = [for (final id in _current(edition)) ?_records[id]];
     final stopped = records.any((record) => record.id == _active)
         ? _activeStopped?.future
         : null;
@@ -380,9 +417,7 @@ class LocalDownloads extends Downloads {
   Future<void> remove(Edition edition) {
     if (_reading.isNotEmpty) {
       try {
-        for (final source in _current(edition).files) {
-          _reading.remove(_id(source));
-        }
+        _current(edition).forEach(_reading.remove);
       } on StateError {
         return _command(() => _remove(edition));
       }
@@ -391,12 +426,9 @@ class LocalDownloads extends Downloads {
   }
 
   Future<void> _remove(Edition edition) async {
-    _current(edition);
+    final ids = _current(edition);
     final generation = _generation;
-    final records = [
-      for (final source in edition.files)
-        if (_records[_id(source)] != null) _records[_id(source)]!,
-    ];
+    final records = [for (final id in ids) ?_records[id]];
     await _cancel(edition);
     void guard() {
       if (_disposed || generation != _generation) {
@@ -417,7 +449,12 @@ class LocalDownloads extends Downloads {
         record.digest = null;
       }
     } finally {
-      if (generation == _generation) _emit();
+      if (generation == _generation) {
+        for (final record in records) {
+          await _observe(record);
+        }
+        _emit();
+      }
     }
   }
 
@@ -439,7 +476,7 @@ class LocalDownloads extends Downloads {
     Directory directory,
     String accountKey,
   ) async {
-    if (!_containedDirectory(directory, accountKey)) return null;
+    if (!await _containedDirectory(directory, accountKey)) return null;
     final id = directory.uri.pathSegments.where((part) => part.isNotEmpty).last;
     final manifest = File('${directory.path}/record.json');
     try {
@@ -466,10 +503,10 @@ class LocalDownloads extends Downloads {
     JellyfinSession session,
     Object binding,
   ) async {
-    if (!_containedDirectory(directory, session.scope.key)) return null;
+    if (!await _containedDirectory(directory, session.scope.key)) return null;
     final id = directory.uri.pathSegments.where((part) => part.isNotEmpty).last;
     final identity = await _savedIdentity(directory, session.scope.key);
-    var bytes = DerivedBookFiles.bytes(directory);
+    var bytes = await DerivedBookFiles.bytes(directory);
     for (final name in ['complete', 'partial']) {
       final file = File('${directory.path}/$name');
       if (await _regularFile(file)) bytes += await file.length();
@@ -524,7 +561,7 @@ class LocalDownloads extends Downloads {
           !identical(_retainedBinding, download.binding) ||
           _sources.containsKey(download.id) ||
           !download.removable ||
-          !RegExp(r'^[a-f0-9]{64}$').hasMatch(download.id)) {
+          !_idPattern.hasMatch(download.id)) {
         throw StateError(
           'This retained download no longer belongs to this view.',
         );
@@ -555,14 +592,14 @@ class LocalDownloads extends Downloads {
   ) async {
     guard();
     if (_session == null ||
-        !_containedDirectory(directory, _session!.scope.key)) {
+        !await _containedDirectory(directory, _session!.scope.key)) {
       throw StateError('Download storage is no longer a private directory.');
     }
     await DerivedBookFiles.remove(directory);
     for (final name in ['partial', 'complete', 'record.next', 'record.json']) {
       guard();
       if (_session == null ||
-          !_containedDirectory(directory, _session!.scope.key)) {
+          !await _containedDirectory(directory, _session!.scope.key)) {
         throw StateError('Download storage is no longer a private directory.');
       }
       final file = File('${directory.path}/$name');
@@ -611,27 +648,42 @@ class LocalDownloads extends Downloads {
     await _binding;
     if (_disposed || generation != _generation) return null;
     final record = _records[_id(source)];
-    if (!_sources.containsKey(_id(source)) ||
-        record == null ||
-        !record.complete) {
-      return null;
-    }
+    if (record == null || !record.complete) return null;
+    return await _confirm(record, generation)
+        ? record.file('complete').uri
+        : null;
+  }
+
+  /// Verify a complete record, and reject it when its saved file no longer
+  /// matches.
+  Future<bool> _confirm(_Record record, int generation) async {
     final verified = await _verified(record);
-    if (_disposed || generation != _generation) return null;
-    if (verified && _present(record)) return record.file('complete').uri;
+    if (_disposed || generation != _generation) return false;
+    if (verified && _present(record)) return true;
     await _rejectComplete(record);
     await _persist(record);
     _emit();
-    return null;
+    return false;
   }
 
+  /// Look at every record's storage again, which notices files changed
+  /// outside the app. The app calls this when it resumes. Listeners hear
+  /// only about changes that the looks found.
   @override
   Future<void> refresh() async {
+    final generation = _generation;
     await _binding;
-    for (final source in _sources.values.toList()) {
-      await localFile(source);
+    var changed = false;
+    for (final record in _records.values.toList()) {
+      if (_disposed || generation != _generation) return;
+      if (record.complete) {
+        // A rejected record notifies listeners itself.
+        await _confirm(record, generation);
+      } else {
+        changed |= await _observe(record);
+      }
     }
-    _emit();
+    if (changed && generation == _generation) _emit();
   }
 
   void _networkChanged() {
@@ -938,6 +990,7 @@ class LocalDownloads extends Downloads {
       throw const _MediaError('Download storage contains an unexpected file.');
     }
     await partial.rename(complete.path);
+    record.wroteComplete(length);
     guard();
     assert(record.bytes == record.length && _records[record.id] == record);
     record.digest = digest;
@@ -1002,7 +1055,7 @@ class LocalDownloads extends Downloads {
       'error': record.error,
     });
     final write = _writes.then((_) async {
-      if (!_containedDirectory(record.directory, record.accountKey)) {
+      if (!await _containedDirectory(record.directory, record.accountKey)) {
         throw const _MediaError('Download storage is not a private directory.');
       }
       for (final name in ['record.next', 'record.json']) {
@@ -1062,12 +1115,33 @@ class LocalDownloads extends Downloads {
     return operation.whenComplete(() => _operations.remove(operation));
   }
 
+  /// Invariants:
+  /// - Signed-out downloads hold no records.
+  /// - Each record identifies a current source revision of the account.
+  /// - A complete record has a digest and a verified length.
+  /// - The queue holds exactly the requested, incomplete, error-free records.
+  /// - The cached source ids of each bound edition match its files.
+  /// - Each record's last look at its complete file matches storage. A file
+  ///   changed outside the app breaks this until [refresh] looks again.
   @override
   void checkInvariants() {
     if (_session == null && (_records.isNotEmpty || _queued.isNotEmpty)) {
       throw StateError('Signed-out downloads must expose no account records.');
     }
+    final editionSources = {
+      for (final edition in _editions.values)
+        edition.id: [for (final source in edition.files) _id(source)],
+    };
+    if (jsonEncode(editionSources) != jsonEncode(_editionSources) ||
+        !editionSources.values.every(
+          (ids) => ids.every(_sources.containsKey),
+        )) {
+      throw StateError('Cached edition sources must match the bound catalog.');
+    }
     for (final record in _records.values) {
+      if (record.savedLength != _savedLength(record)) {
+        throw StateError('Download status must match the saved complete file.');
+      }
       if (record.accountKey != _session?.scope.key ||
           !_sources.containsKey(record.id) ||
           _id(record.source) != record.id) {
@@ -1118,7 +1192,23 @@ class _Record {
   String? error;
   bool complete = false;
   bool requested = false;
+
+  /// The length of the regular complete file at the last look at or write to
+  /// this directory, or null when there was none.
+  int? savedLength;
+
+  /// The regular derived-file bytes at the last look.
+  int derivedBytes = 0;
+
+  /// Counts looks and writes, so an older look cannot replace newer facts.
+  int diskVersion = 0;
+
   File file(String name) => File('${directory.path}/$name');
+
+  void wroteComplete(int length) {
+    diskVersion++;
+    savedLength = length;
+  }
 }
 
 class _MediaError implements Exception {
