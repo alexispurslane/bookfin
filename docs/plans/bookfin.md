@@ -259,3 +259,18 @@ original PDF page, source-page positions, cached recognition, cancellation and
 failure fallback through the existing reader model. Recognition supports reflow
 and search but does not guarantee correct columns, tables or reading order.
 Production Android acceptance and dependency distribution review remain required.
+
+## Library redesign — November 7, 2026 decision
+
+The user approved `docs/mockups/library-redesign.html`. It replaces the library, book details, and account screens of the first mockup. The user also gave a mandate to restyle borders, colors, and other details across the app so that every screen matches the new mockup.
+
+- The bottom navigation has four tabs: Library, Downloads, Listening, and Settings.
+- The Library tab is for browsing. A search icon in its top bar opens a separate search screen. A second icon switches between a grid and a list.
+- The library groups books into series. A series of two or more books shows as one stacked card. The card opens a series page in reading order. Search results never group series.
+- Filters are All, Audio, Ebooks, and Downloaded. A filter applies to books before the grouping, so a series card counts only the matching books.
+- Covers come from the Jellyfin primary image of the item, or of its album for audio files. The app keeps a copy of each cover on the phone, so covers show offline. A book without a cover gets a generated cover with its title.
+- A book shows a checkmark in the upper corner of its cover when its audio is downloaded. A book without audio shows the checkmark when an ebook edition is downloaded. A series card shows the checkmark only when every book in it shows one. Its text gives the count, for example "1 of 3 downloaded".
+- Series names come from the Jellyfin `SeriesName` of the item. A user correction of the book details still wins.
+- The book details page shows the cover over a blurred copy of itself, then the title, author, narrator, series link, key facts, the main actions, progress, description, and other metadata. Edition and file corrections move to a lower section and the overflow menu.
+- Settings holds the account, "Sign in to another account" (it signs out first, one account at a time), sign out, the Jellyfin libraries to show, layout density (compact or spacious), appearance, personal-record sync, catalog corrections, licenses, and Clear data.
+- Clear data removes downloads, covers, and the saved library from the phone. It first uploads personal records that are not synced. If that upload fails, it stops and tells the user.
