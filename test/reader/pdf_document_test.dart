@@ -49,6 +49,23 @@ void main() {
     },
   );
 
+  test('an opened PDF keeps the digest and identity that saved places and OCR caches use', () async {
+    final bytes = await File('tool/research/readers/fixtures/simple.pdf')
+        .readAsBytes();
+    final book = await PdfRuntime.instance.open(bytes);
+    addTearDown(book.dispose);
+    // Saved reading places and OCR caches are keyed by these values, so a
+    // change here would orphan them.
+    expect(
+      book.originalDigest,
+      '51d05de2a89dd83fb8f04301ac254419b2d616d48f6e8bb9fbe0938745bc04ce',
+    );
+    expect(
+      book.identity,
+      '39cd1ab8b3cd4b412994d1e5bfd7174075542b35c2a7866b9978d48edaf4a823',
+    );
+  });
+
   test(
     'a scanned source page keeps its visible original without inventing text',
     () async {

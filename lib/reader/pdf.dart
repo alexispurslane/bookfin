@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'dart:ui' show RootIsolateToken;
 
 import 'package:crypto/crypto.dart';
-import 'package:flutter/foundation.dart' show ValueListenable;
+import 'package:flutter/foundation.dart' show ValueListenable, compute;
 import 'package:pdfrx_engine/pdfrx_engine.dart' as native;
 import 'package:pdfrx/pdfrx.dart' show pdfrxFlutterInitialize;
 
@@ -98,6 +98,8 @@ abstract class PdfTextSupply {
   Future<void> close();
 }
 
+String _digest(Uint8List bytes) => sha256.convert(bytes).toString();
+
 class PdfRuntime {
   PdfRuntime._();
   static final PdfRuntime instance = PdfRuntime._();
@@ -117,9 +119,11 @@ class PdfRuntime {
   Future<PdfBook> open(Uint8List bytes, {PdfTextSupply? textSupply}) =>
       _admit(() async {
         await (_initialization ??= pdfrxFlutterInitialize());
+        // Scanned PDFs can be large enough to freeze the UI while hashing.
+        final digest = await compute(_digest, bytes);
         final document = await native.PdfDocument.openData(
           bytes,
-          sourceName: sha256.convert(bytes).toString(),
+          sourceName: digest,
         );
         if (document.isEncrypted || document.pages.isEmpty) {
           await document.dispose();
@@ -127,12 +131,7 @@ class PdfRuntime {
             'Encrypted or empty PDFs are not supported. The original download was kept.',
           );
         }
-        final book = _NativePdfBook(
-          this,
-          document,
-          sha256.convert(bytes).toString(),
-          textSupply,
-        );
+        final book = _NativePdfBook(this, document, digest, textSupply);
         _books.add(book);
         return book;
       });
