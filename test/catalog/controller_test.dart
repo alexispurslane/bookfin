@@ -38,21 +38,22 @@ class MemoryCredentials implements CredentialStore {
 }
 
 class MemoryCatalogStore implements CatalogStore {
-  final values = <String, CatalogCache>{};
+  /// The saved catalog text of each account, by account scope key.
+  final values = <String, String>{};
   bool failWrites = false;
   bool failReads = false;
   Completer<void>? gate;
   @override
-  Future<CatalogCache?> read(AccountScope scope) async {
+  Future<String?> read(AccountScope scope) async {
     if (failReads) throw StateError('unreadable cache');
     return values[scope.key];
   }
 
   @override
-  Future<void> write(AccountScope scope, CatalogCache cache) async {
+  Future<void> write(AccountScope scope, String text) async {
     await gate?.future;
     if (failWrites) throw StateError('disk failure');
-    values[scope.key] = cache;
+    values[scope.key] = text;
   }
 }
 
@@ -118,11 +119,6 @@ void main() {
       await connectAndSelect();
       client.failure = const CatalogFailure(CatalogFailureKind.forbidden);
       await controller.refresh();
-      final scope = account('alice').scope;
-      store.values[scope.key] = CatalogCache.decode(
-        scope,
-        store.values[scope.key]!.encode(),
-      );
       final restarted = CatalogController(
         credentials: credentials,
         store: store,
@@ -220,7 +216,11 @@ void main() {
       expect(controller.session, isNull);
       await signingOut;
       expect(credentials.value, isNull);
-      expect(store.values[account('alice').scope.key]!.entries, hasLength(1));
+      final scope = account('alice').scope;
+      expect(
+        CatalogCache.decode(scope, store.values[scope.key]!).entries,
+        hasLength(1),
+      );
     },
   );
 
