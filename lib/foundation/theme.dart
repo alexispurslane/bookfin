@@ -503,3 +503,32 @@ class _BookfinScreenStackState extends State<BookfinScreenStack>
     ),
   );
 }
+
+/// The warm light behind the player's cover at night, and its chapter line.
+const theaterGlow = Color(0xFFE4B58A);
+
+/// The player stage at night: a dark theater with cream type and a cream
+/// play button. [night] is the app's night theme.
+ThemeData theaterTheme(ThemeData night) {
+  const stage = Color(0xFF22170F);
+  const light = Color(0xFFF3E6D2);
+  const dim = Color(0xFFC4AD91);
+  final scheme = night.colorScheme.copyWith(
+    primary: light,
+    onPrimary: stage,
+    secondary: light,
+    onSecondary: stage,
+    surface: stage,
+    onSurface: light,
+    onSurfaceVariant: dim,
+    surfaceContainerLowest: light.withValues(alpha: 0.06),
+    surfaceContainerLow: light.withValues(alpha: 0.06),
+    outlineVariant: light.withValues(alpha: 0.16),
+  );
+  return night.copyWith(
+    colorScheme: scheme,
+    scaffoldBackgroundColor: stage,
+    textTheme: night.textTheme.apply(bodyColor: light, displayColor: light),
+    iconTheme: night.iconTheme.copyWith(color: light),
+  );
+}

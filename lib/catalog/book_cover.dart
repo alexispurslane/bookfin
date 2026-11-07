@@ -382,3 +382,140 @@ class _CoverTextPainter extends CustomPainter {
   bool shouldRepaint(_CoverTextPainter oldDelegate) =>
       oldDelegate.title != title || oldDelegate.author != author;
 }
+
+/// The blurred cover behind a book's stage. By day it is a cover-colored wash
+/// that fades into the page. At night it is a glow in the cover's colors
+/// around the cover, on a dark stage.
+class CoverBackdrop extends StatelessWidget {
+  const CoverBackdrop({super.key, required this.book});
+  final Book book;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final surface = theme.colorScheme.surface;
+    final scope = CoverScope.of(context);
+    final art = ClipRect(
+      child: ImageFiltered(
+        imageFilter: ui.ImageFilter.blur(sigmaX: 28, sigmaY: 28),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: coverPalette(book.title),
+            ),
+          ),
+          child:
+              scope?.covers != null &&
+                  scope?.session != null &&
+                  book.cover != null
+              ? Image(
+                  image: CoverImage(
+                    scope!.covers!,
+                    scope.session!,
+                    book.cover!,
+                  ),
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  height: double.infinity,
+                  excludeFromSemantics: true,
+                  errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                )
+              : null,
+        ),
+      ),
+    );
+    if (theme.brightness == Brightness.dark) {
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          ShaderMask(
+            blendMode: BlendMode.dstIn,
+            shaderCallback: (bounds) => const RadialGradient(
+              center: Alignment(0, -0.15),
+              radius: 0.8,
+              colors: [Color(0xE6000000), Color(0x80000000), Color(0x00000000)],
+              stops: [0, 0.5, 1],
+            ).createShader(bounds),
+            child: art,
+          ),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                stops: const [0, 0.6, 1],
+                colors: [
+                  surface.withValues(alpha: 0),
+                  surface.withValues(alpha: 0),
+                  surface,
+                ],
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Positioned.fill(bottom: 40, child: art),
+        DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              stops: const [0, 0.55, 0.86],
+              colors: [
+                surface.withValues(alpha: 0.3),
+                surface.withValues(alpha: 0.55),
+                surface,
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// A book cover lit for a stage: a deep shadow by day, and a dark shadow
+/// with a warm glow at night.
+class StageCover extends StatelessWidget {
+  const StageCover({
+    super.key,
+    required this.book,
+    required this.width,
+    this.downloaded = false,
+  });
+  final Book book;
+  final double width;
+  final bool downloaded;
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    width: width,
+    child: DecoratedBox(
+      decoration: BoxDecoration(
+        boxShadow: Theme.of(context).brightness == Brightness.dark
+            ? const [
+                BoxShadow(
+                  color: Color(0x99000000),
+                  blurRadius: 50,
+                  offset: Offset(0, 20),
+                ),
+                BoxShadow(color: Color(0x59D68C52), blurRadius: 70),
+              ]
+            : const [
+                BoxShadow(
+                  color: Color(0x66392A1F),
+                  blurRadius: 34,
+                  offset: Offset(7, 16),
+                ),
+              ],
+      ),
+      child: BookCover.book(book, downloaded: downloaded),
+    ),
+  );
+}

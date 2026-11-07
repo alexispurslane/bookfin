@@ -58,6 +58,7 @@ void main() {
   testWidgets(
     'history keeps playback controls and Undo after bookmark restore',
     (tester) async {
+      phone(tester);
       await tester.runAsync(() async {
         await playback.addBookmark(title: 'Beginning');
         await playback.seekEdition(75000);
@@ -69,8 +70,7 @@ void main() {
           home: Scaffold(body: PlayerView(playback: playback)),
         ),
       );
-      await tester.scrollUntilVisible(find.text('History'), 150);
-      await tester.tap(find.text('History'));
+      await tester.tap(find.byTooltip('Bookmarks and history'));
       await tester.pumpAndSettle();
       expect(find.byTooltip('Pause'), findsOneWidget);
       await tester.runAsync(() async {
@@ -92,6 +92,7 @@ void main() {
   testWidgets(
     'mini-player opens the same active recording and controls its position',
     (tester) async {
+      phone(tester);
       await tester.pumpWidget(
         MaterialApp(
           theme: bookfinTheme(Brightness.light),
@@ -118,6 +119,7 @@ void main() {
   testWidgets(
     'chapter selection seeks to the actual source without losing playback',
     (tester) async {
+      phone(tester);
       await tester.pumpWidget(
         MaterialApp(
           theme: bookfinTheme(Brightness.light),
@@ -125,7 +127,7 @@ void main() {
         ),
       );
       await tester.scrollUntilVisible(find.text('Chapters'), 150);
-      await tester.tap(find.widgetWithText(OutlinedButton, 'Chapters'));
+      await tester.tap(find.text('Chapters'));
       await tester.pumpAndSettle();
       await tester.runAsync(() async {
         await tester.tap(find.text('Return'));
@@ -140,14 +142,15 @@ void main() {
   testWidgets(
     'player offers speed and sleep without claiming sync completion',
     (tester) async {
+      phone(tester);
       await tester.pumpWidget(
         MaterialApp(
           theme: bookfinTheme(Brightness.dark),
           home: Scaffold(body: PlayerView(playback: playback)),
         ),
       );
-      await tester.scrollUntilVisible(find.text('1× speed'), 150);
-      await tester.tap(find.text('1× speed'));
+      await tester.scrollUntilVisible(find.text('Speed'), 150);
+      await tester.tap(find.text('Speed'));
       await tester.pumpAndSettle();
       await tester.ensureVisible(find.text('1.5×'));
       await tester.runAsync(() async {
@@ -156,9 +159,9 @@ void main() {
       });
       await tester.pumpAndSettle();
       expect(playback.playbackSpeed, 1.5);
-      await tester.ensureVisible(find.text('Sleep timer'));
+      await tester.ensureVisible(find.text('Sleep'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Sleep timer'));
+      await tester.tap(find.text('Sleep'));
       await tester.pumpAndSettle();
       await tester.runAsync(() async {
         await tester.tap(find.text('15 minutes'));
@@ -167,13 +170,14 @@ void main() {
       await tester.pumpAndSettle();
       expect(playback.sleepDeadline, isNotNull);
       expect(find.textContaining('sync complete'), findsNothing);
-      expect(find.text('History'), findsOneWidget);
+      expect(find.byTooltip('Bookmarks and history'), findsOneWidget);
     },
   );
 
   testWidgets(
     'slider previews a drag without seeking until release and offers Undo',
     (tester) async {
+      phone(tester);
       await tester.pumpWidget(
         MaterialApp(
           theme: bookfinTheme(Brightness.light),
@@ -215,6 +219,7 @@ void main() {
   testWidgets(
     'bookmarks can be added edited restored and deleted from listening history',
     (tester) async {
+      phone(tester);
       await tester.pumpWidget(
         MaterialApp(
           theme: bookfinTheme(Brightness.light),
@@ -239,9 +244,7 @@ void main() {
       });
       await tester.pumpAndSettle();
       expect(playback.bookmarks.single.title, 'Remember');
-      await tester.scrollUntilVisible(find.text('History'), 150);
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('History'));
+      await tester.tap(find.byTooltip('Bookmarks and history'));
       await tester.pumpAndSettle();
       expect(find.text('Remember'), findsOneWidget);
       await tester.tap(find.byTooltip('Edit bookmark'));
@@ -275,4 +278,11 @@ void main() {
       expect(find.text('Bookmark restore'), findsOneWidget);
     },
   );
+}
+
+/// A Pixel 8 sized screen, so the whole player stage fits.
+void phone(WidgetTester tester) {
+  tester.view.physicalSize = const Size(1080, 2400);
+  tester.view.devicePixelRatio = 2.625;
+  addTearDown(tester.view.reset);
 }

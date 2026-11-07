@@ -62,14 +62,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Listening'));
       await tester.pumpAndSettle();
-      await tester.scrollUntilVisible(find.text('History'), 150);
-      // Center it, so the navigation bar does not cover it.
-      await Scrollable.ensureVisible(
-        tester.element(find.text('History')),
-        alignment: 0.5,
-      );
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('History'));
+      await tester.tap(find.byTooltip('Bookmarks and history'));
       await tester.pumpAndSettle();
       expect(find.text('Alice private bookmark'), findsOneWidget);
       await tester.runAsync(() async {

@@ -164,39 +164,45 @@ class _CatalogHomeState extends State<CatalogHome> {
         covers: widget.covers,
         session: _catalog.accessBlocked ? null : _catalog.session,
         child: Scaffold(
-          appBar: AppBar(
-            title: Text(switch (tab) {
-              _ when !signedIn => 'Bookfin',
-              _Tab.library => 'Library',
-              _Tab.downloads => 'Downloads',
-              _Tab.listening => 'Listening',
-              _Tab.settings => 'Settings',
-            }),
-            actions: [
-              if (tab == _Tab.library && signedIn && !choosing) ...[
-                IconButton(
-                  tooltip: 'Search',
-                  onPressed: () => openSearch(context, services),
-                  icon: const Icon(Icons.search_rounded),
+          // An open book's player draws its own stage up to the status bar.
+          appBar: tab == _Tab.listening && widget.playback?.book != null
+              ? null
+              : AppBar(
+                  title: Text(switch (tab) {
+                    _ when !signedIn => 'Bookfin',
+                    _Tab.library => 'Library',
+                    _Tab.downloads => 'Downloads',
+                    _Tab.listening => 'Listening',
+                    _Tab.settings => 'Settings',
+                  }),
+                  actions: [
+                    if (tab == _Tab.library && signedIn && !choosing) ...[
+                      IconButton(
+                        tooltip: 'Search',
+                        onPressed: () => openSearch(context, services),
+                        icon: const Icon(Icons.search_rounded),
+                      ),
+                      LayoutToggle(layout: _layout),
+                      const SizedBox(width: 8),
+                    ],
+                    if (!signedIn)
+                      IconButton(
+                        tooltip: 'Appearance',
+                        onPressed: widget.onAppearance,
+                        icon: const Icon(Icons.contrast_rounded),
+                      ),
+                  ],
                 ),
-                LayoutToggle(layout: _layout),
-                const SizedBox(width: 8),
-              ],
-              if (!signedIn)
-                IconButton(
-                  tooltip: 'Appearance',
-                  onPressed: widget.onAppearance,
-                  icon: const Icon(Icons.contrast_rounded),
-                ),
-            ],
-          ),
           bottomNavigationBar: !signedIn
               ? null
               : Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (widget.playback != null && tab != _Tab.listening)
-                      PlaybackMiniPlayer(playback: widget.playback!),
+                      PlaybackMiniPlayer(
+                        playback: widget.playback!,
+                        onOpenBook: (book) => openBook(context, services, book),
+                      ),
                     DecoratedBox(
                       decoration: BoxDecoration(
                         border: Border(
@@ -277,7 +283,11 @@ class _CatalogHomeState extends State<CatalogHome> {
                                     openBook(context, services, book),
                               ),
                               _Tab.listening when widget.playback != null =>
-                                PlayerView(playback: widget.playback!),
+                                PlayerView(
+                                  playback: widget.playback!,
+                                  onOpenBook: (book) =>
+                                      openBook(context, services, book),
+                                ),
                               _Tab.settings => SettingsPage(
                                 catalog: _catalog,
                                 layout: _layout,

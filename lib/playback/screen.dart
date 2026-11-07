@@ -1,16 +1,26 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../catalog/book_cover.dart';
+import '../catalog/library_services.dart' show duration;
+import '../catalog/model.dart';
 import '../foundation/theme.dart';
 import 'playback.dart';
 import 'recent.dart';
 import 'records_screen.dart';
 
 class PlaybackMiniPlayer extends StatelessWidget {
-  const PlaybackMiniPlayer({super.key, required this.playback});
+  const PlaybackMiniPlayer({
+    super.key,
+    required this.playback,
+    this.onOpenBook,
+  });
   final Playback playback;
+
+  /// Lets the opened player offer the book details page.
+  final ValueChanged<Book>? onOpenBook;
   @override
   Widget build(BuildContext context) => ListenableBuilder(
     listenable: playback,
@@ -36,7 +46,11 @@ class PlaybackMiniPlayer extends StatelessWidget {
                       child: Tooltip(
                         message: 'Open player',
                         child: InkWell(
-                          onTap: () => openPlayer(context, playback),
+                          onTap: () => openPlayer(
+                            context,
+                            playback,
+                            onOpenBook: onOpenBook,
+                          ),
                           child: Padding(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 20,
@@ -109,7 +123,11 @@ void openListeningHistory(BuildContext context, Playback playback) => unawaited(
   ),
 );
 
-void openPlayer(BuildContext context, Playback playback) {
+void openPlayer(
+  BuildContext context,
+  Playback playback, {
+  ValueChanged<Book>? onOpenBook,
+}) {
   // The pushed route sits above the screen's cover scope, so carry it along.
   final scope = CoverScope.of(context);
   unawaited(
@@ -119,8 +137,7 @@ void openPlayer(BuildContext context, Playback playback) {
           covers: scope?.covers,
           session: scope?.session,
           child: Scaffold(
-            appBar: AppBar(title: const Text('Listening')),
-            body: BookfinSurface(child: PlayerView(playback: playback)),
+            body: PlayerView(playback: playback, onOpenBook: onOpenBook),
           ),
         ),
       ),
@@ -194,8 +211,12 @@ class ReplacementStartNotice extends StatelessWidget {
 }
 
 class PlayerView extends StatelessWidget {
-  const PlayerView({super.key, required this.playback});
+  const PlayerView({super.key, required this.playback, this.onOpenBook});
   final Playback playback;
+
+  /// Opens the book details page. The More menu offers it only when set.
+  final ValueChanged<Book>? onOpenBook;
+
   @override
   Widget build(BuildContext context) => ListenableBuilder(
     listenable: playback,
@@ -227,152 +248,393 @@ class PlayerView extends StatelessWidget {
           ],
         );
       }
-      final duration = playback.durationMilliseconds;
-      final position = playback.editionMilliseconds;
-      return ListView(
-        padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
-        children: [
-          Text(
-            'NOW LISTENING',
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.labelSmall,
-          ),
-          const SizedBox(height: 20),
-          Center(child: SizedBox(width: 168, child: BookCover.book(book))),
-          const SizedBox(height: 24),
-          Text(
-            book.title,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.headlineMedium
-                ?.copyWith(fontFamily: 'Source Serif 4'),
-          ),
-          Text(book.author, textAlign: TextAlign.center),
-          const SizedBox(height: 8),
-          Text(
-            playback.edition!.label,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-          RecordSaveStatus(playback: playback),
-          ReplacementStartNotice(playback: playback),
-          const SizedBox(height: 20),
-          if (duration != null && duration > 0 && position != null) ...[
-            _PositionSlider(playback: playback),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(audioTime(position)),
-                Text('${audioTime(duration - position)} left'),
-              ],
-            ),
-          ] else
-            Text(
-              'File position · ${audioTime(playback.position!.milliseconds)}',
-              textAlign: TextAlign.center,
-            ),
-          const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              IconButton(
-                tooltip: 'Back ${playback.backwardSeconds} seconds',
-                iconSize: 32,
-                onPressed: () => unawaited(playback.jump(forward: false)),
-                icon: const Icon(Icons.replay_rounded),
-              ),
-              Text('${playback.backwardSeconds}s'),
-              const SizedBox(width: 16),
-              _PlayButton(playback: playback, large: true),
-              const SizedBox(width: 16),
-              Text('${playback.forwardSeconds}s'),
-              IconButton(
-                tooltip: 'Forward ${playback.forwardSeconds} seconds',
-                iconSize: 32,
-                onPressed: () => unawaited(playback.jump(forward: true)),
-                icon: const Icon(Icons.forward_rounded),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          _UndoControl(playback: playback),
-          Wrap(
-            alignment: WrapAlignment.center,
-            spacing: 10,
-            runSpacing: 10,
-            children: [
-              OutlinedButton(
-                onPressed: () => _chapters(context),
-                child: const Text('Chapters'),
-              ),
-              OutlinedButton(
-                onPressed: () => editAudioBookmark(context, playback),
-                child: const Text('Bookmark'),
-              ),
-              OutlinedButton(
-                onPressed: () => openListeningHistory(context, playback),
-                child: const Text('History'),
-              ),
-              OutlinedButton(
-                onPressed: () => _speed(context),
-                child: Text('${_rate(playback.playbackSpeed)}× speed'),
-              ),
-              OutlinedButton(
-                onPressed: () => _sleep(context),
-                child: Text(
-                  playback.sleepDeadline == null
-                      ? 'Sleep timer'
-                      : 'Sleep timer on',
-                ),
-              ),
-              TextButton(
-                onPressed: () => _jumps(context),
-                child: const Text('Short jumps'),
-              ),
-            ],
-          ),
-          const SizedBox(height: 28),
-          RecentListeningList(playback: playback),
-        ],
+      final base = Theme.of(context);
+      final night = base.brightness == Brightness.dark;
+      return Theme(
+        data: night ? theaterTheme(base) : base,
+        child: Builder(builder: (context) => _stage(context, book, night)),
       );
     },
   );
+
+  Widget _stage(BuildContext context, Book book, bool night) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final top = MediaQuery.paddingOf(context).top;
+    final narrator = playback.edition!.narrator;
+    final chapters = playback.chapters;
+    final chapter = playback.chapterIndex;
+    final total = playback.durationMilliseconds;
+    final position = playback.editionMilliseconds;
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: night ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
+      child: ColoredBox(
+        color: scheme.surface,
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            Stack(
+              children: [
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  top: 0,
+                  height: top + 380,
+                  child: CoverBackdrop(book: book),
+                ),
+                Padding(
+                  padding: EdgeInsets.only(top: top),
+                  child: Column(
+                    children: [
+                      _topBar(context, book),
+                      StageCover(book: book, width: 168),
+                      const SizedBox(height: 20),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: Text(
+                          book.title,
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.headlineMedium?.copyWith(
+                            fontFamily: 'Source Serif 4',
+                            fontWeight: FontWeight.w600,
+                            height: 1.1,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: Text.rich(
+                          TextSpan(
+                            children: [
+                              TextSpan(
+                                text: book.author,
+                                style: TextStyle(color: scheme.onSurface),
+                              ),
+                              if (narrator != null)
+                                TextSpan(text: ' · read by $narrator'),
+                            ],
+                          ),
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: scheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ),
+                      if (chapter != null && chapters.length > 1)
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(24, 10, 24, 0),
+                          child: Text(
+                            '${chapters[chapter].name} · ${chapter + 1} of ${chapters.length}',
+                            textAlign: TextAlign.center,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.labelLarge?.copyWith(
+                              color: night ? theaterGlow : scheme.primary,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      RecordSaveStatus(playback: playback),
+                      ReplacementStartNotice(playback: playback),
+                      const SizedBox(height: 10),
+                      if (total != null && total > 0 && position != null)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: _PositionSlider(playback: playback),
+                        )
+                      else
+                        Text(
+                          'File position · ${audioTime(playback.position!.milliseconds)}',
+                          textAlign: TextAlign.center,
+                        ),
+                      const SizedBox(height: 6),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          _JumpButton(
+                            playback: playback,
+                            forward: false,
+                            onLongPress: () => _jumps(context),
+                          ),
+                          const SizedBox(width: 30),
+                          _PlayButton(playback: playback, large: true),
+                          const SizedBox(width: 30),
+                          _JumpButton(
+                            playback: playback,
+                            forward: true,
+                            onLongPress: () => _jumps(context),
+                          ),
+                        ],
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(18, 8, 18, 0),
+                        child: _UndoControl(playback: playback),
+                      ),
+                      const SizedBox(height: 14),
+                      _tools(context),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 30, 20, 32),
+              child: RecentListeningList(playback: playback),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _topBar(BuildContext context, Book book) => SizedBox(
+    height: kToolbarHeight,
+    child: Row(
+      children: [
+        const SizedBox(width: 4),
+        if (Navigator.of(context).canPop()) const BackButton(),
+        const Spacer(),
+        IconButton(
+          tooltip: 'Bookmarks and history',
+          onPressed: () => openListeningHistory(context, playback),
+          icon: const Icon(Icons.history_rounded),
+        ),
+        PopupMenuButton<VoidCallback>(
+          tooltip: 'More player actions',
+          icon: const Icon(Icons.more_horiz_rounded),
+          onSelected: (action) => action(),
+          itemBuilder: (context) => [
+            PopupMenuItem(
+              value: () => unawaited(_jumps(context)),
+              child: const ListTile(
+                leading: Icon(Icons.replay_rounded),
+                title: Text('Jump lengths'),
+              ),
+            ),
+            if (onOpenBook != null)
+              PopupMenuItem(
+                value: () => onOpenBook!(book),
+                child: const ListTile(
+                  leading: Icon(Icons.article_outlined),
+                  title: Text('Book details'),
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(width: 8),
+      ],
+    ),
+  );
+
+  /// Chapters, Bookmark, Speed, and Sleep, in one rounded row.
+  Widget _tools(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final accent = theme.brightness == Brightness.dark
+        ? theaterGlow
+        : scheme.primary;
+    final deadline = playback.sleepDeadline;
+    final value = TextStyle(
+      fontSize: 14,
+      fontWeight: FontWeight.w600,
+      color: scheme.onSurface,
+    );
+    Widget tool(String label, Widget top, VoidCallback onTap) => Expanded(
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(4, 10, 4, 9),
+          child: Column(
+            children: [
+              SizedBox(height: 22, child: Center(child: top)),
+              const SizedBox(height: 3),
+              Text(
+                label,
+                style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 18),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerLowest,
+        border: Border.all(color: scheme.outlineVariant),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Material(
+        type: MaterialType.transparency,
+        child: IntrinsicHeight(
+          child: Row(
+            children: [
+              tool(
+                'Chapters',
+                Icon(Icons.format_list_bulleted_rounded, color: accent),
+                () => unawaited(_chapters(context)),
+              ),
+              VerticalDivider(width: 1, color: scheme.outlineVariant),
+              tool(
+                'Bookmark',
+                Icon(Icons.bookmark_border_rounded, color: accent),
+                () => unawaited(editAudioBookmark(context, playback)),
+              ),
+              VerticalDivider(width: 1, color: scheme.outlineVariant),
+              tool(
+                'Speed',
+                Text('${_rate(playback.playbackSpeed)}×', style: value),
+                () => unawaited(_speed(context)),
+              ),
+              VerticalDivider(width: 1, color: scheme.outlineVariant),
+              tool(
+                'Sleep',
+                deadline == null
+                    ? Icon(Icons.bedtime_outlined, color: accent)
+                    : Text(
+                        '${(deadline.difference(DateTime.now()).inSeconds / 60).ceil()} m',
+                        style: value,
+                      ),
+                () => unawaited(_sleep(context)),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   Future<void> _chapters(BuildContext context) => showModalBottomSheet<void>(
     context: context,
     useSafeArea: true,
     isScrollControlled: true,
-    builder: (context) => DraggableScrollableSheet(
-      expand: false,
-      initialChildSize: 0.65,
-      builder: (context, scroll) => ListView(
-        controller: scroll,
-        padding: const EdgeInsets.all(20),
-        children: [
-          Text('Chapters', style: Theme.of(context).textTheme.headlineSmall),
-          for (final chapter in playback.chapters)
-            ListTile(
-              title: Text(chapter.name),
-              subtitle: Text(audioTime(chapter.milliseconds)),
-              selected:
-                  playback.position?.sourceKey == chapter.sourceKey &&
-                  playback.position!.milliseconds >= chapter.milliseconds &&
-                  !playback.chapters.any(
-                    (next) =>
-                        next.sourceKey == chapter.sourceKey &&
-                        next.milliseconds > chapter.milliseconds &&
-                        next.milliseconds <= playback.position!.milliseconds,
-                  ),
-              onTap: () {
-                unawaited(
-                  playback.seekSource(chapter.sourceKey, chapter.milliseconds),
-                );
-                Navigator.pop(context);
-              },
+    showDragHandle: true,
+    builder: (context) {
+      final theme = Theme.of(context);
+      final scheme = theme.colorScheme;
+      final accent = theme.brightness == Brightness.dark
+          ? theaterGlow
+          : scheme.primary;
+      final chapters = playback.chapters;
+      final current = playback.chapterIndex;
+      final position = playback.position?.milliseconds ?? 0;
+      return DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: 0.65,
+        builder: (context, scroll) => ListView(
+          controller: scroll,
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Text(
+                'Chapters',
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  fontFamily: 'Source Serif 4',
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
-        ],
-      ),
-    ),
+            for (final (index, chapter) in chapters.indexed) ...[
+              if (index > 0) Divider(height: 1, color: scheme.outlineVariant),
+              InkWell(
+                onTap: () {
+                  unawaited(
+                    playback.seekSource(
+                      chapter.sourceKey,
+                      chapter.milliseconds,
+                    ),
+                  );
+                  Navigator.pop(context);
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  child: DefaultTextStyle.merge(
+                    style: index == current
+                        ? TextStyle(color: accent, fontWeight: FontWeight.w600)
+                        : null,
+                    child: Row(
+                      children: [
+                        SizedBox(
+                          width: 26,
+                          child: Text(
+                            '${index + 1}',
+                            textAlign: TextAlign.right,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: index == current
+                                  ? accent
+                                  : scheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(chapter.name),
+                              if (index == current)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 6),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(3),
+                                    child: LinearProgressIndicator(
+                                      minHeight: 3,
+                                      color: accent,
+                                      backgroundColor: scheme.outlineVariant,
+                                      value: _chapterShare(
+                                        chapters,
+                                        index,
+                                        position,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          audioTime(
+                            chapter.editionMilliseconds ?? chapter.milliseconds,
+                          ),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: scheme.onSurfaceVariant,
+                            fontFeatures: const [FontFeature.tabularFigures()],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      );
+    },
   );
+
+  /// How far through chapter [index] the file position [position] is, from 0
+  /// to 1, or null when the chapter's end is unknown.
+  double? _chapterShare(
+    List<PlaybackChapter> chapters,
+    int index,
+    int position,
+  ) {
+    final chapter = chapters[index];
+    final next = index + 1 < chapters.length ? chapters[index + 1] : null;
+    final end = next != null && next.sourceKey == chapter.sourceKey
+        ? next.milliseconds
+        : null;
+    if (end == null || end <= chapter.milliseconds) return null;
+    return ((position - chapter.milliseconds) / (end - chapter.milliseconds))
+        .clamp(0, 1);
+  }
 
   Future<void> _speed(BuildContext context) => showModalBottomSheet<void>(
     context: context,
@@ -460,7 +722,7 @@ class PlayerView extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Short jumps',
+                  'Jump lengths',
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
                 DropdownButtonFormField<int>(
@@ -501,7 +763,7 @@ class PlayerView extends StatelessWidget {
                     unawaited(playback.setJumps(backward, forward));
                     Navigator.pop(context);
                   },
-                  child: const Text('Save short jumps'),
+                  child: const Text('Save jump lengths'),
                 ),
               ],
             ),
@@ -518,24 +780,102 @@ class _PlayButton extends StatelessWidget {
   final bool large;
   @override
   Widget build(BuildContext context) {
-    final icon = Icon(
-      playback.playing ? Icons.pause_rounded : Icons.play_arrow_rounded,
-    );
     final label = playback.playing ? 'Pause' : 'Play';
+    final icon = playback.playing
+        ? Icons.pause_rounded
+        : Icons.play_arrow_rounded;
     void toggle() =>
         unawaited(playback.playing ? playback.pause() : playback.play());
-    return large
-        ? IconButton.filled(
-            tooltip: label,
-            iconSize: 42,
-            padding: const EdgeInsets.all(16),
-            onPressed: toggle,
-            icon: icon,
-          )
-        : IconButton(tooltip: label, onPressed: toggle, icon: icon);
+    if (!large) {
+      return IconButton(tooltip: label, onPressed: toggle, icon: Icon(icon));
+    }
+    final scheme = Theme.of(context).colorScheme;
+    return Tooltip(
+      message: label,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? const Color(0x73000000)
+                  : scheme.primary.withValues(alpha: 0.35),
+              blurRadius: 24,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Material(
+          color: scheme.primary,
+          shape: const CircleBorder(),
+          child: InkWell(
+            customBorder: const CircleBorder(),
+            onTap: toggle,
+            child: SizedBox.square(
+              dimension: 72,
+              child: Icon(icon, size: 38, color: scheme.onPrimary),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 
+/// A circular arrow with the jump length inside. A long press changes the
+/// jump lengths.
+class _JumpButton extends StatelessWidget {
+  const _JumpButton({
+    required this.playback,
+    required this.forward,
+    required this.onLongPress,
+  });
+  final Playback playback;
+  final bool forward;
+  final VoidCallback onLongPress;
+
+  @override
+  Widget build(BuildContext context) {
+    final seconds = forward
+        ? playback.forwardSeconds
+        : playback.backwardSeconds;
+    final color = Theme.of(context).colorScheme.onSurface;
+    return Tooltip(
+      message: '${forward ? 'Forward' : 'Back'} $seconds seconds',
+      child: InkResponse(
+        radius: 30,
+        onTap: () => unawaited(playback.jump(forward: forward)),
+        onLongPress: onLongPress,
+        child: SizedBox.square(
+          dimension: 56,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Transform.flip(
+                flipX: forward,
+                child: Icon(Icons.replay_rounded, size: 42, color: color),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 3),
+                child: Text(
+                  '$seconds',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: color,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The position slider with chapter marks, and the elapsed time, the time
+/// left in the chapter, and the time left in the book below it.
 class _PositionSlider extends StatefulWidget {
   const _PositionSlider({required this.playback});
   final Playback playback;
@@ -546,20 +886,104 @@ class _PositionSlider extends StatefulWidget {
 class _PositionSliderState extends State<_PositionSlider> {
   double? _target;
   @override
-  Widget build(BuildContext context) => Slider(
-    semanticFormatterCallback: (value) => audioTime(value.round()),
-    value: (_target ?? widget.playback.editionMilliseconds!.toDouble()).clamp(
-      0,
-      widget.playback.durationMilliseconds!.toDouble(),
-    ),
-    max: widget.playback.durationMilliseconds!.toDouble(),
-    onChangeStart: (_) => unawaited(widget.playback.beginSliderSeek()),
-    onChanged: (value) => setState(() => _target = value),
-    onChangeEnd: (value) async {
-      await widget.playback.finishSliderSeek(value.round());
-      if (mounted) setState(() => _target = null);
-    },
-  );
+  Widget build(BuildContext context) {
+    final playback = widget.playback;
+    final scheme = Theme.of(context).colorScheme;
+    final total = playback.durationMilliseconds!;
+    final value = (_target ?? playback.editionMilliseconds!.toDouble()).clamp(
+      0.0,
+      total.toDouble(),
+    );
+    final chapters = playback.chapters;
+    final index = playback.chapterIndex;
+    final next = index != null && index + 1 < chapters.length
+        ? chapters[index + 1].editionMilliseconds
+        : null;
+    final chapterLeft = index == null
+        ? null
+        : (next ?? total) - playback.editionMilliseconds!;
+    final small = TextStyle(
+      fontSize: 12,
+      color: scheme.onSurfaceVariant,
+      fontFeatures: const [FontFeature.tabularFigures()],
+    );
+    return Column(
+      children: [
+        SliderTheme(
+          data: SliderTheme.of(context).copyWith(
+            trackHeight: 4,
+            activeTrackColor: scheme.primary,
+            inactiveTrackColor: scheme.outlineVariant,
+            thumbColor: scheme.primary,
+            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
+            overlayShape: const RoundSliderOverlayShape(overlayRadius: 18),
+          ),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Slider(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                semanticFormatterCallback: (value) => audioTime(value.round()),
+                value: value,
+                max: total.toDouble(),
+                onChangeStart: (_) => unawaited(playback.beginSliderSeek()),
+                onChanged: (value) => setState(() => _target = value),
+                onChangeEnd: (value) async {
+                  await playback.finishSliderSeek(value.round());
+                  if (mounted) setState(() => _target = null);
+                },
+              ),
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: LayoutBuilder(
+                    builder: (context, size) => Stack(
+                      children: [
+                        for (final chapter in chapters)
+                          if ((chapter.editionMilliseconds ?? 0) > 0 &&
+                              chapter.editionMilliseconds! < total)
+                            Positioned(
+                              left:
+                                  size.maxWidth *
+                                      chapter.editionMilliseconds! /
+                                      total -
+                                  0.75,
+                              top: size.maxHeight / 2 - 5,
+                              child: Container(
+                                width: 1.5,
+                                height: 10,
+                                color: scheme.surface,
+                              ),
+                            ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Row(
+          children: [
+            Expanded(child: Text(audioTime(value.round()), style: small)),
+            if (chapterLeft != null)
+              Text(
+                chapterLeft < 60000
+                    ? 'chapter ${(chapterLeft / 1000).ceil()} s left'
+                    : 'chapter ${duration(chapterLeft)} left',
+                style: small,
+              ),
+            Expanded(
+              child: Text(
+                '${audioTime(total - value.round())} left',
+                textAlign: TextAlign.right,
+                style: small,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
 }
 
 String _rate(double value) =>

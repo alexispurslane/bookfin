@@ -60,8 +60,7 @@ void main() {
       final bookmark = playback.bookmarks.single;
       final historyCount = playback.history.length;
       await showPlayer(tester);
-      await tester.scrollUntilVisible(find.text('History'), 150);
-      await tester.tap(find.text('History'));
+      await tester.tap(find.byTooltip('Bookmarks and history'));
       await tester.pumpAndSettle();
       await tester.tap(find.byTooltip('Delete bookmark'));
       await tester.pumpAndSettle();
@@ -95,8 +94,7 @@ void main() {
       );
       final historyIds = playback.history.map((event) => event.id).toList();
       await showPlayer(tester);
-      await tester.scrollUntilVisible(find.text('History'), 150);
-      await tester.tap(find.text('History'));
+      await tester.tap(find.byTooltip('Bookmarks and history'));
       await tester.pumpAndSettle();
       final row = find.ancestor(
         of: find.text('Remove this'),

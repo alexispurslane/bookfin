@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bookfin player redesign</title>
+<style>
+:root{
+  --paper:#f6efe2;--sheet:#fff9ef;--wash:#eae0ce;--ink:#39291f;--subtle:#715d4b;--line:#d9ccb6;
+  --sepia:#775035;
+  --serif:'Source Serif 4',Georgia,serif;--display:'Outfit',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:var(--display);color:var(--ink)}
+h1{font-size:15px;font-weight:600;text-align:center;margin:0 0 4px;color:var(--foreground,#39291f)}
+.title{text-align:center;font-size:12px;color:var(--muted-foreground,#715d4b);margin:0 0 18px}
+.board{display:flex;flex-wrap:wrap;gap:22px;justify-content:center}
+.design{display:flex;flex-direction:column;gap:10px;align-items:center}
+.design>h2{font-size:13px;letter-spacing:.1em;text-transform:uppercase;margin:0;color:var(--foreground,#775035)}
+.pair{display:flex;gap:16px}
+.frame{display:flex;flex-direction:column;align-items:center;gap:8px;zoom:.78}
+.label{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-foreground,#715d4b)}
+.phone{width:340px;height:720px;background:var(--paper);border:1px solid var(--line);border-radius:34px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 18px 50px rgba(57,41,31,.13);position:relative}
+svg.i{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.bar{position:relative;z-index:3;display:flex;align-items:center;gap:4px;padding:30px 12px 0 12px;flex:none}
+.bar .t{flex:1}
+.ib{width:38px;height:38px;border-radius:50%;display:grid;place-items:center}
+.nav{flex:none;display:flex;justify-content:space-around;padding:8px 6px 14px;border-top:1px solid var(--line);background:var(--paper);position:relative;z-index:3}
+.nav div{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;color:var(--subtle);width:70px}
+.nav div span{width:52px;height:28px;border-radius:99px;display:grid;place-items:center}
+.nav div.sel{color:var(--sepia);font-weight:600}.nav div.sel span{background:var(--wash)}
+.nav svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.8}
+
+/* the cover */
+.c{position:relative;border-radius:4px 10px 10px 4px;overflow:hidden;color:#fff9ef;font-family:var(--serif);display:flex;flex-direction:column;justify-content:flex-end;padding:16px;background:linear-gradient(160deg,#a8653a,#6b3b22)}
+.c::after{content:'';position:absolute;width:120%;aspect-ratio:1;border-radius:50%;border:1px solid rgba(255,249,239,.25);top:-40%;right:-55%}
+.c::before{content:'';position:absolute;inset:0;box-shadow:inset 4px 0 0 rgba(0,0,0,.14)}
+.c b{font-weight:600;font-size:21px;line-height:1.1;border-top:1.5px solid rgba(255,249,239,.5);padding-top:8px}.c i{font-style:normal;font-family:var(--display);font-size:11px;opacity:.8;margin-top:4px}
+.mc{width:40px;height:58px;padding:4px;border-radius:2px 5px 5px 2px;flex:none}.mc b{font-size:7px;border:0;padding:0}.mc i{display:none}
+.mc.g1{background:linear-gradient(160deg,#4f6b5a,#2e3f35)}.mc.g3{background:linear-gradient(160deg,#3d4f73,#232d45)}
+
+/* shared player parts */
+.body{flex:1;overflow:hidden;position:relative}
+.meta{text-align:center;padding:0 24px}
+.meta .n{font-family:var(--serif);font-size:27px;font-weight:600;letter-spacing:-.3px;line-height:1.1}
+.meta .a{font-size:13px;margin-top:5px;color:var(--subtle)}
+.meta .a em{font-style:normal;color:var(--ink)}
+.chap{display:flex;justify-content:center;align-items:center;gap:6px;font-size:12px;margin-top:12px;color:var(--sepia);font-weight:500}
+.scrub{padding:0 26px;margin-top:14px}
+.track{height:4px;border-radius:4px;background:var(--line);position:relative}
+.track i{position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:var(--sepia);width:34%}
+.track u{position:absolute;left:34%;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:var(--sepia);box-shadow:0 1px 4px rgba(57,41,31,.35)}
+.track s{position:absolute;top:-3px;width:1.5px;height:10px;background:var(--paper)}
+.times{display:flex;justify-content:space-between;font-size:11px;color:var(--subtle);margin-top:7px;font-variant-numeric:tabular-nums}
+.transport{display:flex;align-items:center;justify-content:center;gap:30px;margin-top:10px}
+.jump{position:relative;width:46px;height:46px;display:grid;place-items:center}
+.jump svg{width:34px;height:34px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.jump b{position:absolute;font-size:10px;font-weight:600;top:17px}
+.play{width:74px;height:74px;border-radius:50%;background:var(--sepia);color:var(--sheet);display:grid;place-items:center;box-shadow:0 10px 24px rgba(119,80,53,.35)}
+.play svg{width:28px;height:28px;fill:currentColor}
+
+/* Design A: stage on paper */
+.wash{position:absolute;left:0;right:0;top:0;height:420px;background:linear-gradient(160deg,#c47b47,#6b3b22);filter:blur(30px);transform:scale(1.2);opacity:.75}
+.fade{position:absolute;left:0;right:0;top:0;height:430px;background:linear-gradient(to bottom,rgba(246,239,226,.25),rgba(246,239,226,.6) 55%,var(--paper) 88%)}
+.hero{position:relative;width:184px;height:276px;margin:6px auto 22px;box-shadow:8px 18px 40px rgba(57,41,31,.4)}
+.dock{margin:18px 18px 0;background:var(--sheet);border:1px solid var(--line);border-radius:20px;display:grid;grid-template-columns:repeat(4,1fr)}
+.dock div{display:flex;flex-direction:column;align-items:center;gap:4px;padding:11px 0 10px;font-size:11px;color:var(--subtle)}
+.dock div+div{border-left:1px solid var(--line)}
+.dock div b{font-size:13px;color:var(--ink);font-weight:600;height:20px;display:grid;place-items:center}
+.dock div svg{color:var(--sepia)}
+.scrim{position:absolute;inset:0;background:rgba(37,30,25,.38);z-index:4}
+.sheet{position:absolute;left:0;right:0;bottom:0;z-index:5;background:var(--sheet);border-radius:26px 26px 0 0;padding:10px 20px 18px;box-shadow:0 -10px 30px rgba(0,0,0,.15)}
+.grab{width:40px;height:4px;border-radius:4px;background:var(--line);margin:0 auto 12px}
+.sheet h3{font-family:var(--serif);font-size:20px;margin:0 0 6px;font-weight:600}
+.li{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);font-size:14px}
+.li .k{width:22px;font-size:11px;color:var(--subtle);text-align:right}
+.li .x{flex:1}.li .t{font-size:11px;color:var(--subtle);font-variant-numeric:tabular-nums}
+.li.on{color:var(--sepia);font-weight:600}.li.on .k{color:var(--sepia)}
+.li .bar2{height:3px;background:var(--line);border-radius:3px;margin-top:5px}.li .bar2 i{display:block;height:100%;width:62%;background:var(--sepia);border-radius:3px}
+.seg{display:flex;background:var(--wash);border-radius:99px;padding:3px;margin:4px 0 8px}
+.seg span{flex:1;text-align:center;font-size:12px;padding:7px 0;border-radius:99px;color:var(--subtle)}
+.seg span.on{background:var(--sheet);color:var(--ink);font-weight:600;box-shadow:0 1px 3px rgba(57,41,31,.15)}
+.menu{position:absolute;right:14px;top:66px;z-index:6;background:var(--sheet);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 30px rgba(57,41,31,.2);padding:6px 0;font-size:14px;width:200px}
+.menu div{padding:10px 16px;display:flex;gap:10px;align-items:center}.menu div svg{color:var(--subtle)}
+
+/* Design B: dark theater */
+.dark{background:#22170f;color:#f3e6d2}
+.dark .bar,.dark .meta .a em{color:#f3e6d2}
+.glow{position:absolute;left:0;right:0;top:0;height:560px;background:radial-gradient(60% 45% at 50% 34%,rgba(214,140,82,.55),rgba(107,59,34,.45) 45%,rgba(34,23,15,0) 80%)}
+.floor{position:absolute;left:0;right:0;top:0;height:640px;background:linear-gradient(to bottom,rgba(34,23,15,0),#22170f 92%)}
+.dark .hero{box-shadow:0 24px 60px rgba(0,0,0,.6),0 0 80px rgba(214,140,82,.35)}
+.dark .meta .a,.dark .times{color:#c4ad91}
+.dark .chap{color:#e4b58a}
+.dark .track{background:rgba(243,230,210,.2)}.dark .track i,.dark .track u{background:#f3e6d2}.dark .track s{background:#22170f}
+.dark .play{background:#f3e6d2;color:#22170f;box-shadow:0 10px 30px rgba(0,0,0,.45)}
+.pills{display:flex;justify-content:space-between;padding:0 26px;margin-top:14px}
+.pill{font-size:12px;border:1px solid rgba(243,230,210,.3);border-radius:99px;padding:6px 12px;display:flex;gap:6px;align-items:center;color:#f3e6d2}
+.pill svg{width:15px;height:15px}
+.panel{position:relative;margin-top:16px;background:var(--paper);color:var(--ink);border-radius:26px 26px 0 0;padding:10px 18px 0;min-height:260px}
+.panel .grab{margin-bottom:8px}
+.shared{max-width:900px;margin:22px auto 0;font-size:13px;color:var(--muted-foreground,#715d4b);line-height:1.5}
+</style>
+</head>
+<body>
+<h1>Player redesign: two designs</h1>
+<p class="title">First Frost, paused in chapter 4. Both designs keep the same parts and differ in the stage and in where the tools live.</p>
+<div class="board">
+
+<!-- ============ DESIGN A ============ -->
+<div class="design">
+<h2>A · Stage on paper</h2>
+<div class="pair">
+<div class="frame"><div class="label">Player</div>
+<div class="phone">
+  <div class="wash"></div><div class="fade"></div>
+  <div class="bar"><div class="ib"><svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></div><div class="t"></div>
+    <div class="ib"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+    <div class="ib"><svg class="i" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></svg></div></div>
+  <div class="body">
+    <div class="c hero"><b>FIRST FROST</b><i>Mara Ellison</i></div>
+    <div class="meta"><div class="n">First Frost</div><div class="a"><em>Mara Ellison</em> · read by Tom Avery</div></div>
+    <div class="chap">Chapter 4 · The Grafting <span style="color:var(--subtle);font-weight:400">· 4 of 12</span></div>
+    <div class="scrub"><div class="track"><i></i><s style="left:8%"></s><s style="left:17%"></s><s style="left:26%"></s><s style="left:42%"></s><s style="left:55%"></s><s style="left:70%"></s><s style="left:85%"></s><u></u></div>
+      <div class="times"><span>3:28:06</span><span>chapter 18 m left</span><span>6:43:54 left</span></div></div>
+    <div class="transport">
+      <div class="jump"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4h4"/></svg><b>10</b></div>
+      <div class="play"><svg viewBox="0 0 24 24"><path d="M8 5l12 7-12 7z"/></svg></div>
+      <div class="jump"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.4-5.7"/><path d="M20 4v4h-4"/></svg><b>30</b></div>
+    </div>
+    <div class="dock">
+      <div><b><svg class="i" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg></b>Chapters</div>
+      <div><b><svg class="i" viewBox="0 0 24 24"><path d="M7 4h10v16l-5-4-5 4z"/></svg></b>Bookmark</div>
+      <div><b>1.25×</b>Speed</div>
+      <div><b><svg class="i" viewBox="0 0 24 24"><path d="M20 14A8 8 0 1 1 10 4a6 6 0 0 0 10 10z"/></svg></b>Sleep</div>
+    </div>
+  </div>
+  <div class="nav"><div><span><svg viewBox="0 0 24 24"><path d="M4 5h6v14H4zM14 5l5 1-3 13-5-1z"/></svg></span>Library</div><div><span><svg viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg></span>Downloads</div><div class="sel"><span><svg viewBox="0 0 24 24"><path d="M4 15a8 8 0 0 1 16 0v3h-4v-5h4M4 13h4v5H4z"/></svg></span>Listening</div><div><span><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg></span>Settings</div></div>
+</div></div>
+
+<div class="frame"><div class="label">Chapters sheet, and the ⋯ menu</div>
+<div class="phone">
+  <div class="wash"></div><div class="fade"></div>
+  <div class="bar"><div class="ib"><svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></div><div class="t"></div>
+    <div class="ib"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+    <div class="ib" style="background:var(--wash)"><svg class="i" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></svg></div></div>
+  <div class="menu">
+    <div><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Listening history</div>
+    <div><svg class="i" viewBox="0 0 24 24"><path d="M7 4h10v16l-5-4-5 4z"/></svg>All bookmarks</div>
+    <div><svg class="i" viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4h4"/></svg>Jump lengths</div>
+    <div><svg class="i" viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="16" rx="2"/><path d="M9 9h6M9 13h6"/></svg>Book details</div>
+  </div>
+  <div class="body">
+    <div class="c hero"><b>FIRST FROST</b><i>Mara Ellison</i></div>
+  </div>
+  <div class="scrim"></div>
+  <div class="sheet">
+    <div class="grab"></div>
+    <h3>Chapters</h3>
+    <div class="li"><span class="k">2</span><span class="x">The Orchard Wall</span><span class="t">0:42:10</span></div>
+    <div class="li"><span class="k">3</span><span class="x">Wren Returns</span><span class="t">1:31:55</span></div>
+    <div class="li on"><span class="k">4</span><span class="x">The Grafting<div class="bar2"><i></i></div></span><span class="t">2:58:30</span></div>
+    <div class="li"><span class="k">5</span><span class="x">Stranger's Stock</span><span class="t">3:46:12</span></div>
+    <div class="li" style="border:0"><span class="k">6</span><span class="x">Frostbite</span><span class="t">4:30:01</span></div>
+  </div>
+</div></div>
+</div>
+</div>
+
+<!-- ============ DESIGN B ============ -->
+<div class="design">
+<h2>B · Dark theater</h2>
+<div class="pair">
+<div class="frame"><div class="label">Player</div>
+<div class="phone dark">
+  <div class="glow"></div><div class="floor"></div>
+  <div class="bar"><div class="ib"><svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></div><div class="t"></div>
+    <div class="ib"><svg class="i" viewBox="0 0 24 24"><path d="M7 4h10v16l-5-4-5 4z"/><path d="M12 8v5M9.5 10.5h5"/></svg></div></div>
+  <div class="body">
+    <div class="c hero"><b>FIRST FROST</b><i>Mara Ellison</i></div>
+    <div class="meta"><div class="n">First Frost</div><div class="a"><em>Mara Ellison</em> · read by Tom Avery</div></div>
+    <div class="chap">Chapter 4 · The Grafting <span style="opacity:.7;font-weight:400">· 4 of 12</span></div>
+    <div class="scrub"><div class="track"><i></i><s style="left:8%"></s><s style="left:17%"></s><s style="left:26%"></s><s style="left:42%"></s><s style="left:55%"></s><s style="left:70%"></s><s style="left:85%"></s><u></u></div>
+      <div class="times"><span>3:28:06</span><span>chapter 18 m left</span><span>6:43:54 left</span></div></div>
+    <div class="transport">
+      <div class="jump"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4h4"/></svg><b>10</b></div>
+      <div class="play"><svg viewBox="0 0 24 24"><path d="M8 5l12 7-12 7z"/></svg></div>
+      <div class="jump"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.4-5.7"/><path d="M20 4v4h-4"/></svg><b>30</b></div>
+    </div>
+    <div class="pills">
+      <div class="pill">1.25×</div>
+      <div class="pill"><svg class="i" viewBox="0 0 24 24"><path d="M20 14A8 8 0 1 1 10 4a6 6 0 0 0 10 10z"/></svg>Sleep off</div>
+    </div>
+  </div>
+</div></div>
+
+<div class="frame"><div class="label">Scrolled: the panel under the stage</div>
+<div class="phone dark">
+  <div class="glow" style="top:-420px"></div>
+  <div class="bar"><div class="ib"><svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></div><div class="t" style="font-family:var(--serif);font-size:16px;text-align:center">First Frost</div>
+    <div class="ib"><svg class="i" viewBox="0 0 24 24"><path d="M7 4h10v16l-5-4-5 4z"/><path d="M12 8v5M9.5 10.5h5"/></svg></div></div>
+  <div class="body">
+    <div class="transport" style="margin-top:4px">
+      <div class="jump"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4h4"/></svg><b>10</b></div>
+      <div class="play"><svg viewBox="0 0 24 24"><path d="M8 5l12 7-12 7z"/></svg></div>
+      <div class="jump"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.4-5.7"/><path d="M20 4v4h-4"/></svg><b>30</b></div>
+    </div>
+    <div class="pills">
+      <div class="pill">1.25×</div>
+      <div class="pill"><svg class="i" viewBox="0 0 24 24"><path d="M20 14A8 8 0 1 1 10 4a6 6 0 0 0 10 10z"/></svg>Sleep off</div>
+    </div>
+    <div class="panel">
+      <div class="grab"></div>
+      <div class="seg"><span class="on">Chapters</span><span>Bookmarks</span><span>History</span></div>
+      <div class="li"><span class="k">3</span><span class="x">Wren Returns</span><span class="t">1:31:55</span></div>
+      <div class="li on"><span class="k">4</span><span class="x">The Grafting<div class="bar2"><i></i></div></span><span class="t">2:58:30</span></div>
+      <div class="li"><span class="k">5</span><span class="x">Stranger's Stock</span><span class="t">3:46:12</span></div>
+      <div class="li"><span class="k">6</span><span class="x">Frostbite</span><span class="t">4:30:01</span></div>
+      <div class="li"><span class="k">7</span><span class="x">The Cold Cellar</span><span class="t">5:12:40</span></div>
+      <div class="li" style="border:0"><span class="k">8</span><span class="x">Windfall</span><span class="t">5:58:02</span></div>
+    </div>
+  </div>
+</div></div>
+</div>
+</div>
+</div>
+
+<p class="shared">Both designs share: the hero cover with a deep shadow, the serif title, "author · read by narrator", the current chapter name with chapter marks on the scrubber, the time left in the chapter, a larger play button with the jump lengths written inside the jump icons, jump lengths set by a long press on a jump button, and the recently listened list further down the page.</p>
+</body>
+</html>

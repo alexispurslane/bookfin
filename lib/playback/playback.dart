@@ -451,16 +451,51 @@ class Playback extends ChangeNotifier {
     return elapsed == null ? null : (elapsedMs: elapsed, totalMs: total);
   }
 
-  List<PlaybackChapter> get chapters => [
-    for (final file in _edition?.files ?? <SourceFile>[]) ...[
-      if (!file.chapters.any((chapter) => chapter.startMs == 0))
-        PlaybackChapter(file.displayName, file.key, 0),
-      for (final chapter in file.chapters)
+  List<PlaybackChapter> get chapters {
+    final chapters = <PlaybackChapter>[];
+    // Where the current file starts in the edition, while every earlier file
+    // has a known duration.
+    int? offset = 0;
+    for (final file in _edition?.files ?? <SourceFile>[]) {
+      if (!file.chapters.any((chapter) => chapter.startMs == 0)) {
+        chapters.add(PlaybackChapter(file.displayName, file.key, 0, offset));
+      }
+      for (final chapter in file.chapters) {
         if (chapter.startMs >= 0 &&
-            (file.durationMs == null || chapter.startMs < file.durationMs!))
-          PlaybackChapter(chapter.name, file.key, chapter.startMs),
-    ],
-  ];
+            (file.durationMs == null || chapter.startMs < file.durationMs!)) {
+          chapters.add(
+            PlaybackChapter(
+              chapter.name,
+              file.key,
+              chapter.startMs,
+              offset == null ? null : offset + chapter.startMs,
+            ),
+          );
+        }
+      }
+      offset = offset == null || file.durationMs == null
+          ? null
+          : offset + file.durationMs!;
+    }
+    return chapters;
+  }
+
+  /// The index in [chapters] of the chapter that holds the position.
+  int? get chapterIndex {
+    final position = _position;
+    if (position == null) return null;
+    final chapters = this.chapters;
+    int? found;
+    for (final (index, chapter) in chapters.indexed) {
+      if (chapter.sourceKey == position.sourceKey &&
+          chapter.milliseconds <= position.milliseconds &&
+          (found == null ||
+              chapter.milliseconds >= chapters[found].milliseconds)) {
+        found = index;
+      }
+    }
+    return found;
+  }
 
   Future<void> _enqueue(Future<void> Function() action) {
     final generation = _generation;
@@ -1263,8 +1298,19 @@ class Playback extends ChangeNotifier {
 }
 
 class PlaybackChapter {
-  const PlaybackChapter(this.name, this.sourceKey, this.milliseconds);
+  const PlaybackChapter(
+    this.name,
+    this.sourceKey,
+    this.milliseconds, [
+    this.editionMilliseconds,
+  ]);
   final String name;
   final String sourceKey;
+
+  /// Where the chapter starts within its source file.
   final int milliseconds;
+
+  /// Where the chapter starts within the whole edition, or null when an
+  /// earlier file has no known duration.
+  final int? editionMilliseconds;
 }

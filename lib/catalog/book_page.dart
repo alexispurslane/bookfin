@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
@@ -414,82 +413,17 @@ class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final top = MediaQuery.paddingOf(context).top + kToolbarHeight;
-    final surface = Theme.of(context).colorScheme.surface;
-    final scope = CoverScope.of(context);
     return SizedBox(
       height: top + 250,
       child: Stack(
         children: [
-          Positioned.fill(
-            bottom: 40,
-            child: ClipRect(
-              child: ImageFiltered(
-                imageFilter: ui.ImageFilter.blur(sigmaX: 28, sigmaY: 28),
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: coverPalette(book.title),
-                    ),
-                  ),
-                  child:
-                      scope?.covers != null &&
-                          scope?.session != null &&
-                          book.cover != null
-                      ? Image(
-                          image: CoverImage(
-                            scope!.covers!,
-                            scope.session!,
-                            book.cover!,
-                          ),
-                          fit: BoxFit.cover,
-                          width: double.infinity,
-                          height: double.infinity,
-                          excludeFromSemantics: true,
-                          errorBuilder: (_, _, _) => const SizedBox.shrink(),
-                        )
-                      : null,
-                ),
-              ),
-            ),
-          ),
-          Positioned.fill(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  stops: const [0, 0.55, 0.86],
-                  colors: [
-                    surface.withValues(alpha: 0.3),
-                    surface.withValues(alpha: 0.55),
-                    surface,
-                  ],
-                ),
-              ),
-            ),
-          ),
+          Positioned.fill(child: CoverBackdrop(book: book)),
           Positioned(
             top: top,
             left: 0,
             right: 0,
             child: Center(
-              child: SizedBox(
-                width: 156,
-                child: DecoratedBox(
-                  decoration: const BoxDecoration(
-                    boxShadow: [
-                      BoxShadow(
-                        color: Color(0x55392A1F),
-                        blurRadius: 30,
-                        offset: Offset(6, 14),
-                      ),
-                    ],
-                  ),
-                  child: BookCover.book(book, downloaded: downloaded),
-                ),
-              ),
+              child: StageCover(book: book, width: 156, downloaded: downloaded),
             ),
           ),
         ],

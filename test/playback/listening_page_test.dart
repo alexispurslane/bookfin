@@ -166,7 +166,7 @@ void main() {
     await tester.pump();
 
     expect(playback.book?.title, 'Tidewater');
-    expect(find.text('NOW LISTENING'), findsOneWidget);
+    expect(find.byTooltip('More player actions'), findsOneWidget);
     expect(playback.editionMilliseconds, greaterThan(0));
     // Close in fake time too, because the tap made fake-time playback work.
     await finish(tester, playback.close());
@@ -179,7 +179,7 @@ void main() {
       await tester.runAsync(() => listen(['Tidewater', 'First Frost']));
       await showListening(tester);
 
-      expect(find.text('NOW LISTENING'), findsOneWidget);
+      expect(find.byTooltip('More player actions'), findsOneWidget);
       expect(find.text('First Frost'), findsOneWidget);
       expect(find.byType(BookCover), findsOneWidget);
       await tester.scrollUntilVisible(find.text('Tidewater'), 200);

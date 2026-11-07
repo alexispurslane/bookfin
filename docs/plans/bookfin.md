@@ -276,3 +276,15 @@ The user approved `docs/mockups/library-redesign.html`. It replaces the library,
 - Clear data removes downloads, covers, and the saved library from the phone. It first uploads personal records that are not synced. If that upload fails, it stops and tells the user.
 - Decision of the same day: an ebook item joins an audiobook item as one book when both have the same Jellyfin series, title, and author, and exactly one audiobook item matches. Outside a series, possible matches still need confirmation. An edition that the user placed or separated keeps that choice. In a series, a book without a position takes the position of a same-titled book.
 - Decision of the same day, from the user's real server: no audiobook carries the Jellyfin series field. Series come from, strongest first: a user correction, the Jellyfin series field, the one Jellyfin collection that holds the item, and a "(Series #N)" title ending. A title ending also gives the position and leaves the shown title. Otherwise an ebook's series index, then an audiobook's item number, gives the position. On the user's library this gives 134 series cards for 1,478 audiobooks.
+
+## Listening and player redesign — November 7, 2026 decision
+
+The user chose design A of `docs/mockups/player-redesign.html` for the layout, and the colors of design B for night.
+
+- With nothing open, the Listening tab lists the recently listened books, newest first, one row per book. A tap resumes the book. While a book is open, the same list follows the player and leaves out the open book.
+- The player is a stage like the book details page: the cover over a blurred copy of itself, the serif title, "author · read by narrator", and the current chapter with its place, for example "Chapter 4 · 4 of 12".
+- The position slider shows a mark at each chapter start. Below it are the elapsed time, the time left in the chapter, and the time left in the book.
+- The jump buttons show their length inside the arrow. A long press on either one sets the jump lengths.
+- One row holds Chapters, Bookmark, Speed, and Sleep. Speed shows its value, and Sleep shows the minutes left when it is on.
+- The top bar holds Bookmarks and history, and a More menu with Jump lengths and Book details.
+- By day the stage uses the paper colors. At night the stage is a dark theater: a glow in the cover's colors on a dark background, cream type, and a cream play button. The book details page shares the same backdrop and cover lighting.
