@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import 'jellyfin.dart';
 import 'model.dart';
+import 'shelf.dart';
 import 'store.dart';
 
 typedef JellyfinClientFactory = JellyfinClient Function(
@@ -9,49 +10,246 @@ typedef JellyfinClientFactory = JellyfinClient Function(
   String deviceId,
 );
 
+/// Runs [work] on [input] in another isolate and completes with its result,
+/// which comes back without a copy. [compute] is the default.
+typedef CatalogHop = Future<R> Function<M, R>(R Function(M) work, M input);
+
+/// What the last request to Jellyfin says about the server.
+enum CatalogReach {
+  /// No request for this account reached Jellyfin or failed to reach it
+  /// since the app started or the account signed in. The library is the
+  /// saved one.
+  unknown,
+
+  /// The last request reached Jellyfin. The library is the saved one or a
+  /// fresh one, and either is fully usable.
+  reached,
+
+  /// The last request could not reach Jellyfin: a network error, a timeout
+  /// or a server error. Only a later request that reaches Jellyfin ends it,
+  /// so it stays while a retry runs.
+  unreachable,
+
+  /// Jellyfin no longer accepts the sign-in, so the account is signed out.
+  signInExpired,
+
+  /// Jellyfin denies this account access to its book libraries, so the
+  /// library is empty. A saved denial survives a restart.
+  accessRevoked,
+}
+
+/// Where the catalog stands with Jellyfin.
+/// - [refreshing]: a sign-in or a refresh talks to Jellyfin now. A restore
+///   from storage is not a refresh.
+/// - [reach]: what the last request said about Jellyfin.
+/// - [message]: the text to show about the last operation, or null.
+typedef CatalogStatus = ({
+  bool refreshing,
+  CatalogReach reach,
+  String? message,
+});
+
+/// The signed-in account and what it may read: its session, whether access
+/// is blocked, its Jellyfin book libraries, and the ids of the selected
+/// ones. Two accounts are equal when these values are equal, so a refresh of
+/// the same account does not change it.
+class CatalogAccount {
+  const CatalogAccount({
+    this.session,
+    this.accessBlocked = false,
+    this.libraries = const [],
+    this.selected = const {},
+  });
+  final JellyfinSession? session;
+  final bool accessBlocked;
+  final List<BookLibrary> libraries;
+  final Set<String> selected;
+
+  @override
+  bool operator ==(Object other) =>
+      other is CatalogAccount &&
+      _sameSession(session, other.session) &&
+      accessBlocked == other.accessBlocked &&
+      listEquals(_names(libraries), _names(other.libraries)) &&
+      setEquals(selected, other.selected);
+
+  @override
+  int get hashCode => Object.hash(
+    session?.scope.key,
+    accessBlocked,
+    Object.hashAll(_names(libraries)),
+    Object.hashAllUnordered(selected),
+  );
+
+  static bool _sameSession(JellyfinSession? left, JellyfinSession? right) =>
+      identical(left, right) ||
+      (left != null &&
+          right != null &&
+          left.scope.key == right.scope.key &&
+          left.token == right.token &&
+          left.username == right.username &&
+          left.canDownload == right.canDownload);
+
+  static List<String> _names(List<BookLibrary> libraries) => [
+    for (final library in libraries) ...[library.id, library.name],
+  ];
+}
+
+/// What the catalog is doing.
+enum _Work { idle, restore, refresh }
+
+/// The catalog state that one isolate hop builds: the cache, the text that
+/// saves it, and the library of its books.
+typedef _Built = ({CatalogCache cache, String text, CatalogLibrary library});
+
+/// The smallest saved catalog text, in characters, and the fewest entries
+/// that the catalog builds in another isolate. A smaller catalog builds on
+/// the UI isolate. Measured in AOT on an M-series Mac: a hop costs about
+/// 35 µs plus the copy of its input, and a short entry builds in about 5 µs,
+/// but an entry with a long description and many chapters takes about
+/// 85 µs. So these limits do not mark where a hop starts to pay: that is
+/// one or two entries. They are a compromise: widget tests run in fake time,
+/// in which a hop never completes, and every test library is below them.
+/// A library of real size is far above them.
+const _hopText = 16 * 1024;
+const _hopEntries = 16;
+
+/// Decodes the saved catalog [saved] and builds its library.
+_Built _restoreCatalog(({AccountScope scope, String text}) saved) {
+  final cache = CatalogCache.decode(saved.scope, saved.text);
+  return (cache: cache, text: saved.text, library: _libraryOf(cache));
+}
+
+/// Adds the content digest to [cache], encodes it and builds its library.
+_Built _saveCatalog(CatalogCache cache) {
+  final sealed = cache.withContent();
+  return (cache: sealed, text: sealed.encode(), library: _libraryOf(sealed));
+}
+
+CatalogLibrary _libraryOf(CatalogCache cache) {
+  final List<Book> books;
+  try {
+    books = buildBooks(cache.entries, edits: cache.edits);
+  } catch (_) {
+    throw const FormatException('The catalog books could not be built.');
+  }
+  return CatalogLibrary.build(books);
+}
+
+/// The one owner of the signed-in account, its saved catalog and its books.
+///
+/// It notifies through itself for every change, and through three narrow
+/// signals for one kind of change each: [libraryNotifier], [accountNotifier]
+/// and [statusNotifier]. Each signal holds the state that the last
+/// notification read, so it notifies only when its own value changed.
+///
+/// The widget tickets of the conformance epic move from the broad
+/// notification and these members to the signals:
+/// - [books] and the top-level [shelf], [search] and [possibleMatches]:
+///   [libraryNotifier] and its [CatalogLibrary.shelf],
+///   [CatalogLibrary.search], [CatalogLibrary.series],
+///   [CatalogLibrary.seriesOf], [CatalogLibrary.book] and
+///   [CatalogLibrary.matches].
+/// - [session], [accessBlocked], [libraries] and the selection in [cache]:
+///   [accountNotifier].
+/// - [busy] and [message]: [statusNotifier]. [busy] also covers a restore.
+/// [readingOrder] stays: [CatalogLibrary] series are in reading order.
+///
+/// Invariants, which [checkInvariants] proves:
+/// - A signed-out catalog holds no account data.
+/// - The cache belongs to the active account, and each cached item belongs
+///   to a selected book library.
+/// - Each source belongs to exactly one edition, and a text edition has one
+///   source.
+/// - The library view matches its books.
+/// - While no operation runs, [libraryNotifier] holds the visible library.
 class CatalogController extends ChangeNotifier {
   CatalogController({
     required this._credentials,
     required this._store,
     JellyfinClientFactory? clientFactory,
+    CatalogHop? hop,
   }) : _clientFactory =
            clientFactory ??
-           ((server, deviceId) => JellyfinClient(server, deviceId: deviceId));
+           ((server, deviceId) => JellyfinClient(server, deviceId: deviceId)),
+       _hop = hop ?? compute;
   final CredentialStore _credentials;
   final CatalogStore _store;
   final JellyfinClientFactory _clientFactory;
+  final CatalogHop _hop;
   JellyfinClient? _active;
   JellyfinSession? _session;
   CatalogCache? _cache;
   List<BookLibrary> _libraries = [];
-  List<Book> _books = [];
-  bool _busy = false;
+
+  /// The library of [_cache], or the empty library without a cache.
+  CatalogLibrary _built = CatalogLibrary.empty;
+  _Work _work = _Work.idle;
   bool _verified = false;
   bool _accessBlocked = false;
+
+  /// What the last request said about Jellyfin. Access that is blocked is
+  /// [_accessBlocked], so this is never [CatalogReach.accessRevoked].
+  CatalogReach _reach = CatalogReach.unknown;
   bool _disposed = false;
   String? _message;
   int _generation = 0;
   int _accountGeneration = 0;
   Future<void>? _credentialWrites;
   Future<void>? _cacheWrites;
+  late final _librarySignal = ValueNotifier(_visible);
+  late final _accountSignal = ValueNotifier(_account);
+  late final _statusSignal = ValueNotifier(_status);
+
+  /// The visible library: the books of the signed-in account, with their
+  /// shelves and indexes. It is empty while signed out or while access is
+  /// blocked. It notifies only when the books change. A refresh that brings
+  /// the same entries and corrections keeps the same library, the same book
+  /// objects, and notifies nothing.
+  ValueListenable<CatalogLibrary> get libraryNotifier => _librarySignal;
+
+  /// The signed-in account and what it may read.
+  ValueListenable<CatalogAccount> get accountNotifier => _accountSignal;
+
+  /// Whether a refresh runs, what the last request said about Jellyfin, and
+  /// the message to show. A shelf shows only downloaded books while
+  /// [CatalogStatus.reach] is [CatalogReach.unreachable].
+  ValueListenable<CatalogStatus> get statusNotifier => _statusSignal;
 
   JellyfinSession? get session => _session;
   CatalogCache? get cache => _cache;
 
   /// The visible books. A change replaces the list, so callers can compare
   /// lists by identity to see whether the books changed.
-  List<Book> get books =>
-      _session == null || _accessBlocked ? const [] : _books;
+  List<Book> get books => _visible.books;
   List<BookLibrary> get libraries => List.unmodifiable(_libraries);
-  bool get busy => _busy;
+
+  /// Whether a restore, a sign-in or a refresh runs.
+  bool get busy => _work != _Work.idle;
   bool get verified => _verified;
   bool get accessBlocked => _accessBlocked;
   String? get message => _message;
 
+  CatalogLibrary get _visible =>
+      _session == null || _accessBlocked ? CatalogLibrary.empty : _built;
+
+  CatalogAccount get _account => CatalogAccount(
+    session: _session,
+    accessBlocked: _accessBlocked,
+    libraries: _libraries,
+    selected: _cache?.selected ?? const {},
+  );
+
+  CatalogStatus get _status => (
+    refreshing: _work == _Work.refresh,
+    reach: _accessBlocked ? CatalogReach.accessRevoked : _reach,
+    message: _message,
+  );
+
   void checkInvariants() {
     if (_session == null &&
         (_cache != null ||
-            _books.isNotEmpty ||
+            _built.books.isNotEmpty ||
             _libraries.isNotEmpty ||
             _verified)) {
       throw StateError('A signed-out catalog must contain no account data.');
@@ -68,7 +266,7 @@ class CatalogController extends ChangeNotifier {
       );
     }
     final sources = <String>{};
-    for (final book in _books) {
+    for (final book in _built.books) {
       for (final edition in book.editions) {
         if (edition.kind == EditionKind.text && edition.files.length != 1) {
           throw StateError('A text edition must have one source.');
@@ -82,20 +280,56 @@ class CatalogController extends ChangeNotifier {
         }
       }
     }
+    _built.checkInvariants();
+    if (_work == _Work.idle &&
+        !_disposed &&
+        !identical(_librarySignal.value, _visible)) {
+      throw StateError('The library signal must hold the visible library.');
+    }
   }
 
-  int _begin() {
+  /// Builds a catalog with [work] in another isolate, or here when [small]
+  /// (see [_hopEntries]).
+  Future<_Built> _build<M>(
+    _Built Function(M) work,
+    M input, {
+    required bool small,
+  }) async => small ? work(input) : _hop(work, input);
+
+  /// Adopts [built] as the cache. The library changes only when the books
+  /// can differ: a cache with the content of the current one has the same
+  /// books, so the current library, and its book objects, stay.
+  void _adopt(_Built built) {
+    assert(_session?.scope.key == built.cache.scope.key);
+    final previous = _cache;
+    _cache = built.cache;
+    _accessBlocked = built.cache.accessBlocked;
+    if (previous == null ||
+        built.cache.content == null ||
+        built.cache.content != previous.content) {
+      _built = built.library;
+    }
+  }
+
+  int _begin({_Work work = _Work.refresh}) {
     _active?.close();
     _active = null;
-    _busy = true;
+    _work = work;
     _verified = false;
     _message = null;
     return ++_generation;
   }
 
   bool _current(int generation) => !_disposed && generation == _generation;
+
+  /// Publishes the state to the narrow signals, then notifies the broad
+  /// listeners. A signal whose value did not change does not notify.
   void _notify() {
-    if (!_disposed) notifyListeners();
+    if (_disposed) return;
+    _librarySignal.value = _visible;
+    _accountSignal.value = _account;
+    _statusSignal.value = _status;
+    notifyListeners();
   }
 
   Future<void> _writeCredentials(JellyfinSession? value) {
@@ -110,21 +344,26 @@ class CatalogController extends ChangeNotifier {
     ++_accountGeneration;
     _session = null;
     _cache = null;
-    _books = [];
+    _built = CatalogLibrary.empty;
     _libraries = [];
     _verified = false;
     _accessBlocked = false;
+    _reach = CatalogReach.unknown;
   }
 
-  void _publish(CatalogCache value) {
-    assert(_session?.scope.key == value.scope.key);
-    _cache = value;
-    _accessBlocked = value.accessBlocked;
-    _books = buildBooks(value.entries, edits: value.edits);
+  /// The saved catalog of [scope], decoded and built, or null when none is
+  /// saved.
+  Future<_Built?> _readSaved(AccountScope scope) async {
+    final text = await _store.read(scope);
+    if (text == null) return null;
+    return _build(_restoreCatalog, (
+      scope: scope,
+      text: text,
+    ), small: text.length < _hopText);
   }
 
   Future<void> restore() async {
-    final generation = _begin();
+    final generation = _begin(work: _Work.restore);
     _clearVisible();
     _notify();
     try {
@@ -133,11 +372,11 @@ class CatalogController extends ChangeNotifier {
       if (!_current(generation)) return;
       if (restored != null) {
         _session = restored;
-        final saved = await _store.read(restored.scope);
+        final saved = await _readSaved(restored.scope);
         if (!_current(generation)) return;
-        if (saved != null && saved.scope.key == restored.scope.key) {
-          _publish(saved);
-          _libraries = saved.libraries;
+        if (saved != null) {
+          _adopt(saved);
+          _libraries = saved.cache.libraries;
         }
       }
     } catch (_) {
@@ -147,7 +386,7 @@ class CatalogController extends ChangeNotifier {
       }
     } finally {
       if (_current(generation)) {
-        _busy = false;
+        _work = _Work.idle;
         _notify();
       }
     }
@@ -166,15 +405,16 @@ class CatalogController extends ChangeNotifier {
       _active = client;
       final signedIn = await client.signIn(username.trim(), password);
       if (!_current(generation)) return;
+      _reach = CatalogReach.reached;
       if (signedIn.scope.server != address) {
         throw const CatalogFailure(CatalogFailureKind.unauthorized);
       }
       await _writeCredentials(signedIn);
       if (!_current(generation)) return;
       _session = signedIn;
-      CatalogCache? saved;
+      _Built? saved;
       try {
-        saved = await _store.read(signedIn.scope);
+        saved = await _readSaved(signedIn.scope);
       } catch (_) {
         if (_current(generation)) {
           _message =
@@ -182,9 +422,7 @@ class CatalogController extends ChangeNotifier {
         }
       }
       if (!_current(generation)) return;
-      if (saved != null && saved.scope.key == signedIn.scope.key) {
-        _publish(saved);
-      }
+      if (saved != null) _adopt(saved);
       final views = await client.libraries(signedIn);
       if (!_current(generation)) return;
       _libraries = views;
@@ -207,7 +445,7 @@ class CatalogController extends ChangeNotifier {
       }
     } finally {
       if (_current(generation)) {
-        _busy = false;
+        _work = _Work.idle;
         _active?.close();
         _active = null;
         _notify();
@@ -227,6 +465,7 @@ class CatalogController extends ChangeNotifier {
       _active = client;
       final validated = await client.validate(currentSession);
       if (!_current(generation)) return;
+      _reach = CatalogReach.reached;
       final views = await client.libraries(validated);
       if (!_current(generation)) return;
       _libraries = views;
@@ -242,21 +481,24 @@ class CatalogController extends ChangeNotifier {
       if (!_current(generation)) return;
       final write = (_cacheWrites ?? Future<void>.value()).then((_) async {
         if (!_current(generation)) return;
-        final next = CatalogCache(
-          scope: validated.scope,
-          libraries: views,
-          selected: Set.unmodifiable(selection),
-          entries: List.unmodifiable(entries),
-          edits: _cache?.edits,
-          completedAt: DateTime.now().toUtc(),
+        final built = await _build(
+          _saveCatalog,
+          CatalogCache(
+            scope: validated.scope,
+            libraries: views,
+            selected: selection,
+            entries: entries,
+            edits: _cache?.edits,
+            completedAt: DateTime.now().toUtc(),
+          ),
+          small: entries.length < _hopEntries,
         );
-        buildBooks(next.entries, edits: next.edits);
-        await _store.write(validated.scope, next);
+        if (!_current(generation)) return;
+        await _store.write(validated.scope, built.text);
         if (!_current(generation)) return;
         _session = validated;
-        _publish(next);
+        _adopt(built);
         _verified = true;
-        _accessBlocked = false;
       });
       _cacheWrites = write.catchError((Object _) {});
       await write;
@@ -270,7 +512,7 @@ class CatalogController extends ChangeNotifier {
       }
     } finally {
       if (_current(generation)) {
-        _busy = false;
+        _work = _Work.idle;
         _active?.close();
         _active = null;
         _notify();
@@ -281,8 +523,17 @@ class CatalogController extends ChangeNotifier {
   Future<void> _failure(CatalogFailure failure, int generation) async {
     _verified = false;
     _message = failure.message;
+    _reach = switch (failure.kind) {
+      CatalogFailureKind.unavailable => CatalogReach.unreachable,
+      // The request did not reach Jellyfin, so it says nothing new.
+      CatalogFailureKind.cancelled ||
+      CatalogFailureKind.invalidServer => _reach,
+      // Jellyfin answered. An expired sign-in is set below, with sign-out.
+      _ => CatalogReach.reached,
+    };
     if (failure.kind == CatalogFailureKind.unauthorized) {
       _clearVisible();
+      _reach = CatalogReach.signInExpired;
       try {
         await _writeCredentials(null);
       } catch (_) {
@@ -296,17 +547,22 @@ class CatalogController extends ChangeNotifier {
       final write = (_cacheWrites ?? Future<void>.value()).then((_) async {
         if (!_current(generation)) return;
         final previous = _cache;
-        final denied = CatalogCache(
-          scope: scope,
-          libraries: previous?.libraries ?? _libraries,
-          selected: previous?.selected ?? const {},
-          entries: previous?.entries ?? const [],
-          edits: previous?.edits,
-          completedAt: previous?.completedAt,
-          accessBlocked: true,
+        final denied = await _build(
+          _saveCatalog,
+          CatalogCache(
+            scope: scope,
+            libraries: previous?.libraries ?? _libraries,
+            selected: previous?.selected ?? const {},
+            entries: previous?.entries ?? const [],
+            edits: previous?.edits,
+            completedAt: previous?.completedAt,
+            accessBlocked: true,
+          ),
+          small: (previous?.entries.length ?? 0) < _hopEntries,
         );
-        await _store.write(scope, denied);
-        if (_current(generation)) _cache = denied;
+        if (!_current(generation)) return;
+        await _store.write(scope, denied.text);
+        if (_current(generation)) _adopt(denied);
       });
       _cacheWrites = write.catchError((Object _) {});
       try {
@@ -324,7 +580,7 @@ class CatalogController extends ChangeNotifier {
   Future<void> signOut() async {
     _begin();
     _clearVisible();
-    _busy = false;
+    _work = _Work.idle;
     _notify();
     final generation = _generation;
     try {
@@ -341,20 +597,19 @@ class CatalogController extends ChangeNotifier {
     _active?.close();
     _active = null;
     ++_generation;
-    _busy = false;
+    _work = _Work.idle;
     _verified = false;
     _message = 'Refresh cancelled.';
     _notify();
   }
 
-  Book _book(String id) => books.firstWhere(
-    (book) => book.id == id,
-    orElse: () => throw ArgumentError.value(
-      id,
-      'bookId',
-      'Book is not in the active catalog.',
-    ),
-  );
+  Book _book(String id) =>
+      _visible.book(id) ??
+      (throw ArgumentError.value(
+        id,
+        'bookId',
+        'Book is not in the active catalog.',
+      ));
 
   Future<void> _edit(CatalogEdits Function(CatalogEdits) change) {
     if (_session == null || _cache == null || _accessBlocked) {
@@ -366,20 +621,23 @@ class CatalogController extends ChangeNotifier {
     final write = (_cacheWrites ?? Future<void>.value()).then((_) async {
       if (!currentAccount()) return;
       final previous = _cache!;
-      final next = CatalogCache(
-        scope: previous.scope,
-        libraries: previous.libraries,
-        selected: previous.selected,
-        entries: previous.entries,
-        edits: change(previous.edits),
-        completedAt: previous.completedAt,
-      );
-      final rebuilt = buildBooks(next.entries, edits: next.edits);
       try {
-        await _store.write(next.scope, next);
+        final built = await _build(
+          _saveCatalog,
+          CatalogCache(
+            scope: previous.scope,
+            libraries: previous.libraries,
+            selected: previous.selected,
+            entries: previous.entries,
+            edits: change(previous.edits),
+            completedAt: previous.completedAt,
+          ),
+          small: previous.entries.length < _hopEntries,
+        );
         if (!currentAccount()) return;
-        _cache = next;
-        _books = rebuilt;
+        await _store.write(previous.scope, built.text);
+        if (!currentAccount()) return;
+        _adopt(built);
         _message = null;
         _notify();
       } catch (_) {
@@ -551,6 +809,9 @@ class CatalogController extends ChangeNotifier {
     _disposed = true;
     ++_generation;
     _active?.close();
+    _librarySignal.dispose();
+    _accountSignal.dispose();
+    _statusSignal.dispose();
     super.dispose();
   }
 }

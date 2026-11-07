@@ -154,3 +154,227 @@ List<Book> search(List<Book> books, String query) {
 
 String _seriesKey(String name) =>
     name.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
+
+/// The books of one catalog, with the shelves and indexes that the library
+/// pages read. The catalog builds a library off the UI isolate, once for each
+/// change of its books, so that a page finds a shelf, a series, a book, its
+/// possible matches or search results without a scan of the whole library.
+///
+/// A library never changes after it is built.
+///
+/// Invariant: every shelf and index is the one that [CatalogLibrary.build]
+/// makes from [books]. [checkInvariants] proves it.
+class CatalogLibrary {
+  CatalogLibrary._({
+    required this.books,
+    required this._shelves,
+    required this._positions,
+    required this._seriesOfBook,
+    required this._seriesByName,
+    required this._sameTitle,
+    required this._sameIdentifier,
+    required this._searchText,
+  });
+
+  /// Groups and indexes [books], which must be in natural order of their
+  /// titles, as [buildBooks] gives them. This is whole-library work, so the
+  /// catalog runs it in another isolate.
+  factory CatalogLibrary.build(List<Book> books) {
+    bool has(Book book, EditionKind kind) =>
+        book.editions.any((edition) => edition.kind == kind);
+    final shelves = {
+      ShelfFilter.all: _group(books),
+      ShelfFilter.audio: _group([
+        for (final book in books)
+          if (has(book, EditionKind.audio)) book,
+      ]),
+      ShelfFilter.ebooks: _group([
+        for (final book in books)
+          if (has(book, EditionKind.text)) book,
+      ]),
+    };
+    final sameTitle = <String, List<int>>{};
+    final sameIdentifier = <String, List<int>>{};
+    for (final (index, book) in books.indexed) {
+      sameTitle.putIfAbsent(titleMatchKey(book.title), () => []).add(index);
+      for (final identifier in book.providerIds.entries) {
+        if (identifier.value.isEmpty) continue;
+        sameIdentifier
+            .putIfAbsent(
+              _identifierKey(identifier.key, identifier.value),
+              () => [],
+            )
+            .add(index);
+      }
+    }
+    final series = shelves[ShelfFilter.all]!.whereType<ShelfSeries>();
+    return CatalogLibrary._(
+      books: books,
+      shelves: shelves,
+      positions: {for (final (index, book) in books.indexed) book.id: index},
+      seriesOfBook: {
+        for (final entry in series)
+          for (final book in entry.books) book.id: entry,
+      },
+      seriesByName: {for (final entry in series) entry.name: entry},
+      sameTitle: sameTitle,
+      sameIdentifier: sameIdentifier,
+      searchText: [for (final book in books) _searchTextOf(book)],
+    );
+  }
+
+  /// The library of a signed-out account, or of an account without access.
+  static final empty = CatalogLibrary.build(const []);
+
+  /// In natural order of their titles.
+  final List<Book> books;
+
+  /// The shelves of the filters that need no download state.
+  final Map<ShelfFilter, List<ShelfItem>> _shelves;
+
+  /// The index of each book in [books], by book id.
+  final Map<String, int> _positions;
+
+  /// The series entry of the full shelf that holds each book, by book id.
+  final Map<String, ShelfSeries> _seriesOfBook;
+
+  /// The series entries of the full shelf, by name. Two series never share a
+  /// name, because the shelf groups series by their name without case and
+  /// spacing.
+  final Map<String, ShelfSeries> _seriesByName;
+
+  /// The indexes of the books with each title, as [possibleMatches] compares
+  /// titles.
+  final Map<String, List<int>> _sameTitle;
+
+  /// The indexes of the books with each nonempty provider identifier.
+  final Map<String, List<int>> _sameIdentifier;
+
+  /// The lowercase title, author and series of each book, in [books] order.
+  final List<String> _searchText;
+
+  /// The library entries of the books that pass [filter], as [shelf] gives
+  /// them. The shelves of all books, audio and ebooks are ready, so the call
+  /// costs nothing, and it gives back the same list on every call.
+  /// [downloaded] is read only for [ShelfFilter.downloaded]. That shelf is
+  /// grouped here, on the calling isolate: it holds only the downloaded
+  /// books, and grouping a few hundred books costs less than one isolate hop
+  /// (about 1 ms for 500 books, measured in AOT), while the hop would copy
+  /// every book to the other isolate. The downloaded shelf keeps its list
+  /// while the same books are downloaded.
+  List<ShelfItem> shelf(
+    ShelfFilter filter,
+    bool Function(Edition) downloaded,
+  ) => _shelves[filter] ?? _shelf(books, filter, downloaded);
+
+  /// The series of the full shelf whose name is [name], or null.
+  ShelfSeries? series(String name) =>
+      _seriesOfBook.values.where((series) => series.name == name).firstOrNull;
+
+  /// The series entry of the full shelf that holds [book], or null when the
+  /// book is not in a series of two or more books of this library.
+  ShelfSeries? seriesOf(Book book) => _seriesOfBook[book.id];
+
+  /// The book whose id is [id], or null.
+  Book? book(String id) {
+    final index = _positions[id];
+    return index == null ? null : books[index];
+  }
+
+  /// The other books of this library that may be the same work as [book],
+  /// in [books] order: the books with the same title, as [possibleMatches]
+  /// compares titles, and the books that share a provider identifier.
+  List<Book> matches(Book book) {
+    final found = <int>{
+      ...?_sameTitle[titleMatchKey(book.title)],
+      for (final identifier in book.providerIds.entries)
+        if (identifier.value.isNotEmpty)
+          ...?_sameIdentifier[_identifierKey(identifier.key, identifier.value)],
+    };
+    return [
+      for (final index in found.toList()..sort())
+        if (books[index].id != book.id) books[index],
+    ];
+  }
+
+  /// The books whose title, author or series contains [query], ignoring
+  /// letter case, in natural order of their titles, as [search] gives them.
+  /// This runs on the calling isolate: the lowercase text of every book is
+  /// ready, so a search is one substring test for each book, about 0.5 ms
+  /// for 5000 books. A hop to another isolate would copy the library and
+  /// cost more than that.
+  List<Book> search(String query) {
+    final needle = query.trim().toLowerCase();
+    if (needle.isEmpty) return const [];
+    return [
+      for (final (index, text) in _searchText.indexed)
+        if (text.contains(needle)) books[index],
+    ];
+  }
+
+  /// Throws a [StateError] unless every shelf and index is the one that a
+  /// new build from [books] makes. It rebuilds the library, so it is slow.
+  void checkInvariants() {
+    final fresh = CatalogLibrary.build(books);
+    for (final filter in fresh._shelves.keys) {
+      if (!_sameItems(_shelves[filter]!, fresh._shelves[filter]!)) {
+        throw StateError('The $filter shelf must group the library books.');
+      }
+    }
+    for (final (index, book) in books.indexed) {
+      if (_positions[book.id] != index) {
+        throw StateError('Each book id must lead to its book.');
+      }
+      final series = _seriesOfBook[book.id];
+      if (series?.name != fresh._seriesOfBook[book.id]?.name ||
+          (series != null &&
+              !series.books.any((member) => identical(member, book)))) {
+        throw StateError('Each book must lead to the series that holds it.');
+      }
+      if (_searchText[index] != fresh._searchText[index]) {
+        throw StateError('The search text must follow each book.');
+      }
+      if (!_sameBooks(matches(book), possibleMatches(book, books))) {
+        throw StateError('The possible matches must follow the books.');
+      }
+    }
+    for (final series in fresh._seriesByName.values) {
+      if (!identical(
+        _seriesByName[series.name],
+        _seriesOfBook[series.books.first.id],
+      )) {
+        throw StateError('Each series name must lead to its series.');
+      }
+    }
+    if (_positions.length != books.length ||
+        _seriesOfBook.length != fresh._seriesOfBook.length ||
+        _seriesByName.length != fresh._seriesByName.length) {
+      throw StateError('The indexes must hold only the library books.');
+    }
+  }
+}
+
+/// [shelf], under a name that [CatalogLibrary.shelf] does not hide.
+const _shelf = shelf;
+
+String _identifierKey(String provider, String value) => '$provider\n$value';
+
+String _searchTextOf(Book book) =>
+    [book.title, book.author, ?book.series].join('\n').toLowerCase();
+
+bool _sameItems(List<ShelfItem> left, List<ShelfItem> right) {
+  if (left.length != right.length) return false;
+  for (var index = 0; index < left.length; index++) {
+    final same = switch ((left[index], right[index])) {
+      (ShelfBook(book: final a), ShelfBook(book: final b)) => identical(a, b),
+      (
+        ShelfSeries(name: final a, books: final x),
+        ShelfSeries(name: final b, books: final y),
+      ) =>
+        a == b && _sameBooks(x, y),
+      _ => false,
+    };
+    if (!same) return false;
+  }
+  return true;
+}
