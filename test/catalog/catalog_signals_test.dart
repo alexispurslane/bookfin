@@ -4,6 +4,8 @@ import 'dart:isolate';
 import 'package:bookfin/catalog/controller.dart';
 import 'package:bookfin/catalog/jellyfin.dart';
 import 'package:bookfin/catalog/model.dart';
+import 'package:bookfin/catalog/store.dart';
+import 'package:bookfin/catalog/transport.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'controller_test.dart'
@@ -27,6 +29,62 @@ List<CatalogEntry> _largeLibrary({String prefix = 'Book'}) => [
     entry('item$index', title: '$prefix $index', source: 'source$index'),
 ];
 
+/// Whether [input], the value that a hop copies into its worker, holds
+/// catalog entries. A record shows its fields only through its text, so a
+/// record that names an entry or a cache counts as holding entries.
+bool _carriesEntries(Object? input) => switch (input) {
+  CatalogCache(:final entries) => entries.isNotEmpty,
+  CatalogEntry() => true,
+  Iterable() => input.any(_carriesEntries),
+  Record() => '$input'.contains(RegExp('CatalogEntry|CatalogCache')),
+  _ => false,
+};
+
+/// Answers with one book library, `books`, whose one catalog page holds
+/// [items], and with no collections.
+class _PageTransport implements JsonTransport {
+  _PageTransport(this.items);
+  final List<Map<String, dynamic>> items;
+  @override
+  Future<Map<String, dynamic>> send(
+    Uri uri, {
+    required String method,
+    required Map<String, String> headers,
+    Map<String, dynamic>? body,
+  }) async => switch (uri.pathSegments.last) {
+    'UserViews' => {
+      'Items': [
+        {'Id': 'books', 'Name': 'Books', 'CollectionType': 'books'},
+      ],
+    },
+    _ when uri.queryParameters['parentId'] == 'books' => {
+      'Items': items,
+      'TotalRecordCount': items.length,
+      'StartIndex': 0,
+    },
+    _ => {'Items': <Object>[]},
+  };
+  @override
+  void close() {}
+}
+
+/// A client whose catalog pages come from Jellyfin's JSON, so the catalog
+/// builds its entries from responses, as with a real server.
+class _PagedClient extends FixtureClient {
+  _PagedClient(super.server, List<Map<String, dynamic>> items)
+    : _pages = JellyfinClient(
+        server,
+        deviceId: 'test',
+        transport: _PageTransport(items),
+      );
+  final JellyfinClient _pages;
+  @override
+  Future<List<CatalogEntry>> catalog(
+    JellyfinSession session,
+    Set<String> selected,
+  ) => _pages.catalog(session, selected);
+}
+
 void main() {
   late MemoryCredentials credentials;
   late MemoryCatalogStore store;
@@ -35,12 +93,17 @@ void main() {
   late ReceivePort reports;
   late List<(String?, int)> builds;
 
+  /// Whether each hop copied entries into its worker, in hop order.
+  late List<bool> crossings;
+
   CatalogController newController() => CatalogController(
     credentials: credentials,
     store: store,
     clientFactory: (server, device) => client,
-    hop: <M, R>(R Function(M) work, M input) =>
-        _recordingHop(reports.sendPort, work, input),
+    hop: <M, R>(R Function(M) work, M input) {
+      crossings.add(_carriesEntries(input));
+      return _recordingHop(reports.sendPort, work, input);
+    },
   );
 
   /// Waits until the worker reports of earlier hops have arrived.
@@ -51,6 +114,7 @@ void main() {
     store = MemoryCatalogStore();
     client = FixtureClient(Uri.parse('https://books.example'));
     builds = [];
+    crossings = [];
     reports = ReceivePort()
       ..listen((report) => builds.add(report as (String?, int)));
     controller = newController();
@@ -329,6 +393,117 @@ void main() {
         await settleReports();
         expect(builds, isEmpty);
         expect(controller.books, hasLength(1));
+      },
+    );
+  });
+
+  group('what crosses to the worker', () {
+    test(
+      'a refresh hands the worker Jellyfin\'s responses, not built entries',
+      () async {
+        client = _PagedClient(Uri.parse('https://books.example'), [
+          for (final value in _largeLibrary()) {...value.json},
+        ]);
+        controller.dispose();
+        controller = newController();
+        await connectAndSelect();
+        await settleReports();
+        expect(crossings, [false]);
+        expect(builds, [('catalog worker', 1)]);
+        expect(controller.books, hasLength(40));
+      },
+      skip:
+          'ta-7oe6: the transport returns decoded maps on the UI isolate, so '
+          'the entries cross until it hands the worker page bytes.',
+    );
+
+    test(
+      'a correction hands the worker the saved text, not the entries',
+      () async {
+        client.entries = _largeLibrary();
+        await connectAndSelect();
+        crossings.clear();
+        await controller.correctBook(
+          'book:item1',
+          const BookDetails(title: 'Corrected', author: 'Writer'),
+        );
+        expect(crossings, [false]);
+        expect(
+          controller.books.map((book) => book.title),
+          contains('Corrected'),
+        );
+        final saved = CatalogCache.decode(
+          account('alice').scope,
+          store.values[account('alice').scope.key]!,
+        );
+        expect(saved.entries, hasLength(40));
+        expect(saved.edits.details['book:item1']!.title, 'Corrected');
+        controller.checkInvariants();
+      },
+    );
+
+    test(
+      'a saved denial hands the worker the saved text, not the entries',
+      () async {
+        client.entries = _largeLibrary();
+        await connectAndSelect();
+        crossings.clear();
+        client.failure = const CatalogFailure(CatalogFailureKind.forbidden);
+        await controller.refresh();
+        expect(crossings, [false]);
+        expect(
+          controller.statusNotifier.value.reach,
+          CatalogReach.accessRevoked,
+        );
+        final saved = CatalogCache.decode(
+          account('alice').scope,
+          store.values[account('alice').scope.key]!,
+        );
+        expect(saved.accessBlocked, isTrue);
+        expect(saved.entries, hasLength(40));
+        controller.checkInvariants();
+      },
+    );
+
+    test('corrections in a row each start from the last saved one', () async {
+      client.entries = _largeLibrary();
+      await connectAndSelect();
+      await Future.wait([
+        controller.correctBook(
+          'book:item1',
+          const BookDetails(title: 'First', author: 'Writer'),
+        ),
+        controller.correctBook(
+          'book:item2',
+          const BookDetails(title: 'Second', author: 'Writer'),
+        ),
+      ]);
+      expect(
+        controller.books.map((book) => book.title),
+        containsAll(['First', 'Second']),
+      );
+      final restarted = newController();
+      addTearDown(restarted.dispose);
+      await restarted.restore();
+      expect(
+        restarted.books.map((book) => book.title),
+        containsAll(['First', 'Second']),
+      );
+    });
+
+    test(
+      'access that returns after a saved denial brings the books back',
+      () async {
+        client.entries = _largeLibrary();
+        await connectAndSelect();
+        client.failure = const CatalogFailure(CatalogFailureKind.forbidden);
+        await controller.refresh();
+        expect(controller.books, isEmpty);
+        client.failure = null;
+        await controller.refresh();
+        expect(controller.books, hasLength(40));
+        expect(controller.statusNotifier.value.reach, CatalogReach.reached);
+        controller.checkInvariants();
       },
     );
   });
