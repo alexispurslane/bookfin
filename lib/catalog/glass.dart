@@ -35,7 +35,9 @@ class CoverGlass extends StatelessWidget {
     final night = theme.brightness == Brightness.dark;
     final shape = BorderRadius.circular(radius);
     final shown =
-        book ?? PageBook.of(context) ?? CoverScope.of(context)?.playing;
+        book ??
+        PageBook.of(context) ??
+        CoverScope.of(context, CoverAspect.playing)?.playing;
     return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: shape,
