@@ -1,6 +1,6 @@
 ---
 id: boo-4bof
-status: in_progress
+status: closed
 deps: [boo-l5x3, t9-112h]
 links: []
 created: 2026-11-07T21:30:01Z

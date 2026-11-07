@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../foundation/listenable_selector.dart';
@@ -10,13 +11,16 @@ import 'book_page.dart';
 import 'layout.dart';
 import 'library_services.dart';
 import 'model.dart';
+import 'controller.dart';
 import 'screen.dart' show LibrarySelector, TabFrame, TabPage;
 import 'shelf.dart';
 
-/// The Library tab below its top bar: filters, then the grouped shelf.
+/// The Library tab below its top bar: filters, then the grouped shelf. A tap
+/// on an entry goes to [onOpen].
 class LibraryShelf extends StatefulWidget {
-  const LibraryShelf({super.key, required this.services});
+  const LibraryShelf({super.key, required this.services, required this.onOpen});
   final LibraryServices services;
+  final ValueChanged<ShelfItem> onOpen;
   @override
   State<LibraryShelf> createState() => _LibraryShelfState();
 }
@@ -24,30 +28,46 @@ class LibraryShelf extends StatefulWidget {
 class _LibraryShelfState extends State<LibraryShelf> {
   ShelfFilter _filter = ShelfFilter.all;
 
-  /// The shelf follows the catalog and the layout. Download state changes
-  /// the shelf only through the Downloaded filter, and only when a download
-  /// finishes or goes away, because [shelf] keeps the same list otherwise.
+  /// The shelf follows the catalog's library, and whether Jellyfin can be
+  /// reached. While it cannot, the shelf shows only downloaded books, and
+  /// the chosen filter stays for the next refresh that reaches Jellyfin.
+  /// Download state changes the shelf only through the downloaded books,
+  /// and only when a download starts, finishes or goes away, because
+  /// [CatalogLibrary.shelf] keeps the same list otherwise. Each entry follows
+  /// its own book.
   @override
   Widget build(BuildContext context) {
     final services = widget.services;
     final catalog = services.catalog;
-    return ListenableBuilder(
-      listenable: Listenable.merge([catalog, services.layout]),
-      builder: (context, _) => ListenableSelector(
-        listenable: Listenable.merge([
-          if (_filter == ShelfFilter.downloaded) ?services.downloads,
-        ]),
-        select: () => shelf(catalog.books, _filter, services.editionDownloaded),
-        builder: (context, items, _) => _build(context, items),
+    return ValueListenableBuilder(
+      valueListenable: catalog.libraryNotifier,
+      builder: (context, library, _) => ListenableSelector(
+        listenable: catalog.statusNotifier,
+        select: () =>
+            catalog.statusNotifier.value.reach == CatalogReach.unreachable,
+        builder: (context, offline, _) {
+          final filter = offline ? ShelfFilter.downloaded : _filter;
+          return ListenableSelector(
+            listenable: Listenable.merge([
+              if (filter == ShelfFilter.downloaded) ?services.downloads?.phases,
+            ]),
+            select: () => library.shelf(filter, services.editionDownloaded),
+            builder: (context, items, _) => _build(context, items, filter),
+          );
+        },
       ),
     );
   }
 
-  Widget _build(BuildContext context, List<ShelfItem> items) {
+  Widget _build(
+    BuildContext context,
+    List<ShelfItem> items,
+    ShelfFilter shown,
+  ) {
     final services = widget.services;
     final catalog = services.catalog;
     return RefreshIndicator(
-      onRefresh: catalog.busy ? () async {} : catalog.refresh,
+      onRefresh: () => catalog.busy ? Future<void>.value() : catalog.refresh(),
       child: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
@@ -75,16 +95,7 @@ class _LibraryShelfState extends State<LibraryShelf> {
               ),
             ),
           ),
-          if (!catalog.verified && catalog.cache?.completedAt != null)
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-                child: Text(
-                  'Saved library · ${dayAndTime(context, catalog.cache!.completedAt!)}',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ),
-            ),
+          _SavedLine(catalog: catalog),
           if (items.isEmpty)
             SliverFillRemaining(
               hasScrollBody: false,
@@ -92,9 +103,9 @@ class _LibraryShelfState extends State<LibraryShelf> {
                 child: Padding(
                   padding: const EdgeInsets.all(32),
                   child: Text(
-                    catalog.accessBlocked
+                    catalog.accountNotifier.value.accessBlocked
                         ? 'Choose available book libraries to continue.'
-                        : _filter == ShelfFilter.downloaded
+                        : shown == ShelfFilter.downloaded
                         ? 'No downloaded books yet.'
                         : 'No books found.',
                     textAlign: TextAlign.center,
@@ -104,7 +115,11 @@ class _LibraryShelfState extends State<LibraryShelf> {
               ),
             )
           else
-            ShelfEntries(services: services, items: items),
+            ShelfEntries(
+              services: services,
+              items: items,
+              onOpen: widget.onOpen,
+            ),
           SliverToBoxAdapter(
             child: SizedBox(height: 24 + floatingBarInset(context)),
           ),
@@ -114,26 +129,62 @@ class _LibraryShelfState extends State<LibraryShelf> {
   }
 }
 
-/// Library entries as a grid or a list, in the saved layout. A sliver.
+/// The time of the saved library, while no refresh confirmed it.
+class _SavedLine extends StatelessWidget {
+  const _SavedLine({required this.catalog});
+  final CatalogController catalog;
+
+  @override
+  Widget build(BuildContext context) => ListenableSelector(
+    listenable: Listenable.merge([
+      catalog.statusNotifier,
+      catalog.libraryNotifier,
+    ]),
+    select: () => catalog.statusNotifier.value.verified
+        ? null
+        : catalog.cache?.completedAt,
+    builder: (context, savedAt, _) => SliverToBoxAdapter(
+      child: savedAt == null
+          ? const SizedBox.shrink()
+          : Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+              child: Text(
+                'Saved library · ${dayAndTime(context, savedAt)}',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ),
+    ),
+  );
+}
+
+/// Library entries as a grid or a list, in the saved layout. A sliver. A tap
+/// on an entry goes to [onOpen]. Each entry follows only its own books.
 class ShelfEntries extends StatelessWidget {
   const ShelfEntries({
     super.key,
     required this.services,
     required this.items,
+    required this.onOpen,
     this.showSeriesPosition = false,
     this.forceList = false,
   });
   final LibraryServices services;
   final List<ShelfItem> items;
+  final ValueChanged<ShelfItem> onOpen;
 
   /// Labels each book with its position, for example "BOOK 2".
   final bool showSeriesPosition;
   final bool forceList;
 
   @override
-  Widget build(BuildContext context) {
-    final compact = services.layout.density == LibraryDensity.compact;
-    if (services.layout.view == LibraryView.grid && !forceList) {
+  Widget build(BuildContext context) => ValueListenableBuilder(
+    valueListenable: services.shelfLayout,
+    builder: (context, layout, _) => _build(context, layout),
+  );
+
+  Widget _build(BuildContext context, ShelfLayout layout) {
+    final compact = layout.density == LibraryDensity.compact;
+    if (layout.view == LibraryView.grid && !forceList) {
       return SliverPadding(
         padding: const EdgeInsets.symmetric(horizontal: 18),
         sliver: SliverLayoutBuilder(
@@ -160,6 +211,7 @@ class ShelfEntries extends StatelessWidget {
                           ? _GridTile(
                               services: services,
                               item: items[row * columns + column],
+                              onOpen: onOpen,
                               compact: compact,
                               showSeriesPosition: showSeriesPosition,
                             )
@@ -181,6 +233,7 @@ class ShelfEntries extends StatelessWidget {
         itemBuilder: (context, index) => _ListRow(
           services: services,
           item: items[index],
+          onOpen: onOpen,
           compact: compact,
           showSeriesPosition: showSeriesPosition,
         ),
@@ -189,10 +242,14 @@ class ShelfEntries extends StatelessWidget {
   }
 }
 
-void _open(BuildContext context, LibraryServices services, ShelfItem item) =>
+/// Changes when what the library shows of [item] can change: the download
+/// state and listening progress of its book, or of each book of its series.
+Listenable _activity(LibraryServices services, ShelfItem item) =>
     switch (item) {
-      ShelfBook(:final book) => openBook(context, services, book),
-      ShelfSeries() => openSeries(context, services, item),
+      ShelfBook(:final book) => services.bookActivity(book),
+      ShelfSeries(:final books) => Listenable.merge([
+        for (final book in books) services.bookActivity(book),
+      ]),
     };
 
 /// Whether the entry's book, or every book of its series, is downloaded.
@@ -227,19 +284,21 @@ class _GridTile extends StatelessWidget {
   const _GridTile({
     required this.services,
     required this.item,
+    required this.onOpen,
     required this.compact,
     required this.showSeriesPosition,
   });
   final LibraryServices services;
   final ShelfItem item;
+  final ValueChanged<ShelfItem> onOpen;
   final bool compact;
   final bool showSeriesPosition;
 
-  /// A tile rebuilds for download state and listening progress only when
-  /// what it shows of them changes.
+  /// A tile follows only its own book or series, and rebuilds for download
+  /// state and listening progress only when what it shows of them changes.
   @override
   Widget build(BuildContext context) => ListenableSelector(
-    listenable: services.activity,
+    listenable: _activity(services, item),
     select: () => (
       downloaded: _downloaded(services, item),
       progress: switch (item) {
@@ -277,7 +336,7 @@ class _GridTile extends StatelessWidget {
       label: item is ShelfSeries ? 'Series $title' : title,
       excludeSemantics: true,
       child: InkWell(
-        onTap: () => _open(context, services, item),
+        onTap: () => onOpen(item),
         borderRadius: BorderRadius.circular(10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -327,19 +386,21 @@ class _ListRow extends StatelessWidget {
   const _ListRow({
     required this.services,
     required this.item,
+    required this.onOpen,
     required this.compact,
     required this.showSeriesPosition,
   });
   final LibraryServices services;
   final ShelfItem item;
+  final ValueChanged<ShelfItem> onOpen;
   final bool compact;
   final bool showSeriesPosition;
 
-  /// A row rebuilds for download state and listening progress only when
-  /// what it shows of them changes.
+  /// A row follows only its own book or series, and rebuilds for download
+  /// state and listening progress only when what it shows of them changes.
   @override
   Widget build(BuildContext context) => ListenableSelector(
-    listenable: services.activity,
+    listenable: _activity(services, item),
     select: () => (
       downloaded: _downloaded(services, item),
       detail: switch (item) {
@@ -376,7 +437,7 @@ class _ListRow extends StatelessWidget {
       detail: detail,
       compact: compact,
       semanticLabel: item is ShelfSeries ? 'Series $title' : title,
-      onTap: () => _open(context, services, item),
+      onTap: () => onOpen(item),
     );
   }
 }
@@ -511,24 +572,43 @@ TextStyle _positionStyle(ThemeData theme) => TextStyle(
   color: theme.colorScheme.primary,
 );
 
-/// The top bar action that switches between grid and list.
+/// The top bar action that switches between grid and list. It reports the
+/// chosen view to [onChanged].
 class LayoutToggle extends StatelessWidget {
-  const LayoutToggle({super.key, required this.layout});
-  final LibraryLayout layout;
+  const LayoutToggle({
+    super.key,
+    required this.layout,
+    required this.onChanged,
+  });
+  final ValueListenable<ShelfLayout> layout;
+  final ValueChanged<LibraryView> onChanged;
   @override
-  Widget build(BuildContext context) => ListenableBuilder(
-    listenable: layout,
-    builder: (context, _) {
-      final grid = layout.view == LibraryView.grid;
+  Widget build(BuildContext context) => ValueListenableBuilder(
+    valueListenable: layout,
+    builder: (context, shown, _) {
+      final grid = shown.view == LibraryView.grid;
       return IconButton(
         tooltip: grid ? 'Show as list' : 'Show as grid',
-        onPressed: () =>
-            layout.view = grid ? LibraryView.list : LibraryView.grid,
+        onPressed: () => onChanged(grid ? LibraryView.list : LibraryView.grid),
         icon: Icon(grid ? Icons.view_list_outlined : Icons.grid_view_outlined),
       );
     },
   );
 }
+
+/// Opens the page of [item]: a book's page or a series page. Only the page
+/// controllers call this: [LibraryTab], [SearchPage] and [SeriesPage].
+void _open(BuildContext context, LibraryServices services, ShelfItem item) =>
+    switch (item) {
+      ShelfBook(:final book) => openBook(context, services, book),
+      ShelfSeries() => openSeries(context, services, item),
+    };
+
+/// The layout toggle of a page, which saves the view that it reports.
+Widget _layoutToggle(LibraryServices services) => LayoutToggle(
+  layout: services.shelfLayout,
+  onChanged: (view) => services.layout.view = view,
+);
 
 void openSearch(BuildContext context, LibraryServices services) => unawaited(
   Navigator.push<void>(
@@ -548,77 +628,88 @@ class SearchPage extends StatefulWidget {
 }
 
 class _SearchPageState extends State<SearchPage> {
-  String _query = '';
+  final _query = TextEditingController();
 
-  /// Results follow the catalog and the layout. Each row follows its own
-  /// download state and listening progress.
   @override
-  Widget build(BuildContext context) => ListenableBuilder(
-    listenable: Listenable.merge([
-      widget.services.catalog,
-      widget.services.layout,
-    ]),
-    builder: (context, _) {
-      final results = search(widget.services.catalog.books, _query);
-      return widget.services.page(
-        context,
-        appBar: AppBar(
-          titleSpacing: 0,
-          title: Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: TextField(
-              autofocus: true,
-              textInputAction: TextInputAction.search,
-              decoration: InputDecoration(
-                hintText: 'Search books, authors, series',
-                prefixIcon: const Icon(Icons.search_rounded),
-                isDense: true,
-                contentPadding: const EdgeInsets.symmetric(vertical: 10),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(99),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(99),
-                  borderSide: BorderSide(
-                    color: Theme.of(context).colorScheme.outlineVariant,
-                  ),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(99),
-                  borderSide: BorderSide(
-                    color: Theme.of(context).colorScheme.primary,
-                    width: 1.5,
-                  ),
+  void dispose() {
+    _query.dispose();
+    super.dispose();
+  }
+
+  /// The page frame stays as it is while the user types. The results follow
+  /// the query and the catalog's library, and come from the library's search
+  /// of the current query, so a result never belongs to an older query. Each
+  /// row follows its own book.
+  @override
+  Widget build(BuildContext context) {
+    final services = widget.services;
+    final library = services.catalog.libraryNotifier;
+    return services.page(
+      context,
+      appBar: AppBar(
+        titleSpacing: 0,
+        title: Padding(
+          padding: const EdgeInsets.only(right: 16),
+          child: TextField(
+            controller: _query,
+            autofocus: true,
+            textInputAction: TextInputAction.search,
+            decoration: InputDecoration(
+              hintText: 'Search books, authors, series',
+              prefixIcon: const Icon(Icons.search_rounded),
+              isDense: true,
+              contentPadding: const EdgeInsets.symmetric(vertical: 10),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(99),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(99),
+                borderSide: BorderSide(
+                  color: Theme.of(context).colorScheme.outlineVariant,
                 ),
               ),
-              onChanged: (value) => setState(() => _query = value),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(99),
+                borderSide: BorderSide(
+                  color: Theme.of(context).colorScheme.primary,
+                  width: 1.5,
+                ),
+              ),
             ),
           ),
         ),
-        body: _query.trim().isEmpty
-            ? const SizedBox.shrink()
-            : results.isEmpty
-            ? Center(
-                child: Text(
-                  'No books match “${_query.trim()}”.',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              )
-            : CustomScrollView(
-                slivers: [
-                  ShelfEntries(
-                    services: widget.services,
-                    items: [for (final book in results) ShelfBook(book)],
-                    forceList: true,
-                  ),
-                  SliverToBoxAdapter(
-                    child: SizedBox(height: floatingBarInset(context)),
-                  ),
-                ],
+      ),
+      body: ListenableSelector(
+        listenable: Listenable.merge([_query, library]),
+        select: () => (library: library.value, query: _query.text.trim()),
+        builder: (context, shown, _) {
+          if (shown.query.isEmpty) return const SizedBox.shrink();
+          final results = shown.library.search(shown.query);
+          if (results.isEmpty) {
+            return Center(
+              child: Text(
+                'No books match “${shown.query}”.',
+                style: Theme.of(context).textTheme.bodySmall,
               ),
-      );
-    },
-  );
+            );
+          }
+          return CustomScrollView(
+            slivers: [
+              ShelfEntries(
+                services: services,
+                items: [for (final book in results) ShelfBook(book)],
+                onOpen: (item) => _open(context, services, item),
+                forceList: true,
+              ),
+              SliverToBoxAdapter(
+                child: SizedBox(height: floatingBarInset(context)),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
 }
 
 void openSeries(
@@ -636,126 +727,122 @@ void openSeries(
   ),
 );
 
-/// One series in reading order. It reads the current catalog, so it follows
-/// refreshes and corrections while it is open.
+/// One series in reading order. It reads the catalog's current library, so
+/// it follows refreshes and corrections while it is open.
 class SeriesPage extends StatelessWidget {
   const SeriesPage({super.key, required this.services, required this.name});
   final LibraryServices services;
   final String name;
 
-  /// The series follows the catalog and the layout. Its summary and each
-  /// book follow their own download state and listening progress.
+  /// The series follows the catalog's library. Its summary follows the
+  /// download state and listening progress of its books, and each book
+  /// follows its own.
   @override
-  Widget build(BuildContext context) => ListenableBuilder(
-    listenable: Listenable.merge([services.catalog, services.layout]),
-    builder: (context, _) {
-      final series = shelf(
-        services.catalog.books,
-        ShelfFilter.all,
-        services.editionDownloaded,
-      ).whereType<ShelfSeries>().where((item) => item.name == name).firstOrNull;
-      final theme = Theme.of(context);
-      return services.page(
-        context,
-        appBar: AppBar(actions: [LayoutToggle(layout: services.layout)]),
-        body: series == null
-            ? const Center(
-                child: Text('This series is not in the current library.'),
-              )
-            : CustomScrollView(
-                slivers: [
-                  SliverToBoxAdapter(
-                    child: ListenableSelector(
-                      listenable: services.activity,
-                      select: () => (
-                        downloaded: _downloaded(services, series),
-                        summary: services.seriesSummary(series),
+  Widget build(BuildContext context) => services.page(
+    context,
+    appBar: AppBar(actions: [_layoutToggle(services)]),
+    body: ValueListenableBuilder(
+      valueListenable: services.catalog.libraryNotifier,
+      builder: (context, library, _) {
+        final series = library.series(name);
+        if (series == null) {
+          return const Center(
+            child: Text('This series is not in the current library.'),
+          );
+        }
+        final theme = Theme.of(context);
+        return CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(
+              child: ListenableSelector(
+                listenable: _activity(services, series),
+                select: () => (
+                  downloaded: _downloaded(services, series),
+                  summary: services.seriesSummary(series),
+                ),
+                builder: (context, shown, _) => Padding(
+                  padding: const EdgeInsets.fromLTRB(18, 4, 18, 18),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      SizedBox(
+                        width: 92,
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 6, right: 7),
+                          child: _cover(series, downloaded: shown.downloaded),
+                        ),
                       ),
-                      builder: (context, shown, _) => Padding(
-                        padding: const EdgeInsets.fromLTRB(18, 4, 18, 18),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.end,
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            SizedBox(
-                              width: 92,
-                              child: Padding(
-                                padding: const EdgeInsets.only(
-                                  top: 6,
-                                  right: 7,
-                                ),
-                                child: _cover(
-                                  series,
-                                  downloaded: shown.downloaded,
-                                ),
+                            Text(
+                              series.name,
+                              style: TextStyle(
+                                fontFamily: 'Source Serif 4',
+                                fontSize: 26,
+                                height: 1.1,
+                                fontWeight: FontWeight.w500,
+                                color: theme.colorScheme.onSurface,
                               ),
                             ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    series.name,
-                                    style: TextStyle(
-                                      fontFamily: 'Source Serif 4',
-                                      fontSize: 26,
-                                      height: 1.1,
-                                      fontWeight: FontWeight.w500,
-                                      color: theme.colorScheme.onSurface,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    [
-                                      if (series.books.first.author.isNotEmpty)
-                                        series.books.first.author,
-                                      '${series.books.length} books',
-                                    ].join(' · '),
-                                    style: theme.textTheme.bodySmall,
-                                  ),
-                                  if (shown.summary.isNotEmpty)
-                                    Text(
-                                      shown.summary,
-                                      style: theme.textTheme.bodySmall,
-                                    ),
-                                ],
-                              ),
+                            const SizedBox(height: 6),
+                            Text(
+                              [
+                                if (series.books.first.author.isNotEmpty)
+                                  series.books.first.author,
+                                '${series.books.length} books',
+                              ].join(' · '),
+                              style: theme.textTheme.bodySmall,
                             ),
+                            if (shown.summary.isNotEmpty)
+                              Text(
+                                shown.summary,
+                                style: theme.textTheme.bodySmall,
+                              ),
                           ],
                         ),
                       ),
-                    ),
+                    ],
                   ),
-                  ShelfEntries(
-                    services: services,
-                    items: [for (final book in series.books) ShelfBook(book)],
-                    showSeriesPosition: true,
-                  ),
-                  SliverToBoxAdapter(
-                    child: SizedBox(height: 24 + floatingBarInset(context)),
-                  ),
-                ],
+                ),
               ),
-      );
-    },
+            ),
+            ShelfEntries(
+              services: services,
+              items: [for (final book in series.books) ShelfBook(book)],
+              onOpen: (item) => _open(context, services, item),
+              showSeriesPosition: true,
+            ),
+            SliverToBoxAdapter(
+              child: SizedBox(height: 24 + floatingBarInset(context)),
+            ),
+          ],
+        );
+      },
+    ),
   );
 }
 
 /// The Library tab: the library selector until the account has chosen book
 /// libraries, then the shelf. Search and the layout toggle join the top bar
-/// with the shelf.
+/// with the shelf. The tab opens the pages of the entries that the shelf
+/// reports, and saves the view that the layout toggle reports.
 class LibraryTab extends StatelessWidget {
   const LibraryTab({super.key, required this.services});
   final LibraryServices services;
 
+  /// The tab follows only the account and whether it chose book libraries.
   @override
   Widget build(BuildContext context) {
     final catalog = services.catalog;
+    final account = catalog.accountNotifier;
     return ListenableSelector(
-      listenable: catalog,
+      listenable: account,
       select: () => (
-        account: catalog.session?.scope.key,
-        choosing: catalog.cache == null || catalog.cache!.selected.isEmpty,
+        account: account.value.session?.scope.key,
+        choosing: account.value.selected.isEmpty,
       ),
       builder: (context, library, _) => TabFrame(
         bar: AppBar(
@@ -767,7 +854,7 @@ class LibraryTab extends StatelessWidget {
                 onPressed: () => openSearch(context, services),
                 icon: const Icon(Icons.search_rounded),
               ),
-              LayoutToggle(layout: services.layout),
+              _layoutToggle(services),
               const SizedBox(width: 8),
             ],
           ],
@@ -783,6 +870,7 @@ class LibraryTab extends StatelessWidget {
               : LibraryShelf(
                   key: ValueKey(library.account),
                   services: services,
+                  onOpen: (item) => _open(context, services, item),
                 ),
         ),
       ),
