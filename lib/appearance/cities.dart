@@ -1,9 +1,16 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart' show compute;
+
 import 'appearance.dart';
 
 class CityCatalog {
   CityCatalog.fromTsv(String source) : _cities = _readCities(source);
+
+  /// Parses [source] on a background isolate, because the bundled list is
+  /// too large to parse without dropping frames.
+  static Future<CityCatalog> parse(String source) =>
+      compute(CityCatalog.fromTsv, source);
 
   final List<_City> _cities;
 

@@ -25,7 +25,7 @@ class _CitySearchState extends State<CitySearch> {
     super.didChangeDependencies();
     _catalog ??= DefaultAssetBundle.of(context)
         .loadString('assets/cities/cities.tsv')
-        .then(CityCatalog.fromTsv);
+        .then(CityCatalog.parse);
   }
 
   @override

@@ -18,6 +18,7 @@ import 'jellyfin.dart';
 import 'layout.dart';
 import 'library_services.dart';
 import 'library_view.dart';
+import 'model.dart';
 import 'book_page.dart' show openBook;
 
 class CatalogHome extends StatefulWidget {
@@ -68,6 +69,10 @@ class _CatalogHomeState extends State<CatalogHome> {
   bool _lastAccessBlocked = false;
   int _bindingGeneration = 0;
 
+  /// The account and books last handed to Downloads, Playback and the reader.
+  JellyfinSession? _boundSession;
+  List<Book>? _boundBooks;
+
   LibraryServices get _services => LibraryServices(
     catalog: _catalog,
     layout: _layout,
@@ -110,11 +115,17 @@ class _CatalogHomeState extends State<CatalogHome> {
   }
 
   void _accessChanged() {
-    if (_accountKey != _catalog.session?.scope.key || _catalog.accessBlocked) {
-      unawaited(widget.playback?.bind(null, []));
-      unawaited(widget.reader?.bind(null, []));
+    // The catalog replaces its session and book list when either changes, so
+    // identity shows whether this notice changed what the services hold.
+    if (!identical(_boundSession, _visibleSession) ||
+        !identical(_boundBooks, _catalog.books)) {
+      if (_accountKey != _catalog.session?.scope.key ||
+          _catalog.accessBlocked) {
+        unawaited(widget.playback?.bind(null, []));
+        unawaited(widget.reader?.bind(null, []));
+      }
+      _bindDownloads();
     }
-    _bindDownloads();
     final key = _catalog.session?.scope.key;
     if (key == _accountKey && _lastAccessBlocked == _catalog.accessBlocked) {
       return;
@@ -128,12 +139,15 @@ class _CatalogHomeState extends State<CatalogHome> {
     }
   }
 
+  JellyfinSession? get _visibleSession =>
+      _catalog.accessBlocked ? null : _catalog.session;
+
   void _bindDownloads() {
+    final session = _boundSession = _visibleSession;
+    final books = _boundBooks = _catalog.books;
     final downloads = widget.downloads;
     if (downloads != null) {
       final generation = ++_bindingGeneration;
-      final session = _catalog.accessBlocked ? null : _catalog.session;
-      final books = _catalog.books;
       final readingBinding = widget.reader?.bind(session, books);
       unawaited(() async {
         await downloads.bind(session, books);
