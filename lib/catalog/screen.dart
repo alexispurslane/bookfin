@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../foundation/theme.dart';
 import '../downloads/downloads.dart';
@@ -534,10 +535,12 @@ class _SignInFormState extends State<_SignInForm> {
 
   Future<void> _submit() async {
     if (!_form.currentState!.validate() || widget.catalog.busy) return;
-    final password = _password.text;
-    _password.clear();
     FocusScope.of(context).unfocus();
-    await widget.catalog.connect(_server.text, _username.text, password);
+    await widget.catalog.connect(_server.text, _username.text, _password.text);
+    if (!mounted) return;
+    // A password manager offers to save only a login that worked.
+    TextInput.finishAutofillContext(shouldSave: widget.catalog.session != null);
+    _password.clear();
   }
 
   @override
@@ -551,57 +554,62 @@ class _SignInFormState extends State<_SignInForm> {
       const SizedBox(height: 24),
       Form(
         key: _form,
-        child: Column(
-          children: [
-            TextFormField(
-              controller: _server,
-              enabled: !widget.catalog.busy,
-              keyboardType: TextInputType.url,
-              autocorrect: false,
-              decoration: const InputDecoration(
-                labelText: 'Server address',
-                hintText: 'https://jellyfin.example',
+        child: AutofillGroup(
+          child: Column(
+            children: [
+              TextFormField(
+                controller: _server,
+                enabled: !widget.catalog.busy,
+                keyboardType: TextInputType.url,
+                autofillHints: const [AutofillHints.url],
+                autocorrect: false,
+                decoration: const InputDecoration(
+                  labelText: 'Server address',
+                  hintText: 'https://jellyfin.example',
+                ),
+                validator: (value) {
+                  try {
+                    parseServer(value ?? '');
+                    return null;
+                  } on CatalogFailure catch (error) {
+                    return error.message;
+                  }
+                },
               ),
-              validator: (value) {
-                try {
-                  parseServer(value ?? '');
-                  return null;
-                } on CatalogFailure catch (error) {
-                  return error.message;
-                }
-              },
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _username,
-              enabled: !widget.catalog.busy,
-              autocorrect: false,
-              decoration: const InputDecoration(labelText: 'Username'),
-              validator: (value) => value == null || value.trim().isEmpty
-                  ? 'Enter your username.'
-                  : null,
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _password,
-              enabled: !widget.catalog.busy,
-              obscureText: true,
-              autocorrect: false,
-              enableSuggestions: false,
-              decoration: const InputDecoration(labelText: 'Password'),
-              onFieldSubmitted: (_) => unawaited(_submit()),
-            ),
-            const SizedBox(height: 24),
-            FilledButton(
-              onPressed: widget.catalog.busy ? null : _submit,
-              child: const Text('Sign in'),
-            ),
-            if (widget.catalog.busy)
-              TextButton(
-                onPressed: () => unawaited(widget.catalog.signOut()),
-                child: const Text('Cancel'),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _username,
+                enabled: !widget.catalog.busy,
+                autofillHints: const [AutofillHints.username],
+                autocorrect: false,
+                decoration: const InputDecoration(labelText: 'Username'),
+                validator: (value) => value == null || value.trim().isEmpty
+                    ? 'Enter your username.'
+                    : null,
               ),
-          ],
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _password,
+                enabled: !widget.catalog.busy,
+                obscureText: true,
+                autofillHints: const [AutofillHints.password],
+                autocorrect: false,
+                enableSuggestions: false,
+                decoration: const InputDecoration(labelText: 'Password'),
+                onFieldSubmitted: (_) => unawaited(_submit()),
+              ),
+              const SizedBox(height: 24),
+              FilledButton(
+                onPressed: widget.catalog.busy ? null : _submit,
+                child: const Text('Sign in'),
+              ),
+              if (widget.catalog.busy)
+                TextButton(
+                  onPressed: () => unawaited(widget.catalog.signOut()),
+                  child: const Text('Cancel'),
+                ),
+            ],
+          ),
         ),
       ),
       if (widget.catalog.message?.contains('Secure sign-out') == true)

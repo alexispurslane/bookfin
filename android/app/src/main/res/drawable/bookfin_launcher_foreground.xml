@@ -1,0 +1,16 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- The 48-unit book mark, scaled into the 66-unit circle that every launcher mask keeps visible. -->
+    <group
+        android:scaleX="1.375"
+        android:scaleY="1.375"
+        android:translateX="21"
+        android:translateY="21">
+        <path
+            android:fillColor="#775035"
+            android:pathData="M8,10L23,13L23,38L8,35ZM25,13L40,10L40,35L25,38Z" />
+    </group>
+</vector>

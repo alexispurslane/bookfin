@@ -58,6 +58,35 @@ void main() {
     );
   });
 
+  testWidgets('password managers recognize the sign-in fields as one login', (
+    tester,
+  ) async {
+    await show(tester);
+    List<String>? hints(String label) => tester
+        .widget<EditableText>(
+          find.descendant(
+            of: find.widgetWithText(TextFormField, label),
+            matching: find.byType(EditableText),
+          ),
+        )
+        .autofillHints
+        ?.toList();
+    expect(hints('Server address'), [AutofillHints.url]);
+    expect(hints('Username'), [AutofillHints.username]);
+    expect(hints('Password'), [AutofillHints.password]);
+    final group = find.byType(AutofillGroup);
+    expect(group, findsOneWidget);
+    for (final label in ['Server address', 'Username', 'Password']) {
+      expect(
+        find.descendant(
+          of: group,
+          matching: find.widgetWithText(TextFormField, label),
+        ),
+        findsOneWidget,
+      );
+    }
+  });
+
   testWidgets(
     'sign-in is usable without gallery labels or enabled media controls',
     (tester) async {
