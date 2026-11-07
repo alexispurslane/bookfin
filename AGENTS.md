@@ -33,6 +33,28 @@ These are hard rules for all new and changed Flutter code. When you touch code t
 2. One component for each kind of thing. When two widgets do relevantly similar things, one widget does both. Customize it through parameters, `child`, `children` or builder slots, and callbacks. Factor when the second copy appears, not for hypothetical callers.
 3. Depend on the minimum, and subscribe at the lowest level. Each widget depends on the least data that it needs. A controller passes data sources, or narrow listenables, down; it does not pass changing values that would force it to rebuild. The lowest widget that shows a value subscribes to it, for example with `ValueListenableBuilder`, a narrow `ListenableBuilder`, or an `InheritedModel` aspect. A data source exposes narrow change signals instead of one notification for everything. Example: the app shell depends only on the selected tab and on whether the user is signed in.
 
+## Engine rules
+
+These are hard rules for all new and changed code under the UI. When you touch code that breaks them, fix the code you touch or record a ticket.
+
+1. Keep the UI isolate free. The UI isolate draws frames and handles input. Do not make it wait on anything else.
+   - All storage, network, and platform-channel access is asynchronous. Never call a `*Sync` file method on the UI isolate, outside tests and on-demand invariant checkers.
+   - Move CPU work off the UI isolate with `Isolate.run` or a long-lived worker isolate, and await the result. This includes even modest work: hashing, JSON encode and decode of whole stores, parsing, sorting or diffing large lists, image and text processing.
+   - Batch small pieces into one off-isolate call, because each hop to another isolate has a fixed cost. Work that is clearly smaller than that cost, such as hashing one short string, can stay inline. Say why in a comment.
+   - Run independent asynchronous work concurrently (`Future.wait`, unawaited background tasks owned by a data source), not one after another.
+2. Start from the cache, then backfill silently. The fastest possible start is a product goal.
+   - At launch, show the last known state from local storage first: the library, the shelf, the open book, and its position. Network requests are never on the path to the first useful frame.
+   - Cached information is fully usable. The user can browse, open, play, and read from it before any refresh finishes.
+   - Refresh in the background and replace the shown data in place when the new data arrives. Do not show spinners, banners, or "saved" labels for a background refresh. Report a failure only when the user asked for the refresh or when it blocks something the user is doing.
+   - A data source owns its cache and its refresh. Widgets do not know whether a value came from disk or from the server.
+3. Never lose listening history or a place in a book. Losing either is discouraging, so it counts as data loss.
+   - Write position, history, and bookmark changes to local storage first, then sync. A failed or slow sync never discards a local change.
+   - Save the position often during playback and reading, and always on pause, seek, chapter change, book change, and when the app goes to the background.
+   - Write stores atomically (write a temporary file, then rename) so a crash or a kill mid-write leaves the old or the new version, never a broken one.
+   - Never let older data overwrite newer data. Merge by time or version. When two devices disagree, keep both moves in the history so the user can go back.
+   - Never delete or reset history, positions, or bookmarks except on an explicit user action. If a store cannot be read, keep the file aside and report it. Do not replace it with an empty store.
+   - Every way that a position or a history entry could be lost needs a test: a kill mid-write, a failed sync, a conflicting device, a corrupt file.
+
 ## Environment and devices
 
 Keep the project under `~/Development/bookfin`. Provide a pinned Nix flake with `devShells.<system>.default`. Run build and test commands through `nix develop`. Put required environment variables in the dev shell, never the user's shell profile. Do not install toolchains globally. Pin sources and hashes for native dependencies absent from nixpkgs. Stage new `.nix` files before a Git flake uses them.
