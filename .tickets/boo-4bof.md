@@ -18,3 +18,9 @@ AGENTS.md engine rule 1 says the UI isolate does no synchronous storage access a
 
 No *Sync file call runs on the UI isolate outside tests and invariant checkers. Each remaining inline CPU step has a comment that says why the hop costs more than the work.
 
+
+## Notes
+
+**2026-11-07T21:40:02Z**
+
+From boo-xifx (merged 49edfd5): LocalResumeStore.read() still builds and deep-copies the whole snapshot on the UI isolate when an account binds or refreshes, and the startup journal replay and the SharedPreferences fallback work on the whole store there. Per-second saves are now small change sets and are not affected.
