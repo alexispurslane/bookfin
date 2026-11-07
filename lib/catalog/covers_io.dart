@@ -28,6 +28,9 @@ class DiskCovers implements Covers {
 
   @override
   Future<Uint8List?> load(JellyfinSession session, CoverRef cover) {
+    // NOTE: Engine rule 1. This hashes one account key of a few dozen
+    // bytes. Measured in AOT on an M-series Mac, that takes about 2 µs, and
+    // a hop to another isolate about 33 µs.
     final directory = Directory(
       '${root.path}/${sha256.convert(utf8.encode(session.scope.key))}',
     );

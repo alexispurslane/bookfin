@@ -21,6 +21,92 @@ typedef DocumentLoader = Future<ReaderDocument> Function(
 );
 typedef VisibleLocation = ReadingLocation;
 
+/// The owner of each account's saved reading records, as [ReaderSession]
+/// uses it.
+abstract class ReadingStore {
+  /// The saved reading snapshot of [accountKey], or null when the account
+  /// has none: `version`, `fontSize`, `resumes` and `bookmarks`.
+  Future<Map<String, dynamic>?> read(String accountKey);
+
+  /// Saves [changes] to the reading records of [accountKey].
+  ///
+  /// A record that [changes] does not name keeps its saved value. A named
+  /// record that equals the value this writer last saved or accepted adds no
+  /// sync action, so a retry can resend changes that were already saved.
+  Future<void> saveReading(String accountKey, ReadingChanges changes);
+
+  /// Records [value] as the snapshot that the writer of [accountKey] now
+  /// shows, so later saves compare their records with it.
+  void acceptSnapshot(String accountKey, Map<String, dynamic>? value) {}
+}
+
+/// The reading records that one save changes.
+///
+/// A save carries the whole small [settings], but only the resumes and
+/// bookmarks that changed.
+class ReadingChanges {
+  ReadingChanges(
+    this.settings, {
+    this.resumes = const [],
+    this.bookmarks = const {},
+  });
+
+  /// The version and the font size.
+  final Map<String, dynamic> settings;
+
+  /// The changed resumes as JSON. A resume replaces the saved resume of the
+  /// same edition, source and revision. Resumes are never deleted.
+  final List<Map<String, dynamic>> resumes;
+
+  /// The changed bookmarks as JSON, by id. A null value deletes it.
+  final Map<String, Map<String, dynamic>?> bookmarks;
+
+  /// These changes followed by [later]: the later value of each record and
+  /// the later settings win.
+  ReadingChanges followedBy(ReadingChanges later) => ReadingChanges(
+    later.settings,
+    resumes: [
+      for (final value in resumes)
+        if (!later.resumes.any((next) => _samePlace(value, next))) value,
+      ...later.resumes,
+    ],
+    bookmarks: {...bookmarks, ...later.bookmarks},
+  );
+
+  /// The reading snapshot that results when these changes apply to
+  /// [snapshot]. A changed resume goes last, as the session orders its
+  /// places. A changed bookmark keeps its place, a new one goes last, and a
+  /// deleted one is removed.
+  Map<String, dynamic> applyTo(Map<String, dynamic>? snapshot) {
+    final unplaced = Map.of(bookmarks);
+    return {
+      ...settings,
+      'resumes': [
+        for (final value in snapshot?['resumes'] as List? ?? const [])
+          if (!resumes.any((next) => _samePlace(value as Map, next)))
+            Map<String, dynamic>.from(value as Map),
+        ...resumes,
+      ],
+      'bookmarks': [
+        for (final value in snapshot?['bookmarks'] as List? ?? const [])
+          if (!unplaced.containsKey(value['id']))
+            Map<String, dynamic>.from(value as Map)
+          else
+            ?unplaced.remove(value['id']),
+        ...unplaced.values.nonNulls,
+      ],
+    };
+  }
+
+  static bool _samePlace(
+    Map<dynamic, dynamic> first,
+    Map<dynamic, dynamic> second,
+  ) =>
+      first['edition'] == second['edition'] &&
+      first['source'] == second['source'] &&
+      first['revision'] == second['revision'];
+}
+
 /// The open book, its place, and the account's reading records.
 ///
 /// The session notifies its own listeners once for each change of any part
@@ -56,7 +142,7 @@ class ReaderSession extends ChangeNotifier {
     ];
   }
   final Downloads downloads;
-  final ResumeStore store;
+  final ReadingStore store;
   final PublicationLoader load;
   final DocumentLoader? loadDocument;
   ReaderDocument? _document;
@@ -114,7 +200,7 @@ class ReaderSession extends ChangeNotifier {
   int _accountGeneration = 0;
   Future<void> _binding = Future.value();
   Future<void> _writes = Future.value();
-  final _pendingWrites = <String, Map<String, dynamic>>{};
+  final _pendingWrites = <String, ReadingChanges>{};
   final _failedAccounts = <String>{};
   int _search = 0;
   int _recordRevision = 0;
@@ -191,7 +277,8 @@ class ReaderSession extends ChangeNotifier {
       if (!_liveAccount(generation) || key == null) return;
       try {
         final pending = _pendingWrites[key];
-        final saved = pending ?? await store.read(key);
+        final stored = await store.read(key);
+        final saved = pending == null ? stored : pending.applyTo(stored);
         if (!_liveAccount(generation)) return;
         if (saved != null) {
           if (saved['version'] != 1 ||
@@ -452,24 +539,22 @@ class ReaderSession extends ChangeNotifier {
           _compatible(saved) != null,
     );
     _resumes.add(position!);
-    unawaited(_save());
+    unawaited(_save(resumes: [position!]));
     _emit();
   }
 
   Future<void> addBookmark({String? title, String? note}) async {
     final current = position;
     if (current == null || !_recordsReady) return;
-    _bookmarks = [
-      ..._bookmarks,
-      TextBookmark(
-        id: recordId(),
-        position: current,
-        createdAt: DateTime.now(),
-        title: title,
-        note: note,
-      ),
-    ];
-    await _save();
+    final added = TextBookmark(
+      id: recordId(),
+      position: current,
+      createdAt: DateTime.now(),
+      title: title,
+      note: note,
+    );
+    _bookmarks = [..._bookmarks, added];
+    await _save(bookmarks: {added.id: added});
     _emit();
   }
 
@@ -477,21 +562,21 @@ class ReaderSession extends ChangeNotifier {
     final index = _bookmarks.indexWhere((value) => value.id == id);
     if (index < 0) return;
     final old = _bookmarks[index];
-    _bookmarks = List.of(_bookmarks)
-      ..[index] = TextBookmark(
-        id: old.id,
-        position: old.position,
-        createdAt: old.createdAt,
-        title: title,
-        note: note,
-      );
-    await _save();
+    final edited = TextBookmark(
+      id: old.id,
+      position: old.position,
+      createdAt: old.createdAt,
+      title: title,
+      note: note,
+    );
+    _bookmarks = List.of(_bookmarks)..[index] = edited;
+    await _save(bookmarks: {id: edited});
     _emit();
   }
 
   Future<void> deleteBookmark(String id) async {
     _bookmarks = _bookmarks.where((value) => value.id != id).toList();
-    await _save();
+    await _save(bookmarks: {id: null});
     _emit();
   }
 
@@ -576,17 +661,26 @@ class ReaderSession extends ChangeNotifier {
     }
   }
 
-  Future<void> _save() async {
+  /// Hands the store the [resumes] and [bookmarks] that one action changed,
+  /// with the current settings. A null bookmark is a deletion. The changes
+  /// stay pending, merged with earlier pending changes, until the store
+  /// saves them.
+  Future<void> _save({
+    List<TextPosition> resumes = const [],
+    Map<String, TextBookmark?> bookmarks = const {},
+  }) async {
     final key = _account;
     if (key == null || !_recordsReady || _disposed) return;
     ++_recordRevision;
-    final value = <String, dynamic>{
-      'version': 1,
-      'fontSize': fontSize,
-      'resumes': _resumes.map(encodeTextPosition).toList(),
-      'bookmarks': _bookmarks.map((value) => value.toJson()).toList(),
-    };
-    _pendingWrites[key] = value;
+    final changes = ReadingChanges(
+      {'version': 1, 'fontSize': fontSize},
+      resumes: resumes.map(encodeTextPosition).toList(),
+      bookmarks: {
+        for (final MapEntry(key: id, value: mark) in bookmarks.entries)
+          id: mark?.toJson(),
+      },
+    );
+    _pendingWrites[key] = _pendingWrites[key]?.followedBy(changes) ?? changes;
     await _retryPending();
   }
 
@@ -594,7 +688,7 @@ class ReaderSession extends ChangeNotifier {
     _writes = _writes.then((_) async {
       for (final entry in _pendingWrites.entries.toList()) {
         try {
-          await store.write(entry.key, entry.value);
+          await store.saveReading(entry.key, entry.value);
           if (identical(_pendingWrites[entry.key], entry.value)) {
             _pendingWrites.remove(entry.key);
             _failedAccounts.remove(entry.key);

@@ -56,11 +56,13 @@ class HeldOriginal extends Fake implements File {
   @override
   Future<RandomAccessFile> open({FileMode mode = FileMode.read}) =>
       fileZone.run(() => original.open(mode: mode));
+  // The cache checks the original with a stat on this isolate before it
+  // hashes the bytes in a hop, so holding the stat holds the check.
   @override
-  Stream<List<int>> openRead([int? start, int? end]) async* {
+  Future<FileStat> stat() async {
     if (!started.isCompleted) started.complete();
     await release.future;
-    yield* original.openRead(start, end);
+    return fileZone.run(original.stat);
   }
 }
 
