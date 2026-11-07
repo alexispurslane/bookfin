@@ -793,18 +793,18 @@ class DisappearingLocalFiles extends LocalFiles {
 class FailingRecordStore extends MemoryResume {
   bool fail = false;
   @override
-  Future<void> write(String accountKey, Map<String, dynamic> value) async {
+  Future<void> save(String accountKey, ListeningChanges changes) async {
     if (fail) throw Exception('disk full');
-    await super.write(accountKey, value);
+    await super.save(accountKey, changes);
   }
 }
 
 class GatedRecordStore extends MemoryResume {
   Completer<void>? gate;
   @override
-  Future<void> write(String accountKey, Map<String, dynamic> value) async {
+  Future<void> save(String accountKey, ListeningChanges changes) async {
     await gate?.future;
-    await super.write(accountKey, value);
+    await super.save(accountKey, changes);
   }
 }
 

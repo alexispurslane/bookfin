@@ -12,7 +12,7 @@ import '../playback/playback_test.dart' show account, LocalFiles;
 import 'publication_test.dart' show epub;
 import 'session_test.dart' show source, edition, book, visible;
 
-class FailingRecords extends ResumeStore {
+class FailingRecords extends ResumeStore implements ListeningStore {
   FailingRecords(this.records);
   final ResumeStore records;
   bool writable = false;
@@ -27,6 +27,13 @@ class FailingRecords extends ResumeStore {
     await gate?.future;
     if (!writable) throw Exception('Storage is unavailable');
     await records.write(key, value);
+  }
+
+  @override
+  Future<void> save(String key, ListeningChanges changes) async {
+    await gate?.future;
+    if (!writable) throw Exception('Storage is unavailable');
+    await (records as ListeningStore).save(key, changes);
   }
 }
 

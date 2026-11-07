@@ -105,7 +105,7 @@ class SyncFixture {
   }
 }
 
-class HeldRecords extends ResumeStore {
+class HeldRecords extends ResumeStore implements ListeningStore {
   HeldRecords(this.delegate);
   final ResumeStore delegate;
   @override
@@ -136,12 +136,22 @@ class HeldRecords extends ResumeStore {
     return saved;
   }
 
-  @override
-  Future<void> write(String accountKey, Map<String, dynamic> value) async {
+  Future<void> _heldWrite() async {
     if (writeReady != null && !writeReady!.isCompleted) {
       writeReady!.complete();
       await writeRelease!.future;
     }
+  }
+
+  @override
+  Future<void> write(String accountKey, Map<String, dynamic> value) async {
+    await _heldWrite();
     await delegate.write(accountKey, value);
+  }
+
+  @override
+  Future<void> save(String accountKey, ListeningChanges changes) async {
+    await _heldWrite();
+    await (delegate as ListeningStore).save(accountKey, changes);
   }
 }

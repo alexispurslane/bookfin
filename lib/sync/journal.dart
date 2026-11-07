@@ -94,19 +94,27 @@ class RecordJournal {
       if (entry.value.length > 1) entry.key: List.unmodifiable(entry.value),
   };
 
+  /// The current value of every record that has one, by address.
   Map<String, Map<String, dynamic>> get values => {
-    for (final entry in _records.entries)
-      if (!entry.value.any((action) => action['value'] == null))
-        if (entry.value.length == 1 || !_isResume(entry.key))
-          entry.key: Map<String, dynamic>.from(
-            (entry.value.toList()..sort(
-                      (first, second) =>
-                          identity(first).compareTo(identity(second)),
-                    ))
-                    .first['value']
-                as Map,
-          ),
+    for (final record in _records.keys) record: ?value(record),
   };
+
+  /// A copy of the current value of [record], or null when the record is
+  /// absent or deleted, or is a resume with conflicting versions. Other
+  /// conflicting records show their version with the lowest identity.
+  Map<String, dynamic>? value(String record) {
+    final versions = _records[record];
+    if (versions == null ||
+        versions.any((action) => action['value'] == null) ||
+        versions.length > 1 && _isResume(record)) {
+      return null;
+    }
+    final first = versions.reduce(
+      (first, second) =>
+          identity(first).compareTo(identity(second)) <= 0 ? first : second,
+    );
+    return Map<String, dynamic>.from(first['value'] as Map);
+  }
 
   bool _isResume(String record) => (jsonDecode(record) as List)[1] == 'resumes';
 
