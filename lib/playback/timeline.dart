@@ -3,11 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../catalog/glass.dart';
-import '../catalog/library_services.dart' show duration;
 import '../catalog/model.dart';
 import '../foundation/theme.dart';
+import '../foundation/time.dart';
 import 'playback.dart';
-import 'recent.dart' show listenedWhen;
 import 'records_screen.dart';
 
 /// Opens the listening timeline of [book] on a glass sheet. Without a book,

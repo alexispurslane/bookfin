@@ -13,6 +13,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'controller_test.dart'
     show MemoryCatalogStore, MemoryCredentials, FixtureClient;
 import 'layout_test.dart' show MemoryLayoutStore;
+import 'model_test.dart' show entry;
 
 void main() {
   late CatalogController catalog;
@@ -126,6 +127,43 @@ void main() {
     await tester.pumpAndSettle();
     expect(downloads.calls, ['request']);
     expect(find.widgetWithText(TextButton, 'Remove'), findsOneWidget);
+  });
+
+  testWidgets('a chapter an hour in reads as hours, minutes and seconds', (
+    tester,
+  ) async {
+    const twoHours = 72000000000;
+    client.entries = [
+      entry(
+        'one',
+        fields: {
+          'RunTimeTicks': twoHours,
+          'MediaSources': [
+            {
+              'Id': 'source',
+              'Container': 'm4b',
+              'Size': 1000,
+              'RunTimeTicks': twoHours,
+            },
+          ],
+          'Chapters': [
+            {'Name': 'Opening', 'StartPositionTicks': 0},
+            {'Name': 'Night falls', 'StartPositionTicks': 39000000000},
+          ],
+        },
+      ),
+    ];
+    await showBook(tester);
+    await tester.scrollUntilVisible(find.byType(ExpansionTile), 200);
+    await tester.tap(find.byType(ExpansionTile));
+    await tester.pumpAndSettle();
+    expect(
+      find.descendant(
+        of: find.widgetWithText(ListTile, 'Night falls'),
+        matching: find.text('1:05:00'),
+      ),
+      findsOneWidget,
+    );
   });
 }
 

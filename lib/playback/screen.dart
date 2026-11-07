@@ -5,9 +5,9 @@ import 'package:flutter/services.dart';
 
 import '../catalog/book_cover.dart';
 import '../catalog/glass.dart';
-import '../catalog/library_services.dart' show duration;
 import '../catalog/model.dart';
 import '../foundation/theme.dart';
+import '../foundation/time.dart';
 import 'playback.dart';
 import 'recent.dart';
 import 'records_screen.dart';

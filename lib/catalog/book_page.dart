@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../downloads/downloads.dart' show DownloadAction;
 import '../downloads/screen.dart';
 import '../foundation/theme.dart';
+import '../foundation/time.dart';
 import '../playback/screen.dart';
 import '../playback/timeline.dart';
 import '../reader/screen.dart';
@@ -797,7 +798,7 @@ class _EditionPanel extends StatelessWidget {
                 for (final chapter in file.chapters)
                   ListTile(
                     title: Text(chapter.name),
-                    trailing: Text(_time(chapter.startMs)),
+                    trailing: Text(audioTime(chapter.startMs)),
                   ),
                 TextButton(
                   onPressed: () async {
@@ -1115,9 +1116,4 @@ class _FileOrderState extends State<_FileOrder> {
       ),
     ),
   );
-}
-
-String _time(int milliseconds) {
-  final seconds = milliseconds ~/ 1000;
-  return '${seconds ~/ 60}:${(seconds % 60).toString().padLeft(2, '0')}';
 }

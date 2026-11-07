@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../catalog/book_cover.dart';
-import '../catalog/library_services.dart' show duration;
 import '../catalog/library_view.dart' show BookRow;
 import '../foundation/theme.dart';
+import '../foundation/time.dart';
 import 'playback.dart';
 
 /// Books listened to recently, newest first. A tap resumes a book where it
@@ -75,41 +75,4 @@ class _RecentRow extends StatelessWidget {
       ),
     );
   }
-}
-
-const _weekdays = [
-  'Monday',
-  'Tuesday',
-  'Wednesday',
-  'Thursday',
-  'Friday',
-  'Saturday',
-  'Sunday',
-];
-const _months = [
-  'Jan',
-  'Feb',
-  'Mar',
-  'Apr',
-  'May',
-  'Jun',
-  'Jul',
-  'Aug',
-  'Sep',
-  'Oct',
-  'Nov',
-  'Dec',
-];
-
-/// For example "Today", "Yesterday", "Tuesday", or "12 Oct", in local time.
-String listenedWhen(DateTime at, DateTime now) {
-  final local = at.toLocal();
-  final day = DateTime(local.year, local.month, local.day);
-  final today = DateTime(now.year, now.month, now.day);
-  final days = (today.difference(day).inHours / 24).round();
-  if (days <= 0) return 'Today';
-  if (days == 1) return 'Yesterday';
-  if (days < 7) return _weekdays[local.weekday - 1];
-  return '${local.day} ${_months[local.month - 1]}'
-      '${local.year == now.year ? '' : ' ${local.year}'}';
 }

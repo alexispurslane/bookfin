@@ -104,6 +104,50 @@ void main() {
     variant: TargetPlatformVariant.only(TargetPlatform.linux),
   );
 
+  /// Opens the reader on [book] at a visible place, with one untitled
+  /// bookmark there, and shows its bookmarks panel.
+  Future<ReaderSession> openBookmarks(WidgetTester tester) async {
+    final downloads = LocalFiles()
+      ..files[source.key] = Uri.file('/verified.epub');
+    final reader = ReaderSession(
+      downloads: downloads,
+      store: MemoryResume(),
+      load: (_) async => Publication.admit(epub()),
+    );
+    addTearDown(() {
+      reader.dispose();
+      downloads.dispose();
+    });
+    await reader.bind(account(), [book]);
+    await reader.open(book, edition);
+    reader.attach(reader.token, ControlPort(), []);
+    reader.acceptVisible(reader.token, visible);
+    await reader.addBookmark();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: ReaderScreen(reader: reader, onNightChanged: (_) {}),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Reading bookmarks'));
+    await tester.pumpAndSettle();
+    return reader;
+  }
+
+  testWidgets(
+    'an untitled reading bookmark names the day and time it was saved',
+    (tester) async {
+      final reader = await openBookmarks(tester);
+      final saved = reader.bookmarks.single.createdAt.toLocal();
+      final time = const DefaultMaterialLocalizations().formatTimeOfDay(
+        TimeOfDay.fromDateTime(saved),
+      );
+      expect(find.text('Today, $time'), findsOneWidget);
+      await tester.pumpWidget(const SizedBox());
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.linux),
+  );
+
   testWidgets(
     'production reading controls save a bookmark and change text size',
     (tester) async {

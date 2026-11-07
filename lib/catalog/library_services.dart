@@ -4,6 +4,7 @@ import 'book_cover.dart';
 import 'covers.dart';
 
 import '../downloads/downloads.dart';
+import '../foundation/time.dart';
 import '../playback/playback.dart';
 import '../reader/session.dart';
 import 'controller.dart';
@@ -107,12 +108,6 @@ String formats(Book book) {
       'Ebook',
     ...text,
   ].join(' + ');
-}
-
-/// For example "9 h 44 m", or "12 m" under one hour.
-String duration(int milliseconds) {
-  final minutes = (milliseconds / 60000).round();
-  return minutes < 60 ? '$minutes m' : '${minutes ~/ 60} h ${minutes % 60} m';
 }
 
 String seriesPosition(double order) => order == order.truncateToDouble()

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../foundation/theme.dart';
+import '../foundation/time.dart';
 import '../playback/screen.dart';
 import 'book_cover.dart';
 import 'book_page.dart';
@@ -61,7 +62,7 @@ class _LibraryShelfState extends State<LibraryShelf> {
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
                 child: Text(
-                  'Saved library · ${catalog.cache!.completedAt!.toLocal().toString().split('.').first}',
+                  'Saved library · ${dayAndTime(context, catalog.cache!.completedAt!)}',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ),

@@ -1,9 +1,9 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 
 import '../catalog/model.dart';
+import '../foundation/time.dart';
 import 'playback.dart';
 import '../catalog/glass.dart';
 
@@ -125,10 +125,4 @@ class _BookmarkEditorState extends State<_BookmarkEditor> {
       ),
     ],
   );
-}
-
-String audioTime(int milliseconds) {
-  final seconds = max(0, milliseconds) ~/ 1000;
-  final minutes = seconds ~/ 60;
-  return '${minutes ~/ 60 > 0 ? '${minutes ~/ 60}:' : ''}${(minutes % 60).toString().padLeft(2, '0')}:${(seconds % 60).toString().padLeft(2, '0')}';
 }

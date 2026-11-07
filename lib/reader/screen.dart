@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_epub_viewer/flutter_epub_viewer.dart';
 
+import '../foundation/time.dart';
 import '../playback/playback.dart';
 import '../playback/screen.dart';
 import 'session.dart';
@@ -479,7 +480,7 @@ class _BookmarksPanel extends StatelessWidget {
                 subtitle: Text(
                   bookmark.note?.isNotEmpty == true
                       ? bookmark.note!
-                      : bookmark.createdAt.toLocal().toString(),
+                      : dayAndTime(context, bookmark.createdAt),
                 ),
                 onTap: () {
                   unawaited(reader.restoreBookmark(bookmark.id));
