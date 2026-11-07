@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../catalog/book_cover.dart';
@@ -8,13 +9,14 @@ import '../catalog/layout.dart';
 import '../catalog/library_services.dart';
 import '../catalog/library_view.dart' show BookRow;
 import '../catalog/model.dart';
+import '../foundation/listenable_selector.dart';
 import '../foundation/theme.dart';
 import 'downloads.dart';
 import '../catalog/glass.dart';
 
 /// An edition's download state in words, with a button for each of its
 /// download actions. A tap reports the action through [onAction]; the page
-/// performs it.
+/// performs it. It follows [Downloads.watch] of [edition] by itself.
 class DownloadControls extends StatelessWidget {
   const DownloadControls({
     super.key,
@@ -27,9 +29,16 @@ class DownloadControls extends StatelessWidget {
   final ValueChanged<DownloadAction> onAction;
 
   @override
-  Widget build(BuildContext context) {
-    final owner = downloads;
-    final state = owner?.status(edition) ?? const EditionDownload();
+  Widget build(BuildContext context) => switch (downloads) {
+    final owner? => ValueListenableBuilder(
+      valueListenable: owner.watch(edition),
+      builder: (context, state, _) => _controls(context, state),
+    ),
+    null => _controls(context, const EditionDownload()),
+  };
+
+  Widget _controls(BuildContext context, EditionDownload state) {
+    final supported = downloads?.supported == true;
     final active =
         state.phase == DownloadPhase.downloading ||
         state.phase == DownloadPhase.waiting;
@@ -52,9 +61,9 @@ class DownloadControls extends StatelessWidget {
             child: ProgressLine(value: _share(state)),
           ),
         if (state.message != null) StatusMessage(state.message!),
-        if (owner?.supported != true)
+        if (!supported)
           const Text('Local downloads are available in the Android app.'),
-        if (owner?.supported == true)
+        if (supported)
           Wrap(
             spacing: 8,
             children: [
@@ -83,7 +92,8 @@ class DownloadControls extends StatelessWidget {
 
 /// The book page's round download button. A tap reports the first of the
 /// edition's download actions through [onAction]. Its icon shows a finished
-/// or waiting download, and a ring shows a running transfer.
+/// or waiting download, and a ring shows a running transfer. It follows
+/// [Downloads.watch] of [edition] by itself.
 class DownloadButton extends StatelessWidget {
   const DownloadButton({
     super.key,
@@ -96,8 +106,12 @@ class DownloadButton extends StatelessWidget {
   final ValueChanged<DownloadAction> onAction;
 
   @override
-  Widget build(BuildContext context) {
-    final state = downloads.status(edition);
+  Widget build(BuildContext context) => ValueListenableBuilder(
+    valueListenable: downloads.watch(edition),
+    builder: (context, state, _) => _button(context, state),
+  );
+
+  Widget _button(BuildContext context, EditionDownload state) {
     final action = state.actions.first;
     final icon = switch (state.phase) {
       DownloadPhase.downloaded => Icons.check_rounded,
@@ -138,31 +152,42 @@ class DownloadButton extends StatelessWidget {
   }
 }
 
-/// Every edition with local files or a transfer: a summary of the space they
-/// use and of the network, then one library row per edition. Tapping a row
-/// opens its book. The controls at the end of a row only change the download.
-/// The Downloads tab's page. It shows the catalog's books at the layout's
-/// density, and follows download state. A tapped book opens its page.
+/// The Downloads tab, as the app shell shows it. It follows the catalog's
+/// library and the layout density, and gives them to [DownloadsPage]. A
+/// tapped book opens its page.
 class DownloadsTab extends StatelessWidget {
   const DownloadsTab({super.key, required this.services});
   final LibraryServices services;
 
   @override
-  Widget build(BuildContext context) => ListenableBuilder(
+  Widget build(BuildContext context) => ListenableSelector(
     listenable: Listenable.merge([
-      services.catalog,
+      services.catalog.libraryNotifier,
       services.layout,
-      ?services.downloads,
     ]),
-    builder: (context, _) => DownloadsPage(
-      downloads: services.downloads,
-      books: services.catalog.books,
+    select: () => (
+      books: services.catalog.libraryNotifier.value.books,
       compact: services.layout.density == LibraryDensity.compact,
+    ),
+    builder: (context, shown, _) => DownloadsPage(
+      downloads: services.downloads,
+      books: shown.books,
+      compact: shown.compact,
       onOpen: (context, book) => openBook(context, services, book),
     ),
   );
 }
 
+/// Every edition of [books] with local files or a transfer: a summary of the
+/// space they use and of the network, then one library row per edition.
+/// Tapping a row opens its book through [onOpen]. The controls at the end of
+/// a row only change the download.
+///
+/// This is the controller of the Downloads screen. Its parts report what the
+/// person chose, and it confirms and performs the change: download actions,
+/// mobile data for the session, and the leftover files page. The list
+/// follows [Downloads.phases], and each row follows [Downloads.watch] of its
+/// edition, so byte progress redraws only that row.
 class DownloadsPage extends StatelessWidget {
   const DownloadsPage({
     super.key,
@@ -176,10 +201,30 @@ class DownloadsPage extends StatelessWidget {
   final void Function(BuildContext context, Book book)? onOpen;
   final bool compact;
 
+  Future<void> _allowMobile(BuildContext context, MediaPolicy policy) async {
+    final allow = await confirmAction(
+      context,
+      title: 'Allow mobile data?',
+      message: 'Allow media transfers for this account session. Your carrier may charge for mobile data. Signing out or restarting ends this permission.',
+      action: 'Allow this session',
+      cancel: 'Wait for Wi-Fi',
+    );
+    if (allow) policy.allowMobileForSession();
+  }
+
+  void _openLeftovers(BuildContext context, Downloads downloads) => unawaited(
+    Navigator.push<void>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => LeftoverFilesPage(downloads: downloads),
+      ),
+    ),
+  );
+
   @override
   Widget build(BuildContext context) {
     final owner = downloads;
-    if (owner?.supported != true) {
+    if (owner == null || !owner.supported) {
       return const Center(
         child: Padding(
           padding: EdgeInsets.all(32),
@@ -187,10 +232,17 @@ class DownloadsPage extends StatelessWidget {
         ),
       );
     }
+    return ListenableBuilder(
+      listenable: owner.phases,
+      builder: (context, _) => _list(context, owner),
+    );
+  }
+
+  Widget _list(BuildContext context, Downloads owner) {
     final entries = [
       for (final book in books)
         for (final edition in book.editions)
-          if (owner!.status(edition) case final state
+          if (owner.status(edition) case final state
               when state.phase != DownloadPhase.none ||
                   state.bytes > 0 ||
                   state.unavailableBytes > 0)
@@ -207,10 +259,35 @@ class DownloadsPage extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(2, 22, 2, 2),
       child: SectionLabel(label),
     );
+    Iterable<Widget> rows(
+      List<({Book book, Edition edition, EditionDownload state})> shown,
+    ) sync* {
+      for (final (index, entry) in shown.indexed) {
+        if (index > 0) yield const Divider();
+        yield _DownloadRow(
+          book: entry.book,
+          edition: entry.edition,
+          download: owner.watch(entry.edition),
+          compact: compact,
+          onOpen: (book) => onOpen?.call(context, book),
+          onAction: (edition, action) =>
+              changeDownload(context, owner, edition, action),
+        );
+      }
+    }
+
     return ListView(
       padding: EdgeInsets.fromLTRB(18, 4, 18, 24 + floatingBarInset(context)),
       children: [
-        _Summary(downloads: owner!, saved: saved),
+        _Summary(
+          saved: saved,
+          policy: owner.policy,
+          leftovers: owner.leftovers,
+          onAllowMobile: () => unawaited(_allowMobile(context, owner.policy)),
+          onWifiOnly: owner.policy.resetSession,
+          onOpenLeftovers: () => _openLeftovers(context, owner),
+          onRetryLeftovers: () => unawaited(owner.reloadLeftovers()),
+        ),
         if (entries.isEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 32),
@@ -225,46 +302,42 @@ class DownloadsPage extends StatelessWidget {
             ),
           ),
         if (pending.isNotEmpty) section('IN PROGRESS'),
-        for (final (index, entry) in pending.indexed) ...[
-          if (index > 0) const Divider(),
-          _DownloadRow(
-            onAction: (action) =>
-                changeDownload(context, owner, entry.edition, action),
-            book: entry.book,
-            edition: entry.edition,
-            state: entry.state,
-            onOpen: onOpen,
-            compact: compact,
-          ),
-        ],
+        ...rows(pending),
         if (saved.isNotEmpty) section('ON THIS PHONE'),
-        for (final (index, entry) in saved.indexed) ...[
-          if (index > 0) const Divider(),
-          _DownloadRow(
-            onAction: (action) =>
-                changeDownload(context, owner, entry.edition, action),
-            book: entry.book,
-            edition: entry.edition,
-            state: entry.state,
-            onOpen: onOpen,
-            compact: compact,
-          ),
-        ],
+        ...rows(saved),
         const SizedBox(height: 24),
       ],
     );
   }
 }
 
+/// The space that [saved] editions use, the network line, and the leftover
+/// line. It reports the mobile-data choices and the leftover taps up.
 class _Summary extends StatelessWidget {
-  const _Summary({required this.downloads, required this.saved});
-  final Downloads downloads;
+  const _Summary({
+    required this.saved,
+    required this.policy,
+    required this.leftovers,
+    required this.onAllowMobile,
+    required this.onWifiOnly,
+    required this.onOpenLeftovers,
+    required this.onRetryLeftovers,
+  });
   final List<({Book book, Edition edition, EditionDownload state})> saved;
+  final MediaPolicy policy;
+  final ValueListenable<LeftoverFiles> leftovers;
+
+  /// The person asked to use mobile data for this session.
+  final VoidCallback onAllowMobile;
+
+  /// The person asked to wait for Wi-Fi again.
+  final VoidCallback onWifiOnly;
+  final VoidCallback onOpenLeftovers;
+  final VoidCallback onRetryLeftovers;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final policy = downloads.policy;
     final audio = saved
         .where((entry) => entry.edition.kind == EditionKind.audio)
         .length;
@@ -276,28 +349,6 @@ class _Summary extends StatelessWidget {
     final audioBytes = saved
         .where((entry) => entry.edition.kind == EditionKind.audio)
         .fold<int>(0, (total, entry) => total + entry.state.bytes);
-    final (icon, network) = switch (policy.network) {
-      MediaNetwork.wifi => (
-        Icons.wifi_rounded,
-        'Connected to Wi-Fi · downloads run now',
-      ),
-      MediaNetwork.mobile when policy.mobileAllowed => (
-        Icons.signal_cellular_alt_rounded,
-        'On mobile data · allowed for this session',
-      ),
-      MediaNetwork.mobile => (
-        Icons.signal_cellular_alt_rounded,
-        'On mobile data · downloads wait for Wi-Fi',
-      ),
-      MediaNetwork.disconnected => (
-        Icons.cloud_off_rounded,
-        'Offline · downloaded books still play',
-      ),
-      MediaNetwork.unknown => (
-        Icons.help_outline_rounded,
-        'Network unknown · downloads wait for Wi-Fi',
-      ),
-    };
     return BookfinPanel(
       padding: const EdgeInsets.fromLTRB(18, 16, 12, 8),
       child: Column(
@@ -332,64 +383,99 @@ class _Summary extends StatelessWidget {
             padding: EdgeInsets.symmetric(vertical: 10),
             child: Divider(),
           ),
-          Row(
-            children: [
-              Icon(icon, size: 20, color: theme.colorScheme.primary),
-              const SizedBox(width: 10),
-              Expanded(child: Text(network)),
-            ],
+          ListenableBuilder(
+            listenable: policy,
+            builder: (context, _) => _network(context),
           ),
-          if (policy.network == MediaNetwork.mobile && !policy.mobileAllowed)
-            TextButton(
-              onPressed: () async {
-                final allow = await confirmAction(
-                  context,
-                  title: 'Allow mobile data?',
-                  message: 'Allow media transfers for this account session. Your carrier may charge for mobile data. Signing out or restarting ends this permission.',
-                  action: 'Allow this session',
-                  cancel: 'Wait for Wi-Fi',
-                );
-                if (allow && context.mounted) {
-                  policy.allowMobileForSession();
-                }
-              },
-              child: const Text('Allow mobile data this session'),
+          ValueListenableBuilder(
+            valueListenable: leftovers,
+            builder: (context, leftovers, _) => _LeftoverSummary(
+              leftovers: leftovers,
+              onOpen: onOpenLeftovers,
+              onRetry: onRetryLeftovers,
             ),
-          if (policy.mobileAllowed)
-            TextButton(
-              onPressed: policy.resetSession,
-              child: const Text('Use Wi-Fi only'),
-            ),
-          // A stable key keeps one storage scan while the card rebuilds.
-          _LeftoverSummary(
-            key: const ValueKey('leftover files'),
-            downloads: downloads,
           ),
           const SizedBox(height: 8),
         ],
       ),
     );
   }
+
+  Widget _network(BuildContext context) {
+    final theme = Theme.of(context);
+    final (icon, network) = switch (policy.network) {
+      MediaNetwork.wifi => (
+        Icons.wifi_rounded,
+        'Connected to Wi-Fi · downloads run now',
+      ),
+      MediaNetwork.mobile when policy.mobileAllowed => (
+        Icons.signal_cellular_alt_rounded,
+        'On mobile data · allowed for this session',
+      ),
+      MediaNetwork.mobile => (
+        Icons.signal_cellular_alt_rounded,
+        'On mobile data · downloads wait for Wi-Fi',
+      ),
+      MediaNetwork.disconnected => (
+        Icons.cloud_off_rounded,
+        'Offline · downloaded books still play',
+      ),
+      MediaNetwork.unknown => (
+        Icons.help_outline_rounded,
+        'Network unknown · downloads wait for Wi-Fi',
+      ),
+    };
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, size: 20, color: theme.colorScheme.primary),
+            const SizedBox(width: 10),
+            Expanded(child: Text(network)),
+          ],
+        ),
+        if (policy.network == MediaNetwork.mobile && !policy.mobileAllowed)
+          TextButton(
+            onPressed: onAllowMobile,
+            child: const Text('Allow mobile data this session'),
+          ),
+        if (policy.mobileAllowed)
+          TextButton(
+            onPressed: onWifiOnly,
+            child: const Text('Use Wi-Fi only'),
+          ),
+      ],
+    );
+  }
 }
 
+/// One edition's library row. It follows [download], so byte progress
+/// redraws only this row. It reports a tap through [onOpen] and a download
+/// action through [onAction].
 class _DownloadRow extends StatelessWidget {
   const _DownloadRow({
-    required this.onAction,
     required this.book,
     required this.edition,
-    required this.state,
-    required this.onOpen,
+    required this.download,
     required this.compact,
+    required this.onOpen,
+    required this.onAction,
   });
-  final ValueChanged<DownloadAction> onAction;
   final Book book;
   final Edition edition;
-  final EditionDownload state;
-  final void Function(BuildContext context, Book book)? onOpen;
+  final ValueListenable<EditionDownload> download;
   final bool compact;
+  final ValueChanged<Book> onOpen;
+  final void Function(Edition edition, DownloadAction action) onAction;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => ValueListenableBuilder(
+    valueListenable: download,
+    builder: (context, state, _) => _row(state),
+  );
+
+  Widget _row(EditionDownload state) {
     final kind = edition.kind == EditionKind.audio
         ? 'Audiobook'
         : edition.files.firstOrNull?.container.toUpperCase().nonEmpty ??
@@ -420,7 +506,7 @@ class _DownloadRow extends StatelessWidget {
       author: book.author,
       detail: detail,
       compact: compact,
-      onTap: () => onOpen?.call(context, book),
+      onTap: () => onOpen(book),
       below: state.phase == DownloadPhase.downloading
           ? ProgressLine(value: _share(state))
           : null,
@@ -430,7 +516,7 @@ class _DownloadRow extends StatelessWidget {
           for (final action in state.actions)
             IconButton(
               tooltip: _tooltip(action),
-              onPressed: () => onAction(action),
+              onPressed: () => onAction(edition, action),
               icon: Icon(_icon(action)),
             ),
         ],
@@ -503,148 +589,83 @@ void changeDownload(
   }
 }());
 
-/// Reads the leftover files of the bound account, and reads them again when
-/// [Downloads.phases] notifies, so byte progress never starts a new read.
-/// [builder] gets the latest read and a way to repeat it.
-class _LeftoverInventory extends StatefulWidget {
-  const _LeftoverInventory({required this.downloads, required this.builder});
-  final Downloads downloads;
-  final Widget Function(
-    BuildContext context,
-    AsyncSnapshot<List<RetainedDownload>> inventory,
-    VoidCallback reload,
-  )
-  builder;
-
-  @override
-  State<_LeftoverInventory> createState() => _LeftoverInventoryState();
-}
-
-class _LeftoverInventoryState extends State<_LeftoverInventory> {
-  late Future<List<RetainedDownload>> _inventory;
-
-  @override
-  void initState() {
-    super.initState();
-    widget.downloads.phases.addListener(_reload);
-    _inventory = _read();
-  }
-
-  @override
-  void didUpdateWidget(_LeftoverInventory oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.downloads != widget.downloads) {
-      oldWidget.downloads.phases.removeListener(_reload);
-      widget.downloads.phases.addListener(_reload);
-      _inventory = _read();
-    }
-  }
-
-  void _reload() {
-    setState(() {
-      _inventory = _read();
-    });
-  }
-
-  Future<List<RetainedDownload>> _read() {
-    final inventory = widget.downloads.retainedStorage();
-    inventory.ignore();
-    return inventory;
-  }
-
-  @override
-  void dispose() {
-    widget.downloads.phases.removeListener(_reload);
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) => FutureBuilder<List<RetainedDownload>>(
-    future: _inventory,
-    builder: (context, snapshot) => widget.builder(context, snapshot, _reload),
-  );
-}
-
-/// The summary card's line about leftover files. It shows nothing while there
-/// are none.
+/// The summary card's line about [leftovers]. It shows nothing while the
+/// first read runs or there are none. A tap reports [onOpen], or [onRetry]
+/// after a failed read.
 class _LeftoverSummary extends StatelessWidget {
-  const _LeftoverSummary({super.key, required this.downloads});
-  final Downloads downloads;
+  const _LeftoverSummary({
+    required this.leftovers,
+    required this.onOpen,
+    required this.onRetry,
+  });
+  final LeftoverFiles leftovers;
+  final VoidCallback onOpen;
+  final VoidCallback onRetry;
 
   @override
-  Widget build(BuildContext context) => _LeftoverInventory(
-    downloads: downloads,
-    builder: (context, inventory, reload) {
-      final theme = Theme.of(context);
-      final entries = inventory.data ?? const <RetainedDownload>[];
-      final failed = inventory.hasError;
-      if (inventory.connectionState != ConnectionState.done ||
-          !failed && entries.isEmpty) {
-        return const SizedBox.shrink();
-      }
-      final bytes = entries.fold<int>(0, (total, entry) => total + entry.bytes);
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const Padding(padding: EdgeInsets.only(top: 8), child: Divider()),
-          InkWell(
-            borderRadius: BorderRadius.circular(12),
-            onTap: failed
-                ? reload
-                : () => unawaited(
-                    Navigator.push<void>(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => LeftoverFilesPage(downloads: downloads),
-                      ),
-                    ),
-                  ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Row(
-                children: [
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final failed = leftovers.error != null;
+    if (leftovers.reading || !failed && leftovers.entries.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    final bytes = leftovers.entries.fold<int>(
+      0,
+      (total, entry) => total + entry.bytes,
+    );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const Padding(padding: EdgeInsets.only(top: 8), child: Divider()),
+        InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: failed ? onRetry : onOpen,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Row(
+              children: [
+                Icon(
+                  failed
+                      ? Icons.error_outline_rounded
+                      : Icons.inventory_2_outlined,
+                  size: 20,
+                  color: theme.colorScheme.primary,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: failed
+                      ? const Text(
+                          'Cannot check leftover files. Tap to try again.',
+                        )
+                      : Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Leftover files'),
+                            Text(
+                              '${formatBytes(bytes)} from books no longer in your library',
+                              style: theme.textTheme.bodySmall,
+                            ),
+                          ],
+                        ),
+                ),
+                if (!failed)
                   Icon(
-                    failed
-                        ? Icons.error_outline_rounded
-                        : Icons.inventory_2_outlined,
-                    size: 20,
-                    color: theme.colorScheme.primary,
+                    Icons.chevron_right_rounded,
+                    color: theme.colorScheme.onSurfaceVariant,
                   ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: failed
-                        ? const Text(
-                            'Cannot check leftover files. Tap to try again.',
-                          )
-                        : Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text('Leftover files'),
-                              Text(
-                                '${formatBytes(bytes)} from books no longer in your library',
-                                style: theme.textTheme.bodySmall,
-                              ),
-                            ],
-                          ),
-                  ),
-                  if (!failed)
-                    Icon(
-                      Icons.chevron_right_rounded,
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                ],
-              ),
+              ],
             ),
           ),
-        ],
-      );
-    },
-  );
+        ),
+      ],
+    );
+  }
 }
 
 /// Files kept on the phone from books that are no longer in the library, for
 /// example after a library was deselected. They stay until the user removes
-/// them.
+/// them. The page shows [Downloads.leftovers]. It is the controller of its
+/// page: it asks before each removal, and reads again on request.
 class LeftoverFilesPage extends StatelessWidget {
   const LeftoverFilesPage({super.key, required this.downloads});
   final Downloads downloads;
@@ -658,16 +679,19 @@ class LeftoverFilesPage extends StatelessWidget {
         cancel: 'Keep files',
       );
 
+  /// Removes [entries]. A removal changes saved files, so Downloads reads
+  /// the leftovers again by itself. After a failure, this asks for that read,
+  /// so the page shows what is left.
   Future<void> _remove(
     BuildContext context,
     List<RetainedDownload> entries,
-    VoidCallback reload,
   ) async {
     try {
       for (final entry in entries) {
         await downloads.removeRetained(entry);
       }
     } catch (_) {
+      unawaited(downloads.reloadLeftovers());
       if (context.mounted) {
         showGlassMessage(
           context,
@@ -675,125 +699,105 @@ class LeftoverFilesPage extends StatelessWidget {
         );
       }
     }
-    if (context.mounted) reload();
   }
 
   @override
-  Widget build(BuildContext context) => _LeftoverInventory(
-    downloads: downloads,
-    builder: (context, inventory, reload) {
-      final theme = Theme.of(context);
-      final entries = inventory.hasError
-          ? const <RetainedDownload>[]
-          : inventory.data ?? const <RetainedDownload>[];
-      final removable = entries.where((entry) => entry.removable).toList();
-      final total = removable.fold<int>(0, (sum, entry) => sum + entry.bytes);
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text('Leftover files'),
-          actions: [
-            IconButton(
-              tooltip: 'Check again',
-              onPressed: reload,
-              icon: const Icon(Icons.refresh_rounded),
+  Widget build(BuildContext context) => ValueListenableBuilder(
+    valueListenable: downloads.leftovers,
+    builder: (context, leftovers, _) => _page(context, leftovers),
+  );
+
+  Widget _page(BuildContext context, LeftoverFiles leftovers) {
+    final theme = Theme.of(context);
+    final failed = leftovers.error != null;
+    // After a failed read, no old entry is offered for removal.
+    final entries = failed ? const <RetainedDownload>[] : leftovers.entries;
+    final removable = entries.where((entry) => entry.removable).toList();
+    final total = removable.fold<int>(0, (sum, entry) => sum + entry.bytes);
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Leftover files'),
+        actions: [
+          IconButton(
+            tooltip: 'Check again',
+            onPressed: () => unawaited(downloads.reloadLeftovers()),
+            icon: const Icon(Icons.refresh_rounded),
+          ),
+          if (removable.isNotEmpty)
+            TextButton(
+              onPressed: () async {
+                if (await _confirm(
+                      context,
+                      'Remove all leftover files?',
+                      'Remove ${formatBytes(total)} kept from books that are no longer in your library? Your Jellyfin files will not change.',
+                    ) &&
+                    context.mounted) {
+                  await _remove(context, removable);
+                }
+              },
+              child: const Text('Remove all'),
             ),
-            if (removable.isNotEmpty)
-              TextButton(
-                onPressed: () async {
-                  if (await _confirm(
-                        context,
-                        'Remove all leftover files?',
-                        'Remove ${formatBytes(total)} kept from books that are no longer in your library? Your Jellyfin files will not change.',
-                      ) &&
-                      context.mounted) {
-                    await _remove(context, removable, reload);
-                  }
-                },
-                child: const Text('Remove all'),
+          const SizedBox(width: 8),
+        ],
+      ),
+      body: BookfinSurface(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(18, 4, 18, 24),
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(2, 0, 2, 14),
+              child: Text(
+                'These files are from books that are no longer in your library, for example after you hide a library. They stay on this phone until you remove them.',
+                style: theme.textTheme.bodySmall,
               ),
-            const SizedBox(width: 8),
+            ),
+            if (leftovers.reading)
+              const Center(child: CircularProgressIndicator())
+            else if (failed)
+              const Text(
+                'Cannot read leftover files. No files were removed. Check again to retry.',
+              )
+            else if (entries.isEmpty)
+              const Text('No leftover files.')
+            else
+              SettingsGroup(
+                children: [
+                  for (final entry in entries)
+                    ListTile(
+                      leading: const Icon(Icons.insert_drive_file_outlined),
+                      title: Text(
+                        entry.removable
+                            ? 'Source ${entry.sourceKey}'
+                            : 'Unidentified files',
+                      ),
+                      subtitle: Text(formatBytes(entry.bytes)),
+                      trailing: entry.removable
+                          ? IconButton(
+                              tooltip: 'Remove leftover files',
+                              onPressed: () async {
+                                if (await _confirm(
+                                      context,
+                                      'Remove leftover files?',
+                                      'Remove ${formatBytes(entry.bytes)} kept from a book that is no longer in your library? Your Jellyfin files will not change.',
+                                    ) &&
+                                    context.mounted) {
+                                  await _remove(context, [entry]);
+                                }
+                              },
+                              icon: const Icon(Icons.delete_outline_rounded),
+                            )
+                          : const Tooltip(
+                              message: 'These files cannot be identified, so they stay.',
+                              child: Icon(Icons.lock_outline_rounded),
+                            ),
+                    ),
+                ],
+              ),
           ],
         ),
-        body: BookfinSurface(
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(18, 4, 18, 24),
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(2, 0, 2, 14),
-                child: Text(
-                  'These files are from books that are no longer in your library, for example after you hide a library. They stay on this phone until you remove them.',
-                  style: theme.textTheme.bodySmall,
-                ),
-              ),
-              if (inventory.connectionState != ConnectionState.done)
-                const Center(child: CircularProgressIndicator())
-              else if (inventory.hasError)
-                const Text(
-                  'Cannot read leftover files. No files were removed. Check again to retry.',
-                )
-              else if (entries.isEmpty)
-                const Text('No leftover files.')
-              else
-                SettingsGroup(
-                  children: [
-                    for (final entry in entries)
-                      ListTile(
-                        leading: const Icon(Icons.insert_drive_file_outlined),
-                        title: Text(
-                          entry.removable
-                              ? 'Source ${entry.sourceKey}'
-                              : 'Unidentified files',
-                        ),
-                        subtitle: Text(formatBytes(entry.bytes)),
-                        trailing: entry.removable
-                            ? IconButton(
-                                tooltip: 'Remove leftover files',
-                                onPressed: () async {
-                                  if (await _confirm(
-                                        context,
-                                        'Remove leftover files?',
-                                        'Remove ${formatBytes(entry.bytes)} kept from a book that is no longer in your library? Your Jellyfin files will not change.',
-                                      ) &&
-                                      context.mounted) {
-                                    await _remove(context, [entry], reload);
-                                  }
-                                },
-                                icon: const Icon(Icons.delete_outline_rounded),
-                              )
-                            : const Tooltip(
-                                message: 'These files cannot be identified, so they stay.',
-                                child: Icon(Icons.lock_outline_rounded),
-                              ),
-                      ),
-                  ],
-                ),
-            ],
-          ),
-        ),
-      );
-    },
-  );
-}
-
-String bookAvailability(Book book, EditionKind kind, Downloads? downloads) {
-  final editions = book.editions.where((edition) => edition.kind == kind);
-  final states = editions
-      .map((edition) => downloads?.status(edition) ?? const EditionDownload())
-      .toList();
-  final label = kind == EditionKind.audio ? 'Audio' : 'Ebook';
-  for (final phase in [
-    DownloadPhase.downloaded,
-    DownloadPhase.downloading,
-    DownloadPhase.waiting,
-    DownloadPhase.failed,
-    DownloadPhase.partial,
-    DownloadPhase.none,
-  ]) {
-    if (states.any((state) => state.phase == phase)) {
-      return '$label · ${states.firstWhere((state) => state.phase == phase).label}';
-    }
+      ),
+    );
   }
-  return '$label · Not downloaded';
 }
 
 /// For example "412 MB", "2.4 MB", or "830 KB".

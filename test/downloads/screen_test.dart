@@ -24,7 +24,7 @@ void main() {
   late MediaFixture fixture;
   late Directory root;
   late CatalogController catalog;
-  late LocalDownloads downloads;
+  late _CountedLeftovers downloads;
   late MediaPolicy policy;
   setUp(() async {
     HttpOverrides.global = _RealHttp();
@@ -39,7 +39,7 @@ void main() {
     await catalog.refresh(selected: {'books'});
     await catalog.linkBooks('book:text', 'book:audio1');
     policy = MediaPolicy()..network = MediaNetwork.wifi;
-    downloads = LocalDownloads(
+    downloads = _CountedLeftovers(
       root: root,
       freeBytes: () async => 1000000,
       policy: policy,
@@ -102,17 +102,13 @@ void main() {
       () => tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: AnimatedBuilder(
-              animation: downloads,
-              builder: (_, _) =>
-                  DownloadsPage(downloads: downloads, books: fixture.books),
-            ),
+            body: DownloadsPage(downloads: downloads, books: fixture.books),
           ),
         ),
       ),
     );
     await showDownloads();
-    await settleStorage(tester);
+    await _settleStorage(tester, downloads);
     expect(find.byTooltip('Remove download'), findsOneWidget);
     expect(
       find.textContaining('6 B saved but unavailable for playback'),
@@ -122,13 +118,13 @@ void main() {
       await tester.tap(find.byTooltip('Retry download'));
       await downloads.idle;
     });
-    await settleStorage(tester);
+    await _settleStorage(tester, downloads);
     expect(find.textContaining('Waiting for Wi-Fi'), findsOneWidget);
     await tester.runAsync(() async {
       await tester.tap(find.byTooltip('Cancel download'));
       await downloads.idle;
     });
-    await settleStorage(tester);
+    await _settleStorage(tester, downloads);
     expect(find.byTooltip('Remove download'), findsOneWidget);
     expect(
       find.textContaining('6 B saved but unavailable for playback'),
@@ -138,7 +134,7 @@ void main() {
     await tester.runAsync(() async {
       downloads.dispose();
       await downloads.idle;
-      downloads = LocalDownloads(
+      downloads = _CountedLeftovers(
         root: root,
         freeBytes: () async => 1000000,
         policy: policy,
@@ -148,7 +144,7 @@ void main() {
       expect(await downloads.localFile(fixture.text.files.single), isNull);
     });
     await showDownloads();
-    await settleStorage(tester);
+    await _settleStorage(tester, downloads);
     expect(find.byTooltip('Remove download'), findsOneWidget);
     expect(
       find.textContaining('6 B saved but unavailable for playback'),
@@ -304,21 +300,17 @@ void main() {
         MaterialApp(
           theme: bookfinTheme(Brightness.light),
           home: Scaffold(
-            body: ListenableBuilder(
-              listenable: downloads,
-              builder: (context, child) =>
-                  DownloadsPage(downloads: downloads, books: const []),
-            ),
+            body: DownloadsPage(downloads: downloads, books: const []),
           ),
         ),
       ),
     );
-    await settleStorage(tester);
+    await _settleStorage(tester, downloads);
   }
 
   Future<void> openLeftovers(WidgetTester tester) async {
     await tester.tap(find.text('Leftover files'));
-    await settleStorage(tester);
+    await _settleStorage(tester, downloads);
   }
 
   testWidgets(
@@ -351,7 +343,7 @@ void main() {
           ),
         ),
       );
-      await settleStorage(tester);
+      await _settleStorage(tester, downloads);
       expect(find.text('Leftover files'), findsNothing);
       expect(find.textContaining('leftover'), findsNothing);
     },
@@ -378,11 +370,11 @@ void main() {
         await tester.tap(find.widgetWithText(FilledButton, 'Remove files'));
         await downloads.idle;
       });
-      await settleStorage(tester);
+      await _settleStorage(tester, downloads);
       expect(await tester.runAsync(downloads.retainedStorage), isEmpty);
       expect(find.text('No leftover files.'), findsOneWidget);
       await tester.pageBack();
-      await settleStorage(tester);
+      await _settleStorage(tester, downloads);
       expect(find.text('Leftover files'), findsNothing);
     },
   );
@@ -399,7 +391,7 @@ void main() {
       await tester.tap(find.widgetWithText(FilledButton, 'Remove files'));
       await downloads.idle;
     });
-    await settleStorage(tester);
+    await _settleStorage(tester, downloads);
     expect(await tester.runAsync(downloads.retainedStorage), isEmpty);
   });
 
@@ -411,14 +403,13 @@ void main() {
     await tester.runAsync(
       () => downloads.bind(fixture.session(user: 'bob'), []),
     );
-    await settleStorage(tester);
+    await _settleStorage(tester, downloads);
     expect(find.text('Leftover files'), findsNothing);
   });
 
   testWidgets('byte progress alone does not reread leftover files', (
     tester,
   ) async {
-    late _CountedLeftovers counted;
     var notifications = 0;
     await tester.runAsync(() async {
       downloads.dispose();
@@ -426,7 +417,7 @@ void main() {
       fixture.payload = Uint8List(12 << 20);
       fixture.pieceBytes = 48 << 10;
       var now = DateTime(2026);
-      downloads = counted = _CountedLeftovers(
+      downloads = _CountedLeftovers(
         root: root,
         freeBytes: () async => 64 << 20,
         policy: policy,
@@ -437,18 +428,46 @@ void main() {
         MaterialApp(home: LeftoverFilesPage(downloads: downloads)),
       );
     });
-    await settleStorage(tester);
-    final before = counted.reads;
+    await _settleStorage(tester, downloads);
+    final before = downloads.reads;
     downloads.addListener(() => notifications++);
     await tester.runAsync(() async {
       await downloads.request(fixture.text);
       await downloads.idle;
     });
-    await settleStorage(tester);
+    await _settleStorage(tester, downloads);
     expect(downloads.status(fixture.text).phase, DownloadPhase.downloaded);
     expect(notifications, greaterThan(20));
-    expect(counted.reads - before, lessThanOrEqualTo(3));
+    expect(downloads.reads - before, lessThanOrEqualTo(3));
   });
+
+  testWidgets(
+    'opening the Downloads tab again shows the leftovers without a new storage read',
+    (tester) async {
+      await tester.runAsync(() async {
+        final text = catalog.books
+            .expand((book) => book.editions)
+            .firstWhere((edition) => edition.kind == EditionKind.text);
+        await downloads.request(text);
+        await downloads.idle;
+        await show(tester);
+        await catalog.refresh(selected: {});
+        await downloads.idle;
+        await tester.tap(find.text('Downloads'));
+      });
+      await _settleStorage(tester, downloads);
+      expect(find.text('Leftover files'), findsOneWidget);
+      final reads = downloads.reads;
+
+      await tester.tap(find.text('Settings'));
+      await _settleStorage(tester, downloads);
+      await tester.tap(find.text('Downloads'));
+      await _settleStorage(tester, downloads);
+
+      expect(find.text('Leftover files'), findsOneWidget);
+      expect(downloads.reads, reads);
+    },
+  );
 
   testWidgets('unreadable identities have no removal action', (tester) async {
     await showRetained(tester);
@@ -463,7 +482,7 @@ void main() {
       await File(records.single.path).writeAsString('unreadable');
       await tester.tap(find.byTooltip('Check again'));
     });
-    await settleStorage(tester);
+    await _settleStorage(tester, downloads);
     expect(find.text('Unidentified files'), findsOneWidget);
     expect(find.text('6 B'), findsOneWidget);
     expect(find.byTooltip('Remove leftover files'), findsNothing);
@@ -486,14 +505,8 @@ void main() {
         await File(account.path).writeAsString('not a directory');
         await tester.tap(find.byTooltip('Check again'));
       });
-      await tester.pump();
-      final view = tester
-          .widgetList<FutureBuilder<List<RetainedDownload>>>(
-            find.byType(FutureBuilder<List<RetainedDownload>>),
-          )
-          .last;
-      await tester.runAsync(() => expectLater(view.future, throwsStateError));
-      await tester.pumpAndSettle();
+      await _settleStorage(tester, downloads);
+      expect(downloads.leftovers.value.error, isStateError);
       expect(find.text('Source text:text'), findsNothing);
       expect(find.byTooltip('Remove leftover files'), findsNothing);
       expect(
@@ -518,14 +531,14 @@ void main() {
         await tester.tap(find.text('Downloads'));
         await tester.pump();
       });
-      await settleStorage(tester);
+      await _settleStorage(tester, downloads);
       expect(catalog.books, isEmpty);
       expect(find.text('Leftover files'), findsOneWidget);
       await tester.runAsync(() async {
         await catalog.refresh(selected: {'books'});
         await downloads.idle;
       });
-      await settleStorage(tester);
+      await _settleStorage(tester, downloads);
       expect(find.text('Leftover files'), findsNothing);
       expect(downloads.status(text).phase, DownloadPhase.downloaded);
       expect(fixture.mediaRequests, ['text']);
@@ -533,21 +546,23 @@ void main() {
   );
 }
 
-/// Waits until every leftover file inventory on screen is read.
-Future<void> settleStorage(WidgetTester tester) async {
-  // Frames built in real time let a pushed page start its storage read
-  // there, so the read can finish.
+/// Waits until [downloads] ends its transfers and leftover reads, and no
+/// read starts after the last one.
+Future<void> _settleStorage(
+  WidgetTester tester,
+  _CountedLeftovers downloads,
+) async {
+  // Frames built in real time let a shown inventory start its read there,
+  // so the read can finish.
   await tester.runAsync(() async {
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 500));
-  });
-  final views = tester.widgetList<FutureBuilder<List<RetainedDownload>>>(
-    find.byType(FutureBuilder<List<RetainedDownload>>),
-  );
-  await tester.runAsync(() async {
-    for (final view in views) {
-      await view.future?.then((_) {}, onError: (Object _) {});
-    }
+    int reads;
+    do {
+      reads = downloads.reads;
+      await tester.pump();
+      await downloads.idle;
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      await downloads.lastRead;
+    } while (reads != downloads.reads);
   });
   await tester.pumpAndSettle();
 }
@@ -583,10 +598,15 @@ class _CountedLeftovers extends LocalDownloads {
     super.clock,
   });
   int reads = 0;
+
+  /// Ends when the last storage read ends, whether it failed or not.
+  Future<void> lastRead = Future.value();
   @override
   Future<List<RetainedDownload>> retainedStorage() {
     reads++;
-    return super.retainedStorage();
+    final read = super.retainedStorage();
+    lastRead = read.then((_) {}, onError: (Object _) {});
+    return read;
   }
 }
 
