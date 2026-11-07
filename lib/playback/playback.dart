@@ -382,10 +382,7 @@ class Playback extends ChangeNotifier {
   }
 
   String sourceName(AudioPosition position) =>
-      _books
-          .expand((book) => book.editions)
-          .where((edition) => edition.id == position.editionId)
-          .expand((edition) => edition.files)
+      _editions[position.editionId]?.$2.files
           .where((file) => file.key == position.sourceKey)
           .firstOrNull
           ?.displayName ??
@@ -593,15 +590,7 @@ class Playback extends ChangeNotifier {
     ListeningAction kind,
   ) async {
     if (!_restored) return false;
-    final book = _books
-        .where(
-          (book) =>
-              book.editions.any((edition) => edition.id == target.editionId),
-        )
-        .firstOrNull;
-    final edition = book?.editions
-        .where((edition) => edition.id == target.editionId)
-        .firstOrNull;
+    final (book, edition) = _editions[target.editionId] ?? (null, null);
     if (edition == null || !target.fits(edition)) {
       _message = 'The saved audio source changed or is unavailable. Its personal records were kept but were not applied.';
       _notify();
@@ -660,13 +649,10 @@ class Playback extends ChangeNotifier {
   /// The length chosen for the running sleep timer, or null when none runs.
   Duration? get sleepTimer => _sleepTimer;
 
-  int? get durationMilliseconds {
-    final files = _edition?.files;
-    if (files == null || files.any((file) => file.durationMs == null)) {
-      return null;
-    }
-    return files.fold<int>(0, (total, file) => total + file.durationMs!);
-  }
+  /// The length of the open edition in milliseconds, or null when none is
+  /// open or a file has no known length.
+  int? get durationMilliseconds =>
+      _edition == null ? null : _layout(_edition!).totalMs;
 
   /// Where [position] is in its audio edition, in milliseconds from the
   /// edition's start. Null when the edition is not in the library, or when a
@@ -679,27 +665,26 @@ class Playback extends ChangeNotifier {
   }
 
   static int? _editionTime(Edition edition, AudioPosition position) {
-    final start = _fileStarts(edition)[position.sourceKey];
+    final start = _layout(edition).starts[position.sourceKey];
     return start == null ? null : start + position.milliseconds;
   }
 
-  static final _starts = Expando<Map<String, int?>>();
+  static final _layouts = Expando<_EditionLayout>();
 
-  /// Where each file of [edition] starts in the edition, in milliseconds, by
-  /// file key. A start is null when an earlier file has no known length. An
-  /// edition never changes, so its starts are found once.
-  static Map<String, int?> _fileStarts(Edition edition) =>
-      _starts[edition] ??= () {
-        final starts = <String, int?>{};
-        int? offset = 0;
-        for (final file in edition.files) {
-          starts.putIfAbsent(file.key, () => offset);
-          offset = offset == null || file.durationMs == null
-              ? null
-              : offset + file.durationMs!;
-        }
-        return starts;
-      }();
+  /// Where each file of [edition] starts in the edition, and how long the
+  /// edition is, in milliseconds. An edition never changes, so its layout is
+  /// found once.
+  static _EditionLayout _layout(Edition edition) => _layouts[edition] ??= () {
+    final starts = <String, int?>{};
+    int? offset = 0;
+    for (final file in edition.files) {
+      starts.putIfAbsent(file.key, () => offset);
+      offset = offset == null || file.durationMs == null
+          ? null
+          : offset + file.durationMs!;
+    }
+    return (starts: starts, totalMs: offset);
+  }();
 
   /// The bookmarks of the open edition, newest first, each with where it is
   /// in the edition. A bookmark whose place cannot be measured is left out.
@@ -749,16 +734,11 @@ class Playback extends ChangeNotifier {
         ? _position
         : _readPosition(edition);
     if (position == null || !position.fits(edition)) return null;
-    int? elapsed;
-    var total = 0;
-    for (final file in edition.files) {
-      if (file.key == position.sourceKey) {
-        elapsed = total + position.milliseconds;
-      }
-      if (file.durationMs == null) return null;
-      total += file.durationMs!;
-    }
-    return elapsed == null ? null : (elapsedMs: elapsed, totalMs: total);
+    final total = _layout(edition).totalMs;
+    final elapsed = _editionTime(edition, position);
+    return total == null || elapsed == null
+        ? null
+        : (elapsedMs: elapsed, totalMs: total);
   }
 
   /// The chapters of the open edition in order. A file without a chapter at
@@ -768,7 +748,7 @@ class Playback extends ChangeNotifier {
     final edition = _edition;
     if (edition == null) return const [];
     final chapters = <PlaybackChapter>[];
-    final starts = _fileStarts(edition);
+    final starts = _layout(edition).starts;
     for (final file in edition.files) {
       final offset = starts[file.key];
       if (!file.chapters.any((chapter) => chapter.startMs == 0)) {
@@ -847,18 +827,15 @@ class Playback extends ChangeNotifier {
       final generation = _generation;
       _session = session;
       if (_edition != null) {
-        final current = books
-            .expand((book) => book.editions)
-            .where((edition) => edition.id == _edition!.id)
-            .firstOrNull;
+        final current = _editions[_edition!.id];
         if (current == null ||
-            _position?.fits(current) != true ||
-            !_sameEdition(current, _edition!)) {
+            _position?.fits(current.$2) != true ||
+            !_sameEdition(current.$2, _edition!)) {
           await bind(null, []);
           await bind(session, books);
         } else {
-          _edition = current;
-          _book = books.firstWhere((book) => book.editions.contains(current));
+          _book = current.$1;
+          _edition = current.$2;
           _notify();
         }
       }
@@ -867,8 +844,7 @@ class Playback extends ChangeNotifier {
       // The library can arrive after the account, so the saved book may
       // only now be in [books].
       if (_edition == null && _restored) {
-        final (book, edition) = _selectedEdition();
-        if (book != null && edition != null) {
+        if (_selectedEdition() case (final book, final edition)) {
           final resume = _readPosition(edition);
           if (resume != null && !_resumeFits(edition, _resumeRecord(edition))) {
             _offerReplacement(book, edition, resume);
@@ -1004,24 +980,16 @@ class Playback extends ChangeNotifier {
   }
 
   /// The bound book and edition that were open when this account last saved.
-  (Book?, Edition?) _selectedEdition() {
-    final book = _books
-        .where(
-          (book) => book.editions.any((edition) => edition.id == _selected),
-        )
-        .firstOrNull;
-    return (
-      book,
-      book?.editions.where((edition) => edition.id == _selected).firstOrNull,
-    );
-  }
+  (Book, Edition)? _selectedEdition() =>
+      _selected == null ? null : _editions[_selected];
 
   /// Reopens the edition that was open when this account last saved, paused
   /// at its saved position. Does nothing while that edition is not in the
   /// bound books.
   Future<void> _restoreSelected() async {
-    final (book, edition) = _selectedEdition();
-    if (book == null || edition == null) return;
+    final selected = _selectedEdition();
+    if (selected == null) return;
+    final (book, edition) = selected;
     final resume = _readPosition(edition);
     if (resume == null || !_resumeFits(edition, _resumeRecord(edition))) {
       _message = 'The saved audio source changed. Its resume is kept but was not applied.';
@@ -1746,6 +1714,11 @@ class Playback extends ChangeNotifier {
     }
   }
 }
+
+/// Where each file of an edition starts in it, by file key, and the edition's
+/// length, in milliseconds. A start is null when an earlier file has no
+/// known length, and the length is null when any file has none.
+typedef _EditionLayout = ({Map<String, int?> starts, int? totalMs});
 
 /// A bookmark of the open edition, and where it is in the edition, in
 /// milliseconds from the edition's start.
