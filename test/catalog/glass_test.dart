@@ -21,11 +21,23 @@ const opened = Book(
 void main() {
   /// Shows a page inside the app's cover scope, with [playingBook] in the
   /// player, and gives the page's context to [open] when the button is tapped.
+  /// A [pageBook] makes it the page about that book.
   Future<void> showPage(
     WidgetTester tester, {
     Book? playingBook,
+    Book? pageBook,
     required void Function(BuildContext context) open,
   }) async {
+    final page = Scaffold(
+      body: Builder(
+        builder: (context) => Center(
+          child: TextButton(
+            onPressed: () => open(context),
+            child: const Text('Open'),
+          ),
+        ),
+      ),
+    );
     await tester.pumpWidget(
       MaterialApp(
         theme: bookfinTheme(Brightness.dark),
@@ -33,16 +45,9 @@ void main() {
           covers: null,
           session: null,
           playing: playingBook,
-          child: Scaffold(
-            body: Builder(
-              builder: (context) => Center(
-                child: TextButton(
-                  onPressed: () => open(context),
-                  child: const Text('Open'),
-                ),
-              ),
-            ),
-          ),
+          child: pageBook == null
+              ? page
+              : PageBook(book: pageBook, child: page),
         ),
       ),
     );
@@ -97,6 +102,37 @@ void main() {
     );
     expect(glassAround('Remove leftover files?'), findsOneWidget);
     expect(bookBehind(tester, 'Remove leftover files?'), playing);
+  });
+
+  testWidgets('a dialog opened on a book\'s page shows that book', (
+    tester,
+  ) async {
+    await showPage(
+      tester,
+      playingBook: playing,
+      open: (context) => showDialog<void>(
+        context: context,
+        builder: (_) => const GlassDialog(title: Text('Correct book details')),
+      ),
+      pageBook: opened,
+    );
+    expect(bookBehind(tester, 'Correct book details'), opened);
+  });
+
+  testWidgets('a layer that names its own book shows it on any page', (
+    tester,
+  ) async {
+    await showPage(
+      tester,
+      playingBook: playing,
+      open: (context) => showGlassSheet<void>(
+        context,
+        book: playing,
+        builder: (_) => const Text('Player'),
+      ),
+      pageBook: opened,
+    );
+    expect(bookBehind(tester, 'Player'), playing);
   });
 
   testWidgets('with nothing playing, a dialog is plain frost', (tester) async {

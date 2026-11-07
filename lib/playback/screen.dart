@@ -297,7 +297,11 @@ class PlayerView extends StatelessWidget {
       final night = base.brightness == Brightness.dark;
       return Theme(
         data: night ? theaterTheme(base) : base,
-        child: Builder(builder: (context) => _stage(context, book, night)),
+        // Sheets, dialogs and menus opened on the stage are about this book.
+        child: PageBook(
+          book: book,
+          child: Builder(builder: (context) => _stage(context, book, night)),
+        ),
       );
     },
   );
@@ -462,7 +466,6 @@ class PlayerView extends StatelessWidget {
         GlassMenuButton(
           tooltip: 'More player actions',
           icon: const Icon(Icons.more_horiz_rounded),
-          book: book,
           items: [
             GlassMenuItem(
               'Jump lengths',
@@ -569,7 +572,6 @@ class PlayerView extends StatelessWidget {
 
   Future<void> _chapters(BuildContext context) => showGlassSheet<void>(
     context,
-    book: playback.book,
     isScrollControlled: true,
     builder: (context) {
       final theme = Theme.of(context);
@@ -698,7 +700,6 @@ class PlayerView extends StatelessWidget {
 
   Future<void> _speed(BuildContext context) => showGlassSheet<void>(
     context,
-    book: playback.book,
     builder: (context) => SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -736,7 +737,6 @@ class PlayerView extends StatelessWidget {
 
   Future<void> _sleep(BuildContext context) => showGlassSheet<void>(
     context,
-    book: playback.book,
     builder: (context) => SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -773,7 +773,6 @@ class PlayerView extends StatelessWidget {
     var forward = playback.forwardSeconds;
     await showGlassSheet<void>(
       context,
-      book: playback.book,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => SingleChildScrollView(
           child: Padding(

@@ -19,8 +19,9 @@ class CoverGlass extends StatelessWidget {
     this.tint = 0.55,
   });
 
-  /// The book the pane belongs to. Without one, the pane shows the book open
-  /// in the player, and with nothing open it is plain frost.
+  /// The book the pane belongs to. Without one, the pane shows the book of
+  /// the page beneath it, else the book open in the player. With neither, it
+  /// is plain frost.
   final Book? book;
   final Widget child;
   final double radius;
@@ -33,7 +34,8 @@ class CoverGlass extends StatelessWidget {
     final theme = Theme.of(context);
     final night = theme.brightness == Brightness.dark;
     final shape = BorderRadius.circular(radius);
-    final shown = book ?? CoverScope.of(context)?.playing;
+    final shown =
+        book ?? PageBook.of(context) ?? CoverScope.of(context)?.playing;
     return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: shape,
@@ -82,6 +84,23 @@ class CoverGlass extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Marks the book that a page is about. Glass layers opened on the page show
+/// this book.
+class PageBook extends InheritedTheme {
+  const PageBook({super.key, required this.book, required super.child});
+  final Book book;
+
+  static Book? of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<PageBook>()?.book;
+
+  @override
+  Widget wrap(BuildContext context, Widget child) =>
+      PageBook(book: book, child: child);
+
+  @override
+  bool updateShouldNotify(PageBook oldWidget) => oldWidget.book != book;
 }
 
 /// Shows a bottom sheet as a glass pane inset from the screen edges.
