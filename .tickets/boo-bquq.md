@@ -1,18 +1,28 @@
 ---
 id: boo-bquq
 status: open
-deps: [boo-um68, boo-5jzo]
+deps: [boo-l5x3, boo-y6fb, t9-se8f, t9-4jqk, t9-112h, t9-dcld, boo-petv, boo-4bof, t9-sspn, t9-6u46, t9-xj41, t9-pols, boo-63ti, t9-kfdf, t9-d4kb, t9-8v91, boo-0km1, boo-7ua0, t9-3n2m, t9-cx1u, t9-rlgt]
 links: []
 created: 2026-11-07T21:20:29Z
-type: chore
+type: epic
 priority: 2
 assignee: Alexis Purslane
 parent: boo-fs0n
+tags: [ui-rules, engine-rules]
 ---
-# Bring existing widgets in line with the UI architecture rules
+# Bring the app in line with the UI architecture and engine rules
 
-AGENTS.md now has UI architecture rules: data down, actions up; one component per kind of thing; minimal dependencies with low-level subscription. Known breaks: DownloadControls and row buttons call Downloads directly; the timeline calls Playback restore and delete; RecentListeningList calls playback.open; _LeftoverInventory owns a storage future in a leaf State. Audit and refactor after the current audit branches merge.
+This epic holds all conformance work for the two rule sets in AGENTS.md. The UI architecture rules are: data down and actions up, one component for each kind of thing, and depend on the minimum while the lowest widget subscribes. The engine rules are: keep the UI isolate free, start from the cache and refresh silently, and never lose listening history or a place in a book.
 
+Target model: the data sources (catalog, Downloads, Playback, the reader session, appearance, record sync) and the tab or page controllers own every side effect and all long-lived data. Leaf widgets draw what they get and report events through callbacks, and each event gains meaning as it goes up. Each source exposes narrow listenables, such as the catalog's library, account and status, Downloads.watch(edition), and Playback's position, records and selection. The lowest widget that shows a value subscribes to it. The UI isolate does no synchronous storage access and no whole-store JSON work, hashing, grouping or sorting. At launch the app shows the cache and refreshes in the background with no spinner or label. Positions, history and bookmarks are written locally first and atomically, and are never lost.
+
+Order of the work. Each child names its owned files. Two children that can run at once own no common file.
+1. Wave 1: the data sources add narrow signals and move work off the UI isolate (t9-se8f catalog, t9-4jqk Downloads, boo-y6fb Playback, t9-112h reader session), the durability proof (boo-l5x3), and the app shell (t9-dcld). The shell adds stable tab entry widgets, so the tab tickets change only their own files. The source tickets keep their broad notifications, so every merge stays green.
+2. Wave 2: the screens that depend only on wave 1 (t9-sspn library, t9-6u46 Downloads tab, t9-xj41 player, t9-pols settings and sync), plus boo-petv and boo-4bof.
+3. Wave 3: the screens that build on wave 2 (t9-kfdf book page, t9-d4kb timeline, t9-8v91 reader screen), boo-63ti and boo-0km1.
+4. Wave 4: boo-7ua0, t9-3n2m PDF viewport, t9-rlgt gallery, and t9-cx1u, which stops the broad notifications after every consumer moved.
+
+Run `tk dep tree boo-bquq` for the full order.
 
 ## Notes
 

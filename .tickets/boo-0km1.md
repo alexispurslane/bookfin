@@ -1,18 +1,38 @@
 ---
 id: boo-0km1
 status: open
-deps: [boo-um68]
+deps: [t9-se8f, t9-dcld, t9-sspn, boo-petv]
 links: []
 created: 2026-11-07T21:20:29Z
 type: feature
 priority: 2
 assignee: Alexis Purslane
-parent: boo-fs0n
+parent: boo-bquq
+tags: [engine-rules]
 ---
 # Refresh the library silently at launch
 
 The library already loads from disk at launch. Hide the background refresh: no progress bar under the app bar and no Saved library timestamp line during it; bind Playback and Downloads to the saved books at launch (see boo-petv); swap fresh data in without moving the scroll position. Speak up only for a user pull-to-refresh, an expired sign-in or revoked access, or a failed refresh while the saved library is old.
 
+Rules: engine rule 2.
+
+Breaks (verified at f388307):
+- lib/catalog/screen.dart, _CatalogStatus: shows the LinearProgressIndicator for catalog.busy, and the catalog message, during the background refresh at launch.
+- lib/catalog/library_view.dart, _LibraryShelfState._build: shows the 'Saved library · <time>' line while the catalog is not verified.
+- lib/catalog/controller.dart, refresh: a user refresh and a background refresh share one busy and message state, so no widget can tell them apart. A failed background refresh sets message, which every tab and the book page show.
+- lib/catalog/controller.dart, refresh and _publish: a refresh replaces every Book and Edition object. That ends the first reopen of the saved book (boo-petv) and can move the scroll position.
+
+Target design: the status listenable from t9-se8f carries a visible status only for a refresh that the user asked for (pull-to-refresh, Save libraries, Refresh libraries) and for the failures that the first paragraph names. The background refresh at launch is silent. AccountBinding from t9-dcld binds Downloads and Playback to the saved books at once. The shelf keeps its scroll position when the view changes in place.
+
+Open decision: what counts as an old saved library for the failure notice.
+- Option A: a fixed age, for example 7 days after completedAt. Cost: a limit that the user did not choose.
+- Option B: never speak about a failed background refresh. Speak only for a user refresh, an expired sign-in and revoked access. Cost: a user whose library is very old gets no hint that refreshes fail.
+
+Owned files: lib/catalog/screen.dart (_CatalogStatus), lib/catalog/library_view.dart (the Saved library line and RefreshIndicator), lib/catalog/controller.dart (refresh status), lib/app/account_binding.dart (binding at launch), and their tests.
+
+## Acceptance Criteria
+
+A launch with a saved library and a slow refresh shows no progress bar, no Saved library line and no message, and the shelf is usable at once. A pull-to-refresh shows progress and a failure. An expired sign-in and revoked access still speak. A refresh that replaces equal books keeps the shelf's scroll offset.
 
 ## Notes
 
