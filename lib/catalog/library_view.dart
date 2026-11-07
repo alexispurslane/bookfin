@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../foundation/listenable_selector.dart';
 import '../foundation/theme.dart';
 import '../foundation/time.dart';
 import 'book_cover.dart';
@@ -22,11 +23,28 @@ class LibraryShelf extends StatefulWidget {
 class _LibraryShelfState extends State<LibraryShelf> {
   ShelfFilter _filter = ShelfFilter.all;
 
+  /// The shelf follows the catalog and the layout. Download state changes
+  /// the shelf only through the Downloaded filter, and only when a download
+  /// finishes or goes away, because [shelf] keeps the same list otherwise.
   @override
   Widget build(BuildContext context) {
     final services = widget.services;
     final catalog = services.catalog;
-    final items = shelf(catalog.books, _filter, services.editionDownloaded);
+    return ListenableBuilder(
+      listenable: Listenable.merge([catalog, services.layout]),
+      builder: (context, _) => ListenableSelector(
+        listenable: Listenable.merge([
+          if (_filter == ShelfFilter.downloaded) ?services.downloads,
+        ]),
+        select: () => shelf(catalog.books, _filter, services.editionDownloaded),
+        builder: (context, items, _) => _build(context, items),
+      ),
+    );
+  }
+
+  Widget _build(BuildContext context, List<ShelfItem> items) {
+    final services = widget.services;
+    final catalog = services.catalog;
     return RefreshIndicator(
       onRefresh: catalog.busy ? () async {} : catalog.refresh,
       child: CustomScrollView(
@@ -176,11 +194,17 @@ void _open(BuildContext context, LibraryServices services, ShelfItem item) =>
       ShelfSeries() => openSeries(context, services, item),
     };
 
-Widget _cover(LibraryServices services, ShelfItem item, {bool small = false}) =>
+/// Whether the entry's book, or every book of its series, is downloaded.
+bool _downloaded(LibraryServices services, ShelfItem item) => switch (item) {
+  ShelfBook(:final book) => services.downloaded(book),
+  ShelfSeries(:final books) => books.every(services.downloaded),
+};
+
+Widget _cover(ShelfItem item, {required bool downloaded, bool small = false}) =>
     switch (item) {
       ShelfBook(:final book) => BookCover.book(
         book,
-        downloaded: services.downloaded(book),
+        downloaded: downloaded,
         showText: !small,
       ),
       ShelfSeries(:final books, :final name) => BookCover(
@@ -189,7 +213,7 @@ Widget _cover(LibraryServices services, ShelfItem item, {bool small = false}) =>
         cover: books.map((book) => book.cover).nonNulls.firstOrNull,
         stacked: true,
         label: small ? null : '${books.length} books',
-        downloaded: books.every(services.downloaded),
+        downloaded: downloaded,
         showText: !small,
       ),
     };
@@ -210,14 +234,32 @@ class _GridTile extends StatelessWidget {
   final bool compact;
   final bool showSeriesPosition;
 
+  /// A tile rebuilds for download state and listening progress only when
+  /// what it shows of them changes.
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => ListenableSelector(
+    listenable: services.activity,
+    select: () => (
+      downloaded: _downloaded(services, item),
+      progress: switch (item) {
+        ShelfBook(:final book) => services.progress(book),
+        ShelfSeries() => null,
+      },
+    ),
+    builder: (context, shown, _) =>
+        _build(context, shown.downloaded, shown.progress),
+  );
+
+  Widget _build(
+    BuildContext context,
+    bool downloaded,
+    ({int elapsedMs, int totalMs})? progress,
+  ) {
     final theme = Theme.of(context);
-    final (title, subtitle, progress, position) = switch (item) {
+    final (title, subtitle, position) = switch (item) {
       ShelfBook(:final book) => (
         book.title,
         book.author,
-        services.progress(book),
         _position(book, showSeriesPosition),
       ),
       ShelfSeries(:final name, :final books) => (
@@ -226,7 +268,6 @@ class _GridTile extends StatelessWidget {
           if (books.first.author.isNotEmpty) books.first.author,
           '${books.length} books',
         ].join(' · '),
-        null,
         null,
       ),
     };
@@ -242,7 +283,7 @@ class _GridTile extends StatelessWidget {
           children: [
             Padding(
               padding: const EdgeInsets.only(top: 6),
-              child: _cover(services, item, small: compact),
+              child: _cover(item, downloaded: downloaded, small: compact),
             ),
             SizedBox(height: compact ? 6 : 8),
             if (position != null) Text(position, style: _positionStyle(theme)),
@@ -293,27 +334,40 @@ class _ListRow extends StatelessWidget {
   final bool compact;
   final bool showSeriesPosition;
 
+  /// A row rebuilds for download state and listening progress only when
+  /// what it shows of them changes.
   @override
-  Widget build(BuildContext context) {
-    final (title, author, detail, position) = switch (item) {
+  Widget build(BuildContext context) => ListenableSelector(
+    listenable: services.activity,
+    select: () => (
+      downloaded: _downloaded(services, item),
+      detail: switch (item) {
+        ShelfBook(:final book) => services.summary(book),
+        ShelfSeries(:final books) => [
+          'Series · ${books.length} books',
+          services.seriesSummary(item as ShelfSeries),
+        ].where((part) => part.isNotEmpty).join(' · '),
+      },
+    ),
+    builder: (context, shown, _) =>
+        _build(context, shown.downloaded, shown.detail),
+  );
+
+  Widget _build(BuildContext context, bool downloaded, String detail) {
+    final (title, author, position) = switch (item) {
       ShelfBook(:final book) => (
         book.title,
         book.author,
-        services.summary(book),
         _position(book, showSeriesPosition),
       ),
       ShelfSeries(:final name, :final books) => (
         name,
         books.first.author,
-        [
-          'Series · ${books.length} books',
-          services.seriesSummary(item as ShelfSeries),
-        ].where((part) => part.isNotEmpty).join(' · '),
         null,
       ),
     };
     return BookRow(
-      cover: _cover(services, item, small: true),
+      cover: _cover(item, downloaded: downloaded, small: true),
       stacked: item is ShelfSeries,
       title: title,
       author: author,
@@ -495,9 +549,14 @@ class SearchPage extends StatefulWidget {
 class _SearchPageState extends State<SearchPage> {
   String _query = '';
 
+  /// Results follow the catalog and the layout. Each row follows its own
+  /// download state and listening progress.
   @override
   Widget build(BuildContext context) => ListenableBuilder(
-    listenable: widget.services.changes,
+    listenable: Listenable.merge([
+      widget.services.catalog,
+      widget.services.layout,
+    ]),
     builder: (context, _) {
       final results = search(widget.services.catalog.books, _query);
       return widget.services.page(
@@ -583,9 +642,11 @@ class SeriesPage extends StatelessWidget {
   final LibraryServices services;
   final String name;
 
+  /// The series follows the catalog and the layout. Its summary and each
+  /// book follow their own download state and listening progress.
   @override
   Widget build(BuildContext context) => ListenableBuilder(
-    listenable: services.changes,
+    listenable: Listenable.merge([services.catalog, services.layout]),
     builder: (context, _) {
       final series = shelf(
         services.catalog.books,
@@ -603,51 +664,64 @@ class SeriesPage extends StatelessWidget {
             : CustomScrollView(
                 slivers: [
                   SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(18, 4, 18, 18),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          SizedBox(
-                            width: 92,
-                            child: Padding(
-                              padding: const EdgeInsets.only(top: 6, right: 7),
-                              child: _cover(services, series),
+                    child: ListenableSelector(
+                      listenable: services.activity,
+                      select: () => (
+                        downloaded: _downloaded(services, series),
+                        summary: services.seriesSummary(series),
+                      ),
+                      builder: (context, shown, _) => Padding(
+                        padding: const EdgeInsets.fromLTRB(18, 4, 18, 18),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            SizedBox(
+                              width: 92,
+                              child: Padding(
+                                padding: const EdgeInsets.only(
+                                  top: 6,
+                                  right: 7,
+                                ),
+                                child: _cover(
+                                  series,
+                                  downloaded: shown.downloaded,
+                                ),
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  series.name,
-                                  style: TextStyle(
-                                    fontFamily: 'Source Serif 4',
-                                    fontSize: 26,
-                                    height: 1.1,
-                                    fontWeight: FontWeight.w500,
-                                    color: theme.colorScheme.onSurface,
-                                  ),
-                                ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  [
-                                    if (series.books.first.author.isNotEmpty)
-                                      series.books.first.author,
-                                    '${series.books.length} books',
-                                  ].join(' · '),
-                                  style: theme.textTheme.bodySmall,
-                                ),
-                                if (services.seriesSummary(series).isNotEmpty)
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
                                   Text(
-                                    services.seriesSummary(series),
+                                    series.name,
+                                    style: TextStyle(
+                                      fontFamily: 'Source Serif 4',
+                                      fontSize: 26,
+                                      height: 1.1,
+                                      fontWeight: FontWeight.w500,
+                                      color: theme.colorScheme.onSurface,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    [
+                                      if (series.books.first.author.isNotEmpty)
+                                        series.books.first.author,
+                                      '${series.books.length} books',
+                                    ].join(' · '),
                                     style: theme.textTheme.bodySmall,
                                   ),
-                              ],
+                                  if (shown.summary.isNotEmpty)
+                                    Text(
+                                      shown.summary,
+                                      style: theme.textTheme.bodySmall,
+                                    ),
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),

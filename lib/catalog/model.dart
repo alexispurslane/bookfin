@@ -352,8 +352,7 @@ List<Book> buildBooks(List<CatalogEntry> entries, {CatalogEdits? edits}) {
       ),
     );
   }
-  books.sort((left, right) => naturalCompare(left.title, right.title));
-  return List.unmodifiable(books);
+  return List.unmodifiable(sortedNaturally(books, (book) => book.title));
 }
 
 List<Book> possibleMatches(Book book, List<Book> books) => books
@@ -497,30 +496,54 @@ String _author(Map<String, dynamic> item) {
       (item['Artists'] as List? ?? []).join(', ');
 }
 
-int naturalCompare(String left, String right) {
-  final parts = RegExp(r'\d+|\D+');
-  final leftParts = parts
-      .allMatches(left.toLowerCase())
-      .map((match) => match[0]!)
-      .toList();
-  final rightParts = parts
-      .allMatches(right.toLowerCase())
-      .map((match) => match[0]!)
-      .toList();
-  for (
-    var index = 0;
-    index < leftParts.length && index < rightParts.length;
-    index++
-  ) {
-    final leftNumber = int.tryParse(leftParts[index]);
-    final rightNumber = int.tryParse(rightParts[index]);
-    final comparison = leftNumber != null && rightNumber != null
-        ? leftNumber.compareTo(rightNumber)
-        : leftParts[index].compareTo(rightParts[index]);
-    if (comparison != 0) return comparison;
-  }
-  return leftParts.length.compareTo(rightParts.length);
+/// Compares two texts in natural order: letter case is ignored, and runs of
+/// digits compare as numbers, so "Book 9" comes before "Book 10".
+int naturalCompare(String left, String right) =>
+    NaturalKey(left).compareTo(NaturalKey(right));
+
+/// [items] in natural order of [name], with one key made per item instead of
+/// two per comparison.
+List<T> sortedNaturally<T>(Iterable<T> items, String Function(T) name) {
+  final keyed = [
+    for (final item in items) (key: NaturalKey(name(item)), item: item),
+  ]..sort((left, right) => left.key.compareTo(right.key));
+  return [for (final entry in keyed) entry.item];
 }
+
+/// A text split once into its lowercase runs of digits and of other
+/// characters, for [naturalCompare] order.
+class NaturalKey implements Comparable<NaturalKey> {
+  factory NaturalKey(String text) {
+    final parts = [
+      for (final match in _naturalParts.allMatches(text.toLowerCase()))
+        match[0]!,
+    ];
+    return NaturalKey._(parts, [for (final part in parts) int.tryParse(part)]);
+  }
+  const NaturalKey._(this._parts, this._numbers);
+  final List<String> _parts;
+
+  /// Each part's value when it is a number that fits an int, else null.
+  final List<int?> _numbers;
+
+  @override
+  int compareTo(NaturalKey other) {
+    for (
+      var index = 0;
+      index < _parts.length && index < other._parts.length;
+      index++
+    ) {
+      final left = _numbers[index], right = other._numbers[index];
+      final comparison = left != null && right != null
+          ? left.compareTo(right)
+          : _parts[index].compareTo(other._parts[index]);
+      if (comparison != 0) return comparison;
+    }
+    return _parts.length.compareTo(other._parts.length);
+  }
+}
+
+final _naturalParts = RegExp(r'\d+|\D+');
 
 class _SourceEdition {
   const _SourceEdition(this.entry, this.id, this.kind, this.file);

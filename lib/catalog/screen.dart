@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../foundation/listenable_selector.dart';
 import '../foundation/theme.dart';
 import '../downloads/downloads.dart';
 import '../downloads/screen.dart';
@@ -11,7 +12,6 @@ import '../playback/screen.dart';
 import '../reader/session.dart';
 import '../settings/screen.dart';
 import '../sync/coordinator.dart';
-import 'book_cover.dart';
 import 'controller.dart';
 import 'covers.dart';
 import 'jellyfin.dart';
@@ -133,7 +133,7 @@ class _CatalogHomeState extends State<CatalogHome> {
     final dismiss = key != _accountKey || _catalog.accessBlocked;
     _accountKey = key;
     _lastAccessBlocked = _catalog.accessBlocked;
-    _tab = _Tab.library;
+    if (mounted) setState(() => _tab = _Tab.library);
     if (mounted && dismiss) {
       Navigator.of(context).popUntil((route) => route.isFirst);
     }
@@ -159,69 +159,33 @@ class _CatalogHomeState extends State<CatalogHome> {
     }
   }
 
+  /// The shell builds only the frame of the app: the navigation, and the tab
+  /// or sign-in screen in it. It rebuilds when the tab changes or the user
+  /// signs in or out. Every part inside listens to the state that it shows.
   @override
-  Widget build(BuildContext context) => ListenableBuilder(
-    listenable: Listenable.merge([
-      _catalog,
-      _layout,
-      if (widget.downloads != null) widget.downloads!,
-      if (widget.playback != null) widget.playback!,
-    ]),
-    builder: (context, _) {
-      final signedIn = _catalog.session != null;
+  Widget build(BuildContext context) => ListenableSelector(
+    listenable: _catalog,
+    select: () => _catalog.session != null,
+    builder: (context, signedIn, _) {
       final tab = signedIn ? _tab : _Tab.library;
-      final choosing =
-          signedIn &&
-          (_catalog.cache == null || _catalog.cache!.selected.isEmpty);
       final services = _services;
-      return CoverScope(
-        covers: widget.covers,
-        session: _catalog.accessBlocked ? null : _catalog.session,
-        playing: widget.playback?.book,
-        child: Scaffold(
+      final playback = widget.playback;
+      return services.coverScope(
+        Scaffold(
           // Pages scroll beneath the floating mini player.
           extendBody: true,
-          // An open book's player draws its own stage up to the status bar.
-          appBar: tab == _Tab.listening && widget.playback?.book != null
-              ? null
-              : AppBar(
-                  title: Text(switch (tab) {
-                    _ when !signedIn => 'Bookfin',
-                    _Tab.library => 'Library',
-                    _Tab.downloads => 'Downloads',
-                    _Tab.listening => 'Listening',
-                    _Tab.settings => 'Settings',
-                  }),
-                  actions: [
-                    if (tab == _Tab.library && signedIn && !choosing) ...[
-                      IconButton(
-                        tooltip: 'Search',
-                        onPressed: () => openSearch(context, services),
-                        icon: const Icon(Icons.search_rounded),
-                      ),
-                      LayoutToggle(layout: _layout),
-                      const SizedBox(width: 8),
-                    ],
-                    if (!signedIn)
-                      IconButton(
-                        tooltip: 'Appearance',
-                        onPressed: widget.onAppearance,
-                        icon: const Icon(Icons.contrast_rounded),
-                      ),
-                  ],
-                ),
           bottomNavigationBar: !signedIn
               ? null
               : Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    if (widget.playback != null && tab != _Tab.listening)
+                    if (playback != null && tab != _Tab.listening)
                       // The navigation bar below keeps the system inset.
                       MediaQuery.removePadding(
                         context: context,
                         removeBottom: true,
                         child: PlaybackMiniPlayer(
-                          playback: widget.playback!,
+                          playback: playback,
                           onOpenBook: (book) =>
                               openBook(context, services, book),
                         ),
@@ -250,7 +214,7 @@ class _CatalogHomeState extends State<CatalogHome> {
                             label: 'Downloads',
                           ),
                           NavigationDestination(
-                            enabled: widget.playback != null,
+                            enabled: playback != null,
                             icon: const Icon(Icons.headphones_outlined),
                             selectedIcon: const Icon(Icons.headphones_rounded),
                             label: 'Listening',
@@ -265,72 +229,226 @@ class _CatalogHomeState extends State<CatalogHome> {
                     ),
                   ],
                 ),
-          body: SafeArea(
-            top: false,
-            bottom: false,
-            child: BookfinSurface(
-              child: Material(
-                type: MaterialType.transparency,
-                child: Column(
-                  children: [
-                    if (_catalog.busy)
-                      const LinearProgressIndicator(minHeight: 2),
-                    if (_catalog.message != null)
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
-                        child: StatusMessage(_catalog.message!),
-                      ),
-                    if (widget.playback?.message != null &&
-                        tab != _Tab.listening)
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
-                        child: StatusMessage(widget.playback!.message!),
-                      ),
-                    if (widget.playback != null && tab != _Tab.listening)
-                      ReplacementStartNotice(playback: widget.playback!),
-                    Expanded(
-                      child: !signedIn
-                          ? _SignInForm(catalog: _catalog)
-                          : switch (tab) {
-                              _Tab.downloads => DownloadsPage(
-                                downloads: widget.downloads,
-                                books: _catalog.books,
-                                compact:
-                                    _layout.density == LibraryDensity.compact,
-                                onOpen: (context, book) =>
-                                    openBook(context, services, book),
-                              ),
-                              _Tab.listening when widget.playback != null =>
-                                PlayerView(
-                                  playback: widget.playback!,
-                                  onOpenBook: (book) =>
-                                      openBook(context, services, book),
-                                ),
-                              _Tab.settings => SettingsPage(
-                                catalog: _catalog,
-                                layout: _layout,
-                                onAppearance: widget.onAppearance,
-                                sync: widget.sync,
-                              ),
-                              _ when choosing => LibrarySelector(
-                                key: ValueKey(_catalog.session!.scope.key),
-                                catalog: _catalog,
-                              ),
-                              _ => LibraryShelf(
-                                key: ValueKey(_catalog.session!.scope.key),
-                                services: services,
-                              ),
-                            },
-                    ),
-                  ],
+          body: switch (tab) {
+            _ when !signedIn => _TabFrame(
+              bar: AppBar(
+                title: const Text('Bookfin'),
+                actions: [
+                  IconButton(
+                    tooltip: 'Appearance',
+                    onPressed: widget.onAppearance,
+                    icon: const Icon(Icons.contrast_rounded),
+                  ),
+                ],
+              ),
+              child: _TabPage(
+                catalog: _catalog,
+                playback: playback,
+                child: _SignInForm(catalog: _catalog),
+              ),
+            ),
+            _Tab.downloads => _TabFrame(
+              bar: AppBar(title: const Text('Downloads')),
+              child: _TabPage(
+                catalog: _catalog,
+                playback: playback,
+                child: ListenableBuilder(
+                  listenable: Listenable.merge([
+                    _catalog,
+                    _layout,
+                    ?widget.downloads,
+                  ]),
+                  builder: (context, _) => DownloadsPage(
+                    downloads: widget.downloads,
+                    books: _catalog.books,
+                    compact: _layout.density == LibraryDensity.compact,
+                    onOpen: (context, book) =>
+                        openBook(context, services, book),
+                  ),
                 ),
               ),
             ),
-          ),
+            _Tab.listening when playback != null => ListenableSelector(
+              listenable: playback,
+              select: () => playback.book != null,
+              // An open book's player draws its own stage up to the status
+              // bar.
+              builder: (context, open, page) => _TabFrame(
+                bar: open ? null : AppBar(title: const Text('Listening')),
+                child: page!,
+              ),
+              child: _TabPage(
+                catalog: _catalog,
+                child: PlayerView(
+                  playback: playback,
+                  onOpenBook: (book) => openBook(context, services, book),
+                ),
+              ),
+            ),
+            _Tab.settings => _TabFrame(
+              bar: AppBar(title: const Text('Settings')),
+              child: _TabPage(
+                catalog: _catalog,
+                playback: playback,
+                child: ListenableBuilder(
+                  listenable: Listenable.merge([_catalog, _layout]),
+                  builder: (context, _) => SettingsPage(
+                    catalog: _catalog,
+                    layout: _layout,
+                    onAppearance: widget.onAppearance,
+                    sync: widget.sync,
+                  ),
+                ),
+              ),
+            ),
+            _ => _LibraryTab(services: services),
+          },
         ),
       );
     },
   );
+}
+
+/// The Library tab: the library selector until the account has chosen book
+/// libraries, then the shelf. Search and the layout toggle join the top bar
+/// with the shelf.
+class _LibraryTab extends StatelessWidget {
+  const _LibraryTab({required this.services});
+  final LibraryServices services;
+
+  @override
+  Widget build(BuildContext context) {
+    final catalog = services.catalog;
+    return ListenableSelector(
+      listenable: catalog,
+      select: () => (
+        account: catalog.session?.scope.key,
+        choosing: catalog.cache == null || catalog.cache!.selected.isEmpty,
+      ),
+      builder: (context, library, _) => _TabFrame(
+        bar: AppBar(
+          title: const Text('Library'),
+          actions: [
+            if (!library.choosing) ...[
+              IconButton(
+                tooltip: 'Search',
+                onPressed: () => openSearch(context, services),
+                icon: const Icon(Icons.search_rounded),
+              ),
+              LayoutToggle(layout: services.layout),
+              const SizedBox(width: 8),
+            ],
+          ],
+        ),
+        child: _TabPage(
+          catalog: catalog,
+          playback: services.playback,
+          child: library.choosing
+              ? LibrarySelector(
+                  key: ValueKey(library.account),
+                  catalog: catalog,
+                )
+              : LibraryShelf(
+                  key: ValueKey(library.account),
+                  services: services,
+                ),
+        ),
+      ),
+    );
+  }
+}
+
+/// A tab below its top [bar]. Without a bar, the tab reaches up to the
+/// status bar, as an open book's player does.
+class _TabFrame extends StatelessWidget {
+  const _TabFrame({required this.bar, required this.child});
+  final PreferredSizeWidget? bar;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    children: [
+      if (bar case final bar?)
+        // The height that a Scaffold gives its app bar.
+        SizedBox(
+          height: bar.preferredSize.height + MediaQuery.paddingOf(context).top,
+          child: bar,
+        ),
+      Expanded(
+        child: MediaQuery.removePadding(
+          context: context,
+          removeTop: bar != null,
+          child: child,
+        ),
+      ),
+    ],
+  );
+}
+
+/// The catalog's progress and its error, above every tab's page. It is the
+/// one place where the app shows the state of a catalog refresh.
+class _CatalogStatus extends StatelessWidget {
+  const _CatalogStatus({required this.catalog});
+  final CatalogController catalog;
+
+  @override
+  Widget build(BuildContext context) => ListenableSelector(
+    listenable: catalog,
+    select: () => (busy: catalog.busy, message: catalog.message),
+    builder: (context, status, _) => Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (status.busy) const LinearProgressIndicator(minHeight: 2),
+        if (status.message case final message?)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
+            child: StatusMessage(message),
+          ),
+      ],
+    ),
+  );
+}
+
+/// A tab's page: catalog progress and errors, the player's notices when
+/// [playback] is given, then [child].
+class _TabPage extends StatelessWidget {
+  const _TabPage({required this.catalog, this.playback, required this.child});
+  final CatalogController catalog;
+  final Playback? playback;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final playback = this.playback;
+    return SafeArea(
+      top: false,
+      bottom: false,
+      child: BookfinSurface(
+        child: Material(
+          type: MaterialType.transparency,
+          child: Column(
+            children: [
+              _CatalogStatus(catalog: catalog),
+              if (playback != null) ...[
+                ListenableSelector(
+                  listenable: playback,
+                  select: () => playback.message,
+                  builder: (context, message, _) => message == null
+                      ? const SizedBox.shrink()
+                      : Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
+                          child: StatusMessage(message),
+                        ),
+                ),
+                ReplacementStartNotice(playback: playback),
+              ],
+              Expanded(child: child),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _SignInForm extends StatefulWidget {
@@ -364,80 +482,84 @@ class _SignInFormState extends State<_SignInForm> {
   }
 
   @override
-  Widget build(BuildContext context) => ListView(
-    padding: const EdgeInsets.all(24),
-    children: [
-      Text(
-        'Your library starts here.',
-        style: Theme.of(context).textTheme.displaySmall,
-      ),
-      const SizedBox(height: 24),
-      Form(
-        key: _form,
-        child: AutofillGroup(
-          child: Column(
-            children: [
-              TextFormField(
-                controller: _server,
-                enabled: !widget.catalog.busy,
-                keyboardType: TextInputType.url,
-                autofillHints: const [AutofillHints.url],
-                autocorrect: false,
-                decoration: const InputDecoration(
-                  labelText: 'Server address',
-                  hintText: 'https://jellyfin.example',
+  // The form shows the catalog's progress and its sign-in errors.
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: widget.catalog,
+    builder: (context, _) => ListView(
+      padding: const EdgeInsets.all(24),
+      children: [
+        Text(
+          'Your library starts here.',
+          style: Theme.of(context).textTheme.displaySmall,
+        ),
+        const SizedBox(height: 24),
+        Form(
+          key: _form,
+          child: AutofillGroup(
+            child: Column(
+              children: [
+                TextFormField(
+                  controller: _server,
+                  enabled: !widget.catalog.busy,
+                  keyboardType: TextInputType.url,
+                  autofillHints: const [AutofillHints.url],
+                  autocorrect: false,
+                  decoration: const InputDecoration(
+                    labelText: 'Server address',
+                    hintText: 'https://jellyfin.example',
+                  ),
+                  validator: (value) {
+                    try {
+                      parseServer(value ?? '');
+                      return null;
+                    } on CatalogFailure catch (error) {
+                      return error.message;
+                    }
+                  },
                 ),
-                validator: (value) {
-                  try {
-                    parseServer(value ?? '');
-                    return null;
-                  } on CatalogFailure catch (error) {
-                    return error.message;
-                  }
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _username,
-                enabled: !widget.catalog.busy,
-                autofillHints: const [AutofillHints.username],
-                autocorrect: false,
-                decoration: const InputDecoration(labelText: 'Username'),
-                validator: (value) => value == null || value.trim().isEmpty
-                    ? 'Enter your username.'
-                    : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _password,
-                enabled: !widget.catalog.busy,
-                obscureText: true,
-                autofillHints: const [AutofillHints.password],
-                autocorrect: false,
-                enableSuggestions: false,
-                decoration: const InputDecoration(labelText: 'Password'),
-                onFieldSubmitted: (_) => unawaited(_submit()),
-              ),
-              const SizedBox(height: 24),
-              FilledButton(
-                onPressed: widget.catalog.busy ? null : _submit,
-                child: const Text('Sign in'),
-              ),
-              if (widget.catalog.busy)
-                TextButton(
-                  onPressed: () => unawaited(widget.catalog.signOut()),
-                  child: const Text('Cancel'),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _username,
+                  enabled: !widget.catalog.busy,
+                  autofillHints: const [AutofillHints.username],
+                  autocorrect: false,
+                  decoration: const InputDecoration(labelText: 'Username'),
+                  validator: (value) => value == null || value.trim().isEmpty
+                      ? 'Enter your username.'
+                      : null,
                 ),
-            ],
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _password,
+                  enabled: !widget.catalog.busy,
+                  obscureText: true,
+                  autofillHints: const [AutofillHints.password],
+                  autocorrect: false,
+                  enableSuggestions: false,
+                  decoration: const InputDecoration(labelText: 'Password'),
+                  onFieldSubmitted: (_) => unawaited(_submit()),
+                ),
+                const SizedBox(height: 24),
+                FilledButton(
+                  onPressed: widget.catalog.busy ? null : _submit,
+                  child: const Text('Sign in'),
+                ),
+                if (widget.catalog.busy)
+                  TextButton(
+                    onPressed: () => unawaited(widget.catalog.signOut()),
+                    child: const Text('Cancel'),
+                  ),
+              ],
+            ),
           ),
         ),
-      ),
-      if (widget.catalog.message?.contains('Secure sign-out') == true)
-        TextButton(
-          onPressed: () => unawaited(widget.catalog.signOut()),
-          child: const Text('Retry sign-out'),
-        ),
-    ],
+        if (widget.catalog.message?.contains('Secure sign-out') == true)
+          TextButton(
+            onPressed: () => unawaited(widget.catalog.signOut()),
+            child: const Text('Retry sign-out'),
+          ),
+      ],
+    ),
   );
 }
 

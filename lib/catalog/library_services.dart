@@ -5,6 +5,7 @@ import 'book_page.dart' show openBook;
 import 'covers.dart';
 
 import '../downloads/downloads.dart';
+import '../foundation/listenable_selector.dart';
 import '../foundation/theme.dart';
 import '../foundation/time.dart';
 import '../playback/playback.dart';
@@ -35,19 +36,24 @@ class LibraryServices {
   final Playback? playback;
   final ReaderSession? reader;
 
-  /// Changes whenever a library screen can look different.
-  Listenable get changes =>
-      Listenable.merge([catalog, layout, ?downloads, ?playback]);
+  /// Changes when download state or listening progress changes. While a
+  /// book plays or downloads, that is several times a second, so a part that
+  /// shows either listens to this on its own, and selects what it shows.
+  Listenable get activity => Listenable.merge([?downloads, ?playback]);
 
   /// Gives covers below [child] the cover store and the current account, and
   /// glass panes the book open in the player. A page pushed on the navigator
   /// needs this, because the library's own scope sits below the navigator.
-  Widget coverScope(Widget child) => ListenableBuilder(
+  Widget coverScope(Widget child) => ListenableSelector(
     listenable: Listenable.merge([catalog, ?playback]),
-    builder: (context, child) => CoverScope(
-      covers: covers,
+    select: () => (
       session: catalog.accessBlocked ? null : catalog.session,
       playing: playback?.book,
+    ),
+    builder: (context, scope, child) => CoverScope(
+      covers: covers,
+      session: scope.session,
+      playing: scope.playing,
       child: child!,
     ),
     child: child,
