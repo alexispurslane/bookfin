@@ -853,11 +853,7 @@ class Playback extends ChangeNotifier {
             .firstOrNull;
         if (current == null ||
             _position?.fits(current) != true ||
-            !listEquals(
-              current.files.map((file) => file.key).toList(),
-              _edition!.files.map((file) => file.key).toList(),
-            ) ||
-            _editionSources(current) != _editionSources(_edition!)) {
+            !_sameEdition(current, _edition!)) {
           await bind(null, []);
           await bind(session, books);
         } else {
@@ -1042,12 +1038,35 @@ class Playback extends ChangeNotifier {
     return jsonEncode(sources);
   }
 
-  bool _currentEdition(Book book, Edition edition) =>
-      _session != null &&
-      _books.any(
-        (candidate) =>
-            candidate.id == book.id && candidate.editions.contains(edition),
+  /// Whether [a] and [b] describe the same audio: the same edition id, and
+  /// the same source files in the same order at the same revisions. A library
+  /// refresh rebuilds every book and edition as new objects, so identity
+  /// cannot tell whether the audio changed.
+  bool _sameEdition(Edition a, Edition b) =>
+      a.id == b.id &&
+      listEquals(
+        [for (final file in a.files) (file.key, file.revision)],
+        [for (final file in b.files) (file.key, file.revision)],
       );
+
+  /// The bound objects of [edition] in [book], or null when the bound
+  /// account's library no longer has that book with the same audio. Work
+  /// that waits uses this after each wait, so a library refresh that
+  /// replaces equal objects neither stops it nor leaves it holding the old
+  /// objects.
+  (Book, Edition)? _bound(Book book, Edition edition) {
+    if (_session == null) return null;
+    final found = _editions[edition.id];
+    if (found == null ||
+        found.$1.id != book.id ||
+        !_sameEdition(found.$2, edition)) {
+      return null;
+    }
+    return found;
+  }
+
+  bool _currentEdition(Book book, Edition edition) =>
+      _bound(book, edition) != null;
 
   void _offerReplacement(Book book, Edition edition, AudioPosition resume) {
     if (!_restored || !_currentEdition(book, edition)) return;
@@ -1098,11 +1117,13 @@ class Playback extends ChangeNotifier {
     ListeningAction? action,
     AudioReplacement? replacement,
   }) async {
-    if (!_currentEdition(book, edition) ||
+    var bound = _bound(book, edition);
+    if (bound == null ||
         edition.kind != EditionKind.audio ||
         edition.files.isEmpty) {
       throw ArgumentError('Choose an audio edition from the current account.');
     }
+    (book, edition) = bound;
     if (!_restored) {
       _message = 'Cannot restore listening records. Restart Bookfin before listening. Saved listening data was not removed.';
       _notify();
@@ -1112,9 +1133,10 @@ class Playback extends ChangeNotifier {
     final files = <Uri>[];
     for (final file in edition.files) {
       final uri = await downloads.localFile(file);
-      if (generation != _generation || !_currentEdition(book, edition)) {
-        return false;
-      }
+      if (generation != _generation) return false;
+      bound = _bound(book, edition);
+      if (bound == null) return false;
+      (book, edition) = bound;
       if (uri == null || uri.scheme != 'file') {
         _message =
             'Download every file in this audio edition before listening.';
@@ -1148,7 +1170,8 @@ class Playback extends ChangeNotifier {
       final confirmed = target == null
           ? AudioSample(fileIndex, resume?.milliseconds ?? 0)
           : await engine.seek(fileIndex, target.milliseconds);
-      if (generation != _generation ||
+      bound = generation == _generation ? _bound(book, edition) : null;
+      if (bound == null ||
           replacement != null && !identical(replacement, _replacementStart)) {
         await engine.pause();
         if (generation == _generation) {
@@ -1158,6 +1181,7 @@ class Playback extends ChangeNotifier {
         }
         return false;
       }
+      (book, edition) = bound;
       if (confirmed.fileIndex < 0 ||
           confirmed.fileIndex >= edition.files.length) {
         throw const FormatException(
@@ -1661,7 +1685,8 @@ class Playback extends ChangeNotifier {
 
   /// Throws a [StateError] when an invariant fails. Run it on demand from a
   /// test or a debug switch, when no command is in flight:
-  /// - The selection, the position and the account agree.
+  /// - The selection, the position and the account agree, and the open book
+  ///   and edition are the bound library's own objects.
   /// - A sleep timer, its length, its deadline and its countdown agree.
   /// - Each narrow signal shows the state that it names.
   /// - The personal records, the pending writes and the replacement offer
@@ -1672,7 +1697,10 @@ class Playback extends ChangeNotifier {
         _decoderReady && _edition == null ||
         _playing && _position == null ||
         _position != null &&
-            (!_position!.fits(_edition!) || _session == null)) {
+            (!_position!.fits(_edition!) || _session == null) ||
+        _edition != null &&
+            (!identical(_editions[_edition!.id]?.$1, _book) ||
+                !identical(_editions[_edition!.id]?.$2, _edition))) {
       throw StateError(
         'Playback selection, source position, and account must agree.',
       );
