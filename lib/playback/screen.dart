@@ -985,14 +985,6 @@ class _PositionSliderState extends State<_PositionSlider> {
       total.toDouble(),
     );
     final chapters = playback.chapters;
-    // Where each bookmark of the open edition sits, in edition milliseconds.
-    final bookmarks = [
-      for (final bookmark in playback.bookmarks)
-        if (playback.editionTime(bookmark.position) case final at?
-            when bookmark.position.editionId == playback.edition?.id &&
-                at <= total)
-          (id: bookmark.id, at: at),
-    ];
     final accent = Theme.of(context).brightness == Brightness.dark
         ? theaterGlow
         : scheme.primary;
@@ -1036,40 +1028,18 @@ class _PositionSliderState extends State<_PositionSlider> {
               ),
               Positioned.fill(
                 child: IgnorePointer(
-                  child: LayoutBuilder(
-                    builder: (context, size) => Stack(
-                      children: [
-                        for (final chapter in chapters)
-                          if ((chapter.editionMilliseconds ?? 0) > 0 &&
-                              chapter.editionMilliseconds! < total)
-                            Positioned(
-                              left:
-                                  size.maxWidth *
-                                      chapter.editionMilliseconds! /
-                                      total -
-                                  0.75,
-                              top: size.maxHeight / 2 - 5,
-                              child: Container(
-                                width: 1.5,
-                                height: 10,
-                                color: scheme.surface,
-                              ),
-                            ),
-                        for (final (:id, :at) in bookmarks)
-                          Positioned(
-                            key: ValueKey('bookmark mark $id'),
-                            left: size.maxWidth * at / total - 3,
-                            top: size.maxHeight / 2 - 13,
-                            child: Container(
-                              width: 6,
-                              height: 6,
-                              decoration: BoxDecoration(
-                                color: accent,
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                          ),
-                      ],
+                  // The marks change far less often than the slider, so they
+                  // keep a layer of their own.
+                  child: RepaintBoundary(
+                    child: CustomPaint(
+                      key: const ValueKey('position marks'),
+                      painter: _PositionMarks(
+                        chapters: chapters,
+                        bookmarks: playback.editionBookmarks,
+                        total: total,
+                        chapterColor: scheme.surface,
+                        bookmarkColor: accent,
+                      ),
                     ),
                   ),
                 ),
@@ -1099,6 +1069,55 @@ class _PositionSliderState extends State<_PositionSlider> {
       ],
     );
   }
+}
+
+/// The chapter starts and the bookmarks of the open edition, drawn across
+/// the position bar where they are in the edition.
+class _PositionMarks extends CustomPainter {
+  _PositionMarks({
+    required this.chapters,
+    required this.bookmarks,
+    required this.total,
+    required this.chapterColor,
+    required this.bookmarkColor,
+  });
+  final List<PlaybackChapter> chapters;
+  final List<EditionBookmark> bookmarks;
+
+  /// The length of the edition, in milliseconds.
+  final int total;
+  final Color chapterColor;
+  final Color bookmarkColor;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    double x(int milliseconds) => size.width * milliseconds / total;
+    final middle = size.height / 2;
+    final chapter = Paint()..color = chapterColor;
+    for (final PlaybackChapter(:editionMilliseconds) in chapters) {
+      if (editionMilliseconds case final at? when at > 0 && at < total) {
+        canvas.drawRect(
+          Rect.fromLTWH(x(at) - 0.75, middle - 5, 1.5, 10),
+          chapter,
+        );
+      }
+    }
+    final bookmark = Paint()..color = bookmarkColor;
+    for (final (bookmark: _, :at) in bookmarks) {
+      if (at <= total) {
+        canvas.drawCircle(Offset(x(at), middle - 10), 3, bookmark);
+      }
+    }
+  }
+
+  // The lists stay the same objects until their marks change.
+  @override
+  bool shouldRepaint(_PositionMarks old) =>
+      !identical(chapters, old.chapters) ||
+      !identical(bookmarks, old.bookmarks) ||
+      total != old.total ||
+      chapterColor != old.chapterColor ||
+      bookmarkColor != old.bookmarkColor;
 }
 
 String _rate(double value) =>

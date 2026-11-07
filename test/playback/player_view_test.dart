@@ -170,16 +170,17 @@ void main() {
       await playback.seekEdition(0);
     });
     await showPlayer(tester);
-    final mark = find.byWidgetPredicate(
-      (widget) => switch (widget.key) {
-        ValueKey<String>(:final value) => value.startsWith('bookmark mark'),
-        _ => false,
-      },
+    final marks = find.byKey(const ValueKey('position marks'));
+    expect(
+      tester.getRect(marks).width,
+      tester.getRect(find.byType(Slider)).width,
     );
-    expect(mark, findsOneWidget);
-    final bar = tester.getRect(find.byType(Slider));
-    // 75 s of 150 s is halfway along the bar.
-    expect(tester.getCenter(mark).dx, closeTo(bar.center.dx, 12));
+    // 75 s of 150 s is halfway along the bar. The chapter starts are drawn as
+    // rectangles, so the one circle is the bookmark.
+    expect(
+      tester.renderObject(marks),
+      paints..circle(x: tester.getSize(marks).width / 2),
+    );
   });
 
   testWidgets('a long press on a jump button sets the jump lengths', (

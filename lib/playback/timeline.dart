@@ -31,49 +31,6 @@ void openListeningTimeline(
   ),
 );
 
-/// One moment in listening: an action or a bookmark.
-sealed class TimelineEntry {
-  const TimelineEntry();
-  String get id;
-  DateTime get at;
-  String get bookTitle;
-}
-
-final class ActionEntry extends TimelineEntry {
-  const ActionEntry(this.event);
-  final ListeningEvent event;
-  @override
-  String get id => event.id;
-  @override
-  DateTime get at => event.at;
-  @override
-  String get bookTitle => event.bookTitle;
-}
-
-final class BookmarkEntry extends TimelineEntry {
-  const BookmarkEntry(this.bookmark);
-  final AudioBookmark bookmark;
-  @override
-  String get id => bookmark.id;
-  @override
-  DateTime get at => bookmark.createdAt;
-  @override
-  String get bookTitle => bookmark.bookTitle;
-}
-
-/// The actions and bookmarks of [book], or of every book, newest first.
-List<TimelineEntry> timelineOf(Playback playback, Book? book) {
-  bool belongs(AudioPosition place) =>
-      book == null ||
-      book.editions.any((edition) => edition.id == place.editionId);
-  return [
-    for (final event in playback.history)
-      if (belongs(event.after)) ActionEntry(event),
-    for (final bookmark in playback.bookmarks)
-      if (belongs(bookmark.position)) BookmarkEntry(bookmark),
-  ]..sort((a, b) => b.at.compareTo(a.at));
-}
-
 /// A dense, vertical timeline of listening, grouped by day. A tap on an
 /// entry shows the places it can return to, and Delete.
 class ListeningTimeline extends StatefulWidget {
@@ -106,14 +63,19 @@ class _ListeningTimelineState extends State<ListeningTimeline> {
     listenable: playback,
     builder: (context, _) {
       final theme = Theme.of(context);
-      final entries = timelineOf(playback, widget.book);
+      final entries = playback.timeline(widget.book);
       final now = DateTime.now();
-      String? day;
-      return ListView(
+      String day(int index) => listenedWhen(entries[index].at.toLocal(), now);
+      // Only the rows near the screen are built, because a history can hold
+      // thousands of entries.
+      return ListView.builder(
         controller: widget.scroll,
         padding: EdgeInsets.fromLTRB(16, 0, 16, 16 + floatingBarInset(context)),
-        children: [
-          Padding(
+        // The title, the save status, then the entries or a note that there
+        // are none.
+        itemCount: 2 + (entries.isEmpty ? 1 : entries.length),
+        itemBuilder: (context, index) => switch (index - 2) {
+          -2 => Padding(
             padding: const EdgeInsets.fromLTRB(4, 0, 4, 4),
             child: Text(
               'History',
@@ -123,20 +85,19 @@ class _ListeningTimelineState extends State<ListeningTimeline> {
               ),
             ),
           ),
-          RecordSaveStatus(playback: playback),
-          if (entries.isEmpty)
-            const Padding(
-              padding: EdgeInsets.all(4),
-              child: Text(
-                'Nothing yet. Jumps, pauses and bookmarks appear here.',
-              ),
+          -1 => RecordSaveStatus(playback: playback),
+          _ when entries.isEmpty => const Padding(
+            padding: EdgeInsets.all(4),
+            child: Text(
+              'Nothing yet. Jumps, pauses and bookmarks appear here.',
             ),
-          for (final entry in entries) ...[
-            if (listenedWhen(entry.at.toLocal(), now) != day)
-              _DayLabel(day = listenedWhen(entry.at.toLocal(), now)),
-            _row(context, entry),
-          ],
-        ],
+          ),
+          final row when row == 0 || day(row) != day(row - 1) => Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [_DayLabel(day(row)), _row(context, entries[row])],
+          ),
+          final row => _row(context, entries[row]),
+        },
       );
     },
   );
