@@ -1,3 +1,4 @@
+import 'package:bookfin/app/account_binding.dart';
 import 'package:bookfin/catalog/controller.dart';
 import 'package:bookfin/catalog/screen.dart';
 import 'package:bookfin/foundation/theme.dart';
@@ -38,6 +39,12 @@ void main() {
       await catalog.refresh(selected: {'books'});
       downloads.files[catalog.books.single.editions.single.files.single.key] =
           Uri.file('/verified.epub');
+      final binding = AccountBinding(
+        catalog: catalog,
+        downloads: downloads,
+        reader: reader,
+      );
+      addTearDown(binding.dispose);
       await tester.pumpWidget(
         MaterialApp(
           theme: bookfinTheme(Brightness.light),

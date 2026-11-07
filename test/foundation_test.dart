@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'app/app_shell_test.dart' show fakeClock;
 import 'appearance/preferences_test.dart' show MemoryAppearanceStore;
 import 'contrast_test.dart' show contrast;
 import 'catalog/controller_test.dart'
@@ -111,23 +112,21 @@ void main() {
   testWidgets(
     'an open appearance sheet updates its polar explanation after the date changes',
     (tester) async {
-      var now = DateTime.utc(2026, 11, 1);
-      final controller = AppearanceController(MemoryAppearanceStore());
+      final controller = AppearanceController(
+        MemoryAppearanceStore(),
+        clock: fakeClock(tester, DateTime.utc(2026, 11, 1)),
+      );
       await controller.selectLocation(
         SelectedLocation('Tromsø', 69.6492, 18.9553),
       );
       await tester.pumpWidget(
-        BookfinApp(
-          appearance: controller,
-          clock: () => now,
-          catalog: disconnectedCatalog(),
-        ),
+        BookfinApp(appearance: controller, catalog: disconnectedCatalog()),
       );
       await tester.tap(find.byTooltip('Appearance'));
       await tester.pumpAndSettle();
       expect(find.text('After sunset · Tromsø').hitTestable(), findsOneWidget);
-      now = DateTime.utc(2026, 12, 21, 12);
-      await tester.pump(const Duration(seconds: 31));
+      // Polar night has begun by 21 December at 12:00.
+      await tester.pump(const Duration(days: 50, hours: 12));
       await tester.pumpAndSettle();
       expect(find.text('Polar night · Tromsø').hitTestable(), findsOneWidget);
     },
@@ -289,16 +288,15 @@ void main() {
     'automatic appearance recalculates after resume and location changes',
     (tester) async {
       var now = DateTime.utc(2026, 3, 20, 16);
-      final controller = AppearanceController(MemoryAppearanceStore());
+      final controller = AppearanceController(
+        MemoryAppearanceStore(),
+        clock: () => now,
+      );
       await controller.selectLocation(
         SelectedLocation('New York', 40.7128, -74.0060),
       );
       await tester.pumpWidget(
-        BookfinApp(
-          appearance: controller,
-          clock: () => now,
-          catalog: disconnectedCatalog(),
-        ),
+        BookfinApp(appearance: controller, catalog: disconnectedCatalog()),
       );
       await tester.pumpAndSettle();
       expect(brightness(tester), Brightness.light);
@@ -322,22 +320,20 @@ void main() {
   testWidgets('automatic appearance changes while the app remains open', (
     tester,
   ) async {
-    var now = DateTime.utc(2026, 3, 20, 22, 55);
-    final controller = AppearanceController(MemoryAppearanceStore());
+    final controller = AppearanceController(
+      MemoryAppearanceStore(),
+      clock: fakeClock(tester, DateTime.utc(2026, 3, 20, 22, 55)),
+    );
     await controller.selectLocation(
       SelectedLocation('New York', 40.7128, -74.0060),
     );
     await tester.pumpWidget(
-      BookfinApp(
-        appearance: controller,
-        clock: () => now,
-        catalog: disconnectedCatalog(),
-      ),
+      BookfinApp(appearance: controller, catalog: disconnectedCatalog()),
     );
     await tester.pumpAndSettle();
     expect(brightness(tester), Brightness.light);
-    now = DateTime.utc(2026, 3, 20, 23, 20);
-    await tester.pump(const Duration(seconds: 31));
+    // New York sets at about 23:10 UTC on the March equinox.
+    await tester.pump(const Duration(minutes: 25));
     await tester.pumpAndSettle();
     expect(brightness(tester), Brightness.dark);
   });

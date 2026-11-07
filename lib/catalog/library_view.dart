@@ -10,6 +10,7 @@ import 'book_page.dart';
 import 'layout.dart';
 import 'library_services.dart';
 import 'model.dart';
+import 'screen.dart' show LibrarySelector, TabFrame, TabPage;
 import 'shelf.dart';
 
 /// The Library tab below its top bar: filters, then the grouped shelf.
@@ -738,4 +739,53 @@ class SeriesPage extends StatelessWidget {
       );
     },
   );
+}
+
+/// The Library tab: the library selector until the account has chosen book
+/// libraries, then the shelf. Search and the layout toggle join the top bar
+/// with the shelf.
+class LibraryTab extends StatelessWidget {
+  const LibraryTab({super.key, required this.services});
+  final LibraryServices services;
+
+  @override
+  Widget build(BuildContext context) {
+    final catalog = services.catalog;
+    return ListenableSelector(
+      listenable: catalog,
+      select: () => (
+        account: catalog.session?.scope.key,
+        choosing: catalog.cache == null || catalog.cache!.selected.isEmpty,
+      ),
+      builder: (context, library, _) => TabFrame(
+        bar: AppBar(
+          title: const Text('Library'),
+          actions: [
+            if (!library.choosing) ...[
+              IconButton(
+                tooltip: 'Search',
+                onPressed: () => openSearch(context, services),
+                icon: const Icon(Icons.search_rounded),
+              ),
+              LayoutToggle(layout: services.layout),
+              const SizedBox(width: 8),
+            ],
+          ],
+        ),
+        child: TabPage(
+          catalog: catalog,
+          playback: services.playback,
+          child: library.choosing
+              ? LibrarySelector(
+                  key: ValueKey(library.account),
+                  catalog: catalog,
+                )
+              : LibraryShelf(
+                  key: ValueKey(library.account),
+                  services: services,
+                ),
+        ),
+      ),
+    );
+  }
 }

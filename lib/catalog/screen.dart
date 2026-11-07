@@ -18,7 +18,6 @@ import 'jellyfin.dart';
 import 'layout.dart';
 import 'library_services.dart';
 import 'library_view.dart';
-import 'model.dart';
 import 'book_page.dart' show openBook;
 
 class CatalogHome extends StatefulWidget {
@@ -67,11 +66,6 @@ class _CatalogHomeState extends State<CatalogHome> {
   LibraryLayout get _layout => widget.layout ?? _ownLayout;
   String? _accountKey;
   bool _lastAccessBlocked = false;
-  int _bindingGeneration = 0;
-
-  /// The account and books last handed to Downloads, Playback and the reader.
-  JellyfinSession? _boundSession;
-  List<Book>? _boundBooks;
 
   LibraryServices get _services => LibraryServices(
     catalog: _catalog,
@@ -89,7 +83,6 @@ class _CatalogHomeState extends State<CatalogHome> {
     _accountKey = _catalog.session?.scope.key;
     _lastAccessBlocked = _catalog.accessBlocked;
     _catalog.addListener(_accessChanged);
-    _bindDownloads();
   }
 
   @override
@@ -100,11 +93,6 @@ class _CatalogHomeState extends State<CatalogHome> {
       _catalog.addListener(_accessChanged);
       _accessChanged();
     }
-    if (oldWidget.downloads != widget.downloads ||
-        oldWidget.playback != widget.playback ||
-        oldWidget.reader != widget.reader) {
-      _bindDownloads();
-    }
   }
 
   @override
@@ -114,18 +102,10 @@ class _CatalogHomeState extends State<CatalogHome> {
     super.dispose();
   }
 
+  /// A new account or blocked access returns to the Library tab. Either one
+  /// also closes the pages above the shell, which showed the old account's
+  /// books. [AccountBinding] hands the new account to the sources.
   void _accessChanged() {
-    // The catalog replaces its session and book list when either changes, so
-    // identity shows whether this notice changed what the services hold.
-    if (!identical(_boundSession, _visibleSession) ||
-        !identical(_boundBooks, _catalog.books)) {
-      if (_accountKey != _catalog.session?.scope.key ||
-          _catalog.accessBlocked) {
-        unawaited(widget.playback?.bind(null, []));
-        unawaited(widget.reader?.bind(null, []));
-      }
-      _bindDownloads();
-    }
     final key = _catalog.session?.scope.key;
     if (key == _accountKey && _lastAccessBlocked == _catalog.accessBlocked) {
       return;
@@ -136,26 +116,6 @@ class _CatalogHomeState extends State<CatalogHome> {
     if (mounted) setState(() => _tab = _Tab.library);
     if (mounted && dismiss) {
       Navigator.of(context).popUntil((route) => route.isFirst);
-    }
-  }
-
-  JellyfinSession? get _visibleSession =>
-      _catalog.accessBlocked ? null : _catalog.session;
-
-  void _bindDownloads() {
-    final session = _boundSession = _visibleSession;
-    final books = _boundBooks = _catalog.books;
-    final downloads = widget.downloads;
-    if (downloads != null) {
-      final generation = ++_bindingGeneration;
-      final readingBinding = widget.reader?.bind(session, books);
-      unawaited(() async {
-        await downloads.bind(session, books);
-        if (!mounted || generation != _bindingGeneration) return;
-        await widget.playback?.bind(session, books);
-        if (!mounted || generation != _bindingGeneration) return;
-        await readingBinding;
-      }());
     }
   }
 
@@ -230,7 +190,7 @@ class _CatalogHomeState extends State<CatalogHome> {
                   ],
                 ),
           body: switch (tab) {
-            _ when !signedIn => _TabFrame(
+            _ when !signedIn => TabFrame(
               bar: AppBar(
                 title: const Text('Bookfin'),
                 actions: [
@@ -241,31 +201,18 @@ class _CatalogHomeState extends State<CatalogHome> {
                   ),
                 ],
               ),
-              child: _TabPage(
+              child: TabPage(
                 catalog: _catalog,
                 playback: playback,
                 child: _SignInForm(catalog: _catalog),
               ),
             ),
-            _Tab.downloads => _TabFrame(
+            _Tab.downloads => TabFrame(
               bar: AppBar(title: const Text('Downloads')),
-              child: _TabPage(
+              child: TabPage(
                 catalog: _catalog,
                 playback: playback,
-                child: ListenableBuilder(
-                  listenable: Listenable.merge([
-                    _catalog,
-                    _layout,
-                    ?widget.downloads,
-                  ]),
-                  builder: (context, _) => DownloadsPage(
-                    downloads: widget.downloads,
-                    books: _catalog.books,
-                    compact: _layout.density == LibraryDensity.compact,
-                    onOpen: (context, book) =>
-                        openBook(context, services, book),
-                  ),
-                ),
+                child: DownloadsTab(services: services),
               ),
             ),
             _Tab.listening when playback != null => ListenableSelector(
@@ -273,11 +220,11 @@ class _CatalogHomeState extends State<CatalogHome> {
               select: () => playback.book != null,
               // An open book's player draws its own stage up to the status
               // bar.
-              builder: (context, open, page) => _TabFrame(
+              builder: (context, open, page) => TabFrame(
                 bar: open ? null : AppBar(title: const Text('Listening')),
                 child: page!,
               ),
-              child: _TabPage(
+              child: TabPage(
                 catalog: _catalog,
                 child: PlayerView(
                   playback: playback,
@@ -285,23 +232,20 @@ class _CatalogHomeState extends State<CatalogHome> {
                 ),
               ),
             ),
-            _Tab.settings => _TabFrame(
+            _Tab.settings => TabFrame(
               bar: AppBar(title: const Text('Settings')),
-              child: _TabPage(
+              child: TabPage(
                 catalog: _catalog,
                 playback: playback,
-                child: ListenableBuilder(
-                  listenable: Listenable.merge([_catalog, _layout]),
-                  builder: (context, _) => SettingsPage(
-                    catalog: _catalog,
-                    layout: _layout,
-                    onAppearance: widget.onAppearance,
-                    sync: widget.sync,
-                  ),
+                child: SettingsTab(
+                  catalog: _catalog,
+                  layout: _layout,
+                  onAppearance: widget.onAppearance,
+                  sync: widget.sync,
                 ),
               ),
             ),
-            _ => _LibraryTab(services: services),
+            _ => LibraryTab(services: services),
           },
         ),
       );
@@ -309,59 +253,10 @@ class _CatalogHomeState extends State<CatalogHome> {
   );
 }
 
-/// The Library tab: the library selector until the account has chosen book
-/// libraries, then the shelf. Search and the layout toggle join the top bar
-/// with the shelf.
-class _LibraryTab extends StatelessWidget {
-  const _LibraryTab({required this.services});
-  final LibraryServices services;
-
-  @override
-  Widget build(BuildContext context) {
-    final catalog = services.catalog;
-    return ListenableSelector(
-      listenable: catalog,
-      select: () => (
-        account: catalog.session?.scope.key,
-        choosing: catalog.cache == null || catalog.cache!.selected.isEmpty,
-      ),
-      builder: (context, library, _) => _TabFrame(
-        bar: AppBar(
-          title: const Text('Library'),
-          actions: [
-            if (!library.choosing) ...[
-              IconButton(
-                tooltip: 'Search',
-                onPressed: () => openSearch(context, services),
-                icon: const Icon(Icons.search_rounded),
-              ),
-              LayoutToggle(layout: services.layout),
-              const SizedBox(width: 8),
-            ],
-          ],
-        ),
-        child: _TabPage(
-          catalog: catalog,
-          playback: services.playback,
-          child: library.choosing
-              ? LibrarySelector(
-                  key: ValueKey(library.account),
-                  catalog: catalog,
-                )
-              : LibraryShelf(
-                  key: ValueKey(library.account),
-                  services: services,
-                ),
-        ),
-      ),
-    );
-  }
-}
-
 /// A tab below its top [bar]. Without a bar, the tab reaches up to the
 /// status bar, as an open book's player does.
-class _TabFrame extends StatelessWidget {
-  const _TabFrame({required this.bar, required this.child});
+class TabFrame extends StatelessWidget {
+  const TabFrame({super.key, required this.bar, required this.child});
   final PreferredSizeWidget? bar;
   final Widget child;
 
@@ -411,8 +306,13 @@ class _CatalogStatus extends StatelessWidget {
 
 /// A tab's page: catalog progress and errors, the player's notices when
 /// [playback] is given, then [child].
-class _TabPage extends StatelessWidget {
-  const _TabPage({required this.catalog, this.playback, required this.child});
+class TabPage extends StatelessWidget {
+  const TabPage({
+    super.key,
+    required this.catalog,
+    this.playback,
+    required this.child,
+  });
   final CatalogController catalog;
   final Playback? playback;
   final Widget child;
