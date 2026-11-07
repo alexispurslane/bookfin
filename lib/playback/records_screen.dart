@@ -1,9 +1,10 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 
 import '../catalog/model.dart';
+import '../foundation/theme.dart';
+import '../foundation/time.dart';
 import 'playback.dart';
 import '../catalog/glass.dart';
 
@@ -14,11 +15,7 @@ class RecordSaveStatus extends StatelessWidget {
   Widget build(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      if (playback.message != null)
-        Text(
-          playback.message!,
-          style: TextStyle(color: Theme.of(context).colorScheme.error),
-        ),
+      if (playback.message != null) StatusMessage(playback.message!),
       if (playback.saveFailed) ...[
         const Text(
           'Personal records are not saved to this device. Keep Bookfin open and retry.',
@@ -125,10 +122,4 @@ class _BookmarkEditorState extends State<_BookmarkEditor> {
       ),
     ],
   );
-}
-
-String audioTime(int milliseconds) {
-  final seconds = max(0, milliseconds) ~/ 1000;
-  final minutes = seconds ~/ 60;
-  return '${minutes ~/ 60 > 0 ? '${minutes ~/ 60}:' : ''}${(minutes % 60).toString().padLeft(2, '0')}:${(seconds % 60).toString().padLeft(2, '0')}';
 }

@@ -103,6 +103,35 @@ void main() {
     expect(find.text('The Orchard Cycle'), findsOneWidget);
   });
 
+  testWidgets('a saved library names the day and time it was read', (
+    tester,
+  ) async {
+    final credentials = MemoryCredentials();
+    final store = MemoryCatalogStore();
+    final first = CatalogController(
+      credentials: credentials,
+      store: store,
+      clientFactory: (server, device) => client,
+    );
+    await first.connect('https://books.example', 'alice', 'password');
+    await first.refresh(selected: {'books'});
+    first.dispose();
+    controller.dispose();
+    controller = CatalogController(
+      credentials: credentials,
+      store: store,
+      clientFactory: (server, device) => client,
+    );
+    await controller.restore();
+    expect(controller.verified, isFalse);
+    await show(tester);
+    final read = controller.cache!.completedAt!.toLocal();
+    final time = const DefaultMaterialLocalizations().formatTimeOfDay(
+      TimeOfDay.fromDateTime(read),
+    );
+    expect(find.text('Saved library · Today, $time'), findsOneWidget);
+  });
+
   testWidgets('the top bar switches the library between a grid and a list', (
     tester,
   ) async {

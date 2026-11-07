@@ -178,6 +178,7 @@ class Playback extends ChangeNotifier {
   String? _selected;
   Timer? _sleep;
   DateTime? _sleepDeadline;
+  Duration? _sleepTimer;
   Future<void> _operations = Future.value();
   Future<void> _writes = Future.value();
   Future<void> _binding = Future.value();
@@ -597,6 +598,9 @@ class Playback extends ChangeNotifier {
   int get backwardSeconds => _backward;
   int get forwardSeconds => _forward;
   DateTime? get sleepDeadline => _sleepDeadline;
+
+  /// The length chosen for the running sleep timer, or null when none runs.
+  Duration? get sleepTimer => _sleepTimer;
 
   int? get durationMilliseconds {
     final files = _edition?.files;
@@ -1403,6 +1407,7 @@ class Playback extends ChangeNotifier {
     _cancelSleep();
     if (duration != null) {
       _sleepDeadline = DateTime.now().add(duration);
+      _sleepTimer = duration;
       _sleep = Timer(duration, () {
         _cancelSleep();
         unawaited(pause());
@@ -1415,6 +1420,7 @@ class Playback extends ChangeNotifier {
     _sleep?.cancel();
     _sleep = null;
     _sleepDeadline = null;
+    _sleepTimer = null;
   }
 
   String? get _decoderAnchor => _position == null || _edition == null
@@ -1546,6 +1552,10 @@ class Playback extends ChangeNotifier {
       throw StateError(
         'Playback selection, source position, and account must agree.',
       );
+    }
+    if ((_sleep == null) != (_sleepTimer == null) ||
+        (_sleepTimer == null) != (_sleepDeadline == null)) {
+      throw StateError('A sleep timer, its length and its deadline agree.');
     }
     if (_history.map((event) => event.id).toSet().length != _history.length ||
         _bookmarks.map((bookmark) => bookmark.id).toSet().length !=

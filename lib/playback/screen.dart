@@ -5,9 +5,9 @@ import 'package:flutter/services.dart';
 
 import '../catalog/book_cover.dart';
 import '../catalog/glass.dart';
-import '../catalog/library_services.dart' show duration;
 import '../catalog/model.dart';
 import '../foundation/theme.dart';
+import '../foundation/time.dart';
 import 'playback.dart';
 import 'recent.dart';
 import 'records_screen.dart';
@@ -127,16 +127,15 @@ class PlaybackMiniPlayer extends StatelessWidget {
                         RepaintBoundary(
                           child: Padding(
                             padding: const EdgeInsets.fromLTRB(14, 0, 14, 8),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(2),
-                              child: LinearProgressIndicator(
-                                minHeight: 2.5,
-                                value:
-                                    (playback.editionMilliseconds ?? 0) / total,
-                                color: scheme.primary,
-                                backgroundColor: scheme.onSurface.withValues(
-                                  alpha: 0.12,
-                                ),
+                            // On glass a faint ink track reads better than
+                            // the paper outline.
+                            child: ProgressLine(
+                              height: 2.5,
+                              value:
+                                  (playback.editionMilliseconds ?? 0) / total,
+                              color: scheme.primary,
+                              trackColor: scheme.onSurface.withValues(
+                                alpha: 0.12,
                               ),
                             ),
                           ),
@@ -192,29 +191,17 @@ class ReplacementStartNotice extends StatelessWidget {
           ),
           TextButton(
             onPressed: () async {
-              final confirmed = await showDialog<bool>(
-                context: context,
-                builder: (context) => GlassDialog(
-                  title: const Text('Start replacement audio?'),
-                  content: Text(
+              final confirmed = await confirmAction(
+                context,
+                title: 'Start replacement audio?',
+                message:
                     'Start ${request.edition.label} from the beginning. '
                     'Your old position (${audioTime(request.previous.milliseconds)} within its original audio file), '
                     'history and bookmarks will be kept separately. '
                     'Old positions will not be applied to changed audio.',
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context, false),
-                      child: const Text('Cancel'),
-                    ),
-                    FilledButton(
-                      onPressed: () => Navigator.pop(context, true),
-                      child: const Text('Start from beginning'),
-                    ),
-                  ],
-                ),
+                action: 'Start from beginning',
               );
-              if (confirmed != true) {
+              if (!confirmed) {
                 playback.cancelReplacement(request);
                 return;
               }
@@ -594,6 +581,7 @@ class PlayerView extends StatelessWidget {
 
   Future<void> _chapters(BuildContext context) => showGlassSheet<void>(
     context,
+    title: 'Chapters',
     isScrollControlled: true,
     builder: (context) {
       final theme = Theme.of(context);
@@ -611,16 +599,6 @@ class PlayerView extends StatelessWidget {
           controller: scroll,
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
           children: [
-            Padding(
-              padding: const EdgeInsets.only(bottom: 6),
-              child: Text(
-                'Chapters',
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  fontFamily: 'Source Serif 4',
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
             for (final (index, chapter) in chapters.indexed) ...[
               if (index > 0) Divider(height: 1, color: scheme.outlineVariant),
               InkWell(
@@ -663,17 +641,12 @@ class PlayerView extends StatelessWidget {
                               if (index == current)
                                 Padding(
                                   padding: const EdgeInsets.only(top: 6),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(3),
-                                    child: LinearProgressIndicator(
-                                      minHeight: 3,
-                                      color: accent,
-                                      backgroundColor: scheme.outlineVariant,
-                                      value: _chapterShare(
-                                        chapters,
-                                        index,
-                                        position,
-                                      ),
+                                  child: ProgressLine(
+                                    color: accent,
+                                    value: _chapterShare(
+                                      chapters,
+                                      index,
+                                      position,
                                     ),
                                   ),
                                 ),
@@ -720,74 +693,27 @@ class PlayerView extends StatelessWidget {
         .clamp(0, 1);
   }
 
-  Future<void> _speed(BuildContext context) => showGlassSheet<void>(
+  Future<void> _speed(BuildContext context) => showGlassChoices<double>(
     context,
-    builder: (context) => SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Playback speed',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            for (final speed in [
-              0.5,
-              0.75,
-              1.0,
-              1.25,
-              1.5,
-              1.75,
-              2.0,
-              2.5,
-              3.0,
-            ])
-              ListTile(
-                title: Text('${_rate(speed)}×'),
-                selected: speed == playback.playbackSpeed,
-                onTap: () {
-                  unawaited(playback.setSpeed(speed));
-                  Navigator.pop(context);
-                },
-              ),
-          ],
-        ),
-      ),
-    ),
+    title: 'Playback speed',
+    choices: [
+      for (final speed in [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0])
+        (speed, '${_rate(speed)}×'),
+    ],
+    current: playback.playbackSpeed,
+    onSelected: (speed) => unawaited(playback.setSpeed(speed)),
   );
 
-  Future<void> _sleep(BuildContext context) => showGlassSheet<void>(
+  Future<void> _sleep(BuildContext context) => showGlassChoices<Duration?>(
     context,
-    builder: (context) => SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Sleep timer',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            for (final minutes in [5, 15, 30, 45, 60])
-              ListTile(
-                title: Text('$minutes minutes'),
-                onTap: () {
-                  unawaited(playback.setSleep(Duration(minutes: minutes)));
-                  Navigator.pop(context);
-                },
-              ),
-            ListTile(
-              title: const Text('Turn off'),
-              onTap: () {
-                unawaited(playback.setSleep(null));
-                Navigator.pop(context);
-              },
-            ),
-          ],
-        ),
-      ),
-    ),
+    title: 'Sleep timer',
+    choices: [
+      for (final minutes in [5, 15, 30, 45, 60])
+        (Duration(minutes: minutes), '$minutes minutes'),
+      (null, 'Turn off'),
+    ],
+    current: playback.sleepTimer,
+    onSelected: (timer) => unawaited(playback.setSleep(timer)),
   );
 
   Future<void> _jumps(BuildContext context) async {
@@ -795,17 +721,14 @@ class PlayerView extends StatelessWidget {
     var forward = playback.forwardSeconds;
     await showGlassSheet<void>(
       context,
+      title: 'Jump lengths',
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  'Jump lengths',
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
                 DropdownButtonFormField<int>(
                   initialValue: backward,
                   decoration: const InputDecoration(

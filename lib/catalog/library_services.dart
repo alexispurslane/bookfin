@@ -1,10 +1,14 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 
 import 'book_cover.dart';
+import 'book_page.dart' show openBook;
 import 'covers.dart';
 
 import '../downloads/downloads.dart';
+import '../foundation/theme.dart';
+import '../foundation/time.dart';
 import '../playback/playback.dart';
+import '../playback/screen.dart' show PlaybackMiniPlayer;
 import '../reader/session.dart';
 import 'controller.dart';
 import 'layout.dart';
@@ -47,6 +51,30 @@ class LibraryServices {
       child: child!,
     ),
     child: child,
+  );
+
+  /// A page pushed over the library: [body] on the page surface, with the
+  /// mini player floating over its bottom. The player opened from the mini
+  /// player offers the book details page. With [extendBodyBehindAppBar], the
+  /// body also runs beneath the [appBar].
+  Widget page(
+    BuildContext context, {
+    PreferredSizeWidget? appBar,
+    bool extendBodyBehindAppBar = false,
+    required Widget body,
+  }) => Scaffold(
+    extendBodyBehindAppBar: extendBodyBehindAppBar,
+    extendBody: true,
+    bottomNavigationBar: playback == null
+        ? null
+        : PlaybackMiniPlayer(
+            playback: playback!,
+            onOpenBook: (book) => openBook(context, this, book),
+          ),
+    appBar: appBar,
+    body: BookfinSurface(
+      child: Material(type: MaterialType.transparency, child: body),
+    ),
   );
 
   bool editionDownloaded(Edition edition) =>
@@ -107,12 +135,6 @@ String formats(Book book) {
       'Ebook',
     ...text,
   ].join(' + ');
-}
-
-/// For example "9 h 44 m", or "12 m" under one hour.
-String duration(int milliseconds) {
-  final minutes = (milliseconds / 60000).round();
-  return minutes < 60 ? '$minutes m' : '${minutes ~/ 60} h ${minutes % 60} m';
 }
 
 String seriesPosition(double order) => order == order.truncateToDouble()

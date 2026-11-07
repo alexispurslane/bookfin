@@ -102,63 +102,98 @@ class PageBook extends InheritedTheme {
 
 /// Shows a bottom sheet as a glass pane inset from the screen edges.
 ///
-/// [book] is the book the sheet is about, if any. An [expand]ed sheet fills
-/// the screen and brings its own close control, so it has no drag handle.
+/// [book] is the book the sheet is about, if any. A [title] heads the sheet
+/// below its drag handle, in the one heading style of glass sheets, and
+/// stays put while the content below it scrolls. An [expand]ed sheet fills
+/// the screen and brings its own close control, so it has no drag handle
+/// and no title.
 Future<T?> showGlassSheet<T>(
   BuildContext context, {
   Book? book,
+  String? title,
   bool isScrollControlled = false,
   bool expand = false,
   AnimationStyle? sheetAnimationStyle,
   required WidgetBuilder builder,
-}) => showModalBottomSheet<T>(
-  context: context,
-  isScrollControlled: isScrollControlled || expand,
-  useSafeArea: true,
-  showDragHandle: false,
-  backgroundColor: Colors.transparent,
-  elevation: 0,
-  barrierColor: Colors.black.withValues(alpha: 0.3),
-  constraints: expand ? const BoxConstraints.expand() : null,
-  sheetAnimationStyle: sheetAnimationStyle,
-  builder: (context) {
-    final handle = Theme.of(context).colorScheme.onSurfaceVariant;
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: const EdgeInsets.all(8),
-        child: _StepBack(
-          radius: 28,
-          child: CoverGlass(
-            book: book,
+}) {
+  assert(!expand || title == null, 'An expanded sheet draws its own top.');
+  return showModalBottomSheet<T>(
+    context: context,
+    isScrollControlled: isScrollControlled || expand,
+    useSafeArea: true,
+    showDragHandle: false,
+    backgroundColor: Colors.transparent,
+    elevation: 0,
+    barrierColor: Colors.black.withValues(alpha: 0.3),
+    constraints: expand ? const BoxConstraints.expand() : null,
+    sheetAnimationStyle: sheetAnimationStyle,
+    builder: (context) {
+      final handle = Theme.of(context).colorScheme.onSurfaceVariant;
+      return SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: _StepBack(
             radius: 28,
-            tint: 0.65,
-            child: Material(
-              type: MaterialType.transparency,
-              child: expand
-                  ? builder(context)
-                  : Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: 32,
-                          height: 4,
-                          margin: const EdgeInsets.symmetric(vertical: 12),
-                          decoration: BoxDecoration(
-                            color: handle.withValues(alpha: 0.4),
-                            borderRadius: BorderRadius.circular(2),
+            child: CoverGlass(
+              book: book,
+              radius: 28,
+              tint: 0.65,
+              child: Material(
+                type: MaterialType.transparency,
+                child: expand
+                    ? builder(context)
+                    : Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 32,
+                            height: 4,
+                            margin: const EdgeInsets.symmetric(vertical: 12),
+                            decoration: BoxDecoration(
+                              color: handle.withValues(alpha: 0.4),
+                              borderRadius: BorderRadius.circular(2),
+                            ),
                           ),
-                        ),
-                        Flexible(child: builder(context)),
-                      ],
-                    ),
+                          if (title != null) _SheetTitle(title),
+                          Flexible(child: builder(context)),
+                        ],
+                      ),
+              ),
+            ),
+          ),
+        ),
+      );
+    },
+  );
+}
+
+class _SheetTitle extends StatelessWidget {
+  const _SheetTitle(this.text);
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+      child: Align(
+        alignment: AlignmentDirectional.centerStart,
+        child: Semantics(
+          header: true,
+          child: Text(
+            text,
+            style: theme.textTheme.headlineSmall?.copyWith(
+              fontFamily: 'Source Serif 4',
+              fontWeight: FontWeight.w600,
+              color: theme.colorScheme.onSurface,
             ),
           ),
         ),
       ),
     );
-  },
-);
+  }
+}
 
 /// Makes a glass pane step back, smaller and darker, while another route
 /// covers the route that shows it. Two lively panes then do not compete.
@@ -263,6 +298,82 @@ class GlassDialog extends StatelessWidget {
     );
   }
 }
+
+/// Shows [choices] as rows on a glass sheet headed [title], and marks the
+/// row whose value equals [current]. A tap on a row reports its value through
+/// [onSelected] and closes the sheet.
+Future<void> showGlassChoices<T>(
+  BuildContext context, {
+  required String title,
+  required List<(T value, String label)> choices,
+  required T current,
+  required ValueChanged<T> onSelected,
+}) => showGlassSheet<void>(
+  context,
+  title: title,
+  builder: (context) => SingleChildScrollView(
+    child: Padding(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (final (value, label) in choices)
+            ListTile(
+              title: Text(label),
+              selected: value == current,
+              onTap: () {
+                onSelected(value);
+                Navigator.pop(context);
+              },
+            ),
+        ],
+      ),
+    ),
+  ),
+);
+
+/// Asks the person to confirm [action] before it happens. The dialog shows
+/// [title] and [message], a [cancel] button, and a filled button labeled
+/// [action]. It is true only when the person chose [action]; Cancel and a tap
+/// outside the dialog are false.
+///
+/// The dialog is a glass pane, except with [glass] false, which draws a plain
+/// dialog for a screen that keeps its own look, such as the reader.
+Future<bool> confirmAction(
+  BuildContext context, {
+  required String title,
+  required String message,
+  required String action,
+  String cancel = 'Cancel',
+  bool glass = true,
+}) async =>
+    await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        final actions = [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(action),
+          ),
+        ];
+        return glass
+            ? GlassDialog(
+                title: Text(title),
+                content: Text(message),
+                actions: actions,
+              )
+            : AlertDialog(
+                title: Text(title),
+                content: Text(message),
+                actions: actions,
+              );
+      },
+    ) ??
+    false;
 
 /// Shows a short message that floats on glass above the bottom of the page.
 void showGlassMessage(BuildContext context, String message) {

@@ -172,6 +172,34 @@ void main() {
     expect(find.text('Remove files?'), findsNothing);
   });
 
+  testWidgets('a confirmation is true only when its filled action is chosen', (
+    tester,
+  ) async {
+    final answers = <bool>[];
+    Future<void> ask(BuildContext context) async => answers.add(
+      await confirmAction(
+        context,
+        title: 'Remove files?',
+        message: 'The files leave this phone.',
+        action: 'Remove files',
+        cancel: 'Keep files',
+      ),
+    );
+    await showPage(tester, open: ask);
+    expect(glassAround('The files leave this phone.'), findsOneWidget);
+    await tester.tap(find.widgetWithText(FilledButton, 'Remove files'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(TextButton, 'Keep files'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
+    await tester.tapAt(const Offset(4, 4));
+    await tester.pumpAndSettle();
+    expect(answers, [true, false, false]);
+  });
+
   testWidgets('a glass sheet steps back while another layer covers it', (
     tester,
   ) async {

@@ -3,11 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../catalog/glass.dart';
-import '../catalog/library_services.dart' show duration;
 import '../catalog/model.dart';
 import '../foundation/theme.dart';
+import '../foundation/time.dart';
 import 'playback.dart';
-import 'recent.dart' show listenedWhen;
 import 'records_screen.dart';
 
 /// Opens the listening timeline of [book] on a glass sheet. Without a book,
@@ -20,6 +19,7 @@ void openListeningTimeline(
   showGlassSheet<void>(
     context,
     book: book,
+    title: 'History',
     isScrollControlled: true,
     builder: (_) => DraggableScrollableSheet(
       expand: false,
@@ -62,7 +62,6 @@ class _ListeningTimelineState extends State<ListeningTimeline> {
   Widget build(BuildContext context) => ListenableBuilder(
     listenable: playback,
     builder: (context, _) {
-      final theme = Theme.of(context);
       final entries = playback.timeline(widget.book);
       final now = DateTime.now();
       String day(int index) => listenedWhen(entries[index].at.toLocal(), now);
@@ -71,20 +70,9 @@ class _ListeningTimelineState extends State<ListeningTimeline> {
       return ListView.builder(
         controller: widget.scroll,
         padding: EdgeInsets.fromLTRB(16, 0, 16, 16 + floatingBarInset(context)),
-        // The title, the save status, then the entries or a note that there
-        // are none.
-        itemCount: 2 + (entries.isEmpty ? 1 : entries.length),
-        itemBuilder: (context, index) => switch (index - 2) {
-          -2 => Padding(
-            padding: const EdgeInsets.fromLTRB(4, 0, 4, 4),
-            child: Text(
-              'History',
-              style: theme.textTheme.headlineSmall?.copyWith(
-                fontFamily: 'Source Serif 4',
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
+        // The save status, then the entries or a note that there are none.
+        itemCount: 1 + (entries.isEmpty ? 1 : entries.length),
+        itemBuilder: (context, index) => switch (index - 1) {
           -1 => RecordSaveStatus(playback: playback),
           _ when entries.isEmpty => const Padding(
             padding: EdgeInsets.all(4),
@@ -280,26 +268,14 @@ class _ListeningTimelineState extends State<ListeningTimeline> {
         () => playback.deleteBookmark(bookmark.id),
       ),
     };
-    await showDialog<void>(
-      context: context,
-      builder: (context) => GlassDialog(
-        title: Text(title),
-        content: Text(explanation),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () async {
-              await remove();
-              if (context.mounted) Navigator.pop(context);
-            },
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
-    );
+    if (await confirmAction(
+      context,
+      title: title,
+      message: explanation,
+      action: 'Delete',
+    )) {
+      await remove();
+    }
   }
 
   /// A place as a time in its edition, or in its file when the edition time

@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../foundation/theme.dart';
-import '../playback/screen.dart';
+import '../foundation/time.dart';
 import 'book_cover.dart';
 import 'book_page.dart';
 import 'layout.dart';
@@ -61,7 +61,7 @@ class _LibraryShelfState extends State<LibraryShelf> {
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
                 child: Text(
-                  'Saved library · ${catalog.cache!.completedAt!.toLocal().toString().split('.').first}',
+                  'Saved library · ${dayAndTime(context, catalog.cache!.completedAt!)}',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ),
@@ -456,21 +456,6 @@ TextStyle _positionStyle(ThemeData theme) => TextStyle(
   color: theme.colorScheme.primary,
 );
 
-/// A thin progress line, as under a book in the library.
-class ProgressLine extends StatelessWidget {
-  const ProgressLine({super.key, required this.value});
-  final double value;
-  @override
-  Widget build(BuildContext context) => ClipRRect(
-    borderRadius: BorderRadius.circular(3),
-    child: LinearProgressIndicator(
-      value: value.clamp(0, 1),
-      minHeight: 3,
-      backgroundColor: Theme.of(context).colorScheme.outlineVariant,
-    ),
-  );
-}
-
 /// The top bar action that switches between grid and list.
 class LayoutToggle extends StatelessWidget {
   const LayoutToggle({super.key, required this.layout});
@@ -515,11 +500,8 @@ class _SearchPageState extends State<SearchPage> {
     listenable: widget.services.changes,
     builder: (context, _) {
       final results = search(widget.services.catalog.books, _query);
-      return Scaffold(
-        extendBody: true,
-        bottomNavigationBar: widget.services.playback == null
-            ? null
-            : PlaybackMiniPlayer(playback: widget.services.playback!),
+      return widget.services.page(
+        context,
         appBar: AppBar(
           titleSpacing: 0,
           title: Padding(
@@ -553,32 +535,27 @@ class _SearchPageState extends State<SearchPage> {
             ),
           ),
         ),
-        body: BookfinSurface(
-          child: Material(
-            type: MaterialType.transparency,
-            child: _query.trim().isEmpty
-                ? const SizedBox.shrink()
-                : results.isEmpty
-                ? Center(
-                    child: Text(
-                      'No books match “${_query.trim()}”.',
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  )
-                : CustomScrollView(
-                    slivers: [
-                      ShelfEntries(
-                        services: widget.services,
-                        items: [for (final book in results) ShelfBook(book)],
-                        forceList: true,
-                      ),
-                      SliverToBoxAdapter(
-                        child: SizedBox(height: floatingBarInset(context)),
-                      ),
-                    ],
+        body: _query.trim().isEmpty
+            ? const SizedBox.shrink()
+            : results.isEmpty
+            ? Center(
+                child: Text(
+                  'No books match “${_query.trim()}”.',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              )
+            : CustomScrollView(
+                slivers: [
+                  ShelfEntries(
+                    services: widget.services,
+                    items: [for (final book in results) ShelfBook(book)],
+                    forceList: true,
                   ),
-          ),
-        ),
+                  SliverToBoxAdapter(
+                    child: SizedBox(height: floatingBarInset(context)),
+                  ),
+                ],
+              ),
       );
     },
   );
@@ -616,93 +593,74 @@ class SeriesPage extends StatelessWidget {
         services.editionDownloaded,
       ).whereType<ShelfSeries>().where((item) => item.name == name).firstOrNull;
       final theme = Theme.of(context);
-      return Scaffold(
-        extendBody: true,
-        bottomNavigationBar: services.playback == null
-            ? null
-            : PlaybackMiniPlayer(playback: services.playback!),
+      return services.page(
+        context,
         appBar: AppBar(actions: [LayoutToggle(layout: services.layout)]),
-        body: BookfinSurface(
-          child: Material(
-            type: MaterialType.transparency,
-            child: series == null
-                ? const Center(
-                    child: Text('This series is not in the current library.'),
-                  )
-                : CustomScrollView(
-                    slivers: [
-                      SliverToBoxAdapter(
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(18, 4, 18, 18),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              SizedBox(
-                                width: 92,
-                                child: Padding(
-                                  padding: const EdgeInsets.only(
-                                    top: 6,
-                                    right: 7,
-                                  ),
-                                  child: _cover(services, series),
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      series.name,
-                                      style: TextStyle(
-                                        fontFamily: 'Source Serif 4',
-                                        fontSize: 26,
-                                        height: 1.1,
-                                        fontWeight: FontWeight.w500,
-                                        color: theme.colorScheme.onSurface,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 6),
-                                    Text(
-                                      [
-                                        if (series
-                                            .books
-                                            .first
-                                            .author
-                                            .isNotEmpty)
-                                          series.books.first.author,
-                                        '${series.books.length} books',
-                                      ].join(' · '),
-                                      style: theme.textTheme.bodySmall,
-                                    ),
-                                    if (services
-                                        .seriesSummary(series)
-                                        .isNotEmpty)
-                                      Text(
-                                        services.seriesSummary(series),
-                                        style: theme.textTheme.bodySmall,
-                                      ),
-                                  ],
-                                ),
-                              ),
-                            ],
+        body: series == null
+            ? const Center(
+                child: Text('This series is not in the current library.'),
+              )
+            : CustomScrollView(
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(18, 4, 18, 18),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          SizedBox(
+                            width: 92,
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 6, right: 7),
+                              child: _cover(services, series),
+                            ),
                           ),
-                        ),
-                      ),
-                      ShelfEntries(
-                        services: services,
-                        items: [
-                          for (final book in series.books) ShelfBook(book),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  series.name,
+                                  style: TextStyle(
+                                    fontFamily: 'Source Serif 4',
+                                    fontSize: 26,
+                                    height: 1.1,
+                                    fontWeight: FontWeight.w500,
+                                    color: theme.colorScheme.onSurface,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  [
+                                    if (series.books.first.author.isNotEmpty)
+                                      series.books.first.author,
+                                    '${series.books.length} books',
+                                  ].join(' · '),
+                                  style: theme.textTheme.bodySmall,
+                                ),
+                                if (services.seriesSummary(series).isNotEmpty)
+                                  Text(
+                                    services.seriesSummary(series),
+                                    style: theme.textTheme.bodySmall,
+                                  ),
+                              ],
+                            ),
+                          ),
                         ],
-                        showSeriesPosition: true,
                       ),
-                      SliverToBoxAdapter(
-                        child: SizedBox(height: 24 + floatingBarInset(context)),
-                      ),
-                    ],
+                    ),
                   ),
-          ),
-        ),
+                  ShelfEntries(
+                    services: services,
+                    items: [for (final book in series.books) ShelfBook(book)],
+                    showSeriesPosition: true,
+                  ),
+                  SliverToBoxAdapter(
+                    child: SizedBox(height: 24 + floatingBarInset(context)),
+                  ),
+                ],
+              ),
       );
     },
   );

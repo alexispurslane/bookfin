@@ -66,7 +66,34 @@ class EditionDownload {
     DownloadPhase.failed => 'Download failed',
     DownloadPhase.downloaded => 'Downloaded',
   };
+
+  /// The changes that a person can ask of the download in this state, the
+  /// most useful first. Every screen offers these and no others.
+  ///
+  /// A transfer that runs or waits can only be canceled. Otherwise a download
+  /// that failed or saved some bytes is retried, and one that saved nothing
+  /// is requested. Anything on the phone, and a failure, can be removed.
+  List<DownloadAction> get actions {
+    if (phase == DownloadPhase.downloading || phase == DownloadPhase.waiting) {
+      return const [DownloadAction.cancel];
+    }
+    final failed = phase == DownloadPhase.failed;
+    return [
+      if (phase != DownloadPhase.downloaded)
+        failed || bytes > 0 ? DownloadAction.retry : DownloadAction.request,
+      if (phase == DownloadPhase.downloaded ||
+          failed ||
+          bytes > 0 ||
+          unavailableBytes > 0 ||
+          completeFiles > 0)
+        DownloadAction.remove,
+    ];
+  }
 }
+
+/// A change to an edition's download. [request] and [retry] both ask for the
+/// files; retry continues a download that failed or stopped part way.
+enum DownloadAction { request, retry, cancel, remove }
 
 class RetainedDownload {
   const RetainedDownload({

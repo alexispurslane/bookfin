@@ -104,10 +104,11 @@ void main() {
       final historyIds = playback.history.map((event) => event.id).toList();
       await showPlayer(tester);
       await openBookmark(tester, 'Remove this');
-      await tester.tap(find.byTooltip('Delete'));
+      await tester.runAsync(() => tester.tap(find.byTooltip('Delete')));
       await tester.pumpAndSettle();
       await tester.runAsync(() async {
-        await tester.tap(find.widgetWithText(TextButton, 'Delete'));
+        await tester.tap(find.widgetWithText(FilledButton, 'Delete'));
+        await Future<void>.delayed(Duration.zero);
         await playback.flush();
       });
       await tester.pumpAndSettle();

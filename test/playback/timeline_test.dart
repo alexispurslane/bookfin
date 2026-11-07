@@ -154,10 +154,13 @@ void main() {
     await openHistory(tester);
     await tester.tap(inTimeline(find.text('Jumped ahead 30 s')));
     await tester.pumpAndSettle();
-    await tester.tap(inTimeline(find.byTooltip('Delete')));
+    await tester.runAsync(
+      () => tester.tap(inTimeline(find.byTooltip('Delete'))),
+    );
     await tester.pumpAndSettle();
     await tester.runAsync(() async {
-      await tester.tap(find.widgetWithText(TextButton, 'Delete'));
+      await tester.tap(find.widgetWithText(FilledButton, 'Delete'));
+      await Future<void>.delayed(Duration.zero);
       await playback.flush();
     });
     await tester.pumpAndSettle();

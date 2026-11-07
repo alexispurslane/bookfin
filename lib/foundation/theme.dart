@@ -286,16 +286,6 @@ ThemeData bookfinTheme(Brightness brightness, {bool reduceMotion = false}) {
       labelStyle: TextStyle(color: subtle),
       floatingLabelStyle: TextStyle(color: sepia),
     ),
-    cardTheme: CardThemeData(
-      color: sheet,
-      surfaceTintColor: Colors.transparent,
-      elevation: 0,
-      margin: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: line),
-      ),
-    ),
     dialogTheme: DialogThemeData(
       backgroundColor: sheet,
       surfaceTintColor: Colors.transparent,
@@ -427,21 +417,122 @@ class BookfinSurface extends StatelessWidget {
   );
 }
 
-class BookfinPanel extends StatelessWidget {
-  const BookfinPanel({super.key, required this.child});
+/// A problem that a data source reports to the person, in the error color.
+class StatusMessage extends StatelessWidget {
+  const StatusMessage(this.message, {super.key});
+  final String message;
 
+  @override
+  Widget build(BuildContext context) => Text(
+    message,
+    style: TextStyle(color: Theme.of(context).colorScheme.error),
+  );
+}
+
+/// The small spaced capitals that name a section of a page, for example
+/// "EDITIONS" or "ON THIS PHONE".
+class SectionLabel extends StatelessWidget {
+  const SectionLabel(this.text, {super.key});
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => Text(
+    text,
+    style: TextStyle(
+      fontSize: 11,
+      letterSpacing: 1.2,
+      fontWeight: FontWeight.w500,
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
+    ),
+  );
+}
+
+/// A rounded sheet of paper on the page, with a thin edge. It takes the
+/// colors of the theme around it, so it also fits the night stage. Ink from
+/// rows and buttons inside it shows on the paper.
+class BookfinPanel extends StatelessWidget {
+  const BookfinPanel({
+    super.key,
+    this.padding = const EdgeInsets.all(18),
+    required this.child,
+  });
+
+  /// The space between the edge and [child]. Rows that reach the edge, such
+  /// as list tiles, use [EdgeInsets.zero].
+  final EdgeInsetsGeometry padding;
   final Widget child;
 
   @override
   Widget build(BuildContext context) => Container(
     width: double.infinity,
-    padding: const EdgeInsets.all(18),
+    clipBehavior: Clip.antiAlias,
     decoration: BoxDecoration(
       color: Theme.of(context).colorScheme.surfaceContainerLowest,
       borderRadius: BorderRadius.circular(20),
       border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
     ),
-    child: child,
+    child: Material(
+      type: MaterialType.transparency,
+      child: Padding(padding: padding, child: child),
+    ),
+  );
+}
+
+/// A thin rounded line that fills with progress, as under a book in the
+/// library.
+class ProgressLine extends StatelessWidget {
+  const ProgressLine({
+    super.key,
+    required this.value,
+    this.height = 3,
+    this.color,
+    this.trackColor,
+  });
+
+  /// How much is done, from 0 to 1. Null means unknown, and the line moves
+  /// instead.
+  final double? value;
+
+  /// The thickness, in logical pixels.
+  final double height;
+
+  /// The filled part. The theme's progress color by default.
+  final Color? color;
+
+  /// The unfilled part. The theme's faint outline color by default.
+  final Color? trackColor;
+
+  @override
+  Widget build(BuildContext context) => ClipRRect(
+    borderRadius: BorderRadius.circular(height),
+    child: LinearProgressIndicator(
+      value: value?.clamp(0, 1),
+      minHeight: height,
+      color: color,
+      backgroundColor:
+          trackColor ?? Theme.of(context).colorScheme.outlineVariant,
+    ),
+  );
+}
+
+/// A paper panel of rows, separated by lines, with space below it.
+class SettingsGroup extends StatelessWidget {
+  const SettingsGroup({super.key, required this.children});
+  final List<Widget> children;
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(bottom: 14),
+    child: BookfinPanel(
+      padding: EdgeInsets.zero,
+      child: Column(
+        children: [
+          for (final (index, child) in children.indexed) ...[
+            if (index > 0) const Divider(),
+            child,
+          ],
+        ],
+      ),
+    ),
   );
 }
 
