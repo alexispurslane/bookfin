@@ -1,6 +1,6 @@
 ---
 id: boo-7al5
-status: in_progress
+status: closed
 deps: [t9-xj41]
 links: []
 created: 2026-11-07T18:34:07Z
