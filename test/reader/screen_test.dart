@@ -260,6 +260,21 @@ void main() {
         await tester.tap(find.text('Edit title and note'));
         await tester.pumpAndSettle();
         expect(find.text('Edit reading bookmark'), findsOneWidget);
+        // The reader keeps its own plain look, so its editor is no glass pane.
+        expect(
+          find.ancestor(
+            of: find.text('Edit reading bookmark'),
+            matching: find.byType(CoverGlass),
+          ),
+          findsNothing,
+        );
+        expect(
+          find.ancestor(
+            of: find.text('Edit reading bookmark'),
+            matching: find.byType(AlertDialog),
+          ),
+          findsOneWidget,
+        );
         await tester.enterText(
           find.widgetWithText(TextField, 'Title (optional)'),
           title,

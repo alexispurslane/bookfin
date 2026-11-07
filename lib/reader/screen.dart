@@ -118,6 +118,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
       title: bookmark.title,
       note: bookmark.note,
       place: 'Saved ${dayAndTime(context, bookmark.createdAt)}',
+      glass: false,
     );
     if (edited == null) return;
     await reader.editBookmark(
