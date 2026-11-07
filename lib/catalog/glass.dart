@@ -107,16 +107,35 @@ class PageBook extends InheritedTheme {
 /// stays put while the content below it scrolls. An [expand]ed sheet fills
 /// the screen and brings its own close control, so it has no drag handle
 /// and no title.
+///
+/// The sheet is a glass pane, except with [glass] false, which draws the
+/// plain sheet of the theme with a drag handle, for a screen that keeps its
+/// own look, such as the reader. A plain sheet has no [book], [title] or
+/// [expand].
 Future<T?> showGlassSheet<T>(
   BuildContext context, {
   Book? book,
   String? title,
   bool isScrollControlled = false,
   bool expand = false,
+  bool glass = true,
   AnimationStyle? sheetAnimationStyle,
   required WidgetBuilder builder,
 }) {
   assert(!expand || title == null, 'An expanded sheet draws its own top.');
+  assert(
+    glass || (book == null && title == null && !expand),
+    'A plain sheet has no glass parts.',
+  );
+  if (!glass) {
+    return showModalBottomSheet<T>(
+      context: context,
+      isScrollControlled: isScrollControlled,
+      showDragHandle: true,
+      sheetAnimationStyle: sheetAnimationStyle,
+      builder: builder,
+    );
+  }
   return showModalBottomSheet<T>(
     context: context,
     isScrollControlled: isScrollControlled || expand,
