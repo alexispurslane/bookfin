@@ -72,14 +72,16 @@ void main() {
   sqfliteFfiInit();
 
   late RecordDatabase database;
+  late String path;
 
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
     final directory = await Directory.systemTemp.createTemp('bookfin-hop-');
     addTearDown(() => directory.delete(recursive: true));
+    path = '${directory.path}/records.sqlite';
     database = await RecordDatabase.open(
       factory: databaseFactoryFfi,
-      path: '${directory.path}/records.sqlite',
+      path: path,
     );
     addTearDown(database.close);
   });
@@ -191,4 +193,95 @@ void main() {
       expect(listening['history'], hasLength(40));
     },
   );
+
+  test(
+    'a small account derives on the UI isolate, because a hop costs more',
+    () async {
+      final writer = LocalResumeStore(openDatabase: () async => database);
+      await writer.save('carol', resume(1000));
+      final hop = CountingHop();
+      final store = LocalResumeStore(
+        openDatabase: () async => database,
+        hop: hop.call,
+      );
+
+      expect((await store.read('carol'))!['resumes']['book'], hasLength(1));
+      expect(hop.hops, 0);
+    },
+  );
+
+  test(
+    'a change drops the kept view, so the next read shows the change',
+    () async {
+      await seedLargeAccount();
+      final store = LocalResumeStore(
+        openDatabase: () async => database,
+        hop: CountingHop().call,
+      );
+      await store.read('alice');
+      await store.reading.write('alice', {
+        'version': 1,
+        'fontSize': 30,
+        'resumes': [page(8)],
+        'bookmarks': <dynamic>[],
+      });
+
+      final reading = (await store.reading.read('alice'))!;
+
+      expect(reading['fontSize'], 30);
+      expect(reading['resumes'].single['anchor'], jsonEncode({'page': 8}));
+      await store.checkInvariants();
+    },
+  );
+
+  test(
+    'an unreadable large account fails in the hop and is never written over',
+    () async {
+      await seedLargeAccount();
+      final sql = await databaseFactoryFfi.openDatabase(path);
+      await sql.rawUpdate(
+        "UPDATE record_actions SET payload = '[]' WHERE rowid = (SELECT MIN(rowid) FROM record_actions)",
+      );
+      // The connection is the same instance as the store's, which the test
+      // closes at its end.
+      final before = await database.rows('alice');
+      final store = LocalResumeStore(
+        openDatabase: () async => database,
+        hop: CountingHop().call,
+      );
+
+      await expectLater(store.read('alice'), throwsA(isA<FormatException>()));
+      await expectLater(
+        store.save('alice', resume(99000)),
+        throwsA(isA<FormatException>()),
+      );
+
+      final after = await database.rows('alice');
+      expect(after!.payloads, before!.payloads);
+      expect(after.metadata, before.metadata);
+    },
+  );
+
+  test('a large account moves from the format before the journal into the database in one hop', () async {
+    SharedPreferences.setMockInitialValues({
+      'bookfin.playback.v1.dana': jsonEncode({
+        ...settings(),
+        'history': [for (var index = 0; index < 40; index++) event('h$index')],
+        'bookmarks': <dynamic>[],
+        'resumes': <String, dynamic>{},
+      }),
+    });
+    final hop = CountingHop();
+    final store = LocalResumeStore(
+      openDatabase: () async => database,
+      hop: hop.call,
+    );
+
+    expect((await store.read('dana'))!['history'], hasLength(40));
+    expect(hop.hops, 1);
+    expect((await database.rows('dana'))!.payloads, hasLength(40));
+    await store.checkInvariants();
+    final restarted = LocalResumeStore(openDatabase: () async => database);
+    expect((await restarted.read('dana'))!['history'], hasLength(40));
+  });
 }

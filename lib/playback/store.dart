@@ -546,6 +546,10 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
   /// Saves a whole listening or reading [value] by the changes of its records
   /// from what its writer last saved or accepted. A record that the writer
   /// knew and that [value] lacks is deleted.
+  ///
+  /// NOTE: Engine rule 1. This copies and flattens the whole snapshot on the
+  /// calling isolate. Playback and the reader save change sets instead, so
+  /// only tests and the [ResumeStore] interface still write whole snapshots.
   Future<void> _write(
     String accountKey,
     Map<String, dynamic> value, {
