@@ -210,6 +210,13 @@ class PageSource {
     return layout != null && layout.isTrueStart(page.start);
   }
 
+  /// The page that [show] showed last, while it is in the cache.
+  LaidPage? get shown => _pages[_shown]?.page;
+
+  /// The prepared section of [page], which must be in the cache. It stays
+  /// prepared while [page] is shown or pinned.
+  PreparedSection sectionOf(LaidPage page) => _cachedOf(page).layout.prepared!;
+
   /// A picture now, with outlines for images not decoded yet.
   ui.Picture draft(LaidPage page) {
     final cached = _cachedOf(page);

@@ -39,3 +39,9 @@ docs/plans/native-epub-reader.md (epic boo-b2ey). Read the sections named in the
 - Next chapter skips a chapter that starts in the middle of the shown page (t6-0cjf), with a BookMap test.
 - checkInvariants of the session passes after each step.
 
+
+## Notes
+
+**2026-11-08T22:04:24Z**
+
+From tc-mxfp: the pager opens at the first present(), so the session can call attachDocument at once; display/contents/seek before the first present wait for it, and move before it does nothing. The constructor has an extra optional hop (search batches; default compute). configure is a no-op until this ticket removes it. A failed open calls onWarning with the WebView's displayerror text; the session's _navigate already turns thrown verb errors into its message.
