@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
@@ -12,7 +13,10 @@ import '../reader/session.dart' show ReadingChanges, ReadingStore;
 
 /// Runs [work] on [input] in another isolate and completes with its result,
 /// which comes back without a copy. [compute] is the default.
-typedef RecordsHop = Future<R> Function<M, R>(R Function(M) work, M input);
+typedef RecordsHop = Future<R> Function<M, R>(
+  FutureOr<R> Function(M) work,
+  M input,
+);
 
 /// Which domains of an account hold records that changed outside their
 /// writer since the writer last took in a snapshot that the store handed
@@ -107,10 +111,11 @@ const _hopText = 4 * 1024;
 /// file, so the store keeps all of them, and each later operation first
 /// tries the rewrite again.
 ///
-/// Engine rule 1: the whole-account work of a read (journal replay, the
-/// decoding of an older format, and each domain's snapshot) runs in one hop
-/// to another isolate, and its result comes back without a copy. A save
-/// does only the work of its own change on the UI isolate.
+/// Engine rule 1: the whole-account work of a read (the read of a large
+/// account's rows, journal replay, the decoding of an older format, and
+/// each domain's snapshot) runs in one hop to another isolate, and its
+/// result comes back without a copy. A save does only the work of its own
+/// change on the UI isolate.
 ///
 /// Invariants, checked on demand by [checkInvariants]:
 /// - The journal of each cached account satisfies
@@ -161,7 +166,7 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
   /// Runs [work] on [input] on this isolate when [small], and in a hop
   /// otherwise.
   Future<R> _derive<M, R>(
-    R Function(M) work,
+    FutureOr<R> Function(M) work,
     M input, {
     required bool small,
   }) async => small ? work(input) : _hop(work, input);
@@ -527,21 +532,13 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
       if (_rewriteDue) await _rewriteCached(database);
       final cached = _accounts[accountKey];
       if (cached != null) return cached;
-      AccountRows? rows;
+      _Restored? restored;
       try {
-        rows = await database.rows(accountKey);
+        restored = await _restoreFile(database, accountKey);
       } on RecordFileSetAside {
         await _rewriteCached(database);
       }
-      if (rows != null) {
-        return _adopt(
-          accountKey,
-          await _derive(_restoreRows, (
-            account: accountKey,
-            rows: rows,
-          ), small: rows.payloads.length < _hopItems),
-        );
-      }
+      if (restored != null) return _adopt(accountKey, restored);
     }
     final preferences = await SharedPreferences.getInstance();
     final legacy = await database?.read(accountKey);
@@ -556,6 +553,27 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
       ), small: raw.length < _hopText),
       text: raw,
     );
+  }
+
+  /// The account that the record file holds for [account], restored, or
+  /// null when it has none. A large account is read, decoded and replayed
+  /// in one hop that reads the file on a connection of its own, so its rows
+  /// never cross the UI isolate. Throws [RecordFileSetAside] when the file
+  /// has damaged pages.
+  Future<_Restored?> _restoreFile(
+    RecordDatabase database,
+    String account,
+  ) async {
+    if (await database.actionCount(account) < _hopItems) {
+      final rows = await database.rows(account);
+      return rows == null ? null : _restoreRows((account: account, rows: rows));
+    }
+    final read = await _hop(_readAndRestore, (
+      account: account,
+      reader: database.reader,
+    ));
+    if (read.damaged) await database.setAsideDamaged();
+    return read.restored;
   }
 
   /// Saves [restored] as the durable state of [account] when it must be
@@ -1103,6 +1121,22 @@ _Views _viewsOfVersions(
   for (final MapEntry(key: record, value: versions) in account.versions.entries)
     record: ?RecordJournal.currentValue(record, versions),
 });
+
+/// The account that `input.reader` reads for `input.account`, restored as
+/// [_restoreRows] does, or null when it has none. [damaged] says that SQLite
+/// reported damaged pages in the record file.
+Future<({_Restored? restored, bool damaged})> _readAndRestore(
+  ({String account, RecordReader reader}) input,
+) async {
+  final read = await input.reader.rows(input.account);
+  final rows = read.rows;
+  return (
+    restored: rows == null
+        ? null
+        : _restoreRows((account: input.account, rows: rows)),
+    damaged: read.damaged,
+  );
+}
 
 /// The account that its durable [AccountRows] hold, with its views, or a
 /// new account from what [_salvageRows] can read of them when they are

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/services.dart';
 import 'package:sqflite/sqflite.dart';
 
 import '../sync/journal.dart';
@@ -63,11 +64,76 @@ class RecordFileSetAside implements Exception {
   String toString() => 'The damaged record file was kept as $keptFile.';
 }
 
+/// Read access to the record file from another isolate. It is sendable to
+/// another isolate, and holds no connection: each read opens a read-only
+/// connection of its own in the isolate that reads, and closes it.
+///
+/// It never uses the connection of the isolate that writes. sqflite on
+/// Android hands every isolate the same native connection for a path unless
+/// a connection opens with `singleInstance: false`, and the Dart lock of a
+/// transaction covers one isolate only.
+///
+/// Measured on emulator-5556 with this code (tool/research/record_rows_bench,
+/// results-emulator-5556.txt), for six hours of listening (21,600 actions,
+/// 10.5 MB): a read on the UI isolate's connection stalls the UI isolate
+/// for 28 to 31 ms, because the platform channel decodes the reply there,
+/// and a read here for 4 to 6 ms, which is the noise of the 1 ms timer.
+/// For 43,200 actions, the stalls are 75 to 102 ms and 13 to 30 ms.
+///
+/// The Android plugin runs the work of all connections on one thread, so a
+/// commit of another connection waits until a read here ends. The store
+/// runs one operation at a time, so none of its commits waits for it.
+final class RecordReader {
+  const RecordReader._(this._name, this._files);
+  final String _name;
+
+  /// The SQLite binding in the isolate that calls it.
+  final DatabaseFactory Function() _files;
+
+  /// The durable rows of [account] as [RecordDatabase.rows] reads them, or
+  /// null when it has none. [damaged] says that SQLite reported damaged
+  /// pages, which the owner of the file sets aside with
+  /// [RecordDatabase.setAsideDamaged].
+  ///
+  /// One statement reads them, so they come from one snapshot of the file:
+  /// a commit of another connection is in all of them or in none. A
+  /// read-only connection writes nothing and takes no write lock, so a
+  /// commit of another connection during the read waits for nothing.
+  Future<({AccountRows? rows, bool damaged})> rows(String account) async {
+    try {
+      final database = await _files().openDatabase(
+        _name,
+        options: OpenDatabaseOptions(readOnly: true, singleInstance: false),
+      );
+      try {
+        return (
+          rows: await RecordDatabase._readRows(database, account),
+          damaged: false,
+        );
+      } finally {
+        await database.close();
+      }
+    } on DatabaseException catch (error) {
+      if (!RecordDatabase._damaged(error)) rethrow;
+      return (rows: null, damaged: true);
+    }
+  }
+}
+
 class RecordDatabase {
-  RecordDatabase._(this._files, this._name, this._database, {this.keptFile});
+  RecordDatabase._(
+    this._files,
+    this._name,
+    this._database,
+    this.reader, {
+    this.keptFile,
+  });
   final DatabaseFactory _files;
   final String _name;
   Database _database;
+
+  /// Reads the record file from another isolate.
+  final RecordReader reader;
 
   /// The name of the copy of a record file that SQLite reported as damaged,
   /// or null while the file is intact. [open], or a later read or write that
@@ -75,20 +141,36 @@ class RecordDatabase {
   /// this name and its `-wal` name, then started a new file.
   String? keptFile;
 
-  /// Opens the record file at [path], or the default file.
+  /// Opens the record file at [path], or the default file, with the
+  /// SQLite binding [factory], or the platform's.
   ///
   /// When SQLite reports the file as damaged (not a database, or corrupt),
   /// this copies the file aside as [keptFile] says, deletes the damaged
   /// original only after the copy is complete, and opens a new empty file.
   /// Other failures, such as a full disk, throw and change nothing.
+  ///
+  /// [reader] reads with [factory] copied into the reading isolate, which
+  /// the FFI binding of tests allows, or with the platform's binding, which
+  /// reaches the plugin through the root isolate.
   static Future<RecordDatabase> open({
     DatabaseFactory? factory,
     String? path,
   }) async {
     final files = factory ?? databaseFactory;
     final name = path ?? 'bookfin-personal-records-v1.sqlite';
+    final reader = RecordReader._(
+      name,
+      factory == null
+          ? _platformFiles(RootIsolateToken.instance!)
+          : _copied(factory),
+    );
     try {
-      return RecordDatabase._(files, name, await _openFile(files, name));
+      return RecordDatabase._(
+        files,
+        name,
+        await _openFile(files, name),
+        reader,
+      );
     } on DatabaseException catch (error) {
       if (!_damaged(error)) rethrow;
     }
@@ -97,9 +179,23 @@ class RecordDatabase {
       files,
       name,
       await _openFile(files, name),
+      reader,
       keptFile: kept,
     );
   }
+
+  /// The platform's SQLite binding in a background isolate, which reaches
+  /// the plugin through the root isolate of [token]. The function holds
+  /// only [token], so it is sendable.
+  static DatabaseFactory Function() _platformFiles(RootIsolateToken token) =>
+      () {
+        BackgroundIsolateBinaryMessenger.ensureInitialized(token);
+        return databaseFactory;
+      };
+
+  /// [files] itself. The function holds only [files].
+  static DatabaseFactory Function() _copied(DatabaseFactory files) =>
+      () => files;
 
   /// Whether [error] says that the file is damaged: SQLITE_CORRUPT or
   /// SQLITE_NOTADB. Android reports extended codes.
@@ -133,6 +229,13 @@ class RecordDatabase {
     } on DatabaseException catch (error) {
       if (!_damaged(error)) rethrow;
     }
+    return setAsideDamaged();
+  }
+
+  /// Closes the record file, sets it aside as [open] does, opens a new
+  /// empty file, and throws [RecordFileSetAside]. A [reader] that found
+  /// damaged pages hands them to this owner of the file.
+  Future<Never> setAsideDamaged() async {
     await _database.close();
     final kept = keptFile = await _keepAside(_files, _name);
     _database = await _openFile(_files, _name);
@@ -191,83 +294,97 @@ class RecordDatabase {
   ///
   /// Nothing is decoded, so a read can send the rows to another isolate as
   /// strings and decode them there with [decode]. Throws
-  /// [RecordFileSetAside] when the file has damaged pages.
-  Future<AccountRows?> rows(String account) => _guarded(
-    (database) => database.transaction((transaction) async {
-      final accounts = await transaction.query(
-        'record_accounts',
-        where: 'account = ?',
-        whereArgs: [account],
-      );
-      if (accounts.isEmpty) return null;
-      final row = accounts.single;
-      final actions = await transaction.query(
-        'record_actions',
-        where: 'account = ?',
-        whereArgs: [account],
-        orderBy: 'rowid',
-      );
-      final versions = await transaction.query(
-        'record_versions',
-        where: 'account = ?',
-        whereArgs: [account],
-      );
-      final coverage = await transaction.query(
-        'record_coverage',
-        where: 'account = ?',
-        whereArgs: [account],
-      );
-      // A value of another type than its column holds reads as one that
-      // does not decode, and marks the rows as malformed.
-      var malformed = false;
-      String text(Object? value) {
-        if (value is String) return value;
-        malformed = true;
-        return '';
-      }
+  /// [RecordFileSetAside] when the file has damaged pages. The rows of a
+  /// large account cross the platform channel to this isolate, so such an
+  /// account is read with [reader] instead.
+  Future<AccountRows?> rows(String account) =>
+      _guarded((database) => _readRows(database, account));
 
-      int number(Object? value) {
-        if (value is int) return value;
-        malformed = true;
-        return -1;
-      }
-
-      // NOTE: Engine rule 1. These loops only copy column values out of
-      // the rows, about 50 ns each, so that the hop sends strings instead
-      // of row maps. The JSON in them is decoded in the hop.
-      final identities = [
-        for (final action in actions) text(action['identity']),
-      ];
-      final pending = <String>[];
-      for (final (index, action) in actions.indexed) {
-        switch (action['pending']) {
-          case 1:
-            pending.add(identities[index]);
-          case 0:
-            break;
-          default:
-            malformed = true;
-        }
-      }
-      return (
-        metadata: text(row['metadata']),
-        replica: text(row['replica']),
-        cursor: number(row['cursor']),
-        identities: identities,
-        payloads: [for (final action in actions) text(action['payload'])],
-        pending: pending,
-        versions: {
-          for (final version in versions)
-            text(version['record']): text(version['identities']),
-        },
-        coverage: {
-          for (final entry in coverage)
-            text(entry['replica']): number(entry['sequence']),
-        },
-        malformed: malformed,
-      );
-    }),
+  /// How many actions [account] retains. It reads only the index of the
+  /// actions. Throws [RecordFileSetAside] when the file has damaged pages.
+  Future<int> actionCount(String account) => _guarded(
+    (database) async =>
+        (await database.rawQuery(
+              'SELECT COUNT(*) AS count FROM record_actions WHERE account = ?',
+              [account],
+            )).single['count']
+            as int,
   );
+
+  /// The rows of [account] that [database] holds, read in one statement and
+  /// so from one snapshot, or null when it has none. `kind` names the table
+  /// of each row: 0 the account, 1 an action, in the order of its rows, 2 a
+  /// record's current versions, and 3 the coverage of an installation.
+  static Future<AccountRows?> _readRows(
+    DatabaseExecutor database,
+    String account,
+  ) async {
+    final rows = await database.rawQuery(
+      'SELECT 0 AS kind, NULL AS position, replica AS name, cursor AS number, metadata AS content FROM record_accounts WHERE account = ? '
+      'UNION ALL SELECT 1, rowid, identity, pending, payload FROM record_actions WHERE account = ? '
+      'UNION ALL SELECT 2, NULL, record, NULL, identities FROM record_versions WHERE account = ? '
+      'UNION ALL SELECT 3, NULL, replica, sequence, NULL FROM record_coverage WHERE account = ? '
+      'ORDER BY kind, position',
+      [account, account, account, account],
+    );
+    if (rows.isEmpty || rows.first['kind'] != 0) return null;
+    // A value of another type than its column holds reads as one that does
+    // not decode, and marks the rows as malformed.
+    var malformed = false;
+    String text(Object? value) {
+      if (value is String) return value;
+      malformed = true;
+      return '';
+    }
+
+    int number(Object? value) {
+      if (value is int) return value;
+      malformed = true;
+      return -1;
+    }
+
+    // NOTE: Engine rule 1. This loop only copies column values out of the
+    // rows, about 50 ns each, so that a hop sends strings instead of row
+    // maps. The JSON in them is decoded in the hop. A large account runs it
+    // in the hop that reads it.
+    final head = rows.first;
+    final identities = <String>[];
+    final payloads = <String>[];
+    final pending = <String>[];
+    final versions = <String, String>{};
+    final coverage = <String, int>{};
+    for (final row in rows.skip(1)) {
+      switch (row['kind']) {
+        case 1:
+          final identity = text(row['name']);
+          identities.add(identity);
+          payloads.add(text(row['content']));
+          switch (row['number']) {
+            case 1:
+              pending.add(identity);
+            case 0:
+              break;
+            default:
+              malformed = true;
+          }
+        case 2:
+          versions[text(row['name'])] = text(row['content']);
+        case 3:
+          coverage[text(row['name'])] = number(row['number']);
+      }
+    }
+    return (
+      metadata: text(head['content']),
+      replica: text(head['name']),
+      cursor: number(head['number']),
+      identities: identities,
+      payloads: payloads,
+      pending: pending,
+      versions: versions,
+      coverage: coverage,
+      malformed: malformed,
+    );
+  }
 
   /// The account that [rows] hold: the settings under `snapshot`, the
   /// journal under `sync`, and the current versions and causal coverage

@@ -45,3 +45,73 @@ BENCH size=43200 bytes=20983478 way=codec run=2 ms=531 stallMs=531
 BENCH size=43200 bytes=20983478 way=worker run=2 ms=1192 stallMs=9
 BENCH size=43200 bytes=20983478 way=workerOwn run=2 ms=1218 stallMs=7
 BENCH done
+
+# tf-0nvi build, run 1, 2026-11-07, same emulator. Host load was about 40 on 10 cores. recordMain and recordWorker run Bookfin's own RecordDatabase code (lib/bookfin link). Lines of way=main repeat the earlier read for comparison.
+BENCH size=3600 bytes=1737276 way=main run=0 ms=68 stallMs=10
+BENCH size=3600 bytes=1737276 way=main run=1 ms=80 stallMs=15
+BENCH size=3600 bytes=1737276 way=main run=2 ms=42 stallMs=6
+BENCH size=3600 way=recordMain run=0 ms=31 stallMs=4
+BENCH size=3600 way=recordWorker run=0 ms=56 stallMs=12
+BENCH size=3600 way=recordMain run=1 ms=33 stallMs=4
+BENCH size=3600 way=recordWorker run=1 ms=46 stallMs=3
+BENCH size=3600 way=recordMain run=2 ms=33 stallMs=4
+BENCH size=3600 way=recordWorker run=2 ms=48 stallMs=3
+BENCH check walVisible=true damaged=false
+BENCH check concurrentWriteMs=41 readCount=3601 readIsOneSnapshot=true afterCount=3602 expected=3602
+BENCH size=21600 bytes=10475078 way=main run=0 ms=695 stallMs=37
+BENCH size=21600 bytes=10475078 way=main run=1 ms=786 stallMs=46
+BENCH size=21600 bytes=10475078 way=main run=2 ms=519 stallMs=40
+BENCH size=21600 way=recordMain run=0 ms=655 stallMs=118
+BENCH size=21600 way=recordWorker run=0 ms=742 stallMs=31
+BENCH size=21600 way=recordMain run=1 ms=539 stallMs=58
+BENCH size=21600 way=recordWorker run=1 ms=641 stallMs=23
+BENCH size=21600 way=recordMain run=2 ms=637 stallMs=63
+BENCH size=21600 way=recordWorker run=2 ms=565 stallMs=30
+BENCH check walVisible=true damaged=false
+BENCH check concurrentWriteMs=428 readCount=21601 readIsOneSnapshot=true afterCount=21602 expected=21602
+BENCH size=43200 bytes=20983478 way=main run=0 ms=1698 stallMs=79
+BENCH size=43200 bytes=20983478 way=main run=1 ms=1936 stallMs=83
+BENCH size=43200 bytes=20983478 way=main run=2 ms=1777 stallMs=62
+BENCH size=43200 way=recordMain run=0 ms=1472 stallMs=81
+BENCH size=43200 way=recordWorker run=0 ms=1574 stallMs=10
+BENCH size=43200 way=recordMain run=1 ms=1404 stallMs=90
+BENCH size=43200 way=recordWorker run=1 ms=1414 stallMs=12
+BENCH size=43200 way=recordMain run=2 ms=1416 stallMs=87
+BENCH size=43200 way=recordWorker run=2 ms=1658 stallMs=19
+BENCH check walVisible=true damaged=false
+BENCH check concurrentWriteMs=1391 readCount=43201 readIsOneSnapshot=true afterCount=43202 expected=43202
+
+# tf-0nvi build, run 2, 2026-11-07, same emulator. Host load was about 22 on 10 cores. recordMain and recordWorker run Bookfin's own RecordDatabase code (lib/bookfin link). Lines of way=main repeat the earlier read for comparison.
+BENCH size=3600 bytes=1737276 way=main run=0 ms=52 stallMs=6
+BENCH size=3600 bytes=1737276 way=main run=1 ms=43 stallMs=6
+BENCH size=3600 bytes=1737276 way=main run=2 ms=40 stallMs=7
+BENCH size=3600 way=recordMain run=0 ms=31 stallMs=6
+BENCH size=3600 way=recordWorker run=0 ms=35 stallMs=3
+BENCH size=3600 way=recordMain run=1 ms=27 stallMs=3
+BENCH size=3600 way=recordWorker run=1 ms=69 stallMs=7
+BENCH size=3600 way=recordMain run=2 ms=30 stallMs=6
+BENCH size=3600 way=recordWorker run=2 ms=57 stallMs=10
+BENCH check walVisible=true damaged=false
+BENCH check concurrentWriteMs=36 readCount=3601 readIsOneSnapshot=true afterCount=3602 expected=3602
+BENCH size=21600 bytes=10475078 way=main run=0 ms=394 stallMs=35
+BENCH size=21600 bytes=10475078 way=main run=1 ms=451 stallMs=37
+BENCH size=21600 bytes=10475078 way=main run=2 ms=370 stallMs=28
+BENCH size=21600 way=recordMain run=0 ms=345 stallMs=31
+BENCH size=21600 way=recordWorker run=0 ms=358 stallMs=4
+BENCH size=21600 way=recordMain run=1 ms=350 stallMs=28
+BENCH size=21600 way=recordWorker run=1 ms=361 stallMs=5
+BENCH size=21600 way=recordMain run=2 ms=341 stallMs=30
+BENCH size=21600 way=recordWorker run=2 ms=365 stallMs=6
+BENCH check walVisible=true damaged=false
+BENCH check concurrentWriteMs=330 readCount=21601 readIsOneSnapshot=true afterCount=21602 expected=21602
+BENCH size=43200 bytes=20983478 way=main run=0 ms=1303 stallMs=46
+BENCH size=43200 bytes=20983478 way=main run=1 ms=1213 stallMs=53
+BENCH size=43200 bytes=20983478 way=main run=2 ms=1275 stallMs=57
+BENCH size=43200 way=recordMain run=0 ms=1404 stallMs=75
+BENCH size=43200 way=recordWorker run=0 ms=1538 stallMs=15
+BENCH size=43200 way=recordMain run=1 ms=1658 stallMs=102
+BENCH size=43200 way=recordWorker run=1 ms=1674 stallMs=30
+BENCH size=43200 way=recordMain run=2 ms=1669 stallMs=84
+BENCH size=43200 way=recordWorker run=2 ms=1363 stallMs=13
+BENCH check walVisible=true damaged=false
+BENCH check concurrentWriteMs=1210 readCount=43201 readIsOneSnapshot=true afterCount=43202 expected=43202
