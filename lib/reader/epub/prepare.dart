@@ -230,7 +230,7 @@ final class ParagraphItem extends FlowItem {
 final class ImageItem extends FlowItem {
   const ImageItem({
     required this.node,
-    required this.path,
+    required this.image,
     required this.sizing,
     required this.marginLeft,
     required this.centered,
@@ -240,9 +240,7 @@ final class ImageItem extends FlowItem {
 
   /// The image element's [DomNode.order].
   final int node;
-
-  /// The image's publication path, or null when it leaves the publication.
-  final String? path;
+  final DrawnImage image;
 
   /// How the image's size follows from the width of the block that holds
   /// it.
@@ -355,13 +353,11 @@ final class BreakRun extends InlineRun {
 
 /// An image in a line.
 final class ImageRun extends InlineRun {
-  const ImageRun(this.node, this.path, this.sizing);
+  const ImageRun(this.node, this.image, this.sizing);
 
   /// The image element's [DomNode.order].
   final int node;
-
-  /// The image's publication path, or empty when it leaves the publication.
-  final String path;
+  final DrawnImage image;
 
   /// How the image's size follows from the paragraph's width.
   final ImageSizing sizing;
@@ -505,6 +501,24 @@ class BoxPlacement {
     }
     return (left, contentWidth);
   }
+}
+
+/// What a page draws for an image: the decoded file at [path], with its
+/// colors inverted by [invert], or else [alt] in the image's box. A page
+/// draws an outline while the file is not decoded yet, and in place of a
+/// file that cannot decode and has no [alt].
+final class DrawnImage {
+  const DrawnImage(this.path, {this.invert = 0, this.alt = ''});
+
+  /// The image's publication path, or empty when it leaves the publication.
+  final String path;
+
+  /// How far `filter: invert()` moves the image's colors toward their
+  /// inverse, from 0 (unchanged) to 1 (inverted).
+  final double invert;
+
+  /// The image's `alt` text, or empty.
+  final String alt;
 }
 
 /// How an image's used size follows from the width of the block that holds
@@ -1231,7 +1245,7 @@ class _Flattener {
     flow.add(
       ImageItem(
         node: box.element.order,
-        path: resolvePath(source.path, box.element.attributes['src'] ?? ''),
+        image: _drawn(box.element, style),
         sizing: _sizing(box.element, style),
         marginLeft: style.margin[3].resolve(width),
         centered: style.margin[3].isAuto && style.margin[1].isAuto,
@@ -1240,6 +1254,12 @@ class _Flattener {
       ),
     );
   }
+
+  DrawnImage _drawn(DomElement element, Style style) => DrawnImage(
+    resolvePath(source.path, element.attributes['src'] ?? '') ?? '',
+    invert: style.invert,
+    alt: element.attributes['alt'] ?? '',
+  );
 
   ImageSizing _sizing(DomElement element, Style style) {
     final path = resolvePath(source.path, element.attributes['src'] ?? '');
@@ -1329,7 +1349,7 @@ class _Flattener {
           runs.add(
             ImageRun(
               element.order,
-              resolvePath(source.path, element.attributes['src'] ?? '') ?? '',
+              _drawn(element, style),
               _sizing(element, style),
             ),
           );

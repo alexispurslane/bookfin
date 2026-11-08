@@ -417,6 +417,12 @@ Flutter rounds each line's height to a whole pixel. Chromium does not. Layout re
 - The page source decodes each image at its drawn size. A page draws an outline until its image arrives, then draws again.
 - E17 adds `filter: invert()` on images. Standard Ebooks sets it on black line art in its dark color scheme, so line art stays visible in the night theme. An image that fails to decode draws its alt text.
 
+What E17 decided (tc-cl77):
+
+- The computed style keeps one value of `filter`: how far it inverts, from 0 to 1. Each `invert()` composes with the ones before it (by a, then by b, inverts by a + b − 2ab). The other filter functions are ignored. `filter` is not inherited, so only the image's own filter counts.
+- Image items and inline image runs carry a `DrawnImage`: the path, the invert amount and the alt text. Paint draws an inverted image through a color matrix.
+- A page's images have three states: decoded, not decoded yet (an outline), and unable to decode (the alt text in the reader font, clipped to the image's box, or an outline without alt text). Admission already decodes every image that it keeps, so the third state is rare. A palette PNG without its palette is one example.
+
 ### Footnote links
 
 This is a product fork. See "Product fork for the user".

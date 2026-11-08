@@ -114,6 +114,8 @@ Publication book(
 }) {
   String type(String path) => switch (path.split('.').last) {
     'png' => 'image/png',
+    'jpg' => 'image/jpeg',
+    'svg' => 'image/svg+xml',
     'woff' => 'font/woff',
     _ => 'application/octet-stream',
   };

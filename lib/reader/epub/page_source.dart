@@ -263,6 +263,8 @@ class PageSource {
     final wanted = _imagesOf(page, 1);
     if (wanted.isEmpty) return cached.plain();
     return cached.draft ??= drawPage(page, {
+      for (final key in _broken)
+        if (wanted.containsKey(key.path)) key.path: null,
       for (final MapEntry(key: key, value: image) in _images.entries)
         if (wanted.containsKey(key.path)) key.path: image,
     });
@@ -287,7 +289,7 @@ class PageSource {
       if (cached.pictures[scale] case final drawn?) return drawn;
       cached.images.addAll(keys);
       return cached.pictures[scale] = drawPage(page, {
-        for (final (index, key) in keys.indexed) key.path: ?images[index],
+        for (final (index, key) in keys.indexed) key.path: images[index],
       });
     } finally {
       for (final key in keys) {
@@ -1010,7 +1012,7 @@ class PageSource {
     );
     for (final piece in page.pieces) {
       for (final (box, held) in piece.inlines) {
-        if (held is String) add(held, box);
+        if (held is DrawnImage) add(held.path, box);
       }
     }
     for (final decoration in page.decorations) {
@@ -1020,7 +1022,7 @@ class PageSource {
   }
 
   /// The image of [key], decoded at its width. Null when it cannot decode;
-  /// the page then draws an outline.
+  /// the page then draws its alt text.
   Future<ui.Image?> _decode(_ImageKey key) async {
     if (_images.remove(key) case final image?) {
       _images[key] = image;
