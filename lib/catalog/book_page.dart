@@ -2,7 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../downloads/downloads.dart' show DownloadAction;
+import '../downloads/downloads.dart' show DownloadAction, Downloads;
+import '../foundation/listenable_selector.dart';
 import '../downloads/screen.dart';
 import '../foundation/theme.dart';
 import '../foundation/time.dart';
@@ -29,8 +30,16 @@ void openBook(BuildContext context, LibraryServices services, Book book) =>
       ),
     );
 
-/// The details of one book: its cover, facts, actions, and editions. It reads
-/// the current catalog, so it follows refreshes and corrections while open.
+/// The details of one book: its cover, facts, actions, and editions.
+///
+/// The page is the controller of everything on it. It follows the catalog's
+/// library, so it shows refreshes and corrections while open, and finds its
+/// book, series and possible matches through the library's indexes. Each
+/// part below follows only its own state: the cover its download state, the
+/// actions and progress the book's activity, each edition panel its own
+/// download, and the status lines their messages. The parts report taps,
+/// and the page opens the player and the reader, asks before a change, and
+/// tells the catalog, Playback or Downloads what to do.
 class BookPage extends StatelessWidget {
   const BookPage({super.key, required this.services, required this.bookId});
   final LibraryServices services;
@@ -38,295 +47,400 @@ class BookPage extends StatelessWidget {
 
   CatalogController get catalog => services.catalog;
 
-  /// The page finds its book, series and possible matches in the catalog
-  /// only when the catalog changes. Download state and listening progress
-  /// rebuild the page's content below its top bar, without a library scan.
   @override
-  Widget build(BuildContext context) => ListenableBuilder(
-    listenable: catalog,
-    builder: (context, _) {
-      final book = catalog.books.where((book) => book.id == bookId).firstOrNull;
-      if (book == null) {
-        return Scaffold(
-          appBar: AppBar(),
-          body: const Center(
-            child: Text('This book is not in the current library.'),
-          ),
-        );
-      }
-      final playback = services.playback;
-      final audio = book.editions
-          .where((edition) => edition.kind == EditionKind.audio)
-          .toList();
-      final text = book.editions
-          .where((edition) => edition.kind == EditionKind.text)
-          .toList();
-      final series = book.series == null
-          ? null
-          : shelf(catalog.books, ShelfFilter.all, services.editionDownloaded)
-                .whereType<ShelfSeries>()
-                .where(
-                  (series) =>
-                      series.books.any((member) => member.id == book.id),
-                )
-                .firstOrNull;
-      final matches = possibleMatches(book, catalog.books).length;
-      final formats = {
-        for (final edition in text)
-          for (final file in edition.files)
-            if (file.container.isNotEmpty) file.container.toUpperCase(),
-      };
-      final narrator = audio
-          .map((edition) => edition.narrator)
-          .nonNulls
-          .firstOrNull;
-      // Sheets, dialogs, menus and messages opened here are about this book.
-      return PageBook(
+  Widget build(BuildContext context) => ListenableSelector(
+    listenable: catalog.libraryNotifier,
+    select: () {
+      final library = catalog.libraryNotifier.value;
+      final book = library.book(bookId);
+      return (
         book: book,
-        // Actions below use this context, so layers they open find the book.
-        child: Builder(
-          builder: (context) => services.page(
-            context,
-            extendBodyBehindAppBar: true,
-            appBar: AppBar(
-              backgroundColor: Colors.transparent,
-              actions: [
-                GlassMenuButton(
-                  tooltip: 'More actions',
-                  icon: const Icon(Icons.more_horiz_rounded),
-                  items: [
-                    GlassMenuItem(
-                      'Correct book details',
-                      onSelected: () => unawaited(_correct(context, book)),
-                    ),
-                    GlassMenuItem(
-                      'Link another book or ebook',
-                      onSelected: () => unawaited(_link(context, book)),
-                    ),
-                    if (audio.length > 1)
-                      GlassMenuItem(
-                        'Combine files of one recording',
-                        onSelected: () => unawaited(_combine(context, book)),
-                      ),
-                  ],
-                ),
-              ],
-            ),
-            body: ListenableBuilder(
-              listenable: services.activity,
-              builder: (context, _) {
-                final theme = Theme.of(context);
-                final listening =
-                    audio
-                        .where((edition) => playback?.progress(edition) != null)
-                        .firstOrNull ??
-                    audio.firstOrNull;
-                final progress = services.progress(book);
-                final audioMs = listening == null ? null : _length(listening);
-                return ListView(
-                  padding: EdgeInsets.only(bottom: floatingBarInset(context)),
-                  children: [
-                    _Header(book: book, downloaded: services.downloaded(book)),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: Column(
-                        children: [
-                          const SizedBox(height: 18),
-                          Text(
-                            book.title,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontFamily: 'Source Serif 4',
-                              fontSize: 28,
-                              height: 1.12,
-                              fontWeight: FontWeight.w500,
-                              letterSpacing: -0.3,
-                              color: theme.colorScheme.onSurface,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            [
-                              if (book.author.isNotEmpty) book.author,
-                              if (narrator != null) 'read by $narrator',
-                            ].join(' · '),
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: theme.colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                          if (book.series != null)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 4),
-                              child: TextButton(
-                                onPressed: series == null
-                                    ? null
-                                    : () =>
-                                          openSeries(context, services, series),
-                                style: TextButton.styleFrom(
-                                  minimumSize: const Size(48, 36),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                  ),
-                                ),
-                                child: Text(
-                                  [
-                                        book.series!,
-                                        if (book.seriesOrder != null)
-                                          'Book ${seriesPosition(book.seriesOrder!)}',
-                                      ].join(' · ') +
-                                      (series != null ? '  ›' : ''),
-                                  style: const TextStyle(fontSize: 13),
-                                ),
-                              ),
-                            ),
-                          const SizedBox(height: 14),
-                          _Facts(
-                            facts: [
-                              if (audioMs != null) (duration(audioMs), 'audio'),
-                              if (formats.isNotEmpty)
-                                (formats.join(' + '), 'ebook')
-                              else if (text.isNotEmpty)
-                                ('Ebook', 'edition'),
-                              if (book.year != null)
-                                ('${book.year}', 'published'),
-                            ],
-                          ),
-                          const SizedBox(height: 18),
-                          _Actions(
-                            services: services,
-                            onDownload: (edition, action) => changeDownload(
-                              context,
-                              services.downloads!,
-                              edition,
-                              action,
-                            ),
-                            book: book,
-                            listening: listening,
-                            reading: text.firstOrNull,
-                          ),
-                          if (progress != null && progress.totalMs > 0) ...[
-                            const SizedBox(height: 14),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    progress.totalMs - progress.elapsedMs <
-                                            60000
-                                        ? 'Finished'
-                                        : '${(progress.elapsedMs * 100 / progress.totalMs).floor()}% · ${duration(progress.totalMs - progress.elapsedMs)} left',
-                                    style: theme.textTheme.bodySmall,
-                                  ),
-                                ),
-                                if (playback != null)
-                                  TextButton(
-                                    onPressed: () => openListeningTimeline(
-                                      context,
-                                      playback,
-                                      book: book,
-                                    ),
-                                    style: TextButton.styleFrom(
-                                      minimumSize: const Size(48, 32),
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                      ),
-                                    ),
-                                    child: const Text(
-                                      'History',
-                                      style: TextStyle(fontSize: 12),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                            const SizedBox(height: 4),
-                            ProgressLine(
-                              value: progress.elapsedMs / progress.totalMs,
-                            ),
-                          ],
-                          if (catalog.message != null)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 12),
-                              child: StatusMessage(catalog.message!),
-                            ),
-                          if (playback?.message != null)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 12),
-                              child: StatusMessage(playback!.message!),
-                            ),
-                          if (playback != null &&
-                              playback.replacementStart?.book.id == bookId)
-                            ReplacementStartNotice(
-                              playback: playback,
-                              onStarted: () => openPlayer(context, playback),
-                            ),
-                        ],
-                      ),
-                    ),
-                    if (book.description != null)
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(24, 22, 24, 0),
-                        child: _Description(text: book.description!),
-                      ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 18, 24, 0),
-                      child: _Metadata(
-                        rows: [
-                          if (book.genres.isNotEmpty)
-                            ('Genre', book.genres.join(', ')),
-                          if (book.publisher != null)
-                            ('Publisher', book.publisher!),
-                          if (_files(book).isNotEmpty) ('Files', _files(book)),
-                        ],
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 28, 24, 32),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SectionLabel('EDITIONS'),
-                          const SizedBox(height: 10),
-                          for (final edition in book.editions)
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 12),
-                              child: _EditionPanel(
-                                services: services,
-                                onDownload: (action) => changeDownload(
-                                  context,
-                                  services.downloads!,
-                                  edition,
-                                  action,
-                                ),
-                                book: book,
-                                edition: edition,
-                              ),
-                            ),
-                          if (matches > 0)
-                            Text(
-                              '$matches possible ${matches == 1 ? 'match' : 'matches'} · Confirmation required',
-                              style: theme.textTheme.bodySmall,
-                            ),
-                        ],
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
-          ),
-        ),
+        series: book == null ? null : library.seriesOf(book),
+        matches: book == null ? 0 : library.matches(book).length,
       );
     },
+    builder: (context, found, _) => switch (found.book) {
+      null => Scaffold(
+        appBar: AppBar(),
+        body: const Center(
+          child: Text('This book is not in the current library.'),
+        ),
+      ),
+      final book => PageBook(
+        // Sheets, dialogs, menus and messages opened here are about this
+        // book, so the actions below use the context inside it.
+        book: book,
+        child: Builder(
+          builder: (context) =>
+              _page(context, book, found.series, found.matches),
+        ),
+      ),
+    },
   );
+
+  Widget _page(
+    BuildContext context,
+    Book book,
+    ShelfSeries? series,
+    int matches,
+  ) {
+    final theme = Theme.of(context);
+    final playback = services.playback;
+    final reader = services.reader;
+    final downloads = services.downloads;
+    final audio = book.editions
+        .where((edition) => edition.kind == EditionKind.audio)
+        .toList();
+    final text = book.editions
+        .where((edition) => edition.kind == EditionKind.text)
+        .toList();
+    final formats = {
+      for (final edition in text)
+        for (final file in edition.files)
+          if (file.container.isNotEmpty) file.container.toUpperCase(),
+    };
+    final narrator = audio
+        .map((edition) => edition.narrator)
+        .nonNulls
+        .firstOrNull;
+    final activity = services.bookActivity(book);
+    return services.page(
+      context,
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        actions: [
+          GlassMenuButton(
+            tooltip: 'More actions',
+            icon: const Icon(Icons.more_horiz_rounded),
+            items: [
+              GlassMenuItem(
+                'Correct book details',
+                onSelected: () => unawaited(_correct(context, book)),
+              ),
+              GlassMenuItem(
+                'Link another book or ebook',
+                onSelected: () => unawaited(_link(context, book)),
+              ),
+              if (audio.length > 1)
+                GlassMenuItem(
+                  'Combine files of one recording',
+                  onSelected: () => unawaited(_combine(context, book)),
+                ),
+            ],
+          ),
+        ],
+      ),
+      body: ListView(
+        padding: EdgeInsets.only(bottom: floatingBarInset(context)),
+        children: [
+          ListenableSelector(
+            listenable: Listenable.merge([
+              if (downloads != null)
+                for (final edition in book.editions) downloads.watch(edition),
+            ]),
+            select: () => services.downloaded(book),
+            builder: (context, downloaded, _) =>
+                _Header(book: book, downloaded: downloaded),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              children: [
+                const SizedBox(height: 18),
+                Text(
+                  book.title,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: 'Source Serif 4',
+                    fontSize: 28,
+                    height: 1.12,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: -0.3,
+                    color: theme.colorScheme.onSurface,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  [
+                    if (book.author.isNotEmpty) book.author,
+                    if (narrator != null) 'read by $narrator',
+                  ].join(' · '),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                if (book.series != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: TextButton(
+                      onPressed: series == null
+                          ? null
+                          : () => openSeries(context, services, series),
+                      style: TextButton.styleFrom(
+                        minimumSize: const Size(48, 36),
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                      ),
+                      child: Text(
+                        [
+                              book.series!,
+                              if (book.seriesOrder != null)
+                                'Book ${seriesPosition(book.seriesOrder!)}',
+                            ].join(' · ') +
+                            (series != null ? '  ›' : ''),
+                        style: const TextStyle(fontSize: 13),
+                      ),
+                    ),
+                  ),
+                const SizedBox(height: 14),
+                // The edition to listen to changes when listening starts on
+                // another one, not on each position tick.
+                ListenableSelector(
+                  listenable: activity,
+                  select: () => _listening(audio),
+                  builder: (context, listening, _) {
+                    final audioMs = listening.edition == null
+                        ? null
+                        : _length(listening.edition!);
+                    final reading = text.firstOrNull;
+                    return Column(
+                      children: [
+                        _Facts(
+                          facts: [
+                            if (audioMs != null) (duration(audioMs), 'audio'),
+                            if (formats.isNotEmpty)
+                              (formats.join(' + '), 'ebook')
+                            else if (text.isNotEmpty)
+                              ('Ebook', 'edition'),
+                            if (book.year != null)
+                              ('${book.year}', 'published'),
+                          ],
+                        ),
+                        const SizedBox(height: 18),
+                        BookActions(
+                          listening: listening.edition,
+                          reading: reading,
+                          resume: listening.resume,
+                          downloads: downloads,
+                          onListen: playback == null
+                              ? null
+                              : (edition) =>
+                                    unawaited(_listen(context, book, edition)),
+                          onRead: reader == null
+                              ? null
+                              : (edition) => _read(context, book, edition),
+                          onDownload: (edition, action) =>
+                              _download(context, edition, action),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+                ListenableSelector(
+                  listenable: activity,
+                  select: () => services.progress(book),
+                  builder: (context, progress, _) =>
+                      progress == null || progress.totalMs <= 0
+                      ? const SizedBox.shrink()
+                      : _Progress(
+                          progress: progress,
+                          onHistory: playback == null
+                              ? null
+                              : () => openListeningTimeline(
+                                  context,
+                                  playback,
+                                  book: book,
+                                ),
+                        ),
+                ),
+                _StatusLine(
+                  catalog.statusNotifier,
+                  () => catalog.statusNotifier.value.message,
+                ),
+                if (playback != null) ...[
+                  _StatusLine(
+                    playback.statusNotifier,
+                    () => playback.statusNotifier.value.message,
+                  ),
+                  // The replacement offer has no narrow signal, so this
+                  // follows every change of Playback and rebuilds only when
+                  // the offer comes or goes for this book.
+                  ListenableSelector(
+                    listenable: playback,
+                    select: () => playback.replacementStart?.book.id == bookId,
+                    builder: (_, offered, _) => offered
+                        ? ReplacementStartNotice(
+                            playback: playback,
+                            onStarted: () => openPlayer(context, playback),
+                          )
+                        : const SizedBox.shrink(),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          if (book.description != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 22, 24, 0),
+              child: _Description(text: book.description!),
+            ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 18, 24, 0),
+            child: _Metadata(
+              rows: [
+                if (book.genres.isNotEmpty) ('Genre', book.genres.join(', ')),
+                if (book.publisher != null) ('Publisher', book.publisher!),
+                if (_files(book).isNotEmpty) ('Files', _files(book)),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 28, 24, 32),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SectionLabel('EDITIONS'),
+                const SizedBox(height: 10),
+                for (final edition in book.editions)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: _editionPanel(
+                      context,
+                      book,
+                      edition,
+                      // The main actions above already open the only
+                      // edition of a kind.
+                      choice: switch (edition.kind) {
+                        EditionKind.audio => audio.length > 1,
+                        EditionKind.text => text.length > 1,
+                      },
+                    ),
+                  ),
+                if (matches > 0)
+                  Text(
+                    '$matches possible ${matches == 1 ? 'match' : 'matches'} · Confirmation required',
+                    style: theme.textTheme.bodySmall,
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _editionPanel(
+    BuildContext context,
+    Book book,
+    Edition edition, {
+    required bool choice,
+  }) {
+    final playback = services.playback;
+    final reader = services.reader;
+    final audio = edition.kind == EditionKind.audio;
+    return EditionPanel(
+      edition: edition,
+      downloads: services.downloads,
+      onListen: choice && audio && playback != null
+          ? () => unawaited(_listen(context, book, edition))
+          : null,
+      onRead: choice && !audio && reader != null
+          ? () => _read(context, book, edition)
+          : null,
+      onOrderFiles: () => unawaited(_orderFiles(context, edition)),
+      onSeparate: (file) => unawaited(_separate(context, file)),
+      onDownload: (action) => _download(context, edition, action),
+    );
+  }
+
+  /// The audio edition that Listen opens: the first one with listening
+  /// progress, or else the first one. [resume] says whether it has progress.
+  ({Edition? edition, bool resume}) _listening(List<Edition> audio) {
+    final playback = services.playback;
+    for (final edition in audio) {
+      if (playback?.progress(edition) != null) {
+        return (edition: edition, resume: true);
+      }
+    }
+    return (edition: audio.firstOrNull, resume: false);
+  }
+
+  /// Opens [edition] in the player, then shows the player when it opened.
+  Future<void> _listen(BuildContext context, Book book, Edition edition) async {
+    final playback = services.playback!;
+    await playback.open(book, edition);
+    if (context.mounted && playback.edition == edition) {
+      openPlayer(context, playback);
+    }
+  }
+
+  /// Opens [edition] in the reader and shows the reader screen.
+  void _read(BuildContext context, Book book, Edition edition) {
+    final reader = services.reader!;
+    unawaited(reader.open(book, edition));
+    unawaited(
+      Navigator.push<void>(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ReaderScreen(
+            reader: reader,
+            onNightChanged: services.onReaderNightChanged,
+            playback: services.playback,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _download(BuildContext context, Edition edition, DownloadAction action) {
+    final downloads = services.downloads;
+    if (downloads != null) changeDownload(context, downloads, edition, action);
+  }
+
+  /// The book of this page in the current library, or null when it left.
+  Book? get _current => catalog.libraryNotifier.value.book(bookId);
+
+  /// Asks before [file] becomes a separate book, and separates it after a
+  /// yes, while it is still a source of this book.
+  Future<void> _separate(BuildContext context, SourceFile file) async {
+    if (!await confirmAction(
+      context,
+      title: 'Separate this source?',
+      message: 'This source becomes a separate book. Its Jellyfin item will not change.',
+      action: 'Separate',
+    )) {
+      return;
+    }
+    if (_current?.editions.any(
+          (edition) => edition.memberIds.contains(file.key),
+        ) ==
+        true) {
+      await catalog.separateEdition(file.key);
+    }
+  }
+
+  Future<void> _orderFiles(BuildContext context, Edition edition) async {
+    final keys = await showGlassSheet<List<String>>(
+      context,
+      title: 'Correct file order',
+      isScrollControlled: true,
+      builder: (_) => _FileOrder(edition: edition),
+    );
+    if (keys != null &&
+        _current?.editions.any((candidate) => candidate.id == edition.id) ==
+            true) {
+      await catalog.orderFiles(edition.id, keys);
+    }
+  }
 
   Future<void> _correct(BuildContext context, Book book) async {
     final result = await showDialog<BookDetails>(
       context: context,
       builder: (_) => _BookCorrection(book: book),
     );
-    if (result != null &&
-        catalog.books.any((candidate) => candidate.id == book.id)) {
+    if (result != null && _current != null) {
       await catalog.correctBook(book.id, result);
     }
   }
@@ -336,7 +450,8 @@ class BookPage extends StatelessWidget {
       context,
       title: 'Link editions',
       isScrollControlled: true,
-      builder: (_) => _BookPicker(book: book, books: catalog.books),
+      builder: (_) =>
+          _BookPicker(book: book, library: catalog.libraryNotifier.value),
     );
     if (candidate == null || !context.mounted) return;
     if (await confirmAction(
@@ -346,12 +461,14 @@ class BookPage extends StatelessWidget {
           'Keep “${candidate.title}” by ${candidate.author.isEmpty ? 'an unknown author' : candidate.author} as the book details. Recordings and ebook editions stay separate. Jellyfin will not change.',
       action: 'Link editions',
     )) {
-      if (!catalog.books.any((candidate) => candidate.id == book.id) ||
-          !catalog.books.any((book) => book.id == candidate.id)) {
+      final library = catalog.libraryNotifier.value;
+      if (library.book(book.id) == null || library.book(candidate.id) == null) {
         return;
       }
       await catalog.linkBooks(book.id, candidate.id);
-      if (context.mounted && catalog.message == null) Navigator.pop(context);
+      if (context.mounted && catalog.statusNotifier.value.message == null) {
+        Navigator.pop(context);
+      }
     }
   }
 
@@ -472,52 +589,54 @@ class _Facts extends StatelessWidget {
   }
 }
 
-/// The main actions: listen or resume, read, and download.
-class _Actions extends StatelessWidget {
-  const _Actions({
-    required this.services,
-    required this.book,
+/// The main actions: listen or resume, read, and download. It reports each
+/// tap with its edition and causes nothing itself.
+class BookActions extends StatelessWidget {
+  const BookActions({
+    super.key,
     required this.listening,
     required this.reading,
+    required this.resume,
+    required this.downloads,
+    required this.onListen,
+    required this.onRead,
     required this.onDownload,
   });
-  final LibraryServices services;
-  final Book book;
+
+  /// The audio edition that Listen opens, or null without one.
   final Edition? listening;
+
+  /// The ebook edition that Read opens, or null without one.
   final Edition? reading;
+
+  /// Whether [listening] has listening progress, so Listen says Resume.
+  final bool resume;
+
+  /// What the round download button follows for its edition, or null
+  /// without downloads.
+  final Downloads? downloads;
+
+  /// Reports a tap on Listen or Resume. Null disables the button.
+  final ValueChanged<Edition>? onListen;
+
+  /// Reports a tap on Read. Null disables the button.
+  final ValueChanged<Edition>? onRead;
 
   /// Reports a tap on the download button: the edition and its action.
   final void Function(Edition edition, DownloadAction action) onDownload;
 
   @override
   Widget build(BuildContext context) {
-    final playback = services.playback;
-    final reader = services.reader;
-    final progress = listening == null ? null : playback?.progress(listening!);
-    final listen = listening != null && playback != null
-        ? () async {
-            await playback.open(book, listening!);
-            if (context.mounted && playback.edition == listening) {
-              openPlayer(context, playback);
-            }
-          }
-        : null;
-    final read = reading != null && reader != null
-        ? () {
-            unawaited(reader.open(book, reading!));
-            Navigator.push<void>(
-              context,
-              MaterialPageRoute(
-                builder: (_) => ReaderScreen(
-                  reader: reader,
-                  onNightChanged: services.onReaderNightChanged,
-                  playback: playback,
-                ),
-              ),
-            );
-          }
-        : null;
+    final listening = this.listening;
+    final reading = this.reading;
+    final listen = listening == null || onListen == null
+        ? null
+        : () => onListen!(listening);
+    final read = reading == null || onRead == null
+        ? null
+        : () => onRead!(reading);
     final saved = listening ?? reading;
+    final downloads = this.downloads;
     return Row(
       children: [
         if (listening != null)
@@ -525,7 +644,7 @@ class _Actions extends StatelessWidget {
             child: FilledButton.icon(
               onPressed: listen,
               icon: const Icon(Icons.play_arrow_rounded),
-              label: Text(progress == null ? 'Listen' : 'Resume'),
+              label: Text(resume ? 'Resume' : 'Listen'),
             ),
           ),
         if (reading != null) ...[
@@ -550,10 +669,10 @@ class _Actions extends StatelessWidget {
                   label: const Text('Read'),
                 ),
         ],
-        if (saved != null && services.downloads?.supported == true) ...[
+        if (saved != null && downloads != null && downloads.supported) ...[
           const SizedBox(width: 8),
           DownloadButton(
-            downloads: services.downloads!,
+            downloads: downloads,
             edition: saved,
             onAction: (action) => onDownload(saved, action),
           ),
@@ -561,6 +680,68 @@ class _Actions extends StatelessWidget {
       ],
     );
   }
+}
+
+/// How far the listening of the book is, with the way to its history.
+class _Progress extends StatelessWidget {
+  const _Progress({required this.progress, required this.onHistory});
+  final ({int elapsedMs, int totalMs}) progress;
+
+  /// Reports a tap on History. Null hides the button.
+  final VoidCallback? onHistory;
+
+  @override
+  Widget build(BuildContext context) {
+    final (:elapsedMs, :totalMs) = progress;
+    return Column(
+      children: [
+        const SizedBox(height: 14),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                totalMs - elapsedMs < 60000
+                    ? 'Finished'
+                    : '${(elapsedMs * 100 / totalMs).floor()}% · ${duration(totalMs - elapsedMs)} left',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ),
+            if (onHistory != null)
+              TextButton(
+                onPressed: onHistory,
+                style: TextButton.styleFrom(
+                  minimumSize: const Size(48, 32),
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                ),
+                child: const Text('History', style: TextStyle(fontSize: 12)),
+              ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        ProgressLine(value: elapsedMs / totalMs),
+      ],
+    );
+  }
+}
+
+/// The message that [message] reads after [listenable] notifies, or nothing
+/// without one. It rebuilds only when the message changes.
+class _StatusLine extends StatelessWidget {
+  const _StatusLine(this.listenable, this.message);
+  final Listenable listenable;
+  final String? Function() message;
+
+  @override
+  Widget build(BuildContext context) => ListenableSelector(
+    listenable: listenable,
+    select: message,
+    builder: (context, message, _) => message == null
+        ? const SizedBox.shrink()
+        : Padding(
+            padding: const EdgeInsets.only(top: 12),
+            child: StatusMessage(message),
+          ),
+  );
 }
 
 class _Description extends StatefulWidget {
@@ -664,33 +845,45 @@ class _Metadata extends StatelessWidget {
   }
 }
 
-/// One edition with its own download, listen or read action, and files.
-class _EditionPanel extends StatelessWidget {
-  const _EditionPanel({
-    required this.services,
-    required this.book,
+/// One edition with its download controls, its files, and the actions that
+/// open or correct it. It reports each tap and causes nothing itself.
+class EditionPanel extends StatelessWidget {
+  const EditionPanel({
+    super.key,
     required this.edition,
+    required this.downloads,
+    this.onListen,
+    this.onRead,
+    required this.onOrderFiles,
+    required this.onSeparate,
     required this.onDownload,
   });
-  final LibraryServices services;
-  final Book book;
   final Edition edition;
+
+  /// What the download controls follow for [edition], or null without
+  /// downloads.
+  final Downloads? downloads;
+
+  /// Reports a tap on Listen. Null shows no Listen button.
+  final VoidCallback? onListen;
+
+  /// Reports a tap on Read. Null shows no Read button.
+  final VoidCallback? onRead;
+
+  /// Reports a tap on Correct file order, shown for two or more files.
+  final VoidCallback onOrderFiles;
+
+  /// Reports a tap on Separate source under one of the files.
+  final ValueChanged<SourceFile> onSeparate;
 
   /// Reports a tap on one of the edition's download actions.
   final ValueChanged<DownloadAction> onDownload;
 
-  CatalogController get catalog => services.catalog;
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final playback = services.playback;
-    final reader = services.reader;
     final audio = edition.kind == EditionKind.audio;
     final length = audio ? _length(edition) : null;
-    // The main actions above already open the only edition of a kind.
-    final choice =
-        book.editions.where((other) => other.kind == edition.kind).length > 1;
     return BookfinPanel(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -712,45 +905,28 @@ class _EditionPanel extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           DownloadControls(
-            downloads: services.downloads,
+            downloads: downloads,
             edition: edition,
             onAction: onDownload,
           ),
           Wrap(
             spacing: 8,
             children: [
-              if (choice && audio && playback != null)
+              if (onListen != null)
                 FilledButton.tonalIcon(
-                  onPressed: () async {
-                    await playback.open(book, edition);
-                    if (context.mounted && playback.edition == edition) {
-                      openPlayer(context, playback);
-                    }
-                  },
+                  onPressed: onListen,
                   icon: const Icon(Icons.play_arrow_rounded),
                   label: const Text('Listen'),
                 ),
-              if (choice && !audio && reader != null)
+              if (onRead != null)
                 FilledButton.tonalIcon(
-                  onPressed: () {
-                    unawaited(reader.open(book, edition));
-                    Navigator.push<void>(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ReaderScreen(
-                          reader: reader,
-                          onNightChanged: services.onReaderNightChanged,
-                          playback: playback,
-                        ),
-                      ),
-                    );
-                  },
+                  onPressed: onRead,
                   icon: const Icon(Icons.menu_book_outlined),
                   label: const Text('Read'),
                 ),
               if (edition.files.length > 1)
                 TextButton(
-                  onPressed: () => _orderFiles(context, edition),
+                  onPressed: onOrderFiles,
                   child: const Text('Correct file order'),
                 ),
             ],
@@ -787,16 +963,7 @@ class _EditionPanel extends StatelessWidget {
                     trailing: Text(audioTime(chapter.startMs)),
                   ),
                 TextButton(
-                  onPressed: () async {
-                    if (await confirmAction(
-                      context,
-                      title: 'Separate this source?',
-                      message: 'This source becomes a separate book. Its Jellyfin item will not change.',
-                      action: 'Separate',
-                    )) {
-                      await catalog.separateEdition(file.key);
-                    }
-                  },
+                  onPressed: () => onSeparate(file),
                   child: const Text('Separate source'),
                 ),
               ],
@@ -804,21 +971,6 @@ class _EditionPanel extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  Future<void> _orderFiles(BuildContext context, Edition edition) async {
-    final keys = await showGlassSheet<List<String>>(
-      context,
-      title: 'Correct file order',
-      isScrollControlled: true,
-      builder: (_) => _FileOrder(edition: edition),
-    );
-    if (keys != null &&
-        catalog.books
-            .expand((book) => book.editions)
-            .any((candidate) => candidate.id == edition.id)) {
-      await catalog.orderFiles(edition.id, keys);
-    }
   }
 }
 
@@ -920,39 +1072,35 @@ class _BookCorrectionState extends State<_BookCorrection> {
 }
 
 class _BookPicker extends StatefulWidget {
-  const _BookPicker({required this.book, required this.books});
+  const _BookPicker({required this.book, required this.library});
   final Book book;
-  final List<Book> books;
+  final CatalogLibrary library;
   @override
   State<_BookPicker> createState() => _BookPickerState();
 }
 
 class _BookPickerState extends State<_BookPicker> {
   String _query = '';
+
+  /// The ids of the possible matches of the book, from the library's index.
+  late final _suggested = {
+    for (final book in widget.library.matches(widget.book)) book.id,
+  };
+
   @override
   Widget build(BuildContext context) {
-    final suggested = possibleMatches(
-      widget.book,
-      widget.books,
-    ).map((book) => book.id).toSet();
-    final books =
-        widget.books
-            .where(
-              (book) =>
-                  book.id != widget.book.id &&
-                  '${book.title} ${book.author}'.toLowerCase().contains(
-                    _query.toLowerCase(),
-                  ),
-            )
-            .toList()
-          ..sort(
-            (left, right) =>
-                suggested.contains(left.id) == suggested.contains(right.id)
-                ? left.title.compareTo(right.title)
-                : suggested.contains(left.id)
-                ? -1
-                : 1,
-          );
+    // The library's own search and order: one pass over the books, with no
+    // sort, so a keystroke costs as much as a library search.
+    final found = _query.trim().isEmpty
+        ? widget.library.books
+        : widget.library.search(_query);
+    final books = [
+      for (final suggested in [true, false])
+        for (final book in found)
+          if (book.id != widget.book.id &&
+              _suggested.contains(book.id) == suggested)
+            book,
+    ];
     return FractionallySizedBox(
       heightFactor: 0.85,
       child: Padding(
@@ -970,7 +1118,7 @@ class _BookPickerState extends State<_BookPicker> {
                 itemBuilder: (context, index) => ListTile(
                   title: Text(books[index].title),
                   subtitle: Text(
-                    '${books[index].author}${suggested.contains(books[index].id) ? ' · Possible match' : ''}',
+                    '${books[index].author}${_suggested.contains(books[index].id) ? ' · Possible match' : ''}',
                   ),
                   onTap: () => Navigator.pop(context, books[index]),
                 ),
