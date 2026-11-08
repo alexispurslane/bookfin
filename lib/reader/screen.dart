@@ -298,76 +298,45 @@ class _ReaderScreenState extends State<ReaderScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Wrap(
-                          alignment: WrapAlignment.center,
-                          spacing: 4,
-                          runSpacing: 4,
-                          children: [
-                            _button(
-                              changes: reader.documentChanges,
-                              enabled: () => reader.ready,
-                              tooltip: 'Contents',
-                              icon: Icons.list_rounded,
-                              onPressed: _openContents,
-                            ),
-                            _button(
-                              changes: reader.documentChanges,
-                              enabled: () => reader.ready,
-                              tooltip: 'Search book',
-                              icon: Icons.search_rounded,
-                              onPressed: () => unawaited(_openSearch()),
-                            ),
-                            _button(
-                              changes: documentOrSize,
-                              enabled: () =>
-                                  reader.document != null &&
-                                  reader.fontSize > 14,
-                              tooltip: 'Smaller text',
-                              icon: Icons.text_decrease_rounded,
-                              onPressed: () => unawaited(
-                                reader.setFontSize(reader.fontSize - 2),
-                              ),
-                            ),
-                            _button(
-                              changes: documentOrSize,
-                              enabled: () =>
-                                  reader.document != null &&
-                                  reader.fontSize < 40,
-                              tooltip: 'Larger text',
-                              icon: Icons.text_increase_rounded,
-                              onPressed: () => unawaited(
-                                reader.setFontSize(reader.fontSize + 2),
-                              ),
-                            ),
-                            _button(
-                              changes: Listenable.merge([
-                                reader.bookmarkChanges,
-                                reader.placeChanges,
-                              ]),
-                              enabled: () => reader.canBookmark,
-                              tooltip: 'Bookmark this place',
-                              icon: Icons.bookmark_add_outlined,
-                              onPressed: () => unawaited(reader.addBookmark()),
-                            ),
-                            _button(
-                              changes: reader.documentChanges,
-                              enabled: () => reader.document != null,
-                              tooltip: 'Reading bookmarks',
-                              icon: Icons.bookmarks_outlined,
-                              onPressed: _openBookmarks,
-                            ),
-                            IconButton(
-                              tooltip: night
-                                  ? 'Cream reading theme'
-                                  : 'Night reading theme',
-                              onPressed: () => widget.onNightChanged(!night),
-                              icon: Icon(
-                                night
-                                    ? Icons.light_mode_outlined
-                                    : Icons.dark_mode_outlined,
-                              ),
-                            ),
-                          ],
+                        // The bar rebuilds only when a control turns on
+                        // or off.
+                        ListenableSelector(
+                          listenable: Listenable.merge([
+                            documentOrSize,
+                            reader.bookmarkChanges,
+                            reader.placeChanges,
+                          ]),
+                          select: () => (
+                            ready: reader.ready,
+                            smaller:
+                                reader.document != null && reader.fontSize > 14,
+                            larger:
+                                reader.document != null && reader.fontSize < 40,
+                            bookmark: reader.canBookmark,
+                            bookmarks: reader.document != null,
+                          ),
+                          builder: (_, on, _) => ReaderControls(
+                            onContents: on.ready ? _openContents : null,
+                            onSearch: on.ready
+                                ? () => unawaited(_openSearch())
+                                : null,
+                            onSmaller: on.smaller
+                                ? () => unawaited(
+                                    reader.setFontSize(reader.fontSize - 2),
+                                  )
+                                : null,
+                            onLarger: on.larger
+                                ? () => unawaited(
+                                    reader.setFontSize(reader.fontSize + 2),
+                                  )
+                                : null,
+                            onBookmark: on.bookmark
+                                ? () => unawaited(reader.addBookmark())
+                                : null,
+                            onBookmarks: on.bookmarks ? _openBookmarks : null,
+                            night: night,
+                            onNightChanged: widget.onNightChanged,
+                          ),
                         ),
                         ListenableBuilder(
                           listenable: reader.placeChanges,
@@ -493,6 +462,73 @@ class _ReaderScreenState extends State<ReaderScreen> {
       onTap: () {
         if (mounted) setState(() => _controls = !_controls);
       },
+    );
+  }
+}
+
+/// The reader's control bar: Contents, Search book, text size, the two
+/// bookmark controls and the reading theme. A control whose callback is null
+/// shows but is off. Each tap goes to its own callback, so the owner decides
+/// what it does.
+class ReaderControls extends StatelessWidget {
+  const ReaderControls({
+    super.key,
+    required this.onContents,
+    required this.onSearch,
+    required this.onSmaller,
+    required this.onLarger,
+    required this.onBookmark,
+    required this.onBookmarks,
+    required this.night,
+    required this.onNightChanged,
+  });
+
+  /// Reports Contents, which asks for the table of contents.
+  final VoidCallback? onContents;
+
+  /// Reports Search book, which asks for the search panel.
+  final VoidCallback? onSearch;
+
+  /// Reports Smaller text.
+  final VoidCallback? onSmaller;
+
+  /// Reports Larger text.
+  final VoidCallback? onLarger;
+
+  /// Reports Bookmark this place, which asks to bookmark the shown place.
+  final VoidCallback? onBookmark;
+
+  /// Reports Reading bookmarks, which asks for the bookmarks panel.
+  final VoidCallback? onBookmarks;
+
+  /// Whether the night reading theme shows. The theme control offers the
+  /// other theme.
+  final bool night;
+
+  /// Reports the theme control with the night value that it asks for.
+  final ValueChanged<bool> onNightChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    Widget button(String tooltip, IconData icon, VoidCallback? onPressed) =>
+        IconButton(tooltip: tooltip, onPressed: onPressed, icon: Icon(icon));
+    return Wrap(
+      alignment: WrapAlignment.center,
+      spacing: 4,
+      runSpacing: 4,
+      children: [
+        button('Contents', Icons.list_rounded, onContents),
+        button('Search book', Icons.search_rounded, onSearch),
+        button('Smaller text', Icons.text_decrease_rounded, onSmaller),
+        button('Larger text', Icons.text_increase_rounded, onLarger),
+        button('Bookmark this place', Icons.bookmark_add_outlined, onBookmark),
+        button('Reading bookmarks', Icons.bookmarks_outlined, onBookmarks),
+        button(
+          night ? 'Cream reading theme' : 'Night reading theme',
+          night ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
+          () => onNightChanged(!night),
+        ),
+      ],
     );
   }
 }

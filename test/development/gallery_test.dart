@@ -1,6 +1,7 @@
 import 'package:bookfin/appearance/preferences.dart';
 import 'package:bookfin/catalog/book_cover.dart';
-import 'package:bookfin/catalog/library_view.dart' show BookRow;
+import 'package:bookfin/catalog/library_view.dart'
+    show BookRow, ShelfFilterChips;
 import 'package:bookfin/main.dart';
 import 'package:bookfin/playback/recent.dart';
 import 'package:bookfin/playback/records_screen.dart';
@@ -90,17 +91,42 @@ void main() {
     }
   });
 
-  testWidgets('the Downloaded filter leaves only the downloaded sample book', (
+  testWidgets('the production filter row filters the sample books', (
     tester,
   ) async {
     await showGallery(tester);
-    await tester.tap(find.text('Downloaded'));
-    await tester.pumpAndSettle();
-    expect(
-      find.descendant(of: screen('library'), matching: find.byType(BookRow)),
-      findsOneWidget,
+    final chips = find.descendant(
+      of: screen('library'),
+      matching: find.byType(ShelfFilterChips),
     );
-    expect(find.text('The Time Machine'), findsWidgets);
+    expect(chips, findsOneWidget);
+    expect(
+      find.descendant(of: screen('library'), matching: find.byType(ChoiceChip)),
+      findsNWidgets(
+        find
+            .descendant(of: chips, matching: find.byType(ChoiceChip))
+            .evaluate()
+            .length,
+      ),
+      reason: 'the gallery shows no filter chips of its own',
+    );
+    final rows = find.descendant(
+      of: screen('library'),
+      matching: find.byType(BookRow),
+    );
+    Future<void> choose(String filter) async {
+      await tester.tap(find.descendant(of: chips, matching: find.text(filter)));
+      await tester.pumpAndSettle();
+    }
+
+    await choose('Ebooks');
+    expect(rows, findsOneWidget);
+    expect(find.widgetWithText(BookRow, 'The Time Machine'), findsOneWidget);
+    await choose('Downloaded');
+    expect(rows, findsOneWidget);
+    expect(find.widgetWithText(BookRow, 'The Time Machine'), findsOneWidget);
+    await choose('Audio');
+    expect(rows, findsNWidgets(3));
   });
 
   testWidgets('a tap on a library book opens it in the sample player', (
@@ -179,6 +205,30 @@ void main() {
     expect(tester.widget<PlayPauseButton>(stagePlayButton()).playing, isFalse);
   });
 
+  testWidgets('a chapter in the production chapter sheet moves the sample', (
+    tester,
+  ) async {
+    await showGallery(tester);
+    await openScreen(tester, 'Player & history');
+    await tester.tap(
+      find.descendant(
+        of: screen('player'),
+        matching: find.textContaining('of 12'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final list = find.byType(ChapterList);
+    // The sample place, 1 h 27 min in, is in chapter 6.
+    expect(tester.widget<ChapterList>(list).current, 5);
+    await tester.tap(
+      find.descendant(of: list, matching: find.text('Chapter 3')),
+    );
+    await tester.pumpAndSettle();
+    expect(list, findsNothing);
+    // Each of the 12 sample chapters is a twelfth of 3 h 28 min.
+    expect(slider(tester).position, 2 * 12480000 ~/ 12);
+  });
+
   testWidgets('Go back in the production timeline restores the sample place', (
     tester,
   ) async {
@@ -231,13 +281,17 @@ void main() {
     expect(find.text('Retry saving'), findsNothing);
   });
 
-  testWidgets('resuming a production recent row opens that sample book', (
+  testWidgets('resuming a book in the production recent list opens it', (
     tester,
   ) async {
     await showGallery(tester);
     await openScreen(tester, 'Player & history');
     final row = find.widgetWithText(RecentListeningRow, 'The Poison Belt');
     await reveal(tester, 'player', row);
+    expect(
+      find.ancestor(of: row, matching: find.byType(RecentListeningList)),
+      findsOneWidget,
+    );
     expect(find.byType(RecentListeningRow), findsNWidgets(2));
     await tester.tap(row);
     await tester.pumpAndSettle();
@@ -249,13 +303,87 @@ void main() {
     );
   });
 
+  testWidgets('the reader sample uses the production control bar', (
+    tester,
+  ) async {
+    await showGallery(tester);
+    await openScreen(tester, 'Reader');
+    final bar = find.descendant(
+      of: screen('reader'),
+      matching: find.byType(ReaderControls),
+    );
+    await reveal(tester, 'reader', bar);
+    expect(bar, findsOneWidget);
+    expect(
+      find.descendant(of: screen('reader'), matching: find.byType(TextButton)),
+      findsNothing,
+      reason: 'the gallery has no reader control buttons of its own',
+    );
+  });
+
+  testWidgets(
+    'Smaller text shrinks the sample text, then turns off at its smallest',
+    (tester) async {
+      await showGallery(tester);
+      await openScreen(tester, 'Reader');
+      await reveal(tester, 'reader', find.byTooltip('Smaller text'));
+      double size() => tester
+          .widget<Text>(
+            find.textContaining(
+              'The Time Traveller (for so',
+              skipOffstage: false,
+            ),
+          )
+          .style!
+          .fontSize!;
+      bool on(String control) =>
+          tester
+              .widget<IconButton>(
+                find.byWidgetPredicate(
+                  (widget) => widget is IconButton && widget.tooltip == control,
+                ),
+              )
+              .onPressed !=
+          null;
+      final start = size();
+      await tester.tap(find.byTooltip('Smaller text'));
+      await tester.pumpAndSettle();
+      expect(size(), lessThan(start));
+      while (on('Smaller text')) {
+        await tester.tap(find.byTooltip('Smaller text'));
+        await tester.pumpAndSettle();
+      }
+      expect(on('Larger text'), isTrue);
+    },
+  );
+
+  testWidgets('the theme control turns the sample page to the night theme', (
+    tester,
+  ) async {
+    await showGallery(tester);
+    await openScreen(tester, 'Reader');
+    await reveal(tester, 'reader', find.byTooltip('Night reading theme'));
+    Brightness page() => Theme.of(
+      tester.element(
+        find.textContaining('The Time Traveller (for so', skipOffstage: false),
+      ),
+    ).brightness;
+    expect(page(), Brightness.light);
+    await tester.tap(find.byTooltip('Night reading theme'));
+    await tester.pumpAndSettle();
+    expect(page(), Brightness.dark);
+    await tester.tap(find.byTooltip('Cream reading theme'));
+    await tester.pumpAndSettle();
+    expect(page(), Brightness.light);
+  });
+
   testWidgets('a contents entry in the production panel moves the sample', (
     tester,
   ) async {
     await showGallery(tester);
     await openScreen(tester, 'Reader');
-    await reveal(tester, 'reader', find.widgetWithText(TextButton, 'Contents'));
-    await tester.tap(find.widgetWithText(TextButton, 'Contents'));
+    await reveal(tester, 'reader', find.byTooltip('Contents'));
+    await tester.tap(find.byTooltip('Contents'));
     await tester.pumpAndSettle();
     expect(find.byType(ReaderContentsPanel), findsOneWidget);
     await tester.tap(find.text('III · The Time Traveller Returns'));
@@ -269,8 +397,8 @@ void main() {
   ) async {
     await showGallery(tester);
     await openScreen(tester, 'Reader');
-    await reveal(tester, 'reader', find.widgetWithText(TextButton, 'Search'));
-    await tester.tap(find.widgetWithText(TextButton, 'Search'));
+    await reveal(tester, 'reader', find.byTooltip('Search book'));
+    await tester.tap(find.byTooltip('Search book'));
     await tester.pumpAndSettle();
     expect(find.byType(ReaderSearchPanel), findsOneWidget);
     await tester.enterText(find.byType(TextField), 'radiance');
@@ -291,14 +419,10 @@ void main() {
     (tester) async {
       await showGallery(tester);
       await openScreen(tester, 'Reader');
-      await reveal(
-        tester,
-        'reader',
-        find.widgetWithText(TextButton, 'Bookmark this place'),
-      );
-      await tester.tap(find.widgetWithText(TextButton, 'Bookmark this place'));
+      await reveal(tester, 'reader', find.byTooltip('Bookmark this place'));
+      await tester.tap(find.byTooltip('Bookmark this place'));
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(TextButton, 'Reading bookmarks'));
+      await tester.tap(find.byTooltip('Reading bookmarks'));
       await tester.pumpAndSettle();
       final panel = find.byType(ReaderBookmarksPanel);
       expect(

@@ -7,8 +7,9 @@ import 'package:flutter_epub_viewer/navigation.dart'
 
 import '../catalog/book_cover.dart';
 import '../catalog/glass.dart' show confirmAction, showGlassSheet;
-import '../catalog/library_view.dart' show BookRow;
+import '../catalog/library_view.dart' show BookRow, ShelfFilterChips;
 import '../catalog/model.dart';
+import '../catalog/shelf.dart' show ShelfFilter, bookMatches;
 import '../foundation/theme.dart';
 import '../foundation/time.dart';
 import '../playback/playback.dart';
@@ -129,37 +130,68 @@ final _chapters = [
     ),
 ];
 
-Book _sampleBook(String id, String title, String author, {String? series}) =>
-    Book(
-      id: id,
-      title: title,
-      author: author,
-      series: series,
-      editions: [
-        Edition(
-          id: '$id-audio',
-          kind: EditionKind.audio,
-          label: 'Audiobook',
-          files: [
-            SourceFile(
-              itemId: '$id-file',
-              displayName: title,
-              mediaSourceId: 'source',
-              revision: '1',
-              durationMs: _length,
-              container: 'm4b',
-              sizeBytes: null,
-            ),
-          ],
-          memberIds: ['$id-file'],
+/// The index in [_chapters] of the chapter that holds [position], in
+/// milliseconds from the start.
+int _chapterAt(int position) =>
+    _chapters.lastIndexWhere((chapter) => chapter.milliseconds <= position);
+
+/// A sample book whose first edition is its audiobook. With [ebook], it also
+/// has an EPUB edition.
+Book _sampleBook(
+  String id,
+  String title,
+  String author, {
+  String? series,
+  bool ebook = false,
+}) => Book(
+  id: id,
+  title: title,
+  author: author,
+  series: series,
+  editions: [
+    Edition(
+      id: '$id-audio',
+      kind: EditionKind.audio,
+      label: 'Audiobook',
+      files: [
+        SourceFile(
+          itemId: '$id-file',
+          displayName: title,
+          mediaSourceId: 'source',
+          revision: '1',
+          durationMs: _length,
+          container: 'm4b',
+          sizeBytes: null,
         ),
       ],
-    );
+      memberIds: ['$id-file'],
+    ),
+    if (ebook)
+      Edition(
+        id: '$id-epub',
+        kind: EditionKind.text,
+        label: 'EPUB',
+        files: [
+          SourceFile(
+            itemId: '$id-epub-file',
+            displayName: title,
+            mediaSourceId: 'source',
+            revision: '1',
+            durationMs: null,
+            container: 'epub',
+            sizeBytes: null,
+          ),
+        ],
+        memberIds: ['$id-epub-file'],
+      ),
+  ],
+);
 
 final _timeMachine = _sampleBook(
   'time-machine',
   'The Time Machine',
   'H. G. Wells',
+  ebook: true,
 );
 final _lostWorld = _sampleBook(
   'lost-world',
@@ -191,8 +223,8 @@ final _library = [
 ];
 
 AudioPosition _place(Book book, int milliseconds) => AudioPosition(
-  editionId: book.editions.single.id,
-  sourceKey: book.editions.single.files.single.key,
+  editionId: book.editions.first.id,
+  sourceKey: book.editions.first.files.single.key,
   revision: '1',
   milliseconds: milliseconds,
 );
@@ -266,23 +298,25 @@ List<TimelineEntry> _sampleTimeline(DateTime now) {
 class _SamplePlayer {
   _SamplePlayer(DateTime now)
     : timeline = ValueNotifier(_sampleTimeline(now)),
-      recent = [
+      _listened = [
         (
           book: _poisonBelt,
-          edition: _poisonBelt.editions.single,
+          edition: _poisonBelt.editions.first,
           at: now.subtract(const Duration(days: 1)),
         ),
         (
           book: _lostWorld,
-          edition: _lostWorld.editions.single,
+          edition: _lostWorld.editions.first,
           at: now.subtract(const Duration(days: 3)),
         ),
         (
           book: _timeMachine,
-          edition: _timeMachine.editions.single,
+          edition: _timeMachine.editions.first,
           at: now.subtract(const Duration(days: 5)),
         ),
-      ];
+      ] {
+    recent = ValueNotifier(_recentNow());
+  }
 
   final book = ValueNotifier(_timeMachine);
 
@@ -303,14 +337,17 @@ class _SamplePlayer {
   final replacement = ValueNotifier<AudioReplacement?>(
     AudioReplacement(
       _timeMachine,
-      _timeMachine.editions.single,
+      _timeMachine.editions.first,
       _place(_timeMachine, 5234000),
     ),
   );
 
-  /// Every sample book, newest listening first. A list of recent books
-  /// leaves out the open book.
-  final List<RecentListening> recent;
+  /// Every sample book, newest listening first.
+  final List<RecentListening> _listened;
+
+  /// Every sample book, newest listening first, each with its saved place.
+  /// A list of recent books leaves out the open book.
+  late final ValueNotifier<List<RecentProgress>> recent;
 
   /// The saved place of each sample book that is not open, by book id.
   final _places = {_lostWorld.id: 0, _poisonBelt.id: 1800000};
@@ -318,15 +355,23 @@ class _SamplePlayer {
   late final share = _SampleShare(position);
 
   /// The saved place of [other], in milliseconds.
-  int placeOf(Book other) =>
+  int _placeOf(Book other) =>
       other.id == book.value.id ? position.value : _places[other.id] ?? 0;
 
   /// The bookmarks of the open book, where the position slider marks them.
   List<EditionBookmark> get bookmarks => [
     for (final entry in timeline.value)
       if (entry case BookmarkEntry(:final bookmark)
-          when bookmark.position.editionId == book.value.editions.single.id)
+          when bookmark.position.editionId == book.value.editions.first.id)
         (bookmark: bookmark, at: bookmark.position.milliseconds),
+  ];
+
+  List<RecentProgress> _recentNow() => [
+    for (final entry in _listened)
+      (
+        entry: entry,
+        progress: (elapsedMs: _placeOf(entry.book), totalMs: _length),
+      ),
   ];
 
   /// Opens [next] at its saved place. The open book keeps its place.
@@ -336,6 +381,7 @@ class _SamplePlayer {
     book.value = next;
     position.value = _places.remove(next.id) ?? 0;
     previous.value = null;
+    recent.value = _recentNow();
   }
 
   /// Moves to [milliseconds] in the open book, and offers Undo.
@@ -349,7 +395,7 @@ class _SamplePlayer {
     open(
       _library
           .map((entry) => entry.book)
-          .firstWhere((book) => book.editions.single.id == place.editionId),
+          .firstWhere((book) => book.editions.first.id == place.editionId),
     );
     move(place.milliseconds);
   }
@@ -404,6 +450,7 @@ class _SamplePlayer {
       timeline,
       status,
       replacement,
+      recent,
     ]) {
       notifier.dispose();
     }
@@ -472,7 +519,7 @@ class _LibraryFixture extends StatefulWidget {
 }
 
 class _LibraryFixtureState extends State<_LibraryFixture> {
-  bool _downloaded = false;
+  ShelfFilter _filter = ShelfFilter.all;
 
   @override
   Widget build(BuildContext context) => ListView(
@@ -484,21 +531,9 @@ class _LibraryFixtureState extends State<_LibraryFixture> {
         style: Theme.of(context).textTheme.displaySmall,
       ),
       const SizedBox(height: 20),
-      // TODO(t3-rlq6): show the library's own filter row here once it is a
-      // leaf widget. Until then these chips stand in for it.
-      Wrap(
-        spacing: 8,
-        children: [
-          for (final (local, label) in [
-            (false, 'All books'),
-            (true, 'Downloaded'),
-          ])
-            ChoiceChip(
-              label: Text(label),
-              selected: _downloaded == local,
-              onSelected: (_) => setState(() => _downloaded = local),
-            ),
-        ],
+      ShelfFilterChips(
+        selected: _filter,
+        onChanged: (filter) => setState(() => _filter = filter),
       ),
       const SizedBox(height: 8),
       AnimatedSize(
@@ -510,7 +545,7 @@ class _LibraryFixtureState extends State<_LibraryFixture> {
         child: Column(
           children: [
             for (final (:book, :detail, :downloaded) in _library)
-              if (downloaded || !_downloaded)
+              if (bookMatches(book, _filter, (_) => downloaded))
                 BookRow(
                   cover: BookCover.book(
                     book,
@@ -548,6 +583,18 @@ class _PlayerFixture extends StatelessWidget {
     )) {
       sample.delete(entry);
     }
+  }
+
+  /// Shows the sample chapters. A chosen chapter moves the sample there.
+  Future<void> _chooseChapter(BuildContext context) {
+    final position = sample.position.value;
+    return showChapters(
+      context,
+      chapters: _chapters,
+      current: _chapterAt(position),
+      position: position,
+      onChapter: (chapter) => sample.move(chapter.milliseconds),
+    );
   }
 
   Future<void> _rename(BuildContext context, AudioBookmark bookmark) async {
@@ -592,14 +639,17 @@ class _PlayerFixture extends StatelessWidget {
         ValueListenableBuilder(
           valueListenable: sample.position,
           builder: (context, position, _) {
-            final chapter = _chapters.lastIndexWhere(
-              (chapter) => chapter.milliseconds <= position,
-            );
-            return Text(
-              '${_chapters[chapter].name} · ${chapter + 1} of ${_chapters.length}',
-              textAlign: TextAlign.center,
-              style: theme.textTheme.labelLarge?.copyWith(
-                color: theme.colorScheme.primary,
+            final chapter = _chapterAt(position);
+            return Center(
+              child: TextButton(
+                onPressed: () => unawaited(_chooseChapter(context)),
+                child: Text(
+                  '${_chapters[chapter].name} · ${chapter + 1} of ${_chapters.length}',
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
               ),
             );
           },
@@ -631,9 +681,7 @@ class _PlayerFixture extends StatelessWidget {
               position: position,
               total: _length,
               chapters: _chapters,
-              chapterIndex: _chapters.lastIndexWhere(
-                (chapter) => chapter.milliseconds <= position,
-              ),
+              chapterIndex: _chapterAt(position),
               bookmarks: sample.bookmarks,
               onSeekStart: () {},
               onSeekEnd: (milliseconds) async => sample.move(milliseconds),
@@ -671,29 +719,13 @@ class _PlayerFixture extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 18),
-        // TODO(t3-da6r): show RecentListeningList here once it takes values
-        // instead of Playback.
-        const SectionLabel('RECENTLY LISTENED'),
         ValueListenableBuilder(
           valueListenable: sample.book,
-          builder: (context, open, _) {
-            final now = DateTime.now();
-            return Column(
-              children: [
-                for (final entry in sample.recent)
-                  if (entry.book.id != open.id)
-                    RecentListeningRow(
-                      entry: entry,
-                      progress: (
-                        elapsedMs: sample.placeOf(entry.book),
-                        totalMs: _length,
-                      ),
-                      now: now,
-                      onResume: (entry) => onOpen(entry.book),
-                    ),
-              ],
-            );
-          },
+          builder: (context, open, _) => RecentListeningList(
+            recent: sample.recent,
+            open: open,
+            onResume: (entry) => onOpen(entry.book),
+          ),
         ),
       ],
     );
@@ -726,6 +758,10 @@ class _ReaderFixture extends StatefulWidget {
 
 class _ReaderFixtureState extends State<_ReaderFixture> {
   double _fontSize = 19;
+
+  /// Whether the sample page shows the night reading theme, or null while it
+  /// follows the app's theme.
+  bool? _night;
 
   /// The index in [_readerChapters] of the shown chapter.
   int _chapter = 0;
@@ -879,6 +915,23 @@ class _ReaderFixtureState extends State<_ReaderFixture> {
 
   @override
   Widget build(BuildContext context) {
+    final app = Theme.of(context);
+    final night = _night ?? app.brightness == Brightness.dark;
+    final theme = night == (app.brightness == Brightness.dark)
+        ? app
+        : bookfinTheme(night ? Brightness.dark : Brightness.light);
+    return Theme(
+      data: theme,
+      child: Builder(
+        builder: (context) => Material(
+          color: theme.colorScheme.surface,
+          child: _page(context, night),
+        ),
+      ),
+    );
+  }
+
+  Widget _page(BuildContext context, bool night) {
     final (number, title, _) = _readerChapters[_chapter];
     final text = TextStyle(
       fontFamily: 'Source Serif 4',
@@ -905,44 +958,25 @@ class _ReaderFixtureState extends State<_ReaderFixture> {
           const SizedBox(height: 20),
         ],
         const SizedBox(height: 8),
-        // TODO(t3-pk3x): show the reader's own control bar here
-        // once it is a leaf widget. Until then these buttons stand in for it.
-        Wrap(
-          alignment: WrapAlignment.center,
-          spacing: 4,
-          children: [
-            TextButton(onPressed: _openContents, child: const Text('Contents')),
-            TextButton(
-              onPressed: () => unawaited(_openSearch()),
-              child: const Text('Search'),
-            ),
-            TextButton(
-              onPressed: _fontSize > 15
-                  ? () => setState(() => _fontSize -= 2)
-                  : null,
-              child: const Text('A−'),
-            ),
-            TextButton(
-              onPressed: _fontSize < 29
-                  ? () => setState(() => _fontSize += 2)
-                  : null,
-              child: const Text('A+'),
-            ),
-            TextButton(
-              onPressed: _addBookmark,
-              child: const Text('Bookmark this place'),
-            ),
-            TextButton(
-              onPressed: _openBookmarks,
-              child: const Text('Reading bookmarks'),
-            ),
-          ],
+        ReaderControls(
+          onContents: _openContents,
+          onSearch: () => unawaited(_openSearch()),
+          onSmaller: _fontSize > 15
+              ? () => setState(() => _fontSize -= 2)
+              : null,
+          onLarger: _fontSize < 29
+              ? () => setState(() => _fontSize += 2)
+              : null,
+          onBookmark: _addBookmark,
+          onBookmarks: _openBookmarks,
+          night: night,
+          onNightChanged: (night) => setState(() => _night = night),
         ),
         const SizedBox(height: 24),
         ProgressLine(value: (_chapter + 1) / 12),
         const SizedBox(height: 12),
         Text(
-          'Sample chapters · no ebook file is open\nText size and scroll stay in this gallery session.',
+          'Sample chapters · no ebook file is open\nText size, theme and scroll stay in this gallery session.',
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.bodySmall,
         ),

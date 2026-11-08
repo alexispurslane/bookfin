@@ -1,6 +1,6 @@
 ---
 id: t3-xi4e
-status: open
+status: in_progress
 deps: []
 links: []
 created: 2026-11-08T00:15:11Z

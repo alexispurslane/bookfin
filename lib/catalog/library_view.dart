@@ -72,27 +72,10 @@ class _LibraryShelfState extends State<LibraryShelf> {
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
           SliverToBoxAdapter(
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
+            child: ShelfFilterChips(
+              selected: _filter,
+              onChanged: (filter) => setState(() => _filter = filter),
               padding: const EdgeInsets.fromLTRB(18, 4, 18, 14),
-              child: Row(
-                children: [
-                  for (final (filter, label) in [
-                    (ShelfFilter.all, 'All'),
-                    (ShelfFilter.audio, 'Audio'),
-                    (ShelfFilter.ebooks, 'Ebooks'),
-                    (ShelfFilter.downloaded, 'Downloaded'),
-                  ])
-                    Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: ChoiceChip(
-                        label: Text(label),
-                        selected: _filter == filter,
-                        onSelected: (_) => setState(() => _filter = filter),
-                      ),
-                    ),
-                ],
-              ),
             ),
           ),
           if (items.isEmpty)
@@ -126,6 +109,52 @@ class _LibraryShelfState extends State<LibraryShelf> {
       ),
     );
   }
+}
+
+/// The row of shelf filters, which scrolls sideways when it does not fit. It
+/// marks [selected], and reports a tap through [onChanged]. Its owner keeps
+/// the choice.
+class ShelfFilterChips extends StatelessWidget {
+  const ShelfFilterChips({
+    super.key,
+    required this.selected,
+    required this.onChanged,
+    this.padding = EdgeInsets.zero,
+  });
+
+  /// The filter that the person chose. While Jellyfin cannot be reached, the
+  /// shelf shows downloaded books, but this stays the chosen filter.
+  final ShelfFilter selected;
+
+  /// Reports the filter of a tapped chip.
+  final ValueChanged<ShelfFilter> onChanged;
+
+  /// The space around the row, inside its sideways scroll.
+  final EdgeInsetsGeometry padding;
+
+  @override
+  Widget build(BuildContext context) => SingleChildScrollView(
+    scrollDirection: Axis.horizontal,
+    padding: padding,
+    child: Row(
+      children: [
+        for (final (filter, label) in [
+          (ShelfFilter.all, 'All'),
+          (ShelfFilter.audio, 'Audio'),
+          (ShelfFilter.ebooks, 'Ebooks'),
+          (ShelfFilter.downloaded, 'Downloaded'),
+        ])
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: ChoiceChip(
+              label: Text(label),
+              selected: selected == filter,
+              onSelected: (_) => onChanged(filter),
+            ),
+          ),
+      ],
+    ),
+  );
 }
 
 /// Library entries as a grid or a list, in the saved layout. A sliver. A tap

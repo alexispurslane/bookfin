@@ -736,4 +736,47 @@ void main() {
       },
     );
   });
+
+  group('the shelf filter chips', () {
+    /// Shows the filter chips with [selected] chosen, and returns the
+    /// filters that they report.
+    Future<List<ShelfFilter>> showChips(
+      WidgetTester tester,
+      ShelfFilter selected,
+    ) async {
+      final reported = <ShelfFilter>[];
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: bookfinTheme(Brightness.light),
+          home: Scaffold(
+            body: ShelfFilterChips(selected: selected, onChanged: reported.add),
+          ),
+        ),
+      );
+      return reported;
+    }
+
+    bool marked(WidgetTester tester, String label) => tester
+        .widget<ChoiceChip>(find.widgetWithText(ChoiceChip, label))
+        .selected;
+
+    testWidgets('mark the chosen filter and no other', (tester) async {
+      await showChips(tester, ShelfFilter.ebooks);
+      expect(marked(tester, 'Ebooks'), isTrue);
+      for (final label in ['All', 'Audio', 'Downloaded']) {
+        expect(marked(tester, label), isFalse, reason: label);
+      }
+    });
+
+    testWidgets('report a tapped filter and leave the choice to their owner', (
+      tester,
+    ) async {
+      final reported = await showChips(tester, ShelfFilter.all);
+      await tester.tap(find.text('Audio'));
+      await tester.pumpAndSettle();
+      expect(reported, [ShelfFilter.audio]);
+      expect(marked(tester, 'All'), isTrue);
+      expect(marked(tester, 'Audio'), isFalse);
+    });
+  });
 }
