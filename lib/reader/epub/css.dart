@@ -51,7 +51,7 @@ enum Align { start, end, left, right, center, justify }
 
 enum WhiteSpace { normal, pre, preWrap, preLine, nowrap }
 
-enum VerticalAlign { baseline, superscript, subscript }
+enum VerticalAlign { baseline, superscript, subscript, top, middle, bottom }
 
 enum Transform { none, upper, lower, capitalize }
 
@@ -63,8 +63,23 @@ class Style {
   factory Style.initial() => Style._();
 
   Display display = Display.inline;
+
+  /// Whether the box is a flex or grid container. Each of its children then
+  /// lays out as a block, as a flex or grid item is blockified.
+  bool flexOrGrid = false;
   bool floated = false;
   String position = 'static';
+
+  /// The `left` and `top` offsets of a positioned box.
+  Length left = const Length.auto();
+  Length top = const Length.auto();
+
+  /// Whether the box is placed absolutely or fixed and moved off the page
+  /// by a negative left or top offset. Books move text that only screen
+  /// readers need that way.
+  bool get movedOffPage =>
+      (position == 'absolute' || position == 'fixed') &&
+      (left.value < 0 || top.value < 0);
   List<Length> margin = const [
     Length.px(0),
     Length.px(0),
@@ -1200,7 +1215,16 @@ class Cascade {
     for (final MapEntry(key: property, value: winner) in winners.entries) {
       _apply(style, parent, property, winner.$4.trim(), rootFontSize);
     }
-    if (style.floated && style.display == Display.inline) {
+    // A float and a positioned box are blocks. So is a flex or grid item.
+    if ((style.floated ||
+            style.position == 'absolute' ||
+            style.position == 'fixed') &&
+        style.display == Display.inline) {
+      style.display = Display.block;
+    }
+    if (parent.flexOrGrid &&
+        (style.display == Display.inline ||
+            style.display == Display.inlineBlock)) {
       style.display = Display.block;
     }
     return style;
@@ -1438,14 +1462,28 @@ void _apply(
         'inline-block' ||
         'inline-table' ||
         'inline-flex' => Display.inlineBlock,
-        // The renderer lays out tables, flex and grid boxes as plain blocks.
-        // The support check reports them.
+        // The renderer lays out flex and grid boxes as plain blocks, and
+        // prepare finds tables by their elements.
         _ => Display.block,
       };
+      style.flexOrGrid = const {
+        'flex',
+        'inline-flex',
+        'grid',
+        'inline-grid',
+      }.contains(lower);
     case 'float':
       style.floated = lower == 'left' || lower == 'right';
     case 'position':
       style.position = lower;
+    case 'left' || 'top':
+      final parsed = length();
+      if (parsed == null || parsed.isNone) return;
+      if (property == 'left') {
+        style.left = parsed;
+      } else {
+        style.top = parsed;
+      }
     case 'margin-top' || 'margin-right' || 'margin-bottom' || 'margin-left':
       final parsed = length();
       if (parsed != null && !parsed.isNone) {
@@ -1603,6 +1641,9 @@ void _apply(
       style.verticalAlign = switch (lower) {
         'super' => VerticalAlign.superscript,
         'sub' => VerticalAlign.subscript,
+        'top' || 'text-top' => VerticalAlign.top,
+        'middle' => VerticalAlign.middle,
+        'bottom' || 'text-bottom' => VerticalAlign.bottom,
         _ => VerticalAlign.baseline,
       };
   }
@@ -1634,6 +1675,8 @@ const _longhands = [
   'display',
   'float',
   'position',
+  'left',
+  'top',
   'width',
   'max-width',
   'height',
@@ -1700,10 +1743,15 @@ void _copyFrom(Style style, Style source, String property) {
         ..[border] = source.borderVisible[border];
     case 'display':
       style.display = source.display;
+      style.flexOrGrid = source.flexOrGrid;
     case 'float':
       style.floated = source.floated;
     case 'position':
       style.position = source.position;
+    case 'left':
+      style.left = source.left;
+    case 'top':
+      style.top = source.top;
     case 'width':
       style.width = source.width;
     case 'max-width':

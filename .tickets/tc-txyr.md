@@ -1,6 +1,6 @@
 ---
 id: tc-txyr
-status: open
+status: in_progress
 deps: [tc-nang, tc-nh0b]
 links: []
 created: 2026-11-08T19:23:13Z
@@ -35,3 +35,9 @@ docs/plans/native-epub-reader.md (epic boo-b2ey). Read the sections named in the
 - Pages break only between rows. E3's property (a run from any true page start cuts the same pages) holds with tables.
 - A flex row and a grid show their children as blocks in order, with no text lost.
 
+
+## Notes
+
+**2026-11-08T20:49:55Z**
+
+Interfaces as built. prepare: TableItem(rows, width) and TableCell(flow, colspan, padding, border, align). The table's own box is a BlockStart before the TableItem and a BlockEnd after it; without a set width it is shrink-to-fit to the grid's widest content. A cell's flow is its content only; the table draws the cell's box as tall as its row. BoxPlacement no longer stores x and width: place(x, width, [fit]) and available(width) take the containing block, and layout places every block in the content box of the block that holds it (the page for the main run, the column for a cell). ImageItem now carries sizing, marginLeft and centered, and layout sizes and places it the same way. table.dart: columnWidths, gridMaxContent, cellBoxes and cellSpacing (2 px, Chromium's default border-spacing). layout: Slice.rowPieces holds the paragraphs of a row slice; LaidPage.pieces yields them; PageStart(item, row) starts a page at a row; a cell lays out in a private LayoutRun._cell. css: Style.left, Style.top, Style.movedOffPage, Style.flexOrGrid; flex and grid items, floats and positioned boxes are blocks; VerticalAlign gains top, middle and bottom for cells. Beyond the ticket: cells follow vertical-align (top, middle by default, bottom), because Moby-Dick chapter 101 asks for top. Limits: percentages in cells resolve against the table's width; thead and tfoot stay in document order; children of a table other than captions and rows are left out. New tickets: te-4cez (a row taller than a page loses the text past the page edge), te-orei (border-collapse and border-spacing).

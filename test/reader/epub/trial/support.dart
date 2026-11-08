@@ -124,7 +124,7 @@ List<_Finding> _classify(List<Declaration> declarations, String? pseudo) {
     found.add(
       offset.startsWith('-')
           ? const _Finding('text moved off the page is left out')
-          : const _Finding('absolute or fixed position', unsupported: true),
+          : const _Finding('an absolute or fixed box drawn as a block'),
     );
   } else if (position == 'relative') {
     found.add(const _Finding('relative position offsets'));
@@ -143,10 +143,10 @@ List<_Finding> _classify(List<Declaration> declarations, String? pseudo) {
     found.add(
       values['flex-direction'] == 'column'
           ? const _Finding('a flex column drawn as blocks')
-          : const _Finding('flex layout', unsupported: true),
+          : const _Finding('a flex row drawn as blocks'),
     );
   } else if (display == 'grid' || display == 'inline-grid') {
-    found.add(const _Finding('grid layout', unsupported: true));
+    found.add(const _Finding('a grid drawn as blocks'));
   } else if (display != null && display.startsWith('table')) {
     found.add(const _Finding('display: table on a non-table drawn as a block'));
   } else if (display == 'inline-block') {
@@ -184,8 +184,8 @@ List<_Finding> _classify(List<Declaration> declarations, String? pseudo) {
 List<_Finding> _checkElement(DomElement element) {
   final found = <_Finding>[];
   switch (element.name) {
-    case 'table' when element.elements.any(_isRowGroup):
-      found.add(const _Finding('tables', unsupported: true));
+    case 'td' || 'th' when (element.attributes['rowspan'] ?? '1') != '1':
+      found.add(const _Finding('rowspan counted as 1'));
     case 'svg':
       found.add(const _Finding('inline SVG', unsupported: true));
     case 'math':
@@ -203,6 +203,3 @@ List<_Finding> _checkElement(DomElement element) {
   }
   return found;
 }
-
-bool _isRowGroup(DomElement element) =>
-    const {'tr', 'thead', 'tbody', 'tfoot'}.contains(element.name);
