@@ -13,12 +13,42 @@ import '../playback/playback_test.dart' show account;
 // These tests run in fake time, so the coordinator reads the fake clock. Each
 // test disposes the coordinator, because a live timer fails a widget test.
 void main() {
+  /// Signs in and lets the sync that signing in starts finish, then counts
+  /// from zero.
   Future<(RecordSync, CountingRecords)> signIn(WidgetTester tester) async {
     final records = CountingRecords();
     final sync = RecordSync(records: records, now: tester.binding.clock.now)
       ..bind(account());
+    await tester.pump();
+    records.runs = 0;
     return (sync, records);
   }
+
+  testWidgets('signing in syncs records at once', (tester) async {
+    final records = CountingRecords();
+    final sync = RecordSync(records: records, now: tester.binding.clock.now)
+      ..bind(account());
+    await tester.pump();
+    expect(records.runs, 1);
+    await tester.pump(const Duration(seconds: 30));
+    expect(records.runs, 2);
+    sync.dispose();
+  });
+
+  testWidgets(
+    'signing in while the app is in the background syncs as soon as it returns',
+    (tester) async {
+      final (sync, records) = await signIn(tester);
+      sync.suspend();
+      sync.bind(account(user: 'bob'));
+      await tester.pump(const Duration(seconds: 5));
+      expect(records.runs, 0);
+      sync.resume();
+      await tester.pump();
+      expect(records.runs, 1);
+      sync.dispose();
+    },
+  );
 
   testWidgets('records sync every 30 seconds while the app is in front', (
     tester,
@@ -162,10 +192,13 @@ class CountingRecords implements LocalResumeStore {
   int runs = 0;
 
   @override
-  Future<void> synchronize(
+  Future<SyncReport> synchronize(
     JellyfinSession session,
     JellyfinClient client,
-  ) async => runs++;
+  ) async {
+    runs++;
+    return (stale: (listening: false, reading: false), replaced: 0);
+  }
 
   @override
   Future<Map<String, List<Map<String, dynamic>>>> conflicts(

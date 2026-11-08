@@ -6,6 +6,7 @@ import '../catalog/jellyfin.dart';
 import '../playback/playback.dart';
 import '../playback/store.dart';
 import '../reader/session.dart';
+import 'journal.dart' show DeepCollectionEquality;
 
 /// What the Sync page shows about an action that the user started: Sync now
 /// or a choice between saved versions.
@@ -13,8 +14,9 @@ import '../reader/session.dart';
 /// - [message]: the result of the latest such action, or null.
 typedef RecordSyncStatus = ({bool busy, String? message});
 
-/// How the latest sync ended: when it finished, and whether it failed.
-typedef RecordSyncOutcome = ({DateTime at, bool failed});
+/// How the latest sync ended: when it finished, whether it failed, and how
+/// many damaged records on this phone it [replaced] by the server's copy.
+typedef RecordSyncOutcome = ({DateTime at, bool failed, int replaced});
 
 /// The records with saved versions to choose between: each record address
 /// with its saved versions.
@@ -25,13 +27,17 @@ typedef _Result = ({bool failed, String message});
 
 /// Synchronizes personal records with Jellyfin for the signed-in account.
 ///
-/// While the app is in front, a periodic sync runs every [_period]. While it
-/// is in the background ([suspend]), no periodic sync runs. On [resume], a
-/// sync that came due in the background runs at once, and the period restarts.
+/// It alone decides when a background sync runs. Signing in ([bind]) makes
+/// a sync due at once. While the app is in front, a periodic sync runs every
+/// [_period]. While it is in the background ([suspend]), no sync runs. On
+/// [resume], a sync that came due in the background runs at once, and the
+/// period restarts.
 ///
 /// A background sync is one that the app starts: [synchronize], from the
 /// period, from [resume] and after sign-in. It shows no busy state and no
-/// message. The user starts [syncNow] and [resolve], which show busy and then
+/// message. After a sync, Playback and the reader refresh only when the
+/// store reports that records of their domain changed outside them, and the
+/// conflicts notify only when they differ. The user starts [syncNow] and [resolve], which show busy and then
 /// their result in [statusNotifier]. Every sync sets [lastSyncNotifier] and
 /// [conflictsNotifier].
 ///
@@ -58,7 +64,8 @@ class RecordSync {
   JellyfinSession? _session;
   JellyfinClient? _client;
   Timer? _timer;
-  // When the current period began: at sign-in or at the latest sync start.
+  // When the latest sync of this account started, or null before the first,
+  // which is due at once.
   DateTime? _periodStart;
   bool _suspended = false;
   int _generation = 0;
@@ -99,12 +106,13 @@ class RecordSync {
     _client = session == null
         ? null
         : JellyfinClient(session.scope.server, deviceId: 'bookfin-record-sync');
-    _periodStart = session == null ? null : now();
+    _periodStart = null;
     _schedule();
     if (_disposed) return;
     _status.value = _idle;
     _lastSync.value = null;
     _conflicts.value = const {};
+    if (!_suspended) unawaited(synchronize());
   }
 
   /// Stops the periodic sync while the app is in the background.
@@ -119,7 +127,8 @@ class RecordSync {
     if (!_suspended) return;
     _suspended = false;
     final start = _periodStart;
-    if (start != null && now().difference(start) >= _period) {
+    if (_session != null &&
+        (start == null || now().difference(start) >= _period)) {
       unawaited(synchronize());
     }
     _schedule();
@@ -133,9 +142,11 @@ class RecordSync {
   }
 
   /// A background sync. It replaces the result of an earlier action of the
-  /// user, because the outcome of this sync is newer.
+  /// user, because the outcome of this sync is newer. While another sync or
+  /// choice runs, it starts nothing and completes when that one ends.
   Future<void> synchronize() async {
-    if (_disposed || _session == null || _running != null) return;
+    if (_running case final running?) return running;
+    if (_disposed || _session == null) return;
     final generation = _generation;
     final result = await _exclusive(_sync);
     if (result != null && _current(generation) && !busy) {
@@ -166,7 +177,7 @@ class RecordSync {
       if (accepted) return await _sync();
       final conflicts = await records.conflicts(session.scope.key);
       if (!_current(generation)) return null;
-      _conflicts.value = Map.unmodifiable(conflicts);
+      _publish(conflicts);
       return (
         failed: true,
         message: 'This saved choice changed before it was selected. Review the current saved versions and choose again.',
@@ -224,16 +235,17 @@ class RecordSync {
     try {
       await playback?.flush();
       await reader?.flush();
-      await records.synchronize(session, client);
+      final (:stale, :replaced) = await records.synchronize(session, client);
       if (!_current(generation)) return null;
-      await playback?.refreshPersonalRecords();
-      await reader?.refreshPersonalRecords();
+      if (stale.listening) await playback?.refreshPersonalRecords();
+      if (stale.reading) await reader?.refreshPersonalRecords();
       if (!_current(generation)) return null;
       final conflicts = await records.conflicts(session.scope.key);
       if (!_current(generation)) return null;
-      _conflicts.value = Map.unmodifiable(conflicts);
+      _publish(conflicts);
       return _ended(
         failed: false,
+        replaced: replaced,
         message: conflicts.isEmpty ? 'Personal records are synced.' : 'Choose between saved places or edits. Both versions are kept until you choose.',
       );
     } on Exception {
@@ -241,7 +253,7 @@ class RecordSync {
       try {
         final conflicts = await records.conflicts(session.scope.key);
         if (!_current(generation)) return null;
-        _conflicts.value = Map.unmodifiable(conflicts);
+        _publish(conflicts);
       } on Exception {
         if (!_current(generation)) return null;
         return _ended(
@@ -256,8 +268,19 @@ class RecordSync {
     }
   }
 
-  _Result _ended({required bool failed, required String message}) {
-    _lastSync.value = (at: now(), failed: failed);
+  /// Shows [conflicts], unless they equal the ones shown.
+  void _publish(RecordConflicts conflicts) {
+    if (!const DeepCollectionEquality().equals(_conflicts.value, conflicts)) {
+      _conflicts.value = Map.unmodifiable(conflicts);
+    }
+  }
+
+  _Result _ended({
+    required bool failed,
+    required String message,
+    int replaced = 0,
+  }) {
+    _lastSync.value = (at: now(), failed: failed, replaced: replaced);
     return (failed: failed, message: message);
   }
 

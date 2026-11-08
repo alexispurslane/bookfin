@@ -341,7 +341,7 @@ void main() {
     await restarted.checkInvariants();
   });
 
-  test('an altered duplicate cannot replace immutable data or advance the discovery cursor', () async {
+  test('an altered server copy replaces the saved action, keeps the saved copy aside, and advances the discovery cursor', () async {
     final disk = await storage();
     final fixture = await SyncFixture.open();
     addTearDown(fixture.close);
@@ -369,18 +369,19 @@ void main() {
       'Payload': jsonEncode(changed),
       'Deleted': false,
     };
-    await expectLater(
-      store.synchronize(fixture.session, fixture.client),
-      throwsFormatException,
+    // The server's copy wins (ta-tso8): an action never changes, and the
+    // server holds the copy uploaded before any damage on this phone.
+    final report = await store.synchronize(fixture.session, fixture.client);
+    expect(report.replaced, 1);
+    final replaced = jsonDecode((await disk.records.read(account))!) as Map;
+    expect(replaced['sync']['actions'], [changed]);
+    expect(replaced['sync']['cursor'], 2);
+    final kept = await disk.sql.query('set_aside_record_actions');
+    expect(
+      kept.map((row) => jsonDecode(row['payload'] as String)),
+      contains(equals(action)),
     );
-    expect(jsonDecode((await disk.records.read(account))!), original);
-    fixture.objects[RecordJournal.identity(action)]!['Payload'] = jsonEncode(
-      action,
-    );
-    await store.synchronize(fixture.session, fixture.client);
-    final retried = jsonDecode((await disk.records.read(account))!) as Map;
-    expect(retried['sync']['actions'], [action]);
-    expect(retried['sync']['cursor'], 2);
+    expect(original['sync']['actions'], [action]);
   });
 
   test('a legacy account with a damaged superseded value is kept aside when it moves into the record tables', () async {

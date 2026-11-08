@@ -16,10 +16,13 @@ void main() {
   late DateTime clock;
   late List<RecordSyncStatus> shown;
 
-  setUp(() {
+  setUp(() async {
     records = ControlledRecords();
     clock = DateTime(2026, 11, 7, 16, 29);
     sync = RecordSync(records: records, now: () => clock)..bind(account());
+    // Signing in syncs at once. These tests start after that sync.
+    await pumpEventQueue();
+    records.runs = 0;
     shown = [];
     sync.statusNotifier.addListener(() => shown.add(sync.statusNotifier.value));
   });
@@ -46,8 +49,22 @@ void main() {
     expect(sync.lastSyncNotifier.value, (
       at: DateTime(2026, 11, 7, 16, 30),
       failed: false,
+      replaced: 0,
     ));
   });
+
+  test(
+    'a background sync records how many damaged records took the server copy',
+    () async {
+      records.replaced = 2;
+      await sync.synchronize();
+      expect(sync.lastSyncNotifier.value?.replaced, 2);
+      expect(shown, isEmpty);
+      records.replaced = 0;
+      await sync.synchronize();
+      expect(sync.lastSyncNotifier.value?.replaced, 0);
+    },
+  );
 
   test(
     'a failed background sync is recorded as failed and shows no message',
@@ -177,17 +194,19 @@ class ControlledRecords implements LocalResumeStore {
   int runs = 0;
   Completer<void>? gate;
   bool failure = false;
+  int replaced = 0;
   Map<String, List<Map<String, dynamic>>> found = {};
   final resolved = <String>[];
 
   @override
-  Future<void> synchronize(
+  Future<SyncReport> synchronize(
     JellyfinSession session,
     JellyfinClient client,
   ) async {
     runs++;
     await gate?.future;
     if (failure) throw Exception('Jellyfin cannot be reached.');
+    return (stale: (listening: false, reading: false), replaced: replaced);
   }
 
   @override

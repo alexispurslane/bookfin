@@ -220,9 +220,11 @@ void main() {
   group('with a controlled sync', () {
     late ControlledRecords records;
     late RecordSync controlled;
-    setUp(() {
+    setUp(() async {
       records = ControlledRecords();
       controlled = RecordSync(records: records)..bind(account());
+      // Signing in syncs at once. These tests start after that sync.
+      await pumpEventQueue();
     });
     tearDown(() => controlled.dispose());
 
@@ -264,6 +266,27 @@ void main() {
           find.textContaining('Personal records remain on this device'),
           findsNothing,
         );
+      },
+    );
+
+    testWidgets(
+      'after a sync that took the server copy of damaged records the page quietly says so',
+      (tester) async {
+        records.replaced = 1;
+        await showPage(tester);
+        await controlled.synchronize();
+        await tester.pump();
+        expect(
+          find.textContaining(
+            '1 damaged record was restored from Jellyfin. Bookfin kept the damaged copy.',
+          ),
+          findsOneWidget,
+        );
+        expect(find.byType(AlertDialog), findsNothing);
+        records.replaced = 0;
+        await controlled.synchronize();
+        await tester.pump();
+        expect(find.textContaining('restored from Jellyfin'), findsNothing);
       },
     );
 
