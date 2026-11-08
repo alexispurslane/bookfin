@@ -50,7 +50,10 @@ void main() {
       await reader.addBookmark(title: 'River mark');
       final bookmark = reader.bookmarks.single;
       await tester.pumpAndSettle();
-      expect(find.text('River heading · Page 2 of 8'), findsOneWidget);
+      expect(
+        find.bySemanticsLabel('River heading · Page 2 of 8'),
+        findsOneWidget,
+      );
       expect(tester.widget<Slider>(find.byType(Slider)).value, .25);
       reader.acceptVisible(
         reader.token,
@@ -63,12 +66,12 @@ void main() {
         }),
       );
       await tester.pumpAndSettle();
-      expect(find.text('The bridge · Page 3 of 4'), findsOneWidget);
+      expect(find.bySemanticsLabel('The bridge · Page 3 of 4'), findsOneWidget);
       expect(tester.widget<Slider>(find.byType(Slider)).value, .75);
       await reader.restoreBookmark(bookmark.id);
       await tester.pumpAndSettle();
       expect(port.destinations.single.cfi, visible.cfi);
-      expect(find.text('The bridge · Page 3 of 4'), findsOneWidget);
+      expect(find.bySemanticsLabel('The bridge · Page 3 of 4'), findsOneWidget);
       reader.acceptVisible(
         reader.token,
         ReadingLocation.fromJson({
@@ -80,7 +83,10 @@ void main() {
         }),
       );
       await tester.pumpAndSettle();
-      expect(find.text('River heading · Page 1 of 5'), findsOneWidget);
+      expect(
+        find.bySemanticsLabel('River heading · Page 1 of 5'),
+        findsOneWidget,
+      );
       expect(tester.widget<Slider>(find.byType(Slider)).value, .2);
       reader.acceptVisible(reader.token, visible);
       await tester.pumpAndSettle();

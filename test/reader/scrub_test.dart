@@ -106,7 +106,7 @@ void main() {
     reader.acceptVisible(reader.token, inSectionTwo(.25));
     await show(tester, reader);
     expect(bar(tester).value, closeTo(inTwo(.25), 1e-9));
-    expect(find.text('Two · Page 3 of 8'), findsOneWidget);
+    expect(find.bySemanticsLabel('Two · Page 3 of 8'), findsOneWidget);
     final marks = find.byKey(const ValueKey('position marks'));
     final width = tester.getSize(marks).width;
     // A tick is a rectangle and a bookmark is a circle, each centered at its
@@ -141,8 +141,11 @@ void main() {
     bar(tester).onChangeStart!(inTwo(.25));
     bar(tester).onChanged!(target);
     await tester.pump();
-    expect(find.text('Half · ${(target * 100).round()}%'), findsOneWidget);
-    expect(find.text('Two · Page 3 of 8'), findsNothing);
+    expect(
+      find.bySemanticsLabel('Half · ${(target * 100).round()}%'),
+      findsOneWidget,
+    );
+    expect(find.bySemanticsLabel('Two · Page 3 of 8'), findsNothing);
     expect(port.seeks, isEmpty);
     expect(reader.visibleLocation!.progress, .25);
 
@@ -152,7 +155,7 @@ void main() {
     expect(port.seeks.single.$2, closeTo(.75, 1e-9));
     reader.acceptVisible(reader.token, inSectionTwo(.74, page: 7));
     await tester.pumpAndSettle();
-    expect(find.text('Two · Page 7 of 8'), findsOneWidget);
+    expect(find.bySemanticsLabel('Two · Page 7 of 8'), findsOneWidget);
     expect(bar(tester).value, closeTo(inTwo(.74), 1e-9));
   }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
 
@@ -219,5 +222,30 @@ void main() {
     // The thumb is 8 points wide on each side of its place.
     expect(track.left, greaterThanOrEqualTo(30 + 8));
     expect(screen.width - track.right, greaterThanOrEqualTo(30 + 8));
+  }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
+
+  testWidgets('a long chapter title keeps the bar one height, so a drag does '
+      'not resize the page above it', (tester) async {
+    final reader = await openReader(ControlPort());
+    reader.acceptVisible(reader.token, inSectionTwo(.25));
+    await show(tester, reader);
+    final height = tester.getSize(find.byType(ReaderScrubBar)).height;
+    final long = 'A chapter title much too long for one line ' * 3;
+    reader.acceptVisible(
+      reader.token,
+      ReadingLocation.fromJson({
+        ...inSectionTwo(.25).toJson(),
+        'chapter': long,
+        'page': 3,
+        'pages': 8,
+      }),
+    );
+    await tester.pump();
+    expect(tester.getSize(find.byType(ReaderScrubBar)).height, height);
+    expect(find.textContaining('Page 3 of 8'), findsOneWidget);
+    bar(tester).onChangeStart!(inTwo(.25));
+    bar(tester).onChanged!(inTwo(.25));
+    await tester.pump();
+    expect(tester.getSize(find.byType(ReaderScrubBar)).height, height);
   }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
 }

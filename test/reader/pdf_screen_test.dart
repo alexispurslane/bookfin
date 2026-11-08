@@ -135,7 +135,10 @@ void main() {
       await settleNative(tester);
       expect((reader.visibleAddress as PdfAddress).sourcePage, 2);
       expect(bar().value, 1 / pages);
-      expect(find.text('Source page 2 · Page 2 of $pages'), findsOneWidget);
+      expect(
+        find.bySemanticsLabel('Source page 2 · Page 2 of $pages'),
+        findsOneWidget,
+      );
       await tester.pumpWidget(const SizedBox());
       reader.dispose();
       downloads.dispose();

@@ -782,14 +782,13 @@ class ReaderScrubBar extends StatelessWidget {
         : 'Page $page of $pages';
   }
 
-  /// The dragged place, such as "Chapter 4 · 37%" in an EPUB or "Page 12 of
-  /// 40" in a PDF.
-  static String _targetLabel(BookMap map, BookTarget target) {
+  /// The dragged place, such as "37%" in an EPUB or "Page 12 of 40" in a
+  /// PDF.
+  static String _targetPlace(BookMap map, BookTarget target) {
     final pages = map.pages;
-    final place = pages != null
+    return pages != null
         ? 'Page ${target.part + 1} of $pages'
         : '${(target.fraction * 100).round()}%';
-    return target.chapter == null ? place : '${target.chapter} · $place';
   }
 
   @override
@@ -803,22 +802,43 @@ class ReaderScrubBar extends StatelessWidget {
       final place = reader.visibleAddress;
       final map = reader.bookMap;
       final at = place == null ? null : map?.fractionOf(place);
-      final visible =
-          '${place?.chapter ?? 'Current chapter unavailable'} · ${_pageLabel(place)}';
-      Widget label(String text) => Row(
+      final style = Theme.of(context).textTheme.bodySmall;
+      // The label keeps one line, so that a drag never changes the bar's
+      // height and the page above it does not lay out again. A long chapter
+      // title is cut short, and the place always shows in full.
+      Widget label(String? chapter, String place) => Row(
         children: [
           previous,
           Expanded(
-            child: Text(
-              text,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodySmall,
+            // Assistive technology reads the whole label, uncut.
+            child: Semantics(
+              label: chapter == null ? place : '$chapter · $place',
+              excludeSemantics: true,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (chapter != null)
+                    Flexible(
+                      child: Text(
+                        '$chapter · ',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: style,
+                      ),
+                    ),
+                  Text(place, maxLines: 1, style: style),
+                ],
+              ),
             ),
           ),
           next,
         ],
       );
-      if (map == null || at == null) return label(visible);
+      Widget visible() => label(
+        place?.chapter ?? 'Current chapter unavailable',
+        _pageLabel(place),
+      );
+      if (map == null || at == null) return visible();
       final onStart = onScrubStart;
       final onTarget = onScrubTarget;
       // Android takes a drag that starts in the gesture zone at a screen edge
@@ -839,7 +859,13 @@ class ReaderScrubBar extends StatelessWidget {
               if (reader.addressOf(bookmark) case final address?)
                 ?map.fractionOf(address),
           ],
-          describe: (fraction) => _targetLabel(map, map.targetAt(fraction)),
+          describe: (fraction) {
+            final target = map.targetAt(fraction);
+            final place = _targetPlace(map, target);
+            return target.chapter == null
+                ? place
+                : '${target.chapter} · $place';
+          },
           onStart: onStart == null
               ? null
               : (fraction) => onStart(map.targetAt(fraction)),
@@ -847,9 +873,11 @@ class ReaderScrubBar extends StatelessWidget {
               ? null
               : (fraction) => onTarget(map.targetAt(fraction)),
           onEnd: (fraction) => onScrubEnd(map.targetAt(fraction)),
-          below: (context, target) => label(
-            target == null ? visible : _targetLabel(map, map.targetAt(target)),
-          ),
+          below: (context, fraction) {
+            if (fraction == null) return visible();
+            final target = map.targetAt(fraction);
+            return label(target.chapter, _targetPlace(map, target));
+          },
         ),
       );
     },
