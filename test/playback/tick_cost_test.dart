@@ -132,16 +132,29 @@ void main() {
       expect(playback.measured, lessThan(entries));
     });
 
-    testWidgets('does not measure every entry on a playing tick', (
-      tester,
-    ) async {
+    // A row measures the places it shows, so a count of measured places
+    // counts the rows that were built again.
+    testWidgets('rebuilds no row on a playing tick', (tester) async {
       await openTimeline(tester);
       playback.measured = 0;
       tick();
       await tester.pump();
-      // Each entry that was derived again would be measured at least once.
+      expect(playback.measured, 0);
+    });
+
+    testWidgets('shows a new bookmark as soon as it is saved', (tester) async {
+      await openTimeline(tester);
+      playback.measured = 0;
+      await tester.runAsync(() => playback.addBookmark());
+      await tester.pump();
       expect(playback.measured, greaterThan(0));
-      expect(playback.measured, lessThan(entries));
+      expect(
+        find.descendant(
+          of: find.byType(ListeningTimeline),
+          matching: find.text('Bookmark'),
+        ),
+        findsOneWidget,
+      );
     });
 
     testWidgets('scrolls to its oldest entry', (tester) async {
