@@ -10,6 +10,10 @@ abstract class Covers {
   /// Jellyfin cannot be reached and no copy is kept.
   Future<Uint8List?> load(JellyfinSession session, CoverRef cover);
 
+  /// A file of the cover blurred the way the player chip blurs it, for the
+  /// system media player. Null when [load] gives no readable cover image.
+  Future<Uri?> blurred(JellyfinSession session, CoverRef cover);
+
   /// Removes every kept cover.
   Future<void> clear();
 }

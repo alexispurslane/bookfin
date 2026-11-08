@@ -1,6 +1,6 @@
 ---
 id: boo-lxzv
-status: open
+status: in_progress
 deps: []
 links: []
 created: 2026-11-08T19:47:35Z
@@ -27,3 +27,7 @@ Design fork to bring to the user before step 3: the system background is the sha
 **2026-11-08T19:51:25Z**
 
 Decision (user, 2026-11-08): option B. Hand Android a blurred copy of the cover, made off the UI isolate and cached beside the cover. The user accepts that the lock screen, car displays and watches show the same blurred image.
+
+**2026-11-08T20:12:48Z**
+
+Built (option B). The cover cache (DiskCovers.blurred) owns the blurred copy: <item>@<tag>.blur.png beside the kept cover, made once per cover image in another isolate (image package), written to .partial then renamed. PlaybackHandler asks once per book through its art function, publishes the book at once without art, and adds artUri when the file arrives; a late file of a book that was left is dropped. The blur sigma is 22/390 of the width, as the chip's CoverGlass blur. The chip's page-color tint is not applied: Android draws its own dark scrim and light text from the art's colors, and a cream wash would lower that contrast and make every book's player beige. Checked on a disposable AVD (API 36) with a signed copy of the release APK and tool/showcase_fixture.dart: the system player turned navy for A Map of Quiet Rooms and olive after a change to A Field Guide to Small Weather. Follow-ups: t5-h6ep (books without a cover image), t5-vbno (unsigned release APK).

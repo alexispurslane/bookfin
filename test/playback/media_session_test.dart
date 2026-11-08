@@ -7,7 +7,7 @@ import 'package:bookfin/playback/playback.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'playback_test.dart'
-    show LocalFiles, TestEngine, MemoryResume, account, title, recording;
+    show LocalFiles, TestEngine, MemoryResume, account, title, recording, first;
 
 /// A playback that tells whether anything follows its broad notifications,
 /// which fire for every change, including each player tick.
@@ -187,4 +187,141 @@ void main() {
       expect(handler.mediaItem.value?.title, 'The long journey');
     },
   );
+
+  group('the system media player shows the blurred cover', () {
+    const covered = Book(
+      id: 'book',
+      title: 'The journey',
+      author: 'A. Writer',
+      editions: [recording],
+      cover: CoverRef('book', 'v1'),
+    );
+    const sequelRecording = Edition(
+      id: 'sequel-recording',
+      kind: EditionKind.audio,
+      label: 'Reader',
+      files: [first],
+      memberIds: ['one:m1'],
+    );
+    const sequel = Book(
+      id: 'sequel',
+      title: 'The return',
+      author: 'A. Writer',
+      editions: [sequelRecording],
+      cover: CoverRef('sequel', 'v1'),
+    );
+    Uri blurredFile(CoverRef cover) =>
+        Uri.file('/covers/${cover.itemId}@${cover.tag}.blur.png');
+
+    late LocalFiles downloads;
+    late Playback playback;
+
+    /// Each cover asked for, and the art that answers it, which the test
+    /// gives when it chooses.
+    late Map<CoverRef, Completer<Uri?>> asked;
+    late List<String> accounts;
+    PlaybackHandler handler() => PlaybackHandler(
+      art: (session, cover) {
+        accounts.add(session.scope.key);
+        return (asked[cover] = Completer<Uri?>()).future;
+      },
+    )..attach(playback);
+
+    setUp(() async {
+      asked = {};
+      accounts = [];
+      downloads = LocalFiles();
+      playback = Playback(
+        downloads: downloads,
+        engine: TestEngine(),
+        store: MemoryResume(),
+      );
+      await playback.bind(account(), [covered, sequel]);
+    });
+    tearDown(() async {
+      await playback.close();
+      downloads.dispose();
+    });
+
+    test(
+      'once it is ready, without holding back the book or playback',
+      () async {
+        await playback.open(covered, recording, autoplay: false);
+        final session = handler();
+        expect(session.mediaItem.value?.title, 'The journey');
+        expect(session.mediaItem.value?.artUri, isNull);
+        await playback.play();
+        expect(session.playbackState.value.playing, isTrue);
+        asked[covered.cover]!.complete(blurredFile(covered.cover!));
+        await pumpEventQueue();
+        expect(session.mediaItem.value?.artUri, blurredFile(covered.cover!));
+        expect(session.mediaItem.value?.title, 'The journey');
+        expect(accounts, [account().scope.key]);
+      },
+    );
+
+    test('of the new book after a book change', () async {
+      await playback.open(covered, recording, autoplay: false);
+      final session = handler();
+      asked[covered.cover]!.complete(blurredFile(covered.cover!));
+      await pumpEventQueue();
+      await playback.open(sequel, sequelRecording, autoplay: false);
+      expect(session.mediaItem.value?.title, 'The return');
+      expect(
+        session.mediaItem.value?.artUri,
+        isNull,
+        reason: 'the old book cover does not show behind the new book',
+      );
+      asked[sequel.cover]!.complete(blurredFile(sequel.cover!));
+      await pumpEventQueue();
+      expect(session.mediaItem.value?.artUri, blurredFile(sequel.cover!));
+    });
+
+    test('of the open book, not of a book that was left first', () async {
+      await playback.open(covered, recording, autoplay: false);
+      final session = handler();
+      await playback.open(sequel, sequelRecording, autoplay: false);
+      asked[sequel.cover]!.complete(blurredFile(sequel.cover!));
+      asked[covered.cover]!.complete(blurredFile(covered.cover!));
+      await pumpEventQueue();
+      expect(session.mediaItem.value?.title, 'The return');
+      expect(session.mediaItem.value?.artUri, blurredFile(sequel.cover!));
+    });
+
+    test('asked for once for each book, not on each playback change', () async {
+      await playback.open(covered, recording, autoplay: false);
+      final session = handler();
+      asked[covered.cover]!.complete(blurredFile(covered.cover!));
+      await playback.play();
+      await playback.seekEdition(20000);
+      await playback.setSpeed(1.5);
+      await playback.pause();
+      const renamed = Book(
+        id: 'book',
+        title: 'The long journey',
+        author: 'A. Writer',
+        editions: [recording],
+        cover: CoverRef('book', 'v1'),
+      );
+      await playback.bind(account(), [renamed, sequel]);
+      await pumpEventQueue();
+      expect(asked.keys, [covered.cover]);
+      expect(session.mediaItem.value?.title, 'The long journey');
+      expect(
+        session.mediaItem.value?.artUri,
+        blurredFile(covered.cover!),
+        reason: 'a retitled book keeps its cover',
+      );
+    });
+
+    test('nowhere for a book without a cover image', () async {
+      await playback.bind(account(), [title, sequel]);
+      await playback.open(title, recording, autoplay: false);
+      final session = handler();
+      await pumpEventQueue();
+      expect(asked, isEmpty);
+      expect(session.mediaItem.value?.title, 'The journey');
+      expect(session.mediaItem.value?.artUri, isNull);
+    });
+  });
 }
