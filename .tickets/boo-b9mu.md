@@ -19,3 +19,7 @@ After the group A merge (t9-cx1u moved byte progress to the per-edition watches)
 **2026-11-08T01:13:03Z**
 
 Orchestrator, Nov 7: possible cause. The t9-3n2m agent ran 'pkill -f flutter_tester' at about 19:45, and its own full run was stopped by an outside SIGTERM at about 20:07. My failing run ended at about 20:08. The five tests that did not complete may have been killed, not hung. Check this first: if the tests never hang under load without an outside kill, close this ticket as not a bug.
+
+**2026-11-08T01:36:38Z**
+
+Orchestrator, Nov 7: the t6-n8y3 agent confirmed that it also ran 'pkill -f flutter_tester' at about 20:07, the time of the failing run. The cause is almost certainly an outside kill.
