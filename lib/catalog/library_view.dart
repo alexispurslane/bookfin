@@ -825,7 +825,8 @@ class SeriesPage extends StatelessWidget {
   );
 }
 
-/// The Library tab: the library selector until the account has chosen book
+/// The Library tab: nothing while a restore reads the account's saved
+/// catalog, then the library selector until the account has chosen book
 /// libraries, then the shelf. Search and the layout toggle join the top bar
 /// with the shelf. The tab opens the pages of the entries that the shelf
 /// reports, and saves the view that the layout toggle reports.
@@ -833,7 +834,8 @@ class LibraryTab extends StatelessWidget {
   const LibraryTab({super.key, required this.services});
   final LibraryServices services;
 
-  /// The tab follows only the account and whether it chose book libraries.
+  /// The tab follows only the account, whether its saved catalog is still
+  /// being read, and whether it chose book libraries.
   @override
   Widget build(BuildContext context) {
     final catalog = services.catalog;
@@ -842,13 +844,14 @@ class LibraryTab extends StatelessWidget {
       listenable: account,
       select: () => (
         account: account.value.session?.scope.key,
+        restoring: account.value.restoring,
         choosing: account.value.selected.isEmpty,
       ),
       builder: (context, library, _) => TabFrame(
         bar: AppBar(
           title: const Text('Library'),
           actions: [
-            if (!library.choosing) ...[
+            if (!library.restoring && !library.choosing) ...[
               IconButton(
                 tooltip: 'Search',
                 onPressed: () => openSearch(context, services),
@@ -862,7 +865,9 @@ class LibraryTab extends StatelessWidget {
         child: TabPage(
           catalog: catalog,
           playback: services.playback,
-          child: library.choosing
+          child: library.restoring
+              ? const SizedBox.shrink()
+              : library.choosing
               ? LibrarySelector(
                   key: ValueKey(library.account),
                   catalog: catalog,
