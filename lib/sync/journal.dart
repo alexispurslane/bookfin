@@ -67,6 +67,16 @@ class RecordJournal {
     if (_pending.remove(identity)) acknowledged.add(identity);
   }
 
+  /// Marks the retained action [identity] as waiting for upload, as the
+  /// kept copy that a recovered action came from marked it.
+  void markPending(String identity) {
+    if (!_actions.containsKey(identity)) {
+      throw ArgumentError.value(identity, 'identity', 'is not retained');
+    }
+    _pending.add(identity);
+    acknowledged.remove(identity);
+  }
+
   void persisted() {
     additions.clear();
     changedRecords.clear();

@@ -205,6 +205,11 @@ class CountingRecords implements LocalResumeStore {
     String account,
   ) async => {};
 
+  /// The app retries kept copies after its first frame. These tests keep
+  /// none.
+  @override
+  Future<void> recoverKept() async {}
+
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

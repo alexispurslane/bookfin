@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:sqflite/sqflite.dart';
 
 import '../sync/journal.dart';
+import 'kept_files.dart';
 
 /// One account's durable rows as SQLite returns them, before any decoding.
 ///
@@ -25,6 +26,21 @@ typedef AccountRows = ({
   Map<String, String> versions,
   Map<String, int> coverage,
 });
+
+/// What this phone keeps of damaged records, as SQLite returns it, before
+/// any decoding. [kept] says that a kept copy exists, whether SQLite can
+/// read it or not. [rows] holds each account's rows in the journal format
+/// that SQLite could read, one entry for each kept copy, and [texts] each
+/// account's saved text in the format before the journal.
+typedef KeptRows = ({
+  bool kept,
+  List<({String account, AccountRows rows})> rows,
+  List<({String account, String text})> texts,
+});
+
+/// The identities of the actions and the addresses of the records that the
+/// record file holds for one account.
+typedef HeldIdentities = ({Set<String> actions, Set<String> records});
 
 /// The rows that one commit writes, as [RecordDatabase.encodeCommit] makes
 /// them.
@@ -101,10 +117,7 @@ final class RecordReader {
   /// commit of another connection during the read waits for nothing.
   Future<({AccountRows? rows, bool damaged})> rows(String account) async {
     try {
-      final database = await _files().openDatabase(
-        _name,
-        options: OpenDatabaseOptions(readOnly: true, singleInstance: false),
-      );
+      final database = await _readOnly(_files(), _name);
       try {
         return (
           rows: await RecordDatabase._readRows(database, account),
@@ -118,6 +131,75 @@ final class RecordReader {
       return (rows: null, damaged: true);
     }
   }
+
+  /// The kept copies of damaged records: the rows that the record file keeps
+  /// aside, and every account of each kept record file. A kept file, or an
+  /// account in it, that SQLite still cannot read adds nothing and stays as
+  /// it is. Nothing here writes to a kept file.
+  Future<KeptRows> kept() async {
+    final files = _files();
+    final rows = <({String account, AccountRows rows})>[];
+    final texts = <({String account, String text})>[];
+    final live = await _readOnly(files, _name);
+    var kept = false;
+    try {
+      kept = await RecordDatabase._readKept(live, rows, texts, whole: false);
+    } finally {
+      await live.close();
+    }
+    for (final copy in await keptFiles(
+      await RecordDatabase._path(files, _name),
+    )) {
+      kept = true;
+      try {
+        final database = await _readOnly(files, copy);
+        try {
+          await RecordDatabase._readKept(database, rows, texts, whole: true);
+        } finally {
+          await database.close();
+        }
+      } on Exception {
+        // A copy that SQLite still cannot open stays kept for a later
+        // version of the app.
+      }
+    }
+    return (kept: kept, rows: rows, texts: texts);
+  }
+
+  /// What the record file holds for each of [accounts].
+  Future<Map<String, HeldIdentities>> held(Iterable<String> accounts) async {
+    final database = await _readOnly(_files(), _name);
+    try {
+      return {
+        for (final account in accounts)
+          account: (
+            actions: {
+              for (final row in await database.rawQuery(
+                'SELECT identity FROM record_actions WHERE account = ?',
+                [account],
+              ))
+                row['identity'] as String,
+            },
+            records: {
+              for (final row in await database.rawQuery(
+                'SELECT record FROM record_versions WHERE account = ?',
+                [account],
+              ))
+                row['record'] as String,
+            },
+          ),
+      };
+    } finally {
+      await database.close();
+    }
+  }
+
+  /// A connection of its own to the file [name] that only reads.
+  static Future<Database> _readOnly(DatabaseFactory files, String name) =>
+      files.openDatabase(
+        name,
+        options: OpenDatabaseOptions(readOnly: true, singleInstance: false),
+      );
 }
 
 class RecordDatabase {
@@ -201,6 +283,89 @@ class RecordDatabase {
   /// SQLITE_NOTADB. Android reports extended codes.
   static bool _damaged(DatabaseException error) =>
       const {11, 26}.contains((error.getResultCode() ?? 0) & 0xff);
+
+  /// The full path of the record file [name].
+  static Future<String> _path(DatabaseFactory files, String name) async =>
+      name.startsWith('/') ? name : '${await files.getDatabasesPath()}/$name';
+
+  /// Adds to [rows] and [texts] what [database] keeps of damaged records:
+  /// the rows of its tables that keep damaged rows, and, when [whole] says
+  /// that the file is a kept copy, every account of its record tables.
+  /// Returns whether its tables that keep damaged rows hold any row.
+  static Future<bool> _readKept(
+    DatabaseExecutor database,
+    List<({String account, AccountRows rows})> rows,
+    List<({String account, String text})> texts, {
+    required bool whole,
+  }) async {
+    final tables = {
+      for (final row in await database.rawQuery(
+        "SELECT name FROM sqlite_master WHERE type = 'table'",
+      ))
+        row['name'],
+    };
+    Future<void> read(
+      String account, {
+      required bool aside,
+      Object? keptAt,
+    }) async {
+      try {
+        final found = await _readRows(
+          database,
+          account,
+          aside: aside,
+          keptAt: keptAt,
+        );
+        if (found != null) rows.add((account: account, rows: found));
+      } on Exception {
+        // Rows that SQLite still cannot read stay kept.
+      }
+    }
+
+    Future<void> readTexts(String table) async {
+      for (final row in await database.rawQuery(
+        'SELECT account, payload FROM $table',
+      )) {
+        if (row case {
+          'account': final String account,
+          'payload': final String text,
+        }) {
+          texts.add((account: account, text: text));
+        }
+      }
+    }
+
+    if (whole && tables.contains('record_accounts')) {
+      for (final row in await database.rawQuery(
+        'SELECT account FROM record_accounts',
+      )) {
+        if (row['account'] case final String account) {
+          await read(account, aside: false);
+        }
+      }
+    }
+    if (whole && tables.contains('accounts')) await readTexts('accounts');
+    var kept = false;
+    for (final table in _accountTables.keys) {
+      if (!tables.contains('set_aside_$table')) continue;
+      kept |= (await database.rawQuery(
+        'SELECT 1 FROM set_aside_$table LIMIT 1',
+      )).isNotEmpty;
+    }
+    if (tables.contains('set_aside_record_accounts')) {
+      for (final row in await database.rawQuery(
+        'SELECT DISTINCT account, kept_at FROM set_aside_record_accounts',
+      )) {
+        if (row['account'] case final String account) {
+          await read(account, aside: true, keptAt: row['kept_at']);
+        }
+      }
+    }
+    if (tables.contains('set_aside_accounts')) {
+      await readTexts('set_aside_accounts');
+    }
+    return kept;
+  }
 
   /// Copies the closed file [name] and its write-ahead log aside, deletes
   /// the original only after the copy is complete, and returns the name of
@@ -312,20 +477,27 @@ class RecordDatabase {
   );
 
   /// The rows of [account] that [database] holds, read in one statement and
-  /// so from one snapshot, or null when it has none. `kind` names the table
+  /// so from one snapshot, or null when it has none. With [aside], they are
+  /// the rows that the tables that keep damaged rows hold for [account] with
+  /// the stamp [keptAt]. `kind` names the table
   /// of each row: 0 the account, 1 an action, in the order of its rows, 2 a
   /// record's current versions, and 3 the coverage of an installation.
   static Future<AccountRows?> _readRows(
     DatabaseExecutor database,
-    String account,
-  ) async {
+    String account, {
+    bool aside = false,
+    Object? keptAt,
+  }) async {
+    final prefix = aside ? 'set_aside_' : '';
+    final where = aside ? 'account = ? AND kept_at IS ?' : 'account = ?';
+    final arguments = [account, if (aside) keptAt];
     final rows = await database.rawQuery(
-      'SELECT 0 AS kind, NULL AS position, replica AS name, cursor AS number, metadata AS content FROM record_accounts WHERE account = ? '
-      'UNION ALL SELECT 1, rowid, identity, pending, payload FROM record_actions WHERE account = ? '
-      'UNION ALL SELECT 2, NULL, record, NULL, identities FROM record_versions WHERE account = ? '
-      'UNION ALL SELECT 3, NULL, replica, sequence, NULL FROM record_coverage WHERE account = ? '
+      'SELECT 0 AS kind, NULL AS position, replica AS name, cursor AS number, metadata AS content FROM ${prefix}record_accounts WHERE $where '
+      'UNION ALL SELECT 1, rowid, identity, pending, payload FROM ${prefix}record_actions WHERE $where '
+      'UNION ALL SELECT 2, NULL, record, NULL, identities FROM ${prefix}record_versions WHERE $where '
+      'UNION ALL SELECT 3, NULL, replica, sequence, NULL FROM ${prefix}record_coverage WHERE $where '
       'ORDER BY kind, position',
-      [account, account, account, account],
+      [...arguments, ...arguments, ...arguments, ...arguments],
     );
     if (rows.isEmpty || rows.first['kind'] != 0) return null;
     // A value of another type than its column holds reads as one that does
@@ -634,6 +806,23 @@ class RecordDatabase {
           'payload': payload,
         }, conflictAlgorithm: ConflictAlgorithm.replace);
       });
+
+  /// Deletes every kept copy of damaged records: the rows that the record
+  /// file keeps aside, in one transaction, then each kept record file with
+  /// its write-ahead log. Only the user's confirmed Discard calls it.
+  /// Throws [RecordFileSetAside] when the record file has damaged pages.
+  Future<void> discardKept() async {
+    await _guarded(
+      (database) => database.transaction((transaction) async {
+        for (final table in _accountTables.keys) {
+          await transaction.delete('set_aside_$table');
+        }
+      }),
+    );
+    for (final copy in await keptFiles(await _path(_files, _name))) {
+      await _files.deleteDatabase(copy);
+    }
+  }
 
   Future<void> checkInvariants() async {
     final result = await _database.rawQuery('PRAGMA integrity_check');

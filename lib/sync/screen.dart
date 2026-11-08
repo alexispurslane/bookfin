@@ -8,11 +8,13 @@ import '../catalog/model.dart';
 import '../catalog/shelf.dart';
 import '../foundation/theme.dart';
 import '../foundation/time.dart' show audioTime, dayAndTime;
+import '../playback/store.dart' show KeptRecords;
 import 'coordinator.dart';
 import 'journal.dart';
 
 /// The Personal records page. It runs Sync now and the choice between saved
-/// versions on [sync], and names books from [library].
+/// versions on [sync], asks the user to confirm Discard before it deletes
+/// the kept copies of damaged records, and names books from [library].
 class RecordSyncPage extends StatelessWidget {
   const RecordSyncPage({super.key, required this.sync, required this.library});
   final RecordSync sync;
@@ -31,38 +33,83 @@ class RecordSyncPage extends StatelessWidget {
               status: sync.statusNotifier,
               lastSync: sync.lastSyncNotifier,
               conflicts: sync.conflictsNotifier,
+              kept: sync.records.keptNotifier,
               library: library,
               onSync: () => unawaited(sync.syncNow()),
               onResolve: (record, identity) =>
                   unawaited(sync.resolve(record, identity)),
+              onDiscard: () => unawaited(_discard(context)),
             ),
           ],
         ),
       ),
     ),
   );
+
+  /// Asks the user to confirm Discard, then deletes the kept copies of
+  /// damaged records. A failure says so, and the copies that remain are
+  /// still offered.
+  Future<void> _discard(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Discard damaged records?'),
+        content: const Text(
+          'Bookfin deletes its copy of the damaged records. Records that were recovered stay. Records that Bookfin could not read are lost.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Discard'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    try {
+      await sync.records.discardKept();
+    } on Exception {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'The damaged copies were not deleted. Retry after checking device storage.',
+          ),
+        ),
+      );
+    }
+  }
 }
 
 /// The state of personal-record sync, and the conflicts to choose from.
-/// Each part follows only its own signal. It reports [onSync] for Sync now
-/// and [onResolve] with the record address and the identity of the chosen
-/// saved version.
+/// Each part follows only its own signal. It reports [onSync] for Sync now,
+/// [onResolve] with the record address and the identity of the chosen
+/// saved version, and [onDiscard] for Discard of the kept copies of damaged
+/// records.
 class RecordSyncView extends StatelessWidget {
   const RecordSyncView({
     super.key,
     required this.status,
     required this.lastSync,
     required this.conflicts,
+    required this.kept,
     required this.library,
     required this.onSync,
     required this.onResolve,
+    required this.onDiscard,
   });
   final ValueListenable<RecordSyncStatus> status;
   final ValueListenable<RecordSyncOutcome?> lastSync;
   final ValueListenable<RecordConflicts> conflicts;
+  final ValueListenable<KeptRecords> kept;
   final ValueListenable<CatalogLibrary> library;
   final VoidCallback onSync;
   final void Function(String record, String identity) onResolve;
+  final VoidCallback onDiscard;
 
   @override
   Widget build(BuildContext context) => Column(
@@ -105,6 +152,33 @@ class RecordSyncView extends StatelessWidget {
                           '${outcome.replaced} damaged records were restored from Jellyfin. Bookfin kept the damaged copies.',
                       ].join('\n'),
                 style: Theme.of(context).textTheme.bodySmall,
+              ),
+      ),
+      ValueListenableBuilder(
+        valueListenable: kept,
+        builder: (context, kept, _) => !kept.kept && kept.recovered == 0
+            ? const SizedBox.shrink()
+            : Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      [
+                        if (kept.recovered == 1)
+                          '1 damaged record was recovered.',
+                        if (kept.recovered > 1)
+                          '${kept.recovered} damaged records were recovered.',
+                        if (kept.kept)
+                          'Bookfin keeps a copy of the damaged records.',
+                      ].join(' '),
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ),
+                  if (kept.kept)
+                    TextButton(
+                      onPressed: onDiscard,
+                      child: const Text('Discard'),
+                    ),
+                ],
               ),
       ),
       ListenableBuilder(
