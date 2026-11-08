@@ -429,6 +429,15 @@ void main() {
     expect(spineStep(opf, 1), '/6/4[r2]');
   });
 
+  test('the spine steps of a whole book come from one reading of its package '
+      'document, in spine order', () {
+    const opf =
+        '<package><metadata/><manifest/><guide/><spine>'
+        '<itemref idref="a" id="r1"/><itemref idref="b"/>'
+        '<itemref idref="c" id=""/></spine></package>';
+    expect(spineSteps(opf), ['/8/2[r1]', '/8/4', '/8/6']);
+  });
+
   group('the saved start of a page', () {
     test('a page that starts at a node\'s first word saves the node start', () {
       final section = dom('<p>\n  Call me Ishmael.</p>');
