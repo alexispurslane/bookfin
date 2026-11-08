@@ -1,6 +1,6 @@
 ---
 id: boo-bquq
-status: open
+status: closed
 deps: [boo-l5x3, boo-y6fb, t9-se8f, t9-4jqk, t9-112h, t9-dcld, boo-petv, boo-4bof, t9-sspn, t9-6u46, t9-xj41, t9-pols, boo-63ti, t9-kfdf, t9-d4kb, t9-8v91, boo-0km1, boo-7ua0, t9-3n2m, t9-cx1u, t9-rlgt, t6-2ghu, t6-epwo, t6-n8y3, t1-vtiy, t4-lvhh, ta-7oe6, tc-y4ij, td-rvpm, boo-uceu, te-20r5, tf-0nvi, tf-o5vc, tb-85e4, tb-iuwr, tc-qdk7, t1-vvck, t1-gaeu]
 links: []
 created: 2026-11-07T21:20:29Z
@@ -41,3 +41,7 @@ From boo-5jzo (merged 1fd38a5), rule breaks left in place: book page _Actions an
 **2026-11-07T21:55:32Z**
 
 From boo-um68 (merged after c2b050f): the catalog has no narrow change signals, so LibraryShelf also rebuilds on busy notifications; the shell wraps SettingsPage and DownloadsPage in broad ListenableBuilders because those pages take values, not sources; DownloadsPage rebuilds on each download notice; the book page rebuilds all content below its top bar on each playback tick (services.activity merges Downloads and Playback); the shell calls the player and reader bind methods from _accessChanged (rule 1). New shared piece: ListenableSelector in lib/foundation/listenable_selector.dart.
+
+**2026-11-08T02:48:54Z**
+
+Orchestrator, Nov 7: every child ticket is closed and merged. Main at 1abdb6b: format clean, analyze clean, 1,218 tests passed, 3 skipped. APK b4884eb6… built from that commit and installed on emulator-5556. Against the user's real Jellyfin server, sign-in and the four-at-once catalog page requests loaded the full library with covers and no Flutter errors. Personal-record sync failed there because the server answers 404 for /BookfinStorage/v1/objects (an installed plugin route would answer 401 without a token, as /Plugins does), so the Bookfin Storage plugin is not installed on that server.
