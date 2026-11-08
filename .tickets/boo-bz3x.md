@@ -1,6 +1,6 @@
 ---
 id: boo-bz3x
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-08T15:33:33Z

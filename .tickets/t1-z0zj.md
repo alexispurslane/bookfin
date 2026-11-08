@@ -1,6 +1,6 @@
 ---
 id: t1-z0zj
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-11-08T04:08:43Z
