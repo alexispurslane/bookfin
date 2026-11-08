@@ -234,33 +234,33 @@ void main() {
     },
   );
 
-  test(
-    'an unreadable large account fails in the hop and is never written over',
-    () async {
-      await seedLargeAccount();
-      final sql = await databaseFactoryFfi.openDatabase(path);
-      await sql.rawUpdate(
-        "UPDATE record_actions SET payload = '[]' WHERE rowid = (SELECT MIN(rowid) FROM record_actions)",
-      );
-      // The connection is the same instance as the store's, which the test
-      // closes at its end.
-      final before = await database.rows('alice');
-      final store = LocalResumeStore(
-        openDatabase: () async => database,
-        hop: CountingHop().call,
-      );
+  test('a damaged large account is set aside in the same hop and the store keeps saving', () async {
+    await seedLargeAccount();
+    final sql = await databaseFactoryFfi.openDatabase(path);
+    await sql.rawUpdate(
+      "UPDATE record_actions SET payload = '[]' WHERE rowid = (SELECT MIN(rowid) FROM record_actions)",
+    );
+    // The connection is the same instance as the store's, which the test
+    // closes at its end.
+    final before = await database.rows('alice');
+    final hop = CountingHop();
+    final store = LocalResumeStore(
+      openDatabase: () async => database,
+      hop: hop.call,
+    );
 
-      await expectLater(store.read('alice'), throwsA(isA<FormatException>()));
-      await expectLater(
-        store.save('alice', resume(99000)),
-        throwsA(isA<FormatException>()),
-      );
+    await store.read('alice');
+    expect(hop.hops, 1);
+    expect(store.setAside('alice'), isTrue);
+    await store.save('alice', resume(99000));
 
-      final after = await database.rows('alice');
-      expect(after!.payloads, before!.payloads);
-      expect(after.metadata, before.metadata);
-    },
-  );
+    final kept = await sql.query('set_aside_record_actions', orderBy: 'rowid');
+    expect([for (final row in kept) row['payload']], before!.payloads);
+    expect(
+      (await sql.query('set_aside_record_accounts')).single['metadata'],
+      before.metadata,
+    );
+  });
 
   test('a large account moves from the format before the journal into the database in one hop', () async {
     SharedPreferences.setMockInitialValues({

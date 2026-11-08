@@ -704,6 +704,35 @@ void main() {
     expect(store.values[account().scope.key], saved);
   });
 
+  test(
+    'a damaged record store is named as the cause and keeps new places',
+    () async {
+      await playback.close();
+      SharedPreferences.setMockInitialValues({
+        'bookfin.playback.v1.${account().scope.key}': '[]',
+      });
+      playback = Playback(
+        downloads: downloads,
+        engine: TestEngine(),
+        store: LocalResumeStore(),
+      );
+      await playback.bind(account(), [title]);
+      expect(playback.message, contains('damaged'));
+      await playback.open(title, recording, autoplay: false);
+      await playback.seekEdition(90000);
+      await playback.close();
+
+      playback = Playback(
+        downloads: downloads,
+        engine: TestEngine(),
+        store: LocalResumeStore(),
+      );
+      await playback.bind(account(), [title]);
+      expect(playback.editionMilliseconds, 90000);
+      expect(playback.message, isNull);
+    },
+  );
+
   test('history retains the confirmed decoder result rather than the requested target', () async {
     await playback.close();
     playback = Playback(

@@ -51,7 +51,7 @@ void main() {
 
   for (final damage in damages.entries) {
     test(
-      '${damage.key} reports a storage error without destroying records or poisoning later reader saves',
+      '${damage.key} is kept aside, and later reader saves and syncs keep every readable record',
       () async {
         SharedPreferences.setMockInitialValues({});
         final fixture = await SyncFixture.open();
@@ -76,34 +76,43 @@ void main() {
         damage.value(damaged);
         final raw = jsonEncode(damaged);
         await preferences.setString(key, raw);
-        await expectLater(
-          reader.addBookmark(title: 'New pending bookmark'),
-          completes,
+        await reader.addBookmark(title: 'New pending bookmark');
+        await reader.flush();
+        expect(reader.saveFailed, isFalse);
+        expect(
+          [
+            for (final name in preferences.getKeys())
+              if (name.startsWith('bookfin.damaged-records.v1.'))
+                preferences.getString(name),
+          ],
+          [raw],
         );
-        expect(reader.message, contains('not saved'));
-        expect(preferences.getString(key), raw);
         final sync = RecordSync(records: records)..bind(fixture.session);
-        await expectLater(sync.syncNow(), completes);
-        expect(sync.message, contains('could not be read'));
-        expect(sync.lastSyncNotifier.value?.failed, isTrue);
-        expect(preferences.getString(key), raw);
+        await sync.syncNow();
+        expect(sync.lastSyncNotifier.value?.failed, isFalse);
         sync.dispose();
-        await preferences.setString(key, healthy);
-        await expectLater(reader.flush(), completes);
+        // Without its actions, the original bookmark is only in the copy.
+        final readable = [
+          if (damage.key != 'actions is null') 'Original unsynced bookmark',
+          'New pending bookmark',
+        ];
         final saved = (await records.reading.read(fixture.session.scope.key))!;
         expect(
           (saved['bookmarks'] as List).map((mark) => mark['title']),
-          unorderedEquals([
-            'Original unsynced bookmark',
-            'New pending bookmark',
-          ]),
+          unorderedEquals(readable),
+        );
+        expect(
+          [
+            for (final object in fixture.objects.values)
+              (jsonDecode(object['Payload'] as String)
+                  as Map)['value']?['title'],
+          ].whereType<String>(),
+          unorderedEquals(readable),
         );
         final journal =
             (jsonDecode(preferences.getString(key)!) as Map)['sync']
                 as Map<String, dynamic>;
-        final originalPending =
-            (jsonDecode(healthy) as Map)['sync']['pending'] as List;
-        expect(journal['pending'], containsAll(originalPending));
+        expect(journal['pending'], isEmpty);
         RecordJournal(
           fixture.session.scope.key,
           journal['replica'] as String,

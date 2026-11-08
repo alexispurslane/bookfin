@@ -38,6 +38,12 @@ abstract class ReadingStore {
   /// Records [value] as the snapshot that the writer of [accountKey] now
   /// shows, so later saves compare their records with it.
   void acceptSnapshot(String accountKey, Map<String, dynamic>? value) {}
+
+  /// Whether this store found the saved records of [accountKey] damaged
+  /// while this app ran, kept the damaged data aside, and started the
+  /// account again from the records that it could read. A [read] of the
+  /// account finds out.
+  bool setAside(String accountKey) => false;
 }
 
 /// The reading records that one save changes.
@@ -445,7 +451,11 @@ class ReaderSession extends ChangeNotifier {
           _message = 'The saved place belongs to different source or processed content. The old place and bookmarks were kept. Reading starts at the beginning.';
         }
       }
-      if (!_recordsReady) _message = 'Reading records could not be opened. Existing records were kept. Restart before saving new places.';
+      if (!_recordsReady) {
+        _message = 'Reading records could not be opened. Existing records were kept. Restart before saving new places.';
+      } else if (store.setAside(_account!)) {
+        _message ??= 'Saved reading records were damaged. Bookfin kept a copy and restored the places that it could read. The next sync restores the rest.';
+      }
     } on FormatException catch (error) {
       if (_live(generation)) _message = error.message;
     } catch (_) {

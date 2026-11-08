@@ -383,7 +383,7 @@ void main() {
     expect(retried['sync']['cursor'], 2);
   });
 
-  test('migration validates superseded values and can retry after the legacy account is repaired', () async {
+  test('a legacy account with a damaged superseded value is kept aside when it moves into the record tables', () async {
     final disk = await storage();
     final journal = RecordJournal('alice', 'original');
     final address = jsonEncode([
@@ -399,25 +399,18 @@ void main() {
       'edition': 'edition',
       ...listening(2000)['resumes']['edition'] as Map,
     });
-    final healthy = jsonEncode({...listening(2000), 'sync': journal.encode()});
-    final damaged = jsonDecode(healthy) as Map;
+    final damaged = jsonDecode(
+      jsonEncode({...listening(2000), 'sync': journal.encode()}),
+    ) as Map;
     damaged['sync']['actions'][0]['value']['edition'] = 7;
     final raw = jsonEncode(damaged);
     await disk.records.write('alice', raw);
     final store = LocalResumeStore(openDatabase: () async => disk.records);
-    await expectLater(store.read('alice'), throwsFormatException);
-    expect((await disk.sql.query('accounts')).single['payload'], raw);
-    expect(await disk.sql.query('record_accounts'), isEmpty);
-    await disk.records.write('alice', healthy);
-    expect(
-      (await store.read('alice'))!['resumes']['edition'].single['milliseconds'],
-      2000,
-    );
-    expect(
-      (jsonDecode((await disk.records.read('alice'))!)
-          as Map)['sync']['actions'],
-      hasLength(2),
-    );
+    await store.read('alice');
+    expect(store.setAside('alice'), isTrue);
+    expect((await disk.sql.query('set_aside_accounts')).single['payload'], raw);
+    expect(await disk.sql.query('accounts'), isEmpty);
+    expect(await disk.sql.query('record_accounts'), hasLength(1));
     await store.checkInvariants();
   });
 

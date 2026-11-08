@@ -36,11 +36,14 @@ typedef _Views = ({_View listening, _View reading});
 
 /// An account that a hop restored from storage, its views, and whether it
 /// must be saved again before anything reads it. [commit] holds the rows of
-/// that save when the store has a database.
+/// that save when the store has a database. [damaged] says that the saved
+/// data could not be read, so the account is a new one with the records
+/// that the hop could still read, and the damaged data must move aside.
 typedef _Restored = ({
   _StoredAccount stored,
   _Views views,
   bool persist,
+  bool damaged,
   RecordCommit? commit,
 });
 
@@ -73,8 +76,16 @@ const _hopText = 4 * 1024;
 /// marks an upload done only after the server confirms it, and saves the
 /// records that it receives with their discovery cursor in one write.
 /// Versions from two devices that did not see each other stay side by side
-/// until [resolve]. A store that cannot be read is never written over: each
-/// read and write of its account fails, and the data stays as it was.
+/// until [resolve].
+///
+/// Damage: when the saved data of an account cannot be read, the read that
+/// finds it keeps the damaged data aside, never deleted, and starts the
+/// account again at once with a new installation identity and every record
+/// that still decodes. Each such record keeps its sync action and its
+/// upload state, so the next sync adds no copy of it and refills the rest.
+/// An action that follows a lost action of its installation waits for that
+/// sync. [setAside] reports the damage. If the damaged data cannot be moved
+/// aside, the read fails and the data stays where it was.
 ///
 /// Engine rule 1: the whole-account work of a read (journal replay, the
 /// decoding of an older format, and each domain's snapshot) runs in one hop
@@ -92,10 +103,14 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
   final Future<RecordDatabase> Function()? openDatabase;
   final RecordsHop _hop;
   Future<RecordDatabase>? _database;
+  RecordDatabase? _opened;
   Future<RecordDatabase?> _storage() async {
     if (openDatabase == null) return null;
-    return _database ??= openDatabase!();
+    return _opened ??= await (_database ??= openDatabase!());
   }
+
+  /// The accounts whose damaged data this store kept aside.
+  final Set<String> _setAside = {};
 
   late final ReadingRecords reading = ReadingRecords._(this);
   Future<void> _writes = Future.value();
@@ -343,33 +358,73 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
       if (cached != null) return cached;
       final rows = await database.rows(accountKey);
       if (rows != null) {
-        final restored = await _derive(_restoreRows, (
-          account: accountKey,
-          rows: rows,
-        ), small: rows.payloads.length < _hopItems);
-        _keep(accountKey, restored.views);
-        return _accounts[accountKey] = restored.stored;
+        return _adopt(
+          accountKey,
+          await _derive(_restoreRows, (
+            account: accountKey,
+            rows: rows,
+          ), small: rows.payloads.length < _hopItems),
+        );
       }
     }
     final preferences = await SharedPreferences.getInstance();
     final legacy = await database?.read(accountKey);
     final raw = legacy ?? preferences.getString(_key(accountKey));
     if (raw == null) return null;
-    final restored = await _derive(_restoreText, (
-      account: accountKey,
+    return _adopt(
+      accountKey,
+      await _derive(_restoreText, (
+        account: accountKey,
+        text: raw,
+        database: database != null,
+      ), small: raw.length < _hopText),
       text: raw,
-      database: database != null,
-    ), small: raw.length < _hopText);
+    );
+  }
+
+  /// Saves [restored] as the durable state of [account] when it must be
+  /// saved, keeps its views, and returns it. [text] is the saved text that
+  /// the hop restored, if any.
+  ///
+  /// A damaged account's data moves aside before the new account replaces
+  /// it. With a database, both happen in one transaction, and preference
+  /// text, which the store no longer reads once the account has rows, stays
+  /// where it is. Without one, the text is copied to its own key first.
+  Future<_StoredAccount> _adopt(
+    String account,
+    _Restored restored, {
+    String? text,
+  }) async {
     final stored = restored.stored;
-    if (restored.persist) {
+    final database = await _storage();
+    if (restored.damaged && database != null) {
+      _forgetViews(account);
+      await database.replaceDamaged(
+        restored.commit!,
+        keptAt: DateTime.now().millisecondsSinceEpoch,
+      );
+      stored.journal.persisted();
+      _accounts[account] = stored;
+    } else if (restored.damaged) {
+      final preferences = await SharedPreferences.getInstance();
+      final kept =
+          'bookfin.damaged-records.v1.$account.${DateTime.now().millisecondsSinceEpoch}';
+      if (!await preferences.setString(kept, text!)) {
+        throw Exception('Damaged personal records could not be kept aside.');
+      }
+      await _persist(account, stored.metadata, stored.journal);
+    } else if (restored.persist) {
       await _persist(
-        accountKey,
+        account,
         stored.metadata,
         stored.journal,
         commit: restored.commit,
       );
+    } else if (database != null) {
+      _accounts[account] = stored;
     }
-    _keep(accountKey, restored.views);
+    if (restored.damaged) _setAside.add(account);
+    _keep(account, restored.views);
     return stored;
   }
 
@@ -519,6 +574,12 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
   @override
   void acceptSnapshot(String accountKey, Map<String, dynamic>? value) =>
       _accept(accountKey, value, reading: false);
+
+  /// The whole record file counts for every account when it could not be
+  /// opened, because the store cannot tell which accounts it held.
+  @override
+  bool setAside(String accountKey) =>
+      _setAside.contains(accountKey) || _opened?.keptFile != null;
 
   /// Records [value] as the snapshot that the writer of one domain of
   /// [account] now shows.
@@ -673,6 +734,9 @@ class ReadingRecords implements ResumeStore, ReadingStore {
   @override
   void acceptSnapshot(String accountKey, Map<String, dynamic>? value) =>
       owner._accept(accountKey, value, reading: true);
+
+  @override
+  bool setAside(String accountKey) => owner.setAside(accountKey);
 }
 
 void _validateActionValue(Map<String, dynamic> action) {
@@ -822,11 +886,22 @@ _Views _viewsOfVersions(
     record: ?RecordJournal.currentValue(record, versions),
 });
 
+/// The account that its durable [AccountRows] hold, with its views, or a
+/// new account from what [_salvageRows] can read of them when they are
+/// damaged.
+_Restored _restoreRows(({String account, AccountRows rows}) input) {
+  try {
+    return _readRows(input);
+  } on FormatException {
+    return _salvageRows(input);
+  }
+}
+
 /// The account that its durable [AccountRows] hold, with its views.
 ///
 /// Throws a [FormatException] when the rows cannot be decoded or their
 /// current versions do not match the actions that they retain.
-_Restored _restoreRows(({String account, AccountRows rows}) input) {
+_Restored _readRows(({String account, AccountRows rows}) input) {
   final rows = RecordDatabase.decode(input.rows);
   final journal = _journal(input.account, {'sync': rows['sync']});
   if (!const DeepCollectionEquality().equals(
@@ -847,14 +922,27 @@ _Restored _restoreRows(({String account, AccountRows rows}) input) {
     stored: (metadata: metadata, journal: journal),
     views: _views(metadata, journal.values),
     persist: false,
+    damaged: false,
     commit: null,
   );
 }
 
 /// The account that one saved [text] holds in a format before the record
-/// tables, with its views. [database] says that the account moves into the
-/// database, so the result carries the rows of that first commit.
+/// tables, with its views, or a new account from what [_salvageText] can
+/// read of it when it is damaged. [database] says that the account moves
+/// into the database, so the result carries the rows of that first commit.
 _Restored _restoreText(({String account, String text, bool database}) input) {
+  try {
+    return _readText(input);
+  } on FormatException {
+    return _salvageText(input);
+  }
+}
+
+/// The account that one saved [text] holds, as [_restoreText] says.
+///
+/// Throws a [FormatException] when the text cannot be decoded.
+_Restored _readText(({String account, String text, bool database}) input) {
   final decoded = jsonDecode(input.text);
   if (decoded is! Map<String, dynamic>) {
     throw const FormatException('Personal records must be an object.');
@@ -875,6 +963,7 @@ _Restored _restoreText(({String account, String text, bool database}) input) {
     stored: (metadata: metadata, journal: journal),
     views: _views(metadata, journal.values),
     persist: persist,
+    damaged: false,
     commit: input.database
         ? RecordDatabase.encodeCommit(
             input.account,
@@ -885,6 +974,192 @@ _Restored _restoreText(({String account, String text, bool database}) input) {
         : null,
   );
 }
+
+/// A new account from the damaged [AccountRows] of `input.account`: the
+/// settings when they decode, and each action that decodes.
+_Restored _salvageRows(({String account, AccountRows rows}) input) {
+  final rows = input.rows;
+  return _salvaged(
+    input.account,
+    _decodedObject(rows.metadata) ?? {},
+    actions: [for (final payload in rows.payloads) ?_decodedObject(payload)],
+    pending: rows.pending,
+    database: true,
+  );
+}
+
+/// A new account from the damaged saved text of `input.account`: the
+/// settings and each record or action that still decodes.
+_Restored _salvageText(({String account, String text, bool database}) input) {
+  final decoded = _decodedObject(input.text) ?? {};
+  final sync = decoded['sync'];
+  if (sync is! Map<String, dynamic>) {
+    return _salvaged(
+      input.account,
+      decoded,
+      records: decoded,
+      database: input.database,
+    );
+  }
+  final actions = sync['actions'];
+  final pending = sync['pending'];
+  return _salvaged(
+    input.account,
+    decoded,
+    actions: [
+      if (actions is List)
+        for (final action in actions)
+          if (action is Map<String, dynamic>) action,
+    ],
+    pending: pending is List && pending.every((identity) => identity is String)
+        ? pending.cast<String>()
+        : null,
+    database: input.database,
+  );
+}
+
+/// A new account of [account] with a new installation identity: the
+/// settings of [snapshot], each of [actions] that the journal accepts, with
+/// its upload still pending when [pending] names it, and each record of
+/// [records], a snapshot in the format before the journal, that decodes.
+/// When [pending] is null or names an action that is not salvaged, the
+/// upload state is not known, so every salvaged action is uploaded again.
+///
+/// Salvaged actions keep their identities, so a sync that receives them
+/// again adds nothing, and the server keeps one copy of an action that is
+/// uploaded twice. An action that follows an action that is lost waits
+/// until a sync brings the lost one. The account is saved before anything
+/// reads it, as [_readText] explains for a new identity.
+_Restored _salvaged(
+  String account,
+  Map<String, dynamic> snapshot, {
+  List<Map<String, dynamic>> actions = const [],
+  List<String>? pending = const [],
+  Map<String, dynamic> records = const {},
+  required bool database,
+}) {
+  final metadata = _metadata({
+    ...snapshot,
+    'reading': snapshot['reading'] is Map<String, dynamic>
+        ? snapshot['reading']
+        : null,
+  });
+  final readable = <String, Map<String, dynamic>>{};
+  for (final action in actions) {
+    final identity = RecordJournal.identity(action);
+    if (readable.containsKey(identity)) continue;
+    try {
+      // A journal of its own checks one action alone: its form, its value,
+      // and, when it has no predecessor, the versions that it preserves.
+      RecordJournal(
+        account,
+        'salvage',
+        null,
+        _validateActionValue,
+      ).receive([action]);
+      readable[identity] = action;
+    } on FormatException {
+      continue;
+    }
+  }
+  final replica = _replica();
+  RecordJournal journal;
+  try {
+    journal = RecordJournal(account, replica, {
+      'version': 1,
+      'replica': replica,
+      'actions': readable.values.toList(),
+      'pending': pending != null && pending.every(readable.containsKey)
+          ? pending
+          : readable.keys.toList(),
+      'cursor': 0,
+    }, _validateActionValue);
+  } on FormatException {
+    // NOTE: Actions that pass alone can still disagree with each other, such
+    // as one that preserves a version of another record. The damaged data
+    // keeps them, and the next sync brings back the ones that it had sent.
+    journal = RecordJournal(account, replica, null, _validateActionValue);
+  }
+  for (final MapEntry(key: record, :value) in _records(records)) {
+    try {
+      journal.change(record, value);
+    } on FormatException {
+      continue;
+    }
+  }
+  return (
+    stored: (metadata: metadata, journal: journal),
+    views: _views(metadata, journal.values),
+    persist: true,
+    damaged: true,
+    commit: database
+        ? RecordDatabase.encodeCommit(
+            account,
+            metadata,
+            journal,
+            initialize: true,
+          )
+        : null,
+  );
+}
+
+/// [text] decoded, or null when it is not a JSON object.
+Map<String, dynamic>? _decodedObject(String text) {
+  try {
+    final decoded = jsonDecode(text);
+    return decoded is Map<String, dynamic> ? decoded : null;
+  } on FormatException {
+    return null;
+  }
+}
+
+/// Each record of [combined], a snapshot in the format before the journal,
+/// that decodes on its own, by address, as [_flatten] reads it.
+Iterable<MapEntry<String, Map<String, dynamic>>> _records(
+  Map<String, dynamic> combined,
+) sync* {
+  for (final reading in [false, true]) {
+    final snapshot = reading ? combined['reading'] : combined;
+    if (snapshot is! Map<String, dynamic>) continue;
+    final pieces = <Map<String, dynamic>>[
+      for (final collection in [
+        'bookmarks',
+        if (!reading) 'history',
+        if (reading) 'resumes',
+      ])
+        if (snapshot[collection] case final List values)
+          for (final value in values)
+            {
+              collection: [value],
+            },
+      if (!reading && snapshot['resumes'] is Map<String, dynamic>)
+        for (final MapEntry(key: edition, :value)
+            in (snapshot['resumes'] as Map<String, dynamic>).entries)
+          for (final place in value is List ? value : [value])
+            {
+              'resumes': {
+                edition: [place],
+              },
+            },
+    ];
+    for (final piece in pieces) {
+      try {
+        yield* _flatten(
+          reading ? {'reading': piece} : piece,
+          reading: reading,
+        ).entries;
+      } on FormatException {
+        continue;
+      }
+    }
+  }
+}
+
+/// A new random installation identity.
+String _replica() => List.generate(
+  20,
+  (_) => Random.secure().nextInt(256).toRadixString(16).padLeft(2, '0'),
+).join();
 
 RecordJournal _journal(String account, Map<String, dynamic> combined) {
   if (combined.containsKey('sync') &&
@@ -899,12 +1174,7 @@ RecordJournal _journal(String account, Map<String, dynamic> combined) {
       'The personal-record journal needs an installation identity.',
     );
   }
-  final replica =
-      saved?['replica'] as String? ??
-      List.generate(
-        20,
-        (_) => Random.secure().nextInt(256).toRadixString(16).padLeft(2, '0'),
-      ).join();
+  final replica = saved?['replica'] as String? ?? _replica();
   final journal = RecordJournal(account, replica, saved, _validateActionValue);
   if (saved == null) {
     for (final reading in [false, true]) {
