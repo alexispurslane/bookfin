@@ -1,6 +1,6 @@
 ---
 id: boo-2sev
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-08T14:31:02Z
