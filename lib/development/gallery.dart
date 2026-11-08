@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_epub_viewer/navigation.dart'
     show ContentsEntry, ReadingLocation;
@@ -10,6 +9,7 @@ import '../catalog/glass.dart' show confirmAction, showGlassSheet;
 import '../catalog/library_view.dart' show BookRow, ShelfFilterChips;
 import '../catalog/model.dart';
 import '../catalog/shelf.dart' show ShelfFilter, bookMatches;
+import '../foundation/derived_value.dart';
 import '../foundation/theme.dart';
 import '../foundation/time.dart';
 import '../playback/playback.dart';
@@ -352,7 +352,8 @@ class _SamplePlayer {
   /// The saved place of each sample book that is not open, by book id.
   final _places = {_lostWorld.id: 0, _poisonBelt.id: 1800000};
 
-  late final share = _SampleShare(position);
+  /// How far through the open sample book the place is, from 0 to 1.
+  late final share = DerivedValue(position, () => position.value / _length);
 
   /// The saved place of [other], in milliseconds.
   int _placeOf(Book other) =>
@@ -455,22 +456,6 @@ class _SamplePlayer {
       notifier.dispose();
     }
   }
-}
-
-/// How far through the open sample book the place is, from 0 to 1.
-class _SampleShare implements ValueListenable<double> {
-  _SampleShare(this.position);
-  final ValueListenable<int> position;
-
-  @override
-  double get value => position.value / _length;
-
-  @override
-  void addListener(VoidCallback listener) => position.addListener(listener);
-
-  @override
-  void removeListener(VoidCallback listener) =>
-      position.removeListener(listener);
 }
 
 Widget _playPause(_SamplePlayer sample, {bool large = false}) =>

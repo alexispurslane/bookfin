@@ -44,12 +44,14 @@ const other = Book(
 
 void main() {
   late LocalFiles downloads;
+  late TestEngine engine;
   late Playback playback;
   setUp(() async {
     downloads = LocalFiles()..files[otherFile.key] = Uri.file('/three.wav');
+    engine = TestEngine();
     playback = Playback(
       downloads: downloads,
-      engine: TestEngine(),
+      engine: engine,
       store: MemoryResume(),
     );
     await playback.bind(account(), [title, other]);
@@ -206,6 +208,30 @@ void main() {
     await tester.pump();
     expect(inTimeline(find.text('01:15')), findsNothing);
     expect(inTimeline(find.text('01:25')), findsWidgets);
+  });
+
+  testWidgets('a playing tick redraws no entry of an open timeline', (
+    tester,
+  ) async {
+    await openHistory(tester);
+    void tick() =>
+        engine.emit(engine.index, engine.milliseconds + 200, playing: true);
+    // The first report starts playing, which records an action.
+    tick();
+    await tester.pumpAndSettle();
+    final rebuilt = <Widget>[];
+    debugOnRebuildDirtyWidget = (element, _) => rebuilt.add(element.widget);
+    try {
+      tick();
+      await tester.pump();
+    } finally {
+      debugOnRebuildDirtyWidget = null;
+    }
+    expect(rebuilt.whereType<Slider>(), isNotEmpty, reason: 'the tick arrived');
+    expect(
+      rebuilt.whereType<ValueListenableBuilder<List<TimelineEntry>>>(),
+      isEmpty,
+    );
   });
 
   testWidgets('an action can be deleted from the timeline', (tester) async {

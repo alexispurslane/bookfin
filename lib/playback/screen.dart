@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import '../catalog/book_cover.dart';
 import '../catalog/glass.dart';
 import '../catalog/model.dart';
+import '../foundation/derived_value.dart';
 import '../foundation/listenable_selector.dart';
 import '../foundation/theme.dart';
 import '../foundation/time.dart';
@@ -51,8 +52,12 @@ class PlaybackMiniPlayer extends StatelessWidget {
           _playPause(playback),
           _jump(playback, forward: true, compact: true),
         ],
+        // How far through its edition the open place is, from 0 to 1.
         progress: total != null && total > 0
-            ? _EditionShare(playback, total)
+            ? DerivedValue(
+                playback.positionNotifier,
+                () => (playback.editionMilliseconds ?? 0) / total,
+              )
             : null,
       );
     },
@@ -672,27 +677,6 @@ Widget _undoNotice(Playback playback) => ValueListenableBuilder(
           onDismiss: playback.dismissUndo,
         ),
 );
-
-/// How far through its edition the open place is, from 0 to 1. It notifies
-/// through [Playback.positionNotifier], so it owns no listeners itself.
-class _EditionShare implements ValueListenable<double> {
-  _EditionShare(this.playback, this.total);
-  final Playback playback;
-
-  /// The length of the open edition, in milliseconds. More than zero.
-  final int total;
-
-  @override
-  double get value => (playback.editionMilliseconds ?? 0) / total;
-
-  @override
-  void addListener(VoidCallback listener) =>
-      playback.positionNotifier.addListener(listener);
-
-  @override
-  void removeListener(VoidCallback listener) =>
-      playback.positionNotifier.removeListener(listener);
-}
 
 /// One tool of the player's tool row: [top] over a small [label].
 class _Tool extends StatelessWidget {

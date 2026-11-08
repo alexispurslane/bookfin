@@ -6,6 +6,7 @@ import 'book_page.dart' show openBook;
 import 'covers.dart';
 
 import '../downloads/downloads.dart';
+import '../foundation/derived_value.dart';
 import '../foundation/listenable_selector.dart';
 import '../foundation/theme.dart';
 import '../foundation/time.dart';
@@ -40,8 +41,13 @@ class LibraryServices {
   final Playback? playback;
   final ReaderSession? reader;
 
-  /// The saved layout, read only.
-  ValueListenable<ShelfLayout> get shelfLayout => _ShelfLayoutView(layout);
+  /// The saved layout, read only. Equal for the same [layout], so a rebuilt
+  /// screen keeps its subscription.
+  ValueListenable<ShelfLayout> get shelfLayout => DerivedValue(
+    layout,
+    () => (view: layout.view, density: layout.density),
+    source: layout,
+  );
 
   /// Changes when what the library shows of [book] can change: the download
   /// state of one of its editions, or the listening progress of one of its
@@ -176,25 +182,6 @@ String formats(Book book) {
 String seriesPosition(double order) => order == order.truncateToDouble()
     ? order.toInt().toString()
     : order.toString();
-
-/// [LibraryLayout] seen as its view and density, with no way to change them.
-class _ShelfLayoutView implements ValueListenable<ShelfLayout> {
-  const _ShelfLayoutView(this.layout);
-  final LibraryLayout layout;
-
-  @override
-  ShelfLayout get value => (view: layout.view, density: layout.density);
-  @override
-  void addListener(VoidCallback listener) => layout.addListener(listener);
-  @override
-  void removeListener(VoidCallback listener) => layout.removeListener(listener);
-
-  @override
-  bool operator ==(Object other) =>
-      other is _ShelfLayoutView && identical(other.layout, layout);
-  @override
-  int get hashCode => identityHashCode(layout);
-}
 
 /// [Playback.positionNotifier], heard only while one of [editions] is open
 /// in the player.

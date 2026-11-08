@@ -136,4 +136,15 @@ void main() {
     await playback.flush();
     expect(notices, 0);
   });
+
+  test('the recent books read twice from one Playback are equal, so a '
+      'rebuilt list keeps its subscription', () {
+    final playback = playbackOn(store);
+    addTearDown(playback.close);
+    expect(recentProgress(playback), recentProgress(playback));
+    expect(
+      recentProgress(playback).hashCode,
+      recentProgress(playback).hashCode,
+    );
+  });
 }

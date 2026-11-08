@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../catalog/glass.dart';
 import '../catalog/model.dart';
+import '../foundation/derived_value.dart';
 import '../foundation/theme.dart';
 import '../foundation/time.dart';
 import 'playback.dart';
@@ -40,7 +41,16 @@ void openListeningTimeline(
         }
 
         return ListeningTimeline(
-          entries: _TimelineEntries(playback, book),
+          // The rows show labels and places measured from the library, so
+          // the entries follow the records and the library. A playing tick
+          // does not reach the timeline.
+          entries: DerivedValue(
+            Listenable.merge([
+              playback.recordsNotifier,
+              playback.libraryNotifier,
+            ]),
+            () => playback.timeline(book),
+          ),
           editionTime: playback.editionTime,
           showBooks: book == null,
           header: RecordSaveStatus(playback: playback),
@@ -95,30 +105,6 @@ Future<void> _confirmDelete(
   )) {
     await remove();
   }
-}
-
-/// The timeline of [book] in [playback]. It notifies only when the records
-/// or the library change, because the rows show labels and places measured
-/// from the library. A playing tick does not reach the timeline.
-class _TimelineEntries implements ValueListenable<List<TimelineEntry>> {
-  _TimelineEntries(this.playback, this.book);
-  final Playback playback;
-  final Book? book;
-
-  @override
-  List<TimelineEntry> get value => playback.timeline(book);
-
-  late final _changes = Listenable.merge([
-    playback.recordsNotifier,
-    playback.libraryNotifier,
-  ]);
-
-  @override
-  void addListener(VoidCallback listener) => _changes.addListener(listener);
-
-  @override
-  void removeListener(VoidCallback listener) =>
-      _changes.removeListener(listener);
 }
 
 /// A dense, vertical timeline of listening, grouped by day. A tap on an
