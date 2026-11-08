@@ -21,3 +21,9 @@ Steps:
 
 Design fork to bring to the user before step 3: the system background is the sharp cover, not a blur. To match the chip, the app can hand Android a pre-blurred copy. The cost: the same artwork also goes to the lock screen, Bluetooth car displays and watches, where a blurred cover looks broken. Option A uses the sharp cover everywhere. Option B uses a blurred copy (blur work off the UI isolate, cached beside the cover).
 
+
+## Notes
+
+**2026-11-08T19:51:25Z**
+
+Decision (user, 2026-11-08): option B. Hand Android a blurred copy of the cover, made off the UI isolate and cached beside the cover. The user accepts that the lock screen, car displays and watches show the same blurred image.
