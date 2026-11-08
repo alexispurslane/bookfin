@@ -1,6 +1,6 @@
 ---
 id: t2-7ptd
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-08T01:23:12Z
