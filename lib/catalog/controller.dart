@@ -112,10 +112,11 @@ typedef _Built = ({CatalogCache cache, String text, CatalogLibrary library});
 
 /// The smallest saved catalog text, in characters, and the fewest entries
 /// that the catalog builds in another isolate. A smaller catalog builds on
-/// the UI isolate. Measured in AOT on an M-series Mac: a hop costs about
-/// 35 µs plus the copy of its input, and a short entry builds in about 5 µs,
-/// but an entry with a long description and many chapters takes about
-/// 85 µs. So these limits do not mark where a hop starts to pay: that is
+/// the UI isolate. A refresh counts the items that Jellyfin's pages hold,
+/// because their body size depends on Jellyfin's fields. Measured in AOT on
+/// an M-series Mac: a hop costs about 35 µs plus the copy of its input, and
+/// a short entry builds in about 5 µs, but an entry with a long
+/// description and many chapters takes about 85 µs. So these limits do not mark where a hop starts to pay: that is
 /// one or two entries. They are a compromise: widget tests run in fake time,
 /// in which a hop never completes, and every test library is below them.
 /// A library of real size is far above them.
@@ -154,6 +155,33 @@ _Built _reviseCatalog(_Revision revision) {
     ),
   );
 }
+
+/// A refresh's answer from Jellyfin for [scope]: its book [libraries], the
+/// [selected] ones, and their catalog [pages], not yet decoded. The catalog
+/// keeps [edits].
+typedef _Refresh = ({
+  AccountScope scope,
+  List<BookLibrary> libraries,
+  Set<String> selected,
+  CatalogPages pages,
+  CatalogEdits? edits,
+  DateTime completedAt,
+});
+
+/// Decodes and checks the pages of [refresh], builds its entries, and saves
+/// and builds the result. The pages cross to the worker as block copies, so
+/// a refresh copies no entries. Throws a [CatalogFailure] when the pages are
+/// not one complete catalog.
+_Built _refreshCatalog(_Refresh refresh) => _saveCatalog(
+  CatalogCache(
+    scope: refresh.scope,
+    libraries: refresh.libraries,
+    selected: refresh.selected,
+    entries: catalogEntries(refresh.pages),
+    edits: refresh.edits,
+    completedAt: refresh.completedAt,
+  ),
+);
 
 /// Adds the content digest to [cache], encodes it and builds its library.
 _Built _saveCatalog(CatalogCache cache) {
@@ -558,24 +586,20 @@ class CatalogController extends ChangeNotifier {
       if (!views.map((library) => library.id).toSet().containsAll(selection)) {
         throw const CatalogFailure(CatalogFailureKind.invalidSelection);
       }
-      final entries = selection.isEmpty
-          ? <CatalogEntry>[]
+      final pages = selection.isEmpty
+          ? const CatalogPages()
           : await client.catalog(validated, selection);
       if (!_current(generation)) return;
       final write = (_cacheWrites ?? Future<void>.value()).then((_) async {
         if (!_current(generation)) return;
-        final built = await _build(
-          _saveCatalog,
-          CatalogCache(
-            scope: validated.scope,
-            libraries: views,
-            selected: selection,
-            entries: entries,
-            edits: _cache?.edits,
-            completedAt: DateTime.now().toUtc(),
-          ),
-          small: entries.length < _hopEntries,
-        );
+        final built = await _build(_refreshCatalog, (
+          scope: validated.scope,
+          libraries: views,
+          selected: selection,
+          pages: pages,
+          edits: _cache?.edits,
+          completedAt: DateTime.now().toUtc(),
+        ), small: pages.items < _hopEntries);
         if (!_current(generation)) return;
         await _store.write(validated.scope, built.text);
         if (!_current(generation)) return;

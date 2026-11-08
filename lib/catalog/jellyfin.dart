@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:math';
+import 'dart:typed_data';
 
 import 'model.dart';
 import 'transport.dart';
@@ -129,6 +131,133 @@ class BookLibrary {
   final String id;
   final String name;
   Map<String, dynamic> toJson() => {'id': id, 'name': name};
+}
+
+/// The number of catalog items in a full page from Jellyfin.
+const catalogPageSize = 200;
+
+/// The pages of one selected book library as Jellyfin sent them: the id of
+/// the library, how many items Jellyfin counted in it, and the body of each
+/// page, in order. Page `n` starts at item `n * catalogPageSize`.
+typedef LibraryPages = ({String libraryId, int total, List<Uint8List> pages});
+
+/// Jellyfin's answer to a catalog read, not yet decoded: the pages of each
+/// selected book library, in order, and the names of the collections that
+/// hold each item. [catalogEntries] decodes and checks it. Page bodies cross
+/// to another isolate as block copies, so that isolate can decode them and
+/// build the entries, and the UI isolate never holds them as maps.
+class CatalogPages {
+  const CatalogPages({this.libraries = const [], this.collections = const {}});
+  final List<LibraryPages> libraries;
+
+  /// The names of the Jellyfin collections that hold each item, by item id.
+  /// It can name items that are not in the catalog.
+  final Map<String, List<String>> collections;
+
+  /// How many items the pages hold, when they are complete.
+  int get items => libraries.fold(0, (sum, library) => sum + library.total);
+}
+
+/// How many catalog pages the client requests at once. Pages are
+/// independent once Jellyfin counted the library, and a few at once keep the
+/// server busy without flooding it.
+const _pageRequests = 4;
+
+/// The fields of a catalog item that the catalog keeps. Jellyfin sends more,
+/// and the rest is dropped.
+const _itemFields = [
+  'Id',
+  'Name',
+  'Type',
+  'ParentId',
+  'Album',
+  'AlbumArtist',
+  'Artists',
+  'IndexNumber',
+  'ParentIndexNumber',
+  'RunTimeTicks',
+  'DateModified',
+  'Etag',
+  'ProviderIds',
+  'People',
+  'Chapters',
+  'Container',
+  'SeriesName',
+  'Overview',
+  'Genres',
+  'Studios',
+  'ProductionYear',
+  'ImageTags',
+  'AlbumId',
+  'AlbumPrimaryImageTag',
+];
+const _sourceFields = ['Id', 'Container', 'Size', 'RunTimeTicks', 'ETag'];
+
+/// Decodes the pages of [catalog], checks that they are one complete and
+/// consistent catalog, and builds its entries, in page order. It keeps the
+/// [_itemFields] of each item and adds its collection names. A top-level
+/// function, so the catalog worker can run it.
+///
+/// Throws [CatalogFailureKind.incomplete] when a page disagrees with the
+/// count of its library, misses items or repeats an item, and
+/// [CatalogFailureKind.invalidResponse] when a page cannot be read or holds
+/// an item that is not a book.
+List<CatalogEntry> catalogEntries(CatalogPages catalog) {
+  final entries = <CatalogEntry>[];
+  final seen = <String>{};
+  for (final library in catalog.libraries) {
+    final total = library.total;
+    if (library.pages.length !=
+        (total + catalogPageSize - 1) ~/ catalogPageSize) {
+      throw const CatalogFailure(CatalogFailureKind.incomplete);
+    }
+    for (final (index, body) in library.pages.indexed) {
+      final start = index * catalogPageSize;
+      try {
+        final response = jsonDecode(utf8.decode(body)) as Map<String, dynamic>;
+        final page = response['Items'] as List;
+        if (response['TotalRecordCount'] as int != total ||
+            (response['StartIndex'] != null &&
+                response['StartIndex'] != start) ||
+            page.length != min(catalogPageSize, total - start)) {
+          throw const CatalogFailure(CatalogFailureKind.incomplete);
+        }
+        for (final value in page) {
+          final item = value as Map<String, dynamic>;
+          final id = item['Id'] as String;
+          if (id.isEmpty || !seen.add(id)) {
+            throw const CatalogFailure(CatalogFailureKind.incomplete);
+          }
+          if (item['Type'] != 'AudioBook' &&
+              item['Type'] != 'Audio' &&
+              item['Type'] != 'Book') {
+            throw const CatalogFailure(CatalogFailureKind.invalidResponse);
+          }
+          entries.add(
+            CatalogEntry.fromJson({
+              for (final field in _itemFields)
+                if (item.containsKey(field)) field: item[field],
+              'MediaSources': [
+                for (final source
+                    in (item['MediaSources'] as List? ?? [])
+                        .cast<Map<String, dynamic>>())
+                  {
+                    for (final field in _sourceFields)
+                      if (source.containsKey(field)) field: source[field],
+                  },
+              ],
+              'BookfinCollections': ?catalog.collections[id],
+            }, libraryId: library.libraryId),
+          );
+        }
+      } on CatalogFailure {
+        rethrow;
+      } catch (_) {
+        throw const CatalogFailure(CatalogFailureKind.invalidResponse);
+      }
+    }
+  }
+  return entries;
 }
 
 class JellyfinClient {
@@ -264,7 +393,11 @@ class JellyfinClient {
     }
   }
 
-  Future<List<CatalogEntry>> catalog(
+  /// Reads the catalog of the [selected] book libraries from Jellyfin,
+  /// with the collections of its items, and returns the pages undecoded.
+  /// For each library, a request for one item gives Jellyfin's count, and
+  /// the pages of that count follow. [catalogEntries] checks and builds them.
+  Future<CatalogPages> catalog(
     JellyfinSession session,
     Set<String> selected,
   ) async {
@@ -274,130 +407,74 @@ class JellyfinClient {
     if (!available.containsAll(selected)) {
       throw const CatalogFailure(CatalogFailureKind.invalidSelection);
     }
-    final entries = <CatalogEntry>[];
-    final seen = <String>{};
-    for (final library in selected.toList()..sort()) {
-      var start = 0;
-      int? total;
-      while (true) {
-        final response = await _send(
-          ['Items'],
-          session: session,
-          query: {
-            'userId': session.scope.userId,
-            'parentId': library,
-            'recursive': 'true',
-            'includeItemTypes': 'AudioBook,Book,Audio',
-            'fields': 'MediaSources,Chapters,People,ProviderIds,Etag,ParentId,Overview,Genres,Studios',
-            'startIndex': '$start',
-            'limit': '200',
-            'enableTotalRecordCount': 'true',
-            'sortBy': 'SortName',
-            'sortOrder': 'Ascending',
-          },
-        );
-        try {
-          final page = response['Items'] as List;
-          final count = response['TotalRecordCount'] as int;
-          if (count < 0 ||
-              count > 1000000 ||
-              (total != null && total != count) ||
-              (response['StartIndex'] != null &&
-                  response['StartIndex'] != start) ||
-              page.length > 200 ||
-              start + page.length > count ||
-              (page.isEmpty && start < count)) {
-            throw const CatalogFailure(CatalogFailureKind.incomplete);
-          }
-          total = count;
-          for (final value in page) {
-            final item = value as Map<String, dynamic>;
-            final id = item['Id'] as String;
-            if (id.isEmpty || !seen.add(id)) {
-              throw const CatalogFailure(CatalogFailureKind.incomplete);
-            }
-            if (item['Type'] != 'AudioBook' &&
-                item['Type'] != 'Audio' &&
-                item['Type'] != 'Book') {
-              throw const CatalogFailure(CatalogFailureKind.invalidResponse);
-            }
-            final safe = <String, dynamic>{
-              for (final field in [
-                'Id',
-                'Name',
-                'Type',
-                'ParentId',
-                'Album',
-                'AlbumArtist',
-                'Artists',
-                'IndexNumber',
-                'ParentIndexNumber',
-                'RunTimeTicks',
-                'DateModified',
-                'Etag',
-                'ProviderIds',
-                'People',
-                'Chapters',
-                'Container',
-                'SeriesName',
-                'Overview',
-                'Genres',
-                'Studios',
-                'ProductionYear',
-                'ImageTags',
-                'AlbumId',
-                'AlbumPrimaryImageTag',
-              ])
-                if (item.containsKey(field)) field: item[field],
-            };
-            safe['MediaSources'] = [
-              for (final source
-                  in (item['MediaSources'] as List? ?? [])
-                      .cast<Map<String, dynamic>>())
-                {
-                  for (final field in [
-                    'Id',
-                    'Container',
-                    'Size',
-                    'RunTimeTicks',
-                    'ETag',
-                  ])
-                    if (source.containsKey(field)) field: source[field],
-                },
-            ];
-            entries.add(CatalogEntry.fromJson(safe, libraryId: library));
-          }
-          start += page.length;
-          if (start == total) break;
-        } on CatalogFailure {
-          rethrow;
-        } catch (_) {
-          throw const CatalogFailure(CatalogFailureKind.invalidResponse);
-        }
-      }
+    final collections = _collections(session);
+    final List<LibraryPages> pages;
+    try {
+      pages = [
+        for (final library in selected.toList()..sort())
+          await _libraryPages(session, library),
+      ];
+    } catch (_) {
+      collections.ignore();
+      rethrow;
     }
-    final collections = await _collections(
-      session,
-      entries.map((entry) => entry.id).toSet(),
-    );
-    return List.unmodifiable(
-      entries.map(
-        (entry) => collections[entry.id] == null
-            ? entry
-            : CatalogEntry.fromJson({
-                ...entry.json,
-                'BookfinCollections': collections[entry.id],
-              }, libraryId: entry.libraryId),
-      ),
-    );
+    return CatalogPages(libraries: pages, collections: await collections);
   }
 
-  /// The names of the Jellyfin collections that hold each catalog item, by
-  /// item id. Collections often name a book series. A collection that cannot
+  /// The pages of [library]: a request for one item gives Jellyfin's count,
+  /// then the pages of that count follow, [_pageRequests] at a time.
+  Future<LibraryPages> _libraryPages(
+    JellyfinSession session,
+    String library,
+  ) async {
+    Map<String, String> query(int start, int limit) => {
+      'userId': session.scope.userId,
+      'parentId': library,
+      'recursive': 'true',
+      'includeItemTypes': 'AudioBook,Book,Audio',
+      'fields': 'MediaSources,Chapters,People,ProviderIds,Etag,ParentId,Overview,Genres,Studios',
+      'startIndex': '$start',
+      'limit': '$limit',
+      'enableTotalRecordCount': 'true',
+      'sortBy': 'SortName',
+      'sortOrder': 'Ascending',
+    };
+    final counted = await _send(
+      ['Items'],
+      session: session,
+      query: query(0, 1),
+    );
+    final total = counted['TotalRecordCount'];
+    if (total is! int) {
+      throw const CatalogFailure(CatalogFailureKind.invalidResponse);
+    }
+    if (total < 0 || total > 1000000) {
+      throw const CatalogFailure(CatalogFailureKind.incomplete);
+    }
+    final starts = [
+      for (var start = 0; start < total; start += catalogPageSize) start,
+    ];
+    final pages = <Uint8List>[];
+    for (var batch = 0; batch < starts.length; batch += _pageRequests) {
+      pages.addAll(
+        await Future.wait([
+          for (final start in starts.skip(batch).take(_pageRequests))
+            _fetchBody(
+              ['Items'],
+              session: session,
+              query: query(start, catalogPageSize),
+            ),
+        ]),
+      );
+    }
+    return (libraryId: library, total: total, pages: pages);
+  }
+
+  /// The names of the Jellyfin collections that hold each item, by item id.
+  /// Collections often name a book series. A collection that cannot
   /// be read only removes series names, so it never fails the catalog.
   Future<Map<String, List<String>>> _collections(
     JellyfinSession session,
-    Set<String> ids,
   ) async {
     try {
       final sets =
@@ -433,7 +510,7 @@ class JellyfinClient {
         for (final (index, page) in children.indexed) {
           for (final child in (page['Items'] as List? ?? []).whereType<Map>()) {
             final id = child['Id'];
-            if (id is String && ids.contains(id)) {
+            if (id is String) {
               result.putIfAbsent(id, () => []).add(batch[index]['Name']);
             }
           }
@@ -462,26 +539,43 @@ class JellyfinClient {
     Map<String, dynamic>? body,
   }) {
     if (session != null) _guard(session);
-    final uri = server.replace(
-      pathSegments: [
-        ...server.pathSegments.where((segment) => segment.isNotEmpty),
-        ...segments,
-      ],
-      queryParameters: query,
-    );
     return _transport.send(
-      uri,
+      _uri(segments, query),
       method: method,
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Authorization':
-            'MediaBrowser Client="Bookfin", Device="Bookfin", DeviceId="${deviceId.replaceAll(RegExp(r'[^a-zA-Z0-9_-]'), '')}", Version="0.1.0"${session == null ? '' : ', Token="${session.token}"'}',
-        if (session != null) 'X-Emby-Token': session.token,
-      },
+      headers: _headers(session),
       body: body,
     );
   }
+
+  /// Like [_send] for a GET request, but returns the response body undecoded.
+  Future<Uint8List> _fetchBody(
+    List<String> segments, {
+    required JellyfinSession session,
+    required Map<String, String> query,
+  }) {
+    _guard(session);
+    return _transport.fetchBody(
+      _uri(segments, query),
+      method: 'GET',
+      headers: _headers(session),
+    );
+  }
+
+  Uri _uri(List<String> segments, Map<String, String>? query) => server.replace(
+    pathSegments: [
+      ...server.pathSegments.where((segment) => segment.isNotEmpty),
+      ...segments,
+    ],
+    queryParameters: query,
+  );
+
+  Map<String, String> _headers(JellyfinSession? session) => {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json',
+    'Authorization':
+        'MediaBrowser Client="Bookfin", Device="Bookfin", DeviceId="${deviceId.replaceAll(RegExp(r'[^a-zA-Z0-9_-]'), '')}", Version="0.1.0"${session == null ? '' : ', Token="${session.token}"'}',
+    if (session != null) 'X-Emby-Token': session.token,
+  };
 
   void close() => _transport.close();
 }
