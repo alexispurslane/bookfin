@@ -166,8 +166,9 @@ abstract class Downloads extends ChangeNotifier {
   _watches = {};
 
   /// [status] of [edition], which notifies only when that status changes.
-  /// Byte progress of the edition notifies it. Changes of other editions do
-  /// not. Each call for one edition id returns the same listenable.
+  /// Byte progress of the edition notifies it, and notifies nothing else.
+  /// Changes of other editions do not. Each call for one edition id returns
+  /// the same listenable.
   ValueListenable<EditionDownload> watch(Edition edition) {
     final state = _watches[edition.id]?.state ?? ValueNotifier(status(edition));
     _watches[edition.id] = (edition: edition, state: state);
@@ -176,7 +177,9 @@ abstract class Downloads extends ChangeNotifier {
 
   /// Gives each watched edition its current [status]. A watch notifies only
   /// when its status changed. [notifyListeners] calls this first, so a
-  /// subclass that only notifies broadly keeps every watch true.
+  /// subclass that only notifies broadly keeps every watch true. A subclass
+  /// calls this alone for byte progress, so only the watches of the
+  /// editions that gained bytes notify.
   @protected
   void updateWatches() {
     for (final watch in _watches.values.toList()) {
@@ -195,8 +198,8 @@ abstract class Downloads extends ChangeNotifier {
   Future<void> remove(Edition edition);
 
   /// Notifies when a download starts, finishes, fails, stops or waits, or
-  /// when saved files change. Byte progress notifies only the listeners of
-  /// this object, not of [phases].
+  /// when saved files change. This object notifies its own listeners at the
+  /// same times. Byte progress notifies only [watch].
   Listenable get phases => this;
   Future<List<RetainedDownload>> retainedStorage() async => const [];
 

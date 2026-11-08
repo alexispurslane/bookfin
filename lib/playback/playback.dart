@@ -165,6 +165,10 @@ typedef PlaybackSettings = ({double speed, int backward, int forward});
 /// records of the bound account failed to save.
 typedef PlaybackStatus = ({String? message, bool saveFailed});
 
+/// The action that Undo can take back, and whether the place before it is
+/// saved on this device.
+typedef UndoOffer = ({ListeningEvent action, bool saved});
+
 class Playback extends ChangeNotifier {
   Playback({
     required this.downloads,
@@ -260,15 +264,21 @@ class Playback extends ChangeNotifier {
   late final _selectionSignal = ValueNotifier<PlaybackSelection>(_selection);
   late final _sleepSignal = ValueNotifier<Duration?>(_sleepLeft);
   late final _recordsSignal = ValueNotifier<Object>(_records);
+  late final _librarySignal = ValueNotifier<List<Book>>(_books);
   late final _settingsSignal = ValueNotifier<PlaybackSettings>(_settings);
   late final _statusSignal = ValueNotifier<PlaybackStatus>(_status);
+  late final _undoSignal = ValueNotifier<UndoOffer?>(_undoOffer);
 
-  // Playback notifies through itself for every change, and through these
-  // narrow signals for one kind of change each. A widget that shows one
-  // value follows the signal of that value. Every signal holds the state
+  // Playback notifies through these narrow signals for one kind of change
+  // each, and through itself for every change but two: a decoder report
+  // that only moves the position, and a confirmed save that ends no
+  // failure. Those two reach only the narrow signals, so the broad
+  // listeners do not run several times a second while audio plays. A
+  // widget that shows one value follows the signal of that value. Every signal holds the state
   // that [_publish] last read, so it notifies only when its own value
-  // changed. Positions and records compare by identity: each new decoder
-  // report is a new position, and a records change replaces its list.
+  // changed. Positions, records and the library compare by identity: each
+  // new decoder report is a new position, a records change replaces its
+  // list, and each bind replaces the library list.
 
   /// The position of the open edition, or null when none is open. It
   /// notifies on each decoder report while audio plays, a seek, a restore,
@@ -290,11 +300,22 @@ class Playback extends ChangeNotifier {
   /// position on each save, so [positionNotifier] carries that change.
   Listenable get recordsNotifier => _recordsSignal;
 
+  /// Notifies when another library is bound, even for the same account.
+  /// The values measured from the library, such as [editionTime] and
+  /// [recent], can then change, although no record changed.
+  Listenable get libraryNotifier => _librarySignal;
+
   /// The listening speed and the short jump lengths.
   ValueListenable<PlaybackSettings> get settingsNotifier => _settingsSignal;
 
   /// The message to show, and whether the records failed to save.
   ValueListenable<PlaybackStatus> get statusNotifier => _statusSignal;
+
+  /// The Undo offer after a position change, or null when there is none. It
+  /// notifies when the offer comes or goes, and when the place before the
+  /// change is saved. A save of the place where audio plays now does not
+  /// change it.
+  ValueListenable<UndoOffer?> get undoNotifier => _undoSignal;
 
   /// The listening actions, newest first. The list stays the same object
   /// until the history changes.
@@ -1240,7 +1261,11 @@ class Playback extends ChangeNotifier {
       _cancelSleep();
       unawaited(_enqueue(engine.pause));
     }
-    _notify();
+    if (wasPlaying == _playing && !sample.completed) {
+      _publish();
+    } else {
+      _notify();
+    }
   }
 
   AudioPosition _positionForSample(AudioSample sample) {
@@ -1572,6 +1597,7 @@ class Playback extends ChangeNotifier {
     try {
       await store.save(accountKey, value);
       if (identical(_pendingWrites[accountKey], value)) {
+        final status = _status;
         _pendingWrites.remove(accountKey);
         _failedAccounts.remove(accountKey);
         if (_session?.scope.key == accountKey) {
@@ -1579,7 +1605,8 @@ class Playback extends ChangeNotifier {
               'Personal records could not be saved. Free storage and try again.') {
             _message = null;
           }
-          _notify();
+          // A save that ends no failure changes only [undoNotifier].
+          _status == status ? _publish() : _notify();
         }
       }
     } on Exception {
@@ -1629,8 +1656,10 @@ class Playback extends ChangeNotifier {
     _selectionSignal,
     _sleepSignal,
     _recordsSignal,
+    _librarySignal,
     _settingsSignal,
     _statusSignal,
+    _undoSignal,
   ];
 
   /// Publishes the current state to the narrow signals, then to the broad
@@ -1648,8 +1677,10 @@ class Playback extends ChangeNotifier {
     _selectionSignal.value = _selection;
     _sleepSignal.value = _sleepLeft;
     _recordsSignal.value = _records;
+    _librarySignal.value = _books;
     _settingsSignal.value = _settings;
     _statusSignal.value = _status;
+    _undoSignal.value = _undoOffer;
   }
 
   PlaybackSelection get _selection =>
@@ -1659,6 +1690,18 @@ class Playback extends ChangeNotifier {
       (speed: _speed, backward: _backward, forward: _forward);
 
   PlaybackStatus get _status => (message: _message, saveFailed: saveFailed);
+
+  /// The undo offer. Its action is saved once no unconfirmed write of the
+  /// bound account holds it.
+  UndoOffer? get _undoOffer => switch (_undo) {
+    null => null,
+    final action => (
+      action: action,
+      saved:
+          _pendingWrites[_session?.scope.key]?.history.containsKey(action.id) !=
+          true,
+    ),
+  };
 
   // The record lists and the resume map are replaced, never changed in
   // place, when records change, so their identities tell whether they
@@ -1699,8 +1742,10 @@ class Playback extends ChangeNotifier {
             _selectionSignal.value != _selection ||
             _sleepSignal.value != _sleepLeft ||
             _recordsSignal.value != _records ||
+            !identical(_librarySignal.value, _books) ||
             _settingsSignal.value != _settings ||
-            _statusSignal.value != _status)) {
+            _statusSignal.value != _status ||
+            _undoSignal.value != _undoOffer)) {
       throw StateError('Each narrow signal shows the state that it names.');
     }
     if (_history.map((event) => event.id).toSet().length != _history.length ||

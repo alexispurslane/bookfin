@@ -10,6 +10,7 @@ import 'package:bookfin/catalog/store.dart';
 import 'package:bookfin/catalog/transport.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../invariant_watch.dart';
 import 'controller_test.dart'
     show FixtureClient, MemoryCatalogStore, MemoryCredentials, account;
 import 'model_test.dart' show entry;
@@ -640,17 +641,13 @@ void main() {
       'the status and the catalog agree on success at every status notice',
       () async {
         final seen = <(bool, bool)>[];
-        // A notifier reports an error that its listener throws instead of
-        // failing the test, so the listener keeps the broken invariants.
-        final broken = <Object>[];
-        controller.statusNotifier.addListener(() {
-          seen.add((verified(), controller.verified));
-          try {
-            controller.checkInvariants();
-          } on StateError catch (error) {
-            broken.add(error);
-          }
-        });
+        controller.statusNotifier.addListener(
+          () => seen.add((verified(), controller.verified)),
+        );
+        expectInvariantsAtEveryNotice(
+          controller.statusNotifier,
+          controller.checkInvariants,
+        );
         await connectAndSelect();
         await controller.correctBook(
           'book:one',
@@ -672,7 +669,6 @@ void main() {
           everyElement(predicate<(bool, bool)>((s) => s.$1 == s.$2)),
         );
         expect(seen.map((s) => s.$1), containsAllInOrder([true, false, true]));
-        expect(broken, isEmpty);
       },
     );
   });

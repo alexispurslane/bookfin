@@ -430,7 +430,7 @@ void main() {
     });
     await _settleStorage(tester, downloads);
     final before = downloads.reads;
-    downloads.addListener(() => notifications++);
+    downloads.watch(fixture.text).addListener(() => notifications++);
     await tester.runAsync(() async {
       await downloads.request(fixture.text);
       await downloads.idle;

@@ -8,7 +8,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'playback_test.dart'
-    show LocalFiles, TestEngine, MemoryResume, account, title, recording;
+    show
+        LocalFiles,
+        TestEngine,
+        MemoryResume,
+        account,
+        title,
+        recording,
+        first,
+        second;
 
 const otherFile = SourceFile(
   itemId: 'three',
@@ -161,6 +169,43 @@ void main() {
     expect(playback.editionMilliseconds, 75000);
     // Going somewhere closes the timeline, so the player shows the new place.
     expect(find.byType(ListeningTimeline), findsNothing);
+  });
+
+  testWidgets('an open timeline measures its places again when the library '
+      'changes the length of an earlier file', (tester) async {
+    await openHistory(tester);
+    expect(inTimeline(find.text('01:15')), findsWidgets);
+    // A refresh of the same account finds that part one runs ten seconds
+    // longer, so the bookmark in part two is ten seconds later in the book.
+    final longer = Edition(
+      id: recording.id,
+      kind: recording.kind,
+      label: recording.label,
+      files: [
+        SourceFile(
+          itemId: first.itemId,
+          displayName: first.displayName,
+          mediaSourceId: first.mediaSourceId,
+          revision: first.revision,
+          durationMs: first.durationMs! + 10000,
+          container: first.container,
+          sizeBytes: first.sizeBytes,
+          chapters: first.chapters,
+        ),
+        second,
+      ],
+      memberIds: recording.memberIds,
+    );
+    final refreshed = Book(
+      id: title.id,
+      title: title.title,
+      author: title.author,
+      editions: [longer],
+    );
+    await tester.runAsync(() => playback.bind(account(), [refreshed, other]));
+    await tester.pump();
+    expect(inTimeline(find.text('01:15')), findsNothing);
+    expect(inTimeline(find.text('01:25')), findsWidgets);
   });
 
   testWidgets('an action can be deleted from the timeline', (tester) async {

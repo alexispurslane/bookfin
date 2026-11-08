@@ -662,16 +662,12 @@ Widget _jump(
 );
 
 /// The Undo offer after a position change, while there is one.
-Widget _undoNotice(Playback playback) => ListenableSelector<bool?>(
-  // Undo has no narrow signal, so this follows every change of Playback and
-  // rebuilds only when the offer or its saved state changes. The value is
-  // whether the previous place is still unsaved, or null without an offer.
-  listenable: playback,
-  select: () => playback.undoAction == null ? null : playback.unsavedChanges,
-  builder: (context, unsaved, _) => unsaved == null
+Widget _undoNotice(Playback playback) => ValueListenableBuilder(
+  valueListenable: playback.undoNotifier,
+  builder: (context, offer, _) => offer == null
       ? const SizedBox.shrink()
       : UndoNotice(
-          unsaved: unsaved,
+          unsaved: !offer.saved,
           onUndo: () => unawaited(playback.undoSeek()),
           onDismiss: playback.dismissUndo,
         ),
