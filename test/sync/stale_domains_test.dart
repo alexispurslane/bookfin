@@ -75,8 +75,8 @@ void main() {
         }
       }
 
-      Future<StaleDomains> sync() =>
-          records.synchronize(fixture.session, fixture.client);
+      Future<StaleDomains> sync() async =>
+          (await records.synchronize(fixture.session, fixture.client)).stale;
 
       test(
         'a sync that brings no new record leaves both writers current',

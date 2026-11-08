@@ -74,6 +74,10 @@ class RecordJournal {
     acknowledged.clear();
   }
 
+  /// The retained action [identity], or null when the journal lacks it.
+  /// Do not change it.
+  Map<String, dynamic>? retained(String identity) => _actions[identity];
+
   static String identity(Map<String, dynamic> action) =>
       'action.${action['replica']}.${action['sequence']}';
 

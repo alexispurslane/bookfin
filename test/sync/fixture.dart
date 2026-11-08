@@ -80,6 +80,14 @@ class SyncFixture {
             'Deleted': false,
           },
         );
+      } else if (request.uri.pathSegments.length == 4) {
+        final stored = objects[request.uri.pathSegments.last];
+        if (stored == null) {
+          request.response.statusCode = 404;
+          await request.response.close();
+          return;
+        }
+        value = stored;
       } else {
         final after = int.parse(request.uri.queryParameters['after']!);
         if (failDiscoveryAfter case final limit? when after >= limit) {

@@ -37,12 +37,13 @@ class _Reader extends ReaderSession {
 /// Personal records whose next sync reports [stale] and finds [found].
 class _Records implements LocalResumeStore {
   StaleDomains stale = (listening: false, reading: false);
+  int replaced = 0;
   Map<String, List<Map<String, dynamic>>> found = {};
   @override
-  Future<StaleDomains> synchronize(
+  Future<SyncReport> synchronize(
     JellyfinSession session,
     JellyfinClient client,
-  ) async => stale;
+  ) async => (stale: stale, replaced: replaced);
 
   @override
   Future<Map<String, List<Map<String, dynamic>>>> conflicts(

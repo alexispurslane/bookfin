@@ -20,6 +20,11 @@ typedef RecordsHop = Future<R> Function<M, R>(R Function(M) work, M input);
 /// choice between saved versions change records outside the writers.
 typedef StaleDomains = ({bool listening, bool reading});
 
+/// What one sync tells its caller: the [stale] domains whose writer must
+/// refresh, and how many of this phone's saved actions differed from the
+/// server's copy of the same action and were [replaced] by it.
+typedef SyncReport = ({StaleDomains stale, int replaced});
+
 /// One stored account: the settings of both domains and the record journal.
 ///
 /// [metadata] holds the listening settings at the top and the reading
@@ -224,21 +229,34 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
   /// outside it, including records that an earlier sync saved before it
   /// failed. A sync that brings nothing new, or only this device's own
   /// actions, returns no stale domain once both writers are current.
-  Future<StaleDomains> synchronize(
+  Future<SyncReport> synchronize(
     JellyfinSession session,
     JellyfinClient client,
   ) async {
     await client.validate(session);
     final account = session.scope.key;
+    var replaced = 0;
     final uploads = await _query(account, (journal) => journal.uploads);
     for (final action in uploads) {
       final identity = RecordJournal.identity(action);
       final payload = jsonEncode(action);
-      final stored = await client.uploadPersonalRecord(
-        session,
-        identity,
-        payload,
-      );
+      Map<String, dynamic> stored;
+      try {
+        stored = await client.uploadPersonalRecord(session, identity, payload);
+      } on Exception {
+        // The server refuses an upload whose identity it holds with other
+        // content. Its copy was uploaded before any damage here, so it
+        // wins. A server that cannot be asked, or that lacks the action,
+        // leaves the failure as it was.
+        final copy = await _serverCopy(session, client, identity);
+        if (copy == null) rethrow;
+        if (!const DeepCollectionEquality().equals(copy, action)) {
+          await _takeServerCopies(account, [copy]);
+          replaced++;
+        }
+        await _update(account, (journal) => journal.acknowledge(identity));
+        continue;
+      }
       if (stored['Id'] != identity ||
           stored['Payload'] != payload ||
           stored['Deleted'] != false ||
@@ -283,6 +301,20 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
         }
         actions.add(decoded);
       }
+      final differing = await _query(
+        account,
+        (journal) => [
+          for (final action in actions)
+            if (journal.retained(RecordJournal.identity(action))
+                case final local?
+                when !const DeepCollectionEquality().equals(local, action))
+              action,
+        ],
+      );
+      if (differing.isNotEmpty) {
+        await _takeServerCopies(account, differing);
+        replaced += differing.length;
+      }
       if (page['Cursor'] != previous ||
           (page['HasMore'] == true && objects.isEmpty)) {
         throw const FormatException(
@@ -298,14 +330,91 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
       });
       if (page['HasMore'] == false) {
         return (
-          listening: _behind.contains(_writer(account, reading: false)),
-          reading: _behind.contains(_writer(account, reading: true)),
+          stale: (
+            listening: _behind.contains(_writer(account, reading: false)),
+            reading: _behind.contains(_writer(account, reading: true)),
+          ),
+          replaced: replaced,
         );
       }
     }
     throw Exception(
       'Personal-record sync is incomplete. Retry to continue discovery.',
     );
+  }
+
+  /// The server's copy of the action [identity], or null when the server
+  /// cannot be asked, lacks it, or answers with something else.
+  Future<Map<String, dynamic>?> _serverCopy(
+    JellyfinSession session,
+    JellyfinClient client,
+    String identity,
+  ) async {
+    try {
+      final stored = await client.personalRecord(session, identity);
+      if (stored['Id'] != identity ||
+          stored['Deleted'] != false ||
+          stored['Payload'] is! String) {
+        return null;
+      }
+      final copy = jsonDecode(stored['Payload'] as String);
+      return copy is Map<String, dynamic> &&
+              RecordJournal.identity(copy) == identity
+          ? copy
+          : null;
+    } on Exception {
+      return null;
+    }
+  }
+
+  /// Replaces each saved action of [account] that has the identity of one
+  /// of [copies], the server's copies, by that copy. The server's copy wins,
+  /// because an action never changes and the server holds the copy that was
+  /// uploaded before any damage here. The saved data moves aside first, as
+  /// damaged data does, and is never deleted. The copies count as uploaded.
+  ///
+  /// The journal is replayed with the copies in a hop. Throws a
+  /// [FormatException] when the copies do not fit the journal, and changes
+  /// nothing then.
+  Future<void> _takeServerCopies(
+    String account,
+    List<Map<String, dynamic>> copies,
+  ) {
+    final operation = _writes.then((_) async {
+      var completed = false;
+      try {
+        final stored = (await _readAccount(account))!;
+        final database = await _storage();
+        final sync = stored.journal.encode();
+        final restored = await _derive(_withServerCopies, (
+          account: account,
+          metadata: stored.metadata,
+          sync: sync,
+          copies: copies,
+          database: database != null,
+        ), small: (sync['actions'] as List).length < _hopItems);
+        _changedOutsideWriters(account, [
+          for (final copy in copies) ...[
+            copy['record'] as String,
+            stored.journal.retained(RecordJournal.identity(copy))!['record']
+                as String,
+          ],
+        ]);
+        await _adopt(
+          account,
+          restored,
+          text: database == null
+              ? (await SharedPreferences.getInstance()).getString(_key(account))
+              : null,
+          reported: false,
+        );
+        completed = true;
+      } finally {
+        if (!completed) _forget(account);
+      }
+    });
+    _writes = operation.then<void>((_) {}, onError: (Object _) {});
+    return operation;
   }
 
   Future<Map<String, List<Map<String, dynamic>>>> conflicts(String account) =>
@@ -440,7 +549,8 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
 
   /// Saves [restored] as the durable state of [account] when it must be
   /// saved, keeps its views, and returns it. [text] is the saved text that
-  /// the hop restored, if any.
+  /// the hop restored, if any. [reported] says that [setAside] reports the
+  /// damaged data that moved aside.
   ///
   /// A damaged account's data moves aside before the new account replaces
   /// it. With a database, both happen in one transaction, and preference
@@ -450,6 +560,7 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
     String account,
     _Restored restored, {
     String? text,
+    bool reported = true,
   }) async {
     final stored = restored.stored;
     final database = await _storage();
@@ -484,7 +595,7 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
     } else if (database != null) {
       _accounts[account] = stored;
     }
-    if (restored.damaged) _setAside.add(account);
+    if (restored.damaged && reported) _setAside.add(account);
     _keep(account, restored.views);
     return stored;
   }
@@ -1078,6 +1189,54 @@ _Restored _salvageRows(({String account, AccountRows rows}) input) {
     actions: [for (final payload in rows.payloads) ?_decodedObject(payload)],
     pending: rows.malformed ? null : rows.pending,
     database: true,
+  );
+}
+
+/// The account of `input.account` with its settings `input.metadata` and
+/// the journal that `input.sync` encodes, in which each of `input.copies`
+/// replaces the action of its identity, and counts as uploaded. It must be
+/// saved as a damaged account, which keeps the saved data aside.
+///
+/// Throws a [FormatException] when the journal does not accept the copies.
+_Restored _withServerCopies(
+  ({
+    String account,
+    Map<String, dynamic> metadata,
+    Map<String, dynamic> sync,
+    List<Map<String, dynamic>> copies,
+    bool database,
+  })
+  input,
+) {
+  final copies = {
+    for (final copy in input.copies) RecordJournal.identity(copy): copy,
+  };
+  final sync = input.sync;
+  final journal = RecordJournal(input.account, sync['replica'] as String, {
+    ...sync,
+    'actions': [
+      for (final action
+          in (sync['actions'] as List).cast<Map<String, dynamic>>())
+        copies[RecordJournal.identity(action)] ?? action,
+    ],
+    'pending': [
+      for (final identity in (sync['pending'] as List).cast<String>())
+        if (!copies.containsKey(identity)) identity,
+    ],
+  }, _validateActionValue);
+  return (
+    stored: (metadata: input.metadata, journal: journal),
+    views: _views(input.metadata, journal.values),
+    persist: true,
+    damaged: true,
+    commit: input.database
+        ? RecordDatabase.encodeCommit(
+            input.account,
+            input.metadata,
+            journal,
+            initialize: true,
+          )
+        : null,
   );
 }
 

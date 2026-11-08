@@ -269,6 +269,27 @@ void main() {
       },
     );
 
+    testWidgets(
+      'after a sync that took the server copy of damaged records the page quietly says so',
+      (tester) async {
+        records.replaced = 1;
+        await showPage(tester);
+        await controlled.synchronize();
+        await tester.pump();
+        expect(
+          find.textContaining(
+            '1 damaged record was restored from Jellyfin. Bookfin kept the damaged copy.',
+          ),
+          findsOneWidget,
+        );
+        expect(find.byType(AlertDialog), findsNothing);
+        records.replaced = 0;
+        await controlled.synchronize();
+        await tester.pump();
+        expect(find.textContaining('restored from Jellyfin'), findsNothing);
+      },
+    );
+
     testWidgets('tapping Sync now shows busy, then the result', (tester) async {
       records.gate = Completer();
       await showPage(tester);

@@ -14,8 +14,9 @@ import 'journal.dart' show DeepCollectionEquality;
 /// - [message]: the result of the latest such action, or null.
 typedef RecordSyncStatus = ({bool busy, String? message});
 
-/// How the latest sync ended: when it finished, and whether it failed.
-typedef RecordSyncOutcome = ({DateTime at, bool failed});
+/// How the latest sync ended: when it finished, whether it failed, and how
+/// many damaged records on this phone it [replaced] by the server's copy.
+typedef RecordSyncOutcome = ({DateTime at, bool failed, int replaced});
 
 /// The records with saved versions to choose between: each record address
 /// with its saved versions.
@@ -234,7 +235,7 @@ class RecordSync {
     try {
       await playback?.flush();
       await reader?.flush();
-      final stale = await records.synchronize(session, client);
+      final (:stale, :replaced) = await records.synchronize(session, client);
       if (!_current(generation)) return null;
       if (stale.listening) await playback?.refreshPersonalRecords();
       if (stale.reading) await reader?.refreshPersonalRecords();
@@ -244,6 +245,7 @@ class RecordSync {
       _publish(conflicts);
       return _ended(
         failed: false,
+        replaced: replaced,
         message: conflicts.isEmpty ? 'Personal records are synced.' : 'Choose between saved places or edits. Both versions are kept until you choose.',
       );
     } on Exception {
@@ -273,8 +275,12 @@ class RecordSync {
     }
   }
 
-  _Result _ended({required bool failed, required String message}) {
-    _lastSync.value = (at: now(), failed: failed);
+  _Result _ended({
+    required bool failed,
+    required String message,
+    int replaced = 0,
+  }) {
+    _lastSync.value = (at: now(), failed: failed, replaced: replaced);
     return (failed: failed, message: message);
   }
 

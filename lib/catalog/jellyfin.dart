@@ -223,6 +223,22 @@ class JellyfinClient {
     query: {'after': '$after', 'limit': '4'},
   );
 
+  /// The server's copy of the personal-record object [identity].
+  Future<Map<String, dynamic>> personalRecord(
+    JellyfinSession session,
+    String identity,
+  ) {
+    if (!RegExp(r'^[a-zA-Z0-9._:-]{1,128}$').hasMatch(identity)) {
+      throw const FormatException('Invalid personal-record identity.');
+    }
+    return _send([
+      'BookfinStorage',
+      'v1',
+      'objects',
+      identity,
+    ], session: session);
+  }
+
   Future<Map<String, dynamic>> uploadPersonalRecord(
     JellyfinSession session,
     String identity,

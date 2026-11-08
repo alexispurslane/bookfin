@@ -192,12 +192,12 @@ class CountingRecords implements LocalResumeStore {
   int runs = 0;
 
   @override
-  Future<StaleDomains> synchronize(
+  Future<SyncReport> synchronize(
     JellyfinSession session,
     JellyfinClient client,
   ) async {
     runs++;
-    return (listening: false, reading: false);
+    return (stale: (listening: false, reading: false), replaced: 0);
   }
 
   @override

@@ -98,7 +98,12 @@ class RecordSyncView extends StatelessWidget {
             : Text(
                 outcome.failed
                     ? 'Last sync failed. Tap Sync now to retry.'
-                    : 'Last synced · ${dayAndTime(context, outcome.at)}',
+                    : [
+                        'Last synced · ${dayAndTime(context, outcome.at)}',
+                        if (outcome.replaced == 1) '1 damaged record was restored from Jellyfin. Bookfin kept the damaged copy.',
+                        if (outcome.replaced > 1)
+                          '${outcome.replaced} damaged records were restored from Jellyfin. Bookfin kept the damaged copies.',
+                      ].join('\n'),
                 style: Theme.of(context).textTheme.bodySmall,
               ),
       ),
