@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- audio_service looks up its media button icons by name from Dart, so the
+     release resource shrinker cannot see that they are used. Without them,
+     every playback state update fails, Android shows no media notification,
+     and playback stops when the app goes to the background. -->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@drawable/audio_service_*" />
