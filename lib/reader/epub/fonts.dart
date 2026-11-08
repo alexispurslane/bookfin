@@ -20,11 +20,21 @@ abstract final class BookFonts {
   /// the start of its load, so a second load of it waits for the first.
   static final _loads = <(String, String), Future<void>>{};
 
+  /// The families of which at least one face registered.
+  static final _registered = <String>{};
+
+  /// Whether a load named [family] and none of its faces registered: a
+  /// face of it is still loading, or each of them failed to load. Layout
+  /// draws such a family in the reader font.
+  static bool missing(String family) =>
+      !_registered.contains(family) &&
+      _loads.keys.any((key) => key.$1 == family);
+
   /// Registers each of [faces] once, under its family in the book whose
   /// faces carry [prefix] (`FontFaceRule.familyIn`), from the bytes that
   /// [bytes] gives for its path. A face that fails to load is skipped, so
-  /// its runs draw in a fallback font. When the future completes, every one
-  /// of [faces] that can load is registered.
+  /// its runs draw in the reader font ([missing]). When the future
+  /// completes, every one of [faces] that can load is registered.
   static Future<void> load(
     Iterable<FontFaceRule> faces,
     Uint8List? Function(String path) bytes,
@@ -65,7 +75,9 @@ abstract final class BookFonts {
     await Future.wait([
       for (final (index, (family, _)) in fresh.indexed)
         if (fonts[index] case final font?)
-          ui.loadFontFromList(font, fontFamily: family).catchError((_) {}),
+          ui
+              .loadFontFromList(font, fontFamily: family)
+              .then<void>((_) => _registered.add(family), onError: (_) {}),
     ]);
   }
 }

@@ -24,6 +24,7 @@ import 'dart:ui' as ui;
 
 import 'css.dart';
 import 'dom.dart';
+import 'fonts.dart';
 import 'prepare.dart';
 import 'table.dart';
 
@@ -1162,33 +1163,49 @@ class LayoutRun {
 
   // Paragraphs.
 
-  static ui.TextStyle _textStyle(RunStyle style, ui.Color ink) => ui.TextStyle(
-    color: ink,
-    fontFamily: style.family,
-    fontSize: style.size,
-    fontWeight: _weight(style.weight),
-    fontStyle: style.italic ? ui.FontStyle.italic : ui.FontStyle.normal,
-    letterSpacing: style.letterSpacing == 0 ? null : style.letterSpacing,
-    wordSpacing: style.wordSpacing == 0 ? null : style.wordSpacing,
-    height: style.lineHeight == null ? null : style.lineHeight! / style.size,
-    leadingDistribution: ui.TextLeadingDistribution.even,
-    decoration: ui.TextDecoration.combine([
-      if (style.underline) ui.TextDecoration.underline,
-      if (style.lineThrough) ui.TextDecoration.lineThrough,
-    ]),
-    fontFeatures: [
-      if (style.smallCaps) const ui.FontFeature.enable('smcp'),
-      if (style.oldstyleFigures) const ui.FontFeature.oldstyleFigures(),
-    ],
-    fontVariations: [
-      // Chromium sets a variable font's optical size to the text size.
-      ui.FontVariation('opsz', style.size.clamp(8, 60).toDouble()),
-      // The reader's @font-face rule names no weights, so Chromium draws
-      // bold text as a thickened regular face with regular widths. Flutter
-      // would pick the font's true bold, which is wider.
-      const ui.FontVariation('wght', 400),
-    ],
-  );
+  /// The family that draws [family]: the reader font for an embedded face
+  /// that did not load, as for a face that prepare cannot read, and else
+  /// [family].
+  static String _drawn(String family) =>
+      BookFonts.missing(family) ? readerFontFamily : family;
+
+  static ui.TextStyle _textStyle(RunStyle style, ui.Color ink) {
+    final family = _drawn(style.family);
+    return ui.TextStyle(
+      color: ink,
+      fontFamily: family,
+      // A character that a face lacks draws in the reader font, not in the
+      // platform's default font.
+      fontFamilyFallback: const [readerFontFamily],
+      fontSize: style.size,
+      fontWeight: _weight(style.weight),
+      fontStyle: style.italic ? ui.FontStyle.italic : ui.FontStyle.normal,
+      letterSpacing: style.letterSpacing == 0 ? null : style.letterSpacing,
+      wordSpacing: style.wordSpacing == 0 ? null : style.wordSpacing,
+      height: style.lineHeight == null ? null : style.lineHeight! / style.size,
+      leadingDistribution: ui.TextLeadingDistribution.even,
+      decoration: ui.TextDecoration.combine([
+        if (style.underline) ui.TextDecoration.underline,
+        if (style.lineThrough) ui.TextDecoration.lineThrough,
+      ]),
+      fontFeatures: [
+        if (style.smallCaps) const ui.FontFeature.enable('smcp'),
+        if (style.oldstyleFigures) const ui.FontFeature.oldstyleFigures(),
+      ],
+      fontVariations: [
+        // Chromium sets a variable font's optical size to the text size.
+        ui.FontVariation('opsz', style.size.clamp(8, 60).toDouble()),
+        // Chromium sets a variable font's weight axis to the CSS weight. But
+        // the reader's @font-face rule names no weights, so Chromium draws
+        // bold reader text as a thickened regular face with regular widths.
+        // Flutter would pick the font's true bold, which is wider.
+        ui.FontVariation(
+          'wght',
+          family == readerFontFamily ? 400 : style.weight.toDouble(),
+        ),
+      ],
+    );
+  }
 
   static ui.FontWeight _weight(int weight) =>
       ui.FontWeight.values[((weight / 100).round() - 1).clamp(0, 8)];
@@ -1209,7 +1226,7 @@ class LayoutRun {
       // The block's own font and line height form a strut, as CSS's root
       // inline box does.
       strutStyle: ui.StrutStyle(
-        fontFamily: container.family,
+        fontFamily: _drawn(container.family),
         fontSize: container.size,
         height: height == null ? null : height / container.size,
         leadingDistribution: ui.TextLeadingDistribution.even,

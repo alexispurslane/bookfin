@@ -1,6 +1,6 @@
 ---
 id: tc-sqp7
-status: open
+status: closed
 deps: [tc-bsen]
 links: []
 created: 2026-11-08T19:23:12Z
@@ -53,3 +53,9 @@ docs/plans/native-epub-reader.md (epic boo-b2ey). Read the sections named in the
 - ReaderDocument.save of the EpubAddress for the trial's harbour passage page writes cfi epubcfi(/6/2!/4/26/1:0), as epub.js did.
 - ReadingLocation.toJson output is unchanged. end is never saved.
 
+
+## Notes
+
+**2026-11-08T20:24:16Z**
+
+Built placeAt, destination, quoteMatches, chapterTitle, pageLocation and hitLocation, DomSection.elementById and ReadingLocation.end. Fixed wordStart to match epub.js: it skips the range after a node's first space, and it skips a range that holds only the space before the page. Real books at 412 x 671: native word starts equal the epub.js CFIs on 407 of 407 compared page starts at 20 px and 463 of 464 at 23 px. The one left is a page with only an image, where layout picks the page start. A temporary recorder ran reader.js in headless Chromium over the 7 trial books and the 3 showcase books at 20 px: 2904 page starts, 729 contents destinations and 8871 search hits. Every one resolves through the native DOM to the same CFI, quote and progress, and the native saved JSON equals the WebView's. Chapter labels differ only in 47 records of se-poetry, because Publication.contents folds U+FEFF in three titles to a space. The showcase records are committed in places_test.dart. Interface change: destination returns null when the fragment names no element, where reader.js throws. epub.js throws IndexSizeError for a CFI offset past the end of a text node; placeOf stops at the end, as the design says. New ticket: t1-5r2c (page number of native pages).
