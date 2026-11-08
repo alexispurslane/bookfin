@@ -1,6 +1,6 @@
 ---
 id: tc-acl5
-status: open
+status: in_progress
 deps: []
 links: []
 created: 2026-11-08T19:23:12Z
@@ -55,3 +55,9 @@ docs/plans/native-epub-reader.md (epic boo-b2ey). Read the sections named in the
 - imageSizes has the size of every admitted PNG and JPEG.
 - Existing publication tests pass unchanged.
 
+
+## Notes
+
+**2026-11-08T19:39:06Z**
+
+Implemented. Three departures from the ticket text: (1) test/reader/fixtures has no EPUBs, so the identity test pins the committed EPUBs in tool/research/readers/fixtures and tool/evidence/reader/android-remaining instead, beside the three showcase books (zipped again with a fixed file time) and the seven trial books when .cache/epub-trial/books exists. (2) No Latin-1 fallback for bookStyles: admission already refuses a sheet that is not UTF-8, so the fallback could never run, and admitting such books would change admission behavior. (3) Contents titles also collapse inner white space to one space, besides the trim. A nav toc that yields no entries falls back to the NCX.
