@@ -23,3 +23,7 @@ Design decided by the user on 2026-11-08: design A, live pages. Every card shows
 **2026-11-08T15:20:59Z**
 
 Built design A. EPUB and MOBI pages come from a second, hidden epub.js rendition in the same WebView: its page document, with style, fonts and images inlined, becomes an SVG image drawn to a canvas and sent as a JPEG. PDF pages come from PdfBook.render. PagePreviews, owned by ReaderSession, owns the page images; ScrubDeck shows them. The shown frames now lay out in standards mode, as XHTML does (they were in quirks mode), so a preview matches its page. Measured cost per page on emulator-5554: EPUB 0.6 to 0.8 s in a section, 1.4 to 1.7 s across sections; PDF 27 to 93 ms. Follow-ups: t6-rt20 (EPUB cost), t6-6gej (frame rate on hardware graphics).
+
+**2026-11-08T15:27:24Z**
+
+Device check on emulator-5554 (debug build of the final code): the deck opens, shows real pages day and night in First Frost, and lands on the target. Screenshot: docs/screenshots/reader-deck.png. The Windfall (PDF) deck ran on an earlier profile build of the same design (pages drawn in 27 to 93 ms); its final-build screenshots were not taken, because another session took over the emulator.
