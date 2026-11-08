@@ -407,15 +407,85 @@ Map<String, String> _seriesEditionLinks(List<CatalogEntry> entries) {
   };
 }
 
-/// A title that ends in a series and a number, for example
-/// "A Crown of Swords (The Wheel of Time #7)".
+/// A title with a series and a number in it, for example
+/// "A Crown of Swords (The Wheel of Time #7)". Text can follow the series
+/// part, as in "Queen Amid Ashes (The Sun Eater #4.5) by Christopher
+/// Ruocchio". The last series part counts.
 final _titledSeries = RegExp(
-  r'^(.*\S)\s*\(\s*([^()#]*[^()#\s])\s*#\s*(\d+(?:\.\d+)?)\s*\)\s*$',
+  r'^(.*\S)\s*\(\s*([^()#]*[^()#\s])\s*#\s*(\d+(?:\.\d+)?)\s*\)\s*(.*?)\s*$',
 );
 
+/// A title with a leading part before " - ", as in
+/// "2.6 Sun Eater Series - Queen Amid Ashes".
+final _leadingPart = RegExp(r'^(.*?\S)\s+[-–]\s+(\S.*)$');
+
+/// What can come before a trailing credit, as in " by Christopher Ruocchio"
+/// and "-Christopher Ruocchio".
+final _creditSeparator = RegExp(r'\s+by\s+|\s*[-–]\s*', caseSensitive: false);
+
+/// What separates the names in a credit or an author list.
+final _nameSeparator = RegExp(r',|&|\band\b', caseSensitive: false);
+
+/// The shown title of [item] in [series], from its [title] and its
+/// "(Series #N)" part [match], if any. A file name can add noise around a
+/// title: a leading label that names the series, as in "2.6 Sun Eater Series
+/// - ", or only the authors, as in "Stephen Baxter - ", and a trailing credit
+/// to the authors, as in " by Christopher Ruocchio". A series part or a series
+/// label marks such a file name, and then the label and the credit go. A title
+/// without either mark does not change.
+String _shownTitle(
+  String title,
+  RegExpMatch? match,
+  String series,
+  Map<String, dynamic> item,
+) {
+  final core = match == null
+      ? title
+      : [
+          match.group(1)!,
+          match.group(4)!,
+        ].where((part) => part.isNotEmpty).join(' ');
+  final names = {
+    _seriesLabelKey(series),
+    if (match != null) _seriesLabelKey(match.group(2)!),
+  }..remove('');
+  final lead = _leadingPart.firstMatch(core);
+  final labeled =
+      lead != null && names.contains(_seriesLabelKey(lead.group(1)!));
+  if (match == null && !labeled) return title;
+  final rest =
+      lead != null && (labeled || _creditsAuthors(lead.group(1)!, item))
+      ? lead.group(2)!
+      : core;
+  for (final separator in _creditSeparator.allMatches(rest)) {
+    if (separator.start > 0 &&
+        _creditsAuthors(rest.substring(separator.end), item)) {
+      return rest.substring(0, separator.start);
+    }
+  }
+  return rest;
+}
+
+/// The form of a series name that a leading title part must match: its
+/// letters only, without the words "the", "series", and "book". So
+/// "2.6 Sun Eater Series" names "The Sun Eater", and "2" names nothing.
+String _seriesLabelKey(String name) => name.toLowerCase().replaceAll(
+  RegExp(r'\b(?:the|series|book)\b|[^\p{L}]', unicode: true),
+  '',
+);
+
+/// Whether every name in [credit] is an author of [item].
+bool _creditsAuthors(String credit, Map<String, dynamic> item) {
+  String key(String name) =>
+      name.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
+  final authors = _author(item).split(_nameSeparator).map(key).toSet()
+    ..remove('');
+  return credit.split(_nameSeparator).map(key).every(authors.contains);
+}
+
 /// The series of one Jellyfin item, its position, and its title without a
-/// series ending. Sources, strongest first: the Jellyfin series field, the one
-/// book collection that holds the item, and a "(Series #N)" title ending. The
+/// series part. Sources, strongest first: the Jellyfin series field, the one
+/// book collection that holds the item, and a "(Series #N)" title part. The
 /// position comes from the title number, else from the item number. Plain
 /// audio files are tracks, so they have no series.
 ({String title, String? series, double? order, int trust}) _seriesOf(
@@ -438,7 +508,7 @@ final _titledSeries = RegExp(
     return (title: title, series: null, order: null, trust: 0);
   }
   return (
-    title: match?.group(1) ?? title,
+    title: _shownTitle(title, match, series, item),
     series: series,
     order: match != null
         ? double.parse(match.group(3)!)

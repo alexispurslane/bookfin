@@ -1,4 +1,5 @@
 import 'package:bookfin/catalog/model.dart';
+import 'package:bookfin/catalog/shelf.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 CatalogEntry entry(
@@ -312,6 +313,304 @@ void main() {
       ),
     ]).single;
     expect(book.series, 'Discworld', reason: 'the title still names it');
+  });
+
+  group('a (Series #N) part with text after it', () {
+    Map<String, dynamic> writtenBy(String author) => {
+      'People': [
+        {'Name': author, 'Type': 'Author'},
+        {'Name': 'Narrator Person', 'Type': 'Narrator'},
+      ],
+    };
+
+    test('names the series, its position, and the plain title', () {
+      final book = buildBooks([
+        entry(
+          'queen',
+          title:
+              '2.6 Sun Eater Series - Queen Amid Ashes (The Sun Eater #4.5) '
+              'by Christopher Ruocchio',
+          fields: writtenBy('Christopher Ruocchio'),
+        ),
+      ]).single;
+      expect(book.series, 'The Sun Eater');
+      expect(book.seriesOrder, 4.5);
+      expect(book.title, 'Queen Amid Ashes');
+    });
+
+    test('keeps a fractional side story between its neighbors', () {
+      final books = buildBooks([
+        entry(
+          'kingdoms',
+          title: 'Kingdoms of Death (The Sun Eater #4) by Christopher Ruocchio',
+          fields: writtenBy('Christopher Ruocchio'),
+        ),
+        entry(
+          'queen',
+          title:
+              '2.6 Sun Eater Series - Queen Amid Ashes (The Sun Eater #4.5) '
+              'by Christopher Ruocchio',
+          fields: writtenBy('Christopher Ruocchio'),
+        ),
+        entry(
+          'ashes',
+          title: 'Ashes of Man (The Sun Eater #5) by Christopher Ruocchio',
+          fields: writtenBy('Christopher Ruocchio'),
+        ),
+      ]);
+      expect(books.map((book) => book.series).toSet(), {'The Sun Eater'});
+      expect(readingOrder(books).map((book) => book.title), [
+        'Kingdoms of Death',
+        'Queen Amid Ashes',
+        'Ashes of Man',
+      ]);
+    });
+
+    test('drops a trailing credit to the album artist', () {
+      final book = buildBooks([
+        entry('mort', title: 'Mort (Discworld #4) by A. Writer'),
+      ]).single;
+      expect(book.title, 'Mort');
+      expect(book.series, 'Discworld');
+    });
+
+    test('drops a trailing credit only when it names every author', () {
+      Map<String, dynamic> coauthors = {
+        'People': [
+          {'Name': 'Douglas Preston', 'Type': 'Author'},
+          {'Name': 'Lincoln Child', 'Type': 'Author'},
+        ],
+      };
+      final books = buildBooks([
+        entry(
+          'relic',
+          title: 'Relic (Pendergast #1) by Douglas Preston and Lincoln Child',
+          fields: coauthors,
+        ),
+        entry(
+          'reliquary',
+          title: 'Reliquary (Pendergast #2) by Douglas Preston & A. Stranger',
+          fields: coauthors,
+        ),
+      ]);
+      expect(books.map((book) => book.title), [
+        'Relic',
+        'Reliquary by Douglas Preston & A. Stranger',
+      ]);
+    });
+
+    test('keeps a trailing credit to someone who is not an author', () {
+      final books = buildBooks([
+        entry(
+          'rising',
+          title: 'Red Rising (Red Rising Saga #1) read by Tim Gerard Reynolds',
+          fields: writtenBy('Pierce Brown'),
+        ),
+        entry(
+          'golden',
+          title: 'Golden Son (Red Rising Saga #2) by Narrator Person',
+          fields: writtenBy('Pierce Brown'),
+        ),
+      ]);
+      expect(books.map((book) => book.title), [
+        'Golden Son by Narrator Person',
+        'Red Rising read by Tim Gerard Reynolds',
+      ]);
+      expect(books.map((book) => book.seriesOrder), [2, 1]);
+    });
+
+    test('keeps other trailing text in the title', () {
+      final book = buildBooks([
+        entry('dune', title: 'Dune (Dune #1) [Dramatized Adaptation]'),
+      ]).single;
+      expect(book.title, 'Dune [Dramatized Adaptation]');
+      expect(book.series, 'Dune');
+      expect(book.seriesOrder, 1);
+    });
+  });
+
+  group('a leading part before " - "', () {
+    test('is dropped when it names the series of the title', () {
+      final books = buildBooks([
+        entry(
+          'empire',
+          title: 'Mistborn - The Final Empire (Mistborn #1)',
+          track: 1,
+        ),
+        entry(
+          'crown',
+          title:
+              'The Wheel of Time 07 - A Crown of Swords (The Wheel of Time #7)',
+          track: 2,
+        ),
+      ]);
+      expect(books.map((book) => book.title), [
+        'A Crown of Swords',
+        'The Final Empire',
+      ]);
+    });
+
+    test('is dropped when it names only the authors of the book', () {
+      final book = buildBooks([
+        entry(
+          'coalescent',
+          title: "Stephen Baxter - (Destiny's Children #1) Coalescent",
+          fields: {
+            'People': [
+              {'Name': 'Stephen Baxter', 'Type': 'Author'},
+            ],
+          },
+        ),
+      ]).single;
+      expect(book.title, 'Coalescent');
+      expect(book.series, "Destiny's Children");
+      expect(book.seriesOrder, 1);
+    });
+
+    test('stays when it names something other than the series', () {
+      final book = buildBooks([
+        entry('thrawn', title: 'Star Wars - Thrawn (Thrawn #1)'),
+      ]).single;
+      expect(book.title, 'Star Wars - Thrawn');
+      expect(book.series, 'Thrawn');
+    });
+
+    test('stays when it is only a number', () {
+      final book = buildBooks([
+        entry('two', title: '2 - The Two Towers (The Lord of the Rings #2)'),
+      ]).single;
+      expect(book.title, '2 - The Two Towers');
+    });
+  });
+
+  test('titles without a series label keep " by " and " - " as written', () {
+    final titles = [
+      ('poems', 'Poems by Emily Dickinson', 'Emily Dickinson'),
+      ('hole', 'Death by Black Hole', 'Neil deGrasse Tyson'),
+      ('sapiens', 'Sapiens - A Brief History of Humankind', 'Yuval Harari'),
+      ('wars', 'Star Wars - Thrawn by Timothy Zahn', 'Timothy Zahn'),
+      ('zahn', 'Timothy Zahn - Thrawn', 'Timothy Zahn'),
+      (
+        'death',
+        'Kingdoms of Death - Christopher Ruocchio',
+        'Christopher Ruocchio',
+      ),
+    ];
+    final books = buildBooks([
+      for (final (id, title, author) in titles)
+        entry(
+          id,
+          title: title,
+          fields: {
+            'People': [
+              {'Name': author, 'Type': 'Author'},
+            ],
+            'BookfinCollections': ['The Sun Eater'],
+          },
+        ),
+    ]);
+    expect(
+      books.map((book) => book.title).toSet(),
+      titles.map((title) => title.$2).toSet(),
+    );
+  });
+
+  group('a title without a (Series #N) part', () {
+    Map<String, dynamic> sunEater({List<String> collections = const []}) => {
+      'People': [
+        {'Name': 'Christopher Ruocchio', 'Type': 'Author'},
+      ],
+      'IndexNumber': 4,
+      'BookfinCollections': collections,
+    };
+
+    test('loses a series label and an author credit in its series', () {
+      final books = buildBooks([
+        entry(
+          'spaced',
+          title: 'Sun Eater Series - Kingdoms of Death- Christopher Ruocchio',
+          fields: sunEater(collections: ['The Sun Eater']),
+        ),
+        entry(
+          'joined',
+          type: 'Book',
+          container: 'epub',
+          title: 'Sun Eater Series - Kingdoms of Death-Christopher Ruocchio',
+          fields: sunEater(collections: ['The Sun Eater']),
+        ),
+      ]);
+      final book = books.single;
+      expect(book.title, 'Kingdoms of Death');
+      expect(book.series, 'The Sun Eater');
+      expect(book.seriesOrder, 4, reason: 'the item number, not a guess');
+      expect(book.editions, hasLength(2), reason: 'the clean titles match');
+    });
+
+    test('outside a series keeps its title and gains no series', () {
+      final book = buildBooks([
+        entry(
+          'alone',
+          title: 'Sun Eater Series - Kingdoms of Death-Christopher Ruocchio',
+          fields: sunEater(),
+        ),
+      ]).single;
+      expect(book.series, isNull);
+      expect(
+        book.title,
+        'Sun Eater Series - Kingdoms of Death-Christopher Ruocchio',
+      );
+    });
+  });
+
+  test('the series page on the phone puts the #4.5 side story after #4', () {
+    // The names, item numbers, and years of the Sun Eater items in the
+    // phone's saved library on 2026-11-07. Without a title number, Queen Amid
+    // Ashes took its item number 2.
+    final sunEater = [
+      ('empire', 'Empire of Silence (Sun Eater #1)', 1, 2018),
+      ('devil', 'The Lesser Devil (Sun Eater #1)', 1, 2020),
+      (
+        'queen',
+        '2.6 Sun Eater Series - Queen Amid Ashes (The Sun Eater #4.5) '
+            'by Christopher Ruocchio',
+        2,
+        2022,
+      ),
+      ('howling', 'Howling Dark (Sun Eater #2)', 2, 2019),
+      ('demon', 'Demon in White (Sun Eater #3)', 3, 2020),
+      (
+        'kingdoms',
+        'Sun Eater Series - Kingdoms of Death-Christopher Ruocchio',
+        4,
+        2022,
+      ),
+      ('ashes', 'Ashes of Man (Sun Eater #5)', 5, 2022),
+    ];
+    final books = buildBooks([
+      for (final (id, title, number, year) in sunEater)
+        entry(
+          id,
+          title: title,
+          fields: {
+            'People': [
+              {'Name': 'Christopher Ruocchio', 'Type': 'Author'},
+            ],
+            'IndexNumber': number,
+            'ProductionYear': year,
+            'BookfinCollections': ['Sun Eater'],
+          },
+        ),
+    ]);
+    expect(books.map((book) => book.series).toSet(), {'Sun Eater'});
+    expect(readingOrder(books).map((book) => book.title), [
+      'Empire of Silence',
+      'The Lesser Devil',
+      'Howling Dark',
+      'Demon in White',
+      'Kingdoms of Death',
+      'Queen Amid Ashes',
+      'Ashes of Man',
+    ]);
   });
 
   test('a title in parentheses without a number is not a series', () {
