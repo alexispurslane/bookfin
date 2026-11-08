@@ -195,6 +195,17 @@ void main() {
     expect(style.display, Display.block);
   });
 
+  test('a book rule beats a user agent rule of higher specificity', () {
+    // The user agent sets `section h1 { font-size: 1.5em }`.
+    final style = styleOf(
+      'x',
+      '<section><h1 id="x">T</h1></section>',
+      'h1{font-size:1.4em;margin:1.5em 0 1em}',
+    );
+    expect(style.fontSize, closeTo(28, 1e-9));
+    expect(style.margin[0].value, closeTo(42, 1e-9));
+  });
+
   test('a page-break property names the same break as break-before', () {
     final style = styleOf(
       'x',
