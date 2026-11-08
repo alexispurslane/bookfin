@@ -23,7 +23,7 @@ class ScrubBar extends StatefulWidget {
     required this.onEnd,
     this.onStart,
     this.onTarget,
-    this.below,
+    this.layout,
   });
 
   /// The open place.
@@ -48,9 +48,11 @@ class ScrubBar extends StatefulWidget {
   /// returned future completes.
   final Future<void> Function(double fraction) onEnd;
 
-  /// Builds what shows under the bar. `target` is the dragged place while a
-  /// drag or its move runs, and null otherwise.
-  final Widget Function(BuildContext context, double? target)? below;
+  /// Places the [bar] among what shows around it, such as a label of the
+  /// place. `target` is the dragged place while a drag or its move runs, and
+  /// null otherwise. Without it, the bar shows alone.
+  final Widget Function(BuildContext context, Widget bar, double? target)?
+  layout;
 
   @override
   State<ScrubBar> createState() => _ScrubBarState();
@@ -66,60 +68,55 @@ class _ScrubBarState extends State<ScrubBar> {
     final accent = Theme.of(context).brightness == Brightness.dark
         ? theaterGlow
         : scheme.primary;
-    final below = widget.below;
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        SliderTheme(
-          data: SliderTheme.of(context).copyWith(
-            trackHeight: 4,
-            activeTrackColor: scheme.primary,
-            inactiveTrackColor: scheme.outlineVariant,
-            thumbColor: scheme.primary,
-            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
-            overlayShape: const RoundSliderOverlayShape(overlayRadius: 18),
+    final layout = widget.layout;
+    final bar = SliderTheme(
+      data: SliderTheme.of(context).copyWith(
+        trackHeight: 4,
+        activeTrackColor: scheme.primary,
+        inactiveTrackColor: scheme.outlineVariant,
+        thumbColor: scheme.primary,
+        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
+        overlayShape: const RoundSliderOverlayShape(overlayRadius: 18),
+      ),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Slider(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            semanticFormatterCallback: widget.describe,
+            value: (_target ?? widget.value).clamp(0.0, 1.0),
+            onChangeStart: (value) => widget.onStart?.call(value),
+            onChanged: (value) {
+              setState(() => _target = value);
+              widget.onTarget?.call(value);
+            },
+            onChangeEnd: (value) async {
+              setState(() => _target = value);
+              await widget.onEnd(value);
+              if (mounted) setState(() => _target = null);
+            },
           ),
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Slider(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                semanticFormatterCallback: widget.describe,
-                value: (_target ?? widget.value).clamp(0.0, 1.0),
-                onChangeStart: (value) => widget.onStart?.call(value),
-                onChanged: (value) {
-                  setState(() => _target = value);
-                  widget.onTarget?.call(value);
-                },
-                onChangeEnd: (value) async {
-                  setState(() => _target = value);
-                  await widget.onEnd(value);
-                  if (mounted) setState(() => _target = null);
-                },
-              ),
-              Positioned.fill(
-                child: IgnorePointer(
-                  // The marks change far less often than the thumb, so they
-                  // keep a layer of their own.
-                  child: RepaintBoundary(
-                    child: CustomPaint(
-                      key: const ValueKey('position marks'),
-                      painter: _ScrubMarks(
-                        chapters: widget.chapters,
-                        bookmarks: widget.bookmarks,
-                        chapterColor: scheme.surface,
-                        bookmarkColor: accent,
-                      ),
-                    ),
+          Positioned.fill(
+            child: IgnorePointer(
+              // The marks change far less often than the thumb, so they
+              // keep a layer of their own.
+              child: RepaintBoundary(
+                child: CustomPaint(
+                  key: const ValueKey('position marks'),
+                  painter: _ScrubMarks(
+                    chapters: widget.chapters,
+                    bookmarks: widget.bookmarks,
+                    chapterColor: scheme.surface,
+                    bookmarkColor: accent,
                   ),
                 ),
               ),
-            ],
+            ),
           ),
-        ),
-        if (below != null) below(context, _target),
-      ],
+        ],
+      ),
     );
+    return layout == null ? bar : layout(context, bar, _target);
   }
 }
 

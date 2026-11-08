@@ -38,30 +38,42 @@ class PlaybackMiniPlayer extends StatelessWidget {
   /// Lets the opened player offer the book details page.
   final ValueChanged<Book>? onOpenBook;
   @override
-  Widget build(BuildContext context) => ListenableSelector<(Book?, Edition?)>(
-    listenable: playback.selectionNotifier,
-    select: () => (playback.book, playback.edition),
-    builder: (context, open, _) {
-      final (book, _) = open;
-      if (book == null) return const SizedBox.shrink();
-      final total = playback.durationMilliseconds;
-      return MiniPlayerCard(
+  Widget build(BuildContext context) => _withOpenBook(
+    playback,
+    (context, book) => MiniPlayerCard(
+      book: book,
+      onOpen: () => openPlayer(context, playback, onOpenBook: onOpenBook),
+      notice: _undoNotice(playback),
+      controls: [
+        _playPause(playback),
+        _jump(playback, forward: true, compact: true),
+      ],
+      progress: _progress(playback),
+    ),
+  );
+}
+
+/// The open audiobook as a round button: its cover inside a ring of how far
+/// through it the open place is. A tap plays or pauses, and a long press
+/// opens the player. With no audiobook open, it takes no room.
+class PlaybackCoverButton extends StatelessWidget {
+  const PlaybackCoverButton({super.key, required this.playback});
+  final Playback playback;
+
+  @override
+  Widget build(BuildContext context) => _withOpenBook(
+    playback,
+    (context, book) => _followPlayState(
+      playback,
+      (context, state, onPlayPause) => CoverPlayButton(
         book: book,
-        onOpen: () => openPlayer(context, playback, onOpenBook: onOpenBook),
-        notice: _undoNotice(playback),
-        controls: [
-          _playPause(playback),
-          _jump(playback, forward: true, compact: true),
-        ],
-        // How far through its edition the open place is, from 0 to 1.
-        progress: total != null && total > 0
-            ? DerivedValue(
-                playback.positionNotifier,
-                () => (playback.editionMilliseconds ?? 0) / total,
-              )
-            : null,
-      );
-    },
+        playing: state.playing,
+        starting: state.starting,
+        progress: _progress(playback),
+        onPlayPause: onPlayPause,
+        onOpen: () => openPlayer(context, playback),
+      ),
+    ),
   );
 }
 
@@ -636,9 +648,44 @@ class PlayerView extends StatelessWidget {
 // The wiring that the controllers above share. Each function builds a
 // control that follows its own signal and commands Playback.
 
-/// The play button, following whether [playback] plays or starts the open
-/// edition. A tap while it starts or plays means Pause.
-Widget _playPause(Playback playback, {bool large = false}) {
+/// Builds [builder] with the book open in [playback], and nothing while no
+/// book is open. It rebuilds only when the open book or edition changes.
+Widget _withOpenBook(
+  Playback playback,
+  Widget Function(BuildContext context, Book book) builder,
+) => ListenableSelector<(Book?, Edition?)>(
+  listenable: playback.selectionNotifier,
+  select: () => (playback.book, playback.edition),
+  builder: (context, open, _) {
+    final (book, _) = open;
+    return book == null ? const SizedBox.shrink() : builder(context, book);
+  },
+);
+
+/// How far through its edition the open place of [playback] is, from 0 to 1,
+/// or null when the edition's length is unknown.
+ValueListenable<double>? _progress(Playback playback) {
+  final total = playback.durationMilliseconds;
+  return total != null && total > 0
+      ? DerivedValue(
+          playback.positionNotifier,
+          () => (playback.editionMilliseconds ?? 0) / total,
+        )
+      : null;
+}
+
+/// Builds [builder] with whether [playback] plays or starts the open
+/// edition, and with the tap that means Pause while it plays or starts, else
+/// Play.
+Widget _followPlayState(
+  Playback playback,
+  Widget Function(
+    BuildContext context,
+    ({bool playing, bool starting}) state,
+    VoidCallback onPlayPause,
+  )
+  builder,
+) {
   bool starting() {
     final edition = playback.starting;
     return edition != null && edition.id == playback.edition?.id;
@@ -650,16 +697,27 @@ Widget _playPause(Playback playback, {bool large = false}) {
       playback.startingNotifier,
     ]),
     select: () => (playing: playback.playing, starting: starting()),
-    builder: (context, state, _) => PlayPauseButton(
-      playing: state.playing,
-      starting: state.starting,
-      large: large,
-      onPlayPause: () => unawaited(
+    builder: (context, state, _) => builder(
+      context,
+      state,
+      () => unawaited(
         playback.playing || starting() ? playback.pause() : playback.play(),
       ),
     ),
   );
 }
+
+/// The play button, following whether [playback] plays or starts the open
+/// edition. A tap while it starts or plays means Pause.
+Widget _playPause(Playback playback, {bool large = false}) => _followPlayState(
+  playback,
+  (context, state, onPlayPause) => PlayPauseButton(
+    playing: state.playing,
+    starting: state.starting,
+    large: large,
+    onPlayPause: onPlayPause,
+  ),
+);
 
 /// A jump button, following the jump length of its direction.
 Widget _jump(
@@ -1128,12 +1186,12 @@ class PositionSlider extends StatelessWidget {
       describe: (value) => audioTime(milliseconds(value)),
       onStart: (_) => onSeekStart(),
       onEnd: (value) => onSeekEnd(milliseconds(value)),
-      below: (context, target) {
+      layout: (context, bar, target) {
         final shown = (target == null ? position : milliseconds(target)).clamp(
           0,
           total,
         );
-        return Row(
+        final times = Row(
           children: [
             Expanded(child: Text(audioTime(shown), style: small)),
             if (chapterLeft != null)
@@ -1152,6 +1210,7 @@ class PositionSlider extends StatelessWidget {
             ),
           ],
         );
+        return Column(mainAxisSize: MainAxisSize.min, children: [bar, times]);
       },
     );
   }
@@ -1365,6 +1424,108 @@ class MiniPlayerCard extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// The cover of [book] in a circle, ringed by the [progress] through it, with
+/// the play state over the cover: a progress ring while its audio is
+/// [starting], a pause sign while it is [playing], else a play arrow.
+class CoverPlayButton extends StatelessWidget {
+  const CoverPlayButton({
+    super.key,
+    required this.book,
+    required this.playing,
+    required this.onPlayPause,
+    required this.onOpen,
+    this.starting = false,
+    this.progress,
+  });
+  final Book book;
+  final bool playing;
+
+  /// Whether a Play command waits for the audio to sound.
+  final bool starting;
+
+  /// How far through the book the place is, from 0 to 1. Only the ring
+  /// follows it. Null when the length is unknown, and then the ring is empty.
+  final ValueListenable<double>? progress;
+
+  /// Reports a tap. The listener means Pause while [playing] or [starting],
+  /// else Play.
+  final VoidCallback onPlayPause;
+
+  /// Reports a long press, which asks to open the player.
+  final VoidCallback onOpen;
+
+  /// The width of the whole button, in logical pixels. It matches an icon
+  /// button's touch target.
+  static const size = 48.0;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final progress = this.progress;
+    Widget ring(double? value) => CircularProgressIndicator(
+      value: value?.clamp(0.0, 1.0) ?? 0,
+      strokeWidth: 3,
+      color: scheme.primary,
+      backgroundColor: scheme.onSurface.withValues(alpha: 0.12),
+    );
+    return Semantics(
+      button: true,
+      label: playing || starting ? 'Pause audiobook' : 'Play audiobook',
+      onLongPressHint: 'Open player',
+      excludeSemantics: true,
+      child: GestureDetector(
+        onTap: onPlayPause,
+        onLongPress: onOpen,
+        child: SizedBox.square(
+          dimension: size,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              // The ring moves while audio plays. Its own layer keeps the
+              // glass behind it from repainting.
+              RepaintBoundary(
+                child: progress == null
+                    ? ring(null)
+                    : ValueListenableBuilder(
+                        valueListenable: progress,
+                        builder: (context, value, _) => ring(value),
+                      ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(5),
+                child: ClipOval(
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      FittedBox(
+                        fit: BoxFit.cover,
+                        child: SizedBox(
+                          width: 38,
+                          height: 57,
+                          child: BookCover.book(book, showText: false),
+                        ),
+                      ),
+                      const ColoredBox(color: Color(0x59000000)),
+                      Center(
+                        child: PlayStateIcon(
+                          playing: playing,
+                          starting: starting,
+                          size: 22,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

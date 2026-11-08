@@ -12,6 +12,7 @@ import 'package:pdfrx_engine/pdfrx_engine.dart';
 import '../playback/playback_test.dart' show account, LocalFiles, MemoryResume;
 import 'pdf_document_test.dart' show pdfSource;
 import 'pdf_session_test.dart' show book, edition;
+import 'reader_settings.dart';
 
 Future<void> settleNative(WidgetTester tester) async {
   for (var attempt = 0; attempt < 12; attempt++) {
@@ -56,8 +57,11 @@ void main() {
       );
       await settleNative(tester);
       expect(find.bySemanticsLabel('Original source page 1'), findsOneWidget);
-      await tester.tap(find.byTooltip('Reflow text'));
-      await settleNative(tester);
+      await chooseSetting(
+        tester,
+        'Reflow text',
+        settle: () => settleNative(tester),
+      );
       expect(
         find.textContaining('The river follows the old road.'),
         findsOneWidget,
@@ -75,8 +79,11 @@ void main() {
       await tester.tap(find.byTooltip('Bookmark this place'));
       await tester.pumpAndSettle();
       expect(reader.bookmarks.single.position.sourcePage, 2);
-      await tester.tap(find.byTooltip('Original page'));
-      await settleNative(tester);
+      await chooseSetting(
+        tester,
+        'Original page',
+        settle: () => settleNative(tester),
+      );
       expect(find.bySemanticsLabel('Original source page 2'), findsOneWidget);
       await tester.pumpWidget(const SizedBox());
       reader.dispose();

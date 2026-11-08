@@ -642,3 +642,36 @@ ThemeData theaterTheme(ThemeData night) {
 /// end when its page lets content run beneath the mini player.
 double floatingBarInset(BuildContext context) =>
     MediaQuery.paddingOf(context).bottom;
+
+/// One choice of a few [segments], as a light track with a raised pill on
+/// the [selected] one. A tap on another segment reports its value through
+/// [onChanged]. Without [onChanged], the choice shows but is off.
+class PillChoice<T> extends StatelessWidget {
+  const PillChoice({
+    super.key,
+    required this.segments,
+    required this.selected,
+    this.onChanged,
+  });
+  final List<ButtonSegment<T>> segments;
+  final T selected;
+  final ValueChanged<T>? onChanged;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.all(3),
+    decoration: BoxDecoration(
+      color: Theme.of(context).colorScheme.surfaceContainer,
+      borderRadius: BorderRadius.circular(99),
+    ),
+    child: SegmentedButton<T>(
+      showSelectedIcon: false,
+      segments: segments,
+      selected: {selected},
+      onSelectionChanged: switch (onChanged) {
+        null => null,
+        final onChanged => (chosen) => onChanged(chosen.single),
+      },
+    ),
+  );
+}

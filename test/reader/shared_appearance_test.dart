@@ -19,6 +19,7 @@ import '../real_time.dart';
 import 'appearance_test.dart' show BridgePlatform, finishLoading;
 import 'publication_test.dart' show epub;
 import 'session_test.dart' show visible;
+import 'reader_settings.dart';
 
 class ReadingApp {
   final platform = BridgePlatform();
@@ -135,12 +136,10 @@ void main() {
         final bridge = app.platform.controllers.single;
         bridge.handlers['readerLocation']!([visible.toJson()]);
         await app.reader.addBookmark(title: 'A saved river');
-        await tester.tap(find.byTooltip('Larger text'));
-        await tester.pumpAndSettle();
+        await chooseSetting(tester, 'Larger text');
         final anchor = app.reader.position!.anchor;
         bridge.calls.clear();
-        await tester.tap(find.byTooltip(choice.tooltip));
-        await tester.pumpAndSettle();
+        await chooseSetting(tester, choice.tooltip);
         expect(app.appearance.settings.mode, choice.mode);
         expect(app.appearance.saveState, PreferenceSaveState.saved);
         expect(screenBrightness(tester), choice.brightness);
@@ -195,8 +194,7 @@ void main() {
       addTearDown(tester.platformDispatcher.clearPlatformBrightnessTestValue);
       final app = ReadingApp();
       await app.prepare(tester, AppearanceMode.day);
-      await tester.tap(find.byTooltip('Night reading theme'));
-      await tester.pumpAndSettle();
+      await chooseSetting(tester, 'Night reading theme');
       final bridge = app.platform.controllers.single;
       bridge.handlers['readerLocation']!([visible.toJson()]);
       final anchor = app.reader.position!.anchor;

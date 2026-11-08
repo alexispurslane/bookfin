@@ -19,6 +19,7 @@ import 'ocr_test.dart' show blankPages, englishPage;
 import 'pdf_document_test.dart' show pdfSource;
 import 'pdf_navigation_test.dart' show HeldPdf;
 import 'pdf_session_test.dart' show book, edition;
+import 'reader_settings.dart';
 
 class PendingScan extends HeldPdf {
   PendingScan(this.originalDigest);
@@ -176,7 +177,7 @@ void main() {
                 .isNotEmpty &&
             nativeCalls == 1,
       );
-      await tester.tap(find.byTooltip('Reflow text'));
+      await chooseSetting(tester, 'Reflow text', settle: tester.pump);
       await waitFor(tester, textSettled);
       expect(
         find.descendant(
@@ -253,7 +254,7 @@ void main() {
                 .evaluate()
                 .isNotEmpty,
           );
-          await tester.tap(find.byTooltip('Reflow text'));
+          await chooseSetting(tester, 'Reflow text', settle: tester.pump);
           await waitFor(tester, textSettled);
           expect(nativeCalls, 1);
           expect(find.byType(ErrorWidget), findsNothing);
