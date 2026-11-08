@@ -116,6 +116,18 @@ void main() {
     expect(library.series('Tidewater'), isNull);
   });
 
+  test(
+    'each series is found by its name as the same entry that its books know',
+    () {
+      for (final book in books) {
+        final series = library.seriesOf(book);
+        if (series == null) continue;
+        expect(library.series(series.name), same(series));
+      }
+      expect(library.series('No such series'), isNull);
+    },
+  );
+
   test('a book in a series of several books knows that series', () {
     expect(library.seriesOf(graft)!.name, 'The Orchard Cycle');
     expect(library.seriesOf(lonely), isNull);

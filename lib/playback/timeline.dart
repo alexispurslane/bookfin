@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../catalog/glass.dart';
@@ -8,6 +9,11 @@ import '../foundation/theme.dart';
 import '../foundation/time.dart';
 import 'playback.dart';
 import 'records_screen.dart';
+
+// openListeningTimeline is the controller of the timeline sheet. It wires
+// ListeningTimeline, which only draws entries and reports choices, to
+// Playback: it confirms a delete, closes the sheet before a jump, and names
+// a bookmark through the shared bookmark editor.
 
 /// Opens the listening timeline of [book] on a glass sheet. Without a book,
 /// the timeline shows every book and names the book of each entry.
@@ -25,24 +31,134 @@ void openListeningTimeline(
       expand: false,
       initialChildSize: 0.7,
       maxChildSize: 0.95,
-      builder: (context, scroll) =>
-          ListeningTimeline(playback: playback, book: book, scroll: scroll),
+      builder: (context, scroll) {
+        // A choice that goes to a place closes the timeline, so the player
+        // shows that place and offers Undo.
+        void go(Future<void> Function() restore) {
+          Navigator.pop(context);
+          unawaited(restore());
+        }
+
+        return ListeningTimeline(
+          entries: _TimelineEntries(playback, book),
+          editionTime: playback.editionTime,
+          showBooks: book == null,
+          header: RecordSaveStatus(playback: playback),
+          scroll: scroll,
+          onGoBack: (event) => go(() => playback.restoreHistory(event.id)),
+          onGoTo: (entry) => go(
+            () => switch (entry) {
+              ActionEntry(:final event) => playback.restoreHistory(
+                event.id,
+                previous: false,
+              ),
+              BookmarkEntry(:final bookmark) => playback.restoreBookmark(
+                bookmark.id,
+              ),
+            },
+          ),
+          onRename: (bookmark) => unawaited(
+            editAudioBookmark(context, playback, bookmark: bookmark),
+          ),
+          onDelete: (entry) =>
+              unawaited(_confirmDelete(context, playback, entry)),
+        );
+      },
     ),
   ),
 );
 
+/// Asks the listener to confirm the deletion of [entry], then deletes it
+/// from [playback]. Nothing changes when the listener cancels.
+Future<void> _confirmDelete(
+  BuildContext context,
+  Playback playback,
+  TimelineEntry entry,
+) async {
+  final (title, explanation, remove) = switch (entry) {
+    ActionEntry(:final event) => (
+      'Delete history action?',
+      'Remove this action from your history on synced devices. Bookmarks and other actions stay.',
+      () => playback.deleteHistory(event.id),
+    ),
+    BookmarkEntry(:final bookmark) => (
+      'Delete bookmark?',
+      'Remove this bookmark on synced devices. Other bookmarks and your history stay.',
+      () => playback.deleteBookmark(bookmark.id),
+    ),
+  };
+  if (await confirmAction(
+    context,
+    title: title,
+    message: explanation,
+    action: 'Delete',
+  )) {
+    await remove();
+  }
+}
+
+/// The timeline of [book] in [playback], which notifies only when the
+/// records change, so a playing tick does not reach the timeline.
+class _TimelineEntries implements ValueListenable<List<TimelineEntry>> {
+  _TimelineEntries(this.playback, this.book);
+  final Playback playback;
+  final Book? book;
+
+  @override
+  List<TimelineEntry> get value => playback.timeline(book);
+
+  @override
+  void addListener(VoidCallback listener) =>
+      playback.recordsNotifier.addListener(listener);
+
+  @override
+  void removeListener(VoidCallback listener) =>
+      playback.recordsNotifier.removeListener(listener);
+}
+
 /// A dense, vertical timeline of listening, grouped by day. A tap on an
-/// entry shows the places it can return to, and Delete.
+/// entry shows the places it can return to, and Delete. The timeline changes
+/// no records itself: it reports each choice through its callbacks.
 class ListeningTimeline extends StatefulWidget {
   const ListeningTimeline({
     super.key,
-    required this.playback,
-    this.book,
+    required this.entries,
+    required this.editionTime,
+    this.showBooks = false,
+    this.header,
     this.scroll,
+    required this.onGoBack,
+    required this.onGoTo,
+    required this.onRename,
+    required this.onDelete,
   });
-  final Playback playback;
-  final Book? book;
+
+  /// The actions and bookmarks to show, newest first.
+  final ValueListenable<List<TimelineEntry>> entries;
+
+  /// Where a place is in its audio edition, in milliseconds from the
+  /// edition's start, or null when that is unknown.
+  final int? Function(AudioPosition place) editionTime;
+
+  /// Whether each entry names its book, for a timeline of every book.
+  final bool showBooks;
+
+  /// Shown above the entries, such as the save status of the records.
+  final Widget? header;
   final ScrollController? scroll;
+
+  /// Reports Go back on an action: return to where [ListeningEvent.before]
+  /// says the action began.
+  final ValueChanged<ListeningEvent> onGoBack;
+
+  /// Reports Go to: return to where an action ended, or to a bookmark.
+  final ValueChanged<TimelineEntry> onGoTo;
+
+  /// Reports Name or Rename on a bookmark.
+  final ValueChanged<AudioBookmark> onRename;
+
+  /// Reports Delete on an entry. The listener has not confirmed it yet.
+  final ValueChanged<TimelineEntry> onDelete;
 
   @override
   State<ListeningTimeline> createState() => _ListeningTimelineState();
@@ -56,13 +172,10 @@ class _ListeningTimelineState extends State<ListeningTimeline> {
   /// The entry whose choices are shown, if any.
   String? _open;
 
-  Playback get playback => widget.playback;
-
   @override
-  Widget build(BuildContext context) => ListenableBuilder(
-    listenable: playback,
-    builder: (context, _) {
-      final entries = playback.timeline(widget.book);
+  Widget build(BuildContext context) => ValueListenableBuilder(
+    valueListenable: widget.entries,
+    builder: (context, entries, _) {
       final now = DateTime.now();
       String day(int index) => listenedWhen(entries[index].at.toLocal(), now);
       // Only the rows near the screen are built, because a history can hold
@@ -70,10 +183,10 @@ class _ListeningTimelineState extends State<ListeningTimeline> {
       return ListView.builder(
         controller: widget.scroll,
         padding: EdgeInsets.fromLTRB(16, 0, 16, 16 + floatingBarInset(context)),
-        // The save status, then the entries or a note that there are none.
+        // The header, then the entries or a note that there are none.
         itemCount: 1 + (entries.isEmpty ? 1 : entries.length),
         itemBuilder: (context, index) => switch (index - 1) {
-          -1 => RecordSaveStatus(playback: playback),
+          -1 => widget.header ?? const SizedBox.shrink(),
           _ when entries.isEmpty => const Padding(
             padding: EdgeInsets.all(4),
             child: Text(
@@ -167,7 +280,7 @@ class _ListeningTimelineState extends State<ListeningTimeline> {
                         TextSpan(
                           text: label,
                           children: [
-                            if (widget.book == null)
+                            if (widget.showBooks)
                               TextSpan(
                                 text: ' · ${entry.bookTitle}',
                                 style: small,
@@ -194,7 +307,7 @@ class _ListeningTimelineState extends State<ListeningTimeline> {
                 child: Wrap(
                   crossAxisAlignment: WrapCrossAlignment.center,
                   spacing: 4,
-                  children: [..._choices(context, entry)],
+                  children: [..._choices(entry)],
                 ),
               ),
           ],
@@ -203,89 +316,53 @@ class _ListeningTimelineState extends State<ListeningTimeline> {
     );
   }
 
-  List<Widget> _choices(BuildContext context, TimelineEntry entry) {
-    // A choice that goes to a place closes the timeline, so the player shows
-    // that place and offers Undo.
-    Widget choice(
-      String text,
-      Future<void> Function() go, {
-      bool goes = true,
-    }) => TextButton(
+  List<Widget> _choices(TimelineEntry entry) {
+    Widget choice(String text, VoidCallback report) => TextButton(
       style: TextButton.styleFrom(
         visualDensity: VisualDensity.compact,
         padding: const EdgeInsets.symmetric(horizontal: 10),
       ),
-      onPressed: () {
-        if (goes) Navigator.pop(context);
-        unawaited(go());
-      },
+      onPressed: report,
       child: Text(text),
     );
     final delete = IconButton(
       tooltip: 'Delete',
       visualDensity: VisualDensity.compact,
       icon: const Icon(Icons.delete_outline, size: 20),
-      onPressed: () => unawaited(_delete(context, entry)),
+      onPressed: () => widget.onDelete(entry),
     );
     return switch (entry) {
       ActionEntry(:final event) => [
         if (event.changesPosition)
           choice(
             'Go back to ${_place(event.before)}',
-            () => playback.restoreHistory(event.id),
+            () => widget.onGoBack(event),
           ),
-        choice(
-          'Go to ${_place(event.after)}',
-          () => playback.restoreHistory(event.id, previous: false),
-        ),
+        choice('Go to ${_place(event.after)}', () => widget.onGoTo(entry)),
         delete,
       ],
       BookmarkEntry(:final bookmark) => [
         choice(
           'Go to ${_place(bookmark.position)}',
-          () => playback.restoreBookmark(bookmark.id),
+          () => widget.onGoTo(entry),
         ),
         choice(
           bookmark.title == null ? 'Name' : 'Rename',
-          () => editAudioBookmark(context, playback, bookmark: bookmark),
-          goes: false,
+          () => widget.onRename(bookmark),
         ),
         delete,
       ],
     };
   }
 
-  Future<void> _delete(BuildContext context, TimelineEntry entry) async {
-    final (title, explanation, remove) = switch (entry) {
-      ActionEntry(:final event) => (
-        'Delete history action?',
-        'Remove this action from your history on synced devices. Bookmarks and other actions stay.',
-        () => playback.deleteHistory(event.id),
-      ),
-      BookmarkEntry(:final bookmark) => (
-        'Delete bookmark?',
-        'Remove this bookmark on synced devices. Other bookmarks and your history stay.',
-        () => playback.deleteBookmark(bookmark.id),
-      ),
-    };
-    if (await confirmAction(
-      context,
-      title: title,
-      message: explanation,
-      action: 'Delete',
-    )) {
-      await remove();
-    }
-  }
-
   /// A place as a time in its edition, or in its file when the edition time
   /// is unknown.
   String _place(AudioPosition place) =>
-      audioTime(playback.editionTime(place) ?? place.milliseconds);
+      audioTime(widget.editionTime(place) ?? place.milliseconds);
 
   String _label(ListeningEvent event) {
-    final from = playback.editionTime(event.before);
-    final to = playback.editionTime(event.after);
+    final from = widget.editionTime(event.before);
+    final to = widget.editionTime(event.after);
     String moved(String verb) {
       if (from == null || to == null) return verb;
       final distance = (to - from).abs();
