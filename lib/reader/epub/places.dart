@@ -6,6 +6,9 @@
 // body's text from the place on, and the share of the section's visible
 // characters before the place. These functions write the same three
 // values, so a place saved by one renderer opens in the other.
+import 'dart:math' as math;
+
+import 'package:flutter_epub_viewer/navigation.dart';
 import 'package:xml/xml.dart';
 
 import 'dom.dart';
@@ -99,12 +102,21 @@ EpubPlace? placeOf(DomSection dom, int section, String cfi) {
 /// The place that epub.js saves for a page of [dom] whose first character
 /// is at [place].
 ///
-/// epub.js (mapping.js `splitTextNodeIntoRanges`) trims the text node,
-/// finds each space in the trimmed text, and starts a range after each
-/// one, at that offset in the untrimmed node. It saves the start of the
-/// first range that lies on the page: the first range start after the
-/// node's last visible character before [place]. A node that starts with
-/// white space therefore gets starts that sit before their words.
+/// epub.js (mapping.js `splitTextNodeIntoRanges` and `findTextStartRange`)
+/// trims the text node and finds each space in the trimmed text. It cuts
+/// the node into ranges: one from the node start, and one after each space
+/// but the first, each up to the next space. It uses these trimmed offsets
+/// as offsets in the untrimmed node, so in a node that starts with white
+/// space each range starts before its word. It saves the start of the first
+/// range on the page. A range is on the page when it starts at or after
+/// [place], or when it starts in the white space just before [place] and
+/// holds a visible character. Chromium leaves the space that ends the line
+/// before out of a range's bounds unless the range holds nothing else, as
+/// the trial books show. When the page starts at the node's first visible
+/// character, the
+/// saved place is the node start. When no range of the node is on the page,
+/// [place] stays, where epub.js would fall back to the node start on the
+/// page before.
 EpubPlace wordStart(DomSection dom, EpubPlace place) {
   final text = dom.textAt(place);
   if (text == null) return place;
@@ -113,6 +125,7 @@ EpubPlace wordStart(DomSection dom, EpubPlace place) {
   while (lastVisible >= 0 && isSpace(data.codeUnitAt(lastVisible))) {
     lastVisible--;
   }
+  if (lastVisible < 0) return EpubPlace(place.section, place.node, 0);
   var lead = 0;
   while (lead < data.length && isSpace(data.codeUnitAt(lead))) {
     lead++;
@@ -122,11 +135,17 @@ EpubPlace wordStart(DomSection dom, EpubPlace place) {
     end--;
   }
   final trimmed = data.substring(lead, end);
-  if (lastVisible < 0) return EpubPlace(place.section, place.node, 0);
-  for (var space = trimmed.indexOf(' '); space >= 0;) {
+  final first = trimmed.indexOf(' ');
+  if (first < 0) return place;
+  for (var space = trimmed.indexOf(' ', first + 1); space > 0;) {
     final start = space + 1;
-    if (start > lastVisible) return EpubPlace(place.section, place.node, start);
-    space = trimmed.indexOf(' ', space + 1);
+    final next = trimmed.indexOf(' ', start);
+    final stop = next < 0 ? trimmed.length : next;
+    if (start >= place.offset ||
+        (start > lastVisible && visibleCount(data, start, stop) > 0)) {
+      return EpubPlace(place.section, place.node, start);
+    }
+    space = next;
   }
   return place;
 }
@@ -159,3 +178,208 @@ double progressAt(DomSection dom, EpubPlace place) {
   final before = dom.visibleBefore(place);
   return (before / dom.visibleLength * 1e6).round() / 1e6;
 }
+
+/// The place at text progress [progress] through [dom], the section with
+/// spine index [section], as reader.js `placeAt` finds it: the visible
+/// character at `floor(progress × total)`, at most the last one. A section
+/// without visible text has its body.
+///
+/// [progress] runs from 0 to 1, in the measure of [progressAt].
+EpubPlace placeAt(DomSection dom, int section, double progress) {
+  if (!(progress >= 0 && progress <= 1)) {
+    throw ArgumentError.value(progress, 'progress', 'must be from 0 to 1');
+  }
+  final total = dom.visibleLength;
+  if (total == 0) return EpubPlace(section, dom.body.order, 0);
+  final wanted = math.min(total - 1, (progress * total).floor());
+  final texts = dom.texts;
+  // The last text node that starts at or before the wanted character holds
+  // it, because a node without visible characters starts where the next
+  // one does.
+  var low = 0;
+  var high = texts.length - 1;
+  while (low < high) {
+    final middle = (low + high + 1) >> 1;
+    if (texts[middle].visibleBefore <= wanted) {
+      low = middle;
+    } else {
+      high = middle - 1;
+    }
+  }
+  final text = texts[low];
+  var left = wanted - text.visibleBefore;
+  var offset = 0;
+  for (; offset < text.text.length; offset++) {
+    if (!isSpace(text.text.codeUnitAt(offset)) && left-- == 0) break;
+  }
+  return EpubPlace(section, text.order, offset);
+}
+
+/// The place that a link or a contents entry to [fragment] in [dom], the
+/// section with spine index [section], opens, as reader.js
+/// `resolveDestination` finds it: the first text node in the element whose
+/// id is [fragment], at offset 0, even when it is white space. Without a
+/// fragment the element is the body. An element without text is its own
+/// place. A fragment that names no element has no destination.
+///
+/// [fragment] is the decoded id, or null or empty for none.
+EpubPlace? destination(DomSection dom, int section, String? fragment) {
+  final target = fragment == null || fragment.isEmpty
+      ? dom.body
+      : dom.elementById(fragment);
+  if (target == null) return null;
+  // A tree walker that shows text nodes skips CDATA sections.
+  final text = target.texts.where((text) => text.textIndex >= 0).firstOrNull;
+  return EpubPlace(section, (text ?? target).order, 0);
+}
+
+/// Whether the text of [dom] at [place] starts with [quote], the quote of a
+/// saved place, as reader.js `verifyLocation` checks it. An empty quote
+/// matches every place.
+bool quoteMatches(DomSection dom, EpubPlace place, String quote) =>
+    quote.isEmpty || quoteAt(dom, place).startsWith(quote);
+
+/// The chapter label of [place] in [dom], as reader.js `visibleLocation`
+/// gives it: the title of the last entry of [contents] that points into
+/// this section at or before [place], else the text of the section's first
+/// `h1` or `title` element in document order, else "Chapter N" for the
+/// section's spine position N. It is at most 512 characters.
+///
+/// Each entry's href is relative to the package document at [packagePath].
+/// [sectionPath] is the section's path in the book, as the spine lists it.
+/// An entry without a fragment points at the body. Entries and [place]
+/// compare as epub.js compares their CFIs, step by step (see
+/// [_compareSteps]).
+String chapterTitle(
+  DomSection dom,
+  EpubPlace place,
+  List<ContentsEntry> contents,
+  String packagePath,
+  String sectionPath,
+) {
+  var chapter = _heading(dom) ?? 'Chapter ${place.section + 1}';
+  final package = Uri(scheme: 'https', host: 'book', path: '/$packagePath');
+  final at = _steps(dom, place);
+  (List<int>, int)? found;
+  for (final entry in contents) {
+    final DomElement? target;
+    try {
+      final href = package.resolve(entry.href);
+      if (href.pathSegments.join('/') != sectionPath) continue;
+      target = href.fragment.isEmpty
+          ? dom.body
+          : dom.elementById(Uri.decodeComponent(href.fragment));
+    } on FormatException {
+      continue;
+    }
+    if (target == null) continue;
+    final candidate = _steps(dom, EpubPlace(place.section, target.order, 0));
+    if (_compareSteps(candidate, at) <= 0 &&
+        (found == null || _compareSteps(candidate, found) >= 0)) {
+      chapter = entry.title;
+      found = candidate;
+    }
+  }
+  return chapter.length > 512 ? chapter.substring(0, 512) : chapter;
+}
+
+/// The trimmed text of the first `h1` or `title` element of [dom] in
+/// document order, as `querySelector('h1, title')` finds it, or null when
+/// there is none or its text is empty.
+String? _heading(DomSection dom) {
+  DomElement? find(DomElement element) {
+    if (element.name == 'h1' || element.name == 'title') return element;
+    for (final child in element.elements) {
+      if (find(child) case final found?) return found;
+    }
+    return null;
+  }
+
+  final heading = find(dom.root);
+  if (heading == null) return null;
+  final text = heading.texts.map((text) => text.text).join();
+  var start = 0;
+  var end = text.length;
+  while (start < end && isSpace(text.codeUnitAt(start))) {
+    start++;
+  }
+  while (end > start && isSpace(text.codeUnitAt(end - 1))) {
+    end--;
+  }
+  return start == end ? null : text.substring(start, end);
+}
+
+/// The steps of the CFI of [place] below the root element, as epub.js
+/// parses them: each element's index among its parent's elements, then a
+/// text node's index among its parent's text nodes. The second value is the
+/// character offset, 0 for an element.
+(List<int>, int) _steps(DomSection dom, EpubPlace place) {
+  final node = dom.nodeAt(place.node);
+  final steps = <int>[if (node is DomText) node.textIndex];
+  var element = node is DomText ? node.parent! : node as DomElement;
+  while (element.parent != null) {
+    steps.add(element.elementIndex);
+    element = element.parent!;
+  }
+  return (steps.reversed.toList(), place.offset);
+}
+
+/// Compares two CFIs of one section as epub.js `EpubCFI.compare` does: step
+/// by step by index, where an element and a text node with the same index
+/// count as equal; then the shorter path first; then the offset. So an
+/// element can count as before a text node that precedes it.
+int _compareSteps((List<int>, int) a, (List<int>, int) b) {
+  final (stepsA, offsetA) = a;
+  final (stepsB, offsetB) = b;
+  for (var index = 0; index < stepsA.length; index++) {
+    if (index >= stepsB.length) return 1;
+    if (stepsA[index] != stepsB[index]) {
+      return stepsA[index].compareTo(stepsB[index]);
+    }
+  }
+  if (stepsA.length < stepsB.length) return -1;
+  return offsetA.compareTo(offsetB);
+}
+
+/// The saved location of a page of [dom] that starts at [start] and whose
+/// last visible character is at [end], as reader.js `visibleLocation`
+/// writes it for a shown page: the CFI, quote and progress of the
+/// [wordStart] of [start], in the section at [sectionPath] whose spine step
+/// is [spine]. [chapter] is the page's [chapterTitle], which is the same at
+/// [start] and at its word start. Its [ReadingLocation.end] is the
+/// progress of [end], and it has no page number.
+ReadingLocation pageLocation(
+  String spine,
+  String sectionPath,
+  DomSection dom,
+  EpubPlace start,
+  EpubPlace end,
+  String chapter,
+) {
+  final word = wordStart(dom, start);
+  return ReadingLocation(
+    cfiOf(spine, dom, word),
+    sectionPath,
+    quoteAt(dom, word),
+    chapter: chapter,
+    progress: progressAt(dom, word),
+    end: progressAt(dom, end),
+  );
+}
+
+/// The location of a search hit of [dom] whose match starts at [start], as
+/// reader.js `searchBook` writes it: the CFI and quote of [start] itself,
+/// in the section at [sectionPath] whose spine step is [spine], with
+/// [chapter], its [chapterTitle]. Like reader.js, it has no progress.
+ReadingLocation hitLocation(
+  String spine,
+  String sectionPath,
+  DomSection dom,
+  EpubPlace start,
+  String chapter,
+) => ReadingLocation(
+  cfiOf(spine, dom, start),
+  sectionPath,
+  quoteAt(dom, start),
+  chapter: chapter,
+);
