@@ -1,6 +1,6 @@
 ---
 id: tc-tjtc
-status: open
+status: closed
 deps: [tc-acl5, tc-nang, tc-nh0b]
 links: []
 created: 2026-11-08T19:23:12Z
@@ -78,3 +78,19 @@ docs/plans/native-epub-reader.md (epic boo-b2ey). Read the sections named in the
 - Fonts are registered before the first paragraph that uses them.
 - An on-demand host benchmark shows no step longer than the budget plus the longest paragraph.
 
+
+## Notes
+
+**2026-11-08T20:46:53Z**
+
+Interfaces as built: PageSource has the ticket's signatures. A request that stops early fails with PageRequestStopped: its abandon future completed, another page was shown (the source's own work only), the source was disposed, or the settings of its page were dropped. LayoutRun gained one getter, `PageStart get next` (the start of the next page that it publishes), so that the source records the page after every page that a run cuts. That record (following starts, integers only) is how after() works without a run.
+
+Decisions for the pager (tc-mxfp):
+- The source owns every page and picture that it returns. A page stays usable until the cache drops it. show() pins it and its neighbors, so show a page before keeping it. draft() and picture() take only a cached page, and the source disposes the pictures on eviction.
+- Pages are keyed by section, settings and start. A page at a start is the same page whichever run cut it (the property of layout.dart), so an anchored page whose start is a true start is the true page.
+- after() and before() always run as urgent work. pageAt(urgent: true) and turns share the top rank; the shown page's neighbors come next, then pageAt without urgent, then the shown section's main run, the next section's first page and the previous section's main run.
+- The previous settings are those of the shown page when the settings change (or the settings before the change when nothing is shown, or when the new value equals the shown page's settings). So a fast A to B to C change keeps A, whose page is still on screen.
+- Main-run pages enter the cache only when a request waits for them; the others are disposed at once, so the main run's sweep does not push recently read pages out of the cache.
+- The cache keeps the prepared sections of the shown and pinned pages and of the requests in progress, even over the limit.
+
+Verification: the on-demand benchmark is BOOKFIN_PAGE_SOURCE_BENCHMARK=1 flutter test test/reader/epub/page_source_test.dart --plain-name 'host benchmark'.

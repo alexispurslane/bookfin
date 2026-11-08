@@ -430,6 +430,10 @@ class LayoutRun {
   /// flow's length once every item is laid out.
   int get reached => _item;
 
+  /// The start of the next page that the run publishes, while it is not
+  /// [done].
+  PageStart get next => _pageStart;
+
   /// Lays out flow items until [budget] is spent or [want] pages are cut in
   /// this step (null: no page limit). A step ends after the item, usually a
   /// paragraph, that crosses the budget, so it lays out at least one item.
