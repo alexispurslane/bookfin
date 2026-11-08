@@ -93,8 +93,7 @@ void main() {
       () => playback.open(title, recording, autoplay: false),
     );
     await show(tester);
-    // The ring of the audiobook's progress is always there. The starting
-    // ring is the one inside the play state.
+    // The starting ring is the one inside the play state.
     Finder startingRing() => find.descendant(
       of: find.byType(PlayStateIcon),
       matching: find.byType(CircularProgressIndicator),
@@ -111,21 +110,56 @@ void main() {
     expect(button('Pause'), findsOneWidget);
   });
 
-  testWidgets('the round cover button rings the audiobook with how far '
-      'through it the open place is', (tester) async {
+  testWidgets('the round cover button fills its faded cover in full colour, '
+      'like a pie, as far through the audiobook as the open place is', (
+    tester,
+  ) async {
     await tester.runAsync(() async {
       await playback.open(title, recording, autoplay: false);
       await playback.seekEdition(75000);
     });
     await show(tester);
     final total = playback.durationMilliseconds!;
-    final ring = tester.widget<CircularProgressIndicator>(
+    final pie = tester.widget<ClipPath>(
+      find.descendant(
+        of: find.byType(PlaybackCoverButton),
+        matching: find.byWidgetPredicate(
+          (widget) => widget is ClipPath && widget.clipper is ProgressPie,
+        ),
+      ),
+    );
+    expect((pie.clipper! as ProgressPie).value, closeTo(75000 / total, 1e-9));
+    expect(
       find.descendant(
         of: find.byType(PlaybackCoverButton),
         matching: find.byType(CircularProgressIndicator),
       ),
+      findsNothing,
+      reason: 'No ring around the cover takes room from it.',
     );
-    expect(ring.value, closeTo(75000 / total, 1e-9));
+  });
+
+  test('the progress pie grows clockwise from twelve o\'clock', () {
+    const size = Size.square(48);
+    Path pie(double value) => ProgressPie(value).getClip(size);
+    const upperRight = Offset(36, 12);
+    const lowerRight = Offset(36, 36);
+    const lowerLeft = Offset(12, 36);
+    const upperLeft = Offset(12, 12);
+
+    final quarter = pie(.25);
+    expect(quarter.contains(upperRight), isTrue);
+    expect(quarter.contains(lowerRight), isFalse);
+    expect(quarter.contains(upperLeft), isFalse);
+
+    final most = pie(.8);
+    expect(most.contains(lowerLeft), isTrue);
+    expect(most.contains(upperLeft), isFalse);
+
+    expect(pie(0).contains(upperRight), isFalse);
+    for (final point in [upperRight, lowerRight, lowerLeft, upperLeft]) {
+      expect(pie(1).contains(point), isTrue);
+    }
   });
 
   testWidgets('with no audiobook open there is no round cover button', (

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -1466,8 +1467,9 @@ class CoverPlayButton extends StatelessWidget {
   /// Whether a Play command waits for the audio to sound.
   final bool starting;
 
-  /// How far through the book the place is, from 0 to 1. Only the ring
-  /// follows it. Null when the length is unknown, and then the ring is empty.
+  /// How far through the book the place is, from 0 to 1. Only the pie
+  /// follows it. Null when the length is unknown, and then the whole cover
+  /// stays faded.
   final ValueListenable<double>? progress;
 
   /// Reports a tap. The listener means Pause while [playing] or [starting],
@@ -1485,12 +1487,16 @@ class CoverPlayButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final progress = this.progress;
-    Widget ring(double? value) => CircularProgressIndicator(
-      value: value?.clamp(0.0, 1.0) ?? 0,
-      strokeWidth: 3,
-      color: scheme.primary,
-      backgroundColor: scheme.onSurface.withValues(alpha: 0.12),
+    final cover = FittedBox(
+      fit: BoxFit.cover,
+      child: SizedBox(
+        width: 38,
+        height: 57,
+        child: BookCover.book(book, showText: false),
+      ),
     );
+    Widget pie(double value) =>
+        ClipPath(clipper: ProgressPie(value), child: cover);
     return Semantics(
       button: true,
       label: playing || starting ? 'Pause audiobook' : 'Play audiobook',
@@ -1501,47 +1507,43 @@ class CoverPlayButton extends StatelessWidget {
         onLongPress: onOpen,
         child: SizedBox.square(
           dimension: size,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              // The ring moves while audio plays. Its own layer keeps the
-              // glass behind it from repainting.
-              RepaintBoundary(
-                child: progress == null
-                    ? ring(null)
-                    : ValueListenableBuilder(
-                        valueListenable: progress,
-                        builder: (context, value, _) => ring(value),
+          child: ClipOval(
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                // The cover that is still ahead shows faded.
+                cover,
+                ColoredBox(color: scheme.surface.withValues(alpha: .62)),
+                // The pie moves while audio plays. Its own layer keeps the
+                // glass behind it from repainting.
+                if (progress != null)
+                  RepaintBoundary(
+                    child: ValueListenableBuilder(
+                      valueListenable: progress,
+                      builder: (context, value, _) => pie(value),
+                    ),
+                  ),
+                // A small dark disc keeps the icon readable on any cover,
+                // and leaves the pie around it visible.
+                Center(
+                  child: DecoratedBox(
+                    decoration: const BoxDecoration(
+                      color: Color(0x73000000),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: PlayStateIcon(
+                        playing: playing,
+                        starting: starting,
+                        size: 20,
+                        color: Colors.white,
                       ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(5),
-                child: ClipOval(
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      FittedBox(
-                        fit: BoxFit.cover,
-                        child: SizedBox(
-                          width: 38,
-                          height: 57,
-                          child: BookCover.book(book, showText: false),
-                        ),
-                      ),
-                      const ColoredBox(color: Color(0x59000000)),
-                      Center(
-                        child: PlayStateIcon(
-                          playing: playing,
-                          starting: starting,
-                          size: 22,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -1576,4 +1578,28 @@ class ReplacementOffer extends StatelessWidget {
       ),
     ],
   );
+}
+
+/// The part of a round cover that a listener has heard: a pie slice that
+/// starts at twelve o'clock and grows clockwise to [value] of the circle.
+class ProgressPie extends CustomClipper<Path> {
+  const ProgressPie(this.value);
+
+  /// How far through the audiobook the place is, from 0 to 1.
+  final double value;
+
+  @override
+  Path getClip(Size size) {
+    final circle = Offset.zero & size;
+    final value = this.value.clamp(0.0, 1.0);
+    if (value >= 1) return Path()..addOval(circle);
+    if (value <= 0) return Path();
+    return Path()
+      ..moveTo(circle.center.dx, circle.center.dy)
+      ..arcTo(circle, -math.pi / 2, 2 * math.pi * value, false)
+      ..close();
+  }
+
+  @override
+  bool shouldReclip(ProgressPie oldClipper) => oldClipper.value != value;
 }
