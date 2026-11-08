@@ -1,6 +1,6 @@
 ---
 id: boo-gnx9
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-08T14:56:46Z
