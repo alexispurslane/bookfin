@@ -1,7 +1,7 @@
 ---
 id: boo-0i64
 status: open
-deps: []
+deps: [boo-gnx9, boo-2sev]
 links: []
 created: 2026-11-08T14:56:46Z
 type: feature

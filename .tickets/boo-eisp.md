@@ -1,7 +1,7 @@
 ---
 id: boo-eisp
 status: open
-deps: []
+deps: [boo-gnx9]
 links: []
 created: 2026-11-08T14:56:46Z
 type: feature
