@@ -2,7 +2,7 @@
 id: t8-oitu
 status: open
 deps: []
-links: []
+links: [boo-f2gn, t1-jh0y]
 created: 2026-11-03T20:34:28Z
 type: bug
 priority: 3

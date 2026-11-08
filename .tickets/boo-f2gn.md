@@ -2,7 +2,7 @@
 id: boo-f2gn
 status: open
 deps: []
-links: []
+links: [t8-oitu, t1-jh0y]
 created: 2026-11-08T03:16:28Z
 type: bug
 priority: 2

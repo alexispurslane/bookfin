@@ -5,9 +5,12 @@
 // Sign in at http://127.0.0.1:8096 with any username and password.
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:image/image.dart' as img;
+
+import 'showcase_media.dart' as media;
 
 const _token = 'showcase-token';
 
@@ -103,6 +106,9 @@ const _books = [
     'salt',
     'Salt and Lantern',
     'J. Okafor',
+    // Ebook only: outside a series, an audiobook and an ebook with the same
+    // title join only after the user confirms, so the grid would show both.
+    audio: false,
     ebook: 'epub',
     cover: (0x4F6B5A, 0x2E3F35),
     year: 2020,
@@ -128,6 +134,36 @@ const _books = [
     narrator: 'Sam Ortiz',
   ),
   _Book(
+    'almanac',
+    'The Lamplighter\'s Almanac',
+    'Odile Fenn',
+    cover: (0xB5793E, 0x6E4220),
+    year: 2024,
+    genres: ['Fantasy'],
+    narrator: 'Ruth Calder',
+    minutes: 598,
+  ),
+  _Book(
+    'north',
+    'Northbound',
+    'Teodor Halse',
+    cover: (0x5E7F8F, 0x2B3D47),
+    year: 2021,
+    genres: ['Travel'],
+    narrator: 'Teodor Halse',
+    minutes: 388,
+  ),
+  _Book(
+    'weather',
+    'A Field Guide to Small Weather',
+    'June Ashby',
+    cover: (0x8A8A4E, 0x4A4A26),
+    year: 2018,
+    genres: ['Nature writing'],
+    narrator: 'Priya Rao',
+    minutes: 455,
+  ),
+  _Book(
     'ledger',
     'Winter Ledger',
     'S. Moreau',
@@ -144,8 +180,7 @@ const _overview =
     'old trees grafted with a stranger\'s stock, and the village quietly '
     'pretending not to notice.</p><p>What follows is a patient, strange book '
     'about inheritance, weather, and the things a place remembers when the '
-    'people in it would rather forget. Synthetic description for the '
-    'Bookfin showcase fixture.</p>';
+    'people in it would rather forget.</p>';
 
 Uint8List _cover(_Book book) {
   final (top, bottom) = book.cover!;
@@ -172,62 +207,57 @@ Uint8List _cover(_Book book) {
   img.drawCircle(image, x: 300, y: 170, radius: 120, color: light);
   img.drawCircle(image, x: 300, y: 170, radius: 80, color: light);
   img.fillRect(image, x1: 40, y1: 420, x2: 360, y2: 424, color: light);
-  img.drawString(
-    image,
-    book.title.toUpperCase(),
-    font: img.arial24,
-    x: 40,
-    y: 440,
-    color: img.ColorRgb8(255, 249, 239),
-  );
+  // The title wraps at word ends to lines of at most 20 letters, which fit
+  // the 320-pixel text column.
+  final lines = <String>[];
+  for (final word in book.title.toUpperCase().split(' ')) {
+    if (lines.isNotEmpty && lines.last.length + 1 + word.length <= 20) {
+      lines.last = '${lines.last} $word';
+    } else {
+      lines.add(word);
+    }
+  }
+  for (var i = 0; i < lines.length; i++) {
+    img.drawString(
+      image,
+      lines[i],
+      font: img.arial24,
+      x: 40,
+      y: 440 + i * 30,
+      color: img.ColorRgb8(255, 249, 239),
+    );
+  }
   img.drawString(
     image,
     book.author,
     font: img.arial14,
     x: 40,
-    y: 480,
+    y: 450 + lines.length * 30,
     color: img.ColorRgba8(255, 249, 239, 200),
   );
   return img.encodePng(image);
 }
 
-/// Two minutes of 8 kHz, 8-bit mono silence, so audio downloads can play.
-const _silenceBytes = 44 + 8000 * 120;
+/// The ebook file of a book: a made-up EPUB, or a PDF with a scanned page.
+Uint8List _ebook(_Book book) => switch (book.ebook) {
+  'pdf' => media.pdfWithScan(),
+  _ => media.epub(book.id, book.title, book.author, switch (book.id) {
+    'frost' => media.firstFrost,
+    'salt' => media.saltAndLantern,
+    _ => media.winterLedger,
+  }),
+};
 
-Uint8List _silence() {
-  const rate = 8000, seconds = 120;
-  final data = ByteData(44 + rate * seconds);
-  void text(int at, String value) {
-    for (var i = 0; i < value.length; i++) {
-      data.setUint8(at + i, value.codeUnitAt(i));
-    }
-  }
-
-  text(0, 'RIFF');
-  data.setUint32(4, 36 + rate * seconds, Endian.little);
-  text(8, 'WAVE');
-  text(12, 'fmt ');
-  data.setUint32(16, 16, Endian.little);
-  data.setUint16(20, 1, Endian.little);
-  data.setUint16(22, 1, Endian.little);
-  data.setUint32(24, rate, Endian.little);
-  data.setUint32(28, rate, Endian.little);
-  data.setUint16(32, 1, Endian.little);
-  data.setUint16(34, 8, Endian.little);
-  text(36, 'data');
-  data.setUint32(40, rate * seconds, Endian.little);
-  for (var i = 44; i < data.lengthInBytes; i++) {
-    data.setUint8(i, 128);
-  }
-  return data.buffer.asUint8List();
-}
-
-Map<String, Object?> _item(_Book book, {required bool text}) => {
+Map<String, Object?> _item(
+  _Book book, {
+  required bool text,
+  required int size,
+}) => {
   'Id': text ? '${book.id}-text' : book.id,
   'Name': book.title,
   'Type': text ? 'Book' : 'AudioBook',
   'SeriesName': ?book.series,
-  if (text && book.index != null) 'IndexNumber': book.index,
+  'IndexNumber': ?book.index,
   'People': [
     {'Name': book.author, 'Type': 'Author'},
     if (!text && book.narrator != null)
@@ -239,7 +269,7 @@ Map<String, Object?> _item(_Book book, {required bool text}) => {
     {'Name': 'Halyard Press', 'Id': 'halyard'},
   ],
   'ProductionYear': ?book.year,
-  if (book.cover != null) 'ImageTags': {'Primary': 'v1'},
+  if (book.cover != null) 'ImageTags': {'Primary': 'v2'},
   'DateModified': '2026-11-07T00:00:00Z',
   'RunTimeTicks': text ? null : book.minutes * 60 * 10000000,
   'ProviderIds': <String, String>{},
@@ -256,7 +286,7 @@ Map<String, Object?> _item(_Book book, {required bool text}) => {
     {
       'Id': text ? '${book.id}-text' : book.id,
       'Container': text ? book.ebook : 'm4b',
-      'Size': text ? 8 : _silenceBytes,
+      'Size': size,
       'RunTimeTicks': text ? null : book.minutes * 60 * 10000000,
       'ETag': 'showcase-${book.id}-${text ? 'text' : 'audio'}',
     },
@@ -272,16 +302,24 @@ Future<void> main(List<String> arguments) async {
     for (final book in _books)
       if (book.cover != null) book.id: _cover(book),
   };
-  final silence = _silence();
+  // Every audiobook plays the same silence, long enough for the longest book.
+  final silence = await media.silence(
+    Duration(minutes: _books.map((book) => book.minutes).reduce(max)),
+  );
+  final ebooks = {
+    for (final book in _books)
+      if (book.ebook != null) '${book.id}-text': _ebook(book),
+  };
   final items = [
     for (final book in _books) ...[
-      if (book.audio) _item(book, text: false),
-      if (book.ebook != null) _item(book, text: true),
+      if (book.audio) _item(book, text: false, size: silence.length),
+      if (book.ebook != null)
+        _item(book, text: true, size: ebooks['${book.id}-text']!.length),
     ],
   ];
   const user = {
     'Id': 'showcase-user',
-    'Name': 'alexis',
+    'Name': 'reader',
     'Policy': {'EnableContentDownloading': true, 'IsAdministrator': false},
   };
   stdout.writeln('Showcase fixture on http://127.0.0.1:${server.port}');
@@ -334,9 +372,9 @@ Future<void> main(List<String> arguments) async {
       };
     } else if (parts.isNotEmpty && parts.last == 'Download') {
       response.headers.contentType = ContentType.binary;
-      final text =
-          parts.length >= 2 && parts[parts.length - 2].endsWith('-text');
-      final bytes = text ? utf8.encode('showcase') : silence;
+      final bytes = parts.length >= 2
+          ? ebooks[parts[parts.length - 2]] ?? silence
+          : silence;
       response.contentLength = bytes.length;
       response.add(bytes);
       await response.close();
