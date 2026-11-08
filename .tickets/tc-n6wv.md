@@ -1,6 +1,6 @@
 ---
 id: tc-n6wv
-status: open
+status: in_progress
 deps: [tc-txyr]
 links: []
 created: 2026-11-08T19:23:13Z
@@ -34,3 +34,9 @@ docs/plans/native-epub-reader.md (epic boo-b2ey). Read the sections named in the
 - The on-demand fidelity test on tc-pshi's committed Chromium data agrees on page starts at 23 pixels at least as well as at 20, and line start agreement does not drop.
 - E3's properties still hold.
 
+
+## Notes
+
+**2026-11-08T22:19:05Z**
+
+An exact line's height is Flutter's own height before it rounds (ascent + descent): the CSS line height, or the height of a line's taller inline content. Lines of line-height: normal keep Flutter's rounded height, because Chromium rounds font metrics there. Paint draws each line at its exact baseline, clipped to it, and draws neighboring lines with the same shift together. Fidelity on chromium-layout.json: body text page starts 1,460 to 1,461 of 1,482 at 20 px and 2,024 of 2,048 at 23 px (unchanged), line starts unchanged; A Christmas Carol page starts 117 to 162 of 267 at 20 px and 104 to 207 of 351 at 23 px. Keats' other differences come from elsewhere (see the report). Needed t5-ynlj.
