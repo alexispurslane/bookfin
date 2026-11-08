@@ -160,7 +160,7 @@ void _placeTests(
   }, timeout: const Timeout(Duration(minutes: 10)));
 
   test('every contents entry of $name opens where epub.js opened it, on a page '
-      'that shows it', () async {
+      'whose first line holds it', () async {
     final book = _Book(publication());
     final source = immediateSource(book.publication)..settings = readerPage;
     final misplaced = <String>[];
@@ -196,14 +196,19 @@ void _placeTests(
           'quote': entry['quote'],
         }, reason: where);
         final shown = await source.pageAt(place, anchored: true);
-        if (_notShown(shown, dom, place) case final why?) {
+        if (_notOnFirstLine(shown, dom, place) case final why?) {
           misplaced.add('$where $why');
         }
       }
     } finally {
       source.dispose();
     }
-    _report(name, 'contents entries shown', count - misplaced.length, count);
+    _report(
+      name,
+      'contents entries on the first line',
+      count - misplaced.length,
+      count,
+    );
     expect(misplaced, isEmpty);
   });
 
@@ -277,9 +282,7 @@ void _expectFirstLineHolds(
 /// page without text, such as a title page image, shows only the place at
 /// its start.
 ///
-/// The design asks this of contents entries and search hits ("Testing,
-/// Behavior tests"). A place in a node of only white space can open on a
-/// page before its next visible character (t9-ousp).
+/// The design asks this of search hits ("Testing, Behavior tests").
 String? _notShown(LaidPage page, DomSection dom, EpubPlace place) {
   final visible = dom.visibleBefore(place);
   final from = page.start == const PageStart(0, 0) ? 0 : page.startVisible;
@@ -287,6 +290,33 @@ String? _notShown(LaidPage page, DomSection dom, EpubPlace place) {
   if (visible >= from && visible <= to) return null;
   return 'is character $visible, on a page that shows characters $from to '
       '$to';
+}
+
+/// Why the first line of [page] does not hold [place], a place in [dom], or
+/// null when it holds it: its visible character is at or after the line's
+/// first one, and before the next line's first one. On a section's first
+/// page, the first line also holds the text before it that the reader
+/// hides, as [_notShown] allows. A page without text holds only the place
+/// at its start.
+///
+/// A contents entry in a node of only white space counts as its next
+/// visible character (t9-ousp).
+String? _notOnFirstLine(LaidPage page, DomSection dom, EpubPlace place) {
+  final visible = dom.visibleBefore(place);
+  final lines = page.lineStarts;
+  final from = lines.isEmpty || page.start == const PageStart(0, 0)
+      ? page.start == const PageStart(0, 0)
+            ? 0
+            : page.startVisible
+      : lines.first;
+  final to = lines.length > 1
+      ? lines[1] - 1
+      : lines.isEmpty
+      ? page.endVisible
+      : page.endVisible - 1;
+  if (visible >= from && visible <= to) return null;
+  return 'is character $visible, on a page whose first line holds characters '
+      '$from to $to';
 }
 
 /// Writes how many of [total] places of [book] passed a check, so that an

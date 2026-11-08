@@ -1523,9 +1523,9 @@ class LayoutRun {
   }
 }
 
-/// The page start of the line that holds [place], a place in [section]: the
-/// last line that starts at or before it. A place in white space counts as
-/// the next visible character of its node. It lays out one paragraph.
+/// The page start of the line that holds [place], a place in [section]
+/// (see [_holder]). It lays out the paragraph of the place, and the next
+/// one when the place is in white space after it.
 PageStart lineStart(PreparedSection section, EpubPlace place) {
   if (place.section != section.index) {
     throw ArgumentError.value(place, 'place', 'is not in this section');
@@ -1541,35 +1541,103 @@ PageStart lineStart(PreparedSection section, EpubPlace place) {
   if (item < 0) return const PageStart(0, 0);
   final run = LayoutRun(section, from: PageStart(item, 0));
   try {
-    while (run._item <= item) {
-      run._layOutItem();
+    ({Slice? holder, bool past}) holderUpTo(int last) {
+      while (run._item <= last) {
+        run._layOutItem();
+      }
+      return _holder(dom, place, [
+        for (final slice in run._pending)
+          for (final line in _lines(slice)) (line, slice),
+      ]);
     }
-    // The line that holds the place is the last one, in document order,
-    // that starts at or before it. The cells of a split table row put lines
-    // of later cells on earlier pages, so it is not always the last slice.
-    Slice? found;
-    (int, int)? best;
-    for (final slice in run._pending) {
-      if (slice.at.item != item) continue;
-      found ??= slice;
-      for (final line in _lines(slice)) {
-        final start = line.start;
-        if (start == null) continue;
-        final order = _order(dom, start);
-        if (_compare(order, key) <= 0 &&
-            (best == null || _compare(order, best) >= 0)) {
-          found = slice;
-          best = order;
-        }
+
+    var (:holder, :past) = holderUpTo(item);
+    if (past) {
+      // A place in white space after the item's lines is on the first line
+      // of the next item that shows something.
+      for (var next = item + 1; next < flow.length; next++) {
+        if (_firstPlace(section.index, flow[next]) == null) continue;
+        (:holder, :past) = holderUpTo(next);
+        break;
       }
     }
     // The item's first line starts where the run starts: at the section
     // start when nothing comes before it.
-    if (found == null || found.at.line == 0) return run._from;
-    return found.at;
+    if (holder == null || holder.at == PageStart(item, 0)) return run._from;
+    return holder.at;
   } finally {
     run.dispose();
   }
+}
+
+/// The owner of the line of [lines] that holds [place], and whether the
+/// place lies after everything that the lines show. [lines] pairs each
+/// line with its owner, in any order.
+///
+/// The line that holds a place is the last line that starts at or before
+/// it in document order. But a place after the last thing that this line
+/// shows, such as a place in white space between two paragraphs, belongs
+/// to the next line: the line of its next visible character or image.
+/// Null when no line starts at or after the place either.
+({T? holder, bool past}) _holder<T>(
+  DomSection dom,
+  EpubPlace place,
+  Iterable<(Slice, T)> lines,
+) {
+  final key = _order(dom, place);
+  (Slice, T)? before;
+  (int, int)? beforeOrder;
+  T? after;
+  (int, int)? afterOrder;
+  for (final entry in lines) {
+    final start = entry.$1.start;
+    if (start == null) continue;
+    final order = _order(dom, start);
+    if (_compare(order, key) <= 0) {
+      if (beforeOrder == null || _compare(order, beforeOrder) >= 0) {
+        before = entry;
+        beforeOrder = order;
+      }
+    } else if (afterOrder == null || _compare(order, afterOrder) < 0) {
+      after = entry.$2;
+      afterOrder = order;
+    }
+  }
+  if (before == null) return (holder: after, past: false);
+  final (line, owner) = before;
+  final last = _lastShown(dom, line);
+  if (last == null || _compare(key, last) <= 0) {
+    return (holder: owner, past: false);
+  }
+  return after == null
+      ? (holder: owner, past: true)
+      : (holder: after, past: false);
+}
+
+/// The order of the last thing that [line] shows: its last visible
+/// character or placeholder, or its start when it shows only white space.
+/// Null when it ends with raised text, whose places the line does not map:
+/// it then shows everything up to the next line.
+(int, int)? _lastShown(DomSection dom, Slice line) {
+  final start = _order(dom, line.start!);
+  final piece = line.piece;
+  if (piece == null) return start;
+  final (first, end) = line.units;
+  for (var unit = end - 1; unit >= first; unit--) {
+    final text = piece.map.textPlaceAt(unit);
+    if (text == null) {
+      // A placeholder: an image or a line break at its element, raised
+      // text at its first text node, or an indent at no node.
+      final node = piece.map.nodes[piece.map._segment(unit)];
+      if (node < 0) continue;
+      return dom.nodeAt(node) is DomText ? null : (node, 0);
+    }
+    final data = dom.textAt(text)!.text;
+    if (text.offset < data.length && !isSpace(data.codeUnitAt(text.offset))) {
+      return (text.node, text.offset);
+    }
+  }
+  return start;
 }
 
 /// The first place that flow [item] of section [section] shows, or null
@@ -1642,28 +1710,15 @@ class ChapterLayout {
   List<Decoration> get decorations =>
       {for (final page in pages) ...page.decorations}.toList();
 
-  /// The index of the page that holds [place]: the page of the last line
-  /// that starts at or before it in document order.
-  int pageAt(EpubPlace place) {
-    final key = _order(section.dom, place);
-    var found = 0;
-    (int, int)? best;
-    for (var index = 0; index < pages.length; index++) {
-      for (final slice in pages[index].slices) {
-        for (final line in _lines(slice)) {
-          final start = line.start;
-          if (start == null) continue;
-          final order = _order(section.dom, start);
-          if (_compare(order, key) <= 0 &&
-              (best == null || _compare(order, best) >= 0)) {
-            found = index;
-            best = order;
-          }
-        }
-      }
-    }
-    return found;
-  }
+  /// The index of the page that holds [place]: the page of the line that
+  /// holds it (see [_holder]).
+  int pageAt(EpubPlace place) =>
+      _holder(section.dom, place, [
+        for (final (index, page) in pages.indexed)
+          for (final slice in page.slices)
+            for (final line in _lines(slice)) (line, index),
+      ]).holder ??
+      0;
 
   /// The index of the page that holds [visible], a visible character
   /// index.
