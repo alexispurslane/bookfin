@@ -395,6 +395,85 @@ void main() {
     });
   });
 
+  // The fixture's 6-byte files hash on this isolate, so the read counter
+  // sees every digest.
+  group('a verified saved file is read again only after it changes', () {
+    Future<T> countingReads<T>(List<String> reads, Future<T> Function() body) =>
+        IOOverrides.runZoned(
+          body,
+          createFile: (path) =>
+              _ReadCounting(Zone.root.run(() => File(path)), reads),
+        );
+
+    test('a downloaded file opens without a read of its bytes', () async {
+      final file = await downloadText();
+      final reads = <String>[];
+      final local = await countingReads(
+        reads,
+        () => downloads.localFile(fixture.text.files.single),
+      );
+      expect(local, file.uri);
+      expect(reads, isEmpty);
+    });
+
+    test(
+      'a restart opens a downloaded file without a read of its bytes',
+      () async {
+        await downloadText();
+        downloads.dispose();
+        await downloads.idle;
+        final reads = <String>[];
+        final local = await countingReads(reads, () async {
+          downloads = create();
+          await downloads.bind(fixture.session(), fixture.books);
+          return downloads.localFile(fixture.text.files.single);
+        });
+        expect(local, isNotNull);
+        expect(downloads.status(fixture.text).phase, DownloadPhase.downloaded);
+        expect(reads, isEmpty);
+      },
+    );
+
+    test(
+      'a file touched outside the app is read once and stays downloaded',
+      () async {
+        final file = await downloadText();
+        await file.setLastModified(DateTime.utc(2020));
+        final reads = <String>[];
+        await countingReads(reads, () async {
+          expect(
+            await downloads.localFile(fixture.text.files.single),
+            isNotNull,
+          );
+          expect(
+            await downloads.localFile(fixture.text.files.single),
+            isNotNull,
+          );
+        });
+        expect(reads, [file.path]);
+        expect(downloads.status(fixture.text).phase, DownloadPhase.downloaded);
+      },
+    );
+
+    test(
+      'a restart after a touched file was read again does not read it',
+      () async {
+        final file = await downloadText();
+        await file.setLastModified(DateTime.utc(2020));
+        expect(await downloads.localFile(fixture.text.files.single), isNotNull);
+        downloads.dispose();
+        await downloads.idle;
+        final reads = <String>[];
+        await countingReads(reads, () async {
+          downloads = create();
+          await downloads.bind(fixture.session(), fixture.books);
+        });
+        expect(downloads.status(fixture.text).phase, DownloadPhase.downloaded);
+        expect(reads, isEmpty);
+      },
+    );
+  });
+
   group('binding computes source ids off the UI isolate', () {
     test(
       'a large library binds without hashing its sources on the UI isolate',

@@ -201,6 +201,8 @@ class Playback extends ChangeNotifier {
   // samples until the retained selection is successfully loaded again.
   bool _decoderReady = false;
   bool _restored = false;
+  // See [starting].
+  Edition? _starting;
   String? _message;
   double _speed = 1;
   int _backward = 10;
@@ -268,6 +270,7 @@ class Playback extends ChangeNotifier {
   late final _settingsSignal = ValueNotifier<PlaybackSettings>(_settings);
   late final _statusSignal = ValueNotifier<PlaybackStatus>(_status);
   late final _undoSignal = ValueNotifier<UndoOffer?>(_undoOffer);
+  late final _startingSignal = ValueNotifier<Edition?>(_starting);
 
   // Playback notifies through these narrow signals for one kind of change
   // each, and through itself for every change but two: a decoder report
@@ -316,6 +319,12 @@ class Playback extends ChangeNotifier {
   /// change is saved. A save of the place where audio plays now does not
   /// change it.
   ValueListenable<UndoOffer?> get undoNotifier => _undoSignal;
+
+  /// The edition that a Play or Listen command is starting, or null. It
+  /// notifies at the command, before any wait, and again when the edition's
+  /// audio sounds, or when the command ends without sound: a missing
+  /// download, a decoder failure, Pause, Stop or another account.
+  ValueListenable<Edition?> get startingNotifier => _startingSignal;
 
   /// The listening actions, newest first. The list stays the same object
   /// until the history changes.
@@ -629,14 +638,12 @@ class Playback extends ChangeNotifier {
       return false;
     }
     final generation = _generation;
-    for (final file in edition.files) {
-      final local = await downloads.localFile(file);
-      if (generation != _generation) return false;
-      if (local == null || local.scheme != 'file') {
-        _message = 'Download every file in this audio edition before restoring a position.';
-        _notify();
-        return false;
-      }
+    final saved = await _savedFiles(edition);
+    if (generation != _generation) return false;
+    if (saved == null) {
+      _message = 'Download every file in this audio edition before restoring a position.';
+      _notify();
+      return false;
     }
     final before = _position;
     final wasPlaying = _playing;
@@ -668,6 +675,11 @@ class Playback extends ChangeNotifier {
   AudioPosition? get position => _position;
   bool get playing => _playing;
   bool get active => _active;
+
+  /// The edition that a Play or Listen command is starting: from the command
+  /// until the edition's audio sounds, or until the command ends without
+  /// sound. Null otherwise. See [startingNotifier].
+  Edition? get starting => _starting;
   bool get pendingOfflineResume =>
       _edition != null &&
       _resumeFits(_edition!, _resumeRecord(_edition!)) &&
@@ -845,6 +857,7 @@ class Playback extends ChangeNotifier {
     }
     _playing = false;
     _active = false;
+    _starting = null;
     reports?.stop();
     _save();
     _notify();
@@ -907,6 +920,7 @@ class Playback extends ChangeNotifier {
     _recordedDecoderAnchor = null;
     _playing = false;
     _active = false;
+    _starting = null;
     _decoderReady = false;
     _resumes = {};
     _history = [];
@@ -1106,10 +1120,45 @@ class Playback extends ChangeNotifier {
     );
   }
 
-  Future<void> open(Book book, Edition edition, {bool autoplay = true}) =>
+  Future<void> open(Book book, Edition edition, {bool autoplay = true}) {
+    if (autoplay) _start(edition);
+    return _settleStart(
       _enqueue(() async {
         await _open(book, edition, autoplay: autoplay);
-      });
+      }),
+    );
+  }
+
+  /// Shows [edition] as starting, at once, before the command waits.
+  void _start(Edition edition) {
+    if (_closed) return;
+    _starting = edition;
+    _publish();
+  }
+
+  /// Ends the start when [command] ended without sound to wait for. A command
+  /// that called the decoder's play leaves the start to the first sound.
+  Future<void> _settleStart(Future<void> command) => command.whenComplete(() {
+    if (_starting != null && (!_active || _playing)) _endStart();
+  });
+
+  void _endStart() {
+    if (_closed || _starting == null) return;
+    _starting = null;
+    _publish();
+  }
+
+  /// The saved files of [edition] in order, or null when any of them is not
+  /// saved on this device. The lookups run together: each one can take a
+  /// look at storage, and an edition can have dozens of files.
+  Future<List<Uri>?> _savedFiles(Edition edition) async {
+    final found = await Future.wait([
+      for (final file in edition.files) downloads.localFile(file),
+    ]);
+    return found.every((uri) => uri?.scheme == 'file')
+        ? found.cast<Uri>()
+        : null;
+  }
 
   /// True only when this account's selection was loaded and committed.
   Future<bool> _open(
@@ -1133,20 +1182,15 @@ class Playback extends ChangeNotifier {
       return false;
     }
     final generation = _generation;
-    final files = <Uri>[];
-    for (final file in edition.files) {
-      final uri = await downloads.localFile(file);
-      if (generation != _generation) return false;
-      bound = _bound(book, edition);
-      if (bound == null) return false;
-      (book, edition) = bound;
-      if (uri == null || uri.scheme != 'file') {
-        _message =
-            'Download every file in this audio edition before listening.';
-        _notify();
-        return false;
-      }
-      files.add(uri);
+    final files = await _savedFiles(edition);
+    if (generation != _generation) return false;
+    bound = _bound(book, edition);
+    if (bound == null) return false;
+    (book, edition) = bound;
+    if (files == null) {
+      _message = 'Download every file in this audio edition before listening.';
+      _notify();
+      return false;
     }
     final resume = replacement != null
         ? null
@@ -1232,6 +1276,9 @@ class Playback extends ChangeNotifier {
     _position = _positionForSample(sample);
     final milliseconds = _position!.milliseconds;
     _playing = _active && sample.playing && !sample.completed;
+    // The first sound ends any start. A start that a later command took
+    // over must not wait for a sound of its own edition.
+    if (_playing && !wasPlaying) _starting = null;
     if (wasPlaying != _playing && _commandAction == null) {
       _record(
         sample.completed
@@ -1280,22 +1327,24 @@ class Playback extends ChangeNotifier {
     );
   }
 
-  Future<void> play() => _enqueue(() async {
+  Future<void> play() {
+    if (!_playing && _edition != null) _start(_edition!);
+    return _settleStart(_enqueue(_play));
+  }
+
+  Future<void> _play() async {
     if (_edition == null) return;
     if (!_decoderReady) {
       await _open(_book!, _edition!, autoplay: true, target: _position);
       return;
     }
     final generation = _generation;
-    for (final file in _edition!.files) {
-      final local = await downloads.localFile(file);
-      if (generation != _generation) return;
-      if (local == null) {
-        _message =
-            'Download every file in this audio edition before listening.';
-        _notify();
-        return;
-      }
+    final saved = await _savedFiles(_edition!);
+    if (generation != _generation) return;
+    if (saved == null) {
+      _message = 'Download every file in this audio edition before listening.';
+      _notify();
+      return;
     }
     if (durationMilliseconds != null &&
         editionMilliseconds == durationMilliseconds) {
@@ -1303,9 +1352,14 @@ class Playback extends ChangeNotifier {
     }
     _active = true;
     await engine.play();
-  });
+  }
 
-  Future<void> pause() => _enqueue(() async {
+  Future<void> pause() {
+    _endStart();
+    return _enqueue(_pause);
+  }
+
+  Future<void> _pause() async {
     final generation = _generation;
     _commandAction = ListeningAction.pause;
     try {
@@ -1319,9 +1373,14 @@ class Playback extends ChangeNotifier {
     _save();
     await _writes;
     _notify();
-  });
+  }
 
-  Future<void> stop() => _enqueue(() async {
+  Future<void> stop() {
+    _endStart();
+    return _enqueue(_stop);
+  }
+
+  Future<void> _stop() async {
     final generation = _generation;
     _commandAction = ListeningAction.stop;
     try {
@@ -1338,7 +1397,7 @@ class Playback extends ChangeNotifier {
     _save();
     await _writes;
     _notify();
-  });
+  }
 
   Future<void> seekEdition(int milliseconds) =>
       _enqueue(() => _seekEdition(milliseconds));
@@ -1660,6 +1719,7 @@ class Playback extends ChangeNotifier {
     _settingsSignal,
     _statusSignal,
     _undoSignal,
+    _startingSignal,
   ];
 
   /// Publishes the current state to the narrow signals, then to the broad
@@ -1681,6 +1741,7 @@ class Playback extends ChangeNotifier {
     _settingsSignal.value = _settings;
     _statusSignal.value = _status;
     _undoSignal.value = _undoOffer;
+    _startingSignal.value = _starting;
   }
 
   PlaybackSelection get _selection =>
