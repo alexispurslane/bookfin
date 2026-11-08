@@ -1,13 +1,14 @@
 import 'package:bookfin/reader/document.dart';
 import 'package:bookfin/reader/pdf.dart';
 import 'package:bookfin/reader/pdf_viewport.dart';
+import 'package:bookfin/reader/screen.dart' show ReaderControls;
 import 'package:flutter/material.dart';
 import 'package:flutter_epub_viewer/navigation.dart' show ContentsEntry;
 
 /// A [PdfViewport] under a stand-in for the reader screen's controller
-/// part. It keeps the reflow choice, which starts at [reflow], and sends
-/// recognition choices to the document's text supply, as the screen does
-/// through the session.
+/// part. It keeps the reflow choice, which starts at [reflow], and offers it
+/// in the reader's control bar. It sends recognition choices to the
+/// document's text supply, as the screen does through the session.
 class PdfViewportHost extends StatefulWidget {
   const PdfViewportHost({
     super.key,
@@ -31,15 +32,32 @@ class PdfViewportHost extends StatefulWidget {
 class _PdfViewportHostState extends State<PdfViewportHost> {
   late bool _reflow = widget.reflow;
   @override
-  Widget build(BuildContext context) => PdfViewport(
-    book: widget.book,
-    fontSize: widget.fontSize,
-    initial: widget.initial,
-    onReady: widget.onReady,
-    onAddress: widget.onAddress,
-    reflow: _reflow,
-    onReflow: (on) => setState(() => _reflow = on),
-    onCancelRecognition: () => widget.book.textSupply?.cancel(),
-    onRetryRecognition: (page) => widget.book.textSupply?.retry(page),
+  Widget build(BuildContext context) => Column(
+    children: [
+      Expanded(
+        child: PdfViewport(
+          book: widget.book,
+          fontSize: widget.fontSize,
+          initial: widget.initial,
+          onReady: widget.onReady,
+          onAddress: widget.onAddress,
+          reflow: _reflow,
+          onCancelRecognition: () => widget.book.textSupply?.cancel(),
+          onRetryRecognition: (page) => widget.book.textSupply?.retry(page),
+        ),
+      ),
+      ReaderControls(
+        onContents: null,
+        onSearch: null,
+        onSmaller: null,
+        onLarger: null,
+        onBookmark: null,
+        onBookmarks: null,
+        night: false,
+        onNightChanged: (_) {},
+        reflow: _reflow,
+        onReflowChanged: (on) => setState(() => _reflow = on),
+      ),
+    ],
   );
 }

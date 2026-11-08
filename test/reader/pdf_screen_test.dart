@@ -56,7 +56,7 @@ void main() {
       );
       await settleNative(tester);
       expect(find.bySemanticsLabel('Original source page 1'), findsOneWidget);
-      await tester.tap(find.text('Reflow text'));
+      await tester.tap(find.byTooltip('Reflow text'));
       await settleNative(tester);
       expect(
         find.textContaining('The river follows the old road.'),
@@ -75,7 +75,7 @@ void main() {
       await tester.tap(find.byTooltip('Bookmark this place'));
       await tester.pumpAndSettle();
       expect(reader.bookmarks.single.position.sourcePage, 2);
-      await tester.tap(find.text('Original page'));
+      await tester.tap(find.byTooltip('Original page'));
       await settleNative(tester);
       expect(find.bySemanticsLabel('Original source page 2'), findsOneWidget);
       await tester.pumpWidget(const SizedBox());

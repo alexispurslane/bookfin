@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_epub_viewer/flutter_epub_viewer.dart';
 
-import '../catalog/glass.dart' show confirmAction, showGlassSheet;
+import '../catalog/glass.dart' show PageBook, confirmAction, showGlassSheet;
 import '../foundation/listenable_selector.dart';
 import '../foundation/time.dart';
 import '../playback/playback.dart';
@@ -306,6 +306,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
                             documentOrSize,
                             reader.bookmarkChanges,
                             reader.placeChanges,
+                            reader.reflowChanges,
                           ]),
                           select: () => (
                             ready: reader.ready,
@@ -315,6 +316,9 @@ class _ReaderScreenState extends State<ReaderScreen> {
                                 reader.document != null && reader.fontSize < 40,
                             bookmark: reader.canBookmark,
                             bookmarks: reader.document != null,
+                            reflow: reader.document is PdfBook
+                                ? reader.reflow
+                                : null,
                           ),
                           builder: (_, on, _) => ReaderControls(
                             onContents: on.ready ? _openContents : null,
@@ -337,6 +341,8 @@ class _ReaderScreenState extends State<ReaderScreen> {
                             onBookmarks: on.bookmarks ? _openBookmarks : null,
                             night: night,
                             onNightChanged: widget.onNightChanged,
+                            reflow: on.reflow,
+                            onReflowChanged: reader.setReflow,
                           ),
                         ),
                         ListenableBuilder(
@@ -410,7 +416,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
     final publication = reader.publication;
     final fontSize = MediaQuery.textScalerOf(context).scale(reader.fontSize);
     if (document is PdfBook) {
-      return PdfViewport(
+      final viewport = PdfViewport(
         key: ValueKey(token),
         book: document,
         initial: reader.initialAddress as PdfAddress?,
@@ -419,10 +425,12 @@ class _ReaderScreenState extends State<ReaderScreen> {
             reader.attachDocument(token, navigator, entries),
         onAddress: (address) => reader.acceptAddress(token, address),
         reflow: reader.reflow,
-        onReflow: reader.setReflow,
         onCancelRecognition: () => document.textSupply?.cancel(),
         onRetryRecognition: (page) => document.textSupply?.retry(page),
       );
+      // The glass layers over the page show the open book.
+      final book = reader.book;
+      return book == null ? viewport : PageBook(book: book, child: viewport);
     }
     if (!epubViewportSupported) {
       return const Center(
@@ -471,9 +479,9 @@ class _ReaderScreenState extends State<ReaderScreen> {
   }
 }
 
-/// The reader's control bar: Contents, Search book, text size, the two
-/// bookmark controls and the reading theme. A control whose callback is null
-/// shows but is off. Each tap goes to its own callback, so the owner decides
+/// The reader's control bar: Contents, Search book, text size, the reflow
+/// control of a PDF, the two bookmark controls and the reading theme. A
+/// control whose callback is null shows but is off. Each tap goes to its own callback, so the owner decides
 /// what it does.
 class ReaderControls extends StatelessWidget {
   const ReaderControls({
@@ -486,6 +494,8 @@ class ReaderControls extends StatelessWidget {
     required this.onBookmarks,
     required this.night,
     required this.onNightChanged,
+    this.reflow,
+    this.onReflowChanged,
   });
 
   /// Reports Contents, which asks for the table of contents.
@@ -513,19 +523,34 @@ class ReaderControls extends StatelessWidget {
   /// Reports the theme control with the night value that it asks for.
   final ValueChanged<bool> onNightChanged;
 
+  /// Whether the open PDF shows as reflowed text. Null when the book is not
+  /// a PDF, and then the bar has no reflow control. The reflow control
+  /// offers the other view.
+  final bool? reflow;
+
+  /// Reports the reflow control with the reflow value that it asks for.
+  final ValueChanged<bool>? onReflowChanged;
+
   @override
   Widget build(BuildContext context) {
     Widget button(String tooltip, IconData icon, VoidCallback? onPressed) =>
         IconButton(tooltip: tooltip, onPressed: onPressed, icon: Icon(icon));
+    // The buttons' own padding spaces them, so that the eight controls of a
+    // PDF fit in one row on a phone 411 points wide.
     return Wrap(
       alignment: WrapAlignment.center,
-      spacing: 4,
       runSpacing: 4,
       children: [
         button('Contents', Icons.list_rounded, onContents),
         button('Search book', Icons.search_rounded, onSearch),
         button('Smaller text', Icons.text_decrease_rounded, onSmaller),
         button('Larger text', Icons.text_increase_rounded, onLarger),
+        if (reflow case final reflow?)
+          button(
+            reflow ? 'Original page' : 'Reflow text',
+            reflow ? Icons.picture_as_pdf_outlined : Icons.article_outlined,
+            onReflowChanged == null ? null : () => onReflowChanged!(!reflow),
+          ),
         button('Bookmark this place', Icons.bookmark_add_outlined, onBookmark),
         button('Reading bookmarks', Icons.bookmarks_outlined, onBookmarks),
         button(

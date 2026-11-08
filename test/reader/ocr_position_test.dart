@@ -99,6 +99,7 @@ void main() {
   late RecordDatabase database;
   late ReaderSession reader;
   late DocumentNavigator navigation;
+  var placeReported = false;
   var calls = 0;
   Future<String> Function() recognize = () async => englishPage;
 
@@ -111,6 +112,7 @@ void main() {
   );
 
   Future<void> showReader(WidgetTester tester) async {
+    placeReported = false;
     addTearDown(() async {
       await tester.pumpWidget(const SizedBox());
       await native(tester, () => reader.flush());
@@ -129,7 +131,10 @@ void main() {
                 navigation = value;
                 reader.attachDocument(token, value, entries);
               },
-              onAddress: (value) => reader.acceptAddress(token, value),
+              onAddress: (value) {
+                placeReported = true;
+                reader.acceptAddress(token, value);
+              },
             ),
           ),
         ),
@@ -154,16 +159,16 @@ void main() {
     expect(find.bySemanticsLabel('Original source page $page'), findsOneWidget);
   }
 
+  /// Waits until the shown viewport is done with its page text. The
+  /// viewport reports a place only once its page text arrived, failed or
+  /// stopped being awaited.
   Future<void> finishText(WidgetTester tester) async {
     for (var attempt = 0; attempt < 100; attempt++) {
       await tester.runAsync(
         () => Future<void>.delayed(const Duration(milliseconds: 10)),
       );
       await tester.pump();
-      final button = tester.widget<TextButton>(
-        find.widgetWithText(TextButton, 'Reflow text'),
-      );
-      if (button.onPressed != null) return;
+      if (placeReported) return;
     }
     fail('The current source-page text must settle.');
   }
@@ -268,7 +273,7 @@ void main() {
       expect(hit.sourcePage, 2);
       expect(hit.character, greaterThan(1000));
       await native(tester, () => navigation.display(hit));
-      await tester.tap(find.text('Reflow text'));
+      await tester.tap(find.byTooltip('Reflow text'));
       await tester.pump();
       await tester.pump();
       expect(
@@ -282,7 +287,7 @@ void main() {
       );
       await showReader(tester);
       await finishText(tester);
-      await tester.tap(find.text('Reflow text'));
+      await tester.tap(find.byTooltip('Reflow text'));
       await tester.pump();
       await tester.pump();
       final scroll = tester
@@ -346,7 +351,7 @@ void main() {
       await showReader(tester);
       await finishText(tester);
       await drawOriginal(tester, 1);
-      await tester.tap(find.text('Reflow text'));
+      await tester.tap(find.byTooltip('Reflow text'));
       await tester.pump();
       expect(find.textContaining('Restart Bookfin'), findsOneWidget);
       expect(find.text('Retry recognition'), findsNothing);
@@ -403,7 +408,7 @@ void main() {
             () => started.future.timeout(const Duration(seconds: 5)),
           );
           if (failure == 'cancel') {
-            await tester.tap(find.text('Cancel recognition'));
+            await tester.tap(find.text('Stop waiting'));
             await tester.pump();
             held.complete(englishPage);
           }
@@ -478,7 +483,7 @@ void main() {
         expect((reader.initialAddress as PdfAddress).character, 10);
         await showReader(tester);
         await finishText(tester);
-        await tester.tap(find.text('Reflow text'));
+        await tester.tap(find.byTooltip('Reflow text'));
         await tester.pump();
         await drawOriginal(tester, 2);
         expect(find.byType(SingleChildScrollView), findsNothing);
