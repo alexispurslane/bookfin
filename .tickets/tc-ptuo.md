@@ -1,6 +1,6 @@
 ---
 id: tc-ptuo
-status: open
+status: closed
 deps: [tc-cl77, tc-rap6]
 links: []
 created: 2026-11-08T19:23:13Z
@@ -33,3 +33,9 @@ docs/plans/native-epub-reader.md (epic boo-b2ey). Read the sections named in the
 - Memory stays within the limits, and any changed limit in page_source.dart cites the measurement.
 - docs/research/native-epub-phone.md records the numbers and the commands.
 
+
+## Notes
+
+**2026-11-08T19:27:23Z**
+
+User decision (2026-11-08): dropped. Use the limits that the design picked from Mac measurements; tune later only if the reader feels slow on the phone.

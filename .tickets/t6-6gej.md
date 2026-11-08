@@ -23,3 +23,7 @@ boo-duaq moved the EPUB WebView to texture-layer composition (useHybridCompositi
 **2026-11-08T19:23:53Z**
 
 Absorbed by tc-ptuo (epic boo-b2ey). It measures the native reader's frames, layout steps and memory on the Pixel 8. The WebView redraw costs in the notes above go away with tc-rap6. Close when tc-ptuo merges.
+
+**2026-11-08T19:27:23Z**
+
+2026-11-08: tc-ptuo was dropped. The WebView redraw cost that this ticket measures goes away with the WebView in tc-rap6, so this ticket becomes obsolete then.
