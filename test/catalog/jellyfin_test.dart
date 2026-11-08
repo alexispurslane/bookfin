@@ -63,6 +63,49 @@ void main() {
     await server.close(force: true);
   });
 
+  /// The entries of the catalog of [selected], built from its pages as the
+  /// catalog worker builds them.
+  Future<List<CatalogEntry>> entries(Set<String> selected) async =>
+      catalogEntries(await client.catalog(session, selected));
+
+  /// The body of each catalog page that [serveCatalog] sent, in order.
+  late List<String> servedPages;
+
+  /// Answers the book library list, and answers each catalog request with
+  /// [page] for its start index. A page request asks for a full page.
+  void serveCatalog(Map<String, dynamic> Function(int start) page) {
+    servedPages = [];
+    respond = (request) {
+      final start =
+          int.tryParse(request.uri.queryParameters['startIndex'] ?? '') ?? 0;
+      final text = jsonEncode(
+        request.uri.path.endsWith('UserViews')
+            ? {
+                'Items': [
+                  {'Id': 'books', 'Name': 'Books', 'CollectionType': 'books'},
+                ],
+              }
+            : page(start),
+      );
+      if (request.uri.queryParameters['limit'] == '$catalogPageSize') {
+        servedPages.add(text);
+      }
+      request.response.write(text);
+      return request.response.close();
+    };
+  }
+
+  bool isPage(
+    ({String method, Uri uri, String? token, Map<String, dynamic>? body})
+    request,
+  ) =>
+      request.uri.path.endsWith('/Items') &&
+      request.uri.queryParameters['limit'] == '$catalogPageSize';
+
+  Matcher failsWith(CatalogFailureKind kind) => throwsA(
+    isA<CatalogFailure>().having((failure) => failure.kind, 'kind', kind),
+  );
+
   test('sign-in sends password only in the JSON body and preserves a server subpath', () async {
     respond = (request) {
       request.response.write(
@@ -165,15 +208,13 @@ void main() {
       );
       return request.response.close();
     };
-    final items = await client.catalog(session, {'books'});
+    final items = await entries({'books'});
     expect(items, hasLength(205));
-    final pages = requests
-        .where((request) => request.uri.path.endsWith('/Items'))
-        .toList();
-    expect(pages.map((request) => request.uri.queryParameters['startIndex']), [
-      '0',
-      '200',
-    ]);
+    final pages = requests.where(isPage).toList();
+    expect(
+      pages.map((request) => request.uri.queryParameters['startIndex']),
+      unorderedEquals(['0', '200']),
+    );
     expect(
       pages.every(
         (request) => request.uri.queryParameters['parentId'] == 'books',
@@ -226,7 +267,7 @@ void main() {
       return request.response.close();
     };
     await expectLater(
-      client.catalog(session, {'books'}),
+      entries({'books'}),
       throwsA(
         isA<CatalogFailure>().having(
           (failure) => failure.kind,
@@ -375,7 +416,7 @@ void main() {
           return request.response.close();
         };
         await expectLater(
-          client.catalog(session, {'books'}),
+          entries({'books'}),
           throwsA(
             isA<CatalogFailure>().having(
               (failure) => failure.kind,
@@ -464,7 +505,7 @@ void main() {
       }
       return request.response.close();
     };
-    final items = await client.catalog(session, {'books'});
+    final items = await entries({'books'});
     final edition = buildBooks(items).single.editions.single;
     expect(edition.kind, EditionKind.audio);
     expect(edition.files.single.revision, contains('file-revision'));
@@ -518,7 +559,7 @@ void main() {
         }
         return request.response.close();
       };
-      final items = await client.catalog(session, {'books'});
+      final items = await entries({'books'});
       expect(items.single.json, isNot(contains('UnrelatedSecret')));
       final book = buildBooks(items).single;
       expect(book.series, 'The Orchard Cycle');
@@ -530,6 +571,115 @@ void main() {
       expect(book.year, 2021);
     },
   );
+
+  test('a catalog read hands back each page as Jellyfin sent it', () async {
+    serveCatalog(
+      (start) => {
+        'Items': [
+          for (var index = start; index < start + 3; index++)
+            entry('item$index').json,
+        ],
+        'TotalRecordCount': 3,
+        'StartIndex': start,
+      },
+    );
+    final catalog = await client.catalog(session, {'books'});
+    final library = catalog.libraries.single;
+    expect(library.libraryId, 'books');
+    expect(library.total, 3);
+    expect(library.pages.single, utf8.encode(servedPages.single));
+    expect(catalog.items, 3);
+  });
+
+  test(
+    'the pages of a library are requested together, not one after another',
+    () async {
+      serveCatalog(
+        (start) => {
+          'Items': [
+            for (var index = start; index < start + 200; index++)
+              entry('item$index').json,
+          ],
+          'TotalRecordCount': 600,
+          'StartIndex': start,
+        },
+      );
+      final answer = respond;
+      final waiting = <Completer<void>>[];
+      respond = (request) async {
+        if (request.uri.queryParameters['limit'] == '$catalogPageSize') {
+          // Each page waits until the server holds all three page requests.
+          final arrived = Completer<void>();
+          waiting.add(arrived);
+          if (waiting.length == 3) {
+            for (final each in waiting) {
+              each.complete();
+            }
+          }
+          await arrived.future;
+        }
+        await answer(request);
+      };
+      expect(await entries({'books'}), hasLength(600));
+    },
+    timeout: const Timeout(Duration(seconds: 10)),
+  );
+
+  test('a page shorter than its place in the count is incomplete', () async {
+    serveCatalog(
+      (start) => {
+        'Items': [
+          for (var index = start; index < (start == 0 ? 199 : 205); index++)
+            entry('item$index').json,
+        ],
+        'TotalRecordCount': 205,
+        'StartIndex': start,
+      },
+    );
+    await expectLater(
+      entries({'books'}),
+      failsWith(CatalogFailureKind.incomplete),
+    );
+  });
+
+  test('an item that is not a book is an unreadable catalog', () async {
+    serveCatalog(
+      (start) => {
+        'Items': [entry('film', type: 'Movie').json],
+        'TotalRecordCount': 1,
+        'StartIndex': start,
+      },
+    );
+    await expectLater(
+      entries({'books'}),
+      failsWith(CatalogFailureKind.invalidResponse),
+    );
+  });
+
+  test('closing the client cancels a page request in flight', () async {
+    final received = Completer<void>();
+    final finish = Completer<void>();
+    serveCatalog(
+      (start) => {
+        'Items': [entry('item0').json],
+        'TotalRecordCount': 1,
+        'StartIndex': start,
+      },
+    );
+    final answer = respond;
+    respond = (request) async {
+      if (request.uri.queryParameters['limit'] == '$catalogPageSize') {
+        received.complete();
+        await finish.future;
+      }
+      await answer(request);
+    };
+    final reading = client.catalog(session, {'books'});
+    await received.future;
+    client.close();
+    await expectLater(reading, failsWith(CatalogFailureKind.cancelled));
+    finish.complete();
+  });
 
   Future<void> Function(HttpRequest) collectionServer({
     bool failCollections = false,
@@ -583,7 +733,7 @@ void main() {
   test('books in a Jellyfin collection belong to its series', () async {
     answerCollections = false;
     respond = collectionServer();
-    final books = buildBooks(await client.catalog(session, {'books'}));
+    final books = buildBooks(await entries({'books'}));
     expect(
       books.singleWhere((book) => book.title == 'A Crown of Swords').series,
       'The Wheel of Time',
@@ -599,7 +749,7 @@ void main() {
     () async {
       answerCollections = false;
       respond = collectionServer(failCollections: true);
-      final books = buildBooks(await client.catalog(session, {'books'}));
+      final books = buildBooks(await entries({'books'}));
       expect(books, hasLength(2));
       expect(books.every((book) => book.series == null), isTrue);
     },

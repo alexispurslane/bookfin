@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:isolate';
+import 'dart:typed_data';
 
 import 'package:bookfin/catalog/controller.dart';
 import 'package:bookfin/catalog/jellyfin.dart';
@@ -40,11 +42,13 @@ bool _carriesEntries(Object? input) => switch (input) {
   _ => false,
 };
 
-/// Answers with one book library, `books`, whose one catalog page holds
-/// [items], and with no collections.
+/// Answers with one book library, `books`, whose catalog holds [items], and
+/// with no collections. A catalog request gets the items of its start index
+/// and limit. A page reports [pageTotal] items, or the count of [items].
 class _PageTransport implements JsonTransport {
-  _PageTransport(this.items);
+  _PageTransport(this.items, {this.pageTotal});
   final List<Map<String, dynamic>> items;
+  final int? pageTotal;
   @override
   Future<Map<String, dynamic>> send(
     Uri uri, {
@@ -58,12 +62,27 @@ class _PageTransport implements JsonTransport {
       ],
     },
     _ when uri.queryParameters['parentId'] == 'books' => {
-      'Items': items,
+      'Items': items
+          .skip(int.parse(uri.queryParameters['startIndex']!))
+          .take(int.parse(uri.queryParameters['limit']!))
+          .toList(),
       'TotalRecordCount': items.length,
-      'StartIndex': 0,
+      'StartIndex': int.parse(uri.queryParameters['startIndex']!),
     },
     _ => {'Items': <Object>[]},
   };
+  @override
+  Future<Uint8List> fetchBody(
+    Uri uri, {
+    required String method,
+    required Map<String, String> headers,
+    Map<String, dynamic>? body,
+  }) async => utf8.encode(
+    jsonEncode({
+      ...await send(uri, method: method, headers: headers, body: body),
+      'TotalRecordCount': ?pageTotal,
+    }),
+  );
   @override
   void close() {}
 }
@@ -71,18 +90,16 @@ class _PageTransport implements JsonTransport {
 /// A client whose catalog pages come from Jellyfin's JSON, so the catalog
 /// builds its entries from responses, as with a real server.
 class _PagedClient extends FixtureClient {
-  _PagedClient(super.server, List<Map<String, dynamic>> items)
+  _PagedClient(super.server, List<Map<String, dynamic>> items, {int? pageTotal})
     : _pages = JellyfinClient(
         server,
         deviceId: 'test',
-        transport: _PageTransport(items),
+        transport: _PageTransport(items, pageTotal: pageTotal),
       );
   final JellyfinClient _pages;
   @override
-  Future<List<CatalogEntry>> catalog(
-    JellyfinSession session,
-    Set<String> selected,
-  ) => _pages.catalog(session, selected);
+  Future<CatalogPages> catalog(JellyfinSession session, Set<String> selected) =>
+      _pages.catalog(session, selected);
 }
 
 void main() {
@@ -412,6 +429,101 @@ void main() {
     });
   });
 
+  group('a refresh asked for while another runs', () {
+    String? message() => controller.statusNotifier.value.message;
+    const incomplete = CatalogFailure(CatalogFailureKind.incomplete);
+
+    test('joins a background refresh and reports its failure after Jellyfin answered', () async {
+      await connectAndSelect();
+      client.pendingCatalog = Completer();
+      final background = controller.refresh();
+      await pumpEventQueue();
+      final asked = controller.refresh(byUser: true);
+      client.pendingCatalog!.completeError(incomplete);
+      await Future.wait([background, asked]);
+      expect(message(), incomplete.message);
+      expect(controller.statusNotifier.value.reach, CatalogReach.reached);
+      expect(controller.statusNotifier.value.verified, isFalse);
+      expect(controller.books, hasLength(1));
+    });
+
+    test('starts no second request to Jellyfin', () async {
+      await connectAndSelect();
+      final before = client.catalogReads;
+      client.pendingCatalog = Completer();
+      final background = controller.refresh();
+      await pumpEventQueue();
+      var askedEnded = false;
+      final asked = controller
+          .refresh(byUser: true)
+          .whenComplete(() => askedEnded = true);
+      await pumpEventQueue();
+      expect(askedEnded, isFalse);
+      client.pendingCatalog!.complete([entry('two', title: 'The River')]);
+      await Future.wait([background, asked]);
+      expect(client.catalogReads, before + 1);
+      expect(controller.books.single.title, 'The River');
+      expect(controller.statusNotifier.value.verified, isTrue);
+    });
+
+    test('a background refresh that joins one the person asked for keeps it reported', () async {
+      await connectAndSelect();
+      client.pendingCatalog = Completer();
+      final asked = controller.refresh(byUser: true);
+      await pumpEventQueue();
+      final background = controller.refresh();
+      client.pendingCatalog!.completeError(incomplete);
+      await Future.wait([asked, background]);
+      expect(message(), incomplete.message);
+    });
+
+    test('a background refresh that nobody asked about stays silent', () async {
+      await connectAndSelect();
+      client.pendingCatalog = Completer();
+      final first = controller.refresh();
+      await pumpEventQueue();
+      final second = controller.refresh();
+      client.pendingCatalog!.completeError(incomplete);
+      await Future.wait([first, second]);
+      expect(message(), isNull);
+    });
+
+    test('a refresh of another selection replaces the running one', () async {
+      client.views = [
+        const BookLibrary('books', 'Books'),
+        const BookLibrary('more', 'More'),
+      ];
+      await connectAndSelect();
+      final before = client.catalogReads;
+      final pending = client.pendingCatalog = Completer();
+      final background = controller.refresh();
+      await pumpEventQueue();
+      client.pendingCatalog = null;
+      await controller.refresh(selected: {'books', 'more'}, byUser: true);
+      pending.complete([entry('late', title: 'Late')]);
+      await background;
+      expect(controller.books.single.title, isNot('Late'));
+      expect(client.catalogReads, before + 2);
+      expect(controller.accountNotifier.value.selected, {'books', 'more'});
+      expect(controller.statusNotifier.value.verified, isTrue);
+    });
+
+    test('a refresh asked for during a restore runs after it, from the restored catalog', () async {
+      await connectAndSelect();
+      final restarted = newController();
+      addTearDown(restarted.dispose);
+      store.readGate = Completer();
+      final restoring = restarted.restore();
+      await pumpEventQueue();
+      client.failure = incomplete;
+      final asked = restarted.refresh(byUser: true);
+      store.readGate!.complete();
+      await Future.wait([restoring, asked]);
+      expect(restarted.statusNotifier.value.message, incomplete.message);
+      expect(restarted.books, hasLength(1));
+    });
+  });
+
   group('whether the last sign-in or refresh succeeded', () {
     bool verified() => controller.statusNotifier.value.verified;
 
@@ -728,10 +840,32 @@ void main() {
         expect(builds, [('catalog worker', 1)]);
         expect(controller.books, hasLength(40));
       },
-      skip:
-          'ta-7oe6: the transport returns decoded maps on the UI isolate, so '
-          'the entries cross until it hands the worker page bytes.',
     );
+
+    test('a catalog that the worker finds incomplete is reported to a person who asked, and the saved books stay', () async {
+      client.entries = _largeLibrary(prefix: 'Saved');
+      await connectAndSelect();
+      final saved = store.values[account('alice').scope.key];
+      client = _PagedClient(Uri.parse('https://books.example'), [
+        for (final value in _largeLibrary()) {...value.json},
+      ], pageTotal: 41);
+      crossings.clear();
+      builds.clear();
+      await controller.refresh(byUser: true);
+      await settleReports();
+      expect(crossings, [false]);
+      expect(builds, isEmpty);
+      final status = controller.statusNotifier.value;
+      expect(
+        status.message,
+        const CatalogFailure(CatalogFailureKind.incomplete).message,
+      );
+      expect(status.reach, CatalogReach.reached);
+      expect(status.verified, isFalse);
+      expect(controller.books.first.title, startsWith('Saved'));
+      expect(store.values[account('alice').scope.key], saved);
+      controller.checkInvariants();
+    });
 
     test(
       'a correction hands the worker the saved text, not the entries',

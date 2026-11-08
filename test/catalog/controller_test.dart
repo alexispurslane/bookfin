@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:bookfin/catalog/controller.dart';
 import 'package:bookfin/catalog/jellyfin.dart';
@@ -43,8 +44,12 @@ class MemoryCatalogStore implements CatalogStore {
   bool failWrites = false;
   bool failReads = false;
   Completer<void>? gate;
+
+  /// Holds each read until it completes, when a test sets it.
+  Completer<void>? readGate;
   @override
   Future<String?> read(AccountScope scope) async {
+    await readGate?.future;
     if (failReads) throw StateError('unreadable cache');
     return values[scope.key];
   }
@@ -63,6 +68,9 @@ class FixtureClient extends JellyfinClient {
   List<BookLibrary> views = [const BookLibrary('books', 'Books')];
   CatalogFailure? failure;
   Completer<List<CatalogEntry>>? pendingCatalog;
+
+  /// How many catalog reads reached this client.
+  int catalogReads = 0;
   Completer<JellyfinSession>? pendingSignIn;
   @override
   Future<JellyfinSession> signIn(String username, String password) async =>
@@ -80,13 +88,45 @@ class FixtureClient extends JellyfinClient {
   }
 
   @override
-  Future<List<CatalogEntry>> catalog(
+  Future<CatalogPages> catalog(
     JellyfinSession session,
     Set<String> selected,
   ) async {
+    catalogReads++;
     if (failure != null) throw failure!;
-    return pendingCatalog?.future ?? entries;
+    return pagesOf(await (pendingCatalog?.future ?? entries));
   }
+}
+
+/// The catalog pages that Jellyfin sends for [entries]: the entries of each
+/// library, in pages of [catalogPageSize].
+CatalogPages pagesOf(List<CatalogEntry> entries) {
+  final byLibrary = <String, List<CatalogEntry>>{};
+  for (final each in entries) {
+    byLibrary.putIfAbsent(each.libraryId, () => []).add(each);
+  }
+  return CatalogPages(
+    libraries: [
+      for (final MapEntry(key: id, value: items) in byLibrary.entries)
+        (
+          libraryId: id,
+          total: items.length,
+          pages: [
+            for (var start = 0; start < items.length; start += catalogPageSize)
+              utf8.encode(
+                jsonEncode({
+                  'Items': [
+                    for (final item in items.skip(start).take(catalogPageSize))
+                      item.json,
+                  ],
+                  'TotalRecordCount': items.length,
+                  'StartIndex': start,
+                }),
+              ),
+          ],
+        ),
+    ],
+  );
 }
 
 void main() {

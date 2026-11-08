@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:bookfin/catalog/jellyfin.dart';
 import 'package:bookfin/catalog/transport.dart';
@@ -48,6 +49,14 @@ class _UnconfirmedUpload implements JsonTransport {
     }
     return response;
   }
+
+  @override
+  Future<Uint8List> fetchBody(
+    Uri uri, {
+    required String method,
+    required Map<String, String> headers,
+    Map<String, dynamic>? body,
+  }) => delegate.fetchBody(uri, method: method, headers: headers, body: body);
 
   @override
   void close() => delegate.close();

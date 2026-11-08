@@ -106,16 +106,29 @@ class CatalogAccount {
 /// What the catalog is doing.
 enum _Work { idle, restore, refresh }
 
+/// A refresh that runs: its [generation], the [selected] libraries that it
+/// was asked to read, or null for the saved selection, when it is [done],
+/// and whether a caller asked for its outcome. A refresh asked for while it
+/// runs joins it, so [reported] can turn true while it runs.
+class _Refreshing {
+  _Refreshing(this.generation, this.selected, {required this.reported});
+  final int generation;
+  final Set<String>? selected;
+  bool reported;
+  late final Future<void> done;
+}
+
 /// The catalog state that one isolate hop builds: the cache, the text that
 /// saves it, and the library of its books.
 typedef _Built = ({CatalogCache cache, String text, CatalogLibrary library});
 
 /// The smallest saved catalog text, in characters, and the fewest entries
 /// that the catalog builds in another isolate. A smaller catalog builds on
-/// the UI isolate. Measured in AOT on an M-series Mac: a hop costs about
-/// 35 µs plus the copy of its input, and a short entry builds in about 5 µs,
-/// but an entry with a long description and many chapters takes about
-/// 85 µs. So these limits do not mark where a hop starts to pay: that is
+/// the UI isolate. A refresh counts the items that Jellyfin's pages hold,
+/// because their body size depends on Jellyfin's fields. Measured in AOT on
+/// an M-series Mac: a hop costs about 35 µs plus the copy of its input, and
+/// a short entry builds in about 5 µs, but an entry with a long
+/// description and many chapters takes about 85 µs. So these limits do not mark where a hop starts to pay: that is
 /// one or two entries. They are a compromise: widget tests run in fake time,
 /// in which a hop never completes, and every test library is below them.
 /// A library of real size is far above them.
@@ -154,6 +167,33 @@ _Built _reviseCatalog(_Revision revision) {
     ),
   );
 }
+
+/// A refresh's answer from Jellyfin for [scope]: its book [libraries], the
+/// [selected] ones, and their catalog [pages], not yet decoded. The catalog
+/// keeps [edits].
+typedef _Refresh = ({
+  AccountScope scope,
+  List<BookLibrary> libraries,
+  Set<String> selected,
+  CatalogPages pages,
+  CatalogEdits? edits,
+  DateTime completedAt,
+});
+
+/// Decodes and checks the pages of [refresh], builds its entries, and saves
+/// and builds the result. The pages cross to the worker as block copies, so
+/// a refresh copies no entries. Throws a [CatalogFailure] when the pages are
+/// not one complete catalog.
+_Built _refreshCatalog(_Refresh refresh) => _saveCatalog(
+  CatalogCache(
+    scope: refresh.scope,
+    libraries: refresh.libraries,
+    selected: refresh.selected,
+    entries: catalogEntries(refresh.pages),
+    edits: refresh.edits,
+    completedAt: refresh.completedAt,
+  ),
+);
 
 /// Adds the content digest to [cache], encodes it and builds its library.
 _Built _saveCatalog(CatalogCache cache) {
@@ -229,6 +269,13 @@ class CatalogController extends ChangeNotifier {
   /// The library of [_cache], or the empty library without a cache.
   CatalogLibrary _built = CatalogLibrary.empty;
   _Work _work = _Work.idle;
+
+  /// The last restore, which runs while [_work] is [_Work.restore].
+  Future<void>? _restoring;
+
+  /// The last refresh, which runs while its generation is current and
+  /// [_work] is [_Work.refresh].
+  _Refreshing? _refreshing;
   bool _verified = false;
   bool _accessBlocked = false;
 
@@ -426,7 +473,9 @@ class CatalogController extends ChangeNotifier {
     ), small: text.length < _hopText);
   }
 
-  Future<void> restore() async {
+  Future<void> restore() => _restoring = _restore();
+
+  Future<void> _restore() async {
     final generation = _begin(work: _Work.restore);
     _clearVisible();
     _notify();
@@ -527,19 +576,49 @@ class CatalogController extends ChangeNotifier {
   }
 
   /// Reads the account's book libraries and the catalog of [selected], or
-  /// of the saved selection, from Jellyfin, then saves and shows them.
+  /// of the saved selection, from Jellyfin, then saves and shows them. The
+  /// future ends when the refresh ends.
   ///
   /// [byUser] says that the person asked for this refresh, for example with
-  /// pull to refresh, Retry or Save libraries. Only such a refresh reports
-  /// a failure after Jellyfin answered, such as an incomplete catalog or one
-  /// that cannot be saved. A background refresh, at launch or on app resume,
-  /// keeps those silent. Every refresh reports an expired sign-in and
-  /// revoked access. A refresh that cannot reach Jellyfin says so through
-  /// [CatalogStatus.reach].
-  Future<void> refresh({Set<String>? selected, bool byUser = false}) async {
-    final currentSession = _session;
-    if (currentSession == null) return;
-    final generation = _begin();
+  /// pull to refresh, Retry or Save libraries. A refresh reports a failure
+  /// after Jellyfin answered, such as an incomplete catalog or one that
+  /// cannot be saved, only when a caller asked for it. A background refresh,
+  /// at launch or on app resume, keeps those silent. Every refresh reports
+  /// an expired sign-in and revoked access. A refresh that cannot reach
+  /// Jellyfin says so through [CatalogStatus.reach].
+  ///
+  /// One refresh runs at a time. A refresh while another runs, of the same
+  /// selection or with none given, joins it and sends no second request.
+  /// With [byUser], it asks for the outcome of the running refresh. A
+  /// refresh of another selection replaces the running one. A refresh
+  /// during a restore starts after the restore, from the restored catalog.
+  Future<void> refresh({Set<String>? selected, bool byUser = false}) {
+    if (_work == _Work.restore) {
+      return _restoring!.then(
+        (_) => refresh(selected: selected, byUser: byUser),
+      );
+    }
+    final running = _refreshing;
+    if (running != null &&
+        _work == _Work.refresh &&
+        running.generation == _generation &&
+        (selected == null || setEquals(selected, running.selected))) {
+      running.reported |= byUser;
+      return running.done;
+    }
+    if (_session == null) return Future<void>.value();
+    final refreshing = _refreshing = _Refreshing(
+      _begin(),
+      selected,
+      reported: byUser,
+    );
+    return refreshing.done = _refresh(refreshing);
+  }
+
+  Future<void> _refresh(_Refreshing refreshing) async {
+    final currentSession = _session!;
+    final generation = refreshing.generation;
+    final selected = refreshing.selected;
     _notify();
     try {
       final device = await _credentials.deviceId();
@@ -558,24 +637,20 @@ class CatalogController extends ChangeNotifier {
       if (!views.map((library) => library.id).toSet().containsAll(selection)) {
         throw const CatalogFailure(CatalogFailureKind.invalidSelection);
       }
-      final entries = selection.isEmpty
-          ? <CatalogEntry>[]
+      final pages = selection.isEmpty
+          ? const CatalogPages()
           : await client.catalog(validated, selection);
       if (!_current(generation)) return;
       final write = (_cacheWrites ?? Future<void>.value()).then((_) async {
         if (!_current(generation)) return;
-        final built = await _build(
-          _saveCatalog,
-          CatalogCache(
-            scope: validated.scope,
-            libraries: views,
-            selected: selection,
-            entries: entries,
-            edits: _cache?.edits,
-            completedAt: DateTime.now().toUtc(),
-          ),
-          small: entries.length < _hopEntries,
-        );
+        final built = await _build(_refreshCatalog, (
+          scope: validated.scope,
+          libraries: views,
+          selected: selection,
+          pages: pages,
+          edits: _cache?.edits,
+          completedAt: DateTime.now().toUtc(),
+        ), small: pages.items < _hopEntries);
         if (!_current(generation)) return;
         await _store.write(validated.scope, built.text);
         if (!_current(generation)) return;
@@ -588,8 +663,8 @@ class CatalogController extends ChangeNotifier {
     } catch (error) {
       if (_current(generation)) {
         if (error is CatalogFailure) {
-          await _failure(error, generation, report: byUser);
-        } else if (byUser) {
+          await _failure(error, generation, report: refreshing.reported);
+        } else if (refreshing.reported) {
           _message = 'The refreshed catalog was not saved. Your previous saved books are unchanged.';
         }
       }

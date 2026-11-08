@@ -28,6 +28,45 @@ class _IoTransport implements JsonTransport {
     required Map<String, String> headers,
     Map<String, dynamic>? body,
   }) async {
+    final (:status, :bytes) = await _receive(uri, method, headers, body);
+    if (status == 204 && bytes.isEmpty) return {};
+    try {
+      // A typed byte list crosses to the other isolate as one block copy,
+      // and the decoded value comes back without a copy.
+      final value = bytes.length < _hopBytes
+          ? _decode(bytes)
+          : await compute(_decode, bytes);
+      if (_closed) throw const CatalogFailure(CatalogFailureKind.cancelled);
+      if (value is! Map<String, dynamic>) {
+        throw const CatalogFailure(CatalogFailureKind.invalidResponse);
+      }
+      return value;
+    } on CatalogFailure {
+      rethrow;
+    } catch (_) {
+      throw CatalogFailure(
+        _closed
+            ? CatalogFailureKind.cancelled
+            : CatalogFailureKind.invalidResponse,
+      );
+    }
+  }
+
+  @override
+  Future<Uint8List> fetchBody(
+    Uri uri, {
+    required String method,
+    required Map<String, String> headers,
+    Map<String, dynamic>? body,
+  }) async => (await _receive(uri, method, headers, body)).bytes;
+
+  /// Sends a request and returns its status and its body.
+  Future<({int status, Uint8List bytes})> _receive(
+    Uri uri,
+    String method,
+    Map<String, String> headers,
+    Map<String, dynamic>? body,
+  ) async {
     if (_closed) throw const CatalogFailure(CatalogFailureKind.cancelled);
     try {
       final request = await _client
@@ -56,22 +95,9 @@ class _IoTransport implements JsonTransport {
         received.add(chunk);
       }
       if (_closed) throw const CatalogFailure(CatalogFailureKind.cancelled);
-      if (response.statusCode == 204 && received.isEmpty) return {};
-      final bytes = received.takeBytes();
-      // A typed byte list crosses to the other isolate as one block copy,
-      // and the decoded value comes back without a copy.
-      final value = bytes.length < _hopBytes
-          ? _decode(bytes)
-          : await compute(_decode, bytes);
-      if (_closed) throw const CatalogFailure(CatalogFailureKind.cancelled);
-      if (value is! Map<String, dynamic>) {
-        throw const CatalogFailure(CatalogFailureKind.invalidResponse);
-      }
-      return value;
+      return (status: response.statusCode, bytes: received.takeBytes());
     } on CatalogFailure {
       rethrow;
-    } on FormatException {
-      throw const CatalogFailure(CatalogFailureKind.invalidResponse);
     } catch (_) {
       throw CatalogFailure(
         _closed ? CatalogFailureKind.cancelled : CatalogFailureKind.unavailable,

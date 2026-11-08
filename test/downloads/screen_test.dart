@@ -17,7 +17,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../catalog/controller_test.dart'
-    show MemoryCredentials, MemoryCatalogStore;
+    show MemoryCredentials, MemoryCatalogStore, pagesOf;
 import 'transfer_test.dart' show MediaFixture;
 
 void main() {
@@ -580,14 +580,14 @@ class _CatalogFixture extends JellyfinClient {
     const BookLibrary('books', 'Books'),
   ];
   @override
-  Future<List<CatalogEntry>> catalog(
+  Future<CatalogPages> catalog(
     JellyfinSession session,
     Set<String> selected,
-  ) async => [
+  ) async => pagesOf([
     if (selected.contains('books'))
       for (final id in ['audio1', 'audio2', 'text'])
         CatalogEntry.fromJson(fixture.dto(id), libraryId: 'books'),
-  ];
+  ]);
 }
 
 class _CountedLeftovers extends LocalDownloads {
