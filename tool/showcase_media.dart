@@ -329,7 +329,7 @@ Uint8List pdfWithScan() {
   final image = add(
     stream(
       '/Type /XObject /Subtype /Image /Width ${scan.width} '
-      '/Height ${scan.height} /ColorSpace /DeviceGray /BitsPerComponent 8 '
+      '/Height ${scan.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 '
       '/Filter /DCTDecode',
       img.encodeJpg(scan, quality: 70),
     ),
@@ -382,7 +382,7 @@ Uint8List pdfWithScan() {
 /// A gray page image at 150 dots per inch with typewriter-like text and a
 /// little paper noise, like a photocopy.
 img.Image scannedPage() {
-  final page = img.Image(width: 1275, height: 1650, numChannels: 1);
+  final page = img.Image(width: 1275, height: 1650);
   img.fill(page, color: img.ColorUint8.rgb(236, 236, 236));
   var seed = 7;
   int next() => seed = (seed * 1103515245 + 12345) & 0x7fffffff;

@@ -6,7 +6,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/screenshots/hero.png" alt="Three Bookfin screens: the library grid, the player, and an open book" width="900">
+  <img src="docs/screenshots/hero.png" alt="Three Bookfin screens: the library grid, the player at night, and an EPUB book" width="900">
 </p>
 
 <p align="center">
@@ -46,17 +46,17 @@ The library in them is made-up test data from `tool/showcase_fixture.dart`.
 - Filters show all books, only audiobooks, only ebooks, or only downloaded books.
 - A checkmark on a cover means that the book is on the phone. A series card says how many of its books are downloaded.
 - Search has its own screen. It finds books by title, author or series.
-- Covers are kept on the phone. A book without a cover gets a generated cover with its title.
+- Covers are kept on the phone. A book without a cover gets a generated cover in its own colors.
 
 ### A page for every book
 
 <p align="center">
   <img src="docs/screenshots/book.png" alt="A book page with the cover over a blurred backdrop" width="260">
-  <img src="docs/screenshots/downloads.png" alt="The Downloads tab with download progress" width="260">
+  <img src="docs/screenshots/downloads.png" alt="The Downloads tab with three downloaded audiobooks" width="260">
 </p>
 
 - The book page shows the cover, the author and narrator, the series, the length, your progress and the description.
-- From the book page you listen, read, download or remove the book.
+- From the book page you listen or read. Each audio and ebook edition has its own download and remove buttons.
 - Audio and ebook downloads are separate. A downloaded ebook does not mean that the audiobook is downloaded.
 - Downloads run on Wi-Fi. On mobile data, a download waits for Wi-Fi, unless you allow mobile data for the session.
 - An interrupted download continues later. Bookfin marks a file as downloaded only after it checks the complete file.
@@ -115,7 +115,8 @@ The library in them is made-up test data from `tool/showcase_fixture.dart`.
 - At launch, Bookfin loads the library and your place in each book from the phone, not from the network.
 - It refreshes from Jellyfin in the background and changes the screen in place.
 - If Jellyfin cannot be reached, the library shows your downloaded books and says so. The next refresh brings back the full library.
-- The night theme starts at local sunset and ends at sunrise. Bookfin calculates the times on the phone from a city that you choose. You can also keep day or night all the time.
+- The night theme starts at local sunset and ends at sunrise. Bookfin calculates the times on the phone from a city that you choose.
+- Without a city, Bookfin follows the Android system appearance. You can also keep day or night all the time.
 - Settings holds your account, the libraries to show, layout density, appearance, sync, and Clear data.
 
 ### Your place on every device
@@ -180,7 +181,7 @@ Then sign in with the address of your Jellyfin server, your user name and your p
 
 To try the app without a real server, start the fixture server in `tool/showcase_fixture.dart`.
 A fixture server is a small fake Jellyfin server for tests.
-It serves a made-up library with generated covers, silent audio, two EPUB books and a PDF with a scanned page.
+It serves a made-up library with generated covers, silent audio, three EPUB books and a PDF with a scanned page.
 
 ```sh
 nix develop --command dart run tool/showcase_fixture.dart 8096

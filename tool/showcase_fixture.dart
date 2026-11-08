@@ -106,6 +106,9 @@ const _books = [
     'salt',
     'Salt and Lantern',
     'J. Okafor',
+    // Ebook only: outside a series, an audiobook and an ebook with the same
+    // title join only after the user confirms, so the grid would show both.
+    audio: false,
     ebook: 'epub',
     cover: (0x4F6B5A, 0x2E3F35),
     year: 2020,
@@ -131,6 +134,36 @@ const _books = [
     narrator: 'Sam Ortiz',
   ),
   _Book(
+    'almanac',
+    'The Lamplighter\'s Almanac',
+    'Odile Fenn',
+    cover: (0xB5793E, 0x6E4220),
+    year: 2024,
+    genres: ['Fantasy'],
+    narrator: 'Ruth Calder',
+    minutes: 598,
+  ),
+  _Book(
+    'north',
+    'Northbound',
+    'Teodor Halse',
+    cover: (0x5E7F8F, 0x2B3D47),
+    year: 2021,
+    genres: ['Travel'],
+    narrator: 'Teodor Halse',
+    minutes: 388,
+  ),
+  _Book(
+    'weather',
+    'A Field Guide to Small Weather',
+    'June Ashby',
+    cover: (0x8A8A4E, 0x4A4A26),
+    year: 2018,
+    genres: ['Nature writing'],
+    narrator: 'Priya Rao',
+    minutes: 455,
+  ),
+  _Book(
     'ledger',
     'Winter Ledger',
     'S. Moreau',
@@ -147,8 +180,7 @@ const _overview =
     'old trees grafted with a stranger\'s stock, and the village quietly '
     'pretending not to notice.</p><p>What follows is a patient, strange book '
     'about inheritance, weather, and the things a place remembers when the '
-    'people in it would rather forget. Synthetic description for the '
-    'Bookfin showcase fixture.</p>';
+    'people in it would rather forget.</p>';
 
 Uint8List _cover(_Book book) {
   final (top, bottom) = book.cover!;
@@ -175,20 +207,32 @@ Uint8List _cover(_Book book) {
   img.drawCircle(image, x: 300, y: 170, radius: 120, color: light);
   img.drawCircle(image, x: 300, y: 170, radius: 80, color: light);
   img.fillRect(image, x1: 40, y1: 420, x2: 360, y2: 424, color: light);
-  img.drawString(
-    image,
-    book.title.toUpperCase(),
-    font: img.arial24,
-    x: 40,
-    y: 440,
-    color: img.ColorRgb8(255, 249, 239),
-  );
+  // The title wraps at word ends to lines of at most 20 letters, which fit
+  // the 320-pixel text column.
+  final lines = <String>[];
+  for (final word in book.title.toUpperCase().split(' ')) {
+    if (lines.isNotEmpty && lines.last.length + 1 + word.length <= 20) {
+      lines.last = '${lines.last} $word';
+    } else {
+      lines.add(word);
+    }
+  }
+  for (var i = 0; i < lines.length; i++) {
+    img.drawString(
+      image,
+      lines[i],
+      font: img.arial24,
+      x: 40,
+      y: 440 + i * 30,
+      color: img.ColorRgb8(255, 249, 239),
+    );
+  }
   img.drawString(
     image,
     book.author,
     font: img.arial14,
     x: 40,
-    y: 480,
+    y: 450 + lines.length * 30,
     color: img.ColorRgba8(255, 249, 239, 200),
   );
   return img.encodePng(image);
@@ -213,7 +257,7 @@ Map<String, Object?> _item(
   'Name': book.title,
   'Type': text ? 'Book' : 'AudioBook',
   'SeriesName': ?book.series,
-  if (text && book.index != null) 'IndexNumber': book.index,
+  'IndexNumber': ?book.index,
   'People': [
     {'Name': book.author, 'Type': 'Author'},
     if (!text && book.narrator != null)
@@ -225,7 +269,7 @@ Map<String, Object?> _item(
     {'Name': 'Halyard Press', 'Id': 'halyard'},
   ],
   'ProductionYear': ?book.year,
-  if (book.cover != null) 'ImageTags': {'Primary': 'v1'},
+  if (book.cover != null) 'ImageTags': {'Primary': 'v2'},
   'DateModified': '2026-11-07T00:00:00Z',
   'RunTimeTicks': text ? null : book.minutes * 60 * 10000000,
   'ProviderIds': <String, String>{},

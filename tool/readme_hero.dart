@@ -14,6 +14,8 @@ const _gap = 48;
 const _margin = 72;
 const _lift = 56;
 const _radius = 34;
+const _shadowPad = 60;
+const _shadowDrop = 24;
 const _cream = (0xF6, 0xEF, 0xE3);
 const _sand = (0xEA, 0xDC, 0xC6);
 const _shadow = (0x5A, 0x3E, 0x26);
@@ -35,7 +37,7 @@ Future<void> main(List<String> arguments) async {
   ];
   final phoneHeight = phones.map((phone) => phone.height).reduce(max);
   final width = _margin * 2 + _phoneWidth * 3 + _gap * 2;
-  final height = _margin * 2 + phoneHeight + _lift;
+  final height = _margin * 2 + phoneHeight + _lift + _shadowDrop;
   final canvas = img.Image(width: width, height: height, numChannels: 4);
   for (var y = 0; y < height; y++) {
     final t = y / (height - 1);
@@ -58,10 +60,28 @@ Future<void> main(List<String> arguments) async {
     final x = _margin + i * (_phoneWidth + _gap);
     final y = _margin + (i == 1 ? 0 : _lift);
     final shadow = _shadowOf(phones[i]);
-    img.compositeImage(canvas, shadow, dstX: x - 30, dstY: y - 6);
-    img.compositeImage(canvas, phones[i], dstX: x, dstY: y);
+    _blend(canvas, shadow, x - _shadowPad, y - _shadowPad);
+    _blend(canvas, phones[i], x, y);
   }
   await File(arguments.first).writeAsBytes(img.encodePng(canvas, level: 9));
+}
+
+/// Draws [layer] over [canvas] at ([left], [top]) with straight alpha.
+void _blend(img.Image canvas, img.Image layer, int left, int top) {
+  for (var y = 0; y < layer.height; y++) {
+    for (var x = 0; x < layer.width; x++) {
+      final from = layer.getPixel(x, y);
+      final a = from.a / 255;
+      if (a == 0) continue;
+      if (left + x < 0 || left + x >= canvas.width) continue;
+      if (top + y < 0 || top + y >= canvas.height) continue;
+      final to = canvas.getPixel(left + x, top + y);
+      to
+        ..r = (to.r * (1 - a) + from.r * a).round()
+        ..g = (to.g * (1 - a) + from.g * a).round()
+        ..b = (to.b * (1 - a) + from.b * a).round();
+    }
+  }
 }
 
 /// The screenshot with transparent rounded corners.
@@ -88,10 +108,11 @@ img.Image _rounded(img.Image source) {
   return phone;
 }
 
-/// A blurred, warm-brown silhouette of [phone], padded by 30 pixels on
-/// each side and moved 24 pixels down, for a soft drop shadow.
+/// A blurred, warm-brown silhouette of [phone], padded by [_shadowPad]
+/// pixels on each side and moved [_shadowDrop] pixels down, for a soft drop
+/// shadow. The padding leaves room for the blur, so no edge cuts it off.
 img.Image _shadowOf(img.Image phone) {
-  const pad = 30;
+  const pad = _shadowPad;
   final shadow = img.Image(
     width: phone.width + pad * 2,
     height: phone.height + pad * 2,
@@ -103,7 +124,7 @@ img.Image _shadowOf(img.Image phone) {
       if (alpha == 0) continue;
       shadow.setPixelRgba(
         x + pad,
-        y + pad + 24,
+        y + pad + _shadowDrop,
         _shadow.$1,
         _shadow.$2,
         _shadow.$3,
