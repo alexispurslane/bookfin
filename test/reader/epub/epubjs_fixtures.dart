@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:archive/archive.dart';
 import 'package:bookfin/reader/epub/page_source.dart';
 import 'package:bookfin/reader/epub/prepare.dart';
 import 'package:crypto/crypto.dart';
@@ -53,3 +54,24 @@ PageSource immediateSource(Publication publication) => PageSource(
   publication,
   schedule: (step, {required urgent}) => Timer.run(step),
 );
+
+/// [book], a downloaded book, as epub.js laid it out when it recorded the
+/// fixtures: with automatic hyphenation turned off in each style sheet.
+/// compare.cjs turned it off in Chromium, and the WebView reader never
+/// hyphenated, because the sanitizer empties the Standard Ebooks sheets
+/// that ask for it. Native pages can start where epub.js pages started
+/// only without it.
+Uint8List asRecorded(Uint8List book) {
+  final archive = Archive();
+  for (final file in ZipDecoder().decodeBytes(book).files) {
+    archive.add(
+      file.isFile && file.name.endsWith('.css')
+          ? ArchiveFile.string(
+              file.name,
+              '${utf8.decode(file.content)}\n*{hyphens:manual!important}',
+            )
+          : file,
+    );
+  }
+  return ZipEncoder().encodeBytes(archive);
+}

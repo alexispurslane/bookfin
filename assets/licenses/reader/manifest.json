@@ -99,6 +99,10 @@
     "package": "PDFium chromium/8125: zlib",
     "sha256": "33fd641c9f3b0e0be64bc78fea9e94807674cdd70c48477599226cb8956565fe"
   },
+  "hyphenation-en-notice.txt": {
+    "package": "hyph-utf8 English hyphenation patterns (CTAN-2024.12.31)",
+    "sha256": "ab6b5c2dc3966a2d7fbf72603f355714e8df3660d72f504bd3f188d647ba0581"
+  },
   "miniz-notice.txt": {
     "package": "miniz 1.15",
     "sha256": "90cc6607cdfd1b37be04d69012d0764e8943a63b37f17aea2cc30f37c7748a7a"
