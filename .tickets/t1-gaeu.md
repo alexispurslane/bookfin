@@ -1,7 +1,7 @@
 ---
 id: t1-gaeu
 status: open
-deps: []
+deps: [boo-0km1]
 links: []
 created: 2026-11-08T00:06:43Z
 type: task
@@ -20,3 +20,9 @@ Options: the pull marks the running refresh as asked for, so that the controller
 
 A pull during a running background refresh that then fails after Jellyfin answered shows the failure. A pull during a refresh starts no second request.
 
+
+## Notes
+
+**2026-11-08T00:14:19Z**
+
+Orchestrator, Nov 7: group B (ta-7oe6, t6-n8y3) also does this, because it owns lib/catalog/controller.dart.

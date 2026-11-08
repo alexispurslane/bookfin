@@ -1,6 +1,6 @@
 ---
 id: boo-0km1
-status: in_progress
+status: closed
 deps: [t9-se8f, t9-dcld, t9-sspn, boo-petv, t6-2ghu, t6-epwo, t4-lvhh, tc-y4ij]
 links: []
 created: 2026-11-07T21:20:29Z

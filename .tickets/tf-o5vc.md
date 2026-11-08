@@ -1,7 +1,7 @@
 ---
 id: tf-o5vc
 status: open
-deps: [td-rvpm, ta-7oe6, tf-0nvi, boo-7ua0, t6-n8y3]
+deps: [td-rvpm, ta-7oe6, tf-0nvi, boo-7ua0, t6-n8y3, t1-gaeu]
 links: []
 created: 2026-11-07T23:48:23Z
 type: chore
