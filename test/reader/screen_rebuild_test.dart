@@ -126,7 +126,8 @@ void main() {
   );
 
   testWidgets(
-    'choosing reflow redraws the viewport, not the title or the controls row',
+    'choosing reflow redraws the viewport and the control bar, not the title '
+    'or the page row',
     (tester) async {
       final reader = await openPdf(tester);
       final rebuilt = await _rebuildsDuring(() async {
@@ -136,7 +137,19 @@ void main() {
       final viewports = rebuilt.whereType<PdfViewport>();
       expect(viewports, isNotEmpty);
       expect(viewports.map((viewport) => viewport.reflow), everyElement(true));
-      expect(_controlButtons(rebuilt), isEmpty);
+      expect(
+        rebuilt.whereType<IconButton>().map((button) => button.tooltip),
+        contains('Original page'),
+        reason: 'The reflow control now offers the original page.',
+      );
+      expect(
+        _controlButtons(rebuilt).map((button) => button.tooltip),
+        isNot(anyOf(contains('Previous page'), contains('Next page'))),
+      );
+      expect(
+        _controlButtons(rebuilt).map((button) => button.tooltip),
+        isNot(contains('Hide reader controls')),
+      );
       expect(
         _texts(rebuilt, (text) => text == book.title),
         isEmpty,

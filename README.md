@@ -101,8 +101,9 @@ The library in them is made-up test data from `tool/showcase_fixture.dart`.
 - The reader opens EPUB, unencrypted MOBI, and PDF files.
 - It has contents, search, text size, bookmarks, and a saved place for each book.
 - Reading is immersive. A tap shows the controls, and another tap hides them.
-- A PDF can show its original pages, or its text reflowed to the width of the phone.
+- A PDF can show its original pages, or its text reflowed to the width of the phone. One button in the bottom bar switches between the two views.
 - For scanned pages, Bookfin recognizes the text on the phone with Tesseract (English only). OCR (optical character recognition) needs no network.
+- While Bookfin recognizes a page, the page dims under a progress card. Stop waiting shows the original page at once.
 - The original page is always one tap away, because recognized text can lose columns and tables.
 
 ### Start from the phone, then refresh

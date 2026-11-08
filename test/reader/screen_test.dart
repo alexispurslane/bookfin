@@ -31,6 +31,12 @@ void main() {
         ),
       );
       expect(find.textContaining('Page progress unavailable'), findsOneWidget);
+      expect(
+        find.byTooltip('Reflow text'),
+        findsNothing,
+        reason: 'An EPUB has no reflow control.',
+      );
+      expect(find.byTooltip('Original page'), findsNothing);
       reader.acceptVisible(
         reader.token,
         ReadingLocation.fromJson({

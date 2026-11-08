@@ -5,6 +5,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_epub_viewer/navigation.dart' show ContentsEntry;
 
+import '../catalog/glass.dart' show CoverGlass;
 import 'document.dart';
 import 'pdf.dart';
 
@@ -12,8 +13,9 @@ import 'pdf.dart';
 ///
 /// The viewport draws what its owner gives it and reports what the person
 /// chose. It causes no recognition or reflow change itself. The book stays
-/// the owner of page text and recognition, and the owner keeps the reflow
-/// choice. The viewport keeps only the shown page and its layout.
+/// the owner of page text and recognition. The owner keeps the reflow choice
+/// and offers its control. The viewport keeps only the shown page and its
+/// layout. Recognition shows on a glass layer over the page.
 class PdfViewport extends StatefulWidget {
   const PdfViewport({
     super.key,
@@ -22,7 +24,6 @@ class PdfViewport extends StatefulWidget {
     required this.onReady,
     required this.onAddress,
     required this.reflow,
-    required this.onReflow,
     required this.onCancelRecognition,
     required this.onRetryRecognition,
     this.initial,
@@ -37,13 +38,9 @@ class PdfViewport extends StatefulWidget {
   /// while the page has no text that matches the place.
   final bool reflow;
 
-  /// Reports that the person chose Reflow text (true) or Original page
-  /// (false).
-  final ValueChanged<bool> onReflow;
-
   /// Reports that the viewport no longer waits for the text of the shown
-  /// page: the person chose Cancel recognition, or left the page before its
-  /// text arrived.
+  /// page: the person chose Stop waiting, or left the page before its text
+  /// arrived.
   final VoidCallback onCancelRecognition;
 
   /// Reports that the person asked to recognize the source page again. The
@@ -356,67 +353,52 @@ class _PdfViewportState extends State<PdfViewport>
     },
   );
 
+  /// Stops waiting for the shown page's text and shows its original page.
+  /// Recognition can still finish in the background.
+  void _stopWaiting() {
+    widget.onCancelRecognition();
+    _search++;
+    _generation++;
+    setState(() {
+      _loading = false;
+      _failure = 'Stopped waiting for recognition. The original page shows, and recognition can finish in the background.';
+    });
+    _publish();
+    unawaited(_draw(_generation));
+  }
+
+  void _retryRecognition() {
+    widget.onRetryRecognition(_page);
+    unawaited(_load(_address));
+  }
+
+  /// The original page, the reflowed text, or what stands in their place.
+  Widget _shownPage() => _usingText
+      ? _reflowText()
+      : _image == null
+      ? Center(
+          child: _failure == null
+              ? const CircularProgressIndicator()
+              : TextButton(
+                  onPressed: () => unawaited(_load(_address)),
+                  child: const Text('Retry source page'),
+                ),
+        )
+      : Semantics(
+          label: 'Original source page $_page',
+          image: true,
+          child: InteractiveViewer(
+            minScale: 1,
+            maxScale: 6,
+            child: Center(
+              child: RawImage(image: _image, fit: BoxFit.contain),
+            ),
+          ),
+        );
+
   @override
   Widget build(BuildContext context) => Column(
     children: [
-      Wrap(
-        alignment: WrapAlignment.center,
-        children: [
-          TextButton(
-            onPressed: () => widget.onReflow(false),
-            child: const Text('Original page'),
-          ),
-          TextButton(
-            onPressed: _loading ? null : () => widget.onReflow(true),
-            child: const Text('Reflow text'),
-          ),
-        ],
-      ),
-      if (widget.book.textSupply != null)
-        ValueListenableBuilder<bool>(
-          valueListenable: widget.book.textSupply!.recognizing,
-          builder: (context, recognizing, _) => Wrap(
-            alignment: WrapAlignment.center,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              Text(
-                recognizing
-                    ? 'Recognizing English text…'
-                    : 'English scans only. Other languages are not supported.',
-              ),
-              if (recognizing)
-                TextButton(
-                  onPressed: () {
-                    widget.onCancelRecognition();
-                    _search++;
-                    _generation++;
-                    setState(() {
-                      _loading = false;
-                      _failure = 'Recognition canceled. The current page can finish in the background. The original page is available.';
-                    });
-                    _publish();
-                    unawaited(_draw(_generation));
-                  },
-                  child: const Text('Cancel recognition'),
-                ),
-              if (!recognizing &&
-                  widget.book.textSupply!.canRetry &&
-                  !_loading &&
-                  _text?.status != PdfTextStatus.candidate)
-                TextButton(
-                  onPressed: () {
-                    widget.onRetryRecognition(_page);
-                    unawaited(_load(_address));
-                  },
-                  child: Text(
-                    _text?.status == PdfTextStatus.unreliable
-                        ? 'Try English recognition'
-                        : 'Retry recognition',
-                  ),
-                ),
-            ],
-          ),
-        ),
       if (widget.reflow)
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -429,39 +411,140 @@ class _PdfViewportState extends State<PdfViewport>
                     : _failure ?? 'Checking source-page text.'),
           ),
         ),
-      if (!widget.reflow &&
-          widget.book.textSupply != null &&
-          _text?.reason != null)
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Text(_text!.reason!),
-        ),
       if (_failure != null)
         Padding(padding: const EdgeInsets.all(8), child: Text(_failure!)),
       Expanded(
-        child: _usingText
-            ? _reflowText()
-            : _image == null
-            ? Center(
-                child: _failure == null
-                    ? const CircularProgressIndicator()
-                    : TextButton(
-                        onPressed: () => unawaited(_load(_address)),
-                        child: const Text('Retry source page'),
-                      ),
-              )
-            : Semantics(
-                label: 'Original source page $_page',
-                image: true,
-                child: InteractiveViewer(
-                  minScale: 1,
-                  maxScale: 6,
-                  child: Center(
-                    child: RawImage(image: _image, fit: BoxFit.contain),
+        child: Stack(
+          children: [
+            Positioned.fill(child: _shownPage()),
+            if (widget.book.textSupply case final supply?)
+              Positioned.fill(
+                child: ValueListenableBuilder<bool>(
+                  valueListenable: supply.recognizing,
+                  builder: (context, recognizing, _) => _RecognitionLayer(
+                    waiting: recognizing && _loading,
+                    reason: widget.reflow ? null : _text?.reason,
+                    retry:
+                        !recognizing &&
+                            supply.canRetry &&
+                            !_loading &&
+                            _text?.status != PdfTextStatus.candidate
+                        ? _text?.status == PdfTextStatus.unreliable
+                              ? 'Try English recognition'
+                              : 'Retry recognition'
+                        : null,
+                    onStopWaiting: _stopWaiting,
+                    onRetry: _retryRecognition,
                   ),
                 ),
               ),
+          ],
+        ),
       ),
     ],
   );
+}
+
+/// What English recognition means for the shown page, on glass over the
+/// page. While the page waits for its recognized text, the layer dims the
+/// page and shows the progress and Stop waiting. Otherwise a quiet pane at
+/// the bottom of the page, which does not dim it, keeps the English-only
+/// note, the [reason] that the page has no reliable text, and [retry].
+class _RecognitionLayer extends StatelessWidget {
+  const _RecognitionLayer({
+    required this.waiting,
+    required this.reason,
+    required this.retry,
+    required this.onStopWaiting,
+    required this.onRetry,
+  });
+
+  /// Whether the shown page waits for its recognized text.
+  final bool waiting;
+
+  /// Why the page has no reliable text, if it says.
+  final String? reason;
+
+  /// The label of the retry control, or null when it does not show.
+  final String? retry;
+
+  /// Reports Stop waiting.
+  final VoidCallback onStopWaiting;
+
+  /// Reports the retry control.
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final type = Theme.of(context).textTheme;
+    if (waiting) {
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          // The page stays movable under the dimming.
+          IgnorePointer(
+            child: ColoredBox(color: Colors.black.withValues(alpha: .4)),
+          ),
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: CoverGlass(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(28, 24, 28, 12),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const CircularProgressIndicator(),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Recognizing English text…',
+                        style: type.titleMedium,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                      TextButton(
+                        onPressed: onStopWaiting,
+                        child: const Text('Stop waiting'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: CoverGlass(
+          radius: 16,
+          tint: .75,
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(16, 10, 16, retry == null ? 10 : 2),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (reason != null)
+                  Text(
+                    reason!,
+                    style: type.bodyMedium,
+                    textAlign: TextAlign.center,
+                  ),
+                Text(
+                  'English scans only. Other languages are not supported.',
+                  style: type.bodySmall,
+                  textAlign: TextAlign.center,
+                ),
+                if (retry != null)
+                  TextButton(onPressed: onRetry, child: Text(retry!)),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }

@@ -61,6 +61,11 @@ Future<void> waitFor(WidgetTester tester, bool Function() ready) async {
   fail('The reader did not reach the expected visible state.');
 }
 
+/// Whether the reflowed view is done with the page text: it no longer
+/// checks the text, and shows the text or says why it cannot.
+bool textSettled() =>
+    find.text('Checking source-page text.').evaluate().isEmpty;
+
 void main() {
   const channel = MethodChannel('bookfin/ocr');
   late Directory root;
@@ -152,7 +157,7 @@ void main() {
       final savedAnchor = reader.bookmarks.single.position.anchor;
       expect((reader.initialAddress as PdfAddress).character, 10);
       await showReader(tester);
-      await tester.tap(find.text('Cancel recognition'));
+      await tester.tap(find.text('Stop waiting'));
       await tester.pump();
       expect(find.byType(ErrorWidget), findsNothing);
       expect(reader.position!.anchor, savedAnchor);
@@ -169,18 +174,8 @@ void main() {
                 .isNotEmpty &&
             nativeCalls == 1,
       );
-      await waitFor(
-        tester,
-        () =>
-            tester
-                .widget<TextButton>(
-                  find.widgetWithText(TextButton, 'Reflow text'),
-                )
-                .onPressed !=
-            null,
-      );
-      await tester.tap(find.text('Reflow text'));
-      await tester.pump();
+      await tester.tap(find.byTooltip('Reflow text'));
+      await waitFor(tester, textSettled);
       expect(
         find.descendant(
           of: find.byType(PdfViewport),
@@ -226,7 +221,7 @@ void main() {
             );
           }
           expect(find.text('Recognizing English text…'), findsOneWidget);
-          await tester.tap(find.text('Cancel recognition'));
+          await tester.tap(find.text('Stop waiting'));
           await tester.pump();
           expect(find.byType(ErrorWidget), findsNothing);
           expect(find.text('Retry recognition'), findsOneWidget);
@@ -250,12 +245,6 @@ void main() {
           }
           pdf.finishRender();
           firstRecognition.complete(englishPage.replaceFirst('quiet', 'stale'));
-          await waitFor(tester, () {
-            final reflow = tester.widget<TextButton>(
-              find.widgetWithText(TextButton, 'Reflow text'),
-            );
-            return reflow.onPressed != null;
-          });
           await waitFor(
             tester,
             () => find
@@ -263,10 +252,10 @@ void main() {
                 .evaluate()
                 .isNotEmpty,
           );
+          await tester.tap(find.byTooltip('Reflow text'));
+          await waitFor(tester, textSettled);
           expect(nativeCalls, pending == 'render' ? 1 : 2);
           expect(find.byType(ErrorWidget), findsNothing);
-          await tester.tap(find.text('Reflow text'));
-          await tester.pump();
           if (retryFails) {
             expect(
               find.descendant(

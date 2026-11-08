@@ -73,10 +73,12 @@ void main() {
         ),
       );
       await tester.pump();
-      await tester.tap(find.text('Original page'));
-      await tester.pump();
-      await tester.tap(find.text('Original page'));
-      await tester.pump();
+      for (var turn = 0; turn < 2; turn++) {
+        await tester.tap(find.byTooltip('Reflow text'));
+        await tester.pump();
+        await tester.tap(find.byTooltip('Original page'));
+        await tester.pump();
+      }
       expect(
         book.renders,
         1,
@@ -119,7 +121,7 @@ void main() {
         ),
       );
       await tester.pump();
-      await tester.tap(find.text('Reflow text'));
+      await tester.tap(find.byTooltip('Reflow text'));
       await tester.pumpAndSettle();
       final scroll = tester
           .widget<SingleChildScrollView>(find.byType(SingleChildScrollView))
@@ -165,7 +167,7 @@ void main() {
       );
       await tester.pumpWidget(reader(20));
       await tester.pump();
-      await tester.tap(find.text('Reflow text'));
+      await tester.tap(find.byTooltip('Reflow text'));
       await tester.pumpAndSettle();
       ScrollController scroll() => tester
           .widget<SingleChildScrollView>(find.byType(SingleChildScrollView))
@@ -185,7 +187,7 @@ void main() {
       addTearDown(() => tester.binding.setSurfaceSize(null));
       await tester.pumpWidget(reader(40, initial: saved));
       await tester.pump();
-      await tester.tap(find.text('Reflow text'));
+      await tester.tap(find.byTooltip('Reflow text'));
       await tester.pumpAndSettle();
       expect(scroll().position.maxScrollExtent, greaterThan(0));
       expect(scroll().offset, 0);

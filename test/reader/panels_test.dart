@@ -141,6 +141,7 @@ void main() {
       List<String> tapped, {
       Set<String> off = const {},
       bool night = false,
+      bool? reflow,
     }) {
       VoidCallback? report(String control) =>
           off.contains(control) ? null : () => tapped.add(control);
@@ -155,6 +156,8 @@ void main() {
           onBookmarks: report('Reading bookmarks'),
           night: night,
           onNightChanged: (night) => tapped.add('night $night'),
+          reflow: reflow,
+          onReflowChanged: (reflow) => tapped.add('reflow $reflow'),
         ),
       );
     }
@@ -203,6 +206,57 @@ void main() {
       expect(find.byTooltip('Night reading theme'), findsNothing);
       await tester.tap(find.byTooltip('Cream reading theme'));
       expect(tapped, ['night false']);
+    });
+
+    IconData? icon(String tooltip) => find
+        .descendant(of: find.byTooltip(tooltip), matching: find.byType(Icon))
+        .evaluate()
+        .map((element) => (element.widget as Icon).icon)
+        .single;
+
+    testWidgets('a book that is not a PDF has no reflow control', (
+      tester,
+    ) async {
+      final tapped = <String>[];
+      await showControls(tester, tapped);
+      expect(find.byTooltip('Reflow text'), findsNothing);
+      expect(find.byTooltip('Original page'), findsNothing);
+    });
+
+    testWidgets('while the original PDF page shows, the reflow control offers '
+        'Reflow text', (tester) async {
+      final tapped = <String>[];
+      await showControls(tester, tapped, reflow: false);
+      expect(find.byTooltip('Original page'), findsNothing);
+      expect(icon('Reflow text'), Icons.article_outlined);
+      await tester.tap(find.byTooltip('Reflow text'));
+      expect(tapped, ['reflow true']);
+    });
+
+    testWidgets(
+      'while reflowed text shows, the reflow control offers Original page',
+      (tester) async {
+        final tapped = <String>[];
+        await showControls(tester, tapped, reflow: true);
+        expect(find.byTooltip('Reflow text'), findsNothing);
+        expect(icon('Original page'), Icons.picture_as_pdf_outlined);
+        await tester.tap(find.byTooltip('Original page'));
+        expect(tapped, ['reflow false']);
+      },
+    );
+
+    testWidgets('the reflow control sits after the text size controls', (
+      tester,
+    ) async {
+      await showControls(tester, [], reflow: false);
+      final tooltips = tester
+          .widgetList<IconButton>(find.byType(IconButton))
+          .map((button) => button.tooltip)
+          .toList();
+      expect(
+        tooltips.indexOf('Reflow text'),
+        tooltips.indexOf('Larger text') + 1,
+      );
     });
   });
 }

@@ -109,7 +109,7 @@ void main() {
       );
       await tester.pump();
       expect(find.text('Recognizing English text…'), findsOneWidget);
-      await tester.tap(find.text('Cancel recognition'));
+      await tester.tap(find.text('Stop waiting'));
       await tester.pump();
       expect(supply.canceled, isTrue, reason: 'The screen cancels it.');
       expect(find.byType(ErrorWidget), findsNothing);
@@ -144,7 +144,7 @@ void main() {
       await tester.pump();
       expect(find.bySemanticsLabel('Original source page 1'), findsOneWidget);
       expect(find.text('Recognizing English text…'), findsOneWidget);
-      await tester.tap(find.text('Cancel recognition'));
+      await tester.tap(find.text('Stop waiting'));
       await tester.pump();
       expect(supply.canceled, isTrue);
       expect(find.bySemanticsLabel('Original source page 1'), findsOneWidget);
@@ -176,7 +176,7 @@ void main() {
         ),
       );
       await tester.pump();
-      await tester.tap(find.text('Reflow text'));
+      await tester.tap(find.byTooltip('Reflow text'));
       await tester.pump();
       expect(find.text('The quiet garden.'), findsOneWidget);
       final report = await navigation.search('garden', 1);

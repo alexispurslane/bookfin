@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:bookfin/catalog/glass.dart' show CoverGlass;
 import 'package:bookfin/reader/document.dart';
 import 'package:bookfin/reader/pdf.dart';
 import 'package:bookfin/reader/pdf_viewport.dart';
@@ -73,9 +74,19 @@ class DrawnPdf extends HeldPdf {
   }
 }
 
+/// A PDF with a drawn original page whose page text arrives only when
+/// [textArrives] completes.
+class LateTextPdf extends DrawnPdf {
+  final textArrives = Completer<void>();
+  @override
+  Future<PdfText> text(int sourcePage) async {
+    await textArrives.future;
+    return super.text(sourcePage);
+  }
+}
+
 /// What a viewport reported to its owner.
 class Reports {
-  final reflows = <bool>[];
   final retries = <int>[];
   final addresses = <PdfAddress>[];
   var cancels = 0;
@@ -96,7 +107,6 @@ Widget viewport(
       reflow: reflow,
       onReady: (navigator, _) => reports.navigator = navigator,
       onAddress: reports.addresses.add,
-      onReflow: reports.reflows.add,
       onCancelRecognition: () => reports.cancels++,
       onRetryRecognition: reports.retries.add,
     ),
@@ -117,6 +127,24 @@ Future<void> drawn(WidgetTester tester, {Finder? shown}) async {
   fail('The page was not shown.');
 }
 
+/// Whether a dark see-through layer lies over the page, apart from the
+/// tint of a glass pane.
+bool dimmed() => find
+    .descendant(
+      of: find.byType(PdfViewport),
+      matching: find.byWidgetPredicate(
+        (widget) =>
+            widget is ColoredBox &&
+            widget.color.a > 0 &&
+            widget.color.a < 1 &&
+            widget.color.computeLuminance() < .05,
+      ),
+    )
+    .evaluate()
+    .any(
+      (element) => element.findAncestorWidgetOfExactType<CoverGlass>() == null,
+    );
+
 ScrollController reflowScroll(WidgetTester tester) => tester
     .widget<SingleChildScrollView>(find.byType(SingleChildScrollView))
     .controller!;
@@ -124,8 +152,8 @@ ScrollController reflowScroll(WidgetTester tester) => tester
 void main() {
   group('the viewport reports recognition choices to its owner', () {
     testWidgets(
-      'Cancel recognition reports up, and the original page stays with a '
-      'canceled note',
+      'while the shown page is recognized, a glass layer dims the page and '
+      'shows the recognition progress',
       (tester) async {
         final supply = RefusingSupply(recognizing: true);
         addTearDown(supply.recognizing.dispose);
@@ -133,14 +161,123 @@ void main() {
         final reports = Reports();
         await tester.pumpWidget(viewport(pdf, reports));
         await drawn(tester);
-        expect(find.text('Recognizing English text…'), findsOneWidget);
+        final layer = find.ancestor(
+          of: find.text('Recognizing English text…'),
+          matching: find.byType(CoverGlass),
+        );
+        expect(layer, findsOneWidget);
+        expect(
+          find.descendant(
+            of: layer,
+            matching: find.byType(CircularProgressIndicator),
+          ),
+          findsOneWidget,
+        );
+        expect(
+          find.descendant(of: layer, matching: find.text('Stop waiting')),
+          findsOneWidget,
+        );
+        expect(dimmed(), isTrue);
+        expect(find.bySemanticsLabel('Original source page 1'), findsOneWidget);
         expect(reports.cancels, 0, reason: 'Opening a page cancels nothing.');
-        await tester.tap(find.text('Cancel recognition'));
+        await tester.pumpWidget(const SizedBox());
+      },
+    );
+
+    testWidgets(
+      'Stop waiting reports up, and the layer leaves the original page with '
+      'a note',
+      (tester) async {
+        final supply = RefusingSupply(recognizing: true);
+        addTearDown(supply.recognizing.dispose);
+        final pdf = ScannedPdf(supply)..pending = Completer<PdfText>().future;
+        final reports = Reports();
+        await tester.pumpWidget(viewport(pdf, reports));
+        await drawn(tester);
+        await tester.tap(find.text('Stop waiting'));
         await tester.pump();
         expect(reports.cancels, 1);
+        expect(find.text('Recognizing English text…'), findsNothing);
+        expect(dimmed(), isFalse);
         expect(find.bySemanticsLabel('Original source page 1'), findsOneWidget);
-        expect(find.textContaining('Recognition canceled.'), findsOneWidget);
+        expect(
+          find.textContaining('Stopped waiting for recognition.'),
+          findsOneWidget,
+        );
         expect(reports.addresses.last.sourcePage, 1);
+        await tester.pumpWidget(const SizedBox());
+      },
+    );
+
+    testWidgets(
+      'when the page text arrives, the layer stops dimming and keeps only '
+      'the English-only note',
+      (tester) async {
+        final supply = RefusingSupply(recognizing: true);
+        addTearDown(supply.recognizing.dispose);
+        final text = Completer<PdfText>();
+        final pdf = ScannedPdf(supply)..pending = text.future;
+        final reports = Reports();
+        await tester.pumpWidget(viewport(pdf, reports));
+        await drawn(tester);
+        expect(dimmed(), isTrue);
+        // Recognition of another page, such as for a search, can go on.
+        const garden = 'The quiet garden.';
+        text.complete(
+          PdfText(
+            source: garden,
+            text: garden,
+            sourceOffsets: List.generate(garden.length, (index) => index),
+            status: PdfTextStatus.candidate,
+            digest: 'garden-text',
+          ),
+        );
+        await tester.pump();
+        await tester.pump();
+        expect(find.text('Recognizing English text…'), findsNothing);
+        expect(find.text('Stop waiting'), findsNothing);
+        expect(dimmed(), isFalse);
+        expect(
+          find.ancestor(
+            of: find.textContaining('Other languages are not supported.'),
+            matching: find.byType(CoverGlass),
+          ),
+          findsOneWidget,
+        );
+        expect(reports.cancels, 0);
+        await tester.pumpWidget(const SizedBox());
+      },
+    );
+
+    testWidgets(
+      'a page without reliable text keeps its reason and Retry on the quiet '
+      'layer, which does not dim the page',
+      (tester) async {
+        final supply = RefusingSupply();
+        addTearDown(supply.recognizing.dispose);
+        final pdf = ScannedPdf(supply)
+          ..pending = Future.value(
+            const PdfText(
+              source: '',
+              text: '',
+              sourceOffsets: [],
+              status: PdfTextStatus.absent,
+              reason: 'This page has no text layer.',
+            ),
+          );
+        final reports = Reports();
+        await tester.pumpWidget(viewport(pdf, reports));
+        await drawn(tester);
+        for (final message in [
+          find.text('This page has no text layer.'),
+          find.text('Retry recognition'),
+        ]) {
+          expect(
+            find.ancestor(of: message, matching: find.byType(CoverGlass)),
+            findsOneWidget,
+          );
+        }
+        expect(dimmed(), isFalse);
         await tester.pumpWidget(const SizedBox());
       },
     );
@@ -182,25 +319,23 @@ void main() {
 
   group('the reflow choice belongs to the viewport owner', () {
     testWidgets(
-      'Reflow text and Original page report the choice and leave the view '
-      'to the owner',
+      'the viewport has no reflow buttons of its own and shows the choice '
+      'of its owner',
       (tester) async {
         final pdf = DrawnPdf();
         final reports = Reports();
         await tester.pumpWidget(viewport(pdf, reports));
         await drawn(tester);
-        await tester.tap(find.text('Reflow text'));
-        await tester.pump();
-        expect(reports.reflows, [true]);
-        expect(find.byType(SingleChildScrollView), findsNothing);
+        expect(find.text('Reflow text'), findsNothing);
+        expect(find.text('Original page'), findsNothing);
         expect(find.bySemanticsLabel('Original source page 1'), findsOneWidget);
         await tester.pumpWidget(viewport(pdf, reports, reflow: true));
         await tester.pumpAndSettle();
         expect(find.byType(SingleChildScrollView), findsOneWidget);
-        await tester.tap(find.text('Original page'));
-        await tester.pump();
-        expect(reports.reflows, [true, false]);
-        expect(find.byType(SingleChildScrollView), findsOneWidget);
+        expect(find.text('Original page'), findsNothing);
+        await tester.pumpWidget(viewport(pdf, reports));
+        await drawn(tester);
+        expect(find.byType(SingleChildScrollView), findsNothing);
         await tester.pumpWidget(const SizedBox());
       },
     );
@@ -321,17 +456,59 @@ void main() {
 
       await reader.bind(account(), [book]);
       await showReader(shown: find.byType(RawImage));
-      await tester.tap(find.text('Reflow text'));
+      await tester.tap(find.byTooltip('Reflow text'));
       await drawn(tester, shown: reflowed);
       expect(reader.reflow, isTrue);
       await tester.pumpWidget(const SizedBox());
       expect(reader.document, isNull, reason: 'Closing closes the book.');
       await showReader(shown: reflowed);
       expect(reflowed, findsOneWidget);
-      await tester.tap(find.text('Original page'));
+      await tester.tap(find.byTooltip('Original page'));
       await drawn(tester);
       expect(reflowed, findsNothing);
       expect(find.bySemanticsLabel('Original source page 1'), findsOneWidget);
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
+
+  testWidgets(
+    'Reflow text chosen while the page text loads shows the original page '
+    'until the text arrives, and then the text',
+    (tester) async {
+      final pdf = LateTextPdf();
+      final downloads = LocalFiles()
+        ..files[pdfSource.key] = Uri.file('/text.pdf');
+      final reader = ReaderSession(
+        downloads: downloads,
+        store: MemoryResume(),
+        load: loadPublication,
+        loadDocument: (_, _) async => pdf,
+      );
+      addTearDown(() {
+        reader.dispose();
+        downloads.dispose();
+      });
+      final reflowed = find.descendant(
+        of: find.byType(PdfViewport),
+        matching: find.byType(SingleChildScrollView),
+      );
+      await reader.bind(account(), [book]);
+      await reader.open(book, edition);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: ReaderScreen(reader: reader, onNightChanged: (_) {}),
+        ),
+      );
+      await drawn(tester);
+      await tester.tap(find.byTooltip('Reflow text'));
+      await tester.pump();
+      expect(reader.reflow, isTrue);
+      expect(find.byTooltip('Original page'), findsOneWidget);
+      expect(reflowed, findsNothing);
+      expect(find.bySemanticsLabel('Original source page 1'), findsOneWidget);
+      pdf.textArrives.complete();
+      await drawn(tester, shown: reflowed);
+      expect(find.bySemanticsLabel('Original source page 1'), findsNothing);
       await tester.pumpWidget(const SizedBox());
     },
   );
