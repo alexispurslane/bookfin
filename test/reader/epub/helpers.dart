@@ -110,7 +110,8 @@ List<Object?> pageKey(LaidPage page) {
     ],
     [
       for (final piece in page.pieces)
-        '${_px(piece.x)} ${_px(piece.y - top)} ${_px(piece.paragraph.width)}',
+        '${_px(piece.x)} ${_px(piece.y - top)} ${_px(piece.paragraph.width)} '
+            '${_px(piece.shown)}',
     ],
     [
       for (final decoration in page.decorations)

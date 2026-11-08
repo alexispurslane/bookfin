@@ -131,6 +131,14 @@ class Style {
   bool listStyleInside = false;
   int orphans = 2;
   int widows = 2;
+
+  /// A table's `border-spacing` in pixels: across, between its columns,
+  /// and down, between its rows.
+  (double, double) borderSpacing = (0, 0);
+
+  /// Whether a table's borders collapse (`border-collapse: collapse`): two
+  /// cells that touch share one border.
+  bool collapseBorders = false;
   VerticalAlign verticalAlign = VerticalAlign.baseline;
 
   /// The line height in pixels, or null for `normal`.
@@ -162,7 +170,9 @@ class Style {
     ..listStyleType = listStyleType
     ..listStyleInside = listStyleInside
     ..orphans = orphans
-    ..widows = widows;
+    ..widows = widows
+    ..borderSpacing = borderSpacing
+    ..collapseBorders = collapseBorders;
 }
 
 enum BreakRule { auto, page, avoid }
@@ -1345,9 +1355,46 @@ Iterable<(String, String)> _expand(Declaration declaration) sync* {
       for (final longhand in _longhands) {
         yield (longhand, value);
       }
+    // A value that is not valid drops the declaration, so the one that it
+    // would replace stays, as in Chromium.
+    case 'border-spacing':
+      if (_keyword(value) || _spacing(value, 16, 16) != null) {
+        yield (property, value);
+      }
+    case 'border-collapse':
+      if (_keyword(value) ||
+          const {'collapse', 'separate'}.contains(value.trim().toLowerCase())) {
+        yield (property, value);
+      }
     default:
       yield (property, value);
   }
+}
+
+/// Whether [value] is `inherit`, `initial` or `unset`.
+bool _keyword(String value) =>
+    const {'inherit', 'initial', 'unset'}.contains(value.trim().toLowerCase());
+
+/// The `border-spacing` that [value] gives, across and down in pixels, in
+/// an element whose font is [fontSize] pixels: one length for both, or
+/// two. Null when [value] is not valid: a percentage or a negative length.
+(double, double)? _spacing(String value, double fontSize, double root) {
+  final lengths = [
+    for (final token in _tokens(value)) parseLength(token, fontSize, root),
+  ];
+  if (lengths.isEmpty || lengths.length > 2) return null;
+  final pixels = <double>[];
+  for (final length in lengths) {
+    if (length == null ||
+        length.isAuto ||
+        length.isNone ||
+        length.unit == LengthUnit.percent ||
+        length.value < 0) {
+      return null;
+    }
+    pixels.add(length.resolve(0));
+  }
+  return (pixels.first, pixels.last);
 }
 
 const _borderStyles = {
@@ -1637,6 +1684,11 @@ void _apply(
       style.orphans = int.tryParse(lower) ?? style.orphans;
     case 'widows':
       style.widows = int.tryParse(lower) ?? style.widows;
+    case 'border-spacing':
+      style.borderSpacing =
+          _spacing(lower, style.fontSize, root) ?? style.borderSpacing;
+    case 'border-collapse':
+      style.collapseBorders = lower == 'collapse';
     case 'vertical-align':
       style.verticalAlign = switch (lower) {
         'super' => VerticalAlign.superscript,
@@ -1667,6 +1719,8 @@ const _inheritedProperties = {
   'list-style-position',
   'orphans',
   'widows',
+  'border-spacing',
+  'border-collapse',
 };
 
 /// The longhand properties that the renderer computes, which `all`
@@ -1719,6 +1773,8 @@ const _longhands = [
   'list-style-position',
   'orphans',
   'widows',
+  'border-spacing',
+  'border-collapse',
   'vertical-align',
 ];
 
@@ -1806,6 +1862,10 @@ void _copyFrom(Style style, Style source, String property) {
       style.orphans = source.orphans;
     case 'widows':
       style.widows = source.widows;
+    case 'border-spacing':
+      style.borderSpacing = source.borderSpacing;
+    case 'border-collapse':
+      style.collapseBorders = source.collapseBorders;
     case 'vertical-align':
       style.verticalAlign = source.verticalAlign;
   }
