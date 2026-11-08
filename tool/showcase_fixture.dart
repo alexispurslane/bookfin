@@ -5,9 +5,12 @@
 // Sign in at http://127.0.0.1:8096 with any username and password.
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:image/image.dart' as img;
+
+import 'showcase_media.dart' as media;
 
 const _token = 'showcase-token';
 
@@ -191,38 +194,21 @@ Uint8List _cover(_Book book) {
   return img.encodePng(image);
 }
 
-/// Two minutes of 8 kHz, 8-bit mono silence, so audio downloads can play.
-const _silenceBytes = 44 + 8000 * 120;
+/// The ebook file of a book: a made-up EPUB, or a PDF with a scanned page.
+Uint8List _ebook(_Book book) => switch (book.ebook) {
+  'pdf' => media.pdfWithScan(),
+  _ => media.epub(book.id, book.title, book.author, switch (book.id) {
+    'frost' => media.firstFrost,
+    'salt' => media.saltAndLantern,
+    _ => media.winterLedger,
+  }),
+};
 
-Uint8List _silence() {
-  const rate = 8000, seconds = 120;
-  final data = ByteData(44 + rate * seconds);
-  void text(int at, String value) {
-    for (var i = 0; i < value.length; i++) {
-      data.setUint8(at + i, value.codeUnitAt(i));
-    }
-  }
-
-  text(0, 'RIFF');
-  data.setUint32(4, 36 + rate * seconds, Endian.little);
-  text(8, 'WAVE');
-  text(12, 'fmt ');
-  data.setUint32(16, 16, Endian.little);
-  data.setUint16(20, 1, Endian.little);
-  data.setUint16(22, 1, Endian.little);
-  data.setUint32(24, rate, Endian.little);
-  data.setUint32(28, rate, Endian.little);
-  data.setUint16(32, 1, Endian.little);
-  data.setUint16(34, 8, Endian.little);
-  text(36, 'data');
-  data.setUint32(40, rate * seconds, Endian.little);
-  for (var i = 44; i < data.lengthInBytes; i++) {
-    data.setUint8(i, 128);
-  }
-  return data.buffer.asUint8List();
-}
-
-Map<String, Object?> _item(_Book book, {required bool text}) => {
+Map<String, Object?> _item(
+  _Book book, {
+  required bool text,
+  required int size,
+}) => {
   'Id': text ? '${book.id}-text' : book.id,
   'Name': book.title,
   'Type': text ? 'Book' : 'AudioBook',
@@ -256,7 +242,7 @@ Map<String, Object?> _item(_Book book, {required bool text}) => {
     {
       'Id': text ? '${book.id}-text' : book.id,
       'Container': text ? book.ebook : 'm4b',
-      'Size': text ? 8 : _silenceBytes,
+      'Size': size,
       'RunTimeTicks': text ? null : book.minutes * 60 * 10000000,
       'ETag': 'showcase-${book.id}-${text ? 'text' : 'audio'}',
     },
@@ -272,16 +258,24 @@ Future<void> main(List<String> arguments) async {
     for (final book in _books)
       if (book.cover != null) book.id: _cover(book),
   };
-  final silence = _silence();
+  // Every audiobook plays the same silence, long enough for the longest book.
+  final silence = await media.silence(
+    Duration(minutes: _books.map((book) => book.minutes).reduce(max)),
+  );
+  final ebooks = {
+    for (final book in _books)
+      if (book.ebook != null) '${book.id}-text': _ebook(book),
+  };
   final items = [
     for (final book in _books) ...[
-      if (book.audio) _item(book, text: false),
-      if (book.ebook != null) _item(book, text: true),
+      if (book.audio) _item(book, text: false, size: silence.length),
+      if (book.ebook != null)
+        _item(book, text: true, size: ebooks['${book.id}-text']!.length),
     ],
   ];
   const user = {
     'Id': 'showcase-user',
-    'Name': 'alexis',
+    'Name': 'reader',
     'Policy': {'EnableContentDownloading': true, 'IsAdministrator': false},
   };
   stdout.writeln('Showcase fixture on http://127.0.0.1:${server.port}');
@@ -334,9 +328,9 @@ Future<void> main(List<String> arguments) async {
       };
     } else if (parts.isNotEmpty && parts.last == 'Download') {
       response.headers.contentType = ContentType.binary;
-      final text =
-          parts.length >= 2 && parts[parts.length - 2].endsWith('-text');
-      final bytes = text ? utf8.encode('showcase') : silence;
+      final bytes = parts.length >= 2
+          ? ebooks[parts[parts.length - 2]] ?? silence
+          : silence;
       response.contentLength = bytes.length;
       response.add(bytes);
       await response.close();
