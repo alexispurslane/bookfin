@@ -4,7 +4,8 @@ import 'dart:convert';
 import 'dart:ui' show RootIsolateToken;
 
 import 'package:crypto/crypto.dart';
-import 'package:flutter/foundation.dart' show ValueListenable, compute;
+import 'package:flutter/foundation.dart'
+    show ValueListenable, compute, protected;
 import 'package:pdfrx_engine/pdfrx_engine.dart' as native;
 import 'package:pdfrx/pdfrx.dart' show pdfrxFlutterInitialize;
 
@@ -57,9 +58,20 @@ abstract class PdfBook extends ReaderDocument {
         (character + 160).clamp(0, text.source.length),
       ),
       representation:
-          '$policy/$engine/${text.recognition ?? 'extracted'}/${sha256.convert(utf8.encode(text.source))}',
+          '$policy/$engine/${text.recognition ?? 'extracted'}/${_digests[text] ??= digest(text.source)}',
     );
   }
+
+  /// The digest of each page text that [addressFor] named, so each scroll
+  /// step inside a page reuses its page's digest.
+  final _digests = Expando<String>('PDF page text digest');
+
+  /// The digest that names the page text [source] in an address. It hashes
+  /// on the UI isolate because [addressFor] answers at once, and it runs
+  /// once for each page text, which is usually a few kilobytes.
+  @protected
+  String digest(String source) =>
+      sha256.convert(utf8.encode(source)).toString();
 
   PdfAddress? resolveAddress(PdfAddress address, PdfText text) {
     if (!accepts(address) ||

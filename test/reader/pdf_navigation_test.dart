@@ -3,9 +3,10 @@ import 'dart:typed_data';
 
 import 'package:bookfin/reader/document.dart';
 import 'package:bookfin/reader/pdf.dart';
-import 'package:bookfin/reader/pdf_viewport.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import 'pdf_viewport_host.dart';
 
 class HeldPdf extends PdfBook {
   final rendering = Completer<PdfRaster>();
@@ -61,7 +62,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: PdfViewport(
+            body: PdfViewportHost(
               book: book,
               fontSize: 20,
               onReady: (_, _) {},
@@ -83,10 +84,14 @@ void main() {
       book.rendering.complete(
         PdfRaster(1, 1, Uint8List.fromList([0, 0, 0, 255])),
       );
-      await tester.runAsync(
-        () async => Future<void>.delayed(const Duration(milliseconds: 30)),
-      );
-      await tester.pump();
+      // Decoding needs real time, and more of it on a busy machine.
+      for (var attempt = 0; attempt < 300; attempt++) {
+        await tester.runAsync(
+          () async => Future<void>.delayed(const Duration(milliseconds: 10)),
+        );
+        await tester.pump();
+        if (find.byType(RawImage).evaluate().isNotEmpty) break;
+      }
       final image = tester.widget<RawImage>(find.byType(RawImage)).image!;
       expect(image.debugDisposed, isFalse);
       await tester.pumpWidget(const SizedBox());
@@ -103,7 +108,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: PdfViewport(
+            body: PdfViewportHost(
               book: book,
               fontSize: 24,
               onReady: (value, _) => navigation = value,
@@ -148,7 +153,7 @@ void main() {
       PdfAddress? location;
       Widget reader(double size, {PdfAddress? initial}) => MaterialApp(
         home: Scaffold(
-          body: PdfViewport(
+          body: PdfViewportHost(
             book: book,
             fontSize: size,
             initial: initial,

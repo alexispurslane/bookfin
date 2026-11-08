@@ -126,6 +126,28 @@ void main() {
   );
 
   testWidgets(
+    'choosing reflow redraws the viewport, not the title or the controls row',
+    (tester) async {
+      final reader = await openPdf(tester);
+      final rebuilt = await _rebuildsDuring(() async {
+        reader.setReflow(true);
+        await tester.pump();
+      });
+      final viewports = rebuilt.whereType<PdfViewport>();
+      expect(viewports, isNotEmpty);
+      expect(viewports.map((viewport) => viewport.reflow), everyElement(true));
+      expect(_controlButtons(rebuilt), isEmpty);
+      expect(
+        _texts(rebuilt, (text) => text == book.title),
+        isEmpty,
+        reason: 'the title in the app bar',
+      );
+      await close(tester, reader);
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.linux),
+  );
+
+  testWidgets(
     'a text size change redraws the viewport, not the page label or the '
     'controls row',
     (tester) async {
