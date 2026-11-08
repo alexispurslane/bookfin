@@ -242,7 +242,8 @@ void main() {
     );
     await tester.pump();
     expect(tester.getSize(find.byType(ReaderScrubBar)).height, height);
-    expect(find.textContaining('Page 3 of 8'), findsOneWidget);
+    // A long title is cut short, but the separator and the place show whole.
+    expect(find.textContaining('· Page 3 of 8'), findsOneWidget);
     bar(tester).onChangeStart!(inTwo(.25));
     bar(tester).onChanged!(inTwo(.25));
     await tester.pump();

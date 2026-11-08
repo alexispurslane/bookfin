@@ -814,20 +814,34 @@ class ReaderScrubBar extends StatelessWidget {
             child: Semantics(
               label: chapter == null ? place : '$chapter · $place',
               excludeSemantics: true,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (chapter != null)
-                    Flexible(
+              // The place takes the width that it needs, up to the whole
+              // row, and the chapter title takes what is left.
+              child: LayoutBuilder(
+                builder: (context, constraints) => Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (chapter != null)
+                      Flexible(
+                        child: Text(
+                          chapter,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: style,
+                        ),
+                      ),
+                    ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: constraints.maxWidth,
+                      ),
                       child: Text(
-                        '$chapter · ',
+                        chapter == null ? place : ' · $place',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: style,
                       ),
                     ),
-                  Text(place, maxLines: 1, style: style),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
