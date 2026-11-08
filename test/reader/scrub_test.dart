@@ -201,15 +201,23 @@ void main() {
     expect(find.textContaining('Page progress unavailable'), findsOneWidget);
   }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
 
-  testWidgets('the bar keeps clear of the screen edges, where Android takes '
-      'a drag as Back', (tester) async {
+  testWidgets('the thumb at the start or the end of the book stays clear '
+      'of the screen edges, where Android takes a drag as Back', (
+    tester,
+  ) async {
+    // The emulator's gesture zone is 78 pixels at 2.625 pixels a point.
+    tester.view.systemGestureInsets = FakeViewPadding(
+      left: 30 * tester.view.devicePixelRatio,
+      right: 30 * tester.view.devicePixelRatio,
+    );
+    addTearDown(tester.view.resetSystemGestureInsets);
     final reader = await openReader(ControlPort());
     reader.acceptVisible(reader.token, inSectionTwo(0));
     await show(tester, reader);
     final track = tester.getRect(find.byType(Slider));
     final screen = tester.getSize(find.byType(ReaderScreen));
-    // Android's back gesture takes about 24 points at each edge by default.
-    expect(track.left, greaterThanOrEqualTo(24));
-    expect(screen.width - track.right, greaterThanOrEqualTo(24));
+    // The thumb is 8 points wide on each side of its place.
+    expect(track.left, greaterThanOrEqualTo(30 + 8));
+    expect(screen.width - track.right, greaterThanOrEqualTo(30 + 8));
   }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
 }

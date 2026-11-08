@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_epub_viewer/flutter_epub_viewer.dart';
@@ -820,10 +821,16 @@ class ReaderScrubBar extends StatelessWidget {
       if (map == null || at == null) return label(visible);
       final onStart = onScrubStart;
       final onTarget = onScrubTarget;
-      // Android takes a drag that starts near a screen edge as Back, so the
-      // bar keeps clear of the edges.
+      // Android takes a drag that starts in the gesture zone at a screen edge
+      // as Back. The thumb at the start or the end of the book sits at the
+      // bar's edge, so the bar keeps clear of the zone. The reader's bottom
+      // panel already keeps 12 points from the screen, more than the thumb's
+      // 8-point radius.
+      final gestures = MediaQuery.systemGestureInsetsOf(context);
       return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: EdgeInsets.symmetric(
+          horizontal: math.max(16, math.max(gestures.left, gestures.right)),
+        ),
         child: ScrubBar(
           value: at,
           chapters: [for (final chapter in map.chapters) chapter.start],
