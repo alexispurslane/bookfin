@@ -1,13 +1,13 @@
 import 'package:bookfin/reader/document.dart';
 import 'package:bookfin/reader/pdf.dart';
 import 'package:bookfin/reader/pdf_viewport.dart';
-import 'package:bookfin/reader/screen.dart' show ReaderControls;
+import 'package:bookfin/reader/screen.dart' show ReaderSettingsPanel;
 import 'package:flutter/material.dart';
 import 'package:flutter_epub_viewer/navigation.dart' show ContentsEntry;
 
 /// A [PdfViewport] under a stand-in for the reader screen's controller
 /// part. It keeps the reflow choice, which starts at [reflow], and offers it
-/// in the reader's control bar. It sends recognition choices to the
+/// in the reader's settings panel, shown under the viewport. It sends recognition choices to the
 /// document's text supply, as the screen does through the session.
 class PdfViewportHost extends StatefulWidget {
   const PdfViewportHost({
@@ -46,13 +46,10 @@ class _PdfViewportHostState extends State<PdfViewportHost> {
           onRetryRecognition: (page) => widget.book.textSupply?.retry(page),
         ),
       ),
-      ReaderControls(
-        onContents: null,
-        onSearch: null,
+      ReaderSettingsPanel(
+        fontSize: widget.fontSize,
         onSmaller: null,
         onLarger: null,
-        onBookmark: null,
-        onBookmarks: null,
         night: false,
         onNightChanged: (_) {},
         reflow: _reflow,

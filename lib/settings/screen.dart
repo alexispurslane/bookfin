@@ -219,21 +219,13 @@ class DensitySwitch extends StatelessWidget {
   final ValueChanged<LibraryDensity> onChanged;
 
   @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(3),
-    decoration: BoxDecoration(
-      color: Theme.of(context).colorScheme.surfaceContainer,
-      borderRadius: BorderRadius.circular(99),
-    ),
-    child: SegmentedButton<LibraryDensity>(
-      showSelectedIcon: false,
-      segments: const [
-        ButtonSegment(value: LibraryDensity.compact, label: Text('Compact')),
-        ButtonSegment(value: LibraryDensity.spacious, label: Text('Spacious')),
-      ],
-      selected: {density},
-      onSelectionChanged: (value) => onChanged(value.single),
-    ),
+  Widget build(BuildContext context) => PillChoice<LibraryDensity>(
+    segments: const [
+      ButtonSegment(value: LibraryDensity.compact, label: Text('Compact')),
+      ButtonSegment(value: LibraryDensity.spacious, label: Text('Spacious')),
+    ],
+    selected: density,
+    onChanged: onChanged,
   );
 }
 

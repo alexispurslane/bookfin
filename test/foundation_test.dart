@@ -204,8 +204,12 @@ void main() {
       );
       await tester.tap(find.text('Reader'));
       await tester.pumpAndSettle();
-      await tester.scrollUntilVisible(find.byTooltip('Larger text'), 300);
+      await tester.scrollUntilVisible(find.byTooltip('Reading settings'), 300);
+      await tester.tap(find.byTooltip('Reading settings'));
+      await tester.pumpAndSettle();
       await tester.tap(find.byTooltip('Larger text'));
+      await tester.pumpAndSettle();
+      await tester.tapAt(const Offset(20, 20));
       await tester.pumpAndSettle();
       final paragraph = find.textContaining('The Time Traveller (for so');
       final readerScroll = find.descendant(

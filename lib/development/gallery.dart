@@ -742,11 +742,12 @@ class _ReaderFixture extends StatefulWidget {
 }
 
 class _ReaderFixtureState extends State<_ReaderFixture> {
-  double _fontSize = 19;
+  /// The sample text size. The settings sheet follows it while it is open.
+  final _fontSize = ValueNotifier<double>(19);
 
   /// Whether the sample page shows the night reading theme, or null while it
   /// follows the app's theme.
-  bool? _night;
+  final _night = ValueNotifier<bool?>(null);
 
   /// The index in [_readerChapters] of the shown chapter.
   int _chapter = 0;
@@ -758,6 +759,8 @@ class _ReaderFixtureState extends State<_ReaderFixture> {
   @override
   void dispose() {
     _scroll.dispose();
+    _fontSize.dispose();
+    _night.dispose();
     _bookmarks.dispose();
     _hits.dispose();
     super.dispose();
@@ -783,12 +786,41 @@ class _ReaderFixtureState extends State<_ReaderFixture> {
 
   void _openContents() => unawaited(
     _sheet(
-      (sheet) => ReaderContentsPanel(
-        contents: [for (final chapter in _readerChapters) chapter.$3],
-        onContents: (href) {
-          Navigator.pop(sheet);
-          _showChapter(href);
-        },
+      (sheet) => ValueListenableBuilder(
+        valueListenable: _bookmarks,
+        builder: (_, bookmarks, _) => ReaderContentsPanel(
+          contents: [for (final chapter in _readerChapters) chapter.$3],
+          onContents: (href) {
+            Navigator.pop(sheet);
+            _showChapter(href);
+          },
+          bookmarks: bookmarks,
+          onRestore: (bookmark) {
+            Navigator.pop(sheet);
+            _showChapter(bookmark.position.anchor);
+          },
+          onEdit: (bookmark) => unawaited(_editBookmark(bookmark)),
+          onDelete: (bookmark) => unawaited(_deleteBookmark(bookmark)),
+        ),
+      ),
+    ),
+  );
+
+  /// Whether the sample page shows the night theme.
+  bool get _isNight =>
+      _night.value ?? Theme.of(context).brightness == Brightness.dark;
+
+  void _openSettings() => unawaited(
+    _sheet(
+      (sheet) => ListenableBuilder(
+        listenable: Listenable.merge([_fontSize, _night]),
+        builder: (_, _) => ReaderSettingsPanel(
+          fontSize: _fontSize.value,
+          onSmaller: _fontSize.value > 15 ? () => _fontSize.value -= 2 : null,
+          onLarger: _fontSize.value < 29 ? () => _fontSize.value += 2 : null,
+          night: _isNight,
+          onNightChanged: (night) => _night.value = night,
+        ),
       ),
     ),
   );
@@ -881,27 +913,15 @@ class _ReaderFixtureState extends State<_ReaderFixture> {
     }
   }
 
-  void _openBookmarks() => unawaited(
-    _sheet(
-      (sheet) => ValueListenableBuilder(
-        valueListenable: _bookmarks,
-        builder: (_, bookmarks, _) => ReaderBookmarksPanel(
-          bookmarks: bookmarks,
-          onRestore: (bookmark) {
-            Navigator.pop(sheet);
-            _showChapter(bookmark.position.anchor);
-          },
-          onEdit: (bookmark) => unawaited(_editBookmark(bookmark)),
-          onDelete: (bookmark) => unawaited(_deleteBookmark(bookmark)),
-        ),
-      ),
-    ),
+  @override
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: Listenable.merge([_fontSize, _night]),
+    builder: (context, _) => _themed(context),
   );
 
-  @override
-  Widget build(BuildContext context) {
+  Widget _themed(BuildContext context) {
     final app = Theme.of(context);
-    final night = _night ?? app.brightness == Brightness.dark;
+    final night = _isNight;
     final theme = night == (app.brightness == Brightness.dark)
         ? app
         : bookfinTheme(night ? Brightness.dark : Brightness.light);
@@ -921,7 +941,7 @@ class _ReaderFixtureState extends State<_ReaderFixture> {
     final text = TextStyle(
       fontFamily: 'Source Serif 4',
       fontFamilyFallback: const ['Noto Serif'],
-      fontSize: _fontSize,
+      fontSize: _fontSize.value,
       height: 1.85,
     );
     return ListView(
@@ -943,22 +963,18 @@ class _ReaderFixtureState extends State<_ReaderFixture> {
           const SizedBox(height: 20),
         ],
         const SizedBox(height: 8),
-        ReaderControls(
-          onContents: _openContents,
-          onSearch: () => unawaited(_openSearch()),
-          onSmaller: _fontSize > 15
-              ? () => setState(() => _fontSize -= 2)
-              : null,
-          onLarger: _fontSize < 29
-              ? () => setState(() => _fontSize += 2)
-              : null,
-          onBookmark: _addBookmark,
-          onBookmarks: _openBookmarks,
-          night: night,
-          onNightChanged: (night) => setState(() => _night = night),
+        ReaderDock(
+          bar: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+            child: ProgressLine(value: (_chapter + 1) / 12),
+          ),
+          tools: ReaderTools(
+            onContents: _openContents,
+            onSearch: () => unawaited(_openSearch()),
+            onSettings: _openSettings,
+            onBookmark: _addBookmark,
+          ),
         ),
-        const SizedBox(height: 24),
-        ProgressLine(value: (_chapter + 1) / 12),
         const SizedBox(height: 12),
         Text(
           'Sample chapters · no ebook file is open\nText size, theme and scroll stay in this gallery session.',

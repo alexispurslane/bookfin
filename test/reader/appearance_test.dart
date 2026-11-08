@@ -15,6 +15,7 @@ import '../playback/playback_test.dart' show account, LocalFiles, MemoryResume;
 import '../appearance/preferences_test.dart' show MemoryAppearanceStore;
 import 'publication_test.dart' show epub;
 import 'session_test.dart' show source, edition, book, visible;
+import 'reader_settings.dart';
 
 class BridgePlatform extends InAppWebViewPlatform {
   Completer<void>? openGate;
@@ -164,8 +165,7 @@ void main() {
       await finishLoading(tester);
       expect(reader.ready, isFalse);
       final bridge = platform.controllers.single;
-      await tester.tap(find.byTooltip('Larger text'));
-      await tester.pumpAndSettle();
+      await chooseSetting(tester, 'Larger text');
       expect(bridge.calls, hasLength(1));
       platform.openGate!.complete();
       await tester.pumpAndSettle();
@@ -230,16 +230,14 @@ void main() {
       await tester.pumpAndSettle();
       final anchor = reader.position!.anchor;
       bridge.calls.clear();
-      await tester.tap(find.byTooltip('Larger text'));
-      await tester.pumpAndSettle();
+      await chooseSetting(tester, 'Larger text');
       expect(reader.fontSize, 22);
       expect(bridge.calls.map((call) => call.arguments).toList(), [
         {'argument0': 44.0, 'argument1': false},
       ]);
       expect(reader.position!.anchor, anchor);
       bridge.calls.clear();
-      await tester.tap(find.byTooltip('Night reading theme'));
-      await tester.pumpAndSettle();
+      await chooseSetting(tester, 'Night reading theme');
       expect(bridge.calls.map((call) => call.arguments).toList(), [
         {'argument0': 44.0, 'argument1': true},
       ]);

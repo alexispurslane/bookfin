@@ -676,6 +676,25 @@ class ReaderSession extends ChangeNotifier {
     if (navigator != null) await _navigate(() => navigator.move(forward));
   }
 
+  /// Whether the open book has chapters on its map. The chapter arrows then
+  /// step between chapters. A book without them, such as a PDF, whose
+  /// contents list pages, turns pages instead.
+  bool get hasChapters => _bookMap?.chapters.isNotEmpty ?? false;
+
+  /// Shows the start of the next chapter with [forward]. Back, it shows the
+  /// start of the chapter that holds the visible place, or of the chapter
+  /// before when the visible place is that start (see
+  /// [BookMap.chapterStep]). With no chapter that way it does nothing. In a
+  /// book without chapters it turns one page, like [move].
+  Future<void> moveChapter(bool forward) async {
+    final map = _bookMap;
+    if (map == null || map.chapters.isEmpty) return move(forward);
+    final place = _visibleAddress;
+    final at = place == null ? null : map.fractionOf(place);
+    final start = at == null ? null : map.chapterStep(at, forward: forward);
+    if (start != null) await goTo(map.targetAt(start));
+  }
+
   /// Shows [target], a place that the scrub bar chose in the open book. The
   /// viewport then reports the page that it shows, which becomes the visible
   /// place and is saved like a page turn. If the viewport cannot show it,

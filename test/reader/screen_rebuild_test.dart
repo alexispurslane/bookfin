@@ -32,11 +32,8 @@ Future<List<Widget>> _rebuildsDuring(Future<void> Function() during) async {
 const _controls = {
   'Contents',
   'Search book',
-  'Smaller text',
-  'Larger text',
+  'Reading settings',
   'Bookmark this place',
-  'Reading bookmarks',
-  'Night reading theme',
   'Previous page',
   'Next page',
   'Hide reader controls',
@@ -122,8 +119,7 @@ void main() {
   }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
 
   testWidgets(
-    'choosing reflow redraws the viewport and the control bar, not the title '
-    'or the page row',
+    'choosing reflow redraws the viewport, not the title or the dock',
     (tester) async {
       final reader = await openPdf(tester);
       final rebuilt = await _rebuildsDuring(() async {
@@ -133,19 +129,7 @@ void main() {
       final viewports = rebuilt.whereType<PdfViewport>();
       expect(viewports, isNotEmpty);
       expect(viewports.map((viewport) => viewport.reflow), everyElement(true));
-      expect(
-        rebuilt.whereType<IconButton>().map((button) => button.tooltip),
-        contains('Original page'),
-        reason: 'The reflow control now offers the original page.',
-      );
-      expect(
-        _controlButtons(rebuilt).map((button) => button.tooltip),
-        isNot(anyOf(contains('Previous page'), contains('Next page'))),
-      );
-      expect(
-        _controlButtons(rebuilt).map((button) => button.tooltip),
-        isNot(contains('Hide reader controls')),
-      );
+      expect(_controlButtons(rebuilt), isEmpty);
       expect(
         _texts(rebuilt, (text) => text == book.title),
         isEmpty,

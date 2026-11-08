@@ -1,6 +1,6 @@
 ---
 id: boo-bz3x
-status: open
+status: in_progress
 deps: []
 links: []
 created: 2026-11-08T15:33:33Z
@@ -19,3 +19,7 @@ User request (2026-11-08): the reader's bottom area stacks four rows (tool icons
 **2026-11-08T15:35:55Z**
 
 Design chosen by the user on 2026-11-08: design A, one glass dock. The reader's bottom controls become one glass dock with: a one-line place label (for example 'One. The Grafted Trees · 4%'); the scrub bar with the chapter arrows at its two ends; and one row of icons: Contents, Search, Aa, Add bookmark, and the audiobook as a round cover button with a progress ring (tap plays or pauses, long press opens the player). Aa opens a sheet with text size, the reading theme and, for PDFs, the reflow toggle. Bookmarks move into the Contents sheet as a second tab, so the separate bookmarks list button goes away. The controls still show and hide with a tap on the page. Rejected: tools in the top bar, and a slim one-line mini player.
+
+**2026-11-08T16:46:14Z**
+
+Built design A on 2026-11-08: one glass dock (ReaderDock) with the place label, ReaderScrubBar between the chapter arrows, and ReaderTools (Contents, Search book, Reading settings 'Aa', Bookmark this place, and PlaybackCoverButton while an audiobook is open). Reading settings sheet: ReaderSettingsPanel. Bookmarks moved to the Contents sheet's second tab. In a book without chapters, such as a PDF, the arrows turn pages and say so. Bottom area at 360 by 800 dp: 152 dp before without audio, 242.5 dp with the mini player; 137 dp after in both cases. Also fixed: hiding the controls opened the book again (the warnings row left the column and the page area was rebuilt), and the reader page now has the cover scope, so the audiobook shows its real cover (t1-z0zj). New tickets: t6-1luw, t6-0cjf.

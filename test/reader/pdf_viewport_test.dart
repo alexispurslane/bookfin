@@ -15,6 +15,7 @@ import '../playback/playback_test.dart' show account, LocalFiles, MemoryResume;
 import 'pdf_document_test.dart' show pdfSource;
 import 'pdf_navigation_test.dart' show HeldPdf;
 import 'pdf_session_test.dart' show book, edition;
+import 'reader_settings.dart';
 
 /// A text supply that fails the test when anything asks it to act. It only
 /// shows whether recognition runs and whether a retry is possible.
@@ -466,14 +467,14 @@ void main() {
 
       await reader.bind(account(), [book]);
       await showReader(shown: find.byType(RawImage));
-      await tester.tap(find.byTooltip('Reflow text'));
+      await chooseSetting(tester, 'Reflow text', settle: tester.pump);
       await drawn(tester, shown: reflowed);
       expect(reader.reflow, isTrue);
       await tester.pumpWidget(const SizedBox());
       expect(reader.document, isNull, reason: 'Closing closes the book.');
       await showReader(shown: reflowed);
       expect(reflowed, findsOneWidget);
-      await tester.tap(find.byTooltip('Original page'));
+      await chooseSetting(tester, 'Original page', settle: tester.pump);
       await drawn(tester);
       expect(reflowed, findsNothing);
       expect(find.bySemanticsLabel('Original source page 1'), findsOneWidget);
@@ -510,10 +511,8 @@ void main() {
         ),
       );
       await drawn(tester);
-      await tester.tap(find.byTooltip('Reflow text'));
-      await tester.pump();
+      await chooseSetting(tester, 'Reflow text', settle: tester.pump);
       expect(reader.reflow, isTrue);
-      expect(find.byTooltip('Original page'), findsOneWidget);
       expect(reflowed, findsNothing);
       expect(find.bySemanticsLabel('Original source page 1'), findsOneWidget);
       pdf.textArrives.complete();

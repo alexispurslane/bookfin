@@ -323,14 +323,17 @@ void main() {
     );
   });
 
-  testWidgets('the reader sample uses the production control bar', (
+  testWidgets('the reader sample uses the production dock and tools', (
     tester,
   ) async {
     await showGallery(tester);
     await openScreen(tester, 'Reader');
     final bar = find.descendant(
       of: screen('reader'),
-      matching: find.byType(ReaderControls),
+      matching: find.descendant(
+        of: find.byType(ReaderDock),
+        matching: find.byType(ReaderTools),
+      ),
     );
     await reveal(tester, 'reader', bar);
     expect(bar, findsOneWidget);
@@ -346,7 +349,9 @@ void main() {
     (tester) async {
       await showGallery(tester);
       await openScreen(tester, 'Reader');
-      await reveal(tester, 'reader', find.byTooltip('Smaller text'));
+      await reveal(tester, 'reader', find.byTooltip('Reading settings'));
+      await tester.tap(find.byTooltip('Reading settings'));
+      await tester.pumpAndSettle();
       double size() => tester
           .widget<Text>(
             find.textContaining(
@@ -382,7 +387,9 @@ void main() {
   ) async {
     await showGallery(tester);
     await openScreen(tester, 'Reader');
-    await reveal(tester, 'reader', find.byTooltip('Night reading theme'));
+    await reveal(tester, 'reader', find.byTooltip('Reading settings'));
+    await tester.tap(find.byTooltip('Reading settings'));
+    await tester.pumpAndSettle();
     Brightness page() => Theme.of(
       tester.element(
         find.textContaining('The Time Traveller (for so', skipOffstage: false),
@@ -442,9 +449,11 @@ void main() {
       await reveal(tester, 'reader', find.byTooltip('Bookmark this place'));
       await tester.tap(find.byTooltip('Bookmark this place'));
       await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('Reading bookmarks'));
+      await tester.tap(find.byTooltip('Contents'));
       await tester.pumpAndSettle();
-      final panel = find.byType(ReaderBookmarksPanel);
+      await tester.tap(find.widgetWithText(Tab, 'Bookmarks'));
+      await tester.pumpAndSettle();
+      final panel = find.byType(ReaderContentsPanel);
       expect(
         find.descendant(of: panel, matching: find.text('Saved reading place')),
         findsOneWidget,

@@ -42,7 +42,8 @@ void main() {
           reports.add('end $fraction');
           return landed.future;
         },
-        below: (context, target) => Text('under ${target ?? 'open place'}'),
+        layout: (context, bar, target) =>
+            Column(children: [bar, Text('under ${target ?? 'open place'}')]),
       ),
     );
     expect(find.text('under open place'), findsOneWidget);

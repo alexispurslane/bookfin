@@ -42,6 +42,10 @@ void main() {
           ContentsEntry('The bridge', 'two.xhtml', depth: 1),
         ],
         onContents: chosen.add,
+        bookmarks: const [],
+        onRestore: (_) {},
+        onEdit: (_) {},
+        onDelete: (_) {},
       ),
     );
     await tester.tap(find.text('The bridge'));
@@ -100,20 +104,24 @@ void main() {
     expect(find.text('No matches.'), findsOneWidget);
   });
 
-  testWidgets('a bookmark row reports a tap as a return to its place, and its '
-      'menu reports Edit and Delete', (tester) async {
+  testWidgets('a bookmark row on the Bookmarks tab reports a tap as a return '
+      'to its place, and its menu reports Edit and Delete', (tester) async {
     final restored = <TextBookmark>[];
     final edited = <TextBookmark>[];
     final deleted = <TextBookmark>[];
     await _show(
       tester,
-      ReaderBookmarksPanel(
+      ReaderContentsPanel(
+        contents: const [ContentsEntry('River heading', 'one.xhtml')],
+        onContents: (_) {},
         bookmarks: [_mark],
         onRestore: restored.add,
         onEdit: edited.add,
         onDelete: deleted.add,
       ),
     );
+    await tester.tap(find.widgetWithText(Tab, 'Bookmarks'));
+    await tester.pumpAndSettle();
     expect(find.text('Where the road bends'), findsOneWidget);
     await tester.tap(find.text('River mark'));
     await tester.pump();
@@ -133,10 +141,83 @@ void main() {
     expect(restored, hasLength(1), reason: 'a menu choice is not a tap');
   });
 
-  group('the reader control bar', () {
-    /// Shows the control bar. Every control is on unless it is named in
-    /// [off], and each tap adds its control to [tapped].
-    Future<void> showControls(
+  group('the reader tool row', () {
+    /// Shows the tool row. Every tool is on unless it is named in [off], and
+    /// each tap adds its tool to [tapped].
+    Future<void> showTools(
+      WidgetTester tester,
+      List<String> tapped, {
+      Set<String> off = const {},
+      Widget? audio,
+    }) {
+      VoidCallback? report(String tool) =>
+          off.contains(tool) ? null : () => tapped.add(tool);
+      return _show(
+        tester,
+        ReaderTools(
+          onContents: report('Contents'),
+          onSearch: report('Search book'),
+          onSettings: report('Reading settings'),
+          onBookmark: report('Bookmark this place'),
+          audio: audio,
+        ),
+      );
+    }
+
+    const tools = [
+      'Contents',
+      'Search book',
+      'Reading settings',
+      'Bookmark this place',
+    ];
+
+    testWidgets('reports each tap through the callback of its tool', (
+      tester,
+    ) async {
+      final tapped = <String>[];
+      await showTools(tester, tapped);
+      for (final tool in tools) {
+        await tester.tap(find.byTooltip(tool));
+      }
+      expect(tapped, tools);
+    });
+
+    testWidgets('a tool that is off shows but reports no tap', (tester) async {
+      final tapped = <String>[];
+      await showTools(
+        tester,
+        tapped,
+        off: {'Reading settings', 'Bookmark this place'},
+      );
+      await tester.tap(find.byTooltip('Reading settings'));
+      await tester.tap(find.byTooltip('Bookmark this place'));
+      await tester.tap(find.byTooltip('Contents'));
+      expect(tapped, ['Contents']);
+    });
+
+    testWidgets('puts the audio slot last, after the four tools', (
+      tester,
+    ) async {
+      await showTools(
+        tester,
+        [],
+        audio: const SizedBox.square(key: Key('audio'), dimension: 48),
+      );
+      final audio = tester.getRect(find.byKey(const Key('audio')));
+      for (final tool in tools) {
+        expect(
+          tester.getRect(find.byTooltip(tool)).right,
+          lessThanOrEqualTo(audio.left),
+          reason: tool,
+        );
+      }
+    });
+  });
+
+  group('the reading settings panel', () {
+    /// Shows the panel. Both size buttons are on unless named in [off], and
+    /// each choice adds itself to [tapped].
+    Future<void> showSettings(
       WidgetTester tester,
       List<String> tapped, {
       Set<String> off = const {},
@@ -147,13 +228,10 @@ void main() {
           off.contains(control) ? null : () => tapped.add(control);
       return _show(
         tester,
-        ReaderControls(
-          onContents: report('Contents'),
-          onSearch: report('Search book'),
+        ReaderSettingsPanel(
+          fontSize: 20,
           onSmaller: report('Smaller text'),
           onLarger: report('Larger text'),
-          onBookmark: report('Bookmark this place'),
-          onBookmarks: report('Reading bookmarks'),
           night: night,
           onNightChanged: (night) => tapped.add('night $night'),
           reflow: reflow,
@@ -162,133 +240,44 @@ void main() {
       );
     }
 
-    const controls = [
-      'Contents',
-      'Search book',
-      'Smaller text',
-      'Larger text',
-      'Bookmark this place',
-      'Reading bookmarks',
-    ];
-
-    testWidgets('reports each tap through the callback of its control', (
+    testWidgets('shows the text size and reports the size buttons', (
       tester,
     ) async {
       final tapped = <String>[];
-      await showControls(tester, tapped);
-      for (final control in controls) {
-        await tester.tap(find.byTooltip(control));
-      }
-      await tester.tap(find.byTooltip('Night reading theme'));
-      expect(tapped, [...controls, 'night true']);
-    });
-
-    testWidgets('a control that is off shows but reports no tap', (
-      tester,
-    ) async {
-      final tapped = <String>[];
-      await showControls(
-        tester,
-        tapped,
-        off: {'Smaller text', 'Bookmark this place'},
-      );
+      await showSettings(tester, tapped, off: {'Smaller text'});
+      expect(find.text('20'), findsOneWidget);
       await tester.tap(find.byTooltip('Smaller text'));
-      await tester.tap(find.byTooltip('Bookmark this place'));
       await tester.tap(find.byTooltip('Larger text'));
       expect(tapped, ['Larger text']);
     });
 
-    testWidgets('in the night theme the theme control offers the cream theme', (
-      tester,
-    ) async {
+    testWidgets('marks the shown theme and reports the other', (tester) async {
       final tapped = <String>[];
-      await showControls(tester, tapped, night: true);
-      expect(find.byTooltip('Night reading theme'), findsNothing);
+      await showSettings(tester, tapped, night: true);
+      await tester.tap(find.byTooltip('Night reading theme'));
+      await tester.pump();
+      expect(tapped, isEmpty, reason: 'The night theme already shows.');
       await tester.tap(find.byTooltip('Cream reading theme'));
       expect(tapped, ['night false']);
     });
 
-    IconData? icon(String tooltip) => find
-        .descendant(of: find.byTooltip(tooltip), matching: find.byType(Icon))
-        .evaluate()
-        .map((element) => (element.widget as Icon).icon)
-        .single;
-
-    testWidgets('a book that is not a PDF has no reflow control', (
+    testWidgets('a book that is not a PDF has no reflow choice', (
       tester,
     ) async {
-      final tapped = <String>[];
-      await showControls(tester, tapped);
+      await showSettings(tester, []);
       expect(find.byTooltip('Reflow text'), findsNothing);
       expect(find.byTooltip('Original page'), findsNothing);
     });
 
-    testWidgets('while the original PDF page shows, the reflow control offers '
-        'Reflow text', (tester) async {
+    testWidgets('a PDF offers its original page and reflowed text, and '
+        'reports the other view', (tester) async {
       final tapped = <String>[];
-      await showControls(tester, tapped, reflow: false);
-      expect(find.byTooltip('Original page'), findsNothing);
-      expect(icon('Reflow text'), Icons.article_outlined);
+      await showSettings(tester, tapped, reflow: false);
+      await tester.tap(find.byTooltip('Original page'));
+      await tester.pump();
+      expect(tapped, isEmpty, reason: 'The original page already shows.');
       await tester.tap(find.byTooltip('Reflow text'));
       expect(tapped, ['reflow true']);
-    });
-
-    testWidgets(
-      'while reflowed text shows, the reflow control offers Original page',
-      (tester) async {
-        final tapped = <String>[];
-        await showControls(tester, tapped, reflow: true);
-        expect(find.byTooltip('Reflow text'), findsNothing);
-        expect(icon('Original page'), Icons.picture_as_pdf_outlined);
-        await tester.tap(find.byTooltip('Original page'));
-        expect(tapped, ['reflow false']);
-      },
-    );
-
-    testWidgets(
-      'on a phone 411 points wide, the eight controls of a PDF fit in one row',
-      (tester) async {
-        await tester.binding.setSurfaceSize(const Size(411, 800));
-        addTearDown(() => tester.binding.setSurfaceSize(null));
-        await _show(
-          tester,
-          Padding(
-            // The reader screen's side margins around the bar.
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: ReaderControls(
-              onContents: () {},
-              onSearch: () {},
-              onSmaller: () {},
-              onLarger: () {},
-              onBookmark: () {},
-              onBookmarks: () {},
-              night: false,
-              onNightChanged: (_) {},
-              reflow: false,
-              onReflowChanged: (_) {},
-            ),
-          ),
-        );
-        final rows = tester
-            .widgetList<IconButton>(find.byType(IconButton))
-            .map((button) => tester.getCenter(find.byWidget(button)).dy)
-            .toSet();
-        expect(rows, hasLength(1));
-      },
-    );
-
-    testWidgets('the reflow control sits after the text size controls', (
-      tester,
-    ) async {
-      await showControls(tester, [], reflow: false);
-      final tooltips = tester
-          .widgetList<IconButton>(find.byType(IconButton))
-          .map((button) => button.tooltip)
-          .toList();
-      expect(
-        tooltips.indexOf('Reflow text'),
-        tooltips.indexOf('Larger text') + 1,
-      );
     });
   });
 }

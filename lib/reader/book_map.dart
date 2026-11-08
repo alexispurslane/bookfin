@@ -199,6 +199,29 @@ class BookMap {
         (_starts[part + 1] - _starts[part]) * place.progress.clamp(0.0, 1.0);
   }
 
+  /// Where the chapter that a chapter arrow goes to from the place [at]
+  /// starts. Forward, that is the first chapter that starts after [at].
+  /// Back, it is the last chapter that starts before [at]: the start of the
+  /// chapter that holds [at], or the chapter before when [at] is that start.
+  /// The book's start counts as a chapter start, so back reaches the text
+  /// before the first chapter. Null when no chapter starts that way.
+  double? chapterStep(double at, {required bool forward}) {
+    // Places measured on two paths can differ in the last bits.
+    const near = 1e-9;
+    if (forward) {
+      for (final chapter in chapters) {
+        if (chapter.start > at + near) return chapter.start;
+      }
+      return null;
+    }
+    double? before = at > near ? 0 : null;
+    for (final chapter in chapters) {
+      if (chapter.start >= at - near) break;
+      before = chapter.start;
+    }
+    return before;
+  }
+
   /// The place at [fraction] of the book. A fraction outside 0 to 1 is the
   /// book's start or end.
   BookTarget targetAt(double fraction) {

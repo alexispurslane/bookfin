@@ -19,6 +19,9 @@ void main() {
   double inTwo(double progress) =>
       (size('OPS/one.xhtml') + size('OPS/two.xhtml') * progress) / whole;
 
+  /// [fraction] of the book as the place label names it, such as "37%".
+  String percent(double fraction) => '${(fraction * 100).round()}%';
+
   /// A place [progress] of the way through "two", as the viewport reports
   /// it, on page [page] of 8 of the section.
   ReadingLocation inSectionTwo(double progress, {int page = 3}) =>
@@ -106,7 +109,10 @@ void main() {
     reader.acceptVisible(reader.token, inSectionTwo(.25));
     await show(tester, reader);
     expect(bar(tester).value, closeTo(inTwo(.25), 1e-9));
-    expect(find.bySemanticsLabel('Two · Page 3 of 8'), findsOneWidget);
+    expect(
+      find.bySemanticsLabel('Two · ${percent(inTwo(.25))}'),
+      findsOneWidget,
+    );
     final marks = find.byKey(const ValueKey('position marks'));
     final width = tester.getSize(marks).width;
     // A tick is a rectangle and a bookmark is a circle, each centered at its
@@ -145,7 +151,7 @@ void main() {
       find.bySemanticsLabel('Half · ${(target * 100).round()}%'),
       findsOneWidget,
     );
-    expect(find.bySemanticsLabel('Two · Page 3 of 8'), findsNothing);
+    expect(find.bySemanticsLabel('Two · ${percent(inTwo(.25))}'), findsNothing);
     expect(port.seeks, isEmpty);
     expect(reader.visibleLocation!.progress, .25);
 
@@ -155,7 +161,10 @@ void main() {
     expect(port.seeks.single.$2, closeTo(.75, 1e-9));
     reader.acceptVisible(reader.token, inSectionTwo(.74, page: 7));
     await tester.pumpAndSettle();
-    expect(find.bySemanticsLabel('Two · Page 7 of 8'), findsOneWidget);
+    expect(
+      find.bySemanticsLabel('Two · ${percent(inTwo(.74))}'),
+      findsOneWidget,
+    );
     expect(bar(tester).value, closeTo(inTwo(.74), 1e-9));
   }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
 
@@ -236,7 +245,12 @@ void main() {
     );
     await show(tester, reader);
     expect(bar(tester).value, closeTo(inTwo(0), 1e-9));
-    expect(find.textContaining('Page progress unavailable'), findsOneWidget);
+    expect(
+      find.bySemanticsLabel(
+        'Current chapter unavailable · ${percent(inTwo(0))}',
+      ),
+      findsOneWidget,
+    );
   }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
 
   testWidgets('the thumb at the start or the end of the book stays clear '
@@ -278,7 +292,7 @@ void main() {
     await tester.pump();
     expect(tester.getSize(find.byType(ReaderScrubBar)).height, height);
     // A long title is cut short, but the separator and the place show whole.
-    expect(find.textContaining('· Page 3 of 8'), findsOneWidget);
+    expect(find.textContaining('· ${percent(inTwo(.25))}'), findsOneWidget);
     bar(tester).onChangeStart!(inTwo(.25));
     bar(tester).onChanged!(inTwo(.25));
     await tester.pump();

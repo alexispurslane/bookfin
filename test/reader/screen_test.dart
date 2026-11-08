@@ -10,6 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../playback/playback_test.dart' show account, LocalFiles, MemoryResume;
 import 'publication_test.dart' show epub;
+import 'reader_settings.dart';
 import 'session_test.dart' show source, edition, book, visible;
 
 void main() {
@@ -52,10 +53,7 @@ void main() {
       await reader.addBookmark(title: 'River mark');
       final bookmark = reader.bookmarks.single;
       await tester.pumpAndSettle();
-      expect(
-        find.bySemanticsLabel('River heading · Page 2 of 8'),
-        findsOneWidget,
-      );
+      expect(find.bySemanticsLabel('River heading · 25%'), findsOneWidget);
       expect(tester.widget<Slider>(find.byType(Slider)).value, .25);
       reader.acceptVisible(
         reader.token,
@@ -68,12 +66,12 @@ void main() {
         }),
       );
       await tester.pumpAndSettle();
-      expect(find.bySemanticsLabel('The bridge · Page 3 of 4'), findsOneWidget);
+      expect(find.bySemanticsLabel('The bridge · 75%'), findsOneWidget);
       expect(tester.widget<Slider>(find.byType(Slider)).value, .75);
       await reader.restoreBookmark(bookmark.id);
       await tester.pumpAndSettle();
       expect(port.destinations.single.cfi, visible.cfi);
-      expect(find.bySemanticsLabel('The bridge · Page 3 of 4'), findsOneWidget);
+      expect(find.bySemanticsLabel('The bridge · 75%'), findsOneWidget);
       reader.acceptVisible(
         reader.token,
         ReadingLocation.fromJson({
@@ -85,14 +83,14 @@ void main() {
         }),
       );
       await tester.pumpAndSettle();
-      expect(
-        find.bySemanticsLabel('River heading · Page 1 of 5'),
-        findsOneWidget,
-      );
+      expect(find.bySemanticsLabel('River heading · 20%'), findsOneWidget);
       expect(tester.widget<Slider>(find.byType(Slider)).value, .2);
       reader.acceptVisible(reader.token, visible);
       await tester.pumpAndSettle();
-      expect(find.textContaining('Page progress unavailable'), findsOneWidget);
+      expect(
+        find.bySemanticsLabel('Current chapter unavailable · 0%'),
+        findsOneWidget,
+      );
       expect(
         tester.widget<Slider>(find.byType(Slider)).value,
         0,
@@ -106,7 +104,7 @@ void main() {
   );
 
   /// Opens the reader on [book] at a visible place, with one untitled
-  /// bookmark there, and shows its bookmarks panel.
+  /// bookmark there, and shows the Bookmarks tab of its Contents sheet.
   Future<ReaderSession> openBookmarks(
     WidgetTester tester, {
     ControlPort? port,
@@ -134,7 +132,9 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('Reading bookmarks'));
+    await tester.tap(find.byTooltip('Contents'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(Tab, 'Bookmarks'));
     await tester.pumpAndSettle();
     return reader;
   }
@@ -354,7 +354,7 @@ void main() {
       );
       final context = tester.element(find.byType(ReaderScreen));
       final surface = Theme.of(context).bottomSheetTheme.backgroundColor;
-      for (final panel in ['Contents', 'Search book', 'Reading bookmarks']) {
+      for (final panel in ['Contents', 'Search book', 'Reading settings']) {
         await tester.tap(find.byTooltip(panel));
         await tester.pumpAndSettle();
         final sheet = find.byType(BottomSheet);
@@ -370,7 +370,11 @@ void main() {
           surface,
           reason: '$panel sheet surface',
         );
-        expect(find.byType(CoverGlass), findsNothing, reason: panel);
+        expect(
+          find.descendant(of: sheet, matching: find.byType(CoverGlass)),
+          findsNothing,
+          reason: panel,
+        );
         await tester.tapAt(const Offset(20, 20));
         await tester.pumpAndSettle();
       }
@@ -401,8 +405,7 @@ void main() {
           home: ReaderScreen(reader: reader, onNightChanged: (_) {}),
         ),
       );
-      await tester.tap(find.byTooltip('Larger text'));
-      await tester.pumpAndSettle();
+      await chooseSetting(tester, 'Larger text');
       expect(reader.fontSize, 22);
       await tester.tap(find.byTooltip('Bookmark this place'));
       await tester.pumpAndSettle();

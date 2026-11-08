@@ -407,10 +407,14 @@ class BookPage extends StatelessWidget {
       Navigator.push<void>(
         context,
         MaterialPageRoute(
-          builder: (_) => ReaderScreen(
-            reader: reader,
-            onNightChanged: services.onReaderNightChanged,
-            playback: services.playback,
+          // The pushed page sits above the library's cover scope, so it
+          // brings its own, and the audiobook in its dock shows its cover.
+          builder: (_) => services.coverScope(
+            ReaderScreen(
+              reader: reader,
+              onNightChanged: services.onReaderNightChanged,
+              playback: services.playback,
+            ),
           ),
         ),
       ),
