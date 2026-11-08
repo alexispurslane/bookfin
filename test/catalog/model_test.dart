@@ -424,6 +424,46 @@ void main() {
     expect(book.year, 2021);
   });
 
+  group('a book description', () {
+    String? describe(Object? overview) => buildBooks([
+      entry('one', fields: {'Overview': overview}),
+    ]).single.description;
+
+    test('turns line breaks and paragraph ends into new lines', () {
+      expect(
+        describe('One<br>two<BR />three</p>four'),
+        'One\ntwo\nthree\n\nfour',
+      );
+    });
+
+    test('drops other tags but keeps the text inside them', () {
+      expect(
+        describe('<i>Grafted</i> <b class="x">roots</b>'),
+        'Grafted roots',
+      );
+    });
+
+    test('decodes entities after it drops tags, and only once', () {
+      expect(
+        describe('&lt;b&gt; &amp;lt; &quot;a&quot; &#39;b&#39;&nbsp;c'),
+        '<b> &lt; "a" \'b\' c',
+      );
+    });
+
+    test('keeps single spaces and collapses runs of spaces and tabs', () {
+      expect(describe('a b  c\td \t e'), 'a b c d e');
+    });
+
+    test('trims spaces around new lines and keeps at most one blank line', () {
+      expect(describe('a  \n  b\n\n\n\nc\n\nd'), 'a\nb\n\nc\n\nd');
+    });
+
+    test('is absent when the overview is empty after cleanup or not text', () {
+      expect(describe('  <p> </p> '), isNull);
+      expect(describe(42), isNull);
+    });
+  });
+
   test('audio positions cannot cross editions or reuse replaced files', () {
     final edition = buildBooks([entry('one')]).single.editions.single;
     final file = edition.files.single;

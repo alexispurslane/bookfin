@@ -24,14 +24,18 @@ void main() {
   late CatalogController controller;
   late FixtureClient client;
   late LibraryLayout layout;
+  late MemoryCredentials credentials;
+  late MemoryCatalogStore store;
   Covers? covers;
   setUp(() {
     layout = LibraryLayout(MemoryLayoutStore());
     covers = null;
     client = FixtureClient(Uri.parse('https://books.example'));
+    credentials = MemoryCredentials();
+    store = MemoryCatalogStore();
     controller = CatalogController(
-      credentials: MemoryCredentials(),
-      store: MemoryCatalogStore(),
+      credentials: credentials,
+      store: store,
       clientFactory: (server, device) => client,
     );
   });
@@ -74,6 +78,66 @@ void main() {
       ),
     entry('salt', title: 'Salt and Lantern'),
   ];
+
+  group('at launch', () {
+    /// Signs in, then starts the app again with the same saved account and
+    /// library.
+    Future<void> relaunch(WidgetTester tester) async {
+      await signIn(tester);
+      controller.dispose();
+      controller = CatalogController(
+        credentials: credentials,
+        store: store,
+        clientFactory: (server, device) => client,
+      );
+    }
+
+    testWidgets('shows no sign-in form while the saved account is read', (
+      tester,
+    ) async {
+      await relaunch(tester);
+      credentials.readGate = Completer<void>();
+      final restoring = controller.restore();
+      await show(tester);
+      await tester.pump();
+      expect(find.text('Your library starts here.'), findsNothing);
+      expect(find.text('Cancel'), findsNothing);
+      credentials.readGate!.complete();
+      await finish(tester, restoring);
+      expect(find.byType(NavigationBar), findsOneWidget);
+    });
+
+    testWidgets(
+      'shows the signed-in library tab, not the library selector or an empty '
+      'shelf message, while the saved library loads',
+      (tester) async {
+        client.entries = orchardCycle();
+        await relaunch(tester);
+        store.readGate = Completer<void>();
+        final restoring = controller.restore();
+        await show(tester);
+        await tester.pump();
+        expect(find.text('Your library starts here.'), findsNothing);
+        expect(find.byType(NavigationBar), findsOneWidget);
+        expect(find.text('Save libraries'), findsNothing);
+        expect(find.text('No books found.'), findsNothing);
+        store.readGate!.complete();
+        await finish(tester, restoring);
+        await tester.pump();
+        expect(find.text('Salt and Lantern'), findsOneWidget);
+      },
+    );
+
+    testWidgets('shows the sign-in form when no account is saved', (
+      tester,
+    ) async {
+      final restoring = controller.restore();
+      await show(tester);
+      await finish(tester, restoring);
+      await tester.pump();
+      expect(find.text('Your library starts here.'), findsOneWidget);
+    });
+  });
 
   testWidgets(
     'the library shows a series as one card that opens its books in order',

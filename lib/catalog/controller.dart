@@ -58,14 +58,22 @@ typedef CatalogStatus = ({
 /// is blocked, its Jellyfin book libraries, and the ids of the selected
 /// ones. Two accounts are equal when these values are equal, so a refresh of
 /// the same account does not change it.
+///
+/// [restoring] says that a restore from storage runs, so the account is not
+/// fully known yet. Without a [session], the saved credentials are still
+/// being read, so the person may be signed in. With one, the saved catalog
+/// is still being read, so the libraries, the selection and the blocked
+/// access are not known yet.
 class CatalogAccount {
   const CatalogAccount({
     this.session,
     this.accessBlocked = false,
     this.libraries = const [],
     this.selected = const {},
+    this.restoring = false,
   });
   final JellyfinSession? session;
+  final bool restoring;
   final bool accessBlocked;
   final List<BookLibrary> libraries;
   final Set<String> selected;
@@ -74,6 +82,7 @@ class CatalogAccount {
   bool operator ==(Object other) =>
       other is CatalogAccount &&
       _sameSession(session, other.session) &&
+      restoring == other.restoring &&
       accessBlocked == other.accessBlocked &&
       listEquals(_names(libraries), _names(other.libraries)) &&
       setEquals(selected, other.selected);
@@ -81,6 +90,7 @@ class CatalogAccount {
   @override
   int get hashCode => Object.hash(
     session?.scope.key,
+    restoring,
     accessBlocked,
     Object.hashAll(_names(libraries)),
     Object.hashAllUnordered(selected),
@@ -321,6 +331,7 @@ class CatalogController extends ChangeNotifier {
 
   CatalogAccount get _account => CatalogAccount(
     session: _session,
+    restoring: _work == _Work.restore,
     accessBlocked: _accessBlocked,
     libraries: _libraries,
     selected: _cache?.selected ?? const {},
@@ -479,7 +490,9 @@ class CatalogController extends ChangeNotifier {
       final restored = await _credentials.read();
       if (!_current(generation)) return;
       if (restored != null) {
+        // The account shows at once, and its saved library when it is built.
         _session = restored;
+        _notify();
         final saved = await _readSaved(restored.scope);
         if (!_current(generation)) return;
         if (saved != null) {

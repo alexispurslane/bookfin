@@ -26,8 +26,15 @@ JellyfinSession account(
 class MemoryCredentials implements CredentialStore {
   JellyfinSession? value;
   bool failWrites = false;
+
+  /// Holds each read until it completes, when a test sets it.
+  Completer<void>? readGate;
   @override
-  Future<JellyfinSession?> read() async => value;
+  Future<JellyfinSession?> read() async {
+    await readGate?.future;
+    return value;
+  }
+
   @override
   Future<void> write(JellyfinSession? session) async {
     if (failWrites) throw StateError('vault failure');
@@ -549,4 +556,64 @@ void main() {
       );
     },
   );
+
+  group('a restore at launch', () {
+    late CatalogController restarted;
+    setUp(() async {
+      await connectAndSelect();
+      restarted = CatalogController(
+        credentials: credentials,
+        store: store,
+        clientFactory: (server, device) => client,
+      );
+    });
+    tearDown(() => restarted.dispose());
+
+    test('says that the account is not known yet until the credentials are '
+        'read', () async {
+      credentials.readGate = Completer<void>();
+      final restoring = restarted.restore();
+      await pumpEventQueue();
+      expect(restarted.accountNotifier.value.session, isNull);
+      expect(restarted.accountNotifier.value.restoring, isTrue);
+      credentials.readGate!.complete();
+      await restoring;
+      expect(restarted.accountNotifier.value.restoring, isFalse);
+    });
+
+    test('publishes the saved account as soon as its credentials are read, '
+        'while the saved library still loads', () async {
+      store.readGate = Completer<void>();
+      final restoring = restarted.restore();
+      await pumpEventQueue();
+      final account = restarted.accountNotifier.value;
+      expect(account.session?.username, 'alice');
+      expect(account.restoring, isTrue);
+      expect(restarted.libraryNotifier.value.books, isEmpty);
+      store.readGate!.complete();
+      await restoring;
+      expect(restarted.accountNotifier.value.restoring, isFalse);
+      expect(restarted.accountNotifier.value.selected, {'books'});
+      expect(restarted.libraryNotifier.value.books, hasLength(1));
+      restarted.checkInvariants();
+    });
+
+    test('ends as signed out without saved credentials', () async {
+      credentials.value = null;
+      await restarted.restore();
+      expect(restarted.accountNotifier.value.session, isNull);
+      expect(restarted.accountNotifier.value.restoring, isFalse);
+    });
+
+    test(
+      'keeps the saved account when its saved library cannot be read',
+      () async {
+        store.failReads = true;
+        await restarted.restore();
+        expect(restarted.accountNotifier.value.session?.username, 'alice');
+        expect(restarted.accountNotifier.value.restoring, isFalse);
+        expect(restarted.statusNotifier.value.message, isNotNull);
+      },
+    );
+  });
 }

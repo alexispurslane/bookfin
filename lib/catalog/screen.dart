@@ -120,13 +120,26 @@ class _CatalogHomeState extends State<CatalogHome> {
   }
 
   /// The shell builds only the frame of the app: the navigation, and the tab
-  /// or sign-in screen in it. It rebuilds when the tab changes or the user
-  /// signs in or out. Every part inside listens to the state that it shows.
+  /// or sign-in screen in it. It rebuilds when the tab changes, the user
+  /// signs in or out, or a restore learns whether an account is saved. Every
+  /// part inside listens to the state that it shows.
+  ///
+  /// While a restore reads the saved credentials, the shell shows only the
+  /// page surface: the person may be signed in, so the sign-in form would be
+  /// wrong, and its Cancel would sign the person out.
   @override
   Widget build(BuildContext context) => ListenableSelector(
-    listenable: _catalog,
-    select: () => _catalog.session != null,
-    builder: (context, signedIn, _) {
+    listenable: _catalog.accountNotifier,
+    select: () {
+      final account = _catalog.accountNotifier.value;
+      return (
+        signedIn: account.session != null,
+        unknown: account.session == null && account.restoring,
+      );
+    },
+    builder: (context, shell, _) {
+      if (shell.unknown) return const BookfinSurface(child: SizedBox.expand());
+      final signedIn = shell.signedIn;
       final tab = signedIn ? _tab : _Tab.library;
       final services = _services;
       final playback = widget.playback;
@@ -302,6 +315,7 @@ class _CatalogStatus extends StatelessWidget {
       final status = catalog.statusNotifier.value;
       return (
         refreshing: status.refreshing,
+        restoring: catalog.accountNotifier.value.restoring,
         offline:
             status.reach == CatalogReach.unreachable &&
             catalog.accountNotifier.value.session != null,
@@ -311,7 +325,7 @@ class _CatalogStatus extends StatelessWidget {
     builder: (context, status, _) => Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _SlowProgressLine(running: status.refreshing),
+        _SlowProgressLine(running: status.refreshing || status.restoring),
         if (status.offline)
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 2, 8, 2),
