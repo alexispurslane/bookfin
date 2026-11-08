@@ -419,13 +419,17 @@ class ReaderSession extends ChangeNotifier {
       }
       _document = admitted;
       if (admitted is PdfBook) {
+        // A recognized page that started saves its text after this book
+        // closes, so only the download and the catalog decide whether its
+        // original can be read, not whether the book is still open.
+        bool available() => !_disposed && _current(selected);
         admitted.textSupply?.bind((read) async {
-          if (!_live(generation) || !_current(selected)) return null;
+          if (!available()) return null;
           bool Function() owned = () => true;
           return downloads.readLocalFile<PdfText>(selected.files.single, (
             uri,
           ) async {
-            if (!_live(generation) || !_current(selected)) {
+            if (!available()) {
               return const PdfText(
                 source: '',
                 text: '',
@@ -433,10 +437,7 @@ class ReaderSession extends ChangeNotifier {
                 status: PdfTextStatus.absent,
               );
             }
-            return read(
-              uri,
-              () => owned() && _live(generation) && _current(selected),
-            );
+            return read(uri, () => owned() && available());
           }, onOwnership: (live) => owned = live);
         });
       }

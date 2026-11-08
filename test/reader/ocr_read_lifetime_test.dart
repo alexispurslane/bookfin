@@ -180,42 +180,39 @@ void main() {
     },
   );
 
-  test(
-    'selected text joins a read still acquiring ownership before native work',
-    () async {
-      final acquiring = Completer<void>();
-      final acquired = Completer<void>();
-      var reads = 0;
-      pdf.textSupply!.bind((read) async {
-        bool Function() owned = () => false;
-        return downloads.readLocalFile<PdfText>(pdfSource, (uri) async {
-          if (++reads == 2) {
-            acquiring.complete();
-            await acquired.future;
-          }
-          return read(uri, owned);
-        }, onOwnership: (live) => owned = live);
-      });
-      final second = pdf.text(2);
-      try {
-        await acquiring.future.timeout(const Duration(seconds: 5));
-        final first = pdf.text(1);
-        // Give the request a chance to enter read acquisition before releasing it.
-        await Future<void>.delayed(const Duration(milliseconds: 30));
-        acquired.complete();
-        await nativeStarted.future.timeout(const Duration(seconds: 5));
-        expect(
-          (await first.timeout(const Duration(seconds: 3))).text,
-          'The quiet garden.',
-        );
-        expect(calls, 2);
-      } finally {
-        if (!acquired.isCompleted) acquired.complete();
-        if (!nativeResult.isCompleted) nativeResult.complete(englishPage);
-        await second;
-      }
-    },
-  );
+  test('selected text joins a read still acquiring ownership before recognition starts', () async {
+    final acquiring = Completer<void>();
+    final acquired = Completer<void>();
+    var reads = 0;
+    pdf.textSupply!.bind((read) async {
+      bool Function() owned = () => false;
+      return downloads.readLocalFile<PdfText>(pdfSource, (uri) async {
+        if (++reads == 1) {
+          acquiring.complete();
+          await acquired.future;
+        }
+        return read(uri, owned);
+      }, onOwnership: (live) => owned = live);
+    });
+    final second = pdf.text(2);
+    try {
+      await acquiring.future.timeout(const Duration(seconds: 5));
+      final first = pdf.text(1);
+      // Give the request a chance to enter read acquisition before releasing it.
+      await Future<void>.delayed(const Duration(milliseconds: 30));
+      acquired.complete();
+      await nativeStarted.future.timeout(const Duration(seconds: 5));
+      expect(
+        (await first.timeout(const Duration(seconds: 3))).text,
+        'The quiet garden.',
+      );
+      expect(calls, 2);
+    } finally {
+      if (!acquired.isCompleted) acquired.complete();
+      if (!nativeResult.isCompleted) nativeResult.complete(englishPage);
+      await second;
+    }
+  });
 
   test('ordinary native failure does not expire selected text while its original bytes are being verified', () async {
     final second = pdf.text(2);
@@ -223,6 +220,18 @@ void main() {
     final verifying = Completer<void>();
     final verified = Completer<void>();
     final parent = Zone.current;
+    // The download lookup runs outside the zone with the held file, so only
+    // the cache check of the original sees it.
+    pdf.textSupply!.bind(
+      (read) => parent.run(() {
+        bool Function() owned = () => false;
+        return downloads.readLocalFile<PdfText>(
+          pdfSource,
+          (uri) => read(uri, () => owned()),
+          onOwnership: (live) => owned = live,
+        );
+      }),
+    );
     final first = IOOverrides.runZoned(
       () => pdf.text(1),
       createFile: (path) => path == original.path

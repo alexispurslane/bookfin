@@ -96,7 +96,9 @@ void main() {
           }
           nativeCalls++;
           if (holdFirstNative && nativeCalls == 1) {
-            return firstRecognition.future;
+            final text = await firstRecognition.future;
+            if (retryFails) throw PlatformException(code: 'recognition');
+            return text;
           }
           if (retryFails) throw PlatformException(code: 'recognition');
           return englishPage;
@@ -241,15 +243,13 @@ void main() {
 
           await tester.tap(find.text('Retry recognition'));
           await tester.pump();
-          if (pending == 'native recognition') {
-            expect(
-              nativeCalls,
-              1,
-              reason: 'Retry waits for the canceled native call to drain.',
-            );
-          }
+          expect(
+            nativeCalls,
+            pending == 'render' ? 0 : 1,
+            reason: 'Retry joins the page that started.',
+          );
           pdf.finishRender();
-          firstRecognition.complete(englishPage.replaceFirst('quiet', 'stale'));
+          firstRecognition.complete(englishPage);
           await waitFor(tester, () {
             final reflow = tester.widget<TextButton>(
               find.widgetWithText(TextButton, 'Reflow text'),
@@ -263,7 +263,7 @@ void main() {
                 .evaluate()
                 .isNotEmpty,
           );
-          expect(nativeCalls, pending == 'render' ? 1 : 2);
+          expect(nativeCalls, 1);
           expect(find.byType(ErrorWidget), findsNothing);
           await tester.tap(find.text('Reflow text'));
           await tester.pump();
@@ -282,7 +282,6 @@ void main() {
             expect(find.text('Retry recognition'), findsOneWidget);
           } else {
             expect(find.text('The quiet garden.'), findsOneWidget);
-            expect(find.textContaining('stale garden'), findsNothing);
             expect(reader.position!.sourceKey, pdfSource.key);
             expect(find.byType(LinearProgressIndicator), findsOneWidget);
             expect(

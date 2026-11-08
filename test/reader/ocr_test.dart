@@ -304,44 +304,4 @@ void main() {
     await expectLater(pdf.dispose(), throwsA(isA<PlatformException>()));
     await expectLater(PdfRuntime.instance.shutdown(), completes);
   });
-
-  test('retry during cancellation waits for the native page then recognizes a fresh request', () async {
-    final held = Completer<String>();
-    final started = Completer<void>();
-    recognize = () {
-      started.complete();
-      return held.future;
-    };
-    final pdf = await open();
-    final first = pdf.text(1);
-    await started.future;
-    pdf.textSupply!.cancel();
-    recognize = () async => englishPage;
-    final retry = pdf.text(1);
-    held.complete(englishPage);
-    expect((await first).status, PdfTextStatus.absent);
-    expect((await retry).text, 'The quiet garden.');
-    expect(calls, 2);
-  });
-
-  test(
-    'leaving rejects a late native result and reopening recognizes again',
-    () async {
-      final held = Completer<String>();
-      final started = Completer<void>();
-      recognize = () {
-        started.complete();
-        return held.future;
-      };
-      final pdf = await open();
-      final pending = pdf.text(1);
-      await started.future.timeout(const Duration(seconds: 5));
-      reader.closeView(reader.token);
-      held.complete(englishPage);
-      expect((await pending).status, PdfTextStatus.absent);
-      recognize = () async => englishPage;
-      expect((await (await open()).text(1)).text, 'The quiet garden.');
-      expect(calls, 2);
-    },
-  );
 }

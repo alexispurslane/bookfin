@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
 import 'dart:math';
@@ -106,4 +107,123 @@ void main() {
       isNull,
     );
   });
+
+  test(
+    'a write that a killed process left before its rename keeps the saved page',
+    () async {
+      const earlier = '<div class="ocr_page">River</div>';
+      const later = '<div class="ocr_page">Meadow</div>';
+      await writeOcrCache(
+        original.uri,
+        digest,
+        'one',
+        earlier,
+        () => true,
+        hop: CountingHop().call,
+      );
+      final pending = File('${root.path}/.bookfin-ocr/one.json.pending');
+      await pending.writeAsString('{"key":"one","hocr":"<div');
+
+      expect(
+        await readOcrCache(
+          original.uri,
+          digest,
+          'one',
+          hop: CountingHop().call,
+        ),
+        earlier,
+      );
+      await writeOcrCache(
+        original.uri,
+        digest,
+        'one',
+        later,
+        () => true,
+        hop: CountingHop().call,
+      );
+      expect(
+        await readOcrCache(
+          original.uri,
+          digest,
+          'one',
+          hop: CountingHop().call,
+        ),
+        later,
+      );
+      expect(await pending.exists(), isFalse);
+    },
+  );
+
+  test(
+    'a process killed in the middle of a write keeps the saved page',
+    () async {
+      const earlier = '<div class="ocr_page">River</div>';
+      await writeOcrCache(
+        original.uri,
+        digest,
+        'one',
+        earlier,
+        () => true,
+        hop: CountingHop().call,
+      );
+      final parent = Zone.current;
+
+      await expectLater(
+        IOOverrides.runZoned(
+          () => writeOcrCache(
+            original.uri,
+            digest,
+            'one',
+            '<div class="ocr_page">Meadow</div>',
+            () => true,
+            hop: CountingHop().call,
+          ),
+          createFile: (path) => path.contains('/.bookfin-ocr/')
+              ? _KilledWrite(parent.run(() => File(path)), parent)
+              : parent.run(() => File(path)),
+        ),
+        throwsA(isA<FileSystemException>()),
+      );
+
+      expect(
+        await readOcrCache(
+          original.uri,
+          digest,
+          'one',
+          hop: CountingHop().call,
+        ),
+        earlier,
+      );
+    },
+  );
+}
+
+/// A cache file whose write stops halfway, as when Android kills the
+/// process during the write.
+class _KilledWrite extends Fake implements File {
+  _KilledWrite(this._file, this._zone);
+  final File _file;
+  final Zone _zone;
+  @override
+  String get path => _file.path;
+  @override
+  Future<File> writeAsString(
+    String contents, {
+    FileMode mode = FileMode.write,
+    Encoding encoding = utf8,
+    bool flush = false,
+  }) async {
+    await _zone.run(
+      () => _file.writeAsString(contents.substring(0, contents.length ~/ 2)),
+    );
+    throw const FileSystemException('The process was killed.');
+  }
+
+  @override
+  Future<File> rename(String newPath) => _zone.run(() => _file.rename(newPath));
+  @override
+  Future<bool> exists() => _zone.run(_file.exists);
+  @override
+  Future<FileSystemEntity> delete({bool recursive = false}) =>
+      _zone.run(() => _file.delete(recursive: recursive));
 }
