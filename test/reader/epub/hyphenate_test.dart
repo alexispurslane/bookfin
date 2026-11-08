@@ -5,7 +5,9 @@ import 'package:bookfin/reader/epub/places.dart';
 import 'package:bookfin/reader/epub/prepare.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'epubjs_fixtures.dart' show immediateSource;
 import 'helpers.dart';
+import 'page_source_test.dart' show book;
 
 const softHyphen = '­';
 
@@ -251,6 +253,24 @@ void main() {
         'manuscript',
       );
       expect(textOf(inPackage('<p>manuscript</p>', null)), 'manuscript');
+    });
+
+    test('a book whose pages name no language hyphenates when its package '
+        'names English', () async {
+      Future<String> text(String? language) async {
+        final source = immediateSource(
+          book(
+            ['<p>manuscript</p>'],
+            css: 'p{hyphens:auto}',
+            language: language,
+          ),
+        )..settings = readerPage;
+        addTearDown(source.dispose);
+        return textOf(await source.section(0));
+      }
+
+      expect(await text('en'), 'man${softHyphen}u${softHyphen}script');
+      expect(await text(null), 'manuscript');
     });
 
     test('a word split across elements breaks as one word', () {

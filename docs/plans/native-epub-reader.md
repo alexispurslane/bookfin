@@ -395,7 +395,7 @@ What E16 found and decided (tc-z7au):
 - An inserted soft hyphen, hyphen or word joiner maps to the letter before it in the text map. So a line that ends with one ends at that letter. Places, quotes, search and CFIs read the DOM, which never holds them.
 - `xml:lang` wins over `lang`, as in HTML and in the `:lang()` selector. An empty value names an unknown language.
 - As in Chromium, a word runs between spaces, hyphens and dashes, without the punctuation around it. Only words of the letters a to z break, so a word with the book's own soft hyphen breaks only there. A capitalized English word does not break. `-webkit-hyphens` is another name of `hyphens`, and `hyphens: none` also removes the book's own soft hyphens.
-- `SectionSource.language` carries `dc:language`. The page source does not fill it yet (t0-2yee).
+- `SectionSource.language` carries `dc:language`. Admission reads the package's first `dc:language` that is not blank into `Publication.language`, beside `bookStyles` and outside the identity, and the page source passes it to prepare (t0-2yee).
 - The fidelity fixtures were recorded with hyphenation turned off (compare.cjs). So `fidelity_test.dart` turns it off in the book's style sheets too.
 
 ### Fractional line positions (E15)

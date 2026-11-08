@@ -875,6 +875,7 @@ class PageSource {
             ],
             _publication.bookStyles,
             _publication.imageSizes,
+            _publication.language,
             _fontPrefix,
             settings,
           );
@@ -917,6 +918,7 @@ class PageSource {
     List<Uint8List> xhtml,
     Map<String, String> styleSheets,
     Map<String, (int, int)> imageSizes,
+    String? language,
     String fontPrefix,
     PageSettings settings,
   ) => Isolate.run(
@@ -929,6 +931,7 @@ class PageSource {
           fontPrefix: fontPrefix,
           styleSheets: styleSheets,
           imageSizes: imageSizes,
+          language: language,
         ),
     ], settings),
   );
