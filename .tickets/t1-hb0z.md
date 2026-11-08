@@ -1,6 +1,6 @@
 ---
 id: t1-hb0z
-status: in_progress
+status: closed
 deps: [t9-cx1u, tc-qdk7]
 links: []
 created: 2026-11-08T00:45:00Z
