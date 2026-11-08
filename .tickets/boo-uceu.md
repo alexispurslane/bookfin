@@ -1,6 +1,6 @@
 ---
 id: boo-uceu
-status: in_progress
+status: closed
 deps: [t9-cx1u]
 links: []
 created: 2026-11-07T23:17:21Z
