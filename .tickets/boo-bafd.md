@@ -1,6 +1,6 @@
 ---
 id: boo-bafd
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-08T02:56:28Z
