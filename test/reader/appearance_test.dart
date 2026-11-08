@@ -172,14 +172,15 @@ void main() {
           ),
         ),
       );
+      // NOTE: The session's pager makes the book ready as it opens, so
+      // only the WebView's own calls show whether its renderer opened. The
+      // WebView reader goes away in tc-rap6.
       await finishLoading(tester);
-      expect(reader.ready, isFalse);
       final bridge = platform.controllers.single;
       await chooseSetting(tester, 'Larger text');
       expect(bridge.calls, hasLength(1));
       platform.openGate!.complete();
       await tester.pumpAndSettle();
-      expect(reader.ready, isTrue);
       expect(bridge.calls.last.arguments, {
         'argument0': 44.0,
         'argument1': false,
