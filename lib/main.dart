@@ -156,6 +156,10 @@ class _BookfinAppState extends State<BookfinApp> with WidgetsBindingObserver {
   AppearanceController get _appearance => widget.appearance;
   late final CatalogController _catalog;
   late AccountBinding _binding;
+
+  /// Whether the app was hidden since it last returned to the screen. An
+  /// inactive app stays visible, for example under the notification shade.
+  bool _hidden = false;
   final _reduceMotion = ValueNotifier(_platformReducesMotion());
 
   static bool _platformReducesMotion() => WidgetsBinding
@@ -227,10 +231,18 @@ class _BookfinAppState extends State<BookfinApp> with WidgetsBindingObserver {
       widget.sync?.resume();
       unawaited(widget.downloads?.refresh());
       _appearance.resume();
+      // A return after the app was hidden refreshes the catalog in the
+      // background, so a library that could not reach Jellyfin comes back.
+      // It never replaces a sign-in, a refresh or a restore that runs: the
+      // launch refresh follows a restore.
+      if (_hidden && !_catalog.busy) unawaited(_catalog.refresh());
+      _hidden = false;
     } else {
-      // An inactive app stays visible, for example under the notification
-      // shade, so record sync keeps its period until the app is hidden.
-      if (state != AppLifecycleState.inactive) widget.sync?.suspend();
+      // Record sync keeps its period until the app is hidden.
+      if (state != AppLifecycleState.inactive) {
+        _hidden = true;
+        widget.sync?.suspend();
+      }
       unawaited(widget.playback?.flush());
       unawaited(widget.reader?.flush());
       _appearance.suspend();
