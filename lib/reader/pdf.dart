@@ -4,8 +4,7 @@ import 'dart:convert';
 import 'dart:ui' show RootIsolateToken;
 
 import 'package:crypto/crypto.dart';
-import 'package:flutter/foundation.dart'
-    show ValueListenable, compute, protected;
+import 'package:flutter/foundation.dart' show ValueListenable, compute;
 import 'package:pdfrx_engine/pdfrx_engine.dart' as native;
 import 'package:pdfrx/pdfrx.dart' show pdfrxFlutterInitialize;
 
@@ -21,14 +20,99 @@ class PdfText {
     required this.status,
     this.reason,
     this.recognition,
-  });
+    this.digest,
+  }) : assert(
+         status != PdfTextStatus.candidate || digest != null,
+         'A candidate page text names its digest.',
+       );
   final String source;
   final String text;
   final List<int> sourceOffsets;
   final PdfTextStatus status;
   final String? reason;
   final String? recognition;
+
+  /// The [pdfTextDigest] of [source]. An address inside the page names its
+  /// text by it, so every candidate text has one. Whoever builds the text
+  /// computes it, so that [PdfBook.addressFor] answers without hashing.
+  final String? digest;
 }
+
+/// Runs [work] on [input] in another isolate and completes with its result,
+/// which comes back without a copy. [compute] is the default.
+typedef PdfHop = Future<R> Function<M, R>(R Function(M) work, M input);
+
+/// The digest that names the page text [source] in an address: the SHA-256
+/// of its UTF-8 bytes, as lowercase hex.
+String pdfTextDigest(String source) =>
+    sha256.convert(utf8.encode(source)).toString();
+
+/// The longest extracted page text, in UTF-16 code units, that a source
+/// page offers for reflow.
+const _pageTextLimit = 2000000;
+
+/// The page text that one source page offers the reader. [page] holds the
+/// extracted text and its character boxes: left, top, right and bottom in
+/// PDF points for each UTF-16 code unit of the text. It runs in a hop, so
+/// it takes only data that crosses to another isolate as blocks.
+///
+/// The reflowed text joins each run of whitespace into one space and drops
+/// whitespace at both ends. Each reflowed character records the source
+/// character that it came from, and a joining space records the first
+/// whitespace character of its run.
+PdfText preparePdfPage(({String source, Float64List boxes}) page) {
+  final source = page.source;
+  final output = StringBuffer();
+  final offsets = <int>[];
+  var start = 0;
+  for (var index = 0; index <= source.length; index++) {
+    if (index < source.length && !_whitespace(source.codeUnitAt(index))) {
+      continue;
+    }
+    if (start < index) {
+      if (offsets.isNotEmpty) {
+        output.write(' ');
+        offsets.add(offsets.last + 1);
+      }
+      output.write(source.substring(start, index));
+      for (var offset = start; offset < index; offset++) {
+        offsets.add(offset);
+      }
+    }
+    start = index + 1;
+  }
+  final unreliable = offsets.isEmpty ? null : _textWarning(source, page.boxes);
+  final status = offsets.isEmpty
+      ? PdfTextStatus.absent
+      : unreliable != null
+      ? PdfTextStatus.unreliable
+      : PdfTextStatus.candidate;
+  return PdfText(
+    source: source,
+    text: output.toString(),
+    sourceOffsets: offsets,
+    status: status,
+    reason: offsets.isEmpty
+        ? 'This source page has no extracted text. The original page is available.'
+        : unreliable,
+    digest: status == PdfTextStatus.candidate ? pdfTextDigest(source) : null,
+  );
+}
+
+/// Whether [unit] is a UTF-16 code unit that `RegExp(r'\s')` matches.
+/// Saved places count reflowed characters, so this set must not change.
+bool _whitespace(int unit) =>
+    unit >= 0x09 && unit <= 0x0D ||
+    unit == 0x20 ||
+    unit == 0xA0 ||
+    unit == 0x1680 ||
+    unit >= 0x2000 && unit <= 0x200A ||
+    unit == 0x2028 ||
+    unit == 0x2029 ||
+    unit == 0x202F ||
+    unit == 0x205F ||
+    unit == 0x3000 ||
+    unit == 0xFEFF;
 
 class PdfRaster {
   const PdfRaster(this.width, this.height, this.bgra);
@@ -58,20 +142,9 @@ abstract class PdfBook extends ReaderDocument {
         (character + 160).clamp(0, text.source.length),
       ),
       representation:
-          '$policy/$engine/${text.recognition ?? 'extracted'}/${_digests[text] ??= digest(text.source)}',
+          '$policy/$engine/${text.recognition ?? 'extracted'}/${text.digest!}',
     );
   }
-
-  /// The digest of each page text that [addressFor] named, so each scroll
-  /// step inside a page reuses its page's digest.
-  final _digests = Expando<String>('PDF page text digest');
-
-  /// The digest that names the page text [source] in an address. It hashes
-  /// on the UI isolate because [addressFor] answers at once, and it runs
-  /// once for each page text, which is usually a few kilobytes.
-  @protected
-  String digest(String source) =>
-      sha256.convert(utf8.encode(source)).toString();
 
   PdfAddress? resolveAddress(PdfAddress address, PdfText text) {
     if (!accepts(address) ||
@@ -128,25 +201,29 @@ class PdfRuntime {
     return operation;
   }
 
-  Future<PdfBook> open(Uint8List bytes, {PdfTextSupply? textSupply}) =>
-      _admit(() async {
-        await (_initialization ??= pdfrxFlutterInitialize());
-        // Scanned PDFs can be large enough to freeze the UI while hashing.
-        final digest = await compute(_digest, bytes);
-        final document = await native.PdfDocument.openData(
-          bytes,
-          sourceName: digest,
-        );
-        if (document.isEncrypted || document.pages.isEmpty) {
-          await document.dispose();
-          throw const FormatException(
-            'Encrypted or empty PDFs are not supported. The original download was kept.',
-          );
-        }
-        final book = _NativePdfBook(this, document, digest, textSupply);
-        _books.add(book);
-        return book;
-      });
+  /// Opens the PDF [bytes]. Each page text is prepared through [hop].
+  Future<PdfBook> open(
+    Uint8List bytes, {
+    PdfTextSupply? textSupply,
+    PdfHop hop = compute,
+  }) => _admit(() async {
+    await (_initialization ??= pdfrxFlutterInitialize());
+    // Scanned PDFs can be large enough to freeze the UI while hashing.
+    final digest = await compute(_digest, bytes);
+    final document = await native.PdfDocument.openData(
+      bytes,
+      sourceName: digest,
+    );
+    if (document.isEncrypted || document.pages.isEmpty) {
+      await document.dispose();
+      throw const FormatException(
+        'Encrypted or empty PDFs are not supported. The original download was kept.',
+      );
+    }
+    final book = _NativePdfBook(this, document, digest, textSupply, hop);
+    _books.add(book);
+    return book;
+  });
 
   Future<void> shutdown() => _admit(() async {
     await Future.wait(_books.toList().map((book) => book.dispose()));
@@ -175,11 +252,13 @@ class _NativePdfBook extends PdfBook {
     this._document,
     this.originalDigest,
     this.textSupply,
+    this._hop,
   );
   @override
   final PdfTextSupply? textSupply;
   final PdfRuntime owner;
   final native.PdfDocument _document;
+  final PdfHop _hop;
   final Set<Future<void>> _work = {};
   final Map<int, Future<PdfText>> _texts = {};
   Future<void>? _closing;
@@ -262,7 +341,7 @@ class _NativePdfBook extends PdfBook {
       () => _run(() async {
         final raw = await page.loadText();
         final source = raw?.fullText ?? '';
-        if (source.length > 2000000) {
+        if (source.length > _pageTextLimit) {
           return PdfText(
             source: '',
             text: '',
@@ -271,38 +350,21 @@ class _NativePdfBook extends PdfBook {
             reason: 'This source page has too much text to reflow safely.',
           );
         }
-        final unreliable = raw == null ? null : _textWarning(raw);
-        final output = StringBuffer();
-        final whitespacePattern = RegExp(r'\s');
-        final offsets = <int>[];
-        int? whitespace;
-        for (var index = 0; index < source.length; index++) {
-          final character = source.substring(index, index + 1);
-          if (whitespacePattern.hasMatch(character)) {
-            whitespace ??= index;
-          } else {
-            if (whitespace != null && output.isNotEmpty) {
-              output.write(' ');
-              offsets.add(whitespace);
-            }
-            whitespace = null;
-            output.write(character);
-            offsets.add(index);
-          }
+        // The boxes cross to the worker as one typed list. Packing them
+        // takes about 4 ns a character on an M-series Mac. Sending the
+        // PdfRect objects themselves costs this isolate about 30 times as
+        // much: about 450 ms for a page at the size limit.
+        final rects = raw?.charRects ?? const <native.PdfRect>[];
+        final boxes = Float64List(rects.length * 4);
+        for (var index = 0; index < rects.length; index++) {
+          final rect = rects[index];
+          boxes
+            ..[index * 4] = rect.left
+            ..[index * 4 + 1] = rect.top
+            ..[index * 4 + 2] = rect.right
+            ..[index * 4 + 3] = rect.bottom;
         }
-        return PdfText(
-          source: source,
-          text: output.toString(),
-          sourceOffsets: offsets,
-          status: offsets.isEmpty
-              ? PdfTextStatus.absent
-              : unreliable != null
-              ? PdfTextStatus.unreliable
-              : PdfTextStatus.candidate,
-          reason: offsets.isEmpty
-              ? 'This source page has no extracted text. The original page is available.'
-              : unreliable,
-        );
+        return _hop(preparePdfPage, (source: source, boxes: boxes));
       }),
     );
   }
@@ -355,35 +417,39 @@ class _NativePdfBook extends PdfBook {
   }
 }
 
-String? _textWarning(native.PdfPageRawText raw) {
+/// Why the extracted page [text] with its character [boxes] (see
+/// [preparePdfPage]) cannot be trusted to read in order, or null if it can.
+String? _textWarning(String text, Float64List boxes) {
   const warning =
       'Text order or character mapping is unreliable on this source page. Read the original page instead.';
-  if (raw.charRects.length != raw.fullText.length ||
-      raw.fullText.contains('\uFFFD') ||
-      raw.fullText.contains('\u0000')) {
+  if (boxes.length != text.length * 4 ||
+      text.contains('\uFFFD') ||
+      text.contains('\u0000')) {
     return warning;
   }
+  double left(int index) => boxes[index * 4];
+  double top(int index) => boxes[index * 4 + 1];
+  double right(int index) => boxes[index * 4 + 2];
+  double bottom(int index) => boxes[index * 4 + 3];
   final rows = <int, List<List<int>>>{};
-  for (var index = 0; index < raw.fullText.length; index++) {
-    if (raw.fullText[index].trim().isEmpty || raw.charRects[index].isEmpty) {
+  for (var index = 0; index < text.length; index++) {
+    if (text[index].trim().isEmpty ||
+        left(index) >= right(index) ||
+        top(index) <= bottom(index)) {
       continue;
     }
-    final rect = raw.charRects[index];
     if (![
-      rect.left,
-      rect.right,
-      rect.top,
-      rect.bottom,
+      left(index),
+      right(index),
+      top(index),
+      bottom(index),
     ].every((value) => value.isFinite)) {
       return warning;
     }
-    final bucket = (rect.bottom / 3).floor();
+    final bucket = (bottom(index) / 3).floor();
     final row =
         [for (var key = bucket - 1; key <= bucket + 1; key++) ...?rows[key]]
-            .where(
-              (row) =>
-                  (raw.charRects[row.first].bottom - rect.bottom).abs() <= 3,
-            )
+            .where((row) => (bottom(row.first) - bottom(index)).abs() <= 3)
             .firstOrNull;
     if (row == null) {
       rows.putIfAbsent(bucket, () => []).add([index]);
@@ -395,15 +461,10 @@ String? _textWarning(native.PdfPageRawText raw) {
   var shortGroups = 0;
   var parallelRows = 0;
   for (final row in rows.values.expand((bucket) => bucket)) {
-    row.sort(
-      (first, second) =>
-          raw.charRects[first].left.compareTo(raw.charRects[second].left),
-    );
+    row.sort((first, second) => left(first).compareTo(left(second)));
     final parts = <List<int>>[];
     for (final index in row) {
-      if (parts.isEmpty ||
-          raw.charRects[index].left - raw.charRects[parts.last.last].right >
-              18) {
+      if (parts.isEmpty || left(index) - right(parts.last.last) > 18) {
         parts.add([index]);
       } else {
         parts.last.add(index);
@@ -412,7 +473,7 @@ String? _textWarning(native.PdfPageRawText raw) {
     if (parts.length > 1) parallelRows++;
     for (final part in parts) {
       groups++;
-      final phrase = raw.fullText.substring(
+      final phrase = text.substring(
         part.reduce((first, second) => first < second ? first : second),
         part.reduce((first, second) => first > second ? first : second) + 1,
       );

@@ -6,7 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import '../playback/playback_test.dart' show account, LocalFiles, MemoryResume;
 import 'pdf_document_test.dart' show pdfSource;
 import 'pdf_session_test.dart' show book, edition;
-import 'pdf_viewport_test.dart' show CountingPdf;
+import 'pdf_viewport_test.dart' show DrawnPdf;
 
 void main() {
   late LocalFiles downloads;
@@ -17,7 +17,7 @@ void main() {
       downloads: downloads,
       store: store,
       load: loadPublication,
-      loadDocument: (_, _) async => CountingPdf(),
+      loadDocument: (_, _) async => DrawnPdf(),
     );
     addTearDown(reader.dispose);
     return reader;

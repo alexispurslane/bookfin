@@ -46,6 +46,7 @@ class HeldPdf extends PdfBook {
     text: source,
     sourceOffsets: List.generate(source.length, (i) => i),
     status: PdfTextStatus.candidate,
+    digest: 'fixture-text',
   );
   @override
   Future<PdfRaster> render(int sourcePage, double width) {
