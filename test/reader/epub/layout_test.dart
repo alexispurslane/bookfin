@@ -9,19 +9,9 @@ import 'helpers.dart';
 
 /// Every line slice of [chapter] that shows text, in order, with the
 /// index of the page that holds it.
-List<(int, Slice)> linesByPage(ChapterLayout chapter) => [
-  for (var page = 0; page < chapter.pages.length; page++)
-    for (
-      var index = chapter.pages[page].firstSlice;
-      index < chapter.pages[page].endSlice;
-      index++
-    )
-      (page, chapter.slices[index]),
-];
-
 /// The text node that page [index] of [chapter] starts in.
 String startText(ChapterLayout chapter, int index) =>
-    chapter.section.dom.textAt(chapter.pages[index].start!)!.text;
+    chapter.section.dom.textAt(chapter.pages[index].startPlace!)!.text;
 
 void main() {
   setUpAll(loadReaderFont);
@@ -36,8 +26,8 @@ void main() {
     expect(chapter.pages.length, greaterThan(1));
     final first = chapter.pages[0];
     final second = chapter.pages[1];
-    final last = chapter.slices[first.endSlice - 1];
-    final next = chapter.slices[second.firstSlice];
+    final last = first.slices.last;
+    final next = second.slices.first;
     expect(identical(last.piece, next.piece), isTrue);
     expect(next.line, last.line + 1);
   });
@@ -47,18 +37,22 @@ void main() {
       [for (var i = 0; i < 30; i++) '<p>${prose(3)}</p>'].join(),
     );
     for (final page in chapter.pages) {
-      for (var index = page.firstSlice; index < page.endSlice; index++) {
-        final slice = chapter.slices[index];
-        expect(slice.top, greaterThanOrEqualTo(page.startY - 0.01));
-        expect(slice.bottom, lessThanOrEqualTo(page.startY + 671.01));
+      for (final slice in page.slices) {
+        expect(slice.top, greaterThanOrEqualTo(page.top - 0.01));
+        expect(slice.bottom, lessThanOrEqualTo(page.top + 671.01));
       }
     }
-    // The pages cover the slices once, in order.
-    expect(chapter.pages.first.firstSlice, 0);
+    // The pages cover the strip and its lines once, in order.
     for (var page = 1; page < chapter.pages.length; page++) {
-      expect(chapter.pages[page].firstSlice, chapter.pages[page - 1].endSlice);
+      expect(chapter.pages[page].top, chapter.pages[page - 1].bottom);
     }
-    expect(chapter.pages.last.endSlice, chapter.slices.length);
+    final starts = [
+      for (final page in chapter.pages)
+        for (final slice in page.slices) slice.start!,
+    ];
+    for (var line = 1; line < starts.length; line++) {
+      expect(starts[line].compareTo(starts[line - 1]), 1);
+    }
   });
 
   // At 20 pixels and line height 1.65 a line is 33 pixels high, and a 671
@@ -124,6 +118,27 @@ void main() {
     },
   );
 
+  test(
+    'a box that avoids a break inside moves whole to the next page',
+    () async {
+      // Three lines of the box fit after 17 lines, but the box moves on.
+      final chapter = await lay(
+        '${filler(17)}<div class="keep"><p>${fiveLines()}</p></div>',
+        css: '$tight .keep{break-inside:avoid}',
+      );
+      expect(chapter.pages, hasLength(2));
+      expect(startText(chapter, 1), 'Verse line 0');
+    },
+  );
+
+  test('a box without that rule splits between its lines', () async {
+    final chapter = await lay(
+      '${filler(17)}<div><p>${fiveLines()}</p></div>',
+      css: tight,
+    );
+    expect(startText(chapter, 1), 'Verse line 3');
+  });
+
   test('a heading without that rule stays at the bottom of the page', () async {
     final chapter = await lay(
       '${filler(18)}<h2>Heading</h2><p>${prose(4)}</p>',
@@ -162,7 +177,7 @@ void main() {
     );
     expect(chapter.pages.length, greaterThan(1));
     final second = chapter.pages[1];
-    expect(chapter.slices[second.firstSlice].top, second.startY);
+    expect(second.slices.first.top, second.top);
   });
 
   test('text-indent moves only the first line', () async {
@@ -214,7 +229,7 @@ void main() {
 
   test('a page draws into a picture of the page size', () async {
     final chapter = await lay('<h1>Title</h1><p>${prose(30)}</p>');
-    final picture = drawPage(chapter, chapter.pages.length - 1, const {});
+    final picture = drawPage(chapter.pages.last, const {});
     final image = await picture.toImage(412, 671);
     final bytes = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
     // Some pixels are ink, not paper.

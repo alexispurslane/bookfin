@@ -124,7 +124,7 @@ void main() {
             'screenshots': {0, 1, pages ~/ 2}.where((p) => p < pages).toList(),
             'nativeCfis': [
               for (final page in chapter.pages.take(_cfiPages))
-                if (page.start case final start?)
+                if (page.startPlace case final start?)
                   cfiOf(book.spine(index), dom, wordStart(dom, start)),
             ],
           });
@@ -162,9 +162,7 @@ void main() {
             for (final page in section['lines'] as List)
               (page as List).cast<int>(),
           ];
-          final ours = [
-            for (final page in chapter.pages) chapter.lineStarts(page),
-          ];
+          final ours = [for (final page in chapter.pages) page.lineStarts];
           final theirLines = {for (final page in theirs) ...page};
           final ourLines = {for (final page in ours) ...page};
           final theirStarts = [
@@ -193,7 +191,7 @@ void main() {
           var opensSameText = 0;
           for (var page = 0; page < cfis.length; page++) {
             final start = page < chapter.pages.length
-                ? chapter.pages[page].start
+                ? chapter.pages[page].startPlace
                 : null;
             if (start != null &&
                 cfiOf(book.spine(index), dom, wordStart(dom, start)) ==
@@ -313,12 +311,11 @@ Future<void> _sideBySide(
   if (page >= chapter.pages.length) return;
   const scale = 2.0;
   final images = await decodeImages(
-    chapter,
-    [page],
+    [chapter.pages[page]],
     book.resource,
     scale: scale,
   );
-  final picture = drawPage(chapter, page, images);
+  final picture = drawPage(chapter.pages[page], images);
   final recorder = ui.PictureRecorder();
   ui.Canvas(recorder)
     ..scale(scale)

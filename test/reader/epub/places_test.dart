@@ -67,7 +67,7 @@ void main() {
     expect(chapter.pages.length, greaterThan(2));
     for (var page = 0; page < chapter.pages.length; page++) {
       final dom = chapter.section.dom;
-      final start = chapter.pages[page].start!;
+      final start = chapter.pages[page].startPlace!;
       final cfi = cfiOf('/6/2', dom, wordStart(dom, start));
       final back = placeOf(dom, 0, cfi)!;
       expect(chapter.pageAt(back), page, reason: cfi);

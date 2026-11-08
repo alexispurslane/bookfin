@@ -4,7 +4,6 @@
 // The host benchmark of the renderer, under `flutter test`.
 import 'dart:io';
 import 'dart:math' as math;
-import 'dart:ui' as ui;
 
 import 'package:bookfin/reader/epub/layout.dart';
 import 'package:bookfin/reader/epub/paint.dart';
@@ -141,8 +140,7 @@ Future<BookTiming> benchmarkBook(
       ..reset()
       ..start();
     final images = await decodeImages(
-      chapter,
-      drawn,
+      [for (final page in drawn) chapter.pages[page]],
       book.resource,
       scale: pixelRatio,
     );
@@ -151,7 +149,7 @@ Future<BookTiming> benchmarkBook(
       clock
         ..reset()
         ..start();
-      final picture = drawPage(chapter, page, images);
+      final picture = drawPage(chapter.pages[page], images);
       section.record.add(clock.elapsedMicroseconds / 1000);
       clock
         ..reset()
@@ -169,17 +167,9 @@ Future<BookTiming> benchmarkBook(
     }
     timing.rssPeak = math.max(timing.rssPeak, ProcessInfo.currentRss);
     timing.sections.add(section);
-    _dispose(chapter);
+    chapter.dispose();
   }
   return timing;
-}
-
-void _dispose(ChapterLayout chapter) {
-  final seen = <ui.Paragraph>{};
-  for (final slice in chapter.slices) {
-    final paragraph = slice.piece?.paragraph;
-    if (paragraph != null && seen.add(paragraph)) paragraph.dispose();
-  }
 }
 
 /// The memory that laid-out sections keep: the growth of the process's
@@ -199,7 +189,9 @@ Future<({int bytes, int characters, int sections})> retainedMemory(
   final before = ProcessInfo.currentRss;
   final chapters = [for (final section in chosen) layoutSection(section)];
   final after = ProcessInfo.currentRss;
-  chapters.forEach(_dispose);
+  for (final chapter in chapters) {
+    chapter.dispose();
+  }
   return (
     bytes: after - before,
     characters: chosen.fold<int>(
