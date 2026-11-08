@@ -1,6 +1,6 @@
 ---
 id: tc-qdk7
-status: open
+status: in_progress
 deps: [td-rvpm]
 links: []
 created: 2026-11-07T23:56:52Z

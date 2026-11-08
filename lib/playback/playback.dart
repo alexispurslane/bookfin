@@ -260,6 +260,7 @@ class Playback extends ChangeNotifier {
   late final _selectionSignal = ValueNotifier<PlaybackSelection>(_selection);
   late final _sleepSignal = ValueNotifier<Duration?>(_sleepLeft);
   late final _recordsSignal = ValueNotifier<Object>(_records);
+  late final _librarySignal = ValueNotifier<List<Book>>(_books);
   late final _settingsSignal = ValueNotifier<PlaybackSettings>(_settings);
   late final _statusSignal = ValueNotifier<PlaybackStatus>(_status);
 
@@ -267,8 +268,9 @@ class Playback extends ChangeNotifier {
   // narrow signals for one kind of change each. A widget that shows one
   // value follows the signal of that value. Every signal holds the state
   // that [_publish] last read, so it notifies only when its own value
-  // changed. Positions and records compare by identity: each new decoder
-  // report is a new position, and a records change replaces its list.
+  // changed. Positions, records and the library compare by identity: each
+  // new decoder report is a new position, a records change replaces its
+  // list, and each bind replaces the library list.
 
   /// The position of the open edition, or null when none is open. It
   /// notifies on each decoder report while audio plays, a seek, a restore,
@@ -289,6 +291,11 @@ class Playback extends ChangeNotifier {
   /// or another account. The resume of the open edition follows its
   /// position on each save, so [positionNotifier] carries that change.
   Listenable get recordsNotifier => _recordsSignal;
+
+  /// Notifies when another library is bound, even for the same account.
+  /// The values measured from the library, such as [editionTime] and
+  /// [recent], can then change, although no record changed.
+  Listenable get libraryNotifier => _librarySignal;
 
   /// The listening speed and the short jump lengths.
   ValueListenable<PlaybackSettings> get settingsNotifier => _settingsSignal;
@@ -1629,6 +1636,7 @@ class Playback extends ChangeNotifier {
     _selectionSignal,
     _sleepSignal,
     _recordsSignal,
+    _librarySignal,
     _settingsSignal,
     _statusSignal,
   ];
@@ -1648,6 +1656,7 @@ class Playback extends ChangeNotifier {
     _selectionSignal.value = _selection;
     _sleepSignal.value = _sleepLeft;
     _recordsSignal.value = _records;
+    _librarySignal.value = _books;
     _settingsSignal.value = _settings;
     _statusSignal.value = _status;
   }
@@ -1699,6 +1708,7 @@ class Playback extends ChangeNotifier {
             _selectionSignal.value != _selection ||
             _sleepSignal.value != _sleepLeft ||
             _recordsSignal.value != _records ||
+            !identical(_librarySignal.value, _books) ||
             _settingsSignal.value != _settings ||
             _statusSignal.value != _status)) {
       throw StateError('Each narrow signal shows the state that it names.');

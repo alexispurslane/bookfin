@@ -97,8 +97,9 @@ Future<void> _confirmDelete(
   }
 }
 
-/// The timeline of [book] in [playback], which notifies only when the
-/// records change, so a playing tick does not reach the timeline.
+/// The timeline of [book] in [playback]. It notifies only when the records
+/// or the library change, because the rows show labels and places measured
+/// from the library. A playing tick does not reach the timeline.
 class _TimelineEntries implements ValueListenable<List<TimelineEntry>> {
   _TimelineEntries(this.playback, this.book);
   final Playback playback;
@@ -107,13 +108,17 @@ class _TimelineEntries implements ValueListenable<List<TimelineEntry>> {
   @override
   List<TimelineEntry> get value => playback.timeline(book);
 
+  late final _changes = Listenable.merge([
+    playback.recordsNotifier,
+    playback.libraryNotifier,
+  ]);
+
   @override
-  void addListener(VoidCallback listener) =>
-      playback.recordsNotifier.addListener(listener);
+  void addListener(VoidCallback listener) => _changes.addListener(listener);
 
   @override
   void removeListener(VoidCallback listener) =>
-      playback.recordsNotifier.removeListener(listener);
+      _changes.removeListener(listener);
 }
 
 /// A dense, vertical timeline of listening, grouped by day. A tap on an

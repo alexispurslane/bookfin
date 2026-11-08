@@ -23,6 +23,7 @@ Map<String, int> heard(Playback playback) {
     'selection': playback.selectionNotifier,
     'sleep': playback.sleepNotifier,
     'records': playback.recordsNotifier,
+    'library': playback.libraryNotifier,
     'settings': playback.settingsNotifier,
     'status': playback.statusNotifier,
   };
@@ -71,6 +72,7 @@ void main() {
         'selection': 0,
         'sleep': 0,
         'records': 0,
+        'library': 0,
         'settings': 0,
         'status': 0,
       });
@@ -88,6 +90,7 @@ void main() {
         'selection': 0,
         'sleep': 0,
         'records': 0,
+        'library': 0,
         'settings': 0,
         'status': 0,
       });
@@ -169,6 +172,22 @@ void main() {
       final counts = heard(playback);
       await playback.bind(account(user: 'bob'), [title, other]);
       expect(counts['records'], greaterThan(0));
+    });
+  });
+
+  group('the library', () {
+    test('changes when the same account binds a refreshed library, and the '
+        'records do not', () async {
+      final counts = heard(playback);
+      await playback.bind(account(), [title, other]);
+      expect(counts['library'], 1);
+      expect(counts['records'], 0);
+    });
+
+    test('changes when another account binds its library', () async {
+      final counts = heard(playback);
+      await playback.bind(account(user: 'bob'), [title, other]);
+      expect(counts['library'], greaterThan(0));
     });
   });
 
