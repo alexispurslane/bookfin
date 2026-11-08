@@ -21,3 +21,9 @@ Design B: serve the runtime and the book from two loopback HTTP servers in the a
 
 The macOS app opens a downloaded EPUB from the fixture, turns pages, and keeps its reading place over a restart; every reply carries the same CSP and CORS rules as on Android.
 
+
+## Notes
+
+**2026-11-08T19:23:53Z**
+
+Obsolete. User decision 2026-11-08 (epic boo-b2ey): the Flutter renderer becomes the only EPUB and MOBI reader on every platform, with no WebView. tc-1yif makes the native viewport the reader on macOS and iOS. Close when tc-1yif merges. tf-mqh6 and boo-eisp now also depend on tc-1yif.

@@ -18,3 +18,9 @@ Bookfin targets Android today. Flutter can build the same code for windows. Find
 
 A windows build of Bookfin signs in, browses the library, plays a downloaded audiobook, opens an EPUB and a PDF, and syncs personal records; platform-specific gaps are recorded as tickets.
 
+
+## Notes
+
+**2026-11-08T19:23:53Z**
+
+Note from epic boo-b2ey (2026-11-08). EPUB and MOBI on this platform come from the native Flutter reader (tc-1yif), not from a flutter_inappwebview plugin. Do not port the WebView reader. The acceptance step 'opens an EPUB' needs tc-1yif. Building libmobi in the runner stays this ticket's job.
