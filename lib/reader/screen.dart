@@ -820,24 +820,29 @@ class ReaderScrubBar extends StatelessWidget {
       if (map == null || at == null) return label(visible);
       final onStart = onScrubStart;
       final onTarget = onScrubTarget;
-      return ScrubBar(
-        value: at,
-        chapters: [for (final chapter in map.chapters) chapter.start],
-        bookmarks: [
-          for (final bookmark in reader.bookmarks)
-            if (reader.addressOf(bookmark) case final address?)
-              ?map.fractionOf(address),
-        ],
-        describe: (fraction) => _targetLabel(map, map.targetAt(fraction)),
-        onStart: onStart == null
-            ? null
-            : (fraction) => onStart(map.targetAt(fraction)),
-        onTarget: onTarget == null
-            ? null
-            : (fraction) => onTarget(map.targetAt(fraction)),
-        onEnd: (fraction) => onScrubEnd(map.targetAt(fraction)),
-        below: (context, target) => label(
-          target == null ? visible : _targetLabel(map, map.targetAt(target)),
+      // Android takes a drag that starts near a screen edge as Back, so the
+      // bar keeps clear of the edges.
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: ScrubBar(
+          value: at,
+          chapters: [for (final chapter in map.chapters) chapter.start],
+          bookmarks: [
+            for (final bookmark in reader.bookmarks)
+              if (reader.addressOf(bookmark) case final address?)
+                ?map.fractionOf(address),
+          ],
+          describe: (fraction) => _targetLabel(map, map.targetAt(fraction)),
+          onStart: onStart == null
+              ? null
+              : (fraction) => onStart(map.targetAt(fraction)),
+          onTarget: onTarget == null
+              ? null
+              : (fraction) => onTarget(map.targetAt(fraction)),
+          onEnd: (fraction) => onScrubEnd(map.targetAt(fraction)),
+          below: (context, target) => label(
+            target == null ? visible : _targetLabel(map, map.targetAt(target)),
+          ),
         ),
       );
     },

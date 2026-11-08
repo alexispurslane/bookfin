@@ -200,4 +200,16 @@ void main() {
     expect(bar(tester).value, closeTo(inTwo(0), 1e-9));
     expect(find.textContaining('Page progress unavailable'), findsOneWidget);
   }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
+
+  testWidgets('the bar keeps clear of the screen edges, where Android takes '
+      'a drag as Back', (tester) async {
+    final reader = await openReader(ControlPort());
+    reader.acceptVisible(reader.token, inSectionTwo(0));
+    await show(tester, reader);
+    final track = tester.getRect(find.byType(Slider));
+    final screen = tester.getSize(find.byType(ReaderScreen));
+    // Android's back gesture takes about 24 points at each edge by default.
+    expect(track.left, greaterThanOrEqualTo(24));
+    expect(screen.width - track.right, greaterThanOrEqualTo(24));
+  }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
 }
