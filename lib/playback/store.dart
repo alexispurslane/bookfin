@@ -14,6 +14,12 @@ import '../reader/session.dart' show ReadingChanges, ReadingStore;
 /// which comes back without a copy. [compute] is the default.
 typedef RecordsHop = Future<R> Function<M, R>(R Function(M) work, M input);
 
+/// Which domains of an account hold records that changed outside their
+/// writer since the writer last took in a snapshot that the store handed
+/// it: [listening] for Playback, [reading] for the reader. Sync and a
+/// choice between saved versions change records outside the writers.
+typedef StaleDomains = ({bool listening, bool reading});
+
 /// One stored account: the settings of both domains and the record journal.
 ///
 /// [metadata] holds the listening settings at the top and the reading
@@ -109,6 +115,10 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
     return _opened ??= await (_database ??= openDatabase!());
   }
 
+  /// The writers whose domain holds records that changed outside them since
+  /// the last snapshot that they took in, as [StaleDomains] says.
+  final Set<String> _behind = {};
+
   /// The accounts whose damaged data this store kept aside.
   final Set<String> _setAside = {};
 
@@ -140,6 +150,20 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
   void _keep(String account, _Views views) {
     _views[_writer(account, reading: false)] = views.listening;
     _views[_writer(account, reading: true)] = views.reading;
+  }
+
+  /// Marks the writer of the domain of each of [records] of [account] as
+  /// behind, because the records changed outside it. A snapshot that it was
+  /// handed earlier no longer counts as taking the change in.
+  void _changedOutsideWriters(String account, Iterable<String> records) {
+    for (final record in records) {
+      final writer = _writer(
+        account,
+        reading: (jsonDecode(record) as List)[0] == 'reading',
+      );
+      _behind.add(writer);
+      _handed.remove(writer);
+    }
   }
 
   /// Drops the cached state of [account], so that the next operation reads
@@ -186,7 +210,15 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
         (stored) => query(stored?.journal ?? _journal(account, {})),
       );
 
-  Future<void> synchronize(
+  /// Uploads the pending actions of the account of [session], then receives
+  /// the actions that other devices uploaded, and saves each page of them
+  /// with its discovery cursor in one write.
+  ///
+  /// Returns the domains whose writer has not taken in records that changed
+  /// outside it, including records that an earlier sync saved before it
+  /// failed. A sync that brings nothing new, or only this device's own
+  /// actions, returns no stale domain once both writers are current.
+  Future<StaleDomains> synchronize(
     JellyfinSession session,
     JellyfinClient client,
   ) async {
@@ -251,11 +283,19 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
           'Personal-record discovery did not advance safely.',
         );
       }
+      // The writers count as behind before the save, so that no read can
+      // hand out a snapshot between the save and the mark. A failed save
+      // costs one refresh that finds nothing new.
       await _update(account, (journal) {
-        journal.receive(actions);
+        _changedOutsideWriters(account, journal.receive(actions));
         journal.cursor = previous;
       });
-      if (page['HasMore'] == false) return;
+      if (page['HasMore'] == false) {
+        return (
+          listening: _behind.contains(_writer(account, reading: false)),
+          reading: _behind.contains(_writer(account, reading: true)),
+        );
+      }
     }
     throw Exception(
       'Personal-record sync is incomplete. Retry to continue discovery.',
@@ -275,6 +315,9 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
         };
       });
 
+  /// Keeps the saved version [identity] of [record] and replaces the
+  /// others, which a listening place keeps as bookmarks. Returns false and
+  /// changes nothing when [record] has no such competing version.
   Future<bool> resolve(String account, String record, String identity) =>
       _update(account, (journal) {
         final versions = journal.conflicts[record];
@@ -313,8 +356,10 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
           selected['value'] as Map<String, dynamic>?,
           resolve: true,
         );
+        _changedOutsideWriters(account, [record]);
         return true;
       });
+
   @override
   Future<Map<String, dynamic>?> read(String accountKey) =>
       _read(accountKey, reading: false);
@@ -592,6 +637,7 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
     final handed = _handed.remove(writer);
     if (handed != null && identical(handed.snapshot, value)) {
       _observed[writer] = handed.records;
+      _behind.remove(writer);
       return;
     }
     // NOTE: Engine rule 1. Production writers accept the snapshot that their

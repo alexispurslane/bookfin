@@ -25,6 +25,10 @@ class SyncFixture {
   late final JellyfinClient client;
   final objects = <String, Map<String, dynamic>>{};
 
+  /// When set, a discovery request after this sequence fails with a server
+  /// error, as when the connection drops between pages.
+  int? failDiscoveryAfter;
+
   static Future<SyncFixture> open() async =>
       SyncFixture._(await HttpServer.bind(InternetAddress.loopbackIPv4, 0));
 
@@ -78,6 +82,11 @@ class SyncFixture {
         );
       } else {
         final after = int.parse(request.uri.queryParameters['after']!);
+        if (failDiscoveryAfter case final limit? when after >= limit) {
+          request.response.statusCode = 503;
+          await request.response.close();
+          return;
+        }
         final available =
             objects.values
                 .where((value) => (value['Sequence'] as int) > after)

@@ -16,10 +16,13 @@ void main() {
   late DateTime clock;
   late List<RecordSyncStatus> shown;
 
-  setUp(() {
+  setUp(() async {
     records = ControlledRecords();
     clock = DateTime(2026, 11, 7, 16, 29);
     sync = RecordSync(records: records, now: () => clock)..bind(account());
+    // Signing in syncs at once. These tests start after that sync.
+    await pumpEventQueue();
+    records.runs = 0;
     shown = [];
     sync.statusNotifier.addListener(() => shown.add(sync.statusNotifier.value));
   });
@@ -181,13 +184,14 @@ class ControlledRecords implements LocalResumeStore {
   final resolved = <String>[];
 
   @override
-  Future<void> synchronize(
+  Future<StaleDomains> synchronize(
     JellyfinSession session,
     JellyfinClient client,
   ) async {
     runs++;
     await gate?.future;
     if (failure) throw Exception('Jellyfin cannot be reached.');
+    return (listening: false, reading: false);
   }
 
   @override

@@ -220,9 +220,11 @@ void main() {
   group('with a controlled sync', () {
     late ControlledRecords records;
     late RecordSync controlled;
-    setUp(() {
+    setUp(() async {
       records = ControlledRecords();
       controlled = RecordSync(records: records)..bind(account());
+      // Signing in syncs at once. These tests start after that sync.
+      await pumpEventQueue();
     });
     tearDown(() => controlled.dispose());
 

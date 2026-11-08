@@ -158,7 +158,14 @@ class RecordJournal {
     _pending.add(identity(action));
   }
 
-  void receive(Iterable<Map<String, dynamic>> actions) {
+  /// Adds [actions] that the journal lacks and applies each one whose
+  /// causal context it covers. Returns the addresses of the records whose
+  /// current versions changed.
+  ///
+  /// Throws a [FormatException] when an action is invalid, or when it has
+  /// the identity of a retained action but different content.
+  Set<String> receive(Iterable<Map<String, dynamic>> actions) {
+    final applied = <String>{};
     final candidates = Queue<String>();
     for (final original in actions) {
       final action = jsonDecode(jsonEncode(original)) as Map<String, dynamic>;
@@ -218,6 +225,7 @@ class RecordJournal {
       );
       versions.add(action);
       _coverage[author] = sequence;
+      applied.add(action['record'] as String);
       changedRecords.add(action['record'] as String);
       changedCoverage[author] = sequence;
       assert(identical(_actions[identity(action)], action));
@@ -228,6 +236,7 @@ class RecordJournal {
         candidates.addAll(waiting.remove(waiting.firstKey())!);
       }
     }
+    return applied;
   }
 
   void _validate(Map<String, dynamic> action) {

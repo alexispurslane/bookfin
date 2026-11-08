@@ -375,7 +375,7 @@ void main() {
     await refreshing;
   });
 
-  test('a refresh that brings the same books binds nothing and synchronizes records once', () async {
+  test('a refresh that brings the same books binds nothing and starts no record sync', () async {
     await bound();
     final books = catalog.books;
     await catalog.refresh();
@@ -383,7 +383,7 @@ void main() {
     expect(catalog.verified, isTrue);
     expect(catalog.books, same(books));
     expect(log.binds, isEmpty);
-    expect(sync.calls, ['synchronize']);
+    expect(sync.calls, isEmpty);
   });
 
   test(
@@ -435,28 +435,25 @@ void main() {
     expect(sync.calls, isEmpty);
   });
 
-  test(
-    'signing in binds record sync to the new account before it synchronizes',
-    () async {
-      await catalog.signOut();
-      await bound();
-      await catalog.connect('https://books.example', 'bob', 'password');
-      await pumpEventQueue();
-      final key = catalog.session!.scope.key;
-      expect(sync.calls, ['bind $key', 'synchronize']);
-      final accounts = [for (final bind in log.binds) bind.account];
-      expect(accounts.take(2), [null, null]);
-      expect(accounts.skip(2), everyElement(key));
-    },
-  );
-
-  test('a binding that starts after a refresh that succeeded synchronizes records once', () async {
-    bind();
+  test('signing in binds record sync to the new account, which then syncs on its own schedule', () async {
+    await catalog.signOut();
+    await bound();
+    await catalog.connect('https://books.example', 'bob', 'password');
     await pumpEventQueue();
-    expect(sync.calls.where((call) => call == 'synchronize'), hasLength(1));
+    final key = catalog.session!.scope.key;
+    expect(sync.calls, ['bind $key']);
+    final accounts = [for (final bind in log.binds) bind.account];
+    expect(accounts.take(2), [null, null]);
+    expect(accounts.skip(2), everyElement(key));
   });
 
-  test('a correction after a refresh synchronizes records no second time, even when it cannot be saved', () async {
+  test('a binding that starts after a refresh that succeeded binds record sync and starts no sync of its own', () async {
+    bind();
+    await pumpEventQueue();
+    expect(sync.calls, ['bind ${catalog.session!.scope.key}']);
+  });
+
+  test('a correction after a refresh starts no record sync, even when it cannot be saved', () async {
     await bound();
     await catalog.correctBook(
       catalog.books.single.id,
@@ -487,7 +484,7 @@ void main() {
     expect(sync.calls, isEmpty);
   });
 
-  test('each refresh that succeeds synchronizes records once', () async {
+  test('a refresh that succeeds starts no record sync, because record sync keeps its own schedule', () async {
     await bound();
     await catalog.refresh();
     client.failure = const CatalogFailure(CatalogFailureKind.unavailable);
@@ -495,6 +492,6 @@ void main() {
     client.failure = null;
     await catalog.refresh();
     await pumpEventQueue();
-    expect(sync.calls, ['synchronize', 'synchronize']);
+    expect(sync.calls, isEmpty);
   });
 }
