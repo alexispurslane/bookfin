@@ -93,9 +93,10 @@ The library in them is made-up test data from `tool/showcase_fixture.dart`.
 ### Read EPUB, MOBI and PDF
 
 <p align="center">
-  <img src="docs/screenshots/reader-epub.png" alt="An EPUB book open in the reader" width="260">
-  <img src="docs/screenshots/reader-pdf.png" alt="A scanned PDF page in the reader" width="260">
-  <img src="docs/screenshots/reader-reflow.png" alt="The same scanned page as reflowed text after OCR" width="260">
+  <img src="docs/screenshots/reader-epub.png" alt="An EPUB book open in the reader" width="195">
+  <img src="docs/screenshots/reader-recognizing.png" alt="A scanned PDF page dimmed under a card that says Recognizing English text" width="195">
+  <img src="docs/screenshots/reader-pdf.png" alt="The scanned PDF page in the reader, with the Reflow text button in the bottom bar" width="195">
+  <img src="docs/screenshots/reader-reflow.png" alt="The same scanned page as reflowed text after OCR" width="195">
 </p>
 
 - The reader opens EPUB, unencrypted MOBI, and PDF files.
