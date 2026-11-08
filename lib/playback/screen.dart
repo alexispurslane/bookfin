@@ -635,18 +635,30 @@ class PlayerView extends StatelessWidget {
 // The wiring that the controllers above share. Each function builds a
 // control that follows its own signal and commands Playback.
 
-/// The play button, following whether [playback] plays.
-Widget _playPause(Playback playback, {bool large = false}) =>
-    ListenableSelector<bool>(
-      listenable: playback.selectionNotifier,
-      select: () => playback.playing,
-      builder: (context, playing, _) => PlayPauseButton(
-        playing: playing,
-        large: large,
-        onPlayPause: () =>
-            unawaited(playback.playing ? playback.pause() : playback.play()),
+/// The play button, following whether [playback] plays or starts the open
+/// edition. A tap while it starts or plays means Pause.
+Widget _playPause(Playback playback, {bool large = false}) {
+  bool starting() {
+    final edition = playback.starting;
+    return edition != null && edition.id == playback.edition?.id;
+  }
+
+  return ListenableSelector<({bool playing, bool starting})>(
+    listenable: Listenable.merge([
+      playback.selectionNotifier,
+      playback.startingNotifier,
+    ]),
+    select: () => (playing: playback.playing, starting: starting()),
+    builder: (context, state, _) => PlayPauseButton(
+      playing: state.playing,
+      starting: state.starting,
+      large: large,
+      onPlayPause: () => unawaited(
+        playback.playing || starting() ? playback.pause() : playback.play(),
       ),
-    );
+    ),
+  );
+}
 
 /// A jump button, following the jump length of its direction.
 Widget _jump(
@@ -863,30 +875,77 @@ class ChapterList extends StatelessWidget {
   }
 }
 
-/// Play while paused, Pause while audio plays. [large] is the stage's round
-/// button, and the default is the mini player's icon button.
+/// The icon of every Play control: a progress ring while its audio is
+/// [starting], a pause sign while it is [playing], else a play arrow. It
+/// takes its size and color from the surrounding icon theme, unless [size]
+/// or [color] is given.
+class PlayStateIcon extends StatelessWidget {
+  const PlayStateIcon({
+    super.key,
+    this.playing = false,
+    this.starting = false,
+    this.size,
+    this.color,
+  });
+  final bool playing;
+  final bool starting;
+  final double? size;
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!starting) {
+      return Icon(
+        playing ? Icons.pause_rounded : Icons.play_arrow_rounded,
+        size: size,
+        color: color,
+      );
+    }
+    final theme = IconTheme.of(context);
+    final side = size ?? theme.size ?? 24;
+    // The ring fills the middle of the icon box, like the arrow's glyph.
+    return SizedBox.square(
+      dimension: side,
+      child: Padding(
+        padding: EdgeInsets.all(side / 8),
+        child: CircularProgressIndicator(
+          strokeWidth: side / 12,
+          color: color ?? theme.color,
+        ),
+      ),
+    );
+  }
+}
+
+/// Play while paused, Pause while audio plays or starts. [large] is the
+/// stage's round button, and the default is the mini player's icon button.
 class PlayPauseButton extends StatelessWidget {
   const PlayPauseButton({
     super.key,
     required this.playing,
     required this.onPlayPause,
     this.large = false,
+    this.starting = false,
   });
   final bool playing;
 
-  /// Reports a tap. The listener means Pause while [playing], else Play.
+  /// Whether a Play command waits for the audio to sound. The button then
+  /// shows a progress ring and offers Pause.
+  final bool starting;
+
+  /// Reports a tap. The listener means Pause while [playing] or [starting],
+  /// else Play.
   final VoidCallback onPlayPause;
   final bool large;
 
   @override
   Widget build(BuildContext context) {
-    final label = playing ? 'Pause' : 'Play';
-    final icon = playing ? Icons.pause_rounded : Icons.play_arrow_rounded;
+    final label = playing || starting ? 'Pause' : 'Play';
     if (!large) {
       return IconButton(
         tooltip: label,
         onPressed: onPlayPause,
-        icon: Icon(icon),
+        icon: PlayStateIcon(playing: playing, starting: starting),
       );
     }
     final scheme = Theme.of(context).colorScheme;
@@ -918,7 +977,14 @@ class PlayPauseButton extends StatelessWidget {
               onTap: onPlayPause,
               child: SizedBox.square(
                 dimension: 72,
-                child: Icon(icon, size: 38, color: scheme.onPrimary),
+                child: Center(
+                  child: PlayStateIcon(
+                    playing: playing,
+                    starting: starting,
+                    size: 38,
+                    color: scheme.onPrimary,
+                  ),
+                ),
               ),
             ),
           ),

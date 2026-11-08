@@ -3,6 +3,8 @@
 //
 // nix develop --command dart run tool/showcase_fixture.dart 8096
 // Sign in at http://127.0.0.1:8096 with any username and password.
+// Add --full-size to serve audio files of real audiobook size (see
+// showcase_media.silence).
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
@@ -294,9 +296,11 @@ Map<String, Object?> _item(
 };
 
 Future<void> main(List<String> arguments) async {
+  final fullSize = arguments.contains('--full-size');
+  final port = arguments.where((argument) => argument != '--full-size');
   final server = await HttpServer.bind(
     InternetAddress.loopbackIPv4,
-    arguments.isEmpty ? 8096 : int.parse(arguments.single),
+    port.isEmpty ? 8096 : int.parse(port.single),
   );
   final covers = {
     for (final book in _books)
@@ -305,6 +309,7 @@ Future<void> main(List<String> arguments) async {
   // Every audiobook plays the same silence, long enough for the longest book.
   final silence = await media.silence(
     Duration(minutes: _books.map((book) => book.minutes).reduce(max)),
+    fullSize: fullSize,
   );
   final ebooks = {
     for (final book in _books)

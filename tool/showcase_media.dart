@@ -407,8 +407,16 @@ img.Image scannedPage() {
 
 /// Silent mono AAC audio of the given length, encoded once by FFmpeg from the
 /// dev shell and kept under `.cache/showcase`.
-Future<Uint8List> silence(Duration length) async {
-  final file = File('.cache/showcase/silence-${length.inSeconds}.m4a');
+///
+/// AAC encodes digital silence in about 350 bytes a second, so a 10-hour book
+/// is only 13 MB. With [fullSize], the audio is noise at -66 dBFS, which
+/// AAC cannot compress, at 64 kbit/s: a 10-hour book is about 300 MB, the
+/// size of a real audiobook. Use it to measure work that grows with file
+/// size, such as reads and hashes.
+Future<Uint8List> silence(Duration length, {bool fullSize = false}) async {
+  final file = File(
+    '.cache/showcase/${fullSize ? 'quiet' : 'silence'}-${length.inSeconds}.m4a',
+  );
   if (!file.existsSync()) {
     await file.parent.create(recursive: true);
     final partial = '${file.path}.partial.m4a';
@@ -419,13 +427,13 @@ Future<Uint8List> silence(Duration length) async {
       '-f',
       'lavfi',
       '-i',
-      'anullsrc=r=8000:cl=mono',
+      fullSize ? 'anoisesrc=r=44100:a=0.0005' : 'anullsrc=r=8000:cl=mono',
       '-t',
       '${length.inSeconds}',
       '-c:a',
       'aac',
       '-b:a',
-      '8k',
+      fullSize ? '64k' : '8k',
       '-f',
       'mp4',
       partial,

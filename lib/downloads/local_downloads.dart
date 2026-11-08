@@ -258,6 +258,7 @@ class LocalDownloads extends Downloads {
                 record.length = data['length'] as int?;
                 record.etag = data['etag'] as String?;
                 record.digest = data['digest'] as String?;
+                record.verified = data['verified'] as String?;
                 record.requested = data['requested'] == true;
                 record.error = data['error'] as String?;
                 record.complete = data['complete'] == true;
@@ -437,15 +438,37 @@ class LocalDownloads extends Downloads {
     }
   }
 
+  /// Whether the record's saved file still holds the bytes of its digest.
+  ///
+  /// A digest reads the whole file, which takes seconds for an audiobook.
+  /// So a file is read again only when its fingerprint differs from the one
+  /// that the record keeps from the last match: after a write or a touch
+  /// outside the app. A match records the new fingerprint, so the next look
+  /// and the next launch do not read the file again.
   Future<bool> _verified(_Record record) async {
     await _observe(record);
     if (!_present(record) || record.digest == null) return false;
     try {
-      return await _digest(record.file('complete').path, record.length!) ==
-          record.digest;
+      final complete = record.file('complete');
+      final fingerprint = await _fingerprint(complete);
+      if (fingerprint == record.verified) return true;
+      if (await _digest(complete.path, record.length!) != record.digest) {
+        return false;
+      }
+      record.verified = fingerprint;
+      // A failed save only costs one more read at the next launch.
+      unawaited(_save(record).then((_) {}, onError: (Object _) {}));
+      return true;
     } catch (_) {
       return false;
     }
+  }
+
+  /// The size and the modification time of [file], to the microsecond. Any
+  /// write to the file changes the time.
+  static Future<String> _fingerprint(File file) async {
+    final stat = await file.stat();
+    return '${stat.size}:${stat.modified.microsecondsSinceEpoch}';
   }
 
   /// The SHA-256 digest of the file at [path], which holds [length] bytes.
@@ -1286,9 +1309,11 @@ class LocalDownloads extends Downloads {
     }
     await partial.rename(complete.path);
     record.wroteComplete(length);
+    final fingerprint = await _fingerprint(complete);
     guard();
     assert(record.bytes == record.length && _records[record.id] == record);
     record.digest = digest;
+    record.verified = fingerprint;
   }
 
   Future<void> _checkSource(
@@ -1345,6 +1370,7 @@ class LocalDownloads extends Downloads {
       'length': record.length,
       'etag': record.etag,
       'digest': record.digest,
+      'verified': record.verified,
       'requested': record.requested,
       'complete': record.complete,
       'error': record.error,
@@ -1510,8 +1536,21 @@ class _Record {
   int bytes = 0;
   int? length;
   String? etag;
-  String? digest;
   String? error;
+
+  /// The SHA-256 digest that the saved file must match. A new digest forgets
+  /// [verified], which belongs to the file that matched the old one.
+  String? get digest => _digest;
+  set digest(String? value) {
+    _digest = value;
+    verified = null;
+  }
+
+  String? _digest;
+
+  /// The fingerprint of the saved file when its bytes last matched [digest],
+  /// or null when no file matched it yet.
+  String? verified;
   bool complete = false;
   bool requested = false;
 

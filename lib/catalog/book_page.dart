@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../downloads/downloads.dart' show DownloadAction, Downloads;
@@ -224,6 +225,7 @@ class BookPage extends StatelessWidget {
                           reading: reading,
                           resume: listening.resume,
                           downloads: downloads,
+                          starting: playback?.startingNotifier,
                           onListen: playback == null
                               ? null
                               : (edition) =>
@@ -343,6 +345,7 @@ class BookPage extends StatelessWidget {
     return EditionPanel(
       edition: edition,
       downloads: services.downloads,
+      starting: playback?.startingNotifier,
       onListen: choice && audio && playback != null
           ? () => unawaited(_listen(context, book, edition))
           : null,
@@ -368,8 +371,10 @@ class BookPage extends StatelessWidget {
   }
 
   /// Opens [edition] in the player, then shows the player when it opened.
+  /// A second tap while [edition] starts does nothing.
   Future<void> _listen(BuildContext context, Book book, Edition edition) async {
     final playback = services.playback!;
+    if (playback.starting?.id == edition.id) return;
     await playback.open(book, edition);
     if (context.mounted && playback.edition == edition) {
       openPlayer(context, playback);
@@ -601,7 +606,12 @@ class BookActions extends StatelessWidget {
     required this.onListen,
     required this.onRead,
     required this.onDownload,
+    this.starting,
   });
+
+  /// The edition that Playback starts, which Listen follows to show a
+  /// progress ring while [listening] starts. Null without playback.
+  final ValueListenable<Edition?>? starting;
 
   /// The audio edition that Listen opens, or null without one.
   final Edition? listening;
@@ -643,7 +653,7 @@ class BookActions extends StatelessWidget {
           Expanded(
             child: FilledButton.icon(
               onPressed: listen,
-              icon: const Icon(Icons.play_arrow_rounded),
+              icon: _ListenIcon(starting: starting, edition: listening),
               label: Text(resume ? 'Resume' : 'Listen'),
             ),
           ),
@@ -845,6 +855,24 @@ class _Metadata extends StatelessWidget {
   }
 }
 
+/// The icon of a Listen button: a progress ring while [edition] starts.
+class _ListenIcon extends StatelessWidget {
+  const _ListenIcon({required this.starting, required this.edition});
+  final ValueListenable<Edition?>? starting;
+  final Edition edition;
+
+  @override
+  Widget build(BuildContext context) {
+    final starting = this.starting;
+    if (starting == null) return const PlayStateIcon();
+    return ValueListenableBuilder(
+      valueListenable: starting,
+      builder: (context, value, _) =>
+          PlayStateIcon(starting: value?.id == edition.id),
+    );
+  }
+}
+
 /// One edition with its download controls, its files, and the actions that
 /// open or correct it. It reports each tap and causes nothing itself.
 class EditionPanel extends StatelessWidget {
@@ -857,8 +885,13 @@ class EditionPanel extends StatelessWidget {
     required this.onOrderFiles,
     required this.onSeparate,
     required this.onDownload,
+    this.starting,
   });
   final Edition edition;
+
+  /// The edition that Playback starts, which Listen follows to show a
+  /// progress ring while [edition] starts. Null without playback.
+  final ValueListenable<Edition?>? starting;
 
   /// What the download controls follow for [edition], or null without
   /// downloads.
@@ -915,7 +948,7 @@ class EditionPanel extends StatelessWidget {
               if (onListen != null)
                 FilledButton.tonalIcon(
                   onPressed: onListen,
-                  icon: const Icon(Icons.play_arrow_rounded),
+                  icon: _ListenIcon(starting: starting, edition: edition),
                   label: const Text('Listen'),
                 ),
               if (onRead != null)
