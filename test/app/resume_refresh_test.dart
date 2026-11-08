@@ -10,6 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 import '../appearance/preferences_test.dart' show MemoryAppearanceStore;
 import '../catalog/controller_test.dart'
     show FixtureClient, MemoryCatalogStore, MemoryCredentials;
+import '../real_time.dart';
 
 const _offline = 'Cannot reach Jellyfin. Showing downloaded books.';
 
@@ -58,11 +59,18 @@ void main() {
     client.close();
   });
 
-  Future<void> signIn() async {
-    await catalog.connect('https://books.example', 'alice', 'password');
-    await catalog.refresh(selected: {'books'});
+  Future<void> signIn(WidgetTester tester) async {
+    await finish(
+      tester,
+      catalog.connect('https://books.example', 'alice', 'password'),
+    );
+    await finish(tester, catalog.refresh(selected: {'books'}));
     client.refreshes = 0;
   }
+
+  /// Runs real and fake time until the catalog's refresh ends.
+  Future<void> finishRefresh(WidgetTester tester) =>
+      runUntil(tester, () => !catalog.busy);
 
   Future<void> show(WidgetTester tester) async {
     final appearance = AppearanceController(MemoryAppearanceStore());
@@ -92,9 +100,10 @@ void main() {
     testWidgets('a return after the app was hidden refreshes it once', (
       tester,
     ) async {
-      await signIn();
+      await signIn(tester);
       await show(tester);
       hideAndReturn(tester);
+      await finishRefresh(tester);
       await tester.pumpAndSettle();
       expect(client.refreshes, 1);
       expect(catalog.statusNotifier.value.message, isNull);
@@ -103,7 +112,7 @@ void main() {
     testWidgets('a return from inactive only does not refresh it', (
       tester,
     ) async {
-      await signIn();
+      await signIn(tester);
       await show(tester);
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
@@ -114,9 +123,10 @@ void main() {
     testWidgets('a second return without hiding again does not refresh it', (
       tester,
     ) async {
-      await signIn();
+      await signIn(tester);
       await show(tester);
       hideAndReturn(tester);
+      await finishRefresh(tester);
       await tester.pumpAndSettle();
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
@@ -127,7 +137,7 @@ void main() {
     testWidgets('a return while a refresh runs starts no other', (
       tester,
     ) async {
-      await signIn();
+      await signIn(tester);
       await show(tester);
       client.pendingValidate = Completer();
       final asked = catalog.refresh(byUser: true);
@@ -135,7 +145,7 @@ void main() {
       hideAndReturn(tester);
       await tester.pump();
       client.pendingValidate!.complete();
-      await asked;
+      await finish(tester, asked);
       await tester.pumpAndSettle();
       expect(client.refreshes, 1);
       expect(catalog.statusNotifier.value.verified, isTrue);
@@ -144,7 +154,7 @@ void main() {
     testWidgets('a return while a sign-in runs starts no refresh', (
       tester,
     ) async {
-      await signIn();
+      await signIn(tester);
       await show(tester);
       client.pendingLibraries = Completer();
       final signingIn = catalog.connect(
@@ -157,7 +167,7 @@ void main() {
       hideAndReturn(tester);
       await tester.pump();
       client.pendingLibraries!.complete();
-      await signingIn;
+      await finish(tester, signingIn);
       await tester.pumpAndSettle();
       expect(client.refreshes, 0);
       expect(catalog.statusNotifier.value.verified, isTrue);
@@ -166,7 +176,7 @@ void main() {
     testWidgets(
       'a return while the saved library loads starts no refresh and keeps it',
       (tester) async {
-        await signIn();
+        await signIn(tester);
         catalog.dispose();
         final gate = store.readGate = Completer<void>();
         catalog = newCatalog();
@@ -176,7 +186,7 @@ void main() {
         hideAndReturn(tester);
         await tester.pump();
         gate.complete();
-        await restoring;
+        await finish(tester, restoring);
         await tester.pumpAndSettle();
         expect(client.refreshes, 0);
         expect(catalog.books, hasLength(1));
@@ -196,14 +206,15 @@ void main() {
     testWidgets(
       'a return that reaches Jellyfin brings back the full library after it was offline',
       (tester) async {
-        await signIn();
+        await signIn(tester);
         client.failure = const CatalogFailure(CatalogFailureKind.unavailable);
-        await catalog.refresh();
+        await finish(tester, catalog.refresh());
         await show(tester);
         expect(find.text(_offline), findsOneWidget);
         expect(find.text('The Orchard'), findsNothing);
         client.failure = null;
         hideAndReturn(tester);
+        await finishRefresh(tester);
         await tester.pumpAndSettle();
         expect(find.text(_offline), findsNothing);
         expect(catalog.statusNotifier.value.reach, CatalogReach.reached);

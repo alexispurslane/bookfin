@@ -15,6 +15,7 @@ import '../catalog/controller_test.dart'
     show FixtureClient, MemoryCredentials, MemoryCatalogStore;
 import '../catalog/model_test.dart' show entry;
 import '../playback/playback_test.dart' show LocalFiles, MemoryResume;
+import '../real_time.dart';
 import 'appearance_test.dart' show BridgePlatform, finishLoading;
 import 'publication_test.dart' show epub;
 import 'session_test.dart' show visible;
@@ -64,8 +65,11 @@ class ReadingApp {
     });
     await appearance.selectMode(mode);
     client.entries = [entry('ebook', type: 'Book', container: 'epub')];
-    await catalog.connect('https://books.example', 'alice', 'fixture-password');
-    await catalog.refresh(selected: {'books'});
+    await finish(
+      tester,
+      catalog.connect('https://books.example', 'alice', 'fixture-password'),
+    );
+    await finish(tester, catalog.refresh(selected: {'books'}));
     downloads.files[catalog.books.single.editions.single.files.single.key] =
         Uri.file('/verified.epub');
     await tester.pumpWidget(build());

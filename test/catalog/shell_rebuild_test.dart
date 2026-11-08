@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:bookfin/catalog/book_cover.dart';
 import 'package:bookfin/catalog/controller.dart';
 import 'package:bookfin/catalog/jellyfin.dart';
@@ -19,6 +17,7 @@ import 'controller_test.dart'
     show FixtureClient, MemoryCatalogStore, MemoryCredentials;
 import 'layout_test.dart' show MemoryLayoutStore;
 import 'model_test.dart' show entry;
+import '../real_time.dart';
 
 /// Download state that a test sets by hand. Every file is on the phone, so
 /// the player can open any book.
@@ -116,17 +115,6 @@ void main() {
     catalog.dispose();
     client.close();
   });
-
-  /// Runs fake and real time until [work] ends.
-  Future<void> finish(WidgetTester tester, Future<void> work) async {
-    var done = false;
-    unawaited(work.whenComplete(() => done = true));
-    for (var step = 0; !done && step < 100; step++) {
-      await tester.runAsync(() => Future<void>.delayed(Duration.zero));
-      await tester.pump(const Duration(milliseconds: 10));
-    }
-    expect(done, isTrue);
-  }
 
   /// Shows the app with First Frost open in the player at 5 seconds.
   Future<void> showListening(WidgetTester tester) async {
