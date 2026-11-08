@@ -1,6 +1,29 @@
-import 'package:flutter/material.dart';
+import 'dart:async';
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_epub_viewer/navigation.dart'
+    show ContentsEntry, ReadingLocation;
+
+import '../catalog/book_cover.dart';
+import '../catalog/glass.dart' show confirmAction, showGlassSheet;
+import '../catalog/library_view.dart' show BookRow;
+import '../catalog/model.dart';
 import '../foundation/theme.dart';
+import '../foundation/time.dart';
+import '../playback/playback.dart';
+import '../playback/recent.dart';
+import '../playback/records_screen.dart';
+import '../playback/screen.dart';
+import '../playback/timeline.dart';
+import '../reader/document.dart' show EpubAddress, ReaderHit;
+import '../reader/screen.dart';
+
+// The development gallery shows the app's own leaf widgets with sample books
+// and places, so that a change to a leaf shows here too. It has no catalog,
+// Downloads or Playback. Each screen of the gallery is the controller of its
+// leaves: it handles what they report by changing only sample state, the
+// listening sample in _SamplePlayer and each screen's own State.
 
 class DevelopmentGallery extends StatefulWidget {
   const DevelopmentGallery({super.key});
@@ -10,7 +33,22 @@ class DevelopmentGallery extends StatefulWidget {
 }
 
 class _DevelopmentGalleryState extends State<DevelopmentGallery> {
+  /// The shown screen: 0 the library, 1 the player, 2 the reader.
   int _screen = 0;
+  final _sample = _SamplePlayer(DateTime.now());
+
+  @override
+  void dispose() {
+    _sample.dispose();
+    super.dispose();
+  }
+
+  void _showPlayer() => setState(() => _screen = 1);
+
+  void _open(Book book) {
+    _sample.open(book);
+    _showPlayer();
+  }
 
   @override
   Widget build(BuildContext context) => Column(
@@ -52,20 +90,382 @@ class _DevelopmentGalleryState extends State<DevelopmentGallery> {
         child: BookfinScreenStack(
           index: _screen,
           children: [
-            _LibraryFixture(onPlayer: () => setState(() => _screen = 1)),
-            const _PlayerFixture(),
-            _ReaderFixture(onPlayer: () => setState(() => _screen = 1)),
+            _LibraryFixture(onOpen: _open),
+            _PlayerFixture(sample: _sample, onOpen: _sample.open),
+            const _ReaderFixture(),
           ],
         ),
       ),
+      // As in the app, the mini player sits below every page but the player.
+      if (_screen != 1)
+        ValueListenableBuilder(
+          valueListenable: _sample.book,
+          builder: (context, book, _) => MiniPlayerCard(
+            book: book,
+            onOpen: _showPlayer,
+            notice: _undoNotice(_sample),
+            controls: [
+              _playPause(_sample),
+              _jump(_sample, forward: true, compact: true),
+            ],
+            progress: _sample.share,
+          ),
+        ),
     ],
   );
 }
 
-class _LibraryFixture extends StatefulWidget {
-  const _LibraryFixture({required this.onPlayer});
+/// The length of every sample recording, in milliseconds: 3 h 28 min.
+const _length = 12480000;
 
-  final VoidCallback onPlayer;
+/// The sample chapters, the same for every sample recording.
+final _chapters = [
+  for (var index = 0; index < 12; index++)
+    PlaybackChapter(
+      'Chapter ${index + 1}',
+      'sample',
+      index * _length ~/ 12,
+      index * _length ~/ 12,
+    ),
+];
+
+Book _sampleBook(String id, String title, String author, {String? series}) =>
+    Book(
+      id: id,
+      title: title,
+      author: author,
+      series: series,
+      editions: [
+        Edition(
+          id: '$id-audio',
+          kind: EditionKind.audio,
+          label: 'Audiobook',
+          files: [
+            SourceFile(
+              itemId: '$id-file',
+              displayName: title,
+              mediaSourceId: 'source',
+              revision: '1',
+              durationMs: _length,
+              container: 'm4b',
+              sizeBytes: null,
+            ),
+          ],
+          memberIds: ['$id-file'],
+        ),
+      ],
+    );
+
+final _timeMachine = _sampleBook(
+  'time-machine',
+  'The Time Machine',
+  'H. G. Wells',
+);
+final _lostWorld = _sampleBook(
+  'lost-world',
+  'The Lost World',
+  'Arthur Conan Doyle',
+  series: 'Professor Challenger',
+);
+final _poisonBelt = _sampleBook(
+  'poison-belt',
+  'The Poison Belt',
+  'Arthur Conan Doyle',
+  series: 'Professor Challenger',
+);
+
+/// The sample library: each book, the availability line of its row, and
+/// whether its audio is downloaded.
+final _library = [
+  (
+    book: _timeMachine,
+    detail: 'Audio downloaded · EPUB downloaded',
+    downloaded: true,
+  ),
+  (book: _lostWorld, detail: 'Audio not downloaded', downloaded: false),
+  (
+    book: _poisonBelt,
+    detail: 'Audio partial · 2 of 6 files · waiting for Wi-Fi',
+    downloaded: false,
+  ),
+];
+
+AudioPosition _place(Book book, int milliseconds) => AudioPosition(
+  editionId: book.editions.single.id,
+  sourceKey: book.editions.single.files.single.key,
+  revision: '1',
+  milliseconds: milliseconds,
+);
+
+/// The sample listening records of every sample book, newest first, as of
+/// [now].
+List<TimelineEntry> _sampleTimeline(DateTime now) {
+  ListeningEvent event(
+    String id,
+    Duration ago,
+    ListeningAction kind,
+    Book book,
+    int before,
+    int after,
+  ) => ListeningEvent(
+    id: id,
+    at: now.subtract(ago),
+    kind: kind,
+    before: _place(book, before),
+    after: _place(book, after),
+    bookTitle: book.title,
+    editionLabel: 'Audiobook',
+  );
+  return [
+    ActionEntry(
+      event(
+        'pause',
+        const Duration(minutes: 12),
+        ListeningAction.pause,
+        _timeMachine,
+        5234000,
+        5234000,
+      ),
+    ),
+    ActionEntry(
+      event(
+        'jump',
+        const Duration(minutes: 25),
+        ListeningAction.jump,
+        _timeMachine,
+        3729000,
+        4320000,
+      ),
+    ),
+    BookmarkEntry(
+      AudioBookmark(
+        id: 'eloi',
+        position: _place(_timeMachine, 4800000),
+        createdAt: now.subtract(const Duration(minutes: 40)),
+        bookTitle: _timeMachine.title,
+        editionLabel: 'Audiobook',
+        title: 'The Eloi',
+      ),
+    ),
+    ActionEntry(
+      event(
+        'chapter',
+        const Duration(days: 1),
+        ListeningAction.chapter,
+        _poisonBelt,
+        900000,
+        1800000,
+      ),
+    ),
+  ];
+}
+
+/// The gallery's stand-in for Playback: the open sample book, its place, and
+/// the sample records, in memory. No audio plays and nothing is saved. Only
+/// the gallery changes it, through its methods.
+class _SamplePlayer {
+  _SamplePlayer(DateTime now)
+    : timeline = ValueNotifier(_sampleTimeline(now)),
+      recent = [
+        (
+          book: _poisonBelt,
+          edition: _poisonBelt.editions.single,
+          at: now.subtract(const Duration(days: 1)),
+        ),
+        (
+          book: _lostWorld,
+          edition: _lostWorld.editions.single,
+          at: now.subtract(const Duration(days: 3)),
+        ),
+        (
+          book: _timeMachine,
+          edition: _timeMachine.editions.single,
+          at: now.subtract(const Duration(days: 5)),
+        ),
+      ];
+
+  final book = ValueNotifier(_timeMachine);
+
+  /// The place in the open book, in milliseconds from its start.
+  final position = ValueNotifier(5234000);
+  final playing = ValueNotifier(false);
+
+  /// The place before the last move, which Undo returns to, or null when
+  /// there is nothing to undo.
+  final previous = ValueNotifier<int?>(null);
+
+  /// The actions and bookmarks of every sample book, newest first.
+  final ValueNotifier<List<TimelineEntry>> timeline;
+  final status = ValueNotifier<PlaybackStatus>((
+    message: null,
+    saveFailed: true,
+  ));
+  final replacement = ValueNotifier<AudioReplacement?>(
+    AudioReplacement(
+      _timeMachine,
+      _timeMachine.editions.single,
+      _place(_timeMachine, 5234000),
+    ),
+  );
+
+  /// Every sample book, newest listening first. A list of recent books
+  /// leaves out the open book.
+  final List<RecentListening> recent;
+
+  /// The saved place of each sample book that is not open, by book id.
+  final _places = {_lostWorld.id: 0, _poisonBelt.id: 1800000};
+
+  late final share = _SampleShare(position);
+
+  /// The saved place of [other], in milliseconds.
+  int placeOf(Book other) =>
+      other.id == book.value.id ? position.value : _places[other.id] ?? 0;
+
+  /// The bookmarks of the open book, where the position slider marks them.
+  List<EditionBookmark> get bookmarks => [
+    for (final entry in timeline.value)
+      if (entry case BookmarkEntry(:final bookmark)
+          when bookmark.position.editionId == book.value.editions.single.id)
+        (bookmark: bookmark, at: bookmark.position.milliseconds),
+  ];
+
+  /// Opens [next] at its saved place. The open book keeps its place.
+  void open(Book next) {
+    if (next.id == book.value.id) return;
+    _places[book.value.id] = position.value;
+    book.value = next;
+    position.value = _places.remove(next.id) ?? 0;
+    previous.value = null;
+  }
+
+  /// Moves to [milliseconds] in the open book, and offers Undo.
+  void move(int milliseconds) {
+    previous.value = position.value;
+    position.value = milliseconds.clamp(0, _length);
+  }
+
+  /// Opens the book of [place], then moves to it.
+  void goTo(AudioPosition place) {
+    open(
+      _library
+          .map((entry) => entry.book)
+          .firstWhere((book) => book.editions.single.id == place.editionId),
+    );
+    move(place.milliseconds);
+  }
+
+  void jump(bool forward) => move(position.value + (forward ? 30000 : -15000));
+
+  void undo() {
+    if (previous.value case final place?) position.value = place;
+    previous.value = null;
+  }
+
+  void dismissUndo() => previous.value = null;
+
+  void playPause() => playing.value = !playing.value;
+
+  void startReplacement(AudioReplacement request) {
+    replacement.value = null;
+    move(0);
+  }
+
+  void retrySave() => status.value = (message: null, saveFailed: false);
+
+  void delete(TimelineEntry entry) => timeline.value = [
+    for (final kept in timeline.value)
+      if (kept.id != entry.id) kept,
+  ];
+
+  void rename(AudioBookmark bookmark, String title, String note) =>
+      timeline.value = [
+        for (final entry in timeline.value)
+          entry.id == bookmark.id
+              ? BookmarkEntry(
+                  AudioBookmark(
+                    id: bookmark.id,
+                    position: bookmark.position,
+                    createdAt: bookmark.createdAt,
+                    bookTitle: bookmark.bookTitle,
+                    editionLabel: bookmark.editionLabel,
+                    title: title,
+                    note: note,
+                  ),
+                )
+              : entry,
+      ];
+
+  void dispose() {
+    for (final notifier in <ChangeNotifier>[
+      book,
+      position,
+      playing,
+      previous,
+      timeline,
+      status,
+      replacement,
+    ]) {
+      notifier.dispose();
+    }
+  }
+}
+
+/// How far through the open sample book the place is, from 0 to 1.
+class _SampleShare implements ValueListenable<double> {
+  _SampleShare(this.position);
+  final ValueListenable<int> position;
+
+  @override
+  double get value => position.value / _length;
+
+  @override
+  void addListener(VoidCallback listener) => position.addListener(listener);
+
+  @override
+  void removeListener(VoidCallback listener) =>
+      position.removeListener(listener);
+}
+
+Widget _playPause(_SamplePlayer sample, {bool large = false}) =>
+    ValueListenableBuilder(
+      valueListenable: sample.playing,
+      builder: (context, playing, _) => PlayPauseButton(
+        playing: playing,
+        large: large,
+        onPlayPause: sample.playPause,
+      ),
+    );
+
+Widget _jump(
+  _SamplePlayer sample, {
+  required bool forward,
+  bool compact = false,
+}) => JumpButton(
+  forward: forward,
+  seconds: forward ? 30 : 15,
+  compact: compact,
+  onJump: sample.jump,
+);
+
+Widget _undoNotice(_SamplePlayer sample) => ValueListenableBuilder(
+  valueListenable: sample.previous,
+  builder: (context, previous, _) => previous == null
+      ? const SizedBox.shrink()
+      : Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: UndoNotice(
+            unsaved: false,
+            onUndo: sample.undo,
+            onDismiss: sample.dismissUndo,
+          ),
+        ),
+);
+
+class _LibraryFixture extends StatefulWidget {
+  const _LibraryFixture({required this.onOpen});
+
+  /// Reports a tap on a book, which asks to open it in the player.
+  final ValueChanged<Book> onOpen;
 
   @override
   State<_LibraryFixture> createState() => _LibraryFixtureState();
@@ -77,31 +477,15 @@ class _LibraryFixtureState extends State<_LibraryFixture> {
   @override
   Widget build(BuildContext context) => ListView(
     key: const PageStorageKey('gallery-library'),
-    padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+    padding: const EdgeInsets.fromLTRB(18, 20, 18, 24),
     children: [
-      Text('Book libraries', style: Theme.of(context).textTheme.bodySmall),
-      const SizedBox(height: 24),
       Text(
         'A little further\ninto the story.',
         style: Theme.of(context).textTheme.displaySmall,
       ),
-      const SizedBox(height: 28),
-      BookfinPanel(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '● Downloaded audio only',
-              style: TextStyle(color: Theme.of(context).colorScheme.primary),
-            ),
-            Text(
-              'Sample state: cellular · media transfers paused',
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-          ],
-        ),
-      ),
-      const SizedBox(height: 14),
+      const SizedBox(height: 20),
+      // TODO(t3-rlq6): show the library's own filter row here once it is a
+      // leaf widget. Until then these chips stand in for it.
       Wrap(
         spacing: 8,
         children: [
@@ -110,25 +494,13 @@ class _LibraryFixtureState extends State<_LibraryFixture> {
             (true, 'Downloaded'),
           ])
             ChoiceChip(
-              checkmarkColor: Theme.of(context).colorScheme.onPrimary,
               label: Text(label),
               selected: _downloaded == local,
-              labelStyle: TextStyle(
-                color: _downloaded == local
-                    ? Theme.of(context).colorScheme.onPrimary
-                    : Theme.of(context).colorScheme.onSurface,
-              ),
               onSelected: (_) => setState(() => _downloaded = local),
             ),
         ],
       ),
-      const _BookRow(
-        title: 'The Time Machine',
-        author: 'H. G. Wells · 3h 28m',
-        availability: '✓ Audio downloaded · EPUB downloaded',
-        note: 'Chapter 5 · 1h 27m listened',
-        progress: 0.42,
-      ),
+      const SizedBox(height: 8),
       AnimatedSize(
         duration: MediaQuery.disableAnimationsOf(context)
             ? Duration.zero
@@ -137,309 +509,216 @@ class _LibraryFixtureState extends State<_LibraryFixture> {
         curve: Curves.easeOutCubic,
         child: Column(
           children: [
-            if (!_downloaded) ...[
-              const _BookRow(
-                title: 'The Lost World',
-                author: 'Arthur Conan Doyle',
-                availability: 'Audio not downloaded',
-                note: 'Professor Challenger · Book 1\nEPUB downloaded',
-                cover: Color(0xFF5E644A),
+            for (final (:book, :detail, :downloaded) in _library)
+              if (downloaded || !_downloaded)
+                BookRow(
+                  cover: BookCover.book(
+                    book,
+                    downloaded: downloaded,
+                    showText: false,
+                  ),
+                  title: book.title,
+                  author: book.author,
+                  detail: detail,
+                  onTap: () => widget.onOpen(book),
+                ),
+          ],
+        ),
+      ),
+    ],
+  );
+}
+
+class _PlayerFixture extends StatelessWidget {
+  const _PlayerFixture({required this.sample, required this.onOpen});
+
+  final _SamplePlayer sample;
+
+  /// Reports a tap on a recent book, which asks to open it.
+  final ValueChanged<Book> onOpen;
+
+  Future<void> _confirmDelete(BuildContext context, TimelineEntry entry) async {
+    if (await confirmAction(
+      context,
+      title: entry is BookmarkEntry
+          ? 'Delete bookmark?'
+          : 'Delete history action?',
+      message: 'Remove this sample entry from the gallery.',
+      action: 'Delete',
+    )) {
+      sample.delete(entry);
+    }
+  }
+
+  Future<void> _rename(BuildContext context, AudioBookmark bookmark) async {
+    final edited = await showBookmarkEditor(
+      context,
+      heading: 'Edit bookmark',
+      title: bookmark.title,
+      note: bookmark.note,
+      place: 'At ${audioTime(bookmark.position.milliseconds)}',
+    );
+    if (edited != null) sample.rename(bookmark, edited.title, edited.note);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return ListView(
+      key: const PageStorageKey('gallery-player'),
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
+      children: [
+        const Center(child: SectionLabel('NOW LISTENING · SAMPLE')),
+        const SizedBox(height: 24),
+        ValueListenableBuilder(
+          valueListenable: sample.book,
+          builder: (context, book, _) => Column(
+            children: [
+              SizedBox(width: 176, child: BookCover.book(book)),
+              const SizedBox(height: 20),
+              Text(
+                book.title,
+                textAlign: TextAlign.center,
+                style: theme.textTheme.titleLarge,
               ),
-              const _BookRow(
-                title: 'The Poison Belt',
-                author: 'Arthur Conan Doyle',
-                availability: 'Audio partial · 2 of 6 files',
-                note: 'Professor Challenger · Book 2\nWaiting for Wi-Fi',
-                cover: Color(0xFF6D5160),
+              Text(
+                book.author,
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodySmall,
               ),
             ],
-          ],
+          ),
         ),
-      ),
-      const SizedBox(height: 18),
-      BookfinPanel(
-        child: Row(
-          children: [
-            const Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('The Time Machine'),
-                  Text('Sample resume · chapter 5'),
-                ],
+        ValueListenableBuilder(
+          valueListenable: sample.position,
+          builder: (context, position, _) {
+            final chapter = _chapters.lastIndexWhere(
+              (chapter) => chapter.milliseconds <= position,
+            );
+            return Text(
+              '${_chapters[chapter].name} · ${chapter + 1} of ${_chapters.length}',
+              textAlign: TextAlign.center,
+              style: theme.textTheme.labelLarge?.copyWith(
+                color: theme.colorScheme.primary,
               ),
-            ),
-            IconButton.filled(
-              onPressed: widget.onPlayer,
-              tooltip: 'Open sample player',
-              icon: const Icon(Icons.play_arrow_rounded),
-            ),
-          ],
+            );
+          },
         ),
-      ),
-      const SizedBox(height: 12),
-      Wrap(
-        alignment: WrapAlignment.spaceBetween,
-        spacing: 8,
-        children: [
-          TextButton(
-            onPressed: () => setState(() => _downloaded = false),
-            child: const Text('Library'),
-          ),
-          TextButton(
-            onPressed: () => setState(() => _downloaded = true),
-            child: const Text('Downloads'),
-          ),
-          TextButton(
-            onPressed: widget.onPlayer,
-            child: const Text('Listening'),
-          ),
-        ],
-      ),
-    ],
-  );
-}
-
-class _BookRow extends StatelessWidget {
-  const _BookRow({
-    required this.title,
-    required this.author,
-    required this.availability,
-    required this.note,
-    this.progress,
-    this.cover = const Color(0xFF775035),
-  });
-
-  final String title;
-  final String author;
-  final String availability;
-  final String note;
-  final double? progress;
-  final Color cover;
-
-  @override
-  Widget build(BuildContext context) => Column(
-    children: [
-      Padding(
-        padding: const EdgeInsets.symmetric(vertical: 23),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _Cover(title: title, color: cover),
-            const SizedBox(width: 17),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: Theme.of(context).textTheme.titleLarge),
-                  const SizedBox(height: 5),
-                  Text(author, style: Theme.of(context).textTheme.bodySmall),
-                  const SizedBox(height: 8),
-                  Text(
-                    availability,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  ),
-                  if (progress != null) ...[
-                    const SizedBox(height: 10),
-                    LinearProgressIndicator(value: progress, minHeight: 4),
-                  ],
-                  const SizedBox(height: 6),
-                  Text(note, style: Theme.of(context).textTheme.bodySmall),
-                ],
+        ValueListenableBuilder(
+          valueListenable: sample.status,
+          builder: (context, status, _) =>
+              RecordSaveNotice(status: status, onRetrySave: sample.retrySave),
+        ),
+        ValueListenableBuilder(
+          valueListenable: sample.replacement,
+          builder: (context, request, _) => request == null
+              ? const SizedBox.shrink()
+              : ReplacementOffer(
+                  request: request,
+                  onStartReplacement: sample.startReplacement,
+                ),
+        ),
+        const SizedBox(height: 10),
+        ListenableBuilder(
+          listenable: Listenable.merge([
+            sample.position,
+            sample.timeline,
+            sample.book,
+          ]),
+          builder: (context, _) {
+            final position = sample.position.value;
+            return PositionSlider(
+              position: position,
+              total: _length,
+              chapters: _chapters,
+              chapterIndex: _chapters.lastIndexWhere(
+                (chapter) => chapter.milliseconds <= position,
               ),
-            ),
+              bookmarks: sample.bookmarks,
+              onSeekStart: () {},
+              onSeekEnd: (milliseconds) async => sample.move(milliseconds),
+            );
+          },
+        ),
+        const SizedBox(height: 6),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _jump(sample, forward: false),
+            const SizedBox(width: 30),
+            _playPause(sample, large: true),
+            const SizedBox(width: 30),
+            _jump(sample, forward: true),
           ],
         ),
-      ),
-      const Divider(),
-    ],
-  );
-}
-
-class _Cover extends StatelessWidget {
-  const _Cover({
-    required this.title,
-    this.color = const Color(0xFF775035),
-    this.large = false,
-  });
-
-  final String title;
-  final Color color;
-  final bool large;
-
-  @override
-  Widget build(BuildContext context) => Semantics(
-    label: 'Sample cover: $title',
-    image: true,
-    child: Container(
-      width: large ? 176 : 72,
-      constraints: BoxConstraints(minHeight: large ? 232 : 104),
-      padding: EdgeInsets.all(large ? 24 : 6),
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: const BorderRadius.horizontal(
-          left: Radius.circular(4),
-          right: Radius.circular(12),
-        ),
-        border: const Border(
-          left: BorderSide(color: Color(0xFF39291F), width: 4),
-        ),
-      ),
-      alignment: Alignment.center,
-      child: ExcludeSemantics(
-        child: Text(
-          title.replaceAll(' ', '\n'),
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontFamily: 'Source Serif 4',
-            fontSize: large ? 27 : 13,
-            height: 1.25,
-            color: const Color(0xFFFFF9EF),
+        const SizedBox(height: 12),
+        SizedBox(height: UndoNotice.height + 8, child: _undoNotice(sample)),
+        const SizedBox(height: 12),
+        const SectionLabel('HISTORY'),
+        SizedBox(
+          height: 320,
+          child: ListeningTimeline(
+            entries: sample.timeline,
+            editionTime: (place) => place.milliseconds,
+            showBooks: true,
+            onGoBack: (event) => sample.goTo(event.before),
+            onGoTo: (entry) => sample.goTo(switch (entry) {
+              ActionEntry(:final event) => event.after,
+              BookmarkEntry(:final bookmark) => bookmark.position,
+            }),
+            onRename: (bookmark) => unawaited(_rename(context, bookmark)),
+            onDelete: (entry) => unawaited(_confirmDelete(context, entry)),
           ),
         ),
-      ),
-    ),
-  );
-}
-
-class _PlayerFixture extends StatefulWidget {
-  const _PlayerFixture();
-
-  @override
-  State<_PlayerFixture> createState() => _PlayerFixtureState();
-}
-
-class _PlayerFixtureState extends State<_PlayerFixture> {
-  bool _chapters = false;
-
-  @override
-  Widget build(BuildContext context) => ListView(
-    key: const PageStorageKey('gallery-player'),
-    padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
-    children: [
-      Text(
-        'NOW LISTENING · SAMPLE',
-        style: Theme.of(context).textTheme.labelSmall,
-      ),
-      const SizedBox(height: 28),
-      const Center(child: _Cover(title: 'The Time Machine', large: true)),
-      const SizedBox(height: 24),
-      Text(
-        'The Time Machine',
-        textAlign: TextAlign.center,
-        style: Theme.of(context).textTheme.titleLarge,
-      ),
-      Text(
-        'H. G. Wells · Chapter 5 of 12',
-        textAlign: TextAlign.center,
-        style: Theme.of(context).textTheme.bodySmall,
-      ),
-      const SizedBox(height: 24),
-      const LinearProgressIndicator(value: 0.42, minHeight: 5),
-      const SizedBox(height: 10),
-      const Wrap(
-        alignment: WrapAlignment.spaceBetween,
-        spacing: 32,
-        children: [Text('1:27:14'), Text('3:28:00 total')],
-      ),
-      const SizedBox(height: 18),
-      const Wrap(
-        alignment: WrapAlignment.center,
-        spacing: 12,
-        children: [
-          OutlinedButton(onPressed: null, child: Text('↶ 15s')),
-          IconButton.filled(
-            onPressed: null,
-            tooltip: 'Sample only · playback unavailable',
-            icon: Icon(Icons.play_arrow_rounded),
-            iconSize: 36,
-          ),
-          OutlinedButton(onPressed: null, child: Text('30s ↷')),
-        ],
-      ),
-      const SizedBox(height: 18),
-      const Text(
-        'Visual fixture only · playback is unavailable',
-        textAlign: TextAlign.center,
-      ),
-      const SizedBox(height: 12),
-      Wrap(
-        alignment: WrapAlignment.center,
-        spacing: 8,
-        children: [
-          TextButton(
-            onPressed: () => setState(() => _chapters = true),
-            child: const Text('Chapters'),
-          ),
-          const TextButton(onPressed: null, child: Text('Bookmark')),
-          TextButton(
-            onPressed: () => setState(() => _chapters = false),
-            child: const Text('History'),
-          ),
-        ],
-      ),
-      Text(
-        'Sample: 1.25× speed · sleep timer off',
-        textAlign: TextAlign.center,
-        style: Theme.of(context).textTheme.bodySmall,
-      ),
-      const SizedBox(height: 24),
-      AnimatedSize(
-        duration: MediaQuery.disableAnimationsOf(context)
-            ? Duration.zero
-            : const Duration(milliseconds: 360),
-        alignment: Alignment.topCenter,
-        child: BookfinPanel(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: _chapters
-                ? [
-                    Text(
-                      'Sample chapters',
-                      style: Theme.of(context).textTheme.titleLarge,
+        const SizedBox(height: 18),
+        // TODO(t3-da6r): show RecentListeningList here once it takes values
+        // instead of Playback.
+        const SectionLabel('RECENTLY LISTENED'),
+        ValueListenableBuilder(
+          valueListenable: sample.book,
+          builder: (context, open, _) {
+            final now = DateTime.now();
+            return Column(
+              children: [
+                for (final entry in sample.recent)
+                  if (entry.book.id != open.id)
+                    RecentListeningRow(
+                      entry: entry,
+                      progress: (
+                        elapsedMs: sample.placeOf(entry.book),
+                        totalMs: _length,
+                      ),
+                      now: now,
+                      onResume: (entry) => onOpen(entry.book),
                     ),
-                    const SizedBox(height: 12),
-                    const Text('5 · In the Golden Age'),
-                    const OutlinedButton(onPressed: null, child: Text('Jump')),
-                    const Text('6 · The Sunset of Mankind'),
-                    const OutlinedButton(onPressed: null, child: Text('Jump')),
-                  ]
-                : [
-                    Text(
-                      'Your listening history',
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    const SizedBox(height: 12),
-                    const Text(
-                      'Sample pause · 9:42\nChapter 5 · 1:27:14 into book',
-                    ),
-                    const OutlinedButton(
-                      onPressed: null,
-                      child: Text('Restore'),
-                    ),
-                    const Divider(height: 28),
-                    const Text(
-                      'Sample chapter jump · 9:18\nFrom 1:02:09 to 1:12:00',
-                    ),
-                    const OutlinedButton(
-                      onPressed: null,
-                      child: Text('Restore'),
-                    ),
-                  ],
-          ),
+              ],
+            );
+          },
         ),
-      ),
-    ],
-  );
+      ],
+    );
+  }
 }
+
+/// The sample chapters of the reader: the heading number, the title and the
+/// contents entry.
+const _readerChapters = [
+  ('I', 'The Time Traveller', ContentsEntry('I · The Time Traveller', 'i')),
+  ('II', 'The Machine', ContentsEntry('II · The Machine', 'ii')),
+  (
+    'III',
+    'The Time Traveller Returns',
+    ContentsEntry('III · The Time Traveller Returns', 'iii'),
+  ),
+];
+
+const _paragraphs = [
+  'The Time Traveller (for so it will be convenient to speak of him) was expounding a recondite matter to us. His grey eyes shone and twinkled, and his usually pale face was flushed and animated.',
+  'The fire burned brightly, and the soft radiance of the incandescent lights in the lilies of silver caught the bubbles that flashed and passed in our glasses.',
+];
 
 class _ReaderFixture extends StatefulWidget {
-  const _ReaderFixture({required this.onPlayer});
-
-  final VoidCallback onPlayer;
+  const _ReaderFixture();
 
   @override
   State<_ReaderFixture> createState() => _ReaderFixtureState();
@@ -448,90 +727,226 @@ class _ReaderFixture extends StatefulWidget {
 class _ReaderFixtureState extends State<_ReaderFixture> {
   double _fontSize = 19;
 
+  /// The index in [_readerChapters] of the shown chapter.
+  int _chapter = 0;
+  int _nextBookmark = 0;
+  final _bookmarks = ValueNotifier<List<TextBookmark>>([]);
+  final _hits = ValueNotifier<List<ReaderHit>>([]);
+  final _scroll = ScrollController();
+
   @override
-  Widget build(BuildContext context) => ListView(
-    key: const PageStorageKey('gallery-reader'),
-    padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
-    children: [
-      Text(
-        'THE TIME MACHINE · SAMPLE EPUB',
-        style: Theme.of(context).textTheme.labelSmall,
+  void dispose() {
+    _scroll.dispose();
+    _bookmarks.dispose();
+    _hits.dispose();
+    super.dispose();
+  }
+
+  /// Shows the panel that [builder] builds on the reader's plain sheet.
+  Future<void> _sheet(WidgetBuilder builder) => showGlassSheet<void>(
+    context,
+    glass: false,
+    isScrollControlled: true,
+    builder: builder,
+  );
+
+  /// Shows the start of the chapter whose contents entry is [href].
+  void _showChapter(String href) {
+    setState(
+      () => _chapter = _readerChapters.indexWhere(
+        (chapter) => chapter.$3.href == href,
       ),
-      const SizedBox(height: 32),
-      Text('CHAPTER I', style: Theme.of(context).textTheme.labelSmall),
-      const SizedBox(height: 17),
-      Text(
-        'The Time Traveller',
-        style: Theme.of(context).textTheme.headlineMedium,
+    );
+    _scroll.jumpTo(0);
+  }
+
+  void _openContents() => unawaited(
+    _sheet(
+      (sheet) => ReaderContentsPanel(
+        contents: [for (final chapter in _readerChapters) chapter.$3],
+        onContents: (href) {
+          Navigator.pop(sheet);
+          _showChapter(href);
+        },
       ),
-      const SizedBox(height: 28),
-      Text(
-        'The Time Traveller (for so it will be convenient to speak of him) was expounding a recondite matter to us. His grey eyes shone and twinkled, and his usually pale face was flushed and animated.',
-        style: TextStyle(
-          fontFamily: 'Source Serif 4',
-          fontFamilyFallback: const ['Noto Serif'],
-          fontSize: _fontSize,
-          height: 1.85,
+    ),
+  );
+
+  void _search(String query) {
+    final needle = query.trim().toLowerCase();
+    _hits.value = [
+      for (final (index, paragraph) in _paragraphs.indexed)
+        if (needle.isNotEmpty && paragraph.toLowerCase().contains(needle))
+          ReaderHit(
+            EpubAddress(
+              ReadingLocation(
+                'sample-$index',
+                'sample.xhtml',
+                paragraph.substring(0, 40),
+              ),
+            ),
+            paragraph,
+          ),
+    ];
+  }
+
+  Future<void> _openSearch() async {
+    await _sheet(
+      (sheet) => ValueListenableBuilder(
+        valueListenable: _hits,
+        builder: (_, hits, _) => ReaderSearchPanel(
+          searching: false,
+          hits: hits,
+          error: null,
+          onSearch: _search,
+          onOpenHit: (_) => Navigator.pop(sheet),
+          onCancelSearch: () => Navigator.pop(sheet),
         ),
       ),
-      const SizedBox(height: 20),
-      Text(
-        'The fire burned brightly, and the soft radiance of the incandescent lights in the lilies of silver caught the bubbles that flashed and passed in our glasses.',
-        style: TextStyle(
-          fontFamily: 'Source Serif 4',
-          fontFamilyFallback: const ['Noto Serif'],
-          fontSize: _fontSize,
-          height: 1.85,
+    );
+    _hits.value = [];
+  }
+
+  void _addBookmark() => _bookmarks.value = [
+    ..._bookmarks.value,
+    TextBookmark(
+      id: 'sample-${_nextBookmark++}',
+      position: TextPosition(
+        editionId: 'sample-epub',
+        sourceKey: 'sample.epub',
+        revision: '1',
+        anchor: _readerChapters[_chapter].$3.href,
+      ),
+      createdAt: DateTime.now(),
+    ),
+  ];
+
+  Future<void> _editBookmark(TextBookmark bookmark) async {
+    final edited = await showBookmarkEditor(
+      context,
+      heading: 'Edit reading bookmark',
+      title: bookmark.title,
+      note: bookmark.note,
+      place: 'Saved ${dayAndTime(context, bookmark.createdAt)}',
+      glass: false,
+    );
+    if (edited == null) return;
+    _bookmarks.value = [
+      for (final kept in _bookmarks.value)
+        kept.id == bookmark.id
+            ? TextBookmark(
+                id: kept.id,
+                position: kept.position,
+                createdAt: kept.createdAt,
+                title: edited.title,
+                note: edited.note,
+              )
+            : kept,
+    ];
+  }
+
+  Future<void> _deleteBookmark(TextBookmark bookmark) async {
+    if (await confirmAction(
+      context,
+      title: 'Delete reading bookmark?',
+      message: 'Remove this sample bookmark from the gallery.',
+      action: 'Delete',
+      glass: false,
+    )) {
+      _bookmarks.value = [
+        for (final kept in _bookmarks.value)
+          if (kept.id != bookmark.id) kept,
+      ];
+    }
+  }
+
+  void _openBookmarks() => unawaited(
+    _sheet(
+      (sheet) => ValueListenableBuilder(
+        valueListenable: _bookmarks,
+        builder: (_, bookmarks, _) => ReaderBookmarksPanel(
+          bookmarks: bookmarks,
+          onRestore: (bookmark) {
+            Navigator.pop(sheet);
+            _showChapter(bookmark.position.anchor);
+          },
+          onEdit: (bookmark) => unawaited(_editBookmark(bookmark)),
+          onDelete: (bookmark) => unawaited(_deleteBookmark(bookmark)),
         ),
       ),
-      const SizedBox(height: 28),
-      Wrap(
-        alignment: WrapAlignment.center,
-        spacing: 8,
-        children: [
-          OutlinedButton(
-            onPressed: _fontSize > 15
-                ? () => setState(() => _fontSize -= 2)
-                : null,
-            child: const Text('A−'),
-          ),
-          OutlinedButton(
-            onPressed: _fontSize < 29
-                ? () => setState(() => _fontSize += 2)
-                : null,
-            child: const Text('A+'),
-          ),
-          const OutlinedButton(onPressed: null, child: Text('Bookmark')),
+    ),
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    final (number, title, _) = _readerChapters[_chapter];
+    final text = TextStyle(
+      fontFamily: 'Source Serif 4',
+      fontFamilyFallback: const ['Noto Serif'],
+      fontSize: _fontSize,
+      height: 1.85,
+    );
+    return ListView(
+      key: const PageStorageKey('gallery-reader'),
+      controller: _scroll,
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
+      children: [
+        Text(
+          'THE TIME MACHINE · SAMPLE EPUB',
+          style: Theme.of(context).textTheme.labelSmall,
+        ),
+        const SizedBox(height: 32),
+        Text('CHAPTER $number', style: Theme.of(context).textTheme.labelSmall),
+        const SizedBox(height: 17),
+        Text(title, style: Theme.of(context).textTheme.headlineMedium),
+        const SizedBox(height: 28),
+        for (final paragraph in _paragraphs) ...[
+          Text(paragraph, style: text),
+          const SizedBox(height: 20),
         ],
-      ),
-      const SizedBox(height: 24),
-      BookfinPanel(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        const SizedBox(height: 8),
+        // TODO(t3-pk3x): show the reader's own control bar here
+        // once it is a leaf widget. Until then these buttons stand in for it.
+        Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 4,
           children: [
-            Text(
-              'Audio stays close',
-              style: Theme.of(context).textTheme.titleLarge,
+            TextButton(onPressed: _openContents, child: const Text('Contents')),
+            TextButton(
+              onPressed: () => unawaited(_openSearch()),
+              child: const Text('Search'),
             ),
-            const SizedBox(height: 8),
-            const Text(
-              'Return to the sample player. Audio playback is unavailable in this gallery.',
+            TextButton(
+              onPressed: _fontSize > 15
+                  ? () => setState(() => _fontSize -= 2)
+                  : null,
+              child: const Text('A−'),
             ),
-            OutlinedButton(
-              onPressed: widget.onPlayer,
-              child: const Text('Player'),
+            TextButton(
+              onPressed: _fontSize < 29
+                  ? () => setState(() => _fontSize += 2)
+                  : null,
+              child: const Text('A+'),
+            ),
+            TextButton(
+              onPressed: _addBookmark,
+              child: const Text('Bookmark this place'),
+            ),
+            TextButton(
+              onPressed: _openBookmarks,
+              child: const Text('Reading bookmarks'),
             ),
           ],
         ),
-      ),
-      const SizedBox(height: 24),
-      const LinearProgressIndicator(value: 0.08, minHeight: 4),
-      const SizedBox(height: 12),
-      Text(
-        'Sample chapter 1 · no ebook file is open\nText size and scroll stay in this gallery session.',
-        textAlign: TextAlign.center,
-        style: Theme.of(context).textTheme.bodySmall,
-      ),
-    ],
-  );
+        const SizedBox(height: 24),
+        ProgressLine(value: (_chapter + 1) / 12),
+        const SizedBox(height: 12),
+        Text(
+          'Sample chapters · no ebook file is open\nText size and scroll stay in this gallery session.',
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+      ],
+    );
+  }
 }

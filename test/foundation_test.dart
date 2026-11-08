@@ -60,56 +60,6 @@ void main() {
   });
 
   testWidgets(
-    'gallery retains chapter and history actions without fake playback',
-    (tester) async {
-      await tester.pumpWidget(
-        BookfinApp(
-          appearance: AppearanceController(MemoryAppearanceStore()),
-          gallery: true,
-        ),
-      );
-      await tester.tap(find.text('Player & history'));
-      await tester.pumpAndSettle();
-      await tester.scrollUntilVisible(
-        find.text('Your listening history'),
-        250,
-        scrollable: find.descendant(
-          of: find.byKey(const PageStorageKey('gallery-player')),
-          matching: find.byType(Scrollable),
-        ),
-      );
-      expect(find.widgetWithText(OutlinedButton, 'Restore'), findsNWidgets(2));
-      await tester.ensureVisible(find.text('Chapters'));
-      await tester.tap(find.text('Chapters'));
-      await tester.pumpAndSettle();
-      expect(find.widgetWithText(OutlinedButton, 'Jump'), findsNWidgets(2));
-      for (final button in tester.widgetList<OutlinedButton>(
-        find.widgetWithText(OutlinedButton, 'Jump'),
-      )) {
-        expect(button.onPressed, isNull);
-      }
-      await tester.tap(find.text('Reader').first);
-      await tester.pumpAndSettle();
-      await tester.scrollUntilVisible(
-        find.text('Audio stays close'),
-        250,
-        scrollable: find.descendant(
-          of: find.byKey(const PageStorageKey('gallery-reader')),
-          matching: find.byType(Scrollable),
-        ),
-      );
-      await tester.ensureVisible(find.widgetWithText(OutlinedButton, 'Player'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(OutlinedButton, 'Player'));
-      await tester.pumpAndSettle();
-      expect(
-        find.byKey(const PageStorageKey('gallery-player')),
-        findsOneWidget,
-      );
-    },
-  );
-
-  testWidgets(
     'an open appearance sheet updates its polar explanation after the date changes',
     (tester) async {
       final controller = AppearanceController(
