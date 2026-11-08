@@ -17,3 +17,9 @@ Today a position conflict from personal-record sync shows only on Settings > Per
 
 A conflict found by a background sync produces a visible notice outside the Personal records page; the notice leads to the choice; it disappears after the choice; no notice appears without a conflict; tests cover each case.
 
+
+## Notes
+
+**2026-11-08T15:34:25Z**
+
+Alert designs are in docs/mockups/personal-records-a.html (notice on the book page above Resume and a pill in the player, both open the choice in a glass sheet) and docs/mockups/personal-records-b.html (one glass pill above the mini player on every tab, hidden by its x until a new conflict). Both read RecordSync.conflictsNotifier and add a Settings tab badge and a Settings row line. Awaiting the user's choice on boo-vtvp.
