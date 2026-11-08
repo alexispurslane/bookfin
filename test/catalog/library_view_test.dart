@@ -535,6 +535,40 @@ void main() {
         );
       },
     );
+
+    testLibrary(
+      'that the person pulls for during a background refresh joins it, and shows its failure after Jellyfin answered',
+      (tester) async {
+        await showLibrary(tester);
+        final before = client.catalogReads;
+        client.pendingCatalog = Completer();
+        final background = catalog.refresh();
+        await tester.pump();
+        await tester.fling(
+          find.descendant(
+            of: find.byType(LibraryShelf),
+            matching: find.byType(CustomScrollView),
+          ),
+          const Offset(0, 400),
+          1000,
+        );
+        await tester.pump();
+        await tester.pump(const Duration(seconds: 1));
+        client.pendingCatalog!.completeError(
+          const CatalogFailure(CatalogFailureKind.incomplete),
+        );
+        await finish(tester, background);
+        await tester.pumpAndSettle();
+        expect(client.catalogReads, before + 1);
+        expect(
+          find.text(
+            'The catalog changed or the refresh was incomplete. Try again.',
+          ),
+          findsOneWidget,
+        );
+        expect(shelfTitles(tester), hasLength(4));
+      },
+    );
   });
 
   group('the pages own navigation', () {

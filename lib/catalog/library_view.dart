@@ -66,8 +66,8 @@ class _LibraryShelfState extends State<LibraryShelf> {
     final services = widget.services;
     final catalog = services.catalog;
     return RefreshIndicator(
-      onRefresh: () =>
-          catalog.busy ? Future<void>.value() : catalog.refresh(byUser: true),
+      // A pull during a refresh joins it and asks for its outcome.
+      onRefresh: () => catalog.refresh(byUser: true),
       child: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [

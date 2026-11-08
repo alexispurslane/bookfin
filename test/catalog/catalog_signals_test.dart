@@ -429,6 +429,101 @@ void main() {
     });
   });
 
+  group('a refresh asked for while another runs', () {
+    String? message() => controller.statusNotifier.value.message;
+    const incomplete = CatalogFailure(CatalogFailureKind.incomplete);
+
+    test('joins a background refresh and reports its failure after Jellyfin answered', () async {
+      await connectAndSelect();
+      client.pendingCatalog = Completer();
+      final background = controller.refresh();
+      await pumpEventQueue();
+      final asked = controller.refresh(byUser: true);
+      client.pendingCatalog!.completeError(incomplete);
+      await Future.wait([background, asked]);
+      expect(message(), incomplete.message);
+      expect(controller.statusNotifier.value.reach, CatalogReach.reached);
+      expect(controller.statusNotifier.value.verified, isFalse);
+      expect(controller.books, hasLength(1));
+    });
+
+    test('starts no second request to Jellyfin', () async {
+      await connectAndSelect();
+      final before = client.catalogReads;
+      client.pendingCatalog = Completer();
+      final background = controller.refresh();
+      await pumpEventQueue();
+      var askedEnded = false;
+      final asked = controller
+          .refresh(byUser: true)
+          .whenComplete(() => askedEnded = true);
+      await pumpEventQueue();
+      expect(askedEnded, isFalse);
+      client.pendingCatalog!.complete([entry('two', title: 'The River')]);
+      await Future.wait([background, asked]);
+      expect(client.catalogReads, before + 1);
+      expect(controller.books.single.title, 'The River');
+      expect(controller.statusNotifier.value.verified, isTrue);
+    });
+
+    test('a background refresh that joins one the person asked for keeps it reported', () async {
+      await connectAndSelect();
+      client.pendingCatalog = Completer();
+      final asked = controller.refresh(byUser: true);
+      await pumpEventQueue();
+      final background = controller.refresh();
+      client.pendingCatalog!.completeError(incomplete);
+      await Future.wait([asked, background]);
+      expect(message(), incomplete.message);
+    });
+
+    test('a background refresh that nobody asked about stays silent', () async {
+      await connectAndSelect();
+      client.pendingCatalog = Completer();
+      final first = controller.refresh();
+      await pumpEventQueue();
+      final second = controller.refresh();
+      client.pendingCatalog!.completeError(incomplete);
+      await Future.wait([first, second]);
+      expect(message(), isNull);
+    });
+
+    test('a refresh of another selection replaces the running one', () async {
+      client.views = [
+        const BookLibrary('books', 'Books'),
+        const BookLibrary('more', 'More'),
+      ];
+      await connectAndSelect();
+      final before = client.catalogReads;
+      final pending = client.pendingCatalog = Completer();
+      final background = controller.refresh();
+      await pumpEventQueue();
+      client.pendingCatalog = null;
+      await controller.refresh(selected: {'books', 'more'}, byUser: true);
+      pending.complete([entry('late', title: 'Late')]);
+      await background;
+      expect(controller.books.single.title, isNot('Late'));
+      expect(client.catalogReads, before + 2);
+      expect(controller.accountNotifier.value.selected, {'books', 'more'});
+      expect(controller.statusNotifier.value.verified, isTrue);
+    });
+
+    test('a refresh asked for during a restore runs after it, from the restored catalog', () async {
+      await connectAndSelect();
+      final restarted = newController();
+      addTearDown(restarted.dispose);
+      store.readGate = Completer();
+      final restoring = restarted.restore();
+      await pumpEventQueue();
+      client.failure = incomplete;
+      final asked = restarted.refresh(byUser: true);
+      store.readGate!.complete();
+      await Future.wait([restoring, asked]);
+      expect(restarted.statusNotifier.value.message, incomplete.message);
+      expect(restarted.books, hasLength(1));
+    });
+  });
+
   group('whether the last sign-in or refresh succeeded', () {
     bool verified() => controller.statusNotifier.value.verified;
 

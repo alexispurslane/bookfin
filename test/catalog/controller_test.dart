@@ -44,8 +44,12 @@ class MemoryCatalogStore implements CatalogStore {
   bool failWrites = false;
   bool failReads = false;
   Completer<void>? gate;
+
+  /// Holds each read until it completes, when a test sets it.
+  Completer<void>? readGate;
   @override
   Future<String?> read(AccountScope scope) async {
+    await readGate?.future;
     if (failReads) throw StateError('unreadable cache');
     return values[scope.key];
   }
@@ -64,6 +68,9 @@ class FixtureClient extends JellyfinClient {
   List<BookLibrary> views = [const BookLibrary('books', 'Books')];
   CatalogFailure? failure;
   Completer<List<CatalogEntry>>? pendingCatalog;
+
+  /// How many catalog reads reached this client.
+  int catalogReads = 0;
   Completer<JellyfinSession>? pendingSignIn;
   @override
   Future<JellyfinSession> signIn(String username, String password) async =>
@@ -85,6 +92,7 @@ class FixtureClient extends JellyfinClient {
     JellyfinSession session,
     Set<String> selected,
   ) async {
+    catalogReads++;
     if (failure != null) throw failure!;
     return pagesOf(await (pendingCatalog?.future ?? entries));
   }
