@@ -7,9 +7,11 @@
 // strip. A page is a window [top, bottom) of the strip that holds whole
 // slices, so a paragraph splits across pages between its lines, and a table
 // between its rows. A row taller than a page is a slice for each of its
-// fragments (table.dart), so it splits between the lines of its cells. The
-// breaks follow CSS
-// fragmentation as Chromium applies it to the WebView reader's columns:
+// fragments (table.dart), so it splits between the lines of its cells.
+// Lines sit at their exact CSS positions, as in Chromium, and not where
+// Flutter's whole-pixel line heights put them (see [Piece.tops]). The
+// breaks follow CSS fragmentation as Chromium applies it to the WebView
+// reader's columns:
 // margins at a break are dropped, `break-before: page` is ignored as the
 // columns ignore it, and a break picks the latest place with the best
 // "appeal" (orphans, widows and avoid rules).
@@ -126,8 +128,12 @@ class Slice {
 /// to another place, as a split table row shows one paragraph on several
 /// pages, shares its paragraphs and their holders.
 class Piece {
+  /// The laid-out [paragraph] at ([x], [y]), with its lines where Flutter
+  /// puts them.
   Piece(ui.Paragraph paragraph, this.x, this.y, this.map)
-    : _paragraphs = _Paragraphs(paragraph);
+    : _paragraphs = _Paragraphs(paragraph, exact: false);
+
+  Piece._of(this._paragraphs, this.x, this.y, this.map);
 
   /// [piece] moved down by [dy], holding its paragraphs once more.
   Piece._moved(Piece piece, double dy, this.shown)
@@ -143,8 +149,20 @@ class Piece {
   final double y;
   final TextMap map;
 
-  /// Images and raised text drawn in the paragraph's placeholders.
+  /// Images and raised text drawn in the paragraph's placeholders, at
+  /// their place from the piece's top left.
   List<(ui.Rect, Object)> get inlines => _paragraphs.inlines;
+
+  /// The top of each line from the piece's top, and the bottom of the last
+  /// line. Flutter rounds each line's height to a whole pixel, but Chromium
+  /// does not, so an exact line's height is Flutter's height before it
+  /// rounds: its ascent and descent. That is the CSS line height, or the
+  /// height of the line's tallest inline content.
+  List<double> get tops => _paragraphs.tops;
+
+  /// How far each line draws below the place where Flutter draws it, so
+  /// that its baseline sits at its exact place.
+  List<double> get shifts => _paragraphs.shifts;
 
   /// The height of the lines that this piece shows, from its top. A hanging
   /// first line is a paragraph of its own that shows only its first line.
@@ -173,9 +191,27 @@ class Piece {
 /// The paragraphs that one or more pieces show, and how many holders they
 /// have.
 class _Paragraphs {
-  _Paragraphs(this.paragraph);
+  /// The lines of [paragraph] at their exact CSS positions when [exact],
+  /// and where Flutter puts them otherwise (see [Piece.tops]).
+  _Paragraphs(this.paragraph, {required bool exact}) {
+    final metrics = paragraph.computeLineMetrics();
+    var top = 0.0;
+    for (final (index, line) in metrics.indexed) {
+      tops.add(top);
+      shifts.add(exact ? top + line.ascent - line.baseline : 0);
+      top = exact
+          ? top + line.ascent + line.descent
+          : index == metrics.length - 1
+          ? paragraph.height
+          : line.baseline + line.descent;
+    }
+    tops.add(top);
+  }
+
   final ui.Paragraph paragraph;
   final List<(ui.Rect, Object)> inlines = [];
+  final tops = <double>[];
+  final shifts = <double>[];
   int holders = 1;
 }
 
@@ -1211,7 +1247,8 @@ class LayoutRun {
     if (piece != null) {
       final lines = piece.paragraph.computeLineMetrics();
       if (slice.line < lines.length) {
-        baseline = piece.y + lines[slice.line].baseline;
+        baseline =
+            piece.y + lines[slice.line].baseline + piece.shifts[slice.line];
       }
     }
     final held = Piece(
@@ -1456,25 +1493,35 @@ class LayoutRun {
     final metrics = paragraph.computeLineMetrics();
     final count = lines ?? metrics.length;
     final all = total ?? metrics.length;
-    double bottomOf(int line) => line == metrics.length - 1
-        ? paragraph.height
-        : metrics[line].baseline + metrics[line].descent;
-    var top = from == 0 ? 0.0 : bottomOf(from - 1);
-    final piece = Piece(paragraph, x, _y - top, built.map);
+    // Chromium rounds the font's metrics for `line-height: normal`, so only
+    // a CSS line height is fractional there.
+    final exact = _section.styles[item.text.style].lineHeight != null;
+    final paragraphs = _Paragraphs(paragraph, exact: exact);
+    final tops = paragraphs.tops;
+    var top = tops[from];
+    final piece = Piece._of(paragraphs, x, _y - top, built.map);
     _held.add(piece);
     final boxes = paragraph.getBoxesForPlaceholders();
     for (var slot = 0; slot < built.inlines.length; slot++) {
       final held = built.inlines[slot];
       if (held == null) continue;
       if (slot < boxes.length) {
-        piece.inlines.add((boxes[slot].toRect(), held));
+        // A placeholder draws with the line that holds it.
+        final rect = boxes[slot].toRect();
+        var line = 0;
+        while (line + 1 < metrics.length &&
+            metrics[line].baseline + metrics[line].descent <= rect.center.dy) {
+          line++;
+        }
+        final shift = line < metrics.length ? piece.shifts[line] : 0.0;
+        piece.inlines.add((rect.shift(ui.Offset(0, shift)), held));
       } else if (held is ui.Paragraph) {
         held.dispose();
       }
     }
     final starts = _lineStarts(paragraph, math.min(count + 1, metrics.length));
     for (var line = from; line < count; line++) {
-      final bottom = bottomOf(line);
+      final bottom = tops[line + 1];
       final above = before + line;
       // Chromium keeps the orphans rule first. It keeps the widows rule
       // only when the paragraph is long enough to keep both.
@@ -1502,7 +1549,7 @@ class LayoutRun {
       top = bottom;
     }
     if (lines != null) piece.shown = top;
-    _y = piece.y + (lines == null ? paragraph.height : top);
+    _y = piece.y + (lines == null ? tops.last : top);
   }
 
   /// The first code unit of each of a paragraph's [count] lines.
