@@ -1,10 +1,26 @@
 { pkgs }:
 let
+  # The PDFium build that host tests load, for the system that runs the dev shell.
+  pdfiumHost =
+    {
+      aarch64-darwin = {
+        name = "macos-arm64";
+        archive = "pdfium-mac-arm64.tgz";
+        sha256 = "178k1q3pmc3cy9kkcsiic0bfm7518fy3iw54lc4xqgf8ba9vsfa9";
+      };
+      x86_64-linux = {
+        name = "linux-x64";
+        archive = "pdfium-linux-x64.tgz";
+        sha256 = "0nb6gmgbz4ny13shbicp4sbhj4rckynpkcqn131f1d8c4xpcxhz1";
+      };
+    }
+    .${pkgs.stdenv.hostPlatform.system};
+  sharedLibrary = pkgs.stdenv.hostPlatform.extensions.sharedLibrary;
   pdfiumArchive = pkgs.fetchurl {
-    url = "https://github.com/bblanchon/pdfium-binaries/releases/download/chromium/8125/pdfium-mac-arm64.tgz";
-    sha256 = "178k1q3pmc3cy9kkcsiic0bfm7518fy3iw54lc4xqgf8ba9vsfa9";
+    url = "https://github.com/bblanchon/pdfium-binaries/releases/download/chromium/8125/${pdfiumHost.archive}";
+    inherit (pdfiumHost) sha256;
   };
-  pdfium = pkgs.runCommand "bookfin-pdfium-8125-macos-arm64" { } ''
+  pdfium = pkgs.runCommand "bookfin-pdfium-8125-${pdfiumHost.name}" { } ''
     mkdir -p "$out"
     tar xf ${pdfiumArchive} -C "$out"
   '';
@@ -38,6 +54,8 @@ let
   };
 in
 {
+  pdfiumLibrary = "${pdfium}/lib/libpdfium${sharedLibrary}";
+  mobiLibrary = "${mobi}/lib/libbookfin_mobi${sharedLibrary}";
   inherit
     pdfium
     pdfiumAndroid

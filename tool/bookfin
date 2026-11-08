@@ -16,7 +16,11 @@ case "$command" in
   test)
     bash test/sdk_link_test.sh
     bash test/sdk_platform_test.sh
-    bash test/darwin_native_tools_test.sh
+    if [[ $(uname -s) == Darwin ]]; then
+      bash test/darwin_native_tools_test.sh
+    else
+      printf 'SKIP: darwin_native_tools_test.sh tests the macOS SDK and signer, which only the macOS shell has.\n'
+    fi
     bash test/native/ocr_worker_test.sh
     flutter test --reporter expanded
     ;;
