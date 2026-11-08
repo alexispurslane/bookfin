@@ -42,7 +42,9 @@ enum CatalogReach {
 /// - [refreshing]: a sign-in or a refresh talks to Jellyfin now. A restore
 ///   from storage is not a refresh.
 /// - [reach]: what the last request said about Jellyfin.
-/// - [message]: the text to show about the last operation, or null.
+/// - [message]: the text to show about the last operation, or null. A
+///   signed-in catalog that cannot reach Jellyfin sets none, because [reach]
+///   says it, and the shelf and the status line show it from there.
 /// - [verified]: the last sign-in or refresh succeeded. A new one, a
 ///   cancel, a failure or a sign-out clears it, and a correction keeps it.
 ///   It is its own field, because a refresh can reach Jellyfin and still
@@ -508,7 +510,7 @@ class CatalogController extends ChangeNotifier {
     } catch (error) {
       if (_current(generation)) {
         if (error is CatalogFailure) {
-          await _failure(error, generation);
+          await _failure(error, generation, report: true);
         } else {
           _clearVisible();
           _message = 'The account could not be saved in secure storage. Sign in again.';
@@ -524,7 +526,17 @@ class CatalogController extends ChangeNotifier {
     }
   }
 
-  Future<void> refresh({Set<String>? selected}) async {
+  /// Reads the account's book libraries and the catalog of [selected], or
+  /// of the saved selection, from Jellyfin, then saves and shows them.
+  ///
+  /// [byUser] says that the person asked for this refresh, for example with
+  /// pull to refresh, Retry or Save libraries. Only such a refresh reports
+  /// a failure after Jellyfin answered, such as an incomplete catalog or one
+  /// that cannot be saved. A background refresh, at launch or on app resume,
+  /// keeps those silent. Every refresh reports an expired sign-in and
+  /// revoked access. A refresh that cannot reach Jellyfin says so through
+  /// [CatalogStatus.reach].
+  Future<void> refresh({Set<String>? selected, bool byUser = false}) async {
     final currentSession = _session;
     if (currentSession == null) return;
     final generation = _begin();
@@ -576,8 +588,8 @@ class CatalogController extends ChangeNotifier {
     } catch (error) {
       if (_current(generation)) {
         if (error is CatalogFailure) {
-          await _failure(error, generation);
-        } else {
+          await _failure(error, generation, report: byUser);
+        } else if (byUser) {
           _message = 'The refreshed catalog was not saved. Your previous saved books are unchanged.';
         }
       }
@@ -591,9 +603,23 @@ class CatalogController extends ChangeNotifier {
     }
   }
 
-  Future<void> _failure(CatalogFailure failure, int generation) async {
+  /// Records [failure] of the sign-in or refresh of [generation]. It always
+  /// tells an expired sign-in and blocked access. It tells a failure after
+  /// Jellyfin answered only when [report] is true. It leaves a signed-in
+  /// catalog that cannot reach Jellyfin to [CatalogStatus.reach].
+  Future<void> _failure(
+    CatalogFailure failure,
+    int generation, {
+    required bool report,
+  }) async {
     _verified = false;
-    _message = failure.message;
+    _message = switch (failure.kind) {
+      CatalogFailureKind.unavailable when _session != null => null,
+      CatalogFailureKind.unauthorized ||
+      CatalogFailureKind.forbidden ||
+      CatalogFailureKind.invalidSelection => failure.message,
+      _ => report ? failure.message : null,
+    };
     _reach = switch (failure.kind) {
       CatalogFailureKind.unavailable => CatalogReach.unreachable,
       // The request did not reach Jellyfin, so it says nothing new.

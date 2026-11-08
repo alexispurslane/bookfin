@@ -263,7 +263,7 @@ void main() {
       await connectAndSelect();
       final saved = store.values[account('alice').scope.key];
       client.failure = const CatalogFailure(CatalogFailureKind.incomplete);
-      await controller.refresh();
+      await controller.refresh(byUser: true);
       expect(controller.books, hasLength(1));
       expect(store.values[account('alice').scope.key], same(saved));
       expect(controller.message, contains('incomplete'));

@@ -280,20 +280,53 @@ class TabFrame extends StatelessWidget {
   );
 }
 
-/// The catalog's progress and its error, above every tab's page. It is the
-/// one place where the app shows the state of a catalog refresh.
+/// What a signed-in catalog says while it cannot reach Jellyfin. The shelf
+/// then shows only downloaded books.
+const _unreachable = 'Cannot reach Jellyfin. Showing downloaded books.';
+
+/// The catalog's progress, its offline notice and its message, above every
+/// tab's page. It is the one place where the app shows the state of a
+/// catalog refresh, and the controller of that surface: its Retry action
+/// refreshes the catalog.
 class _CatalogStatus extends StatelessWidget {
   const _CatalogStatus({required this.catalog});
   final CatalogController catalog;
 
   @override
   Widget build(BuildContext context) => ListenableSelector(
-    listenable: catalog,
-    select: () => (busy: catalog.busy, message: catalog.message),
+    listenable: Listenable.merge([
+      catalog.statusNotifier,
+      catalog.accountNotifier,
+    ]),
+    select: () {
+      final status = catalog.statusNotifier.value;
+      return (
+        refreshing: status.refreshing,
+        offline:
+            status.reach == CatalogReach.unreachable &&
+            catalog.accountNotifier.value.session != null,
+        message: status.message,
+      );
+    },
     builder: (context, status, _) => Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (status.busy) const LinearProgressIndicator(minHeight: 2),
+        _SlowProgressLine(running: status.refreshing),
+        if (status.offline)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 2, 8, 2),
+            child: Row(
+              children: [
+                const Expanded(child: StatusMessage(_unreachable)),
+                TextButton(
+                  onPressed: status.refreshing
+                      ? null
+                      : () => unawaited(catalog.refresh(byUser: true)),
+                  child: const Text('Retry'),
+                ),
+              ],
+            ),
+          ),
         if (status.message case final message?)
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
@@ -302,6 +335,60 @@ class _CatalogStatus extends StatelessWidget {
       ],
     ),
   );
+}
+
+/// A thin progress line for work that is [running], shown only after the
+/// work ran for [_delay]. Shorter work shows nothing, so a fast background
+/// refresh does not flash.
+class _SlowProgressLine extends StatefulWidget {
+  const _SlowProgressLine({required this.running});
+  final bool running;
+
+  static const _delay = Duration(milliseconds: 1500);
+
+  @override
+  State<_SlowProgressLine> createState() => _SlowProgressLineState();
+}
+
+class _SlowProgressLineState extends State<_SlowProgressLine> {
+  Timer? _timer;
+  bool _shown = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _follow();
+  }
+
+  @override
+  void didUpdateWidget(_SlowProgressLine oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.running != widget.running) _follow();
+  }
+
+  /// Hides the line, and starts the delay again while the work runs.
+  void _follow() {
+    _timer?.cancel();
+    _timer = null;
+    _shown = false;
+    if (widget.running) {
+      _timer = Timer(
+        _SlowProgressLine._delay,
+        () => setState(() => _shown = true),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => _shown
+      ? const LinearProgressIndicator(minHeight: 2)
+      : const SizedBox.shrink();
 }
 
 /// A tab's page: catalog progress and errors, the player's notices when
@@ -511,10 +598,13 @@ class _LibrarySelectorState extends State<LibrarySelector> {
           onPressed: widget.catalog.busy || widget.catalog.libraries.isEmpty
               ? null
               : () async {
-                  await widget.catalog.refresh(selected: _selected);
+                  await widget.catalog.refresh(
+                    selected: _selected,
+                    byUser: true,
+                  );
                   if (context.mounted &&
                       widget.closeOnSave &&
-                      widget.catalog.message == null) {
+                      widget.catalog.statusNotifier.value.verified) {
                     Navigator.pop(context);
                   }
                 },
@@ -523,13 +613,19 @@ class _LibrarySelectorState extends State<LibrarySelector> {
         TextButton(
           onPressed: widget.catalog.busy
               ? widget.catalog.cancel
-              : () => unawaited(widget.catalog.refresh()),
+              : () => unawaited(widget.catalog.refresh(byUser: true)),
           child: Text(
             widget.catalog.busy ? 'Cancel refresh' : 'Refresh libraries',
           ),
         ),
-        if (widget.closeOnSave && widget.catalog.message != null)
-          Text(widget.catalog.message!),
+        if (widget.closeOnSave)
+          if (widget.catalog.message ??
+                  (widget.catalog.statusNotifier.value.reach ==
+                          CatalogReach.unreachable
+                      ? _unreachable
+                      : null)
+              case final message?)
+            Text(message),
       ],
     ),
   );

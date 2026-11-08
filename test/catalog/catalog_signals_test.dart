@@ -320,7 +320,7 @@ void main() {
       client.failure = const CatalogFailure(CatalogFailureKind.unavailable);
       await controller.refresh();
       client.failure = const CatalogFailure(CatalogFailureKind.incomplete);
-      await controller.refresh();
+      await controller.refresh(byUser: true);
       expect(controller.statusNotifier.value.reach, CatalogReach.reached);
       expect(controller.statusNotifier.value.message, contains('incomplete'));
     });
@@ -337,6 +337,78 @@ void main() {
       await controller.refresh();
       await controller.signOut();
       expect(controller.statusNotifier.value.reach, CatalogReach.unknown);
+    });
+  });
+
+  group('what a refresh tells the person', () {
+    String? message() => controller.statusNotifier.value.message;
+
+    test(
+      'a refresh that cannot reach Jellyfin leaves the telling to the reach',
+      () async {
+        await connectAndSelect();
+        client.failure = const CatalogFailure(CatalogFailureKind.unavailable);
+        await controller.refresh();
+        expect(message(), isNull);
+        await controller.refresh(byUser: true);
+        expect(message(), isNull);
+        expect(controller.statusNotifier.value.reach, CatalogReach.unreachable);
+      },
+    );
+
+    test('a background refresh that Jellyfin answers with an incomplete catalog says nothing', () async {
+      await connectAndSelect();
+      client.failure = const CatalogFailure(CatalogFailureKind.incomplete);
+      await controller.refresh();
+      expect(message(), isNull);
+    });
+
+    test(
+      'a background refresh whose catalog cannot be saved says nothing',
+      () async {
+        await connectAndSelect();
+        store.failWrites = true;
+        client.entries = [entry('two')];
+        await controller.refresh();
+        expect(message(), isNull);
+      },
+    );
+
+    test('a refresh that the person asked for reports a catalog that cannot be saved', () async {
+      await connectAndSelect();
+      store.failWrites = true;
+      client.entries = [entry('two')];
+      await controller.refresh(byUser: true);
+      expect(message(), contains('not saved'));
+    });
+
+    test('a background refresh still reports an expired sign-in and revoked access', () async {
+      await connectAndSelect();
+      client.failure = const CatalogFailure(CatalogFailureKind.forbidden);
+      await controller.refresh();
+      expect(message(), 'This account does not have access.');
+      client.failure = const CatalogFailure(CatalogFailureKind.unauthorized);
+      await controller.refresh();
+      expect(message(), contains('expired'));
+    });
+
+    test('a sign-in that cannot reach Jellyfin asks to check the address and the connection', () async {
+      client.pendingSignIn = Completer();
+      final signingIn = controller.connect(
+        'https://books.example',
+        'alice',
+        'password',
+      );
+      await pumpEventQueue();
+      client.pendingSignIn!.completeError(
+        const CatalogFailure(CatalogFailureKind.unavailable),
+      );
+      await signingIn;
+      expect(controller.session, isNull);
+      expect(
+        message(),
+        'Cannot reach Jellyfin. Check the server address and your connection.',
+      );
     });
   });
 

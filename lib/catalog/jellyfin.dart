@@ -25,7 +25,7 @@ class CatalogFailure implements Exception {
       'Sign in again. Your Jellyfin session has expired.',
     CatalogFailureKind.forbidden => 'This account does not have access.',
     CatalogFailureKind.unavailable =>
-      'Cannot reach Jellyfin. Saved books are still available.',
+      'Cannot reach Jellyfin. Check the server address and your connection.',
     CatalogFailureKind.invalidResponse =>
       'Jellyfin returned an unreadable catalog.',
     CatalogFailureKind.incomplete =>

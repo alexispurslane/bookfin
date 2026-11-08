@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:bookfin/catalog/controller.dart';
@@ -103,33 +104,122 @@ void main() {
     expect(find.text('The Orchard Cycle'), findsOneWidget);
   });
 
-  testWidgets('a saved library names the day and time it was read', (
-    tester,
-  ) async {
-    final credentials = MemoryCredentials();
-    final store = MemoryCatalogStore();
-    final first = CatalogController(
-      credentials: credentials,
-      store: store,
-      clientFactory: (server, device) => client,
+  testWidgets(
+    'a restored library shows its books with no Saved library label',
+    (tester) async {
+      final credentials = MemoryCredentials();
+      final store = MemoryCatalogStore();
+      final first = CatalogController(
+        credentials: credentials,
+        store: store,
+        clientFactory: (server, device) => client,
+      );
+      await first.connect('https://books.example', 'alice', 'password');
+      await first.refresh(selected: {'books'});
+      first.dispose();
+      controller.dispose();
+      controller = CatalogController(
+        credentials: credentials,
+        store: store,
+        clientFactory: (server, device) => client,
+      );
+      await controller.restore();
+      await show(tester);
+      expect(find.text('The Orchard'), findsOneWidget);
+      expect(find.textContaining('Saved library'), findsNothing);
+    },
+  );
+
+  group('the catalog keeps its own messages', () {
+    testWidgets('an expired sign-in says so and offers no Retry', (
+      tester,
+    ) async {
+      await controller.connect('https://books.example', 'alice', 'password');
+      await controller.refresh(selected: {'books'});
+      await show(tester);
+      client.failure = const CatalogFailure(CatalogFailureKind.unauthorized);
+      await controller.refresh();
+      await tester.pumpAndSettle();
+      expect(
+        find.text('Sign in again. Your Jellyfin session has expired.'),
+        findsOneWidget,
+      );
+      expect(find.widgetWithText(TextButton, 'Retry'), findsNothing);
+    });
+
+    testWidgets('revoked access says so and offers no Retry', (tester) async {
+      await controller.connect('https://books.example', 'alice', 'password');
+      await controller.refresh(selected: {'books'});
+      await show(tester);
+      client.failure = const CatalogFailure(CatalogFailureKind.forbidden);
+      await controller.refresh();
+      await tester.pumpAndSettle();
+      expect(find.text('This account does not have access.'), findsOneWidget);
+      expect(find.textContaining('Cannot reach Jellyfin'), findsNothing);
+      expect(find.widgetWithText(TextButton, 'Retry'), findsNothing);
+    });
+
+    testWidgets(
+      'a sign-in that cannot reach Jellyfin offers no downloaded books',
+      (tester) async {
+        await show(tester);
+        client.pendingSignIn = Completer();
+        final signingIn = controller.connect(
+          'https://books.example',
+          'alice',
+          'password',
+        );
+        await tester.pump();
+        client.pendingSignIn!.completeError(
+          const CatalogFailure(CatalogFailureKind.unavailable),
+        );
+        await signingIn;
+        await tester.pumpAndSettle();
+        expect(
+          find.text(
+            'Cannot reach Jellyfin. Check the server address and your connection.',
+          ),
+          findsOneWidget,
+        );
+        expect(find.textContaining('downloaded books'), findsNothing);
+        expect(find.widgetWithText(TextButton, 'Retry'), findsNothing);
+      },
     );
-    await first.connect('https://books.example', 'alice', 'password');
-    await first.refresh(selected: {'books'});
-    first.dispose();
-    controller.dispose();
-    controller = CatalogController(
-      credentials: credentials,
-      store: store,
-      clientFactory: (server, device) => client,
+
+    testWidgets(
+      'saving libraries that cannot reach Jellyfin keeps the page open and says so',
+      (tester) async {
+        await controller.connect('https://books.example', 'alice', 'password');
+        await controller.refresh(selected: {'books'});
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Builder(
+              builder: (context) => TextButton(
+                onPressed: () => Navigator.push<void>(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => Scaffold(
+                      body: LibrarySelector(
+                        catalog: controller,
+                        closeOnSave: true,
+                      ),
+                    ),
+                  ),
+                ),
+                child: const Text('Libraries'),
+              ),
+            ),
+          ),
+        );
+        await tester.tap(find.text('Libraries'));
+        await tester.pumpAndSettle();
+        client.failure = const CatalogFailure(CatalogFailureKind.unavailable);
+        await tester.tap(find.text('Save libraries'));
+        await tester.pumpAndSettle();
+        expect(find.text('Choose book libraries'), findsOneWidget);
+        expect(find.textContaining('Cannot reach Jellyfin'), findsOneWidget);
+      },
     );
-    await controller.restore();
-    expect(controller.verified, isFalse);
-    await show(tester);
-    final read = controller.cache!.completedAt!.toLocal();
-    final time = const DefaultMaterialLocalizations().formatTimeOfDay(
-      TimeOfDay.fromDateTime(read),
-    );
-    expect(find.text('Saved library · Today, $time'), findsOneWidget);
   });
 
   testWidgets('the top bar switches the library between a grid and a list', (
