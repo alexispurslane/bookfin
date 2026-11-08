@@ -260,9 +260,14 @@ class _PdfViewportState extends State<PdfViewport>
       display(PdfAddress(part + 1, 0));
 
   /// A PDF page is a whole part of the book, so its neighbors are the source
-  /// pages before and after it.
+  /// pages before and after it. A page draws in well under a tenth of a
+  /// second, so it does not stop when abandoned.
   @override
-  Future<PagePreview> preview(BookPlace place, double width) async {
+  Future<PagePreview> preview(
+    BookPlace place,
+    double width,
+    Future<void> abandon,
+  ) async {
     final part = place.part;
     final raster = await widget.book.render(part + 1, width);
     final drawn = Completer<ui.Image>();

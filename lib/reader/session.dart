@@ -259,11 +259,11 @@ class ReaderSession extends ChangeNotifier {
   /// The scrub deck's pages, which the shown viewport draws. Closing the
   /// book ends a scrub.
   late final previews = PagePreviews(
-    draw: (place, width) {
+    draw: (place, width, abandon) {
       final navigator = _navigator;
       return navigator == null
           ? Future.error(StateError('No book is shown.'))
-          : navigator.preview(place, width);
+          : navigator.preview(place, width, abandon);
     },
     locate: (place) => _bookMap?.fractionAt(place) ?? 0,
   );

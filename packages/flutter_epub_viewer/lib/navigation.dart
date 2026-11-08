@@ -125,8 +125,15 @@ abstract interface class NavigatorPort {
 
   /// Draws the page that holds the place [progress] of the way through the
   /// text of spine section [section], [width] pixels wide, as the reader
-  /// would show it, without moving the shown page.
-  Future<PagePicture> preview(int section, double progress, double width);
+  /// would show it, without moving the shown page. When [abandon] completes
+  /// before the page is drawn, the drawing stops at its next step and
+  /// fails.
+  Future<PagePicture> preview(
+    int section,
+    double progress,
+    double width,
+    Future<void> abandon,
+  );
   Future<void> configure({required double fontSize, required bool night});
   Future<SearchReport> search(String query, int request);
   Future<void> cancelSearch(int request);

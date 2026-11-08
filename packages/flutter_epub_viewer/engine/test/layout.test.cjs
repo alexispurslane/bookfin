@@ -35,9 +35,11 @@ async function browser({ bookfinFont = false } = {}) {
     const message = JSON.parse(event.data);
     if (message.id) { pending.get(message.id)(message); pending.delete(message.id); }
     if (message.method === 'Fetch.requestPaused') {
+      // A navigation cancels a font request that is still paused, such as the
+      // one of the page previews that load in the background.
       call('Fetch.fulfillRequest', { requestId: message.params.requestId, responseCode: 200,
         responseHeaders: [{ name: 'Content-Type', value: 'font/ttf' }, { name: 'Access-Control-Allow-Origin', value: '*' }],
-        body: fs.readFileSync(path.join(root, 'assets/fonts/SourceSerif4.ttf')).toString('base64') });
+        body: fs.readFileSync(path.join(root, 'assets/fonts/SourceSerif4.ttf')).toString('base64') }).catch(() => {});
     }
   });
   async function call(method, params = {}) {
@@ -133,7 +135,7 @@ for (const {name, tag, whiteSpace, text} of [
       await page.call('Page.navigate', {url: source.url});
       await page.evaluate("new Promise(resolve => { if(window.bookfinReader)resolve();else addEventListener('load',resolve,{once:true});})");
       await page.evaluate(`window.flutter_inappwebview={callHandler:()=>{}};
-        const create=ePub;window.ePub=Object.assign((...args)=>{const book=create(...args);const render=book.renderTo.bind(book);book.renderTo=(...args)=>(window.viewport=render(...args));return book},create);
+        const create=ePub;window.ePub=Object.assign((...args)=>{const book=create(...args);const render=book.renderTo.bind(book);book.renderTo=(...args)=>{const made=render(...args);if(!window.shownRendition)window.viewport=window.shownRendition=made;return made};return book},create);
         bookfinReader.openBook({base:${JSON.stringify(source.url)},packagePath:'OPS/book.opf',fontSize:20,night:false,initial:null})`);
       const before = await page.evaluate(`(()=>{const contents=viewport.getContents()[0];const node=contents.document.querySelector('#target').firstChild;
         const range=contents.document.createRange();range.setStart(node,0);range.collapse(true);
@@ -172,7 +174,7 @@ test('converted Alice retains the recorded character passage', { timeout: 180000
       await page.call('Page.navigate', { url: source.url });
       await page.evaluate("new Promise(resolve => { if (window.bookfinReader) resolve(); else addEventListener('load', resolve, {once:true}); })");
       await page.evaluate(`window.saved=[];window.failures=[];window.flutter_inappwebview={callHandler:(name,value)=>{if(name==='readerLocation')saved.push(value);if(name==='readerWarning'||name==='readerFailure')failures.push(value)}};
-        const create=ePub;window.ePub=Object.assign((...args)=>{const book=create(...args);const render=book.renderTo.bind(book);book.renderTo=(...args)=>(window.viewport=render(...args));return book},create);
+        const create=ePub;window.ePub=Object.assign((...args)=>{const book=create(...args);const render=book.renderTo.bind(book);book.renderTo=(...args)=>{const made=render(...args);if(!window.shownRendition)window.viewport=window.shownRendition=made;return made};return book},create);
         document.querySelector('#viewer').style.height='${height}px';
         bookfinReader.openBook({base:${JSON.stringify(source.url)},packagePath:${JSON.stringify(publication.packagePath)},fontSize:22,night:false,initial:${JSON.stringify(initial)}})`);
     }
@@ -271,6 +273,7 @@ async function withReader(action, resizeWhileLoading = false) {
     await page.evaluate(`document.querySelector('#viewer').style.height='667px'; viewport.resize(412,667); new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>requestAnimationFrame(resolve))))`);
     await page.evaluate(`new Promise(resolve=>{function ready(){const frame=document.querySelector('iframe');if(frame?.contentDocument.querySelector('link[rel=stylesheet]')?.sheet) resolve(frame.contentDocument.fonts.ready);else requestAnimationFrame(ready)}ready()}).then(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))))`);
     await page.evaluate(`viewport.reportLocation(); new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>requestAnimationFrame(resolve))))`);
+    await page.evaluate(pageListener);
     await action(page);
     await page.evaluate('viewport.checkInvariants()');
   } finally { await page.close(); await source.close(); }
@@ -369,7 +372,7 @@ test('a failed publication stylesheet rejects opening and reports the real displ
 
 test('resize during blocked initial resource loading keeps the requested passage attached', { timeout: 30000 }, async () => {
   await withReader(async page => {
-    assert.equal(await page.evaluate('document.querySelectorAll("iframe").length'), 1);
+    assert.equal(await page.evaluate('viewport.manager.container.querySelectorAll("iframe").length'), 1);
     assertPassageFive(await visiblePassage(page));
   }, true);
 });
@@ -396,12 +399,12 @@ test('automatic viewport resize waits for a loading neighboring chapter', { time
     await page.call('Page.navigate', { url: source.url });
     await page.evaluate("new Promise(resolve => { if (window.bookfinReader) resolve(); else addEventListener('load', resolve, {once:true}); })");
     await page.evaluate(`window.saved=[];window.flutter_inappwebview={callHandler:(name,value)=>{if(name==='readerLocation')saved.push(value)}};
-      const create=ePub;window.ePub=Object.assign((...args)=>{const book=create(...args);const render=book.renderTo.bind(book);book.renderTo=(...args)=>(window.viewport=render(...args));return book},create);
+      const create=ePub;window.ePub=Object.assign((...args)=>{const book=create(...args);const render=book.renderTo.bind(book);book.renderTo=(...args)=>{const made=render(...args);if(!window.shownRendition)window.viewport=window.shownRendition=made;return made};return book},create);
       bookfinReader.openBook({base:${JSON.stringify(source.url)},packagePath:'OPS/book.opf',fontSize:20,night:false})`);
     await page.evaluate('window.moving=bookfinReader.move(true);true');
     await source.requested;
     await page.evaluate("document.querySelector('#viewer').style.height='667px'; viewport.manager.onResized(); new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))");
-    assert.equal(await page.evaluate('document.querySelectorAll("iframe").length'), 1);
+    assert.equal(await page.evaluate('viewport.manager.container.querySelectorAll("iframe").length'), 1);
     source.releaseStyles();
     await source.fontRequested;
     source.releaseFont();
@@ -425,7 +428,7 @@ for (const navigation of ['contents', 'bookmark']) {
       await page.call('Page.navigate', { url: source.url });
       await page.evaluate("new Promise(resolve => { if (window.bookfinReader) resolve(); else addEventListener('load', resolve, {once:true}); })");
       await page.evaluate(`window.saved=[];window.flutter_inappwebview={callHandler:(name,value)=>{if(name==='readerLocation')saved.push(value)}};
-        const create=ePub;window.ePub=Object.assign((...args)=>{const book=create(...args);const render=book.renderTo.bind(book);book.renderTo=(...args)=>(window.viewport=render(...args));return book},create);
+        const create=ePub;window.ePub=Object.assign((...args)=>{const book=create(...args);const render=book.renderTo.bind(book);book.renderTo=(...args)=>{const made=render(...args);if(!window.shownRendition)window.viewport=window.shownRendition=made;return made};return book},create);
         bookfinReader.openBook({base:${JSON.stringify(source.url)},packagePath:'OPS/book.opf',fontSize:20,night:false})`);
       const requested = source.holdStyles();
       await page.evaluate("document.querySelector('#viewer').style.height='667px';viewport.manager.onResized();true");
@@ -489,6 +492,16 @@ function imageDifference(first, second) {
     return sum/(a.length/4*3)})()`;
 }
 
+// Stands in for the app's page listener. `previewOf(index, progress, width)`
+// draws a page with the next request number and returns its report, with the
+// posted image as a JPEG data URL and the request number that the image
+// carried.
+const pageListener = `window.posted=[];window.previewCount=0;window.bookfinPages={postMessage:buffer=>posted.push(buffer)};
+  window.previewOf=async(index,progress,width)=>{const request=++previewCount;const report=await bookfinReader.previewPage(request,index,progress,width);
+    const bytes=new Uint8Array(posted.at(-1));const blob=new Blob([bytes.subarray(4)],{type:'image/jpeg'});
+    const image=await new Promise(resolve=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.readAsDataURL(blob)});
+    return {...report,image,tag:new DataView(bytes.buffer).getUint32(0,true),request,jpeg:bytes[4]===0xff&&bytes[5]===0xd8}};true`;
+
 // The shown viewport as a PNG data URL.
 async function shownPage(page) {
   await page.evaluate('new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))');
@@ -501,7 +514,7 @@ test('a page preview draws the page at a place and leaves the shown page where i
     const passage = await page.evaluate(shareBefore('Harbour passage 5.'));
     await page.evaluate('bookfinReader.seek(0, 0)');
     const reported = await page.evaluate('saved.length');
-    const preview = await page.evaluate(`bookfinReader.previewPage(0, ${passage}, 412)`);
+    const preview = await page.evaluate(`previewOf(0, ${passage}, 412)`);
     assert.ok(preview.start <= passage && passage <= preview.end, 'the preview holds the place: ' + JSON.stringify({ ...preview, image: undefined }));
     assert.equal(await page.evaluate('saved.length'), reported, 'a preview reports no reading place');
     assert.equal(await page.evaluate('viewport.location.start.displayed.page'), 1, 'the shown page stays');
@@ -515,18 +528,56 @@ test('a page preview draws the page at a place and leaves the shown page where i
   });
 });
 
+test('opening a book prepares the page previews in the background, beside the shown page', { timeout: 60000 }, async () => {
+  await withReader(async page => {
+    const frames = await page.evaluate(`new Promise(resolve=>{const started=performance.now();(function check(){const count=document.querySelectorAll('iframe').length;
+      if(count>1||performance.now()-started>10000)resolve(count);else setTimeout(check,50)})()})`);
+    assert.equal(frames, 2, 'the hidden rendition has its own frame');
+    assertPassageFive(await visiblePassage(page));
+  });
+});
+
+test('a page preview posts its image as raw JPEG bytes that carry its request number', { timeout: 60000 }, async () => {
+  await withReader(async page => {
+    const preview = await page.evaluate('previewOf(0, 0, 206)');
+    assert.ok(preview.jpeg, 'the bytes after the number are a JPEG image');
+    assert.equal(preview.tag, preview.request);
+    assert.equal(preview.image.startsWith('data:image/jpeg;base64,'), true);
+    assert.equal(await page.evaluate('posted.length'), 1, 'one message for one page');
+  });
+});
+
+test('a cancelled page preview stops and posts no image', { timeout: 60000 }, async () => {
+  await withReader(async page => {
+    const outcome = await page.evaluate(`(async()=>{const drawing=bookfinReader.previewPage(7,0,0.5,206);bookfinReader.cancelPreview(7);
+      try{await drawing;return 'drawn'}catch(error){return error.message}})()`);
+    assert.equal(outcome, 'The preview was cancelled');
+    assert.equal(await page.evaluate('posted.length'), 0);
+  });
+});
+
+test('cancelling a page preview that ended leaves the next preview alone', { timeout: 60000 }, async () => {
+  await withReader(async page => {
+    await page.evaluate('previewOf(0, 0, 103)');
+    await page.evaluate('bookfinReader.cancelPreview(previewCount)');
+    const next = await page.evaluate('previewOf(0, 0.5, 103)');
+    assert.ok(next.jpeg);
+    assert.equal(next.tag, 2);
+  });
+});
+
 test('a page preview names where its neighbors start, and the book ends have none', { timeout: 60000 }, async () => {
   await withReader(async page => {
-    const first = await page.evaluate('bookfinReader.previewPage(0, 0, 103)');
+    const first = await page.evaluate('previewOf(0, 0, 103)');
     assert.equal(first.previous, null);
     assert.equal(first.start, 0);
     assert.equal(first.next.part, 0);
     assert.ok(first.next.progress > first.end, JSON.stringify({ ...first, image: undefined }));
-    const second = await page.evaluate(`bookfinReader.previewPage(0, ${first.next.progress}, 103)`);
+    const second = await page.evaluate(`previewOf(0, ${first.next.progress}, 103)`);
     assert.ok(second.start > first.end - 1e-6 && second.start <= first.next.progress);
-    const back = await page.evaluate(`bookfinReader.previewPage(0, ${second.previous.progress}, 103)`);
+    const back = await page.evaluate(`previewOf(0, ${second.previous.progress}, 103)`);
     assert.equal(back.start, first.start);
-    const last = await page.evaluate('bookfinReader.previewPage(0, 1, 103)');
+    const last = await page.evaluate('previewOf(0, 1, 103)');
     assert.equal(last.next, null);
     assert.equal(last.end, 1);
   });
@@ -534,9 +585,9 @@ test('a page preview names where its neighbors start, and the book ends have non
 
 test('a page preview follows the reading appearance as it changes, and its scale', { timeout: 60000 }, async () => {
   await withReader(async page => {
-    await page.evaluate('bookfinReader.previewPage(0, 0, 206)');
+    await page.evaluate('previewOf(0, 0, 206)');
     await page.evaluate('bookfinReader.configure(20, true)');
-    const preview = await page.evaluate('bookfinReader.previewPage(0, 0, 206)');
+    const preview = await page.evaluate('previewOf(0, 0, 206)');
     const pixel = await page.evaluate(`(async()=>{const image=new Image();image.src=${JSON.stringify(preview.image)};await image.decode();
       const canvas=document.createElement('canvas');canvas.width=image.width;canvas.height=image.height;const context=canvas.getContext('2d');
       context.drawImage(image,0,0);return {width:image.width,height:image.height,corner:[...context.getImageData(2,2,1,1).data]}})()`);
@@ -556,9 +607,10 @@ test('a page preview crosses from a section to its neighbors', { timeout: 60000 
     await page.evaluate("new Promise(resolve => { if (window.bookfinReader) resolve(); else addEventListener('load', resolve, {once:true}); })");
     await page.evaluate(`window.flutter_inappwebview={callHandler:()=>{}};
       bookfinReader.openBook({base:${JSON.stringify(source.url)},packagePath:'OPS/book.opf',fontSize:20,night:false})`);
-    const end = await page.evaluate('bookfinReader.previewPage(0, 1, 103)');
+    await page.evaluate(pageListener);
+    const end = await page.evaluate('previewOf(0, 1, 103)');
     assert.deepEqual(end.next, { part: 1, progress: 0 });
-    const start = await page.evaluate('bookfinReader.previewPage(1, 0, 103)');
+    const start = await page.evaluate('previewOf(1, 0, 103)');
     assert.equal(start.part, 1);
     assert.deepEqual(start.previous, { part: 0, progress: 1 });
     assert.equal(start.next, null);

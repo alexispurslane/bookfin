@@ -196,8 +196,13 @@ abstract interface class DocumentNavigator {
   Future<void> seek(int part, double progress);
 
   /// Draws the page that holds [place], [width] pixels wide, as the viewport
-  /// would show it, without moving the shown page.
-  Future<PagePreview> preview(BookPlace place, double width);
+  /// would show it, without moving the shown page. When [abandon] completes
+  /// before the page is drawn, the drawing can stop early and fail.
+  Future<PagePreview> preview(
+    BookPlace place,
+    double width,
+    Future<void> abandon,
+  );
   Future<void> configure({required double fontSize, required bool night});
   Future<ReaderSearchReport> search(String query, int request);
   Future<void> cancelSearch(int request);
@@ -221,8 +226,17 @@ class EpubNavigator implements DocumentNavigator {
   @override
   Future<void> seek(int part, double progress) => port.seek(part, progress);
   @override
-  Future<PagePreview> preview(BookPlace place, double width) async {
-    final picture = await port.preview(place.part, place.progress, width);
+  Future<PagePreview> preview(
+    BookPlace place,
+    double width,
+    Future<void> abandon,
+  ) async {
+    final picture = await port.preview(
+      place.part,
+      place.progress,
+      width,
+      abandon,
+    );
     // The engine decodes the image on another thread.
     final codec = await ui.instantiateImageCodec(picture.image);
     final ui.Image image;

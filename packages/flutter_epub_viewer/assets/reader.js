@@ -21,6 +21,7 @@ var bookfinReader = (() => {
   var reader_exports = {};
   __export(reader_exports, {
     applyAppearance: () => applyAppearance,
+    cancelPreview: () => cancelPreview,
     cancelSearch: () => cancelSearch,
     configure: () => configure,
     display: () => display,
@@ -274,6 +275,10 @@ var bookfinReader = (() => {
       }
     }
     await rendition.display(initial ? initial.cfi : void 0);
+    const shown = rendition.location && rendition.location.start.cfi;
+    previewJob = previewJob.catch(() => {
+    }).then(() => previewRendition().display(shown)).catch(() => {
+    });
     let entries = flatten(book.navigation.toc);
     if (!entries.length) entries = book.spine.spineItems.filter((section) => section.linear).map((section, index) => ({ title: `Chapter ${index + 1}`, href: section.href, depth: 0 }));
     return entries;
@@ -396,7 +401,7 @@ var bookfinReader = (() => {
   }
   var linkedCss = /* @__PURE__ */ new Map();
   var encodedCss = /* @__PURE__ */ new Map();
-  async function drawPage(view, scale) {
+  async function drawPage(view, scale, step) {
     const manager = view.manager;
     const frame = manager.views.first();
     const document2 = frame.contents.document;
@@ -404,6 +409,7 @@ var bookfinReader = (() => {
     const height = manager.container.clientHeight;
     const left = manager.container.scrollLeft - frame.element.offsetLeft;
     const css = await documentCss(document2);
+    await step();
     if (!encodedCss.has(css)) encodedCss.set(css, encodeURIComponent(css));
     const clone = document2.documentElement.cloneNode(true);
     for (const node of clone.querySelectorAll("style, link, script")) node.remove();
@@ -422,7 +428,9 @@ var bookfinReader = (() => {
     const head = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"><foreignObject x="${-left}" y="0" width="${frameWidth}" height="${height}">`;
     const image = new Image();
     image.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(head + before) + encodedCss.get(css) + encodeURIComponent(after + "</foreignObject></svg>");
+    await step();
     await image.decode();
+    await step();
     const canvas = window.document.createElement("canvas");
     canvas.width = Math.round(width * scale);
     canvas.height = Math.round(height * scale);
@@ -431,7 +439,9 @@ var bookfinReader = (() => {
     context.fillRect(0, 0, canvas.width, canvas.height);
     context.scale(scale, scale);
     context.drawImage(image, 0, 0);
-    return canvas.toDataURL("image/jpeg", 0.85);
+    await step();
+    const blob = await new Promise((resolve, reject) => canvas.toBlob((blob2) => blob2 ? resolve(blob2) : reject(Error("The page could not be encoded")), "image/jpeg", 0.85));
+    return blob.arrayBuffer();
   }
   function charactersAt(range) {
     const document2 = range.startContainer.ownerDocument;
@@ -443,31 +453,56 @@ var bookfinReader = (() => {
     before.setEnd(range.startContainer, range.startOffset);
     return { before: visibleLength(before.toString()), total };
   }
-  function previewPage(index, progress, width) {
+  function yieldToPage() {
+    return globalThis.scheduler && scheduler.yield ? scheduler.yield() : new Promise((resolve) => setTimeout(resolve, 0));
+  }
+  var lastPreview = 0;
+  var cancelledPreviews = /* @__PURE__ */ new Set();
+  function cancelPreview(request) {
+    if (Number.isInteger(request) && request > 0 && request <= lastPreview) cancelledPreviews.add(request);
+  }
+  function previewPage(request, index, progress, width) {
+    if (Number.isInteger(request) && request > lastPreview) lastPreview = request;
     const job = previewJob.catch(() => {
     }).then(async () => {
       const section = Number.isInteger(index) && book.spine.get(index);
-      if (!section || typeof progress !== "number" || !(progress >= 0 && progress <= 1) || typeof width !== "number" || !(width > 0 && width <= 4096)) throw Error("The destination is not in this book");
-      const view = previewRendition();
-      await section.load(book.load.bind(book));
-      await view.display(placeAt(section, progress));
-      const location = view.currentLocation();
-      const image = await drawPage(view, width / view.manager.container.clientWidth);
-      const first = charactersAt(await book.getRange(location.start.cfi));
-      const last = charactersAt(await book.getRange(location.end.cfi));
-      const count = book.spine.spineItems.length;
-      const total = first.total;
-      const place = (character) => (character + 0.5) / total;
-      const firstPage = !total || location.start.displayed.page <= 1;
-      const lastPage = !total || location.end.displayed.page >= location.end.displayed.total;
-      return {
-        image,
-        part: index,
-        start: total ? first.before / total : 0,
-        end: total && !lastPage ? Math.min(1, last.before / total) : 1,
-        previous: !firstPage ? { part: index, progress: place(first.before - 1) } : index > 0 ? { part: index - 1, progress: 1 } : null,
-        next: !lastPage ? { part: index, progress: place(Math.min(total - 1, last.before + 1)) } : index + 1 < count ? { part: index + 1, progress: 0 } : null
+      if (!Number.isInteger(request) || !section || typeof progress !== "number" || !(progress >= 0 && progress <= 1) || typeof width !== "number" || !(width > 0 && width <= 4096)) throw Error("The destination is not in this book");
+      const step = async () => {
+        if (cancelledPreviews.has(request)) throw Error("The preview was cancelled");
+        await yieldToPage();
+        if (cancelledPreviews.has(request)) throw Error("The preview was cancelled");
       };
+      try {
+        await step();
+        const view = previewRendition();
+        await view.resize();
+        await section.load(book.load.bind(book));
+        await step();
+        await view.display(placeAt(section, progress));
+        await step();
+        const location = view.currentLocation();
+        const image = await drawPage(view, width / view.manager.container.clientWidth, step);
+        const first = charactersAt(await book.getRange(location.start.cfi));
+        const last = charactersAt(await book.getRange(location.end.cfi));
+        const count = book.spine.spineItems.length;
+        const total = first.total;
+        const place = (character) => (character + 0.5) / total;
+        const firstPage = !total || location.start.displayed.page <= 1;
+        const lastPage = !total || location.end.displayed.page >= location.end.displayed.total;
+        const message = new Uint8Array(4 + image.byteLength);
+        new DataView(message.buffer).setUint32(0, request, true);
+        message.set(new Uint8Array(image), 4);
+        window.bookfinPages.postMessage(message.buffer);
+        return {
+          part: index,
+          start: total ? first.before / total : 0,
+          end: total && !lastPage ? Math.min(1, last.before / total) : 1,
+          previous: !firstPage ? { part: index, progress: place(first.before - 1) } : index > 0 ? { part: index - 1, progress: 1 } : null,
+          next: !lastPage ? { part: index, progress: place(Math.min(total - 1, last.before + 1)) } : index + 1 < count ? { part: index + 1, progress: 0 } : null
+        };
+      } finally {
+        cancelledPreviews.delete(request);
+      }
     });
     previewJob = job;
     return job;

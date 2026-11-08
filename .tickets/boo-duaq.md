@@ -1,6 +1,6 @@
 ---
 id: boo-duaq
-status: open
+status: in_progress
 deps: []
 links: []
 created: 2026-11-08T15:33:33Z

@@ -3,33 +3,46 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import '../catalog/glass.dart' show CoverGlass;
+import '../catalog/model.dart';
 import 'page_previews.dart';
 
 /// The reader's page area, which becomes a deck of page cards while the
 /// person scrubs.
 ///
-/// When a drag starts, the page zooms out into the front card, and the pages
-/// before and after it show as smaller, dimmed cards behind it, to its left
-/// and right. When the deck settles, the front card zooms back in to fill
-/// the page area. With reduced motion, the deck opens and closes at once.
+/// Each card is a glass pane of the open book. A blank card is an empty
+/// pane. A drawn card holds its page on paper, inside the glass, with a
+/// margin like a printed page, whole and at its own shape.
+///
+/// When a drag starts, the front card zooms out of the page area as it fades
+/// in, and the pages before and after it show as smaller, dimmed cards
+/// behind it, to its left and right. A settling deck holds still while the
+/// reader moves to its place. When it goes, the front card zooms back in to
+/// fill the page area and covers the page until it is gone. A deck that goes
+/// without settling fades away. With reduced motion, the deck opens and
+/// closes at once.
 ///
 /// The deck shows what [deck] gives it and reports nothing. The shown [page]
-/// keeps its place in the tree and stays painted for the deck's whole
-/// life, so a web view in it is never made again. It fills the front card
-/// until a drawn page covers it.
+/// stays in its place in the tree, painted and unmoved, for the deck's
+/// whole life. So a web view in it is never made again, and it does not
+/// draw itself again when the deck opens.
 class ScrubDeck extends StatefulWidget {
   const ScrubDeck({
     super.key,
     required this.deck,
     required this.paper,
+    this.book,
     required this.page,
   });
 
   /// The deck to show, or null while no drag runs.
   final ValueListenable<DeckView?> deck;
 
-  /// The color of the reading page.
+  /// The color of the reading page, which a drawn card's paper takes.
   final Color paper;
+
+  /// The open book, whose cover tints the glass of the cards.
+  final Book? book;
 
   /// The page that the reader shows.
   final Widget page;
@@ -72,7 +85,7 @@ class _ScrubDeckState extends State<ScrubDeck>
     super.initState();
     widget.deck.addListener(_changed);
     _view = widget.deck.value;
-    _open.value = _view == null || _view!.settling ? 0 : 1;
+    _open.value = _view == null ? 0 : 1;
   }
 
   @override
@@ -123,11 +136,10 @@ class _ScrubDeckState extends State<ScrubDeck>
       _direction = order < 0 ? -1 : 1;
     }
     setState(() => _view = view);
-    final target = view.settling ? 0.0 : 1.0;
+    // A settling deck holds still, so the reader draws its new page while
+    // nothing else draws. It closes when it goes.
     if (_instant) {
-      _open.value = target;
-    } else if (view.settling) {
-      _open.reverse();
+      _open.value = 1;
     } else {
       _open.forward();
     }
@@ -137,74 +149,57 @@ class _ScrubDeckState extends State<ScrubDeck>
   Widget build(BuildContext context) {
     final view = _view;
     final shade = Color.lerp(widget.paper, Colors.black, .22)!;
-    // Without a drag, nothing clips the page, which may be a web view.
     return ClipRect(
+      // Without a drag, nothing clips the page, which may be a web view.
       clipBehavior: view == null ? Clip.none : Clip.hardEdge,
-      child: AnimatedBuilder(
-        animation: _openness,
-        child: widget.page,
-        builder: (context, page) {
-          final open = _openness.value;
-          final front = ui.lerpDouble(1, ScrubDeck.frontScale, open)!;
-          final radius = BorderRadius.circular(16 * open);
-          return Stack(
-            fit: StackFit.expand,
-            children: [
-              if (view != null) ...[
-                Opacity(
-                  key: const ValueKey('deck backdrop'),
-                  opacity: open,
-                  child: ColoredBox(color: shade),
-                ),
-                if (view.previous case final card?)
-                  _side(const ValueKey('deck previous card'), card, -1, open),
-                if (view.next case final card?)
-                  _side(const ValueKey('deck next card'), card, 1, open),
-                Transform.scale(
-                  key: const ValueKey('deck shadow'),
-                  scale: front,
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      borderRadius: radius,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: .3 * open),
-                          blurRadius: 18,
-                          offset: const Offset(0, 6),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-              // The front card always holds the shown page at this place in
-              // the tree, so the page is kept.
-              Transform.scale(
-                key: const ValueKey('page'),
-                scale: front,
-                child: ClipRRect(
-                  borderRadius: radius,
-                  clipBehavior: open > 0 ? Clip.antiAlias : Clip.none,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          // The page keeps this place in the tree, under the deck.
+          widget.page,
+          if (view != null)
+            AnimatedBuilder(
+              animation: _openness,
+              builder: (context, _) {
+                final open = _openness.value;
+                // A settled deck covers the page until it is gone, so the
+                // page shows only once the reader landed.
+                final cover = view.settling ? 1.0 : open;
+                // The cards share one blur of what lies beneath them.
+                return BackdropGroup(
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
-                      // A drawn page covers the shown page, which stays
-                      // painted. Taking a web view out of the picture and
-                      // back would switch Android's composition mode, which
-                      // can flash an old frame.
-                      page!,
-                      if (view != null)
-                        KeyedSubtree(
-                          key: const ValueKey('deck front card'),
-                          child: _face(view.front, dim: 0),
+                      Opacity(
+                        key: const ValueKey('deck backdrop'),
+                        opacity: cover,
+                        child: ColoredBox(color: shade),
+                      ),
+                      if (view.previous case final card?)
+                        _side(
+                          const ValueKey('deck previous card'),
+                          card,
+                          -1,
+                          open,
                         ),
+                      if (view.next case final card?)
+                        _side(const ValueKey('deck next card'), card, 1, open),
+                      Opacity(
+                        opacity: cover,
+                        child: Transform.scale(
+                          scale: ui.lerpDouble(1, ScrubDeck.frontScale, open)!,
+                          child: KeyedSubtree(
+                            key: const ValueKey('deck front card'),
+                            child: _card(view.front, animate: true),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
-                ),
-              ),
-            ],
-          );
-        },
+                );
+              },
+            ),
+        ],
       ),
     );
   }
@@ -217,31 +212,64 @@ class _ScrubDeckState extends State<ScrubDeck>
       translation: Offset(side * .16 * open, 0),
       child: Transform.scale(
         scale: ui.lerpDouble(1, ScrubDeck.sideScale, open)!,
-        child: ClipRRect(
+        child: KeyedSubtree(
           key: key,
-          borderRadius: BorderRadius.circular(14),
-          child: _face(card, dim: .32),
+          child: DecoratedBox(
+            key: const ValueKey('deck dim'),
+            position: DecorationPosition.foreground,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(_radius),
+              color: Colors.black.withValues(alpha: .32),
+            ),
+            child: _card(card, animate: false),
+          ),
         ),
       ),
     ),
   );
 
-  /// What a card shows: its drawn page, if any, on paper, dimmed by [dim]
-  /// and more when the page only stands in for the card's own page.
-  Widget _face(DeckCard card, {required double dim}) {
-    final shade = card.exact ? dim : dim + .22;
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        if (card.page case final page?)
-          ColoredBox(
-            color: widget.paper,
-            child: AnimatedSwitcher(
+  static const _radius = 18.0;
+
+  /// A glass card that holds its drawn page, if any. With [animate], a new
+  /// page slides in from the way the thumb moved.
+  Widget _card(DeckCard card, {required bool animate}) {
+    final page = card.page;
+    final face = page == null
+        ? const SizedBox.expand(key: ValueKey('blank'))
+        : Padding(
+            key: ObjectKey(page),
+            padding: const EdgeInsets.all(8),
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: widget.paper,
+                borderRadius: BorderRadius.circular(_radius - 8),
+              ),
+              // A margin like a printed page's keeps the text off the edge.
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 22,
+                  vertical: 26,
+                ),
+                child: Center(
+                  child: AspectRatio(
+                    aspectRatio: page.image.width / page.image.height,
+                    child: _PageImage(image: page.image),
+                  ),
+                ),
+              ),
+            ),
+          );
+    return CoverGlass(
+      book: widget.book,
+      radius: _radius,
+      child: !animate
+          ? face
+          : AnimatedSwitcher(
               duration: _instant ? Duration.zero : _shuffle,
               transitionBuilder: (child, animation) {
                 // A new page slides in from the way the thumb moved, and the
                 // old page slides out the other way.
-                final entering = child.key == ObjectKey(page);
+                final entering = child.key == face.key;
                 return FadeTransition(
                   opacity: animation,
                   child: SlideTransition(
@@ -253,15 +281,8 @@ class _ScrubDeckState extends State<ScrubDeck>
                   ),
                 );
               },
-              child: _PageImage(key: ObjectKey(page), image: page.image),
+              child: face,
             ),
-          ),
-        if (shade > 0)
-          ColoredBox(
-            key: const ValueKey('deck dim'),
-            color: Colors.black.withValues(alpha: shade),
-          ),
-      ],
     );
   }
 }
@@ -269,7 +290,7 @@ class _ScrubDeckState extends State<ScrubDeck>
 /// A drawn page. It keeps its own handle to the image, so the owner of the
 /// image can free it while the card still fades.
 class _PageImage extends StatefulWidget {
-  const _PageImage({super.key, required this.image});
+  const _PageImage({required this.image});
   final ui.Image image;
   @override
   State<_PageImage> createState() => _PageImageState();
@@ -295,5 +316,5 @@ class _PageImageState extends State<_PageImage> {
 
   @override
   Widget build(BuildContext context) =>
-      RawImage(image: _image, fit: BoxFit.contain);
+      RawImage(image: _image, fit: BoxFit.fill);
 }

@@ -517,7 +517,12 @@ class ControlPort implements NavigatorPort {
   /// What each page preview returns, or null to keep it waiting.
   PagePicture? picture;
   @override
-  Future<PagePicture> preview(int section, double progress, double width) {
+  Future<PagePicture> preview(
+    int section,
+    double progress,
+    double width,
+    Future<void> abandon,
+  ) {
     previews.add((section, progress, width));
     return picture == null
         ? Completer<PagePicture>().future
