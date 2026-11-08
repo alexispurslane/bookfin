@@ -160,6 +160,15 @@ class DomSection {
     return low < texts.length ? texts[low] : null;
   }
 
+  /// The first element of the document whose id is [id], as
+  /// `getElementById` finds it, or null when none has it.
+  DomElement? elementById(String id) => _ids[id];
+
+  late final Map<String, DomElement> _ids = {
+    for (final node in _nodes.reversed)
+      if (node case DomElement(id: final id?)) id: node,
+  };
+
   /// The node whose [DomNode.order] is [order].
   DomNode nodeAt(int order) => _nodes[order];
 
