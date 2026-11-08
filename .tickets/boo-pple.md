@@ -1,6 +1,6 @@
 ---
 id: boo-pple
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-07T18:34:08Z
