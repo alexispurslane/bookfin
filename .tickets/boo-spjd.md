@@ -1,6 +1,6 @@
 ---
 id: boo-spjd
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-08T12:48:01Z
