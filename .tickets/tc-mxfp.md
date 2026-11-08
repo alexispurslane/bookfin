@@ -69,3 +69,9 @@ docs/plans/native-epub-reader.md (epic boo-b2ey). Read the sections named in the
 - search returns E6's hits in book order and stops between batches after a cancel.
 - checkInvariants passes after every step of these tests.
 
+
+## Notes
+
+**2026-11-08T20:42:59Z**
+
+From tc-sqp7: destination(dom, section, fragment) returns null when the fragment names no element (reader.js throws there). The pager must handle the null and show its error, as today. pageLocation needs the page's last visible place as end: use LaidPage.endPlace from tc-nang.
