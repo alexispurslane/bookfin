@@ -1,6 +1,6 @@
 ---
 id: tc-pshi
-status: open
+status: closed
 deps: [tc-nang, tc-sqp7]
 links: []
 created: 2026-11-08T19:23:13Z
@@ -36,3 +36,9 @@ docs/plans/native-epub-reader.md (epic boo-b2ey). Read the sections named in the
 - Every recorded epub.js place opens on the page that shows it (the trial had 661 of 661 and 706 of 706).
 - docs/research/native-epub-fidelity.md records the numbers, the commands and the Chromium version.
 
+
+## Notes
+
+**2026-11-08T21:35:28Z**
+
+Recorded with Chromium 138.0.7180.0 at 412 x 671. Body text at 20 px: line starts 26,447 of 26,451, page starts 1,460 of 1,482. At 23 px: 31,745 of 31,757 and 2,024 of 2,048. Saved page starts open on a page whose first line holds them: 663 of 663 at 20 px, 708 of 708 at 23 px. Native pages that start on an epub.js page start save the same JSON: 412 of 412 and 467 of 467. Contents entries save the same JSON in 729 of 729 and open on a page that shows them in 727 of 729. Search hits: 479 of 479. Departure from the ticket, after the design: contents entries and search hits must open on a page that shows them, not on its first line (design 'Testing, Behavior tests'). Fixtures: epubjs-places.json 9 KB, epubjs-corpus-places.json 628 KB, chromium-layout.json 484 KB. The fixture books are zipped again with a fixed time, because the identity hashes the archive. New ticket t9-ousp (priority 1): a place in a white-space-only node opens on the page before it; two Keats contents entries show the wrong page, so the on-demand saved places run fails on se-poetry until it merges. Details: docs/research/native-epub-fidelity.md.

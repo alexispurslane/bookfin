@@ -12,6 +12,7 @@ import 'dart:typed_data';
 
 import 'css.dart';
 import 'dom.dart';
+import 'table.dart';
 
 // Section sources name publication paths, so their callers resolve
 // references with the same rule as the style sheets.
@@ -253,7 +254,7 @@ final class ImageItem extends FlowItem {
 /// one strip slice, so a page breaks only between rows. The [BlockStart]
 /// before it and the [BlockEnd] after it are the table's own box.
 final class TableItem extends FlowItem {
-  const TableItem(this.rows, this.width);
+  const TableItem(this.rows, this.width, this.spacing);
 
   /// The rows of cells, in document order. A cell spans the columns of its
   /// colspan, and every row starts at the first column.
@@ -262,6 +263,11 @@ final class TableItem extends FlowItem {
   /// The width in pixels that the lengths in the cells resolve against: the
   /// widest that the table's content can be.
   final double width;
+
+  /// The space in pixels between the columns and at the table's sides, and
+  /// between the rows and at its top and bottom: its `border-spacing`, or
+  /// none when its borders collapse.
+  final (double, double) spacing;
 }
 
 /// One cell of a [TableItem]: a box that the table draws as tall as its
@@ -707,7 +713,8 @@ sup { vertical-align: super; font-size: smaller }
 u, ins, a:link { text-decoration: underline }
 s, strike, del { text-decoration: line-through }
 center { text-align: center }
-table { text-indent: 0; box-sizing: border-box }
+table { text-indent: 0; box-sizing: border-box; border-spacing: 2px;
+  border-collapse: separate }
 td, th { padding: 1px }
 thead, tbody, tfoot, tr { vertical-align: middle }
 td, th { vertical-align: inherit }
@@ -727,12 +734,13 @@ class _BlockBox extends _Box {
   final String? marker;
 }
 
-/// A table with rows: its cells by row, each with its colspan.
+/// A table with rows: the style of each row and its cells, each with its
+/// colspan.
 class _TableBox extends _Box {
   _TableBox(this.element, this.style, this.rows);
   final DomElement element;
   final Style style;
-  final List<List<(_BlockBox, int)>> rows;
+  final List<({Style style, List<(_BlockBox, int)> cells})> rows;
 }
 
 /// An anonymous block of inline content.
@@ -869,7 +877,7 @@ class _BoxBuilder {
   /// a cell. A row is a `tr` in the table or in one of its row groups.
   (List<_BlockBox>, _TableBox)? _table(DomElement table) {
     final captions = <_BlockBox>[];
-    final rows = <List<(_BlockBox, int)>>[];
+    final rows = <({Style style, List<(_BlockBox, int)> cells})>[];
     void row(DomElement tr) {
       _cells++;
       final cells = [
@@ -884,7 +892,7 @@ class _BoxBuilder {
             ),
       ];
       _cells--;
-      if (cells.isNotEmpty) rows.add(cells);
+      if (cells.isNotEmpty) rows.add((style: styles[tr]!, cells: cells));
     }
 
     for (final child in table.elements) {
@@ -1049,17 +1057,20 @@ class _Flattener {
   }
 
   /// Adds the [BlockStart] of [element], whose containing block is [width]
-  /// pixels wide, and returns its placement.
+  /// pixels wide, and returns its placement. [box] gives its padding and
+  /// border widths when they are not those of its style, as for a table
+  /// whose borders collapse.
   BoxPlacement _start(
     DomElement element,
     Style style,
     double width, {
     required bool shrinkToFit,
     String? marker,
+    ({List<double> padding, List<double> border})? box,
   }) {
     final marginLeft = style.margin[3].resolve(width);
     final marginRight = style.margin[1].resolve(width);
-    final (:padding, :border) = _box(style, width);
+    final (:padding, :border) = box ?? _box(style, width);
     final horizontal = padding[1] + padding[3] + border[1] + border[3];
     final specified = style.width.resolveOrNull(width);
     final maximum = style.maxWidth.resolveOrNull(width);
@@ -1115,32 +1126,71 @@ class _Flattener {
   /// Adds the box of [table], whose containing block is [width] pixels
   /// wide, with its [TableItem] inside. Without a set width, the box is as
   /// wide as the table's content.
+  ///
+  /// A table whose borders collapse has no border-spacing and no padding,
+  /// as in Chromium. Its cells and its own box take the collapsed widths
+  /// of table.dart, and each draws its half of each border.
   void _table(_TableBox table, double width) {
+    final style = table.style;
+    List<double> own(Style style) => [
+      for (var side = 0; side < 4; side++) style.usedBorder(side),
+    ];
+    final collapsed = style.collapseBorders
+        ? collapseBorders([
+            for (final row in table.rows)
+              (
+                border: own(row.style),
+                cells: [
+                  for (final (cell, colspan) in row.cells)
+                    (span: colspan, border: own(cell.style)),
+                ],
+              ),
+          ], own(style))
+        : null;
     final placement = _start(
       table.element,
-      table.style,
+      style,
       width,
-      shrinkToFit: table.style.width.isAuto,
+      shrinkToFit: style.width.isAuto,
+      box: collapsed == null
+          ? null
+          : (padding: const [0, 0, 0, 0], border: collapsed.table),
     );
     final (_, contentWidth) = placement.place(0, width);
     flow
       ..add(
-        TableItem([
-          for (final row in table.rows)
-            [
-              for (final (cell, colspan) in row)
-                _cell(cell, colspan, contentWidth),
-            ],
-        ], contentWidth),
+        TableItem(
+          [
+            for (final (r, row) in table.rows.indexed)
+              [
+                for (final (c, (cell, colspan)) in row.cells.indexed)
+                  _cell(
+                    cell,
+                    colspan,
+                    contentWidth,
+                    border: collapsed?.cells[r][c],
+                  ),
+              ],
+          ],
+          contentWidth,
+          collapsed == null ? style.borderSpacing : (0, 0),
+        ),
       )
       ..add(const BlockEnd());
   }
 
   /// [cell], which spans [colspan] columns of a table whose content is at
   /// most [width] pixels wide. A cell has no margins, and its column
-  /// decides its width.
-  TableCell _cell(_BlockBox cell, int colspan, double width) {
-    final (:padding, :border) = _box(cell.style, width);
+  /// decides its width. [border] gives its border widths when the table's
+  /// borders collapse.
+  TableCell _cell(
+    _BlockBox cell,
+    int colspan,
+    double width, {
+    List<double>? border,
+  }) {
+    final (:padding, border: styled) = _box(cell.style, width);
+    border ??= styled;
     final outer = flow;
     flow = [];
     _content(cell, width - padding[1] - padding[3] - border[1] - border[3]);
