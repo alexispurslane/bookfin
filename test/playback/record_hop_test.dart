@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
+import 'dart:typed_data';
 
 import 'package:bookfin/playback/database.dart';
 import 'package:bookfin/playback/playback.dart';
@@ -27,6 +28,56 @@ class CountingHop {
     return result;
   }
 }
+
+/// The SQLite binding [files], except that a read-only open, which only
+/// the hop's [RecordReader] makes, throws [error].
+class FailingReadOnlyOpen implements DatabaseFactory {
+  FailingReadOnlyOpen(this.files, this.error);
+  final DatabaseFactory files;
+  final Object error;
+
+  @override
+  Future<Database> openDatabase(String path, {OpenDatabaseOptions? options}) {
+    if (options?.readOnly ?? false) throw error;
+    return files.openDatabase(path, options: options);
+  }
+
+  @override
+  Future<String> getDatabasesPath() => files.getDatabasesPath();
+
+  @override
+  Future<void> setDatabasesPath(String path) => files.setDatabasesPath(path);
+
+  @override
+  Future<void> deleteDatabase(String path) => files.deleteDatabase(path);
+
+  @override
+  Future<bool> databaseExists(String path) => files.databaseExists(path);
+
+  @override
+  Future<void> writeDatabaseBytes(String path, Uint8List bytes) =>
+      files.writeDatabaseBytes(path, bytes);
+
+  @override
+  Future<Uint8List> readDatabaseBytes(String path) =>
+      files.readDatabaseBytes(path);
+}
+
+/// A SQLite failure with the result [code], as the binding reports it.
+class SqliteFailure extends DatabaseException {
+  SqliteFailure(super.message, this.code);
+  final int code;
+
+  @override
+  int? getResultCode() => code;
+
+  @override
+  Object? get result => null;
+}
+
+/// The result codes of SQLITE_CANTOPEN and SQLITE_CORRUPT.
+const cannotOpen = 14;
+const corrupt = 11;
 
 Map<String, dynamic> position(int milliseconds) => {
   'edition': 'book',
@@ -95,9 +146,11 @@ void main() {
   });
 
   /// Saves a listening account of 20 history events and 30 resume moves,
-  /// which is 50 journal actions in 21 records, and one reading place.
-  Future<void> seedLargeAccount() async {
-    final writer = LocalResumeStore(openDatabase: () async => database);
+  /// which is 50 journal actions in 21 records, and one reading place, into
+  /// [records], or into [database].
+  Future<void> seedLargeAccount([RecordDatabase? records]) async {
+    final into = records ?? database;
+    final writer = LocalResumeStore(openDatabase: () async => into);
     await writer.save(
       'alice',
       ListeningChanges(
@@ -381,5 +434,81 @@ void main() {
     await store.checkInvariants();
     final restarted = LocalResumeStore(openDatabase: () async => database);
     expect((await restarted.read('dana'))!['history'], hasLength(40));
+  });
+
+  /// A record file at a new path, opened with [files].
+  Future<RecordDatabase> openWith(DatabaseFactory files) async {
+    final records = await RecordDatabase.open(
+      factory: files,
+      path: '$path.other',
+    );
+    addTearDown(records.close);
+    return records;
+  }
+
+  for (final (reason, error) in [
+    (
+      'SQLite cannot open its file',
+      SqliteFailure('unable to open', cannotOpen),
+    ),
+    ('its isolate cannot reach SQLite', StateError('no binding')),
+  ]) {
+    test(
+      'a large account restores through the UI isolate\'s connection when the hop read fails because $reason, and nothing is reported',
+      () async {
+        final records = await openWith(
+          FailingReadOnlyOpen(databaseFactoryFfi, error),
+        );
+        await seedLargeAccount(records);
+        final hop = CountingHop();
+        final store = LocalResumeStore(
+          openDatabase: () async => records,
+          hop: hop.call,
+        );
+
+        final listening = (await store.read('alice'))!;
+        final reading = (await store.reading.read('alice'))!;
+
+        expect(listening['history'], hasLength(20));
+        expect(listening['resumes']['book'].single['milliseconds'], 30000);
+        expect(reading['resumes'].single['anchor'], jsonEncode({'page': 7}));
+        expect(
+          '${hop.inputs.last}'.contains('Hop fixture'),
+          isTrue,
+          reason: 'the rows that the UI isolate read still restore in a hop',
+        );
+        expect(store.setAside('alice'), isFalse);
+        expect(records.keptFile, isNull);
+        await store.checkInvariants();
+      },
+    );
+  }
+
+  test('damage that the hop read reports sets the record file aside, and the UI isolate does not read the file again', () async {
+    // The file is intact, so only the hop's report of damage can make the
+    // account disappear, and a read on the UI isolate would find it.
+    final records = await openWith(
+      FailingReadOnlyOpen(
+        databaseFactoryFfi,
+        SqliteFailure('malformed', corrupt),
+      ),
+    );
+    await seedLargeAccount(records);
+    final store = LocalResumeStore(
+      openDatabase: () async => records,
+      hop: CountingHop().call,
+    );
+
+    expect(await store.read('alice'), isNull);
+    expect(store.setAside('alice'), isTrue);
+    expect(records.keptFile, isNotNull);
+    await store.save('alice', resume(99000));
+    final restarted = LocalResumeStore(openDatabase: () async => records);
+    expect(
+      (await restarted.read(
+        'alice',
+      ))!['resumes']['book'].single['milliseconds'],
+      99000,
+    );
   });
 }

@@ -560,20 +560,36 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
   /// in one hop that reads the file on a connection of its own, so its rows
   /// never cross the UI isolate. Throws [RecordFileSetAside] when the file
   /// has damaged pages.
+  ///
+  /// When that hop fails for another reason, for example because its
+  /// connection cannot open, the UI isolate's connection reads the rows, as
+  /// for a small account, and another hop restores them. The user sees the
+  /// account as usual, so nothing is reported.
   Future<_Restored?> _restoreFile(
     RecordDatabase database,
     String account,
   ) async {
-    if (await database.actionCount(account) < _hopItems) {
-      final rows = await database.rows(account);
-      return rows == null ? null : _restoreRows((account: account, rows: rows));
+    final small = await database.actionCount(account) < _hopItems;
+    if (!small) {
+      ({_Restored? restored, bool damaged})? read;
+      try {
+        read = await _hop(_readAndRestore, (
+          account: account,
+          reader: database.reader,
+        ));
+      } catch (_) {
+        // The hop reports damage in [read] and throws only for other
+        // failures, which the read below does not share.
+      }
+      if (read != null) {
+        if (read.damaged) await database.setAsideDamaged();
+        return read.restored;
+      }
     }
-    final read = await _hop(_readAndRestore, (
-      account: account,
-      reader: database.reader,
-    ));
-    if (read.damaged) await database.setAsideDamaged();
-    return read.restored;
+    final rows = await database.rows(account);
+    return rows == null
+        ? null
+        : _derive(_restoreRows, (account: account, rows: rows), small: small);
   }
 
   /// Saves [restored] as the durable state of [account] when it must be
