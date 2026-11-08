@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
@@ -10,13 +11,20 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 /// A hop that runs each work item in a new isolate, as production does, and
-/// counts the work items.
+/// counts the work items. [inputs] holds the input of each, in hop order.
 class CountingHop {
   int hops = 0;
+  final inputs = <Object?>[];
 
-  Future<R> call<M, R>(R Function(M) work, M input) {
+  /// Runs with each work item, beside it.
+  Future<void> Function()? beside;
+
+  Future<R> call<M, R>(FutureOr<R> Function(M) work, M input) async {
     hops++;
-    return Isolate.run(() => work(input));
+    inputs.add(input);
+    final result = Isolate.run(() => work(input));
+    await beside?.call();
+    return result;
   }
 }
 
@@ -233,6 +241,96 @@ void main() {
       await store.checkInvariants();
     },
   );
+
+  test('a large account is read from the record file in its hop, so no record crosses the UI isolate', () async {
+    await seedLargeAccount();
+    final hop = CountingHop();
+    final store = LocalResumeStore(
+      openDatabase: () async => database,
+      hop: hop.call,
+    );
+
+    final listening = (await store.read('alice'))!;
+
+    expect(hop.hops, 1);
+    expect(listening['history'], hasLength(20));
+    expect(listening['resumes']['book'].single['milliseconds'], 30000);
+    expect(
+      '${hop.inputs.single}'.contains('Hop fixture'),
+      isFalse,
+      reason: 'the input of the hop carries no record',
+    );
+    await store.checkInvariants();
+  });
+
+  test('a place saved on the UI isolate while a hop reads the record file stays on the phone', () async {
+    await seedLargeAccount();
+    final hop = CountingHop();
+    final store = LocalResumeStore(
+      openDatabase: () async => database,
+      hop: hop.call,
+    );
+    // Another owner of the same connection saves while the hop reads.
+    final other = LocalResumeStore(openDatabase: () async => database);
+    hop.beside = () => other.save('bob', resume(42000));
+
+    final listening = (await store.read('alice'))!;
+
+    expect(listening['resumes']['book'].single['milliseconds'], 30000);
+    final restarted = LocalResumeStore(openDatabase: () async => database);
+    expect(
+      (await restarted.read('bob'))!['resumes']['book'].single['milliseconds'],
+      42000,
+    );
+    expect((await restarted.read('alice'))!['history'], hasLength(20));
+  });
+
+  test('damaged pages that a hop read finds set the record file aside, and a place saved after them stays', () async {
+    await seedLargeAccount();
+    await database.close();
+    // The rows of the actions are damaged, and their index is not, so only
+    // a read of the payloads finds the damage.
+    final sql = await databaseFactoryFfi.openDatabase(
+      path,
+      options: OpenDatabaseOptions(singleInstance: false),
+    );
+    await sql.rawQuery('PRAGMA wal_checkpoint(TRUNCATE)');
+    final root =
+        (await sql.query(
+              'sqlite_master',
+              columns: ['rootpage'],
+              where: "name = 'record_actions'",
+            )).single['rootpage']
+            as int;
+    await sql.close();
+    final bytes = await File(path).readAsBytes();
+    bytes.fillRange((root - 1) * 4096, root * 4096, 0xff);
+    await File(path).writeAsBytes(bytes, flush: true);
+    final reopened = await RecordDatabase.open(
+      factory: databaseFactoryFfi,
+      path: path,
+    );
+    addTearDown(reopened.close);
+    final hop = CountingHop();
+    final store = LocalResumeStore(
+      openDatabase: () async => reopened,
+      hop: hop.call,
+    );
+
+    expect(await store.read('alice'), isNull);
+    expect(hop.hops, 1);
+    expect(store.setAside('alice'), isTrue);
+    expect(reopened.keptFile, isNotNull);
+    await store.save('alice', resume(99000));
+    final restarted = LocalResumeStore(openDatabase: () async => reopened);
+    expect(
+      (await restarted.read(
+        'alice',
+      ))!['resumes']['book'].single['milliseconds'],
+      99000,
+    );
+    await restarted.checkInvariants();
+  });
 
   test('a damaged large account is set aside in the same hop and the store keeps saving', () async {
     await seedLargeAccount();

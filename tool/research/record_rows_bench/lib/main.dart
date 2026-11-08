@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:sqflite/sqflite.dart';
 
+import 'restore.dart';
+
 /// The number of actions of each measured account. One second of
 /// listening adds about one action, so 21600 actions are six hours.
 const sizes = [3600, 21600, 43200];
@@ -47,6 +49,7 @@ Future<void> measure(void Function(String line) report) async {
     }
     await database.close();
     await deleteDatabase(path);
+    await measureRestore(size, report);
   }
   report('done');
 }

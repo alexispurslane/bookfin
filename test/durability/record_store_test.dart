@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:bookfin/catalog/jellyfin.dart';
 import 'package:bookfin/playback/database.dart';
@@ -146,6 +147,64 @@ class _CountingPreferences extends SharedPreferencesStorePlatform {
 
   @override
   Future<Map<String, Object>> getAll() async => Map.of(values);
+}
+
+/// The SQLite files of the FFI binding, in which each record file that
+/// opens after the first has a full disk while [full] holds: a write that
+/// needs a new page fails with SQLITE_FULL. The pages that the new file
+/// starts with fit.
+class _FillingDisk implements DatabaseFactory {
+  bool full = true;
+  int _opened = 0;
+
+  @override
+  Future<Database> openDatabase(String path, {OpenDatabaseOptions? options}) {
+    final first = _opened++ == 0;
+    return databaseFactoryFfi.openDatabase(
+      path,
+      options: OpenDatabaseOptions(
+        version: options?.version,
+        onConfigure: options?.onConfigure,
+        onCreate: options?.onCreate,
+        onUpgrade: options?.onUpgrade,
+        onOpen: (database) async {
+          if (!first && full) {
+            final pages = (await database.rawQuery('PRAGMA page_count'))
+                .single
+                .values
+                .single;
+            await database.rawQuery('PRAGMA max_page_count = $pages');
+          }
+        },
+      ),
+    );
+  }
+
+  /// Gives the record file at [path] room again, on the connection that the
+  /// store holds.
+  Future<void> free(String path) async {
+    full = false;
+    final shared = await databaseFactoryFfi.openDatabase(path);
+    await shared.rawQuery('PRAGMA max_page_count = 1073741823');
+  }
+
+  @override
+  Future<String> getDatabasesPath() => databaseFactoryFfi.getDatabasesPath();
+  @override
+  Future<void> setDatabasesPath(String path) =>
+      databaseFactoryFfi.setDatabasesPath(path);
+  @override
+  Future<void> deleteDatabase(String path) =>
+      databaseFactoryFfi.deleteDatabase(path);
+  @override
+  Future<bool> databaseExists(String path) =>
+      databaseFactoryFfi.databaseExists(path);
+  @override
+  Future<void> writeDatabaseBytes(String path, Uint8List bytes) =>
+      databaseFactoryFfi.writeDatabaseBytes(path, bytes);
+  @override
+  Future<Uint8List> readDatabaseBytes(String path) =>
+      databaseFactoryFfi.readDatabaseBytes(path);
 }
 
 /// A second SQLite connection to the record file at [path], as another
@@ -672,6 +731,129 @@ void main() {
         contains('mark'),
       );
       await phone.store.checkInvariants();
+    });
+
+    /// Writes bytes that are not a page over the first page of [table] and
+    /// of each of its indexes in the record file at [path], after another
+    /// connection moved the write-ahead log into it. The other tables stay
+    /// readable.
+    Future<void> damageTable(String path, String table) async {
+      final sql = await _separateConnection(path);
+      await sql.rawQuery('PRAGMA wal_checkpoint(TRUNCATE)');
+      final roots = [
+        for (final row in await sql.query(
+          'sqlite_master',
+          columns: ['rootpage'],
+          where: 'tbl_name = ?',
+          whereArgs: [table],
+        ))
+          row['rootpage'] as int,
+      ];
+      await sql.close();
+      final file = File(path);
+      final bytes = await file.readAsBytes();
+      for (final root in roots) {
+        for (var index = (root - 1) * 4096; index < root * 4096; index++) {
+          bytes[index] = 0xff;
+        }
+      }
+      await file.writeAsBytes(bytes, flush: true);
+    }
+
+    test('found while a damaged account is replaced keeps the records that still decode and those held in memory', () async {
+      final phone = await _Phone.open('pages-on-replace');
+      await phone.store.save('alice', _place(10000));
+      await phone.store.save(
+        'alice',
+        ListeningChanges(
+          _settings,
+          bookmarks: {'mark': _bookmark('mark', 15000)},
+        ),
+      );
+      await fillHistory(phone.store, 'bob');
+      final sql = await _separateConnection(phone.path);
+      await sql.update('record_accounts', {
+        'metadata': '{broken',
+      }, where: "account = 'alice'");
+      await sql.close();
+      // The replacement of Alice's account first copies her rows in the
+      // table of the format before the journal, whose page is damaged.
+      await damageTable(phone.path, 'accounts');
+      await phone.restart();
+      expect(phone.database.keptFile, isNull, reason: 'the file opens');
+      await phone.store.read('bob');
+
+      final alice = await phone.store.read('alice');
+      expect(phone.store.setAside('alice'), isTrue);
+      expect(phone.database.keptFile, isNotNull);
+      expect(_savedPlace(alice), 10000);
+      await phone.store.checkInvariants();
+      await phone.restart();
+      final restarted = await phone.store.read('alice');
+      expect(_savedPlace(restarted), 10000);
+      expect((restarted!['bookmarks'] as List).single['id'], 'mark');
+      expect((await phone.store.read('bob'))!['bookmarks'], hasLength(40));
+    });
+
+    test('that leaves no room to write the records held in memory into the new file keeps them until there is room', () async {
+      final directory = await Directory.systemTemp.createTemp(
+        'bookfin-pages-full-',
+      );
+      addTearDown(() => directory.delete(recursive: true));
+      final path = '${directory.path}/records.sqlite';
+      final disk = _FillingDisk();
+      final writer = await RecordDatabase.open(
+        factory: databaseFactoryFfi,
+        path: path,
+      );
+      final first = LocalResumeStore(openDatabase: () async => writer);
+      await first.save(
+        'alice',
+        ListeningChanges(
+          _settings,
+          bookmarks: {'mark': _bookmark('mark', 15000)},
+        ),
+      );
+      await fillHistory(first, 'alice');
+      await first.save('bob', _place(5000));
+      await writer.close();
+      var database = await RecordDatabase.open(factory: disk, path: path);
+      addTearDown(() => database.close());
+      final store = LocalResumeStore(openDatabase: () async => database);
+      await store.read('alice');
+      await store.read('bob');
+      // The store's connection drops the pages that it read, so that the
+      // next save reads the damaged pages from the file.
+      final shared = await databaseFactoryFfi.openDatabase(path);
+      await shared.execute('PRAGMA cache_size = 0');
+      await shared.execute('PRAGMA shrink_memory');
+      await damageTail(path, pages: 4);
+
+      await expectLater(
+        store.save('alice', _place(20000)),
+        // SQLite rolls back a transaction that fills the disk itself, so
+        // sqflite reports the ROLLBACK that follows.
+        throwsA(isA<DatabaseException>()),
+      );
+      expect(database.keptFile, isNotNull);
+      expect(store.setAside('alice'), isTrue);
+      await disk.free(path);
+      await store.read('bob');
+
+      await database.close();
+      database = await RecordDatabase.open(
+        factory: databaseFactoryFfi,
+        path: path,
+      );
+      final restarted = LocalResumeStore(openDatabase: () async => database);
+      final alice = await restarted.read('alice');
+      expect(_savedPlace(alice), 20000);
+      expect(
+        (alice!['bookmarks'] as List).map((mark) => mark['id']),
+        contains('mark'),
+      );
+      expect(_savedPlace(await restarted.read('bob')), 5000);
+      await restarted.checkInvariants();
     });
   });
 
