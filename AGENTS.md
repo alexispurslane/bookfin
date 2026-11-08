@@ -60,6 +60,8 @@ These are hard rules for all new and changed code under the UI. When you touch c
 
 Keep the project under `~/Development/bookfin`. Provide a pinned Nix flake with `devShells.<system>.default`. Run build and test commands through `nix develop`. Put required environment variables in the dev shell, never the user's shell profile. Do not install toolchains globally. Pin sources and hashes for native dependencies absent from nixpkgs. Stage new `.nix` files before a Git flake uses them.
 
+Several agents run builds and tests on this machine at the same time. Never stop processes by name (`pkill -f flutter_tester`, `killall`), because that stops the runs of other agents. Stop only the process IDs that your own command started.
+
 Use T3 `device_list`, then `device_open` with the returned host/device identifiers. Use the returned device-bound `agent-device` command for every app launch, input, settings action, screenshot, and recording. Use `device_screenshot` to inspect the screen. Never substitute adb/simctl/ssh for those actions. Build, install, logs, and test runners can use their normal tools. Read the active host rules for failures and unavailable platforms.
 
 Use T3 browser tools for requested browser work, starting with `preview_status`. Show generated visuals with `html_preview` then `html_render`. Keep visuals self-contained. Do not expose a public unauthenticated dev server. Request secrets with T3's private secret input, never in chat or logs.
