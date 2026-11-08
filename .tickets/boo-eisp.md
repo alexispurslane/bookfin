@@ -1,7 +1,7 @@
 ---
 id: boo-eisp
 status: open
-deps: [boo-gnx9, tf-gnuk]
+deps: [boo-gnx9, tf-gnuk, tc-1yif]
 links: []
 created: 2026-11-08T14:56:46Z
 type: feature
@@ -18,3 +18,9 @@ Bookfin targets Android today. Flutter can build the same code for ios. Find wha
 
 A ios build of Bookfin signs in, browses the library, plays a downloaded audiobook, opens an EPUB and a PDF, and syncs personal records; platform-specific gaps are recorded as tickets.
 
+
+## Notes
+
+**2026-11-08T19:23:53Z**
+
+Note from epic boo-b2ey (2026-11-08). EPUB and MOBI on iOS come from the native Flutter reader (tc-1yif), not from WKWebView. tf-gnuk is obsolete. This ticket now also depends on tc-1yif.

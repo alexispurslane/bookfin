@@ -28,3 +28,9 @@ PNG/JPEG, exact passive SVG JPEG-wrapper fallback, active SVG unsupported marker
 See `docs/evidence/reader/android-remaining.md`, its per-case artifacts, failure audit, and cleanup. Settings restored, own download removed, signed out, servers/routes/Gradle stopped, bound session closed, device released without shutdown. Parent owns integration and remaining gate decisions.
 
 Post-release readback still found signed-out Bookfin PID11695 despite successful session close. One named-app close attempt through the same now-removed executable failed No such file or directory. No binding reset or adb UI fallback. Host follow-up `t2-y0ce`; app-process termination remains an explicit cleanup limit.
+
+## Notes
+
+**2026-11-08T19:23:53Z**
+
+Note from epic boo-b2ey (2026-11-08). The WebView reader goes away. The resource, navigation and permission denial checks here test the WebView, and they become obsolete when tc-rap6 merges. TalkBack, publisher fonts, SVG fallback, large text and offline reading need a new check on the native reader: tc-fz4n (TalkBack, large text), tc-nh0b (publisher fonts), tc-cl77 (SVG fallback) and tc-1yif (device check, offline). Do not spend more work on WebView evidence here.

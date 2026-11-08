@@ -1,7 +1,7 @@
 ---
 id: tf-mqh6
 status: open
-deps: [tf-gnuk]
+deps: [tf-gnuk, tc-1yif]
 links: []
 created: 2026-11-08T16:27:49Z
 type: task
@@ -18,3 +18,9 @@ lib/reader/mobi.dart opens libbookfin_mobi.so on Android and otherwise the BOOKF
 
 The macOS app imports and opens a MOBI book from the fixture.
 
+
+## Notes
+
+**2026-11-08T19:23:53Z**
+
+Still needed. MOBI still converts with libmobi, but it no longer shows through a WebView: tc-1yif (epic boo-b2ey) makes the native reader the MOBI reader on macOS. This ticket now depends on tc-1yif. Its old blocker tf-gnuk is obsolete.
