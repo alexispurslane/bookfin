@@ -57,5 +57,12 @@ String listenedWhen(DateTime at, DateTime now) {
 /// A moment as its day and its local time of day, for example
 /// "Today, 2:07 PM" or "12 Oct, 14:07", in the format of the app's locale.
 String dayAndTime(BuildContext context, DateTime at) =>
-    '${listenedWhen(at, DateTime.now())}, '
-    '${MaterialLocalizations.of(context).formatTimeOfDay(TimeOfDay.fromDateTime(at.toLocal()), alwaysUse24HourFormat: MediaQuery.alwaysUse24HourFormatOf(context))}';
+    '${listenedWhen(at, DateTime.now())}, ${timeOfDay(context, at)}';
+
+/// The local time of day of a moment, for example "2:07 PM" or "14:07", in
+/// the format of the app's locale.
+String timeOfDay(BuildContext context, DateTime at) =>
+    MaterialLocalizations.of(context).formatTimeOfDay(
+      TimeOfDay.fromDateTime(at.toLocal()),
+      alwaysUse24HourFormat: MediaQuery.alwaysUse24HourFormatOf(context),
+    );

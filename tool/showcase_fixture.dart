@@ -7,8 +7,9 @@
 // showcase_media.silence).
 // Add --sync-conflict to serve the Bookfin Storage plugin's contract, in
 // memory. When the phone uploads its first listening place, a made-up
-// second device saves a different place in the same file without having
-// seen the phone's, so the next sync shows a conflict to choose from.
+// second device, a made-up "Pixel Tablet", saves a different place in the
+// same file without having seen the phone's, so the next sync shows a
+// conflict to choose from.
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
@@ -386,6 +387,11 @@ class _Storage {
             : tabletPlace,
       },
       'preserve': <String>[],
+      'device': 'Pixel Tablet',
+      'savedAt': DateTime.now()
+          .subtract(const Duration(hours: 2))
+          .toUtc()
+          .toIso8601String(),
     };
     _store('action.showcase-tablet.1', jsonEncode(tablet));
   }

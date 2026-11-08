@@ -178,8 +178,14 @@ class RecordSync {
   Future<void> syncNow() => _act(_sync);
 
   /// Keeps the saved version [identity] of [record], then syncs. It shows
-  /// busy until the sync ends, then the result.
-  Future<void> resolve(String record, String identity) => _act(() async {
+  /// busy until the sync ends, then the result. The other saved places stay
+  /// as bookmarks with the titles of [bookmarkTitles], as
+  /// [LocalResumeStore.resolve] says.
+  Future<void> resolve(
+    String record,
+    String identity, {
+    Map<String, String> bookmarkTitles = const {},
+  }) => _act(() async {
     final session = _session!;
     final generation = _generation;
     try {
@@ -189,6 +195,7 @@ class RecordSync {
         session.scope.key,
         record,
         identity,
+        bookmarkTitles: bookmarkTitles,
       );
       if (!_current(generation)) return null;
       await playback?.refreshPersonalRecords();

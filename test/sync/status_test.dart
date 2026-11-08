@@ -229,7 +229,12 @@ class ControlledRecords implements LocalResumeStore {
   ) async => found;
 
   @override
-  Future<bool> resolve(String account, String record, String identity) async {
+  Future<bool> resolve(
+    String account,
+    String record,
+    String identity, {
+    Map<String, String> bookmarkTitles = const {},
+  }) async {
     resolved.add(identity);
     return true;
   }

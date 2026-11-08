@@ -4,13 +4,12 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import '../catalog/model.dart';
 import '../catalog/shelf.dart';
 import '../foundation/theme.dart';
-import '../foundation/time.dart' show audioTime, dayAndTime;
+import '../foundation/time.dart' show dayAndTime, timeOfDay;
 import '../playback/store.dart' show KeptRecords;
 import 'coordinator.dart';
-import 'journal.dart';
+import 'labels.dart';
 
 /// The Personal records page. It runs Sync now and the choice between saved
 /// versions on [sync], asks the user to confirm Discard before it deletes
@@ -36,8 +35,9 @@ class RecordSyncPage extends StatelessWidget {
               kept: sync.records.keptNotifier,
               library: library,
               onSync: () => unawaited(sync.syncNow()),
-              onResolve: (record, identity) =>
-                  unawaited(sync.resolve(record, identity)),
+              onResolve: (record, identity, bookmarkTitles) => unawaited(
+                sync.resolve(record, identity, bookmarkTitles: bookmarkTitles),
+              ),
               onDiscard: () => unawaited(_discard(context)),
             ),
           ],
@@ -87,9 +87,9 @@ class RecordSyncPage extends StatelessWidget {
 
 /// The state of personal-record sync, and the conflicts to choose from.
 /// Each part follows only its own signal. It reports [onSync] for Sync now,
-/// [onResolve] with the record address and the identity of the chosen
-/// saved version, and [onDiscard] for Discard of the kept copies of damaged
-/// records.
+/// [onResolve] with the record address, the identity of the chosen saved
+/// version, and the bookmark title of each version as `labelConflict` names
+/// it, and [onDiscard] for Discard of the kept copies of damaged records.
 class RecordSyncView extends StatelessWidget {
   const RecordSyncView({
     super.key,
@@ -108,7 +108,12 @@ class RecordSyncView extends StatelessWidget {
   final ValueListenable<KeptRecords> kept;
   final ValueListenable<CatalogLibrary> library;
   final VoidCallback onSync;
-  final void Function(String record, String identity) onResolve;
+  final void Function(
+    String record,
+    String identity,
+    Map<String, String> bookmarkTitles,
+  )
+  onResolve;
   final VoidCallback onDiscard;
 
   @override
@@ -186,37 +191,22 @@ class RecordSyncView extends StatelessWidget {
         builder: (context, _) {
           final books = library.value.books;
           final busy = status.value.busy;
+          final now = DateTime.now();
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              for (final entry in conflicts.value.entries)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(_heading(books, entry.key, entry.value)),
-                      for (final action in entry.value)
-                        TextButton(
-                          onPressed: busy
-                              ? null
-                              : () => onResolve(
-                                  entry.key,
-                                  RecordJournal.identity(action),
-                                ),
-                          child: Text(
-                            _describe(
-                              books,
-                              action['value'] as Map<String, dynamic>?,
-                            ),
-                          ),
-                        ),
-                      if ((jsonDecode(entry.key) as List)[1] == 'resumes')
-                        const Text(
-                          'Choosing keeps both places as bookmarks. Your current page or audio does not jump.',
-                        ),
-                    ],
+              for (final MapEntry(key: record, value: versions)
+                  in conflicts.value.entries)
+                _conflict(
+                  record,
+                  labelConflict(
+                    record,
+                    versions,
+                    books: books,
+                    now: now,
+                    clock: (at) => timeOfDay(context, at),
                   ),
+                  busy: busy,
                 ),
             ],
           );
@@ -225,90 +215,34 @@ class RecordSyncView extends StatelessWidget {
     ],
   );
 
-  String _describe(List<Book> books, Map<String, dynamic>? value) {
-    if (value == null) return 'Keep deletion';
-    final position = _position(value);
-    final parts = <String>[_bookName(books, value)];
-    final edition = _edition(books, position);
-    final savedLabel = value['editionLabel'] as String?;
-    parts.add(
-      edition?.label ?? savedLabel ?? 'Edition not in the current library',
-    );
-    final source = edition?.files
-        .where(
-          (file) =>
-              file.key == position['source'] &&
-              file.revision == position['revision'],
-        )
-        .firstOrNull;
-    parts.add(source?.displayName ?? 'Source unavailable or changed');
-    if (position['milliseconds'] is int) {
-      final milliseconds = position['milliseconds'] as int;
-      final fraction = milliseconds % 1000;
-      parts.add(
-        '${audioTime(milliseconds)}${fraction == 0 ? '' : '.${fraction.toString().padLeft(3, '0')}'}',
-      );
-    } else if (position['anchor'] is String) {
-      Map? address;
-      try {
-        final decoded = jsonDecode(position['anchor'] as String);
-        if (decoded is Map) address = decoded;
-      } on FormatException {
-        address = null;
-      }
-      if (address?['page'] is int) parts.add('Source page ${address!['page']}');
-      final quote = address?['quote'];
-      parts.add(
-        quote is String && quote.trim().isNotEmpty
-            ? '“$quote”'
-            : 'Saved reading place (preview unavailable)',
-      );
-    }
-    for (final name in ['title', 'note']) {
-      if (value[name] is String && (value[name] as String).isNotEmpty) {
-        parts.add(value[name] as String);
-      }
-    }
-    return parts.join(' · ');
-  }
-
-  Map<String, dynamic> _position(Map<String, dynamic> value) =>
-      (value['position'] ?? value['after'] ?? value) as Map<String, dynamic>;
-
-  Edition? _edition(List<Book> books, Map<String, dynamic> position) => books
-      .expand((book) => book.editions)
-      .where((edition) => edition.id == position['edition'])
-      .firstOrNull;
-
-  String _bookName(List<Book> books, Map<String, dynamic> value) {
-    final position = _position(value);
-    final book = books
-        .where(
-          (book) =>
-              book.editions.any((edition) => edition.id == position['edition']),
-        )
-        .firstOrNull;
-    return book?.title ??
-        (value['bookTitle'] is String
-            ? '${value['bookTitle']} (not in the current library)'
-            : 'Book not in the current library');
-  }
-
-  String _heading(
-    List<Book> books,
+  /// The choice between the saved versions of [record], as [labels] name
+  /// them. A choice reports the title of the bookmark of every version, so
+  /// that each place that stays a bookmark says where it came from.
+  Widget _conflict(
     String record,
-    List<Map<String, dynamic>> actions,
-  ) {
-    final address = jsonDecode(record) as List;
-    final value = actions
-        .map((action) => action['value'])
-        .whereType<Map<String, dynamic>>()
-        .firstOrNull;
-    final kind = switch (address[1]) {
-      'bookmarks' => 'bookmark',
-      'history' => 'history entry',
-      _ => 'saved place',
-    };
-    return '${value == null ? 'Book unavailable' : _bookName(books, value)} · ${address.first == 'audio' ? 'Listening' : 'Reading'} $kind · choose a saved version';
-  }
+    ConflictLabels labels, {
+    required bool busy,
+  }) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 8),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(labels.heading),
+        for (final choice in labels.choices)
+          TextButton(
+            onPressed: busy
+                ? null
+                : () => onResolve(record, choice.identity, {
+                    for (final choice in labels.choices)
+                      choice.identity: choice.bookmarkTitle,
+                  }),
+            child: Text(choice.text),
+          ),
+        if ((jsonDecode(record) as List)[1] == 'resumes')
+          const Text(
+            'Choosing keeps both places as bookmarks. Your current page or audio does not jump.',
+          ),
+      ],
+    ),
+  );
 }

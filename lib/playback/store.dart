@@ -131,8 +131,24 @@ const _hopText = 32;
 ///   unless a rewrite into a new record file is due.
 /// - Each kept view equals the view that its cached account derives.
 class LocalResumeStore implements ResumeStore, ListeningStore {
-  LocalResumeStore({this.openDatabase, IsolateHop? hop})
+  LocalResumeStore({this.openDatabase, IsolateHop? hop, this.deviceName})
     : _hop = hop ?? compute;
+
+  /// Looks up the name of this device, for example "Pixel 8", or gives null
+  /// when the device has none. Each change that this store saves names the
+  /// device, as [RecordJournal.change] says.
+  final Future<String?> Function()? deviceName;
+  Future<String?>? _deviceLookup;
+
+  /// The name of this device, which the store looks up once. A failed
+  /// lookup counts as a device without a name.
+  Future<String?> _device() => _deviceLookup ??= () async {
+    try {
+      return await deviceName?.call();
+    } on Exception {
+      return null;
+    }
+  }();
   final Future<RecordDatabase> Function()? openDatabase;
   final IsolateHop _hop;
   Future<RecordDatabase>? _database;
@@ -614,23 +630,36 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
   /// Keeps the saved version [identity] of [record] and replaces the
   /// others, which a listening place keeps as bookmarks. Returns false and
   /// changes nothing when [record] has no such competing version.
-  Future<bool> resolve(String account, String record, String identity) =>
-      _update(account, (journal) {
-        final versions = journal.conflicts[record];
-        final selected = versions
-            ?.where((action) => RecordJournal.identity(action) == identity)
-            .firstOrNull;
-        if (selected == null) {
-          return false;
-        }
-        final address = jsonDecode(record) as List;
-        if (address[1] == 'resumes') {
-          for (final action in versions!) {
-            if (action['value'] == null) continue;
-            final value = Map<String, dynamic>.from(action['value'] as Map);
-            final mark = 'conflict.${RecordJournal.identity(action)}';
-            final audio = address[0] == 'audio';
-            journal.change(jsonEncode([address[0], 'bookmarks', mark]), {
+  ///
+  /// [bookmarkTitles] holds the title of the bookmark of each version, by
+  /// the identity of its action, as the choice named it. A version without
+  /// one gets a general title.
+  Future<bool> resolve(
+    String account,
+    String record,
+    String identity, {
+    Map<String, String> bookmarkTitles = const {},
+  }) async {
+    final device = await _device();
+    return _update(account, (journal) {
+      final versions = journal.conflicts[record];
+      final selected = versions
+          ?.where((action) => RecordJournal.identity(action) == identity)
+          .firstOrNull;
+      if (selected == null) {
+        return false;
+      }
+      final address = jsonDecode(record) as List;
+      if (address[1] == 'resumes') {
+        for (final action in versions!) {
+          if (action['value'] == null) continue;
+          final value = Map<String, dynamic>.from(action['value'] as Map);
+          final mark = 'conflict.${RecordJournal.identity(action)}';
+          final audio = address[0] == 'audio';
+          final now = DateTime.now();
+          journal.change(
+            jsonEncode([address[0], 'bookmarks', mark]),
+            {
               'id': mark,
               'position': audio
                   ? {
@@ -640,21 +669,29 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
                       'milliseconds': value['milliseconds'],
                     }
                   : value,
-              'createdAt': DateTime.now().toUtc().toIso8601String(),
-              'title': 'Saved before sync choice',
+              'createdAt': now.toUtc().toIso8601String(),
+              'title':
+                  bookmarkTitles[RecordJournal.identity(action)] ??
+                  'Saved before sync choice',
               if (audio) 'bookTitle': 'Saved listening place',
               if (audio) 'editionLabel': 'Saved recording',
-            });
-          }
+            },
+            device: device,
+            savedAt: now,
+          );
         }
-        journal.change(
-          record,
-          selected['value'] as Map<String, dynamic>?,
-          resolve: true,
-        );
-        _changedOutsideWriters(account, [record]);
-        return true;
-      });
+      }
+      journal.change(
+        record,
+        selected['value'] as Map<String, dynamic>?,
+        resolve: true,
+        device: device,
+        savedAt: DateTime.now(),
+      );
+      _changedOutsideWriters(account, [record]);
+      return true;
+    });
+  }
 
   @override
   Future<Map<String, dynamic>?> read(String accountKey) =>
@@ -1075,6 +1112,8 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
     final operation = _writes.then((_) async {
       var completed = false;
       try {
+        final device = await _device();
+        final savedAt = DateTime.now();
         final stored = await _readAccount(account);
         final journal = stored?.journal ?? _journal(account, {});
         final observed = _observed[writer] ?? {};
@@ -1084,7 +1123,7 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
             observed[record] ?? journal.value(record),
             value,
           )) {
-            journal.change(record, value);
+            journal.change(record, value, device: device, savedAt: savedAt);
           }
         }
         final previous = stored?.metadata ?? _metadata({});

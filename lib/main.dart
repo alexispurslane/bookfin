@@ -28,6 +28,7 @@ import 'reader/session.dart';
 import 'reader/platform.dart';
 import 'reader/licenses.dart';
 import 'sync/coordinator.dart';
+import 'sync/device.dart';
 
 Future<void> main() => runBookfin();
 
@@ -56,6 +57,7 @@ Future<void> runBookfin({bool gallery = false}) async {
     openDatabase: !kIsWeb && defaultTargetPlatform == TargetPlatform.android
         ? () => RecordDatabase.open()
         : null,
+    deviceName: deviceName,
   );
   final layout = LibraryLayout(LocalLayoutStore());
   final (:downloads, :playback, :covers) = await openSources(
