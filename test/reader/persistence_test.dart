@@ -26,6 +26,8 @@ class FailingRecords extends ResumeStore
   void acceptSnapshot(String key, Map<String, dynamic>? value) =>
       records.acceptSnapshot(key, value);
   @override
+  bool setAside(String key) => records.setAside(key);
+  @override
   Future<void> write(String key, Map<String, dynamic> value) async {
     await gate?.future;
     if (!writable) throw Exception('Storage is unavailable');
@@ -74,40 +76,48 @@ void main() {
     downloads.dispose();
   });
 
+  /// The damaged values that the store kept aside, as a new process reads
+  /// them.
+  Future<List<String?>> keptAside() async {
+    final preferences = await SharedPreferences.getInstance();
+    return [
+      for (final name in preferences.getKeys())
+        if (name.startsWith('bookfin.damaged-records.v1.'))
+          preferences.getString(name),
+    ];
+  }
+
   for (final raw in ['[]', '{"reading":[]}']) {
     test(
-      'malformed outer storage preserves data and permits another account: $raw',
+      'malformed outer storage is kept aside, named as damaged, and the account saves new places: $raw',
       () async {
         reader.dispose();
         await reader.flush();
         final preferences = await SharedPreferences.getInstance();
-        final key = 'bookfin.playback.v1.${account().scope.key}';
-        await preferences.setString(key, raw);
+        await preferences.setString(
+          'bookfin.playback.v1.${account().scope.key}',
+          raw,
+        );
+        storage.writable = true;
         reader = ReaderSession(
           downloads: downloads,
           store: storage,
           load: (_) async => publication,
         );
-        await expectLater(reader.bind(account(), [book]), completes);
+        await reader.bind(account(), [book]);
         await reader.open(book, edition);
         reader.acceptVisible(reader.token, visible);
-        expect(reader.canBookmark, isFalse);
-        expect(reader.message, contains('could not be opened'));
+        expect(reader.message, contains('damaged'));
+        await reader.addBookmark(title: 'After the damage');
         await reader.flush();
-        expect(preferences.getString(key), raw);
-        storage.writable = true;
-        await reader.bind(account(user: 'bob'), [book]);
-        await reader.open(book, edition);
-        reader.acceptVisible(reader.token, visible);
-        await reader.addBookmark(title: 'Healthy account');
-        await reader.flush();
+
+        expect(await keptAside(), [raw]);
         expect(
-          (await records.reading.read(
-            account(user: 'bob').scope.key,
+          (await LocalResumeStore().reading.read(
+            account().scope.key,
           ))!['bookmarks'],
           hasLength(1),
         );
-        expect(preferences.getString(key), raw);
       },
     );
   }
@@ -128,34 +138,36 @@ void main() {
     },
   ]) {
     test(
-      'damaged reading records are guarded without overwriting their data: $damaged',
+      'damaged reading records are kept aside and the readable bookmark comes back: $damaged',
       () async {
+        storage.writable = true;
+        await reader.addBookmark(title: 'Readable');
+        await reader.flush();
+        final key = account().scope.key;
+        final readable =
+            ((await records.reading.read(key))!['bookmarks'] as List).single;
         reader.dispose();
         await reader.flush();
+        final text = jsonEncode({
+          'reading': {
+            ...damaged,
+            'bookmarks': [...damaged['bookmarks'] as List, readable],
+          },
+        });
         final preferences = await SharedPreferences.getInstance();
-        await preferences.setString(
-          'bookfin.playback.v1.${account().scope.key}',
-          jsonEncode({'reading': damaged}),
-        );
+        await preferences.setString('bookfin.playback.v1.$key', text);
         reader = ReaderSession(
           downloads: downloads,
           store: storage,
           load: (_) async => publication,
         );
-        await expectLater(reader.bind(account(), [book]), completes);
+        await reader.bind(account(), [book]);
         await reader.open(book, edition);
         reader.acceptVisible(reader.token, visible);
-        await reader.addBookmark();
-        expect(reader.canBookmark, isFalse);
-        expect(reader.message, contains('could not be opened'));
-        expect(
-          jsonDecode(
-            preferences.getString(
-              'bookfin.playback.v1.${account().scope.key}',
-            )!,
-          ),
-          {'reading': damaged},
-        );
+
+        expect(reader.message, contains('damaged'));
+        expect(reader.bookmarks.map((mark) => mark.title), ['Readable']);
+        expect(await keptAside(), [text]);
       },
     );
   }

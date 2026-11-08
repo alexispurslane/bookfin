@@ -39,6 +39,11 @@ abstract class ResumeStore {
   Future<Map<String, dynamic>?> read(String accountKey);
   Future<void> write(String accountKey, Map<String, dynamic> value);
   void acceptSnapshot(String accountKey, Map<String, dynamic>? value) {}
+
+  /// Whether this store found the saved records of [accountKey] damaged
+  /// while this app ran, kept the damaged data aside, and started the
+  /// account again from the records that it could read.
+  bool setAside(String accountKey) => false;
 }
 
 /// The owner of each account's saved listening records, as [Playback] uses
@@ -58,6 +63,12 @@ abstract class ListeningStore {
   /// Records [value] as the snapshot that the writer of [accountKey] now
   /// shows, so later saves compare their records with it.
   void acceptSnapshot(String accountKey, Map<String, dynamic>? value) {}
+
+  /// Whether this store found the saved records of [accountKey] damaged
+  /// while this app ran, kept the damaged data aside, and started the
+  /// account again from the records that it could read. A [read] of the
+  /// account finds out.
+  bool setAside(String accountKey) => false;
 }
 
 /// The listening records that one save changes.
@@ -959,6 +970,9 @@ class Playback extends ChangeNotifier {
         }
         if (pending == null) store.acceptSnapshot(session.scope.key, saved);
         _restored = true;
+        if (store.setAside(session.scope.key)) {
+          _message = 'Saved listening records were damaged. Bookfin kept a copy and restored the records that it could read. The next sync restores the rest.';
+        }
         await _restoreSelected();
       } on Exception {
         if (!_restored) {

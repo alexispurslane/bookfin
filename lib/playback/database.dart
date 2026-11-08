@@ -33,33 +33,84 @@ typedef RecordCommit = ({
   List<Map<String, Object?>> coverage,
 });
 
+/// The columns of each table that holds rows of an account, in the format
+/// before the journal (`accounts`) and in the journal format. Each table has
+/// a table of the same columns, after a `kept_at` column, that keeps the
+/// damaged rows of an account: `set_aside_` and the table's name.
+const _accountTables = {
+  'accounts': ['account', 'payload'],
+  'record_accounts': ['account', 'replica', 'cursor', 'metadata'],
+  'record_actions': ['account', 'identity', 'payload', 'pending'],
+  'record_versions': ['account', 'record', 'identities'],
+  'record_coverage': ['account', 'replica', 'sequence'],
+};
+
 class RecordDatabase {
-  RecordDatabase._(this._database);
+  RecordDatabase._(this._database, {this.keptFile});
   final Database _database;
 
+  /// The name of the copy of a record file that could not be opened, or
+  /// null when the file opened. [open] copied the damaged file and its
+  /// write-ahead log to this name and its `-wal` name, then started a new
+  /// file.
+  final String? keptFile;
+
+  /// Opens the record file at [path], or the default file.
+  ///
+  /// When SQLite reports the file as damaged (not a database, or corrupt),
+  /// this copies the file aside as [keptFile] says, deletes the damaged
+  /// original only after the copy is complete, and opens a new empty file.
+  /// Other failures, such as a full disk, throw and change nothing.
   static Future<RecordDatabase> open({
     DatabaseFactory? factory,
     String? path,
   }) async {
-    final database = await (factory ?? databaseFactory).openDatabase(
-      path ?? 'bookfin-personal-records-v1.sqlite',
-      options: OpenDatabaseOptions(
-        version: 2,
-        onConfigure: (database) async {
-          await database.rawQuery('PRAGMA journal_mode=WAL');
-          await database.execute('PRAGMA synchronous=FULL');
-        },
-        onCreate: (database, _) async {
-          await database.execute(
-            'CREATE TABLE accounts (account TEXT PRIMARY KEY NOT NULL, payload TEXT NOT NULL)',
-          );
-          await _createRows(database);
-        },
-        onUpgrade: (database, _, _) => _createRows(database),
-      ),
-    );
-    return RecordDatabase._(database);
+    final files = factory ?? databaseFactory;
+    final name = path ?? 'bookfin-personal-records-v1.sqlite';
+    try {
+      return RecordDatabase._(await _openFile(files, name));
+    } on DatabaseException catch (error) {
+      // SQLITE_CORRUPT and SQLITE_NOTADB. Android reports extended codes.
+      if (!const {11, 26}.contains((error.getResultCode() ?? 0) & 0xff)) {
+        rethrow;
+      }
+    }
+    final kept =
+        '$name.damaged-${DateTime.now().toUtc().millisecondsSinceEpoch}';
+    for (final suffix in ['', '-wal']) {
+      if (await files.databaseExists('$name$suffix')) {
+        await files.writeDatabaseBytes(
+          '$kept$suffix',
+          await files.readDatabaseBytes('$name$suffix'),
+        );
+      }
+    }
+    await files.deleteDatabase(name);
+    return RecordDatabase._(await _openFile(files, name), keptFile: kept);
   }
+
+  static Future<Database> _openFile(DatabaseFactory files, String name) =>
+      files.openDatabase(
+        name,
+        options: OpenDatabaseOptions(
+          version: 3,
+          onConfigure: (database) async {
+            await database.rawQuery('PRAGMA journal_mode=WAL');
+            await database.execute('PRAGMA synchronous=FULL');
+          },
+          onCreate: (database, _) async {
+            await database.execute(
+              'CREATE TABLE accounts (account TEXT PRIMARY KEY NOT NULL, payload TEXT NOT NULL)',
+            );
+            await _createRows(database);
+            await _createSetAside(database);
+          },
+          onUpgrade: (database, previous, _) async {
+            if (previous < 2) await _createRows(database);
+            await _createSetAside(database);
+          },
+        ),
+      );
 
   static Future<void> _createRows(DatabaseExecutor database) async {
     await database.execute(
@@ -74,6 +125,16 @@ class RecordDatabase {
     await database.execute(
       'CREATE TABLE record_coverage (account TEXT NOT NULL, replica TEXT NOT NULL, sequence INTEGER NOT NULL, PRIMARY KEY (account, replica))',
     );
+  }
+
+  /// Creates the tables that keep damaged rows. Their columns have no type
+  /// and no constraint, so a copy keeps each value exactly as it was.
+  static Future<void> _createSetAside(DatabaseExecutor database) async {
+    for (final MapEntry(key: table, value: columns) in _accountTables.entries) {
+      await database.execute(
+        'CREATE TABLE set_aside_$table (kept_at, ${columns.join(', ')})',
+      );
+    }
   }
 
   /// The durable rows of [account] as text, or null when it has none.
@@ -240,8 +301,38 @@ class RecordDatabase {
   }
 
   /// Writes [commit] in one transaction.
-  Future<void> writeCommit(RecordCommit commit) => _database.transaction((
-    transaction,
+  Future<void> writeCommit(RecordCommit commit) =>
+      _database.transaction((transaction) => _write(transaction, commit));
+
+  /// Moves every row of the account of [commit] into the tables that keep
+  /// damaged rows, stamped with [keptAt] in milliseconds since the epoch,
+  /// and writes [commit] as the account's first commit, in one
+  /// transaction. So a failure or a kill leaves the damaged rows where they
+  /// were, or the new account with the damaged rows kept aside.
+  Future<void> replaceDamaged(RecordCommit commit, {required int keptAt}) {
+    if (!commit.initialize) {
+      throw ArgumentError('A damaged account is replaced by a first commit.');
+    }
+    return _database.transaction((transaction) async {
+      for (final MapEntry(key: table, value: columns)
+          in _accountTables.entries) {
+        await transaction.rawInsert(
+          'INSERT INTO set_aside_$table SELECT ?, ${columns.join(', ')} FROM $table WHERE account = ? ORDER BY rowid',
+          [keptAt, commit.account],
+        );
+        await transaction.delete(
+          table,
+          where: 'account = ?',
+          whereArgs: [commit.account],
+        );
+      }
+      await _write(transaction, commit);
+    });
+  }
+
+  static Future<void> _write(
+    Transaction transaction,
+    RecordCommit commit,
   ) async {
     final account = commit.account;
     if (commit.initialize) {
@@ -291,7 +382,7 @@ class RecordDatabase {
         whereArgs: [account],
       );
     }
-  });
+  }
 
   /// Saves [metadata] and the unsaved changes of [journal] in one
   /// transaction. One save changes a few records, so it encodes on the
