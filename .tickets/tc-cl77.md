@@ -1,6 +1,6 @@
 ---
 id: tc-cl77
-status: open
+status: in_progress
 deps: [tc-z7au]
 links: []
 created: 2026-11-08T19:23:13Z
@@ -35,3 +35,9 @@ docs/plans/native-epub-reader.md (epic boo-b2ey). Read the sections named in the
 - An inline SVG with an aria-label shows its label as text, and that text has places.
 - An SVG wrapper of a JPEG draws the JPEG.
 
+
+## Notes
+
+**2026-11-08T23:32:49Z**
+
+Style.invert holds filter: invert() from 0 to 1; several invert() compose (a + b - 2ab), other filters are ignored, and filter is not inherited. ImageItem and ImageRun carry a DrawnImage (path, invert, alt); ImageItem.path became ImageItem.image, and an image outside the publication now gets a decoration (path empty) so it draws its alt text. PageImages values became nullable: no entry = not decoded yet (outline), null = cannot decode (alt text, or outline without alt). layout.dart and page_source.dart changed only to carry DrawnImage. decodeImages (trial tests only) keeps its Map<String, ui.Image> result, so the trial files did not change. The broken-image test uses a palette PNG without PLTE: the image package reads it, Flutter refuses it. Real check: se-poetry's title page line art gets invert 1.0 in night, 0.0 in cream.

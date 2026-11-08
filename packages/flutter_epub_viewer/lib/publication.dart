@@ -20,6 +20,7 @@ class Publication {
     this.bookStyles,
     this.imageSizes,
     this.contents,
+    this.language,
   );
 
   static const policy = 'bookfin-passive-epub-1';
@@ -63,6 +64,11 @@ class Publication {
   /// (the convention that BookMap.of resolves) and points into the spine.
   /// Each depth is the entry's nesting, from 0, at most [maxContentsDepth].
   final List<ContentsEntry> contents;
+
+  /// The package's first `dc:language` that is not blank, such as `en-GB`,
+  /// without the white space around it: the language of text whose
+  /// elements name none. Null when the package names none.
+  final String? language;
 
   Uri get base => Uri(scheme: 'https', host: host, path: '/$identity/');
 
@@ -606,6 +612,19 @@ class _Admission {
             path: sizes[path]!,
       }),
       List.unmodifiable(contents),
+      // The admitted package document keeps the metadata as the book wrote
+      // it.
+      opf.descendants
+          .whereType<XmlElement>()
+          .where(
+            (node) =>
+                node.name.local == 'language' &&
+                (node.namespaceUri == 'http://purl.org/dc/elements/1.1/' ||
+                    node.name.prefix == 'dc'),
+          )
+          .map((node) => node.innerText.trim())
+          .where((language) => language.isNotEmpty)
+          .firstOrNull,
     );
   }
 

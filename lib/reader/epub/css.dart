@@ -107,6 +107,11 @@ class Style {
   Length height = const Length.auto();
   Length maxHeight = const Length.none();
   bool borderBox = false;
+
+  /// How far `filter: invert()` moves the colors of an image toward their
+  /// inverse, from 0 (unchanged) to 1 (inverted). Other filters are
+  /// ignored.
+  double invert = 0;
   BreakRule breakBefore = BreakRule.auto;
   BreakRule breakAfter = BreakRule.auto;
   bool avoidBreakInside = false;
@@ -1503,6 +1508,44 @@ Length? parseLength(
   };
 }
 
+/// How far the `filter` value [value] inverts colors, from 0 to 1, or null
+/// when it is not a filter list. Chromium composes each `invert()` with the
+/// filters before it, and inverting by a and then by b inverts by
+/// a + b − 2ab. The other filter functions are ignored.
+double? _invertOf(String value) {
+  final text = value.trim();
+  if (text == 'none') return 0;
+  final name = RegExp(r'\s*([a-z-]+)\(');
+  var invert = 0.0;
+  var at = 0;
+  var functions = 0;
+  while (text.substring(at).trim().isNotEmpty) {
+    final match = name.matchAsPrefix(text, at);
+    if (match == null) return null;
+    var close = match.end;
+    for (var depth = 1; ; close++) {
+      if (close == text.length) return null;
+      if (text[close] == '(') depth++;
+      if (text[close] == ')' && --depth == 0) break;
+    }
+    if (match[1] == 'invert') {
+      final argument = text.substring(match.end, close).trim();
+      final percent = argument.endsWith('%');
+      final number = argument.isEmpty
+          ? 1.0
+          : double.tryParse(
+              percent ? argument.substring(0, argument.length - 1) : argument,
+            );
+      if (number == null || number < 0) return null;
+      final amount = math.min(percent ? number / 100 : number, 1.0);
+      invert = invert + amount - 2 * invert * amount;
+    }
+    functions++;
+    at = close + 1;
+  }
+  return functions == 0 ? null : invert;
+}
+
 double _fontSize(String value, double parent, double root) {
   final text = value.trim().toLowerCase();
   const keywords = {
@@ -1626,6 +1669,8 @@ void _apply(
       }
     case 'box-sizing':
       style.borderBox = lower == 'border-box';
+    case 'filter':
+      style.invert = _invertOf(lower) ?? style.invert;
     case 'break-before' || 'break-after':
       final rule = switch (lower) {
         'page' ||
@@ -1790,6 +1835,7 @@ const _longhands = [
   'height',
   'max-height',
   'box-sizing',
+  'filter',
   'break-before',
   'break-after',
   'break-inside',
@@ -1873,6 +1919,8 @@ void _copyFrom(Style style, Style source, String property) {
       style.maxHeight = source.maxHeight;
     case 'box-sizing':
       style.borderBox = source.borderBox;
+    case 'filter':
+      style.invert = source.invert;
     case 'break-before':
       style.breakBefore = source.breakBefore;
     case 'break-after':

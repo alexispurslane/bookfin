@@ -149,8 +149,8 @@ class Piece {
   final double y;
   final TextMap map;
 
-  /// Images and raised text drawn in the paragraph's placeholders, at
-  /// their place from the piece's top left.
+  /// Images ([DrawnImage]) and raised text ([ui.Paragraph]) drawn in the
+  /// paragraph's placeholders, at their place from the piece's top left.
   List<(ui.Rect, Object)> get inlines => _paragraphs.inlines;
 
   /// The top of each line from the piece's top, and the bottom of the last
@@ -225,9 +225,10 @@ class RuleDecoration extends Decoration {
 }
 
 class ImageDecoration extends Decoration {
-  ImageDecoration(this.rect, this.path);
+  ImageDecoration(this.rect, this.image);
   final ui.Rect rect;
-  final String path;
+  final DrawnImage image;
+  String get path => image.path;
 }
 
 class MarkerDecoration extends Decoration {
@@ -1022,9 +1023,7 @@ class LayoutRun {
     _margin(image.marginTop);
     _resolveMargin();
     final rect = ui.Rect.fromLTWH(left, _y, imageWidth, imageHeight);
-    if (image.path case final path?) {
-      _decorations.add(ImageDecoration(rect, path));
-    }
+    _decorations.add(ImageDecoration(rect, image.image));
     final slice = _add(
       _y,
       _y + imageHeight,
@@ -1422,7 +1421,7 @@ class LayoutRun {
           trim = false;
           builder.addText('\n');
           map.addPlaceholder(node);
-        case ImageRun(:final node, :final path, :final sizing):
+        case ImageRun(:final node, :final image, :final sizing):
           final start = unit;
           unit += 1;
           if (start < from) continue;
@@ -1436,7 +1435,7 @@ class LayoutRun {
             baselineOffset: imageHeight,
           );
           map.addPlaceholder(node);
-          inlines.add(path);
+          inlines.add(image);
         case RaisedRun(:final node, text: final inner, :final shift):
           final start = unit;
           unit += 1;
@@ -2154,9 +2153,9 @@ class _Cell {
                   math.min(rect.bottom, bottom),
                 ).shift(offset),
               ),
-            ImageDecoration(:final rect, :final path)
+            ImageDecoration(:final rect, :final image)
                 when rect.top >= top && rect.top < bottom =>
-              ImageDecoration(rect.shift(offset), path),
+              ImageDecoration(rect.shift(offset), image),
             MarkerDecoration(:final piece)
                 when piece.y >= top && piece.y < bottom =>
               MarkerDecoration(
