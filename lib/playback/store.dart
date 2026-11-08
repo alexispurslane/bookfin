@@ -102,7 +102,10 @@ const _hopText = 4 * 1024;
 /// write, the database keeps the whole file aside and continues on a new
 /// file ([RecordFileSetAside]). The store then writes every account that it
 /// holds in memory whole into the new file, with the write in progress, and
-/// [setAside] reports the damage for every account.
+/// [setAside] reports the damage for every account. Until that rewrite
+/// succeeds, memory holds the only copy of those accounts outside the kept
+/// file, so the store keeps all of them, and each later operation first
+/// tries the rewrite again.
 ///
 /// Engine rule 1: the whole-account work of a read (journal replay, the
 /// decoding of an older format, and each domain's snapshot) runs in one hop
@@ -112,7 +115,8 @@ const _hopText = 4 * 1024;
 /// Invariants, checked on demand by [checkInvariants]:
 /// - The journal of each cached account satisfies
 ///   [RecordJournal.checkInvariants].
-/// - The durable rows of each cached account equal its journal and settings.
+/// - The durable rows of each cached account equal its journal and settings,
+///   unless a rewrite into a new record file is due.
 /// - Each kept view equals the view that its cached account derives.
 class LocalResumeStore implements ResumeStore, ListeningStore {
   LocalResumeStore({this.openDatabase, RecordsHop? hop})
@@ -132,6 +136,11 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
 
   /// The accounts whose damaged data this store kept aside.
   final Set<String> _setAside = {};
+
+  /// Whether the record file lacks accounts that the cache holds, because
+  /// their rewrite into the new file that replaced a damaged one has not
+  /// succeeded yet.
+  bool _rewriteDue = false;
 
   late final ReadingRecords reading = ReadingRecords._(this);
   Future<void> _writes = Future.value();
@@ -178,9 +187,10 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
   }
 
   /// Drops the cached state of [account], so that the next operation reads
-  /// it from storage.
+  /// it from storage. While a rewrite is due, storage lacks the account, so
+  /// the cache keeps it with the change that failed, for the rewrite.
   void _forget(String account) {
-    _accounts.remove(account);
+    if (!_rewriteDue) _accounts.remove(account);
     _forgetViews(account);
   }
 
@@ -514,6 +524,7 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
   Future<_StoredAccount?> _readAccount(String accountKey) async {
     final database = await _storage();
     if (database != null) {
+      if (_rewriteDue) await _rewriteCached(database);
       final cached = _accounts[accountKey];
       if (cached != null) return cached;
       AccountRows? rows;
@@ -655,8 +666,10 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
 
   /// Writes every cached account whole into the new file that replaced a
   /// damaged record file, in one transaction, so that the records that the
-  /// store holds in memory stay on the phone. A hop encodes them.
+  /// store holds in memory stay on the phone. A hop encodes them. The
+  /// rewrite stays due until it succeeds.
   Future<void> _rewriteCached(RecordDatabase database) async {
+    _rewriteDue = true;
     final accounts = Map.of(_accounts);
     final input = [
       for (final MapEntry(key: account, value: stored) in accounts.entries)
@@ -673,6 +686,7 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
     await database.writeCommits(
       await _derive(_wholeCommits, input, small: actions < _hopItems),
     );
+    _rewriteDue = false;
     for (final stored in accounts.values) {
       stored.journal.persisted();
     }
@@ -684,6 +698,7 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
       for (final entry in _accounts.entries) {
         final journal = entry.value.journal;
         journal.checkInvariants();
+        if (_rewriteDue) continue;
         final rows = await database!.load(entry.key);
         final savedSync = rows?['sync'] as Map<String, dynamic>?;
         final encoded = journal.encode();
