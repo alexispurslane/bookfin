@@ -1,7 +1,7 @@
 ---
 id: ta-tk3b
 status: open
-deps: []
+deps: [boo-du96]
 links: []
 created: 2026-11-08T00:13:00Z
 type: task
@@ -20,3 +20,7 @@ Found by td-rvpm. A damaged record store is now kept aside: SQLite rows in the s
 **2026-11-08T00:26:10Z**
 
 Orchestrator, Nov 7: held for the user. A recovery path for kept copies is a user-visible design fork.
+
+**2026-11-08T01:39:18Z**
+
+User decision, Nov 7: automatic merge, a quiet line, and discard after confirmation. At each launch, while kept copies exist (set_aside_* tables, <name>.damaged-<ms> files, kept preference values), the store tries again to read them with the current code and merges every readable record by time through the normal merge. Older data never replaces newer data. The Sync page's quiet line reports how many records came back, for example '3 damaged records were recovered.' While kept copies exist, the same line offers Discard, which deletes them only after a confirmation. No dialog other than that confirmation. No export. Recorded in docs/plans/bookfin.md, Conformance decisions.
