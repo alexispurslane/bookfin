@@ -395,7 +395,7 @@ Flutter rounds each line's height to a whole pixel. Chromium does not. Layout re
 
 - A table with rows lays out as a grid. Column widths come from each cell's minimum and maximum content widths (Flutter's `minIntrinsicWidth` and `maxIntrinsicWidth`), in a simple form of CSS automatic table layout.
 - `colspan` works. `rowspan` counts as 1. A caption is a block above the table. Cell padding and borders follow the computed style. A table inside a cell lays out as blocks.
-- A row is one strip slice, so a page breaks between rows. A row taller than a page gets a page of its own and is cut at the page edge.
+- A row is one strip slice, so a page breaks between rows. A row taller than a page splits into fragments between the lines of its cells (te-4cez), so no text is lost. Each fragment but the last fills one page, and each cell goes on from its first line that did not fit. A split cell starts at the top of the row, because no page shows the whole row that vertical-align centers in. A fragment is a strip slice, and a page can start at it.
 - Every cell's text has places, so CFIs, quotes and search work in tables.
 - Flex rows, grids, floats, and absolute or fixed boxes flow as blocks. A box moved off the page by a negative offset stays out, as in the trial.
 

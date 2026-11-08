@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:bookfin/reader/epub/dom.dart';
@@ -229,6 +230,91 @@ void main() {
     });
   });
 
+  group('row fragments', () {
+    // Pages 100 pixels tall. A cell's slices are lines of its content,
+    // from the top of its box: here a padding of 3 above and below.
+    List<(double, double)> lines(int count, double height) => [
+      for (var line = 0; line < count; line++)
+        (3 + line * height, 3 + (line + 1) * height),
+    ];
+
+    test('a row that fits a page is one fragment, with each cell where its '
+        'vertical-align puts it', () {
+      final fragments = rowFragments([
+        (slices: lines(2, 20), height: 46, align: 0.5),
+        (slices: lines(1, 20), height: 26, align: 1),
+      ], 100);
+      expect(fragments, hasLength(1));
+      final [fragment] = fragments;
+      expect(fragment.height, 46);
+      expect(
+        [for (final cell in fragment.cells) (cell.from, cell.to)],
+        [(0, 2), (0, 1)],
+      );
+      expect([for (final cell in fragment.cells) cell.offset], [0, 20]);
+    });
+
+    test('a row taller than a page breaks each cell after its last slice '
+        'that fits, and goes on with each cell at the next fragment\'s '
+        'top', () {
+      final fragments = rowFragments([
+        (slices: lines(10, 20), height: 206, align: 0.5),
+        (slices: lines(4, 30), height: 126, align: 0.5),
+      ], 100);
+      // Each fragment but the last fills a page.
+      expect(
+        [for (final fragment in fragments) fragment.height],
+        [100, 100, 23],
+      );
+      List<(int, int)> shown(int cell) => [
+        for (final fragment in fragments)
+          (fragment.cells[cell].from, fragment.cells[cell].to),
+      ];
+      expect(shown(0), [(0, 4), (4, 9), (9, 10)]);
+      expect(shown(1), [(0, 3), (3, 4), (4, 4)]);
+      // A split cell starts at the row's top, whatever its
+      // vertical-align, and each later fragment starts with its next slice.
+      final [first, second, third] = fragments;
+      expect([for (final cell in first.cells) cell.offset], [0, 0]);
+      expect([for (final cell in second.cells) cell.offset], [-83, -93]);
+      expect(third.cells[0].offset, -183);
+      // Each fragment shows the band of the box from its first slice to
+      // the next fragment's first slice.
+      expect(
+        (first.cells[0].top, first.cells[0].bottom),
+        (double.negativeInfinity, 83),
+      );
+      expect((second.cells[0].top, second.cells[0].bottom), (83, 183));
+      expect(
+        (second.cells[1].top, second.cells[1].bottom),
+        (93, double.infinity),
+      );
+      expect(
+        (third.cells[0].top, third.cells[0].bottom),
+        (183, double.infinity),
+      );
+      // The second cell ended in the second fragment.
+      expect(third.cells[1].bottom, lessThanOrEqualTo(third.cells[1].top));
+    });
+
+    test('a slice taller than a page goes on a fragment of its own', () {
+      final fragments = rowFragments([
+        (slices: [(0.0, 150.0), (150.0, 170.0)], height: 170, align: 0.5),
+      ], 100);
+      expect([for (final fragment in fragments) fragment.height], [150, 20]);
+      expect([for (final fragment in fragments) fragment.cells[0].to], [1, 2]);
+    });
+
+    test('the bottom padding of a cell that does not fit goes on the next '
+        'fragment', () {
+      final fragments = rowFragments([
+        (slices: [(0.0, 50.0), (50.0, 98.0)], height: 104, align: 0),
+      ], 100);
+      expect([for (final fragment in fragments) fragment.height], [100, 6]);
+      expect([for (final fragment in fragments) fragment.cells[0].to], [2, 2]);
+    });
+  });
+
   group('preparing', () {
     test('a table with rows prepares as one table item, after its caption', () {
       final section = prepared(
@@ -396,27 +482,137 @@ void main() {
     disposeAll(pages);
   });
 
-  test('a row taller than a page gets a page of its own', () {
-    final section = prepared(
-      '<table><tr><td>Short</td><td>Row</td></tr>'
-      '<tr><td>Tall</td><td>${prose(30, 'Tall')}</td></tr>'
-      '<tr><td>Next</td><td>Row</td></tr></table>',
-      settings: smallPage,
-    );
-    final pages = runToEnd(section);
-    final tall = pagesShowing(section, pages, 'Tall passage 1.');
-    expect(tall, hasLength(1));
-    final page = pages[tall.single];
-    expect(pagesShowing(section, pages, 'Short'), isNot(contains(page)));
-    expect(pagesShowing(section, pages, 'Next').single, tall.single + 1);
-    expect(page.slices, hasLength(1));
-    expect(page.height, greaterThan(smallPage.height));
-    disposeAll(pages);
+  group('a row taller than a page', () {
+    // Two long cells side by side, the left one in smaller type, so that
+    // their lines do not line up, between a short row and a row after.
+    const css =
+        'td{border:1px solid;padding:3px}td.small{font-size:13px}'
+        'td.narrow{width:20%}';
+    final body =
+        '<p>${prose(1, 'Before')}</p>'
+        '<table><tr><td>Short</td><td>Row</td></tr>'
+        '<tr><td class="small">${prose(5, 'Left')}</td>'
+        '<td>${prose(6, 'Right')}</td></tr>'
+        '<tr><td class="narrow">Last</td><td>${prose(2, 'Tall')}</td></tr>'
+        '<tr><td>Next</td><td>Row</td></tr></table>'
+        '<p>${prose(2, 'After')}</p>';
+
+    test('splits between the lines of its cells, so every line shows whole '
+        'on one page', () {
+      final section = prepared(body, css: css, settings: smallPage);
+      final run = LayoutRun(section);
+      while (!run.done) {
+        run
+          ..step(forever, want: 1)
+          ..checkInvariants();
+      }
+      run.dispose();
+      final pages = run.pages;
+      final left = pagesShowing(section, pages, 'Left passage 1.');
+      expect(left.length, greaterThan(2));
+      expect(
+        pagesShowing(section, pages, 'Right passage 1.'),
+        containsAll(left),
+      );
+      expect(shownLines(section, pages, ['Left', 'Right']), isEmpty);
+      disposeAll(pages);
+    });
+
+    test('starts its split cells at the top of the row, draws their top '
+        'borders on its first page and their bottom borders on its last', () {
+      final section = prepared(body, css: css, settings: smallPage);
+      final pages = runToEnd(section);
+      final shown = pagesShowing(section, pages, 'Right passage 1.').toList()
+        ..sort();
+      final [left, right] = [
+        for (final text in ['Left passage 1.', 'Right passage 1.'])
+          piecesShowing(
+            section,
+            pages,
+            text,
+          ).firstWhere((found) => found.$1 == shown.first).$2,
+      ];
+      expect(left.y, closeTo(right.y, 0.01));
+      // The horizontal rules of each page of the row: the first page has
+      // the cells' top borders, the pages between have none, and the last
+      // has their bottom borders above the next row.
+      List<double> across(LaidPage page, [double below = double.infinity]) => [
+        for (final decoration in page.decorations)
+          if (decoration case RuleDecoration(:final rect)
+              when rect.height == 1 && rect.width > 1 && rect.top < below)
+            rect.top - page.top,
+      ];
+      final first = pages[shown.first];
+      expect(across(first), [0, 0]);
+      for (final page in shown.skip(1).take(shown.length - 2)) {
+        expect(across(pages[page]), isEmpty, reason: 'page $page');
+      }
+      final next = piecesShowing(section, pages, 'Last');
+      final end = pages[shown.last];
+      expect(
+        across(
+          end,
+          next.first.$1 == shown.last ? next.first.$2.y : double.infinity,
+        ),
+        hasLength(2),
+      );
+      disposeAll(pages);
+    });
+
+    test('lays out again from every page start inside it as the main run '
+        'does, and draws the same pixels', () async {
+      final section = prepared(body, css: css, settings: smallPage);
+      final main = runToEnd(section);
+      final inside = pagesShowing(section, main, 'Left passage 1.');
+      expect(inside.length, greaterThan(2));
+      for (var page = 1; page < main.length; page++) {
+        final resumed = runToEnd(section, from: main[page].start);
+        expect(keys(resumed), keys(main.skip(page)), reason: 'page $page');
+        expect(await pixels(resumed.first), await pixels(main[page]));
+        disposeAll(resumed);
+      }
+      disposeAll(main);
+    });
+
+    test('opens a place in its second cell on the page that shows it', () {
+      final section = prepared(body, css: css, settings: smallPage);
+      final chapter = layoutSection(section);
+      for (var passage = 1; passage <= 6; passage++) {
+        final text = 'Right passage $passage.';
+        final place = placeOf(section, text);
+        final page = chapter.pages.indexWhere(
+          (page) => _shows(page, place, section),
+        );
+        expect(page, isNonNegative, reason: text);
+        expect(chapter.pageAt(place), page, reason: text);
+        final run = LayoutRun(section, from: lineStart(section, place))
+          ..step(forever, want: 1);
+        expect(run.pages.first.start, chapter.pages[page].start, reason: text);
+        disposeAll(run.pages);
+        run.dispose();
+      }
+      chapter.dispose();
+    });
+
+    test('ends each of its pages at the last character that the page '
+        'shows', () {
+      final section = prepared(body, css: css, settings: smallPage);
+      final pages = runToEnd(section);
+      final shown = pagesShowing(section, pages, 'Right passage 1.');
+      for (final index in shown) {
+        final page = pages[index];
+        final end = page.endPlace!;
+        expect(_shows(page, end, section), isTrue, reason: 'page $index');
+        final text = section.dom.textAt(end)!.text;
+        expect(text, contains('Right passage'), reason: 'page $index');
+      }
+      disposeAll(pages);
+    });
   });
 
   test('a ruled cell draws its borders as tall as its row', () {
     final section = prepared(
-      '<table><tr><td>Short</td><td>${prose(3, 'Tall')}</td></tr></table>',
+      '<table><tr><td>Short</td><td>${prose(2, 'Tall')}</td></tr></table>',
       css: 'td{border:1px solid;padding:3px}',
       settings: smallPage,
     );
@@ -442,7 +638,7 @@ void main() {
       'vertical-align asks', () {
     final section = prepared(
       '<table><tr><td class="top">Top</td><td>Middle</td>'
-      '<td class="bottom">Bottom</td><td>${prose(3, 'Tall')}</td></tr>'
+      '<td class="bottom">Bottom</td><td>${prose(1, 'Tall')}</td></tr>'
       '</table>',
       css: 'td.top{vertical-align:top}tr td.bottom{vertical-align:bottom}',
       settings: smallPage,
@@ -629,3 +825,78 @@ void main() {
     });
   });
 }
+
+/// The lines of the paragraphs that show the texts that start with one of
+/// [labels] that [pages] do not show exactly once and whole: each with
+/// the number of pages that show it whole and whether a page cuts it.
+List<String> shownLines(
+  PreparedSection section,
+  List<LaidPage> pages,
+  List<String> labels,
+) {
+  final whole = <(ui.Paragraph, int), int>{};
+  final cut = <(ui.Paragraph, int)>{};
+  final paragraphs = <ui.Paragraph>{};
+  for (final page in pages) {
+    for (final piece in page.pieces) {
+      final text = [
+        for (final node in piece.map.nodes)
+          if (node >= 0) section.dom.texts.firstWhere((n) => n.order == node),
+      ].map((node) => node.text).join();
+      if (!labels.any((label) => text.contains('$label passage'))) continue;
+      paragraphs.add(piece.paragraph);
+      final top = math.max(page.top, piece.y);
+      final bottom = math.min(_bottom(page), piece.y + piece.shown);
+      final metrics = piece.paragraph.computeLineMetrics();
+      var lineTop = piece.y;
+      for (final (line, metric) in metrics.indexed) {
+        final lineBottom =
+            piece.y +
+            (line == metrics.length - 1
+                ? piece.paragraph.height
+                : metric.baseline + metric.descent);
+        final key = (piece.paragraph, line);
+        if (lineTop >= top - 0.01 && lineBottom <= bottom + 0.01) {
+          whole[key] = (whole[key] ?? 0) + 1;
+        } else if (lineBottom > top + 0.01 && lineTop < bottom - 0.01) {
+          cut.add(key);
+        }
+        lineTop = lineBottom;
+      }
+    }
+  }
+  expect(paragraphs, isNotEmpty);
+  return [
+    for (final paragraph in paragraphs)
+      for (var line = 0; line < paragraph.computeLineMetrics().length; line++)
+        if (whole[(paragraph, line)] != 1 || cut.contains((paragraph, line)))
+          'line $line: whole on ${whole[(paragraph, line)] ?? 0} pages, '
+              'cut ${cut.contains((paragraph, line))}',
+  ];
+}
+
+/// Whether [page] shows the line that holds [place], whole.
+bool _shows(LaidPage page, EpubPlace place, PreparedSection section) {
+  for (final piece in page.pieces) {
+    final segment = piece.map.nodes.indexOf(place.node);
+    if (segment < 0) continue;
+    final offsets = piece.map.offsets[segment]!;
+    final local = offsets.indexOf(place.offset);
+    if (local < 0) continue;
+    final unit = piece.map.starts[segment] + local;
+    final box = piece.paragraph.getBoxesForRange(unit, unit + 1);
+    if (box.isEmpty) continue;
+    final top = piece.y + box.first.top;
+    final bottom = piece.y + box.first.bottom;
+    if (top >= math.max(page.top, piece.y) - 0.01 &&
+        bottom <= math.min(_bottom(page), piece.y + piece.shown) + 0.01) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/// The strip position where [page] stops showing: its bottom, or one page
+/// height below its top for a page that is taller.
+double _bottom(LaidPage page) =>
+    math.min(page.bottom, page.top + page.settings.height);

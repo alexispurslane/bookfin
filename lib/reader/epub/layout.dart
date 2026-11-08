@@ -6,7 +6,9 @@
 // document would. Each line, image, rule and table row is a slice of the
 // strip. A page is a window [top, bottom) of the strip that holds whole
 // slices, so a paragraph splits across pages between its lines, and a table
-// between its rows. The breaks follow CSS
+// between its rows. A row taller than a page is a slice for each of its
+// fragments (table.dart), so it splits between the lines of its cells. The
+// breaks follow CSS
 // fragmentation as Chromium applies it to the WebView reader's columns:
 // margins at a break are dropped, `break-before: page` is ignored as the
 // columns ignore it, and a break picks the latest place with the best
@@ -48,9 +50,10 @@ abstract final class Appeal {
 /// Where a page begins: line [line] of flow item [item].
 ///
 /// A paragraph's lines count from its first line, a hanging first line
-/// included. An image, and a box without content that is a slice of its
-/// own (such as a rule), start at line 0 of their item. The section's first
-/// page starts at `PageStart(0, 0)`.
+/// included. A table's lines are its slices: a row, or a fragment of a row
+/// taller than a page. An image, and a box without content that is a slice
+/// of its own (such as a rule), start at line 0 of their item. The
+/// section's first page starts at `PageStart(0, 0)`.
 class PageStart implements Comparable<PageStart> {
   const PageStart(this.item, this.line);
   final int item;
@@ -72,8 +75,8 @@ class PageStart implements Comparable<PageStart> {
   String toString() => 'PageStart($item, $line)';
 }
 
-/// A slice of the strip that a page holds whole: a line, an image, a rule
-/// or a table row.
+/// A slice of the strip that a page holds whole: a line, an image, a rule,
+/// a table row or a fragment of a row taller than a page.
 class Slice {
   Slice(
     this.top,
@@ -84,7 +87,7 @@ class Slice {
     this.line = -1,
     this.start,
     this.units = (0, 0),
-    this.rowPieces = const [],
+    this.cellSlices = const [],
   });
   final double top;
   final double bottom;
@@ -109,42 +112,71 @@ class Slice {
   /// The code units of [piece]'s text that the line shows, [start, end).
   final (int, int) units;
 
-  /// The paragraphs in the cells of a table row, which the slice shows
-  /// whole, in document order. Empty for any other slice.
-  final List<Piece> rowPieces;
+  /// The slices of the cells' content that a table row, or a fragment of
+  /// a row taller than a page, shows: cell by cell, in document order. Their
+  /// [at] is a place in their cell's flow. Empty for any other slice.
+  final List<Slice> cellSlices;
 }
 
 /// One laid-out paragraph: a Flutter paragraph at a place on the strip,
 /// and where each of its characters comes from in the DOM.
 ///
 /// The run that builds a piece and each page that shows it hold it. Its
-/// paragraphs are disposed when the last holder lets it go.
+/// paragraphs are disposed when the last holder lets it go. A piece moved
+/// to another place, as a split table row shows one paragraph on several
+/// pages, shares its paragraphs and their holders.
 class Piece {
-  Piece(this.paragraph, this.x, this.y, this.map);
-  final ui.Paragraph paragraph;
+  Piece(ui.Paragraph paragraph, this.x, this.y, this.map)
+    : _paragraphs = _Paragraphs(paragraph);
+
+  /// [piece] moved down by [dy], holding its paragraphs once more.
+  Piece._moved(Piece piece, double dy, this.shown)
+    : x = piece.x,
+      y = piece.y + dy,
+      map = piece.map,
+      _paragraphs = piece._paragraphs {
+    _hold();
+  }
+
+  ui.Paragraph get paragraph => _paragraphs.paragraph;
   final double x;
   final double y;
   final TextMap map;
 
   /// Images and raised text drawn in the paragraph's placeholders.
-  final List<(ui.Rect, Object)> inlines = [];
+  List<(ui.Rect, Object)> get inlines => _paragraphs.inlines;
 
   /// The height of the lines that this piece shows, from its top. A hanging
   /// first line is a paragraph of its own that shows only its first line.
+  /// A page of a split table row shows a cell's lines down to the first
+  /// line that the next page shows.
   double shown = double.infinity;
 
-  int _holders = 1;
+  final _Paragraphs _paragraphs;
 
-  void _hold() => _holders++;
+  void _hold() => _paragraphs.holders++;
 
   void _release() {
-    assert(_holders > 0, 'A piece was released more often than held.');
-    if (--_holders > 0) return;
-    paragraph.dispose();
-    for (final (_, held) in inlines) {
+    final paragraphs = _paragraphs;
+    assert(
+      paragraphs.holders > 0,
+      'A piece was released more often than held.',
+    );
+    if (--paragraphs.holders > 0) return;
+    paragraphs.paragraph.dispose();
+    for (final (_, held) in paragraphs.inlines) {
       if (held is ui.Paragraph) held.dispose();
     }
   }
+}
+
+/// The paragraphs that one or more pieces show, and how many holders they
+/// have.
+class _Paragraphs {
+  _Paragraphs(this.paragraph);
+  final ui.Paragraph paragraph;
+  final List<(ui.Rect, Object)> inlines = [];
+  int holders = 1;
 }
 
 /// A drawn thing on the strip that is not text: a border, a list marker or
@@ -239,8 +271,8 @@ class LaidPage {
     final dom = _section.dom;
     for (final slice in slices.reversed) {
       final shown = [
-        if (slice.piece case final piece?) (piece, slice.units),
-        for (final piece in slice.rowPieces) (piece, (0, piece.map.length)),
+        for (final line in [slice, ...slice.cellSlices])
+          if (line.piece case final piece?) (piece, line.units),
       ];
       for (final (piece, (start, end)) in shown.reversed) {
         for (var unit = end - 1; unit >= start; unit--) {
@@ -286,12 +318,13 @@ class LaidPage {
   Iterable<Piece> get _lines sync* {
     Piece? previous;
     for (final slice in slices) {
-      final piece = slice.piece;
-      if (piece != null && !identical(piece, previous)) {
-        yield piece;
-        previous = piece;
+      for (final line in [slice, ...slice.cellSlices]) {
+        final piece = line.piece;
+        if (piece != null && !identical(piece, previous)) {
+          yield piece;
+          previous = piece;
+        }
       }
-      yield* slice.rowPieces;
     }
   }
 
@@ -465,8 +498,10 @@ class LayoutRun {
         if (slice.piece case final piece?) {
           check(held.contains(piece), 'a pending line is not held');
         }
-        for (final piece in slice.rowPieces) {
-          check(held.contains(piece), 'a pending table row is not held');
+        for (final line in slice.cellSlices) {
+          if (line.piece case final piece?) {
+            check(held.contains(piece), 'a pending table row is not held');
+          }
         }
       }
       for (final decoration in _decorations) {
@@ -478,7 +513,7 @@ class LayoutRun {
         }
       }
       for (final piece in _held) {
-        check(piece._holders > 0, 'a held piece is disposed');
+        check(piece._paragraphs.holders > 0, 'a held piece is disposed');
       }
     }
     for (var index = 1; index < _pages.length; index++) {
@@ -630,11 +665,10 @@ class LayoutRun {
 
   /// Publishes every page that the slices laid out so far decide.
   void _cut() {
-    const epsilon = 0.01;
     final atEnd = _item == _flow.length;
     while (!_done) {
       final count = _pending.length;
-      final limit = _pageTop + _section.settings.height + epsilon;
+      final limit = _pageTop + _section.settings.height + fitTolerance;
       var end = 0;
       while (end < count && _pending[end].bottom <= limit) {
         end++;
@@ -724,7 +758,8 @@ class LayoutRun {
   /// Lets go of the pieces that no page after the published ones can show.
   void _releaseUnreachable() {
     final reachable = <Piece>{
-      for (final slice in _pending) ...[?slice.piece, ...slice.rowPieces],
+      for (final slice in _pending)
+        for (final line in [slice, ...slice.cellSlices]) ?line.piece,
       for (final decoration in _decorations)
         if (decoration is MarkerDecoration) decoration.piece,
     };
@@ -770,7 +805,7 @@ class LayoutRun {
     int line = -1,
     EpubPlace? start,
     (int, int) units = (0, 0),
-    List<Piece> rowPieces = const [],
+    List<Slice> cellSlices = const [],
   }) {
     var finalAppeal = appeal;
     if (_avoidNext) {
@@ -797,7 +832,7 @@ class LayoutRun {
       line: line,
       start: start,
       units: units,
-      rowPieces: rowPieces,
+      cellSlices: cellSlices,
     );
     _pending.add(slice);
     _added++;
@@ -860,23 +895,24 @@ class LayoutRun {
       bottom,
     ),
     block.start.border,
-    closed: closed,
+    bottom: closed,
   );
 
   /// The rules of a border box [rect] whose borders are [border] pixels
-  /// wide, from top to left. Without [closed], the box has no bottom
-  /// border.
+  /// wide, from top to left. Without [top] or [bottom], the box has no top
+  /// or bottom border there, as at a page break.
   static List<RuleDecoration> _rules(
     ui.Rect rect,
     List<double> border, {
-    bool closed = true,
+    bool top = true,
+    bool bottom = true,
   }) {
     return [
-      if (border[0] > 0)
+      if (top && border[0] > 0)
         RuleDecoration(
           ui.Rect.fromLTWH(rect.left, rect.top, rect.width, border[0]),
         ),
-      if (closed && border[2] > 0)
+      if (bottom && border[2] > 0)
         RuleDecoration(
           ui.Rect.fromLTWH(
             rect.left,
@@ -961,15 +997,16 @@ class LayoutRun {
   // Tables.
 
   /// Lays out [table], flow item [index], in the content box of the table's
-  /// own box, and adds its rows from row [from] on as strip slices. A run
-  /// that starts at a row lays out the whole table and places it so that
-  /// row [from] sits at the current strip position.
+  /// own box, and adds its slices from slice [from] on: a slice for each
+  /// row, or for each fragment of a row taller than a page. A run that
+  /// starts at a slice lays out the whole table and places it so that slice
+  /// [from] sits at the current strip position.
   void _table(TableItem table, int index, int from) {
     final (x, width) = _containing;
     final widths = columnWidths(_extents(table), width);
-    // Each cell's box, its content laid out at strip position 0, and the
-    // height of its box.
-    final rows = <List<(ui.Rect, TableCell, _Cell, double)>>[];
+    // Each cell's box, its left edge and width, and its content laid out
+    // at strip position 0.
+    final rows = <List<(double, double, TableCell, _Cell)>>[];
     for (final row in table.rows) {
       final boxes = cellBoxes([for (final cell in row) cell.colspan], widths);
       rows.add([
@@ -980,77 +1017,100 @@ class LayoutRun {
               for (var side = 0; side < 4; side++)
                 cell.padding[side] + cell.border[side],
             ];
-            final content = _layOutCell(
-              cell.flow,
-              x + left + start,
-              math.max(0, cellWidth - start - right),
-            );
             return (
-              ui.Rect.fromLTWH(x + left, 0, cellWidth, 0),
+              x + left,
+              cellWidth,
               cell,
-              content,
-              top + content.height + bottom,
+              _layOutCell(
+                cell.flow,
+                x + left + start,
+                math.max(0, cellWidth - start - right),
+              ),
             );
           }(),
       ]);
     }
-    final heights = [
+    final fragments = [
       for (final row in rows)
-        row.fold(0.0, (tallest, cell) => math.max(tallest, cell.$4)),
+        rowFragments([
+          for (final (_, _, cell, content) in row)
+            () {
+              final top = cell.padding[0] + cell.border[0];
+              return (
+                slices: [
+                  for (final slice in content.slices)
+                    (top + slice.top, top + slice.bottom),
+                ],
+                height: top + content.height + cell.padding[2] + cell.border[2],
+                align: cell.align,
+              );
+            }(),
+        ], _section.settings.height),
     ];
+    // The top of each slice of the table from the grid's top.
     final tops = <double>[];
     var bottom = cellSpacing;
-    for (final height in heights) {
-      tops.add(bottom);
-      bottom += height + cellSpacing;
+    for (final row in fragments) {
+      for (final fragment in row) {
+        tops.add(bottom);
+        bottom += fragment.height;
+      }
+      bottom += cellSpacing;
     }
     _resolveMargin();
-    // Row [from] starts where the run is. From the table's start, the grid
-    // does.
+    // Slice [from] starts where the run is. From the table's start, the
+    // grid does.
     final gridTop = from == 0
         ? _y
         : _y - (from < tops.length ? tops[from] : bottom);
-    for (var row = 0; row < rows.length; row++) {
-      if (row < from) {
-        for (final (_, _, content, _) in rows[row]) {
-          content.release();
+    var number = 0;
+    for (final (row, cells) in rows.indexed) {
+      for (final (part, fragment) in fragments[row].indexed) {
+        final slice = number++;
+        if (slice < from) continue;
+        final top = gridTop + tops[slice];
+        final shown = <Slice>[];
+        for (final (column, (left, cellWidth, cell, content))
+            in cells.indexed) {
+          final (from: first, :to, :offset, top: band, bottom: end) =
+              fragment.cells[column];
+          final inset = cell.padding[0] + cell.border[0];
+          final moved = content.show(
+            first,
+            to,
+            top + offset + inset,
+            band - inset,
+            end - inset,
+          );
+          shown.addAll(moved.slices);
+          _held.addAll(moved.held);
+          // A cell's box is as tall as its row. A row split between pages
+          // has no top border after its first page and no bottom border
+          // before its last.
+          _decorations
+            ..addAll(
+              _rules(
+                ui.Rect.fromLTWH(left, top, cellWidth, fragment.height),
+                cell.border,
+                top: part == 0,
+                bottom: part == fragments[row].length - 1,
+              ),
+            )
+            ..addAll(moved.decorations);
         }
-        continue;
-      }
-      final top = gridTop + tops[row];
-      final height = heights[row];
-      final pieces = <Piece>[];
-      EpubPlace? start;
-      for (final (box, cell, content, boxHeight) in rows[row]) {
-        // A cell's box is as tall as its row, and its content sits where
-        // its vertical-align asks.
-        final moved = content.moveTo(
-          top +
-              cell.padding[0] +
-              cell.border[0] +
-              (height - boxHeight) * cell.align,
+        final added = _add(
+          top,
+          top + fragment.height,
+          Appeal.perfect,
+          PageStart(index, slice),
+          start: shown.map((line) => line.start).nonNulls.firstOrNull,
+          cellSlices: shown,
         );
-        pieces.addAll(moved.pieces);
-        _held.addAll([...moved.pieces, ...moved.markers]);
-        _decorations
-          ..addAll(
-            _rules(
-              ui.Rect.fromLTWH(box.left, top, box.width, height),
-              cell.border,
-            ),
-          )
-          ..addAll(moved.decorations);
-        start ??= moved.start;
+        if (slice == 0) _takeMarker(added);
       }
-      final slice = _add(
-        top,
-        top + height,
-        Appeal.perfect,
-        PageStart(index, row),
-        start: start,
-        rowPieces: pieces,
-      );
-      if (row == 0) _takeMarker(slice);
+      for (final (_, _, _, content) in cells) {
+        content.release();
+      }
     }
     _y = gridTop + bottom;
   }
@@ -1132,13 +1192,7 @@ class LayoutRun {
     for (final piece in run._held) {
       if (!lines.contains(piece) && !markers.contains(piece)) piece._release();
     }
-    return _Cell(
-      lines,
-      markers,
-      run._decorations,
-      run._pending.map((slice) => slice.start).nonNulls.firstOrNull,
-      run._y,
-    );
+    return _Cell(run._pending, lines, markers, run._decorations, run._y);
   }
 
   void _takeMarker(Slice slice) {
@@ -1485,13 +1539,23 @@ PageStart lineStart(PreparedSection section, EpubPlace place) {
     while (run._item <= item) {
       run._layOutItem();
     }
+    // The line that holds the place is the last one, in document order,
+    // that starts at or before it. The cells of a split table row put lines
+    // of later cells on earlier pages, so it is not always the last slice.
     Slice? found;
+    (int, int)? best;
     for (final slice in run._pending) {
       if (slice.at.item != item) continue;
-      final start = slice.start;
-      if (found == null ||
-          (start != null && _compare(_order(dom, start), key) <= 0)) {
-        found = slice;
+      found ??= slice;
+      for (final line in _lines(slice)) {
+        final start = line.start;
+        if (start == null) continue;
+        final order = _order(dom, start);
+        if (_compare(order, key) <= 0 &&
+            (best == null || _compare(order, best) >= 0)) {
+          found = slice;
+          best = order;
+        }
       }
     }
     // The item's first line starts where the run starts: at the section
@@ -1549,6 +1613,11 @@ EpubPlace? _firstPlace(int section, FlowItem item) {
   return (place.node, offset);
 }
 
+/// The lines of [slice]: the slice, or the slices of the cells of a table
+/// row.
+Iterable<Slice> _lines(Slice slice) =>
+    slice.cellSlices.isEmpty ? [slice] : slice.cellSlices;
+
 int _compare((int, int) a, (int, int) b) =>
     a.$1 != b.$1 ? a.$1.compareTo(b.$1) : a.$2.compareTo(b.$2);
 
@@ -1568,15 +1637,24 @@ class ChapterLayout {
   List<Decoration> get decorations =>
       {for (final page in pages) ...page.decorations}.toList();
 
-  /// The index of the page that holds [place]: the last page that starts
-  /// at or before it in document order.
+  /// The index of the page that holds [place]: the page of the last line
+  /// that starts at or before it in document order.
   int pageAt(EpubPlace place) {
     final key = _order(section.dom, place);
     var found = 0;
+    (int, int)? best;
     for (var index = 0; index < pages.length; index++) {
-      final start = pages[index].startPlace;
-      if (start != null && _compare(_order(section.dom, start), key) <= 0) {
-        found = index;
+      for (final slice in pages[index].slices) {
+        for (final line in _lines(slice)) {
+          final start = line.start;
+          if (start == null) continue;
+          final order = _order(section.dom, start);
+          if (_compare(order, key) <= 0 &&
+              (best == null || _compare(order, best) >= 0)) {
+            found = index;
+            best = order;
+          }
+        }
       }
     }
     return found;
@@ -1720,43 +1798,75 @@ class _OpenBlock {
   double get contentLeft => left + start.border[3] + start.padding[3];
 }
 
-/// The content of a table cell laid out at strip position 0: its
-/// paragraphs, its list markers and other decorations, its first place and
-/// its height. It holds its pieces until [moveTo] or [release].
+/// The content of a table cell laid out at strip position 0: its slices,
+/// the paragraphs that they show, its list markers and other decorations,
+/// and its height. It holds its paragraphs and markers until [release].
 class _Cell {
-  _Cell(this.pieces, this.markers, this.decorations, this.start, this.height);
+  _Cell(this.slices, this.pieces, this.markers, this.decorations, this.height);
+
+  final List<Slice> slices;
   final List<Piece> pieces;
   final List<Piece> markers;
   final List<Decoration> decorations;
-  final EpubPlace? start;
   final double height;
 
-  /// The content with its top at strip position [top]. Its pieces move to
-  /// the result, which then holds them.
-  _Cell moveTo(double top) {
-    final moved = <Piece, Piece>{
-      for (final piece in [...pieces, ...markers])
-        piece: Piece(piece.paragraph, piece.x, piece.y + top, piece.map)
-          ..inlines.addAll(piece.inlines)
-          ..shown = piece.shown,
-    };
-    final offset = ui.Offset(0, top);
-    return _Cell(
-      [for (final piece in pieces) moved[piece]!],
-      [for (final piece in markers) moved[piece]!],
-      [
+  /// What a row, or a fragment of a row, shows of the content: its slices
+  /// [from, to) and what it draws in the band [top, bottom) of the content,
+  /// moved down by [dy]. Lines below the band are hidden. The moved pieces
+  /// hold their paragraphs; [held] lists them.
+  ({List<Slice> slices, List<Decoration> decorations, List<Piece> held}) show(
+    int from,
+    int to,
+    double dy,
+    double top,
+    double bottom,
+  ) {
+    final moved = <Piece, Piece>{};
+    Piece move(Piece piece) => moved[piece] ??= Piece._moved(
+      piece,
+      dy,
+      math.min(piece.shown, bottom - piece.y),
+    );
+    final offset = ui.Offset(0, dy);
+    return (
+      slices: [
+        for (final slice in slices.sublist(from, to))
+          Slice(
+            slice.top + dy,
+            slice.bottom + dy,
+            slice.appeal,
+            slice.at,
+            piece: slice.piece == null ? null : move(slice.piece!),
+            line: slice.line,
+            start: slice.start,
+            units: slice.units,
+          ),
+      ],
+      decorations: [
         for (final decoration in decorations)
           switch (decoration) {
-            RuleDecoration(:final rect) => RuleDecoration(rect.shift(offset)),
-            ImageDecoration(:final rect, :final path) => ImageDecoration(
-              rect.shift(offset),
-              path,
-            ),
-            MarkerDecoration(:final piece) => MarkerDecoration(moved[piece]!),
+            RuleDecoration(:final rect)
+                when math.min(rect.bottom, bottom) > math.max(rect.top, top) =>
+              RuleDecoration(
+                ui.Rect.fromLTRB(
+                  rect.left,
+                  math.max(rect.top, top),
+                  rect.right,
+                  math.min(rect.bottom, bottom),
+                ).shift(offset),
+              ),
+            ImageDecoration(:final rect, :final path)
+                when rect.top >= top && rect.top < bottom =>
+              ImageDecoration(rect.shift(offset), path),
+            MarkerDecoration(:final piece)
+                when piece.y >= top && piece.y < bottom =>
+              MarkerDecoration(
+                moved[piece] ??= Piece._moved(piece, dy, piece.shown),
+              ),
+            _ => null,
           },
-      ],
-      start,
-      height,
+      ].nonNulls.toList(),
+      held: moved.values.toList(),
     );
   }
 
