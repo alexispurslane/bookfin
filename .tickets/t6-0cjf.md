@@ -19,3 +19,7 @@ The dock's Next chapter arrow (boo-bz3x) goes to the first chapter that starts a
 **2026-11-08T19:23:53Z**
 
 Absorbed by tc-zevb (epic boo-b2ey). The native pager reports the shown page's end (ReadingLocation.end), and moveChapter uses it. Close when tc-zevb merges.
+
+**2026-11-08T22:37:51Z**
+
+tc-zevb (branch t3/c351d7f2) fixes this for pages that the native pager reports: BookMap.chapterStep steps forward from the shown page's end (ReadingLocation.end), so a chapter that starts on the shown page is skipped. Tests: test/reader/book_map_test.dart 'the chapter arrows' and the session test 'next chapter skips a chapter that starts in the middle of the shown page (t6-0cjf)'. The app still uses the WebView reader until tc-1yif, which reports no end, so the arrow keeps the old rule there. The first page after opening at a saved place also has no end; ticket tc-klz2 covers that.

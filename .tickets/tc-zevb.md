@@ -1,6 +1,6 @@
 ---
 id: tc-zevb
-status: open
+status: in_progress
 deps: [tc-mxfp]
 links: []
 created: 2026-11-08T19:23:12Z
@@ -45,3 +45,7 @@ docs/plans/native-epub-reader.md (epic boo-b2ey). Read the sections named in the
 **2026-11-08T22:04:24Z**
 
 From tc-mxfp: the pager opens at the first present(), so the session can call attachDocument at once; display/contents/seek before the first present wait for it, and move before it does nothing. The constructor has an extra optional hop (search batches; default compute). configure is a no-op until this ticket removes it. A failed open calls onWarning with the WebView's displayerror text; the session's _navigate already turns thrown verb errors into its message.
+
+**2026-11-08T22:37:50Z**
+
+Done in this branch. The session creates EpubPager for every EpubDocument (EPUB and MOBI) in open, with initial: initialAddress, onPlace to acceptAddress(token) and onWarning to warn(token), then calls attachDocument(token, pager, contents) at once. contents is publication.contents, or one 'Chapter N' entry per linear spine item (reader.js rule: linear unless the attribute has a value other than yes), with hrefs relative to the package directory. EpubPager? get pager follows documentChanges. _clear disposes the pager. configure is gone from DocumentNavigator, EpubNavigator, PdfViewport and EpubPager (NavigatorPort keeps its own configure for the WebView). BookMap.chapterStep now takes the shown address: forward goes to the first chapter that starts after the page's end (location.end), else after its start. Design over ticket: the ticket says 'at or after its end'; the design's behavior test says the arrow skips a chapter that starts on the shown page, and a chapter whose first character is the page's last one is on the page, so the rule is strictly after the end. The session's invariants are now listed in its class comment; checkInvariants also checks that a pager exists exactly for an opened EPUB or MOBI document, that a navigator exists only with a document, and runs the pager's own checker. Proof: test/reader/session_native_test.dart opens every page start that epub.js saved in the three showcase books (epubjs-places.json, 20 and 23 px) through the session with the real pager, plus bookmarks at page starts, contents targets and search hits, and checks the shown page and every record the store receives. Interim until tc-1yif: the screen still builds the WebView viewport, whose attach replaces the pager as navigator. Because the pager is attached at open, reader.ready is true before the WebView loads: the 'Laying out the book' spinner no longer shows, and Contents, Search and bookmark taps before the WebView attaches go to the pager, which waits for a present that never comes, so they do nothing (no message, no data change). The book map comes from the publication's contents, not from reader.js's list. The pager never reports a place, because nothing presents to it. New ticket tc-klz2: Next chapter after opening at a saved place.
