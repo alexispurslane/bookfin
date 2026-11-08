@@ -75,3 +75,7 @@ docs/plans/native-epub-reader.md (epic boo-b2ey). Read the sections named in the
 **2026-11-08T20:42:59Z**
 
 From tc-sqp7: destination(dom, section, fragment) returns null when the fragment names no element (reader.js throws there). The pager must handle the null and show its error, as today. pageLocation needs the page's last visible place as end: use LaidPage.endPlace from tc-nang.
+
+**2026-11-08T21:29:52Z**
+
+From tc-866u (orchestrator accepts): SearchSection.xhtml is bytes (decoded in the worker); use spineSteps(opf) once per book, not spineStep per section; searchBook(sections, query, contents, packagePath, isCurrent:) keeps reader.js's limits and errors, and the pager owns the request and its cancel.

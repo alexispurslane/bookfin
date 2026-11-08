@@ -13,6 +13,8 @@ import 'package:bookfin/reader/epub/prepare.dart';
 import 'package:flutter_epub_viewer/publication.dart';
 import 'package:image/image.dart' as img;
 
+import '../../../../tool/showcase_media.dart' as media;
+
 class TrialBook {
   TrialBook._(this.publication, this._sheets, this._opf, this._imageSizes);
 
@@ -106,3 +108,21 @@ List<File> trialBooks() {
 
 String bookName(File file) =>
     file.uri.pathSegments.last.replaceAll('.epub', '');
+
+/// The made-up books of tool/showcase_media.dart, by trial name. Each is
+/// zipped again with a fixed file time, because the showcase stamps each
+/// file with the time it was made and the publication identity hashes the
+/// archive bytes too.
+Map<String, Uint8List> showcaseBooks() => {
+  for (final (id, title, chapters) in [
+    ('frost', 'First Frost', media.firstFrost),
+    ('salt', 'Salt and Lantern', media.saltAndLantern),
+    ('winter', 'The Winter Ledger', media.winterLedger),
+  ])
+    'showcase-$id': ZipEncoder().encodeBytes(
+      ZipDecoder().decodeBytes(
+        media.epub(id, title, 'Bookfin Showcase', chapters),
+      ),
+      modified: DateTime(2026, 11, 7),
+    ),
+};
