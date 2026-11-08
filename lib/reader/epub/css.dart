@@ -55,6 +55,10 @@ enum VerticalAlign { baseline, superscript, subscript, top, middle, bottom }
 
 enum Transform { none, upper, lower, capitalize }
 
+/// The `hyphens` property: whether a line may break inside a word with a
+/// hyphen. `manual` breaks only at the book's own soft hyphens.
+enum Hyphens { none, manual, auto }
+
 /// The computed style of one element.
 class Style {
   Style._();
@@ -125,6 +129,13 @@ class Style {
   double wordSpacing = 0;
   Transform transform = Transform.none;
   WhiteSpace whiteSpace = WhiteSpace.normal;
+  Hyphens hyphens = Hyphens.manual;
+
+  /// The element's language, a BCP 47 tag such as `en-GB`: that of its
+  /// [languageAttribute], or else of its parent. Null when no element up
+  /// to the root names one, and empty when the nearest names an unknown
+  /// language.
+  String? language;
   bool underline = false;
   bool lineThrough = false;
   String listStyleType = 'disc';
@@ -163,6 +174,8 @@ class Style {
     ..wordSpacing = wordSpacing
     ..transform = transform
     ..whiteSpace = whiteSpace
+    ..hyphens = hyphens
+    ..language = language
     // Text decorations are not inherited, but they draw across every
     // descendant's text, which comes to the same here.
     ..underline = underline
@@ -871,7 +884,7 @@ class _PseudoClass {
         return selectors.any((selector) => selector.matches(element));
       case 'lang':
         for (DomElement? node = element; node != null; node = node.parent) {
-          final lang = node.attributes['xml:lang'] ?? node.attributes['lang'];
+          final lang = languageAttribute(node);
           if (lang != null) {
             final wanted = argument.toLowerCase();
             final actual = lang.toLowerCase();
@@ -1231,6 +1244,9 @@ class Cascade {
       offer(declaration, 1, 0, 1);
     }
     final style = parent.inherit();
+    if (languageAttribute(element) case final language?) {
+      style.language = language;
+    }
     // Font size comes first: em lengths of the other properties use it.
     final size = winners.remove('font-size')?.$4;
     if (size != null) {
@@ -1381,10 +1397,26 @@ Iterable<(String, String)> _expand(Declaration declaration) sync* {
           const {'collapse', 'separate'}.contains(value.trim().toLowerCase())) {
         yield (property, value);
       }
+    // Chromium parses -webkit-hyphens as another name of hyphens.
+    case 'hyphens' || '-webkit-hyphens':
+      if (_keyword(value) ||
+          const {
+            'none',
+            'manual',
+            'auto',
+          }.contains(value.trim().toLowerCase())) {
+        yield ('hyphens', value);
+      }
     default:
       yield (property, value);
   }
 }
+
+/// The language that [element] names for itself: its `xml:lang`
+/// attribute, which wins as in HTML, or its `lang` attribute. Null when it
+/// names none.
+String? languageAttribute(DomElement element) =>
+    element.attributes['xml:lang'] ?? element.attributes['lang'];
 
 /// Whether [value] is `inherit`, `initial` or `unset`.
 bool _keyword(String value) =>
@@ -1691,6 +1723,12 @@ void _apply(
     case 'text-decoration-line':
       style.underline = lower.contains('underline');
       style.lineThrough = lower.contains('line-through');
+    case 'hyphens':
+      style.hyphens = switch (lower) {
+        'none' => Hyphens.none,
+        'auto' => Hyphens.auto,
+        _ => Hyphens.manual,
+      };
     case 'list-style-type':
       style.listStyleType = lower;
     case 'list-style-position':
@@ -1730,6 +1768,7 @@ const _inheritedProperties = {
   'word-spacing',
   'text-transform',
   'white-space',
+  'hyphens',
   'list-style-type',
   'list-style-position',
   'orphans',
@@ -1783,6 +1822,7 @@ const _longhands = [
   'word-spacing',
   'text-transform',
   'white-space',
+  'hyphens',
   'text-decoration-line',
   'list-style-type',
   'list-style-position',
@@ -1866,6 +1906,8 @@ void _copyFrom(Style style, Style source, String property) {
       style.transform = source.transform;
     case 'white-space':
       style.whiteSpace = source.whiteSpace;
+    case 'hyphens':
+      style.hyphens = source.hyphens;
     case 'text-decoration-line':
       style.underline = source.underline;
       style.lineThrough = source.lineThrough;

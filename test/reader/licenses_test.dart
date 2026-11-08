@@ -21,4 +21,14 @@ void main() {
     expect(text, contains('libmobi 0.12'));
     expect(text, isNot(contains('\uFFFD')));
   });
+
+  test('reader notices include the hyphenation patterns', () async {
+    final entries = await readerLicenses().toList();
+    final text = entries
+        .expand((entry) => entry.paragraphs)
+        .map((paragraph) => paragraph.text)
+        .join('\n');
+    expect(text, contains('Gerard D.C. Kuiken'));
+    expect(text, contains('Dominik Wujastyk, Graham Toal'));
+  });
 }

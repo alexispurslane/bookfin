@@ -387,6 +387,17 @@ The trial showed that every epub.js place lands on the page that shows it (661 o
 - A line that ends at a soft hyphen gets a drawn hyphen. E16 first finds out whether Flutter's paragraph already draws one.
 - Words of fewer than 5 letters do not break. A break keeps at least 2 letters before it and 3 after it, the TeX defaults for English.
 
+What E16 found and decided (tc-z7au):
+
+- Flutter's paragraph breaks a line at a soft hyphen but draws no hyphen. So layout writes a hyphen (U+2010, as Chromium draws when the font has it) in place of each soft hyphen that ends a line, and lays the paragraph out again. The line then holds its hyphen: the hyphen must fit, and a justified line ends at it, as in Chromium. A drawn decoration after the line would hang past the right edge of justified text.
+- Before it lays out again, layout checks that each hyphen fits: the line's width before justification plus the hyphen's width must not pass the line width. A justified line's width before justification follows from one gap between words, because Flutter widens each gap by the same amount. A soft hyphen whose hyphen does not fit becomes a word joiner (U+2060), and its line breaks earlier. A paragraph with hyphenated lines lays out at least twice, and once more for each word joiner.
+- Cost on the host (2026-11-08, under load): with hyphenation, layout of whole Standard Ebooks books (Frankenstein, Moby-Dick, Pride and Prejudice) takes 2.4 to 2.6 times as long, and prepare about twice as long. Frankenstein lays out in 622 ms instead of 242 ms, about 1 ms per page.
+- An inserted soft hyphen, hyphen or word joiner maps to the letter before it in the text map. So a line that ends with one ends at that letter. Places, quotes, search and CFIs read the DOM, which never holds them.
+- `xml:lang` wins over `lang`, as in HTML and in the `:lang()` selector. An empty value names an unknown language.
+- As in Chromium, a word runs between spaces, hyphens and dashes, without the punctuation around it. Only words of the letters a to z break, so a word with the book's own soft hyphen breaks only there. A capitalized English word does not break. `-webkit-hyphens` is another name of `hyphens`, and `hyphens: none` also removes the book's own soft hyphens.
+- `SectionSource.language` carries `dc:language`. The page source does not fill it yet (t0-2yee).
+- The fidelity fixtures were recorded with hyphenation turned off (compare.cjs). So `fidelity_test.dart` turns it off in the book's style sheets too.
+
 ### Fractional line positions (E15)
 
 Flutter rounds each line's height to a whole pixel. Chromium does not. Layout records each line's exact top: the sum of the unrounded CSS line heights before it. Paint draws each line at its exact top, clipped to that line. Page cuts use the exact positions. Pages then match Chromium at every text size, not only at sizes whose line height is a whole pixel.

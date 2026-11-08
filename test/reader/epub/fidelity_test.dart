@@ -35,7 +35,7 @@ void main() {
           stdout.writeln('$name is not downloaded; skipped');
           continue;
         }
-        final publication = Publication.admit(bytes);
+        final publication = Publication.admit(asRecorded(bytes));
         for (final size in recordedSizes) {
           final source = immediateSource(publication)..settings = pageAt(size);
           try {

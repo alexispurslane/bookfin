@@ -413,7 +413,8 @@ class LayoutRun {
        _textStyles = [
          for (final style in section.styles)
            _textStyle(style, section.settings.ink),
-       ] {
+       ],
+       _advances = _Advances() {
     final start = from ?? const PageStart(0, 0);
     if (start.item < 0 || start.item > section.flow.length) {
       throw RangeError.range(start.item, 0, section.flow.length, 'from.item');
@@ -434,7 +435,8 @@ class LayoutRun {
       _flow = flow,
       _clock = outer._clock,
       _root = (left, width),
-      _textStyles = outer._textStyles;
+      _textStyles = outer._textStyles,
+      _advances = outer._advances;
 
   static final _watch = Stopwatch()..start();
   static Duration _elapsed() => _watch.elapsed;
@@ -449,6 +451,7 @@ class LayoutRun {
   /// outermost boxes: the page, or a cell's column.
   final (double, double) _root;
   final List<ui.TextStyle> _textStyles;
+  final _Advances _advances;
 
   final _pages = <LaidPage>[];
   bool _done = false;
@@ -1343,13 +1346,22 @@ class LayoutRun {
   }
 
   /// Builds the paragraph of [text], [width] pixels wide, from its code
-  /// unit [from] on. Returns the paragraph, its map, and what each of its
-  /// placeholders holds: null for the indent, an image's path, or a raised
-  /// paragraph.
-  _Built _build(StyledText text, double indent, double width, {int from = 0}) {
+  /// unit [from] on. Returns the paragraph, its map, what each of its
+  /// placeholders holds (null for the indent, an image's path, or a raised
+  /// paragraph) and its soft hyphens. [marks] replaces the soft hyphen at
+  /// a code unit of the paragraph with another code unit.
+  _Built _build(
+    StyledText text,
+    double indent,
+    double width, {
+    int from = 0,
+    Map<int, int> marks = const {},
+  }) {
     final builder = ui.ParagraphBuilder(_paragraphStyle(text));
     final map = TextMap(_section.index);
     final inlines = <Object?>[];
+    final softHyphens = <int>[];
+    final texts = <_Text>[];
     var unit = 0;
     if (indent > 0 && from == 0) {
       builder.addPlaceholder(
@@ -1380,9 +1392,27 @@ class LayoutRun {
             if (skip == written.length) continue;
             trim = false;
           }
+          final added = written.substring(skip);
+          final first = map.length;
+          var marked = false;
+          for (
+            var at = added.indexOf(_softHyphen);
+            at >= 0;
+            at = added.indexOf(_softHyphen, at + 1)
+          ) {
+            softHyphens.add(first + at);
+            marked |= marks.containsKey(first + at);
+          }
+          final shown = marked
+              ? String.fromCharCodes([
+                  for (var at = 0; at < added.length; at++)
+                    marks[first + at] ?? added.codeUnitAt(at),
+                ])
+              : added;
+          texts.add((start: first, text: shown, style: style));
           builder
             ..pushStyle(_textStyles[style])
-            ..addText(written.substring(skip))
+            ..addText(shown)
             ..pop();
           map.addText(node, Int32List.sublistView(run.offsets, skip));
         case BreakRun(:final node):
@@ -1427,7 +1457,168 @@ class LayoutRun {
           inlines.add(raised);
       }
     }
-    return _Built(builder.build(), map, inlines);
+    return _Built(builder.build(), map, inlines, softHyphens, texts);
+  }
+
+  static final _softHyphen = String.fromCharCode(softHyphen);
+
+  /// The hyphen that ends a line inside a word, which Chromium draws when
+  /// the font has it.
+  static const _hyphen = 0x2010;
+
+  /// A word joiner: no line break, and nothing drawn.
+  static const _joiner = 0x2060;
+
+  /// The paragraph of [text] built from its code unit [from] on and laid
+  /// out [width] pixels wide, with a hyphen at the end of each line that
+  /// ends inside a word.
+  ///
+  /// Flutter breaks a line at a soft hyphen, but draws no hyphen there. So
+  /// each soft hyphen that ends a line becomes a hyphen, and the paragraph
+  /// is laid out again. The line then holds its hyphen, as in Chromium: a
+  /// justified line ends at it. As in Chromium, the hyphen must fit in the
+  /// line. A soft hyphen whose hyphen would not fit becomes a word joiner,
+  /// so its line breaks earlier, and the lines after it are hyphenated
+  /// again.
+  _Built _layOut(StyledText text, double indent, double width, {int from = 0}) {
+    final marks = <int, int>{};
+    final justified = text.align == Align.justify;
+    // The code units from which the hyphens are checked and the line ends
+    // are marked, or null when no line end is left to mark.
+    var check = 0;
+    int? scan = 0;
+    while (true) {
+      final built = _build(text, indent, width, from: from, marks: marks);
+      built.paragraph.layout(ui.ParagraphConstraints(width: width));
+      if (built.softHyphens.isEmpty) return built;
+      final next = _markHyphens(
+        built,
+        marks,
+        width,
+        check: check,
+        scan: scan,
+        justified: justified,
+      );
+      if (next == null) return built;
+      (check, scan) = next;
+      built.dispose();
+    }
+  }
+
+  /// Marks the soft hyphens of [built], a paragraph laid out [width] pixels
+  /// wide, in [marks]. Returns null when no mark changed, so the paragraph
+  /// is final; else from which code units the next layout's hyphens are
+  /// checked and its line ends are marked (null when none is left).
+  ///
+  /// A hyphen marked from code unit [check] on must end its line. If one
+  /// does not, the width of its justified line was misjudged: it becomes a
+  /// word joiner, and the hyphens after it are unmarked.
+  ///
+  /// Each soft hyphen that ends a line from the line that holds code unit
+  /// [scan] on becomes a hyphen when the hyphen fits in the line, and else
+  /// a word joiner. The line of a word joiner and the lines after it break
+  /// again, so marking stops there.
+  ///
+  /// Each call adds a word joiner or marks every line end, and word joiners
+  /// stay. So a paragraph with n soft hyphens is laid out at most 2n + 2
+  /// times, and once more than it has word joiners when no width is
+  /// misjudged.
+  (int, int?)? _markHyphens(
+    _Built built,
+    Map<int, int> marks,
+    double width, {
+    required int check,
+    required int? scan,
+    required bool justified,
+  }) {
+    final paragraph = built.paragraph;
+    for (final unit in built.softHyphens) {
+      if (unit < check || marks[unit] != _hyphen) continue;
+      final line = paragraph.getLineBoundary(ui.TextPosition(offset: unit));
+      if (line.end != unit + 1) {
+        marks[unit] = _joiner;
+        marks.removeWhere((other, mark) => other > unit && mark == _hyphen);
+        // The line before it broke early, and breaks again.
+        final before = line.start > 0
+            ? paragraph
+                  .getLineBoundary(ui.TextPosition(offset: line.start - 1))
+                  .start
+            : 0;
+        return (unit, before);
+      }
+    }
+    if (scan == null) return null;
+    var changed = false;
+    final length = built.map.length;
+    var offset = paragraph
+        .getLineBoundary(ui.TextPosition(offset: math.min(scan, length - 1)))
+        .start;
+    while (offset < length) {
+      final line = paragraph.getLineBoundary(ui.TextPosition(offset: offset));
+      final unit = line.end - 1;
+      offset = math.max(line.end, offset + 1);
+      if (unit + 1 >= length ||
+          marks.containsKey(unit) ||
+          built.unitAt(unit) != softHyphen) {
+        continue;
+      }
+      final metrics = paragraph.getLineMetricsAt(
+        paragraph.getLineNumberAt(unit)!,
+      )!;
+      final natural = justified
+          ? _naturalWidth(built, metrics, line.start, unit)
+          : metrics.width;
+      final hyphen = _advances.hyphen(built.styleAt(unit), _textStyles);
+      if (natural + hyphen > width + _fitTolerance) {
+        marks[unit] = _joiner;
+        // The line breaks earlier, maybe at another soft hyphen.
+        return (scan, line.start);
+      }
+      marks[unit] = _hyphen;
+      changed = true;
+    }
+    return changed ? (scan, null) : null;
+  }
+
+  /// How far past the line width a hyphen may reach and still fit: float
+  /// noise. A hyphen judged to fit that does not makes its line break
+  /// earlier, and [_markHyphens] then refuses it.
+  static const _fitTolerance = 0.01;
+
+  /// The width of [line], a justified line of [built] from code unit
+  /// [start] to its soft hyphen [end], before Flutter justified it.
+  ///
+  /// Flutter widens each run of spaces between words by the same amount.
+  /// One gap, measured against the space's own width, gives that amount.
+  double _naturalWidth(_Built built, ui.LineMetrics line, int start, int end) {
+    // The runs of spaces between words: their count, and the first one.
+    var runs = 0;
+    int? first;
+    int? last;
+    var inRun = false;
+    for (var unit = start; unit < end; unit++) {
+      if (built.unitAt(unit) == 0x20) {
+        if (!inRun && unit > start) {
+          runs++;
+          first ??= unit;
+        }
+        inRun = true;
+        if (runs == 1 && first != null) last = unit;
+      } else {
+        inRun = false;
+      }
+    }
+    if (runs == 0 || first == null) return line.width;
+    final paragraph = built.paragraph;
+    final before = paragraph.getBoxesForRange(first - 1, first);
+    final after = paragraph.getBoxesForRange(last! + 1, last + 2);
+    if (before.isEmpty || after.isEmpty) return line.width;
+    final gap = after.first.left - before.last.right;
+    var natural = 0.0;
+    for (var unit = first; unit <= last; unit++) {
+      natural += _advances.space(built.styleAt(unit), _textStyles);
+    }
+    return line.width - runs * (gap - natural);
   }
 
   /// Lays out paragraph [item], flow item [index], at [x] and [width]
@@ -1444,23 +1635,20 @@ class LayoutRun {
     final indent = item.indent.resolve(width);
     _resolveMargin();
     if (indent >= 0) {
-      final built = _build(item.text, indent, width);
-      built.paragraph.layout(ui.ParagraphConstraints(width: width));
+      final built = _layOut(item.text, indent, width);
       _place(built, x, item, index, from: from);
       return;
     }
     // A negative indent hangs the first line out to the left: lay it out
     // wider, then lay out the rest at the block's width.
-    final first = _build(item.text, 0, width - indent);
-    first.paragraph.layout(ui.ParagraphConstraints(width: width - indent));
+    final first = _layOut(item.text, 0, width - indent);
     final count = first.paragraph.computeLineMetrics().length;
     if (count <= 1) {
       _place(first, x + indent, item, index, from: from);
       return;
     }
     final end = _lineStarts(first.paragraph, 2)[1];
-    final rest = _build(item.text, 0, width, from: end);
-    rest.paragraph.layout(ui.ParagraphConstraints(width: width));
+    final rest = _layOut(item.text, 0, width, from: end);
     final total = 1 + rest.paragraph.computeLineMetrics().length;
     if (from == 0) {
       _place(first, x + indent, item, index, lines: 1, total: total);
@@ -1989,11 +2177,78 @@ class _Cell {
   }
 }
 
+/// Text that a paragraph shows from code unit [start] on, in run style
+/// [style].
+typedef _Text = ({int start, String text, int style});
+
+/// The widths that a run style draws a hyphen and a space with, measured
+/// once per layout run and the runs of its table cells.
+class _Advances {
+  final _hyphens = <int, double>{};
+  final _spaces = <int, double>{};
+
+  /// The width of a hyphen in run style [style] of [styles].
+  double hyphen(int style, List<ui.TextStyle> styles) =>
+      _hyphens[style] ??= _measure(styles[style], '\u2010', 0);
+
+  /// The width of a space between two words in run style [style].
+  double space(int style, List<ui.TextStyle> styles) =>
+      _spaces[style] ??= _measure(styles[style], 'x x', 1);
+
+  /// The width that code unit [unit] of [text] takes in [style].
+  static double _measure(ui.TextStyle style, String text, int unit) {
+    final paragraph =
+        (ui.ParagraphBuilder(ui.ParagraphStyle())
+              ..pushStyle(style)
+              ..addText(text))
+            .build()
+          ..layout(const ui.ParagraphConstraints(width: double.infinity));
+    final boxes = paragraph.getBoxesForRange(unit, unit + 1);
+    paragraph.dispose();
+    return boxes.fold(0.0, (width, box) => width + box.right - box.left);
+  }
+}
+
 class _Built {
-  _Built(this.paragraph, this.map, this.inlines);
+  _Built(this.paragraph, this.map, this.inlines, this.softHyphens, this.texts);
   final ui.Paragraph paragraph;
   final TextMap map;
   final List<Object?> inlines;
+
+  /// The code units of [paragraph] that hold a soft hyphen of the text, in
+  /// increasing order, whatever marks replaced them with.
+  final List<int> softHyphens;
+
+  /// The text of [paragraph], in order. Placeholders are not in it.
+  final List<_Text> texts;
+
+  /// The text piece that holds code unit [unit], or null for a
+  /// placeholder.
+  _Text? _textAt(int unit) {
+    var low = 0;
+    var high = texts.length - 1;
+    while (low <= high) {
+      final middle = (low + high) >> 1;
+      final text = texts[middle];
+      if (unit < text.start) {
+        high = middle - 1;
+      } else if (unit >= text.start + text.text.length) {
+        low = middle + 1;
+      } else {
+        return text;
+      }
+    }
+    return null;
+  }
+
+  /// Code unit [unit] of the paragraph, or -1 for a placeholder.
+  int unitAt(int unit) {
+    final text = _textAt(unit);
+    return text == null ? -1 : text.text.codeUnitAt(unit - text.start);
+  }
+
+  /// The run style of code unit [unit], which is text.
+  int styleAt(int unit) => _textAt(unit)!.style;
 
   /// Disposes the paragraph and the raised paragraphs in its placeholders.
   void dispose() {
