@@ -72,18 +72,19 @@ typedef _Restored = ({
 /// that the store derives in another isolate. A smaller account derives on
 /// the UI isolate.
 ///
-/// Measured in AOT on an M-series Mac: a hop costs about 33 µs, replaying
-/// one action about 12 µs, and deriving the snapshot of one record about
-/// 5 µs, while copying one record into a hop costs about 0.6 µs. So a hop
-/// pays from about four actions or eight records. These limits are a
-/// compromise: widget tests run in fake time, in which a hop never
-/// completes, and their accounts stay below them. A real account gains
-/// about one action for each second of listening, so it is far above them.
-const _hopItems = 16;
+/// Measured in AOT on an M-series Mac (tool/research/record_hop_bench), as
+/// time on the calling isolate, medians of 201 runs: a hop costs 9 to 11 µs.
+/// Restoring an account without actions costs 9 µs, and one with one action
+/// 27 µs. Deriving the views of one record costs 12 µs, and of none 6 µs. So
+/// a hop pays from the first action or record. Widget tests run the store's
+/// hops in real time through test/real_time.dart.
+const _hopItems = 1;
 
 /// The shortest saved text of an account in the format before the journal
-/// that the store decodes in another isolate. 4 KB holds about 15 records.
-const _hopText = 4 * 1024;
+/// that the store decodes in another isolate. Measured as above: decoding
+/// costs as much as a hop at about 32 characters, and a text that holds one
+/// record has about 200.
+const _hopText = 32;
 
 /// The owner of each account's personal records on this phone.
 ///

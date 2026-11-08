@@ -255,21 +255,60 @@ void main() {
     },
   );
 
-  test(
-    'a small account derives on the UI isolate, because a hop costs more',
-    () async {
-      final writer = LocalResumeStore(openDatabase: () async => database);
-      await writer.save('carol', resume(1000));
-      final hop = CountingHop();
-      final store = LocalResumeStore(
-        openDatabase: () async => database,
-        hop: hop.call,
-      );
+  // Measured in AOT (tool/research/record_hop_bench): a hop costs the UI
+  // isolate about 9 to 11 µs. Restoring an account of one action costs it
+  // about 27 µs, and an account without actions about 9 µs. Decoding a
+  // saved text costs more than a hop from about 32 characters.
+  test('an account with one saved place restores in another isolate, because its replay costs more than a hop', () async {
+    final writer = LocalResumeStore(openDatabase: () async => database);
+    await writer.save('carol', resume(1000));
+    final hop = CountingHop();
+    final store = LocalResumeStore(
+      openDatabase: () async => database,
+      hop: hop.call,
+    );
 
-      expect((await store.read('carol'))!['resumes']['book'], hasLength(1));
-      expect(hop.hops, 0);
-    },
-  );
+    expect((await store.read('carol'))!['resumes']['book'], hasLength(1));
+    expect(hop.hops, 1);
+  });
+
+  test('an account with settings and no records restores here, because a hop costs more', () async {
+    final writer = LocalResumeStore(openDatabase: () async => database);
+    await writer.write('dave', settings());
+    final hop = CountingHop();
+    final store = LocalResumeStore(
+      openDatabase: () async => database,
+      hop: hop.call,
+    );
+
+    expect((await store.read('dave'))!['speed'], 1.0);
+    expect(hop.hops, 0);
+  });
+
+  test('a saved text of one record in the format before the journal decodes in another isolate', () async {
+    SharedPreferences.setMockInitialValues({
+      'bookfin.playback.v1.erin': jsonEncode({
+        ...settings(),
+        'history': [event('h0')],
+      }),
+    });
+    final hop = CountingHop();
+    final store = LocalResumeStore(hop: hop.call);
+
+    expect((await store.read('erin'))!['history'], hasLength(1));
+    expect(hop.hops, 1);
+  });
+
+  test('a saved text too short to hold a record decodes here, because a hop costs more', () async {
+    SharedPreferences.setMockInitialValues({
+      'bookfin.playback.v1.fred': jsonEncode({'speed': 1.5}),
+    });
+    final hop = CountingHop();
+    final store = LocalResumeStore(hop: hop.call);
+
+    expect((await store.read('fred'))!['speed'], 1.5);
+    expect(hop.hops, 0);
+  });
 
   test(
     'a change drops the kept view, so the next read shows the change',
@@ -503,7 +542,15 @@ void main() {
     expect(store.setAside('alice'), isTrue);
     expect(records.keptFile, isNotNull);
     await store.save('alice', resume(99000));
-    final restarted = LocalResumeStore(openDatabase: () async => records);
+    // A restart opens the file with the platform's binding again, whose
+    // reads report no damage.
+    await records.close();
+    final reopened = await RecordDatabase.open(
+      factory: databaseFactoryFfi,
+      path: '$path.other',
+    );
+    addTearDown(reopened.close);
+    final restarted = LocalResumeStore(openDatabase: () async => reopened);
     expect(
       (await restarted.read(
         'alice',

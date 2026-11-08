@@ -19,6 +19,7 @@ import '../playback/playback_test.dart'
 import '../reader/persistence_test.dart' show FailingRecords;
 import '../reader/publication_test.dart' show epub;
 import '../reader/session_test.dart' show book, edition, source, visible;
+import '../real_time.dart';
 
 // Each test names one moment when the app must save a place in a book, and
 // shows that a process killed right after that moment keeps the place. A kill
@@ -85,21 +86,24 @@ Future<Map<String, String>> _readingPlacesAfterKill() async {
   };
 }
 
-/// Waits for [work] in the widget test's fake time, which moves only when
-/// the test pumps frames.
-Future<T> _settle<T>(WidgetTester tester, Future<T> work) async {
-  var done = false;
-  late T result;
-  work.then((value) {
-    result = value;
-    done = true;
-  });
-  for (var frame = 0; !done; frame++) {
-    if (frame == 200) throw StateError('The work did not finish.');
-    await tester.pump(const Duration(milliseconds: 10));
+/// Kills and restarts the app until what [read] gives back after the
+/// restart satisfies [found], and returns that, or the last that it read
+/// after 200 looks. A save that a lifecycle change starts hops to another
+/// isolate, so it ends in real time, which [finish] gives it.
+Future<T> _afterKill<T>(
+  WidgetTester tester,
+  Future<T> Function() read,
+  bool Function(T value) found,
+) => finish(tester, () async {
+  late T value;
+  for (var look = 0; look < 200; look++) {
+    _kill();
+    value = await read();
+    if (found(value)) break;
+    await Future<void>.delayed(const Duration(milliseconds: 5));
   }
-  return result;
-}
+  return value;
+}());
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -115,9 +119,9 @@ void main() {
         engine: engine,
         store: LocalResumeStore(),
       );
-      await _settle(tester, playback.bind(account(), [title]));
-      await _settle(tester, playback.open(title, recording));
-      await _settle(tester, playback.play());
+      await finish(tester, playback.bind(account(), [title]));
+      await finish(tester, playback.open(title, recording));
+      await finish(tester, playback.play());
       engine.emit(0, 31000, playing: true);
       engine.emit(0, 31400, playing: true);
       await tester.pump();
@@ -130,9 +134,14 @@ void main() {
       );
 
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
-      await tester.pump();
-      _kill();
-      final saved = await _settle(tester, LocalResumeStore().read(_account));
+      final saved = await _afterKill(
+        tester,
+        () => LocalResumeStore().read(_account),
+        (saved) =>
+            (saved?['resumes']?[recording.id] as List?)
+                ?.single['milliseconds'] ==
+            31400,
+      );
       expect(
         (saved!['resumes'][recording.id] as List).single['milliseconds'],
         31400,
@@ -163,7 +172,7 @@ void main() {
       await reader.bind(account(), [book, _otherBook]);
       await reader.open(book, edition);
       reader.acceptVisible(reader.token, visible);
-      await pumpEventQueue();
+      await reader.flush();
     });
     tearDown(() {
       reader.dispose();
@@ -174,7 +183,7 @@ void main() {
       'keeps the new chapter when it is killed right after the chapter changes',
       () async {
         reader.acceptVisible(reader.token, _secondChapter);
-        await pumpEventQueue();
+        await reader.flush();
 
         expect(
           (await _readingPlacesAfterKill())[edition.id],
@@ -187,7 +196,7 @@ void main() {
       reader.acceptVisible(reader.token, _secondChapter);
       await reader.open(_otherBook, _otherEdition);
       reader.acceptVisible(reader.token, visible);
-      await pumpEventQueue();
+      await reader.flush();
 
       final places = await _readingPlacesAfterKill();
       expect(places[edition.id], contains('OPS/two.xhtml'));
@@ -200,7 +209,7 @@ void main() {
         storage.writable = false;
         await tester.runAsync(() async {
           reader.acceptVisible(reader.token, _secondChapter);
-          await pumpEventQueue();
+          await reader.flush();
         });
         storage.writable = true;
         await tester.pumpWidget(
@@ -212,16 +221,12 @@ void main() {
         );
 
         tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
-        // The reader was built outside fake time, so its writes finish in
-        // real time.
-        for (var turn = 0; turn < 3; turn++) {
-          await tester.pump();
-          await tester.runAsync(pumpEventQueue);
-        }
-        expect(
-          (await _readingPlacesAfterKill())[edition.id],
-          contains('OPS/two.xhtml'),
+        final places = await _afterKill(
+          tester,
+          _readingPlacesAfterKill,
+          (places) => places[edition.id]?.contains('OPS/two.xhtml') ?? false,
         );
+        expect(places[edition.id], contains('OPS/two.xhtml'));
         await tester.pumpWidget(const SizedBox());
       },
     );
