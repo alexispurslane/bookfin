@@ -1,6 +1,6 @@
 ---
 id: t3-ipk1
-status: in_progress
+status: closed
 deps: [boo-73yj]
 links: [boo-73yj, boo-mx5i, t3-jrhf, t0-ebxa, t2-42og]
 created: 2026-11-02T10:46:17Z
@@ -38,3 +38,7 @@ Renewed normal-app attempt verifies the exact 4ae8c6c source export hashes and n
 **2026-11-03T15:44:19Z**
 
 Same-debug-key companion e5bdcd3bacfe9f06233c4f845fa56af54e24d19cd0c0cfce9d2479a5506d44f9 installs IN PLACE over normal f062456644d1c6e8829b289d130e6047e582eb7fd67b139b1b7263be926615e7 with all 44 action payload hashes unchanged. Normal MOBI reading/bookmarks precede replacement. UI removal proves plain original+derived cache absent; redownload and fresh conversion then render river text/image. Installed modified libmobi SHA657b3a35ffa263b42899e48585163e9e5dd32d5c20bf76c4102d3f34516ee56c and converter bridge have executable mappings matching installed APK ZIP byte extents. KF8 saved visible location fails separately t2-42og; records remain retained. This is finite runtime replacement, not legal/store/signing approval. Report docs/evidence/reader/android-corrected-formats-20261103.md. No closure.
+
+**2026-11-08T02:52:43Z**
+
+Closed on user acceptance, Nov 7: the user accepted the merged work and will report any issue they run into.

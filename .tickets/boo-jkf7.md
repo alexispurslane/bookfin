@@ -1,6 +1,6 @@
 ---
 id: boo-jkf7
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-07T20:55:42Z
@@ -13,3 +13,9 @@ parent: boo-fs0n
 
 Audit P10, P11: each glass pane stacks BackdropFilter, ImageFiltered and Opacity, and redraws at 5 Hz under the ticking player; covers decode at 540 px even in 36 px rows. RepaintBoundary around the slider, drop the Opacity saveLayer, blur a tiny decoded cover, add a cover size class to the cache key. Profile first.
 
+
+## Notes
+
+**2026-11-08T02:52:42Z**
+
+Closed on user acceptance, Nov 7: the user accepted the merged work and will report any issue they run into.

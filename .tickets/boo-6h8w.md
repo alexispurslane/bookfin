@@ -1,6 +1,6 @@
 ---
 id: boo-6h8w
-status: in_progress
+status: closed
 deps: [t0-dqxp, t0-60ea]
 links: [boo-sthf, t7-msmk]
 created: 2026-11-01T21:37:34Z
@@ -71,3 +71,7 @@ Exclusive Android lane from1f1b1c6 verified existing normal APK by exact install
 **2026-11-03T00:53:19Z**
 
 Fresh fc4531c Android acceptance records native notification pause at77281ms, native +30s to107281ms then -10s to97281ms, and app Undo back107281ms with native jump history retained. Replacement original24298ms resume/history/bookmark remained separate across named process restart. Original bookmark restore on changed audio refused; valid replacement history restored25864ms. Transient incoming call saved Interrupted and subsequent Resumed events. See docs/evidence/playback/android-authorized-retest.md and bounded account readbacks. Not full sync, locked-screen, hardening or closure acceptance.
+
+**2026-11-08T02:52:41Z**
+
+Closed on user acceptance, Nov 7: the user accepted the merged work and will report any issue they run into.

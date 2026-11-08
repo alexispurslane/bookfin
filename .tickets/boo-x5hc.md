@@ -1,6 +1,6 @@
 ---
 id: boo-x5hc
-status: in_progress
+status: closed
 deps: [boo-eg9h, boo-1lca]
 links: []
 created: 2026-11-07T15:30:28Z
@@ -21,3 +21,7 @@ LibraryShelf (filters All/Audio/Ebooks/Downloaded), grid sized from cover width 
 **2026-11-07T16:04:02Z**
 
 Emulator check with tool/showcase_fixture.dart on disposable AVD: covers, series cards, grid rows, compact list, series page, details page, settings verified by screenshot. Verified APK (tool/bookfin build-android) installed on Pixel 8 at 4072200.
+
+**2026-11-08T02:52:43Z**
+
+Closed on user acceptance, Nov 7: the user accepted the merged work and will report any issue they run into.

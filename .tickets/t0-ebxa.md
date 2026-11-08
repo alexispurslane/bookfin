@@ -1,6 +1,6 @@
 ---
 id: t0-ebxa
-status: in_progress
+status: closed
 deps: [boo-73yj]
 links: [boo-mx5i, t3-jrhf, t3-ipk1]
 created: 2026-11-02T12:38:42Z
@@ -47,3 +47,7 @@ Exact normal Android attempt on 4ae8c6c is blocked before PDF native entry by t3
 **2026-11-03T15:44:19Z**
 
 Finite corrected normal 44d53af Android sequence succeeds: original PDF raster/fonts, NIST extracted text, original/reflow and close/reopen, short PDF, scan, Census, full process close, fresh true-offline process and NIST original/reflow. No observed native abort. This does not claim simultaneous documents, exact callback counts, explicit worker shutdown or stress/physical-device coverage. Evidence docs/evidence/reader/android-corrected-formats-20261103.md; crash buffer and audited screenshots retained. No closure.
+
+**2026-11-08T02:52:43Z**
+
+Closed on user acceptance, Nov 7: the user accepted the merged work and will report any issue they run into.

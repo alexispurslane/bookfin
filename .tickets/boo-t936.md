@@ -1,6 +1,6 @@
 ---
 id: boo-t936
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-07T20:55:42Z
@@ -13,3 +13,9 @@ parent: boo-fs0n
 
 Audit P4: status() hashes every source file with SHA-256 and runs typeSync, lengthSync and listSync on the UI isolate, called from build for every tile and every edition. Store EditionDownload per edition, update it on events, compute source ids once at bind.
 
+
+## Notes
+
+**2026-11-08T02:52:42Z**
+
+Closed on user acceptance, Nov 7: the user accepted the merged work and will report any issue they run into.

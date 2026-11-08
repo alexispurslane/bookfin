@@ -1,6 +1,6 @@
 ---
 id: boo-mx5i
-status: in_progress
+status: closed
 deps: [boo-9wgg, t9-26f6, t0-odcl, t0-ebxa, t0-qnnu]
 links: [boo-73yj, t3-ipk1, t3-9r9u, boo-9wgg, t0-odcl, t0-qnnu, t0-ebxa, t3-jrhf, t2-42og, boo-3oq0, t2-00a4]
 created: 2026-11-01T21:37:34Z
@@ -80,3 +80,7 @@ Renewed normal Android acceptance on exact source 4ae8c6c2299e7ec7c16420663a8fc3
 **2026-11-03T15:44:19Z**
 
 Exact 44d53af Android normal acceptance advances PDF original/reflow, source-character bookmark/resume, size change, short/long backward boundaries, scan/complex fallback, native close/reopen and true offline process restart. All seven downloaded originals match exact corpus hashes. MOBI plain/PalmDOC/KF8 admission works; same-key companion fresh conversion works after UI removal/redownload. KF8 visible saved-place navigation fails (t2-42og), and explicit sync leaves 28 of 37 new actions pending (t2-00a4). All seven prior action payloads remain unchanged. No production edit, hardening, OCR action or closure. Report docs/evidence/reader/android-corrected-formats-20261103.md.
+
+**2026-11-08T02:52:42Z**
+
+Closed on user acceptance, Nov 7: the user accepted the merged work and will report any issue they run into.

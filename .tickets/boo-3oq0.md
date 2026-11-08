@@ -1,6 +1,6 @@
 ---
 id: boo-3oq0
-status: in_progress
+status: closed
 deps: [boo-p58t, boo-6h8w, boo-9wgg, tb-5fyd, tb-887c]
 links: [t6-t9po, t6-il6y, boo-mx5i, t2-00a4]
 created: 2026-11-01T21:37:34Z
@@ -61,3 +61,7 @@ is claimed; journal growth t6-t9po and plugin deployment t6-il6y remain open.
 **2026-11-03T14:16:49Z**
 
 Bounded actual normal Android + unchanged packaged plugin proof on source4ae8c6c: UI creates EPUB positions/bookmarks, creates another position/bookmark genuinely offline with no default network or fixture reverse route, and survives process restart with six exact retained/pending actions. Failed sync retains them. Direct ordinary-account sync to owned Jellyfin12.4 / Bookfin Storage0.1.1.0 acknowledges all six; server payload hashes match Android exactly. UI deletion adds action7 while retaining six prior payloads; restart uploads deletion and keeps the second bookmark. Bob discovery empty. Initial observer cannot forward PUT; owned direct route avoids this fixture limitation without changing app origin/API/package. No second Android client, conflicts/listening-history/clock acceptance, production edits, or closure. Report docs/evidence/reader/android-normal-formats-20261103.md.
+
+**2026-11-08T02:52:41Z**
+
+Closed on user acceptance, Nov 7: the user accepted the merged work and will report any issue they run into.

@@ -1,6 +1,6 @@
 ---
 id: t9-k4lf
-status: in_progress
+status: closed
 deps: [boo-7o92]
 links: []
 created: 2026-11-02T04:06:10Z
@@ -50,3 +50,7 @@ Current-main APK82faf07d observed Alice retained398040 bytes outside catalog aft
 **2026-11-02T18:52:37Z**
 
 Independent Android acceptance at ac6a247 now observed unavailable398673-byte saved copy after deliberate one-byte local fault, Retry after one synthetic503, Cancel at4096 partial bytes, and process relaunch retaining both without automatic download. Deselecting library exposed402769 retained bytes; Keep download/Keep files preserved them, confirmed Remove files cleared complete/partial/manifest, and relaunch/reselection stayed empty without another transfer. Added host regressions for removal across recreation/reselection and missing-file-at-confirmation tolerance. No production defect or change. Exactly3 Download responses (200, injected503, canceled200). Evidence docs/evidence/playback/remaining-acceptance-android.md. Own files/fixture/route removed and device released. Keep in_progress for parent integration and acceptance; no hardening or closure.
+
+**2026-11-08T02:52:43Z**
+
+Closed on user acceptance, Nov 7: the user accepted the merged work and will report any issue they run into.

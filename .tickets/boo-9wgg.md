@@ -1,6 +1,6 @@
 ---
 id: boo-9wgg
-status: in_progress
+status: closed
 deps: [boo-u3cg, boo-7o92, boo-73yj, t3-9r9u, tb-zqvc]
 links: [t3-9r9u, boo-mx5i, t8-jj2s, t8-j809]
 created: 2026-11-01T21:37:34Z
@@ -83,3 +83,7 @@ Corrected Android acceptance captured22 audited screenshots from readable chapte
 **2026-11-02T20:22:25Z**
 
 Integrated f886849 named Android run: normal ordinary-user sign-in, library selection, original-hash-verified EPUB download, and readable Read PASS despite real Book omitting Container and MediaSources. t8-jj2s still fails20-pixel later-page reopen both within process and after restart with server unavailable; bookmark visible-text restore passes both.22-pixel text size persists, and second-chapter later-page text/CFI survive reopen in that control case. Night override returns cream on reopen; intended lifetime tracked separately in t8-j809, not decided by test agent. Page progress labels disagree for identical visible columns; retain with restoration/layout investigation. New report docs/evidence/reader/android-integrated.md and16 audited screenshots. No native-denial, TalkBack, search, long-run, or whole-reader approval. Cleanup complete, device binding released without shutdown. No production edits or ticket closure.
+
+**2026-11-08T02:52:42Z**
+
+Closed on user acceptance, Nov 7: the user accepted the merged work and will report any issue they run into.

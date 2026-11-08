@@ -1,6 +1,6 @@
 ---
 id: boo-sthf
-status: in_progress
+status: closed
 deps: [boo-7o92, t0-dqxp, t0-60ea]
 links: [t0-60ea, t0-dqxp, boo-6h8w, t7-msmk]
 created: 2026-11-01T21:37:34Z
@@ -88,3 +88,7 @@ Fresh fc4531c normal Android acceptance observed real-Jellyfin replacement playb
 **2026-11-03T00:58:11Z**
 
 Immediate explicit user mute follow-up after acceptance cleanup: reacquired supported device binding, first mute required open; opened signed-out Bookfin and single advised mute retry succeeded. Android STREAM_MUSIC readback Muted:true and streamVolume:0 before and after named close. No playback restarted, no audibility claim, no host audio changed. Media mute deliberately left enabled per user preference; noPID and empty routes verified before shutdown:false release. Evidence docs/evidence/playback/android-authorized-retest.md follow-up and 27-user-requested-media-mute.json.
+
+**2026-11-08T02:52:42Z**
+
+Closed on user acceptance, Nov 7: the user accepted the merged work and will report any issue they run into.

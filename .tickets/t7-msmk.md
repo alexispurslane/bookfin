@@ -1,6 +1,6 @@
 ---
 id: t7-msmk
-status: in_progress
+status: closed
 deps: []
 links: [boo-6h8w, boo-sthf, td-7yxu]
 created: 2026-11-02T11:36:42Z
@@ -54,3 +54,7 @@ Renewed user authorization completed cleanup on November 3. Parent removed all f
 **2026-11-03T19:11:57Z**
 
 November 3 renewed normal-app acceptance used fresh full snapshots and exact sign-in field references; all three fields filled and ordinary account sign-in succeeded. Separate blocker after active OCR Cancel: complete snapshot failed insufficient foreground app content (mw123qnc-f55b5356), one advised full-snapshot retry failed identically (mw1248f2-2610843c). Required UI stop honored, no fallback/rebinding. Inspection task t0-ys9g filed. Device now normal APK, signed in with process present, two new owned PDF downloads, network 1/0/0 instead of initial 0/1/1, large text size unchanged, media muted. Separate authorized cleanup is needed; no UI cleanup was attempted after stop. All 69 previous actions unchanged; 70 total, original 28 pending, zero new-account pending. Host server/controller/private copies/credentials/routes removed after exact real-plugin audit. Evidence docs/evidence/reader/android-remaining-20261103.md. No closure.
+
+**2026-11-08T02:52:43Z**
+
+Closed on user acceptance, Nov 7: the user accepted the merged work and will report any issue they run into.

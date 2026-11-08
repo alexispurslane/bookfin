@@ -1,6 +1,6 @@
 ---
 id: boo-n6ri
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-07T16:47:37Z
@@ -17,3 +17,7 @@ parent: boo-fs0n
 **2026-11-07T16:47:37Z**
 
 BookRow (library_view) gained detail/below/trailing slots; DownloadsPage uses it with remove/cancel/retry icon buttons outside the row tap, a summary card with total size, audiobook/ebook counts and network state, and opens book details on tap. Retained storage view keyed so its scan survives list changes.
+
+**2026-11-08T02:52:42Z**
+
+Closed on user acceptance, Nov 7: the user accepted the merged work and will report any issue they run into.

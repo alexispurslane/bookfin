@@ -1,6 +1,6 @@
 ---
 id: boo-suhu
-status: in_progress
+status: closed
 deps: [boo-mx5i]
 links: [t0-qnnu]
 created: 2026-11-02T00:07:18Z
@@ -101,3 +101,7 @@ Focused fresh-install lane from 2d11125 provisioned a uniquely named disposable 
 **2026-11-03T22:14:32Z**
 
 Authorized continuation from b186860 on owned local/emulator-5556 passed exact normal d8e1021 fresh install, no prior private model/cache, first English OCR with radios1/0/0 AND empty reverse inventory, reflow/search/original access, character611 Unicode bookmark/place, cache reuse after disconnected process restart, genuine blank fallback, and two-account original/cache/bookmark ownership. Bob own offline recognition created a separate cache; ordinary Bob removal preserved Alice cache; Alice bookmark/reflow returned. Original5554 never opened/operated; no original28 recovery claim. No native callback trace, lost-ack runtime gate, new latency/memory claim, hardening, production edit/rebuild, physical phone, or closure. Audit passed; final10 acknowledged/0pending; ordinary downloads removed/signout/close, radios0/1/1 media muted, owned fixture/routes/private copies removed, own AVD released shutdown:true and retained unbooted. Evidence docs/evidence/reader/android-fresh-booted-20261103.md and fresh-booted/README.md. Parent owns integration/closure.
+
+**2026-11-08T02:52:42Z**
+
+Closed on user acceptance, Nov 7: the user accepted the merged work and will report any issue they run into.

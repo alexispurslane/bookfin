@@ -1,6 +1,6 @@
 ---
 id: boo-eg9h
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-07T15:30:28Z
@@ -21,3 +21,7 @@ Book now carries cover (CoverRef itemId+tag), description (HTML stripped), genre
 **2026-11-07T16:05:59Z**
 
 User decision 2026-11-07: same-titled audiobook and ebook in the same Jellyfin series and with the same author join as one book automatically, only when exactly one audiobook item matches. Explicit bookLinks (link or separate) always win. Outside a series, confirmation is still required.
+
+**2026-11-08T02:52:42Z**
+
+Closed on user acceptance, Nov 7: the user accepted the merged work and will report any issue they run into.

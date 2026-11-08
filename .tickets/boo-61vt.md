@@ -1,6 +1,6 @@
 ---
 id: boo-61vt
-status: in_progress
+status: closed
 deps: [boo-gxm8, te-kzht]
 links: []
 created: 2026-11-01T22:02:10Z
@@ -45,3 +45,7 @@ Final acceptance suite expanded to 32 passing Flutter tests, including explicit 
 Partial foundation integration only; ticket stays open. F1 reproduced painted navigation contrast near 2.0:1 against the required 4.5:1. Removed screen fading while retaining slide motion; regression samples rendered text with ancestor opacity in both palettes. F3 restores disabled chapter Jump/history Restore actions and the reader Audio stays close panel with working gallery-only Player navigation. F2 remains original implementation work in te-kzht: dependency reversed so city selection gates this ticket, and no new permission gate applies. Browser fallback-font work te-6x43 now gates release hardening.
 
 Parent verification through nix develop: SDK-link safety checks and all 34 application tests passed. The retained-reading test now uses a visible nonzero scroll position after the restored panel lengthened the page. Root analysis initially discovered standalone research packages without their independent dependencies; root analyzer now excludes tool/research/readers, whose dedicated commands remain documented. Final flutter analyze has no issues. No new Android build or device inspection claimed for parent fixes.
+
+**2026-11-08T02:52:41Z**
+
+Closed on user acceptance, Nov 7: the user accepted the merged work and will report any issue they run into.

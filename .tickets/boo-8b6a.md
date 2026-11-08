@@ -1,6 +1,6 @@
 ---
 id: boo-8b6a
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-07T18:34:08Z
@@ -13,3 +13,9 @@ parent: boo-fs0n
 
 Found on the Pixel 8 on 2026-11-07. With no retained files, Downloads still shows a large 'Retained storage' heading, a long explanation, Refresh storage, and 'No retained files.' Show the section only when retained files exist, or make it one compact line.
 
+
+## Notes
+
+**2026-11-08T02:52:41Z**
+
+Closed on user acceptance, Nov 7: the user accepted the merged work and will report any issue they run into.

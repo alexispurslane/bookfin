@@ -1,6 +1,6 @@
 ---
 id: boo-blsz
-status: in_progress
+status: closed
 deps: [boo-eg9h, boo-1lca]
 links: []
 created: 2026-11-07T15:30:28Z
@@ -17,3 +17,7 @@ parent: boo-fs0n
 **2026-11-07T15:53:58Z**
 
 BookPage: blurred cover backdrop, hero cover, title, author and narrator, series link, facts, Listen/Resume, Read, download button, progress, description with More, metadata rows, editions section. Corrections moved to the More actions menu. Per-edition Listen/Read only when a book has several editions of a kind.
+
+**2026-11-08T02:52:42Z**
+
+Closed on user acceptance, Nov 7: the user accepted the merged work and will report any issue they run into.

@@ -1,6 +1,6 @@
 ---
 id: td-7yxu
-status: in_progress
+status: closed
 deps: []
 links: [t7-msmk]
 created: 2026-11-02T14:10:11Z
@@ -33,3 +33,7 @@ Corrected reader attempt observed own tcp7365 route before/after two relaunches:
 **2026-11-03T00:54:04Z**
 
 Fresh fc4531c authorized normal-app acceptance created only own port7365 reverse route after initially empty list. Route remained observed after named app restart and interrupted-download process relaunches; no reset/rebinding or adb UI fallback. Removed own route during cleanup; final list empty. Ports7364/7365 and owned processes stopped; builder7464/7465 untouched. Evidence docs/evidence/playback/android-authorized-retest.md.
+
+**2026-11-08T02:52:44Z**
+
+Closed on user acceptance, Nov 7: the user accepted the merged work and will report any issue they run into.
