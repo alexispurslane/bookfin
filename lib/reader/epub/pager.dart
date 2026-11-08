@@ -332,11 +332,6 @@ class EpubPager implements DocumentNavigator {
     );
   }
 
-  /// Does nothing. The viewport presents the text size and the theme.
-  @override
-  Future<void> configure({required double fontSize, required bool night}) =>
-      Future.value();
-
   /// Searches the book for [query] in batches of sections in worker
   /// isolates. A [cancelSearch] of [request] stops it between batches, with
   /// an empty report.

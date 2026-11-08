@@ -188,6 +188,10 @@ class PagePreview {
 abstract interface class DocumentNavigator {
   Future<void> move(bool forward);
   Future<void> display(ReaderAddress address);
+
+  /// Shows the destination [href]: a contents entry or an internal link,
+  /// relative to the package document's directory, with an optional
+  /// fragment. A PDF uses `page:N`.
   Future<void> contents(String href);
 
   /// Shows the place [progress] of the way through part [part] of the book,
@@ -203,7 +207,6 @@ abstract interface class DocumentNavigator {
     double width,
     Future<void> abandon,
   );
-  Future<void> configure({required double fontSize, required bool night});
   Future<ReaderSearchReport> search(String query, int request);
   Future<void> cancelSearch(int request);
 }
@@ -257,9 +260,6 @@ class EpubNavigator implements DocumentNavigator {
     );
   }
 
-  @override
-  Future<void> configure({required double fontSize, required bool night}) =>
-      port.configure(fontSize: fontSize, night: night);
   @override
   Future<ReaderSearchReport> search(String query, int request) async {
     final report = await port.search(query, request);
