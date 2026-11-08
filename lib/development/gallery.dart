@@ -742,6 +742,10 @@ class _ReaderFixture extends StatefulWidget {
 class _ReaderFixtureState extends State<_ReaderFixture> {
   double _fontSize = 19;
 
+  /// Whether the sample page shows the night reading theme, or null while it
+  /// follows the app's theme.
+  bool? _night;
+
   /// The index in [_readerChapters] of the shown chapter.
   int _chapter = 0;
   int _nextBookmark = 0;
@@ -894,6 +898,23 @@ class _ReaderFixtureState extends State<_ReaderFixture> {
 
   @override
   Widget build(BuildContext context) {
+    final app = Theme.of(context);
+    final night = _night ?? app.brightness == Brightness.dark;
+    final theme = night == (app.brightness == Brightness.dark)
+        ? app
+        : bookfinTheme(night ? Brightness.dark : Brightness.light);
+    return Theme(
+      data: theme,
+      child: Builder(
+        builder: (context) => Material(
+          color: theme.colorScheme.surface,
+          child: _page(context, night),
+        ),
+      ),
+    );
+  }
+
+  Widget _page(BuildContext context, bool night) {
     final (number, title, _) = _readerChapters[_chapter];
     final text = TextStyle(
       fontFamily: 'Source Serif 4',
@@ -920,44 +941,25 @@ class _ReaderFixtureState extends State<_ReaderFixture> {
           const SizedBox(height: 20),
         ],
         const SizedBox(height: 8),
-        // TODO(t3-pk3x): show the reader's own control bar here
-        // once it is a leaf widget. Until then these buttons stand in for it.
-        Wrap(
-          alignment: WrapAlignment.center,
-          spacing: 4,
-          children: [
-            TextButton(onPressed: _openContents, child: const Text('Contents')),
-            TextButton(
-              onPressed: () => unawaited(_openSearch()),
-              child: const Text('Search'),
-            ),
-            TextButton(
-              onPressed: _fontSize > 15
-                  ? () => setState(() => _fontSize -= 2)
-                  : null,
-              child: const Text('A−'),
-            ),
-            TextButton(
-              onPressed: _fontSize < 29
-                  ? () => setState(() => _fontSize += 2)
-                  : null,
-              child: const Text('A+'),
-            ),
-            TextButton(
-              onPressed: _addBookmark,
-              child: const Text('Bookmark this place'),
-            ),
-            TextButton(
-              onPressed: _openBookmarks,
-              child: const Text('Reading bookmarks'),
-            ),
-          ],
+        ReaderControls(
+          onContents: _openContents,
+          onSearch: () => unawaited(_openSearch()),
+          onSmaller: _fontSize > 15
+              ? () => setState(() => _fontSize -= 2)
+              : null,
+          onLarger: _fontSize < 29
+              ? () => setState(() => _fontSize += 2)
+              : null,
+          onBookmark: _addBookmark,
+          onBookmarks: _openBookmarks,
+          night: night,
+          onNightChanged: (night) => setState(() => _night = night),
         ),
         const SizedBox(height: 24),
         ProgressLine(value: (_chapter + 1) / 12),
         const SizedBox(height: 12),
         Text(
-          'Sample chapters · no ebook file is open\nText size and scroll stay in this gallery session.',
+          'Sample chapters · no ebook file is open\nText size, theme and scroll stay in this gallery session.',
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.bodySmall,
         ),

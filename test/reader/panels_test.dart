@@ -132,4 +132,77 @@ void main() {
     expect(deleted, [_mark]);
     expect(restored, hasLength(1), reason: 'a menu choice is not a tap');
   });
+
+  group('the reader control bar', () {
+    /// Shows the control bar. Every control is on unless it is named in
+    /// [off], and each tap adds its control to [tapped].
+    Future<void> showControls(
+      WidgetTester tester,
+      List<String> tapped, {
+      Set<String> off = const {},
+      bool night = false,
+    }) {
+      VoidCallback? report(String control) =>
+          off.contains(control) ? null : () => tapped.add(control);
+      return _show(
+        tester,
+        ReaderControls(
+          onContents: report('Contents'),
+          onSearch: report('Search book'),
+          onSmaller: report('Smaller text'),
+          onLarger: report('Larger text'),
+          onBookmark: report('Bookmark this place'),
+          onBookmarks: report('Reading bookmarks'),
+          night: night,
+          onNightChanged: (night) => tapped.add('night $night'),
+        ),
+      );
+    }
+
+    const controls = [
+      'Contents',
+      'Search book',
+      'Smaller text',
+      'Larger text',
+      'Bookmark this place',
+      'Reading bookmarks',
+    ];
+
+    testWidgets('reports each tap through the callback of its control', (
+      tester,
+    ) async {
+      final tapped = <String>[];
+      await showControls(tester, tapped);
+      for (final control in controls) {
+        await tester.tap(find.byTooltip(control));
+      }
+      await tester.tap(find.byTooltip('Night reading theme'));
+      expect(tapped, [...controls, 'night true']);
+    });
+
+    testWidgets('a control that is off shows but reports no tap', (
+      tester,
+    ) async {
+      final tapped = <String>[];
+      await showControls(
+        tester,
+        tapped,
+        off: {'Smaller text', 'Bookmark this place'},
+      );
+      await tester.tap(find.byTooltip('Smaller text'));
+      await tester.tap(find.byTooltip('Bookmark this place'));
+      await tester.tap(find.byTooltip('Larger text'));
+      expect(tapped, ['Larger text']);
+    });
+
+    testWidgets('in the night theme the theme control offers the cream theme', (
+      tester,
+    ) async {
+      final tapped = <String>[];
+      await showControls(tester, tapped, night: true);
+      expect(find.byTooltip('Night reading theme'), findsNothing);
+      await tester.tap(find.byTooltip('Cream reading theme'));
+      expect(tapped, ['night false']);
+    });
+  });
 }
