@@ -9,6 +9,7 @@ class ReadingLocation {
     this.page,
     this.pages,
     this.progress,
+    this.end,
   });
   final String cfi;
   final String resource;
@@ -22,6 +23,12 @@ class ReadingLocation {
   /// come before it. It places the location along the whole book, so it is
   /// saved with the place. A place saved before it existed has none.
   final double? progress;
+
+  /// The text progress of the last visible character of the shown page, in
+  /// the same measure as [progress]. It is for display only, such as the
+  /// chapter arrows, so [toJson] does not write it and [fromJson] does not
+  /// read it.
+  final double? end;
   Map<String, dynamic> toJson() => {
     'cfi': cfi,
     'resource': resource,
