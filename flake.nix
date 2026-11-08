@@ -69,9 +69,16 @@
             ln -s ${android.androidsdk}/libexec/android-sdk/cmdline-tools/19.0 "$out/cmdline-tools/19.0"
             ln -s 19.0 "$out/cmdline-tools/latest"
           '';
-          nativeTools = pkgs.lib.optionals isDarwin [
-            (import ./nix/darwin-native-tools.nix { inherit pkgs; })
-          ];
+          # The compiler tools that Dart build hooks use for host code.
+          # On Linux, native_toolchain_c looks up clang and llvm-ar.
+          nativeTools =
+            if isDarwin then
+              [ (import ./nix/darwin-native-tools.nix { inherit pkgs; }) ]
+            else
+              [
+                pkgs.clang
+                pkgs.llvm
+              ];
           readerNative = import ./nix/reader-native.nix { inherit pkgs; };
           ocr = import ./nix/ocr.nix { inherit pkgs; };
           # Gradle downloads an aapt2 built for a generic Linux. It needs the
