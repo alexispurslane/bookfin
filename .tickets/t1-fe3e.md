@@ -1,6 +1,6 @@
 ---
 id: t1-fe3e
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-08T01:02:13Z
