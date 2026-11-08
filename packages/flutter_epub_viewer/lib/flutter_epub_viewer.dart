@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -368,6 +369,32 @@ class _NativeNavigator implements NavigatorPort {
   @override
   Future<void> seek(int section, double progress) async {
     await _call('seek', [section, progress]);
+  }
+
+  @override
+  Future<PagePicture> preview(
+    int section,
+    double progress,
+    double width,
+  ) async {
+    final page = await _call('previewPage', [section, progress, width]) as Map;
+    final image = page['image'] as String;
+    if (!image.startsWith('data:image/jpeg;base64,')) {
+      throw StateError('The reader drew no page image.');
+    }
+    (int, double)? place(Object? value) => value is Map
+        ? (value['part'] as int, (value['progress'] as num).toDouble())
+        : null;
+    return PagePicture(
+      // A page image is about 100 KB, which decodes in well under a
+      // millisecond, less than a hop to another isolate costs.
+      base64Decode(image.substring(image.indexOf(',') + 1)),
+      section: page['part'] as int,
+      start: (page['start'] as num).toDouble(),
+      end: (page['end'] as num).toDouble(),
+      previous: place(page['previous']),
+      next: place(page['next']),
+    );
   }
 
   @override

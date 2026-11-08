@@ -21688,6 +21688,9 @@ var epubEngine = (() => {
           loading.reject(new Error("No Document Available"));
           return loaded;
         }
+        this.document.open();
+        this.document.write("<!DOCTYPE html><html></html>");
+        this.document.close();
         const parsed = new DOMParser().parseFromString(contents, "application/xhtml+xml");
         if (parsed.getElementsByTagName("parsererror").length || parsed.documentElement.localName !== "html" || parsed.documentElement.namespaceURI !== "http://www.w3.org/1999/xhtml") {
           loading.reject(new Error("Invalid passive XHTML document"));

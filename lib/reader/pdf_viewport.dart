@@ -259,6 +259,32 @@ class _PdfViewportState extends State<PdfViewport>
   Future<void> seek(int part, double progress) =>
       display(PdfAddress(part + 1, 0));
 
+  /// A PDF page is a whole part of the book, so its neighbors are the source
+  /// pages before and after it.
+  @override
+  Future<PagePreview> preview(BookPlace place, double width) async {
+    final part = place.part;
+    final raster = await widget.book.render(part + 1, width);
+    final drawn = Completer<ui.Image>();
+    ui.decodeImageFromPixels(
+      raster.bgra,
+      raster.width,
+      raster.height,
+      ui.PixelFormat.bgra8888,
+      drawn.complete,
+    );
+    return PagePreview(
+      part: part,
+      start: 0,
+      end: 1,
+      image: await drawn.future,
+      previous: part > 0 ? (part: part - 1, progress: 0) : null,
+      next: part + 1 < widget.book.pageCount
+          ? (part: part + 1, progress: 0)
+          : null,
+    );
+  }
+
   @override
   Future<void> configure({
     required double fontSize,

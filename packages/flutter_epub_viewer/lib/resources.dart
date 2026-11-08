@@ -54,8 +54,8 @@ class ReaderResources {
         ...headers,
         'Content-Security-Policy':
             "default-src 'none'; script-src 'self'; "
-            "style-src 'unsafe-inline' https://bookfin-publication.invalid; connect-src https://bookfin-publication.invalid; "
-            "frame-src 'self' about:; img-src https://bookfin-publication.invalid; "
+            "style-src 'unsafe-inline' https://bookfin-publication.invalid; connect-src 'self' https://bookfin-publication.invalid; "
+            "frame-src 'self' about:; img-src data: https://bookfin-publication.invalid; "
             "font-src 'self' https://bookfin-publication.invalid; object-src 'none'; base-uri https://bookfin-publication.invalid; form-action 'none'",
       });
     }

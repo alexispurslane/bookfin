@@ -136,9 +136,23 @@ export async function searchBook(book, query, isCurrent) {
   return { hits, error };
 }
 
+// The reader's own style in each shown section, which the page previews
+// share.
+function addReaderStyle(document) {
+  const style = document.createElement('style');
+  style.textContent = '@font-face{font-family:BookfinSerif;src:url("https://bookfin-runtime.invalid/SourceSerif4.ttf")}body{overflow-wrap:break-word;line-height:1.65!important;padding:0 18px!important}img{max-width:100%!important;height:auto}a:focus{outline:2px solid currentColor}';
+  document.head.appendChild(style);
+}
+
+const renditionOptions = { width: '100%', height: '100%', spread: 'none',
+  flow: 'paginated', allowScriptedContent: false, allowPopups: false, method: 'write' };
+
 let book;
 let rendition;
 let settings;
+// The text size and theme that the shown page uses, which the page previews
+// follow.
+let appearance;
 let searchRequest = 0;
 let searchJob = Promise.resolve();
 let navigationJob = Promise.resolve();
@@ -187,13 +201,10 @@ export async function openBook(configuration) {
   book = window.ePub(undefined, { requestMethod: requestLocal, replacements: 'none' });
   await book.open(settings.base, 'directory');
   await book.ready;
-  rendition = book.renderTo('viewer', { width: '100%', height: '100%', spread: 'none',
-    flow: 'paginated', allowScriptedContent: false, allowPopups: false, method: 'write' });
+  rendition = book.renderTo('viewer', renditionOptions);
   rendition.hooks.content.register(contents => {
     const document = contents.document;
-    const style = document.createElement('style');
-    style.textContent = '@font-face{font-family:BookfinSerif;src:url("https://bookfin-runtime.invalid/SourceSerif4.ttf")}body{overflow-wrap:break-word;line-height:1.65!important;padding:0 18px!important}img{max-width:100%!important;height:auto}a:focus{outline:2px solid currentColor}';
-    document.head.appendChild(style);
+    addReaderStyle(document);
     document.addEventListener('click', event => {
       const link = event.target.closest && event.target.closest('a[href]');
       if (link) {
@@ -277,7 +288,9 @@ export function applyAppearance(viewport, fontSize, night) {
 export async function configure(fontSize, night, restore = true) {
   const update = async () => {
     const current = rendition.location && rendition.location.start.cfi;
+    appearance = { fontSize, night };
     applyAppearance(rendition, fontSize, night);
+    if (preview) applyAppearance(preview, fontSize, night);
     if (restore && current) await rendition.display(current);
   };
   return restore ? withNavigation(update) : update();
@@ -289,3 +302,197 @@ export function search(query, request) {
   return operation;
 }
 export function cancelSearch(request) { if (searchRequest === request) searchRequest = -1; }
+
+// The page previews of the scrub deck. A second rendition of the same book
+// lays out pages in a hidden box of the shown page's size, with the shown
+// page's appearance, so its pages break where the shown pages break. It draws
+// a page into an image without moving the shown page or reporting a place.
+let preview;
+let previewJob = Promise.resolve();
+// Each publication resource that a drawn page uses, as a data URL, by its
+// address. A drawn page is an image, which cannot load anything itself.
+const inlined = new Map();
+
+function previewRendition() {
+  if (preview) return preview;
+  // The box fills the shown page's own box, so both have one size.
+  const viewer = document.getElementById('viewer');
+  if (getComputedStyle(viewer).position === 'static') viewer.style.position = 'relative';
+  // epub.js makes its frames visible, which would undo `visibility: hidden`
+  // on the box. No child can undo the box's opacity.
+  const box = document.createElement('div');
+  box.inert = true;
+  box.setAttribute('aria-hidden', 'true');
+  box.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:100%;opacity:0;z-index:-1;pointer-events:none';
+  viewer.appendChild(box);
+  preview = book.renderTo(box, renditionOptions);
+  preview.hooks.content.register(contents => addReaderStyle(contents.document));
+  applyAppearance(preview, appearance.fontSize, appearance.night);
+  return preview;
+}
+
+function dataUrl(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(blob);
+  });
+}
+
+// [address] as a data URL. Only the reader's font and the publication's own
+// resources are read.
+function inline(address) {
+  if (!inlined.has(address)) {
+    const url = new URL(address);
+    const job = url.origin === 'https://bookfin-runtime.invalid' && url.pathname === '/SourceSerif4.ttf'
+      ? fetch(url.href, { credentials: 'omit', redirect: 'error' }).then(response => response.blob())
+      : requestLocal(url.href, 'blob');
+    inlined.set(address, job.then(dataUrl).catch(() => ''));
+  }
+  return inlined.get(address);
+}
+
+// [css] with each url() that it names replaced by its data URL, resolved
+// against [base].
+// Each style text with its resources inlined, by its base and its text. A
+// book has a few style texts, and every page of a section shares them.
+const inlinedCss = new Map();
+
+function inlineCss(css, base) {
+  const key = base + '\n' + css;
+  if (!inlinedCss.has(key)) inlinedCss.set(key, inlineCssOnce(css, base));
+  return inlinedCss.get(key);
+}
+
+async function inlineCssOnce(css, base) {
+  const pattern = /url\(\s*(['"]?)([^'")]+)\1\s*\)/g;
+  const addresses = new Set();
+  for (const [, , address] of css.matchAll(pattern)) {
+    if (!address.startsWith('data:')) addresses.add(new URL(address, base).href);
+  }
+  const found = new Map(await Promise.all([...addresses].map(async address => [address, await inline(address)])));
+  return css.replace(pattern, (whole, quote, address) => address.startsWith('data:') ? whole :
+    `url("${found.get(new URL(address, base).href) || ''}")`);
+}
+
+// The style of [document] as one text: its own style elements and its linked
+// style sheets, in order, each with its resources inlined.
+async function documentCss(document) {
+  const parts = await Promise.all([...document.querySelectorAll('style, link[rel~="stylesheet"]')].map(async node => {
+    // epub.js adds its theme rules to a style element's sheet, not its text.
+    if (node.localName === 'style') {
+      const rules = node.sheet ? [...node.sheet.cssRules].map(rule => rule.cssText).join('\n') : node.textContent;
+      return inlineCss(rules, document.baseURI);
+    }
+    const address = new URL(node.getAttribute('href'), document.baseURI).href;
+    if (!linkedCss.has(address)) {
+      linkedCss.set(address, requestLocal(address, 'text').then(css => inlineCss(css, address), () => ''));
+    }
+    return linkedCss.get(address);
+  }));
+  return parts.join('\n');
+}
+
+// Each linked style sheet with its resources inlined, by its address.
+const linkedCss = new Map();
+
+const encodedCss = new Map();
+
+// Draws the shown page of [view] into a JPEG data URL, [scale] image pixels
+// for each layout pixel. The page's document, with its style and resources
+// inlined, becomes an SVG image, which the browser draws as it draws the page.
+async function drawPage(view, scale) {
+  const manager = view.manager;
+  const frame = manager.views.first();
+  const document = frame.contents.document;
+  const width = manager.container.clientWidth;
+  const height = manager.container.clientHeight;
+  const left = manager.container.scrollLeft - frame.element.offsetLeft;
+  const css = await documentCss(document);
+  // The style, with the reader's font, is most of the image's text. It is
+  // the same for each page of a book, so it is encoded once.
+  if (!encodedCss.has(css)) encodedCss.set(css, encodeURIComponent(css));
+  const clone = document.documentElement.cloneNode(true);
+  for (const node of clone.querySelectorAll('style, link, script')) node.remove();
+  // In a shown section, the body's overflow passes to the frame, which is as
+  // wide as all the columns. In the image, the body would clip its columns.
+  for (const element of [clone, clone.querySelector('body')]) element?.style.setProperty('overflow', 'visible', 'important');
+  await Promise.all([...clone.querySelectorAll('img[src], image')].map(async image => {
+    const attribute = image.localName === 'img' ? 'src' : image.hasAttribute('href') ? 'href' : 'xlink:href';
+    const value = image.getAttribute(attribute);
+    if (value && !value.startsWith('data:')) image.setAttribute(attribute, await inline(new URL(value, document.baseURI).href));
+  }));
+  const marker = 'bookfin-preview-style';
+  const style = document.createElementNS('http://www.w3.org/1999/xhtml', 'style');
+  style.textContent = marker;
+  (clone.querySelector('head') || clone).prepend(style);
+  const [before, after] = new XMLSerializer().serializeToString(clone).split(marker);
+  const frameWidth = frame.element.offsetWidth;
+  const head = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"><foreignObject x="${-left}" y="0" width="${frameWidth}" height="${height}">`;
+  const image = new Image();
+  image.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(head + before) + encodedCss.get(css) +
+    encodeURIComponent(after + '</foreignObject></svg>');
+  await image.decode();
+  const canvas = window.document.createElement('canvas');
+  canvas.width = Math.round(width * scale);
+  canvas.height = Math.round(height * scale);
+  const context = canvas.getContext('2d', { willReadFrequently: true });
+  context.fillStyle = appearance.night ? '#251e19' : '#f6efe2';
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  context.scale(scale, scale);
+  context.drawImage(image, 0, 0);
+  return canvas.toDataURL('image/jpeg', 0.85);
+}
+
+// The number of visible characters, white space left out, before [range]
+// and in the whole section.
+function charactersAt(range) {
+  const document = range.startContainer.ownerDocument;
+  const body = document.body || document.getElementsByTagName('body')[0];
+  const total = body ? visibleLength(body.textContent) : 0;
+  if (!total || !body.contains(range.startContainer)) return { before: 0, total };
+  const before = range.cloneRange();
+  before.selectNodeContents(body);
+  before.setEnd(range.startContainer, range.startOffset);
+  return { before: visibleLength(before.toString()), total };
+}
+
+// Draws the page that holds the place [progress] of the way through the text
+// of spine section [index], as an image [width] pixels wide. It
+// reports the page as `image`, the text progress through the section of the
+// page's first and last visible places as `start` and `end`, and the places
+// where the `previous` and `next` pages start, or null at the book's ends.
+export function previewPage(index, progress, width) {
+  const job = previewJob.catch(() => {}).then(async () => {
+    const section = Number.isInteger(index) && book.spine.get(index);
+    if (!section || typeof progress !== 'number' || !(progress >= 0 && progress <= 1) ||
+        typeof width !== 'number' || !(width > 0 && width <= 4096)) throw Error('The destination is not in this book');
+    const view = previewRendition();
+    await section.load(book.load.bind(book));
+    await view.display(placeAt(section, progress));
+    const location = view.currentLocation();
+    const image = await drawPage(view, width / view.manager.container.clientWidth);
+    const first = charactersAt(await book.getRange(location.start.cfi));
+    const last = charactersAt(await book.getRange(location.end.cfi));
+    const count = book.spine.spineItems.length;
+    const total = first.total;
+    // A place sits inside its character, so rounding cannot move it to the
+    // character's neighbor.
+    const place = character => (character + 0.5) / total;
+    const firstPage = !total || location.start.displayed.page <= 1;
+    const lastPage = !total || location.end.displayed.page >= location.end.displayed.total;
+    return {
+      image,
+      part: index,
+      start: total ? first.before / total : 0,
+      end: total && !lastPage ? Math.min(1, last.before / total) : 1,
+      previous: !firstPage ? { part: index, progress: place(first.before - 1) } :
+        index > 0 ? { part: index - 1, progress: 1 } : null,
+      next: !lastPage ? { part: index, progress: place(Math.min(total - 1, last.before + 1)) } :
+        index + 1 < count ? { part: index + 1, progress: 0 } : null,
+    };
+  });
+  previewJob = job;
+  return job;
+}

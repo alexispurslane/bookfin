@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bookfin/catalog/glass.dart' show CoverGlass;
 import 'package:bookfin/reader/screen.dart';
 import 'package:bookfin/reader/session.dart';
@@ -507,4 +509,18 @@ class ControlPort implements NavigatorPort {
 
   @override
   Future<SearchReport> search(String query, int request) async => report;
+
+  /// The section, the progress and the width of each page preview, in
+  /// order.
+  final previews = <(int, double, double)>[];
+
+  /// What each page preview returns, or null to keep it waiting.
+  PagePicture? picture;
+  @override
+  Future<PagePicture> preview(int section, double progress, double width) {
+    previews.add((section, progress, width));
+    return picture == null
+        ? Completer<PagePicture>().future
+        : Future.value(picture);
+  }
 }

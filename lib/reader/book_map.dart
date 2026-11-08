@@ -190,6 +190,15 @@ class BookMap {
     return _starts[part] + (_starts[part + 1] - _starts[part]) * through;
   }
 
+  /// Where the place [place] sits in the book, the reverse of [targetAt]. A
+  /// part outside the book is its start or its end.
+  double fractionAt(BookPlace place) {
+    final part = place.part.clamp(0, _starts.length - 2);
+    if (part != place.part) return place.part < 0 ? 0 : 1;
+    return _starts[part] +
+        (_starts[part + 1] - _starts[part]) * place.progress.clamp(0.0, 1.0);
+  }
+
   /// The place at [fraction] of the book. A fraction outside 0 to 1 is the
   /// book's start or end.
   BookTarget targetAt(double fraction) {

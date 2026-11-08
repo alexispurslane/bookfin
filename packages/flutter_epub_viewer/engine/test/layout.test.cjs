@@ -96,7 +96,7 @@ async function fixture({ failStyles = false, failedChapter, delayedChapter, publ
       requestedStyles(); await styles;
       if (failStyles) { response.writeHead(404); response.end(); return; }
       response.setHeader('Content-Type', 'text/css');
-      response.end('@font-face{font-family:BookSerif;src:url("/font.woff2")}body{font-family:BookSerif,serif}h1{font-size:1.5em}img{width:96px;height:96px}p{line-height:1.5}');
+      response.end('@font-face{font-family:BookSerif;src:url("/font.woff2")}body{font-family:BookSerif,serif}h1{font-size:1.5em;margin-top:0}img{display:block;width:96px;height:96px}p{line-height:1.5}');
     } else if (request.url === '/image.png') {
       response.setHeader('Content-Type', 'image/png');
       response.end(fs.readFileSync(path.join(root, 'tool/research/readers/fixtures/dot.png')));
@@ -254,7 +254,7 @@ async function withReader(action, resizeWhileLoading = false) {
     await page.call('Page.navigate', { url: source.url });
     await page.evaluate(`new Promise(resolve => { if (window.bookfinReader) resolve(); else addEventListener('load', resolve, {once:true}); })`);
     await page.evaluate(`window.saved=[]; window.trace=[]; window.flutter_inappwebview={callHandler:(name,value)=>{trace.push({event:name,value});if(name==='readerLocation') saved.push(value)}};
-      const create=window.ePub; window.ePub=Object.assign((...args)=>{const book=create(...args); const render=book.renderTo.bind(book);book.renderTo=(...args)=>{window.viewport=render(...args);for(const method of ['display','onResized','reportLocation']){const original=viewport[method].bind(viewport);viewport[method]=(...args)=>{trace.push({method,args,location:viewport.location});return original(...args)}} return viewport};return book},create);
+      const create=window.ePub; window.ePub=Object.assign((...args)=>{const book=create(...args); const render=book.renderTo.bind(book);book.renderTo=(...args)=>{if(window.shownRendition)return render(...args);window.viewport=window.shownRendition=render(...args);for(const method of ['display','onResized','reportLocation']){const original=viewport[method].bind(viewport);viewport[method]=(...args)=>{trace.push({method,args,location:viewport.location});return original(...args)}} return viewport};return book},create);
       window.opening=bookfinReader.openBook({base:${JSON.stringify(source.url)}, packagePath:'OPS/book.opf', fontSize:20, night:false, initial:${JSON.stringify(passageFive)}}); true`);
     await source.requested;
     await page.evaluate('new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))');
@@ -475,5 +475,100 @@ test('seeking to a text progress shows the page that holds it', { timeout: 30000
     await page.evaluate('bookfinReader.seek(0, 1)');
     assert.equal(await page.evaluate('saved.at(-1).page'), 5, 'The end of a section is its last page');
     await assert.rejects(page.evaluate('bookfinReader.seek(4, 0)'));
+  });
+});
+
+// The mean difference of two images, drawn at one small size, per color
+// channel from 0 to 255.
+function imageDifference(first, second) {
+  return `(async()=>{const load=async source=>{const image=new Image();image.src=source;await image.decode();return image};
+    const images=await Promise.all([load(${JSON.stringify(first)}),load(${JSON.stringify(second)})]);
+    const [a,b]=images.map(image=>{const canvas=document.createElement('canvas');canvas.width=103;canvas.height=167;
+      const context=canvas.getContext('2d');context.drawImage(image,0,0,103,167);return context.getImageData(0,0,103,167).data});
+    let sum=0;for(let index=0;index<a.length;index+=4)for(let channel=0;channel<3;channel++)sum+=Math.abs(a[index+channel]-b[index+channel]);
+    return sum/(a.length/4*3)})()`;
+}
+
+// The shown viewport as a PNG data URL.
+async function shownPage(page) {
+  await page.evaluate('new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))');
+  const shot = await page.call('Page.captureScreenshot', { format: 'png', clip: { x: 0, y: 0, width: 412, height: 667, scale: 1 } });
+  return 'data:image/png;base64,' + shot.data;
+}
+
+test('a page preview draws the page at a place and leaves the shown page where it is', { timeout: 60000 }, async () => {
+  await withReader(async page => {
+    const passage = await page.evaluate(shareBefore('Harbour passage 5.'));
+    await page.evaluate('bookfinReader.seek(0, 0)');
+    const reported = await page.evaluate('saved.length');
+    const preview = await page.evaluate(`bookfinReader.previewPage(0, ${passage}, 412)`);
+    assert.ok(preview.start <= passage && passage <= preview.end, 'the preview holds the place: ' + JSON.stringify({ ...preview, image: undefined }));
+    assert.equal(await page.evaluate('saved.length'), reported, 'a preview reports no reading place');
+    assert.equal(await page.evaluate('viewport.location.start.displayed.page'), 1, 'the shown page stays');
+    const first = await shownPage(page);
+    await page.evaluate(`bookfinReader.seek(0, ${passage})`);
+    const target = await shownPage(page);
+    const same = await page.evaluate(imageDifference(preview.image, target));
+    const other = await page.evaluate(imageDifference(preview.image, first));
+    assert.ok(same < 6, 'the preview looks like the page itself: ' + same);
+    assert.ok(other > same * 2, 'the preview differs from another page: ' + JSON.stringify({ same, other }));
+  });
+});
+
+test('a page preview names where its neighbors start, and the book ends have none', { timeout: 60000 }, async () => {
+  await withReader(async page => {
+    const first = await page.evaluate('bookfinReader.previewPage(0, 0, 103)');
+    assert.equal(first.previous, null);
+    assert.equal(first.start, 0);
+    assert.equal(first.next.part, 0);
+    assert.ok(first.next.progress > first.end, JSON.stringify({ ...first, image: undefined }));
+    const second = await page.evaluate(`bookfinReader.previewPage(0, ${first.next.progress}, 103)`);
+    assert.ok(second.start > first.end - 1e-6 && second.start <= first.next.progress);
+    const back = await page.evaluate(`bookfinReader.previewPage(0, ${second.previous.progress}, 103)`);
+    assert.equal(back.start, first.start);
+    const last = await page.evaluate('bookfinReader.previewPage(0, 1, 103)');
+    assert.equal(last.next, null);
+    assert.equal(last.end, 1);
+  });
+});
+
+test('a page preview follows the reading appearance as it changes, and its scale', { timeout: 60000 }, async () => {
+  await withReader(async page => {
+    await page.evaluate('bookfinReader.previewPage(0, 0, 206)');
+    await page.evaluate('bookfinReader.configure(20, true)');
+    const preview = await page.evaluate('bookfinReader.previewPage(0, 0, 206)');
+    const pixel = await page.evaluate(`(async()=>{const image=new Image();image.src=${JSON.stringify(preview.image)};await image.decode();
+      const canvas=document.createElement('canvas');canvas.width=image.width;canvas.height=image.height;const context=canvas.getContext('2d');
+      context.drawImage(image,0,0);return {width:image.width,height:image.height,corner:[...context.getImageData(2,2,1,1).data]}})()`);
+    assert.equal(pixel.width, 206);
+    assert.equal(pixel.height, 334);
+    assert.ok(pixel.corner.slice(0, 3).every(channel => channel < 70), 'the night paper is dark: ' + pixel.corner);
+  });
+});
+
+test('a page preview crosses from a section to its neighbors', { timeout: 60000 }, async () => {
+  const source = await fixture({ delayedChapter: 'two' });
+  const page = await browser();
+  try {
+    source.releaseStyles();
+    source.releaseFont();
+    await page.call('Page.navigate', { url: source.url });
+    await page.evaluate("new Promise(resolve => { if (window.bookfinReader) resolve(); else addEventListener('load', resolve, {once:true}); })");
+    await page.evaluate(`window.flutter_inappwebview={callHandler:()=>{}};
+      bookfinReader.openBook({base:${JSON.stringify(source.url)},packagePath:'OPS/book.opf',fontSize:20,night:false})`);
+    const end = await page.evaluate('bookfinReader.previewPage(0, 1, 103)');
+    assert.deepEqual(end.next, { part: 1, progress: 0 });
+    const start = await page.evaluate('bookfinReader.previewPage(1, 0, 103)');
+    assert.equal(start.part, 1);
+    assert.deepEqual(start.previous, { part: 0, progress: 1 });
+    assert.equal(start.next, null);
+    assert.equal(await page.evaluate("document.querySelector('iframe').contentDocument.querySelector('p').textContent"), 'First chapter.',
+      'the shown page stays in its section');
+  } finally { await page.close(); await source.close(); }
+});
+
+test('a section without a doctype lays out in standards mode, as XHTML does', { timeout: 30000 }, async () => {
+  await withReader(async page => {
+    assert.equal(await page.evaluate("document.querySelector('iframe').contentDocument.compatMode"), 'CSS1Compat');
   });
 });
