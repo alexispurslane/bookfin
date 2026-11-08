@@ -1,6 +1,6 @@
 ---
 id: boo-scex
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-08T19:42:53Z
@@ -19,3 +19,7 @@ Release resource shrinking removed audio_service's drawable/audio_service_* icon
 **2026-11-08T19:44:32Z**
 
 Verified: a release build now contains drawable/audio_service_fast_forward, fast_rewind, pause, play_arrow, skip_next, skip_previous and stop (aapt2 dump resources). Follow-up: the .#apk flake package (boo-77sj) can fail its build when these icons are missing.
+
+**2026-11-08T19:47:35Z**
+
+The user confirmed on the Pixel (2026-11-08) that playback continues in the background and the media notification appears.
