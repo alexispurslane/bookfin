@@ -322,6 +322,111 @@ void main() {
     }
   });
 
+  test('a place in white space opens on the line of the next character '
+      'that it shows', () {
+    final sections = [
+      ...sampleSections(),
+      // Poems in the shape of a Standard Ebooks collection: a contents
+      // entry names the article, whose first text node is white space.
+      ...prepareSections([
+        section(
+          [
+            for (var i = 0; i < 6; i++)
+              '<article id="poem-$i">\n\t<header>\n\t\t<h2>Poem $i</h2>\n'
+                  '\t</header>\n\t<p>${prose(3, 'Poem $i')}</p>\n</article>\n',
+          ].join(),
+        ),
+        // Words in elements of their own, with white space between them,
+        // so that some lines break at a node of white space.
+        section(
+          '<p>${[for (var i = 0; i < 160; i++) '<span>word$i</span>'].join('\n')}</p>',
+        ),
+      ], smallPage),
+    ];
+    for (final section in sections) {
+      final dom = section.dom;
+      final chapter = layoutSection(section);
+      for (final (index, text) in dom.texts.indexed) {
+        if (visibleCount(text.text, 0, text.text.length) > 0) continue;
+        // The next visible character, with nothing shown before it.
+        final next = dom.texts
+            .skip(index + 1)
+            .where(
+              (later) => visibleCount(later.text, 0, later.text.length) > 0,
+            );
+        if (next.isEmpty) continue;
+        final visible = next.first;
+        final between = [
+          for (var node = text.order + 1; node < visible.order; node++)
+            dom.nodeAt(node),
+        ];
+        if (between.any((node) => node is DomElement && node.name == 'img')) {
+          continue;
+        }
+        var offset = 0;
+        while (isSpace(visible.text.codeUnitAt(offset))) {
+          offset++;
+        }
+        final place = EpubPlace(section.index, text.order, 0);
+        final target = EpubPlace(section.index, visible.order, offset);
+        final reason = '$place in ${section.settings}';
+        expect(
+          lineStart(section, place),
+          lineStart(section, target),
+          reason: reason,
+        );
+        expect(chapter.pageAt(place), chapter.pageAt(target), reason: reason);
+      }
+      chapter.dispose();
+    }
+  });
+
+  test('a place in white space before an image opens on the image', () {
+    final section = prepared(
+      '<p>${prose(8)}</p>\n<img src="map.png"/>\n<p>${prose(2)}</p>',
+      settings: smallPage,
+      files: {
+        'text/map.png': img.encodePng(img.Image(width: 300, height: 200)),
+      },
+    );
+    final dom = section.dom;
+    final space = dom.texts.firstWhere(
+      (text) => text.text == '\n' && text.parent == dom.body,
+    );
+    final place = EpubPlace(section.index, space.order, 0);
+    final run = LayoutRun(section, from: lineStart(section, place))
+      ..step(forever, want: 1);
+    final image = run.pages.first.slices.first.start!;
+    expect(dom.nodeAt(image.node), isA<DomElement>());
+    expect((dom.nodeAt(image.node) as DomElement).name, 'img');
+    final chapter = layoutSection(section);
+    expect(chapter.pageAt(place), chapter.pageAt(image));
+    disposeAll(run.pages);
+    run.dispose();
+    chapter.dispose();
+  });
+
+  test('a place in raised text stays on the line that raises it', () {
+    final section = prepared(
+      '<p>${[for (var i = 0; i < 80; i++) 'Note<sup>$i$i</sup>'].join(' ')}</p>',
+      settings: smallPage,
+    );
+    final dom = section.dom;
+    final chapter = layoutSection(section);
+    for (final (index, text) in dom.texts.indexed) {
+      if (text.parent?.name != 'sup') continue;
+      // "Note" and its raised number make one word, so one line holds both.
+      final word = dom.texts[index - 1];
+      final note = EpubPlace(section.index, word.order, word.text.length - 1);
+      for (var offset = 0; offset < text.text.length; offset++) {
+        final place = EpubPlace(section.index, text.order, offset);
+        expect(lineStart(section, place), lineStart(section, note));
+        expect(chapter.pageAt(place), chapter.pageAt(note));
+      }
+    }
+    chapter.dispose();
+  });
+
   test('the first line of a section starts its first page', () {
     final section = prepareSections([richSection()], smallPage).single;
     final main = runToEnd(section);

@@ -41,7 +41,7 @@ A contents entry opens, as reader.js `resolveDestination` finds it, the first te
 - In Keats, the entries "Sleep and Poetry" and "Mrs. Cameron and Ben Nevis" open on a page that shows only the last line of the poem before. The person does not see the poem that they chose.
 - In A Christmas Carol, the entry "IN PROSE" opens on a page that starts one line before the heading. The page shows the heading.
 
-No saved place moves: epub.js page starts and search hits never pointed into such a node. Ticket t9-ousp records the fix. Until it merges, the on-demand run of `saved_places_test.dart` fails on the se-poetry contents test.
+No saved place moves: epub.js page starts and search hits never pointed into such a node. Ticket t9-ousp fixed it: a place after the last thing that its line shows belongs to the next line. All 729 contents entries now open on a page whose first line holds them, and `saved_places_test.dart` asks this of them.
 
 ## The fixtures
 

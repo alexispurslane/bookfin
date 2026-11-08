@@ -7,9 +7,11 @@
 // strip. A page is a window [top, bottom) of the strip that holds whole
 // slices, so a paragraph splits across pages between its lines, and a table
 // between its rows. A row taller than a page is a slice for each of its
-// fragments (table.dart), so it splits between the lines of its cells. The
-// breaks follow CSS
-// fragmentation as Chromium applies it to the WebView reader's columns:
+// fragments (table.dart), so it splits between the lines of its cells.
+// Lines sit at their exact CSS positions, as in Chromium, and not where
+// Flutter's whole-pixel line heights put them (see [Piece.tops]). The
+// breaks follow CSS fragmentation as Chromium applies it to the WebView
+// reader's columns:
 // margins at a break are dropped, `break-before: page` is ignored as the
 // columns ignore it, and a break picks the latest place with the best
 // "appeal" (orphans, widows and avoid rules).
@@ -126,8 +128,12 @@ class Slice {
 /// to another place, as a split table row shows one paragraph on several
 /// pages, shares its paragraphs and their holders.
 class Piece {
+  /// The laid-out [paragraph] at ([x], [y]), with its lines where Flutter
+  /// puts them.
   Piece(ui.Paragraph paragraph, this.x, this.y, this.map)
-    : _paragraphs = _Paragraphs(paragraph);
+    : _paragraphs = _Paragraphs(paragraph, exact: false);
+
+  Piece._of(this._paragraphs, this.x, this.y, this.map);
 
   /// [piece] moved down by [dy], holding its paragraphs once more.
   Piece._moved(Piece piece, double dy, this.shown)
@@ -143,8 +149,20 @@ class Piece {
   final double y;
   final TextMap map;
 
-  /// Images and raised text drawn in the paragraph's placeholders.
+  /// Images and raised text drawn in the paragraph's placeholders, at
+  /// their place from the piece's top left.
   List<(ui.Rect, Object)> get inlines => _paragraphs.inlines;
+
+  /// The top of each line from the piece's top, and the bottom of the last
+  /// line. Flutter rounds each line's height to a whole pixel, but Chromium
+  /// does not, so an exact line's height is Flutter's height before it
+  /// rounds: its ascent and descent. That is the CSS line height, or the
+  /// height of the line's tallest inline content.
+  List<double> get tops => _paragraphs.tops;
+
+  /// How far each line draws below the place where Flutter draws it, so
+  /// that its baseline sits at its exact place.
+  List<double> get shifts => _paragraphs.shifts;
 
   /// The height of the lines that this piece shows, from its top. A hanging
   /// first line is a paragraph of its own that shows only its first line.
@@ -173,9 +191,27 @@ class Piece {
 /// The paragraphs that one or more pieces show, and how many holders they
 /// have.
 class _Paragraphs {
-  _Paragraphs(this.paragraph);
+  /// The lines of [paragraph] at their exact CSS positions when [exact],
+  /// and where Flutter puts them otherwise (see [Piece.tops]).
+  _Paragraphs(this.paragraph, {required bool exact}) {
+    final metrics = paragraph.computeLineMetrics();
+    var top = 0.0;
+    for (final (index, line) in metrics.indexed) {
+      tops.add(top);
+      shifts.add(exact ? top + line.ascent - line.baseline : 0);
+      top = exact
+          ? top + line.ascent + line.descent
+          : index == metrics.length - 1
+          ? paragraph.height
+          : line.baseline + line.descent;
+    }
+    tops.add(top);
+  }
+
   final ui.Paragraph paragraph;
   final List<(ui.Rect, Object)> inlines = [];
+  final tops = <double>[];
+  final shifts = <double>[];
   int holders = 1;
 }
 
@@ -707,8 +743,12 @@ class LayoutRun {
   }
 
   /// Publishes the page of the first [count] pending slices, which ends at
-  /// [bottom], and starts the next page after it.
-  void _publish(int count, double bottom, {required bool last}) {
+  /// [end], and starts the next page after it. The section's [last] page
+  /// also holds the bottom padding and borders of the boxes that close
+  /// after its last slice, so it ends at the run's strip position if that
+  /// is lower.
+  void _publish(int count, double end, {required bool last}) {
+    final bottom = last ? math.max(end, _y) : end;
     assert(count <= _pending.length && bottom >= _pageTop);
     final width = _section.settings.width;
     final window = ui.Rect.fromLTRB(0, _pageTop, width, bottom);
@@ -1211,7 +1251,8 @@ class LayoutRun {
     if (piece != null) {
       final lines = piece.paragraph.computeLineMetrics();
       if (slice.line < lines.length) {
-        baseline = piece.y + lines[slice.line].baseline;
+        baseline =
+            piece.y + lines[slice.line].baseline + piece.shifts[slice.line];
       }
     }
     final held = Piece(
@@ -1456,25 +1497,35 @@ class LayoutRun {
     final metrics = paragraph.computeLineMetrics();
     final count = lines ?? metrics.length;
     final all = total ?? metrics.length;
-    double bottomOf(int line) => line == metrics.length - 1
-        ? paragraph.height
-        : metrics[line].baseline + metrics[line].descent;
-    var top = from == 0 ? 0.0 : bottomOf(from - 1);
-    final piece = Piece(paragraph, x, _y - top, built.map);
+    // Chromium rounds the font's metrics for `line-height: normal`, so only
+    // a CSS line height is fractional there.
+    final exact = _section.styles[item.text.style].lineHeight != null;
+    final paragraphs = _Paragraphs(paragraph, exact: exact);
+    final tops = paragraphs.tops;
+    var top = tops[from];
+    final piece = Piece._of(paragraphs, x, _y - top, built.map);
     _held.add(piece);
     final boxes = paragraph.getBoxesForPlaceholders();
     for (var slot = 0; slot < built.inlines.length; slot++) {
       final held = built.inlines[slot];
       if (held == null) continue;
       if (slot < boxes.length) {
-        piece.inlines.add((boxes[slot].toRect(), held));
+        // A placeholder draws with the line that holds it.
+        final rect = boxes[slot].toRect();
+        var line = 0;
+        while (line + 1 < metrics.length &&
+            metrics[line].baseline + metrics[line].descent <= rect.center.dy) {
+          line++;
+        }
+        final shift = line < metrics.length ? piece.shifts[line] : 0.0;
+        piece.inlines.add((rect.shift(ui.Offset(0, shift)), held));
       } else if (held is ui.Paragraph) {
         held.dispose();
       }
     }
     final starts = _lineStarts(paragraph, math.min(count + 1, metrics.length));
     for (var line = from; line < count; line++) {
-      final bottom = bottomOf(line);
+      final bottom = tops[line + 1];
       final above = before + line;
       // Chromium keeps the orphans rule first. It keeps the widows rule
       // only when the paragraph is long enough to keep both.
@@ -1502,7 +1553,7 @@ class LayoutRun {
       top = bottom;
     }
     if (lines != null) piece.shown = top;
-    _y = piece.y + (lines == null ? paragraph.height : top);
+    _y = piece.y + (lines == null ? tops.last : top);
   }
 
   /// The first code unit of each of a paragraph's [count] lines.
@@ -1523,9 +1574,9 @@ class LayoutRun {
   }
 }
 
-/// The page start of the line that holds [place], a place in [section]: the
-/// last line that starts at or before it. A place in white space counts as
-/// the next visible character of its node. It lays out one paragraph.
+/// The page start of the line that holds [place], a place in [section]
+/// (see [_holder]). It lays out the paragraph of the place, and the next
+/// one when the place is in white space after it.
 PageStart lineStart(PreparedSection section, EpubPlace place) {
   if (place.section != section.index) {
     throw ArgumentError.value(place, 'place', 'is not in this section');
@@ -1541,35 +1592,103 @@ PageStart lineStart(PreparedSection section, EpubPlace place) {
   if (item < 0) return const PageStart(0, 0);
   final run = LayoutRun(section, from: PageStart(item, 0));
   try {
-    while (run._item <= item) {
-      run._layOutItem();
+    ({Slice? holder, bool past}) holderUpTo(int last) {
+      while (run._item <= last) {
+        run._layOutItem();
+      }
+      return _holder(dom, place, [
+        for (final slice in run._pending)
+          for (final line in _lines(slice)) (line, slice),
+      ]);
     }
-    // The line that holds the place is the last one, in document order,
-    // that starts at or before it. The cells of a split table row put lines
-    // of later cells on earlier pages, so it is not always the last slice.
-    Slice? found;
-    (int, int)? best;
-    for (final slice in run._pending) {
-      if (slice.at.item != item) continue;
-      found ??= slice;
-      for (final line in _lines(slice)) {
-        final start = line.start;
-        if (start == null) continue;
-        final order = _order(dom, start);
-        if (_compare(order, key) <= 0 &&
-            (best == null || _compare(order, best) >= 0)) {
-          found = slice;
-          best = order;
-        }
+
+    var (:holder, :past) = holderUpTo(item);
+    if (past) {
+      // A place in white space after the item's lines is on the first line
+      // of the next item that shows something.
+      for (var next = item + 1; next < flow.length; next++) {
+        if (_firstPlace(section.index, flow[next]) == null) continue;
+        (:holder, :past) = holderUpTo(next);
+        break;
       }
     }
     // The item's first line starts where the run starts: at the section
     // start when nothing comes before it.
-    if (found == null || found.at.line == 0) return run._from;
-    return found.at;
+    if (holder == null || holder.at == PageStart(item, 0)) return run._from;
+    return holder.at;
   } finally {
     run.dispose();
   }
+}
+
+/// The owner of the line of [lines] that holds [place], and whether the
+/// place lies after everything that the lines show. [lines] pairs each
+/// line with its owner, in any order.
+///
+/// The line that holds a place is the last line that starts at or before
+/// it in document order. But a place after the last thing that this line
+/// shows, such as a place in white space between two paragraphs, belongs
+/// to the next line: the line of its next visible character or image.
+/// Null when no line starts at or after the place either.
+({T? holder, bool past}) _holder<T>(
+  DomSection dom,
+  EpubPlace place,
+  Iterable<(Slice, T)> lines,
+) {
+  final key = _order(dom, place);
+  (Slice, T)? before;
+  (int, int)? beforeOrder;
+  T? after;
+  (int, int)? afterOrder;
+  for (final entry in lines) {
+    final start = entry.$1.start;
+    if (start == null) continue;
+    final order = _order(dom, start);
+    if (_compare(order, key) <= 0) {
+      if (beforeOrder == null || _compare(order, beforeOrder) >= 0) {
+        before = entry;
+        beforeOrder = order;
+      }
+    } else if (afterOrder == null || _compare(order, afterOrder) < 0) {
+      after = entry.$2;
+      afterOrder = order;
+    }
+  }
+  if (before == null) return (holder: after, past: false);
+  final (line, owner) = before;
+  final last = _lastShown(dom, line);
+  if (last == null || _compare(key, last) <= 0) {
+    return (holder: owner, past: false);
+  }
+  return after == null
+      ? (holder: owner, past: true)
+      : (holder: after, past: false);
+}
+
+/// The order of the last thing that [line] shows: its last visible
+/// character or placeholder, or its start when it shows only white space.
+/// Null when it ends with raised text, whose places the line does not map:
+/// it then shows everything up to the next line.
+(int, int)? _lastShown(DomSection dom, Slice line) {
+  final start = _order(dom, line.start!);
+  final piece = line.piece;
+  if (piece == null) return start;
+  final (first, end) = line.units;
+  for (var unit = end - 1; unit >= first; unit--) {
+    final text = piece.map.textPlaceAt(unit);
+    if (text == null) {
+      // A placeholder: an image or a line break at its element, raised
+      // text at its first text node, or an indent at no node.
+      final node = piece.map.nodes[piece.map._segment(unit)];
+      if (node < 0) continue;
+      return dom.nodeAt(node) is DomText ? null : (node, 0);
+    }
+    final data = dom.textAt(text)!.text;
+    if (text.offset < data.length && !isSpace(data.codeUnitAt(text.offset))) {
+      return (text.node, text.offset);
+    }
+  }
+  return start;
 }
 
 /// The first place that flow [item] of section [section] shows, or null
@@ -1642,28 +1761,15 @@ class ChapterLayout {
   List<Decoration> get decorations =>
       {for (final page in pages) ...page.decorations}.toList();
 
-  /// The index of the page that holds [place]: the page of the last line
-  /// that starts at or before it in document order.
-  int pageAt(EpubPlace place) {
-    final key = _order(section.dom, place);
-    var found = 0;
-    (int, int)? best;
-    for (var index = 0; index < pages.length; index++) {
-      for (final slice in pages[index].slices) {
-        for (final line in _lines(slice)) {
-          final start = line.start;
-          if (start == null) continue;
-          final order = _order(section.dom, start);
-          if (_compare(order, key) <= 0 &&
-              (best == null || _compare(order, best) >= 0)) {
-            found = index;
-            best = order;
-          }
-        }
-      }
-    }
-    return found;
-  }
+  /// The index of the page that holds [place]: the page of the line that
+  /// holds it (see [_holder]).
+  int pageAt(EpubPlace place) =>
+      _holder(section.dom, place, [
+        for (final (index, page) in pages.indexed)
+          for (final slice in page.slices)
+            for (final line in _lines(slice)) (line, index),
+      ]).holder ??
+      0;
 
   /// The index of the page that holds [visible], a visible character
   /// index.

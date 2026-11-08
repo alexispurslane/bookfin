@@ -563,7 +563,6 @@ class ImageSizing {
   );
   final sheets = sectionSheets(source, dom, media);
   final rules = <StyleRule>[
-    ..._userAgentSheet.rules,
     for (final sheet in sheets) ...sheet.rules,
     ...StyleSheet.parse(
       _readerCss(settings),
@@ -573,6 +572,7 @@ class ImageSizing {
   ];
   final cascade = Cascade(
     rules,
+    userAgent: _userAgentSheet.rules,
     overrides: {dom.body: _bodyOverrides(settings)},
   );
   final styles = <DomElement, Style>{};

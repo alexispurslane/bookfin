@@ -1153,8 +1153,17 @@ class _SelectorParser {
 /// The rules of one section's sheets, indexed for matching, and the
 /// cascade over them.
 class Cascade {
-  Cascade(Iterable<StyleRule> rules, {this.overrides = const {}}) {
-    for (final rule in rules) {
+  /// The cascade over [userAgent], the browser's default rules, and
+  /// [rules], the book's and the reader's. A normal declaration of [rules]
+  /// beats every normal declaration of [userAgent], whatever their
+  /// specificity, as the origins of CSS cascade. The user agent rules have
+  /// no important declarations.
+  Cascade(
+    Iterable<StyleRule> rules, {
+    Iterable<StyleRule> userAgent = const [],
+    this.overrides = const {},
+  }) : _userAgent = Set.identity()..addAll(userAgent) {
+    for (final rule in [...userAgent, ...rules]) {
       final key = rule.selector.compounds.last;
       if (key.id != null) {
         (_byId[key.id!] ??= []).add(rule);
@@ -1168,6 +1177,7 @@ class Cascade {
     }
   }
 
+  final Set<StyleRule> _userAgent;
   final _byId = <String, List<StyleRule>>{};
   final _byClass = <String, List<StyleRule>>{};
   final _byTag = <String, List<StyleRule>>{};
@@ -1203,7 +1213,12 @@ class Cascade {
     for (final rule in candidates) {
       if (!rule.selector.matches(element)) continue;
       for (final declaration in rule.declarations) {
-        offer(declaration, 0, rule.selector.specificity, rule.order);
+        offer(
+          declaration,
+          _userAgent.contains(rule) ? -1 : 0,
+          rule.selector.specificity,
+          rule.order,
+        );
       }
     }
     final attribute = element.attributes['style'];

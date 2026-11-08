@@ -711,7 +711,7 @@ void main() {
     expect(sides, hasLength(4));
     for (final side in sides) {
       expect(side.top, sides.first.top);
-      expect(side.height, closeTo(tall.paragraph.height + 8, 0.01));
+      expect(side.height, closeTo(tall.tops.last + 8, 0.01));
     }
     disposeAll(pages);
   });
@@ -732,13 +732,10 @@ void main() {
     final bottom = pieceOf(section, pages, 'Bottom');
     expect(top.y, closeTo(tall.y, 0.01));
     expect(
-      middle.y + middle.paragraph.height / 2,
-      closeTo(tall.y + tall.paragraph.height / 2, 0.01),
+      middle.y + middle.tops.last / 2,
+      closeTo(tall.y + tall.tops.last / 2, 0.01),
     );
-    expect(
-      bottom.y + bottom.paragraph.height,
-      closeTo(tall.y + tall.paragraph.height, 0.01),
-    );
+    expect(bottom.y + bottom.tops.last, closeTo(tall.y + tall.tops.last, 0.01));
     disposeAll(pages);
   });
 
@@ -1037,21 +1034,17 @@ List<String> shownLines(
       paragraphs.add(piece.paragraph);
       final top = math.max(page.top, piece.y);
       final bottom = math.min(_bottom(page), piece.y + piece.shown);
-      final metrics = piece.paragraph.computeLineMetrics();
-      var lineTop = piece.y;
-      for (final (line, metric) in metrics.indexed) {
-        final lineBottom =
-            piece.y +
-            (line == metrics.length - 1
-                ? piece.paragraph.height
-                : metric.baseline + metric.descent);
+      // Each line draws at its exact place, clipped to it.
+      final tops = piece.tops;
+      for (var line = 0; line + 1 < tops.length; line++) {
+        final lineTop = piece.y + tops[line];
+        final lineBottom = piece.y + tops[line + 1];
         final key = (piece.paragraph, line);
         if (lineTop >= top - 0.01 && lineBottom <= bottom + 0.01) {
           whole[key] = (whole[key] ?? 0) + 1;
         } else if (lineBottom > top + 0.01 && lineTop < bottom - 0.01) {
           cut.add(key);
         }
-        lineTop = lineBottom;
       }
     }
   }
@@ -1074,10 +1067,11 @@ bool _shows(LaidPage page, EpubPlace place, PreparedSection section) {
     final local = offsets.indexOf(place.offset);
     if (local < 0) continue;
     final unit = piece.map.starts[segment] + local;
-    final box = piece.paragraph.getBoxesForRange(unit, unit + 1);
-    if (box.isEmpty) continue;
-    final top = piece.y + box.first.top;
-    final bottom = piece.y + box.first.bottom;
+    if (piece.paragraph.getBoxesForRange(unit, unit + 1).isEmpty) continue;
+    // The character draws in its line, at the line's exact place.
+    final line = piece.paragraph.getLineNumberAt(unit)!;
+    final top = piece.y + piece.tops[line];
+    final bottom = piece.y + piece.tops[line + 1];
     if (top >= math.max(page.top, piece.y) - 0.01 &&
         bottom <= math.min(_bottom(page), piece.y + piece.shown) + 0.01) {
       return true;
