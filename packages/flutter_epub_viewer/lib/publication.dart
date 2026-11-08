@@ -6,6 +6,8 @@ import 'package:crypto/crypto.dart';
 import 'package:image/image.dart' as raster;
 import 'package:xml/xml.dart';
 
+import 'navigation.dart';
+
 class Publication {
   Publication._(
     this.resources,
@@ -15,12 +17,16 @@ class Publication {
     this.packagePath,
     this.spine,
     this.warnings,
+    this.bookStyles,
+    this.imageSizes,
+    this.contents,
   );
 
   static const policy = 'bookfin-passive-epub-1';
   static const maxArchiveBytes = 64 * 1024 * 1024;
   static const maxResourceBytes = 16 * 1024 * 1024;
   static const maxExpandedBytes = 128 * 1024 * 1024;
+  static const maxContentsDepth = 16;
   static const host = 'bookfin-publication.invalid';
   static const documentPolicy =
       "default-src 'none'; script-src 'none'; "
@@ -37,6 +43,26 @@ class Publication {
   final String packagePath;
   final List<String> spine;
   final List<String> warnings;
+
+  // The fields below come beside the admitted files. They are outside the
+  // identity, so they can grow without moving a saved place.
+
+  /// The original text of each style sheet in the manifest, by path, as the
+  /// book wrote it. Admission may have emptied or rewritten the sheet in
+  /// [resources]. Each text is the sheet's UTF-8 text, at most
+  /// [maxResourceBytes] long, because the archive limits every entry to that
+  /// size and admission refuses a sheet that is not UTF-8.
+  final Map<String, String> bookStyles;
+
+  /// The pixel width and height of each admitted PNG and JPEG, by path, from
+  /// the raster check that admission already runs.
+  final Map<String, (int, int)> imageSizes;
+
+  /// The contents: the EPUB 3 navigation document's toc, else the NCX navMap,
+  /// else empty. Each href is relative to the package document's directory
+  /// (the convention that BookMap.of resolves) and points into the spine.
+  /// Each depth is the entry's nesting, from 0, at most [maxContentsDepth].
+  final List<ContentsEntry> contents;
 
   Uri get base => Uri(scheme: 'https', host: host, path: '/$identity/');
 
@@ -71,7 +97,23 @@ class Publication {
     return path != null && _documents.contains(mediaTypes[path]);
   }
 
+  /// Throws when one of these invariants fails:
+  /// - every resource is canonical, within the size limits and typed;
+  /// - every spine path is an admitted document;
+  /// - [bookStyles] holds exactly the admitted style sheets;
+  /// - [imageSizes] holds exactly the admitted PNG and JPEG images;
+  /// - every contents entry points into the spine at a depth of at most
+  ///   [maxContentsDepth].
   void checkInvariants() {
+    bool typed(Iterable<String> paths, Set<String> types) {
+      final wanted = {
+        for (final MapEntry(key: path, value: type) in mediaTypes.entries)
+          if (types.contains(type)) path,
+      };
+      return paths.length == wanted.length && wanted.containsAll(paths);
+    }
+
+    final package = Uri(scheme: 'https', host: 'book', path: '/$packagePath');
     if (resources.values.any((bytes) => bytes.length > maxResourceBytes) ||
         resources.values.fold<int>(0, (total, bytes) => total + bytes.length) >
             maxExpandedBytes ||
@@ -81,6 +123,21 @@ class Publication {
         resources.keys.toSet().difference(mediaTypes.keys.toSet()).isNotEmpty) {
       throw StateError(
         'Publication resources, reading order, and media types disagree.',
+      );
+    }
+    if (!typed(bookStyles.keys, {'text/css'}) ||
+        !typed(imageSizes.keys, {'image/png', 'image/jpeg'}) ||
+        imageSizes.values.any((size) => size.$1 < 1 || size.$2 < 1) ||
+        contents.any(
+          (entry) =>
+              entry.depth < 0 ||
+              entry.depth > maxContentsDepth ||
+              !spine.contains(
+                package.resolve(entry.href).pathSegments.join('/'),
+              ),
+        )) {
+      throw StateError(
+        'Publication styles, image sizes, or contents disagree with its resources.',
       );
     }
   }
@@ -299,6 +356,8 @@ class _Admission {
   final types = <String, String>{};
   final warnings = <String>{};
   final wrappers = <String, String?>{};
+  final styles = <String, String>{};
+  final sizes = <String, (int, int)>{};
   int _processedBytes = 0;
 
   XmlDocument _xml(String path) {
@@ -377,6 +436,7 @@ class _Admission {
         .toList();
     final ids = <String, String>{};
     final documents = <String>[];
+    String? navigation;
     for (final item in items) {
       final id = item.getAttribute('id');
       final path = _resolve(package, item.getAttribute('href') ?? '');
@@ -400,11 +460,19 @@ class _Admission {
       types[path] = mime;
       if (_documents.contains(mime)) {
         documents.add(path);
+        if (navigation == null &&
+            (item.getAttribute('properties') ?? '')
+                .split(RegExp(r'\s+'))
+                .contains('nav')) {
+          navigation = path;
+        }
       } else if (mime == 'image/svg+xml') {
         wrappers[path] = null;
       } else if (mime.startsWith('image/')) {
-        if (_raster(path, mime) != null) {
+        final size = _raster(path, mime);
+        if (size != null) {
           _put(path, mime, raw[path]!);
+          sizes[path] = size;
         } else {
           warnings.add(
             'Some images are damaged or exceed the 16-million-pixel limit.',
@@ -419,15 +487,14 @@ class _Admission {
     }
     for (final path in types.keys.toList()) {
       if (types[path] == 'text/css') {
-        _put(
-          path,
-          'text/css',
-          utf8.encode(_css(path, utf8.decode(raw[path]!))),
-        );
+        final text = styles[path] = utf8.decode(raw[path]!);
+        _put(path, 'text/css', utf8.encode(_css(path, text)));
       }
     }
+    XmlDocument? nav;
     for (final path in documents) {
       final source = _xml(path);
+      if (path == navigation) nav = source;
       final root = _clean(
         source.rootElement,
         path,
@@ -465,8 +532,10 @@ class _Admission {
     final ncx = types.entries
         .where((entry) => entry.value == 'application/x-dtbncx+xml')
         .toList();
+    XmlDocument? navMap;
     for (final entry in ncx) {
       final document = _xml(entry.key);
+      navMap ??= document;
       for (final node in document.descendants.whereType<XmlElement>()) {
         if (node.name.local == 'content') {
           final path = _resolve(entry.key, node.getAttribute('src') ?? '');
@@ -497,6 +566,13 @@ class _Admission {
       'application/xml',
       utf8.encode(container.rootElement.toXmlString()),
     );
+    final reading = spine.cast<String>();
+    var contents = nav == null
+        ? const <ContentsEntry>[]
+        : _navContents(nav, navigation!, package, reading);
+    if (contents.isEmpty && navMap != null) {
+      contents = _ncxContents(navMap, ncx.first.key, package, reading);
+    }
     final paths = output.keys.toList()..sort();
     final identity = sha256
         .convert(
@@ -516,8 +592,141 @@ class _Admission {
       digest,
       identity,
       package,
-      List.unmodifiable(spine.cast<String>()),
+      List.unmodifiable(reading),
       List.unmodifiable(warnings),
+      // A later write over the same path, such as the package document, can
+      // change a path's type, so only paths that keep the type stay.
+      Map.unmodifiable({
+        for (final path in paths)
+          if (types[path] == 'text/css') path: styles[path]!,
+      }),
+      Map.unmodifiable({
+        for (final path in paths)
+          if (types[path] == 'image/png' || types[path] == 'image/jpeg')
+            path: sizes[path]!,
+      }),
+      List.unmodifiable(contents),
+    );
+  }
+
+  /// The entries of the toc nav of [document], the raw navigation document
+  /// at [path], in the order that the nav lists them.
+  List<ContentsEntry> _navContents(
+    XmlDocument document,
+    String path,
+    String package,
+    List<String> spine,
+  ) {
+    final toc = document.descendants
+        .whereType<XmlElement>()
+        .where(
+          (node) =>
+              node.name.local == 'nav' &&
+              (node.getAttribute('epub:type') ?? '')
+                  .split(RegExp(r'\s+'))
+                  .contains('toc'),
+        )
+        .firstOrNull;
+    final entries = <ContentsEntry>[];
+    void list(XmlElement ol, int depth) {
+      for (final item in ol.childElements.where(
+        (node) => node.name.local == 'li',
+      )) {
+        final label = item.childElements
+            .where(
+              (node) => node.name.local == 'a' || node.name.local == 'span',
+            )
+            .firstOrNull;
+        if (label != null) {
+          final entry = _entry(
+            label.innerText,
+            label.name.local == 'a' ? label.getAttribute('href') : null,
+            path,
+            package,
+            spine,
+            depth,
+          );
+          if (entry != null) entries.add(entry);
+        }
+        for (final child in item.childElements.where(
+          (node) => node.name.local == 'ol',
+        )) {
+          list(child, depth + 1);
+        }
+      }
+    }
+
+    for (final ol
+        in toc?.childElements.where((node) => node.name.local == 'ol') ??
+            const <XmlElement>[]) {
+      list(ol, 0);
+    }
+    return entries;
+  }
+
+  /// The entries of the navMap of [document], the NCX at [path], in the
+  /// order that the navMap lists them.
+  List<ContentsEntry> _ncxContents(
+    XmlDocument document,
+    String path,
+    String package,
+    List<String> spine,
+  ) {
+    Iterable<XmlElement> children(XmlElement node, String name) =>
+        node.childElements.where((child) => child.name.local == name);
+    final entries = <ContentsEntry>[];
+    void list(XmlElement parent, int depth) {
+      for (final point in children(parent, 'navPoint')) {
+        final label = children(point, 'navLabel').firstOrNull;
+        final entry = _entry(
+          label == null
+              ? ''
+              : children(label, 'text').firstOrNull?.innerText ?? '',
+          children(point, 'content').firstOrNull?.getAttribute('src'),
+          path,
+          package,
+          spine,
+          depth,
+        );
+        if (entry != null) entries.add(entry);
+        list(point, depth + 1);
+      }
+    }
+
+    for (final map in document.descendants.whereType<XmlElement>().where(
+      (node) => node.name.local == 'navMap',
+    )) {
+      list(map, 0);
+    }
+    return entries;
+  }
+
+  /// The contents entry [text] that links to [href] from the document at
+  /// [base], at [depth], or null when [href] does not point into [spine].
+  ContentsEntry? _entry(
+    String text,
+    String? href,
+    String base,
+    String package,
+    List<String> spine,
+    int depth,
+  ) {
+    final target = href == null ? null : _resolve(base, href);
+    if (target == null || !spine.contains(target)) return null;
+    final String fragment;
+    try {
+      fragment = Uri.decodeComponent(Uri.parse(href!).fragment);
+    } on FormatException {
+      // A fragment that is not percent-encoded UTF-8 names no element.
+      return null;
+    }
+    final title = text.replaceAll(RegExp(r'\s+'), ' ').trim();
+    return ContentsEntry(
+      title.isEmpty ? 'Untitled chapter' : title,
+      _relative(package, target, fragment),
+      depth: depth < Publication.maxContentsDepth
+          ? depth
+          : Publication.maxContentsDepth,
     );
   }
 
