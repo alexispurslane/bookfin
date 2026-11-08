@@ -33,6 +33,9 @@ Map<String, (int, int)> imageSizes(Map<String, Uint8List> files) => {
       path: (info.width, info.height),
 };
 
+/// The font prefix of the made-up book of [section].
+const testFontPrefix = 'bookfin-0123456789ab';
+
 /// A made-up section at spine index 0 whose body is [body], styled by
 /// [css], with the images of [files].
 SectionSource section(
@@ -45,6 +48,7 @@ SectionSource section(
   xhtml:
       '<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Test</title>'
       '<style>$css</style></head><body>$body</body></html>',
+  fontPrefix: testFontPrefix,
   imageSizes: imageSizes(files),
 );
 
