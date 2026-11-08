@@ -1,6 +1,6 @@
 ---
 id: t0-2yee
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-08T22:55:12Z
