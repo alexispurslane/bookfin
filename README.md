@@ -93,14 +93,15 @@ The library in them is made-up test data from `tool/showcase_fixture.dart`.
 ### Read EPUB, MOBI and PDF
 
 <p align="center">
-  <img src="docs/screenshots/reader-epub.png" alt="An EPUB book open in the reader" width="195">
+  <img src="docs/screenshots/reader-epub.png" alt="An EPUB book open in the reader, with the scrub bar that marks chapters and a bookmark" width="195">
   <img src="docs/screenshots/reader-recognizing.png" alt="A scanned PDF page dimmed under a card that says Recognizing English text" width="195">
-  <img src="docs/screenshots/reader-pdf.png" alt="The scanned PDF page in the reader, with the Reflow text button in the bottom bar" width="195">
+  <img src="docs/screenshots/reader-pdf.png" alt="The scanned PDF page in the reader, with the Reflow text button and the scrub bar with a bookmark on page 2" width="195">
   <img src="docs/screenshots/reader-reflow.png" alt="The same scanned page as reflowed text after OCR" width="195">
 </p>
 
 - The reader opens EPUB, unencrypted MOBI, and PDF files.
 - It has contents, search, text size, bookmarks, and a saved place for each book.
+- Drag the bar under the page to move through the whole book. It marks each chapter and each bookmark, and it names the place while you drag.
 - Reading is immersive. A tap shows the controls, and another tap hides them.
 - A PDF can show its original pages, or its text reflowed to the width of the phone. One button in the bottom bar switches between the two views.
 - For scanned pages, Bookfin recognizes the text on the phone with Tesseract (English only). OCR (optical character recognition) needs no network.

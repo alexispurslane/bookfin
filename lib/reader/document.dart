@@ -151,6 +151,11 @@ abstract interface class DocumentNavigator {
   Future<void> move(bool forward);
   Future<void> display(ReaderAddress address);
   Future<void> contents(String href);
+
+  /// Shows the place [progress] of the way through part [part] of the book,
+  /// as the book map measures it: a section of an EPUB's spine, or a PDF's
+  /// source page minus one. A PDF shows the start of the source page.
+  Future<void> seek(int part, double progress);
   Future<void> configure({required double fontSize, required bool night});
   Future<ReaderSearchReport> search(String query, int request);
   Future<void> cancelSearch(int request);
@@ -171,6 +176,8 @@ class EpubNavigator implements DocumentNavigator {
 
   @override
   Future<void> contents(String href) => port.contents(href);
+  @override
+  Future<void> seek(int part, double progress) => port.seek(part, progress);
   @override
   Future<void> configure({required double fontSize, required bool night}) =>
       port.configure(fontSize: fontSize, night: night);

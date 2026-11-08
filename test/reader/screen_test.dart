@@ -44,20 +44,17 @@ void main() {
           'chapter': 'River heading',
           'page': 2,
           'pages': 8,
+          'progress': .25,
         }),
       );
       await reader.addBookmark(title: 'River mark');
       final bookmark = reader.bookmarks.single;
       await tester.pumpAndSettle();
-      expect(find.text('River heading · Page 2 of 8'), findsOneWidget);
       expect(
-        tester
-            .widget<LinearProgressIndicator>(
-              find.byType(LinearProgressIndicator),
-            )
-            .value,
-        .25,
+        find.bySemanticsLabel('River heading · Page 2 of 8'),
+        findsOneWidget,
       );
+      expect(tester.widget<Slider>(find.byType(Slider)).value, .25);
       reader.acceptVisible(
         reader.token,
         ReadingLocation.fromJson({
@@ -65,22 +62,16 @@ void main() {
           'chapter': 'The bridge',
           'page': 3,
           'pages': 4,
+          'progress': .75,
         }),
       );
       await tester.pumpAndSettle();
-      expect(find.text('The bridge · Page 3 of 4'), findsOneWidget);
-      expect(
-        tester
-            .widget<LinearProgressIndicator>(
-              find.byType(LinearProgressIndicator),
-            )
-            .value,
-        .75,
-      );
+      expect(find.bySemanticsLabel('The bridge · Page 3 of 4'), findsOneWidget);
+      expect(tester.widget<Slider>(find.byType(Slider)).value, .75);
       await reader.restoreBookmark(bookmark.id);
       await tester.pumpAndSettle();
       expect(port.destinations.single.cfi, visible.cfi);
-      expect(find.text('The bridge · Page 3 of 4'), findsOneWidget);
+      expect(find.bySemanticsLabel('The bridge · Page 3 of 4'), findsOneWidget);
       reader.acceptVisible(
         reader.token,
         ReadingLocation.fromJson({
@@ -88,22 +79,23 @@ void main() {
           'chapter': 'River heading',
           'page': 1,
           'pages': 5,
+          'progress': .2,
         }),
       );
       await tester.pumpAndSettle();
-      expect(find.text('River heading · Page 1 of 5'), findsOneWidget);
       expect(
-        tester
-            .widget<LinearProgressIndicator>(
-              find.byType(LinearProgressIndicator),
-            )
-            .value,
-        .2,
+        find.bySemanticsLabel('River heading · Page 1 of 5'),
+        findsOneWidget,
       );
+      expect(tester.widget<Slider>(find.byType(Slider)).value, .2);
       reader.acceptVisible(reader.token, visible);
       await tester.pumpAndSettle();
       expect(find.textContaining('Page progress unavailable'), findsOneWidget);
-      expect(find.byType(LinearProgressIndicator), findsNothing);
+      expect(
+        tester.widget<Slider>(find.byType(Slider)).value,
+        0,
+        reason: 'A place with no progress sits at the start of its section.',
+      );
       await tester.pumpWidget(const SizedBox());
       reader.dispose();
       downloads.dispose();
@@ -477,6 +469,12 @@ class PopLog extends NavigatorObserver {
 class ControlPort implements NavigatorPort {
   final destinations = <ReadingLocation>[];
 
+  /// The section and the progress of each seek, in order.
+  final seeks = <(int, double)>[];
+
+  /// Whether each seek fails.
+  bool failSeeks = false;
+
   /// What the port did, in order, apart from [destinations].
   final log = <String>[];
 
@@ -501,6 +499,12 @@ class ControlPort implements NavigatorPort {
 
   @override
   Future<void> move(bool forward) async {}
+  @override
+  Future<void> seek(int section, double progress) async {
+    if (failSeeks) throw StateError('The seek did not finish.');
+    seeks.add((section, progress));
+  }
+
   @override
   Future<SearchReport> search(String query, int request) async => report;
 }

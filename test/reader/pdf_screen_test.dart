@@ -85,4 +85,65 @@ void main() {
     },
     variant: TargetPlatformVariant.only(TargetPlatform.linux),
   );
+
+  testWidgets(
+    'the PDF bar measures the whole document, previews a source page while '
+    'it is dragged and opens that page on release',
+    (tester) async {
+      final downloads = LocalFiles()
+        ..files[pdfSource.key] = File(
+          'tool/research/readers/fixtures/simple.pdf',
+        ).absolute.uri;
+      // The session releases its document when it closes, so this test
+      // opens a document of its own.
+      final document =
+          (await tester.runAsync(
+                () => loadReadingDocument(
+                  File('tool/research/readers/fixtures/simple.pdf')
+                      .absolute
+                      .uri,
+                  pdfSource,
+                ),
+              ))!
+              as PdfBook;
+      final reader = ReaderSession(
+        downloads: downloads,
+        store: MemoryResume(),
+        load: loadPublication,
+        loadDocument: (_, _) async => document,
+      );
+      await reader.bind(account(), [book]);
+      await reader.open(book, edition);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: ReaderScreen(reader: reader, onNightChanged: (_) {}),
+        ),
+      );
+      await settleNative(tester);
+      final pages = document.pageCount;
+      expect(pages, greaterThan(1));
+      Slider bar() => tester.widget<Slider>(find.byType(Slider));
+      expect(bar().value, 0);
+      // The second source page holds the second of the equal shares.
+      final second = 1.5 / pages;
+      bar().onChangeStart!(0);
+      bar().onChanged!(second);
+      await tester.pump();
+      expect(find.text('Page 2 of $pages'), findsOneWidget);
+      expect((reader.visibleAddress as PdfAddress).sourcePage, 1);
+      bar().onChangeEnd!(second);
+      await settleNative(tester);
+      expect((reader.visibleAddress as PdfAddress).sourcePage, 2);
+      expect(bar().value, 1 / pages);
+      expect(
+        find.bySemanticsLabel('Source page 2 · Page 2 of $pages'),
+        findsOneWidget,
+      );
+      await tester.pumpWidget(const SizedBox());
+      reader.dispose();
+      downloads.dispose();
+      await tester.pump();
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.linux),
+  );
 }

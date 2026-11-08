@@ -234,7 +234,9 @@ void main() {
             'quote': '',
           });
           expect(find.textContaining('of null'), findsNothing);
-          expect(find.byType(LinearProgressIndicator), findsNothing);
+          // The scrub bar measures the whole PDF by its page count, so the
+          // first page sits at the start.
+          expect(tester.widget<Slider>(find.byType(Slider)).value, 0);
 
           await tester.tap(find.text('Retry recognition'));
           await tester.pump();
@@ -272,15 +274,7 @@ void main() {
           } else {
             expect(find.text('The quiet garden.'), findsOneWidget);
             expect(reader.position!.sourceKey, pdfSource.key);
-            expect(find.byType(LinearProgressIndicator), findsOneWidget);
-            expect(
-              tester
-                  .widget<LinearProgressIndicator>(
-                    find.byType(LinearProgressIndicator),
-                  )
-                  .value,
-              .5,
-            );
+            expect(tester.widget<Slider>(find.byType(Slider)).value, 0);
           }
           pdf.textSupply.checkInvariants();
           reader.checkInvariants();

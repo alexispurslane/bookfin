@@ -97,33 +97,29 @@ void main() {
     await tester.pump();
   }
 
-  testWidgets(
-    'a page turn redraws the page label and the progress bar, not the '
-    'viewport, the title or the controls row',
-    (tester) async {
-      final reader = await openPdf(tester);
-      final pages = document.pageCount;
-      // The viewport reports a new page, as it does after a swipe.
-      final rebuilt = await _rebuildsDuring(() async {
-        reader.acceptAddress(reader.token, PdfAddress(2, 0, pageCount: pages));
-        await tester.pump();
-      });
-      expect(
-        _texts(rebuilt, (text) => text.endsWith('Page 2 of $pages')),
-        isNotEmpty,
-      );
-      expect(rebuilt.whereType<LinearProgressIndicator>(), isNotEmpty);
-      expect(rebuilt.whereType<PdfViewport>(), isEmpty);
-      expect(_controlButtons(rebuilt), isEmpty);
-      expect(
-        _texts(rebuilt, (text) => text == book.title),
-        isEmpty,
-        reason: 'the title in the app bar',
-      );
-      await close(tester, reader);
-    },
-    variant: TargetPlatformVariant.only(TargetPlatform.linux),
-  );
+  testWidgets('a page turn redraws the page label and the scrub bar, not the '
+      'viewport, the title or the controls row', (tester) async {
+    final reader = await openPdf(tester);
+    final pages = document.pageCount;
+    // The viewport reports a new page, as it does after a swipe.
+    final rebuilt = await _rebuildsDuring(() async {
+      reader.acceptAddress(reader.token, PdfAddress(2, 0, pageCount: pages));
+      await tester.pump();
+    });
+    expect(
+      _texts(rebuilt, (text) => text.endsWith('Page 2 of $pages')),
+      isNotEmpty,
+    );
+    expect(rebuilt.whereType<Slider>(), isNotEmpty);
+    expect(rebuilt.whereType<PdfViewport>(), isEmpty);
+    expect(_controlButtons(rebuilt), isEmpty);
+    expect(
+      _texts(rebuilt, (text) => text == book.title),
+      isEmpty,
+      reason: 'the title in the app bar',
+    );
+    await close(tester, reader);
+  }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
 
   testWidgets(
     'choosing reflow redraws the viewport and the control bar, not the title '
@@ -176,7 +172,7 @@ void main() {
         everyElement(reader.fontSize),
       );
       expect(_texts(rebuilt, (text) => text.contains('Page ')), isEmpty);
-      expect(rebuilt.whereType<LinearProgressIndicator>(), isEmpty);
+      expect(rebuilt.whereType<Slider>(), isEmpty);
       expect(_controlButtons(rebuilt), isEmpty);
       await close(tester, reader);
     },
