@@ -1,6 +1,6 @@
 ---
 id: tc-mxfp
-status: open
+status: in_progress
 deps: [tc-sqp7, tc-866u, tc-tjtc]
 links: []
 created: 2026-11-08T19:23:12Z
@@ -79,3 +79,7 @@ From tc-sqp7: destination(dom, section, fragment) returns null when the fragment
 **2026-11-08T21:29:52Z**
 
 From tc-866u (orchestrator accepts): SearchSection.xhtml is bytes (decoded in the worker); use spineSteps(opf) once per book, not spineStep per section; searchBook(sections, query, contents, packagePath, isCurrent:) keeps reader.js's limits and errors, and the pager owns the request and its cancel.
+
+**2026-11-08T22:04:24Z**
+
+Interfaces as built (lib/reader/epub/pager.dart). EpubPager(EpubDocument document, {ReaderAddress? initial, required onPlace, required onWarning, PageSource? source, IsolateHop hop = compute}): hop is new, a test seam for the search batches (search_test's pattern). The pager owns and disposes source. present(settings) throws ArgumentError for a width, height or text size that is not finite and above 0. The book opens at the first present: a verb that goes to a place (display, contents, seek) waits for the first present, and move before it does nothing. Verbs run one at a time in call order; present coalesces to the last settings. A failure to open or re-anchor calls onWarning('This chapter could not be displayed. Use Contents or retry the download.'), the WebView's displayerror text. configure does nothing. The shown page's picture is source.draft() at once and source.picture(scale: the implicit view's devicePixelRatio) once its images decode. PageSource gained two read-only members: LaidPage? get shown and PreparedSection sectionOf(LaidPage). Preview ranges and neighbors are in characters: start is the progress of the first character (0 for the section's first text), end is the middle of the last character before the next true page (1 when it reaches the section end), previous and next are the middles of the characters just outside the page, or (part - 1, 1) and (part + 1, 0). So exactly one deck page holds each neighbor, and a page without text (a lone image) is never a deck neighbor; preview of a section without text gives its first page with start 0 and end 1. Deck timing: host median 4.7 ms in a section (slowest 9.7 ms), 17.5 to 22 ms for a new section's first page; emulator median 3 ms, new section 17 to 21 ms, first page after opening up to 587 ms (ticket te-k1l3).
