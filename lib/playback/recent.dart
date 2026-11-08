@@ -16,7 +16,8 @@ typedef RecentProgress = ({
 });
 
 /// The recent listening of [playback], newest first, each book with its
-/// progress. It notifies when the records or the open book change, so a
+/// progress. It notifies when the records, the open book or the library
+/// change, because the rows show books and lengths from the library. A
 /// playing tick does not reach it.
 ValueListenable<List<RecentProgress>> recentProgress(Playback playback) =>
     _PlaybackRecent(playback);
@@ -25,8 +26,11 @@ class _PlaybackRecent implements ValueListenable<List<RecentProgress>> {
   const _PlaybackRecent(this.playback);
   final Playback playback;
 
-  Listenable get _changes =>
-      Listenable.merge([playback.recordsNotifier, playback.selectionNotifier]);
+  Listenable get _changes => Listenable.merge([
+    playback.recordsNotifier,
+    playback.selectionNotifier,
+    playback.libraryNotifier,
+  ]);
 
   @override
   List<RecentProgress> get value => [
