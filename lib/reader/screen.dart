@@ -535,9 +535,10 @@ class ReaderControls extends StatelessWidget {
   Widget build(BuildContext context) {
     Widget button(String tooltip, IconData icon, VoidCallback? onPressed) =>
         IconButton(tooltip: tooltip, onPressed: onPressed, icon: Icon(icon));
+    // The buttons' own padding spaces them, so that the eight controls of a
+    // PDF fit in one row on a phone 411 points wide.
     return Wrap(
       alignment: WrapAlignment.center,
-      spacing: 4,
       runSpacing: 4,
       children: [
         button('Contents', Icons.list_rounded, onContents),

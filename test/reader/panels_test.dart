@@ -245,6 +245,38 @@ void main() {
       },
     );
 
+    testWidgets(
+      'on a phone 411 points wide, the eight controls of a PDF fit in one row',
+      (tester) async {
+        await tester.binding.setSurfaceSize(const Size(411, 800));
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+        await _show(
+          tester,
+          Padding(
+            // The reader screen's side margins around the bar.
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: ReaderControls(
+              onContents: () {},
+              onSearch: () {},
+              onSmaller: () {},
+              onLarger: () {},
+              onBookmark: () {},
+              onBookmarks: () {},
+              night: false,
+              onNightChanged: (_) {},
+              reflow: false,
+              onReflowChanged: (_) {},
+            ),
+          ),
+        );
+        final rows = tester
+            .widgetList<IconButton>(find.byType(IconButton))
+            .map((button) => tester.getCenter(find.byWidget(button)).dy)
+            .toSet();
+        expect(rows, hasLength(1));
+      },
+    );
+
     testWidgets('the reflow control sits after the text size controls', (
       tester,
     ) async {

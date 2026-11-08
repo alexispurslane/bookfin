@@ -250,8 +250,8 @@ void main() {
     );
 
     testWidgets(
-      'a page without reliable text keeps its reason and Retry on the quiet '
-      'layer, which does not dim the page',
+      'a page without reliable text keeps its reason and Retry on a quiet '
+      'glass note under the page, which neither dims nor covers the page',
       (tester) async {
         final supply = RefusingSupply();
         addTearDown(supply.recognizing.dispose);
@@ -278,6 +278,16 @@ void main() {
           );
         }
         expect(dimmed(), isFalse);
+        final page = tester.getRect(
+          find.bySemanticsLabel('Original source page 1'),
+        );
+        final note = tester.getRect(
+          find.ancestor(
+            of: find.text('Retry recognition'),
+            matching: find.byType(CoverGlass),
+          ),
+        );
+        expect(note.top, greaterThanOrEqualTo(page.bottom));
         await tester.pumpWidget(const SizedBox());
       },
     );

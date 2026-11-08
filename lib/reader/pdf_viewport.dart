@@ -414,42 +414,39 @@ class _PdfViewportState extends State<PdfViewport>
       if (_failure != null)
         Padding(padding: const EdgeInsets.all(8), child: Text(_failure!)),
       Expanded(
-        child: Stack(
-          children: [
-            Positioned.fill(child: _shownPage()),
-            if (widget.book.textSupply case final supply?)
-              Positioned.fill(
-                child: ValueListenableBuilder<bool>(
-                  valueListenable: supply.recognizing,
-                  builder: (context, recognizing, _) => _RecognitionLayer(
-                    waiting: recognizing && _loading,
-                    reason: widget.reflow ? null : _text?.reason,
-                    retry:
-                        !recognizing &&
-                            supply.canRetry &&
-                            !_loading &&
-                            _text?.status != PdfTextStatus.candidate
-                        ? _text?.status == PdfTextStatus.unreliable
-                              ? 'Try English recognition'
-                              : 'Retry recognition'
-                        : null,
-                    onStopWaiting: _stopWaiting,
-                    onRetry: _retryRecognition,
-                  ),
-                ),
-              ),
-          ],
-        ),
+        child: switch (widget.book.textSupply) {
+          null => _shownPage(),
+          final supply => ValueListenableBuilder<bool>(
+            valueListenable: supply.recognizing,
+            builder: (context, recognizing, page) => _RecognitionLayer(
+              waiting: recognizing && _loading,
+              reason: widget.reflow ? null : _text?.reason,
+              retry:
+                  !recognizing &&
+                      supply.canRetry &&
+                      !_loading &&
+                      _text?.status != PdfTextStatus.candidate
+                  ? _text?.status == PdfTextStatus.unreliable
+                        ? 'Try English recognition'
+                        : 'Retry recognition'
+                  : null,
+              onStopWaiting: _stopWaiting,
+              onRetry: _retryRecognition,
+              page: page!,
+            ),
+            child: _shownPage(),
+          ),
+        },
       ),
     ],
   );
 }
 
-/// What English recognition means for the shown page, on glass over the
-/// page. While the page waits for its recognized text, the layer dims the
-/// page and shows the progress and Stop waiting. Otherwise a quiet pane at
-/// the bottom of the page, which does not dim it, keeps the English-only
-/// note, the [reason] that the page has no reliable text, and [retry].
+/// What English recognition means for the shown [page], on glass. While
+/// the page waits for its recognized text, a layer over the page dims it and
+/// shows the progress and Stop waiting. A quiet note under the page, which
+/// covers none of it, keeps the English-only note, the [reason] that the
+/// page has no reliable text, and [retry].
 class _RecognitionLayer extends StatelessWidget {
   const _RecognitionLayer({
     required this.waiting,
@@ -457,6 +454,7 @@ class _RecognitionLayer extends StatelessWidget {
     required this.retry,
     required this.onStopWaiting,
     required this.onRetry,
+    required this.page,
   });
 
   /// Whether the shown page waits for its recognized text.
@@ -474,77 +472,86 @@ class _RecognitionLayer extends StatelessWidget {
   /// Reports the retry control.
   final VoidCallback onRetry;
 
+  /// The original page or the reflowed text.
+  final Widget page;
+
   @override
   Widget build(BuildContext context) {
     final type = Theme.of(context).textTheme;
-    if (waiting) {
-      return Stack(
-        fit: StackFit.expand,
-        children: [
-          // The page stays movable under the dimming.
-          IgnorePointer(
-            child: ColoredBox(color: Colors.black.withValues(alpha: .4)),
-          ),
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: CoverGlass(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(28, 24, 28, 12),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const CircularProgressIndicator(),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Recognizing English text…',
-                        style: type.titleMedium,
-                        textAlign: TextAlign.center,
+    // The page keeps its place in the tree, so its zoom and scroll survive
+    // the layer's changes.
+    return Column(
+      children: [
+        Expanded(
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              page,
+              if (waiting) ...[
+                // The page stays movable under the dimming.
+                IgnorePointer(
+                  child: ColoredBox(color: Colors.black.withValues(alpha: .4)),
+                ),
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: CoverGlass(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(28, 24, 28, 12),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const CircularProgressIndicator(),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Recognizing English text…',
+                              style: type.titleMedium,
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 8),
+                            TextButton(
+                              onPressed: onStopWaiting,
+                              child: const Text('Stop waiting'),
+                            ),
+                          ],
+                        ),
                       ),
-                      const SizedBox(height: 8),
-                      TextButton(
-                        onPressed: onStopWaiting,
-                        child: const Text('Stop waiting'),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
+              ],
+            ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+          child: CoverGlass(
+            radius: 16,
+            tint: .75,
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(16, 10, 16, retry == null ? 10 : 2),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (reason != null)
+                    Text(
+                      reason!,
+                      style: type.bodyMedium,
+                      textAlign: TextAlign.center,
+                    ),
+                  Text(
+                    'English scans only. Other languages are not supported.',
+                    style: type.bodySmall,
+                    textAlign: TextAlign.center,
+                  ),
+                  if (retry != null)
+                    TextButton(onPressed: onRetry, child: Text(retry!)),
+                ],
               ),
             ),
           ),
-        ],
-      );
-    }
-    return Align(
-      alignment: Alignment.bottomCenter,
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: CoverGlass(
-          radius: 16,
-          tint: .75,
-          child: Padding(
-            padding: EdgeInsets.fromLTRB(16, 10, 16, retry == null ? 10 : 2),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (reason != null)
-                  Text(
-                    reason!,
-                    style: type.bodyMedium,
-                    textAlign: TextAlign.center,
-                  ),
-                Text(
-                  'English scans only. Other languages are not supported.',
-                  style: type.bodySmall,
-                  textAlign: TextAlign.center,
-                ),
-                if (retry != null)
-                  TextButton(onPressed: onRetry, child: Text(retry!)),
-              ],
-            ),
-          ),
         ),
-      ),
+      ],
     );
   }
 }
