@@ -1,6 +1,6 @@
 ---
 id: te-orei
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-08T20:49:47Z
