@@ -5,6 +5,10 @@
 // Sign in at http://127.0.0.1:8096 with any username and password.
 // Add --full-size to serve audio files of real audiobook size (see
 // showcase_media.silence).
+// Add --sync-conflict to serve the Bookfin Storage plugin's contract, in
+// memory. When the phone uploads its first listening place, a made-up
+// second device saves a different place in the same file without having
+// seen the phone's, so the next sync shows a conflict to choose from.
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
@@ -295,9 +299,102 @@ Map<String, Object?> _item(
   ],
 };
 
+/// The Bookfin Storage plugin's object store for one user, in memory: each
+/// object has an identity, a sequence that grows with every write, and a
+/// payload. See plugin/Bookfin.Storage/StorageController.cs.
+class _Storage {
+  final _objects = <String, Map<String, Object?>>{};
+  var _sequence = 0;
+  var _conflictAdded = false;
+
+  Map<String, Object?> _store(String id, String payload) => _objects[id] = {
+    'Id': id,
+    'Sequence': ++_sequence,
+    'Payload': payload,
+    'Deleted': false,
+  };
+
+  /// Answers one request to /BookfinStorage/v1/objects[/{id}].
+  Future<(int, Object?)> handle(HttpRequest request, List<String> parts) async {
+    final at = parts.indexOf('objects');
+    final id = parts.length > at + 1 ? parts[at + 1] : null;
+    if (id == null) {
+      if (request.method != 'GET') return (405, null);
+      final after = int.tryParse(request.uri.queryParameters['after'] ?? '0');
+      final limit = int.tryParse(request.uri.queryParameters['limit'] ?? '4');
+      if (after == null || after < 0 || limit == null || limit < 1) {
+        return (400, null);
+      }
+      final newer =
+          _objects.values
+              .where((object) => (object['Sequence'] as int) > after)
+              .toList()
+            ..sort(
+              (a, b) => (a['Sequence'] as int).compareTo(b['Sequence'] as int),
+            );
+      final page = newer.take(limit).toList();
+      return (
+        200,
+        {
+          'Objects': page,
+          'Cursor': page.isEmpty ? after : page.last['Sequence'],
+          'HasMore': newer.length > limit,
+        },
+      );
+    }
+    if (request.method == 'GET') {
+      final object = _objects[id];
+      return object == null ? (404, null) : (200, object);
+    }
+    if (request.method != 'PUT') return (405, null);
+    final body = jsonDecode(await utf8.decodeStream(request));
+    final payload = body is Map ? body['Payload'] : null;
+    if (payload is! String || payload.isEmpty) return (400, null);
+    if (_objects[id] case final existing?) {
+      return (existing['Payload'] == payload ? 200 : 409, existing);
+    }
+    final stored = _store(id, payload);
+    _addConflict(payload);
+    return (201, stored);
+  }
+
+  /// After the phone's first listening place, stores a place in the same
+  /// file from another device whose context has not seen the phone's
+  /// actions, so both versions stay current.
+  void _addConflict(String payload) {
+    if (_conflictAdded) return;
+    final action = jsonDecode(payload) as Map<String, dynamic>;
+    final address = jsonDecode(action['record'] as String) as List;
+    final value = action['value'];
+    if (address[0] != 'audio' || address[1] != 'resumes' || value is! Map) {
+      return;
+    }
+    _conflictAdded = true;
+    // The tablet stopped at 4:12:47, or at 1:08:20 when the phone is there.
+    const tabletPlace = (4 * 3600 + 12 * 60 + 47) * 1000;
+    final tablet = {
+      'version': 1,
+      'account': action['account'],
+      'replica': 'showcase-tablet',
+      'sequence': 1,
+      'context': <String, int>{},
+      'record': action['record'],
+      'value': {
+        ...value,
+        'milliseconds': value['milliseconds'] == tabletPlace
+            ? (3600 + 8 * 60 + 20) * 1000
+            : tabletPlace,
+      },
+      'preserve': <String>[],
+    };
+    _store('action.showcase-tablet.1', jsonEncode(tablet));
+  }
+}
+
 Future<void> main(List<String> arguments) async {
   final fullSize = arguments.contains('--full-size');
-  final port = arguments.where((argument) => argument != '--full-size');
+  final storage = arguments.contains('--sync-conflict') ? _Storage() : null;
+  final port = arguments.where((argument) => !argument.startsWith('--'));
   final server = await HttpServer.bind(
     InternetAddress.loopbackIPv4,
     port.isEmpty ? 8096 : int.parse(port.single),
@@ -353,6 +450,10 @@ Future<void> main(List<String> arguments) async {
       continue;
     } else if (request.headers.value('X-Emby-Token') != _token) {
       response.statusCode = 401;
+    } else if (storage != null && parts.contains('BookfinStorage')) {
+      final (status, answer) = await storage.handle(request, parts);
+      response.statusCode = status;
+      data = answer;
     } else if (path.endsWith('/Users/Me')) {
       data = user;
     } else if (path.endsWith('/UserViews')) {
