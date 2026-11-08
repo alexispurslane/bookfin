@@ -12,6 +12,8 @@ import '../foundation/listenable_selector.dart';
 import '../foundation/scrub_bar.dart';
 import '../foundation/theme.dart';
 import '../foundation/time.dart';
+import '../sync/alert.dart'
+    show BookConflictAlert, RecordSyncScope, chooseConflict;
 import 'playback.dart';
 import 'recent.dart';
 import 'records_screen.dart';
@@ -291,6 +293,21 @@ class PlayerView extends StatelessWidget {
                                     ),
                                   ),
                                 ),
+                        ),
+                      if (RecordSyncScope.of(context) case final sync?)
+                        BookConflictAlert(
+                          conflicts: sync.conflictsNotifier,
+                          book: book,
+                          compact: true,
+                          padding: const EdgeInsets.only(top: 12),
+                          onChoose: (record) => unawaited(
+                            chooseConflict(
+                              context,
+                              sync,
+                              book: book,
+                              record: record,
+                            ),
+                          ),
                         ),
                       RecordSaveStatus(playback: playback),
                       ReplacementStartNotice(playback: playback),

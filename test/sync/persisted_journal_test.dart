@@ -89,7 +89,7 @@ void main() {
         );
         final sync = RecordSync(records: records)..bind(fixture.session);
         await sync.syncNow();
-        expect(sync.lastSyncNotifier.value?.failed, isFalse);
+        expect(sync.lastSyncNotifier.value?.failure, isNull);
         sync.dispose();
         // Without its actions, the original bookmark is only in the copy.
         final readable = [

@@ -49,7 +49,8 @@ void main() {
     await running;
     expect(sync.lastSyncNotifier.value, (
       at: DateTime(2026, 11, 7, 16, 30),
-      failed: false,
+      failure: null,
+      synced: DateTime(2026, 11, 7, 16, 30),
       replaced: 0,
     ));
   });
@@ -72,7 +73,7 @@ void main() {
     () async {
       records.failure = true;
       await sync.synchronize();
-      expect(sync.lastSyncNotifier.value?.failed, isTrue);
+      expect(sync.lastSyncNotifier.value?.failure, isNotNull);
       expect(shown, isEmpty);
       expect(sync.message, isNull);
     },
@@ -88,23 +89,101 @@ void main() {
     expect(sync.conflictsNotifier.value.keys, ['["audio","resumes","x"]']);
   });
 
-  test('Sync now shows busy, then the result', () async {
+  test('Sync now shows busy, then how the sync ended', () async {
     records.gate = Completer();
     final running = sync.syncNow();
     expect(sync.busy, isTrue);
     records.gate!.complete();
     await running;
     expect(shown.map((status) => status.busy), [true, false]);
-    expect(sync.message, 'Personal records are synced.');
-    expect(sync.lastSyncNotifier.value?.failed, isFalse);
+    // The outcome says how the sync ended. A message would repeat it.
+    expect(sync.message, isNull);
+    expect(sync.lastSyncNotifier.value?.failure, isNull);
   });
 
   test('a failed Sync now shows busy, then why it failed', () async {
     records.failure = true;
     await sync.syncNow();
     expect(shown.map((status) => status.busy), [true, false]);
-    expect(sync.message, contains('Personal records remain on this device'));
-    expect(sync.lastSyncNotifier.value?.failed, isTrue);
+    expect(sync.message, isNull);
+    expect(sync.lastSyncNotifier.value?.failure, RecordSyncFailure.unreachable);
+  });
+
+  group('the cause of a failed sync', () {
+    Future<RecordSyncFailure?> failWith(Exception error) async {
+      records.error = error;
+      await sync.synchronize();
+      return sync.lastSyncNotifier.value?.failure;
+    }
+
+    test('a sync that cannot reach Jellyfin reports no connection', () async {
+      expect(
+        await failWith(const CatalogFailure(CatalogFailureKind.unavailable)),
+        RecordSyncFailure.unreachable,
+      );
+    });
+
+    test(
+      'a sync whose Jellyfin has no storage plugin reports the plugin missing',
+      () async {
+        expect(
+          await failWith(
+            const CatalogFailure(CatalogFailureKind.unavailable, status: 404),
+          ),
+          RecordSyncFailure.pluginMissing,
+        );
+      },
+    );
+
+    test(
+      'a storage answer outside the plugin contract reports the plugin missing',
+      () async {
+        expect(
+          await failWith(
+            const FormatException(
+              'Invalid personal-record discovery response.',
+            ),
+          ),
+          RecordSyncFailure.pluginMissing,
+        );
+        expect(
+          await failWith(
+            const CatalogFailure(CatalogFailureKind.invalidResponse),
+          ),
+          RecordSyncFailure.pluginMissing,
+        );
+      },
+    );
+
+    test('a sync whose records on this phone cannot be read reports them unreadable', () async {
+      records.unreadable = true;
+      expect(
+        await failWith(const CatalogFailure(CatalogFailureKind.unavailable)),
+        RecordSyncFailure.unreadable,
+      );
+    });
+
+    test(
+      'another failure is reported as neither no connection nor plugin missing',
+      () async {
+        expect(
+          await failWith(Exception('Device storage is full.')),
+          RecordSyncFailure.other,
+        );
+      },
+    );
+
+    test('a failed sync keeps when records last synced', () async {
+      clock = DateTime(2026, 11, 7, 16, 40);
+      await sync.synchronize();
+      clock = DateTime(2026, 11, 7, 16, 50);
+      await failWith(const CatalogFailure(CatalogFailureKind.unavailable));
+      expect(sync.lastSyncNotifier.value?.at, DateTime(2026, 11, 7, 16, 50));
+      expect(
+        sync.lastSyncNotifier.value?.synced,
+        DateTime(2026, 11, 7, 16, 40),
+      );
+    });
   });
 
   test(
@@ -120,7 +199,7 @@ void main() {
       await Future.wait([background, requested]);
       expect(records.runs, 2);
       expect(sync.busy, isFalse);
-      expect(sync.message, 'Personal records are synced.');
+      expect(sync.message, isNull);
     },
   );
 
@@ -151,7 +230,7 @@ void main() {
     records.gate!.complete();
     await choice;
     expect(shown.map((status) => status.busy), [true, false]);
-    expect(sync.message, 'Personal records are synced.');
+    expect(sync.message, isNull);
   });
 
   test(
@@ -161,7 +240,7 @@ void main() {
       records.failure = true;
       await sync.synchronize();
       expect(sync.message, isNull);
-      expect(sync.lastSyncNotifier.value?.failed, isTrue);
+      expect(sync.lastSyncNotifier.value?.failure, isNotNull);
     },
   );
 
@@ -194,7 +273,17 @@ void main() {
 class ControlledRecords implements LocalResumeStore {
   int runs = 0;
   Completer<void>? gate;
-  bool failure = false;
+
+  /// What a sync throws, or null when it succeeds.
+  Exception? error;
+
+  /// Fails a sync as when Jellyfin cannot be reached.
+  set failure(bool value) => error = value
+      ? const CatalogFailure(CatalogFailureKind.unavailable)
+      : null;
+
+  /// Makes the records unreadable, so [conflicts] throws.
+  bool unreadable = false;
   int replaced = 0;
   Map<String, List<Map<String, dynamic>>> found = {};
   final resolved = <String>[];
@@ -219,14 +308,14 @@ class ControlledRecords implements LocalResumeStore {
   ) async {
     runs++;
     await gate?.future;
-    if (failure) throw Exception('Jellyfin cannot be reached.');
+    if (error case final error?) throw error;
     return (stale: (listening: false, reading: false), replaced: replaced);
   }
 
   @override
   Future<Map<String, List<Map<String, dynamic>>>> conflicts(
     String account,
-  ) async => found;
+  ) async => unreadable ? throw Exception('Records cannot be read.') : found;
 
   @override
   Future<bool> resolve(
@@ -235,9 +324,14 @@ class ControlledRecords implements LocalResumeStore {
     String identity, {
     Map<String, String> bookmarkTitles = const {},
   }) async {
+    if (refuseChoice) return false;
     resolved.add(identity);
+    found = {...found}..remove(record);
     return true;
   }
+
+  /// Answers that a choice changed before it was selected.
+  bool refuseChoice = false;
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

@@ -18,8 +18,12 @@ enum CatalogFailureKind {
 }
 
 class CatalogFailure implements Exception {
-  const CatalogFailure(this.kind);
+  const CatalogFailure(this.kind, {this.status});
   final CatalogFailureKind kind;
+
+  /// The HTTP status of an answer that Jellyfin refused, for example 404
+  /// when it has no such route, or null when no answer came.
+  final int? status;
   String get message => switch (kind) {
     CatalogFailureKind.invalidCredentials =>
       'Sign-in failed. Check your username and password.',

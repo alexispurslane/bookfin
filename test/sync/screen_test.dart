@@ -2,10 +2,14 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:bookfin/catalog/jellyfin.dart';
 import 'package:bookfin/catalog/shelf.dart';
+import 'package:bookfin/foundation/theme.dart';
 import 'package:bookfin/playback/store.dart';
 import 'package:bookfin/sync/coordinator.dart';
+import 'package:bookfin/sync/choice.dart';
 import 'package:bookfin/sync/journal.dart';
+import 'package:bookfin/sync/labels.dart';
 import 'package:bookfin/sync/screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -15,6 +19,7 @@ import '../playback/playback_test.dart' as audio;
 import '../reader/session_test.dart' as reading;
 import '../playback/playback_test.dart' show account;
 import '../real_time.dart';
+import 'conflicts.dart';
 import 'fixture.dart';
 import 'status_test.dart' show ControlledRecords;
 
@@ -96,26 +101,48 @@ void main() {
     await fixture.close();
   });
 
+  Future<void> showFixturePage(
+    WidgetTester tester,
+    ValueNotifier<CatalogLibrary> library,
+  ) async {
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 2.625;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: bookfinTheme(Brightness.light),
+        home: RecordSyncPage(sync: sync, library: library),
+      ),
+    );
+  }
+
+  String shownText(WidgetTester tester) => tester
+      .widgetList<Text>(find.byType(Text))
+      .map((widget) => widget.data ?? widget.textSpan?.toPlainText() ?? '')
+      .join('\n');
+
+  /// Opens the collapsed conflict whose row shows [title].
+  Future<void> open(WidgetTester tester, String title) async {
+    final row = find.widgetWithText(InkWell, title).first;
+    await tester.ensureVisible(row);
+    await tester.tap(row);
+    await tester.pumpAndSettle();
+  }
+
   testWidgets(
     'conflict choices identify saved books and readable positions instead of raw record addresses',
     (tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          home: RecordSyncPage(
-            sync: sync,
-            library: ValueNotifier(CatalogLibrary.empty),
-          ),
-        ),
-      );
-      final text = tester
-          .widgetList<Text>(find.byType(Text))
-          .map((widget) => widget.data ?? '')
-          .join('\n');
+      await showFixturePage(tester, ValueNotifier(CatalogLibrary.empty));
+      for (final title in ['Book not in the current library', 'River']) {
+        if (find.widgetWithText(InkWell, title).evaluate().isNotEmpty) {
+          await open(tester, title);
+        }
+      }
+      final text = shownText(tester);
       expect(text, contains(audio.title.title));
-      expect(text, contains('Pixel 8 · 00:00'));
-      expect(text, contains('Pixel Tablet · 00:00'));
-      expect(text, isNot(contains('00:00.')));
-      expect(text, contains('A river follows the old road'));
+      expect(text, contains('Pixel 8'));
+      expect(text, contains('Pixel Tablet'));
+      expect(text, contains('00:00'));
       expect(text, contains('not in the current library'));
       expect(text, isNot(contains('epubcfi(')));
       expect(text, isNot(contains('"version"')));
@@ -126,30 +153,17 @@ void main() {
   );
 
   testWidgets(
-    'conflict choices use the current catalog book, edition and source names',
+    'conflict choices use the current catalog book and kind of record',
     (tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          home: RecordSyncPage(
-            sync: sync,
-            library: ValueNotifier(
-              CatalogLibrary.build([audio.title, reading.book]),
-            ),
-          ),
-        ),
+      await showFixturePage(
+        tester,
+        ValueNotifier(CatalogLibrary.build([audio.title, reading.book])),
       );
-      final text = tester
-          .widgetList<Text>(find.byType(Text))
-          .map((widget) => widget.data ?? '')
-          .join('\n');
-      expect(text, contains('River · Reading bookmark'));
-      expect(text, contains('The journey · Listening saved place'));
-      expect(text, contains('Pixel Tablet · 00:00 · Opening'));
-      expect(
-        RegExp(RegExp.escape(audio.title.title)).allMatches(text),
-        hasLength(2),
-        reason: 'one heading for the saved place and one for the bookmark',
-      );
+      final text = shownText(tester);
+      expect(text, contains('River'));
+      expect(text, contains('Reading bookmark'));
+      expect(text, contains(audio.title.title));
+      expect(text, contains('Listening saved place'));
       expect(text, isNot(contains('not in the current library')));
       expect(tester.takeException(), isNull);
     },
@@ -159,15 +173,31 @@ void main() {
     'after a library refresh, the conflict list names the book from the new library',
     (tester) async {
       final library = ValueNotifier(CatalogLibrary.empty);
-      await tester.pumpWidget(
-        MaterialApp(
-          home: RecordSyncPage(sync: sync, library: library),
-        ),
-      );
-      expect(find.textContaining('River · Reading bookmark'), findsNothing);
+      await showFixturePage(tester, library);
+      expect(find.text('River'), findsNothing);
       library.value = CatalogLibrary.build([audio.title, reading.book]);
       await tester.pump();
-      expect(find.textContaining('River · Reading bookmark'), findsOneWidget);
+      expect(find.text('River'), findsWidgets);
+    },
+  );
+
+  testWidgets(
+    'Keep resolves the choice through record sync and the page no longer offers it',
+    (tester) async {
+      await showFixturePage(
+        tester,
+        ValueNotifier(CatalogLibrary.build([audio.title, reading.book])),
+      );
+      expect(find.text('4 choices wait'), findsOneWidget);
+      final keep = find.text('Keep A').first;
+      await tester.ensureVisible(keep);
+      await tester.tap(keep);
+      await settle(tester, sync);
+      expect(sync.conflicts, hasLength(3));
+      expect(find.text('3 choices wait'), findsOneWidget);
+      // The choice synced over HTTP in fake time, so the idle connection
+      // closes in fake time too.
+      await tester.pump(const Duration(seconds: 16));
     },
   );
 
@@ -180,32 +210,30 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: SingleChildScrollView(
-              child: RecordSyncView(
-                status: sync.statusNotifier,
-                lastSync: sync.lastSyncNotifier,
-                conflicts: sync.conflictsNotifier,
-                kept: ValueNotifier((recovered: 0, kept: false)),
-                library: ValueNotifier(CatalogLibrary.empty),
-                onSync: () => syncs++,
-                onResolve: (record, identity, bookmarkTitles) =>
-                    choices.add((record, identity, bookmarkTitles)),
-                onDiscard: () {},
-              ),
+            body: RecordSyncView(
+              status: sync.statusNotifier,
+              lastSync: sync.lastSyncNotifier,
+              conflicts: sync.conflictsNotifier,
+              kept: ValueNotifier((recovered: 0, kept: false)),
+              library: ValueNotifier(CatalogLibrary.empty),
+              onSync: () => syncs++,
+              onResolve: (record, identity, bookmarkTitles) =>
+                  choices.add((record, identity, bookmarkTitles)),
+              onDiscard: () {},
             ),
           ),
         ),
       );
-      await tester.tap(find.text('Sync now'));
-      final choice = find.textContaining('first audio note');
-      await tester.ensureVisible(choice);
-      await tester.tap(choice);
+      await tester.tap(find.byTooltip('Sync now'));
+      final keep = find.text('Keep A').first;
+      await tester.ensureVisible(keep);
+      await tester.tap(keep);
       expect(syncs, 1);
       final (record, identity, _) = choices.single;
-      final chosen = sync.conflicts[record]!.singleWhere(
-        (action) => RecordJournal.identity(action) == identity,
+      expect(
+        sync.conflicts[record]!.map(RecordJournal.identity),
+        contains(identity),
       );
-      expect((chosen['value'] as Map)['title'], 'first audio note');
       expect(tester.takeException(), isNull);
     },
   );
@@ -218,25 +246,31 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: SingleChildScrollView(
-              child: RecordSyncView(
-                status: sync.statusNotifier,
-                lastSync: sync.lastSyncNotifier,
-                conflicts: sync.conflictsNotifier,
-                kept: ValueNotifier((recovered: 0, kept: false)),
-                library: ValueNotifier(CatalogLibrary.build([audio.title])),
-                onSync: () {},
-                onResolve: (record, identity, bookmarkTitles) =>
-                    choices.add((record, identity, bookmarkTitles)),
-                onDiscard: () {},
+            body: ConflictChoice(
+              record: sync.conflicts.keys.firstWhere(
+                (record) => record.contains('"audio","resumes"'),
               ),
+              labels: labelConflict(
+                sync.conflicts.keys.firstWhere(
+                  (record) => record.contains('"audio","resumes"'),
+                ),
+                sync.conflicts.entries
+                    .firstWhere(
+                      (entry) => entry.key.contains('"audio","resumes"'),
+                    )
+                    .value,
+                books: [audio.title],
+                now: DateTime.now(),
+                clock: (at) => '$at',
+              ),
+              enabled: true,
+              onResolve: (record, identity, bookmarkTitles) =>
+                  choices.add((record, identity, bookmarkTitles)),
             ),
           ),
         ),
       );
-      final choice = find.text('Pixel Tablet · 00:00 · Opening');
-      await tester.ensureVisible(choice);
-      await tester.tap(choice);
+      await tester.tap(find.text('Keep B'));
       final (record, identity, bookmarkTitles) = choices.single;
       final versions = sync.conflicts[record]!;
       expect(identity, RecordJournal.identity(versions.last));
@@ -247,41 +281,61 @@ void main() {
     },
   );
 
-  testWidgets(
-    'after a background sync the page quietly says when records last synced',
-    (tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          home: RecordSyncPage(
-            sync: sync,
-            library: ValueNotifier(CatalogLibrary.empty),
-          ),
-        ),
-      );
-      expect(find.textContaining('Last synced · Today, '), findsOneWidget);
-      expect(find.text('Sync now'), findsOneWidget);
-      expect(find.textContaining('Choose between saved places'), findsNothing);
-    },
-  );
-
   group('with a controlled sync', () {
     late ControlledRecords records;
     late RecordSync controlled;
+    late DateTime clock;
     setUp(() async {
       records = ControlledRecords();
-      controlled = RecordSync(records: records)..bind(account());
+      clock = DateTime.now();
+      controlled = RecordSync(records: records, now: () => clock)
+        ..bind(account());
       // Signing in syncs at once. These tests start after that sync.
       await pumpEventQueue();
     });
     tearDown(() => controlled.dispose());
 
-    Future<void> showPage(WidgetTester tester) => tester.pumpWidget(
-      MaterialApp(
-        home: RecordSyncPage(
-          sync: controlled,
-          library: ValueNotifier(CatalogLibrary.empty),
+    Future<void> showPage(
+      WidgetTester tester, {
+      Brightness brightness = Brightness.light,
+    }) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 2.625;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: bookfinTheme(brightness),
+          home: RecordSyncPage(
+            sync: controlled,
+            library: ValueNotifier(CatalogLibrary.build(books)),
+          ),
         ),
+      );
+    }
+
+    /// Syncs in the background with what [records] now holds.
+    Future<void> backgroundSync(WidgetTester tester) async {
+      await tester.runAsync(controlled.synchronize);
+      await tester.pumpAndSettle();
+    }
+
+    IconButton roundSync(WidgetTester tester) => tester.widget<IconButton>(
+      find.descendant(
+        of: find.byType(SyncStatusStrip),
+        matching: find.byType(IconButton),
       ),
+    );
+
+    testWidgets(
+      'a healthy page says Synced and that nothing waits to be chosen',
+      (tester) async {
+        await showPage(tester);
+        expect(find.text('Synced'), findsOneWidget);
+        expect(find.textContaining('Jellyfin'), findsWidgets);
+        expect(find.text('Nothing to choose'), findsOneWidget);
+        expect(find.byType(SyncBanner), findsNothing);
+        expect(roundSync(tester).tooltip, 'Sync now');
+      },
     );
 
     testWidgets('a background sync shows no busy state on the page', (
@@ -291,101 +345,151 @@ void main() {
       await showPage(tester);
       unawaited(controlled.synchronize());
       await tester.pump();
-      expect(find.text('Sync now'), findsOneWidget);
-      expect(find.text('Syncing personal records…'), findsNothing);
+      expect(find.text('Syncing…'), findsNothing);
+      expect(roundSync(tester).onPressed, isNotNull);
       records.gate!.complete();
       await tester.pump();
-      expect(find.text('Personal records are synced.'), findsNothing);
     });
 
     testWidgets(
-      'after a failed background sync the page says to tap Sync now to retry',
+      'Sync now shows Syncing until it ends and turns off the Sync button and every Keep button',
       (tester) async {
-        records.failure = true;
+        records.found = {...frostConflict};
+        await backgroundSync(tester);
+        records.gate = Completer();
         await showPage(tester);
-        await controlled.synchronize();
+        await tester.tap(find.byTooltip('Sync now'));
         await tester.pump();
-        expect(
-          find.text('Last sync failed. Tap Sync now to retry.'),
-          findsOneWidget,
-        );
-        expect(
-          find.textContaining('Personal records remain on this device'),
-          findsNothing,
-        );
+        expect(find.text('Syncing…'), findsOneWidget);
+        expect(roundSync(tester).onPressed, isNull);
+        for (final keep in ['Keep A', 'Keep B']) {
+          expect(
+            tester
+                .widget<ButtonStyleButton>(
+                  find.ancestor(
+                    of: find.text(keep),
+                    matching: find.bySubtype<ButtonStyleButton>(),
+                  ),
+                )
+                .onPressed,
+            isNull,
+          );
+        }
+        records.gate!.complete();
+        await tester.pumpAndSettle();
+        expect(find.text('Syncing…'), findsNothing);
+        expect(roundSync(tester).onPressed, isNotNull);
       },
     );
+
+    testWidgets(
+      'without a connection, the page says Not syncing and offers Retry in a banner',
+      (tester) async {
+        clock = DateTime.now().subtract(const Duration(minutes: 5));
+        await backgroundSync(tester);
+        clock = DateTime.now();
+        records.failure = true;
+        await showPage(tester);
+        await backgroundSync(tester);
+        expect(find.text('Not syncing'), findsOneWidget);
+        expect(find.textContaining('· tried '), findsOneWidget);
+        expect(find.text('Jellyfin cannot be reached'), findsOneWidget);
+        expect(find.text('Bookfin Storage plugin missing'), findsNothing);
+        expect(roundSync(tester).tooltip, 'Retry');
+        records.failure = false;
+        await tester.tap(find.widgetWithText(TextButton, 'Retry'));
+        await settle(tester, controlled);
+        expect(find.text('Synced'), findsOneWidget);
+        expect(find.text('Jellyfin cannot be reached'), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'without the storage plugin, the page says Sync is off and offers Check again',
+      (tester) async {
+        records.error = const CatalogFailure(
+          CatalogFailureKind.unavailable,
+          status: 404,
+        );
+        await showPage(tester);
+        await backgroundSync(tester);
+        expect(find.text('Sync is off'), findsOneWidget);
+        expect(find.text('Records stay on this phone'), findsOneWidget);
+        expect(find.text('Bookfin Storage plugin missing'), findsOneWidget);
+        expect(find.text('Jellyfin cannot be reached'), findsNothing);
+        expect(roundSync(tester).tooltip, 'Check again');
+        expect(find.widgetWithText(TextButton, 'Check again'), findsOneWidget);
+      },
+    );
+
+    testWidgets('records that cannot be read show their own banner', (
+      tester,
+    ) async {
+      records
+        ..failure = true
+        ..unreadable = true;
+      await showPage(tester);
+      await backgroundSync(tester);
+      expect(find.text('Personal records could not be read'), findsOneWidget);
+    });
 
     testWidgets(
       'after a sync that took the server copy of damaged records the page quietly says so',
       (tester) async {
         records.replaced = 1;
         await showPage(tester);
-        await controlled.synchronize();
-        await tester.pump();
-        expect(
-          find.textContaining(
-            '1 damaged record was restored from Jellyfin. Bookfin kept the damaged copy.',
-          ),
-          findsOneWidget,
-        );
-        expect(find.byType(AlertDialog), findsNothing);
+        await backgroundSync(tester);
+        expect(find.text('1 record restored from Jellyfin'), findsOneWidget);
+        expect(find.byType(Dialog), findsNothing);
         records.replaced = 0;
-        await controlled.synchronize();
-        await tester.pump();
+        await backgroundSync(tester);
         expect(find.textContaining('restored from Jellyfin'), findsNothing);
       },
     );
 
     testWidgets(
-      'after damaged records came back the page quietly says how many',
+      'damaged records kept aside show a banner that says how many came back',
       (tester) async {
-        records.kept.value = (recovered: 3, kept: true);
+        records.kept.value = (recovered: 2, kept: true);
         await showPage(tester);
-        expect(
-          find.textContaining('3 damaged records were recovered.'),
-          findsOneWidget,
-        );
-        records.kept.value = (recovered: 1, kept: true);
+        expect(find.text('Damaged records kept aside'), findsOneWidget);
+        expect(find.textContaining('2 records came back.'), findsOneWidget);
+        expect(find.text('Discard the copy…'), findsOneWidget);
+        records.kept.value = (recovered: 1, kept: false);
         await tester.pump();
-        expect(
-          find.textContaining('1 damaged record was recovered.'),
-          findsOneWidget,
-        );
-        expect(find.byType(AlertDialog), findsNothing);
+        expect(find.text('Damaged records kept aside'), findsNothing);
+        expect(find.text('1 damaged record was recovered'), findsOneWidget);
+        expect(find.text('Discard the copy…'), findsNothing);
       },
     );
-
-    testWidgets('the quiet line offers Discard only while kept copies exist', (
-      tester,
-    ) async {
-      await showPage(tester);
-      expect(find.text('Discard'), findsNothing);
-      records.kept.value = (recovered: 0, kept: true);
-      await tester.pump();
-      expect(find.text('Discard'), findsOneWidget);
-      expect(find.textContaining('were recovered'), findsNothing);
-    });
 
     testWidgets('Discard deletes the kept copies only after a confirmation', (
       tester,
     ) async {
-      records.kept.value = (recovered: 2, kept: true);
+      records.kept.value = (recovered: 0, kept: true);
       await showPage(tester);
-      await tester.tap(find.text('Discard'));
+      await tester.tap(find.text('Discard the copy…'));
       await tester.pumpAndSettle();
-      expect(find.byType(AlertDialog), findsOneWidget);
+      expect(find.text('Discard damaged records?'), findsOneWidget);
       expect(records.discards, 0);
-      await tester.tap(
-        find.descendant(
-          of: find.byType(AlertDialog),
-          matching: find.text('Discard'),
-        ),
-      );
+      await tester.tap(find.widgetWithText(FilledButton, 'Discard'));
       await tester.pumpAndSettle();
       expect(records.discards, 1);
-      expect(find.byType(AlertDialog), findsNothing);
-      expect(find.text('Discard'), findsNothing);
+      expect(find.text('Discard damaged records?'), findsNothing);
+      expect(find.text('Discard the copy…'), findsNothing);
+    });
+
+    testWidgets('a Discard that the user cancels deletes nothing', (
+      tester,
+    ) async {
+      records.kept.value = (recovered: 0, kept: true);
+      await showPage(tester);
+      await tester.tap(find.text('Discard the copy…'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+      expect(records.discards, 0);
+      expect(find.text('Discard the copy…'), findsOneWidget);
     });
 
     testWidgets('a Discard that fails says so and keeps offering Discard', (
@@ -395,14 +499,9 @@ void main() {
         ..kept.value = (recovered: 0, kept: true)
         ..discardFails = true;
       await showPage(tester);
-      await tester.tap(find.text('Discard'));
+      await tester.tap(find.text('Discard the copy…'));
       await tester.pumpAndSettle();
-      await tester.tap(
-        find.descendant(
-          of: find.byType(AlertDialog),
-          matching: find.text('Discard'),
-        ),
-      );
+      await tester.tap(find.widgetWithText(FilledButton, 'Discard'));
       await tester.pumpAndSettle();
       expect(
         find.text(
@@ -410,19 +509,120 @@ void main() {
         ),
         findsOneWidget,
       );
-      expect(find.text('Discard'), findsOneWidget);
+      expect(find.text('Discard the copy…'), findsOneWidget);
     });
 
-    testWidgets('tapping Sync now shows busy, then the result', (tester) async {
-      records.gate = Completer();
+    testWidgets(
+      'one place conflict draws both places as pins A and B on a track of the book, then two columns',
+      (tester) async {
+        records.found = {...frostConflict};
+        await showPage(tester);
+        await backgroundSync(tester);
+        expect(find.text('1 choice waits'), findsOneWidget);
+        expect(find.text('Choose a saved place'), findsOneWidget);
+        expect(find.text('First Frost'), findsOneWidget);
+        final track = find.byType(BookTrack);
+        expect(track, findsOneWidget);
+        for (final pin in ['A', 'B']) {
+          expect(
+            find.descendant(of: track, matching: find.text(pin)),
+            findsOneWidget,
+          );
+        }
+        expect(find.text('10 h 0 m'), findsOneWidget);
+        expect(find.text('4:12:47'), findsOneWidget);
+        expect(find.text('2:33:16'), findsOneWidget);
+        expect(find.text('Chapter 6 · Frostbite'), findsOneWidget);
+        expect(find.text('Keep A'), findsOneWidget);
+        expect(find.text('Keep B'), findsOneWidget);
+        expect(
+          find.text('Both places stay as bookmarks. Your audio does not jump.'),
+          findsOneWidget,
+        );
+        expect(find.text('Nothing to choose'), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'a bookmark changed on one device and deleted on another shows only the two columns',
+      (tester) async {
+        records.found = {...northConflict};
+        await showPage(tester);
+        await backgroundSync(tester);
+        expect(find.text('Choose a saved version'), findsOneWidget);
+        expect(find.byType(BookTrack), findsNothing);
+        expect(find.text('Keep deletion'), findsOneWidget);
+        expect(find.text('Keep A'), findsOneWidget);
+        expect(find.text('Keep B'), findsOneWidget);
+        expect(find.textContaining('Both places stay'), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'with several conflicts one is open and the rest are collapsed rows that open on a tap',
+      (tester) async {
+        records.found = {...frostConflict, ...northConflict};
+        await showPage(tester);
+        await backgroundSync(tester);
+        expect(find.text('2 choices wait'), findsOneWidget);
+        expect(find.text('Keep A'), findsOneWidget);
+        expect(find.byType(BookTrack), findsOneWidget);
+        expect(find.text('Keep deletion'), findsNothing);
+        await open(tester, 'Northbound');
+        expect(find.text('Keep A'), findsOneWidget);
+        expect(find.text('Keep deletion'), findsOneWidget);
+        expect(find.byType(BookTrack), findsNothing);
+        expect(find.widgetWithText(InkWell, 'First Frost'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'Keep on the page resolves through record sync and clears the conflict',
+      (tester) async {
+        records.found = {...frostConflict};
+        await showPage(tester);
+        await backgroundSync(tester);
+        await tester.tap(find.text('Keep B'));
+        await settle(tester, controlled);
+        expect(records.resolved, [
+          RecordJournal.identity(frostConflict.values.single.last),
+        ]);
+        expect(find.text('Keep B'), findsNothing);
+        expect(find.text('Nothing to choose'), findsOneWidget);
+      },
+    );
+
+    testWidgets('a choice that changed meanwhile says so on the page', (
+      tester,
+    ) async {
+      records
+        ..found = {...frostConflict}
+        ..refuseChoice = true;
       await showPage(tester);
-      await tester.tap(find.text('Sync now'));
-      await tester.pump();
-      expect(find.text('Syncing personal records…'), findsOneWidget);
-      records.gate!.complete();
-      await tester.pump();
-      expect(find.text('Personal records are synced.'), findsOneWidget);
-      expect(find.text('Sync now'), findsOneWidget);
+      await backgroundSync(tester);
+      await tester.tap(find.text('Keep A'));
+      await settle(tester, controlled);
+      expect(
+        find.textContaining(
+          'This saved choice changed before it was selected.',
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('every page state draws at night without overflow', (
+      tester,
+    ) async {
+      records
+        ..found = {...frostConflict, ...northConflict}
+        ..kept.value = (recovered: 2, kept: true)
+        ..replaced = 1;
+      await showPage(tester, brightness: Brightness.dark);
+      await backgroundSync(tester);
+      expect(tester.takeException(), isNull);
+      records.failure = true;
+      await backgroundSync(tester);
+      expect(tester.takeException(), isNull);
     });
   });
 
@@ -444,25 +644,19 @@ void main() {
       ),
     );
 
-    await tester.tap(find.text('Discard'));
+    await tester.tap(find.text('Discard the copy…'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Cancel'));
     await tester.pumpAndSettle();
-    expect(find.byType(AlertDialog), findsNothing);
     expect((await SharedPreferences.getInstance()).getString(copy), '{broken');
-    expect(find.text('Discard'), findsOneWidget);
+    expect(find.text('Discard the copy…'), findsOneWidget);
 
-    await tester.tap(find.text('Discard'));
+    await tester.tap(find.text('Discard the copy…'));
     await tester.pumpAndSettle();
-    await tester.tap(
-      find.descendant(
-        of: find.byType(AlertDialog),
-        matching: find.text('Discard'),
-      ),
-    );
+    await tester.tap(find.widgetWithText(FilledButton, 'Discard'));
     await tester.pumpAndSettle();
     expect((await SharedPreferences.getInstance()).getString(copy), isNull);
-    expect(find.text('Discard'), findsNothing);
+    expect(find.text('Discard the copy…'), findsNothing);
   });
 }
 
@@ -487,4 +681,12 @@ class RefusingSync extends RecordSync {
   }) => refuse
       ? throw StateError('resolve')
       : super.resolve(record, identity, bookmarkTitles: bookmarkTitles);
+}
+
+/// Waits until the sync or the choice that the user started on [sync]
+/// ends, in real and fake time in turns, then lets the frames settle.
+Future<void> settle(WidgetTester tester, RecordSync sync) async {
+  await tester.pump();
+  await runUntil(tester, () => !sync.busy);
+  await tester.pumpAndSettle();
 }

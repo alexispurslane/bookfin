@@ -11,19 +11,51 @@ import 'journal.dart' show DeepCollectionEquality;
 /// What the Sync page shows about an action that the user started: Sync now
 /// or a choice between saved versions.
 /// - [busy]: the action runs now.
-/// - [message]: the result of the latest such action, or null.
+/// - [message]: what the latest such action tells the user beyond how its
+///   sync ended, which [RecordSync.lastSyncNotifier] says: why a choice was
+///   not saved. Null otherwise.
 typedef RecordSyncStatus = ({bool busy, String? message});
 
-/// How the latest sync ended: when it finished, whether it failed, and how
-/// many damaged records on this phone it [replaced] by the server's copy.
-typedef RecordSyncOutcome = ({DateTime at, bool failed, int replaced});
+/// Why a sync failed.
+enum RecordSyncFailure {
+  /// Jellyfin could not be reached: no network, a timeout, or a server
+  /// error.
+  unreachable,
+
+  /// Jellyfin answered, but it has no Bookfin Storage plugin that this app
+  /// can use: the plugin's routes are not found, or its answers do not
+  /// follow the storage contract.
+  pluginMissing,
+
+  /// The personal records on this phone could not be read.
+  unreadable,
+
+  /// Another cause, for example storage on this phone that could not be
+  /// written, or a sign-in that expired.
+  other,
+}
+
+/// How the latest sync ended.
+/// - [at]: when it ended.
+/// - [failure]: why it failed, or null when it succeeded.
+/// - [synced]: when the latest successful sync of this account ended, or
+///   null before the first one. A failed sync keeps it.
+/// - [replaced]: how many damaged records on this phone it replaced by the
+///   server's copy.
+typedef RecordSyncOutcome = ({
+  DateTime at,
+  RecordSyncFailure? failure,
+  DateTime? synced,
+  int replaced,
+});
 
 /// The records with saved versions to choose between: each record address
 /// with its saved versions.
 typedef RecordConflicts = Map<String, List<Map<String, dynamic>>>;
 
-/// What one sync tells the user who started it, and whether it failed.
-typedef _Result = ({bool failed, String message});
+/// What one sync or choice tells the user who started it beyond how its
+/// sync ended, or null when nothing.
+typedef _Result = ({String? message});
 
 /// Synchronizes personal records with Jellyfin for the signed-in account.
 ///
@@ -37,9 +69,10 @@ typedef _Result = ({bool failed, String message});
 /// period, from [resume] and after sign-in. It shows no busy state and no
 /// message. After a sync, Playback and the reader refresh only when the
 /// store reports that records of their domain changed outside them, and the
-/// conflicts notify only when they differ. The user starts [syncNow] and [resolve], which show busy and then
-/// their result in [statusNotifier]. Every sync sets [lastSyncNotifier] and
-/// [conflictsNotifier].
+/// conflicts notify only when they differ. The user starts [syncNow] and
+/// [resolve], which show busy in [statusNotifier] until they end, and then
+/// why a choice was not saved. Every sync sets [lastSyncNotifier], which
+/// says how it ended and why it failed, and [conflictsNotifier].
 ///
 /// One sync or choice runs at a time. A background sync that comes due while
 /// another runs is skipped, because the running one covers it. An action of
@@ -206,13 +239,11 @@ class RecordSync {
       if (!_current(generation)) return null;
       _publish(conflicts);
       return (
-        failed: true,
         message: 'This saved choice changed before it was selected. Review the current saved versions and choose again.',
       );
     } on Exception {
       if (!_current(generation)) return null;
       return (
-        failed: true,
         message: 'The choice was not saved. Both versions were kept. Retry after checking device storage.',
       );
     }
@@ -270,12 +301,8 @@ class RecordSync {
       final conflicts = await records.conflicts(session.scope.key);
       if (!_current(generation)) return null;
       _publish(conflicts);
-      return _ended(
-        failed: false,
-        replaced: replaced,
-        message: conflicts.isEmpty ? 'Personal records are synced.' : 'Choose between saved places or edits. Both versions are kept until you choose.',
-      );
-    } on Exception {
+      return _ended(replaced: replaced);
+    } on Exception catch (error) {
       if (!_current(generation)) return null;
       try {
         final conflicts = await records.conflicts(session.scope.key);
@@ -283,17 +310,22 @@ class RecordSync {
         _publish(conflicts);
       } on Exception {
         if (!_current(generation)) return null;
-        return _ended(
-          failed: true,
-          message: 'Personal records could not be read. Existing records were kept. Restart before syncing again.',
-        );
+        return _ended(failure: RecordSyncFailure.unreadable);
       }
-      return _ended(
-        failed: true,
-        message: 'Personal records remain on this device. Sync needs a connection and the compatible Bookfin Storage plugin on Jellyfin. No other storage is used. Retry after checking the server.',
-      );
+      return _ended(failure: _cause(error));
     }
   }
+
+  /// Why a sync that threw [error] failed, when the records on this phone
+  /// could be read.
+  static RecordSyncFailure _cause(Exception error) => switch (error) {
+    CatalogFailure(kind: CatalogFailureKind.unavailable, status: 404) ||
+    CatalogFailure(kind: CatalogFailureKind.invalidResponse) ||
+    FormatException() => RecordSyncFailure.pluginMissing,
+    CatalogFailure(kind: CatalogFailureKind.unavailable) =>
+      RecordSyncFailure.unreachable,
+    _ => RecordSyncFailure.other,
+  };
 
   /// Shows [conflicts], unless they equal the ones shown.
   void _publish(RecordConflicts conflicts) {
@@ -302,13 +334,17 @@ class RecordSync {
     }
   }
 
-  _Result _ended({
-    required bool failed,
-    required String message,
-    int replaced = 0,
-  }) {
-    _lastSync.value = (at: now(), failed: failed, replaced: replaced);
-    return (failed: failed, message: message);
+  /// Records how this sync ended: its [failure], or else success and the
+  /// number of damaged records that it [replaced].
+  _Result _ended({RecordSyncFailure? failure, int replaced = 0}) {
+    final at = now();
+    _lastSync.value = (
+      at: at,
+      failure: failure,
+      synced: failure == null ? at : _lastSync.value?.synced,
+      replaced: replaced,
+    );
+    return (message: null);
   }
 
   bool _current(int generation) => !_disposed && generation == _generation;

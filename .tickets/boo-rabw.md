@@ -1,6 +1,6 @@
 ---
 id: boo-rabw
-status: open
+status: in_progress
 deps: [boo-vtvp]
 links: []
 created: 2026-11-08T14:38:45Z
@@ -27,3 +27,7 @@ Alert designs are in docs/mockups/personal-records-a.html (notice on the book pa
 **2026-11-08T15:41:45Z**
 
 Design chosen by the user on 2026-11-08, a hybrid of docs/mockups/personal-records-a.html and personal-records-b.html. From design A: the conflict alert appears on the conflicting book only, as a glass notice above Resume on the book page and a pill under the chapter in the player; Choose opens the choice in a cover-tinted glass sheet right there (the same choice component as the page). From design B: each conflict draws both places as pins A and B on one track of the whole book, then two columns with Keep buttons (for bookmark-edit and edit-against-delete conflicts, which have no place on a track, show only the two columns); the page opens with a one-line status strip and a round Sync button, problems stack as banners under it, and with several conflicts one is open and the rest are collapsed rows. Shared by both: the Settings tab badge with the count of waiting choices, the Settings row line in copper ('A choice waits · First Frost'), the boo-cows labels, the note that both places stay as bookmarks, and one source of truth (RecordSync.conflictsNotifier). The sync coordinator must report the cause of a failure (no connection versus plugin missing) instead of one combined message.
+
+**2026-11-08T16:37:46Z**
+
+Built on 2026-11-08: lib/sync/alert.dart. RecordSyncScope above the navigator gives the book page and the player the record sync. BookConflictAlert follows only the conflicts of its book and shows ConflictAlert as a glass notice above Resume or a pill under the chapter in the player. chooseConflict opens the choice in a cover-tinted glass sheet and resolves the kept version through RecordSync. ChoicesBadge counts waiting choices on the Settings tab, and the Settings row line reads waitingChoices ('A choice waits · Northbound') in copper. All read RecordSync.conflictsNotifier, so they clear together.

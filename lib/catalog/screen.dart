@@ -11,6 +11,7 @@ import '../playback/playback.dart';
 import '../playback/screen.dart';
 import '../reader/session.dart';
 import '../settings/screen.dart';
+import '../sync/alert.dart' show ChoicesBadge;
 import '../sync/coordinator.dart';
 import 'controller.dart';
 import 'covers.dart';
@@ -192,9 +193,11 @@ class _CatalogHomeState extends State<CatalogHome> {
                             selectedIcon: const Icon(Icons.headphones_rounded),
                             label: 'Listening',
                           ),
-                          const NavigationDestination(
-                            icon: Icon(Icons.settings_outlined),
-                            selectedIcon: Icon(Icons.settings_rounded),
+                          NavigationDestination(
+                            icon: _choices(const Icon(Icons.settings_outlined)),
+                            selectedIcon: _choices(
+                              const Icon(Icons.settings_rounded),
+                            ),
                             label: 'Settings',
                           ),
                         ],
@@ -264,6 +267,12 @@ class _CatalogHomeState extends State<CatalogHome> {
       );
     },
   );
+
+  /// [icon] with the count of the choices that wait in record sync.
+  Widget _choices(Widget icon) => switch (widget.sync) {
+    final sync? => ChoicesBadge(conflicts: sync.conflictsNotifier, child: icon),
+    null => icon,
+  };
 }
 
 /// A tab below its top [bar]. Without a bar, the tab reaches up to the

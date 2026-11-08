@@ -84,7 +84,10 @@ class _WebTransport implements JsonTransport {
         throw const CatalogFailure(CatalogFailureKind.forbidden);
       }
       if (!response.ok) {
-        throw const CatalogFailure(CatalogFailureKind.unavailable);
+        throw CatalogFailure(
+          CatalogFailureKind.unavailable,
+          status: response.status,
+        );
       }
       final bytes = (await response.arrayBuffer().toDart).toDart.asUint8List();
       if (_closed) throw const CatalogFailure(CatalogFailureKind.cancelled);
