@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ui' as ui;
 
 import 'package:crypto/crypto.dart';
 import 'package:flutter_epub_viewer/publication.dart';
@@ -147,6 +148,43 @@ class ReaderSearchReport {
   final String? error;
 }
 
+/// A place in the open book: the place [progress] of the way through part
+/// [part], as the book map measures it.
+typedef BookPlace = ({int part, double progress});
+
+/// One drawn page of the open book, for the scrub deck.
+class PagePreview {
+  PagePreview({
+    required this.part,
+    required this.start,
+    required this.end,
+    required this.image,
+    this.previous,
+    this.next,
+  });
+
+  /// The part of the book that holds the page: a section of an EPUB's spine,
+  /// or a PDF's source page minus one.
+  final int part;
+
+  /// How far through [part] the page's first and last places are, from 0 to
+  /// 1. A PDF page is a whole part.
+  final double start;
+  final double end;
+
+  /// The page as the reader shows it.
+  final ui.Image image;
+
+  /// Where the pages before and after this one start, or null at the start
+  /// or the end of the book.
+  final BookPlace? previous;
+  final BookPlace? next;
+
+  /// Whether [place] is on this page.
+  bool holds(BookPlace place) =>
+      place.part == part && place.progress >= start && place.progress <= end;
+}
+
 abstract interface class DocumentNavigator {
   Future<void> move(bool forward);
   Future<void> display(ReaderAddress address);
@@ -156,6 +194,10 @@ abstract interface class DocumentNavigator {
   /// as the book map measures it: a section of an EPUB's spine, or a PDF's
   /// source page minus one. A PDF shows the start of the source page.
   Future<void> seek(int part, double progress);
+
+  /// Draws the page that holds [place], [width] pixels wide, as the viewport
+  /// would show it, without moving the shown page.
+  Future<PagePreview> preview(BookPlace place, double width);
   Future<void> configure({required double fontSize, required bool night});
   Future<ReaderSearchReport> search(String query, int request);
   Future<void> cancelSearch(int request);
@@ -178,6 +220,29 @@ class EpubNavigator implements DocumentNavigator {
   Future<void> contents(String href) => port.contents(href);
   @override
   Future<void> seek(int part, double progress) => port.seek(part, progress);
+  @override
+  Future<PagePreview> preview(BookPlace place, double width) async {
+    final picture = await port.preview(place.part, place.progress, width);
+    // The engine decodes the image on another thread.
+    final codec = await ui.instantiateImageCodec(picture.image);
+    final ui.Image image;
+    try {
+      image = (await codec.getNextFrame()).image;
+    } finally {
+      codec.dispose();
+    }
+    BookPlace? at((int, double)? place) =>
+        place == null ? null : (part: place.$1, progress: place.$2);
+    return PagePreview(
+      part: picture.section,
+      start: picture.start,
+      end: picture.end,
+      image: image,
+      previous: at(picture.previous),
+      next: at(picture.next),
+    );
+  }
+
   @override
   Future<void> configure({required double fontSize, required bool night}) =>
       port.configure(fontSize: fontSize, night: night);

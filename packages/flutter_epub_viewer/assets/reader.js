@@ -27,6 +27,7 @@ var bookfinReader = (() => {
     go: () => go,
     move: () => move,
     openBook: () => openBook,
+    previewPage: () => previewPage,
     resolveDestination: () => resolveDestination,
     search: () => search,
     searchBook: () => searchBook,
@@ -157,9 +158,24 @@ var bookfinReader = (() => {
     }
     return { hits, error };
   }
+  function addReaderStyle(document2) {
+    const style = document2.createElement("style");
+    style.textContent = '@font-face{font-family:BookfinSerif;src:url("https://bookfin-runtime.invalid/SourceSerif4.ttf")}body{overflow-wrap:break-word;line-height:1.65!important;padding:0 18px!important}img{max-width:100%!important;height:auto}a:focus{outline:2px solid currentColor}';
+    document2.head.appendChild(style);
+  }
+  var renditionOptions = {
+    width: "100%",
+    height: "100%",
+    spread: "none",
+    flow: "paginated",
+    allowScriptedContent: false,
+    allowPopups: false,
+    method: "write"
+  };
   var book;
   var rendition;
   var settings;
+  var appearance;
   var searchRequest = 0;
   var searchJob = Promise.resolve();
   var navigationJob = Promise.resolve();
@@ -204,20 +220,10 @@ var bookfinReader = (() => {
     book = window.ePub(void 0, { requestMethod: requestLocal, replacements: "none" });
     await book.open(settings.base, "directory");
     await book.ready;
-    rendition = book.renderTo("viewer", {
-      width: "100%",
-      height: "100%",
-      spread: "none",
-      flow: "paginated",
-      allowScriptedContent: false,
-      allowPopups: false,
-      method: "write"
-    });
+    rendition = book.renderTo("viewer", renditionOptions);
     rendition.hooks.content.register((contents) => {
       const document2 = contents.document;
-      const style = document2.createElement("style");
-      style.textContent = '@font-face{font-family:BookfinSerif;src:url("https://bookfin-runtime.invalid/SourceSerif4.ttf")}body{overflow-wrap:break-word;line-height:1.65!important;padding:0 18px!important}img{max-width:100%!important;height:auto}a:focus{outline:2px solid currentColor}';
-      document2.head.appendChild(style);
+      addReaderStyle(document2);
       document2.addEventListener("click", (event) => {
         const link = event.target.closest && event.target.closest("a[href]");
         if (link) {
@@ -309,7 +315,9 @@ var bookfinReader = (() => {
   async function configure(fontSize, night, restore = true) {
     const update = async () => {
       const current = rendition.location && rendition.location.start.cfi;
+      appearance = { fontSize, night };
       applyAppearance(rendition, fontSize, night);
+      if (preview) applyAppearance(preview, fontSize, night);
       if (restore && current) await rendition.display(current);
     };
     return restore ? withNavigation(update) : update();
@@ -323,6 +331,146 @@ var bookfinReader = (() => {
   }
   function cancelSearch(request) {
     if (searchRequest === request) searchRequest = -1;
+  }
+  var preview;
+  var previewJob = Promise.resolve();
+  var inlined = /* @__PURE__ */ new Map();
+  function previewRendition() {
+    if (preview) return preview;
+    const viewer = document.getElementById("viewer");
+    if (getComputedStyle(viewer).position === "static") viewer.style.position = "relative";
+    const box = document.createElement("div");
+    box.inert = true;
+    box.setAttribute("aria-hidden", "true");
+    box.style.cssText = "position:absolute;left:0;top:0;width:100%;height:100%;opacity:0;z-index:-1;pointer-events:none";
+    viewer.appendChild(box);
+    preview = book.renderTo(box, renditionOptions);
+    preview.hooks.content.register((contents) => addReaderStyle(contents.document));
+    applyAppearance(preview, appearance.fontSize, appearance.night);
+    return preview;
+  }
+  function dataUrl(blob) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(blob);
+    });
+  }
+  function inline(address) {
+    if (!inlined.has(address)) {
+      const url = new URL(address);
+      const job = url.origin === "https://bookfin-runtime.invalid" && url.pathname === "/SourceSerif4.ttf" ? fetch(url.href, { credentials: "omit", redirect: "error" }).then((response) => response.blob()) : requestLocal(url.href, "blob");
+      inlined.set(address, job.then(dataUrl).catch(() => ""));
+    }
+    return inlined.get(address);
+  }
+  var inlinedCss = /* @__PURE__ */ new Map();
+  function inlineCss(css, base) {
+    const key = base + "\n" + css;
+    if (!inlinedCss.has(key)) inlinedCss.set(key, inlineCssOnce(css, base));
+    return inlinedCss.get(key);
+  }
+  async function inlineCssOnce(css, base) {
+    const pattern = /url\(\s*(['"]?)([^'")]+)\1\s*\)/g;
+    const addresses = /* @__PURE__ */ new Set();
+    for (const [, , address] of css.matchAll(pattern)) {
+      if (!address.startsWith("data:")) addresses.add(new URL(address, base).href);
+    }
+    const found = new Map(await Promise.all([...addresses].map(async (address) => [address, await inline(address)])));
+    return css.replace(pattern, (whole, quote, address) => address.startsWith("data:") ? whole : `url("${found.get(new URL(address, base).href) || ""}")`);
+  }
+  async function documentCss(document2) {
+    const parts = await Promise.all([...document2.querySelectorAll('style, link[rel~="stylesheet"]')].map(async (node) => {
+      if (node.localName === "style") {
+        const rules = node.sheet ? [...node.sheet.cssRules].map((rule) => rule.cssText).join("\n") : node.textContent;
+        return inlineCss(rules, document2.baseURI);
+      }
+      const address = new URL(node.getAttribute("href"), document2.baseURI).href;
+      if (!linkedCss.has(address)) {
+        linkedCss.set(address, requestLocal(address, "text").then((css) => inlineCss(css, address), () => ""));
+      }
+      return linkedCss.get(address);
+    }));
+    return parts.join("\n");
+  }
+  var linkedCss = /* @__PURE__ */ new Map();
+  var encodedCss = /* @__PURE__ */ new Map();
+  async function drawPage(view, scale) {
+    const manager = view.manager;
+    const frame = manager.views.first();
+    const document2 = frame.contents.document;
+    const width = manager.container.clientWidth;
+    const height = manager.container.clientHeight;
+    const left = manager.container.scrollLeft - frame.element.offsetLeft;
+    const css = await documentCss(document2);
+    if (!encodedCss.has(css)) encodedCss.set(css, encodeURIComponent(css));
+    const clone = document2.documentElement.cloneNode(true);
+    for (const node of clone.querySelectorAll("style, link, script")) node.remove();
+    for (const element of [clone, clone.querySelector("body")]) element?.style.setProperty("overflow", "visible", "important");
+    await Promise.all([...clone.querySelectorAll("img[src], image")].map(async (image2) => {
+      const attribute = image2.localName === "img" ? "src" : image2.hasAttribute("href") ? "href" : "xlink:href";
+      const value = image2.getAttribute(attribute);
+      if (value && !value.startsWith("data:")) image2.setAttribute(attribute, await inline(new URL(value, document2.baseURI).href));
+    }));
+    const marker = "bookfin-preview-style";
+    const style = document2.createElementNS("http://www.w3.org/1999/xhtml", "style");
+    style.textContent = marker;
+    (clone.querySelector("head") || clone).prepend(style);
+    const [before, after] = new XMLSerializer().serializeToString(clone).split(marker);
+    const frameWidth = frame.element.offsetWidth;
+    const head = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"><foreignObject x="${-left}" y="0" width="${frameWidth}" height="${height}">`;
+    const image = new Image();
+    image.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(head + before) + encodedCss.get(css) + encodeURIComponent(after + "</foreignObject></svg>");
+    await image.decode();
+    const canvas = window.document.createElement("canvas");
+    canvas.width = Math.round(width * scale);
+    canvas.height = Math.round(height * scale);
+    const context = canvas.getContext("2d", { willReadFrequently: true });
+    context.fillStyle = appearance.night ? "#251e19" : "#f6efe2";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.scale(scale, scale);
+    context.drawImage(image, 0, 0);
+    return canvas.toDataURL("image/jpeg", 0.85);
+  }
+  function charactersAt(range) {
+    const document2 = range.startContainer.ownerDocument;
+    const body = document2.body || document2.getElementsByTagName("body")[0];
+    const total = body ? visibleLength(body.textContent) : 0;
+    if (!total || !body.contains(range.startContainer)) return { before: 0, total };
+    const before = range.cloneRange();
+    before.selectNodeContents(body);
+    before.setEnd(range.startContainer, range.startOffset);
+    return { before: visibleLength(before.toString()), total };
+  }
+  function previewPage(index, progress, width) {
+    const job = previewJob.catch(() => {
+    }).then(async () => {
+      const section = Number.isInteger(index) && book.spine.get(index);
+      if (!section || typeof progress !== "number" || !(progress >= 0 && progress <= 1) || typeof width !== "number" || !(width > 0 && width <= 4096)) throw Error("The destination is not in this book");
+      const view = previewRendition();
+      await section.load(book.load.bind(book));
+      await view.display(placeAt(section, progress));
+      const location = view.currentLocation();
+      const image = await drawPage(view, width / view.manager.container.clientWidth);
+      const first = charactersAt(await book.getRange(location.start.cfi));
+      const last = charactersAt(await book.getRange(location.end.cfi));
+      const count = book.spine.spineItems.length;
+      const total = first.total;
+      const place = (character) => (character + 0.5) / total;
+      const firstPage = !total || location.start.displayed.page <= 1;
+      const lastPage = !total || location.end.displayed.page >= location.end.displayed.total;
+      return {
+        image,
+        part: index,
+        start: total ? first.before / total : 0,
+        end: total && !lastPage ? Math.min(1, last.before / total) : 1,
+        previous: !firstPage ? { part: index, progress: place(first.before - 1) } : index > 0 ? { part: index - 1, progress: 1 } : null,
+        next: !lastPage ? { part: index, progress: place(Math.min(total - 1, last.before + 1)) } : index + 1 < count ? { part: index + 1, progress: 0 } : null
+      };
+    });
+    previewJob = job;
+    return job;
   }
   return __toCommonJS(reader_exports);
 })();

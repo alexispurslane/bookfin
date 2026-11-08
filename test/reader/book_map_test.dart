@@ -99,6 +99,21 @@ void main() {
     expect(book.fractionOf(place('OPS/two.xhtml')), closeTo(inTwo(0), 1e-9));
   });
 
+  test('a part and a progress through it sit where the bar would put them, '
+      'in an EPUB and a PDF', () async {
+    final book = await map();
+    expect(book.fractionAt((part: 1, progress: .5)), closeTo(inTwo(.5), 1e-9));
+    for (final fraction in [0.0, .3, inTwo(.25), .99]) {
+      final target = book.targetAt(fraction);
+      expect(
+        book.fractionAt((part: target.part, progress: target.progress)),
+        closeTo(fraction, 1e-9),
+      );
+    }
+    expect(BookMap.pages(4).fractionAt((part: 2, progress: .5)), .625);
+    expect(BookMap.pages(4).fractionAt((part: 9, progress: 0)), 1);
+  });
+
   test('a PDF place counts its shown source page as read, so the last '
       'page fills the bar', () {
     final book = BookMap.pages(4);

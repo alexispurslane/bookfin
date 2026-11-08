@@ -1,6 +1,6 @@
 ---
 id: boo-foo7
-status: open
+status: in_progress
 deps: [boo-315o]
 links: []
 created: 2026-11-08T12:48:01Z
@@ -19,3 +19,7 @@ User request (2026-11-08): while the user scrubs back and forth in a book, the p
 **2026-11-08T12:51:22Z**
 
 Design decided by the user on 2026-11-08: design A, live pages. Every card shows a real rendered image of its page, both while the finger moves and when it rests. EPUB and MOBI render target pages in a second, hidden epub.js rendition; PDF uses PdfBook.render. Rejected: index cards (chapter title, page number and first lines as text). Consequences to design for: a render takes about 0.1-0.3 s, so during a fast drag the deck must never show blank cards (keep the nearest finished render, blurred or dimmed, until the target's image arrives), drop renders for places the finger already left, and cache recent page images within one drag. Shared by both designs: on drag start the page zooms out into a card, the previous and next pages show as smaller dimmed overlapping cards, release zooms back into the target page, and it works the same in EPUB, MOBI and PDF. Depends on boo-315o, the whole-book scrub bar.
+
+**2026-11-08T15:20:59Z**
+
+Built design A. EPUB and MOBI pages come from a second, hidden epub.js rendition in the same WebView: its page document, with style, fonts and images inlined, becomes an SVG image drawn to a canvas and sent as a JPEG. PDF pages come from PdfBook.render. PagePreviews, owned by ReaderSession, owns the page images; ScrubDeck shows them. The shown frames now lay out in standards mode, as XHTML does (they were in quirks mode), so a preview matches its page. Measured cost per page on emulator-5554: EPUB 0.6 to 0.8 s in a section, 1.4 to 1.7 s across sections; PDF 27 to 93 ms. Follow-ups: t6-rt20 (EPUB cost), t6-6gej (frame rate on hardware graphics).

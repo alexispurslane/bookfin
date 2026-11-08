@@ -159,6 +159,41 @@ void main() {
     expect(bar(tester).value, closeTo(inTwo(.74), 1e-9));
   }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
 
+  testWidgets('a drag on the bar turns the page into a deck that draws the '
+      'page under the thumb, and the release lands the reader there and '
+      'closes the deck', (tester) async {
+    final port = ControlPort();
+    final reader = await openReader(port);
+    reader.acceptVisible(reader.token, inSectionTwo(.25));
+    await show(tester, reader);
+    final front = find.byKey(const ValueKey('deck front card'));
+    expect(front, findsNothing);
+    bar(tester).onChangeStart!(inTwo(.25));
+    await tester.pump();
+    expect(front, findsOneWidget);
+    expect(port.previews.single.$1, 1);
+    expect(port.previews.single.$2, closeTo(.25, 1e-9));
+    expect(port.previews.single.$3, greaterThan(0));
+    bar(tester).onChanged!(inTwo(.75));
+    await tester.pump();
+    expect(port.seeks, isEmpty, reason: 'The book stays during the drag.');
+    bar(tester).onChangeEnd!(inTwo(.75));
+    await tester.pumpAndSettle();
+    expect(port.seeks.single.$1, 1);
+    expect(port.seeks.single.$2, closeTo(.75, 1e-9));
+    expect(front, findsNothing);
+    expect(reader.previews.deck.value, isNull);
+  }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
+
+  test('closing the book ends a scrub and frees its deck', () async {
+    final reader = await openReader(ControlPort());
+    await pumpEventQueue();
+    reader.previews.start(reader.bookMap!.targetAt(inTwo(.5)), width: 300);
+    expect(reader.previews.deck.value, isNotNull);
+    reader.closeView(reader.token);
+    expect(reader.previews.deck.value, isNull);
+  });
+
   testWidgets('the reader bar reports where a drag starts, each target and '
       'where it ends, as places in the book', (tester) async {
     final reader = await openReader(ControlPort());

@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 class ReadingLocation {
   const ReadingLocation(
     this.cfi,
@@ -82,6 +84,35 @@ class SearchReport {
   final String? error;
 }
 
+/// A page that the reader drew without showing it.
+class PagePicture {
+  const PagePicture(
+    this.image, {
+    required this.section,
+    required this.start,
+    required this.end,
+    this.previous,
+    this.next,
+  });
+
+  /// The page as an encoded image.
+  final Uint8List image;
+
+  /// The spine section that holds the page.
+  final int section;
+
+  /// The text progress through [section] of the page's first and last
+  /// places, from 0 to 1 (see [ReadingLocation.progress]).
+  final double start;
+  final double end;
+
+  /// Where the pages before and after this one start, as a spine section and
+  /// a text progress through it, or null at the start or the end of the
+  /// book.
+  final (int, double)? previous;
+  final (int, double)? next;
+}
+
 abstract interface class NavigatorPort {
   Future<void> move(bool forward);
   Future<void> display(ReadingLocation location);
@@ -91,6 +122,11 @@ abstract interface class NavigatorPort {
   /// text of spine section [section], from 0 at its start to 1 at its end.
   /// [ReadingLocation.progress] measures text progress.
   Future<void> seek(int section, double progress);
+
+  /// Draws the page that holds the place [progress] of the way through the
+  /// text of spine section [section], [width] pixels wide, as the reader
+  /// would show it, without moving the shown page.
+  Future<PagePicture> preview(int section, double progress, double width);
   Future<void> configure({required double fontSize, required bool night});
   Future<SearchReport> search(String query, int request);
   Future<void> cancelSearch(int request);

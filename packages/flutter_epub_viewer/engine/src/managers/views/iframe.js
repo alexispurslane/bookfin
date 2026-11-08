@@ -424,6 +424,14 @@ class IframeView {
 				return loaded;
 			}
 
+			// Bookfin: a section is XHTML, which never lays out in quirks mode.
+			// The blank frame's document is in quirks mode until a doctype is
+			// parsed into it. Page previews, which are always in standards mode,
+			// then lay out as the shown page does.
+			this.document.open();
+			this.document.write("<!DOCTYPE html><html></html>");
+			this.document.close();
+
 			const parsed = new DOMParser().parseFromString(contents, "application/xhtml+xml");
 			if (parsed.getElementsByTagName("parsererror").length ||
 				parsed.documentElement.localName !== "html" ||

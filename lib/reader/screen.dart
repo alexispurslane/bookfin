@@ -16,6 +16,7 @@ import 'session.dart';
 import 'document.dart';
 import 'pdf.dart';
 import 'pdf_viewport.dart';
+import 'scrub_deck.dart';
 
 class ReaderScreen extends StatefulWidget {
   const ReaderScreen({
@@ -169,10 +170,9 @@ class _ReaderScreenState extends State<ReaderScreen> {
       reader.documentChanges,
       reader.fontSizeChanges,
     ]);
+    final paper = night ? const Color(0xff251e19) : const Color(0xfff6efe2);
     return Scaffold(
-      backgroundColor: night
-          ? const Color(0xff251e19)
-          : const Color(0xfff6efe2),
+      backgroundColor: paper,
       appBar: _controls
           ? AppBar(
               title: ListenableBuilder(
@@ -240,13 +240,17 @@ class _ReaderScreenState extends State<ReaderScreen> {
               child: Stack(
                 children: [
                   Positioned.fill(
-                    child: ListenableBuilder(
-                      listenable: Listenable.merge([
-                        documentOrSize,
-                        reader.saveStatusChanges,
-                        reader.reflowChanges,
-                      ]),
-                      builder: (context, _) => _viewport(context, night),
+                    child: ScrubDeck(
+                      deck: reader.previews.deck,
+                      paper: paper,
+                      page: ListenableBuilder(
+                        listenable: Listenable.merge([
+                          documentOrSize,
+                          reader.saveStatusChanges,
+                          reader.reflowChanges,
+                        ]),
+                        builder: (context, _) => _viewport(context, night),
+                      ),
                     ),
                   ),
                   if (!_controls)
@@ -353,7 +357,20 @@ class _ReaderScreenState extends State<ReaderScreen> {
                             icon: Icons.chevron_right_rounded,
                             onPressed: () => unawaited(reader.move(true)),
                           ),
-                          onScrubEnd: reader.goTo,
+                          // The deck's front card is the page area at
+                          // its own scale, at the screen's pixel density.
+                          onScrubStart: (target) => reader.previews.start(
+                            target,
+                            width:
+                                MediaQuery.sizeOf(context).width *
+                                MediaQuery.devicePixelRatioOf(context) *
+                                ScrubDeck.frontScale,
+                          ),
+                          onScrubTarget: reader.previews.aim,
+                          onScrubEnd: (target) => reader.previews.settle(
+                            target,
+                            reader.goTo(target),
+                          ),
                         ),
                         if (widget.playback != null)
                           PlaybackMiniPlayer(playback: widget.playback!),

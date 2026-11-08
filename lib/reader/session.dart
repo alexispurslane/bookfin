@@ -11,6 +11,7 @@ import '../downloads/downloads.dart';
 import '../playback/playback.dart';
 import 'book_map.dart';
 import 'document.dart';
+import 'page_previews.dart';
 import 'pdf.dart';
 
 export 'package:flutter_epub_viewer/navigation.dart';
@@ -255,6 +256,18 @@ class ReaderSession extends ChangeNotifier {
   /// Whether the open book is being measured for [bookMap].
   bool _mapping = false;
 
+  /// The scrub deck's pages, which the shown viewport draws. Closing the
+  /// book ends a scrub.
+  late final previews = PagePreviews(
+    draw: (place, width) {
+      final navigator = _navigator;
+      return navigator == null
+          ? Future.error(StateError('No book is shown.'))
+          : navigator.preview(place, width);
+    },
+    locate: (place) => _bookMap?.fractionAt(place) ?? 0,
+  );
+
   /// Where places sit along the whole open book, for the scrub bar. It is
   /// null while no book is open and until the viewport lists the book's
   /// contents.
@@ -371,6 +384,7 @@ class ReaderSession extends ChangeNotifier {
   void _clear() {
     ++_token;
     ++_search;
+    previews.close();
     _navigator = null;
     final previous = _document;
     if (previous is PdfBook) previous.textSupply?.cancel();
@@ -863,6 +877,7 @@ class ReaderSession extends ChangeNotifier {
     for (final signal in _signals) {
       signal.dispose();
     }
+    previews.dispose();
     super.dispose();
   }
 }
