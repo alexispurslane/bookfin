@@ -541,6 +541,190 @@ void main() {
     );
   });
 
+  group('a SQLite file whose pages are damaged after it opened', () {
+    /// Writes [bytes] over the last [pages] pages of the record file at
+    /// [path], after another connection moved the write-ahead log into it.
+    Future<List<int>> damageTail(String path, {required int pages}) async {
+      final sql = await _separateConnection(path);
+      await sql.rawQuery('PRAGMA wal_checkpoint(TRUNCATE)');
+      await sql.close();
+      final file = File(path);
+      final bytes = await file.readAsBytes();
+      final start = bytes.length - pages * 4096;
+      expect(start, greaterThan(4096), reason: 'the schema page stays');
+      for (var index = start; index < bytes.length; index++) {
+        bytes[index] = index * 7 % 251;
+      }
+      await file.writeAsBytes(bytes, flush: true);
+      return bytes;
+    }
+
+    /// Saves listening history for [account] that fills several pages.
+    Future<void> fillHistory(LocalResumeStore store, String account) async {
+      for (var index = 0; index < 40; index++) {
+        await store.save(
+          account,
+          ListeningChanges(
+            _settings,
+            bookmarks: {
+              'mark-$index': {
+                ..._bookmark('mark-$index', index * 1000),
+                'title': 'Mark $index ${'·' * 200}',
+              },
+            },
+          ),
+        );
+      }
+    }
+
+    test('is kept aside as it was and reported', () async {
+      final phone = await _Phone.open('pages-kept');
+      await phone.store.save('alice', _place(10000));
+      await fillHistory(phone.store, 'alice');
+      await phone.database.close();
+      final damaged = await damageTail(phone.path, pages: 4);
+      phone.database = await RecordDatabase.open(
+        factory: databaseFactoryFfi,
+        path: phone.path,
+      );
+      expect(phone.database.keptFile, isNull, reason: 'the file opens');
+      phone.store = LocalResumeStore(openDatabase: () async => phone.database);
+
+      await phone.store.read('alice');
+      expect(phone.store.setAside('alice'), isTrue);
+      final kept = File(phone.path).parent
+          .listSync()
+          .whereType<File>()
+          .where((file) => RegExp(r'\.damaged-\d+$').hasMatch(file.path));
+      expect(kept.single.readAsBytesSync(), damaged);
+    });
+
+    test('keeps a place saved after it through a kill and a restart', () async {
+      final phone = await _Phone.open('pages-then-place');
+      await phone.store.save('alice', _place(10000));
+      await fillHistory(phone.store, 'alice');
+      await phone.database.close();
+      await damageTail(phone.path, pages: 4);
+      phone.database = await RecordDatabase.open(
+        factory: databaseFactoryFfi,
+        path: phone.path,
+      );
+      phone.store = LocalResumeStore(openDatabase: () async => phone.database);
+
+      await phone.store.read('alice');
+      await phone.store.save('alice', _place(20000));
+      await phone.restart();
+      expect(_savedPlace(await phone.store.read('alice')), 20000);
+      expect(phone.store.setAside('alice'), isFalse);
+      await phone.store.checkInvariants();
+    });
+
+    test('keeps the records of an account that the store had read before it found the damage', () async {
+      final phone = await _Phone.open('pages-cached');
+      await phone.store.save('alice', _place(10000));
+      await phone.store.save(
+        'alice',
+        ListeningChanges(
+          _settings,
+          bookmarks: {'mark': _bookmark('mark', 15000)},
+        ),
+      );
+      await fillHistory(phone.store, 'bob');
+      await phone.restart();
+      expect(_savedPlace(await phone.store.read('alice')), 10000);
+      await damageTail(phone.path, pages: 4);
+
+      await phone.store.read('bob');
+      expect(phone.store.setAside('bob'), isTrue);
+      await phone.store.save('alice', _place(20000));
+      await phone.restart();
+      final alice = await phone.store.read('alice');
+      expect(_savedPlace(alice), 20000);
+      expect((alice!['bookmarks'] as List).single['id'], 'mark');
+      await phone.store.checkInvariants();
+    });
+    test('found by a save keeps the place of that save and the records held in memory', () async {
+      final phone = await _Phone.open('pages-on-save');
+      await phone.store.save(
+        'alice',
+        ListeningChanges(
+          _settings,
+          bookmarks: {'mark': _bookmark('mark', 15000)},
+        ),
+      );
+      await fillHistory(phone.store, 'alice');
+      await phone.restart();
+      await phone.store.read('alice');
+      // The store's connection drops the pages that it read, so that the
+      // next save reads the damaged pages from the file.
+      final shared = await databaseFactoryFfi.openDatabase(phone.path);
+      await shared.execute('PRAGMA cache_size = 0');
+      await shared.execute('PRAGMA shrink_memory');
+      await damageTail(phone.path, pages: 4);
+
+      await phone.store.save('alice', _place(20000));
+      expect(phone.store.setAside('alice'), isTrue);
+      await phone.restart();
+      final alice = await phone.store.read('alice');
+      expect(_savedPlace(alice), 20000);
+      expect(
+        (alice!['bookmarks'] as List).map((mark) => mark['id']),
+        contains('mark'),
+      );
+      await phone.store.checkInvariants();
+    });
+  });
+
+  group('a record row with a value of the wrong type', () {
+    test(
+      'is kept aside as it was, and the records that decode come back',
+      () async {
+        final phone = await _Phone.open('blob-kept');
+        await phone.store.save('alice', _place(10000));
+        await phone.store.save(
+          'alice',
+          ListeningChanges(
+            _settings,
+            bookmarks: {'mark': _bookmark('mark', 15000)},
+          ),
+        );
+        final sql = await _separateConnection(phone.path);
+        addTearDown(sql.close);
+        await sql.rawUpdate(
+          "UPDATE record_actions SET payload = x'00ff7b' WHERE rowid = (SELECT MAX(rowid) FROM record_actions)",
+        );
+
+        await phone.restart();
+        final snapshot = await phone.store.read('alice');
+        expect(phone.store.setAside('alice'), isTrue);
+        expect(_savedPlace(snapshot), 10000);
+        expect(snapshot!['bookmarks'], isEmpty);
+        final kept = await sql.query('set_aside_record_actions');
+        expect(
+          kept.map((row) => row['payload']),
+          contains(equals([0x00, 0xff, 0x7b])),
+        );
+        await phone.store.checkInvariants();
+      },
+    );
+
+    test('keeps a place saved after it through a kill and a restart', () async {
+      final phone = await _Phone.open('blob-then-place');
+      await phone.store.save('alice', _place(10000));
+      final sql = await _separateConnection(phone.path);
+      addTearDown(sql.close);
+      await sql.rawUpdate("UPDATE record_accounts SET metadata = x'00ff'");
+
+      await phone.restart();
+      await phone.store.read('alice');
+      expect(phone.store.setAside('alice'), isTrue);
+      await phone.store.save('alice', _place(20000));
+      await phone.restart();
+      expect(_savedPlace(await phone.store.read('alice')), 20000);
+      await phone.store.checkInvariants();
+    });
+  });
+
   group('record sync', () {
     late SyncFixture server;
     setUp(() async {

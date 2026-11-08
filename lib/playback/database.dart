@@ -10,7 +10,11 @@ import '../sync/journal.dart';
 /// rows, and [pending] names the actions that wait for upload. [versions]
 /// holds the JSON list of current action identities of each record, and
 /// [coverage] the highest applied sequence of each installation.
+/// [malformed] says that a value had a type that its column does not hold,
+/// such as a blob in a text column. Such a text reads as an empty string, and
+/// such a number as -1, so that neither decodes.
 typedef AccountRows = ({
+  bool malformed,
   String metadata,
   String replica,
   int cursor,
@@ -45,15 +49,31 @@ const _accountTables = {
   'record_coverage': ['account', 'replica', 'sequence'],
 };
 
-class RecordDatabase {
-  RecordDatabase._(this._database, {this.keptFile});
-  final Database _database;
+/// Thrown by a read or a write of a [RecordDatabase] that found damaged
+/// pages in the record file. The file was set aside, as [RecordDatabase.open]
+/// does, and the database continues on a new empty file, so the caller must
+/// write again what it holds in memory.
+class RecordFileSetAside implements Exception {
+  const RecordFileSetAside(this.keptFile);
 
-  /// The name of the copy of a record file that could not be opened, or
-  /// null when the file opened. [open] copied the damaged file and its
-  /// write-ahead log to this name and its `-wal` name, then started a new
-  /// file.
-  final String? keptFile;
+  /// The name that the damaged file was copied to.
+  final String keptFile;
+
+  @override
+  String toString() => 'The damaged record file was kept as $keptFile.';
+}
+
+class RecordDatabase {
+  RecordDatabase._(this._files, this._name, this._database, {this.keptFile});
+  final DatabaseFactory _files;
+  final String _name;
+  Database _database;
+
+  /// The name of the copy of a record file that SQLite reported as damaged,
+  /// or null while the file is intact. [open], or a later read or write that
+  /// found damaged pages, copied the damaged file and its write-ahead log to
+  /// this name and its `-wal` name, then started a new file.
+  String? keptFile;
 
   /// Opens the record file at [path], or the default file.
   ///
@@ -68,13 +88,28 @@ class RecordDatabase {
     final files = factory ?? databaseFactory;
     final name = path ?? 'bookfin-personal-records-v1.sqlite';
     try {
-      return RecordDatabase._(await _openFile(files, name));
+      return RecordDatabase._(files, name, await _openFile(files, name));
     } on DatabaseException catch (error) {
-      // SQLITE_CORRUPT and SQLITE_NOTADB. Android reports extended codes.
-      if (!const {11, 26}.contains((error.getResultCode() ?? 0) & 0xff)) {
-        rethrow;
-      }
+      if (!_damaged(error)) rethrow;
     }
+    final kept = await _keepAside(files, name);
+    return RecordDatabase._(
+      files,
+      name,
+      await _openFile(files, name),
+      keptFile: kept,
+    );
+  }
+
+  /// Whether [error] says that the file is damaged: SQLITE_CORRUPT or
+  /// SQLITE_NOTADB. Android reports extended codes.
+  static bool _damaged(DatabaseException error) =>
+      const {11, 26}.contains((error.getResultCode() ?? 0) & 0xff);
+
+  /// Copies the closed file [name] and its write-ahead log aside, deletes
+  /// the original only after the copy is complete, and returns the name of
+  /// the copy.
+  static Future<String> _keepAside(DatabaseFactory files, String name) async {
     final kept =
         '$name.damaged-${DateTime.now().toUtc().millisecondsSinceEpoch}';
     for (final suffix in ['', '-wal']) {
@@ -86,7 +121,22 @@ class RecordDatabase {
       }
     }
     await files.deleteDatabase(name);
-    return RecordDatabase._(await _openFile(files, name), keptFile: kept);
+    return kept;
+  }
+
+  /// Runs [work] on the record file. When SQLite reports damaged pages, this
+  /// closes the file, sets it aside as [open] does, opens a new empty file,
+  /// and throws [RecordFileSetAside]. Other failures throw as they are.
+  Future<T> _guarded<T>(Future<T> Function(Database database) work) async {
+    try {
+      return await work(_database);
+    } on DatabaseException catch (error) {
+      if (!_damaged(error)) rethrow;
+    }
+    await _database.close();
+    final kept = keptFile = await _keepAside(_files, _name);
+    _database = await _openFile(_files, _name);
+    throw RecordFileSetAside(kept);
   }
 
   static Future<Database> _openFile(DatabaseFactory files, String name) =>
@@ -140,64 +190,97 @@ class RecordDatabase {
   /// The durable rows of [account] as text, or null when it has none.
   ///
   /// Nothing is decoded, so a read can send the rows to another isolate as
-  /// strings and decode them there with [decode].
-  Future<AccountRows?> rows(String account) => _database.transaction((
-    transaction,
-  ) async {
-    final accounts = await transaction.query(
-      'record_accounts',
-      where: 'account = ?',
-      whereArgs: [account],
-    );
-    if (accounts.isEmpty) return null;
-    final row = accounts.single;
-    final actions = await transaction.query(
-      'record_actions',
-      where: 'account = ?',
-      whereArgs: [account],
-      orderBy: 'rowid',
-    );
-    final versions = await transaction.query(
-      'record_versions',
-      where: 'account = ?',
-      whereArgs: [account],
-    );
-    final coverage = await transaction.query(
-      'record_coverage',
-      where: 'account = ?',
-      whereArgs: [account],
-    );
-    // NOTE: Engine rule 1. These loops only copy column values out of
-    // the rows, about 50 ns each, so that the hop sends strings instead
-    // of row maps. The JSON in them is decoded in the hop.
-    return (
-      metadata: row['metadata'] as String,
-      replica: row['replica'] as String,
-      cursor: row['cursor'] as int,
-      identities: [for (final action in actions) action['identity'] as String],
-      payloads: [for (final action in actions) action['payload'] as String],
-      pending: [
-        for (final action in actions)
-          if (action['pending'] == 1) action['identity'] as String,
-      ],
-      versions: {
-        for (final version in versions)
-          version['record'] as String: version['identities'] as String,
-      },
-      coverage: {
-        for (final entry in coverage)
-          entry['replica'] as String: entry['sequence'] as int,
-      },
-    );
-  });
+  /// strings and decode them there with [decode]. Throws
+  /// [RecordFileSetAside] when the file has damaged pages.
+  Future<AccountRows?> rows(String account) => _guarded(
+    (database) => database.transaction((transaction) async {
+      final accounts = await transaction.query(
+        'record_accounts',
+        where: 'account = ?',
+        whereArgs: [account],
+      );
+      if (accounts.isEmpty) return null;
+      final row = accounts.single;
+      final actions = await transaction.query(
+        'record_actions',
+        where: 'account = ?',
+        whereArgs: [account],
+        orderBy: 'rowid',
+      );
+      final versions = await transaction.query(
+        'record_versions',
+        where: 'account = ?',
+        whereArgs: [account],
+      );
+      final coverage = await transaction.query(
+        'record_coverage',
+        where: 'account = ?',
+        whereArgs: [account],
+      );
+      // A value of another type than its column holds reads as one that
+      // does not decode, and marks the rows as malformed.
+      var malformed = false;
+      String text(Object? value) {
+        if (value is String) return value;
+        malformed = true;
+        return '';
+      }
+
+      int number(Object? value) {
+        if (value is int) return value;
+        malformed = true;
+        return -1;
+      }
+
+      // NOTE: Engine rule 1. These loops only copy column values out of
+      // the rows, about 50 ns each, so that the hop sends strings instead
+      // of row maps. The JSON in them is decoded in the hop.
+      final identities = [
+        for (final action in actions) text(action['identity']),
+      ];
+      final pending = <String>[];
+      for (final (index, action) in actions.indexed) {
+        switch (action['pending']) {
+          case 1:
+            pending.add(identities[index]);
+          case 0:
+            break;
+          default:
+            malformed = true;
+        }
+      }
+      return (
+        metadata: text(row['metadata']),
+        replica: text(row['replica']),
+        cursor: number(row['cursor']),
+        identities: identities,
+        payloads: [for (final action in actions) text(action['payload'])],
+        pending: pending,
+        versions: {
+          for (final version in versions)
+            text(version['record']): text(version['identities']),
+        },
+        coverage: {
+          for (final entry in coverage)
+            text(entry['replica']): number(entry['sequence']),
+        },
+        malformed: malformed,
+      );
+    }),
+  );
 
   /// The account that [rows] hold: the settings under `snapshot`, the
   /// journal under `sync`, and the current versions and causal coverage
   /// that the rows recorded, under `current` and `coverage`.
   ///
-  /// Throws a [FormatException] when a row cannot be decoded or does not
-  /// name the action that it holds.
+  /// Throws a [FormatException] when a row is malformed, cannot be decoded
+  /// or does not name the action that it holds.
   static Map<String, dynamic> decode(AccountRows rows) {
+    if (rows.malformed) {
+      throw const FormatException(
+        'A personal-record value has a type that its column does not hold.',
+      );
+    }
     final metadata = jsonDecode(rows.metadata);
     if (metadata is! Map<String, dynamic> ||
         (metadata['reading'] != null &&
@@ -300,34 +383,48 @@ class RecordDatabase {
     );
   }
 
-  /// Writes [commit] in one transaction.
-  Future<void> writeCommit(RecordCommit commit) =>
-      _database.transaction((transaction) => _write(transaction, commit));
+  /// Writes [commit] in one transaction. Throws [RecordFileSetAside] when
+  /// the file has damaged pages.
+  Future<void> writeCommit(RecordCommit commit) => _guarded(
+    (database) =>
+        database.transaction((transaction) => _write(transaction, commit)),
+  );
+
+  /// Writes each of [commits] in one transaction.
+  Future<void> writeCommits(List<RecordCommit> commits) =>
+      _database.transaction((transaction) async {
+        for (final commit in commits) {
+          await _write(transaction, commit);
+        }
+      });
 
   /// Moves every row of the account of [commit] into the tables that keep
   /// damaged rows, stamped with [keptAt] in milliseconds since the epoch,
   /// and writes [commit] as the account's first commit, in one
   /// transaction. So a failure or a kill leaves the damaged rows where they
-  /// were, or the new account with the damaged rows kept aside.
+  /// were, or the new account with the damaged rows kept aside. Throws
+  /// [RecordFileSetAside] when the file has damaged pages.
   Future<void> replaceDamaged(RecordCommit commit, {required int keptAt}) {
     if (!commit.initialize) {
       throw ArgumentError('A damaged account is replaced by a first commit.');
     }
-    return _database.transaction((transaction) async {
-      for (final MapEntry(key: table, value: columns)
-          in _accountTables.entries) {
-        await transaction.rawInsert(
-          'INSERT INTO set_aside_$table SELECT ?, ${columns.join(', ')} FROM $table WHERE account = ? ORDER BY rowid',
-          [keptAt, commit.account],
-        );
-        await transaction.delete(
-          table,
-          where: 'account = ?',
-          whereArgs: [commit.account],
-        );
-      }
-      await _write(transaction, commit);
-    });
+    return _guarded(
+      (database) => database.transaction((transaction) async {
+        for (final MapEntry(key: table, value: columns)
+            in _accountTables.entries) {
+          await transaction.rawInsert(
+            'INSERT INTO set_aside_$table SELECT ?, ${columns.join(', ')} FROM $table WHERE account = ? ORDER BY rowid',
+            [keptAt, commit.account],
+          );
+          await transaction.delete(
+            table,
+            where: 'account = ?',
+            whereArgs: [commit.account],
+          );
+        }
+        await _write(transaction, commit);
+      }),
+    );
   }
 
   static Future<void> _write(

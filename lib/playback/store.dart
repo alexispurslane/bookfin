@@ -93,6 +93,12 @@ const _hopText = 4 * 1024;
 /// sync. [setAside] reports the damage. If the damaged data cannot be moved
 /// aside, the read fails and the data stays where it was.
 ///
+/// When SQLite reports damaged pages in the record file during a read or a
+/// write, the database keeps the whole file aside and continues on a new
+/// file ([RecordFileSetAside]). The store then writes every account that it
+/// holds in memory whole into the new file, with the write in progress, and
+/// [setAside] reports the damage for every account.
+///
 /// Engine rule 1: the whole-account work of a read (journal replay, the
 /// decoding of an older format, and each domain's snapshot) runs in one hop
 /// to another isolate, and its result comes back without a copy. A save
@@ -401,7 +407,12 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
     if (database != null) {
       final cached = _accounts[accountKey];
       if (cached != null) return cached;
-      final rows = await database.rows(accountKey);
+      AccountRows? rows;
+      try {
+        rows = await database.rows(accountKey);
+      } on RecordFileSetAside {
+        await _rewriteCached(database);
+      }
       if (rows != null) {
         return _adopt(
           accountKey,
@@ -444,12 +455,17 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
     final database = await _storage();
     if (restored.damaged && database != null) {
       _forgetViews(account);
-      await database.replaceDamaged(
-        restored.commit!,
-        keptAt: DateTime.now().millisecondsSinceEpoch,
-      );
-      stored.journal.persisted();
-      _accounts[account] = stored;
+      try {
+        await database.replaceDamaged(
+          restored.commit!,
+          keptAt: DateTime.now().millisecondsSinceEpoch,
+        );
+        stored.journal.persisted();
+        _accounts[account] = stored;
+      } on RecordFileSetAside {
+        _accounts[account] = stored;
+        await _rewriteCached(database);
+      }
     } else if (restored.damaged) {
       final preferences = await SharedPreferences.getInstance();
       final kept =
@@ -484,17 +500,22 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
     final database = await _storage();
     _forgetViews(account);
     if (database != null) {
-      await database.writeCommit(
-        commit ??
-            RecordDatabase.encodeCommit(
-              account,
-              metadata,
-              journal,
-              initialize: !_accounts.containsKey(account),
-            ),
-      );
-      journal.persisted();
-      _accounts[account] = (metadata: metadata, journal: journal);
+      try {
+        await database.writeCommit(
+          commit ??
+              RecordDatabase.encodeCommit(
+                account,
+                metadata,
+                journal,
+                initialize: !_accounts.containsKey(account),
+              ),
+        );
+        journal.persisted();
+        _accounts[account] = (metadata: metadata, journal: journal);
+      } on RecordFileSetAside {
+        _accounts[account] = (metadata: metadata, journal: journal);
+        await _rewriteCached(database);
+      }
     } else {
       // Without a database the whole account is one preference value, so a
       // kill leaves the old value or the new one if the platform writes one
@@ -518,6 +539,31 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
           'Personal records were not saved. Free storage, then retry.',
         );
       }
+    }
+  }
+
+  /// Writes every cached account whole into the new file that replaced a
+  /// damaged record file, in one transaction, so that the records that the
+  /// store holds in memory stay on the phone. A hop encodes them.
+  Future<void> _rewriteCached(RecordDatabase database) async {
+    final accounts = Map.of(_accounts);
+    final input = [
+      for (final MapEntry(key: account, value: stored) in accounts.entries)
+        (
+          account: account,
+          metadata: stored.metadata,
+          sync: stored.journal.encode(),
+        ),
+    ];
+    final actions = input.fold(
+      0,
+      (count, account) => count + (account.sync['actions'] as List).length,
+    );
+    await database.writeCommits(
+      await _derive(_wholeCommits, input, small: actions < _hopItems),
+    );
+    for (final stored in accounts.values) {
+      stored.journal.persisted();
     }
   }
 
@@ -1022,17 +1068,35 @@ _Restored _readText(({String account, String text, bool database}) input) {
 }
 
 /// A new account from the damaged [AccountRows] of `input.account`: the
-/// settings when they decode, and each action that decodes.
+/// settings when they decode, and each action that decodes. Malformed rows
+/// may have lost the upload state, so every action is uploaded again.
 _Restored _salvageRows(({String account, AccountRows rows}) input) {
   final rows = input.rows;
   return _salvaged(
     input.account,
     _decodedObject(rows.metadata) ?? {},
     actions: [for (final payload in rows.payloads) ?_decodedObject(payload)],
-    pending: rows.pending,
+    pending: rows.malformed ? null : rows.pending,
     database: true,
   );
 }
+
+/// The first commit of each of [accounts] that writes all of its settings
+/// and its whole journal, encoded as [RecordJournal.encode] does.
+List<RecordCommit> _wholeCommits(
+  List<
+    ({String account, Map<String, dynamic> metadata, Map<String, dynamic> sync})
+  >
+  accounts,
+) => [
+  for (final account in accounts)
+    RecordDatabase.encodeCommit(
+      account.account,
+      account.metadata,
+      _journal(account.account, {'sync': account.sync}),
+      initialize: true,
+    ),
+];
 
 /// A new account from the damaged saved text of `input.account`: the
 /// settings and each record or action that still decodes.
