@@ -1,6 +1,6 @@
 ---
 id: t6-0cjf
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-11-08T16:46:14Z
