@@ -66,16 +66,10 @@ class ScannedPdf extends HeldPdf {
   }
 }
 
-/// A text PDF that counts how often it computes the digest of a page text.
-class CountingPdf extends HeldPdf {
-  CountingPdf() {
+/// A text PDF whose original page is already drawn.
+class DrawnPdf extends HeldPdf {
+  DrawnPdf() {
     rendering.complete(PdfRaster(1, 1, Uint8List(4)));
-  }
-  var digests = 0;
-  @override
-  String digest(String source) {
-    digests++;
-    return super.digest(source);
   }
 }
 
@@ -191,7 +185,7 @@ void main() {
       'Reflow text and Original page report the choice and leave the view '
       'to the owner',
       (tester) async {
-        final pdf = CountingPdf();
+        final pdf = DrawnPdf();
         final reports = Reports();
         await tester.pumpWidget(viewport(pdf, reports));
         await drawn(tester);
@@ -215,7 +209,7 @@ void main() {
       'switching between the original page and reflow keeps the reading '
       'place',
       (tester) async {
-        final pdf = CountingPdf();
+        final pdf = DrawnPdf();
         final text = await pdf.text(1);
         final saved = pdf.addressFor(1, text, 2000);
         final reports = Reports();
@@ -253,7 +247,7 @@ void main() {
     testWidgets(
       'a viewport that opens in reflow shows the page text at the saved place',
       (tester) async {
-        final pdf = CountingPdf();
+        final pdf = DrawnPdf();
         final saved = pdf.addressFor(1, await pdf.text(1), 2000);
         final reports = Reports();
         await tester.pumpWidget(
@@ -271,9 +265,10 @@ void main() {
   });
 
   testWidgets(
-    'scrolling inside one reflowed page computes its text digest once',
+    'every place inside one reflowed page names the digest that came with '
+    'its page text',
     (tester) async {
-      final pdf = CountingPdf();
+      final pdf = DrawnPdf();
       final reports = Reports();
       await tester.pumpWidget(viewport(pdf, reports, reflow: true));
       await tester.pumpAndSettle();
@@ -288,9 +283,8 @@ void main() {
       );
       expect(
         reports.addresses.map((address) => address.representation).toSet(),
-        hasLength(1),
+        {'fixture/fixture/extracted/fixture-text'},
       );
-      expect(pdf.digests, 1);
       await tester.pumpWidget(const SizedBox());
     },
   );
@@ -305,7 +299,7 @@ void main() {
         downloads: downloads,
         store: MemoryResume(),
         load: loadPublication,
-        loadDocument: (_, _) async => CountingPdf(),
+        loadDocument: (_, _) async => DrawnPdf(),
       );
       addTearDown(() {
         reader.dispose();

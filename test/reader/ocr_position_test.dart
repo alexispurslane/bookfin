@@ -229,6 +229,7 @@ void main() {
       text: recognized.text,
       sourceOffsets: recognized.sourceOffsets,
       status: PdfTextStatus.candidate,
+      digest: recognized.digest,
     );
     final extractedAddress = pdf.addressFor(2, extracted, 10);
     final recognizedAddress = pdf.addressFor(2, recognized, 10);
@@ -240,6 +241,7 @@ void main() {
       sourceOffsets: recognized.sourceOffsets,
       status: recognized.status,
       recognition: 'previous-model',
+      digest: recognized.digest,
     );
     expect(pdf.resolveAddress(recognizedAddress, differentModel), isNull);
     expect(pdf.resolveAddress(recognizedAddress, recognized)!.character, 10);

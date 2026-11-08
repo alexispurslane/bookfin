@@ -24,3 +24,7 @@ One hop typedef in lib/foundation, used by the three stores, and no behavior cha
 **2026-11-08T00:12:38Z**
 
 Orchestrator, Nov 7: the orchestrator does this one-line refactor after groups B and C merge.
+
+**2026-11-08T01:23:12Z**
+
+Found in tb-jllp: PdfHop (lib/reader/pdf.dart, the hop that PdfRuntime.open takes to prepare page text) is a fourth copy of the same typedef. Use the shared type there too.

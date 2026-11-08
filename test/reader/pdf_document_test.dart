@@ -66,6 +66,53 @@ void main() {
     );
   });
 
+  test('an address inside an extracted page keeps the representation that '
+      'saved places use', () async {
+    final bytes = await File('tool/research/readers/fixtures/simple.pdf')
+        .readAsBytes();
+    final book = await PdfRuntime.instance.open(bytes);
+    addTearDown(book.dispose);
+    // Saved places inside a page compare this value, so a change here
+    // would move every such place back to the start of its page.
+    expect(
+      book.addressFor(1, await book.text(1), 10).representation,
+      'bookfin-pdf-source-pages-1/pdfrx-0.9.0-pdfium-8125/extracted/'
+      '6809befa2062965afe8125645eb4e02934d3edbf04af2c75be151563f835558e',
+    );
+  });
+
+  test(
+    'each page text is prepared in one worker hop that also names its digest',
+    () async {
+      final bytes = await File('tool/research/readers/fixtures/simple.pdf')
+          .readAsBytes();
+      final inputs = <Object?>[];
+      final outputs = <Object?>[];
+      Future<R> hop<M, R>(R Function(M) work, M input) async {
+        inputs.add(input);
+        final output = await Isolate.run(() => work(input));
+        outputs.add(output);
+        return output;
+      }
+
+      final book = await PdfRuntime.instance.open(bytes, hop: hop);
+      addTearDown(book.dispose);
+      final text = await book.text(1);
+      await book.text(1);
+      expect(inputs, hasLength(1));
+      final page = inputs.single! as ({String source, Float64List boxes});
+      expect(page.boxes, hasLength(page.source.length * 4));
+      expect(outputs.single, same(text));
+      expect(text.text, contains('The river follows the old road.'));
+      expect(
+        text.digest,
+        '6809befa2062965afe8125645eb4e02934d3edbf04af2c75be151563f835558e',
+      );
+      await book.text(2);
+      expect(inputs, hasLength(2));
+    },
+  );
+
   test(
     'a scanned source page keeps its visible original without inventing text',
     () async {

@@ -130,6 +130,7 @@ class BundledEnglishText implements PdfTextSupply {
                       sourceOffsets: result.sourceOffsets,
                       status: result.status,
                       recognition: result.recognition,
+                      digest: result.digest,
                       reason: 'English text is available, but could not be cached. Free storage to save recognition.',
                     ),
                     saved: false,
@@ -392,6 +393,7 @@ PdfText decodeRecognizedPage(String hocr) {
     sourceOffsets: offsets,
     recognition: BundledEnglishText.version,
     status: unreliable ? PdfTextStatus.unreliable : PdfTextStatus.candidate,
+    digest: unreliable ? null : pdfTextDigest(raw),
     reason: unreliable
         ? 'Recognized text order is unreliable. Read the original page.'
         : null,
