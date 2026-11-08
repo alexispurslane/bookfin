@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
@@ -8,16 +9,34 @@ import 'package:just_audio/just_audio.dart';
 import '../downloads/downloads.dart';
 import '../catalog/jellyfin.dart';
 import '../catalog/store.dart';
+import 'apple_audio_files.dart';
 import 'playback.dart';
 import 'reporting.dart';
 import 'store.dart';
+
+/// The platforms where just_audio and audio_service both have a native
+/// implementation. Elsewhere Bookfin offers no listening.
+const _playingPlatforms = {
+  TargetPlatform.android,
+  TargetPlatform.iOS,
+  TargetPlatform.macOS,
+};
 
 Future<Playback?> createPlayback(
   Downloads downloads, {
   ListeningStore? store,
 }) async {
-  if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return null;
-  final engine = LocalAudioEngine();
+  if (kIsWeb || !_playingPlatforms.contains(defaultTargetPlatform)) {
+    return null;
+  }
+  final engine = LocalAudioEngine(
+    // AVFoundation picks its decoder by the file extension.
+    links:
+        defaultTargetPlatform == TargetPlatform.iOS ||
+            defaultTargetPlatform == TargetPlatform.macOS
+        ? Directory('${Directory.systemTemp.path}/bookfin-audio')
+        : null,
+  );
   final handler = await AudioService.init(
     builder: PlaybackHandler.new,
     config: const AudioServiceConfig(
@@ -46,11 +65,17 @@ Future<Playback?> createPlayback(
 
 class LocalAudioEngine implements AudioEngine {
   final AudioPlayer _player;
+  final Directory? _links;
   final _events = StreamController<AudioSample>.broadcast(sync: true);
   final _subscriptions = <StreamSubscription<dynamic>>[];
   bool _changingPosition = false;
   AudioSample? _confirmed;
-  LocalAudioEngine({AudioPlayer? player}) : _player = player ?? AudioPlayer() {
+
+  /// Plays with [player]. With [links], it plays each file through a link
+  /// in that directory whose extension names the file's audio format, as
+  /// [playableAudioFile] makes it.
+  LocalAudioEngine({AudioPlayer? player, this._links})
+    : _player = player ?? AudioPlayer() {
     _subscriptions.add(_player.playerStateStream.listen((_) => _publish()));
     _subscriptions.add(_player.currentIndexStream.listen((_) => _publish()));
     _subscriptions.add(_player.positionStream.listen((_) => _publish()));
@@ -84,8 +109,14 @@ class LocalAudioEngine implements AudioEngine {
       throw ArgumentError('Only verified local audio is supported.');
     }
     _confirmed = null;
+    final links = _links;
+    final playable = links == null
+        ? files
+        : await Future.wait(
+            files.map((file) => playableAudioFile(file, links: links)),
+          );
     await _player.setAudioSources(
-      files.map(AudioSource.uri).toList(),
+      playable.map(AudioSource.uri).toList(),
       initialIndex: fileIndex,
       initialPosition: Duration(milliseconds: milliseconds),
     );

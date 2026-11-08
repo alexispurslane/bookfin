@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' show AppExitResponse;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -53,10 +54,11 @@ Future<void> runBookfin({bool gallery = false}) async {
     );
   });
   final appearance = AppearanceController(LocalAppearanceStore());
+  // Every native platform keeps personal records in the record database.
+  // sqflite supplies it on Android, iOS and macOS. A Linux or Windows port
+  // must first set sqflite's databaseFactory to the FFI one.
   final records = LocalResumeStore(
-    openDatabase: !kIsWeb && defaultTargetPlatform == TargetPlatform.android
-        ? () => RecordDatabase.open()
-        : null,
+    openDatabase: kIsWeb ? null : () => RecordDatabase.open(),
     deviceName: deviceName,
   );
   final layout = LibraryLayout(LocalLayoutStore());
@@ -254,6 +256,19 @@ class _BookfinAppState extends State<BookfinApp> with WidgetsBindingObserver {
       unawaited(widget.reader?.flush());
       _appearance.suspend();
     }
+  }
+
+  /// A desktop app can quit from its menu while it is in the foreground,
+  /// with no lifecycle change before. The places in the open books are saved
+  /// before it exits. A save that fails does not keep the app open: the
+  /// binding reports the error and exits.
+  @override
+  Future<AppExitResponse> didRequestAppExit() async {
+    await Future.wait([
+      if (widget.playback case final playback?) playback.flush(),
+      if (widget.reader case final reader?) reader.flush(),
+    ]);
+    return AppExitResponse.exit;
   }
 
   @override

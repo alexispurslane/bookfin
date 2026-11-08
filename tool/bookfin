@@ -36,6 +36,27 @@ case "$command" in
     python3 tool/reader/native_package.py verify build/app/outputs/flutter-apk/app-debug.apk
     python3 tool/reader/ocr_package.py verify build/app/outputs/flutter-apk/app-debug.apk
     ;;
+  build-macos|run-macos|accept-macos)
+    if [[ ${BOOKFIN_MACOS_SHELL:-} != 1 ]]; then
+      printf 'Run through the macOS shell: nix develop .#macos --command bash tool/bookfin %s\n' "$command" >&2
+      exit 1
+    fi
+    python3 tool/reader/native_package.py prepare-macos
+    case "$command" in
+      build-macos) flutter build macos --debug "$@" ;;
+      run-macos) flutter run -d macos "$@" ;;
+      accept-macos)
+        # Each build gets a new ad-hoc signature, and the login keychain asks
+        # the user before a new build reads an item that an older build
+        # saved. The run starts without the saved sign-in and signs out at
+        # the end, so no dialog blocks it.
+        for item in bookfin.session.v1 bookfin.device.v1; do
+          security delete-generic-password -s flutter_secure_storage_service -a "$item" >/dev/null 2>&1 || true
+        done
+        flutter test integration_test/macos_desktop_test.dart -d macos --reporter expanded "$@"
+        ;;
+    esac
+    ;;
   build-probe-android)
     flutter build apk --debug --target-platform android-arm64 --target tool/reload_probe.dart "$@"
     ;;
@@ -68,7 +89,7 @@ case "$command" in
     bash tool/link-t3-sdk "$@"
     ;;
   *)
-    printf 'Commands: doctor, test, analyze, build-web, build-android, build-probe-android, web, probe-web, attach-android <id>, emulator-create, link-t3-sdk <host-sdk>\n'
+    printf 'Commands: doctor, test, analyze, build-web, build-android, build-probe-android, build-macos, run-macos, accept-macos, web, probe-web, attach-android <id>, emulator-create, link-t3-sdk <host-sdk>\n'
     [[ "$command" == help ]]
     ;;
 esac

@@ -4,7 +4,6 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 import 'covers.dart';
@@ -106,8 +105,10 @@ Future<Uint8List?> _httpFetch(Uri uri, Map<String, String> headers) async {
   return bytes.takeBytes();
 }
 
+/// Keeps covers in `bookfin-covers`, beside the download directory that the
+/// runner's media host contract names. Without that contract there are no
+/// saved covers.
 Future<Covers?> createCovers() async {
-  if (defaultTargetPlatform != TargetPlatform.android) return null;
   try {
     final info = await const MethodChannel('bookfin/media')
         .invokeMapMethod<String, dynamic>('storage');

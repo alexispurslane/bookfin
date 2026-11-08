@@ -1,34 +1,38 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 import 'downloads.dart';
 import 'local_downloads.dart';
 import 'platform_stub.dart' show UnavailableDownloads;
 
+/// The media host contract that each platform's runner implements: the
+/// Android activity, and the Apple runners' MediaChannel.swift. `storage`
+/// names the private download directory, `freeBytes` the space left on its
+/// volume, and `network` the current [MediaNetwork] by name, which
+/// `bookfin/media-network` also sends on each change.
 const _methods = MethodChannel('bookfin/media');
 const _events = EventChannel('bookfin/media-network');
 
+/// Opens downloads in the directory that the runner names. A runner without
+/// the media host contract, such as a desktop port that does not implement
+/// it yet, gives unavailable downloads.
 Future<Downloads> createDownloads(MediaPolicy policy) async {
-  if (defaultTargetPlatform != TargetPlatform.android) {
-    return UnavailableDownloads(policy);
-  }
   try {
     final info = await _methods.invokeMapMethod<String, dynamic>('storage');
     if (info == null || info['path'] is! String) {
       return UnavailableDownloads(policy);
     }
-    return _AndroidDownloads(Directory(info['path'] as String), policy);
+    return _HostDownloads(Directory(info['path'] as String), policy);
   } catch (_) {
     policy.network = MediaNetwork.unknown;
     return UnavailableDownloads(policy);
   }
 }
 
-class _AndroidDownloads extends LocalDownloads {
-  _AndroidDownloads(Directory directory, MediaPolicy policy)
+class _HostDownloads extends LocalDownloads {
+  _HostDownloads(Directory directory, MediaPolicy policy)
     : super(
         root: directory,
         freeBytes: () async =>

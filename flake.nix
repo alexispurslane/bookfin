@@ -12,7 +12,9 @@
         "aarch64-darwin"
         "x86_64-linux"
       ];
-      devShell =
+      # The shells of one system: the default shell, and on macOS the shell
+      # that builds the macOS desktop app.
+      shells =
         system:
         let
           pkgs = import nixpkgs {
@@ -87,52 +89,56 @@
             GRADLE_OPTS = "-Dorg.gradle.project.android.aapt2FromMavenOverride=${sdk}/build-tools/36.0.0/aapt2";
           };
         in
-        pkgs.mkShell (
-          {
-            packages = [
-              flutter
-              pkgs.jdk21
-              pkgs.git
-              pkgs.ffmpeg
-              pkgs.jq
-              pkgs.nixfmt
-              pkgs.nodejs_22
-              pkgs.curl
-              pkgs.python3
-              pkgs.cmake
-              pkgs.ninja
-              android.androidsdk
-            ]
-            ++ nativeTools
-            ++ [ ocr.hostEngine ];
-            JAVA_HOME = "${pkgs.jdk21}";
-            ANDROID_HOME = sdk;
-            ANDROID_SDK_ROOT = sdk;
-            FLUTTER_ROOT = "${flutter}";
-            FLUTTER_SUPPRESS_ANALYTICS = "true";
-            DART_SUPPRESS_ANALYTICS = "true";
-            PDFIUM_LIBRARY = readerNative.pdfiumLibrary;
-            BOOKFIN_LIBMOBI_SOURCE = readerNative.libmobiSource;
-            BOOKFIN_MOBI_LIBRARY = readerNative.mobiLibrary;
-            BOOKFIN_PDFIUM_ANDROID = readerNative.pdfiumAndroid;
-            BOOKFIN_GPL3_TEXT = readerNative.gplText;
-            BOOKFIN_OCR_MODEL = ocr.model;
-            BOOKFIN_OCR_ANDROID_AAR = ocr.aar;
-            BOOKFIN_OCR_ANDROID_SOURCE = ocr.source;
-            BOOKFIN_OCR_MODEL_LICENSE = ocr.modelLicense;
-            BOOKFIN_NIX_SHELL = "1";
-            shellHook = ''
-              export PUB_CACHE="$PWD/.cache/pub"
-              export GRADLE_USER_HOME="$PWD/.cache/gradle"
-              export PATH="${sdk}/cmdline-tools/latest/bin:${sdk}/platform-tools:${sdk}/emulator:$PATH"
-            '';
-          }
-          // linuxOnly
-        );
+        {
+          default = pkgs.mkShell (
+            {
+              packages = [
+                flutter
+                pkgs.jdk21
+                pkgs.git
+                pkgs.ffmpeg
+                pkgs.jq
+                pkgs.nixfmt
+                pkgs.nodejs_22
+                pkgs.curl
+                pkgs.python3
+                pkgs.cmake
+                pkgs.ninja
+                android.androidsdk
+              ]
+              ++ nativeTools
+              ++ [ ocr.hostEngine ];
+              JAVA_HOME = "${pkgs.jdk21}";
+              ANDROID_HOME = sdk;
+              ANDROID_SDK_ROOT = sdk;
+              FLUTTER_ROOT = "${flutter}";
+              FLUTTER_SUPPRESS_ANALYTICS = "true";
+              DART_SUPPRESS_ANALYTICS = "true";
+              PDFIUM_LIBRARY = readerNative.pdfiumLibrary;
+              BOOKFIN_LIBMOBI_SOURCE = readerNative.libmobiSource;
+              BOOKFIN_MOBI_LIBRARY = readerNative.mobiLibrary;
+              BOOKFIN_PDFIUM_ANDROID = readerNative.pdfiumAndroid;
+              BOOKFIN_GPL3_TEXT = readerNative.gplText;
+              BOOKFIN_OCR_MODEL = ocr.model;
+              BOOKFIN_OCR_ANDROID_AAR = ocr.aar;
+              BOOKFIN_OCR_ANDROID_SOURCE = ocr.source;
+              BOOKFIN_OCR_MODEL_LICENSE = ocr.modelLicense;
+              BOOKFIN_NIX_SHELL = "1";
+              shellHook = ''
+                export PUB_CACHE="$PWD/.cache/pub"
+                export GRADLE_USER_HOME="$PWD/.cache/gradle"
+                export PATH="${sdk}/cmdline-tools/latest/bin:${sdk}/platform-tools:${sdk}/emulator:$PATH"
+              '';
+            }
+            // linuxOnly
+          );
+        }
+        // pkgs.lib.optionalAttrs isDarwin {
+          # nix develop .#macos
+          macos = import ./nix/macos-desktop.nix { inherit pkgs readerNative; };
+        };
     in
     {
-      devShells = nixpkgs.lib.genAttrs systems (system: {
-        default = devShell system;
-      });
+      devShells = nixpkgs.lib.genAttrs systems shells;
     };
 }
