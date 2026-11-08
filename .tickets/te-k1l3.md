@@ -1,6 +1,6 @@
 ---
 id: te-k1l3
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-08T22:04:24Z
@@ -29,3 +29,7 @@ Change: tool/reader/deck_benchmark.dart opens the book OPEN_AFTER_MS (default 30
 Emulator results, 6 cold process starts each, first deck page: old benchmark (open at the first frame) 117, 190, 253, 273, 398, 496 ms. OPEN_AFTER_MS=0: 217, 328, 335, 379, 480, 496 ms (second page up to 343 ms). OPEN_AFTER_MS=1000: 16 to 18 ms (every page at most 13 ms in a section, 19 ms for a new section). OPEN_AFTER_MS=3000: 16 to 29 ms (at most 16 ms in a section, 20 ms for a new section).
 
 Not met: the Pixel 8 was not measured, because this task's brief kept off the user's Pixel. The cold start case on the emulator stays above 0.3 s for 4 of 6 runs; its cause is the engine's start and Android's start work, recorded as tf-mo5q. The orchestrator decides whether the acceptance means a book opened in a running app (met on the emulator) or also a scrub in the first second after a cold start.
+
+**2026-11-08T23:11:45Z**
+
+Orchestrator, 2026-11-08: accepted as met. A person cannot open a book and scrub within the first second after the process starts, so the goal applies to a book opened in a running app (16 to 29 ms on the emulator). No Pixel 8 measurement: on 2026-11-08 the user said that no Pixel benchmark is needed. The start-up window itself is tf-mo5q.
