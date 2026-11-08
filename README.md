@@ -17,7 +17,7 @@ The landing page is [`index.html`](index.html).
 
 ## Requirements
 
-- An Apple Silicon Mac with Nix and flakes. The flake pins Flutter, Dart, Java, the Android SDK and NDK, and the native reader libraries.
+- A build host with Nix and flakes: an Apple Silicon Mac, an x86_64 Linux computer, or WSL2 on an x86_64 Windows computer. The flake pins Flutter, Dart, Java, the Android SDK and NDK, and the native reader libraries.
 - A 64-bit ARM Android phone or emulator.
 - A Jellyfin server. The plugin was tested only with Jellyfin 12.4.0.
 
@@ -36,6 +36,8 @@ The first command downloads the pinned tools.
 The build makes a debug APK.
 In the app, sign in with the server address, your Jellyfin user name, and your password.
 
+On WSL2, adb sees a USB phone only after you attach the phone to WSL with [usbipd-win](https://github.com/dorssel/usbipd-win).
+The Linux shell has no Android emulator. The emulator runs on the Mac.
 For the emulator and hot reload, read [`docs/setup.md`](docs/setup.md).
 
 ### Try it without a server

@@ -356,7 +356,7 @@ footer a{color:var(--subtle);display:inline-block;padding:.6rem .25rem}
         <p>Bookfin is a personal project with no store release yet. You build it from source on a computer, then install it on your phone. A Nix flake pins every tool, so the build needs nothing else installed.</p>
         <p>You need:</p>
         <ul class="needs">
-          <li>An Apple Silicon Mac with Nix</li>
+          <li>A computer with Nix: an Apple Silicon Mac, x86_64 Linux, or WSL2 on Windows</li>
           <li>A 64-bit Android phone and a USB cable</li>
           <li>A Jellyfin server with a book library</li>
         </ul>
@@ -364,7 +364,7 @@ footer a{color:var(--subtle);display:inline-block;padding:.6rem .25rem}
       <div>
         <div class="code">
           <button class="copybtn" type="button" data-copy="build">Copy</button>
-<pre id="build"><span class="c"># on your Mac, with the phone plugged in</span>
+<pre id="build"><span class="c"># on your Mac, Linux, or WSL2 computer, with the phone plugged in</span>
 git clone https://tangled.org/xenolandscapes.com/bookfin
 cd bookfin
 nix develop --command flutter pub get

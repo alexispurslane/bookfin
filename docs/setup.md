@@ -1,7 +1,10 @@
 # Development setup
 
-This setup targets macOS on Apple Silicon and Android.
-The Nix shell is `devShells.aarch64-darwin.default`.
+This setup targets Android from two build hosts.
+The Nix shells are `devShells.aarch64-darwin.default` for Apple Silicon Macs and `devShells.x86_64-linux.default` for x86_64 Linux and WSL2.
+Google ships the Android build tools and the NDK for x86_64 Linux only, so the flake declares no aarch64 Linux shell.
+The Linux shell has no Android emulator, no system image, and no macOS native tools.
+It points Gradle at the SDK's `aapt2`, because the `aapt2` that Gradle downloads needs a `/lib64` loader that NixOS does not have.
 Other host platforms are not declared or tested.
 Keep the main checkout at `~/Development/bookfin`.
 T3 worktrees, separate checkouts for individual tasks, use the same flake.
