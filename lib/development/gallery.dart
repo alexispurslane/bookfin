@@ -130,6 +130,11 @@ final _chapters = [
     ),
 ];
 
+/// The index in [_chapters] of the chapter that holds [position], in
+/// milliseconds from the start.
+int _chapterAt(int position) =>
+    _chapters.lastIndexWhere((chapter) => chapter.milliseconds <= position);
+
 /// A sample book whose first edition is its audiobook. With [ebook], it also
 /// has an EPUB edition.
 Book _sampleBook(
@@ -565,6 +570,18 @@ class _PlayerFixture extends StatelessWidget {
     }
   }
 
+  /// Shows the sample chapters. A chosen chapter moves the sample there.
+  Future<void> _chooseChapter(BuildContext context) {
+    final position = sample.position.value;
+    return showChapters(
+      context,
+      chapters: _chapters,
+      current: _chapterAt(position),
+      position: position,
+      onChapter: (chapter) => sample.move(chapter.milliseconds),
+    );
+  }
+
   Future<void> _rename(BuildContext context, AudioBookmark bookmark) async {
     final edited = await showBookmarkEditor(
       context,
@@ -607,14 +624,17 @@ class _PlayerFixture extends StatelessWidget {
         ValueListenableBuilder(
           valueListenable: sample.position,
           builder: (context, position, _) {
-            final chapter = _chapters.lastIndexWhere(
-              (chapter) => chapter.milliseconds <= position,
-            );
-            return Text(
-              '${_chapters[chapter].name} · ${chapter + 1} of ${_chapters.length}',
-              textAlign: TextAlign.center,
-              style: theme.textTheme.labelLarge?.copyWith(
-                color: theme.colorScheme.primary,
+            final chapter = _chapterAt(position);
+            return Center(
+              child: TextButton(
+                onPressed: () => unawaited(_chooseChapter(context)),
+                child: Text(
+                  '${_chapters[chapter].name} · ${chapter + 1} of ${_chapters.length}',
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
               ),
             );
           },
@@ -646,9 +666,7 @@ class _PlayerFixture extends StatelessWidget {
               position: position,
               total: _length,
               chapters: _chapters,
-              chapterIndex: _chapters.lastIndexWhere(
-                (chapter) => chapter.milliseconds <= position,
-              ),
+              chapterIndex: _chapterAt(position),
               bookmarks: sample.bookmarks,
               onSeekStart: () {},
               onSeekEnd: (milliseconds) async => sample.move(milliseconds),

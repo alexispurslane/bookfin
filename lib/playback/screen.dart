@@ -528,119 +528,14 @@ class PlayerView extends StatelessWidget {
     );
   }
 
-  Future<void> _chapters(BuildContext context) => showGlassSheet<void>(
+  Future<void> _chapters(BuildContext context) => showChapters(
     context,
-    title: 'Chapters',
-    isScrollControlled: true,
-    builder: (context) {
-      final theme = Theme.of(context);
-      final scheme = theme.colorScheme;
-      final accent = theme.brightness == Brightness.dark
-          ? theaterGlow
-          : scheme.primary;
-      final chapters = playback.chapters;
-      final current = playback.chapterIndex;
-      final position = playback.position?.milliseconds ?? 0;
-      return DraggableScrollableSheet(
-        expand: false,
-        initialChildSize: 0.65,
-        builder: (context, scroll) => ListView(
-          controller: scroll,
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-          children: [
-            for (final (index, chapter) in chapters.indexed) ...[
-              if (index > 0) Divider(height: 1, color: scheme.outlineVariant),
-              InkWell(
-                onTap: () {
-                  unawaited(
-                    playback.seekSource(
-                      chapter.sourceKey,
-                      chapter.milliseconds,
-                    ),
-                  );
-                  Navigator.pop(context);
-                },
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  child: DefaultTextStyle.merge(
-                    style: index == current
-                        ? TextStyle(color: accent, fontWeight: FontWeight.w600)
-                        : null,
-                    child: Row(
-                      children: [
-                        SizedBox(
-                          width: 26,
-                          child: Text(
-                            '${index + 1}',
-                            textAlign: TextAlign.right,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: index == current
-                                  ? accent
-                                  : scheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(chapter.name),
-                              if (index == current)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 6),
-                                  child: ProgressLine(
-                                    color: accent,
-                                    value: _chapterShare(
-                                      chapters,
-                                      index,
-                                      position,
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          audioTime(
-                            chapter.editionMilliseconds ?? chapter.milliseconds,
-                          ),
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: scheme.onSurfaceVariant,
-                            fontFeatures: const [FontFeature.tabularFigures()],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ],
-        ),
-      );
-    },
+    chapters: playback.chapters,
+    current: playback.chapterIndex,
+    position: playback.position?.milliseconds ?? 0,
+    onChapter: (chapter) =>
+        unawaited(playback.seekSource(chapter.sourceKey, chapter.milliseconds)),
   );
-
-  /// How far through chapter [index] the file position [position] is, from 0
-  /// to 1, or null when the chapter's end is unknown.
-  double? _chapterShare(
-    List<PlaybackChapter> chapters,
-    int index,
-    int position,
-  ) {
-    final chapter = chapters[index];
-    final next = index + 1 < chapters.length ? chapters[index + 1] : null;
-    final end = next != null && next.sourceKey == chapter.sourceKey
-        ? next.milliseconds
-        : null;
-    if (end == null || end <= chapter.milliseconds) return null;
-    return ((position - chapter.milliseconds) / (end - chapter.milliseconds))
-        .clamp(0, 1);
-  }
 
   Future<void> _speed(BuildContext context) => showGlassChoices<double>(
     context,
@@ -834,6 +729,153 @@ class _Tool extends StatelessWidget {
       ),
     ),
   );
+}
+
+/// Shows [chapters] on a glass sheet titled Chapters. A tap on a chapter
+/// goes to [onChapter], then closes the sheet. [current] and [position] are
+/// as in [ChapterList].
+Future<void> showChapters(
+  BuildContext context, {
+  required List<PlaybackChapter> chapters,
+  required int? current,
+  required int position,
+  required ValueChanged<PlaybackChapter> onChapter,
+}) => showGlassSheet<void>(
+  context,
+  title: 'Chapters',
+  isScrollControlled: true,
+  builder: (sheet) => DraggableScrollableSheet(
+    expand: false,
+    initialChildSize: 0.65,
+    builder: (context, scroll) => ChapterList(
+      controller: scroll,
+      chapters: chapters,
+      current: current,
+      position: position,
+      onChapter: (chapter) {
+        onChapter(chapter);
+        Navigator.pop(sheet);
+      },
+    ),
+  ),
+);
+
+/// The chapters of an edition, each with where it starts in the edition. The
+/// current chapter stands out and shows how far through it the place is. A
+/// tap on a chapter reports it through [onChapter].
+class ChapterList extends StatelessWidget {
+  const ChapterList({
+    super.key,
+    required this.chapters,
+    required this.current,
+    required this.position,
+    required this.onChapter,
+    this.controller,
+  });
+
+  /// The chapters in order.
+  final List<PlaybackChapter> chapters;
+
+  /// The index in [chapters] of the chapter that holds the place, or null
+  /// when none does.
+  final int? current;
+
+  /// The place in the file of the current chapter, in milliseconds from the
+  /// start of that file.
+  final int position;
+
+  /// Reports a tapped chapter, which asks to go to its start.
+  final ValueChanged<PlaybackChapter> onChapter;
+
+  /// Scrolls the list, for example the controller of a draggable sheet.
+  final ScrollController? controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final accent = theme.brightness == Brightness.dark
+        ? theaterGlow
+        : scheme.primary;
+    return ListView(
+      controller: controller,
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+      children: [
+        for (final (index, chapter) in chapters.indexed) ...[
+          if (index > 0) Divider(height: 1, color: scheme.outlineVariant),
+          InkWell(
+            onTap: () => onChapter(chapter),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: DefaultTextStyle.merge(
+                style: index == current
+                    ? TextStyle(color: accent, fontWeight: FontWeight.w600)
+                    : null,
+                child: Row(
+                  children: [
+                    SizedBox(
+                      width: 26,
+                      child: Text(
+                        '${index + 1}',
+                        textAlign: TextAlign.right,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: index == current
+                              ? accent
+                              : scheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(chapter.name),
+                          if (index == current)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 6),
+                              child: ProgressLine(
+                                color: accent,
+                                value: _share(index),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      audioTime(
+                        chapter.editionMilliseconds ?? chapter.milliseconds,
+                      ),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: scheme.onSurfaceVariant,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  /// How far through chapter [index] the place is, from 0 to 1, or null when
+  /// the chapter's end is unknown.
+  double? _share(int index) {
+    final chapter = chapters[index];
+    final next = index + 1 < chapters.length ? chapters[index + 1] : null;
+    final end = next != null && next.sourceKey == chapter.sourceKey
+        ? next.milliseconds
+        : null;
+    if (end == null || end <= chapter.milliseconds) return null;
+    return ((position - chapter.milliseconds) / (end - chapter.milliseconds))
+        .clamp(0, 1);
+  }
 }
 
 /// Play while paused, Pause while audio plays. [large] is the stage's round

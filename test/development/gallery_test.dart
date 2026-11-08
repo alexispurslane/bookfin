@@ -205,6 +205,30 @@ void main() {
     expect(tester.widget<PlayPauseButton>(stagePlayButton()).playing, isFalse);
   });
 
+  testWidgets('a chapter in the production chapter sheet moves the sample', (
+    tester,
+  ) async {
+    await showGallery(tester);
+    await openScreen(tester, 'Player & history');
+    await tester.tap(
+      find.descendant(
+        of: screen('player'),
+        matching: find.textContaining('of 12'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final list = find.byType(ChapterList);
+    // The sample place, 1 h 27 min in, is in chapter 6.
+    expect(tester.widget<ChapterList>(list).current, 5);
+    await tester.tap(
+      find.descendant(of: list, matching: find.text('Chapter 3')),
+    );
+    await tester.pumpAndSettle();
+    expect(list, findsNothing);
+    // Each of the 12 sample chapters is a twelfth of 3 h 28 min.
+    expect(slider(tester).position, 2 * 12480000 ~/ 12);
+  });
+
   testWidgets('Go back in the production timeline restores the sample place', (
     tester,
   ) async {
