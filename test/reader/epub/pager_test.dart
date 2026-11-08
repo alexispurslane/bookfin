@@ -443,6 +443,29 @@ void main() {
     );
   });
 
+  test('linkAt finds a link in a table cell', () async {
+    open(
+      book([
+        '<p>Before the table.</p><table><tr><td>Plain cell</td>'
+            '<td><a href="s1.xhtml#target">Linked cell</a></td></tr></table>',
+        '<p id="target">The target.</p>',
+      ]),
+    );
+    final first = await present();
+    final dom = (await section(0)).dom;
+    final link = dom.texts.firstWhere((text) => text.text == 'Linked cell');
+    final plain = dom.texts.firstWhere((text) => text.text == 'Plain cell');
+
+    expect(
+      pager().linkAt(_pointOf(first.page, EpubPlace(0, link.order, 3))),
+      'text/s1.xhtml#target',
+    );
+    expect(
+      pager().linkAt(_pointOf(first.page, EpubPlace(0, plain.order, 3))),
+      isNull,
+    );
+  });
+
   test('display of a search hit lands on its match, and a place whose quote '
       'does not match throws', () async {
     open(linkedBook());

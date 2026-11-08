@@ -165,7 +165,9 @@ class EpubPager implements DocumentNavigator {
     final y = page.top + point.dy;
     for (final slice in page.slices) {
       if (y < slice.top || y >= slice.bottom) continue;
-      for (final piece in [?slice.piece, ...slice.rowPieces]) {
+      for (final line in [slice, ...slice.cellSlices]) {
+        final piece = line.piece;
+        if (piece == null) continue;
         final local = ui.Offset(point.dx - piece.x, y - piece.y);
         final position = piece.paragraph.getPositionForOffset(local);
         final unit = position.affinity == ui.TextAffinity.downstream
