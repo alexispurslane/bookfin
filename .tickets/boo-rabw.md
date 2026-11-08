@@ -1,6 +1,6 @@
 ---
 id: boo-rabw
-status: in_progress
+status: closed
 deps: [boo-vtvp]
 links: []
 created: 2026-11-08T14:38:45Z
