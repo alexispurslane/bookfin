@@ -1,6 +1,6 @@
 ---
 id: tc-1iap
-status: open
+status: in_progress
 deps: [tc-mxfp]
 links: []
 created: 2026-11-08T19:23:12Z
@@ -62,3 +62,7 @@ Widget tests with a real pager on the fixture books:
 **2026-11-08T22:04:24Z**
 
 From tc-mxfp: present() throws ArgumentError unless the width, height and text size are finite and above 0, so present only after layout gives a size. linkAt(point) takes logical pixels from the page's top left corner and returns null outside text of a link. shown notifies twice for a page with images: the draft first, then the picture with decoded images.
+
+**2026-11-08T22:28:59Z**
+
+Interface as built (lib/reader/epub/viewport.dart): the constructor is the ticket's. EpubViewport fills its bounded parent. A private render object presents PageSettings(its size, fontSize, night) from performLayout when they differ from the last presented ones, and skips a zero size. It listens to pager.shown and repaints alone (a repaint boundary), so a new page does not rebuild the widget. It paints the paper of the current theme, then shown.picture clipped to its size. Gestures: a tap (every device) asks linkAt(localPosition), then onLink or onTap, and takes the key focus. A swipe is a pan from touch or pen only; a mouse drag is left for selection (tc-iwqp) and a trackpad for scrolling. Keys: Focus with autofocus; key down and key repeat turn. Trackpad: a pan-zoom gesture turns once when its pan passes 80 across and more across than up or down (fingers left: next). Scroll signals (Linux trackpads, Shift+wheel) add up their horizontal deltas, reset on a change of direction, and turn at 80. The numbers are public: EpubViewport.swipeDistance (60), swipeSlant (50), scrollDistance (80). onCopy is unused until tc-iwqp.
