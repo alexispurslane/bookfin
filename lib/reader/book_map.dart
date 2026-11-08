@@ -58,7 +58,7 @@ class BookTarget {
 /// would need every section laid out. A place inside a section sits at its
 /// text progress: the share of the section's visible characters, white
 /// space left out, that come before it. A PDF's parts are its source pages,
-/// which take equal shares, and a place sits at the start of its page.
+/// which take equal shares, and a place sits at the end of its page.
 class BookMap {
   BookMap._(this._starts, this._parts, this.chapters, this.pages);
 
@@ -183,7 +183,8 @@ class BookMap {
         _parts[location.resource],
         location.progress ?? 0.0,
       ),
-      PdfAddress(:final sourcePage) => (sourcePage - 1, 0.0),
+      // The shown page counts as read, so the last page fills the bar.
+      PdfAddress(:final sourcePage) => (sourcePage - 1, 1.0),
     };
     if (part == null || part < 0 || part + 1 >= _starts.length) return null;
     return _starts[part] + (_starts[part + 1] - _starts[part]) * through;

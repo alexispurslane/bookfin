@@ -99,11 +99,12 @@ void main() {
     expect(book.fractionOf(place('OPS/two.xhtml')), closeTo(inTwo(0), 1e-9));
   });
 
-  test('a PDF place sits at the start of its source page', () {
+  test('a PDF place counts its shown source page as read, so the last '
+      'page fills the bar', () {
     final book = BookMap.pages(4);
-    expect(book.fractionOf(PdfAddress(1, 0)), 0);
-    expect(book.fractionOf(PdfAddress(3, 40)), .5);
-    expect(book.fractionOf(PdfAddress(4, 0)), .75);
+    expect(book.fractionOf(PdfAddress(1, 0)), .25);
+    expect(book.fractionOf(PdfAddress(3, 40)), .75);
+    expect(book.fractionOf(PdfAddress(4, 0)), 1);
   });
 
   test('chapters start where the contents point, also inside a section, '

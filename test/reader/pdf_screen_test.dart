@@ -123,7 +123,8 @@ void main() {
       final pages = document.pageCount;
       expect(pages, greaterThan(1));
       Slider bar() => tester.widget<Slider>(find.byType(Slider));
-      expect(bar().value, 0);
+      // The shown page counts as read.
+      expect(bar().value, 1 / pages);
       // The second source page holds the second of the equal shares.
       final second = 1.5 / pages;
       bar().onChangeStart!(0);
@@ -134,7 +135,7 @@ void main() {
       bar().onChangeEnd!(second);
       await settleNative(tester);
       expect((reader.visibleAddress as PdfAddress).sourcePage, 2);
-      expect(bar().value, 1 / pages);
+      expect(bar().value, 2 / pages);
       expect(
         find.bySemanticsLabel('Source page 2 · Page 2 of $pages'),
         findsOneWidget,
