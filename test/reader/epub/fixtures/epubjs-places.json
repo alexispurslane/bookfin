@@ -1,0 +1,170 @@
+{
+ "recorded": "2026-11-08",
+ "chromium": "Chrome/138.0.7180.0",
+ "page": {"width":412.0,"height":671.0},
+ "books": {
+  "showcase-frost": {
+   "name": "showcase-frost",
+   "identity": "0d134ea94ae37a73b2916bbe8af28852bb64e504d3c619de71bbfe98d29fb643",
+   "packagePath": "OEBPS/content.opf",
+   "sections": {
+    "0": {
+     "resource": "OEBPS/chapter1.xhtml",
+     "20": [
+      {"start":0,"cfi":"epubcfi(/6/2!/4/2/2/1:0)","quote":"One. The Grafted TreesWren came back to the orchard on the first cold morning of October, when the grass along the lane ","progress":0},
+      {"start":536,"cfi":"epubcfi(/6/2!/4/2/8/1:150)","quote":"put her hand on the nearest union and felt the ridge of it under the bark, warm in a way that the air was not.In the vil","progress":0.607022}
+     ],
+     "23": [
+      {"start":0,"cfi":"epubcfi(/6/2!/4/2/2/1:0)","quote":"One. The Grafted TreesWren came back to the orchard on the first cold morning of October, when the grass along the lane ","progress":0},
+      {"start":413,"cfi":"epubcfi(/6/2!/4/2/8/1:0)","quote":"Someone had grafted them. Someone had cut the old crowns back to the knuckle and bound in a stranger's stock, and the st","progress":0.467724},
+      {"start":837,"cfi":"epubcfi(/6/2!/4/2/14/1:0)","quote":"\"The trees look after themselves,\" he said. \"Mostly.\"","progress":0.947905}
+     ]
+    },
+    "1": {
+     "resource": "OEBPS/chapter2.xhtml",
+     "20": [
+      {"start":0,"cfi":"epubcfi(/6/4!/4/2/2/1:0)","quote":"Two. The Ledger in the BarnHer grandmother kept a ledger for the orchard, a long green book with a cloth spine, and Wren","progress":0},
+      {"start":510,"cfi":"epubcfi(/6/4!/4/2/10/1:0)","quote":"The final page was dated two winters ago. The first frost was written in, and nothing else. No harvest. No blossom. And ","progress":0.75}
+     ],
+     "23": [
+      {"start":0,"cfi":"epubcfi(/6/4!/4/2/2/1:0)","quote":"Two. The Ledger in the BarnHer grandmother kept a ledger for the orchard, a long green book with a cloth spine, and Wren","progress":0},
+      {"start":370,"cfi":"epubcfi(/6/4!/4/2/8/1:0)","quote":"Most years, the last column was empty. In some years it held a single word. Rain. Bees. Gone. The year that Wren was bor","progress":0.544118}
+     ]
+    },
+    "2": {
+     "resource": "OEBPS/chapter3.xhtml",
+     "20": [
+      {"start":0,"cfi":"epubcfi(/6/6!/4/2/2/1:0)","quote":"Three. What the Orchard RemembersThat night the wind turned and came down off the ridge, and Wren lay awake listening to","progress":0},
+      {"start":497,"cfi":"epubcfi(/6/6!/4/2/8/1:159)","quote":"stove. Wren had thought it was a saying. Now she was not so sure.","progress":0.905282}
+     ],
+     "23": [
+      {"start":0,"cfi":"epubcfi(/6/6!/4/2/2/1:0)","quote":"Three. What the Orchard RemembersThat night the wind turned and came down off the ridge, and Wren lay awake listening to","progress":0},
+      {"start":367,"cfi":"epubcfi(/6/6!/4/2/8/1:0)","quote":"A place remembers what the people in it would rather forget. Her grandmother used to say that about the house, about the","progress":0.668488}
+     ]
+    }
+   },
+   "contents": [
+    {"title":"One. The Grafted Trees","href":"chapter1.xhtml","cfi":"epubcfi(/6/2!/4/2/2/1:0)","resource":"OEBPS/chapter1.xhtml","quote":"One. The Grafted TreesWren came back to the orchard on the first cold morning of October, when the grass along the lane "},
+    {"title":"Two. The Ledger in the Barn","href":"chapter2.xhtml","cfi":"epubcfi(/6/4!/4/2/2/1:0)","resource":"OEBPS/chapter2.xhtml","quote":"Two. The Ledger in the BarnHer grandmother kept a ledger for the orchard, a long green book with a cloth spine, and Wren"},
+    {"title":"Three. What the Orchard Remembers","href":"chapter3.xhtml","cfi":"epubcfi(/6/6!/4/2/2/1:0)","resource":"OEBPS/chapter3.xhtml","quote":"Three. What the Orchard RemembersThat night the wind turned and came down off the ridge, and Wren lay awake listening to"}
+   ],
+   "search": [
+    {
+     "query": "morning",
+     "error": null,
+     "hits": [
+      {"cfi":"epubcfi(/6/2!/4/2/4/1:48)","resource":"OEBPS/chapter1.xhtml","quote":"morning of October, when the grass along the lane was still white and the sun had not yet cleared the ridge. She left th","excerpt":"morning"},
+      {"cfi":"epubcfi(/6/6!/4/2/6/1:7)","resource":"OEBPS/chapter3.xhtml","quote":"morning she walked the south wall again with the ledger under her arm. She counted the grafts. There were forty-one, one","excerpt":"morning"}
+     ]
+    },
+    {
+     "query": "the door",
+     "error": null,
+     "hits": []
+    },
+    {
+     "query": "lantern",
+     "error": null,
+     "hits": []
+    }
+   ]
+  },
+  "showcase-salt": {
+   "name": "showcase-salt",
+   "identity": "bc83d7e8b8a0405426b467f46e09783dfbd4521cf8d7ca64f4f588c693bb94e8",
+   "packagePath": "OEBPS/content.opf",
+   "sections": {
+    "0": {
+     "resource": "OEBPS/chapter1.xhtml",
+     "20": [
+      {"start":0,"cfi":"epubcfi(/6/2!/4/2/2/1:0)","quote":"The Harbor LightThe lamp at the end of the harbor wall burned whale oil until the winter of the long ice, and then it bu","progress":0}
+     ],
+     "23": [
+      {"start":0,"cfi":"epubcfi(/6/2!/4/2/2/1:0)","quote":"The Harbor LightThe lamp at the end of the harbor wall burned whale oil until the winter of the long ice, and then it bu","progress":0},
+      {"start":350,"cfi":"epubcfi(/6/2!/4/2/8/1:137)","quote":"turned their bows toward the small yellow point and came home.","progress":0.870647}
+     ]
+    },
+    "1": {
+     "resource": "OEBPS/chapter2.xhtml",
+     "20": [
+      {"start":0,"cfi":"epubcfi(/6/4!/4/2/2/1:0)","quote":"SaltIn the spring the salt traders came back from the south with their carts, and the town paid them in fish and in stor","progress":0}
+     ],
+     "23": [
+      {"start":0,"cfi":"epubcfi(/6/4!/4/2/2/1:0)","quote":"SaltIn the spring the salt traders came back from the south with their carts, and the town paid them in fish and in stor","progress":0}
+     ]
+    }
+   },
+   "contents": [
+    {"title":"The Harbor Light","href":"chapter1.xhtml","cfi":"epubcfi(/6/2!/4/2/2/1:0)","resource":"OEBPS/chapter1.xhtml","quote":"The Harbor LightThe lamp at the end of the harbor wall burned whale oil until the winter of the long ice, and then it bu"},
+    {"title":"Salt","href":"chapter2.xhtml","cfi":"epubcfi(/6/4!/4/2/2/1:0)","resource":"OEBPS/chapter2.xhtml","quote":"SaltIn the spring the salt traders came back from the south with their carts, and the town paid them in fish and in stor"}
+   ],
+   "search": [
+    {
+     "query": "morning",
+     "error": null,
+     "hits": []
+    },
+    {
+     "query": "the door",
+     "error": null,
+     "hits": []
+    },
+    {
+     "query": "lantern",
+     "error": null,
+     "hits": [
+      {"cfi":"epubcfi(/6/4!/4/2/6/1:175)","resource":"OEBPS/chapter2.xhtml","quote":"lantern of blue glass that she kept for the rest of her life.","excerpt":"lantern"}
+     ]
+    }
+   ]
+  },
+  "showcase-winter": {
+   "name": "showcase-winter",
+   "identity": "7f85285e12bf6ad7c9e5595500b484dcd4498d259e4199a0590f64e908cf2a5f",
+   "packagePath": "OEBPS/content.opf",
+   "sections": {
+    "0": {
+     "resource": "OEBPS/chapter1.xhtml",
+     "20": [
+      {"start":0,"cfi":"epubcfi(/6/2!/4/2/2/1:0)","quote":"JanuaryThe snow keeps its own accounts.It writes the fox, the wren, the wheel,and every morning wipes the pagefor someon","progress":0}
+     ],
+     "23": [
+      {"start":0,"cfi":"epubcfi(/6/2!/4/2/2/1:0)","quote":"JanuaryThe snow keeps its own accounts.It writes the fox, the wren, the wheel,and every morning wipes the pagefor someon","progress":0}
+     ]
+    },
+    "1": {
+     "resource": "OEBPS/chapter2.xhtml",
+     "20": [
+      {"start":0,"cfi":"epubcfi(/6/4!/4/2/2/1:0)","quote":"FebruaryA thaw, and then a hard frost on the thaw.The yard is glass. The hens refuse it.I owe the woodpile more than I c","progress":0}
+     ],
+     "23": [
+      {"start":0,"cfi":"epubcfi(/6/4!/4/2/2/1:0)","quote":"FebruaryA thaw, and then a hard frost on the thaw.The yard is glass. The hens refuse it.I owe the woodpile more than I c","progress":0}
+     ]
+    }
+   },
+   "contents": [
+    {"title":"January","href":"chapter1.xhtml","cfi":"epubcfi(/6/2!/4/2/2/1:0)","resource":"OEBPS/chapter1.xhtml","quote":"JanuaryThe snow keeps its own accounts.It writes the fox, the wren, the wheel,and every morning wipes the pagefor someon"},
+    {"title":"February","href":"chapter2.xhtml","cfi":"epubcfi(/6/4!/4/2/2/1:0)","resource":"OEBPS/chapter2.xhtml","quote":"FebruaryA thaw, and then a hard frost on the thaw.The yard is glass. The hens refuse it.I owe the woodpile more than I c"}
+   ],
+   "search": [
+    {
+     "query": "morning",
+     "error": null,
+     "hits": [
+      {"cfi":"epubcfi(/6/2!/4/2/4/5:10)","resource":"OEBPS/chapter1.xhtml","quote":"morning wipes the pagefor someone else to sign.I walk the lane to read itbefore the plow comes through.Most days the onl","excerpt":"morning"}
+     ]
+    },
+    {
+     "query": "the door",
+     "error": null,
+     "hits": []
+    },
+    {
+     "query": "lantern",
+     "error": null,
+     "hits": []
+    }
+   ]
+  }
+ }
+}

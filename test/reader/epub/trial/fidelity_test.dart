@@ -1,13 +1,15 @@
 // Tool code: the on-demand fidelity comparison of the renderer with
 // epub.js. It is not part of Bookfin's normal test run.
 //
-// It runs in three steps (see docs/research/native-epub.md):
+// It runs in these steps (see docs/research/native-epub-fidelity.md):
 //
 // 1. BOOKFIN_EPUB_TRIAL_PLAN=1 flutter test test/reader/epub/trial/fidelity_test.dart
 //    writes .cache/epub-trial/fidelity-20/plan.json: the sections to compare,
-//    the renderer's CFI of each page start, and the pages to draw. It also
-//    writes each book's admitted publication, with the book's own style
-//    sheets, into .cache/epub-trial/admitted for Chromium.
+//    the renderer's CFI of each page start, the pages to draw and the search
+//    phrases. It covers the downloaded books in .cache/epub-trial/books and
+//    the showcase books of tool/showcase_media.dart. It also writes each
+//    book's admitted publication, with the book's own style sheets, into
+//    .cache/epub-trial/admitted for Chromium.
 // 2. node packages/flutter_epub_viewer/engine/trial/compare.cjs
 //    .cache/epub-trial/fidelity-20/plan.json .cache/epub-trial/admitted
 //    .cache/epub-trial/fidelity-20/chromium
@@ -18,6 +20,12 @@
 //
 // BOOKFIN_EPUB_TRIAL_FONT_SIZE=23 runs the same steps at 23 pixels, in
 // .cache/epub-trial/fidelity-23.
+//
+// After steps 1 and 2 at both sizes,
+// BOOKFIN_EPUB_TRIAL_FIXTURES=1 flutter test test/reader/epub/trial/fidelity_test.dart
+// writes what epub.js measured and saved into test/reader/epub/fixtures:
+// epubjs-places.json for the showcase books, and chromium-layout.json and
+// epubjs-corpus-places.json for the downloaded books.
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
@@ -25,6 +33,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:archive/archive.dart';
+import 'package:crypto/crypto.dart';
 import 'package:bookfin/reader/epub/dom.dart';
 import 'package:bookfin/reader/epub/layout.dart';
 import 'package:bookfin/reader/epub/paint.dart';
@@ -39,6 +48,7 @@ import 'book.dart';
 
 final _plan = Platform.environment['BOOKFIN_EPUB_TRIAL_PLAN'] == '1';
 final _compare = Platform.environment['BOOKFIN_EPUB_TRIAL_FIDELITY'] == '1';
+final _fixtures = Platform.environment['BOOKFIN_EPUB_TRIAL_FIXTURES'] == '1';
 // BOOKFIN_EPUB_TRIAL_FONT_SIZE picks another text size than the reader's
 // default 20 pixels. Each size has its own directory.
 final _fontSize =
@@ -48,6 +58,24 @@ final _fontSize =
     20;
 final _directory = '.cache/epub-trial/fidelity-${_fontSize.round()}';
 const _cfiPages = 40;
+
+/// The phrases that each book is searched for: a word that also comes
+/// capitalized, two words that the text can break between lines, and a
+/// rare word.
+const _phrases = ['morning', 'the door', 'lantern'];
+
+/// The books to compare, by trial name: each downloaded book with the
+/// SHA-256 of its file, and each showcase book without one.
+Map<String, (Uint8List, String?)> _books() => {
+  for (final file in trialBooks())
+    if (!bookName(file).startsWith('showcase-'))
+      bookName(file): (
+        file.readAsBytesSync(),
+        sha256.convert(file.readAsBytesSync()).toString(),
+      ),
+  for (final MapEntry(:key, :value) in showcaseBooks().entries)
+    key: (value, null),
+};
 final _settings = PageSettings(
   width: readerPage.width,
   height: readerPage.height,
@@ -105,22 +133,24 @@ void main() {
     'writes the fidelity plan',
     () async {
       final plan = <Object>[];
-      for (final file in trialBooks()) {
-        final bytes = file.readAsBytesSync();
-        _unpack(
-          bytes,
-          Directory('.cache/epub-trial/admitted/${bookName(file)}'),
-        );
+      for (final MapEntry(key: name, value: (bytes, digest))
+          in _books().entries) {
+        _unpack(bytes, Directory('.cache/epub-trial/admitted/$name'));
         final book = TrialBook.open(bytes);
         final sections = <Object>[];
-        for (final index in _chosen(book)) {
+        // A showcase book is short, so every section and page counts.
+        final showcase = digest == null;
+        for (final index
+            in showcase
+                ? List.generate(book.sections, (index) => index)
+                : _chosen(book)) {
           final chapter = _layout(book, index);
           final dom = chapter.section.dom;
           final pages = chapter.pages.length;
           sections.add({
             'index': index,
             'resource': book.publication.spine[index],
-            'cfiPages': _cfiPages,
+            'cfiPages': showcase ? pages + 10 : _cfiPages,
             'screenshots': {0, 1, pages ~/ 2}.where((p) => p < pages).toList(),
             'nativeCfis': [
               for (final page in chapter.pages.take(_cfiPages))
@@ -130,9 +160,12 @@ void main() {
           });
         }
         plan.add({
-          'book': bookName(file),
+          'book': name,
+          'sha256': ?digest,
+          'identity': book.publication.identity,
           'packagePath': book.publication.packagePath,
           'fontSize': _fontSize,
+          'phrases': _phrases,
           'sections': sections,
         });
       }
@@ -146,14 +179,12 @@ void main() {
   test(
     'compares the renderer with epub.js',
     () async {
-      final chromium = jsonDecode(
-        File('$_directory/chromium/chromium.json').readAsStringSync(),
-      ) as List<dynamic>;
-      final books = {for (final file in trialBooks()) bookName(file): file};
+      final chromium = _chromium(_directory)['books'] as List<dynamic>;
+      final books = _books();
       final report = <Object>[];
       Directory('$_directory/side-by-side').createSync(recursive: true);
       for (final entry in chromium.cast<Map<String, dynamic>>()) {
-        final book = TrialBook.open(books[entry['book']]!.readAsBytesSync());
+        final book = TrialBook.open(books[entry['book']]!.$1);
         for (final section in (entry['sections'] as List).cast<Map>()) {
           final index = section['index'] as int;
           final chapter = _layout(book, index);
@@ -266,6 +297,118 @@ void main() {
     skip: !_compare,
     timeout: const Timeout(Duration(minutes: 10)),
   );
+
+  test('writes what epub.js measured and saved as fixtures', () {
+    final runs = {
+      for (final size in [20, 23])
+        size: _chromium('.cache/epub-trial/fidelity-$size'),
+    };
+    final plans = {
+      for (final size in runs.keys)
+        size: {
+          for (final entry in jsonDecode(
+            File('.cache/epub-trial/fidelity-$size/plan.json')
+                .readAsStringSync(),
+          ) as List)
+            (entry as Map)['book'] as String: entry,
+        },
+    };
+    final chromium = {for (final run in runs.values) run['chromium']};
+    if (chromium.length != 1) {
+      throw StateError('The two runs used different browsers: $chromium');
+    }
+    final header = {
+      'recorded': DateTime.now().toUtc().toIso8601String().substring(0, 10),
+      'chromium': chromium.single,
+      'page': {'width': readerPage.width, 'height': readerPage.height},
+    };
+    final showcase = <String, Object>{};
+    final corpus = <String, Object>{};
+    final layout = <String, Object>{};
+    for (final entry in (runs[20]!['books'] as List).cast<Map>()) {
+      final name = entry['book'] as String;
+      final plan = plans[20]![name]!;
+      final digest = plan['sha256'] as String?;
+      final sections = <String, Map<String, Object?>>{};
+      final lines = <String, Map<String, Object>>{};
+      for (final MapEntry(key: size, value: run) in runs.entries) {
+        final measured = (run['books'] as List).cast<Map>().singleWhere(
+          (book) => book['book'] == name,
+        );
+        final planned = {
+          for (final section in plans[size]![name]!['sections'] as List)
+            (section as Map)['index']: section['resource'],
+        };
+        for (final section in (measured['sections'] as List).cast<Map>()) {
+          final index = section['index'].toString();
+          final pages = (section['saved'] as List).cast<Map>();
+          for (final (number, page) in pages.indexed) {
+            if (page['page'] != number + 1) {
+              throw StateError(
+                '$name $index: page ${number + 1} reports '
+                'page ${page['page']}',
+              );
+            }
+          }
+          (sections[index] ??= {
+            'resource': planned[section['index']],
+          })['$size'] = [
+            for (final page in pages)
+              {
+                'start': page['start'],
+                'cfi': page['cfi'],
+                'quote': page['quote'],
+                'progress': page['progress'],
+              },
+          ];
+          (lines[index] ??= {})['$size'] = section['lines'] as List;
+        }
+      }
+      final record = {
+        'name': name,
+        if (digest == null) 'identity': plan['identity'],
+        'packagePath': plan['packagePath'],
+        'sections': sections,
+        'contents': entry['contents'],
+        'search': entry['search'],
+      };
+      if (digest == null) {
+        showcase[name] = record;
+      } else {
+        corpus[digest] = record;
+        layout[digest] = {'name': name, 'sections': lines};
+      }
+    }
+    final fixtures = Directory('test/reader/epub/fixtures');
+    File('${fixtures.path}/epubjs-places.json')
+        .writeAsStringSync(_encode({...header, 'books': showcase}));
+    File('${fixtures.path}/epubjs-corpus-places.json')
+        .writeAsStringSync(_encode({...header, 'books': corpus}));
+    File('${fixtures.path}/chromium-layout.json')
+        .writeAsStringSync(_encode({...header, 'books': layout}));
+  }, skip: !_fixtures);
+}
+
+/// What compare.cjs wrote into [directory]/chromium.
+Map<String, dynamic> _chromium(String directory) =>
+    jsonDecode(File('$directory/chromium/chromium.json').readAsStringSync())
+        as Map<String, dynamic>;
+
+/// [value] as JSON with one record or one list of numbers per line, so
+/// that a diff of a fixture shows which places moved.
+String _encode(Object? value, [String indent = '']) {
+  final inner = '$indent ';
+  bool flat(Object? item) =>
+      item is! Map && item is! List ||
+      item is List && item.every((element) => element is num) ||
+      item is Map &&
+          item.values.every((element) => element is! Map && element is! List);
+  if (flat(value)) return jsonEncode(value);
+  if (value is List) {
+    return '[\n${[for (final item in value) '$inner${_encode(item, inner)}'].join(',\n')}\n$indent]';
+  }
+  final map = value! as Map;
+  return '{\n${[for (final MapEntry(:key, value: item) in map.entries) '$inner${jsonEncode(key)}: ${_encode(item, inner)}'].join(',\n')}\n$indent}';
 }
 
 /// The first page whose start differs, with both starts and the page

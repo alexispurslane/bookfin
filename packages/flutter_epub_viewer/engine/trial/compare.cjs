@@ -1,19 +1,23 @@
-// The epub.js side of the native EPUB renderer trial (ticket boo-ju83).
-// It is not a test of the engine and changes nothing in it.
+// The epub.js side of the native EPUB renderer trial (ticket boo-ju83) and
+// of the fidelity check against epub.js (ticket tc-pshi). It is not a test
+// of the engine and changes nothing in it.
 //
 // It opens each book of a plan with the built reader (assets/epub.js and
 // assets/reader.js) in headless Chromium, on the WebView reader's page:
-// 412 × 671 pixels, Source Serif 4 at 20 pixels. For each planned section
-// (or the plan's font size) it reports where each line and page starts, as visible character
-// indices (reader.js `progressAt` counts the same characters), the CFI
-// that epub.js saves for each page start, the time to show the section and
-// to draw a scrub-deck page, and the quote and progress that epub.js gives
-// for each CFI that the trial renderer wrote. It saves the planned pages as
-// PNG images.
+// 412 × 671 pixels, Source Serif 4 at 20 pixels (or the plan's font size).
+// For each planned section it reports where each line and page starts, as
+// visible character indices (reader.js `progressAt` counts the same
+// characters), the place that epub.js saves for each page start (CFI,
+// quote and progress, as the reader's `relocated` handler reports it), the
+// time to show the section and to draw a scrub-deck page, and the quote and
+// progress that epub.js gives for each CFI that the native renderer wrote.
+// It saves the planned pages as PNG images. For each book it also reports
+// the place of each contents entry (reader.js `resolveDestination`) and
+// the hits of the plan's search phrases (reader.js `searchBook`).
 //
 // node trial/compare.cjs <plan.json> <publications directory> <out directory>
 //
-// The plan comes from test/reader/native_epub/fidelity_test.dart. Set
+// The plan comes from test/reader/epub/trial/fidelity_test.dart. Set
 // CHROME_BIN when Chromium is not in /Applications.
 const fs = require('node:fs');
 const path = require('node:path');
@@ -80,7 +84,8 @@ async function browser() {
   }
   await call('Fetch.enable', { patterns: [{ urlPattern: 'https://bookfin-runtime.invalid/SourceSerif4.ttf' }] });
   await call('Emulation.setDeviceMetricsOverride', { width, height: 800, deviceScaleFactor: 2, mobile: false });
-  return { call, async evaluate(expression) {
+  const { product } = await call('Browser.getVersion');
+  return { call, product, async evaluate(expression) {
     return (await call('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true })).result.value;
   }, async close() {
     socket.close();
@@ -161,11 +166,13 @@ async function main() {
   const plan = JSON.parse(fs.readFileSync(planPath, 'utf8'));
   fs.mkdirSync(out, { recursive: true });
   const results = [];
+  let chromium;
   for (const entry of plan) {
     const directory = path.resolve(publications, entry.book);
     const server = serve(directory);
     await once(server, 'listening');
     const page = await browser();
+    chromium = page.product;
     const url = `http://127.0.0.1:${server.address().port}/`;
     try {
       await page.call('Page.navigate', { url });
@@ -190,7 +197,8 @@ async function main() {
           return book;
         }, create);
         bookfinReader.openBook({ base: ${JSON.stringify(url)}, packagePath: ${JSON.stringify(entry.packagePath)},
-          fontSize: ${entry.fontSize || 20}, night: false, initial: null }).then(() => true)`);
+          fontSize: ${entry.fontSize || 20}, night: false, initial: null })
+          .then(entries => { window.trialContents = entries; return true; })`);
       const sections = [];
       for (const section of entry.sections) {
         const shown = await page.evaluate(`(async () => {
@@ -208,18 +216,30 @@ async function main() {
         })()`);
         const lines = await page.evaluate(measure);
         const cfis = [];
+        const saved = [];
         const images = {};
         const wanted = new Set(section.screenshots);
         const limit = Math.min(lines.total, section.cfiPages);
         for (let number = 0; number < Math.max(limit, Math.max(-1, ...section.screenshots) + 1); number++) {
           if (number > 0) await page.evaluate('bookfinReader.move(true)');
-          const location = await page.evaluate(`(() => {
+          // The place that the reader's `relocated` handler saves for the
+          // shown page: visibleLocation of the page start.
+          const location = await page.evaluate(`(async () => {
             const location = trialRendition.currentLocation();
             const cfi = new ePub.CFI(location.start.cfi);
             cfi.collapse(true);
-            return { cfi: cfi.toString(), page: location.start.displayed.page };
+            const shown = await bookfinReader.visibleLocation(trialBook, location.start.cfi,
+              ${JSON.stringify(section.resource)}, location.start.displayed);
+            return { cfi: cfi.toString(), page: location.start.displayed.page, shown };
           })()`);
-          if (number < limit) cfis.push(location.cfi);
+          if (number < limit) {
+            cfis.push(location.cfi);
+            // The visible character index of the shown page's first line,
+            // or null for a page without text.
+            const start = lines.pages[location.page - 1]?.[0] ?? null;
+            saved.push({ page: location.page, start, cfi: location.shown.cfi,
+              quote: location.shown.quote, progress: location.shown.progress });
+          }
           if (wanted.has(number)) {
             await new Promise(resolve => setTimeout(resolve, 100));
             const shot = await page.call('Page.captureScreenshot', { format: 'png',
@@ -257,17 +277,40 @@ async function main() {
           })()`));
         }
         sections.push({ index: section.index, showMs: shown, showAgainMs: again, previewMs: previews,
-          pageCount: lines.total, lines: lines.pages, cfis, resolved, images });
+          pageCount: lines.total, lines: lines.pages, cfis, saved, resolved, images });
         process.stdout.write(`${entry.book} section ${section.index}: ${lines.total} pages, show ${shown.toFixed(0)} ms\n`);
       }
-      results.push({ book: entry.book, sections });
+      // The place that each contents entry opens, as reader.js `go` finds
+      // it, and the hits of each search phrase.
+      const contents = await page.evaluate(`(async () => {
+        const out = [];
+        for (const item of window.trialContents) {
+          try {
+            const location = await bookfinReader.resolveDestination(trialBook, item.href,
+              ${JSON.stringify(url)}, ${JSON.stringify(entry.packagePath)});
+            out.push({ title: item.title, href: item.href, cfi: location.cfi, resource: location.resource,
+              quote: location.quote });
+          } catch (error) { out.push({ title: item.title, href: item.href, error: String(error) }); }
+        }
+        return out;
+      })()`);
+      const search = [];
+      for (const query of entry.phrases || []) {
+        search.push(await page.evaluate(`(async () => {
+          const found = await bookfinReader.searchBook(trialBook, ${JSON.stringify(query)}, () => true);
+          return { query: ${JSON.stringify(query)}, error: found.error, hits: found.hits.map(hit => ({
+            cfi: hit.location.cfi, resource: hit.location.resource, quote: hit.location.quote,
+            excerpt: hit.excerpt })) };
+        })()`));
+      }
+      results.push({ book: entry.book, sections, contents, search });
     } finally {
       await page.close();
       server.closeAllConnections();
       await new Promise(resolve => server.close(resolve));
     }
   }
-  fs.writeFileSync(path.join(out, 'chromium.json'), JSON.stringify(results, null, 1));
+  fs.writeFileSync(path.join(out, 'chromium.json'), JSON.stringify({ chromium, books: results }, null, 1));
 }
 
 main().catch(error => { console.error(error); process.exitCode = 1; });
