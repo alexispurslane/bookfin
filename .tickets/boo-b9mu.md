@@ -1,6 +1,6 @@
 ---
 id: boo-b9mu
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-11-08T01:11:02Z
@@ -23,3 +23,7 @@ Orchestrator, Nov 7: possible cause. The t9-3n2m agent ran 'pkill -f flutter_tes
 **2026-11-08T01:36:38Z**
 
 Orchestrator, Nov 7: the t6-n8y3 agent confirmed that it also ran 'pkill -f flutter_tester' at about 20:07, the time of the failing run. The cause is almost certainly an outside kill.
+
+**2026-11-08T01:36:43Z**
+
+Orchestrator, Nov 7: closed as not a bug. Two agents ran 'pkill -f flutter_tester' at about 19:45 and 20:07, and the failing run ended at about 20:08. Since then, eight full runs on main under loads of 13 to 37 passed every downloads test.
