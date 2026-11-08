@@ -2,6 +2,7 @@ import 'package:bookfin/appearance/preferences.dart';
 import 'package:bookfin/catalog/book_cover.dart';
 import 'package:bookfin/catalog/library_view.dart'
     show BookRow, ShelfFilterChips;
+import 'package:bookfin/foundation/theme.dart' show ProgressLine;
 import 'package:bookfin/main.dart';
 import 'package:bookfin/playback/recent.dart';
 import 'package:bookfin/playback/records_screen.dart';
@@ -191,6 +192,25 @@ void main() {
     );
     expect(slider(tester).position, start);
     expect(find.byType(UndoNotice, skipOffstage: false), findsNothing);
+  });
+
+  testWidgets('a forward jump in the mini player moves its progress line', (
+    tester,
+  ) async {
+    await showGallery(tester);
+    final miniPlayer = find.byType(MiniPlayerCard);
+    double shown() => tester
+        .widget<ProgressLine>(
+          find.descendant(of: miniPlayer, matching: find.byType(ProgressLine)),
+        )
+        .value!;
+    final start = shown();
+    await tapShown(
+      tester,
+      find.descendant(of: miniPlayer, matching: jump(forward: true)),
+    );
+    // Thirty seconds of the 3 h 28 min sample recording.
+    expect(shown(), closeTo(start + 30000 / 12480000, 1e-9));
   });
 
   testWidgets('play and pause switch the sample button without a ticker', (

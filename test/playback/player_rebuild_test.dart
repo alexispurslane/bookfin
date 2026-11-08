@@ -110,6 +110,30 @@ void main() {
     );
   });
 
+  testWidgets('a new bookmark redraws no mini player progress line', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: bookfinTheme(Brightness.light),
+        home: Scaffold(
+          bottomNavigationBar: PlaybackMiniPlayer(playback: playback),
+        ),
+      ),
+    );
+    final records = playback.recordsNotifier;
+    var recorded = 0;
+    void heard() => recorded++;
+    records.addListener(heard);
+    addTearDown(() => records.removeListener(heard));
+    final rebuilt = await _rebuildsDuring(() async {
+      await tester.runAsync(playback.addBookmark);
+      await tester.pump();
+    });
+    expect(recorded, isPositive, reason: 'the bookmark was recorded');
+    expect(rebuilt.whereType<ProgressLine>(), isEmpty);
+  });
+
   testWidgets('the Sleep label counts down while nothing else changes', (
     tester,
   ) async {

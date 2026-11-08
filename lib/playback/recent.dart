@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../catalog/book_cover.dart';
 import '../catalog/library_view.dart' show BookRow;
 import '../catalog/model.dart';
+import '../foundation/derived_value.dart';
 import '../foundation/theme.dart';
 import '../foundation/time.dart';
 import 'playback.dart';
@@ -16,38 +17,23 @@ typedef RecentProgress = ({
 });
 
 /// The recent listening of [playback], newest first, each book with its
-/// progress. It notifies when the records or the open book change, so a
-/// playing tick does not reach it.
+/// progress. It notifies when the records, the open book or the library
+/// change, because the rows show books and lengths from the library. A
+/// playing tick does not reach it. Equal for the same [playback], so a
+/// rebuilt owner keeps its subscription.
 ValueListenable<List<RecentProgress>> recentProgress(Playback playback) =>
-    _PlaybackRecent(playback);
-
-class _PlaybackRecent implements ValueListenable<List<RecentProgress>> {
-  const _PlaybackRecent(this.playback);
-  final Playback playback;
-
-  Listenable get _changes =>
-      Listenable.merge([playback.recordsNotifier, playback.selectionNotifier]);
-
-  @override
-  List<RecentProgress> get value => [
-    for (final entry in playback.recent)
-      (entry: entry, progress: playback.progress(entry.edition)),
-  ];
-
-  @override
-  void addListener(VoidCallback listener) => _changes.addListener(listener);
-
-  @override
-  void removeListener(VoidCallback listener) =>
-      _changes.removeListener(listener);
-
-  // Equal for the same Playback, so a rebuilt owner keeps the subscription.
-  @override
-  bool operator ==(Object other) =>
-      other is _PlaybackRecent && identical(other.playback, playback);
-  @override
-  int get hashCode => identityHashCode(playback);
-}
+    DerivedValue(
+      Listenable.merge([
+        playback.recordsNotifier,
+        playback.selectionNotifier,
+        playback.libraryNotifier,
+      ]),
+      () => [
+        for (final entry in playback.recent)
+          (entry: entry, progress: playback.progress(entry.edition)),
+      ],
+      source: playback,
+    );
 
 /// Books listened to recently, newest first, under a RECENTLY LISTENED
 /// label. The [open] book is left out, because the player above shows it.
