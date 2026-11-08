@@ -1,7 +1,7 @@
 ---
 id: tc-qdk7
 status: open
-deps: []
+deps: [td-rvpm]
 links: []
 created: 2026-11-07T23:56:52Z
 type: task
