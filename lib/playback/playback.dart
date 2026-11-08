@@ -795,21 +795,15 @@ class Playback extends ChangeNotifier {
     final starts = _layout(edition).starts;
     for (final file in edition.files) {
       final offset = starts[file.key];
-      if (!file.chapters.any((chapter) => chapter.startMs == 0)) {
-        chapters.add(PlaybackChapter(file.displayName, file.key, 0, offset));
-      }
-      for (final chapter in file.chapters) {
-        if (chapter.startMs >= 0 &&
-            (file.durationMs == null || chapter.startMs < file.durationMs!)) {
-          chapters.add(
-            PlaybackChapter(
-              chapter.name,
-              file.key,
-              chapter.startMs,
-              offset == null ? null : offset + chapter.startMs,
-            ),
-          );
-        }
+      for (final chapter in file.playableChapters) {
+        chapters.add(
+          PlaybackChapter(
+            chapter.name,
+            file.key,
+            chapter.startMs,
+            offset == null ? null : offset + chapter.startMs,
+          ),
+        );
       }
     }
     return List.unmodifiable(chapters);

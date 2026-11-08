@@ -148,10 +148,22 @@ class RecordJournal {
   static bool _isResume(String record) =>
       (jsonDecode(record) as List)[1] == 'resumes';
 
+  /// Adds an action of this installation that sets [record] to [value], or
+  /// deletes it when [value] is null, and marks it for upload. With
+  /// [resolve], the action replaces every competing version. Otherwise it
+  /// keeps the versions of other installations that compete with this one.
+  ///
+  /// The action names the [device] that made the change and the time
+  /// [savedAt], when the caller knows them, so that a choice between saved
+  /// versions can say where each one came from. Actions from before these
+  /// fields lack them, and every reader accepts an action with or without
+  /// them.
   void change(
     String record,
     Map<String, dynamic>? value, {
     bool resolve = false,
+    String? device,
+    DateTime? savedAt,
   }) {
     final versions = _records[record] ?? [];
     final action = <String, dynamic>{
@@ -167,6 +179,8 @@ class RecordJournal {
           for (final previous in versions)
             if (previous['replica'] != replica) identity(previous),
       ],
+      'device': ?device,
+      'savedAt': ?savedAt?.toUtc().toIso8601String(),
     };
     receive([action]);
     _pending.add(identity(action));

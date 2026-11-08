@@ -57,6 +57,7 @@ void main() {
           ]),
         ]),
         audioPosition,
+        device: replica == 'first' ? 'Pixel 8' : 'Pixel Tablet',
       );
       journal.change(
         jsonEncode([
@@ -111,8 +112,9 @@ void main() {
           .map((widget) => widget.data ?? '')
           .join('\n');
       expect(text, contains(audio.title.title));
-      expect(text, contains('00:00.900'));
-      expect(text, contains('00:00.100'));
+      expect(text, contains('Pixel 8 · 00:00'));
+      expect(text, contains('Pixel Tablet · 00:00'));
+      expect(text, isNot(contains('00:00.')));
       expect(text, contains('A river follows the old road'));
       expect(text, contains('not in the current library'));
       expect(text, isNot(contains('epubcfi(')));
@@ -141,8 +143,13 @@ void main() {
           .map((widget) => widget.data ?? '')
           .join('\n');
       expect(text, contains('River · Reading bookmark'));
-      expect(text, contains('River · EPUB · Book.epub'));
-      expect(text, contains('The journey · Narrator · Part one · 00:00.100'));
+      expect(text, contains('The journey · Listening saved place'));
+      expect(text, contains('Pixel Tablet · 00:00 · Opening'));
+      expect(
+        RegExp(RegExp.escape(audio.title.title)).allMatches(text),
+        hasLength(2),
+        reason: 'one heading for the saved place and one for the bookmark',
+      );
       expect(text, isNot(contains('not in the current library')));
       expect(tester.takeException(), isNull);
     },
@@ -169,7 +176,7 @@ void main() {
     (tester) async {
       sync.refuse = true;
       var syncs = 0;
-      final choices = <(String, String)>[];
+      final choices = <(String, String, Map<String, String>)>[];
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -181,8 +188,8 @@ void main() {
                 kept: ValueNotifier((recovered: 0, kept: false)),
                 library: ValueNotifier(CatalogLibrary.empty),
                 onSync: () => syncs++,
-                onResolve: (record, identity) =>
-                    choices.add((record, identity)),
+                onResolve: (record, identity, bookmarkTitles) =>
+                    choices.add((record, identity, bookmarkTitles)),
                 onDiscard: () {},
               ),
             ),
@@ -194,12 +201,49 @@ void main() {
       await tester.ensureVisible(choice);
       await tester.tap(choice);
       expect(syncs, 1);
-      final (record, identity) = choices.single;
+      final (record, identity, _) = choices.single;
       final chosen = sync.conflicts[record]!.singleWhere(
         (action) => RecordJournal.identity(action) == identity,
       );
       expect((chosen['value'] as Map)['title'], 'first audio note');
       expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'choosing a saved place reports the bookmark titles that name each place\'s device',
+    (tester) async {
+      sync.refuse = true;
+      final choices = <(String, String, Map<String, String>)>[];
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: RecordSyncView(
+                status: sync.statusNotifier,
+                lastSync: sync.lastSyncNotifier,
+                conflicts: sync.conflictsNotifier,
+                kept: ValueNotifier((recovered: 0, kept: false)),
+                library: ValueNotifier(CatalogLibrary.build([audio.title])),
+                onSync: () {},
+                onResolve: (record, identity, bookmarkTitles) =>
+                    choices.add((record, identity, bookmarkTitles)),
+                onDiscard: () {},
+              ),
+            ),
+          ),
+        ),
+      );
+      final choice = find.text('Pixel Tablet · 00:00 · Opening');
+      await tester.ensureVisible(choice);
+      await tester.tap(choice);
+      final (record, identity, bookmarkTitles) = choices.single;
+      final versions = sync.conflicts[record]!;
+      expect(identity, RecordJournal.identity(versions.last));
+      expect(bookmarkTitles, {
+        RecordJournal.identity(versions.first): 'Pixel 8 · Opening',
+        RecordJournal.identity(versions.last): 'Pixel Tablet · Opening',
+      });
     },
   );
 
@@ -436,6 +480,11 @@ class RefusingSync extends RecordSync {
       refuse ? throw StateError('syncNow') : super.syncNow();
 
   @override
-  Future<void> resolve(String record, String identity) =>
-      refuse ? throw StateError('resolve') : super.resolve(record, identity);
+  Future<void> resolve(
+    String record,
+    String identity, {
+    Map<String, String> bookmarkTitles = const {},
+  }) => refuse
+      ? throw StateError('resolve')
+      : super.resolve(record, identity, bookmarkTitles: bookmarkTitles);
 }

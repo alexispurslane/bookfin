@@ -97,6 +97,27 @@ class SourceFile {
   final int? sizeBytes;
   final List<AudioChapter> chapters;
   String get key => '$itemId:$mediaSourceId';
+
+  /// The chapters that a listener can reach in this file, in order. A file
+  /// without a chapter at its start begins with a chapter named after the
+  /// file. Chapters before the start or past the end are left out.
+  List<AudioChapter> get playableChapters => [
+    if (!chapters.any((chapter) => chapter.startMs == 0))
+      AudioChapter(displayName, 0),
+    for (final chapter in chapters)
+      if (chapter.startMs >= 0 &&
+          (durationMs == null || chapter.startMs < durationMs!))
+        chapter,
+  ];
+
+  /// The name of the chapter of [playableChapters] that holds [milliseconds]
+  /// into this file, which must not be negative.
+  String chapterAt(int milliseconds) => playableChapters
+      .where((chapter) => chapter.startMs <= milliseconds)
+      .reduce(
+        (found, chapter) => chapter.startMs >= found.startMs ? chapter : found,
+      )
+      .name;
 }
 
 class AudioChapter {

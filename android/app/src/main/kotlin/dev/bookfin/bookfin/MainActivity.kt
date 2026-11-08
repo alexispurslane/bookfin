@@ -8,9 +8,11 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.os.StatFs
+import android.provider.Settings
 import java.io.File
 
 class MainActivity : AudioServiceActivity() {
@@ -31,6 +33,17 @@ class MainActivity : AudioServiceActivity() {
             capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> "mobile"
             else -> "unknown"
         }
+    }
+
+    // The name that the owner gave this device in the system settings, or
+    // else its model name. Reading either needs no permission.
+    private fun deviceName(): String {
+        val named = try {
+            Settings.Global.getString(contentResolver, Settings.Global.DEVICE_NAME)
+        } catch (_: SecurityException) {
+            null
+        }
+        return named?.takeIf { it.isNotBlank() } ?: Build.MODEL
     }
 
     private fun publishNetwork() {
@@ -54,6 +67,13 @@ class MainActivity : AudioServiceActivity() {
                     "storage" -> result.success(mapOf("path" to File(filesDir, "bookfin-media").absolutePath))
                     "freeBytes" -> result.success(StatFs(filesDir.absolutePath).availableBytes)
                     "network" -> result.success(mediaNetwork())
+                    else -> result.notImplemented()
+                }
+            }
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "bookfin/device")
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "name" -> result.success(deviceName())
                     else -> result.notImplemented()
                 }
             }
