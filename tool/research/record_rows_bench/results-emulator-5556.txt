@@ -1,0 +1,47 @@
+# flutter drive --profile on emulator-5556 (bookfin-accept-20261103-db111f95), Android 16, arm64-v8a, 4 vCPUs on an Apple M1 Max host, 2026-11-07. Host load was 10 to 18 on 10 cores from other agents.
+BENCH size=3600 bytes=1737276 way=main run=0 ms=53 stallMs=6
+BENCH decodeOnlyUs size=3600 us=2098
+BENCH size=3600 bytes=1737276 way=codec run=0 ms=46 stallMs=46
+BENCH size=3600 bytes=1737276 way=worker run=0 ms=73 stallMs=10
+BENCH size=3600 bytes=1737276 way=workerOwn run=0 ms=59 stallMs=5
+BENCH size=3600 bytes=1737276 way=main run=1 ms=42 stallMs=6
+BENCH decodeOnlyUs size=3600 us=1694
+BENCH size=3600 bytes=1737276 way=codec run=1 ms=45 stallMs=45
+BENCH size=3600 bytes=1737276 way=worker run=1 ms=56 stallMs=9
+BENCH size=3600 bytes=1737276 way=workerOwn run=1 ms=44 stallMs=3
+BENCH size=3600 bytes=1737276 way=main run=2 ms=39 stallMs=7
+BENCH decodeOnlyUs size=3600 us=1698
+BENCH size=3600 bytes=1737276 way=codec run=2 ms=49 stallMs=49
+BENCH size=3600 bytes=1737276 way=worker run=2 ms=43 stallMs=4
+BENCH size=3600 bytes=1737276 way=workerOwn run=2 ms=45 stallMs=2
+BENCH size=21600 bytes=10475078 way=main run=0 ms=365 stallMs=26
+BENCH decodeOnlyUs size=21600 us=15539
+BENCH size=21600 bytes=10475078 way=codec run=0 ms=247 stallMs=247
+BENCH size=21600 bytes=10475078 way=worker run=0 ms=340 stallMs=8
+BENCH size=21600 bytes=10475078 way=workerOwn run=0 ms=350 stallMs=6
+BENCH size=21600 bytes=10475078 way=main run=1 ms=343 stallMs=20
+BENCH decodeOnlyUs size=21600 us=16382
+BENCH size=21600 bytes=10475078 way=codec run=1 ms=254 stallMs=254
+BENCH size=21600 bytes=10475078 way=worker run=1 ms=342 stallMs=4
+BENCH size=21600 bytes=10475078 way=workerOwn run=1 ms=352 stallMs=6
+BENCH size=21600 bytes=10475078 way=main run=2 ms=342 stallMs=25
+BENCH decodeOnlyUs size=21600 us=15236
+BENCH size=21600 bytes=10475078 way=codec run=2 ms=239 stallMs=239
+BENCH size=21600 bytes=10475078 way=worker run=2 ms=322 stallMs=4
+BENCH size=21600 bytes=10475078 way=workerOwn run=2 ms=334 stallMs=5
+BENCH size=43200 bytes=20983478 way=main run=0 ms=1104 stallMs=44
+BENCH decodeOnlyUs size=43200 us=40199
+BENCH size=43200 bytes=20983478 way=codec run=0 ms=518 stallMs=518
+BENCH size=43200 bytes=20983478 way=worker run=0 ms=1148 stallMs=8
+BENCH size=43200 bytes=20983478 way=workerOwn run=0 ms=1175 stallMs=12
+BENCH size=43200 bytes=20983478 way=main run=1 ms=1095 stallMs=52
+BENCH decodeOnlyUs size=43200 us=31774
+BENCH size=43200 bytes=20983478 way=codec run=1 ms=515 stallMs=515
+BENCH size=43200 bytes=20983478 way=worker run=1 ms=1182 stallMs=8
+BENCH size=43200 bytes=20983478 way=workerOwn run=1 ms=1210 stallMs=8
+BENCH size=43200 bytes=20983478 way=main run=2 ms=1202 stallMs=48
+BENCH decodeOnlyUs size=43200 us=35585
+BENCH size=43200 bytes=20983478 way=codec run=2 ms=531 stallMs=531
+BENCH size=43200 bytes=20983478 way=worker run=2 ms=1192 stallMs=9
+BENCH size=43200 bytes=20983478 way=workerOwn run=2 ms=1218 stallMs=7
+BENCH done

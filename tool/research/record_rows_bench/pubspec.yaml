@@ -1,0 +1,19 @@
+name: record_rows_bench
+description: "Measures how long the UI isolate spends on the rows of a large personal-record account (tf-0nvi)."
+publish_to: 'none'
+version: 0.1.0+1
+environment:
+  sdk: ^3.13.3
+dependencies:
+  flutter:
+    sdk: flutter
+  # The version that Bookfin uses.
+  sqflite: 2.4.5
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  integration_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+flutter:
+  uses-material-design: true
