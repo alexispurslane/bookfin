@@ -375,8 +375,9 @@ The trial showed that every epub.js place lands on the page that shows it (661 o
 - The worker converts WOFF 1 to SFNT (zlib per table). WOFF 2 needs Brotli and table transforms, so such a face uses the reader font, and the corpus report lists it.
 - The page source registers each face once with `ui.loadFontFromList`, before a section that uses it lays out. The family name is per book: `bookfin-<first 12 hex digits of the identity>-<family>`.
 - The prepare worker resolves each run's family list to one family. That family is a registered face, the reader font, or `monospace`, as in the trial.
-- The `opsz` and `wght` font variations that copy Chromium apply only to the reader font, never to an embedded face.
-- Flutter cannot unload a font, so faces stay for the process. A glyph that a face lacks falls back to another font, as Flutter does.
+- A face whose file does not load draws in the reader font, as a WOFF 2 face does. `BookFonts` records which families registered, and layout draws a family that did not register in the reader font.
+- Layout sets the `opsz` axis of every font to the text size, as Chromium does. It sets the `wght` axis of an embedded face to the CSS weight, as Chromium does. The reader font keeps `wght` 400, because its `@font-face` rule names no weights.
+- Flutter cannot unload a font, so faces stay for the process. A character that a face lacks draws in the reader font.
 
 ### Hyphenation (E16)
 

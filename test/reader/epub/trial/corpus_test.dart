@@ -30,12 +30,14 @@ void _write(String name, Object value) {
 
 /// Writes the showcase fixture's made-up EPUBs beside the downloaded books.
 void _writeShowcase() {
+  final books = Directory('.cache/epub-trial/books')
+    ..createSync(recursive: true);
   for (final (id, title, chapters) in [
     ('frost', 'First Frost', media.firstFrost),
     ('salt', 'Salt and Lantern', media.saltAndLantern),
     ('winter', 'The Winter Ledger', media.winterLedger),
   ]) {
-    File('.cache/epub-trial/books/showcase-$id.epub')
+    File('${books.path}/showcase-$id.epub')
         .writeAsBytesSync(media.epub(id, title, 'Bookfin Showcase', chapters));
   }
 }
