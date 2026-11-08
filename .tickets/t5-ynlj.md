@@ -1,6 +1,6 @@
 ---
 id: t5-ynlj
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-08T22:14:17Z

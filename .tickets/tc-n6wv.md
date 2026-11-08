@@ -1,6 +1,6 @@
 ---
 id: tc-n6wv
-status: in_progress
+status: closed
 deps: [tc-txyr]
 links: []
 created: 2026-11-08T19:23:13Z
