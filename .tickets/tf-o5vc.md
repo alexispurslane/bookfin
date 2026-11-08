@@ -1,7 +1,7 @@
 ---
 id: tf-o5vc
 status: open
-deps: [td-rvpm, ta-7oe6, tf-0nvi]
+deps: [td-rvpm, ta-7oe6, tf-0nvi, boo-7ua0, t6-n8y3]
 links: []
 created: 2026-11-07T23:48:23Z
 type: chore
@@ -18,3 +18,9 @@ Found in boo-4bof. CatalogHop (lib/catalog/controller.dart), RecordsHop (lib/pla
 
 One hop typedef in lib/foundation, used by the three stores, and no behavior change.
 
+
+## Notes
+
+**2026-11-08T00:12:38Z**
+
+Orchestrator, Nov 7: the orchestrator does this one-line refactor after groups B and C merge.

@@ -18,3 +18,9 @@ From tc-y4ij. A ChangeNotifier reports an exception thrown by a listener through
 
 Removing a protection that an invariant guards makes each of these tests fail, not just log.
 
+
+## Notes
+
+**2026-11-08T00:12:38Z**
+
+Orchestrator, Nov 7: one agent does tc-qdk7, t9-cx1u and boo-uceu together (group A), to save agent cycles on playback.dart and the broad notifications.

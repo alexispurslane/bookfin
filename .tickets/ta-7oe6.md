@@ -18,3 +18,9 @@ From t6-2ghu. A refresh still builds its entries on the UI isolate and copies th
 
 The skipped test 'a refresh hands the worker Jellyfin's responses, not built entries' in test/catalog/catalog_signals_test.dart runs and passes. A refresh of 5000 entries hands no CatalogEntry objects from the UI isolate to the worker. Cancel and dispose still stop the page requests.
 
+
+## Notes
+
+**2026-11-08T00:12:38Z**
+
+Orchestrator, Nov 7: one agent does ta-7oe6 and t6-n8y3 together (group B), catalog hop work.

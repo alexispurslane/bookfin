@@ -20,3 +20,9 @@ Find out whether sqflite can run its queries from a background isolate on Androi
 
 A measurement on the phone of the channel decode for a large account. Then either the rows load in the worker isolate, or a comment in database.dart records why they cannot.
 
+
+## Notes
+
+**2026-11-08T00:12:38Z**
+
+Orchestrator, Nov 7: one agent does tf-0nvi and boo-7ua0 together (group C), store and sync work.

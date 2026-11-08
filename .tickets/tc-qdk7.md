@@ -18,3 +18,9 @@ Found in t9-d4kb. ListeningTimeline follows only Playback.recordsNotifier. Its l
 
 With the timeline open, a library refresh that changes the length of an earlier file updates the place times of the shown rows. A playing tick still rebuilds no row.
 
+
+## Notes
+
+**2026-11-08T00:12:38Z**
+
+Orchestrator, Nov 7: one agent does tc-qdk7, t9-cx1u and boo-uceu together (group A), to save agent cycles on playback.dart and the broad notifications.

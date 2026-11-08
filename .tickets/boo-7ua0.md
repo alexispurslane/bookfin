@@ -1,7 +1,7 @@
 ---
 id: boo-7ua0
 status: open
-deps: [boo-4bof, t9-pols, t9-dcld, boo-0km1]
+deps: [boo-4bof, t9-pols, t9-dcld, boo-0km1, td-rvpm]
 links: []
 created: 2026-11-07T21:34:40Z
 type: task
@@ -25,3 +25,7 @@ A sync that finds no remote change causes no notification and no re-parse. A cat
 **2026-11-07T23:20:50Z**
 
 t9-pols merged: RecordSync no longer extends ChangeNotifier; it publishes statusNotifier ((busy, message), user actions only), lastSyncNotifier ((at, failed)) and conflictsNotifier, and serializes syncs and choices through _exclusive. A background synchronize() shows nothing. Build the no-change skip on that.
+
+**2026-11-08T00:12:38Z**
+
+Orchestrator, Nov 7: one agent does tf-0nvi and boo-7ua0 together (group C), store and sync work.

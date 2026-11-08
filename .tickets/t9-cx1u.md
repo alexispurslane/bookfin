@@ -29,3 +29,9 @@ Owned files: lib/playback/playback.dart, lib/playback/native.dart, lib/downloads
 - A transfer of ten byte steps causes no broad Downloads notification. phases notifies at the start and at the end.
 - Every widget test passes, so each widget that shows a position or bytes still updates.
 
+
+## Notes
+
+**2026-11-08T00:12:38Z**
+
+Orchestrator, Nov 7: one agent does tc-qdk7, t9-cx1u and boo-uceu together (group A), to save agent cycles on playback.dart and the broad notifications.
