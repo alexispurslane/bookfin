@@ -298,6 +298,43 @@ void main() {
     ], isEmpty);
   });
 
+  test('at launch the saved library is bound before the background refresh ends, and stays bound when that refresh cannot reach Jellyfin', () async {
+    final restarted = CatalogController(
+      credentials: MemoryCredentials()..value = catalog.session,
+      store: store,
+      clientFactory: (_, _) => client,
+    );
+    addTearDown(restarted.dispose);
+    await restarted.restore();
+    client.validateGate = Completer();
+    client.failure = const CatalogFailure(CatalogFailureKind.unavailable);
+    final refreshing = restarted.refresh();
+    binding = AccountBinding(
+      catalog: restarted,
+      downloads: downloads,
+      playback: playback,
+      reader: reader,
+      sync: sync,
+    );
+    await pumpEventQueue();
+    expect(restarted.statusNotifier.value.refreshing, isTrue);
+    expect(log.binds.map((bind) => bind.source).toSet(), {
+      'downloads',
+      'playback',
+      'reader',
+    });
+    for (final bind in log.binds) {
+      expect(bind.account, restarted.session!.scope.key);
+      expect(bind.books, same(restarted.books));
+    }
+    log.binds.clear();
+    client.validateGate!.complete();
+    await refreshing;
+    await pumpEventQueue();
+    expect(restarted.statusNotifier.value.reach, CatalogReach.unreachable);
+    expect(log.binds, isEmpty);
+  });
+
   test('a disposed binding binds nothing more', () async {
     bind().dispose();
     binding = null;

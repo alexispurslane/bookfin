@@ -207,6 +207,20 @@ void main() {
     expect(done, isTrue);
   }
 
+  /// Completes when no catalog refresh runs.
+  Future<void> refreshEnded() {
+    final ended = Completer<void>();
+    void follow() {
+      if (catalog.statusNotifier.value.refreshing || ended.isCompleted) return;
+      catalog.statusNotifier.removeListener(follow);
+      ended.complete();
+    }
+
+    catalog.statusNotifier.addListener(follow);
+    follow();
+    return ended.future;
+  }
+
   /// A widget test whose player closes before fake time ends, because closing
   /// waits on work that fake time does not run.
   void testLibrary(
@@ -397,6 +411,130 @@ void main() {
       await tester.pumpAndSettle();
       expect(shelfTitles(tester), ['First Frost']);
     });
+
+    const notice = 'Cannot reach Jellyfin. Showing downloaded books.';
+
+    testLibrary('the library says so and offers Retry', (tester) async {
+      await showLibrary(tester);
+      client.failure = const CatalogFailure(CatalogFailureKind.unavailable);
+      await finish(tester, catalog.refresh());
+      await tester.pumpAndSettle();
+      expect(find.text(notice), findsOneWidget);
+      expect(find.widgetWithText(TextButton, 'Retry'), findsOneWidget);
+    });
+
+    testLibrary(
+      'Retry refreshes, and a refresh that reaches Jellyfin clears the notice and brings the full library back',
+      (tester) async {
+        await showLibrary(tester);
+        client.failure = const CatalogFailure(CatalogFailureKind.unavailable);
+        await finish(tester, catalog.refresh());
+        await tester.pumpAndSettle();
+        expect(shelfTitles(tester), isEmpty);
+        client.failure = null;
+        await tester.tap(find.widgetWithText(TextButton, 'Retry'));
+        await finish(tester, refreshEnded());
+        await tester.pumpAndSettle();
+        expect(find.text(notice), findsNothing);
+        expect(find.widgetWithText(TextButton, 'Retry'), findsNothing);
+        expect(shelfTitles(tester), hasLength(4));
+      },
+    );
+
+    testLibrary('the notice stays while a retry runs', (tester) async {
+      await showLibrary(tester);
+      client.failure = const CatalogFailure(CatalogFailureKind.unavailable);
+      await finish(tester, catalog.refresh());
+      await tester.pumpAndSettle();
+      client.failure = null;
+      client.pendingCatalog = Completer();
+      await tester.tap(find.widgetWithText(TextButton, 'Retry'));
+      await tester.pump();
+      expect(catalog.statusNotifier.value.refreshing, isTrue);
+      expect(find.text(notice), findsOneWidget);
+      client.pendingCatalog!.complete(client.entries);
+      await finish(tester, refreshEnded());
+      await tester.pumpAndSettle();
+      expect(find.text(notice), findsNothing);
+    });
+  });
+
+  group('a refresh', () {
+    Finder progressLine() => find.byWidgetPredicate(
+      (widget) => widget is LinearProgressIndicator && widget.value == null,
+    );
+
+    testLibrary('that ends within 1.5 seconds shows no progress line', (
+      tester,
+    ) async {
+      await showLibrary(tester);
+      client.pendingCatalog = Completer();
+      final refreshing = catalog.refresh();
+      await tester.pump();
+      expect(progressLine(), findsNothing);
+      await tester.pump(const Duration(milliseconds: 1400));
+      expect(progressLine(), findsNothing);
+      client.pendingCatalog!.complete(client.entries);
+      await finish(tester, refreshing);
+      await tester.pump(const Duration(seconds: 1));
+      expect(progressLine(), findsNothing);
+    });
+
+    testLibrary(
+      'that runs longer than 1.5 seconds shows a progress line until it ends',
+      (tester) async {
+        await showLibrary(tester);
+        client.pendingCatalog = Completer();
+        final refreshing = catalog.refresh();
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 1400));
+        expect(progressLine(), findsNothing);
+        await tester.pump(const Duration(milliseconds: 200));
+        expect(progressLine(), findsOneWidget);
+        client.pendingCatalog!.complete(client.entries);
+        await finish(tester, refreshing);
+        await tester.pump();
+        expect(progressLine(), findsNothing);
+      },
+    );
+
+    testLibrary(
+      'in the background that Jellyfin answers but that fails shows nothing',
+      (tester) async {
+        await showLibrary(tester);
+        client.failure = const CatalogFailure(CatalogFailureKind.incomplete);
+        await finish(tester, catalog.refresh());
+        await tester.pumpAndSettle();
+        expect(find.byType(StatusMessage), findsNothing);
+        expect(shelfTitles(tester), hasLength(4));
+      },
+    );
+
+    testLibrary(
+      'that the person pulls for and that Jellyfin answers but that fails shows its failure',
+      (tester) async {
+        await showLibrary(tester);
+        client.failure = const CatalogFailure(CatalogFailureKind.incomplete);
+        await tester.fling(
+          find.descendant(
+            of: find.byType(LibraryShelf),
+            matching: find.byType(CustomScrollView),
+          ),
+          const Offset(0, 400),
+          1000,
+        );
+        await tester.pump();
+        await tester.pump(const Duration(seconds: 1));
+        await finish(tester, refreshEnded());
+        await tester.pumpAndSettle();
+        expect(
+          find.text(
+            'The catalog changed or the refresh was incomplete. Try again.',
+          ),
+          findsOneWidget,
+        );
+      },
+    );
   });
 
   group('the pages own navigation', () {

@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 
 import '../foundation/listenable_selector.dart';
 import '../foundation/theme.dart';
-import '../foundation/time.dart';
 import 'book_cover.dart';
 import 'book_page.dart';
 import 'layout.dart';
@@ -67,7 +66,8 @@ class _LibraryShelfState extends State<LibraryShelf> {
     final services = widget.services;
     final catalog = services.catalog;
     return RefreshIndicator(
-      onRefresh: () => catalog.busy ? Future<void>.value() : catalog.refresh(),
+      onRefresh: () =>
+          catalog.busy ? Future<void>.value() : catalog.refresh(byUser: true),
       child: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
@@ -95,7 +95,6 @@ class _LibraryShelfState extends State<LibraryShelf> {
               ),
             ),
           ),
-          _SavedLine(catalog: catalog),
           if (items.isEmpty)
             SliverFillRemaining(
               hasScrollBody: false,
@@ -127,34 +126,6 @@ class _LibraryShelfState extends State<LibraryShelf> {
       ),
     );
   }
-}
-
-/// The time of the saved library, while no refresh confirmed it.
-class _SavedLine extends StatelessWidget {
-  const _SavedLine({required this.catalog});
-  final CatalogController catalog;
-
-  @override
-  Widget build(BuildContext context) => ListenableSelector(
-    listenable: Listenable.merge([
-      catalog.statusNotifier,
-      catalog.libraryNotifier,
-    ]),
-    select: () => catalog.statusNotifier.value.verified
-        ? null
-        : catalog.cache?.completedAt,
-    builder: (context, savedAt, _) => SliverToBoxAdapter(
-      child: savedAt == null
-          ? const SizedBox.shrink()
-          : Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-              child: Text(
-                'Saved library · ${dayAndTime(context, savedAt)}',
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            ),
-    ),
-  );
 }
 
 /// Library entries as a grid or a list, in the saved layout. A sliver. A tap
