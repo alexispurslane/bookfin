@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bookfin/foundation/theme.dart';
 import 'package:bookfin/playback/playback.dart';
 import 'package:bookfin/playback/screen.dart';
@@ -6,6 +8,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'history_test.dart' show GatedRecordStore;
 import 'playback_test.dart'
     show LocalFiles, TestEngine, MemoryResume, account, title, recording;
 
@@ -127,6 +130,86 @@ void main() {
     });
   });
 
+  group('while audio plays', () {
+    late Playback playback;
+    late LocalFiles downloads;
+    late TestEngine engine;
+    late _HeldOrFailingStore store;
+    setUp(() async {
+      downloads = LocalFiles();
+      engine = TestEngine();
+      store = _HeldOrFailingStore();
+      playback = Playback(downloads: downloads, engine: engine, store: store);
+      await playback.bind(account(), [title]);
+      await playback.open(title, recording, autoplay: false);
+    });
+    tearDown(() async {
+      await playback.close();
+      downloads.dispose();
+    });
+
+    testWidgets('the Undo pill says Saving until the previous place is saved', (
+      tester,
+    ) async {
+      pixel8(tester);
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: bookfinTheme(Brightness.light),
+          home: Scaffold(body: PlayerView(playback: playback)),
+        ),
+      );
+      store.fail = true;
+      await tester.runAsync(() => playback.seekEdition(75000));
+      await tester.pump();
+      expect(find.text('Saving your previous place'), findsOneWidget);
+      store.fail = false;
+      await tester.runAsync(playback.flush);
+      await tester.pump();
+      expect(find.text('Your previous place is saved'), findsOneWidget);
+    });
+
+    // A playing tick saves the place where audio plays now, which is not
+    // the previous place that Undo returns to.
+    testWidgets('the Undo pill stays saved while a playing tick saves the '
+        'place', (tester) async {
+      pixel8(tester);
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: bookfinTheme(Brightness.light),
+          home: Scaffold(body: PlayerView(playback: playback)),
+        ),
+      );
+      await tester.runAsync(() async {
+        await playback.play();
+        await playback.seekEdition(75000);
+        await playback.flush();
+      });
+      await tester.pump();
+      expect(find.text('Your previous place is saved'), findsOneWidget);
+      // The held save and the tick run in real time, because a future made
+      // on the test clock completes only when that clock moves.
+      late Completer<void> gate;
+      await tester.runAsync(() async {
+        gate = store.gate = Completer<void>();
+        // The tick crosses a whole second, so Playback saves the place.
+        engine.emit(engine.index, engine.milliseconds + 1000, playing: true);
+        await Future<void>.delayed(Duration.zero);
+      });
+      await tester.pump();
+      final saving = playback.unsavedChanges;
+      final shown = find.text('Your previous place is saved').evaluate().length;
+      await tester.runAsync(() async {
+        gate.complete();
+        // A closing Playback stops what plays, and that save must run in
+        // real time, so the test pauses here.
+        await playback.pause();
+        await playback.flush();
+      });
+      expect(saving, isTrue);
+      expect(shown, 1);
+    });
+  });
+
   for (final unsaved in [false, true]) {
     testWidgets('the Undo pill tells ${unsaved ? 'that the previous place is '
                   'still saving' : 'that the previous place is saved'} on one '
@@ -172,5 +255,16 @@ void main() {
         moreOrLessEquals(tester.getCenter(find.text('Undo')).dy, epsilon: 1),
       );
     });
+  }
+}
+
+/// A record store whose saves can wait at [gate], or fail while [fail] is
+/// set, as on a slow or full disk.
+class _HeldOrFailingStore extends GatedRecordStore {
+  bool fail = false;
+  @override
+  Future<void> save(String accountKey, ListeningChanges changes) async {
+    if (fail) throw Exception('disk full');
+    await super.save(accountKey, changes);
   }
 }

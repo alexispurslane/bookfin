@@ -56,15 +56,12 @@ class LocalDownloads extends Downloads {
   bool _disposed = false;
   String? _storageError;
   Object _retainedBinding = Object();
-  final ChangeNotifier _phases = ChangeNotifier();
   ValueNotifier<LeftoverFiles>? _leftovers;
   Future<void>? _leftoverReads;
   bool _leftoversStale = false;
 
   @override
   bool get supported => true;
-  @override
-  Listenable get phases => _phases;
 
   // Engine rule 1: callers hash one short string at a time, such as an
   // account key or one source identity. That costs microseconds, far less
@@ -1259,7 +1256,7 @@ class LocalDownloads extends Downloads {
                     const Duration(milliseconds: 250))) {
           notifiedAt = now;
           notifiedBytes = record.bytes;
-          if (!_disposed) notifyListeners();
+          if (!_disposed) updateWatches();
         }
       }
     } finally {
@@ -1483,12 +1480,11 @@ class LocalDownloads extends Downloads {
     }
   }
 
-  /// Notifies a change other than byte progress to both kinds of listeners,
-  /// and reads the leftover files again once something shows them.
+  /// Notifies a change other than byte progress to every listener, and
+  /// reads the leftover files again once something shows them.
   void _emit() {
     if (_disposed) return;
     notifyListeners();
-    _phases.notifyListeners();
     if (_leftovers != null) unawaited(reloadLeftovers());
   }
 
@@ -1498,7 +1494,6 @@ class LocalDownloads extends Downloads {
     ++_generation;
     policy.removeListener(_networkChanged);
     _client?.close(force: true);
-    _phases.dispose();
     _leftovers?.dispose();
     super.dispose();
   }

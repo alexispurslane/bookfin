@@ -815,9 +815,8 @@ void main() {
       );
       await downloads.bind(fixture.session(), fixture.books);
       shown = [];
-      downloads.addListener(
-        () => shown.add(downloads.status(fixture.text).bytes),
-      );
+      final watched = downloads.watch(fixture.text);
+      watched.addListener(() => shown.add(watched.value.bytes));
       await downloads.request(fixture.text);
       await downloads.idle;
       expect(downloads.status(fixture.text).phase, DownloadPhase.downloaded);
@@ -1264,11 +1263,12 @@ Future<void> waitForBytes(
     }
   }
 
-  downloads.addListener(changed);
+  // Byte progress notifies only the watch of its edition.
+  final watched = downloads.watch(edition)..addListener(changed);
   changed();
   try {
     await ready.future.timeout(const Duration(seconds: 5));
   } finally {
-    downloads.removeListener(changed);
+    watched.removeListener(changed);
   }
 }

@@ -193,6 +193,43 @@ void main() {
       expect(textNotices, 0);
     });
 
+    test('byte progress reaches only the watch of its edition, and the '
+        'broad listeners hear the start and the end', () async {
+      downloads.dispose();
+      await downloads.idle;
+      var now = DateTime(2026);
+      fixture.payload = Uint8List(256 << 10);
+      fixture.pieceBytes = 4 << 10;
+      downloads = create(
+        clock: () => now = now.add(const Duration(seconds: 1)),
+      );
+      await downloads.bind(fixture.session(), fixture.books);
+      final watched = downloads.watch(fixture.text);
+      final watchedBytes = <int>[];
+      final broadBytes = <int>[];
+      final phaseBytes = <int>[];
+      watched.addListener(() => watchedBytes.add(watched.value.bytes));
+      downloads.addListener(
+        () => broadBytes.add(downloads.status(fixture.text).bytes),
+      );
+      downloads.phases.addListener(
+        () => phaseBytes.add(downloads.status(fixture.text).bytes),
+      );
+      await downloads.request(fixture.text);
+      await downloads.idle;
+      final length = fixture.payload.length;
+      expect(downloads.status(fixture.text).bytes, length);
+      expect(
+        watchedBytes.where((bytes) => bytes > 0 && bytes < length).length,
+        greaterThanOrEqualTo(10),
+      );
+      for (final heard in [broadBytes, phaseBytes]) {
+        expect(heard.first, 0);
+        expect(heard.last, length);
+        expect(heard.where((bytes) => bytes > 0 && bytes < length), isEmpty);
+      }
+    });
+
     test(
       'watching an edition twice gives one signal that follows its status',
       () async {
@@ -246,17 +283,14 @@ void main() {
       await downloads.bind(fixture.session(), fixture.books);
       final leftovers = await readLeftovers();
       final readsBefore = downloads.reads;
-      var broad = 0;
       var phases = 0;
       var inventory = 0;
-      downloads.addListener(() => broad++);
       downloads.phases.addListener(() => phases++);
       leftovers.addListener(() => inventory++);
       await downloads.request(fixture.text);
       await downloads.idle;
       await downloads.reloadLeftovers();
       expect(downloads.status(fixture.text).phase, DownloadPhase.downloaded);
-      expect(broad, greaterThan(phases + 10));
       expect(inventory, inInclusiveRange(1, phases + 1));
       expect(downloads.reads - readsBefore, lessThanOrEqualTo(phases + 1));
     });

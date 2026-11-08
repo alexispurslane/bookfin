@@ -26,6 +26,7 @@ Map<String, int> heard(Playback playback) {
     'library': playback.libraryNotifier,
     'settings': playback.settingsNotifier,
     'status': playback.statusNotifier,
+    'undo': playback.undoNotifier,
   };
   final counts = {for (final name in signals.keys) name: 0};
   for (final MapEntry(key: name, value: signal) in signals.entries) {
@@ -62,11 +63,14 @@ void main() {
       await playback.play();
       await playback.setSleep(const Duration(minutes: 30));
       final counts = heard(playback);
+      var broad = 0;
+      playback.addListener(() => broad++);
       // Ten ticks cross two whole seconds, so the resume is saved twice.
       for (var step = 0; step < 10; step++) {
         tick();
       }
       await playback.flush();
+      expect(broad, 0);
       expect(counts, {
         'position': 10,
         'selection': 0,
@@ -75,6 +79,7 @@ void main() {
         'library': 0,
         'settings': 0,
         'status': 0,
+        'undo': 0,
       });
       expect(playback.positionNotifier.value?.milliseconds, 2000);
       playback.checkInvariants();
@@ -93,6 +98,7 @@ void main() {
         'library': 0,
         'settings': 0,
         'status': 0,
+        'undo': 0,
       });
     });
   });
@@ -188,6 +194,39 @@ void main() {
       final counts = heard(playback);
       await playback.bind(account(user: 'bob'), [title, other]);
       expect(counts['library'], greaterThan(0));
+    });
+  });
+
+  group('the undo offer', () {
+    test('comes with a seek once the place before it is saved', () async {
+      final counts = heard(playback);
+      await playback.seekEdition(75000);
+      final offer = playback.undoNotifier.value;
+      expect(offer?.action.kind, ListeningAction.seek);
+      expect(offer?.saved, isTrue);
+      expect(counts['undo'], 1);
+    });
+
+    test('goes when it is dismissed', () async {
+      await playback.seekEdition(75000);
+      final counts = heard(playback);
+      playback.dismissUndo();
+      expect(playback.undoNotifier.value, isNull);
+      expect(counts['undo'], 1);
+    });
+
+    test('stays saved while playing ticks save the place', () async {
+      await playback.play();
+      await playback.seekEdition(75000);
+      await playback.flush();
+      final counts = heard(playback);
+      for (var step = 0; step < 10; step++) {
+        tick();
+      }
+      await playback.flush();
+      expect(playback.undoNotifier.value?.saved, isTrue);
+      expect(counts['undo'], 0);
+      playback.checkInvariants();
     });
   });
 
