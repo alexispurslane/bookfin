@@ -247,6 +247,11 @@ export async function openBook(configuration) {
     catch (_) { send('readerWarning', 'The saved place does not match this text. Reading starts at the beginning.'); }
   }
   await rendition.display(initial ? initial.cfi : undefined);
+  // Adding the hidden rendition of the page previews makes the web view draw
+  // itself again. Adding it now, at the shown place, keeps that out of the
+  // first scrub. A failure here only leaves the work to the first preview.
+  const shown = rendition.location && rendition.location.start.cfi;
+  previewJob = previewJob.catch(() => {}).then(() => previewRendition().display(shown)).catch(() => {});
   let entries = flatten(book.navigation.toc);
   if (!entries.length) entries = book.spine.spineItems.filter(section => section.linear).map((section, index) =>
     ({ title: `Chapter ${index + 1}`, href: section.href, depth: 0 }));
@@ -399,10 +404,11 @@ const linkedCss = new Map();
 
 const encodedCss = new Map();
 
-// Draws the shown page of [view] into a JPEG data URL, [scale] image pixels
-// for each layout pixel. The page's document, with its style and resources
-// inlined, becomes an SVG image, which the browser draws as it draws the page.
-async function drawPage(view, scale) {
+// Draws the shown page of [view] into JPEG bytes, [scale] image pixels for
+// each layout pixel. The page's document, with its style and resources
+// inlined, becomes an SVG image, which the browser draws as it draws the
+// page. [step] runs between the parts of the work.
+async function drawPage(view, scale, step) {
   const manager = view.manager;
   const frame = manager.views.first();
   const document = frame.contents.document;
@@ -410,6 +416,7 @@ async function drawPage(view, scale) {
   const height = manager.container.clientHeight;
   const left = manager.container.scrollLeft - frame.element.offsetLeft;
   const css = await documentCss(document);
+  await step();
   // The style, with the reader's font, is most of the image's text. It is
   // the same for each page of a book, so it is encoded once.
   if (!encodedCss.has(css)) encodedCss.set(css, encodeURIComponent(css));
@@ -433,7 +440,9 @@ async function drawPage(view, scale) {
   const image = new Image();
   image.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(head + before) + encodedCss.get(css) +
     encodeURIComponent(after + '</foreignObject></svg>');
+  await step();
   await image.decode();
+  await step();
   const canvas = window.document.createElement('canvas');
   canvas.width = Math.round(width * scale);
   canvas.height = Math.round(height * scale);
@@ -442,7 +451,11 @@ async function drawPage(view, scale) {
   context.fillRect(0, 0, canvas.width, canvas.height);
   context.scale(scale, scale);
   context.drawImage(image, 0, 0);
-  return canvas.toDataURL('image/jpeg', 0.85);
+  await step();
+  // Unlike a data URL, a blob is encoded away from the page's main thread.
+  const blob = await new Promise((resolve, reject) =>
+    canvas.toBlob(blob => blob ? resolve(blob) : reject(Error('The page could not be encoded')), 'image/jpeg', 0.85));
+  return blob.arrayBuffer();
 }
 
 // The number of visible characters, white space left out, before [range]
@@ -458,40 +471,80 @@ function charactersAt(range) {
   return { before: visibleLength(before.toString()), total };
 }
 
+// Lets the shown page handle input before the next step of a page preview.
+function yieldToPage() {
+  return globalThis.scheduler && scheduler.yield ? scheduler.yield() : new Promise(resolve => setTimeout(resolve, 0));
+}
+
+// The number of the last page preview that the app asked for.
+let lastPreview = 0;
+
+// The page previews that the app cancelled, by request number. A preview
+// stops at its next step when its number is here.
+const cancelledPreviews = new Set();
+
+// Stops page preview [request] at its next step. A preview that already
+// ended is not affected.
+export function cancelPreview(request) {
+  if (Number.isInteger(request) && request > 0 && request <= lastPreview) cancelledPreviews.add(request);
+}
+
 // Draws the page that holds the place [progress] of the way through the text
-// of spine section [index], as an image [width] pixels wide. It
-// reports the page as `image`, the text progress through the section of the
-// page's first and last visible places as `start` and `end`, and the places
-// where the `previous` and `next` pages start, or null at the book's ends.
-export function previewPage(index, progress, width) {
+// of spine section [index], as an image [width] pixels wide. It posts the
+// image to the app through `bookfinPages`: the preview's number [request]
+// in four little-endian bytes, then the JPEG bytes. It reports the text
+// progress through the section of the page's first and last visible places
+// as `start` and `end`, and the places where the `previous` and `next`
+// pages start, or null at the book's ends. It yields to the shown page
+// between its steps, and stops when the app cancels it.
+export function previewPage(request, index, progress, width) {
+  if (Number.isInteger(request) && request > lastPreview) lastPreview = request;
   const job = previewJob.catch(() => {}).then(async () => {
     const section = Number.isInteger(index) && book.spine.get(index);
-    if (!section || typeof progress !== 'number' || !(progress >= 0 && progress <= 1) ||
+    if (!Number.isInteger(request) || !section || typeof progress !== 'number' || !(progress >= 0 && progress <= 1) ||
         typeof width !== 'number' || !(width > 0 && width <= 4096)) throw Error('The destination is not in this book');
-    const view = previewRendition();
-    await section.load(book.load.bind(book));
-    await view.display(placeAt(section, progress));
-    const location = view.currentLocation();
-    const image = await drawPage(view, width / view.manager.container.clientWidth);
-    const first = charactersAt(await book.getRange(location.start.cfi));
-    const last = charactersAt(await book.getRange(location.end.cfi));
-    const count = book.spine.spineItems.length;
-    const total = first.total;
-    // A place sits inside its character, so rounding cannot move it to the
-    // character's neighbor.
-    const place = character => (character + 0.5) / total;
-    const firstPage = !total || location.start.displayed.page <= 1;
-    const lastPage = !total || location.end.displayed.page >= location.end.displayed.total;
-    return {
-      image,
-      part: index,
-      start: total ? first.before / total : 0,
-      end: total && !lastPage ? Math.min(1, last.before / total) : 1,
-      previous: !firstPage ? { part: index, progress: place(first.before - 1) } :
-        index > 0 ? { part: index - 1, progress: 1 } : null,
-      next: !lastPage ? { part: index, progress: place(Math.min(total - 1, last.before + 1)) } :
-        index + 1 < count ? { part: index + 1, progress: 0 } : null,
+    const step = async () => {
+      if (cancelledPreviews.has(request)) throw Error('The preview was cancelled');
+      await yieldToPage();
+      if (cancelledPreviews.has(request)) throw Error('The preview was cancelled');
     };
+    try {
+      await step();
+      const view = previewRendition();
+      // The box follows the shown page's size, but the rendition measures it
+      // only on a window resize. Nothing changes when the size is the same.
+      await view.resize();
+      await section.load(book.load.bind(book));
+      await step();
+      await view.display(placeAt(section, progress));
+      await step();
+      const location = view.currentLocation();
+      const image = await drawPage(view, width / view.manager.container.clientWidth, step);
+      const first = charactersAt(await book.getRange(location.start.cfi));
+      const last = charactersAt(await book.getRange(location.end.cfi));
+      const count = book.spine.spineItems.length;
+      const total = first.total;
+      // A place sits inside its character, so rounding cannot move it to the
+      // character's neighbor.
+      const place = character => (character + 0.5) / total;
+      const firstPage = !total || location.start.displayed.page <= 1;
+      const lastPage = !total || location.end.displayed.page >= location.end.displayed.total;
+      const message = new Uint8Array(4 + image.byteLength);
+      new DataView(message.buffer).setUint32(0, request, true);
+      message.set(new Uint8Array(image), 4);
+      window.bookfinPages.postMessage(message.buffer);
+      return {
+        part: index,
+        start: total ? first.before / total : 0,
+        end: total && !lastPage ? Math.min(1, last.before / total) : 1,
+        previous: !firstPage ? { part: index, progress: place(first.before - 1) } :
+          index > 0 ? { part: index - 1, progress: 1 } : null,
+        next: !lastPage ? { part: index, progress: place(Math.min(total - 1, last.before + 1)) } :
+          index + 1 < count ? { part: index + 1, progress: 0 } : null,
+      };
+    } finally {
+      cancelledPreviews.delete(request);
+    }
   });
   previewJob = job;
   return job;

@@ -85,6 +85,16 @@ class RecordingBridge extends PlatformInAppWebViewController {
     handlers[handlerName] = callback;
   }
 
+  /// The pages that the reader asked to load. The surface reports the load
+  /// of the reader's page itself.
+  final loads = <URLRequest>[];
+  @override
+  Future<void> loadUrl({
+    required URLRequest urlRequest,
+    Uri? iosAllowingReadAccessTo,
+    WebUri? allowingReadAccessTo,
+  }) async => loads.add(urlRequest);
+
   @override
   Future<CallAsyncJavaScriptResult?> callAsyncJavaScript({
     required String functionBody,

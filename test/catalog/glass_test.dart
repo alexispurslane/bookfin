@@ -281,4 +281,29 @@ void main() {
     expect(chosen, 'combine');
     expect(find.text('Combine'), findsNothing);
   });
+
+  testWidgets('glass panes in one backdrop group share one blur', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: BackdropGroup(
+          child: Row(
+            children: [
+              for (final label in ['left', 'right'])
+                Expanded(child: CoverGlass(child: Text(label))),
+            ],
+          ),
+        ),
+      ),
+    );
+    final keys = {
+      for (final filter in tester.widgetList<BackdropFilter>(
+        find.byType(BackdropFilter),
+      ))
+        filter.backdropGroupKey,
+    };
+    expect(keys, hasLength(1));
+    expect(keys.single, isNotNull);
+  });
 }

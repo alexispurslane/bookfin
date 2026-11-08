@@ -299,10 +299,16 @@ class _ReaderScreenState extends State<ReaderScreen> {
               child: Stack(
                 children: [
                   Positioned.fill(
-                    child: ScrubDeck(
-                      deck: reader.previews.deck,
-                      paper: paper,
-                      page: ListenableBuilder(
+                    // The deck's glass shows the open book.
+                    child: ListenableBuilder(
+                      listenable: reader.documentChanges,
+                      builder: (_, page) => ScrubDeck(
+                        deck: reader.previews.deck,
+                        paper: paper,
+                        book: reader.book,
+                        page: page!,
+                      ),
+                      child: ListenableBuilder(
                         listenable: Listenable.merge([
                           documentOrSize,
                           reader.saveStatusChanges,

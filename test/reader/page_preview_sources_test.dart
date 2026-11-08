@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:bookfin/reader/document.dart';
@@ -42,7 +43,7 @@ void main() {
         next: (3, 0),
       );
     final page = await EpubNavigator(port)
-        .preview((part: 2, progress: .45), 300);
+        .preview((part: 2, progress: .45), 300, Completer<void>().future);
     expect(port.previews, [(2, .45, 300.0)]);
     expect(page.part, 2);
     expect(page.start, .4);
@@ -72,7 +73,11 @@ void main() {
     await tester.pump();
     book.drawn.clear();
     final last = (await tester.runAsync(
-      () => navigator.preview((part: 1, progress: .3), 240),
+      () => navigator.preview(
+        (part: 1, progress: .3),
+        240,
+        Completer<void>().future,
+      ),
     ))!;
     expect(book.drawn, [(2, 240.0)]);
     expect(last.part, 1);
@@ -80,7 +85,11 @@ void main() {
     expect(last.previous, (part: 0, progress: 0.0));
     expect(last.next, isNull);
     final first = (await tester.runAsync(
-      () => navigator.preview((part: 0, progress: 0), 240),
+      () => navigator.preview(
+        (part: 0, progress: 0),
+        240,
+        Completer<void>().future,
+      ),
     ))!;
     expect(first.previous, isNull);
     expect(first.next, (part: 1, progress: 0.0));

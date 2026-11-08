@@ -9,7 +9,8 @@ import 'model.dart';
 /// beneath it shows through, blurred, under the cover's colors and a tint of
 /// the page color.
 ///
-/// Every layer that floats over a page is one of these panes.
+/// Every layer that floats over a page is one of these panes. Panes inside
+/// one [BackdropGroup] share one blur of what lies beneath them.
 class CoverGlass extends StatelessWidget {
   const CoverGlass({
     super.key,
@@ -51,8 +52,11 @@ class CoverGlass extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: shape,
+        // Panes in one BackdropGroup blur what lies beneath them once,
+        // together, instead of once each.
         child: BackdropFilter(
           filter: ui.ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+          backdropGroupKey: BackdropGroup.of(context)?.backdropKey,
           child: Stack(
             children: [
               if (shown != null)

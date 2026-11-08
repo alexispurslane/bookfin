@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -135,9 +134,6 @@ class _EpubViewportState extends State<EpubViewport> {
         }
         return InAppWebView(
           key: ValueKey(widget.publication.identity),
-          initialUrlRequest: URLRequest(
-            url: WebUri.uri(ReaderResources.runtimeUrl),
-          ),
           initialSettings: InAppWebViewSettings(
             javaScriptEnabled: true,
             javaScriptCanOpenWindowsAutomatically: false,
@@ -169,9 +165,13 @@ class _EpubViewportState extends State<EpubViewport> {
             displayZoomControls: false,
             transparentBackground: true,
             isInspectable: false,
+            // In hybrid composition, Flutter draws each frame on Android's
+            // main thread, which also runs the Dart UI isolate. A texture
+            // layer keeps that drawing on Flutter's raster thread.
+            useHybridComposition: false,
           ),
-          onWebViewCreated: (controller) {
-            _navigator = _NativeNavigator(controller);
+          onWebViewCreated: (controller) async {
+            final navigator = _navigator = _NativeNavigator(controller);
             controller.addJavaScriptHandler(
               handlerName: 'readerLocation',
               callback: (arguments) {
@@ -221,6 +221,31 @@ class _EpubViewportState extends State<EpubViewport> {
                 }
                 return null;
               },
+            );
+            // The reader posts each page image as raw bytes. A web message
+            // reaches Android's main thread as a byte array, without the JSON
+            // and the base64 text of a handler call. The page loads after
+            // the listener is in place, so the page always has it.
+            try {
+              await controller.addWebMessageListener(
+                WebMessageListener(
+                  jsObjectName: 'bookfinPages',
+                  allowedOriginRules: {ReaderResources.runtimeUrl.origin},
+                  onPostMessage: (message, origin, mainFrame, _) {
+                    if (mainFrame && message?.data is Uint8List) {
+                      navigator.receivePicture(message!.data as Uint8List);
+                    }
+                  },
+                ),
+              );
+            } catch (_) {
+              // Without the listener, the deck's cards stay blank.
+            }
+            if (!mounted) return;
+            await controller.loadUrl(
+              urlRequest: URLRequest(
+                url: WebUri.uri(ReaderResources.runtimeUrl),
+              ),
             );
           },
           shouldInterceptRequest: (controller, request) async {
@@ -371,30 +396,65 @@ class _NativeNavigator implements NavigatorPort {
     await _call('seek', [section, progress]);
   }
 
+  /// The number of the last page preview. The reader posts each page image
+  /// apart from its place, tagged with this number.
+  int _preview = 0;
+
+  /// The image of each page preview that runs, by its number.
+  final _pictures = <int, Completer<Uint8List>>{};
+
+  /// Takes a page image that the reader posted: the number of its preview
+  /// as four bytes in little-endian order, then the JPEG bytes.
+  void receivePicture(Uint8List message) {
+    if (message.length < 4) return;
+    final request = ByteData.sublistView(
+      message,
+      0,
+      4,
+    ).getUint32(0, Endian.little);
+    _pictures.remove(request)?.complete(Uint8List.sublistView(message, 4));
+  }
+
   @override
   Future<PagePicture> preview(
     int section,
     double progress,
     double width,
+    Future<void> abandon,
   ) async {
-    final page = await _call('previewPage', [section, progress, width]) as Map;
-    final image = page['image'] as String;
-    if (!image.startsWith('data:image/jpeg;base64,')) {
-      throw StateError('The reader drew no page image.');
-    }
-    (int, double)? place(Object? value) => value is Map
-        ? (value['part'] as int, (value['progress'] as num).toDouble())
-        : null;
-    return PagePicture(
-      // A page image is about 100 KB, which decodes in well under a
-      // millisecond, less than a hop to another isolate costs.
-      base64Decode(image.substring(image.indexOf(',') + 1)),
-      section: page['part'] as int,
-      start: (page['start'] as num).toDouble(),
-      end: (page['end'] as num).toDouble(),
-      previous: place(page['previous']),
-      next: place(page['next']),
+    final request = ++_preview;
+    final image = _pictures[request] = Completer<Uint8List>();
+    unawaited(
+      abandon.then((_) {
+        if (_pictures.containsKey(request)) {
+          _call('cancelPreview', [request]).ignore();
+        }
+      }),
     );
+    try {
+      final page =
+          await _call('previewPage', [request, section, progress, width])
+              as Map;
+      // The reader posts the image before it answers, but the image takes
+      // another path, so it can arrive a little later.
+      final bytes = await image.future.timeout(
+        const Duration(seconds: 5),
+        onTimeout: () => throw StateError('The reader drew no page image.'),
+      );
+      (int, double)? place(Object? value) => value is Map
+          ? (value['part'] as int, (value['progress'] as num).toDouble())
+          : null;
+      return PagePicture(
+        bytes,
+        section: page['part'] as int,
+        start: (page['start'] as num).toDouble(),
+        end: (page['end'] as num).toDouble(),
+        previous: place(page['previous']),
+        next: place(page['next']),
+      );
+    } finally {
+      _pictures.remove(request);
+    }
   }
 
   @override
