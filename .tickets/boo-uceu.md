@@ -1,6 +1,6 @@
 ---
 id: boo-uceu
-status: open
+status: in_progress
 deps: [t9-cx1u]
 links: []
 created: 2026-11-07T23:17:21Z
@@ -24,3 +24,7 @@ Removing a protection that an invariant guards makes each of these tests fail, n
 **2026-11-08T00:12:38Z**
 
 Orchestrator, Nov 7: one agent does tc-qdk7, t9-cx1u and boo-uceu together (group A), to save agent cycles on playback.dart and the broad notifications.
+
+**2026-11-08T01:04:06Z**
+
+Group A agent, Nov 7: a search of test/ found one test that checks invariants from a listener: test/catalog/catalog_signals_test.dart. The named candidates (app_shell_test, playback/signals_test, downloads/retained_test, status_test, transfer_test) call checkInvariants only after an await, never inside a listener. app_shell_test only stubs checkInvariants. The new helper test/invariant_watch.dart (expectInvariantsAtEveryNotice) replaces the try/catch in the catalog test. Proof: without the verification reset in CatalogController._begin and _failure, the test fails with 'An invariant failed at a notice.' Playback invariants hold only when no command is in flight, so a check at every Playback notice would need a design change first.
