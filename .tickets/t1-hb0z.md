@@ -1,7 +1,7 @@
 ---
 id: t1-hb0z
 status: open
-deps: []
+deps: [t9-cx1u, tc-qdk7]
 links: []
 created: 2026-11-08T00:45:00Z
 type: task
@@ -28,3 +28,9 @@ Target design: one small public type in lib/foundation, for example a ValueListe
 - The five classes are gone, and each use builds the shared type.
 - Tests show that each use still notifies only on its own source.
 
+
+## Notes
+
+**2026-11-08T00:51:59Z**
+
+Orchestrator, Nov 7: waits for group A (tc-qdk7, t9-cx1u), because group A changes _TimelineEntries in lib/playback/timeline.dart and Playback's signals.
