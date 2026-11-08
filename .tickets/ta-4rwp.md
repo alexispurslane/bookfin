@@ -18,3 +18,9 @@ Found by td-rvpm. RecordDatabase.open sets a file aside only when the open itsel
 
 A test for each: a record file with a corrupt page after open, and a record row with a blob in a text column, keep the damaged data, report it, and let new places survive a kill.
 
+
+## Notes
+
+**2026-11-08T00:26:10Z**
+
+Orchestrator, Nov 7: group C (one agent for tf-0nvi, boo-7ua0, ta-4rwp, ta-tso8) does this, because all four change the record store and sync.

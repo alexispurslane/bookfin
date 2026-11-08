@@ -14,3 +14,9 @@ tags: [durability]
 
 Found by td-rvpm. A damaged record store is now kept aside: SQLite rows in the set_aside_* tables, a damaged record file as <name>.damaged-<milliseconds> (and its -wal copy), and a damaged preference value under bookfin.damaged-records.v1.<account>.<milliseconds>. The live store gets every record that still decodes, and sync refills what the server has. Records that were only on this phone and that did not decode, and actions that wait for such a lost action, stay only in the kept copy. Nothing reads the kept copies yet. A recovery path (export them, or merge what a later app version can read) is new work, and a user-visible design fork.
 
+
+## Notes
+
+**2026-11-08T00:26:10Z**
+
+Orchestrator, Nov 7: held for the user. A recovery path for kept copies is a user-visible design fork.
