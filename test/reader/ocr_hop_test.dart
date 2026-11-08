@@ -175,7 +175,11 @@ void main() {
         expect(canceled.status, PdfTextStatus.absent);
         expect(canceled.reason, contains('Recognition canceled'));
         expect((await pdf.text(1)).text, 'The quiet garden.');
-        expect(calls, 2);
+        expect(
+          calls,
+          1,
+          reason: 'The started page finished and was saved for the next visit.',
+        );
       },
     );
 

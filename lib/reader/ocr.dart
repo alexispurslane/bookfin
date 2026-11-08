@@ -10,20 +10,170 @@ import '../foundation/hop.dart';
 import 'ocr_storage.dart';
 import 'pdf.dart';
 
+/// The text of a recognized page, and whether its cache file holds it.
+typedef _Recognized = ({PdfText text, bool saved});
+
+/// The one owner of English page recognition while Bookfin runs. Android
+/// has one native recognition worker, so the pages of every open PDF wait
+/// in this one queue. No reader and no widget owns a page that runs.
+///
+/// A page that starts always finishes and saves its text in the cache,
+/// whether or not a reader still waits for it. A reader that turns the
+/// page, cancels, closes the book or leaves the app only stops waiting. A
+/// page that has not started yet leaves the queue when its last reader
+/// stops waiting. The native worker closes when no reader holds it and no
+/// page waits or runs.
+///
+/// Invariants: at most one page runs, and it is not among the waiting
+/// pages; every waiting page has a reader that waits for it; [_pages] holds
+/// exactly the waiting pages and the running page; no page starts while
+/// the native worker closes.
+class EnglishRecognition {
+  EnglishRecognition._();
+  static final instance = EnglishRecognition._();
+  static const _channel = MethodChannel('bookfin/ocr');
+  final Map<String, _Page> _pages = {};
+  final List<_Page> _waiting = [];
+  _Page? _running;
+  int _holders = 0;
+  Future<void>? _closing;
+
+  /// Whether the page saved under [key] waits or runs.
+  bool _has(String key) => _pages.containsKey(key);
+
+  /// Waits for the page saved under [key]. If that page does not wait or
+  /// run, [recognize] runs it after the pages before it. [recognize] must
+  /// claim what it needs before its first await, because the reader can
+  /// stop waiting at any later moment.
+  _Wait _wait(String key, Future<_Recognized> Function() recognize) {
+    assert(_holders > 0, 'A reader that waits holds the native worker.');
+    final page = _pages.putIfAbsent(key, () {
+      final added = _Page(key, recognize);
+      _waiting.add(added);
+      return added;
+    });
+    final wait = _Wait(this, page);
+    page.waits.add(wait);
+    _start();
+    return wait;
+  }
+
+  void _leave(_Wait wait) {
+    final page = wait.page;
+    if (!page.waits.remove(wait)) return;
+    wait.result.complete(null);
+    if (page.waits.isEmpty && !identical(page, _running)) {
+      // A reader that waits holds the worker, so its close follows later.
+      _waiting.remove(page);
+      _pages.remove(page.key);
+    }
+  }
+
+  void _start() {
+    if (_running != null || _closing != null || _waiting.isEmpty) return;
+    final page = _running = _waiting.removeAt(0);
+    unawaited(_finish(page, page.recognize()));
+  }
+
+  Future<void> _finish(_Page page, Future<_Recognized> running) async {
+    try {
+      final recognized = await running;
+      for (final wait in page.waits) {
+        wait.result.complete(recognized);
+      }
+    } catch (error, stack) {
+      // A failure that no reader waits for has nobody to tell. The page is
+      // recognized again when a reader next opens it.
+      for (final wait in page.waits) {
+        wait.result.completeError(error, stack);
+      }
+    } finally {
+      page.waits.clear();
+      _pages.remove(page.key);
+      _running = null;
+      _start();
+      // A close failure that no closing book waits for is not reported. The
+      // next page opens a new worker, and native recognition refuses an
+      // unsafe one.
+      unawaited(_closeIfIdle().catchError((Object _) {}));
+    }
+  }
+
+  /// Keeps the native worker open until [_release].
+  void _hold() => _holders++;
+
+  /// Ends a hold. The native worker closes now if nothing else uses it, and
+  /// the result reports that close. Otherwise it closes after the last
+  /// page, and the result completes at once.
+  Future<void> _release({required bool held}) {
+    assert(!held || _holders > 0);
+    if (held) _holders--;
+    return _closeIfIdle();
+  }
+
+  Future<void> _closeIfIdle() {
+    if (_holders > 0 || _running != null || _waiting.isNotEmpty) {
+      return Future.value();
+    }
+    return _closing ??= () async {
+      try {
+        await _channel.invokeMethod<void>('close');
+      } finally {
+        _closing = null;
+        _start();
+      }
+    }();
+  }
+
+  void checkInvariants() {
+    final running = _running;
+    if (_holders < 0 ||
+        running != null && _waiting.contains(running) ||
+        _waiting.any((page) => page.waits.isEmpty) ||
+        _pages.length != _waiting.length + (running == null ? 0 : 1) ||
+        _waiting.any((page) => !identical(_pages[page.key], page)) ||
+        running != null && !identical(_pages[running.key], running) ||
+        _closing != null && running != null) {
+      throw StateError(
+        'Recognition must run at most one page, keep only waited-for pages waiting, and never run a page while the native worker closes.',
+      );
+    }
+  }
+}
+
+class _Page {
+  _Page(this.key, this.recognize);
+  final String key;
+  final Future<_Recognized> Function() recognize;
+  final Set<_Wait> waits = {};
+}
+
+/// One reader's wait for one page. Its result is null when the reader
+/// stopped waiting.
+class _Wait {
+  _Wait(this._owner, this.page);
+  final EnglishRecognition _owner;
+  final _Page page;
+  final result = Completer<_Recognized?>();
+  void leave() => _owner._leave(this);
+}
+
 class BundledEnglishText implements PdfTextSupply {
   /// Recognizes English text on scanned pages. Each recognized page, new or
-  /// cached, is decoded through `hop`.
+  /// cached, is decoded through `hop`. Pages run in
+  /// [EnglishRecognition.instance], so a page that started finishes and is
+  /// saved after this reader stops waiting or closes.
   BundledEnglishText({this._hop = compute});
   final IsolateHop _hop;
   static const version =
       'bookfin-ocr-2/tesseract4android-4.9.0/tesseract-5.5.1/leptonica-1.85.0/tessdata_fast-4.1.0-eng-7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2';
-  static const _channel = MethodChannel('bookfin/ocr');
+  final _recognition = EnglishRecognition.instance;
   PdfTextLease? _lease;
   int _generation = 0;
   bool _closed = false;
   bool _fatal = false;
-  Future<void> _draining = Future.value();
-  final Map<({int page, int generation}), Future<PdfText>> _pending = {};
+  bool _holding = false;
+  final Set<_Wait> _waits = {};
   final Set<int> _requested = {};
   final Map<int, ({PdfText text, bool saved})> _selected = {};
   _OwnedTextRead? _read;
@@ -37,9 +187,17 @@ class BundledEnglishText implements PdfTextSupply {
   void bind(PdfTextLease lease) => _lease = lease;
   @override
   void retry(int page) => _requested.add(page);
+
+  /// Stops every wait of this reader. A page that started still finishes
+  /// and is saved; a page that did not start leaves the queue.
   @override
   void cancel() {
     _generation++;
+    final waits = _waits.toList();
+    _waits.clear();
+    for (final wait in waits) {
+      wait.leave();
+    }
     if (!_closed) _recognizing.value = false;
   }
 
@@ -70,105 +228,63 @@ class BundledEnglishText implements PdfTextSupply {
       return live() ? _select(page, saved) : _canceled;
     }
 
-    try {
-      var available = false;
-      final reused = await _withRead((original, owned) async {
-        available = true;
-        return reuse(original, owned);
-      });
-      if (!available) return _canceled;
-      if (reused != null) return reused;
-    } on Exception {
-      return _recognitionFailure;
-    }
-    if (_closed || generation != _generation) return _canceled;
-    if (_fatal) return _fatalFallback;
-    final request = (page: page, generation: _generation);
-    if (_pending.containsKey(request)) return _pending[request]!;
-    if (_pending.length >= 2) {
-      return Future.value(
-        _fallback('Recognition is busy. Retry this source page.'),
-      );
-    }
-    final previous = _draining;
-    final operation = () async {
-      await previous;
-      if (_fatal) return _fatalFallback;
-      bool requestLive() => !_closed && generation == _generation;
-      if (!requestLive()) return _canceled;
-      final lease = _lease;
-      if (lease == null) {
-        return _fallback(
-          'English scan recognition requires an owned local download.',
-        );
-      }
+    // A page that still runs, perhaps for a reader that left it, is joined.
+    // It leaves the queue only after its cache write, so a page that is not
+    // found here is already in the cache if it ran.
+    if (!_recognition._has(key)) {
       try {
-        return await _withRead((original, owned) async {
-              bool live() => requestLive() && owned();
-              if (!live()) return _canceled;
-              final reused = await reuse(original, owned);
-              if (reused != null) return reused;
-              if (extracted.status == PdfTextStatus.unreliable &&
-                  !_requested.contains(page)) {
-                return extracted;
-              }
-              _recognizing.value = true;
-              final raster = await book.render(page, 1600);
-              if (!live()) return _canceled;
-              final hocr = await _channel.invokeMethod<String>('recognize', {
-                'width': raster.width,
-                'height': raster.height,
-                'bgra': raster.bgra,
-              });
-              if (!live()) return _canceled;
-              final result = await _hop(decodeRecognizedPage, hocr ?? '');
-              if (result.status == PdfTextStatus.candidate) {
-                try {
-                  await writeOcrCache(
-                    original,
-                    book.originalDigest,
-                    key,
-                    hocr!,
-                    live,
-                  );
-                } on Exception {
-                  if (!live()) return _canceled;
-                  return _select(
-                    page,
-                    PdfText(
-                      source: result.source,
-                      text: result.text,
-                      sourceOffsets: result.sourceOffsets,
-                      status: result.status,
-                      recognition: result.recognition,
-                      digest: result.digest,
-                      reason: 'English text is available, but could not be cached. Free storage to save recognition.',
-                    ),
-                    saved: false,
-                  );
-                }
-              }
-              return live() ? _select(page, result) : _canceled;
-            }) ??
-            _fallback(
-              'The download is no longer available. The original page remains open.',
-            );
-      } on PlatformException catch (error) {
-        if (error.code == 'recognition-fatal') {
-          _fatal = true;
-          return _fatalFallback;
-        }
-        return _recognitionFailure;
+        var available = false;
+        final reused = await _withRead((original, owned) async {
+          available = true;
+          return reuse(original, owned);
+        });
+        if (!available) return _canceled;
+        if (reused != null) return reused;
       } on Exception {
         return _recognitionFailure;
       }
-    }();
-    _pending[request] = operation;
-    _draining = operation.then<void>((_) {
-      if (!_closed && generation == _generation) _recognizing.value = false;
-      if (identical(_pending[request], operation)) _pending.remove(request);
-    });
-    return operation;
+      if (_closed || generation != _generation) return _canceled;
+      if (_fatal) return _fatalFallback;
+      if (extracted.status == PdfTextStatus.unreliable &&
+          !_requested.contains(page)) {
+        return extracted;
+      }
+    }
+    final lease = _lease;
+    if (lease == null) {
+      return _fallback(
+        'English scan recognition requires an owned local download.',
+      );
+    }
+    if (!_holding) {
+      _holding = true;
+      _recognition._hold();
+    }
+    final wait = _recognition._wait(
+      key,
+      () => _recognizePage(book, page, key, lease, _hop),
+    );
+    _waits.add(wait);
+    _recognizing.value = true;
+    try {
+      final recognized = await wait.result.future;
+      if (recognized == null || _closed || generation != _generation) {
+        return _canceled;
+      }
+      return _select(page, recognized.text, saved: recognized.saved);
+    } on PlatformException catch (error) {
+      if (error.code == 'recognition-fatal') {
+        _fatal = true;
+        return _fatalFallback;
+      }
+      return _recognitionFailure;
+    } on Exception {
+      return _recognitionFailure;
+    } finally {
+      if (_waits.remove(wait) && !_closed) {
+        _recognizing.value = _waits.isNotEmpty;
+      }
+    }
   }
 
   Future<PdfText?> _withRead(
@@ -198,15 +314,17 @@ class BundledEnglishText implements PdfTextSupply {
     return text;
   }
 
+  /// Stops this reader's waits and closes it. It does not wait for a page
+  /// that runs: that page finishes and is saved in the background.
   @override
   Future<void> close() async {
     cancel();
     _closed = true;
-    await _draining;
     await _read?.done;
     try {
-      await _channel.invokeMethod<void>('close');
+      await _recognition._release(held: _holding);
     } finally {
+      _holding = false;
       _selected.clear();
       _recognizing.dispose();
     }
@@ -214,17 +332,63 @@ class BundledEnglishText implements PdfTextSupply {
 
   void checkInvariants() {
     _read?.checkInvariants();
-    if (_pending.length > 2 ||
-        _selected.values.where((value) => value.saved).length > 16 ||
+    if (_selected.values.where((value) => value.saved).length > 16 ||
         _selected.values.any(
           (value) => value.text.status != PdfTextStatus.candidate,
         ) ||
-        _closed && _recognizing.value) {
+        _closed && (_recognizing.value || _waits.isNotEmpty || _holding) ||
+        !_closed && _recognizing.value != _waits.isNotEmpty) {
       throw StateError(
-        'Recognition must have at most one active page, one waiting page, and sixteen disk-backed selected pages; unsaved selections remain until close.',
+        'Recognition must show waiting exactly while this reader waits, keep sixteen disk-backed selected pages, and keep unsaved selections until close.',
       );
     }
   }
+}
+
+/// Recognizes source [page] of [book] and saves its text in the cache
+/// under [key]. The render starts before the first await, so the book
+/// stays open until the page is drawn. After that it needs only the
+/// download: [lease] reads the original for the cache write alone, so a
+/// running page never holds the download while the native worker runs.
+Future<_Recognized> _recognizePage(
+  PdfBook book,
+  int page,
+  String key,
+  PdfTextLease lease,
+  IsolateHop hop,
+) async {
+  final raster = await book.render(page, 1600);
+  final hocr = await EnglishRecognition._channel.invokeMethod<String>(
+    'recognize',
+    {'width': raster.width, 'height': raster.height, 'bgra': raster.bgra},
+  );
+  final result = await hop(decodeRecognizedPage, hocr ?? '');
+  if (result.status != PdfTextStatus.candidate) {
+    return (text: result, saved: false);
+  }
+  var saved = false;
+  try {
+    await lease((original, owned) async {
+      await writeOcrCache(original, book.originalDigest, key, hocr!, owned);
+      saved = owned();
+      return result;
+    });
+    if (!saved) return (text: _gone, saved: false);
+  } on Exception {
+    return (
+      text: PdfText(
+        source: result.source,
+        text: result.text,
+        sourceOffsets: result.sourceOffsets,
+        status: result.status,
+        recognition: result.recognition,
+        digest: result.digest,
+        reason: 'English text is available, but could not be cached. Free storage to save recognition.',
+      ),
+      saved: false,
+    );
+  }
+  return (text: result, saved: true);
 }
 
 // One acquisition serves all admitted text users. The download read remains
@@ -290,6 +454,9 @@ const _canceled = PdfText(
   reason: 'Recognition canceled. The original page is available.',
 );
 
+final _gone = _fallback(
+  'The download is no longer available. The original page remains open.',
+);
 final _recognitionFailure = _fallback(
   'English recognition failed. Retry or read the original page.',
 );
