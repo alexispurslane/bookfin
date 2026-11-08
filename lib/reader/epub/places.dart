@@ -16,16 +16,24 @@ import 'dom.dart';
 /// The spine step of a CFI for spine item [index] of the package document
 /// [opf], as epub.js writes it: `/6/4`, with the itemref's id as an
 /// assertion when it has one.
-String spineStep(String opf, int index) {
+String spineStep(String opf, int index) => spineSteps(opf)[index];
+
+/// The spine step of each spine item of the package document [opf], in
+/// spine order, as [spineStep] gives it. It reads [opf] once.
+List<String> spineSteps(String opf) {
   final package = XmlDocument.parse(opf).rootElement;
   final elements = package.childElements.toList();
   final spine = elements.indexWhere((element) => element.localName == 'spine');
-  final itemref = elements[spine].childElements
-      .where((element) => element.localName == 'itemref')
-      .elementAt(index);
-  final id = itemref.getAttribute('id');
-  return '/${(spine + 1) * 2}/${(index + 1) * 2}'
+  final itemrefs = elements[spine].childElements.where(
+    (element) => element.localName == 'itemref',
+  );
+  String step(int index, String? id) =>
+      '/${(spine + 1) * 2}/${(index + 1) * 2}'
       '${id == null || id.isEmpty ? '' : '[$id]'}';
+  return [
+    for (final (index, itemref) in itemrefs.indexed)
+      step(index, itemref.getAttribute('id')),
+  ];
 }
 
 /// The CFI of [place] in [dom], a section whose spine step is [spine].
