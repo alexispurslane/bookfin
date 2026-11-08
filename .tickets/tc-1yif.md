@@ -34,3 +34,9 @@ docs/plans/native-epub-reader.md (epic boo-b2ey). Read the sections named in the
 - Device check on your own Android emulator, never a shared one and never with flutter drive (it uninstalls the app). Use the T3 device tools (device_list, device_open, the device-bound agent-device command). Open a fixture EPUB, turn pages, change the text size, switch the theme, scrub with the deck, restart the app and land on the same page. Keep the screenshots under docs/evidence/reader/native/.
 - The macOS app (tool/bookfin build-macos) opens a fixture EPUB and turns pages.
 
+
+## Notes
+
+**2026-11-08T22:09:07Z**
+
+From t1-5r2c: for a native EPUB page, take the dock's place label from pager.pageNumber (a ValueListenable), not from ReaderAddress.page and pages, which the native reader leaves null: 'Page N' while count is null, 'Page N of M' once count is set (user decision 2026-11-08, option a). Subscribe at the label with a ValueListenableBuilder.

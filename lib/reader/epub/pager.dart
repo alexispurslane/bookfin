@@ -48,6 +48,7 @@ class ShownPage {
 /// - The shown page holds the shown place, or starts at the line that holds
 ///   it. A page that shows no place keeps the place of the page before.
 /// - The pager holds the prepared section of the shown page.
+/// - The published page number, where known, is the shown page's.
 class EpubPager implements DocumentNavigator {
   /// The pager of [document]. It opens at [initial] once the first
   /// [present] gives it page settings. [onPlace] receives each new place of
@@ -113,6 +114,17 @@ class EpubPager implements DocumentNavigator {
   /// The page on screen with its picture, or null before the first page is
   /// shown.
   ValueListenable<ShownPage?> get shown => _shown;
+
+  /// The number of the shown page in its section, and the section's page
+  /// count, as far as the section's main run knows them. The number is null
+  /// until the main run passes the shown page's start, and the count until
+  /// the main run ends. The reader shows "Page N", then "Page N of M".
+  ValueListenable<PageNumber?> get pageNumber => _number;
+  final _number = ValueNotifier<PageNumber?>(null);
+
+  /// Completes when the shown page changes, which stops the waits for its
+  /// number.
+  Completer<void>? _counting;
 
   /// Asks for pages for [settings]: the viewport's size, the text size and
   /// the theme. It keeps the shown place and reports nothing. It notifies
@@ -362,7 +374,9 @@ class EpubPager implements DocumentNavigator {
     _disposed = true;
     _search = null;
     if (!_presented.isCompleted) _presented.complete();
+    _counting?.complete();
     _shown.dispose();
+    _number.dispose();
     _source.dispose();
   }
 
@@ -378,6 +392,7 @@ class EpubPager implements DocumentNavigator {
     final shown = _shown.value;
     if (shown == null) {
       check(_section == null, 'a section is held without a shown page');
+      check(_number.value == null, 'a page number without a shown page');
       return;
     }
     final page = shown.page;
@@ -392,6 +407,14 @@ class EpubPager implements DocumentNavigator {
           section.index == page.section &&
           section.settings == page.settings,
       'the held section is not the shown page\'s',
+    );
+    final number = _number.value;
+    final known = _source.numberOf(page);
+    check(
+      number == null ||
+          (number.number == known?.number &&
+              (number.count == null || number.count == known?.count)),
+      'the page number is not the shown page\'s',
     );
     if (page.startPlace == null) return;
     final place = _place!;
@@ -484,6 +507,7 @@ class EpubPager implements DocumentNavigator {
     _place = place;
     _shown.value = ShownPage(page, _source.draft(page));
     _sharpen(page);
+    _count(page);
     final start = page.startPlace;
     if (!report || start == null) return;
     final dom = section.dom;
@@ -528,6 +552,36 @@ class EpubPager implements DocumentNavigator {
         onError: (Object _) {},
       ),
     );
+  }
+
+  /// Publishes the number of [page], and again each time the main run of
+  /// its section learns more, while [page] is shown.
+  void _count(LaidPage page) {
+    _counting?.complete();
+    final number = _number.value = _source.numberOf(page);
+    if (number?.count != null) {
+      _counting = null;
+      return;
+    }
+    final stop = _counting = Completer<void>();
+    void update() {
+      if (!_disposed && identical(_shown.value?.page, page)) {
+        _number.value = _source.numberOf(page);
+      }
+    }
+
+    unawaited(() async {
+      try {
+        if (number == null) {
+          await _source.mainRun(page, abandon: stop.future);
+          update();
+        }
+        await _source.mainRun(page, end: true, abandon: stop.future);
+        update();
+      } on PageRequestStopped {
+        // Another page is shown, or the settings changed.
+      }
+    }());
   }
 
   /// The destination of the nearest link that holds [place], relative to

@@ -600,6 +600,63 @@ void main() {
     expect(full.hits, hasLength(20));
   });
 
+  test('the first page has page number 1 at once, and the section\'s page '
+      'count once its main run ends', () async {
+    open(book([paragraphs(60), paragraphs(4)]));
+    final first = await present();
+
+    expect(pager().pageNumber.value, (number: 1, count: null));
+
+    await scheduler.settle();
+    final whole = layoutSection(await section(0));
+    expect(pager().pageNumber.value, (number: 1, count: whole.pages.length));
+    whole.dispose();
+    expect(shown().page, same(first.page));
+  });
+
+  test('a page deep in a section has no number until the main run passes it, '
+      'and then its place among the true pages', () async {
+    open(book([paragraphs(120, sentences: 10)]));
+    await present();
+    await until(pager().seek(0, .8));
+    expect(pager().pageNumber.value, isNull);
+
+    await scheduler.settle();
+    final prepared = await section(0);
+    final whole = layoutSection(prepared);
+    final at = whole.pageAt(placeAt(prepared.dom, 0, .8));
+    expect(pager().pageNumber.value, (
+      number: at + 1,
+      count: whole.pages.length,
+    ));
+
+    await until(pager().move(true));
+    expect(pager().pageNumber.value, (
+      number: at + 2,
+      count: whole.pages.length,
+    ));
+    whole.dispose();
+  });
+
+  test('the page number follows turns into the next section and a new text '
+      'size', () async {
+    open(book([paragraphs(3), paragraphs(30)]));
+    await present();
+    await scheduler.settle();
+    while (shown().page.section == 0) {
+      await until(pager().move(true));
+    }
+    expect(pager().pageNumber.value?.number, 1);
+
+    await present(largerText);
+    expect(shown().page.settings, largerText);
+    expect(pager().pageNumber.value?.number, 1);
+    await scheduler.settle();
+    final whole = layoutSection(await section(1));
+    expect(pager().pageNumber.value, (number: 1, count: whole.pages.length));
+    whole.dispose();
+  });
+
   test('after a text size change and back, the place stays and the page of '
       'the first settings comes back', () async {
     open(showcaseBook('salt'));
