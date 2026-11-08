@@ -1,0 +1,88 @@
+@charset "utf-8";
+@namespace epub "http://www.idpf.org/2007/ops";
+
+body{
+	font-family: serif;
+	hyphens: auto;
+	-epub-hyphens: auto;
+	adobe-hyphenate: auto;
+	font-variant-numeric: oldstyle-nums;
+}
+
+p{
+	margin: 0;
+	text-indent: 1em;
+}
+
+hr + p,
+h1 + p,
+h2 + p,
+h3 + p,
+h4 + p,
+h5 + p,
+h6 + p,
+header + p{
+	text-indent: 0;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+hgroup{
+	margin: 3em 0;
+	break-after: avoid;
+	break-inside: avoid;
+	font-variant: small-caps;
+	hyphens: none;
+	text-align: center;
+}
+
+/* Poetry */
+[epub|type~="z3998:poem"] p,
+[epub|type~="z3998:verse"] p,
+[epub|type~="z3998:song"] p,
+[epub|type~="z3998:hymn"] p{
+	text-align: initial;
+	text-indent: 0;
+}
+
+[epub|type~="z3998:poem"] p + p,
+[epub|type~="z3998:verse"] p + p,
+[epub|type~="z3998:song"] p + p,
+[epub|type~="z3998:hymn"] p + p{
+	margin-top: 1em;
+}
+
+[epub|type~="z3998:poem"] p > span,
+[epub|type~="z3998:verse"] p > span,
+[epub|type~="z3998:song"] p > span,
+[epub|type~="z3998:hymn"] p > span{
+	display: block;
+	padding-left: 1em;
+	text-indent: -1em;
+}
+
+[epub|type~="z3998:poem"] p > span + br,
+[epub|type~="z3998:verse"] p > span + br,
+[epub|type~="z3998:song"] p > span + br,
+[epub|type~="z3998:hymn"] p > span + br{
+	display: none;
+}
+
+[epub|type~="z3998:poem"] p > span.i1,
+[epub|type~="z3998:verse"] p > span.i1,
+[epub|type~="z3998:song"] p > span.i1,
+[epub|type~="z3998:hymn"] p > span.i1{
+	padding-left: 2em;
+	text-indent: -1em;
+}
+
+@media (prefers-color-scheme: dark){
+	img.epub-type-se-image-color-depth-black-on-transparent,
+	img[epub|type~="se:image.color-depth.black-on-transparent"]{
+		filter: invert(100%);
+	}
+}

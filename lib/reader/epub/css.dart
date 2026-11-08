@@ -1,6 +1,12 @@
 // The CSS subset of the EPUB renderer: style sheet parsing, selector
 // matching, and the cascade that gives each element its computed style.
 //
+// The parser is the safety boundary for a book's style sheets. It resolves
+// `url()` and `@import` only to files in the publication and reads nothing
+// else, and it limits the rules, selector length, nesting and import depth
+// of each sheet. It runs in the prepare worker, so a slow sheet cannot stall
+// a frame.
+//
 // The cascade follows the order that Chromium uses for a page of the
 // WebView reader: the user agent's sheet, then the book's sheets and the
 // reader's own rules in document order, then style attributes, then
@@ -165,20 +171,71 @@ class StyleRule {
   final int order;
 }
 
+/// One `@font-face` rule: a font file of the publication and the family,
+/// weight and style that it draws.
+class FontFaceRule {
+  const FontFaceRule({
+    required this.family,
+    required this.path,
+    this.weight = 400,
+    this.italic = false,
+  });
+
+  /// The family that the rule declares, in lower case, because CSS matches
+  /// family names without regard to case.
+  final String family;
+
+  /// The publication path of the font file.
+  final String path;
+
+  /// The CSS font weight that the face draws, from 100 to 900.
+  final int weight;
+  final bool italic;
+
+  /// The family that the face registers under in the book whose faces carry
+  /// [prefix] (`SectionSource.fontPrefix`).
+  String familyIn(String prefix) => '$prefix-$family';
+
+  @override
+  bool operator ==(Object other) =>
+      other is FontFaceRule &&
+      other.family == family &&
+      other.path == path &&
+      other.weight == weight &&
+      other.italic == italic;
+
+  @override
+  int get hashCode => Object.hash(family, path, weight, italic);
+
+  @override
+  String toString() =>
+      'FontFaceRule($family, $path, $weight${italic ? ', italic' : ''})';
+}
+
 /// A parsed style sheet.
 class StyleSheet {
   StyleSheet._(this.rules, this.pseudoRules, this.fontFaces);
 
-  /// Parses [css]. The [order] of its rules starts at [firstOrder]. [media]
-  /// decides `@media` conditions.
+  /// Parses [css], the text of the file at publication [path]. `url()` and
+  /// `@import` resolve against [path] and only to publication paths, so
+  /// with a null [path] they resolve to nothing. [read] gives the CSS text
+  /// of an imported sheet's path, or null. The [order] of the rules starts
+  /// at [firstOrder]. [media] decides `@media` conditions and imports.
+  ///
+  /// Imports reach [maxImportDepth] sheets deep, and no sheet is read
+  /// twice. A sheet past [maxSheetRules], [maxSelectorLength] or
+  /// [maxNesting] keeps the rules before that point.
   factory StyleSheet.parse(
     String css, {
+    String? path,
+    String? Function(String path)? read,
     int firstOrder = 0,
     MediaContext media = const MediaContext(),
   }) {
-    final parser = _SheetParser(css, firstOrder, media);
-    parser.parseRules(parser.text.length, true);
-    return StyleSheet._(parser.rules, parser.pseudoRules, parser.fontFaces);
+    final output = _Output(firstOrder, media, read ?? (_) => null);
+    if (path != null) output.readPaths.add(path);
+    _SheetParser(css, path, 0, output).parseSheet();
+    return StyleSheet._(output.rules, output.pseudoRules, output.fontFaces);
   }
 
   /// The rules that style elements.
@@ -189,15 +246,18 @@ class StyleSheet {
   /// element that the pseudo-element belongs to.
   final List<StyleRule> pseudoRules;
 
-  /// The number of `@font-face` rules that apply.
-  final int fontFaces;
+  /// The `@font-face` rules that apply.
+  final List<FontFaceRule> fontFaces;
 }
 
 /// What `@media` conditions see.
 class MediaContext {
-  const MediaContext({this.width = 412, this.height = 671});
+  const MediaContext({this.width = 412, this.height = 671, this.night = false});
   final double width;
   final double height;
+
+  /// Whether the page uses the night colors.
+  final bool night;
 
   bool matches(String query) {
     for (final part in query.split(',')) {
@@ -231,7 +291,8 @@ class MediaContext {
           ? null
           : double.tryParse(value.replaceAll(RegExp(r'[a-z]+$'), ''));
       result &= switch (name) {
-        'prefers-color-scheme' => value == null || value == 'light',
+        'prefers-color-scheme' =>
+          value == null || value == (night ? 'dark' : 'light'),
         'color' => true,
         'min-width' => number != null && width >= number,
         'max-width' => number != null && width <= number,
@@ -245,74 +306,235 @@ class MediaContext {
   }
 }
 
-class _SheetParser {
-  _SheetParser(String css, this.order, this.media)
-    : text = css.replaceAll(RegExp(r'/\*[\s\S]*?\*/'), '');
-  final String text;
-  final MediaContext media;
+/// The most style rules that one sheet keeps, one for each selector of a
+/// selector list.
+const maxSheetRules = 20000;
+
+/// The longest selector of a selector list, in characters.
+const maxSelectorLength = 1024;
+
+/// The most blocks inside each other, counting a style rule's own block.
+const maxNesting = 32;
+
+/// How many sheets deep imports reach below a linked sheet.
+const maxImportDepth = 4;
+
+/// What every sheet of one parse adds to: the rules and font faces in
+/// cascade order, the next order, and the paths of the sheets read.
+class _Output {
+  _Output(this.order, this.media, this.textOf);
   int order;
-  int index = 0;
+  final MediaContext media;
+
+  /// The CSS text of the sheet at a publication path, or null.
+  final String? Function(String path) textOf;
   final rules = <StyleRule>[];
   final pseudoRules = <StyleRule>[];
-  var fontFaces = 0;
+  final fontFaces = <FontFaceRule>[];
+  final readPaths = <String>{};
+}
 
-  /// Parses rules up to [end]. Rules inside a condition that does not hold
-  /// are read but not kept when [apply] is false.
-  void parseRules(int end, bool apply) {
-    while (true) {
+class _SheetParser {
+  _SheetParser(String css, this.path, this.depth, this.output)
+    : text = css.replaceAll(RegExp(r'/\*[\s\S]*?\*/'), '');
+  final String text;
+
+  /// The sheet's publication path, which its references resolve against.
+  final String? path;
+
+  /// How many imports lead to this sheet: 0 for a linked sheet.
+  final int depth;
+  final _Output output;
+  int index = 0;
+
+  /// The style rules that this sheet kept, without its imports.
+  var _kept = 0;
+
+  /// Whether the sheet passed a limit, which ends it.
+  var _ended = false;
+
+  /// Whether an `@import` here still counts. Like Chromium, an import counts
+  /// only before every rule other than `@charset`, `@layer` and imports.
+  var _importsCount = true;
+
+  void parseSheet() => parseRules(text.length, true, 0);
+
+  void _end() {
+    _ended = true;
+    index = text.length;
+  }
+
+  /// Parses rules up to [end] inside [nesting] blocks. Rules inside a
+  /// condition that does not hold are read but not kept when [apply] is
+  /// false.
+  void parseRules(int end, bool apply, int nesting) {
+    while (!_ended) {
       _skipSpace(end);
       if (index >= end) return;
       if (text.codeUnitAt(index) == 0x40 /* @ */ ) {
-        _atRule(end, apply);
+        _atRule(end, apply, nesting);
         continue;
       }
+      _importsCount = false;
       final open = text.indexOf('{', index);
       if (open < 0 || open >= end) {
         index = end;
         return;
       }
-      final close = _matching(open);
       final prelude = text.substring(index, open).trim();
+      if (nesting + 1 > maxNesting ||
+          _splitTop(
+            prelude,
+            ',',
+          ).any((part) => part.trim().length > maxSelectorLength)) {
+        return _end();
+      }
+      final close = _matching(open);
       final body = text.substring(open + 1, close);
       index = close + 1;
-      final declarations = parseDeclarations(body);
       final selectors = Selector.parseList(prelude);
       if (selectors == null || !apply) continue;
-      final number = order++;
+      if (_kept + selectors.length > maxSheetRules) return _end();
+      _kept += selectors.length;
+      final declarations = parseDeclarations(body);
+      final number = output.order++;
       for (final selector in selectors) {
-        (selector.pseudoElement == null ? rules : pseudoRules).add(
-          StyleRule(selector, declarations, number),
-        );
+        (selector.pseudoElement == null ? output.rules : output.pseudoRules)
+            .add(StyleRule(selector, declarations, number));
       }
     }
   }
 
-  void _atRule(int end, bool apply) {
+  void _atRule(int end, bool apply, int nesting) {
     final match = RegExp(r'@([a-zA-Z-]+)').matchAsPrefix(text, index);
     final name = match?.group(1)?.toLowerCase() ?? '';
     index = match?.end ?? index + 1;
-    final semicolon = text.indexOf(';', index);
-    final open = text.indexOf('{', index);
-    if (open < 0 || open >= end || (semicolon >= 0 && semicolon < open)) {
-      index = semicolon < 0 || semicolon >= end ? end : semicolon + 1;
+    final boundary = _boundary(end);
+    if (boundary >= end || text.codeUnitAt(boundary) == 0x3b /* ; */ ) {
+      final prelude = text.substring(index, boundary).trim();
+      index = boundary >= end ? end : boundary + 1;
+      if (name == 'import') {
+        if (_importsCount) _import(prelude);
+      } else if (name != 'charset' && name != 'layer') {
+        _importsCount = false;
+      }
       return;
     }
+    _importsCount = false;
+    final open = boundary;
     final prelude = text.substring(index, open).trim();
     final close = _matching(open);
     switch (name) {
-      case 'media':
+      case 'media' || 'supports':
+        if (nesting + 1 > maxNesting) return _end();
         index = open + 1;
-        parseRules(close, apply && media.matches(prelude));
-      case 'supports':
-        // Chromium supports every condition that books test.
-        index = open + 1;
-        parseRules(close, apply);
+        // Chromium supports every @supports condition that books test.
+        parseRules(
+          close,
+          apply && (name == 'supports' || output.media.matches(prelude)),
+          nesting + 1,
+        );
+        if (_ended) return;
       case 'font-face':
-        if (apply) fontFaces++;
+        if (apply) _fontFace(text.substring(open + 1, close));
       default:
         break;
     }
     index = close + 1;
+  }
+
+  /// Parses the sheet that an `@import` with [prelude] names, in place.
+  void _import(String prelude) {
+    if (depth >= maxImportDepth) return;
+    if (_reference(prelude) case (final reference, final media)) {
+      final target = _resolve(reference);
+      if (target == null) return;
+      if (media.isNotEmpty && !output.media.matches(media)) return;
+      if (!output.readPaths.add(target)) return;
+      final css = output.textOf(target);
+      if (css == null) return;
+      _SheetParser(css, target, depth + 1, output).parseSheet();
+    }
+  }
+
+  void _fontFace(String body) {
+    String? family;
+    String? file;
+    var weight = 400;
+    var italic = false;
+    for (final declaration in parseDeclarations(body)) {
+      final value = declaration.value.trim();
+      final lower = value.toLowerCase();
+      switch (declaration.property) {
+        case 'font-family':
+          family = lower.replaceAll(RegExp(r'''^["']|["']$'''), '').trim();
+        case 'src':
+          file = _fontFile(value);
+        case 'font-weight':
+          // A variable face names a range. Its first weight stands for it.
+          weight = switch (_tokens(lower).firstOrNull) {
+            'bold' => 700,
+            final token? => int.tryParse(token) ?? 400,
+            null => 400,
+          };
+        case 'font-style':
+          italic = lower.startsWith('italic') || lower.startsWith('oblique');
+      }
+    }
+    if (family == null || family.isEmpty || file == null) return;
+    output.fontFaces.add(
+      FontFaceRule(family: family, path: file, weight: weight, italic: italic),
+    );
+  }
+
+  /// The publication path of the first source in the `src` [value] that the
+  /// renderer can read, as Chromium takes the first source that it
+  /// supports. WOFF 2, EOT and SVG fonts are not read.
+  String? _fontFile(String value) {
+    for (final part in _splitTop(value, ',')) {
+      final source = part.trim();
+      if (!source.toLowerCase().startsWith('url(')) continue;
+      if (_reference(source) case (final reference, final hints)) {
+        final format = RegExp(r'''format\(\s*["']?([^"')\s]+)''')
+            .firstMatch(hints.toLowerCase())
+            ?.group(1);
+        final readable = format == null
+            ? !RegExp(
+                r'\.(woff2|eot|svgz?)$',
+                caseSensitive: false,
+              ).hasMatch(reference.split('#').first)
+            : _readableFormats.contains(format);
+        if (!readable) continue;
+        if (_resolve(reference) case final target?) return target;
+      }
+    }
+    return null;
+  }
+
+  String? _resolve(String reference) {
+    final base = path;
+    return base == null ? null : resolvePath(base, reference);
+  }
+
+  /// The index of the first `;` or `{` from [index] on that is outside
+  /// strings and parentheses, or [end].
+  int _boundary(int end) {
+    var depth = 0;
+    for (var cursor = index; cursor < end; cursor++) {
+      final unit = text.codeUnitAt(cursor);
+      if (unit == 0x22 || unit == 0x27) {
+        final close = text.indexOf(String.fromCharCode(unit), cursor + 1);
+        if (close < 0 || close >= end) return end;
+        cursor = close;
+      } else if (unit == 0x28) {
+        depth++;
+      } else if (unit == 0x29) {
+        if (depth > 0) depth--;
+      } else if (depth == 0 && (unit == 0x3b || unit == 0x7b)) {
+        return cursor;
+      }
+    }
+    return end;
   }
 
   int _matching(int open) {
@@ -348,6 +570,47 @@ class _SheetParser {
       }
     }
   }
+}
+
+const _readableFormats = {
+  'woff',
+  'truetype',
+  'opentype',
+  'woff-variations',
+  'truetype-variations',
+  'opentype-variations',
+};
+
+/// The reference at the start of [text], a `url()` or a string, and the
+/// text after it, or null.
+(String, String)? _reference(String text) {
+  final match = RegExp(
+    r'''^(?:url\(\s*(?:"([^"]*)"|'([^']*)'|([^)\s"']*))\s*\)|"([^"]*)"|'([^']*)')''',
+    caseSensitive: false,
+  ).firstMatch(text);
+  if (match == null) return null;
+  final reference = [
+    for (var group = 1; group <= 5; group++) match.group(group),
+  ].nonNulls.first;
+  return (reference.trim(), text.substring(match.end).trim());
+}
+
+/// The publication path that [reference] in the file at [base] names, or
+/// null when it leaves the publication.
+String? resolvePath(String base, String reference) {
+  if (reference.isEmpty || reference.contains(':')) return null;
+  final path = Uri.decodeComponent(reference.split('#').first);
+  final parts = base.split('/')..removeLast();
+  for (final part in path.split('/')) {
+    if (part == '.' || part.isEmpty) continue;
+    if (part == '..') {
+      if (parts.isEmpty) return null;
+      parts.removeLast();
+    } else {
+      parts.add(part);
+    }
+  }
+  return parts.join('/');
 }
 
 /// The declarations of a rule's body or of a style attribute.
