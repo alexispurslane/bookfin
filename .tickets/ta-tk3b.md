@@ -1,6 +1,6 @@
 ---
 id: ta-tk3b
-status: in_progress
+status: closed
 deps: [boo-du96]
 links: []
 created: 2026-11-08T00:13:00Z
