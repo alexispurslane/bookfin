@@ -67,6 +67,7 @@ List<SectionSource> fixtureSections() => [
             index: index,
             path: book.spine[index],
             xhtml: utf8.decode(book.resources[book.spine[index]]!),
+            fontPrefix: 'bookfin-${book.identity.substring(0, 12)}',
           ),
       ];
     }(),
