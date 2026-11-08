@@ -1,6 +1,6 @@
 ---
 id: t1-gaeu
-status: in_progress
+status: closed
 deps: [boo-0km1]
 links: []
 created: 2026-11-08T00:06:43Z
