@@ -8,6 +8,7 @@ import 'package:just_audio/just_audio.dart';
 
 import '../downloads/downloads.dart';
 import '../catalog/jellyfin.dart';
+import '../catalog/model.dart';
 import '../catalog/store.dart';
 import 'apple_audio_files.dart';
 import 'playback.dart';
@@ -22,9 +23,12 @@ const _playingPlatforms = {
   TargetPlatform.macOS,
 };
 
+/// [art] gives the blurred cover that the system media player draws, as
+/// [PlaybackHandler.art] describes.
 Future<Playback?> createPlayback(
   Downloads downloads, {
   ListeningStore? store,
+  Future<Uri?> Function(JellyfinSession session, CoverRef cover)? art,
 }) async {
   if (kIsWeb || !_playingPlatforms.contains(defaultTargetPlatform)) {
     return null;
@@ -38,7 +42,7 @@ Future<Playback?> createPlayback(
         : null,
   );
   final handler = await AudioService.init(
-    builder: PlaybackHandler.new,
+    builder: () => PlaybackHandler(art: art),
     config: const AudioServiceConfig(
       androidNotificationChannelId: 'dev.bookfin.playback',
       androidNotificationChannelName: 'Bookfin listening',
@@ -204,11 +208,28 @@ class LocalAudioEngine implements AudioEngine {
 /// changes or when that projection drifts from the player by more than
 /// [_drift]: after a seek, a jump, a stall or a restore.
 class PlaybackHandler extends BaseAudioHandler {
+  PlaybackHandler({this.art});
+
+  /// Gives the file of [cover]'s blurred copy, which the system media player
+  /// draws behind the book, or null when there is none. The handler asks once
+  /// for each book that opens, and shows the book at once, without art, until
+  /// the file arrives.
+  final Future<Uri?> Function(JellyfinSession session, CoverRef cover)? art;
   static const _drift = Duration(seconds: 1);
   Playback? _playback;
   Listenable? _changes;
-  ({String id, String title, String artist, String album, int? duration})?
+  ({
+    String id,
+    String title,
+    String artist,
+    String album,
+    int? duration,
+    CoverRef? cover,
+  })?
   _shown;
+
+  /// The blurred cover of the shown book, once [art] gives it.
+  Uri? _art;
 
   void attach(Playback playback) {
     _changes?.removeListener(_publish);
@@ -232,22 +253,25 @@ class PlaybackHandler extends BaseAudioHandler {
             artist: book.author,
             album: playback.edition!.label,
             duration: playback.durationMilliseconds,
+            cover: book.cover,
           );
     if (shown != _shown) {
+      final cover = shown?.cover;
+      final session = playback.session;
+      if (cover != _shown?.cover) {
+        _art = null;
+        if (art != null && cover != null && session != null) {
+          unawaited(
+            art!(session, cover).then((file) {
+              if (file == null || _shown?.cover != cover) return;
+              _art = file;
+              _publishItem();
+            }),
+          );
+        }
+      }
       _shown = shown;
-      mediaItem.add(
-        shown == null
-            ? null
-            : MediaItem(
-                id: shown.id,
-                title: shown.title,
-                artist: shown.artist,
-                album: shown.album,
-                duration: shown.duration == null
-                    ? null
-                    : Duration(milliseconds: shown.duration!),
-              ),
-      );
+      _publishItem();
     }
     final next = PlaybackState(
       controls: [
@@ -284,6 +308,24 @@ class PlaybackHandler extends BaseAudioHandler {
       return;
     }
     playbackState.add(next);
+  }
+
+  void _publishItem() {
+    final shown = _shown;
+    mediaItem.add(
+      shown == null
+          ? null
+          : MediaItem(
+              id: shown.id,
+              title: shown.title,
+              artist: shown.artist,
+              album: shown.album,
+              duration: shown.duration == null
+                  ? null
+                  : Duration(milliseconds: shown.duration!),
+              artUri: _art,
+            ),
+    );
   }
 
   @override

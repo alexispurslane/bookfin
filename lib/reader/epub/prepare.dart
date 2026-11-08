@@ -13,6 +13,10 @@ import 'dart:typed_data';
 import 'css.dart';
 import 'dom.dart';
 
+// Section sources name publication paths, so their callers resolve
+// references with the same rule as the style sheets.
+export 'css.dart' show resolvePath;
+
 /// The reader's font family. Its file is assets/fonts/SourceSerif4.ttf.
 const readerFontFamily = 'Source Serif 4';
 
@@ -62,6 +66,7 @@ class SectionSource {
     required this.index,
     required this.path,
     required this.xhtml,
+    required this.fontPrefix,
     this.styleSheets = const {},
     this.imageSizes = const {},
   });
@@ -73,9 +78,15 @@ class SectionSource {
   final String path;
   final String xhtml;
 
-  /// The CSS text of each style sheet that the section can link, by its
-  /// publication path.
+  /// The CSS text of each style sheet that the section can reach through
+  /// links and `@import`, by its publication path.
   final Map<String, String> styleSheets;
+
+  /// The start of the family name of each of the book's embedded faces:
+  /// `bookfin-` and the first 12 hex digits of the publication identity.
+  /// Flutter registers fonts for the whole process, so the prefix keeps one
+  /// book's faces apart from another book's faces of the same family.
+  final String fontPrefix;
 
   /// The width and height in pixels of each image, by its publication path.
   /// An image without an entry has no intrinsic size.
@@ -91,6 +102,7 @@ class PreparedSection {
     this.dom,
     this.flow,
     this.styles,
+    this.fonts,
   );
 
   /// The section's spine index.
@@ -103,6 +115,10 @@ class PreparedSection {
 
   /// The text styles that the flow items name by index.
   final List<RunStyle> styles;
+
+  /// The embedded faces that [styles] draw with. Each must be registered
+  /// (`BookFonts.load`) before the section lays out.
+  final List<FontFaceRule> fonts;
 }
 
 /// Prepares each of [sources] for a page of [settings].
@@ -113,8 +129,9 @@ List<PreparedSection> prepareSections(
 
 PreparedSection _prepare(SectionSource source, PageSettings settings) {
   final dom = DomSection.parse(source.xhtml);
-  final styles = styleSection(source, dom, settings);
-  final flattener = _Flattener(source, settings, styles);
+  final (:styles, faces: declared) = styleSection(source, dom, settings);
+  final faces = _Faces(declared, source.fontPrefix);
+  final flattener = _Flattener(source, settings, styles, faces);
   flattener.block(_BoxBuilder(styles).block(dom.body), 0, settings.width);
   return PreparedSection._(
     source.index,
@@ -122,6 +139,7 @@ PreparedSection _prepare(SectionSource source, PageSettings settings) {
     dom,
     flattener.flow,
     flattener.runStyles,
+    faces.used.toList(),
   );
 }
 
@@ -473,16 +491,22 @@ class ImageSizing {
 // Styles.
 
 /// The computed style of each element of [dom], the parsed [source], under
-/// its style sheets and the reader's rules for [settings].
-Map<DomElement, Style> styleSection(
+/// its style sheets and the reader's rules for [settings], and the
+/// `@font-face` rules of those sheets.
+({Map<DomElement, Style> styles, List<FontFaceRule> faces}) styleSection(
   SectionSource source,
   DomSection dom,
   PageSettings settings,
 ) {
-  final media = MediaContext(width: settings.width, height: settings.height);
+  final media = MediaContext(
+    width: settings.width,
+    height: settings.height,
+    night: settings.night,
+  );
+  final sheets = sectionSheets(source, dom, media);
   final rules = <StyleRule>[
     ..._userAgentSheet.rules,
-    for (final sheet in sectionSheets(source, dom, media)) ...sheet.rules,
+    for (final sheet in sheets) ...sheet.rules,
     ...StyleSheet.parse(
       _readerCss(settings),
       firstOrder: 1 << 30,
@@ -506,11 +530,14 @@ Map<DomElement, Style> styleSection(
   }
 
   visit(dom.root, rootStyle);
-  return styles;
+  return (
+    styles: styles,
+    faces: [for (final sheet in sheets) ...sheet.fontFaces],
+  );
 }
 
 /// The book's style sheets that section [dom] uses, linked or in style
-/// elements, in document order.
+/// elements, in document order, each with the sheets that it imports.
 List<StyleSheet> sectionSheets(
   SectionSource source,
   DomSection dom,
@@ -520,17 +547,25 @@ List<StyleSheet> sectionSheets(
   var order = 1000;
   for (final element in elementsOf(dom.root)) {
     String? css;
+    String? path;
     if (element.name == 'link' &&
         (element.attributes['rel'] ?? '').toLowerCase().contains(
           'stylesheet',
         )) {
-      final path = resolvePath(source.path, element.attributes['href'] ?? '');
+      path = resolvePath(source.path, element.attributes['href'] ?? '');
       css = path == null ? null : source.styleSheets[path];
     } else if (element.name == 'style') {
+      path = source.path;
       css = element.texts.map((text) => text.text).join();
     }
     if (css == null) continue;
-    final sheet = StyleSheet.parse(css, firstOrder: order, media: media);
+    final sheet = StyleSheet.parse(
+      css,
+      path: path,
+      read: (path) => source.styleSheets[path],
+      firstOrder: order,
+      media: media,
+    );
     sheets.add(sheet);
     order += sheet.rules.length + sheet.pseudoRules.length + 1;
   }
@@ -543,24 +578,6 @@ Iterable<DomElement> elementsOf(DomElement root) sync* {
   for (final child in root.elements) {
     yield* elementsOf(child);
   }
-}
-
-/// The publication path that [reference] in the file at [base] names, or
-/// null when it leaves the publication.
-String? resolvePath(String base, String reference) {
-  if (reference.isEmpty || reference.contains(':')) return null;
-  final path = Uri.decodeComponent(reference.split('#').first);
-  final parts = base.split('/')..removeLast();
-  for (final part in path.split('/')) {
-    if (part == '.' || part.isEmpty) continue;
-    if (part == '..') {
-      if (parts.isEmpty) return null;
-      parts.removeLast();
-    } else {
-      parts.add(part);
-    }
-  }
-  return parts.join('/');
 }
 
 /// The horizontal padding of the page's body: half the column gap that
@@ -849,10 +866,11 @@ String? _marker(String type, int number) {
 /// Turns a tree of boxes into flow items, with every length that its
 /// containing block decides in pixels.
 class _Flattener {
-  _Flattener(this.source, this.settings, this.styles);
+  _Flattener(this.source, this.settings, this.styles, this.faces);
   final SectionSource source;
   final PageSettings settings;
   final Map<DomElement, Style> styles;
+  final _Faces faces;
   final flow = <FlowItem>[];
   final runStyles = <RunStyle>[];
   final _byValue = <RunStyle, int>{};
@@ -1064,7 +1082,7 @@ class _Flattener {
 
   /// The index of the run style of [style].
   int _styleOf(Style style) => _byStyle[style] ??= () {
-    final run = _runStyle(style);
+    final run = _runStyle(style, faces.familyOf(style));
     return _byValue.putIfAbsent(run, () {
       runStyles.add(run);
       return runStyles.length - 1;
@@ -1072,8 +1090,8 @@ class _Flattener {
   }();
 }
 
-RunStyle _runStyle(Style style) => RunStyle(
-  family: _family(style.fontFamily),
+RunStyle _runStyle(Style style, String family) => RunStyle(
+  family: family,
   size: style.fontSize,
   weight: style.fontWeight,
   italic: style.italic,
@@ -1086,17 +1104,54 @@ RunStyle _runStyle(Style style) => RunStyle(
   oldstyleFigures: style.oldstyleFigures,
 );
 
-/// The family to draw [names] with: the reader's font, or monospace.
-String _family(List<String> names) {
-  for (final name in names) {
-    switch (name.toLowerCase()) {
-      case 'bookfinserif' || 'source serif 4' || 'serif':
-        return readerFontFamily;
-      case 'monospace':
-        return 'monospace';
+/// A section's embedded faces by family, and the faces that its runs use.
+class _Faces {
+  _Faces(Iterable<FontFaceRule> faces, this.prefix) {
+    for (final face in faces) {
+      (_byFamily[face.family] ??= []).add(face);
     }
   }
-  return readerFontFamily;
+
+  final String prefix;
+  final _byFamily = <String, List<FontFaceRule>>{};
+
+  /// The faces that the runs use, in the order of first use.
+  final used = <FontFaceRule>{};
+
+  /// The family to draw [style] with: the first of its families that is
+  /// embedded or that the renderer has. That is an embedded family, the
+  /// reader's font or monospace, and else the reader's font. The face of an
+  /// embedded family that suits [style] joins [used].
+  String familyOf(Style style) {
+    for (final name in style.fontFamily) {
+      final family = name.toLowerCase();
+      if (_byFamily[family] case final faces?) {
+        final face = _nearest(faces, style);
+        used.add(face);
+        return face.familyIn(prefix);
+      }
+      switch (family) {
+        case 'bookfinserif' || 'source serif 4' || 'serif':
+          return readerFontFamily;
+        case 'monospace':
+          return 'monospace';
+      }
+    }
+    return readerFontFamily;
+  }
+
+  /// The face of [faces] that CSS font matching picks for [style], in a
+  /// simple form: the same slant if one has it, then the nearest weight.
+  static FontFaceRule _nearest(List<FontFaceRule> faces, Style style) {
+    final slant = faces.where((face) => face.italic == style.italic).toList();
+    return (slant.isEmpty ? faces : slant).reduce(
+      (best, face) =>
+          (face.weight - style.fontWeight).abs() <
+              (best.weight - style.fontWeight).abs()
+          ? face
+          : best,
+    );
+  }
 }
 
 String _sameLength(String original, String changed) =>

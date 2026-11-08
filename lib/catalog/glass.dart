@@ -59,6 +59,8 @@ class CoverGlass extends StatelessWidget {
           backdropGroupKey: BackdropGroup.of(context)?.backdropKey,
           child: Stack(
             children: [
+              // The blurred cover of the system media player follows this
+              // blur: see _blurShare in covers_io.dart.
               if (shown != null)
                 Positioned.fill(
                   child: CoverBlur(book: shown, sigma: 22, opacity: 0.6),

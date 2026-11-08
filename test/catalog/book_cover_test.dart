@@ -39,6 +39,8 @@ class _FixedCovers implements Covers {
   Future<Uint8List?> load(JellyfinSession session, CoverRef cover) async =>
       bytes;
   @override
+  Future<Uri?> blurred(JellyfinSession session, CoverRef cover) async => null;
+  @override
   Future<void> clear() async {}
 }
 

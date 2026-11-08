@@ -63,13 +63,20 @@ Future<void> runBookfin({bool gallery = false}) async {
     deviceName: deviceName,
   );
   final layout = LibraryLayout(LocalLayoutStore());
+  final opening = gallery ? Future<Covers?>.value() : createCovers();
   final (:downloads, :playback, :covers) = await openSources(
     restoreAppearance: appearance.restore,
     restoreLayout: layout.restore,
     openDownloads: () async =>
         gallery ? null : await createDownloads(MediaPolicy()),
-    openPlayback: (downloads) => createPlayback(downloads, store: records),
-    openCovers: () async => gallery ? null : await createCovers(),
+    // The system media player draws the blurred cover that the covers make.
+    // Playback starts without waiting for the covers to open.
+    openPlayback: (downloads) => createPlayback(
+      downloads,
+      store: records,
+      art: (session, cover) async => (await opening)?.blurred(session, cover),
+    ),
+    openCovers: () => opening,
   );
   final reader = downloads == null
       ? null

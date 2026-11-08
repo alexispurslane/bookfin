@@ -670,6 +670,8 @@ class Playback extends ChangeNotifier {
     return true;
   }
 
+  /// The signed-in account that playback is bound to, if any.
+  JellyfinSession? get session => _session;
   Book? get book => _book;
   Edition? get edition => _edition;
   AudioPosition? get position => _position;

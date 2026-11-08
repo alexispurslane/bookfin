@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:bookfin/reader/epub/css.dart';
 import 'package:bookfin/reader/epub/dom.dart';
 import 'package:bookfin/reader/epub/prepare.dart';
@@ -8,13 +10,53 @@ import 'helpers.dart';
 /// The computed style of the element with id [id] in [body] under [css].
 Style styleOf(String id, String body, String css) {
   final source = section(body, css: css);
-  final styles = styleSection(
+  final (:styles, faces: _) = styleSection(
     source,
     DomSection.parse(source.xhtml),
     readerPage,
   );
   return styles.entries.firstWhere((entry) => entry.key.id == id).value;
 }
+
+/// The computed style of each element with an id in [body], in a section at
+/// `epub/text/one.xhtml` whose head links the sheet at [link]. [sheets]
+/// holds the book's style sheets by publication path.
+Map<String, Style> linkedStyles(
+  String body, {
+  required String link,
+  required Map<String, String> sheets,
+  PageSettings settings = readerPage,
+}) {
+  final source = SectionSource(
+    index: 0,
+    path: 'epub/text/one.xhtml',
+    xhtml:
+        '<html xmlns="http://www.w3.org/1999/xhtml"><head><title>T</title>'
+        '<link href="$link" rel="stylesheet" type="text/css"/></head>'
+        '<body>$body</body></html>',
+    fontPrefix: testFontPrefix,
+    styleSheets: sheets,
+  );
+  final (:styles, faces: _) = styleSection(
+    source,
+    DomSection.parse(source.xhtml),
+    settings,
+  );
+  return {
+    for (final MapEntry(key: element, value: style) in styles.entries)
+      ?element.id: style,
+  };
+}
+
+/// The style of [id] in `<p id="x">A</p>`, styled by the sheet
+/// `epub/css/main.css` among [sheets].
+Style mainStyle(Map<String, String> sheets, {PageSettings? settings}) =>
+    linkedStyles(
+      '<p id="x">A</p>',
+      link: '../css/main.css',
+      sheets: sheets,
+      settings: settings ?? readerPage,
+    )['x']!;
 
 void main() {
   test('a later rule of equal specificity wins over an earlier one', () {
@@ -141,6 +183,206 @@ void main() {
     final style = styleOf('x', '<div id="x">A</div>', '#x{all:initial}');
     expect(style.fontSize, 16);
     expect(style.display, Display.inline);
+  });
+
+  test('a Standard Ebooks core.css sets small caps headings and hanging '
+      'verse indents', () {
+    final styles = linkedStyles(
+      '<section epub:type="chapter"><h2 id="heading">I</h2>'
+      '<p id="opening">Text</p>'
+      '<blockquote epub:type="z3998:poem"><p><span id="line">A line</span>'
+      '<br/><span id="indented" class="i1">Indented</span></p></blockquote>'
+      '</section>',
+      link: '../css/core.css',
+      sheets: {
+        'epub/css/core.css': File('test/reader/epub/fixtures/se-core.css')
+            .readAsStringSync(),
+      },
+    );
+    expect(styles['heading']!.smallCaps, isTrue);
+    expect(styles['heading']!.textAlign, Align.center);
+    expect(styles['opening']!.textIndent.value, 0);
+    // The reader's text is 20 pixels, so 1em is 20 pixels.
+    expect(styles['line']!.display, Display.block);
+    expect(styles['line']!.padding[3].value, 20);
+    expect(styles['line']!.textIndent.value, -20);
+    expect(styles['indented']!.padding[3].value, 40);
+    expect(styles['indented']!.textIndent.value, -20);
+  });
+
+  test('an imported sheet applies before the rules of the sheet that '
+      'imports it', () {
+    final style = mainStyle({
+      'epub/css/main.css':
+          '@import url("parts/verse.css"); p{text-align:center}',
+      'epub/css/parts/verse.css': 'p{font-style:italic;text-align:right}',
+    });
+    expect(style.italic, isTrue);
+    expect(style.textAlign, Align.center);
+  });
+
+  test('an import resolves against the sheet that names it', () {
+    final style = mainStyle({
+      'epub/css/main.css': "@import 'parts/one.css';",
+      'epub/css/parts/one.css': '@import "two.css";',
+      'epub/css/parts/two.css': 'p{font-style:italic}',
+    });
+    expect(style.italic, isTrue);
+  });
+
+  test('a remote import or one outside the publication does nothing', () {
+    final style = mainStyle({
+      'epub/css/main.css':
+          '@import url("https://example.com/remote.css");'
+          '@import url(../../../outside.css);'
+          '@import "data:text/css,p{text-align:center}";'
+          '@import "missing.css";',
+      'outside.css': 'p{text-align:right}',
+    });
+    expect(style.textAlign, Align.start);
+  });
+
+  test('an import with a media query applies only when the query holds', () {
+    final style = mainStyle({
+      'epub/css/main.css':
+          '@import "print.css" print; @import "screen.css" screen;',
+      'epub/css/print.css': 'p{text-align:center}',
+      'epub/css/screen.css': 'p{font-style:italic}',
+    });
+    expect(style.textAlign, Align.start);
+    expect(style.italic, isTrue);
+  });
+
+  test('an import after a style rule is ignored, as Chromium ignores it', () {
+    final style = mainStyle({
+      'epub/css/main.css': 'p{font-weight:bold} @import "late.css";',
+      'epub/css/late.css': 'p{font-style:italic}',
+    });
+    expect(style.fontWeight, 700);
+    expect(style.italic, isFalse);
+  });
+
+  test('imports reach four sheets deep and no further', () {
+    final style = mainStyle({
+      'epub/css/main.css': '@import "one.css";',
+      'epub/css/one.css': '@import "two.css"; p{font-style:italic}',
+      'epub/css/two.css': '@import "three.css"; p{text-align:center}',
+      'epub/css/three.css': '@import "four.css"; p{font-weight:bold}',
+      'epub/css/four.css': '@import "five.css"; p{text-indent:2em}',
+      'epub/css/five.css': 'p{letter-spacing:3px}',
+    });
+    expect(style.italic, isTrue);
+    expect(style.textAlign, Align.center);
+    expect(style.fontWeight, 700);
+    expect(style.textIndent.value, 40);
+    expect(style.letterSpacing, 0);
+  });
+
+  test('a sheet that is imported twice applies once', () {
+    final style = mainStyle({
+      'epub/css/main.css':
+          '@import "right.css"; @import "center.css"; @import "right.css";',
+      'epub/css/right.css': 'p{text-align:right}',
+      'epub/css/center.css': '@import "main.css"; p{text-align:center}',
+    });
+    expect(style.textAlign, Align.center);
+  });
+
+  test('dark color scheme rules apply only on night pages', () {
+    const css =
+        '@media (prefers-color-scheme: dark){p{text-align:center}}'
+        '@media (prefers-color-scheme: light){p{font-style:italic}}';
+    final cream = mainStyle({'epub/css/main.css': css});
+    final night = mainStyle(
+      {'epub/css/main.css': css},
+      settings: const PageSettings(
+        width: 412,
+        height: 671,
+        fontSize: 20,
+        night: true,
+      ),
+    );
+    expect((cream.textAlign, cream.italic), (Align.start, true));
+    expect((night.textAlign, night.italic), (Align.center, false));
+  });
+
+  test('a font face names its family, its first supported publication '
+      'file, its weight and its style', () {
+    final sheet = StyleSheet.parse(
+      '@font-face{font-family:"Old Face";'
+      'src:url("../fonts/old.woff2") format("woff2"),'
+      ' url("../fonts/old.woff") format("woff");'
+      'font-weight:bold;font-style:italic}'
+      '@font-face{font-family:Plain;src:local("Plain"),'
+      ' url(https://example.com/plain.ttf), url(../fonts/plain.otf.woff2),'
+      ' url(../fonts/plain.ttf)}'
+      '@font-face{font-family:Remote;src:url(https://example.com/r.ttf)}'
+      '@font-face{src:url(../fonts/nameless.ttf)}'
+      '@media print{@font-face{font-family:Paper;src:url(../fonts/p.ttf)}}',
+      path: 'epub/css/fonts.css',
+    );
+    expect(sheet.fontFaces, const [
+      FontFaceRule(
+        family: 'old face',
+        path: 'epub/fonts/old.woff',
+        weight: 700,
+        italic: true,
+      ),
+      FontFaceRule(family: 'plain', path: 'epub/fonts/plain.ttf'),
+    ]);
+  });
+
+  test('an imported sheet brings its font faces', () {
+    final source = SectionSource(
+      index: 0,
+      path: 'epub/text/one.xhtml',
+      xhtml:
+          '<html xmlns="http://www.w3.org/1999/xhtml"><head><title>T</title>'
+          '<link href="../css/main.css" rel="stylesheet"/></head>'
+          '<body><p>A</p></body></html>',
+      fontPrefix: testFontPrefix,
+      styleSheets: {
+        'epub/css/main.css': '@import "fonts/faces.css";',
+        'epub/css/fonts/faces.css':
+            '@font-face{font-family:Book;src:url(book.ttf)}',
+      },
+    );
+    final (styles: _, :faces) = styleSection(
+      source,
+      DomSection.parse(source.xhtml),
+      readerPage,
+    );
+    expect(faces, const [
+      FontFaceRule(family: 'book', path: 'epub/css/fonts/book.ttf'),
+    ]);
+  });
+
+  test('a sheet keeps its first 20,000 rules', () {
+    final css = [for (var index = 0; index <= 20000; index++) '.c$index{}'];
+    final sheet = StyleSheet.parse(css.join());
+    expect(sheet.rules.length, 20000);
+    expect(sheet.rules.last.selector.compounds.single.classes, ['c19999']);
+  });
+
+  test('a selector longer than 1,024 characters ends the sheet', () {
+    final longest = '.${'x' * 1023}';
+    final sheet = StyleSheet.parse('p{} $longest{} .${'y' * 1024}{} q{}');
+    expect(
+      [for (final rule in sheet.rules) rule.selector.compounds.single.tag],
+      ['p', null],
+    );
+  });
+
+  test('blocks nested deeper than 32 end the sheet', () {
+    String nested(int depth, String rule) =>
+        '${'@media screen{' * depth}$rule${'}' * depth}';
+    final sheet = StyleSheet.parse(
+      'p{} ${nested(31, 'q{}')} ${nested(32, 'b{}')} i{}',
+    );
+    expect(
+      [for (final rule in sheet.rules) rule.selector.compounds.single.tag],
+      ['p', 'q'],
+    );
   });
 
   test('the DOM counts element and text children as epub.js does', () {

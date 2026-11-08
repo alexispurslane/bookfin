@@ -66,6 +66,7 @@ class TrialBook {
       index: index,
       path: path,
       xhtml: utf8.decode(publication.resources[path]!),
+      fontPrefix: 'bookfin-${publication.identity.substring(0, 12)}',
       styleSheets: styleSheets,
       imageSizes: _imageSizes,
     );

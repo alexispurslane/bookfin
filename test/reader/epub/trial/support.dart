@@ -10,6 +10,7 @@
 // section. A rule that matches nothing changes nothing on the page.
 import 'package:bookfin/reader/epub/css.dart';
 import 'package:bookfin/reader/epub/dom.dart';
+import 'package:bookfin/reader/epub/fonts.dart';
 import 'package:bookfin/reader/epub/prepare.dart';
 
 import 'book.dart';
@@ -60,8 +61,13 @@ SupportReport checkSupport(
             .putIfAbsent(finding.feature, () => {})
             .add(index);
     for (final sheet in sectionSheets(input, dom, media)) {
-      if (sheet.fontFaces > 0) {
-        note(const _Finding('embedded fonts drawn in the reader font'));
+      // A face that BookFonts cannot register, such as WOFF 2, draws in
+      // the reader font.
+      for (final face in sheet.fontFaces) {
+        final bytes = book.resource(face.path);
+        if (bytes == null || sfntOf(bytes) == null) {
+          note(const _Finding('embedded fonts drawn in the reader font'));
+        }
       }
       for (final (rule, pseudo) in [
         for (final rule in sheet.rules) (rule, false),
