@@ -56,3 +56,9 @@ Widget tests with a real pager on the fixture books:
 - A resize presents new settings and the shown place stays.
 - A text size or theme change presents new settings, and the old page stays painted until the new one arrives.
 
+
+## Notes
+
+**2026-11-08T22:04:24Z**
+
+From tc-mxfp: present() throws ArgumentError unless the width, height and text size are finite and above 0, so present only after layout gives a size. linkAt(point) takes logical pixels from the page's top left corner and returns null outside text of a link. shown notifies twice for a page with images: the draft first, then the picture with decoded images.

@@ -33,6 +33,11 @@ typedef StepScheduler = void Function(
   required bool urgent,
 });
 
+/// The number of a page among the true pages of its section, from 1, and
+/// the number of true pages in the section, or null while the section's
+/// main run has not ended.
+typedef PageNumber = ({int number, int? count});
+
 /// A request that stopped before its page was ready: its abandon future
 /// completed, another page was shown, the source was disposed, or the
 /// settings of its page were dropped.
@@ -209,6 +214,48 @@ class PageSource {
     final layout = _layouts[(page.section, page.settings)];
     return layout != null && layout.isTrueStart(page.start);
   }
+
+  /// The number of [page] among the true pages of its section: the number
+  /// of true page starts at or before its start. Null while the section's
+  /// main run has not passed its start.
+  PageNumber? numberOf(LaidPage page) {
+    final layout = _layoutOf(page);
+    if (page.start == const PageStart(0, 0)) {
+      return (
+        number: 1,
+        count: layout?.mainDone ?? false ? layout!.starts.length : null,
+      );
+    }
+    if (layout == null || !layout.knows(page.start)) return null;
+    return (
+      number: layout._search(page.start).$1 + 1,
+      count: layout.mainDone ? layout.starts.length : null,
+    );
+  }
+
+  /// Completes once the main run of [page]'s section passed [page]'s start,
+  /// or reached the section end when [end]. It waits with the shown
+  /// section's main run. [abandon] stops the wait, and the future fails
+  /// with [PageRequestStopped].
+  Future<void> mainRun(
+    LaidPage page, {
+    bool end = false,
+    Future<void>? abandon,
+  }) {
+    final layout = _layoutOf(page) ?? _settingsChanged();
+    return _ask(
+      _Rank.shownRun,
+      abandon,
+      (request) => _known(layout, end ? null : page.start, request),
+    );
+  }
+
+  /// The page that [show] showed last, while it is in the cache.
+  LaidPage? get shown => _pages[_shown]?.page;
+
+  /// The prepared section of [page], which must be in the cache. It stays
+  /// prepared while [page] is shown or pinned.
+  PreparedSection sectionOf(LaidPage page) => _cachedOf(page).layout.prepared!;
 
   /// A picture now, with outlines for images not decoded yet.
   ui.Picture draft(LaidPage page) {
