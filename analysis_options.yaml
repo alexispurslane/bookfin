@@ -7,3 +7,4 @@ analyzer:
     - web/**
     # Standalone research packages use their own locks and verification commands.
     - tool/research/readers/**
+    - macos/**

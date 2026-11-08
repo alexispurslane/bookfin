@@ -160,6 +160,13 @@ class SecureCredentialStore implements CredentialStore {
             iOptions: IOSOptions(
               accessibility: KeychainAccessibility.first_unlock_this_device,
             ),
+            // The data protection keychain needs a keychain-access-groups
+            // entitlement, and so a signing team. A locally signed macOS
+            // build keeps its items in the login keychain instead.
+            mOptions: MacOsOptions(
+              accessibility: KeychainAccessibility.first_unlock_this_device,
+              useDataProtectionKeyChain: false,
+            ),
           );
   final FlutterSecureStorage _storage;
   JellyfinSession? _webSession;

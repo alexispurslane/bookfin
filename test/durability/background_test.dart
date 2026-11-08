@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:ui' show AppExitResponse;
 
 import 'package:bookfin/appearance/preferences.dart';
 import 'package:bookfin/catalog/model.dart';
@@ -154,6 +155,49 @@ void main() {
     },
   );
 
+  testWidgets(
+    'a quit from the desktop menu mid-playback saves the last position before the app exits',
+    (tester) async {
+      final downloads = LocalFiles();
+      final engine = TestEngine();
+      final playback = Playback(
+        downloads: downloads,
+        engine: engine,
+        store: LocalResumeStore(),
+      );
+      await finish(tester, playback.bind(account(), [title]));
+      await finish(tester, playback.open(title, recording));
+      await finish(tester, playback.play());
+      engine.emit(0, 31000, playing: true);
+      engine.emit(0, 31400, playing: true);
+      await tester.pump();
+      await tester.pumpWidget(
+        BookfinApp(
+          appearance: AppearanceController(MemoryAppearanceStore()),
+          catalog: disconnectedCatalog(),
+          playback: playback,
+        ),
+      );
+
+      final response = await finish(
+        tester,
+        tester.binding.handleRequestAppExit(),
+      );
+      _kill();
+      final saved = await finish(tester, LocalResumeStore().read(_account));
+
+      expect(response, AppExitResponse.exit);
+      expect(
+        (saved!['resumes'][recording.id] as List).single['milliseconds'],
+        31400,
+      );
+      await tester.pumpWidget(const SizedBox());
+      unawaited(playback.close());
+      await tester.pump();
+      downloads.dispose();
+    },
+  );
+
   group('the reader', () {
     late LocalFiles downloads;
     late FailingRecords storage;
@@ -226,6 +270,35 @@ void main() {
           _readingPlacesAfterKill,
           (places) => places[edition.id]?.contains('OPS/two.xhtml') ?? false,
         );
+        expect(places[edition.id], contains('OPS/two.xhtml'));
+        await tester.pumpWidget(const SizedBox());
+      },
+    );
+
+    testWidgets(
+      'keeps a place whose save failed when the app quits from the desktop menu',
+      (tester) async {
+        storage.writable = false;
+        await tester.runAsync(() async {
+          reader.acceptVisible(reader.token, _secondChapter);
+          await reader.flush();
+        });
+        storage.writable = true;
+        await tester.pumpWidget(
+          BookfinApp(
+            appearance: AppearanceController(MemoryAppearanceStore()),
+            catalog: disconnectedCatalog(),
+            reader: reader,
+          ),
+        );
+
+        final response = await finish(
+          tester,
+          tester.binding.handleRequestAppExit(),
+        );
+        final places = await finish(tester, _readingPlacesAfterKill());
+
+        expect(response, AppExitResponse.exit);
         expect(places[edition.id], contains('OPS/two.xhtml'));
         await tester.pumpWidget(const SizedBox());
       },

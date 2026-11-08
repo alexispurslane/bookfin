@@ -26,6 +26,20 @@ def prepare():
     print('Prepared pinned PDFium chromium/8125 Android ARM64 library:', digest(source))
 
 
+def prepare_macos():
+    # pdfium_dart's build hook downloads PDFium unless its cache holds it.
+    # Seed that cache with the pinned macOS ARM64 library, so the build
+    # makes no unpinned download. The macOS app does not bundle this file:
+    # on Apple platforms pdfium_flutter's link hook drops it, and the app
+    # bundles pdfium_flutter's PDFium XCFramework, which its Swift package
+    # pins by checksum.
+    source = Path(os.environ['PDFIUM_LIBRARY'])
+    destination = ROOT / '.dart_tool/hooks_runner/shared/pdfium_dart/build/chromium_8125/mac-arm64/libpdfium.dylib'
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(source, destination)
+    print('Prepared pinned PDFium chromium/8125 macOS ARM64 library:', digest(source))
+
+
 def verify(apk):
     directory = ROOT / 'assets/licenses/reader'
     manifest = json.loads((directory / 'manifest.json').read_text())
@@ -64,11 +78,14 @@ def main():
     parser = argparse.ArgumentParser()
     commands = parser.add_subparsers(dest='command', required=True)
     commands.add_parser('prepare')
+    commands.add_parser('prepare-macos')
     commands.add_parser('verify').add_argument('apk', type=Path)
     commands.add_parser('sources').add_argument('output', type=Path)
     args = parser.parse_args()
     if args.command == 'prepare':
         prepare()
+    elif args.command == 'prepare-macos':
+        prepare_macos()
     elif args.command == 'verify':
         verify(args.apk)
     else:

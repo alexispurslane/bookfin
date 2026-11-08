@@ -52,6 +52,20 @@ adb reverse tcp:8096 tcp:8096
 
 In the app, sign in at `http://127.0.0.1:8096` with any user name and password.
 
+### Run it on a Mac
+
+The macOS desktop app needs Xcode from Apple, because Nix cannot supply it.
+It signs in, shows the library, downloads and plays audiobooks, opens PDF books, and syncs personal records.
+It does not open EPUB or MOBI books yet, and it does not recognize text on scanned PDF pages.
+[`docs/plans/platforms.md`](docs/plans/platforms.md) lists each platform's state.
+
+```sh
+nix develop .#macos --command bash tool/bookfin run-macos
+```
+
+A locally built app has no stable signature.
+After a rebuild, macOS asks once before the new build reads the saved sign-in.
+
 ## Build and install the Bookfin Storage plugin
 
 The plugin stores bookmarks, history, and reading places for each Jellyfin user.
