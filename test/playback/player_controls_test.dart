@@ -82,18 +82,20 @@ void main() {
       ),
     );
     Slider slider() => tester.widget<Slider>(find.byType(Slider));
+    // The slider measures the edition from 0 at its start to 1 at its end.
     slider().onChangeStart!(0);
-    slider().onChanged!(95000);
+    slider().onChanged!(95000 / 150000);
     await tester.pump();
     expect(starts, 1);
     expect(ends, isEmpty);
-    expect(slider().value, 95000);
+    expect(slider().value, 95000 / 150000);
     expect(find.text('01:35'), findsOneWidget);
+    expect(find.text('00:55 left'), findsOneWidget);
 
-    slider().onChangeEnd!(95000);
+    slider().onChangeEnd!(95000 / 150000);
     await tester.pump();
     expect(ends, [95000]);
-    expect(slider().value, 95000);
+    expect(slider().value, 95000 / 150000);
 
     landed.complete();
     await tester.pumpAndSettle();

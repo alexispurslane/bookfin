@@ -9,6 +9,7 @@ import '../catalog/glass.dart';
 import '../catalog/model.dart';
 import '../foundation/derived_value.dart';
 import '../foundation/listenable_selector.dart';
+import '../foundation/scrub_bar.dart';
 import '../foundation/theme.dart';
 import '../foundation/time.dart';
 import 'playback.dart';
@@ -1006,7 +1007,7 @@ class JumpButton extends StatelessWidget {
 /// time, the time left in the chapter, and the time left in the book below
 /// it. While the listener drags, it shows the dragged place instead of
 /// [position], until the seek that the drag reports lands.
-class PositionSlider extends StatefulWidget {
+class PositionSlider extends StatelessWidget {
   const PositionSlider({
     super.key,
     required this.position,
@@ -1037,80 +1038,38 @@ class PositionSlider extends StatefulWidget {
   final Future<void> Function(int milliseconds) onSeekEnd;
 
   @override
-  State<PositionSlider> createState() => _PositionSliderState();
-}
-
-class _PositionSliderState extends State<PositionSlider> {
-  /// The dragged place, in milliseconds, while a drag or its seek runs.
-  double? _target;
-  @override
   Widget build(BuildContext context) {
-    final PositionSlider(:total, :chapters, :position) = widget;
-    final scheme = Theme.of(context).colorScheme;
-    final value = (_target ?? position.toDouble()).clamp(0.0, total.toDouble());
-    final accent = Theme.of(context).brightness == Brightness.dark
-        ? theaterGlow
-        : scheme.primary;
-    final index = widget.chapterIndex;
+    // An edition of no length has every place at its start.
+    double fraction(int milliseconds) => total > 0 ? milliseconds / total : 0;
+    int milliseconds(double fraction) => (fraction * total).round();
+    final index = chapterIndex;
     final next = index != null && index + 1 < chapters.length
         ? chapters[index + 1].editionMilliseconds
         : null;
     final chapterLeft = index == null ? null : (next ?? total) - position;
     final small = TextStyle(
       fontSize: 12,
-      color: scheme.onSurfaceVariant,
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
       fontFeatures: const [FontFeature.tabularFigures()],
     );
-    return Column(
-      children: [
-        SliderTheme(
-          data: SliderTheme.of(context).copyWith(
-            trackHeight: 4,
-            activeTrackColor: scheme.primary,
-            inactiveTrackColor: scheme.outlineVariant,
-            thumbColor: scheme.primary,
-            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
-            overlayShape: const RoundSliderOverlayShape(overlayRadius: 18),
-          ),
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Slider(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                semanticFormatterCallback: (value) => audioTime(value.round()),
-                value: value,
-                max: total.toDouble(),
-                onChangeStart: (_) => widget.onSeekStart(),
-                onChanged: (value) => setState(() => _target = value),
-                onChangeEnd: (value) async {
-                  await widget.onSeekEnd(value.round());
-                  if (mounted) setState(() => _target = null);
-                },
-              ),
-              Positioned.fill(
-                child: IgnorePointer(
-                  // The marks change far less often than the slider, so they
-                  // keep a layer of their own.
-                  child: RepaintBoundary(
-                    child: CustomPaint(
-                      key: const ValueKey('position marks'),
-                      painter: _PositionMarks(
-                        chapters: chapters,
-                        bookmarks: widget.bookmarks,
-                        total: total,
-                        chapterColor: scheme.surface,
-                        bookmarkColor: accent,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        Row(
+    return ScrubBar(
+      value: fraction(position),
+      chapters: [
+        for (final PlaybackChapter(:editionMilliseconds) in chapters)
+          if (editionMilliseconds != null) fraction(editionMilliseconds),
+      ],
+      bookmarks: [for (final (bookmark: _, :at) in bookmarks) fraction(at)],
+      describe: (value) => audioTime(milliseconds(value)),
+      onStart: (_) => onSeekStart(),
+      onEnd: (value) => onSeekEnd(milliseconds(value)),
+      below: (context, target) {
+        final shown = (target == null ? position : milliseconds(target)).clamp(
+          0,
+          total,
+        );
+        return Row(
           children: [
-            Expanded(child: Text(audioTime(value.round()), style: small)),
+            Expanded(child: Text(audioTime(shown), style: small)),
             if (chapterLeft != null)
               Text(
                 chapterLeft < 60000
@@ -1120,65 +1079,16 @@ class _PositionSliderState extends State<PositionSlider> {
               ),
             Expanded(
               child: Text(
-                '${audioTime(total - value.round())} left',
+                '${audioTime(total - shown)} left',
                 textAlign: TextAlign.right,
                 style: small,
               ),
             ),
           ],
-        ),
-      ],
+        );
+      },
     );
   }
-}
-
-/// The chapter starts and the bookmarks of the open edition, drawn across
-/// the position bar where they are in the edition.
-class _PositionMarks extends CustomPainter {
-  _PositionMarks({
-    required this.chapters,
-    required this.bookmarks,
-    required this.total,
-    required this.chapterColor,
-    required this.bookmarkColor,
-  });
-  final List<PlaybackChapter> chapters;
-  final List<EditionBookmark> bookmarks;
-
-  /// The length of the edition, in milliseconds.
-  final int total;
-  final Color chapterColor;
-  final Color bookmarkColor;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    double x(int milliseconds) => size.width * milliseconds / total;
-    final middle = size.height / 2;
-    final chapter = Paint()..color = chapterColor;
-    for (final PlaybackChapter(:editionMilliseconds) in chapters) {
-      if (editionMilliseconds case final at? when at > 0 && at < total) {
-        canvas.drawRect(
-          Rect.fromLTWH(x(at) - 0.75, middle - 5, 1.5, 10),
-          chapter,
-        );
-      }
-    }
-    final bookmark = Paint()..color = bookmarkColor;
-    for (final (bookmark: _, :at) in bookmarks) {
-      if (at <= total) {
-        canvas.drawCircle(Offset(x(at), middle - 10), 3, bookmark);
-      }
-    }
-  }
-
-  // The lists stay the same objects until their marks change.
-  @override
-  bool shouldRepaint(_PositionMarks old) =>
-      !identical(chapters, old.chapters) ||
-      !identical(bookmarks, old.bookmarks) ||
-      total != old.total ||
-      chapterColor != old.chapterColor ||
-      bookmarkColor != old.bookmarkColor;
 }
 
 String _rate(double value) =>

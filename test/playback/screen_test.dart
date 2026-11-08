@@ -220,16 +220,16 @@ void main() {
       var slider = tester.widget<Slider>(find.byType(Slider));
       await tester.runAsync(() async {
         slider.onChangeStart?.call(0);
-        slider.onChanged!(40000);
-        slider.onChanged!(95000);
+        slider.onChanged!(40000 / 150000);
+        slider.onChanged!(95000 / 150000);
         await playback.flush();
       });
       await tester.pump();
       expect(playback.editionMilliseconds, 0);
-      expect(tester.widget<Slider>(find.byType(Slider)).value, 95000);
+      expect(tester.widget<Slider>(find.byType(Slider)).value, 95000 / 150000);
       slider = tester.widget<Slider>(find.byType(Slider));
       await tester.runAsync(() async {
-        slider.onChangeEnd?.call(95000);
+        slider.onChangeEnd?.call(95000 / 150000);
         await playback.flush();
       });
       await tester.pumpAndSettle();
