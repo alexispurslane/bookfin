@@ -6,7 +6,6 @@ import 'dart:typed_data';
 import 'package:bookfin/reader/document.dart';
 import 'package:bookfin/reader/ocr.dart';
 import 'package:bookfin/reader/pdf.dart';
-import 'package:bookfin/reader/pdf_viewport.dart';
 import 'package:bookfin/reader/platform_io.dart';
 import 'package:bookfin/reader/session.dart';
 import 'package:bookfin/playback/database.dart';
@@ -14,6 +13,9 @@ import 'package:bookfin/playback/store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import 'pdf_viewport_host.dart';
+
 import 'package:pdfrx_engine/pdfrx_engine.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -119,7 +121,7 @@ void main() {
       () => tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: PdfViewport(
+            body: PdfViewportHost(
               book: reader.document! as PdfBook,
               fontSize: 20,
               initial: reader.initialAddress as PdfAddress?,

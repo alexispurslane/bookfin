@@ -3,13 +3,14 @@ import 'dart:async';
 import 'package:bookfin/reader/document.dart';
 import 'package:bookfin/reader/ocr.dart';
 import 'package:bookfin/reader/pdf.dart';
-import 'package:bookfin/reader/pdf_viewport.dart';
 import 'package:bookfin/reader/platform_io.dart';
 import 'package:bookfin/reader/screen.dart';
 import 'package:bookfin/reader/session.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import 'pdf_viewport_host.dart';
 
 import '../playback/playback_test.dart' show account, LocalFiles, MemoryResume;
 import 'ocr_test.dart' show englishPage;
@@ -110,6 +111,7 @@ void main() {
       expect(find.text('Recognizing English text…'), findsOneWidget);
       await tester.tap(find.text('Cancel recognition'));
       await tester.pump();
+      expect(supply.canceled, isTrue, reason: 'The screen cancels it.');
       expect(find.byType(ErrorWidget), findsNothing);
       expect(find.byTooltip('Next page'), findsOneWidget);
       expect(find.text('Retry recognition'), findsOneWidget);
@@ -126,7 +128,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: PdfViewport(
+            body: PdfViewportHost(
               book: pdf,
               fontSize: 20,
               onReady: (_, _) {},
@@ -164,7 +166,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: PdfViewport(
+            body: PdfViewportHost(
               book: pdf,
               fontSize: 20,
               onReady: (value, _) => navigation = value,

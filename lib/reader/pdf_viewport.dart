@@ -8,6 +8,12 @@ import 'package:flutter_epub_viewer/navigation.dart' show ContentsEntry;
 import 'document.dart';
 import 'pdf.dart';
 
+/// The pages of an open PDF, as the original page or as reflowed text.
+///
+/// The viewport draws what its owner gives it and reports what the person
+/// chose. It causes no recognition or reflow change itself. The book stays
+/// the owner of page text and recognition, and the owner keeps the reflow
+/// choice. The viewport keeps only the shown page and its layout.
 class PdfViewport extends StatefulWidget {
   const PdfViewport({
     super.key,
@@ -15,6 +21,10 @@ class PdfViewport extends StatefulWidget {
     required this.fontSize,
     required this.onReady,
     required this.onAddress,
+    required this.reflow,
+    required this.onReflow,
+    required this.onCancelRecognition,
+    required this.onRetryRecognition,
     this.initial,
   });
   final PdfBook book;
@@ -22,6 +32,23 @@ class PdfViewport extends StatefulWidget {
   final PdfAddress? initial;
   final void Function(DocumentNavigator, List<ContentsEntry>) onReady;
   final ValueChanged<PdfAddress> onAddress;
+
+  /// Whether the page shows as reflowed text. The original page shows
+  /// while the page has no text that matches the place.
+  final bool reflow;
+
+  /// Reports that the person chose Reflow text (true) or Original page
+  /// (false).
+  final ValueChanged<bool> onReflow;
+
+  /// Reports that the viewport no longer waits for the text of the shown
+  /// page: the person chose Cancel recognition, or left the page before its
+  /// text arrived.
+  final VoidCallback onCancelRecognition;
+
+  /// Reports that the person asked to recognize the source page again. The
+  /// viewport then asks the book for the page's text again.
+  final ValueChanged<int> onRetryRecognition;
   @override
   State<PdfViewport> createState() => _PdfViewportState();
 }
@@ -38,8 +65,7 @@ class _PdfViewportState extends State<PdfViewport>
   int _generation = 0;
   int? _drawingGeneration;
   int _search = 0;
-  bool _reflow = false;
-  bool _loading = true;
+  bool _loading = false;
   String? _failure;
   double? _layoutWidth;
 
@@ -54,11 +80,18 @@ class _PdfViewportState extends State<PdfViewport>
   void didUpdateWidget(PdfViewport oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.fontSize != widget.fontSize) _layoutWidth = null;
+    if (oldWidget.reflow != widget.reflow) {
+      // A new layout scrolls to the place, and the original page draws once.
+      if (widget.reflow) {
+        _layoutWidth = null;
+      } else {
+        unawaited(_draw(_generation));
+      }
+    }
   }
 
   @override
   void dispose() {
-    widget.book.textSupply?.cancel();
     _generation++;
     _search++;
     _scroll.dispose();
@@ -72,7 +105,7 @@ class _PdfViewportState extends State<PdfViewport>
       throw ArgumentError('Choose a source page in this PDF.');
     }
     _search++;
-    widget.book.textSupply?.cancel();
+    if (_loading) widget.onCancelRecognition();
     final generation = ++_generation;
     setState(() {
       _page = address.sourcePage;
@@ -128,7 +161,7 @@ class _PdfViewportState extends State<PdfViewport>
     if (!_usingText) await _draw(generation);
   }
 
-  bool get _usingText => _reflow && _positionResolved;
+  bool get _usingText => widget.reflow && _positionResolved;
 
   Future<void> _draw(int generation) async {
     if (_image != null ||
@@ -330,19 +363,11 @@ class _PdfViewportState extends State<PdfViewport>
         alignment: WrapAlignment.center,
         children: [
           TextButton(
-            onPressed: () {
-              setState(() => _reflow = false);
-              unawaited(_draw(_generation));
-            },
+            onPressed: () => widget.onReflow(false),
             child: const Text('Original page'),
           ),
           TextButton(
-            onPressed: _loading
-                ? null
-                : () => setState(() {
-                    _reflow = true;
-                    _layoutWidth = null;
-                  }),
+            onPressed: _loading ? null : () => widget.onReflow(true),
             child: const Text('Reflow text'),
           ),
         ],
@@ -362,7 +387,7 @@ class _PdfViewportState extends State<PdfViewport>
               if (recognizing)
                 TextButton(
                   onPressed: () {
-                    widget.book.textSupply!.cancel();
+                    widget.onCancelRecognition();
                     _search++;
                     _generation++;
                     setState(() {
@@ -380,7 +405,7 @@ class _PdfViewportState extends State<PdfViewport>
                   _text?.status != PdfTextStatus.candidate)
                 TextButton(
                   onPressed: () {
-                    widget.book.textSupply!.retry(_page);
+                    widget.onRetryRecognition(_page);
                     unawaited(_load(_address));
                   },
                   child: Text(
@@ -392,7 +417,7 @@ class _PdfViewportState extends State<PdfViewport>
             ],
           ),
         ),
-      if (_reflow)
+      if (widget.reflow)
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
@@ -404,7 +429,9 @@ class _PdfViewportState extends State<PdfViewport>
                     : _failure ?? 'Checking source-page text.'),
           ),
         ),
-      if (!_reflow && widget.book.textSupply != null && _text?.reason != null)
+      if (!widget.reflow &&
+          widget.book.textSupply != null &&
+          _text?.reason != null)
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(_text!.reason!),

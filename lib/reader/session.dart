@@ -145,6 +145,7 @@ class ReaderSession extends ChangeNotifier {
       _searchChanges = _Signal(() => (_searching, _hits, _searchError)),
       _fontSizeChanges = _Signal(() => _fontSize),
       _saveStatusChanges = _Signal(() => saveFailed),
+      _reflowChanges = _Signal(() => _reflow),
     ];
   }
   final Downloads downloads;
@@ -622,6 +623,23 @@ class ReaderSession extends ChangeNotifier {
   Future<void> goToContents(String href) async {
     final navigator = _navigator;
     if (navigator != null) await _navigate(() => navigator.contents(href));
+  }
+
+  bool _reflow = false;
+  late final _Signal _reflowChanges;
+
+  /// Whether PDF pages show as reflowed text instead of the original page.
+  /// The choice lasts for this run of the app, through closing and opening
+  /// books and accounts. It is not saved in the reading records, so a new
+  /// session starts on the original page.
+  bool get reflow => _reflow;
+
+  /// Notifies when [reflow] changes.
+  Listenable get reflowChanges => _reflowChanges;
+
+  void setReflow(bool on) {
+    _reflow = on;
+    _emit();
   }
 
   Future<void> setFontSize(double size) async {

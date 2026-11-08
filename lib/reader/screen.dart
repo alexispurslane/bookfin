@@ -32,7 +32,7 @@ class ReaderScreen extends StatefulWidget {
 /// side effect: it opens the panels, closes them, and tells [ReaderSession]
 /// what the person chose. Each part of the view follows only the session
 /// signal that it shows, so a page turn redraws the page label and the
-/// progress bar, and a text size change redraws the viewport.
+/// progress bar, and a text size or reflow change redraws the viewport.
 class _ReaderScreenState extends State<ReaderScreen> {
   bool _controls = true;
   int? _viewToken;
@@ -252,6 +252,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
                       listenable: Listenable.merge([
                         documentOrSize,
                         reader.saveStatusChanges,
+                        reader.reflowChanges,
                       ]),
                       builder: (context, _) => _viewport(context, night),
                     ),
@@ -400,8 +401,8 @@ class _ReaderScreenState extends State<ReaderScreen> {
   }
 
   /// The view of the open document, or what stands in its place while the
-  /// book opens or cannot open. It follows the document, the text size and
-  /// the reader message.
+  /// book opens or cannot open. It follows the document, the text size, the
+  /// reader message and the reflow choice.
   Widget _viewport(BuildContext context, bool night) {
     _viewToken = reader.token;
     final token = reader.token;
@@ -417,6 +418,10 @@ class _ReaderScreenState extends State<ReaderScreen> {
         onReady: (navigator, entries) =>
             reader.attachDocument(token, navigator, entries),
         onAddress: (address) => reader.acceptAddress(token, address),
+        reflow: reader.reflow,
+        onReflow: reader.setReflow,
+        onCancelRecognition: () => document.textSupply?.cancel(),
+        onRetryRecognition: (page) => document.textSupply?.retry(page),
       );
     }
     if (!epubViewportSupported) {
