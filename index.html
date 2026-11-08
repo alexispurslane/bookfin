@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bookfin · Audiobooks and ebooks from your Jellyfin server</title>
+<meta name="description" content="Bookfin is an Android app for the audiobooks and ebooks on your Jellyfin server. Listen offline, read offline, and never lose your place.">
+<meta name="color-scheme" content="light dark">
+<style>
+@font-face{font-family:"Outfit";font-weight:400 800;font-display:swap;src:url(docs/mockups/fonts/outfit-latin.woff2) format("woff2")}
+@font-face{font-family:"Source Serif 4";font-weight:400 600;font-display:swap;src:url(docs/mockups/fonts/source-serif-4-latin.woff2) format("woff2")}
+
+:root{
+  --paper:#f6efe2;--sheet:#fff9ef;--wash:#eae0ce;--ink:#39291f;--subtle:#715d4b;--line:#d9ccb6;
+  --accent:#775035;--copper:#95603c;
+  --n-paper:#251e19;--n-sheet:#302720;--n-wash:#3b3027;--n-ink:#dcc9a9;--n-subtle:#b09a7f;--n-line:#504234;--n-accent:#c5a079;
+  --band:var(--n-paper);
+  --serif:"Source Serif 4",Georgia,serif;--display:"Outfit",system-ui,sans-serif;
+  --radius:28px;--ease:cubic-bezier(.22,1,.36,1);
+  --gutter:clamp(1.25rem,4vw,3rem);
+}
+@media (prefers-color-scheme:dark){
+  :root{--paper:var(--n-paper);--sheet:var(--n-sheet);--wash:var(--n-wash);--ink:var(--n-ink);--subtle:var(--n-subtle);--line:var(--n-line);--accent:var(--n-accent);--copper:var(--n-accent);
+    --band:#191410}
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 1.125rem/1.6 var(--serif);-webkit-font-smoothing:antialiased}
+::selection{background:var(--copper);color:var(--sheet)}
+a{color:var(--accent);text-underline-offset:.2em;text-decoration-thickness:1px}
+a:focus-visible,button:focus-visible{outline:2px solid var(--copper);outline-offset:3px;border-radius:6px}
+img{display:block;max-width:100%;height:auto}
+p,li{text-wrap:pretty}
+h1,h2,h3{text-wrap:balance}
+.wrap{width:min(1180px,100% - 2 * var(--gutter));margin-inline:auto}
+[id]{scroll-margin-top:1.5rem}
+
+/* Top bar */
+.top{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1.25rem 0}
+.brand{display:flex;align-items:center;gap:.6rem;padding:.4rem 0;font:700 1.35rem var(--display);color:var(--ink);text-decoration:none}
+.brand svg{width:30px;height:30px}
+.top nav{display:flex;gap:1.75rem;font:500 .95rem var(--display)}
+.top nav a{color:var(--subtle);text-decoration:none;padding:.5rem 0}
+.top nav a:hover{color:var(--ink)}
+
+/* Title page */
+.hero{text-align:center;padding:4rem 0 1rem}
+h1{font:600 clamp(2.6rem,6vw,4.6rem)/1.05 var(--serif);margin:0 auto 1.25rem;max-width:18ch;letter-spacing:-.015em}
+.lede{font-size:1.3rem;color:var(--subtle);max-width:44ch;margin:0 auto 2rem}
+.actions{display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap}
+.btn{font:600 1rem var(--display);padding:.9rem 1.6rem;border-radius:999px;text-decoration:none;transition:background .3s var(--ease),color .3s var(--ease)}
+.btn.primary{background:var(--accent);color:var(--sheet)}
+.btn.primary:hover{background:var(--ink)}
+.btn.ghost{background:var(--wash);color:var(--ink)}
+.btn.ghost:hover{background:var(--line)}
+.built{font:500 .95rem var(--display);color:var(--subtle);margin:1.25rem 0 0}
+.built a{color:inherit}
+.hero-art{margin:3.5rem auto 0;max-width:1040px}
+/* The hero image has a cream ground baked in. On paper, fade its lower edge into the page;
+   at night, show it as a lit page lying on the dark desk. */
+.hero-art img{
+  -webkit-mask-image:linear-gradient(#000 78%,transparent),linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent);
+  -webkit-mask-composite:source-in;
+  mask-image:linear-gradient(#000 78%,transparent),linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent);
+  mask-composite:intersect}
+@media (prefers-color-scheme:dark){
+  .hero-art img{-webkit-mask-image:none;mask-image:none;border-radius:var(--radius);box-shadow:0 30px 70px -30px rgba(0,0,0,.8)}
+}
+
+/* Preface */
+.why{max-width:62ch;margin:5rem auto 0}
+.why h2{font:600 clamp(1.9rem,3.6vw,2.5rem)/1.15 var(--serif);margin:0 0 1.25rem}
+.why p{margin:0 0 1.1rem}
+.why p:first-of-type::first-letter{float:left;font:600 4.1em/.8 var(--serif);margin:.08em .1em 0 0;color:var(--copper)}
+.why .sign{font-style:italic;color:var(--subtle)}
+
+/* Contents, the page's own table of contents */
+.contents{max-width:62ch;margin:4rem auto 0;padding:2rem 0;border-block:1px solid var(--line)}
+.contents h2{font:600 .95rem var(--display);letter-spacing:.02em;margin:0 0 1rem;color:var(--subtle)}
+.contents ol{list-style:none;margin:0;padding:0}
+.contents a{display:flex;align-items:baseline;gap:.6rem;padding:.45rem 0;color:var(--ink);text-decoration:none}
+.contents a:hover .t{color:var(--accent)}
+.contents .n{min-width:3.6rem;color:var(--copper)}
+.contents .dots{flex:1;border-bottom:1px dotted var(--line);transform:translateY(-.3em)}
+.contents .d{font:400 .95rem var(--display);color:var(--subtle)}
+
+/* Chapters */
+.chapter{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:clamp(2rem,5vw,4.5rem);align-items:center;padding:7rem 0}
+.chapter.flip .copy{order:2}
+.chapter.full{grid-template-columns:minmax(0,1fr)}
+.chapter h2{font:600 clamp(2.1rem,4vw,2.9rem)/1.1 var(--serif);margin:0 0 .6rem;letter-spacing:-.01em}
+.chapter h2 span{font-style:italic;font-weight:400;color:var(--copper);margin-right:.2rem}
+.stand{font:italic 400 clamp(1.25rem,2vw,1.45rem)/1.4 var(--serif);color:var(--subtle);margin:0 0 1.5rem;text-wrap:balance}
+.copy p{color:var(--subtle);margin:0 0 1rem;max-width:36em}
+.copy ul{margin:1.2rem 0 0;padding:0;list-style:none;max-width:36em}
+.copy li{padding:.6rem 0 .6rem 1.6rem;position:relative;border-bottom:1px dashed var(--line)}
+.copy li:last-child{border-bottom:0}
+.copy li::before{content:"";position:absolute;left:0;top:1.2rem;width:.5rem;height:.5rem;border-radius:50%;background:var(--copper)}
+.formats{font:500 .95rem var(--display);letter-spacing:.06em;color:var(--copper);margin:-.25rem 0 1rem}
+
+.phones{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,250px);gap:1.1rem;justify-content:center;align-items:start}
+.phones img{width:100%;border-radius:var(--radius);border:6px solid var(--sheet);box-shadow:0 1px 0 var(--line),0 24px 50px -22px rgba(57,41,31,.45)}
+.phones img:nth-child(even){margin-top:2.5rem}
+.phones.four{grid-auto-columns:minmax(0,240px);gap:1.4rem}
+
+/* Night band for the player */
+.night{background:var(--band);color:var(--n-ink);
+  background-image:radial-gradient(60% 70% at 75% 40%,rgba(149,96,60,.32),transparent 70%)}
+@media (prefers-color-scheme:dark){.night{border-block:1px solid var(--n-line)}}
+.night .chapter h2 span{color:var(--n-accent)}
+.night .stand{color:var(--n-subtle)}
+.night .copy p{color:var(--n-subtle)}
+.night .phones img{border-color:var(--n-sheet);box-shadow:0 30px 60px -20px rgba(0,0,0,.6)}
+.night .copy li{border-color:var(--n-line)}
+.night .copy li::before{background:var(--n-accent)}
+.night a{color:var(--n-accent)}
+
+/* History, typeset like the app's timeline */
+.timeline{background:var(--sheet);border:1px solid var(--line);border-radius:var(--radius);padding:1.75rem 1.9rem;margin:0}
+.timeline .book{font:600 1.15rem var(--serif);margin:0}
+.timeline .by{font:400 .9rem var(--display);color:var(--subtle);margin:.15rem 0 1.25rem}
+.timeline h3{font:600 .8rem var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--subtle);margin:1.25rem 0 .4rem}
+.timeline ol{list-style:none;margin:0;padding:0 0 0 1.1rem;border-left:2px solid var(--line)}
+.timeline li{position:relative;display:grid;grid-template-columns:3.4rem 1fr;gap:.75rem;padding:.55rem 0;font:400 1rem/1.45 var(--display)}
+.timeline li::before{content:"";position:absolute;left:calc(-1.1rem - 6px);top:1rem;width:10px;height:10px;border-radius:50%;background:var(--sheet);border:2px solid var(--copper)}
+.timeline li.mark::before{background:var(--copper)}
+.timeline li.back{color:var(--accent)}
+.timeline li.back::before{border-style:dashed}
+.timeline time{font-variant-numeric:tabular-nums;color:var(--subtle)}
+.timeline small{display:block;color:var(--subtle);font-size:.85rem}
+.history-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.9fr) minmax(0,250px);gap:clamp(2rem,4vw,3.5rem);align-items:center}
+
+/* Sync, two devices that disagree */
+.devices{display:grid;grid-template-columns:1fr 1fr;gap:1rem;max-width:36em;margin-top:1.75rem}
+.device{background:var(--sheet);border:1px solid var(--line);border-radius:22px;padding:1.25rem 1.35rem}
+.device b{display:block;font:600 .85rem var(--display);color:var(--subtle);margin-bottom:.5rem}
+.device span{display:block;font:600 1.1rem/1.3 var(--serif)}
+.device time{font:400 .95rem var(--display);color:var(--subtle);font-variant-numeric:tabular-nums}
+.devices .both{grid-column:1/-1;text-align:center;font:500 1rem var(--display);color:var(--accent);padding:.9rem;border:1px dashed var(--copper);border-radius:22px}
+
+/* Getting it */
+.setup-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:clamp(2rem,5vw,4rem);align-items:start}
+.needs{margin:1rem 0 0;padding:0;list-style:none}
+.needs li{padding:.5rem 0 .5rem 1.6rem;border-bottom:1px dashed var(--line);color:var(--ink)}
+.needs li:last-child{border-bottom:0}
+.code{position:relative;background:var(--band);color:var(--n-ink);border-radius:20px;padding:1.4rem 1.5rem;margin:0}
+.code pre{margin:0;overflow-x:auto;font:400 .9rem/1.75 ui-monospace,SFMono-Regular,Menlo,monospace}
+.code .c{color:var(--n-subtle)}
+.copybtn{position:absolute;top:.75rem;right:.75rem;font:500 .85rem var(--display);background:var(--n-wash);color:var(--n-ink);border:0;border-radius:999px;padding:.45rem .9rem;cursor:pointer;transition:background .25s var(--ease)}
+.copybtn:hover{background:var(--n-line)}
+.after{color:var(--subtle);margin:1.25rem 0 0}
+@media (prefers-color-scheme:dark){.code{border:1px solid var(--n-line)}}
+
+footer{border-top:1px solid var(--line);padding:2.5rem 0 3.5rem;color:var(--subtle);font:400 .95rem var(--display);display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+footer a{color:var(--subtle);display:inline-block;padding:.6rem .25rem}
+
+@media (max-width:980px){
+  .history-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .history-grid .phones{display:none}
+}
+@media (max-width:860px){
+  .top nav .wide{display:none}
+  .chapter{grid-template-columns:minmax(0,1fr);padding:4.5rem 0}
+  .chapter.flip .copy{order:0}
+  .phones{grid-auto-columns:minmax(0,1fr);justify-content:stretch}
+  .phones.four{grid-auto-columns:minmax(0,1fr);gap:1rem}
+  .phones.four img:nth-child(1),.phones.four img:nth-child(3){display:none}
+  .phones.four img:nth-child(4){margin-top:2.5rem}
+  .history-grid,.setup-grid{grid-template-columns:minmax(0,1fr)}
+  .hero-art{margin-inline:calc(-1 * var(--gutter) + .5rem)}
+}
+@media (max-width:600px){
+  .hero-art{margin-inline:auto;max-width:72%}
+  .hero-art img{-webkit-mask-image:none;mask-image:none;border-radius:var(--radius);border:6px solid var(--sheet);box-shadow:0 24px 50px -22px rgba(57,41,31,.45)}
+}
+@media (max-width:480px){
+  .devices{grid-template-columns:1fr}
+  .phones img{border-width:4px;border-radius:20px}
+  .contents .d{display:none}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body id="top">
+
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="#top">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="5" y="4" width="18" height="24" rx="3" fill="currentColor" opacity=".9"/><rect x="9" y="4" width="18" height="24" rx="3" fill="var(--copper)"/><path d="M14 21v-5a4 4 0 0 1 8 0v5" fill="none" stroke="var(--sheet)" stroke-width="2" stroke-linecap="round"/></svg>
+      Bookfin
+    </a>
+    <nav aria-label="Page">
+      <a class="wide" href="#shelf">Shelf</a>
+      <a class="wide" href="#player">Player</a>
+      <a class="wide" href="#history">History</a>
+      <a class="wide" href="#reader">Reader</a>
+      <a href="#contents">Contents</a>
+      <a href="#setup">Get it</a>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <h1>Your books, on paper you can carry.</h1>
+    <p class="lede">An Android app for the audiobooks and ebooks on your Jellyfin server, the free media server that you run yourself. Made so that books feel as good there as your films and music.</p>
+    <div class="actions">
+      <a class="btn primary" href="#setup">Get started</a>
+      <a class="btn ghost" href="https://tangled.org/xenolandscapes.com/bookfin">Source code</a>
+    </div>
+    <p class="built">Written in <a href="https://flutter.dev">Flutter</a> · open source · Android today</p>
+    <div class="hero-art">
+      <picture>
+        <source media="(max-width:600px) and (prefers-color-scheme:dark)" srcset="docs/screenshots/player-night.png" width="720" height="1600">
+        <source media="(max-width:600px)" srcset="docs/screenshots/player.png" width="720" height="1600">
+        <img src="docs/screenshots/hero.png" width="1500" height="1157" alt="Bookfin screens: the library grid, the player at night, and an EPUB book">
+      </picture>
+    </div>
+  </section>
+
+  <section class="why" id="why">
+    <h2>Why I made Bookfin</h2>
+    <p>Jellyfin is a lovely home for films and music. Books have been there for years, but they get far less attention, and the apps show it. The server reads an audiobook's chapters, but the official apps give you no chapter list. Jellyfin keeps only your latest position, with no record of your skips, jumps, and bookmarks. If you scrub too far by accident, or go back to hear a passage again, there is no quick way to return to where you were. An audiobook and its ebook sit in separate lists. A download that stops when the app closes waits for you to restart it, and removed downloads can leave files behind.</p>
+    <p>Books are a quiet corner of Jellyfin, and the server leaves a lot for an app to do. So I built the app that I wanted on top of it: one that treats your books like a shelf, remembers every place you have been, and feels good in your hand.</p>
+    <p>I wrote Bookfin in Flutter. It draws every frame with its own engine, so the app looks and behaves the same wherever it runs, and the same code can grow to more platforms later. The codebase stays small, clean, and easy to read.</p>
+  </section>
+
+  <nav class="contents" id="contents" aria-labelledby="contents-h">
+    <h2 id="contents-h">Contents</h2>
+    <ol>
+      <li><a href="#shelf"><span class="n">One.</span><span class="t">The shelf</span><span class="dots"></span><span class="d">library and downloads</span></a></li>
+      <li><a href="#player"><span class="n">Two.</span><span class="t">The player</span><span class="dots"></span><span class="d">chapters, late nights</span></a></li>
+      <li><a href="#history"><span class="n">Three.</span><span class="t">The history</span><span class="dots"></span><span class="d">every place you have been</span></a></li>
+      <li><a href="#reader"><span class="n">Four.</span><span class="t">The reader</span><span class="dots"></span><span class="d">EPUB, MOBI, scanned PDF</span></a></li>
+      <li><a href="#sync"><span class="n">Five.</span><span class="t">Every device</span><span class="dots"></span><span class="d">sync on your server</span></a></li>
+      <li><a href="#setup"><span class="n">Six.</span><span class="t">Getting it</span><span class="dots"></span><span class="d">build and install</span></a></li>
+    </ol>
+  </nav>
+
+  <section class="chapter" id="shelf">
+    <div class="copy">
+      <h2><span>One.</span> The shelf</h2>
+      <p class="stand">Audiobooks and ebooks, on one shelf, in your pocket.</p>
+      <p>Most Jellyfin apps keep a book's audio and its text in different places. Bookfin puts them under one cover, shows only your book libraries, and keeps each series in reading order.</p>
+      <p>Download the audiobook, the ebook, or both, then listen and read with no connection at all. Lost signal, a dead battery, or a phone that dies mid-download? Bookfin picks up where it left off, fetches only what is missing, and never hands you a broken file. When you remove a book, its files really go.</p>
+      <ul>
+        <li>Series stack into one card and open in reading order.</li>
+        <li>Filter by audiobooks, ebooks, or what is downloaded.</li>
+      </ul>
+    </div>
+    <div class="phones">
+      <img src="docs/screenshots/library-grid.png" width="720" height="1600" loading="lazy" alt="The library as a grid of covers with stacked series cards">
+      <img src="docs/screenshots/book.png" width="720" height="1600" loading="lazy" alt="A book page with separate download buttons for the audiobook and the ebook">
+    </div>
+  </section>
+</div>
+
+<div class="night" id="player">
+  <div class="wrap">
+    <section class="chapter flip">
+      <div class="copy">
+        <h2><span>Two.</span> The player</h2>
+        <p class="stand">Made for long books and late nights.</p>
+        <p>A twenty-hour book needs more than a play button. Bookfin knows its chapters and shows you where you are in them. After sunset, it turns warm and dim, with a glow in the colors of the cover.</p>
+        <ul>
+          <li>Chapter marks and bookmarks on the position bar.</li>
+          <li>Time left in the chapter and in the whole book.</li>
+        </ul>
+      </div>
+      <div class="phones">
+        <img src="docs/screenshots/player-night.png" width="720" height="1600" loading="lazy" alt="The player at night, with a glow in the colors of the cover">
+        <img src="docs/screenshots/chapters.png" width="720" height="1600" loading="lazy" alt="The chapter list in a frosted glass sheet">
+      </div>
+    </section>
+  </div>
+</div>
+
+<div class="wrap">
+  <section class="chapter full" id="history">
+    <div class="history-grid">
+      <div class="copy">
+        <h2><span>Three.</span> The history</h2>
+        <p class="stand">Every move is saved. Go back to any of them.</p>
+        <p>Fell asleep? Skipped too far? Other apps keep only your last position. Bookfin keeps every pause, seek, chapter jump, and bookmark, so you can always find your way back.</p>
+        <ul>
+          <li>Undo right after a seek or a chapter jump.</li>
+          <li>Tap any moment in the timeline to return to it.</li>
+          <li>Going back is saved too, so nothing is ever erased.</li>
+          <li>Bookmark with one tap. Tap again within 15 seconds to name it.</li>
+        </ul>
+      </div>
+      <figure class="timeline" aria-label="An example listening history">
+        <p class="book">First Frost</p>
+        <p class="by">Mara Ellison · read by Tom Avery</p>
+        <h3>Tonight</h3>
+        <ol>
+          <li class="back"><time>23:20</time><div>Went back to 2:31:40<small>from the pause at 23:14</small></div></li>
+          <li><time>23:14</time><div>Paused<small>Chapter 4 · 2:39:07</small></div></li>
+          <li class="mark"><time>22:58</time><div>Bookmark: “the orchard wall”<small>Chapter 4 · 2:31:40</small></div></li>
+          <li><time>22:41</time><div>Seeked forward 10 minutes<small>2:14:02 to 2:24:02</small></div></li>
+        </ol>
+        <h3>Yesterday</h3>
+        <ol>
+          <li><time>07:52</time><div>Jumped to Chapter 4<small>from Chapter 3 · 1:58:10</small></div></li>
+        </ol>
+      </figure>
+      <div class="phones">
+        <img src="docs/screenshots/history.png" width="720" height="1600" loading="lazy" alt="The history timeline in the app, with seeks, pauses and bookmarks grouped by day">
+      </div>
+    </div>
+  </section>
+
+  <section class="chapter full" id="reader">
+    <div class="copy">
+      <h2><span>Four.</span> The reader</h2>
+      <p class="stand">A real reader, even for scans.</p>
+      <p class="formats">EPUB · MOBI · PDF</p>
+      <p>Bookfin opens your ebooks right next to their audiobooks, with your place saved in each one. Turn any PDF into text that fits your phone with one button. Scanned pages are recognized on the phone, with no network.</p>
+    </div>
+    <div class="phones four">
+      <img src="docs/screenshots/reader-epub.png" width="720" height="1600" loading="lazy" alt="An EPUB book open in the reader">
+      <img src="docs/screenshots/reader-pdf.png" width="720" height="1600" loading="lazy" alt="A scanned PDF page in the reader">
+      <img src="docs/screenshots/reader-recognizing.png" width="720" height="1600" loading="lazy" alt="A scanned PDF page under a card that says Recognizing English text">
+      <img src="docs/screenshots/reader-reflow.png" width="720" height="1600" loading="lazy" alt="The same scanned page as reflowed text">
+    </div>
+  </section>
+
+  <section class="chapter flip" id="sync">
+    <div class="copy">
+      <h2><span>Five.</span> Every device</h2>
+      <p class="stand">Your place, on every device.</p>
+      <p>Jellyfin stores how far you got, and Bookfin reports that like any other app. But Jellyfin has no bookmark or history feature. A small server plugin, Bookfin Storage, fills that gap and carries them between your devices.</p>
+      <ul>
+        <li>If two devices disagree, Bookfin asks which place is real.</li>
+        <li>Choosing keeps both places as bookmarks, so nothing is lost.</li>
+        <li>Without the plugin, everything still works on one phone.</li>
+        <li>Your records stay on your own server.</li>
+      </ul>
+      <div class="devices" aria-label="Two devices with different places in the same book">
+        <div class="device"><b>Phone</b><span>First Frost</span><time>2:33:16</time></div>
+        <div class="device"><b>Tablet</b><span>First Frost</span><time>4:12:47</time></div>
+        <div class="both">You choose one. Both stay as bookmarks.</div>
+      </div>
+    </div>
+    <div class="phones">
+      <img src="docs/screenshots/sync-conflict-choose.png" width="720" height="1600" loading="lazy" alt="The Personal records page asking which of two saved places in First Frost is the real one">
+      <img src="docs/screenshots/sync-conflict-bookmarks.png" width="720" height="1600" loading="lazy" alt="The history after the choice, with both places kept as Saved before sync choice bookmarks">
+    </div>
+  </section>
+
+  <section class="chapter full setup" id="setup">
+    <div class="copy">
+      <h2><span>Six.</span> Getting it</h2>
+      <p class="stand">Build it once, and your shelf comes with you.</p>
+    </div>
+    <div class="setup-grid">
+      <div class="copy">
+        <p>Bookfin is a personal project with no store release yet. You build it from source on a computer, then install it on your phone. A Nix flake pins every tool, so the build needs nothing else installed.</p>
+        <p>You need:</p>
+        <ul class="needs">
+          <li>An Apple Silicon Mac with Nix</li>
+          <li>A 64-bit Android phone and a USB cable</li>
+          <li>A Jellyfin server with a book library</li>
+        </ul>
+      </div>
+      <div>
+        <div class="code">
+          <button class="copybtn" type="button" data-copy="build">Copy</button>
+<pre id="build"><span class="c"># on your Mac, with the phone plugged in</span>
+git clone https://tangled.org/xenolandscapes.com/bookfin
+cd bookfin
+nix develop --command flutter pub get
+nix develop --command bash tool/bookfin build-android
+adb install build/app/outputs/flutter-apk/app-debug.apk</pre>
+        </div>
+        <p class="after">Then open Bookfin and sign in with your Jellyfin address, user name, and password. To sync bookmarks and history between devices, add the Bookfin Storage plugin to your server. The <a href="https://tangled.org/xenolandscapes.com/bookfin">README</a> has its steps.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>Bookfin · An Android companion for Jellyfin</span>
+    <span><a href="https://tangled.org/xenolandscapes.com/bookfin">Source and README on Tangled</a> · <a href="#top">Back to the top</a></span>
+  </footer>
+</div>
+
+<script>
+document.querySelectorAll('.copybtn').forEach(b => b.addEventListener('click', async () => {
+  const text = [...document.getElementById(b.dataset.copy).childNodes]
+    .filter(n => !(n.classList && n.classList.contains('c'))).map(n => n.textContent).join('').trim();
+  try { await navigator.clipboard.writeText(text); b.textContent = 'Copied'; }
+  catch { b.textContent = 'Select and copy'; }
+  setTimeout(() => { b.textContent = 'Copy'; }, 2000);
+}));
+</script>
+</body>
+</html>
