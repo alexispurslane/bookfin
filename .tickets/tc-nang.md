@@ -74,3 +74,9 @@ docs/plans/native-epub-reader.md (epic boo-b2ey). Read the sections named in the
 - Published pages never change.
 - The existing layout tests pass.
 
+
+## Notes
+
+**2026-11-08T19:47:15Z**
+
+From tc-bsen: layout.dart walks PreparedSection.flow with a stack of open blocks (_OpenBlock: placement, boxTop, firstSlice) and carries margin state (_positive, _negative), _avoidNext and a pending list marker between items. A run that starts at a page start must rebuild that stack from the BlockStart and BlockEnd items before its start item. A shrink-to-fit block measures its paragraphs (_maxContent) to place itself. An empty block is detected as a BlockStart followed at once by its BlockEnd.

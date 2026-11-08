@@ -69,3 +69,9 @@ docs/plans/native-epub-reader.md (epic boo-b2ey). Read the sections named in the
 - After BookFonts.load, a run in an embedded face lays out with that face's widths (measurably different from the reader font).
 - prepareSections still runs inside Isolate.run.
 
+
+## Notes
+
+**2026-11-08T19:47:15Z**
+
+From tc-bsen: the opsz and wght font variations are set in layout.dart (_Flow._textStyle), which is tc-nang's file. Limiting them to the reader font needs a one-line change there, for example a check of RunStyle.family == readerFontFamily. Coordinate it with tc-nang.

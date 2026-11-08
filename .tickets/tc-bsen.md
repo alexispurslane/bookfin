@@ -1,6 +1,6 @@
 ---
 id: tc-bsen
-status: open
+status: in_progress
 deps: []
 links: []
 created: 2026-11-08T19:23:12Z
@@ -74,3 +74,9 @@ docs/plans/native-epub-reader.md (epic boo-b2ey). Read the sections named in the
 - lib/reader/native_epub/, test/reader/native_epub/ and tool/epub_trial/ are gone.
 - When the books are present, the on-demand trial corpus run (BOOKFIN_EPUB_TRIAL=1) still works from test/reader/epub/trial/.
 
+
+## Notes
+
+**2026-11-08T19:47:15Z**
+
+Done in lib/reader/epub/{dom,css,places,prepare,layout,paint}.dart. Deviations from the ticket text: (1) EpubPlace replaced the trial's DomPosition everywhere, so places.dart already has tc-sqp7's signatures for cfiOf, placeOf, wordStart, quoteAt and progressAt. (2) No RuleItem: the trial draws a rule as an empty bordered block, so a rule is a BlockStart followed at once by its BlockEnd. (3) RunStyle has no vertical align: prepare turns it into RaisedRun.shift in pixels. RunStyle.family is the one resolved family, as tc-nh0b expects. (4) Lengths that depend on a paragraph's own width (text-indent, inline image sizes) stay as Length or ImageSizing and resolve in layout, because a shrink-to-fit box gets its width only from measured paragraphs. Equivalence: all 317 sections of the 10 trial books at 20 and 23 px gave identical pages, slices, places, pieces and decorations to the HEAD trial code; the corpus support and CFI round-trip results equal the trial's results byte for byte.
