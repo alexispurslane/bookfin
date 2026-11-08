@@ -355,4 +355,33 @@ void main() {
       expect(rebuilt, isNot(contains('CoverBlur')));
     },
   );
+
+  testWidgets(
+    'a new cover store with the same playing book redraws no glass pane',
+    (tester) async {
+      const child = SizedBox(
+        width: 120,
+        height: 60,
+        child: CoverGlass(child: SizedBox.shrink()),
+      );
+      Widget scoped(Covers covers) => MaterialApp(
+        home: CoverScope(
+          covers: covers,
+          session: session,
+          playing: graft,
+          child: child,
+        ),
+      );
+      await tester.pumpWidget(scoped(_FixedCovers()));
+      final rebuilt = <String>[];
+      debugOnRebuildDirtyWidget = (element, _) =>
+          rebuilt.add(element.widget.runtimeType.toString());
+      try {
+        await tester.pumpWidget(scoped(_FixedCovers()));
+      } finally {
+        debugOnRebuildDirtyWidget = null;
+      }
+      expect(rebuilt, isNot(contains('CoverGlass')));
+    },
+  );
 }

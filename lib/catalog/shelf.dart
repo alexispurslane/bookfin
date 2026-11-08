@@ -268,8 +268,7 @@ class CatalogLibrary {
   ) => _shelves[filter] ?? _shelf(books, filter, downloaded);
 
   /// The series of the full shelf whose name is [name], or null.
-  ShelfSeries? series(String name) =>
-      _seriesOfBook.values.where((series) => series.name == name).firstOrNull;
+  ShelfSeries? series(String name) => _seriesByName[name];
 
   /// The series entry of the full shelf that holds [book], or null when the
   /// book is not in a series of two or more books of this library.
