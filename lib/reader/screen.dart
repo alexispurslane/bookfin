@@ -5,10 +5,12 @@ import 'package:flutter_epub_viewer/flutter_epub_viewer.dart';
 
 import '../catalog/glass.dart' show PageBook, confirmAction, showGlassSheet;
 import '../foundation/listenable_selector.dart';
+import '../foundation/scrub_bar.dart';
 import '../foundation/time.dart';
 import '../playback/playback.dart';
 import '../playback/records_screen.dart' show showBookmarkEditor;
 import '../playback/screen.dart';
+import 'book_map.dart';
 import 'session.dart';
 import 'document.dart';
 import 'pdf.dart';
@@ -139,17 +141,6 @@ class _ReaderScreenState extends State<ReaderScreen> {
     )) {
       await reader.deleteBookmark(bookmark.id);
     }
-  }
-
-  /// The visible page, such as "Page 2 of 8".
-  String get _pageLabel {
-    final page = reader.visibleAddress?.page;
-    final pages = reader.visibleAddress?.pages;
-    return page == null
-        ? 'Page progress unavailable'
-        : pages == null
-        ? 'Page $page'
-        : 'Page $page of $pages';
   }
 
   /// An icon button that is on while [enabled] is true. It rebuilds only
@@ -345,53 +336,23 @@ class _ReaderScreenState extends State<ReaderScreen> {
                             onReflowChanged: reader.setReflow,
                           ),
                         ),
-                        ListenableBuilder(
-                          listenable: reader.placeChanges,
-                          builder: (_, _) {
-                            final page = reader.visibleAddress?.page;
-                            final pages = reader.visibleAddress?.pages;
-                            if (page == null || pages == null) {
-                              return const SizedBox.shrink();
-                            }
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                              ),
-                              child: LinearProgressIndicator(
-                                value: page / pages,
-                                semanticsLabel:
-                                    'Current document page progress. $_pageLabel',
-                              ),
-                            );
-                          },
-                        ),
-                        Row(
-                          children: [
-                            _button(
-                              changes: reader.documentChanges,
-                              enabled: () => reader.ready,
-                              tooltip: 'Previous page',
-                              icon: Icons.chevron_left_rounded,
-                              onPressed: () => unawaited(reader.move(false)),
-                            ),
-                            Expanded(
-                              child: ListenableBuilder(
-                                listenable: reader.placeChanges,
-                                builder: (context, _) => Text(
-                                  '${reader.visibleAddress?.chapter ?? 'Current chapter unavailable'} · $_pageLabel',
-                                  textAlign: TextAlign.center,
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                ),
-                              ),
-                            ),
-                            _button(
-                              changes: reader.documentChanges,
-                              enabled: () => reader.ready,
-                              tooltip: 'Next page',
-                              icon: Icons.chevron_right_rounded,
-                              onPressed: () => unawaited(reader.move(true)),
-                            ),
-                          ],
+                        ReaderScrubBar(
+                          reader: reader,
+                          previous: _button(
+                            changes: reader.documentChanges,
+                            enabled: () => reader.ready,
+                            tooltip: 'Previous page',
+                            icon: Icons.chevron_left_rounded,
+                            onPressed: () => unawaited(reader.move(false)),
+                          ),
+                          next: _button(
+                            changes: reader.documentChanges,
+                            enabled: () => reader.ready,
+                            tooltip: 'Next page',
+                            icon: Icons.chevron_right_rounded,
+                            onPressed: () => unawaited(reader.move(true)),
+                          ),
+                          onScrubEnd: reader.goTo,
                         ),
                         if (widget.playback != null)
                           PlaybackMiniPlayer(playback: widget.playback!),
@@ -768,5 +729,117 @@ class ReaderBookmarksPanel extends StatelessWidget {
         ],
       ),
     ),
+  );
+}
+
+/// The reader's scrub bar over the whole open book, with the place label
+/// and the [previous] and [next] page buttons under it. The bar marks each
+/// chapter start and each reading bookmark. While the person drags, the
+/// label names the dragged place instead of the visible place, and the book
+/// stays where it is until the drag ends.
+///
+/// The bar shows once the reader has a map of the book and a visible place.
+/// Until then only the label and the buttons show.
+class ReaderScrubBar extends StatelessWidget {
+  const ReaderScrubBar({
+    super.key,
+    required this.reader,
+    required this.previous,
+    required this.next,
+    required this.onScrubEnd,
+    this.onScrubStart,
+    this.onScrubTarget,
+  });
+
+  /// The reading session whose place, bookmarks and book map the bar shows.
+  final ReaderSession reader;
+
+  /// The button before the label, which turns to the previous page.
+  final Widget previous;
+
+  /// The button after the label, which turns to the next page.
+  final Widget next;
+
+  /// Reports that a drag started, at the place in the book where it started.
+  final ValueChanged<BookTarget>? onScrubStart;
+
+  /// Reports each place in the book that a drag passes, before it ends.
+  final ValueChanged<BookTarget>? onScrubTarget;
+
+  /// Reports the place in the book where a drag ended. The bar shows that
+  /// place until the returned future completes.
+  final Future<void> Function(BookTarget target) onScrubEnd;
+
+  /// The visible page, such as "Page 2 of 8".
+  static String _pageLabel(ReaderAddress? place) {
+    final page = place?.page;
+    final pages = place?.pages;
+    return page == null
+        ? 'Page progress unavailable'
+        : pages == null
+        ? 'Page $page'
+        : 'Page $page of $pages';
+  }
+
+  /// The dragged place, such as "Chapter 4 · 37%" in an EPUB or "Page 12 of
+  /// 40" in a PDF.
+  static String _targetLabel(BookMap map, BookTarget target) {
+    final pages = map.pages;
+    final place = pages != null
+        ? 'Page ${target.part + 1} of $pages'
+        : '${(target.fraction * 100).round()}%';
+    return target.chapter == null ? place : '${target.chapter} · $place';
+  }
+
+  @override
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: Listenable.merge([
+      reader.placeChanges,
+      reader.bookmarkChanges,
+      reader.bookMapChanges,
+    ]),
+    builder: (context, _) {
+      final place = reader.visibleAddress;
+      final map = reader.bookMap;
+      final at = place == null ? null : map?.fractionOf(place);
+      final visible =
+          '${place?.chapter ?? 'Current chapter unavailable'} · ${_pageLabel(place)}';
+      Widget label(String text) => Row(
+        children: [
+          previous,
+          Expanded(
+            child: Text(
+              text,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ),
+          next,
+        ],
+      );
+      if (map == null || at == null) return label(visible);
+      final onStart = onScrubStart;
+      final onTarget = onScrubTarget;
+      return ScrubBar(
+        value: at,
+        chapters: [for (final chapter in map.chapters) chapter.start],
+        bookmarks: [
+          for (final bookmark in reader.bookmarks)
+            if (reader.addressOf(bookmark) case final address?)
+              ?map.fractionOf(address),
+        ],
+        describe: (fraction) => _targetLabel(map, map.targetAt(fraction)),
+        onStart: onStart == null
+            ? null
+            : (fraction) => onStart(map.targetAt(fraction)),
+        onTarget: onTarget == null
+            ? null
+            : (fraction) => onTarget(map.targetAt(fraction)),
+        onEnd: (fraction) => onScrubEnd(map.targetAt(fraction)),
+        below: (context, target) => label(
+          target == null ? visible : _targetLabel(map, map.targetAt(target)),
+        ),
+      );
+    },
   );
 }

@@ -294,4 +294,6 @@ class DeferredSearch implements NavigatorPort {
   Future<void> display(ReadingLocation location) async {}
   @override
   Future<void> move(bool forward) async {}
+  @override
+  Future<void> seek(int section, double progress) async {}
 }

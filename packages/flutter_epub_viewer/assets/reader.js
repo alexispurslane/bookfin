@@ -30,6 +30,7 @@ var bookfinReader = (() => {
     resolveDestination: () => resolveDestination,
     search: () => search,
     searchBook: () => searchBook,
+    seek: () => seek,
     verifyLocation: () => verifyLocation,
     visibleLocation: () => visibleLocation
   });
@@ -47,6 +48,40 @@ var bookfinReader = (() => {
     after.selectNodeContents(body);
     after.setStart(range.startContainer, range.startOffset);
     return after.toString().slice(0, 120);
+  }
+  var visibleLength = (text) => text.replace(/\s/g, "").length;
+  function progressAt(range) {
+    const document2 = range.startContainer.ownerDocument;
+    const body = document2.body || document2.getElementsByTagName("body")[0];
+    if (!body || !body.contains(range.startContainer)) return 0;
+    const total = visibleLength(body.textContent);
+    if (!total) return 0;
+    const before = range.cloneRange();
+    before.selectNodeContents(body);
+    before.setEnd(range.startContainer, range.startOffset);
+    return Math.round(visibleLength(before.toString()) / total * 1e6) / 1e6;
+  }
+  function placeAt(section, progress) {
+    const document2 = section.document;
+    const body = document2.body || document2.getElementsByTagName("body")[0];
+    const total = body ? visibleLength(body.textContent) : 0;
+    if (!total) return section.href;
+    let wanted = Math.min(total - 1, Math.floor(progress * total));
+    const walker = document2.createTreeWalker(body, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_CDATA_SECTION);
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      const count = visibleLength(node.data);
+      if (wanted >= count) {
+        wanted -= count;
+        continue;
+      }
+      let offset = 0;
+      for (; offset < node.data.length; offset++) if (!/\s/.test(node.data[offset]) && wanted-- === 0) break;
+      const range = document2.createRange();
+      range.setStart(node, offset);
+      range.collapse(true);
+      return section.cfiFromRange(range);
+    }
+    return section.href;
   }
   async function visibleLocation(book2, cfi, resource, displayed) {
     const collapsed = new window.ePub.CFI(cfi);
@@ -71,7 +106,8 @@ var bookfinReader = (() => {
       }
     }
     const pages = displayed && Number.isInteger(displayed.page) && Number.isInteger(displayed.total) && displayed.page > 0 && displayed.total >= displayed.page ? { page: displayed.page, pages: displayed.total } : {};
-    return { cfi: start, resource, quote: quoteAt(range), chapter: chapter.slice(0, 512), ...pages };
+    const progress = displayed ? { progress: progressAt(range) } : {};
+    return { cfi: start, resource, quote: quoteAt(range), chapter: chapter.slice(0, 512), ...pages, ...progress };
   }
   async function verifyLocation(book2, location) {
     const resolved = await visibleLocation(book2, location.cfi, location.resource);
@@ -243,6 +279,14 @@ var bookfinReader = (() => {
     return withNavigation(async () => {
       const verified = await verifyLocation(book, location);
       await rendition.display(verified.cfi);
+    });
+  }
+  function seek(index, progress) {
+    return withNavigation(async () => {
+      const section = Number.isInteger(index) && book.spine.get(index);
+      if (!section || typeof progress !== "number" || !(progress >= 0 && progress <= 1)) throw Error("The destination is not in this book");
+      await section.load(book.load.bind(book));
+      await rendition.display(placeAt(section, progress));
     });
   }
   function go(href) {

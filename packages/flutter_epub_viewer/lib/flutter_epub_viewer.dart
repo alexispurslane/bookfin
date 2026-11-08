@@ -366,6 +366,11 @@ class _NativeNavigator implements NavigatorPort {
   }
 
   @override
+  Future<void> seek(int section, double progress) async {
+    await _call('seek', [section, progress]);
+  }
+
+  @override
   Future<void> configure({
     required double fontSize,
     required bool night,

@@ -9,6 +9,7 @@ import '../catalog/jellyfin.dart';
 import '../catalog/model.dart';
 import '../downloads/downloads.dart';
 import '../playback/playback.dart';
+import 'book_map.dart';
 import 'document.dart';
 import 'pdf.dart';
 
@@ -146,6 +147,7 @@ class ReaderSession extends ChangeNotifier {
       _fontSizeChanges = _Signal(() => _fontSize),
       _saveStatusChanges = _Signal(() => saveFailed),
       _reflowChanges = _Signal(() => _reflow),
+      _bookMapChanges = _Signal(() => _bookMap),
     ];
   }
   final Downloads downloads;
@@ -245,7 +247,26 @@ class ReaderSession extends ChangeNotifier {
   late final _Signal _searchChanges;
   late final _Signal _fontSizeChanges;
   late final _Signal _saveStatusChanges;
+  late final _Signal _bookMapChanges;
   late final List<_Signal> _signals;
+
+  BookMap? _bookMap;
+
+  /// Whether the open book is being measured for [bookMap].
+  bool _mapping = false;
+
+  /// Where places sit along the whole open book, for the scrub bar. It is
+  /// null while no book is open and until the viewport lists the book's
+  /// contents.
+  BookMap? get bookMap => _bookMap;
+
+  /// Notifies when [bookMap] changes.
+  Listenable get bookMapChanges => _bookMapChanges;
+
+  /// The place of [bookmark] in the open book, or null when the bookmark
+  /// belongs to other content.
+  ReaderAddress? addressOf(TextBookmark bookmark) =>
+      _compatible(bookmark.position);
 
   bool get ready => document != null && _navigator != null;
   bool get canBookmark => _recordsReady && position != null;
@@ -371,6 +392,8 @@ class ReaderSession extends ChangeNotifier {
     _searching = false;
     _hits = const [];
     _contents = const [];
+    _bookMap = null;
+    _mapping = false;
     _searchError = null;
     _message = null;
   }
@@ -499,6 +522,24 @@ class ReaderSession extends ChangeNotifier {
     if (!_live(eventToken) || document == null) return;
     _navigator = navigator;
     _contents = List.unmodifiable(entries);
+    if (_bookMap == null && !_mapping) {
+      unawaited(_mapBook(eventToken, document!, _contents));
+    }
+    _emit();
+  }
+
+  /// Measures the open [document] for [bookMap], once for each open book. A
+  /// PDF lists its contents again on each page, and its map does not change.
+  Future<void> _mapBook(
+    int eventToken,
+    ReaderDocument document,
+    List<ContentsEntry> contents,
+  ) async {
+    _mapping = true;
+    final map = await BookMap.of(document, contents);
+    if (!_live(eventToken)) return;
+    _mapping = false;
+    _bookMap = map;
     _emit();
   }
 
@@ -619,6 +660,17 @@ class ReaderSession extends ChangeNotifier {
   Future<void> move(bool forward) async {
     final navigator = _navigator;
     if (navigator != null) await _navigate(() => navigator.move(forward));
+  }
+
+  /// Shows [target], a place that the scrub bar chose in the open book. The
+  /// viewport then reports the page that it shows, which becomes the visible
+  /// place and is saved like a page turn. If the viewport cannot show it,
+  /// the place stays and [message] says so.
+  Future<void> goTo(BookTarget target) async {
+    final navigator = _navigator;
+    if (navigator != null) {
+      await _navigate(() => navigator.seek(target.part, target.progress));
+    }
   }
 
   Future<void> goToContents(String href) async {
@@ -779,6 +831,7 @@ class ReaderSession extends ChangeNotifier {
                 _bookmarks.isNotEmpty ||
                 _resumes.isNotEmpty)) ||
         (document != null && (edition == null || !_current(edition!))) ||
+        (_bookMap != null && document == null) ||
         (position != null && _compatible(position!) == null) ||
         ((_visibleAddress == null) != (position == null)) ||
         (_visibleAddress != null &&

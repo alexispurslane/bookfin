@@ -256,6 +256,10 @@ class _PdfViewportState extends State<PdfViewport>
   }
 
   @override
+  Future<void> seek(int part, double progress) =>
+      display(PdfAddress(part + 1, 0));
+
+  @override
   Future<void> configure({
     required double fontSize,
     required bool night,

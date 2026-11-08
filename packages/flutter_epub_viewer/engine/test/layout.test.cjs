@@ -444,3 +444,36 @@ for (const navigation of ['contents', 'bookmark']) {
     } finally { await page.close(); await source.close(); }
   });
 }
+
+// The share of the section's visible characters, white space left out, that
+// come before the first character of [text]. It reads the shown document, so
+// it does not use the reader's own measure.
+function shareBefore(text) {
+  return `(()=>{const doc=document.querySelector('iframe').contentDocument;const letters=doc.body.textContent.replace(/\\s/g,'');
+    return letters.indexOf(${JSON.stringify(text)}.replace(/\\s/g,''))/letters.length})()`;
+}
+
+test('a reported place carries its text progress through its section', { timeout: 30000 }, async () => {
+  await withReader(async page => {
+    const expected = await page.evaluate(shareBefore('Harbour passage 5.'));
+    assert.ok(expected > 0.2 && expected < 0.8, 'passage 5 sits inside the section: ' + expected);
+    assert.ok(Math.abs((await page.evaluate('saved.at(-1).progress')) - expected) < 1e-5);
+    await page.evaluate('bookfinReader.move(true)');
+    assert.ok((await page.evaluate('saved.at(-1).progress')) > expected, 'Next moves the progress on');
+  });
+});
+
+test('seeking to a text progress shows the page that holds it', { timeout: 30000 }, async () => {
+  await withReader(async page => {
+    const passage = await page.evaluate(shareBefore('Harbour passage 5.'));
+    await page.evaluate('bookfinReader.move(true)');
+    await page.evaluate(`bookfinReader.seek(0, ${passage})`);
+    assertPassageFive(await visiblePassage(page));
+    await page.evaluate('bookfinReader.seek(0, 0)');
+    assert.equal(await page.evaluate('saved.at(-1).page'), 1);
+    assert.equal(await page.evaluate('saved.at(-1).progress'), 0);
+    await page.evaluate('bookfinReader.seek(0, 1)');
+    assert.equal(await page.evaluate('saved.at(-1).page'), 5, 'The end of a section is its last page');
+    await assert.rejects(page.evaluate('bookfinReader.seek(4, 0)'));
+  });
+});
