@@ -1,7 +1,7 @@
 ---
 id: tf-gnuk
 status: open
-deps: []
+deps: [boo-ju83]
 links: []
 created: 2026-11-08T16:27:49Z
 type: feature
