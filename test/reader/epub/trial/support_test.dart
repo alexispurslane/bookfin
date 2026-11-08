@@ -61,10 +61,25 @@ void main() {
     expect(report.supportedSections, 1);
   });
 
-  test('a table of rows is a feature that the renderer does not support', () {
-    final report = check('<table><tr><td>A</td><td>B</td></tr></table>');
-    expect(report.unsupported.keys, contains('tables'));
-    expect(report.supportedSections, 0);
+  test('a table of rows passes, and a rowspan is an approximation', () {
+    final report = check(
+      '<table><tr><td rowspan="2">A</td><td>B</td></tr>'
+      '<tr><td>C</td></tr></table>',
+    );
+    expect(report.supported, isTrue);
+    expect(report.approximated.keys, contains('rowspan counted as 1'));
+  });
+
+  test('a flex row and a grid are drawn as blocks', () {
+    final report = check(
+      '<div class="row"><p>A</p></div><div class="grid"><p>B</p></div>',
+      css: '.row{display:flex}.grid{display:grid}',
+    );
+    expect(report.supported, isTrue);
+    expect(
+      report.approximated.keys,
+      containsAll(['a flex row drawn as blocks', 'a grid drawn as blocks']),
+    );
   });
 
   test('vertical writing is a feature that the renderer does not support', () {

@@ -3,9 +3,10 @@
 // there.
 //
 // The section flows down one strip as wide as the page, as a scrolled
-// document would. Each line, image and rule is a slice of the strip. A page
-// is a window [top, bottom) of the strip that holds whole slices, so a
-// paragraph splits across pages between its lines. The breaks follow CSS
+// document would. Each line, image, rule and table row is a slice of the
+// strip. A page is a window [top, bottom) of the strip that holds whole
+// slices, so a paragraph splits across pages between its lines, and a table
+// between its rows. The breaks follow CSS
 // fragmentation as Chromium applies it to the WebView reader's columns:
 // margins at a break are dropped, `break-before: page` is ignored as the
 // columns ignore it, and a break picks the latest place with the best
@@ -25,6 +26,7 @@ import 'css.dart';
 import 'dom.dart';
 import 'fonts.dart';
 import 'prepare.dart';
+import 'table.dart';
 
 /// The page colors of [PageSettings].
 extension PageColors on PageSettings {
@@ -70,8 +72,8 @@ class PageStart implements Comparable<PageStart> {
   String toString() => 'PageStart($item, $line)';
 }
 
-/// A slice of the strip that a page holds whole: a line, an image or a
-/// rule.
+/// A slice of the strip that a page holds whole: a line, an image, a rule
+/// or a table row.
 class Slice {
   Slice(
     this.top,
@@ -82,6 +84,7 @@ class Slice {
     this.line = -1,
     this.start,
     this.units = (0, 0),
+    this.rowPieces = const [],
   });
   final double top;
   final double bottom;
@@ -92,7 +95,8 @@ class Slice {
   /// The start of a page that begins with this slice.
   final PageStart at;
 
-  /// The paragraph that holds this line, or null for an image or a rule.
+  /// The paragraph that holds this line, or null for an image, a rule or a
+  /// table row.
   final Piece? piece;
 
   /// The line's index in [piece].
@@ -104,6 +108,10 @@ class Slice {
 
   /// The code units of [piece]'s text that the line shows, [start, end).
   final (int, int) units;
+
+  /// The paragraphs in the cells of a table row, which the slice shows
+  /// whole, in document order. Empty for any other slice.
+  final List<Piece> rowPieces;
 }
 
 /// One laid-out paragraph: a Flutter paragraph at a place on the strip,
@@ -230,15 +238,19 @@ class LaidPage {
   late final EpubPlace? endPlace = () {
     final dom = _section.dom;
     for (final slice in slices.reversed) {
-      final piece = slice.piece;
-      if (piece == null) continue;
-      for (var unit = slice.units.$2 - 1; unit >= slice.units.$1; unit--) {
-        final place = piece.map.textPlaceAt(unit);
-        if (place == null) continue;
-        final text = dom.textAt(place)!.text;
-        if (place.offset < text.length &&
-            !isSpace(text.codeUnitAt(place.offset))) {
-          return place;
+      final shown = [
+        if (slice.piece case final piece?) (piece, slice.units),
+        for (final piece in slice.rowPieces) (piece, (0, piece.map.length)),
+      ];
+      for (final (piece, (start, end)) in shown.reversed) {
+        for (var unit = end - 1; unit >= start; unit--) {
+          final place = piece.map.textPlaceAt(unit);
+          if (place == null) continue;
+          final text = dom.textAt(place)!.text;
+          if (place.offset < text.length &&
+              !isSpace(text.codeUnitAt(place.offset))) {
+            return place;
+          }
         }
       }
     }
@@ -264,8 +276,8 @@ class LaidPage {
         _section.dom.visibleBefore(start),
   ];
 
-  /// The paragraphs of the page's lines. Throws a [StateError] once the
-  /// page is disposed.
+  /// The paragraphs of the page's lines and table rows. Throws a
+  /// [StateError] once the page is disposed.
   Iterable<Piece> get pieces {
     if (_disposed) throw StateError('The page is disposed.');
     return _lines;
@@ -279,6 +291,7 @@ class LaidPage {
         yield piece;
         previous = piece;
       }
+      yield* slice.rowPieces;
     }
   }
 
@@ -325,7 +338,9 @@ class LayoutRun {
     PageStart? from,
     Duration Function()? clock,
   }) : _section = section,
+       _flow = section.flow,
        _clock = clock ?? _elapsed,
+       _root = (0, section.settings.width),
        _textStyles = [
          for (final style in section.styles)
            _textStyle(style, section.settings.ink),
@@ -338,11 +353,32 @@ class LayoutRun {
     _resume(start);
   }
 
+  /// A run that lays out the flow of a table cell, [flow], in a column
+  /// that starts at [left] and is [width] pixels wide, from strip position
+  /// 0. It never cuts a page: [_layOutCell] takes its slices.
+  LayoutRun._cell(
+    LayoutRun outer,
+    List<FlowItem> flow,
+    double left,
+    double width,
+  ) : _section = outer._section,
+      _flow = flow,
+      _clock = outer._clock,
+      _root = (left, width),
+      _textStyles = outer._textStyles;
+
   static final _watch = Stopwatch()..start();
   static Duration _elapsed() => _watch.elapsed;
 
   final PreparedSection _section;
+
+  /// The flow items that the run lays out: the section's, or a cell's.
+  final List<FlowItem> _flow;
   final Duration Function() _clock;
+
+  /// The left edge and the width of the block that holds the flow's
+  /// outermost boxes: the page, or a cell's column.
+  final (double, double) _root;
   final List<ui.TextStyle> _textStyles;
 
   final _pages = <LaidPage>[];
@@ -425,6 +461,9 @@ class LayoutRun {
         if (slice.piece case final piece?) {
           check(held.contains(piece), 'a pending line is not held');
         }
+        for (final piece in slice.rowPieces) {
+          check(held.contains(piece), 'a pending table row is not held');
+        }
       }
       for (final decoration in _decorations) {
         if (decoration is MarkerDecoration) {
@@ -449,7 +488,7 @@ class LayoutRun {
       check(_pending.first.at == _pageStart, 'the next page has no start');
     }
     if (_done) {
-      check(_item == _section.flow.length, 'a done run has items left');
+      check(_item == _flow.length, 'a done run has items left');
       check(_pending.isEmpty, 'a done run has slices left');
     }
   }
@@ -472,15 +511,20 @@ class LayoutRun {
   /// Sets the run up to start at [start]: rebuilds the blocks open there
   /// and the list marker that waits for its line.
   void _resume(PageStart start) {
-    final flow = _section.flow;
+    final flow = _flow;
     final open = <int>[];
     int? marker;
+    // The blocks that held the marker's block when it opened.
+    var markerParents = const <int>[];
     var sliceBefore = false;
     for (var index = 0; index < start.item; index++) {
       switch (flow[index]) {
         case final BlockStart block:
+          if (block.marker != null) {
+            marker = index;
+            markerParents = List.of(open);
+          }
           open.add(index);
-          if (block.marker != null) marker = index;
           if (index + 1 < flow.length &&
               flow[index + 1] is BlockEnd &&
               block.padding[0] +
@@ -492,7 +536,7 @@ class LayoutRun {
           }
         case BlockEnd():
           open.removeLast();
-        case ParagraphItem() || ImageItem():
+        case ParagraphItem() || ImageItem() || TableItem():
           sliceBefore = true;
           marker = null;
       }
@@ -503,9 +547,22 @@ class LayoutRun {
     _item = start.item;
     _firstLine = start.line;
     _dropMargins = true;
+    // Each block is placed in the content box of the block that holds it.
+    final placed = <int, (double, double)>{};
+    (double, double) contentBox(List<int> chain) {
+      var box = _root;
+      for (final index in chain) {
+        final block = flow[index] as BlockStart;
+        final (left, width) = placed[index] ??= _placeBlock(block, index, box);
+        box = (left + block.border[3] + block.padding[3], width);
+      }
+      return box;
+    }
+
+    contentBox(open);
     for (final index in open) {
       final block = flow[index] as BlockStart;
-      final (left, contentWidth) = _placeBlock(block, index);
+      final (left, contentWidth) = placed[index]!;
       final top = block.padding[0] + block.border[0];
       // The box's top edge is above the page. Its borders are clipped
       // there, so its exact place does not matter.
@@ -517,26 +574,37 @@ class LayoutRun {
     // run from the section start already drew it.
     if (marker != null && start.line == 0) {
       final block = flow[marker] as BlockStart;
-      final (left, _) = _placeBlock(block, marker);
-      _marker(
-        block.marker!.text,
-        block.marker!.style,
-        left + block.border[3] + block.padding[3],
-      );
+      final (left, _) = contentBox([...markerParents, marker]);
+      _marker(block.marker!.text, block.marker!.style, left);
     }
   }
 
-  (double, double) _placeBlock(BlockStart start, int item) {
+  /// The left edge and the width of the block that holds the next box.
+  (double, double) get _containing =>
+      _open.isEmpty ? _root : (_open.last.contentLeft, _open.last.contentWidth);
+
+  /// The left edge of the border box and the content width of [start],
+  /// flow item [item], in the content box [containing].
+  (double, double) _placeBlock(
+    BlockStart start,
+    int item,
+    (double, double) containing,
+  ) {
     final placement = start.placement;
+    final (x, width) = containing;
     return placement.place(
-      start.shrinkToFit ? _maxContent(item + 1, placement.available) : null,
+      x,
+      width,
+      start.shrinkToFit
+          ? _maxContent(item + 1, placement.available(width))
+          : null,
     );
   }
 
   // Cutting pages.
 
   void _layOutItem() {
-    final flow = _section.flow;
+    final flow = _flow;
     if (_item == flow.length) return;
     final index = _item++;
     final line = _firstLine;
@@ -547,17 +615,19 @@ class LayoutRun {
       case BlockEnd():
         _closeBlock(index);
       case final ParagraphItem paragraph:
-        final block = _open.last;
-        _inline(paragraph, index, block.contentLeft, block.contentWidth, line);
+        final (x, width) = _containing;
+        _inline(paragraph, index, x, width, line);
       case final ImageItem image:
         _blockImage(image, index);
+      case final TableItem table:
+        _table(table, index, line);
     }
   }
 
   /// Publishes every page that the slices laid out so far decide.
   void _cut() {
     const epsilon = 0.01;
-    final atEnd = _item == _section.flow.length;
+    final atEnd = _item == _flow.length;
     while (!_done) {
       final count = _pending.length;
       final limit = _pageTop + _section.settings.height + epsilon;
@@ -650,7 +720,7 @@ class LayoutRun {
   /// Lets go of the pieces that no page after the published ones can show.
   void _releaseUnreachable() {
     final reachable = <Piece>{
-      for (final slice in _pending) ?slice.piece,
+      for (final slice in _pending) ...[?slice.piece, ...slice.rowPieces],
       for (final decoration in _decorations)
         if (decoration is MarkerDecoration) decoration.piece,
     };
@@ -665,7 +735,7 @@ class LayoutRun {
   /// that shows no place: those before the first place at or after the
   /// run's start.
   int _visibleAtStart() {
-    final flow = _section.flow;
+    final flow = _flow;
     for (var index = _from.item; index < flow.length; index++) {
       if (_firstPlace(_section.index, flow[index]) case final place?) {
         return _section.dom.visibleBefore(place);
@@ -696,6 +766,7 @@ class LayoutRun {
     int line = -1,
     EpubPlace? start,
     (int, int) units = (0, 0),
+    List<Piece> rowPieces = const [],
   }) {
     var finalAppeal = appeal;
     if (_avoidNext) {
@@ -722,6 +793,7 @@ class LayoutRun {
       line: line,
       start: start,
       units: units,
+      rowPieces: rowPieces,
     );
     _pending.add(slice);
     _added++;
@@ -729,7 +801,7 @@ class LayoutRun {
   }
 
   void _openBlock(BlockStart start, int item) {
-    final (left, contentWidth) = _placeBlock(start, item);
+    final (left, contentWidth) = _placeBlock(start, item, _containing);
     _margin(start.marginTop);
     final top = start.padding[0] + start.border[0];
     double? boxTop;
@@ -776,14 +848,25 @@ class LayoutRun {
     double top,
     double bottom, {
     required bool closed,
-  }) {
-    final border = block.start.border;
-    final rect = ui.Rect.fromLTRB(
+  }) => _rules(
+    ui.Rect.fromLTRB(
       block.left,
       top,
       block.left + block.contentWidth + block.start.placement.horizontal,
       bottom,
-    );
+    ),
+    block.start.border,
+    closed: closed,
+  );
+
+  /// The rules of a border box [rect] whose borders are [border] pixels
+  /// wide, from top to left. Without [closed], the box has no bottom
+  /// border.
+  static List<RuleDecoration> _rules(
+    ui.Rect rect,
+    List<double> border, {
+    bool closed = true,
+  }) {
     return [
       if (border[0] > 0)
         RuleDecoration(
@@ -828,9 +911,13 @@ class LayoutRun {
   }
 
   /// The width of the widest line of the paragraphs from flow item [from]
-  /// on, laid out [available] pixels wide, rounded up.
+  /// on, laid out [available] pixels wide, rounded up. For a table, the
+  /// table's widest content width.
   double _maxContent(int from, double available) {
-    final flow = _section.flow;
+    final flow = _flow;
+    if (flow[from] case final TableItem table) {
+      return gridMaxContent(_extents(table)).ceilToDouble();
+    }
     var widest = 0.0;
     for (var index = from; flow[index] is ParagraphItem; index++) {
       final built = _build((flow[index] as ParagraphItem).text, 0, available);
@@ -844,22 +931,210 @@ class LayoutRun {
   }
 
   void _blockImage(ImageItem image, int item) {
+    final (x, width) = _containing;
+    final (imageWidth, imageHeight) = image.sizing.sizeIn(width);
+    final left = image.centered
+        ? x + (width - imageWidth) / 2
+        : x + image.marginLeft;
     _margin(image.marginTop);
     _resolveMargin();
-    final rect = ui.Rect.fromLTWH(image.left, _y, image.width, image.height);
+    final rect = ui.Rect.fromLTWH(left, _y, imageWidth, imageHeight);
     if (image.path case final path?) {
       _decorations.add(ImageDecoration(rect, path));
     }
     final slice = _add(
       _y,
-      _y + image.height,
+      _y + imageHeight,
       Appeal.perfect,
       PageStart(item, 0),
       start: EpubPlace(_section.index, image.node, 0),
     );
     _takeMarker(slice);
-    _y += image.height;
+    _y += imageHeight;
     _margin(image.marginBottom);
+  }
+
+  // Tables.
+
+  /// Lays out [table], flow item [index], in the content box of the table's
+  /// own box, and adds its rows from row [from] on as strip slices. A run
+  /// that starts at a row lays out the whole table and places it so that
+  /// row [from] sits at the current strip position.
+  void _table(TableItem table, int index, int from) {
+    final (x, width) = _containing;
+    final widths = columnWidths(_extents(table), width);
+    // Each cell's box, its content laid out at strip position 0, and the
+    // height of its box.
+    final rows = <List<(ui.Rect, TableCell, _Cell, double)>>[];
+    for (final row in table.rows) {
+      final boxes = cellBoxes([for (final cell in row) cell.colspan], widths);
+      rows.add([
+        for (final (column, cell) in row.indexed)
+          () {
+            final (left, cellWidth) = boxes[column];
+            final [top, right, bottom, start] = [
+              for (var side = 0; side < 4; side++)
+                cell.padding[side] + cell.border[side],
+            ];
+            final content = _layOutCell(
+              cell.flow,
+              x + left + start,
+              math.max(0, cellWidth - start - right),
+            );
+            return (
+              ui.Rect.fromLTWH(x + left, 0, cellWidth, 0),
+              cell,
+              content,
+              top + content.height + bottom,
+            );
+          }(),
+      ]);
+    }
+    final heights = [
+      for (final row in rows)
+        row.fold(0.0, (tallest, cell) => math.max(tallest, cell.$4)),
+    ];
+    final tops = <double>[];
+    var bottom = cellSpacing;
+    for (final height in heights) {
+      tops.add(bottom);
+      bottom += height + cellSpacing;
+    }
+    _resolveMargin();
+    // Row [from] starts where the run is. From the table's start, the grid
+    // does.
+    final gridTop = from == 0
+        ? _y
+        : _y - (from < tops.length ? tops[from] : bottom);
+    for (var row = 0; row < rows.length; row++) {
+      if (row < from) {
+        for (final (_, _, content, _) in rows[row]) {
+          content.release();
+        }
+        continue;
+      }
+      final top = gridTop + tops[row];
+      final height = heights[row];
+      final pieces = <Piece>[];
+      EpubPlace? start;
+      for (final (box, cell, content, boxHeight) in rows[row]) {
+        // A cell's box is as tall as its row, and its content sits where
+        // its vertical-align asks.
+        final moved = content.moveTo(
+          top +
+              cell.padding[0] +
+              cell.border[0] +
+              (height - boxHeight) * cell.align,
+        );
+        pieces.addAll(moved.pieces);
+        _held.addAll([...moved.pieces, ...moved.markers]);
+        _decorations
+          ..addAll(
+            _rules(
+              ui.Rect.fromLTWH(box.left, top, box.width, height),
+              cell.border,
+            ),
+          )
+          ..addAll(moved.decorations);
+        start ??= moved.start;
+      }
+      final slice = _add(
+        top,
+        top + height,
+        Appeal.perfect,
+        PageStart(index, row),
+        start: start,
+        rowPieces: pieces,
+      );
+      if (row == 0) _takeMarker(slice);
+    }
+    _y = gridTop + bottom;
+  }
+
+  /// The narrowest and the widest content width of each cell of [table].
+  List<List<GridCell>> _extents(TableItem table) => [
+    for (final row in table.rows)
+      [for (final cell in row) _extent(cell, table.width)],
+  ];
+
+  /// The narrowest and the widest content width of [cell], whose lengths
+  /// resolve against [width]: those of its widest paragraph or image, with
+  /// the margins, padding and borders of the boxes around it.
+  GridCell _extent(TableCell cell, double width) {
+    var min = 0.0;
+    var max = 0.0;
+    var around =
+        cell.padding[1] + cell.padding[3] + cell.border[1] + cell.border[3];
+    final outer = <double>[];
+    for (final item in cell.flow) {
+      switch (item) {
+        case BlockStart(:final placement):
+          outer.add(around);
+          around +=
+              placement.marginLeft +
+              placement.marginRight +
+              placement.horizontal;
+        case BlockEnd():
+          around = outer.removeLast();
+        case ParagraphItem(:final text, :final indent):
+          final built = _build(text, math.max(0, indent.resolve(width)), width);
+          built.paragraph.layout(
+            const ui.ParagraphConstraints(width: double.infinity),
+          );
+          min = math.max(min, around + built.paragraph.minIntrinsicWidth);
+          max = math.max(max, around + built.paragraph.maxIntrinsicWidth);
+          built.dispose();
+        case ImageItem(:final sizing, :final marginLeft):
+          final (imageWidth, _) = sizing.sizeIn(width);
+          min = math.max(min, around + marginLeft + imageWidth);
+          max = math.max(max, around + marginLeft + imageWidth);
+        case TableItem():
+          // A table inside a cell is plain blocks.
+          break;
+      }
+    }
+    // Rounded up, so that a paragraph laid out at its widest width keeps
+    // its lines.
+    return (
+      span: cell.colspan,
+      min: min.ceilToDouble(),
+      max: max.ceilToDouble(),
+    );
+  }
+
+  /// Lays out [flow], the content of a table cell, in a content box that
+  /// starts at [left] and is [width] pixels wide, with its top at strip
+  /// position 0.
+  _Cell _layOutCell(List<FlowItem> flow, double left, double width) {
+    final run = LayoutRun._cell(this, flow, left, width);
+    while (run._item < flow.length) {
+      run._layOutItem();
+    }
+    // A cell holds the margins of its content.
+    run._resolveMargin();
+    run._pendingMarker?.$1.dispose();
+    final lines = <Piece>[];
+    for (final slice in run._pending) {
+      final piece = slice.piece;
+      if (piece != null && (lines.isEmpty || !identical(lines.last, piece))) {
+        lines.add(piece);
+      }
+    }
+    final markers = [
+      for (final decoration in run._decorations)
+        if (decoration is MarkerDecoration) decoration.piece,
+    ];
+    // A paragraph without lines shows nothing.
+    for (final piece in run._held) {
+      if (!lines.contains(piece) && !markers.contains(piece)) piece._release();
+    }
+    return _Cell(
+      lines,
+      markers,
+      run._decorations,
+      run._pending.map((slice) => slice.start).nonNulls.firstOrNull,
+      run._y,
+    );
   }
 
   void _takeMarker(Slice slice) {
@@ -1244,6 +1519,15 @@ EpubPlace? _firstPlace(int section, FlowItem item) {
         }
       }
       return null;
+    case TableItem(:final rows):
+      for (final row in rows) {
+        for (final cell in row) {
+          for (final inner in cell.flow) {
+            if (_firstPlace(section, inner) case final place?) return place;
+          }
+        }
+      }
+      return null;
     case BlockStart() || BlockEnd():
       return null;
   }
@@ -1430,6 +1714,54 @@ class _OpenBlock {
   final int firstSlice;
 
   double get contentLeft => left + start.border[3] + start.padding[3];
+}
+
+/// The content of a table cell laid out at strip position 0: its
+/// paragraphs, its list markers and other decorations, its first place and
+/// its height. It holds its pieces until [moveTo] or [release].
+class _Cell {
+  _Cell(this.pieces, this.markers, this.decorations, this.start, this.height);
+  final List<Piece> pieces;
+  final List<Piece> markers;
+  final List<Decoration> decorations;
+  final EpubPlace? start;
+  final double height;
+
+  /// The content with its top at strip position [top]. Its pieces move to
+  /// the result, which then holds them.
+  _Cell moveTo(double top) {
+    final moved = <Piece, Piece>{
+      for (final piece in [...pieces, ...markers])
+        piece: Piece(piece.paragraph, piece.x, piece.y + top, piece.map)
+          ..inlines.addAll(piece.inlines)
+          ..shown = piece.shown,
+    };
+    final offset = ui.Offset(0, top);
+    return _Cell(
+      [for (final piece in pieces) moved[piece]!],
+      [for (final piece in markers) moved[piece]!],
+      [
+        for (final decoration in decorations)
+          switch (decoration) {
+            RuleDecoration(:final rect) => RuleDecoration(rect.shift(offset)),
+            ImageDecoration(:final rect, :final path) => ImageDecoration(
+              rect.shift(offset),
+              path,
+            ),
+            MarkerDecoration(:final piece) => MarkerDecoration(moved[piece]!),
+          },
+      ],
+      start,
+      height,
+    );
+  }
+
+  /// Lets go of the content's paragraphs.
+  void release() {
+    for (final piece in [...pieces, ...markers]) {
+      piece._release();
+    }
+  }
 }
 
 class _Built {

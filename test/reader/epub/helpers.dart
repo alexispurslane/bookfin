@@ -84,7 +84,7 @@ String prose(int count, [String label = 'Harbour']) => List.generate(
 String _px(double value) => value.toStringAsFixed(3);
 
 /// What a reader sees of [page], relative to its top: its start and end,
-/// its line starts, its slices and what it draws.
+/// its line starts, its slices, where its paragraphs sit and what it draws.
 List<Object?> pageKey(LaidPage page) {
   final top = page.top;
   final window = ui.Rect.fromLTWH(0, 0, page.settings.width, page.height);
@@ -107,6 +107,10 @@ List<Object?> pageKey(LaidPage page) {
     [
       for (final slice in page.slices)
         '${_px(slice.top - top)} ${_px(slice.bottom - top)} ${slice.start}',
+    ],
+    [
+      for (final piece in page.pieces)
+        '${_px(piece.x)} ${_px(piece.y - top)} ${_px(piece.paragraph.width)}',
     ],
     [
       for (final decoration in page.decorations)

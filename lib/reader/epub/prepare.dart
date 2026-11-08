@@ -132,7 +132,7 @@ PreparedSection _prepare(SectionSource source, PageSettings settings) {
   final (:styles, faces: declared) = styleSection(source, dom, settings);
   final faces = _Faces(declared, source.fontPrefix);
   final flattener = _Flattener(source, settings, styles, faces);
-  flattener.block(_BoxBuilder(styles).block(dom.body), 0, settings.width);
+  flattener.block(_BoxBuilder(styles).block(dom.body), settings.width);
   return PreparedSection._(
     source.index,
     settings,
@@ -151,7 +151,8 @@ sealed class FlowItem {
 }
 
 /// The start of a block box. The items up to the matching [BlockEnd] are
-/// its content. Its lengths are in pixels.
+/// its content. Its lengths are in pixels. Layout places the box in the
+/// content box of the block that holds it.
 final class BlockStart extends FlowItem {
   const BlockStart({
     required this.placement,
@@ -180,7 +181,9 @@ final class BlockStart extends FlowItem {
   final ({String text, int style})? marker;
 
   /// Whether the box is as wide as its widest line (an inline-block or a
-  /// float). Its content is then paragraphs only, which layout measures.
+  /// float) or as its table's widest content (a table without a set width).
+  /// Its content is then paragraphs only, or one [TableItem], which layout
+  /// measures.
   final bool shrinkToFit;
 
   /// Whether a page break right before the box's first line, right after
@@ -215,14 +218,15 @@ final class ParagraphItem extends FlowItem {
   final int widows;
 }
 
-/// An image in a block of its own, in pixels on the section's strip.
+/// An image in a block of its own. Layout sizes it and places it in the
+/// content box of the block that holds it.
 final class ImageItem extends FlowItem {
   const ImageItem({
     required this.node,
     required this.path,
-    required this.left,
-    required this.width,
-    required this.height,
+    required this.sizing,
+    required this.marginLeft,
+    required this.centered,
     required this.marginTop,
     required this.marginBottom,
   });
@@ -232,11 +236,61 @@ final class ImageItem extends FlowItem {
 
   /// The image's publication path, or null when it leaves the publication.
   final String? path;
-  final double left;
-  final double width;
-  final double height;
+
+  /// How the image's size follows from the width of the block that holds
+  /// it.
+  final ImageSizing sizing;
+
+  /// The image's left margin in pixels, unless both side margins are auto
+  /// and so [centered].
+  final double marginLeft;
+  final bool centered;
   final double marginTop;
   final double marginBottom;
+}
+
+/// A table with rows, laid out as a grid of cells (table.dart). Each row is
+/// one strip slice, so a page breaks only between rows. The [BlockStart]
+/// before it and the [BlockEnd] after it are the table's own box.
+final class TableItem extends FlowItem {
+  const TableItem(this.rows, this.width);
+
+  /// The rows of cells, in document order. A cell spans the columns of its
+  /// colspan, and every row starts at the first column.
+  final List<List<TableCell>> rows;
+
+  /// The width in pixels that the lengths in the cells resolve against: the
+  /// widest that the table's content can be.
+  final double width;
+}
+
+/// One cell of a [TableItem]: a box that the table draws as tall as its
+/// row, with its content inside.
+final class TableCell {
+  const TableCell(
+    this.flow, {
+    required this.colspan,
+    required this.padding,
+    required this.border,
+    required this.align,
+  });
+
+  /// The cell's content. A table inside the cell is plain blocks here, so
+  /// [flow] holds no [TableItem].
+  final List<FlowItem> flow;
+
+  /// The number of columns that the cell spans, at least 1.
+  final int colspan;
+
+  /// The cell's padding and used border widths in pixels, from top to
+  /// left.
+  final List<double> padding;
+  final List<double> border;
+
+  /// Where the cell's content sits in a row taller than it: the share of
+  /// the free height above it, 0 at the top, 0.5 in the middle and 1 at
+  /// the bottom.
+  final double align;
 }
 
 /// Inline content that layout builds into one Flutter paragraph.
@@ -371,12 +425,9 @@ class RunStyle {
   );
 }
 
-/// Where a block box sits across its containing block, which starts at [x]
-/// and is [width] pixels wide.
+/// Where a block box sits across its containing block.
 class BoxPlacement {
   const BoxPlacement({
-    required this.x,
-    required this.width,
     required this.marginLeft,
     required this.marginRight,
     required this.horizontal,
@@ -385,8 +436,6 @@ class BoxPlacement {
     required this.autoRight,
     required this.parentAlign,
   });
-  final double x;
-  final double width;
   final double marginLeft;
   final double marginRight;
 
@@ -405,13 +454,16 @@ class BoxPlacement {
   /// narrow inline-block. Null for any other box.
   final Align? parentAlign;
 
-  /// The content width when the box fills its containing block.
-  double get available => width - marginLeft - marginRight - horizontal;
+  /// The content width when the box fills a containing block [width]
+  /// pixels wide.
+  double available(double width) =>
+      width - marginLeft - marginRight - horizontal;
 
-  /// The left edge of the border box and the content width. [fit] is the
-  /// width of the widest line of a shrink-to-fit box, or null.
-  (double, double) place([double? fit]) {
-    var contentWidth = available;
+  /// The left edge of the border box and the content width, in a
+  /// containing block that starts at [x] and is [width] pixels wide. [fit]
+  /// is the widest content width of a shrink-to-fit box, or null.
+  (double, double) place(double x, double width, [double? fit]) {
+    var contentWidth = available(width);
     var left = x + marginLeft;
     var used = this.used;
     if (fit != null) used = math.min(used ?? contentWidth, fit);
@@ -655,7 +707,12 @@ sup { vertical-align: super; font-size: smaller }
 u, ins, a:link { text-decoration: underline }
 s, strike, del { text-decoration: line-through }
 center { text-align: center }
-th { font-weight: bold }
+table { text-indent: 0; box-sizing: border-box }
+td, th { padding: 1px }
+thead, tbody, tfoot, tr { vertical-align: middle }
+td, th { vertical-align: inherit }
+th { font-weight: bold; text-align: center }
+caption { text-align: center }
 ''');
 
 // Box building.
@@ -668,6 +725,14 @@ class _BlockBox extends _Box {
   final Style style;
   final List<_Box> children;
   final String? marker;
+}
+
+/// A table with rows: its cells by row, each with its colspan.
+class _TableBox extends _Box {
+  _TableBox(this.element, this.style, this.rows);
+  final DomElement element;
+  final Style style;
+  final List<List<(_BlockBox, int)>> rows;
 }
 
 /// An anonymous block of inline content.
@@ -713,6 +778,10 @@ class _BoxBuilder {
   _BoxBuilder(this.styles);
   final Map<DomElement, Style> styles;
 
+  /// The number of table cells that the box being built is inside. A table
+  /// inside a cell lays out as blocks.
+  int _cells = 0;
+
   _BlockBox block(DomElement element, {String? marker}) {
     final style = styles[element]!;
     final children = <_Box>[];
@@ -734,13 +803,7 @@ class _BoxBuilder {
       }
       final child = node as DomElement;
       final childStyle = styles[child]!;
-      // An absolutely placed box leaves the flow. Books use it to move
-      // text off the page.
-      if (childStyle.display == Display.none ||
-          childStyle.position == 'absolute' ||
-          childStyle.position == 'fixed') {
-        return;
-      }
+      if (!_visible(child)) return;
       if (child.name == 'br') {
         run.add(_BreakItem(child));
         return;
@@ -753,6 +816,15 @@ class _BoxBuilder {
           children.add(_BlockBox(child, childStyle, const []));
         }
         return;
+      }
+      if (child.name == 'table' && _cells == 0) {
+        if (_table(child) case (final captions, final table)) {
+          flush();
+          children
+            ..addAll(captions)
+            ..add(table);
+          return;
+        }
       }
       if (childStyle.display != Display.inline) {
         flush();
@@ -767,7 +839,8 @@ class _BoxBuilder {
         children.add(block(child, marker: childMarker));
         return;
       }
-      if (childStyle.verticalAlign != VerticalAlign.baseline) {
+      if (childStyle.verticalAlign == VerticalAlign.superscript ||
+          childStyle.verticalAlign == VerticalAlign.subscript) {
         final inner = <_Item>[];
         _inlineItems(child, childStyle, inner);
         run.add(_RaisedItem(child, childStyle, inner));
@@ -785,13 +858,59 @@ class _BoxBuilder {
     return _BlockBox(element, style, children, marker: marker);
   }
 
+  /// Whether [element] shows: it is not display none, and not a box moved
+  /// off the page.
+  bool _visible(DomElement element) {
+    final style = styles[element]!;
+    return style.display != Display.none && !style.movedOffPage;
+  }
+
+  /// The captions and the box of [table], or null when it has no row with
+  /// a cell. A row is a `tr` in the table or in one of its row groups.
+  (List<_BlockBox>, _TableBox)? _table(DomElement table) {
+    final captions = <_BlockBox>[];
+    final rows = <List<(_BlockBox, int)>>[];
+    void row(DomElement tr) {
+      _cells++;
+      final cells = [
+        for (final cell in tr.elements)
+          if ((cell.name == 'td' || cell.name == 'th') && _visible(cell))
+            (
+              block(cell),
+              (int.tryParse(cell.attributes['colspan'] ?? '') ?? 1).clamp(
+                1,
+                1000,
+              ),
+            ),
+      ];
+      _cells--;
+      if (cells.isNotEmpty) rows.add(cells);
+    }
+
+    for (final child in table.elements) {
+      if (!_visible(child)) continue;
+      switch (child.name) {
+        case 'caption':
+          captions.add(block(child));
+        case 'tr':
+          row(child);
+        case 'thead' || 'tbody' || 'tfoot':
+          for (final tr in child.elements) {
+            if (tr.name == 'tr' && _visible(tr)) row(tr);
+          }
+      }
+    }
+    if (rows.isEmpty) return null;
+    return (captions, _TableBox(table, styles[table]!, rows));
+  }
+
   void _inlineItems(DomElement element, Style style, List<_Item> out) {
     for (final child in element.children) {
       if (child is DomText) {
         out.add(_TextItem(child, style));
       } else if (child is DomElement) {
         final childStyle = styles[child]!;
-        if (childStyle.display == Display.none) continue;
+        if (!_visible(child)) continue;
         if (child.name == 'br') {
           out.add(_BreakItem(child));
         } else {
@@ -863,85 +982,53 @@ String? _marker(String type, int number) {
 
 // Flow items from boxes.
 
-/// Turns a tree of boxes into flow items, with every length that its
-/// containing block decides in pixels.
+/// Turns a tree of boxes into flow items, with every length that the width
+/// of its containing block decides in pixels.
 class _Flattener {
   _Flattener(this.source, this.settings, this.styles, this.faces);
   final SectionSource source;
   final PageSettings settings;
   final Map<DomElement, Style> styles;
   final _Faces faces;
-  final flow = <FlowItem>[];
+
+  /// The flow items being written: the section's, or a table cell's.
+  var flow = <FlowItem>[];
   final runStyles = <RunStyle>[];
   final _byValue = <RunStyle, int>{};
   final _byStyle = <Style, int>{};
 
-  /// Adds [box], whose containing block starts at [x] and is [width]
-  /// pixels wide.
-  void block(_BlockBox box, double x, double width) {
+  /// Adds [box], whose containing block is [width] pixels wide.
+  void block(_BlockBox box, double width) {
     final style = box.style;
     if (box.element.name == 'img') {
-      _blockImage(box, x, width);
+      _blockImage(box, width);
       return;
     }
-    final marginLeft = style.margin[3].resolve(width);
-    final marginRight = style.margin[1].resolve(width);
-    final padding = [for (final side in style.padding) side.resolve(width)];
-    final border = [
-      for (var side = 0; side < 4; side++) style.usedBorder(side),
-    ];
-    final horizontal = padding[1] + padding[3] + border[1] + border[3];
-    final specified = style.width.resolveOrNull(width);
-    final maximum = style.maxWidth.resolveOrNull(width);
-    double? used = specified == null
-        ? null
-        : (style.borderBox ? specified - horizontal : specified);
-    if (maximum != null) {
-      final cap = style.borderBox ? maximum - horizontal : maximum;
-      final available = width - marginLeft - marginRight - horizontal;
-      if (used == null ? available > cap : used > cap) used = cap;
-    }
     final inlineBlock = style.display == Display.inlineBlock;
-    final placement = BoxPlacement(
-      x: x,
-      width: width,
-      marginLeft: marginLeft,
-      marginRight: marginRight,
-      horizontal: horizontal,
-      used: used,
-      autoLeft: style.margin[3].isAuto,
-      autoRight: style.margin[1].isAuto,
-      parentAlign: inlineBlock && box.element.parent != null
-          ? styles[box.element.parent!]!.textAlign
-          : null,
+    final placement = _start(
+      box.element,
+      style,
+      width,
+      marker: box.marker,
+      // A shrink-to-fit box with a block inside fills its containing
+      // block, as when it is not shrink-to-fit.
+      shrinkToFit:
+          (inlineBlock || style.floated) &&
+          box.children.every((child) => child is _InlineBox),
     );
-    final marker = box.marker;
-    flow.add(
-      BlockStart(
-        placement: placement,
-        marginTop: style.margin[0].resolve(width),
-        marginBottom: style.margin[2].resolve(width),
-        padding: padding,
-        border: border,
-        marker: marker != null && !style.listStyleInside
-            ? (text: marker, style: _styleOf(style))
-            : null,
-        // A shrink-to-fit box with a block inside fills its containing
-        // block, as when it is not shrink-to-fit.
-        shrinkToFit:
-            (inlineBlock || style.floated) &&
-            box.children.every((child) => child is _InlineBox),
-        avoidBreakBefore: style.breakBefore == BreakRule.avoid,
-        avoidBreakAfter: style.breakAfter == BreakRule.avoid,
-        avoidBreakInside: style.avoidBreakInside,
-      ),
-    );
-    final (left, contentWidth) = placement.place();
-    final contentLeft = left + border[3] + padding[3];
+    final (_, contentWidth) = placement.place(0, width);
+    _content(box, contentWidth);
+    flow.add(const BlockEnd());
+  }
+
+  /// Adds the content of [box], whose content box is [width] pixels wide.
+  void _content(_BlockBox box, double width) {
     for (final child in box.children) {
       switch (child) {
         case _BlockBox():
-          block(child, contentLeft, contentWidth);
+          block(child, width);
+        case _TableBox():
+          _table(child, width);
         case _InlineBox():
           flow.add(
             ParagraphItem(
@@ -959,21 +1046,130 @@ class _Flattener {
           );
       }
     }
-    flow.add(const BlockEnd());
   }
 
-  void _blockImage(_BlockBox box, double x, double width) {
+  /// Adds the [BlockStart] of [element], whose containing block is [width]
+  /// pixels wide, and returns its placement.
+  BoxPlacement _start(
+    DomElement element,
+    Style style,
+    double width, {
+    required bool shrinkToFit,
+    String? marker,
+  }) {
+    final marginLeft = style.margin[3].resolve(width);
+    final marginRight = style.margin[1].resolve(width);
+    final (:padding, :border) = _box(style, width);
+    final horizontal = padding[1] + padding[3] + border[1] + border[3];
+    final specified = style.width.resolveOrNull(width);
+    final maximum = style.maxWidth.resolveOrNull(width);
+    double? used = specified == null
+        ? null
+        : (style.borderBox ? specified - horizontal : specified);
+    if (maximum != null) {
+      final cap = style.borderBox ? maximum - horizontal : maximum;
+      final available = width - marginLeft - marginRight - horizontal;
+      if (used == null ? available > cap : used > cap) used = cap;
+    }
+    final inlineBlock = style.display == Display.inlineBlock;
+    final placement = BoxPlacement(
+      marginLeft: marginLeft,
+      marginRight: marginRight,
+      horizontal: horizontal,
+      used: used,
+      autoLeft: style.margin[3].isAuto,
+      autoRight: style.margin[1].isAuto,
+      parentAlign: inlineBlock && element.parent != null
+          ? styles[element.parent!]!.textAlign
+          : null,
+    );
+    flow.add(
+      BlockStart(
+        placement: placement,
+        marginTop: style.margin[0].resolve(width),
+        marginBottom: style.margin[2].resolve(width),
+        padding: padding,
+        border: border,
+        marker: marker != null && !style.listStyleInside
+            ? (text: marker, style: _styleOf(style))
+            : null,
+        shrinkToFit: shrinkToFit,
+        avoidBreakBefore: style.breakBefore == BreakRule.avoid,
+        avoidBreakAfter: style.breakAfter == BreakRule.avoid,
+        avoidBreakInside: style.avoidBreakInside,
+      ),
+    );
+    return placement;
+  }
+
+  /// The padding and the used border widths of [style] in pixels, from top
+  /// to left, in a containing block [width] pixels wide.
+  ({List<double> padding, List<double> border}) _box(
+    Style style,
+    double width,
+  ) => (
+    padding: [for (final side in style.padding) side.resolve(width)],
+    border: [for (var side = 0; side < 4; side++) style.usedBorder(side)],
+  );
+
+  /// Adds the box of [table], whose containing block is [width] pixels
+  /// wide, with its [TableItem] inside. Without a set width, the box is as
+  /// wide as the table's content.
+  void _table(_TableBox table, double width) {
+    final placement = _start(
+      table.element,
+      table.style,
+      width,
+      shrinkToFit: table.style.width.isAuto,
+    );
+    final (_, contentWidth) = placement.place(0, width);
+    flow
+      ..add(
+        TableItem([
+          for (final row in table.rows)
+            [
+              for (final (cell, colspan) in row)
+                _cell(cell, colspan, contentWidth),
+            ],
+        ], contentWidth),
+      )
+      ..add(const BlockEnd());
+  }
+
+  /// [cell], which spans [colspan] columns of a table whose content is at
+  /// most [width] pixels wide. A cell has no margins, and its column
+  /// decides its width.
+  TableCell _cell(_BlockBox cell, int colspan, double width) {
+    final (:padding, :border) = _box(cell.style, width);
+    final outer = flow;
+    flow = [];
+    _content(cell, width - padding[1] - padding[3] - border[1] - border[3]);
+    final items = flow;
+    flow = outer;
+    return TableCell(
+      items,
+      colspan: colspan,
+      padding: padding,
+      border: border,
+      // Chromium aligns the baselines of baseline cells, which is close to
+      // their tops.
+      align: switch (cell.style.verticalAlign) {
+        VerticalAlign.top || VerticalAlign.baseline => 0,
+        VerticalAlign.bottom => 1,
+        _ => 0.5,
+      },
+    );
+  }
+
+  void _blockImage(_BlockBox box, double width) {
     final style = box.style;
-    final (imageWidth, imageHeight) = _sizing(box.element, style).sizeIn(width);
     flow.add(
       ImageItem(
         node: box.element.order,
         path: resolvePath(source.path, box.element.attributes['src'] ?? ''),
-        left: style.margin[3].isAuto && style.margin[1].isAuto
-            ? x + (width - imageWidth) / 2
-            : x + style.margin[3].resolve(width),
-        width: imageWidth,
-        height: imageHeight,
+        sizing: _sizing(box.element, style),
+        marginLeft: style.margin[3].resolve(width),
+        centered: style.margin[3].isAuto && style.margin[1].isAuto,
         marginTop: style.margin[0].resolve(width),
         marginBottom: style.margin[2].resolve(width),
       ),
