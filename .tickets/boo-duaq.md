@@ -1,7 +1,7 @@
 ---
 id: boo-duaq
 status: open
-deps: [t6-rt20]
+deps: []
 links: []
 created: 2026-11-08T15:33:33Z
 type: feature
