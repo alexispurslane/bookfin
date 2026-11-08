@@ -10,6 +10,10 @@ import 'ocr_storage.dart';
 import 'pdf.dart';
 
 class BundledEnglishText implements PdfTextSupply {
+  /// Recognizes English text on scanned pages. Each recognized page, new or
+  /// cached, is decoded through `hop`.
+  BundledEnglishText({this._hop = compute});
+  final PdfHop _hop;
   static const version =
       'bookfin-ocr-2/tesseract4android-4.9.0/tesseract-5.5.1/leptonica-1.85.0/tessdata_fast-4.1.0-eng-7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2';
   static const _channel = MethodChannel('bookfin/ocr');
@@ -55,8 +59,14 @@ class BundledEnglishText implements PdfTextSupply {
       if (!live()) return _canceled;
       final selected = _selected[page];
       if (selected != null) return selected.text;
-      final saved = _cachedPage(cached);
-      return saved == null ? null : _select(page, saved);
+      if (cached == null) return null;
+      final PdfText saved;
+      try {
+        saved = await _hop(decodeRecognizedPage, cached);
+      } on Exception {
+        return null; // A cached page that does not decode is recognized again.
+      }
+      return live() ? _select(page, saved) : _canceled;
     }
 
     try {
@@ -110,7 +120,7 @@ class BundledEnglishText implements PdfTextSupply {
                 'bgra': raster.bgra,
               });
               if (!live()) return _canceled;
-              final result = decodeRecognizedPage(hocr ?? '');
+              final result = await _hop(decodeRecognizedPage, hocr ?? '');
               if (result.status == PdfTextStatus.candidate) {
                 try {
                   await writeOcrCache(
@@ -286,15 +296,6 @@ final _fatalFallback = _fallback(
   'English recognition cannot continue safely. Restart Bookfin. The original page remains available.',
 );
 
-PdfText? _cachedPage(String? hocr) {
-  if (hocr == null) return null;
-  try {
-    return decodeRecognizedPage(hocr);
-  } on Exception {
-    return null;
-  }
-}
-
 PdfText _fallback(String reason) => PdfText(
   source: '',
   text: '',
@@ -303,6 +304,14 @@ PdfText _fallback(String reason) => PdfText(
   reason: reason,
 );
 
+/// The page text that the recognition output [hocr] holds. It runs in a hop,
+/// so it takes and returns only data that crosses to another isolate.
+///
+/// The source joins the words of each recognized line with spaces and the
+/// lines with line breaks. The reflowed text replaces each line break with a
+/// space, so each reflowed character records the source character at the
+/// same index. Throws a [FormatException] when [hocr] is not well-formed
+/// recognition output.
 PdfText decodeRecognizedPage(String hocr) {
   if (hocr.length > 8000000) {
     throw const FormatException('Recognition output is too large.');
