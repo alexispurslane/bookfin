@@ -43,16 +43,12 @@ class LibraryServices {
   /// The saved layout, read only.
   ValueListenable<ShelfLayout> get shelfLayout => _ShelfLayoutView(layout);
 
-  /// Changes when download state or listening progress changes. While a
-  /// book plays or downloads, that is several times a second, so a part that
-  /// shows either listens to this on its own, and selects what it shows.
-  /// A part that shows one book listens to [bookActivity] instead.
-  Listenable get activity => Listenable.merge([?downloads, ?playback]);
-
   /// Changes when what the library shows of [book] can change: the download
   /// state of one of its editions, or the listening progress of one of its
   /// audio editions. A player position tick reaches only the book open in
-  /// the player, so the parts that show other books do not hear it.
+  /// the player, so the parts that show other books do not hear it. While
+  /// the book plays or downloads, this changes several times a second, so a
+  /// part that listens selects what it shows.
   Listenable bookActivity(Book book) {
     final downloads = this.downloads;
     final playback = this.playback;
