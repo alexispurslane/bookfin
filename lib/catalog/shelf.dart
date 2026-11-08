@@ -36,6 +36,23 @@ bool bookDownloaded(Book book, bool Function(Edition) downloaded) {
   return (audio.isEmpty ? book.editions : audio).any(downloaded);
 }
 
+/// Whether [filter] keeps [book] on the shelf. [downloaded] is read only for
+/// [ShelfFilter.downloaded].
+bool bookMatches(
+  Book book,
+  ShelfFilter filter,
+  bool Function(Edition) downloaded,
+) {
+  bool has(EditionKind kind) =>
+      book.editions.any((edition) => edition.kind == kind);
+  return switch (filter) {
+    ShelfFilter.all => true,
+    ShelfFilter.audio => has(EditionKind.audio),
+    ShelfFilter.ebooks => has(EditionKind.text),
+    ShelfFilter.downloaded => bookDownloaded(book, downloaded),
+  };
+}
+
 /// Series position first, then publication year, then title. Books without a
 /// value for a key follow the books that have one. A book without a position
 /// takes the position of a book with the same title, so an audiobook sits
@@ -82,17 +99,8 @@ List<ShelfItem> shelf(
   ShelfFilter filter,
   bool Function(Edition) downloaded,
 ) {
-  bool has(Book book, EditionKind kind) =>
-      book.editions.any((edition) => edition.kind == kind);
   final matching = books
-      .where(
-        (book) => switch (filter) {
-          ShelfFilter.all => true,
-          ShelfFilter.audio => has(book, EditionKind.audio),
-          ShelfFilter.ebooks => has(book, EditionKind.text),
-          ShelfFilter.downloaded => bookDownloaded(book, downloaded),
-        },
-      )
+      .where((book) => bookMatches(book, filter, downloaded))
       .toList();
   final shelves = _shelves[books] ??= {};
   final kept = shelves[filter];

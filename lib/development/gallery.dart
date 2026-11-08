@@ -7,8 +7,9 @@ import 'package:flutter_epub_viewer/navigation.dart'
 
 import '../catalog/book_cover.dart';
 import '../catalog/glass.dart' show confirmAction, showGlassSheet;
-import '../catalog/library_view.dart' show BookRow;
+import '../catalog/library_view.dart' show BookRow, ShelfFilterChips;
 import '../catalog/model.dart';
+import '../catalog/shelf.dart' show ShelfFilter, bookMatches;
 import '../foundation/theme.dart';
 import '../foundation/time.dart';
 import '../playback/playback.dart';
@@ -129,37 +130,63 @@ final _chapters = [
     ),
 ];
 
-Book _sampleBook(String id, String title, String author, {String? series}) =>
-    Book(
-      id: id,
-      title: title,
-      author: author,
-      series: series,
-      editions: [
-        Edition(
-          id: '$id-audio',
-          kind: EditionKind.audio,
-          label: 'Audiobook',
-          files: [
-            SourceFile(
-              itemId: '$id-file',
-              displayName: title,
-              mediaSourceId: 'source',
-              revision: '1',
-              durationMs: _length,
-              container: 'm4b',
-              sizeBytes: null,
-            ),
-          ],
-          memberIds: ['$id-file'],
+/// A sample book whose first edition is its audiobook. With [ebook], it also
+/// has an EPUB edition.
+Book _sampleBook(
+  String id,
+  String title,
+  String author, {
+  String? series,
+  bool ebook = false,
+}) => Book(
+  id: id,
+  title: title,
+  author: author,
+  series: series,
+  editions: [
+    Edition(
+      id: '$id-audio',
+      kind: EditionKind.audio,
+      label: 'Audiobook',
+      files: [
+        SourceFile(
+          itemId: '$id-file',
+          displayName: title,
+          mediaSourceId: 'source',
+          revision: '1',
+          durationMs: _length,
+          container: 'm4b',
+          sizeBytes: null,
         ),
       ],
-    );
+      memberIds: ['$id-file'],
+    ),
+    if (ebook)
+      Edition(
+        id: '$id-epub',
+        kind: EditionKind.text,
+        label: 'EPUB',
+        files: [
+          SourceFile(
+            itemId: '$id-epub-file',
+            displayName: title,
+            mediaSourceId: 'source',
+            revision: '1',
+            durationMs: null,
+            container: 'epub',
+            sizeBytes: null,
+          ),
+        ],
+        memberIds: ['$id-epub-file'],
+      ),
+  ],
+);
 
 final _timeMachine = _sampleBook(
   'time-machine',
   'The Time Machine',
   'H. G. Wells',
+  ebook: true,
 );
 final _lostWorld = _sampleBook(
   'lost-world',
@@ -191,8 +218,8 @@ final _library = [
 ];
 
 AudioPosition _place(Book book, int milliseconds) => AudioPosition(
-  editionId: book.editions.single.id,
-  sourceKey: book.editions.single.files.single.key,
+  editionId: book.editions.first.id,
+  sourceKey: book.editions.first.files.single.key,
   revision: '1',
   milliseconds: milliseconds,
 );
@@ -269,17 +296,17 @@ class _SamplePlayer {
       recent = [
         (
           book: _poisonBelt,
-          edition: _poisonBelt.editions.single,
+          edition: _poisonBelt.editions.first,
           at: now.subtract(const Duration(days: 1)),
         ),
         (
           book: _lostWorld,
-          edition: _lostWorld.editions.single,
+          edition: _lostWorld.editions.first,
           at: now.subtract(const Duration(days: 3)),
         ),
         (
           book: _timeMachine,
-          edition: _timeMachine.editions.single,
+          edition: _timeMachine.editions.first,
           at: now.subtract(const Duration(days: 5)),
         ),
       ];
@@ -303,7 +330,7 @@ class _SamplePlayer {
   final replacement = ValueNotifier<AudioReplacement?>(
     AudioReplacement(
       _timeMachine,
-      _timeMachine.editions.single,
+      _timeMachine.editions.first,
       _place(_timeMachine, 5234000),
     ),
   );
@@ -325,7 +352,7 @@ class _SamplePlayer {
   List<EditionBookmark> get bookmarks => [
     for (final entry in timeline.value)
       if (entry case BookmarkEntry(:final bookmark)
-          when bookmark.position.editionId == book.value.editions.single.id)
+          when bookmark.position.editionId == book.value.editions.first.id)
         (bookmark: bookmark, at: bookmark.position.milliseconds),
   ];
 
@@ -349,7 +376,7 @@ class _SamplePlayer {
     open(
       _library
           .map((entry) => entry.book)
-          .firstWhere((book) => book.editions.single.id == place.editionId),
+          .firstWhere((book) => book.editions.first.id == place.editionId),
     );
     move(place.milliseconds);
   }
@@ -472,7 +499,7 @@ class _LibraryFixture extends StatefulWidget {
 }
 
 class _LibraryFixtureState extends State<_LibraryFixture> {
-  bool _downloaded = false;
+  ShelfFilter _filter = ShelfFilter.all;
 
   @override
   Widget build(BuildContext context) => ListView(
@@ -484,21 +511,9 @@ class _LibraryFixtureState extends State<_LibraryFixture> {
         style: Theme.of(context).textTheme.displaySmall,
       ),
       const SizedBox(height: 20),
-      // TODO(t3-rlq6): show the library's own filter row here once it is a
-      // leaf widget. Until then these chips stand in for it.
-      Wrap(
-        spacing: 8,
-        children: [
-          for (final (local, label) in [
-            (false, 'All books'),
-            (true, 'Downloaded'),
-          ])
-            ChoiceChip(
-              label: Text(label),
-              selected: _downloaded == local,
-              onSelected: (_) => setState(() => _downloaded = local),
-            ),
-        ],
+      ShelfFilterChips(
+        selected: _filter,
+        onChanged: (filter) => setState(() => _filter = filter),
       ),
       const SizedBox(height: 8),
       AnimatedSize(
@@ -510,7 +525,7 @@ class _LibraryFixtureState extends State<_LibraryFixture> {
         child: Column(
           children: [
             for (final (:book, :detail, :downloaded) in _library)
-              if (downloaded || !_downloaded)
+              if (bookMatches(book, _filter, (_) => downloaded))
                 BookRow(
                   cover: BookCover.book(
                     book,

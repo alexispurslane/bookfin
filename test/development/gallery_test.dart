@@ -1,6 +1,7 @@
 import 'package:bookfin/appearance/preferences.dart';
 import 'package:bookfin/catalog/book_cover.dart';
-import 'package:bookfin/catalog/library_view.dart' show BookRow;
+import 'package:bookfin/catalog/library_view.dart'
+    show BookRow, ShelfFilterChips;
 import 'package:bookfin/main.dart';
 import 'package:bookfin/playback/recent.dart';
 import 'package:bookfin/playback/records_screen.dart';
@@ -90,17 +91,42 @@ void main() {
     }
   });
 
-  testWidgets('the Downloaded filter leaves only the downloaded sample book', (
+  testWidgets('the production filter row filters the sample books', (
     tester,
   ) async {
     await showGallery(tester);
-    await tester.tap(find.text('Downloaded'));
-    await tester.pumpAndSettle();
-    expect(
-      find.descendant(of: screen('library'), matching: find.byType(BookRow)),
-      findsOneWidget,
+    final chips = find.descendant(
+      of: screen('library'),
+      matching: find.byType(ShelfFilterChips),
     );
-    expect(find.text('The Time Machine'), findsWidgets);
+    expect(chips, findsOneWidget);
+    expect(
+      find.descendant(of: screen('library'), matching: find.byType(ChoiceChip)),
+      findsNWidgets(
+        find
+            .descendant(of: chips, matching: find.byType(ChoiceChip))
+            .evaluate()
+            .length,
+      ),
+      reason: 'the gallery shows no filter chips of its own',
+    );
+    final rows = find.descendant(
+      of: screen('library'),
+      matching: find.byType(BookRow),
+    );
+    Future<void> choose(String filter) async {
+      await tester.tap(find.descendant(of: chips, matching: find.text(filter)));
+      await tester.pumpAndSettle();
+    }
+
+    await choose('Ebooks');
+    expect(rows, findsOneWidget);
+    expect(find.widgetWithText(BookRow, 'The Time Machine'), findsOneWidget);
+    await choose('Downloaded');
+    expect(rows, findsOneWidget);
+    expect(find.widgetWithText(BookRow, 'The Time Machine'), findsOneWidget);
+    await choose('Audio');
+    expect(rows, findsNWidgets(3));
   });
 
   testWidgets('a tap on a library book opens it in the sample player', (
