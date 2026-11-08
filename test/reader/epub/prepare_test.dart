@@ -9,10 +9,10 @@ import 'package:image/image.dart' as img;
 import 'helpers.dart';
 
 /// Each page of [chapter]: where it starts and ends on the strip, the
-/// slices that it holds, and its start place.
+/// number of slices that it holds, and its start.
 List<Object?> pagesOf(ChapterLayout chapter) => [
   for (final page in chapter.pages)
-    (page.startY, page.endY, page.firstSlice, page.endSlice, page.start),
+    (page.top, page.bottom, page.slices.length, page.start, page.startPlace),
 ];
 
 /// Each strip slice of [chapter]: its top, bottom and start place.
@@ -86,8 +86,8 @@ void main() {
     final chapter = layoutSection(prepared[1]);
     expect(chapter.pages.length, greaterThan(1));
     for (final page in chapter.pages) {
-      expect(page.start!.section, 4);
-      expect(chapter.section.dom.textAt(page.start!), isA<DomText>());
+      expect(page.startPlace!.section, 4);
+      expect(chapter.section.dom.textAt(page.startPlace!), isA<DomText>());
     }
   });
 

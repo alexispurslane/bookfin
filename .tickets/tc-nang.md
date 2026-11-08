@@ -1,6 +1,6 @@
 ---
 id: tc-nang
-status: open
+status: in_progress
 deps: [tc-bsen]
 links: []
 created: 2026-11-08T19:23:12Z
@@ -80,3 +80,7 @@ docs/plans/native-epub-reader.md (epic boo-b2ey). Read the sections named in the
 **2026-11-08T19:47:15Z**
 
 From tc-bsen: layout.dart walks PreparedSection.flow with a stack of open blocks (_OpenBlock: placement, boxTop, firstSlice) and carries margin state (_positive, _negative), _avoidNext and a pending list marker between items. A run that starts at a page start must rebuild that stack from the BlockStart and BlockEnd items before its start item. A shrink-to-fit block measures its paragraphs (_maxContent) to place itself. An empty block is detected as a BlockStart followed at once by its BlockEnd.
+
+**2026-11-08T20:19:39Z**
+
+Interfaces as built: LayoutRun also takes an optional clock (Duration Function()) for counted budgets in tests, and exposes reached (the next flow item) and checkInvariants(). LaidPage also exposes top, bottom, height, slices, decorations, pieces and lineStarts for drawing and tests. Pages share a split paragraph through a holder count on Piece, so each page disposes on its own. decodeImages now takes Iterable<LaidPage>. layoutSection stays as the main run stepped to the end, because tests and the trial tools use ChapterLayout. A page with no place takes startVisible from the previous page of its run (the trial took the next page's); no trial page differs.

@@ -1,4 +1,4 @@
-// Draws one page of a laid-out section into a picture.
+// Draws one laid page into a picture.
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -8,22 +8,20 @@ import 'layout.dart';
 /// draws an outline in its place.
 typedef PageImages = Map<String, ui.Image>;
 
-/// Draws page [index] of [chapter], with the images in [images].
-ui.Picture drawPage(ChapterLayout chapter, int index, PageImages images) {
-  final settings = chapter.settings;
-  final page = chapter.pages[index];
+/// Draws [page], with the images in [images].
+ui.Picture drawPage(LaidPage page, PageImages images) {
+  final settings = page.settings;
   final recorder = ui.PictureRecorder();
   final canvas = ui.Canvas(recorder);
   final bounds = ui.Rect.fromLTWH(0, 0, settings.width, settings.height);
   canvas.drawRect(bounds, ui.Paint()..color = settings.paper);
-  final height = (page.endY - page.startY).clamp(0, settings.height).toDouble();
+  final height = page.height.clamp(0, settings.height).toDouble();
   canvas
     ..save()
     ..clipRect(ui.Rect.fromLTWH(0, 0, settings.width, height))
-    ..translate(0, -page.startY);
-  final window = ui.Rect.fromLTRB(0, page.startY, settings.width, page.endY);
+    ..translate(0, -page.top);
   final ink = ui.Paint()..color = settings.ink;
-  for (final piece in chapter.piecesOn(page)) {
+  for (final piece in page.pieces) {
     canvas.save();
     if (piece.shown.isFinite) {
       canvas.clipRect(
@@ -41,17 +39,14 @@ ui.Picture drawPage(ChapterLayout chapter, int index, PageImages images) {
     }
     canvas.restore();
   }
-  for (final decoration in chapter.decorations) {
+  for (final decoration in page.decorations) {
     switch (decoration) {
-      case RuleDecoration(:final rect) when rect.overlaps(window):
+      case RuleDecoration(:final rect):
         canvas.drawRect(rect, ink);
-      case ImageDecoration(:final rect, :final path) when rect.overlaps(window):
+      case ImageDecoration(:final rect, :final path):
         _image(canvas, images[path], rect, ink);
-      case MarkerDecoration(:final paragraph, :final offset)
-          when offset.dy >= page.startY && offset.dy < page.endY:
+      case MarkerDecoration(:final paragraph, :final offset):
         canvas.drawParagraph(paragraph, offset);
-      default:
-        break;
     }
   }
   canvas.restore();
@@ -76,31 +71,23 @@ void _image(ui.Canvas canvas, ui.Image? image, ui.Rect rect, ui.Paint ink) {
   );
 }
 
-/// Decodes the images that [chapter]'s pages [pages] show, from the bytes
-/// that [bytes] gives for a publication path, at the size that they are
-/// drawn at [scale] image pixels per layout pixel.
+/// Decodes the images that [pages] show, from the bytes that [bytes] gives
+/// for a publication path, at the size that they are drawn at [scale] image
+/// pixels per layout pixel.
 Future<PageImages> decodeImages(
-  ChapterLayout chapter,
-  Iterable<int> pages,
+  Iterable<LaidPage> pages,
   Uint8List? Function(String path) bytes, {
   double scale = 1,
 }) async {
   final wanted = <String, ui.Rect>{};
-  for (final index in pages) {
-    final page = chapter.pages[index];
-    final window = ui.Rect.fromLTRB(
-      0,
-      page.startY,
-      chapter.settings.width,
-      page.endY,
-    );
-    for (final piece in chapter.piecesOn(page)) {
+  for (final page in pages) {
+    for (final piece in page.pieces) {
       for (final (box, held) in piece.inlines) {
         if (held is String) wanted[held] = box;
       }
     }
-    for (final decoration in chapter.decorations) {
-      if (decoration is ImageDecoration && decoration.rect.overlaps(window)) {
+    for (final decoration in page.decorations) {
+      if (decoration is ImageDecoration) {
         wanted[decoration.path] = decoration.rect;
       }
     }

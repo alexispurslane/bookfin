@@ -76,3 +76,48 @@ String prose(int count, [String label = 'Harbour']) => List.generate(
       '$label passage ${index + 1}. The reader followed the shoreline and '
       'watched the small boats return.',
 ).join(' ');
+
+String _px(double value) => value.toStringAsFixed(3);
+
+/// What a reader sees of [page], relative to its top: its start and end,
+/// its line starts, its slices and what it draws.
+List<Object?> pageKey(LaidPage page) {
+  final top = page.top;
+  final window = ui.Rect.fromLTWH(0, 0, page.settings.width, page.height);
+  String rect(ui.Rect rect) {
+    final shown = rect.shift(ui.Offset(0, -top)).intersect(window);
+    return '${_px(shown.left)} ${_px(shown.top)} ${_px(shown.right)} '
+        '${_px(shown.bottom)}';
+  }
+
+  return [
+    page.section,
+    page.start,
+    page.startPlace,
+    page.endPlace,
+    page.startVisible,
+    page.endVisible,
+    page.last,
+    page.lineStarts,
+    _px(page.height),
+    [
+      for (final slice in page.slices)
+        '${_px(slice.top - top)} ${_px(slice.bottom - top)} ${slice.start}',
+    ],
+    [
+      for (final decoration in page.decorations)
+        switch (decoration) {
+          RuleDecoration(rect: final r) => 'rule ${rect(r)}',
+          ImageDecoration(rect: final r, :final path) =>
+            'image $path ${rect(r)}',
+          MarkerDecoration(:final offset) =>
+            'marker ${_px(offset.dx)} ${_px(offset.dy - top)}',
+        },
+    ]..sort(),
+  ];
+}
+
+/// The [pageKey] of each of [pages].
+List<List<Object?>> keys(Iterable<LaidPage> pages) => [
+  for (final page in pages) pageKey(page),
+];

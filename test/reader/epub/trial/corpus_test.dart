@@ -93,7 +93,7 @@ void main() {
           final chapter = layoutSection(prepared);
           final dom = prepared.dom;
           for (var page = 0; page < chapter.pages.length; page++) {
-            final start = chapter.pages[page].start;
+            final start = chapter.pages[page].startPlace;
             if (start == null) continue;
             pages++;
             final place = wordStart(dom, start);
@@ -131,6 +131,68 @@ void main() {
   );
 
   test(
+    'a run from every page start of every book cuts the same pages',
+    () {
+      // Each run from a page start is compared over the pages that it cuts
+      // in [compared] pages' worth of steps, so that the 430,000-character
+      // Keats section stays within minutes.
+      const compared = 5;
+      final report = <String, Object>{};
+      for (final file in trialBooks()) {
+        final book = TrialBook.open(file.readAsBytesSync());
+        var starts = 0;
+        var pagesCompared = 0;
+        final failures = <String>[];
+        for (var index = 0; index < book.sections; index++) {
+          final section = prepareSections([
+            book.source(index),
+          ], readerPage).single;
+          final main = layoutSection(section).pages;
+          // The main run stopped after every item cuts the same pages.
+          final stepped = LayoutRun(section);
+          while (!stepped.done) {
+            stepped.step(Duration.zero);
+          }
+          if (!_same(keys(stepped.pages), keys(main))) {
+            failures.add('section $index: stepped run');
+          }
+          for (final page in stepped.pages) {
+            page.dispose();
+          }
+          for (var page = 1; page < main.length; page++) {
+            final run = LayoutRun(section, from: main[page].start)
+              ..step(const Duration(days: 1), want: compared);
+            starts++;
+            pagesCompared += run.pages.length;
+            final expected = main.skip(page).take(run.pages.length);
+            if (!_same(keys(run.pages), keys(expected))) {
+              failures.add('section $index: page $page');
+            }
+            for (final laid in run.pages) {
+              laid.dispose();
+            }
+            run.dispose();
+          }
+          for (final page in main) {
+            page.dispose();
+          }
+        }
+        report[bookName(file)] = {
+          'pageStarts': starts,
+          'pagesCompared': pagesCompared,
+          'failures': failures,
+        };
+      }
+      _write('page-starts', report);
+      for (final MapEntry(:key, :value) in report.entries) {
+        expect((value as Map)['failures'], isEmpty, reason: key);
+      }
+    },
+    skip: !_enabled,
+    timeout: const Timeout(Duration(minutes: 20)),
+  );
+
+  test(
     'the host benchmark lays out and draws every book',
     () async {
       final report = <Object>[];
@@ -151,3 +213,6 @@ void main() {
     timeout: const Timeout(Duration(minutes: 10)),
   );
 }
+
+bool _same(List<List<Object?>> a, List<List<Object?>> b) =>
+    equals(b).matches(a, {});
