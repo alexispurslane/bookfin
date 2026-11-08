@@ -1,6 +1,6 @@
 ---
 id: te-9m1y
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-11-08T18:29:15Z
@@ -23,3 +23,7 @@ A Standard Ebooks EPUB keeps its three sheets after admission, a test proves it,
 **2026-11-08T19:23:53Z**
 
 Absorbed by tc-acl5 and tc-nh0b (epic boo-b2ey). Do not fix this in the sanitizer. The publication identity is a hash of every admitted file, so a changed sheet changes the identity of every Standard Ebooks book, and ReaderDocument.restore then refuses every saved place and bookmark of those books. Instead, admission keeps each sheet's original text beside the identity (tc-acl5), and the native CSS parser reads it (tc-nh0b). The reader.js drawPage EncodingError goes away with epub.js (tc-rap6). Close when tc-nh0b merges.
+
+**2026-11-08T20:15:52Z**
+
+Closed by the tc-nh0b merge (c3210d8): the Standard Ebooks core.css test passes with @namespace and epub|type.
