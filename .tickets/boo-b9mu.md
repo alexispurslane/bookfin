@@ -13,3 +13,9 @@ parent: boo-bquq
 
 After the group A merge (t9-cx1u moved byte progress to the per-edition watches), one full run of flutter test on main at load 20 on 10 cores reported 'did not complete' for five tests: transfer_test 'a missing complete file contributes no bytes to a queued retry' and 'player lookup waits for saved files before declaring them unavailable', and retained_test 'retained removal never follows or deletes a linked media file', 'verified lookup refuses a source directory replaced with a symlink' and 'a corrupt retained copy is not playable after reselection'. test/downloads alone passed (164 tests), and two more full runs at the same load passed (1141 tests). Find whether these tests wait on a real-time condition (for example waitForBytes or a watch notice) that can be missed or that times out under load, and make them deterministic.
 
+
+## Notes
+
+**2026-11-08T01:13:03Z**
+
+Orchestrator, Nov 7: possible cause. The t9-3n2m agent ran 'pkill -f flutter_tester' at about 19:45, and its own full run was stopped by an outside SIGTERM at about 20:07. My failing run ended at about 20:08. The five tests that did not complete may have been killed, not hung. Check this first: if the tests never hang under load without an outside kill, close this ticket as not a bug.
