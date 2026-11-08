@@ -743,8 +743,12 @@ class LayoutRun {
   }
 
   /// Publishes the page of the first [count] pending slices, which ends at
-  /// [bottom], and starts the next page after it.
-  void _publish(int count, double bottom, {required bool last}) {
+  /// [end], and starts the next page after it. The section's [last] page
+  /// also holds the bottom padding and borders of the boxes that close
+  /// after its last slice, so it ends at the run's strip position if that
+  /// is lower.
+  void _publish(int count, double end, {required bool last}) {
+    final bottom = last ? math.max(end, _y) : end;
     assert(count <= _pending.length && bottom >= _pageTop);
     final width = _section.settings.width;
     final window = ui.Rect.fromLTRB(0, _pageTop, width, bottom);

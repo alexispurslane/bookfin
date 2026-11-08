@@ -238,4 +238,56 @@ void main() {
     image.dispose();
     picture.dispose();
   });
+
+  group('a box that closes at the end of a section', () {
+    // The box's bottom border is 3 pixels high, below 5 pixels of padding.
+    const css = '.box{border:3px solid;padding:5px}';
+    for (final (name, body) in [
+      ('a bordered block', '<div class="box"><p>${prose(40)}</p></div>'),
+      (
+        'a bordered table',
+        '<table class="box"><tr><td>${prose(40)}</td></tr></table>',
+      ),
+    ]) {
+      test('$name draws its bottom border on the last page', () async {
+        final chapter = await lay('<p>${prose(1)}</p>$body', css: css);
+        expect(chapter.pages.length, greaterThan(1));
+        final last = chapter.pages.last;
+        final text = last.slices.last.bottom;
+        final across = [
+          for (final decoration in last.decorations)
+            if (decoration case RuleDecoration(:final rect)
+                when rect.height == 3 && rect.width > 3)
+              rect,
+        ];
+        expect(across, hasLength(1));
+        expect(across.single.top, greaterThanOrEqualTo(text + 5 - 0.01));
+        expect(last.bottom, greaterThanOrEqualTo(across.single.bottom));
+        chapter.dispose();
+      });
+
+      test('$name ends the same last page in a run from any page '
+          'start', () async {
+        await loadReaderFont();
+        final section = prepared('<p>${prose(1)}</p>$body', css: css);
+        final main = layoutSection(section);
+        for (var page = 1; page < main.pages.length; page++) {
+          final run = LayoutRun(section, from: main.pages[page].start);
+          while (!run.done) {
+            run.step(const Duration(days: 1));
+          }
+          expect(
+            keys(run.pages),
+            keys(main.pages.skip(page)),
+            reason: 'page $page',
+          );
+          for (final laid in run.pages) {
+            laid.dispose();
+          }
+          run.dispose();
+        }
+        main.dispose();
+      });
+    }
+  });
 }
