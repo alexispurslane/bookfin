@@ -1,6 +1,6 @@
 ---
 id: tc-z7au
-status: in_progress
+status: closed
 deps: [tc-n6wv]
 links: []
 created: 2026-11-08T19:23:13Z
