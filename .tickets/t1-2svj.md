@@ -1,6 +1,6 @@
 ---
 id: t1-2svj
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-08T20:13:41Z
