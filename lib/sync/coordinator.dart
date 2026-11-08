@@ -115,6 +115,26 @@ class RecordSync {
     if (!_suspended) unawaited(synchronize());
   }
 
+  /// Tries again to read the kept copies of damaged records, as
+  /// [LocalResumeStore.recoverKept] says, then refreshes Playback and the
+  /// reader when records of their domain came back for the signed-in
+  /// account. The app starts it after its first frame, in the background. A
+  /// failure leaves the records and the kept copies as they were, and the
+  /// next launch tries again, so it reports nothing.
+  Future<void> recoverKept() async {
+    if (_disposed) return;
+    try {
+      await records.recoverKept();
+    } on Exception {
+      return;
+    }
+    final session = _session;
+    if (_disposed || session == null) return;
+    final stale = records.staleDomains(session.scope.key);
+    if (stale.listening) await playback?.refreshPersonalRecords();
+    if (stale.reading) await reader?.refreshPersonalRecords();
+  }
+
   /// Stops the periodic sync while the app is in the background.
   void suspend() {
     _suspended = true;

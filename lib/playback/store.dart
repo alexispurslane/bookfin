@@ -2,7 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
-import 'package:flutter/foundation.dart' show compute;
+import 'package:flutter/foundation.dart'
+    show ValueListenable, ValueNotifier, compute;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../foundation/hop.dart';
@@ -22,6 +23,11 @@ typedef StaleDomains = ({bool listening, bool reading});
 /// refresh, and how many of this phone's saved actions differed from the
 /// server's copy of the same action and were [replaced] by it.
 typedef SyncReport = ({StaleDomains stale, int replaced});
+
+/// What the store knows of the kept copies of damaged records: how many
+/// records the latest retry of them brought back, and whether kept copies
+/// exist on this phone.
+typedef KeptRecords = ({int recovered, bool kept});
 
 /// One stored account: the settings of both domains and the record journal.
 ///
@@ -60,18 +66,19 @@ typedef _Restored = ({
 /// that the store derives in another isolate. A smaller account derives on
 /// the UI isolate.
 ///
-/// Measured in AOT on an M-series Mac: a hop costs about 33 µs, replaying
-/// one action about 12 µs, and deriving the snapshot of one record about
-/// 5 µs, while copying one record into a hop costs about 0.6 µs. So a hop
-/// pays from about four actions or eight records. These limits are a
-/// compromise: widget tests run in fake time, in which a hop never
-/// completes, and their accounts stay below them. A real account gains
-/// about one action for each second of listening, so it is far above them.
-const _hopItems = 16;
+/// Measured in AOT on an M-series Mac (tool/research/record_hop_bench), as
+/// time on the calling isolate, medians of 201 runs: a hop costs 9 to 11 µs.
+/// Restoring an account without actions costs 9 µs, and one with one action
+/// 27 µs. Deriving the views of one record costs 12 µs, and of none 6 µs. So
+/// a hop pays from the first action or record. Widget tests run the store's
+/// hops in real time through test/real_time.dart.
+const _hopItems = 1;
 
 /// The shortest saved text of an account in the format before the journal
-/// that the store decodes in another isolate. 4 KB holds about 15 records.
-const _hopText = 4 * 1024;
+/// that the store decodes in another isolate. Measured as above: decoding
+/// costs as much as a hop at about 32 characters, and a text that holds one
+/// record has about 200.
+const _hopText = 32;
 
 /// The owner of each account's personal records on this phone.
 ///
@@ -95,6 +102,12 @@ const _hopText = 4 * 1024;
 /// An action that follows a lost action of its installation waits for that
 /// sync. [setAside] reports the damage. If the damaged data cannot be moved
 /// aside, the read fails and the data stays where it was.
+///
+/// Recovery: the kept copies of damaged data stay until the user discards
+/// them ([discardKept]). After each launch, [recoverKept] reads them again
+/// with the current code and merges every record that an account lacks
+/// through the normal merge of the journal, so a later version of the app
+/// can give back what an earlier one could not read.
 ///
 /// When SQLite reports damaged pages in the record file during a read or a
 /// write, the database keeps the whole file aside and continues on a new
@@ -126,7 +139,10 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
   RecordDatabase? _opened;
   Future<RecordDatabase?> _storage() async {
     if (openDatabase == null) return null;
-    return _opened ??= await (_database ??= openDatabase!());
+    if (_opened case final opened?) return opened;
+    final opened = _opened = await (_database ??= openDatabase!());
+    if (opened.keptFile != null) _keptCopy();
+    return opened;
   }
 
   /// The writers whose domain holds records that changed outside them since
@@ -142,6 +158,168 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
   bool _rewriteDue = false;
 
   late final ReadingRecords reading = ReadingRecords._(this);
+
+  final _kept = ValueNotifier<KeptRecords>((recovered: 0, kept: false));
+
+  /// What the store knows of the kept copies of damaged records. A damaged
+  /// copy that this store keeps aside counts at once.
+  ValueListenable<KeptRecords> get keptNotifier => _kept;
+
+  /// The retry of the kept copies and their deletion, one at a time.
+  Future<void> _keptWork = Future.value();
+
+  /// Runs [work] after the retry or the deletion of kept copies that runs
+  /// now.
+  Future<void> _onKept(Future<void> Function() work) {
+    final operation = _keptWork.then((_) => work());
+    _keptWork = operation.then<void>((_) {}, onError: (Object _) {});
+    return operation;
+  }
+
+  /// Counts a damaged copy that this store just kept aside.
+  void _keptCopy() {
+    if (!_kept.value.kept) {
+      _kept.value = (recovered: _kept.value.recovered, kept: true);
+    }
+  }
+
+  /// Reads every kept copy of damaged records again with the current code,
+  /// in another isolate, and merges each record that an account lacks into
+  /// it through the normal merge of the journal. That merge never lets
+  /// older data replace newer data: an action that the account holds adds
+  /// nothing, even when its kept copy differs, and a version that the
+  /// account never saw stays beside its own. Each account's merge is one
+  /// write. [keptNotifier] then says how many records came back.
+  ///
+  /// It deletes no kept copy, even one whose records all came back, because
+  /// only the user's explicit [discardKept] deletes them. A copy that still
+  /// cannot be read waits for a later version. A failure throws and leaves
+  /// the records and the kept copies as they were.
+  Future<void> recoverKept() => _onKept(() async {
+    final database = await _storage();
+    final preferences = await SharedPreferences.getInstance();
+    const prefix = 'bookfin.damaged-records.v1.';
+    final found = await _hop(_readKept, (
+      reader: database?.reader,
+      texts: [
+        for (final key in preferences.getKeys())
+          if (key.startsWith(prefix) &&
+              key.lastIndexOf('.') > prefix.length &&
+              preferences.get(key) is String)
+            (
+              account: key.substring(prefix.length, key.lastIndexOf('.')),
+              text: preferences.getString(key)!,
+            ),
+      ],
+    ));
+    if (found.kept) _keptCopy();
+    var recovered = 0;
+    try {
+      for (final MapEntry(key: account, value: kept)
+          in found.accounts.entries) {
+        recovered += await _recover(account, kept);
+      }
+    } finally {
+      _kept.value = (recovered: recovered, kept: _kept.value.kept);
+    }
+  });
+
+  /// Merges the records of [kept] that [account] lacks into it, as
+  /// [recoverKept] says, saves them in one write, and returns how many
+  /// records changed.
+  Future<int> _recover(String account, _Kept kept) {
+    final operation = _writes.then((_) async {
+      var completed = false;
+      try {
+        final stored = await _readAccount(account);
+        final journal = stored?.journal;
+        // NOTE: Engine rule 1. With a database, the hop of [recoverKept]
+        // dropped what the record file holds, so these loops see only the
+        // few records that came back. Without one, only the web runs this,
+        // and it has no isolates.
+        final actions = [
+          for (final MapEntry(key: identity, value: action)
+              in kept.actions.entries)
+            if (journal?.retained(identity) == null) action,
+        ];
+        final records = {
+          for (final MapEntry(key: record, :value) in kept.records.entries)
+            if (!(journal?.versionsByRecord.containsKey(record) ?? false))
+              record: value,
+        };
+        if (actions.isEmpty && records.isEmpty) {
+          completed = true;
+          return 0;
+        }
+        final database = await _storage();
+        final metadata = stored?.metadata ?? _metadata({});
+        final sync = journal?.encode();
+        final merged = await _derive(
+          _withKept,
+          (
+            account: account,
+            metadata: metadata,
+            sync: sync,
+            actions: actions,
+            pending: kept.pending,
+            records: records,
+            database: database != null,
+          ),
+          small:
+              (sync?['actions'] as List? ?? []).length + actions.length <
+              _hopItems,
+        );
+        _changedOutsideWriters(account, merged.changed);
+        await _persist(
+          account,
+          metadata,
+          merged.journal,
+          commit: merged.commit,
+        );
+        completed = true;
+        return merged.changed.length;
+      } finally {
+        if (!completed) _forget(account);
+      }
+    });
+    _writes = operation.then<void>((_) {}, onError: (Object _) {});
+    return operation;
+  }
+
+  /// Deletes every kept copy of damaged records: the rows kept aside, the
+  /// kept record files and the kept preference values. Only the user's
+  /// confirmed Discard calls it. The records that came back stay. A failure
+  /// throws, and the copies that remain still count as kept.
+  Future<void> discardKept() => _onKept(() {
+    final operation = _writes.then((_) async {
+      final database = await _storage();
+      try {
+        await database?.discardKept();
+      } on RecordFileSetAside {
+        await _rewriteCached(database!);
+        rethrow;
+      }
+      final preferences = await SharedPreferences.getInstance();
+      for (final key in [
+        for (final key in preferences.getKeys())
+          if (key.startsWith('bookfin.damaged-records.')) key,
+      ]) {
+        if (!await preferences.remove(key)) {
+          throw Exception('A kept copy of damaged records was not deleted.');
+        }
+      }
+      _kept.value = (recovered: _kept.value.recovered, kept: false);
+    });
+    _writes = operation.then<void>((_) {}, onError: (Object _) {});
+    return operation;
+  });
+
+  /// The domains of [account] whose writer has not taken in records that
+  /// changed outside it.
+  StaleDomains staleDomains(String account) => (
+    listening: _behind.contains(_writer(account, reading: false)),
+    reading: _behind.contains(_writer(account, reading: true)),
+  );
   Future<void> _writes = Future.value();
   final Map<String, Map<String, Map<String, dynamic>>> _observed = {};
   final Map<String, _StoredAccount> _accounts = {};
@@ -338,13 +516,7 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
         journal.cursor = previous;
       });
       if (page['HasMore'] == false) {
-        return (
-          stale: (
-            listening: _behind.contains(_writer(account, reading: false)),
-            reading: _behind.contains(_writer(account, reading: true)),
-          ),
-          replaced: replaced,
-        );
+        return (stale: staleDomains(account), replaced: replaced);
       }
     }
     throw Exception(
@@ -634,6 +806,7 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
     } else if (database != null) {
       _accounts[account] = stored;
     }
+    if (restored.damaged) _keptCopy();
     if (restored.damaged && reported) _setAside.add(account);
     _keep(account, restored.views);
     return stored;
@@ -698,6 +871,7 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
   /// rewrite stays due until it succeeds.
   Future<void> _rewriteCached(RecordDatabase database) async {
     _rewriteDue = true;
+    _keptCopy();
     final accounts = Map.of(_accounts);
     final input = [
       for (final MapEntry(key: account, value: stored) in accounts.entries)
@@ -1237,18 +1411,85 @@ _Restored _readText(({String account, String text, bool database}) input) {
   );
 }
 
-/// A new account from the damaged [AccountRows] of `input.account`: the
-/// settings when they decode, and each action that decodes. Malformed rows
-/// may have lost the upload state, so every action is uploaded again.
-_Restored _salvageRows(({String account, AccountRows rows}) input) {
-  final rows = input.rows;
-  return _salvaged(
-    input.account,
-    _decodedObject(rows.metadata) ?? {},
-    actions: [for (final payload in rows.payloads) ?_decodedObject(payload)],
-    pending: rows.malformed ? null : rows.pending,
-    database: true,
+/// A new account from the damaged [AccountRows] of `input.account`, from
+/// what [_readableRows] reads of them.
+_Restored _salvageRows(({String account, AccountRows rows}) input) =>
+    _salvaged(input.account, _readableRows(input.rows), database: true);
+
+/// What a damaged copy of one account holds that the current code reads:
+/// the settings of [snapshot], the [actions] that decode as objects, the
+/// identities of those that wait for upload, or null when that is not
+/// known, and the [records] of a snapshot in the format before the journal.
+typedef _Readable = ({
+  Map<String, dynamic> snapshot,
+  List<Map<String, dynamic>> actions,
+  List<String>? pending,
+  Map<String, dynamic> records,
+});
+
+/// What [rows] hold: the settings when they decode, and each action that
+/// decodes. Malformed rows may have lost the upload state, so it is not
+/// known.
+_Readable _readableRows(AccountRows rows) => (
+  snapshot: _decodedObject(rows.metadata) ?? {},
+  actions: [for (final payload in rows.payloads) ?_decodedObject(payload)],
+  pending: rows.malformed ? null : rows.pending,
+  records: const {},
+);
+
+/// What a saved [text] holds: the settings, and each action of its journal
+/// or, in the format before the journal, each of its records.
+_Readable _readableText(String text) {
+  final decoded = _decodedObject(text) ?? {};
+  final sync = decoded['sync'];
+  if (sync is! Map<String, dynamic>) {
+    return (
+      snapshot: decoded,
+      actions: const [],
+      pending: const [],
+      records: decoded,
+    );
+  }
+  final actions = sync['actions'];
+  final pending = sync['pending'];
+  return (
+    snapshot: decoded,
+    actions: [
+      if (actions is List)
+        for (final action in actions)
+          if (action is Map<String, dynamic>) action,
+    ],
+    pending: pending is List && pending.every((identity) => identity is String)
+        ? pending.cast<String>()
+        : null,
+    records: const {},
   );
+}
+
+/// Each of [actions] that a journal of [account] accepts alone, by
+/// identity: its form, its value, and, when it has no predecessor, the
+/// versions that it preserves. The first action of an identity counts.
+Map<String, Map<String, dynamic>> _readableActions(
+  String account,
+  Iterable<Map<String, dynamic>> actions,
+) {
+  final readable = <String, Map<String, dynamic>>{};
+  for (final action in actions) {
+    final identity = RecordJournal.identity(action);
+    if (readable.containsKey(identity)) continue;
+    try {
+      RecordJournal(
+        account,
+        'salvage',
+        null,
+        _validateActionValue,
+      ).receive([action]);
+      readable[identity] = action;
+    } on FormatException {
+      continue;
+    }
+  }
+  return readable;
 }
 
 /// The account of `input.account` with its settings `input.metadata` and
@@ -1299,6 +1540,146 @@ _Restored _withServerCopies(
   );
 }
 
+/// The records of one account that its kept copies hold and that the
+/// record file lacks: [actions] by identity, the identities of those that
+/// wait for upload, and [records] of a snapshot in the format before the
+/// journal, by address.
+typedef _Kept = ({
+  Map<String, Map<String, dynamic>> actions,
+  Set<String> pending,
+  Map<String, Map<String, dynamic>> records,
+});
+
+/// What the kept copies of damaged records hold that the record file lacks,
+/// by account, and whether kept copies exist. `input.reader` reads the rows
+/// kept aside, the kept record files and what the record file holds, when
+/// the store has a database. `input.texts` are the kept preference values.
+///
+/// An action counts as waiting for upload when one of its copies says so,
+/// or when a copy does not know. A second upload of an action is harmless,
+/// because the server keeps one copy of each identity.
+Future<({bool kept, Map<String, _Kept> accounts})> _readKept(
+  ({RecordReader? reader, List<({String account, String text})> texts}) input,
+) async {
+  final found = await input.reader?.kept();
+  final copies = [
+    if (found != null)
+      for (final (:account, :rows) in found.rows)
+        (account: account, copy: _readableRows(rows)),
+    for (final (:account, :text) in [...?found?.texts, ...input.texts])
+      (account: account, copy: _readableText(text)),
+  ];
+  final held =
+      await input.reader?.held({
+        for (final (:account, copy: _) in copies) account,
+      }) ??
+      const <String, HeldIdentities>{};
+  final accounts = <String, _Kept>{};
+  for (final (:account, :copy) in copies) {
+    final kept = accounts.putIfAbsent(
+      account,
+      () => (actions: {}, pending: {}, records: {}),
+    );
+    final holds = held[account];
+    final pending = copy.pending?.toSet();
+    for (final MapEntry(key: identity, value: action) in _readableActions(
+      account,
+      copy.actions,
+    ).entries) {
+      if (holds?.actions.contains(identity) ?? false) continue;
+      kept.actions.putIfAbsent(identity, () => action);
+      if (pending?.contains(identity) ?? true) kept.pending.add(identity);
+    }
+    for (final MapEntry(key: record, :value) in _records(copy.records)) {
+      if (holds?.records.contains(record) ?? false) continue;
+      kept.records.putIfAbsent(record, () => value);
+    }
+  }
+  accounts.removeWhere(
+    (_, kept) => kept.actions.isEmpty && kept.records.isEmpty,
+  );
+  return (
+    kept: (found?.kept ?? false) || input.texts.isNotEmpty,
+    accounts: accounts,
+  );
+}
+
+/// The journal of `input.account` that `input.sync` encodes, or a new one
+/// when it is null, after the normal merge of `input.actions`, with each of
+/// them that `input.pending` names waiting for upload, and each of
+/// `input.records` that it lacks. It returns the merged journal, whose
+/// unsaved changes are the merge, the addresses of the records whose
+/// current versions changed, and, when `input.database` says so, the rows of
+/// its save with the settings `input.metadata`.
+({RecordJournal journal, Set<String> changed, RecordCommit? commit}) _withKept(
+  ({
+    String account,
+    Map<String, dynamic> metadata,
+    Map<String, dynamic>? sync,
+    List<Map<String, dynamic>> actions,
+    Set<String> pending,
+    Map<String, Map<String, dynamic>> records,
+    bool database,
+  })
+  input,
+) {
+  final replica = input.sync?['replica'] as String? ?? _replica();
+  var changed = <String>{};
+  RecordJournal merged(List<Map<String, dynamic>> actions) {
+    final journal = RecordJournal(
+      input.account,
+      replica,
+      input.sync,
+      _validateActionValue,
+    )..persisted();
+    changed = journal.receive(actions);
+    return journal;
+  }
+
+  RecordJournal journal;
+  try {
+    journal = merged(input.actions);
+  } on FormatException {
+    // NOTE: Actions that each pass alone can still disagree with the
+    // journal, such as one that preserves a version of another record. Each
+    // one is tried then, and the kept copy keeps those that do not fit.
+    final accepted = <Map<String, dynamic>>[];
+    for (final action in input.actions) {
+      try {
+        merged([...accepted, action]);
+        accepted.add(action);
+      } on FormatException {
+        continue;
+      }
+    }
+    journal = merged(accepted);
+  }
+  for (final identity in input.pending) {
+    if (journal.additions.containsKey(identity)) journal.markPending(identity);
+  }
+  for (final MapEntry(key: record, :value) in input.records.entries) {
+    if (journal.versionsByRecord.containsKey(record)) continue;
+    try {
+      journal.change(record, value);
+      changed.add(record);
+    } on FormatException {
+      continue;
+    }
+  }
+  return (
+    journal: journal,
+    changed: changed,
+    commit: input.database
+        ? RecordDatabase.encodeCommit(
+            input.account,
+            input.metadata,
+            journal,
+            initialize: input.sync == null,
+          )
+        : null,
+  );
+}
+
 /// The first commit of each of [accounts] that writes all of its settings
 /// and its whole journal, encoded as [RecordJournal.encode] does.
 List<RecordCommit> _wholeCommits(
@@ -1316,80 +1697,36 @@ List<RecordCommit> _wholeCommits(
     ),
 ];
 
-/// A new account from the damaged saved text of `input.account`: the
-/// settings and each record or action that still decodes.
-_Restored _salvageText(({String account, String text, bool database}) input) {
-  final decoded = _decodedObject(input.text) ?? {};
-  final sync = decoded['sync'];
-  if (sync is! Map<String, dynamic>) {
-    return _salvaged(
+/// A new account from the damaged saved text of `input.account`, from what
+/// [_readableText] reads of it.
+_Restored _salvageText(({String account, String text, bool database}) input) =>
+    _salvaged(
       input.account,
-      decoded,
-      records: decoded,
+      _readableText(input.text),
       database: input.database,
     );
-  }
-  final actions = sync['actions'];
-  final pending = sync['pending'];
-  return _salvaged(
-    input.account,
-    decoded,
-    actions: [
-      if (actions is List)
-        for (final action in actions)
-          if (action is Map<String, dynamic>) action,
-    ],
-    pending: pending is List && pending.every((identity) => identity is String)
-        ? pending.cast<String>()
-        : null,
-    database: input.database,
-  );
-}
 
-/// A new account of [account] with a new installation identity: the
-/// settings of [snapshot], each of [actions] that the journal accepts, with
-/// its upload still pending when [pending] names it, and each record of
-/// [records], a snapshot in the format before the journal, that decodes.
-/// When [pending] is null or names an action that is not salvaged, the
-/// upload state is not known, so every salvaged action is uploaded again.
+/// A new account of [account] with a new installation identity from what
+/// a damaged copy of it still holds ([_Readable]): its settings, each of
+/// its actions that the journal accepts, with its upload still pending
+/// when the copy says so, and each of its records that decodes. When the
+/// copy's pending identities are not known or name an action that is not
+/// salvaged, every salvaged action is uploaded again.
 ///
 /// Salvaged actions keep their identities, so a sync that receives them
 /// again adds nothing, and the server keeps one copy of an action that is
 /// uploaded twice. An action that follows an action that is lost waits
 /// until a sync brings the lost one. The account is saved before anything
 /// reads it, as [_readText] explains for a new identity.
-_Restored _salvaged(
-  String account,
-  Map<String, dynamic> snapshot, {
-  List<Map<String, dynamic>> actions = const [],
-  List<String>? pending = const [],
-  Map<String, dynamic> records = const {},
-  required bool database,
-}) {
+_Restored _salvaged(String account, _Readable copy, {required bool database}) {
+  final (:snapshot, :actions, :pending, :records) = copy;
   final metadata = _metadata({
     ...snapshot,
     'reading': snapshot['reading'] is Map<String, dynamic>
         ? snapshot['reading']
         : null,
   });
-  final readable = <String, Map<String, dynamic>>{};
-  for (final action in actions) {
-    final identity = RecordJournal.identity(action);
-    if (readable.containsKey(identity)) continue;
-    try {
-      // A journal of its own checks one action alone: its form, its value,
-      // and, when it has no predecessor, the versions that it preserves.
-      RecordJournal(
-        account,
-        'salvage',
-        null,
-        _validateActionValue,
-      ).receive([action]);
-      readable[identity] = action;
-    } on FormatException {
-      continue;
-    }
-  }
+  final readable = _readableActions(account, actions);
   final replica = _replica();
   RecordJournal journal;
   try {

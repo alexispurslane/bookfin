@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
@@ -6,6 +7,7 @@ import 'package:bookfin/catalog/jellyfin.dart';
 import 'package:bookfin/playback/database.dart';
 import 'package:bookfin/playback/playback.dart';
 import 'package:bookfin/playback/store.dart';
+import 'package:flutter/foundation.dart' show compute;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
@@ -905,6 +907,347 @@ void main() {
       expect(_savedPlace(await phone.store.read('alice')), 20000);
       await phone.store.checkInvariants();
     });
+  });
+
+  group('kept copies of damaged records', () {
+    const columns = {
+      'accounts': 'account, payload',
+      'record_accounts': 'account, replica, cursor, metadata',
+      'record_actions': 'account, identity, payload, pending',
+      'record_versions': 'account, record, identities',
+      'record_coverage': 'account, replica, sequence',
+    };
+
+    /// Copies every row of [account] into the tables that keep damaged
+    /// rows, stamped with [keptAt], as an earlier version did with rows that
+    /// it could not read. [move] also deletes the rows from the record
+    /// tables, as that version did.
+    Future<void> keepAside(
+      Database sql,
+      String account, {
+      int keptAt = 1,
+      bool move = true,
+    }) async {
+      for (final MapEntry(key: table, value: names) in columns.entries) {
+        await sql.rawInsert(
+          'INSERT INTO set_aside_$table SELECT ?, $names FROM $table WHERE account = ? ORDER BY rowid',
+          [keptAt, account],
+        );
+        if (move) {
+          await sql.delete(table, where: 'account = ?', whereArgs: [account]);
+        }
+      }
+    }
+
+    /// How many rows the tables that keep damaged rows hold.
+    Future<int> keptRows(Database sql) async {
+      var count = 0;
+      for (final table in columns.keys) {
+        count += (await sql.query('set_aside_$table')).length;
+      }
+      return count;
+    }
+
+    /// The identities of the listening bookmarks of [snapshot].
+    Set<String> marks(Map<String, dynamic>? snapshot) => {
+      for (final mark in (snapshot?['bookmarks'] as List? ?? []))
+        (mark as Map)['id'] as String,
+    };
+
+    /// The change set that saves listening bookmarks [ids].
+    ListeningChanges marked(List<String> ids) => ListeningChanges(
+      _settings,
+      bookmarks: {
+        for (final (index, id) in ids.indexed)
+          id: _bookmark(id, (index + 1) * 1000),
+      },
+    );
+
+    /// A phone whose earlier version kept the bookmarks `one` and `two` of
+    /// alice aside, and whose place was saved at 20000 after that.
+    Future<(_Phone, Database)> phoneWithKeptMarks(String name) async {
+      final phone = await _Phone.open(name);
+      await phone.store.save('alice', marked(['one', 'two']));
+      final sql = await _separateConnection(phone.path);
+      addTearDown(sql.close);
+      await keepAside(sql, 'alice');
+      await phone.restart();
+      await phone.store.save('alice', _place(20000));
+      await phone.restart();
+      return (phone, sql);
+    }
+
+    test('marks that an earlier version kept aside come back at the next launch beside the place saved since', () async {
+      final (phone, _) = await phoneWithKeptMarks('kept-marks');
+
+      await phone.store.recoverKept();
+      final shown = await phone.store.read('alice');
+      expect(_savedPlace(shown), 20000);
+      expect(marks(shown), {'one', 'two'});
+      expect(phone.store.keptNotifier.value, (recovered: 2, kept: true));
+      await phone.store.checkInvariants();
+      await phone.restart();
+      expect(marks(await phone.store.read('alice')), {'one', 'two'});
+    });
+
+    test('a kept copy older than the saved records neither moves the place back nor brings back a deleted mark', () async {
+      final phone = await _Phone.open('kept-older');
+      await phone.store.save('alice', _place(10000));
+      await phone.store.save('alice', marked(['one']));
+      final sql = await _separateConnection(phone.path);
+      addTearDown(sql.close);
+      await keepAside(sql, 'alice', move: false);
+      await phone.store.save('alice', _place(20000));
+      await phone.store.save(
+        'alice',
+        ListeningChanges(_settings, bookmarks: {'one': null}),
+      );
+      await phone.restart();
+
+      await phone.store.recoverKept();
+      final shown = await phone.store.read('alice');
+      expect(_savedPlace(shown), 20000);
+      expect(marks(shown), isEmpty);
+      expect(phone.store.keptNotifier.value, (recovered: 0, kept: true));
+    });
+
+    test('a kept place that this phone never saw stays beside the saved place as a choice', () async {
+      final phone = await _Phone.open('kept-concurrent');
+      await phone.store.save('alice', _place(10000));
+      final sql = await _separateConnection(phone.path);
+      addTearDown(sql.close);
+      await keepAside(sql, 'alice');
+      await phone.restart();
+      await phone.store.save('alice', _place(20000));
+      await phone.restart();
+
+      await phone.store.recoverKept();
+      final places = (await phone.store.conflicts('alice')).values
+          .expand((versions) => versions)
+          .map((action) => (action['value'] as Map)['milliseconds'])
+          .toSet();
+      expect(places, {10000, 20000});
+    });
+
+    test('a kill during the merge keeps the saved place and the kept copy, and the next launch merges again', () async {
+      final (phone, sql) = await phoneWithKeptMarks('kept-kill');
+      final kept = await keptRows(sql);
+      await sql.execute(
+        "CREATE TRIGGER cut AFTER INSERT ON record_actions BEGIN SELECT RAISE(ABORT, 'killed'); END",
+      );
+
+      await expectLater(phone.store.recoverKept(), throwsA(anything));
+      await sql.execute('DROP TRIGGER cut');
+      await phone.restart();
+      final shown = await phone.store.read('alice');
+      expect(_savedPlace(shown), 20000);
+      expect(marks(shown), isEmpty);
+      expect(await keptRows(sql), kept);
+
+      await phone.store.recoverKept();
+      expect(marks(await phone.store.read('alice')), {'one', 'two'});
+    });
+
+    test('records that came back add nothing at the next launch', () async {
+      final (phone, sql) = await phoneWithKeptMarks('kept-twice');
+      await phone.store.recoverKept();
+      final actions = (await sql.query('record_actions')).length;
+
+      await phone.restart();
+      await phone.store.recoverKept();
+      expect(phone.store.keptNotifier.value, (recovered: 0, kept: true));
+      expect((await sql.query('record_actions')).length, actions);
+    });
+
+    test(
+      'a kept record file that SQLite cannot read stays kept as it was',
+      () async {
+        final phone = await _Phone.open('kept-unreadable');
+        await phone.store.save('alice', _place(20000));
+        final damaged = List<int>.generate(8192, (index) => index * 7 % 251);
+        final copy = File('${phone.path}.damaged-1');
+        await copy.writeAsBytes(damaged);
+
+        await phone.store.recoverKept();
+        expect(copy.readAsBytesSync(), damaged);
+        expect(phone.store.keptNotifier.value, (recovered: 0, kept: true));
+        expect(_savedPlace(await phone.store.read('alice')), 20000);
+      },
+    );
+
+    test('a kept record file gives back the records of the accounts that it can read', () async {
+      final old = await _Phone.open('kept-file-old');
+      await old.store.save('alice', marked(['one', 'two']));
+      final source = await _separateConnection(old.path);
+      await source.rawQuery('PRAGMA wal_checkpoint(TRUNCATE)');
+      await source.close();
+      final phone = await _Phone.open('kept-file');
+      await phone.store.save('alice', _place(20000));
+      final copy = File('${phone.path}.damaged-1');
+      await copy.writeAsBytes(await File(old.path).readAsBytes());
+      final bytes = copy.readAsBytesSync();
+
+      await phone.store.recoverKept();
+      final shown = await phone.store.read('alice');
+      expect(_savedPlace(shown), 20000);
+      expect(marks(shown), {'one', 'two'});
+      expect(copy.readAsBytesSync(), bytes);
+    });
+
+    test('a kept record file gives back records that were still in its write-ahead log', () async {
+      final old = await _Phone.open('kept-wal-old');
+      await old.store.save('alice', marked(['one', 'two']));
+      final phone = await _Phone.open('kept-wal');
+      await phone.store.save('alice', _place(20000));
+      for (final suffix in ['', '-wal']) {
+        await File('${phone.path}.damaged-1$suffix')
+            .writeAsBytes(await File('${old.path}$suffix').readAsBytes());
+      }
+
+      await phone.store.recoverKept();
+      expect(marks(await phone.store.read('alice')), {'one', 'two'});
+    });
+
+    test(
+      'a record file kept aside when it opened counts as a kept copy at once',
+      () async {
+        final directory = await Directory.systemTemp.createTemp(
+          'bookfin-kept-open-',
+        );
+        addTearDown(() => directory.delete(recursive: true));
+        final path = '${directory.path}/records.sqlite';
+        await File(path).writeAsString('not a database ' * 512);
+        final database = await RecordDatabase.open(
+          factory: databaseFactoryFfi,
+          path: path,
+        );
+        addTearDown(database.close);
+        final store = LocalResumeStore(openDatabase: () async => database);
+
+        await store.read('alice');
+        expect(store.keptNotifier.value.kept, isTrue);
+      },
+    );
+
+    test(
+      'a kept preference value gives back its records without a database',
+      () async {
+        // An account key holds dots, as a server address does.
+        final account = jsonEncode([
+          'https://books.example',
+          'server',
+          'alice',
+        ]);
+        await LocalResumeStore().save(account, marked(['one', 'two']));
+        final preferences = await SharedPreferences.getInstance();
+        final text = preferences.getString('bookfin.playback.v1.$account')!;
+        await preferences.remove('bookfin.playback.v1.$account');
+        await preferences.setString(
+          'bookfin.damaged-records.v1.$account.1',
+          text,
+        );
+        final store = LocalResumeStore();
+        await store.save(account, _place(20000));
+
+        await store.recoverKept();
+        final shown = await store.read(account);
+        expect(_savedPlace(shown), 20000);
+        expect(marks(shown), {'one', 'two'});
+        expect(store.keptNotifier.value, (recovered: 2, kept: true));
+      },
+    );
+
+    test(
+      'damage found during this launch counts as a kept copy at once',
+      () async {
+        final phone = await _Phone.open('kept-now');
+        await phone.store.save('alice', _place(10000));
+        final sql = await _separateConnection(phone.path);
+        addTearDown(sql.close);
+        await sql.update('record_accounts', {'metadata': '{broken'});
+
+        await phone.restart();
+        await phone.store.read('alice');
+        expect(phone.store.keptNotifier.value.kept, isTrue);
+      },
+    );
+
+    test('the retry reads the kept copies in another isolate', () async {
+      final (phone, _) = await phoneWithKeptMarks('kept-hop');
+      var hops = 0;
+      final store = LocalResumeStore(
+        openDatabase: () async => phone.database,
+        hop: <M, R>(FutureOr<R> Function(M) work, M input) {
+          hops++;
+          return compute(work, input);
+        },
+      );
+
+      await store.recoverKept();
+      expect(hops, greaterThan(0));
+      expect(marks(await store.read('alice')), {'one', 'two'});
+    });
+
+    test(
+      'Discard deletes every kept copy and keeps the records that came back',
+      () async {
+        final (phone, sql) = await phoneWithKeptMarks('kept-discard');
+        final copy = File('${phone.path}.damaged-1');
+        await copy.writeAsBytes(List<int>.filled(4096, 7));
+        await File('${copy.path}-wal').writeAsBytes(List<int>.filled(64, 7));
+        final preferences = await SharedPreferences.getInstance();
+        await preferences.setString(
+          'bookfin.damaged-records.v1.alice.1',
+          '{broken',
+        );
+        await phone.store.recoverKept();
+
+        await phone.store.discardKept();
+        expect(await keptRows(sql), 0);
+        expect(
+          copy.parent.listSync().where(
+            (file) => file.path.contains('.damaged-'),
+          ),
+          isEmpty,
+        );
+        expect(
+          preferences.getKeys().where(
+            (key) => key.startsWith('bookfin.damaged-records.'),
+          ),
+          isEmpty,
+        );
+        expect(phone.store.keptNotifier.value, (recovered: 2, kept: false));
+        await phone.restart();
+        final shown = await phone.store.read('alice');
+        expect(_savedPlace(shown), 20000);
+        expect(marks(shown), {'one', 'two'});
+      },
+    );
+
+    test(
+      'a mark that came back reaches another device at the next sync',
+      () async {
+        final server = await SyncFixture.open();
+        addTearDown(server.close);
+        final account = server.session.scope.key;
+        final phone = await _Phone.open('kept-sync');
+        await phone.store.save(account, marked(['one']));
+        final sql = await _separateConnection(phone.path);
+        addTearDown(sql.close);
+        await keepAside(sql, account);
+        await phone.restart();
+        await phone.store.save(account, _place(20000));
+        await phone.restart();
+
+        await phone.store.recoverKept();
+        await phone.store.synchronize(server.session, server.client);
+        final tablet = await _Phone.open('kept-sync-tablet');
+        await tablet.store.synchronize(server.session, server.client);
+        final shown = await tablet.store.read(account);
+        expect(_savedPlace(shown), 20000);
+        expect(marks(shown), {'one'});
+      },
+    );
   });
 
   group('record sync', () {

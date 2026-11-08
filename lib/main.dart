@@ -182,6 +182,11 @@ class _BookfinAppState extends State<BookfinApp> with WidgetsBindingObserver {
       unawaited(_catalog.restore().then((_) => _catalog.refresh()));
     }
     _binding = _bind();
+    // Kept copies of damaged records are read again in the background,
+    // never on the path to the first frame.
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => unawaited(widget.sync?.recoverKept()),
+    );
     WidgetsBinding.instance.addObserver(this);
     _showAppearance(_appearance);
   }

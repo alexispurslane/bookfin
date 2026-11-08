@@ -1,6 +1,6 @@
 ---
 id: ta-tk3b
-status: open
+status: in_progress
 deps: [boo-du96]
 links: []
 created: 2026-11-08T00:13:00Z
@@ -24,3 +24,7 @@ Orchestrator, Nov 7: held for the user. A recovery path for kept copies is a use
 **2026-11-08T01:39:18Z**
 
 User decision, Nov 7: automatic merge, a quiet line, and discard after confirmation. At each launch, while kept copies exist (set_aside_* tables, <name>.damaged-<ms> files, kept preference values), the store tries again to read them with the current code and merges every readable record by time through the normal merge. Older data never replaces newer data. The Sync page's quiet line reports how many records came back, for example '3 damaged records were recovered.' While kept copies exist, the same line offers Discard, which deletes them only after a confirmation. No dialog other than that confirmation. No export. Recorded in docs/plans/bookfin.md, Conformance decisions.
+
+**2026-11-08T02:02:01Z**
+
+Implementation, Nov 7: LocalResumeStore.recoverKept reads the set_aside_* rows, every <name>.damaged-<ms> file (read-only, its -wal too) and the kept preference values in one hop, drops what the record file holds, and merges the rest per account through RecordJournal.receive in one write. Pending marks follow the kept copy; an unknown mark counts as pending. An identity that the live store holds adds nothing, even with other content (ta-tso8). A kept copy whose records all merged stays until Discard, because only an explicit user action deletes records. A kept place that this phone never saw becomes a saved-version choice beside the live place, as a second device's place does. RecordSync.recoverKept runs after the first frame and refreshes Playback and the reader when their records came back. The Sync page's quiet line says 'N damaged records were recovered.' and, while copies exist, 'Bookfin keeps a copy of the damaged records.' with Discard; the page confirms before LocalResumeStore.discardKept.

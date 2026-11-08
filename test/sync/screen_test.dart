@@ -14,6 +14,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../playback/playback_test.dart' as audio;
 import '../reader/session_test.dart' as reading;
 import '../playback/playback_test.dart' show account;
+import '../real_time.dart';
 import 'fixture.dart';
 import 'status_test.dart' show ControlledRecords;
 
@@ -177,10 +178,12 @@ void main() {
                 status: sync.statusNotifier,
                 lastSync: sync.lastSyncNotifier,
                 conflicts: sync.conflictsNotifier,
+                kept: ValueNotifier((recovered: 0, kept: false)),
                 library: ValueNotifier(CatalogLibrary.empty),
                 onSync: () => syncs++,
                 onResolve: (record, identity) =>
                     choices.add((record, identity)),
+                onDiscard: () {},
               ),
             ),
           ),
@@ -290,6 +293,82 @@ void main() {
       },
     );
 
+    testWidgets(
+      'after damaged records came back the page quietly says how many',
+      (tester) async {
+        records.kept.value = (recovered: 3, kept: true);
+        await showPage(tester);
+        expect(
+          find.textContaining('3 damaged records were recovered.'),
+          findsOneWidget,
+        );
+        records.kept.value = (recovered: 1, kept: true);
+        await tester.pump();
+        expect(
+          find.textContaining('1 damaged record was recovered.'),
+          findsOneWidget,
+        );
+        expect(find.byType(AlertDialog), findsNothing);
+      },
+    );
+
+    testWidgets('the quiet line offers Discard only while kept copies exist', (
+      tester,
+    ) async {
+      await showPage(tester);
+      expect(find.text('Discard'), findsNothing);
+      records.kept.value = (recovered: 0, kept: true);
+      await tester.pump();
+      expect(find.text('Discard'), findsOneWidget);
+      expect(find.textContaining('were recovered'), findsNothing);
+    });
+
+    testWidgets('Discard deletes the kept copies only after a confirmation', (
+      tester,
+    ) async {
+      records.kept.value = (recovered: 2, kept: true);
+      await showPage(tester);
+      await tester.tap(find.text('Discard'));
+      await tester.pumpAndSettle();
+      expect(find.byType(AlertDialog), findsOneWidget);
+      expect(records.discards, 0);
+      await tester.tap(
+        find.descendant(
+          of: find.byType(AlertDialog),
+          matching: find.text('Discard'),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(records.discards, 1);
+      expect(find.byType(AlertDialog), findsNothing);
+      expect(find.text('Discard'), findsNothing);
+    });
+
+    testWidgets('a Discard that fails says so and keeps offering Discard', (
+      tester,
+    ) async {
+      records
+        ..kept.value = (recovered: 0, kept: true)
+        ..discardFails = true;
+      await showPage(tester);
+      await tester.tap(find.text('Discard'));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.descendant(
+          of: find.byType(AlertDialog),
+          matching: find.text('Discard'),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.text(
+          'The damaged copies were not deleted. Retry after checking device storage.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Discard'), findsOneWidget);
+    });
+
     testWidgets('tapping Sync now shows busy, then the result', (tester) async {
       records.gate = Completer();
       await showPage(tester);
@@ -301,6 +380,45 @@ void main() {
       expect(find.text('Personal records are synced.'), findsOneWidget);
       expect(find.text('Sync now'), findsOneWidget);
     });
+  });
+
+  testWidgets('a Discard that the user cancels keeps the kept copies', (
+    tester,
+  ) async {
+    const copy = 'bookfin.damaged-records.v1.alice.1';
+    SharedPreferences.setMockInitialValues({copy: '{broken'});
+    final records = LocalResumeStore();
+    await finish(tester, records.recoverKept());
+    final page = RecordSync(records: records);
+    addTearDown(page.dispose);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: RecordSyncPage(
+          sync: page,
+          library: ValueNotifier(CatalogLibrary.empty),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Discard'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+    expect(find.byType(AlertDialog), findsNothing);
+    expect((await SharedPreferences.getInstance()).getString(copy), '{broken');
+    expect(find.text('Discard'), findsOneWidget);
+
+    await tester.tap(find.text('Discard'));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.text('Discard'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect((await SharedPreferences.getInstance()).getString(copy), isNull);
+    expect(find.text('Discard'), findsNothing);
   });
 }
 

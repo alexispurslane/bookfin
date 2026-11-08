@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:bookfin/catalog/jellyfin.dart';
 import 'package:bookfin/playback/store.dart';
 import 'package:bookfin/sync/coordinator.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../playback/playback_test.dart' show account;
@@ -197,6 +198,19 @@ class ControlledRecords implements LocalResumeStore {
   int replaced = 0;
   Map<String, List<Map<String, dynamic>>> found = {};
   final resolved = <String>[];
+  final kept = ValueNotifier<KeptRecords>((recovered: 0, kept: false));
+  int discards = 0;
+  bool discardFails = false;
+
+  @override
+  ValueListenable<KeptRecords> get keptNotifier => kept;
+
+  @override
+  Future<void> discardKept() async {
+    discards++;
+    if (discardFails) throw Exception('The disk is busy.');
+    kept.value = (recovered: kept.value.recovered, kept: false);
+  }
 
   @override
   Future<SyncReport> synchronize(

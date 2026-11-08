@@ -52,6 +52,17 @@ class _Records implements LocalResumeStore {
     for (final entry in found.entries) entry.key: [...entry.value],
   };
 
+  /// Whether the next retry of kept copies fails.
+  bool recoveryFails = false;
+
+  @override
+  Future<void> recoverKept() async {
+    if (recoveryFails) throw Exception('The kept copies cannot be read.');
+  }
+
+  @override
+  StaleDomains staleDomains(String account) => stale;
+
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
@@ -106,6 +117,40 @@ void main() {
       await sync.synchronize();
       expect(playback.refreshes, 0);
       expect(reader.refreshes, 1);
+    },
+  );
+
+  test(
+    'listening records that came back from kept copies refresh only Playback',
+    () async {
+      records.stale = (listening: true, reading: false);
+      await sync.recoverKept();
+      expect(playback.refreshes, 1);
+      expect(reader.refreshes, 0);
+    },
+  );
+
+  test(
+    'reading records that came back from kept copies refresh only the reader',
+    () async {
+      records.stale = (listening: false, reading: true);
+      await sync.recoverKept();
+      expect(playback.refreshes, 0);
+      expect(reader.refreshes, 1);
+    },
+  );
+
+  test(
+    'a retry of kept copies that fails reports nothing and refreshes nothing',
+    () async {
+      records
+        ..stale = (listening: true, reading: true)
+        ..recoveryFails = true;
+      await sync.recoverKept();
+      expect(playback.refreshes, 0);
+      expect(reader.refreshes, 0);
+      expect(sync.message, isNull);
+      expect(sync.lastSyncNotifier.value?.failed, isNot(true));
     },
   );
 
