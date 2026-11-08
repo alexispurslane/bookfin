@@ -6,7 +6,7 @@ Read `docs/plans/bookfin.md` and your ticket before implementation. The user app
 
 ## Agents and orchestration
 
-The user requires every subagent to use Codex `gpt-6.1-sol` with `reasoningEffort: high`. This applies to builders, researchers, reviewers, fixers, and test agents. Never substitute another model or effort. A child performs its own task and starts no children unless its brief explicitly authorizes them. Follow the host's delegation and workflow rules.
+A child performs its own task and starts no children unless its brief explicitly authorizes them. Follow the host's delegation and workflow rules.
 
 Track work with `tk`. Read `tk ready` and the dependency tree. Keep ticket changes with the work they describe. Start a ticket when its work begins. Only the orchestrator closes a ticket after integration. Record newly found work as tickets. The epic is `boo-fs0n`; its design is `docs/plans/bookfin.md`.
 
