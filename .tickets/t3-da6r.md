@@ -1,6 +1,6 @@
 ---
 id: t3-da6r
-status: open
+status: in_progress
 deps: []
 links: []
 created: 2026-11-08T00:15:11Z

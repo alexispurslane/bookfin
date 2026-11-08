@@ -298,7 +298,7 @@ List<TimelineEntry> _sampleTimeline(DateTime now) {
 class _SamplePlayer {
   _SamplePlayer(DateTime now)
     : timeline = ValueNotifier(_sampleTimeline(now)),
-      recent = [
+      _listened = [
         (
           book: _poisonBelt,
           edition: _poisonBelt.editions.first,
@@ -314,7 +314,9 @@ class _SamplePlayer {
           edition: _timeMachine.editions.first,
           at: now.subtract(const Duration(days: 5)),
         ),
-      ];
+      ] {
+    recent = ValueNotifier(_recentNow());
+  }
 
   final book = ValueNotifier(_timeMachine);
 
@@ -340,9 +342,12 @@ class _SamplePlayer {
     ),
   );
 
-  /// Every sample book, newest listening first. A list of recent books
-  /// leaves out the open book.
-  final List<RecentListening> recent;
+  /// Every sample book, newest listening first.
+  final List<RecentListening> _listened;
+
+  /// Every sample book, newest listening first, each with its saved place.
+  /// A list of recent books leaves out the open book.
+  late final ValueNotifier<List<RecentProgress>> recent;
 
   /// The saved place of each sample book that is not open, by book id.
   final _places = {_lostWorld.id: 0, _poisonBelt.id: 1800000};
@@ -350,7 +355,7 @@ class _SamplePlayer {
   late final share = _SampleShare(position);
 
   /// The saved place of [other], in milliseconds.
-  int placeOf(Book other) =>
+  int _placeOf(Book other) =>
       other.id == book.value.id ? position.value : _places[other.id] ?? 0;
 
   /// The bookmarks of the open book, where the position slider marks them.
@@ -361,6 +366,14 @@ class _SamplePlayer {
         (bookmark: bookmark, at: bookmark.position.milliseconds),
   ];
 
+  List<RecentProgress> _recentNow() => [
+    for (final entry in _listened)
+      (
+        entry: entry,
+        progress: (elapsedMs: _placeOf(entry.book), totalMs: _length),
+      ),
+  ];
+
   /// Opens [next] at its saved place. The open book keeps its place.
   void open(Book next) {
     if (next.id == book.value.id) return;
@@ -368,6 +381,7 @@ class _SamplePlayer {
     book.value = next;
     position.value = _places.remove(next.id) ?? 0;
     previous.value = null;
+    recent.value = _recentNow();
   }
 
   /// Moves to [milliseconds] in the open book, and offers Undo.
@@ -436,6 +450,7 @@ class _SamplePlayer {
       timeline,
       status,
       replacement,
+      recent,
     ]) {
       notifier.dispose();
     }
@@ -704,29 +719,13 @@ class _PlayerFixture extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 18),
-        // TODO(t3-da6r): show RecentListeningList here once it takes values
-        // instead of Playback.
-        const SectionLabel('RECENTLY LISTENED'),
         ValueListenableBuilder(
           valueListenable: sample.book,
-          builder: (context, open, _) {
-            final now = DateTime.now();
-            return Column(
-              children: [
-                for (final entry in sample.recent)
-                  if (entry.book.id != open.id)
-                    RecentListeningRow(
-                      entry: entry,
-                      progress: (
-                        elapsedMs: sample.placeOf(entry.book),
-                        totalMs: _length,
-                      ),
-                      now: now,
-                      onResume: (entry) => onOpen(entry.book),
-                    ),
-              ],
-            );
-          },
+          builder: (context, open, _) => RecentListeningList(
+            recent: sample.recent,
+            open: open,
+            onResume: (entry) => onOpen(entry.book),
+          ),
         ),
       ],
     );

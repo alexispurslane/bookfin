@@ -281,13 +281,17 @@ void main() {
     expect(find.text('Retry saving'), findsNothing);
   });
 
-  testWidgets('resuming a production recent row opens that sample book', (
+  testWidgets('resuming a book in the production recent list opens it', (
     tester,
   ) async {
     await showGallery(tester);
     await openScreen(tester, 'Player & history');
     final row = find.widgetWithText(RecentListeningRow, 'The Poison Belt');
     await reveal(tester, 'player', row);
+    expect(
+      find.ancestor(of: row, matching: find.byType(RecentListeningList)),
+      findsOneWidget,
+    );
     expect(find.byType(RecentListeningRow), findsNWidgets(2));
     await tester.tap(row);
     await tester.pumpAndSettle();

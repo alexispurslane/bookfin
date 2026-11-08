@@ -174,7 +174,8 @@ class PlayerView extends StatelessWidget {
       RecordSaveStatus(playback: playback),
       ReplacementStartNotice(playback: playback),
       RecentListeningList(
-        playback: playback,
+        recent: recentProgress(playback),
+        open: null,
         onResume: _resume,
         empty: const Padding(
           padding: EdgeInsets.symmetric(vertical: 48),
@@ -369,7 +370,11 @@ class PlayerView extends StatelessWidget {
                 20,
                 32 + floatingBarInset(context),
               ),
-              child: RecentListeningList(playback: playback, onResume: _resume),
+              child: RecentListeningList(
+                recent: recentProgress(playback),
+                open: book,
+                onResume: _resume,
+              ),
             ),
           ],
         ),
