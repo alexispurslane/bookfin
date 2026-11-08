@@ -139,12 +139,20 @@ ThemeData bookfinTheme(Brightness brightness, {bool reduceMotion = false}) {
   final subtle = Color(night ? 0xFFB09A7F : 0xFF715D4B);
   final sepia = Color(night ? 0xFFC5A079 : 0xFF775035);
   final line = Color(night ? 0xFF504234 : 0xFFD9CCB6);
+  // Copper marks what waits for the person, such as a choice or a problem
+  // with sync, on its own pale wash.
+  final copper = Color(night ? 0xFFD49A6C : 0xFF95603C);
+  final copperWash = Color(night ? 0xFF45311F : 0xFFF2E2CF);
   final scheme = ColorScheme(
     brightness: brightness,
     primary: sepia,
     onPrimary: night ? paper : sheet,
     secondary: sepia,
     onSecondary: night ? paper : sheet,
+    tertiary: copper,
+    onTertiary: night ? paper : sheet,
+    tertiaryContainer: copperWash,
+    onTertiaryContainer: ink,
     error: Color(night ? 0xFFFFB4A0 : 0xFF9D3423),
     onError: night ? paper : sheet,
     surface: paper,

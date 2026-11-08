@@ -133,17 +133,11 @@ void main() {
         await showTab(tester, sync: sync);
         await tester.tap(find.text('Personal-record sync'));
         await tester.pumpAndSettle();
-        expect(
-          find.textContaining('The Orchard · Listening saved place'),
-          findsOneWidget,
-        );
+        expect(find.text('The Orchard'), findsOneWidget);
         client.entries = [entry('one', title: 'The River')];
         await tester.runAsync(catalog.refresh);
         await tester.pump();
-        expect(
-          find.textContaining('The River · Listening saved place'),
-          findsOneWidget,
-        );
+        expect(find.text('The River'), findsOneWidget);
         // A live 30-second sync timer fails a widget test.
         sync.dispose();
       },

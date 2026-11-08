@@ -9,6 +9,7 @@ import '../catalog/screen.dart' show LibrarySelector;
 import '../foundation/listenable_selector.dart';
 import '../foundation/theme.dart';
 import '../sync/coordinator.dart';
+import '../sync/labels.dart' show waitingChoices;
 import '../sync/screen.dart';
 
 /// The Settings tab: account, libraries, layout, appearance, and records.
@@ -114,17 +115,21 @@ class SettingsTab extends StatelessWidget {
               if (sync case final sync?)
                 ListTile(
                   title: const Text('Personal-record sync'),
-                  subtitle: const Text('Bookmarks, history, and progress'),
-                  trailing: const Icon(Icons.chevron_right_rounded),
-                  onTap: () => Navigator.push<void>(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => RecordSyncPage(
-                        sync: sync,
-                        library: catalog.libraryNotifier,
-                      ),
+                  subtitle: ListenableSelector(
+                    listenable: Listenable.merge([
+                      sync.conflictsNotifier,
+                      catalog.libraryNotifier,
+                    ]),
+                    select: () => waitingChoices(
+                      sync.conflicts,
+                      catalog.libraryNotifier.value.books,
                     ),
+                    builder: (context, waiting, _) => waiting == null
+                        ? const Text('Bookmarks, history, and progress')
+                        : _WaitingLine(waiting),
                   ),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () => _openRecords(context, sync),
                 ),
               // The cache appears together with a new library and goes
               // together with the session, so this tile follows both.
@@ -153,6 +158,24 @@ class SettingsTab extends StatelessWidget {
       );
     },
   );
+
+  /// Opens the Personal records page with the covers of the tab.
+  void _openRecords(BuildContext context, RecordSync sync) {
+    final scope = InheritedTheme.capture(
+      from: context,
+      to: Navigator.of(context).context,
+    );
+    unawaited(
+      Navigator.push<void>(
+        context,
+        MaterialPageRoute(
+          builder: (_) => scope.wrap(
+            RecordSyncPage(sync: sync, library: catalog.libraryNotifier),
+          ),
+        ),
+      ),
+    );
+  }
 
   void _openLibraries(BuildContext context) => Navigator.push<void>(
     context,
@@ -212,4 +235,34 @@ class DensitySwitch extends StatelessWidget {
       onSelectionChanged: (value) => onChanged(value.single),
     ),
   );
+}
+
+/// The copper line of the Personal-record sync row while a choice waits,
+/// for example "A choice waits · First Frost".
+class _WaitingLine extends StatelessWidget {
+  const _WaitingLine(this.text);
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final copper = Theme.of(context).colorScheme.tertiary;
+    return Row(
+      children: [
+        Container(
+          width: 7,
+          height: 7,
+          margin: const EdgeInsets.only(right: 6),
+          decoration: BoxDecoration(shape: BoxShape.circle, color: copper),
+        ),
+        Expanded(
+          child: Text(
+            text,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(color: copper, fontWeight: FontWeight.w500),
+          ),
+        ),
+      ],
+    );
+  }
 }

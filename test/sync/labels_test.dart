@@ -101,13 +101,14 @@ void main() {
   });
 
   test(
-    'the book title appears once, in the heading, and no choice repeats it',
+    'the book title appears once, as the title, and no choice repeats it',
     () {
       final labels = _label([
         _place('phone', _chapterSeven, device: 'Pixel 8'),
         _place('tablet', _chapterTwelve, device: 'Pixel Tablet'),
       ]);
-      expect(labels.heading, startsWith('Winter Road · '));
+      expect(labels.title, 'Winter Road');
+      expect(labels.kind, 'Listening saved place');
       for (final choice in labels.choices) {
         expect(choice.text, isNot(contains('Winter Road')));
         expect(choice.text, isNot(contains('Ada Narrator')));
@@ -233,6 +234,152 @@ void main() {
     expect(labels.choices.map((choice) => choice.identity), [
       'action.phone.1',
       'action.tablet.1',
+    ]);
+  });
+
+  test('a saved place shows its time apart from the chapter', () {
+    final choice = _label([_place('phone', _chapterSeven, device: 'Pixel 8')])
+        .choices
+        .single;
+    expect(choice.time, '2:33:16');
+    expect(choice.detail, 'Chapter 7');
+  });
+
+  test('the labels name the book of the current library', () {
+    final labels = _label([_place('phone', _chapterSeven, device: 'Pixel 8')]);
+    expect(labels.book, same(_book));
+    final outside = _label([
+      _place('phone', _chapterSeven, device: 'Pixel 8'),
+    ], books: const []);
+    expect(outside.book, isNull);
+  });
+
+  group('the track of the whole book', () {
+    test('holds every saved place where it lies in the edition', () {
+      final track = _label([
+        _place('phone', _chapterSeven, device: 'Pixel 8'),
+        _place('tablet', _chapterTwelve, device: 'Pixel Tablet'),
+      ]).track!;
+      expect(track.places, [
+        _chapterSeven / (5 * _hour),
+        _chapterTwelve / (5 * _hour),
+      ]);
+      expect(track.length, '5 h 0 m');
+    });
+
+    test('marks where each chapter after the first begins', () {
+      final track = _label([
+        _place('phone', _chapterSeven, device: 'Pixel 8'),
+        _place('tablet', _chapterTwelve, device: 'Pixel Tablet'),
+      ]).track!;
+      expect(track.chapters, [0.5, (4 * _hour + 10 * _minute) / (5 * _hour)]);
+    });
+
+    test('places a place in a later file after the files before it', () {
+      const later = SourceFile(
+        itemId: 'winter-2',
+        displayName: 'Winter Road 2.m4b',
+        mediaSourceId: 'm2',
+        revision: 'r1',
+        durationMs: 3 * _hour,
+        container: 'm4b',
+        sizeBytes: 42,
+      );
+      const edition = Edition(
+        id: 'winter-audio',
+        kind: EditionKind.audio,
+        label: 'Ada Narrator',
+        files: [_file, later],
+        memberIds: ['winter:m1', 'winter-2:m2'],
+      );
+      const book = Book(
+        id: 'winter',
+        title: 'Winter Road',
+        author: 'A. Writer',
+        editions: [edition],
+      );
+      final inLater = {
+        ..._place('tablet', _hour, device: 'Pixel Tablet'),
+        'value': {
+          'edition': edition.id,
+          'source': later.key,
+          'revision': later.revision,
+          'milliseconds': _hour,
+        },
+      };
+      final track = _label(
+        [_place('phone', _chapterSeven, device: 'Pixel 8'), inLater],
+        books: const [book],
+      ).track!;
+      expect(track.places, [_chapterSeven / (8 * _hour), 6 / 8]);
+      expect(track.chapters, contains(5 / 8));
+    });
+
+    test('is missing when the edition is not in the library', () {
+      expect(
+        _label([
+          _place('phone', _chapterSeven, device: 'Pixel 8'),
+          _place('tablet', _chapterTwelve, device: 'Pixel Tablet'),
+        ], books: const []).track,
+        isNull,
+      );
+    });
+
+    test('is missing for a bookmark, which is no saved place', () {
+      final record = jsonEncode(['audio', 'bookmarks', 'mark']);
+      Map<String, dynamic> mark(String replica, String title) => {
+        ..._place(replica, 0, device: replica),
+        'record': record,
+        'value': {
+          'id': 'mark',
+          'position': _place(replica, _chapterSeven)['value'],
+          'createdAt': '2026-11-07T21:12:00Z',
+          'title': title,
+        },
+      };
+      final labels = _label(record: record, [
+        mark('phone', 'Snow at the pass'),
+        mark('tablet', 'The pass'),
+      ]);
+      expect(labels.track, isNull);
+      expect(labels.choices.map((choice) => choice.detail), [
+        'Chapter 7 · Snow at the pass',
+        'Chapter 7 · The pass',
+      ]);
+    });
+
+    test('is missing when one device deleted what the other changed', () {
+      final labels = _label([
+        _place('phone', _chapterSeven, device: 'Pixel 8'),
+        {..._place('tablet', 0, device: 'Pixel Tablet'), 'value': null},
+      ]);
+      expect(labels.track, isNull);
+      expect(labels.choices.last.detail, 'Keep deletion');
+      expect(labels.choices.last.time, isNull);
+    });
+  });
+
+  test('a book holds only the conflicts of its own editions', () {
+    final other = jsonEncode([
+      'audio',
+      'resumes',
+      jsonEncode(['other-audio', 'other:m1', 'r1']),
+    ]);
+    final ours = [_place('phone', _chapterSeven, device: 'Pixel 8')];
+    final theirs = [
+      {
+        ..._place('phone', 0),
+        'record': other,
+        'value': {
+          'edition': 'other-audio',
+          'source': 'other:m1',
+          'revision': 'r1',
+          'milliseconds': 0,
+        },
+      },
+    ];
+    expect(bookConflicts({_record: ours, other: theirs}, _book).keys, [
+      _record,
     ]);
   });
 }

@@ -29,6 +29,10 @@ class SyncFixture {
   /// error, as when the connection drops between pages.
   int? failDiscoveryAfter;
 
+  /// When set, Jellyfin has no Bookfin Storage plugin: its routes are not
+  /// found.
+  bool pluginMissing = false;
+
   static Future<SyncFixture> open() async =>
       SyncFixture._(await HttpServer.bind(InternetAddress.loopbackIPv4, 0));
 
@@ -56,6 +60,12 @@ class SyncFixture {
         request.headers.value('Authorization'),
         contains('Token="fixture-token"'),
       );
+      if (pluginMissing &&
+          request.uri.pathSegments.contains('BookfinStorage')) {
+        request.response.statusCode = 404;
+        await request.response.close();
+        return;
+      }
       if (request.uri.path == '/Users/Me') {
         value = {
           'Id': 'alice',

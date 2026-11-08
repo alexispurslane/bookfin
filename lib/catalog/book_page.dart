@@ -11,6 +11,7 @@ import '../foundation/time.dart';
 import '../playback/screen.dart';
 import '../playback/timeline.dart';
 import '../reader/screen.dart';
+import '../sync/alert.dart';
 import 'book_cover.dart';
 import 'controller.dart';
 import 'library_services.dart';
@@ -33,7 +34,8 @@ void openBook(BuildContext context, LibraryServices services, Book book) =>
 
 /// The details of one book: its cover, facts, actions, and editions.
 ///
-/// The page is the controller of everything on it. It follows the catalog's
+/// The page is the controller of everything on it, including the choice
+/// between saved versions of the book that waits in the [RecordSyncScope]. It follows the catalog's
 /// library, so it shows refreshes and corrections while open, and finds its
 /// book, series and possible matches through the library's indexes. Each
 /// part below follows only its own state: the cover its download state, the
@@ -220,6 +222,22 @@ class BookPage extends StatelessWidget {
                           ],
                         ),
                         const SizedBox(height: 18),
+                        // Resume plays from the saved place, so a choice
+                        // between saved places waits above it.
+                        if (RecordSyncScope.of(context) case final sync?)
+                          BookConflictAlert(
+                            conflicts: sync.conflictsNotifier,
+                            book: book,
+                            padding: const EdgeInsets.only(bottom: 14),
+                            onChoose: (record) => unawaited(
+                              chooseConflict(
+                                context,
+                                sync,
+                                book: book,
+                                record: record,
+                              ),
+                            ),
+                          ),
                         BookActions(
                           listening: listening.edition,
                           reading: reading,

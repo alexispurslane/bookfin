@@ -85,7 +85,10 @@ class _IoTransport implements JsonTransport {
         throw const CatalogFailure(CatalogFailureKind.forbidden);
       }
       if (response.statusCode < 200 || response.statusCode >= 300) {
-        throw const CatalogFailure(CatalogFailureKind.unavailable);
+        throw CatalogFailure(
+          CatalogFailureKind.unavailable,
+          status: response.statusCode,
+        );
       }
       final received = BytesBuilder(copy: false);
       await for (final chunk in response.timeout(const Duration(seconds: 20))) {

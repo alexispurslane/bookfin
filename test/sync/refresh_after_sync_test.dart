@@ -150,7 +150,7 @@ void main() {
       expect(playback.refreshes, 0);
       expect(reader.refreshes, 0);
       expect(sync.message, isNull);
-      expect(sync.lastSyncNotifier.value?.failed, isNot(true));
+      expect(sync.lastSyncNotifier.value?.failure, isNull);
     },
   );
 

@@ -27,6 +27,7 @@ import 'playback/database.dart';
 import 'reader/session.dart';
 import 'reader/platform.dart';
 import 'reader/licenses.dart';
+import 'sync/alert.dart' show RecordSyncScope;
 import 'sync/coordinator.dart';
 import 'sync/device.dart';
 
@@ -281,10 +282,13 @@ class _BookfinAppState extends State<BookfinApp> with WidgetsBindingObserver {
         debugShowCheckedModeBanner: false,
         theme: theme,
         themeAnimationDuration: Duration.zero,
-        builder: (context, child) => BookfinThemeTransition(
-          theme: theme,
-          reduceMotion: reduceMotion,
-          child: child!,
+        builder: (context, child) => RecordSyncScope(
+          sync: widget.sync,
+          child: BookfinThemeTransition(
+            theme: theme,
+            reduceMotion: reduceMotion,
+            child: child!,
+          ),
         ),
         home: home,
       );
