@@ -5,14 +5,8 @@ import 'dart:io';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart' show compute;
 
+import '../foundation/hop.dart';
 import '../downloads/derived_files.dart';
-
-/// Runs [work] on [input] in another isolate and completes with its result.
-/// [compute] is the default.
-typedef OcrHop = Future<R> Function<M, R>(
-  FutureOr<R> Function(M) work,
-  M input,
-);
 
 /// The check of the original PDF that the last cache access made: its path,
 /// the digest that it was checked against, its size and modification time
@@ -31,7 +25,7 @@ typedef OcrHop = Future<R> Function<M, R>(
 _lastCheck;
 
 /// Whether the original PDF [file] has [digest]. The hash runs in a hop.
-Future<bool> _matches(File file, String digest, OcrHop hop) async {
+Future<bool> _matches(File file, String digest, IsolateHop hop) async {
   final stat = await file.stat();
   final last = _lastCheck;
   if (last != null &&
@@ -61,7 +55,11 @@ Future<bool> _matches(File file, String digest, OcrHop hop) async {
 Future<String> _digestOf(String path) async =>
     (await sha256.bind(File(path).openRead()).first).toString();
 
-Future<Directory> _directory(Uri original, String digest, OcrHop hop) async {
+Future<Directory> _directory(
+  Uri original,
+  String digest,
+  IsolateHop hop,
+) async {
   final file = File.fromUri(original);
   if (original.scheme != 'file' ||
       original.host.isNotEmpty ||
@@ -112,7 +110,7 @@ Future<String?> readOcrCache(
   Uri original,
   String digest,
   String key, {
-  OcrHop hop = compute,
+  IsolateHop hop = compute,
 }) async {
   final directory = await _directory(original, digest, hop);
   final file = File('${directory.path}/$key.json');
@@ -130,7 +128,7 @@ Future<void> writeOcrCache(
   String key,
   String hocr,
   bool Function() live, {
-  OcrHop hop = compute,
+  IsolateHop hop = compute,
 }) async {
   final directory = await _directory(original, digest, hop);
   if (!live()) return;

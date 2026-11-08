@@ -28,7 +28,7 @@ const lockedPage =
 
 /// Runs [work] on [input] in a new isolate. It is top-level so that the
 /// closure sent to the isolate holds only [work] and [input].
-Future<R> runInWorker<M, R>(R Function(M) work, M input) =>
+Future<R> runInWorker<M, R>(FutureOr<R> Function(M) work, M input) =>
     Isolate.run(() => work(input));
 
 void main() {
@@ -72,7 +72,7 @@ void main() {
     var calls = 0;
     Future<String> Function() recognize = () async => englishPage;
 
-    Future<R> hop<M, R>(R Function(M) work, M input) async {
+    Future<R> hop<M, R>(FutureOr<R> Function(M) work, M input) async {
       inputs.add(input);
       final held = hold;
       if (held != null) {

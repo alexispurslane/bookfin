@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
 import 'dart:typed_data';
@@ -88,7 +89,7 @@ void main() {
           .readAsBytes();
       final inputs = <Object?>[];
       final outputs = <Object?>[];
-      Future<R> hop<M, R>(R Function(M) work, M input) async {
+      Future<R> hop<M, R>(FutureOr<R> Function(M) work, M input) async {
         inputs.add(input);
         final output = await Isolate.run(() => work(input));
         outputs.add(output);

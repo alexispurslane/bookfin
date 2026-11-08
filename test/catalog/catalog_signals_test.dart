@@ -18,13 +18,16 @@ import 'model_test.dart' show entry;
 /// Runs [work] in a new isolate and reports, through [reports], the name of
 /// that isolate and how many times it built books. A top-level function, so
 /// the closure that crosses to the isolate holds only these three values.
-Future<R> _recordingHop<M, R>(SendPort reports, R Function(M) work, M input) =>
-    Isolate.run(() {
-      final before = booksBuilt;
-      final result = work(input);
-      reports.send((Isolate.current.debugName, booksBuilt - before));
-      return result;
-    }, debugName: 'catalog worker');
+Future<R> _recordingHop<M, R>(
+  SendPort reports,
+  FutureOr<R> Function(M) work,
+  M input,
+) => Isolate.run(() {
+  final before = booksBuilt;
+  final result = work(input);
+  reports.send((Isolate.current.debugName, booksBuilt - before));
+  return result;
+}, debugName: 'catalog worker');
 
 /// A library large enough that the catalog builds it in another isolate.
 List<CatalogEntry> _largeLibrary({String prefix = 'Book'}) => [
@@ -118,7 +121,7 @@ void main() {
     credentials: credentials,
     store: store,
     clientFactory: (server, device) => client,
-    hop: <M, R>(R Function(M) work, M input) {
+    hop: <M, R>(FutureOr<R> Function(M) work, M input) {
       crossings.add(_carriesEntries(input));
       return _recordingHop(reports.sendPort, work, input);
     },

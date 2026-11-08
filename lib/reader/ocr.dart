@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:xml/xml.dart';
 
+import '../foundation/hop.dart';
 import 'ocr_storage.dart';
 import 'pdf.dart';
 
@@ -13,7 +14,7 @@ class BundledEnglishText implements PdfTextSupply {
   /// Recognizes English text on scanned pages. Each recognized page, new or
   /// cached, is decoded through `hop`.
   BundledEnglishText({this._hop = compute});
-  final PdfHop _hop;
+  final IsolateHop _hop;
   static const version =
       'bookfin-ocr-2/tesseract4android-4.9.0/tesseract-5.5.1/leptonica-1.85.0/tessdata_fast-4.1.0-eng-7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2';
   static const _channel = MethodChannel('bookfin/ocr');

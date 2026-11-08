@@ -5,18 +5,12 @@ import 'dart:math';
 import 'package:flutter/foundation.dart' show compute;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../foundation/hop.dart';
 import 'playback.dart';
 import '../sync/journal.dart';
 import '../catalog/jellyfin.dart';
 import 'database.dart';
 import '../reader/session.dart' show ReadingChanges, ReadingStore;
-
-/// Runs [work] on [input] in another isolate and completes with its result,
-/// which comes back without a copy. [compute] is the default.
-typedef RecordsHop = Future<R> Function<M, R>(
-  FutureOr<R> Function(M) work,
-  M input,
-);
 
 /// Which domains of an account hold records that changed outside their
 /// writer since the writer last took in a snapshot that the store handed
@@ -124,10 +118,10 @@ const _hopText = 4 * 1024;
 ///   unless a rewrite into a new record file is due.
 /// - Each kept view equals the view that its cached account derives.
 class LocalResumeStore implements ResumeStore, ListeningStore {
-  LocalResumeStore({this.openDatabase, RecordsHop? hop})
+  LocalResumeStore({this.openDatabase, IsolateHop? hop})
     : _hop = hop ?? compute;
   final Future<RecordDatabase> Function()? openDatabase;
-  final RecordsHop _hop;
+  final IsolateHop _hop;
   Future<RecordDatabase>? _database;
   RecordDatabase? _opened;
   Future<RecordDatabase?> _storage() async {

@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../foundation/hop.dart';
 import 'jellyfin.dart';
 import 'model.dart';
 import 'shelf.dart';
@@ -9,10 +10,6 @@ typedef JellyfinClientFactory = JellyfinClient Function(
   Uri server,
   String deviceId,
 );
-
-/// Runs [work] on [input] in another isolate and completes with its result,
-/// which comes back without a copy. [compute] is the default.
-typedef CatalogHop = Future<R> Function<M, R>(R Function(M) work, M input);
 
 /// What the last request to Jellyfin says about the server.
 enum CatalogReach {
@@ -246,7 +243,7 @@ class CatalogController extends ChangeNotifier {
     required this._credentials,
     required this._store,
     JellyfinClientFactory? clientFactory,
-    CatalogHop? hop,
+    IsolateHop? hop,
   }) : _clientFactory =
            clientFactory ??
            ((server, deviceId) => JellyfinClient(server, deviceId: deviceId)),
@@ -254,7 +251,7 @@ class CatalogController extends ChangeNotifier {
   final CredentialStore _credentials;
   final CatalogStore _store;
   final JellyfinClientFactory _clientFactory;
-  final CatalogHop _hop;
+  final IsolateHop _hop;
   JellyfinClient? _active;
   JellyfinSession? _session;
   CatalogCache? _cache;

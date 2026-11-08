@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart' show ValueListenable, compute;
 import 'package:pdfrx_engine/pdfrx_engine.dart' as native;
 import 'package:pdfrx/pdfrx.dart' show pdfrxFlutterInitialize;
 
+import '../foundation/hop.dart';
 import 'document.dart';
 
 enum PdfTextStatus { candidate, absent, unreliable }
@@ -37,10 +38,6 @@ class PdfText {
   /// computes it, so that [PdfBook.addressFor] answers without hashing.
   final String? digest;
 }
-
-/// Runs [work] on [input] in another isolate and completes with its result,
-/// which comes back without a copy. [compute] is the default.
-typedef PdfHop = Future<R> Function<M, R>(R Function(M) work, M input);
 
 /// The digest that names the page text [source] in an address: the SHA-256
 /// of its UTF-8 bytes, as lowercase hex.
@@ -205,7 +202,7 @@ class PdfRuntime {
   Future<PdfBook> open(
     Uint8List bytes, {
     PdfTextSupply? textSupply,
-    PdfHop hop = compute,
+    IsolateHop hop = compute,
   }) => _admit(() async {
     await (_initialization ??= pdfrxFlutterInitialize());
     // Scanned PDFs can be large enough to freeze the UI while hashing.
@@ -258,7 +255,7 @@ class _NativePdfBook extends PdfBook {
   final PdfTextSupply? textSupply;
   final PdfRuntime owner;
   final native.PdfDocument _document;
-  final PdfHop _hop;
+  final IsolateHop _hop;
   final Set<Future<void>> _work = {};
   final Map<int, Future<PdfText>> _texts = {};
   Future<void>? _closing;
