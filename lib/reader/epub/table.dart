@@ -16,10 +16,6 @@ import 'dart:math' as math;
 /// the page. Layout cuts pages with it too.
 const fitTolerance = 0.01;
 
-/// The space between the cells of a table and around them: Chromium's
-/// default `border-spacing`.
-const cellSpacing = 2.0;
-
 /// One cell of a grid: the number of columns that it spans, and its
 /// narrowest and widest content width in pixels, its padding and borders
 /// included. The narrowest width holds its longest word; the widest holds
@@ -27,7 +23,9 @@ const cellSpacing = 2.0;
 typedef GridCell = ({int span, double min, double max});
 
 /// The width of each column of a grid of [rows] that fills a table
-/// [width] pixels wide (its content box, the spacing included).
+/// [width] pixels wide (its content box, the spacing included), with
+/// [spacing] pixels between columns and at each side: the table's
+/// horizontal `border-spacing`.
 ///
 /// Each column wants the narrowest and the widest content of its cells. A
 /// cell that spans columns widens them evenly by what they lack. If the
@@ -36,10 +34,14 @@ typedef GridCell = ({int span, double min, double max});
 /// narrowest width and a share of the rest in proportion to the width that
 /// it wants beyond that. If even the narrowest widths do not fit, the
 /// columns shrink in proportion to them.
-List<double> columnWidths(List<List<GridCell>> rows, double width) {
-  final (:min, :max) = _columns(rows);
+List<double> columnWidths(
+  List<List<GridCell>> rows,
+  double width,
+  double spacing,
+) {
+  final (:min, :max) = _columns(rows, spacing);
   final count = min.length;
-  final space = math.max(0.0, width - cellSpacing * (count + 1));
+  final space = math.max(0.0, width - spacing * (count + 1));
   final wantMin = _sum(min);
   final wantMax = _sum(max);
   if (wantMax <= space) {
@@ -65,31 +67,144 @@ List<double> columnWidths(List<List<GridCell>> rows, double width) {
 }
 
 /// The width of a grid of [rows] whose columns take their widest content,
-/// the spacing included: the table's widest content width.
-double gridMaxContent(List<List<GridCell>> rows) {
-  final (:min, :max) = _columns(rows);
-  return _sum(max) + cellSpacing * (max.length + 1);
+/// with [spacing] pixels between columns and at each side: the table's
+/// widest content width.
+double gridMaxContent(List<List<GridCell>> rows, double spacing) {
+  final (:min, :max) = _columns(rows, spacing);
+  return _sum(max) + spacing * (max.length + 1);
 }
 
 /// The box of each cell of a row whose cells span [spans] columns, in
-/// columns of [widths]: its left edge from the table's content left, and
-/// its width. A cell that spans past the last column stops there.
-List<(double, double)> cellBoxes(List<int> spans, List<double> widths) {
+/// columns of [widths] with [spacing] pixels between them and at each side:
+/// its left edge from the table's content left, and its width. A cell that
+/// spans past the last column stops there.
+List<(double, double)> cellBoxes(
+  List<int> spans,
+  List<double> widths,
+  double spacing,
+) {
   final boxes = <(double, double)>[];
   var column = 0;
-  var left = cellSpacing;
+  var left = spacing;
   for (final span in spans) {
     final end = math.min(column + span, widths.length);
     var width = 0.0;
     for (var index = column; index < end; index++) {
       width += widths[index];
     }
-    width += cellSpacing * math.max(0, end - column - 1);
+    width += spacing * math.max(0, end - column - 1);
     boxes.add((left, width));
-    left += width + cellSpacing;
+    left += width + spacing;
     column = end;
   }
   return boxes;
+}
+
+/// A cell of a table whose borders collapse: the number of columns that it
+/// spans, and its own border widths in pixels, from top to left.
+typedef CollapseCell = ({int span, List<double> border});
+
+/// A row of a table whose borders collapse: the row's own border widths,
+/// from top to left, and its cells.
+typedef CollapseRow = ({List<double> border, List<CollapseCell> cells});
+
+/// The used border widths, from top to left, of each cell of a table of
+/// [rows] whose borders collapse, and of the table, whose own borders are
+/// [table].
+///
+/// This is the collapsing border model of CSS 2.1 (17.6.2), for widths
+/// only, because the renderer draws every border as a solid rule in ink.
+/// Each edge between two cells has one border: the widest of the borders
+/// that meet there, those of the cells and of their rows, and the table's
+/// at its edges. Each cell takes half of each of its edges, and the cell
+/// beside it takes the other half. An edge that meets several cells takes
+/// the widest of them. The table takes the outer half of its edges: at its
+/// top and bottom, half the widest edge of its first and last rows; at its
+/// sides, half the edges of its first row's first and last cells. A wider
+/// side edge in a later row spills past the table's border.
+({List<List<List<double>>> cells, List<double> table}) collapseBorders(
+  List<CollapseRow> rows,
+  List<double> table,
+) {
+  // The columns [first, end) of each cell.
+  final columns = [
+    for (final row in rows)
+      () {
+        var column = 0;
+        return [for (final cell in row.cells) (column, column += cell.span)];
+      }(),
+  ];
+  final count = columns.fold(
+    0,
+    (widest, row) => math.max(widest, row.lastOrNull?.$2 ?? 0),
+  );
+  double widest(Iterable<double> widths) => widths.fold(0.0, math.max);
+  // The [side] borders of the cells of row [row] over the columns
+  // [first, end).
+  Iterable<double> over(int row, int first, int end, int side) => [
+    for (final (index, (start, stop)) in columns[row].indexed)
+      if (start < end && stop > first) rows[row].cells[index].border[side],
+  ];
+  final last = rows.length - 1;
+  final cells = [
+    for (final (r, row) in rows.indexed)
+      [
+        for (final (c, cell) in row.cells.indexed)
+          () {
+            final (first, end) = columns[r][c];
+            final lastCell = c == row.cells.length - 1;
+            return [
+              widest([
+                cell.border[0],
+                row.border[0],
+                if (r == 0)
+                  table[0]
+                else ...[
+                  rows[r - 1].border[2],
+                  ...over(r - 1, first, end, 2),
+                ],
+              ]),
+              widest([
+                cell.border[1],
+                if (!lastCell)
+                  row.cells[c + 1].border[3]
+                else if (end >= count) ...[
+                  row.border[1],
+                  table[1],
+                ],
+              ]),
+              widest([
+                cell.border[2],
+                row.border[2],
+                if (r == last)
+                  table[2]
+                else ...[
+                  rows[r + 1].border[0],
+                  ...over(r + 1, first, end, 0),
+                ],
+              ]),
+              widest([
+                cell.border[3],
+                if (c > 0)
+                  row.cells[c - 1].border[1]
+                else ...[
+                  row.border[3],
+                  table[3],
+                ],
+              ]),
+            ].map((width) => width / 2).toList();
+          }(),
+      ],
+  ];
+  return (
+    cells: cells,
+    table: [
+      widest([for (final cell in cells.first) cell[0]]),
+      cells.first.last[1],
+      widest([for (final cell in cells.last) cell[2]]),
+      cells.first.first[3],
+    ],
+  );
 }
 
 /// A cell of a row, for cutting the row into fragments: the extent
@@ -225,8 +340,12 @@ List<RowFragment> rowFragments(List<FragmentCell> cells, double pageHeight) {
   return fragments;
 }
 
-/// The narrowest and the widest width that each column of [rows] wants.
-({List<double> min, List<double> max}) _columns(List<List<GridCell>> rows) {
+/// The narrowest and the widest width that each column of [rows] wants,
+/// with [spacing] pixels between columns.
+({List<double> min, List<double> max}) _columns(
+  List<List<GridCell>> rows,
+  double spacing,
+) {
   var count = 0;
   for (final row in rows) {
     count = math.max(count, row.fold(0, (sum, cell) => sum + cell.span));
@@ -248,8 +367,8 @@ List<RowFragment> rowFragments(List<FragmentCell> cells, double pageHeight) {
     var column = 0;
     for (final cell in row) {
       if (cell.span > 1) {
-        _widen(min, column, cell.span, cell.min);
-        _widen(max, column, cell.span, cell.max);
+        _widen(min, column, cell.span, cell.min, spacing);
+        _widen(max, column, cell.span, cell.max, spacing);
       }
       column += cell.span;
     }
@@ -261,9 +380,15 @@ List<RowFragment> rowFragments(List<FragmentCell> cells, double pageHeight) {
 }
 
 /// Widens the [span] columns of [widths] from [column] evenly, so that
-/// with the spacing between them they are at least [want] pixels wide.
-void _widen(List<double> widths, int column, int span, double want) {
-  var have = cellSpacing * (span - 1);
+/// with the [spacing] between them they are at least [want] pixels wide.
+void _widen(
+  List<double> widths,
+  int column,
+  int span,
+  double want,
+  double spacing,
+) {
+  var have = spacing * (span - 1);
   for (var index = column; index < column + span; index++) {
     have += widths[index];
   }

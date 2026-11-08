@@ -956,7 +956,7 @@ class LayoutRun {
   double _maxContent(int from, double available) {
     final flow = _flow;
     if (flow[from] case final TableItem table) {
-      return gridMaxContent(_extents(table)).ceilToDouble();
+      return gridMaxContent(_extents(table), table.spacing.$1).ceilToDouble();
     }
     var widest = 0.0;
     for (var index = from; flow[index] is ParagraphItem; index++) {
@@ -1003,12 +1003,17 @@ class LayoutRun {
   /// [from] sits at the current strip position.
   void _table(TableItem table, int index, int from) {
     final (x, width) = _containing;
-    final widths = columnWidths(_extents(table), width);
+    final (across, down) = table.spacing;
+    final widths = columnWidths(_extents(table), width, across);
     // Each cell's box, its left edge and width, and its content laid out
     // at strip position 0.
     final rows = <List<(double, double, TableCell, _Cell)>>[];
     for (final row in table.rows) {
-      final boxes = cellBoxes([for (final cell in row) cell.colspan], widths);
+      final boxes = cellBoxes(
+        [for (final cell in row) cell.colspan],
+        widths,
+        across,
+      );
       rows.add([
         for (final (column, cell) in row.indexed)
           () {
@@ -1049,13 +1054,13 @@ class LayoutRun {
     ];
     // The top of each slice of the table from the grid's top.
     final tops = <double>[];
-    var bottom = cellSpacing;
+    var bottom = down;
     for (final row in fragments) {
       for (final fragment in row) {
         tops.add(bottom);
         bottom += fragment.height;
       }
-      bottom += cellSpacing;
+      bottom += down;
     }
     _resolveMargin();
     // Slice [from] starts where the run is. From the table's start, the

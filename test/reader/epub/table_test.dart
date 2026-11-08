@@ -151,6 +151,8 @@ void main() {
   setUpAll(loadReaderFont);
 
   group('column widths', () {
+    // Chromium's default border-spacing.
+    const spacing = 2.0;
     ({int span, double min, double max}) cell(
       double min,
       double max, {
@@ -164,8 +166,11 @@ void main() {
         [cell(10, 50), cell(20, 80)],
         [cell(30, 40), cell(5, 10)],
       ];
-      expect(gridMaxContent(rows), 50 + 80 + 3 * cellSpacing);
-      expect(columnWidths(rows, gridMaxContent(rows)), [50, 80]);
+      expect(gridMaxContent(rows, spacing), 50 + 80 + 3 * spacing);
+      expect(columnWidths(rows, gridMaxContent(rows, spacing), spacing), [
+        50,
+        80,
+      ]);
     });
 
     test('a table that is set wider than its content shares the extra width '
@@ -174,7 +179,7 @@ void main() {
         [cell(10, 50), cell(20, 150)],
       ];
       // 300 pixels hold 200 of content and three spaces.
-      final widths = columnWidths(rows, 300 + 3 * cellSpacing);
+      final widths = columnWidths(rows, 300 + 3 * spacing, spacing);
       expect(widths[0], closeTo(75, 1e-9));
       expect(widths[1], closeTo(225, 1e-9));
     });
@@ -185,7 +190,7 @@ void main() {
         [cell(10, 50), cell(20, 80)],
       ];
       // 100 pixels: 30 for the narrowest widths, 70 shared 40 to 60.
-      final widths = columnWidths(rows, 100 + 3 * cellSpacing);
+      final widths = columnWidths(rows, 100 + 3 * spacing, spacing);
       expect(widths[0], closeTo(38, 1e-9));
       expect(widths[1], closeTo(62, 1e-9));
     });
@@ -195,7 +200,7 @@ void main() {
       final rows = [
         [cell(100, 200), cell(300, 400)],
       ];
-      final widths = columnWidths(rows, 200 + 3 * cellSpacing);
+      final widths = columnWidths(rows, 200 + 3 * spacing, spacing);
       expect(widths[0], closeTo(50, 1e-9));
       expect(widths[1], closeTo(150, 1e-9));
     });
@@ -206,12 +211,12 @@ void main() {
         [cell(30, 120, span: 2)],
       ];
       // The two columns and the space between them give 82 of the 120.
-      final widths = columnWidths(rows, gridMaxContent(rows));
+      final widths = columnWidths(rows, gridMaxContent(rows, spacing), spacing);
       expect(widths[0], closeTo(59, 1e-9));
       expect(widths[1], closeTo(59, 1e-9));
-      expect(cellBoxes([2], widths).single, (
-        cellSpacing,
-        59 + cellSpacing + 59,
+      expect(cellBoxes([2], widths, spacing).single, (
+        spacing,
+        59 + spacing + 59,
       ));
     });
 
@@ -220,13 +225,90 @@ void main() {
         [cell(10, 40), cell(10, 60), cell(5, 30)],
         [cell(10, 20)],
       ];
-      final widths = columnWidths(rows, gridMaxContent(rows));
+      final widths = columnWidths(rows, gridMaxContent(rows, spacing), spacing);
       expect(widths, [40, 60, 30]);
-      expect(cellBoxes([1, 1, 1], widths), [
-        (cellSpacing, 40),
-        (2 * cellSpacing + 40, 60),
-        (3 * cellSpacing + 100, 30),
+      expect(cellBoxes([1, 1, 1], widths, spacing), [
+        (spacing, 40),
+        (2 * spacing + 40, 60),
+        (3 * spacing + 100, 30),
       ]);
+    });
+  });
+
+  group('collapsed borders', () {
+    const none = [0.0, 0.0, 0.0, 0.0];
+    List<double> all(double width) => [width, width, width, width];
+
+    test('two cells that touch share the wider of their two borders, half '
+        'on each side', () {
+      final (:cells, :table) = collapseBorders([
+        (
+          border: none,
+          cells: [
+            (span: 1, border: [1.0, 6.0, 1.0, 1.0]),
+            (span: 1, border: [1.0, 1.0, 1.0, 2.0]),
+          ],
+        ),
+      ], none);
+      expect(cells[0][0], [0.5, 3, 0.5, 0.5]);
+      expect(cells[0][1], [0.5, 0.5, 0.5, 3]);
+      // The table takes the other half of the borders at its edges.
+      expect(table, [0.5, 0.5, 0.5, 0.5]);
+    });
+
+    test('an edge that meets several cells takes the widest of their '
+        'borders', () {
+      final (:cells, table: _) = collapseBorders([
+        (border: none, cells: [(span: 2, border: all(1))]),
+        (
+          border: none,
+          cells: [
+            (span: 1, border: [3.0, 1.0, 1.0, 1.0]),
+            (span: 1, border: all(1)),
+          ],
+        ),
+      ], none);
+      expect(cells[0][0][2], 1.5);
+      expect(cells[1][0][0], 1.5);
+      expect(cells[1][1][0], 0.5);
+    });
+
+    test('the borders of the table and of a row collapse with those of the '
+        'cells at their edges', () {
+      final (:cells, :table) = collapseBorders([
+        (
+          border: [0.0, 0.0, 2.0, 0.0],
+          cells: [(span: 1, border: all(1)), (span: 1, border: all(1))],
+        ),
+        (
+          border: none,
+          cells: [(span: 1, border: all(1)), (span: 1, border: all(1))],
+        ),
+      ], all(4));
+      expect(cells[0][0], [2, 0.5, 1, 2]);
+      expect(cells[1][1], [1, 2, 2, 0.5]);
+      expect(table, [2, 2, 2, 2]);
+    });
+
+    test('a table takes as its top and bottom border half the widest of the '
+        'cells at that edge, and as its sides half those of its first row', () {
+      final (cells: _, :table) = collapseBorders([
+        (
+          border: none,
+          cells: [
+            (span: 1, border: [2.0, 1.0, 1.0, 1.0]),
+            (span: 1, border: [6.0, 3.0, 1.0, 1.0]),
+          ],
+        ),
+        (
+          border: none,
+          cells: [
+            (span: 1, border: [1.0, 1.0, 1.0, 8.0]),
+            (span: 1, border: [1.0, 1.0, 4.0, 1.0]),
+          ],
+        ),
+      ], none);
+      expect(table, [3, 1.5, 2, 0.5]);
     });
   });
 
@@ -658,6 +740,114 @@ void main() {
       closeTo(tall.y + tall.paragraph.height, 0.01),
     );
     disposeAll(pages);
+  });
+
+  group('border-spacing and border-collapse', () {
+    const grid =
+        '<table><tr><td class="wide">One</td><td>Two</td></tr>'
+        '<tr><td>Three</td><td>Four</td></tr></table>';
+
+    /// The rules of the one page of [pages] that are taller than wide, and
+    /// those that are wider than tall, each sorted by where they start.
+    ({List<ui.Rect> down, List<ui.Rect> across}) rules(List<LaidPage> pages) {
+      final rects = [
+        for (final decoration in pages.single.decorations)
+          if (decoration case RuleDecoration(:final rect)) rect,
+      ];
+      return (
+        down: [
+          for (final rect in rects)
+            if (rect.height > rect.width) rect,
+        ]..sort((a, b) => a.left.compareTo(b.left)),
+        across: [
+          for (final rect in rects)
+            if (rect.width > rect.height) rect,
+        ]..sort((a, b) => a.top.compareTo(b.top)),
+      );
+    }
+
+    /// The rules of [down] that run beside the first row's cells only.
+    List<ui.Rect> firstRow(
+      PreparedSection section,
+      List<LaidPage> pages,
+      List<ui.Rect> down,
+    ) {
+      final three = pieceOf(section, pages, 'Three');
+      return [
+        for (final rect in down)
+          if (rect.bottom <= three.y) rect,
+      ];
+    }
+
+    test('a table spaces its columns and rows by its border-spacing', () {
+      final section = prepared(
+        grid,
+        css: 'table{border-spacing:10px 20px}td{border:1px solid}',
+      );
+      final pages = runToEnd(section);
+      final (:down, :across) = rules(pages);
+      // The first row's cells: One's left and right, Two's left and right.
+      final row = firstRow(section, pages, down);
+      expect(row, hasLength(4));
+      expect(row[2].left - row[1].right, closeTo(10, 0.01));
+      // One's top and bottom, then Three's top.
+      final tops = {for (final rect in across) rect.top}.toList();
+      expect(tops[2] - (tops[1] + 1), closeTo(20, 0.01));
+      final one = pieceOf(section, pages, 'One');
+      final three = pieceOf(section, pages, 'Three');
+      expect(three.x, one.x);
+      disposeAll(pages);
+    });
+
+    test('collapsed borders leave no space between cells and draw one rule '
+        'as wide as the wider border where two cells meet', () {
+      final section = prepared(
+        grid,
+        css:
+            'table{border-collapse:collapse}td{border:2px solid}'
+            'td.wide{border-right:6px solid}',
+      );
+      final pages = runToEnd(section);
+      final (:down, :across) = rules(pages);
+      final row = firstRow(section, pages, down);
+      expect(row, hasLength(4));
+      // One's right half and Two's left half meet in one 6 pixel rule.
+      final (oneRight, twoLeft) = (row[1], row[2]);
+      expect(twoLeft.left, closeTo(oneRight.right, 0.01));
+      expect(oneRight.width + twoLeft.width, closeTo(6, 0.01));
+      // One's bottom half and Three's top half meet in one 2 pixel rule.
+      final one = pieceOf(section, pages, 'One');
+      final three = pieceOf(section, pages, 'Three');
+      final between = [
+        for (final rect in across)
+          if (rect.left == row[0].left &&
+              rect.top > one.y &&
+              rect.bottom < three.y)
+            rect,
+      ];
+      expect(between, hasLength(2));
+      expect(between[1].top, closeTo(between[0].bottom, 0.01));
+      expect(between[0].height + between[1].height, closeTo(2, 0.01));
+      disposeAll(pages);
+    });
+
+    test('a table whose borders collapse ignores its padding and draws half '
+        'of its outer border, and its cells draw the other half', () {
+      final section = prepared(
+        grid,
+        css:
+            'table{border-collapse:collapse;border:4px solid;padding:10px}'
+            'td{border:2px solid}',
+      );
+      final pages = runToEnd(section);
+      final (:down, across: _) = rules(pages);
+      // The table's left rule, then One's left rule beside it.
+      final [table, one, ...] = down;
+      expect(table.width, closeTo(2, 0.01));
+      expect(one.width, closeTo(2, 0.01));
+      expect(one.left, closeTo(table.right, 0.01));
+      disposeAll(pages);
+    });
   });
 
   test('a caption lays out as a block above its table', () {
