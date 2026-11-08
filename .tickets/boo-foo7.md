@@ -1,6 +1,6 @@
 ---
 id: boo-foo7
-status: in_progress
+status: closed
 deps: [boo-315o]
 links: []
 created: 2026-11-08T12:48:01Z
