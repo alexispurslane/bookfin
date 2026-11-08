@@ -126,14 +126,12 @@ typedef _Built = ({CatalogCache cache, String text, CatalogLibrary library});
 /// that the catalog builds in another isolate. A smaller catalog builds on
 /// the UI isolate. A refresh counts the items that Jellyfin's pages hold,
 /// because their body size depends on Jellyfin's fields. Measured in AOT on
-/// an M-series Mac: a hop costs about 35 µs plus the copy of its input, and
-/// a short entry builds in about 5 µs, but an entry with a long
-/// description and many chapters takes about 85 µs. So these limits do not mark where a hop starts to pay: that is
-/// one or two entries. They are a compromise: widget tests run in fake time,
-/// in which a hop never completes, and every test library is below them.
-/// A library of real size is far above them.
-const _hopText = 16 * 1024;
-const _hopEntries = 16;
+/// an M-series Mac, as time on the calling isolate: a hop costs about 15 µs,
+/// an empty catalog (about 370 characters) builds in 7 to 14 µs, and a
+/// catalog of one short entry (about 740 characters) in 19 to 36 µs. So a
+/// hop pays from the first entry, and only an empty catalog builds here.
+const _hopText = 512;
+const _hopEntries = 1;
 
 /// Decodes the saved catalog [saved] and builds its library.
 _Built _restoreCatalog(({AccountScope scope, String text}) saved) {

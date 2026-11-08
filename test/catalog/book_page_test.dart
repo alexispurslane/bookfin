@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:bookfin/catalog/book_cover.dart';
 import 'package:bookfin/catalog/book_page.dart';
 import 'package:bookfin/catalog/controller.dart';
@@ -23,6 +21,7 @@ import 'layout_test.dart' show MemoryLayoutStore;
 import 'model_test.dart' show entry;
 import '../playback/playback_test.dart'
     show LocalFiles, MemoryResume, TestEngine, account, first, title, recording;
+import '../real_time.dart';
 
 void main() {
   late _RecordingCatalog catalog;
@@ -47,8 +46,11 @@ void main() {
     tester.view.physicalSize = const Size(1080, 2400);
     tester.view.devicePixelRatio = 2.625;
     addTearDown(tester.view.reset);
-    await catalog.connect('https://books.example', 'alice', 'password');
-    await catalog.refresh(selected: {'books'});
+    await finish(
+      tester,
+      catalog.connect('https://books.example', 'alice', 'password'),
+    );
+    await finish(tester, catalog.refresh(selected: {'books'}));
     await tester.pumpWidget(
       MaterialApp(
         theme: bookfinTheme(Brightness.light),
@@ -216,14 +218,20 @@ void main() {
     );
 
     testWidgets('on search offers the book details', (tester) async {
-      await catalog.connect('https://books.example', 'alice', 'password');
+      await finish(
+        tester,
+        catalog.connect('https://books.example', 'alice', 'password'),
+      );
       await openMore(tester, SearchPage(services: services()));
       expect(find.text('Book details'), findsOneWidget);
     });
 
     testWidgets('on a book page offers the book details', (tester) async {
-      await catalog.connect('https://books.example', 'alice', 'password');
-      await catalog.refresh(selected: {'books'});
+      await finish(
+        tester,
+        catalog.connect('https://books.example', 'alice', 'password'),
+      );
+      await finish(tester, catalog.refresh(selected: {'books'}));
       await openMore(
         tester,
         BookPage(services: services(), bookId: catalog.books.single.id),
@@ -240,8 +248,11 @@ void main() {
         await playback.play();
       });
       final problem = playback.message!;
-      await catalog.connect('https://books.example', 'alice', 'password');
-      await catalog.refresh(selected: {'books'});
+      await finish(
+        tester,
+        catalog.connect('https://books.example', 'alice', 'password'),
+      );
+      await finish(tester, catalog.refresh(selected: {'books'}));
       await tester.pumpWidget(
         MaterialApp(
           theme: bookfinTheme(Brightness.light),
@@ -288,17 +299,6 @@ void main() {
     Book book(String title) =>
         catalog.books.singleWhere((book) => book.title == title);
     Edition audio(String title) => book(title).editions.single;
-
-    /// Runs fake and real time until [work] ends.
-    Future<void> finish(WidgetTester tester, Future<void> work) async {
-      var done = false;
-      unawaited(work.whenComplete(() => done = true));
-      for (var step = 0; !done && step < 100; step++) {
-        await tester.runAsync(() => Future<void>.delayed(Duration.zero));
-        await tester.pump(const Duration(milliseconds: 10));
-      }
-      expect(done, isTrue);
-    }
 
     /// A widget test whose player closes before fake time ends, because
     /// closing waits on work that fake time does not run.

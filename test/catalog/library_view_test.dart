@@ -19,6 +19,7 @@ import '../playback/playback_test.dart' show MemoryResume, TestEngine;
 import 'controller_test.dart'
     show FixtureClient, MemoryCatalogStore, MemoryCredentials;
 import 'model_test.dart' show entry;
+import '../real_time.dart';
 
 /// Download state that a test sets by hand. It records which editions the
 /// library asked about, apart from the questions that Downloads itself asks
@@ -195,17 +196,6 @@ void main() {
     catalog.dispose();
     client.close();
   });
-
-  /// Runs fake and real time until [work] ends.
-  Future<void> finish(WidgetTester tester, Future<void> work) async {
-    var done = false;
-    unawaited(work.whenComplete(() => done = true));
-    for (var step = 0; !done && step < 100; step++) {
-      await tester.runAsync(() => Future<void>.delayed(Duration.zero));
-      await tester.pump(const Duration(milliseconds: 10));
-    }
-    expect(done, isTrue);
-  }
 
   /// Completes when no catalog refresh runs.
   Future<void> refreshEnded() {

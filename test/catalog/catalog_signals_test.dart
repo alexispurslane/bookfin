@@ -814,13 +814,37 @@ void main() {
       expect(controller.books.map((book) => book.title), contains('Corrected'));
     });
 
+    test('a one-book library builds in another isolate, because its build costs more than a hop', () async {
+      await connectAndSelect();
+      await controller.correctBook(
+        'book:one',
+        const BookDetails(title: 'Corrected', author: 'Writer'),
+      );
+      final restarted = newController();
+      addTearDown(restarted.dispose);
+      await restarted.restore();
+      await settleReports();
+      expect(builds, [
+        ('catalog worker', 1),
+        ('catalog worker', 1),
+        ('catalog worker', 1),
+      ]);
+      expect(restarted.books.single.title, 'Corrected');
+    });
+
     test(
-      'a small library builds here, because a hop costs more than its build',
+      'an empty library builds here, because a hop costs more than its build',
       () async {
+        client.entries = [];
         await connectAndSelect();
+        final restarted = newController();
+        addTearDown(restarted.dispose);
+        await restarted.restore();
         await settleReports();
         expect(builds, isEmpty);
-        expect(controller.books, hasLength(1));
+        expect(controller.verified, isTrue);
+        expect(restarted.session, isNotNull);
+        expect(restarted.books, isEmpty);
       },
     );
   });

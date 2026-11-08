@@ -12,6 +12,7 @@ import '../catalog/controller_test.dart'
     show FixtureClient, MemoryCredentials, MemoryCatalogStore;
 import '../catalog/model_test.dart' show entry;
 import '../playback/playback_test.dart' show LocalFiles, MemoryResume;
+import '../real_time.dart';
 import 'publication_test.dart' show epub;
 
 void main() {
@@ -31,12 +32,11 @@ void main() {
         store: MemoryResume(),
         load: (_) async => Publication.admit(epub()),
       );
-      await catalog.connect(
-        'https://books.example',
-        'alice',
-        'fixture-password',
+      await finish(
+        tester,
+        catalog.connect('https://books.example', 'alice', 'fixture-password'),
       );
-      await catalog.refresh(selected: {'books'});
+      await finish(tester, catalog.refresh(selected: {'books'}));
       downloads.files[catalog.books.single.editions.single.files.single.key] =
           Uri.file('/verified.epub');
       final binding = AccountBinding(

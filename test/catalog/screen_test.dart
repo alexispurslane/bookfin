@@ -18,6 +18,7 @@ import 'controller_test.dart'
     show MemoryCatalogStore, MemoryCredentials, FixtureClient;
 import 'layout_test.dart' show MemoryLayoutStore;
 import 'model_test.dart' show entry;
+import '../real_time.dart';
 
 void main() {
   late CatalogController controller;
@@ -53,6 +54,15 @@ void main() {
         ),
       );
 
+  /// Signs in and selects the Books library, in real time.
+  Future<void> signIn(WidgetTester tester) async {
+    await finish(
+      tester,
+      controller.connect('https://books.example', 'alice', 'password'),
+    );
+    await finish(tester, controller.refresh(selected: {'books'}));
+  }
+
   List<CatalogEntry> orchardCycle() => [
     for (final (index, title) in ['First Frost', 'Graft', 'Windfall'].indexed)
       entry(
@@ -69,8 +79,7 @@ void main() {
     'the library shows a series as one card that opens its books in order',
     (tester) async {
       client.entries = orchardCycle();
-      await controller.connect('https://books.example', 'alice', 'password');
-      await controller.refresh(selected: {'books'});
+      await signIn(tester);
       await show(tester);
       expect(find.text('Salt and Lantern'), findsOneWidget);
       expect(find.text('The Orchard Cycle'), findsOneWidget);
@@ -87,8 +96,7 @@ void main() {
     tester,
   ) async {
     client.entries = orchardCycle();
-    await controller.connect('https://books.example', 'alice', 'password');
-    await controller.refresh(selected: {'books'});
+    await signIn(tester);
     await show(tester);
     expect(find.byType(TextField), findsNothing);
     await tester.tap(find.byTooltip('Search'));
@@ -114,8 +122,11 @@ void main() {
         store: store,
         clientFactory: (server, device) => client,
       );
-      await first.connect('https://books.example', 'alice', 'password');
-      await first.refresh(selected: {'books'});
+      await finish(
+        tester,
+        first.connect('https://books.example', 'alice', 'password'),
+      );
+      await finish(tester, first.refresh(selected: {'books'}));
       first.dispose();
       controller.dispose();
       controller = CatalogController(
@@ -123,7 +134,7 @@ void main() {
         store: store,
         clientFactory: (server, device) => client,
       );
-      await controller.restore();
+      await finish(tester, controller.restore());
       await show(tester);
       expect(find.text('The Orchard'), findsOneWidget);
       expect(find.textContaining('Saved library'), findsNothing);
@@ -134,11 +145,10 @@ void main() {
     testWidgets('an expired sign-in says so and offers no Retry', (
       tester,
     ) async {
-      await controller.connect('https://books.example', 'alice', 'password');
-      await controller.refresh(selected: {'books'});
+      await signIn(tester);
       await show(tester);
       client.failure = const CatalogFailure(CatalogFailureKind.unauthorized);
-      await controller.refresh();
+      await finish(tester, controller.refresh());
       await tester.pumpAndSettle();
       expect(
         find.text('Sign in again. Your Jellyfin session has expired.'),
@@ -148,11 +158,10 @@ void main() {
     });
 
     testWidgets('revoked access says so and offers no Retry', (tester) async {
-      await controller.connect('https://books.example', 'alice', 'password');
-      await controller.refresh(selected: {'books'});
+      await signIn(tester);
       await show(tester);
       client.failure = const CatalogFailure(CatalogFailureKind.forbidden);
-      await controller.refresh();
+      await finish(tester, controller.refresh());
       await tester.pumpAndSettle();
       expect(find.text('This account does not have access.'), findsOneWidget);
       expect(find.textContaining('Cannot reach Jellyfin'), findsNothing);
@@ -189,8 +198,7 @@ void main() {
     testWidgets(
       'saving libraries that cannot reach Jellyfin keeps the page open and says so',
       (tester) async {
-        await controller.connect('https://books.example', 'alice', 'password');
-        await controller.refresh(selected: {'books'});
+        await signIn(tester);
         await tester.pumpWidget(
           MaterialApp(
             home: Builder(
@@ -225,8 +233,7 @@ void main() {
   testWidgets('the top bar switches the library between a grid and a list', (
     tester,
   ) async {
-    await controller.connect('https://books.example', 'alice', 'password');
-    await controller.refresh(selected: {'books'});
+    await signIn(tester);
     await show(tester);
     expect(find.byType(SliverLayoutBuilder), findsOneWidget);
     await tester.tap(find.byTooltip('Show as list'));
@@ -239,8 +246,7 @@ void main() {
   });
 
   testWidgets('settings make the library compact', (tester) async {
-    await controller.connect('https://books.example', 'alice', 'password');
-    await controller.refresh(selected: {'books'});
+    await signIn(tester);
     await show(tester);
     final spacious = tester.getSize(find.byType(BookCover)).width;
     await tester.tap(find.text('Settings'));
@@ -264,8 +270,7 @@ void main() {
           'ImageTags': {'Primary': 'tag'},
         }, libraryId: 'books'),
     ];
-    await controller.connect('https://books.example', 'alice', 'password');
-    await controller.refresh(selected: {'books'});
+    await signIn(tester);
     await show(tester);
     final coverImages = find.byWidgetPredicate(
       (widget) => widget is Image && widget.image is CoverImage,
@@ -282,11 +287,10 @@ void main() {
   testWidgets('permission recovery closes only the library selector', (
     tester,
   ) async {
-    await controller.connect('https://books.example', 'alice', 'password');
-    await controller.refresh(selected: {'books'});
+    await signIn(tester);
     await show(tester);
     client.failure = const CatalogFailure(CatalogFailureKind.forbidden);
-    await controller.refresh();
+    await finish(tester, controller.refresh());
     await tester.pumpAndSettle();
     client.failure = null;
     await tester.tap(find.text('Settings'));
@@ -294,6 +298,7 @@ void main() {
     await tester.tap(find.text('Libraries'));
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(FilledButton, 'Save libraries'));
+    await runUntil(tester, () => !controller.busy);
     await tester.pumpAndSettle();
     expect(find.byType(CatalogHome), findsOneWidget);
     expect(find.text('The Orchard'), findsOneWidget);
@@ -372,8 +377,7 @@ void main() {
     (tester) async {
       await show(tester);
       expect(find.byType(NavigationBar), findsNothing);
-      await controller.connect('https://books.example', 'alice', 'password');
-      await controller.refresh(selected: {'books'});
+      await signIn(tester);
       await tester.pumpAndSettle();
       expect(find.byType(NavigationBar), findsOneWidget);
       final navigation = tester.getRect(find.byType(NavigationBar));
@@ -397,10 +401,14 @@ void main() {
   testWidgets(
     'selecting a book library reveals saved books and their real editions',
     (tester) async {
-      await controller.connect('https://books.example', 'alice', 'password');
+      await finish(
+        tester,
+        controller.connect('https://books.example', 'alice', 'password'),
+      );
       await show(tester);
       await tester.tap(find.widgetWithText(CheckboxListTile, 'Books'));
       await tester.tap(find.widgetWithText(FilledButton, 'Save libraries'));
+      await runUntil(tester, () => !controller.busy);
       await tester.pumpAndSettle();
       expect(find.text('The Orchard'), findsOneWidget);
       await tester.tap(find.text('The Orchard'));
@@ -415,8 +423,7 @@ void main() {
 
   testWidgets('book search filters the real cached catalog', (tester) async {
     client.entries = [entry('one'), entry('two', title: 'The River')];
-    await controller.connect('https://books.example', 'alice', 'password');
-    await controller.refresh(selected: {'books'});
+    await signIn(tester);
     await show(tester);
     await tester.tap(find.byTooltip('Search'));
     await tester.pumpAndSettle();
@@ -434,24 +441,29 @@ void main() {
         entry('two', title: 'A side story'),
       ];
       {
-        await controller.connect('https://books.example', 'alice', 'password');
-        await controller.refresh(selected: {'books'});
-        await controller.correctBook(
-          'book:one',
-          const BookDetails(
-            title: 'Z first',
-            author: 'Writer',
-            series: 'Garden',
-            seriesOrder: 1,
+        await signIn(tester);
+        await finish(
+          tester,
+          controller.correctBook(
+            'book:one',
+            const BookDetails(
+              title: 'Z first',
+              author: 'Writer',
+              series: 'Garden',
+              seriesOrder: 1,
+            ),
           ),
         );
-        await controller.correctBook(
-          'book:two',
-          const BookDetails(
-            title: 'A side story',
-            author: 'Writer',
-            series: 'Garden',
-            seriesOrder: 1.5,
+        await finish(
+          tester,
+          controller.correctBook(
+            'book:two',
+            const BookDetails(
+              title: 'A side story',
+              author: 'Writer',
+              series: 'Garden',
+              seriesOrder: 1.5,
+            ),
           ),
         );
       }
@@ -475,8 +487,7 @@ void main() {
   testWidgets(
     'the correction dialog shows the corrected book behind its glass',
     (tester) async {
-      await controller.connect('https://books.example', 'alice', 'password');
-      await controller.refresh(selected: {'books'});
+      await signIn(tester);
       await show(tester);
       await tester.tap(find.text('The Orchard'));
       await tester.pumpAndSettle();
@@ -499,8 +510,7 @@ void main() {
   testWidgets('sign-out dismisses open corrections from the previous account', (
     tester,
   ) async {
-    await controller.connect('https://books.example', 'alice', 'password');
-    await controller.refresh(selected: {'books'});
+    await signIn(tester);
     await show(tester);
     await tester.tap(find.text('The Orchard'));
     await tester.pumpAndSettle();
@@ -519,8 +529,7 @@ void main() {
   testWidgets('revoked library access dismisses an open book correction', (
     tester,
   ) async {
-    await controller.connect('https://books.example', 'alice', 'password');
-    await controller.refresh(selected: {'books'});
+    await signIn(tester);
     await show(tester);
     await tester.tap(find.text('The Orchard'));
     await tester.pumpAndSettle();
@@ -529,7 +538,7 @@ void main() {
     await tester.tap(find.text('Correct book details'));
     await tester.pumpAndSettle();
     client.failure = const CatalogFailure(CatalogFailureKind.forbidden);
-    await controller.refresh();
+    await finish(tester, controller.refresh());
     await tester.pumpAndSettle();
     expect(controller.books, isEmpty);
     expect(find.text('Correct book details'), findsNothing);
@@ -543,9 +552,8 @@ void main() {
         entry('one', title: 'Orchard part 1', track: 1),
         entry('two', title: 'Orchard part 2', track: 2),
       ];
-      await controller.connect('https://books.example', 'alice', 'password');
-      await controller.refresh(selected: {'books'});
-      await controller.linkBooks('book:two', 'book:one');
+      await signIn(tester);
+      await finish(tester, controller.linkBooks('book:two', 'book:one'));
       await show(tester);
       await tester.tap(find.text('Orchard part 1'));
       await tester.pumpAndSettle();
@@ -577,6 +585,10 @@ void main() {
       await tester.tap(find.widgetWithText(FilledButton, 'Continue'));
       await tester.pumpAndSettle();
       await tester.tap(find.widgetWithText(FilledButton, 'Combine files'));
+      await runUntil(
+        tester,
+        () => controller.books.single.editions.length == 1,
+      );
       await tester.pumpAndSettle();
       expect(
         controller.books.single.editions.single.files.map(
@@ -594,8 +606,7 @@ void main() {
       entry('one'),
       entry('two', type: 'Book', container: 'epub'),
     ];
-    await controller.connect('https://books.example', 'alice', 'password');
-    await controller.refresh(selected: {'books'});
+    await signIn(tester);
     await show(tester);
     await tester.tap(find.text('The Orchard').first);
     await tester.pumpAndSettle();
@@ -620,6 +631,7 @@ void main() {
     );
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(FilledButton, 'Link editions'));
+    await runUntil(tester, () => controller.books.length == 1);
     await tester.pumpAndSettle();
     expect(find.text('Link editions?'), findsNothing);
     expect(controller.message, isNull);
@@ -630,11 +642,13 @@ void main() {
   testWidgets(
     'resetting corrections requires confirmation and restores source details',
     (tester) async {
-      await controller.connect('https://books.example', 'alice', 'password');
-      await controller.refresh(selected: {'books'});
-      await controller.correctBook(
-        'book:one',
-        const BookDetails(title: 'My title', author: 'Writer'),
+      await signIn(tester);
+      await finish(
+        tester,
+        controller.correctBook(
+          'book:one',
+          const BookDetails(title: 'My title', author: 'Writer'),
+        ),
       );
       await show(tester);
       await tester.tap(find.text('Settings'));
@@ -645,6 +659,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(controller.books.single.title, 'My title');
       await tester.tap(find.widgetWithText(FilledButton, 'Reset corrections'));
+      await runUntil(tester, () => controller.books.single.title != 'My title');
       await tester.pumpAndSettle();
       expect(controller.books.single.title, 'The Orchard');
     },
