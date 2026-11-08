@@ -35,17 +35,6 @@ class _CountingClient extends FixtureClient {
   }
 }
 
-/// A catalog store whose reads wait for [readGate], so a restore stays open
-/// after it read the saved account.
-class _SlowCatalogStore extends MemoryCatalogStore {
-  final readGate = Completer<void>();
-  @override
-  Future<String?> read(AccountScope scope) async {
-    await readGate.future;
-    return super.read(scope);
-  }
-}
-
 void main() {
   late _CountingClient client;
   late MemoryCredentials credentials;
@@ -179,15 +168,14 @@ void main() {
       (tester) async {
         await signIn();
         catalog.dispose();
-        final slow = _SlowCatalogStore()..values.addAll(store.values);
-        store = slow;
+        final gate = store.readGate = Completer<void>();
         catalog = newCatalog();
         final restoring = catalog.restore();
         await show(tester);
         expect(catalog.session, isNotNull);
         hideAndReturn(tester);
         await tester.pump();
-        slow.readGate.complete();
+        gate.complete();
         await restoring;
         await tester.pumpAndSettle();
         expect(client.refreshes, 0);
