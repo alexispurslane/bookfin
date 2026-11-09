@@ -268,11 +268,8 @@ class BookPage extends StatelessWidget {
                           progress: progress,
                           onHistory: playback == null
                               ? null
-                              : () => openListeningTimeline(
-                                  context,
-                                  playback,
-                                  book: book,
-                                ),
+                              : () =>
+                                    openHistory(context, playback, book: book),
                         ),
                 ),
                 _StatusLine(

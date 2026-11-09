@@ -255,7 +255,7 @@ void main() {
     await showGallery(tester);
     await openScreen(tester, 'Player & history');
     await reveal(tester, 'player', find.textContaining('Jumped ahead'));
-    expect(find.byType(ListeningTimeline), findsOneWidget);
+    expect(find.byType(HistoryTimeline), findsOneWidget);
     await tester.tap(find.textContaining('Jumped ahead'));
     await tester.pumpAndSettle();
     await tester.tap(find.textContaining('Go back to'));
@@ -269,7 +269,7 @@ void main() {
     await showGallery(tester);
     await openScreen(tester, 'Player & history');
     await reveal(tester, 'player', find.textContaining('Jumped ahead'));
-    expect(find.byType(ListeningTimeline), findsOneWidget);
+    expect(find.byType(HistoryTimeline), findsOneWidget);
     await tester.tap(find.textContaining('Jumped ahead'));
     await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('Delete'));

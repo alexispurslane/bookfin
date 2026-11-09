@@ -167,7 +167,7 @@ typedef PlaybackStatus = ({String? message, bool saveFailed});
 
 /// The action that Undo can take back, and whether the place before it is
 /// saved on this device.
-typedef UndoOffer = ({ListeningEvent action, bool saved});
+typedef UndoOffer = ({HistoryEvent<AudioPosition> action, bool saved});
 
 class Playback extends ChangeNotifier {
   Playback({
@@ -223,34 +223,44 @@ class Playback extends ChangeNotifier {
   // of these lists (see [_Memo]). Debug builds enforce this contract with
   // unmodifiable lists. Release builds skip it, so that a broken contract
   // can only show a stale list, never throw in a path that saves records.
-  List<ListeningEvent> _historyList = const [];
-  List<AudioBookmark> _bookmarkList = const [];
-  List<ListeningEvent> get _history => _historyList;
-  set _history(List<ListeningEvent> value) =>
+  List<HistoryEvent<AudioPosition>> _historyList = const [];
+  List<Bookmark<AudioPosition>> _bookmarkList = const [];
+  List<HistoryEvent<AudioPosition>> get _history => _historyList;
+  set _history(List<HistoryEvent<AudioPosition>> value) =>
       _historyList = kDebugMode ? List.unmodifiable(value) : value;
-  List<AudioBookmark> get _bookmarks => _bookmarkList;
-  set _bookmarks(List<AudioBookmark> value) =>
+  List<Bookmark<AudioPosition>> get _bookmarks => _bookmarkList;
+  set _bookmarks(List<Bookmark<AudioPosition>> value) =>
       _bookmarkList = kDebugMode ? List.unmodifiable(value) : value;
   final _historyNewestFirst =
-      _Memo<List<ListeningEvent>, List<ListeningEvent>>();
+      _Memo<
+        List<HistoryEvent<AudioPosition>>,
+        List<HistoryEvent<AudioPosition>>
+      >();
   final _bookmarksNewestFirst =
-      _Memo<List<AudioBookmark>, List<AudioBookmark>>();
+      _Memo<List<Bookmark<AudioPosition>>, List<Bookmark<AudioPosition>>>();
   final _editionIndex = _Memo<List<Book>, Map<String, (Book, Edition)>>();
   final _recent =
-      _Memo<(List<ListeningEvent>, List<Book>), List<RecentListening>>();
+      _Memo<
+        (List<HistoryEvent<AudioPosition>>, List<Book>),
+        List<RecentListening>
+      >();
   final _chapters = _Memo<Edition?, List<PlaybackChapter>>();
   final _timeline =
       _Memo<
-        (List<ListeningEvent>, List<AudioBookmark>, Book?),
+        (
+          List<HistoryEvent<AudioPosition>>,
+          List<Bookmark<AudioPosition>>,
+          Book?,
+        ),
         List<TimelineEntry>
       >();
   final _editionBookmarks =
-      _Memo<(List<AudioBookmark>, Edition?), List<EditionBookmark>>();
-  ListeningEvent? _undo;
+      _Memo<(List<Bookmark<AudioPosition>>, Edition?), List<EditionBookmark>>();
+  HistoryEvent<AudioPosition>? _undo;
   _SliderGesture? _sliderStart;
   int _sliderRevision = 0;
   bool _seeking = false;
-  ListeningAction? _commandAction;
+  HistoryAction? _commandAction;
   // The changes of each account that the store did not yet confirm, merged
   // into one change set. A retry resends all of them.
   final _pendingWrites = <String, ListeningChanges>{};
@@ -328,7 +338,7 @@ class Playback extends ChangeNotifier {
 
   /// The listening actions, newest first. The list stays the same object
   /// until the history changes.
-  List<ListeningEvent> get history => _historyNewestFirst.of(
+  List<HistoryEvent<AudioPosition>> get history => _historyNewestFirst.of(
     _history,
     () => List.unmodifiable(_history.reversed),
   );
@@ -388,11 +398,11 @@ class Playback extends ChangeNotifier {
 
   /// The bookmarks, newest first. The list stays the same object until a
   /// bookmark changes.
-  List<AudioBookmark> get bookmarks => _bookmarksNewestFirst.of(
+  List<Bookmark<AudioPosition>> get bookmarks => _bookmarksNewestFirst.of(
     _bookmarks,
     () => List.unmodifiable(_bookmarks.reversed),
   );
-  ListeningEvent? get undoAction => _undo;
+  HistoryEvent<AudioPosition>? get undoAction => _undo;
   bool get unsavedChanges => _pendingWrites.containsKey(_session?.scope.key);
   bool get saveFailed => _failedAccounts.contains(_session?.scope.key);
   AudioReplacement? get replacementStart => _replacementStart;
@@ -467,7 +477,7 @@ class Playback extends ChangeNotifier {
   Future<void> undoSeek() => _enqueue(() async {
     final event = _undo;
     if (event == null) return;
-    if (await _restorePosition(event.before, ListeningAction.undo)) {
+    if (await _restorePosition(event.before, HistoryAction.undo)) {
       _undo = null;
     }
     _notify();
@@ -481,7 +491,7 @@ class Playback extends ChangeNotifier {
         }
         await _restorePosition(
           previous ? event.before : event.after,
-          ListeningAction.historyRestore,
+          HistoryAction.historyRestore,
         );
       });
 
@@ -496,7 +506,7 @@ class Playback extends ChangeNotifier {
       throw ArgumentError('Choose a bookmark position in this audio edition.');
     }
     _putBookmark(
-      AudioBookmark(
+      Bookmark(
         id: recordId(),
         position: target,
         createdAt: DateTime.now().toUtc(),
@@ -518,7 +528,7 @@ class Playback extends ChangeNotifier {
         }
         final bookmark = _bookmarks[index];
         _putBookmark(
-          AudioBookmark(
+          Bookmark(
             id: bookmark.id,
             position: bookmark.position,
             createdAt: bookmark.createdAt,
@@ -559,14 +569,18 @@ class Playback extends ChangeNotifier {
     }
     final history = (saved['history'] as List)
         .map(
-          (value) =>
-              ListeningEvent.fromJson(Map<String, dynamic>.from(value as Map)),
+          (value) => HistoryEvent.fromJson(
+            Map<String, dynamic>.from(value as Map),
+            decodePosition,
+          ),
         )
         .toList();
     final bookmarks = (saved['bookmarks'] as List)
         .map(
-          (value) =>
-              AudioBookmark.fromJson(Map<String, dynamic>.from(value as Map)),
+          (value) => Bookmark.fromJson(
+            Map<String, dynamic>.from(value as Map),
+            decodePosition,
+          ),
         )
         .toList();
     final resumes = <String, List<Map<String, dynamic>>>{
@@ -590,7 +604,7 @@ class Playback extends ChangeNotifier {
     if (bookmark == null) {
       throw ArgumentError('Choose a bookmark from the current account.');
     }
-    await _restorePosition(bookmark.position, ListeningAction.bookmarkRestore);
+    await _restorePosition(bookmark.position, HistoryAction.bookmarkRestore);
   });
 
   String? _optionalText(String? value) =>
@@ -603,7 +617,7 @@ class Playback extends ChangeNotifier {
   }
 
   /// Adds [bookmark], or replaces the bookmark with its id, for the next save.
-  void _putBookmark(AudioBookmark bookmark) {
+  void _putBookmark(Bookmark<AudioPosition> bookmark) {
     final index = _bookmarks.indexWhere((saved) => saved.id == bookmark.id);
     _bookmarks = index < 0
         ? [..._bookmarks, bookmark]
@@ -628,7 +642,7 @@ class Playback extends ChangeNotifier {
 
   Future<bool> _restorePosition(
     AudioPosition target,
-    ListeningAction kind,
+    HistoryAction kind,
   ) async {
     if (!_restored) return false;
     final (book, edition) = _editions[target.editionId] ?? (null, null);
@@ -753,7 +767,7 @@ class Playback extends ChangeNotifier {
 
   /// The newest bookmark of the open edition that lies at most
   /// [bookmarkReach] before the open place, if any.
-  AudioBookmark? get bookmarkHere {
+  Bookmark<AudioPosition>? get bookmarkHere {
     final edition = _edition;
     final now = editionMilliseconds;
     if (edition == null || now == null) return null;
@@ -957,15 +971,17 @@ class Playback extends ChangeNotifier {
           if (saved['version'] != 1) {
             _history = (saved['history'] as List)
                 .map(
-                  (value) => ListeningEvent.fromJson(
+                  (value) => HistoryEvent.fromJson(
                     Map<String, dynamic>.from(value as Map),
+                    decodePosition,
                   ),
                 )
                 .toList();
             _bookmarks = (saved['bookmarks'] as List)
                 .map(
-                  (value) => AudioBookmark.fromJson(
+                  (value) => Bookmark.fromJson(
                     Map<String, dynamic>.from(value as Map),
+                    decodePosition,
                   ),
                 )
                 .toList();
@@ -1162,7 +1178,7 @@ class Playback extends ChangeNotifier {
     Edition edition, {
     required bool autoplay,
     AudioPosition? target,
-    ListeningAction? action,
+    HistoryAction? action,
     AudioReplacement? replacement,
   }) async {
     var bound = _bound(book, edition);
@@ -1278,10 +1294,10 @@ class Playback extends ChangeNotifier {
     if (wasPlaying != _playing && _commandAction == null) {
       _record(
         sample.completed
-            ? ListeningAction.completion
+            ? HistoryAction.completion
             : _playing
-            ? ListeningAction.resume
-            : ListeningAction.interruption,
+            ? HistoryAction.resume
+            : HistoryAction.interruption,
         previous!,
         _position!,
       );
@@ -1344,7 +1360,7 @@ class Playback extends ChangeNotifier {
     }
     if (durationMilliseconds != null &&
         editionMilliseconds == durationMilliseconds) {
-      if (!await _seekPosition(0, 0, ListeningAction.seek)) return;
+      if (!await _seekPosition(0, 0, HistoryAction.seek)) return;
     }
     _active = true;
     await engine.play();
@@ -1357,11 +1373,11 @@ class Playback extends ChangeNotifier {
 
   Future<void> _pause() async {
     final generation = _generation;
-    _commandAction = ListeningAction.pause;
+    _commandAction = HistoryAction.pause;
     try {
       await engine.pause();
       if (generation != _generation) return;
-      if (_active) _record(ListeningAction.pause, _position!, _position!);
+      if (_active) _record(HistoryAction.pause, _position!, _position!);
     } finally {
       _commandAction = null;
     }
@@ -1378,11 +1394,11 @@ class Playback extends ChangeNotifier {
 
   Future<void> _stop() async {
     final generation = _generation;
-    _commandAction = ListeningAction.stop;
+    _commandAction = HistoryAction.stop;
     try {
       await engine.pause();
       if (generation != _generation) return;
-      if (_active) _record(ListeningAction.stop, _position!, _position!);
+      if (_active) _record(HistoryAction.stop, _position!, _position!);
     } finally {
       _commandAction = null;
     }
@@ -1400,7 +1416,7 @@ class Playback extends ChangeNotifier {
 
   Future<void> _seekEdition(
     int milliseconds, {
-    ListeningAction kind = ListeningAction.seek,
+    HistoryAction kind = HistoryAction.seek,
     _SliderGesture? gesture,
   }) async {
     if (_edition == null) return;
@@ -1428,7 +1444,7 @@ class Playback extends ChangeNotifier {
   Future<void> _seekSource(
     String sourceKey,
     int milliseconds, {
-    ListeningAction kind = ListeningAction.chapter,
+    HistoryAction kind = HistoryAction.chapter,
   }) async {
     if (_edition == null) return;
     final index = _edition!.files.indexWhere((file) => file.key == sourceKey);
@@ -1447,25 +1463,21 @@ class Playback extends ChangeNotifier {
     final current = editionMilliseconds;
     final amount = (forward ? _forward : -_backward) * 1000;
     if (current != null && durationMilliseconds != null) {
-      await _seekEdition(current + amount, kind: ListeningAction.jump);
+      await _seekEdition(current + amount, kind: HistoryAction.jump);
     } else if (_position != null) {
       await _seekSource(
         _position!.sourceKey,
         max(0, _position!.milliseconds + amount),
-        kind: ListeningAction.jump,
+        kind: HistoryAction.jump,
       );
     }
   });
 
-  void _record(
-    ListeningAction kind,
-    AudioPosition before,
-    AudioPosition after,
-  ) {
+  void _record(HistoryAction kind, AudioPosition before, AudioPosition after) {
     assert(
       _restored && _book != null && _edition != null && after.fits(_edition!),
     );
-    final event = ListeningEvent(
+    final event = HistoryEvent(
       id: recordId(),
       at: DateTime.now().toUtc(),
       kind: kind,
@@ -1483,7 +1495,7 @@ class Playback extends ChangeNotifier {
   Future<bool> _seekPosition(
     int index,
     int milliseconds,
-    ListeningAction kind, {
+    HistoryAction kind, {
     AudioPosition? before,
     _SliderGesture? gesture,
   }) async {
@@ -1838,7 +1850,7 @@ typedef _EditionLayout = ({Map<String, int?> starts, int? totalMs});
 
 /// A bookmark of the open edition, and where it is in the edition, in
 /// milliseconds from the edition's start.
-typedef EditionBookmark = ({AudioBookmark bookmark, int at});
+typedef EditionBookmark = ({Bookmark<AudioPosition> bookmark, int at});
 
 /// The value last derived from a key. It is derived again only when the key
 /// differs from the last key. A key holds the inputs of the value. Lists,

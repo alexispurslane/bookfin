@@ -95,7 +95,7 @@ TextPosition positionAt(String anchor, [Edition? edition]) {
   );
 }
 
-Map<String, dynamic> bookmarkAt(String id, String anchor) => TextBookmark(
+Map<String, dynamic> bookmarkAt(String id, String anchor) => Bookmark(
   id: id,
   position: positionAt(anchor),
   createdAt: DateTime.utc(2026, 11, 1),
@@ -421,6 +421,7 @@ void main() {
               // text. The records stay as they were.
               expect(store.values[accountKey], {
                 ...stored,
+                'history': <dynamic>[],
                 if (size != 20) 'sizesMainText': true,
               }, reason: where);
               reader.dispose();

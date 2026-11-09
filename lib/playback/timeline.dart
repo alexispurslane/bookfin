@@ -11,72 +11,75 @@ import '../foundation/time.dart';
 import 'playback.dart';
 import 'records_screen.dart';
 
-// openListeningTimeline is the controller of the timeline sheet. It wires
-// ListeningTimeline, which only draws entries and reports choices, to
+// openHistory is the controller of the timeline sheet. It wires
+// HistoryTimeline, which only draws entries and reports choices, to
 // Playback: it confirms a delete, closes the sheet before a jump, and names
 // a bookmark through the shared bookmark editor.
 
 /// Opens the listening timeline of [book] on a glass sheet. Without a book,
 /// the timeline shows every book and names the book of each entry.
-void openListeningTimeline(
-  BuildContext context,
-  Playback playback, {
-  Book? book,
-}) => unawaited(
-  showGlassSheet<void>(
-    context,
-    book: book,
-    title: 'History',
-    isScrollControlled: true,
-    builder: (_) => DraggableScrollableSheet(
-      expand: false,
-      initialChildSize: 0.7,
-      maxChildSize: 0.95,
-      builder: (context, scroll) {
-        // A choice that goes to a place closes the timeline, so the player
-        // shows that place and offers Undo.
-        void go(Future<void> Function() restore) {
-          Navigator.pop(context);
-          unawaited(restore());
-        }
+void openHistory(BuildContext context, Playback playback, {Book? book}) =>
+    unawaited(
+      showGlassSheet<void>(
+        context,
+        book: book,
+        title: 'History',
+        isScrollControlled: true,
+        builder: (_) => DraggableScrollableSheet(
+          expand: false,
+          initialChildSize: 0.7,
+          maxChildSize: 0.95,
+          builder: (context, scroll) {
+            // A choice that goes to a place closes the timeline, so the player
+            // shows that place and offers Undo.
+            void go(Future<void> Function() restore) {
+              Navigator.pop(context);
+              unawaited(restore());
+            }
 
-        return ListeningTimeline(
-          // The rows show labels and places measured from the library, so
-          // the entries follow the records and the library. A playing tick
-          // does not reach the timeline.
-          entries: DerivedValue(
-            Listenable.merge([
-              playback.recordsNotifier,
-              playback.libraryNotifier,
-            ]),
-            () => playback.timeline(book),
-          ),
-          editionTime: playback.editionTime,
-          showBooks: book == null,
-          header: RecordSaveStatus(playback: playback),
-          scroll: scroll,
-          onGoBack: (event) => go(() => playback.restoreHistory(event.id)),
-          onGoTo: (entry) => go(
-            () => switch (entry) {
-              ActionEntry(:final event) => playback.restoreHistory(
-                event.id,
-                previous: false,
+            return HistoryTimeline(
+              // The rows show labels and places measured from the library, so
+              // the entries follow the records and the library. A playing tick
+              // does not reach the timeline.
+              entries: DerivedValue(
+                Listenable.merge([
+                  playback.recordsNotifier,
+                  playback.libraryNotifier,
+                ]),
+                () => playback.timeline(book),
               ),
-              BookmarkEntry(:final bookmark) => playback.restoreBookmark(
-                bookmark.id,
+              editionTime: playback.editionTime,
+              showBooks: book == null,
+              header: RecordSaveStatus(playback: playback),
+              scroll: scroll,
+              onGoBack: (event) => go(() => playback.restoreHistory(event.id)),
+              onGoTo: (entry) => go(
+                () => switch (entry) {
+                  ActionEntry(:final event) => playback.restoreHistory(
+                    event.id,
+                    previous: false,
+                  ),
+                  BookmarkEntry(:final bookmark) => playback.restoreBookmark(
+                    bookmark.id,
+                  ),
+                },
               ),
-            },
-          ),
-          onRename: (bookmark) => unawaited(
-            editAudioBookmark(context, playback, bookmark: bookmark),
-          ),
-          onDelete: (entry) =>
-              unawaited(_confirmDelete(context, playback, entry)),
-        );
-      },
-    ),
-  ),
-);
+              onRename: (bookmark) {
+                // NOTE: Only listening entries reach this timeline until
+                // t9-9ffz shares it with the reader.
+                if (bookmark is Bookmark<AudioPosition>) {
+                  unawaited(
+                    editAudioBookmark(context, playback, bookmark: bookmark),
+                  );
+                }
+              },
+              onDelete: (entry) =>
+                  unawaited(_confirmDelete(context, playback, entry)),
+            );
+          },
+        ),
+      ),
+    );
 
 /// Asks the listener to confirm the deletion of [entry], then deletes it
 /// from [playback]. Nothing changes when the listener cancels.
@@ -110,8 +113,8 @@ Future<void> _confirmDelete(
 /// A dense, vertical timeline of listening, grouped by day. A tap on an
 /// entry shows the places it can return to, and Delete. The timeline changes
 /// no records itself: it reports each choice through its callbacks.
-class ListeningTimeline extends StatefulWidget {
-  const ListeningTimeline({
+class HistoryTimeline extends StatefulWidget {
+  const HistoryTimeline({
     super.key,
     required this.entries,
     required this.editionTime,
@@ -138,28 +141,28 @@ class ListeningTimeline extends StatefulWidget {
   final Widget? header;
   final ScrollController? scroll;
 
-  /// Reports Go back on an action: return to where [ListeningEvent.before]
+  /// Reports Go back on an action: return to where [HistoryEvent.before]
   /// says the action began.
-  final ValueChanged<ListeningEvent> onGoBack;
+  final ValueChanged<HistoryEvent<Place>> onGoBack;
 
   /// Reports Go to: return to where an action ended, or to a bookmark.
   final ValueChanged<TimelineEntry> onGoTo;
 
   /// Reports Name or Rename on a bookmark.
-  final ValueChanged<AudioBookmark> onRename;
+  final ValueChanged<Bookmark<Place>> onRename;
 
   /// Reports Delete on an entry. The listener has not confirmed it yet.
   final ValueChanged<TimelineEntry> onDelete;
 
   @override
-  State<ListeningTimeline> createState() => _ListeningTimelineState();
+  State<HistoryTimeline> createState() => _HistoryTimelineState();
 }
 
 /// The width of the time of day column, wide enough for "12:59 PM" on one
 /// line.
 const _timeWidth = 68.0;
 
-class _ListeningTimelineState extends State<ListeningTimeline> {
+class _HistoryTimelineState extends State<HistoryTimeline> {
   /// The entry whose choices are shown, if any.
   String? _open;
 
@@ -346,14 +349,25 @@ class _ListeningTimelineState extends State<ListeningTimeline> {
     };
   }
 
-  /// A place as a time in its edition, or in its file when the edition time
-  /// is unknown.
-  String _place(AudioPosition place) =>
-      audioTime(widget.editionTime(place) ?? place.milliseconds);
+  /// A listening place as a time in its edition, or in its file when the
+  /// edition time is unknown.
+  String _place(Place place) => switch (place) {
+    AudioPosition() => audioTime(
+      widget.editionTime(place) ?? place.milliseconds,
+    ),
+    // TODO(t9-9ffz): Describe a reading place with ReaderSession.describe.
+    // No reading entry reaches the timeline before that ticket.
+    TextPosition() => 'Reading place',
+  };
 
-  String _label(ListeningEvent event) {
-    final from = widget.editionTime(event.before);
-    final to = widget.editionTime(event.after);
+  String _label(HistoryEvent<Place> event) {
+    final (from, to) = switch ((event.before, event.after)) {
+      (final AudioPosition before, final AudioPosition after) => (
+        widget.editionTime(before),
+        widget.editionTime(after),
+      ),
+      _ => (null, null),
+    };
     String moved(String verb) {
       if (from == null || to == null) return verb;
       final distance = (to - from).abs();
@@ -364,17 +378,21 @@ class _ListeningTimelineState extends State<ListeningTimeline> {
     }
 
     return switch (event.kind) {
-      ListeningAction.seek => moved('Moved'),
-      ListeningAction.jump => moved('Jumped'),
-      ListeningAction.chapter => 'Changed chapter',
-      ListeningAction.undo => 'Undid a move',
-      ListeningAction.historyRestore => 'Went back in history',
-      ListeningAction.bookmarkRestore => 'Went to a bookmark',
-      ListeningAction.pause => 'Paused',
-      ListeningAction.resume => 'Played',
-      ListeningAction.interruption => 'Interrupted',
-      ListeningAction.stop => 'Stopped',
-      ListeningAction.completion => 'Finished',
+      HistoryAction.seek => moved('Moved'),
+      HistoryAction.jump => moved('Jumped'),
+      HistoryAction.chapter => 'Changed chapter',
+      HistoryAction.undo => 'Undid a move',
+      HistoryAction.historyRestore => 'Went back in history',
+      HistoryAction.bookmarkRestore => 'Went to a bookmark',
+      HistoryAction.pause => 'Paused',
+      HistoryAction.resume => 'Played',
+      HistoryAction.interruption => 'Interrupted',
+      HistoryAction.stop => 'Stopped',
+      HistoryAction.completion => 'Finished',
+      HistoryAction.link => 'Followed a link',
+      HistoryAction.search => 'Went to a search result',
+      HistoryAction.open => 'Opened',
+      HistoryAction.close => 'Closed',
     };
   }
 }

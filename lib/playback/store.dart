@@ -124,6 +124,16 @@ const _hopText = 32;
 /// result comes back without a copy. A save does only the work of its own
 /// change on the UI isolate.
 ///
+/// Records of a newer build: a record can have an address or a kind that
+/// this build does not know, because a newer build saved it on another
+/// device. The journal keeps such a record, applies its action in causal
+/// order, and syncs it on unchanged, so it never stops the discovery of the
+/// records after it. No view shows it, no choice between saved versions
+/// offers it, and no writer changes it. A later build that knows its kind
+/// shows it at once, without a new sync. A value of a known kind that does
+/// not decode is still damage. [_readable] decides which records this build
+/// reads.
+///
 /// Invariants, checked on demand by [checkInvariants]:
 /// - The journal of each cached account satisfies
 ///   [RecordJournal.checkInvariants].
@@ -370,10 +380,9 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
   /// handed earlier no longer counts as taking the change in.
   void _changedOutsideWriters(String account, Iterable<String> records) {
     for (final record in records) {
-      final writer = _writer(
-        account,
-        reading: (jsonDecode(record) as List)[0] == 'reading',
-      );
+      final address = jsonDecode(record) as List;
+      if (!_knownAddress(address)) continue;
+      final writer = _writer(account, reading: address[0] == 'reading');
       _behind.add(writer);
       _handed.remove(writer);
     }
@@ -619,7 +628,17 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
         // NOTE: Engine rule 1. Only records with competing versions are
         // copied, which are few, so the copy costs less than a hop.
         final conflicts = jsonDecode(
-          jsonEncode(stored?.journal.conflicts ?? {}),
+          jsonEncode({
+            for (final MapEntry(key: record, value: versions)
+                in (stored?.journal.conflicts ?? const {}).entries)
+              if (versions.every(
+                (version) => _readable(
+                  record,
+                  version['value'] as Map<String, dynamic>?,
+                ),
+              ))
+                record: versions,
+          }),
         ) as Map<String, dynamic>;
         return {
           for (final entry in conflicts.entries)
@@ -1174,15 +1193,17 @@ class ReadingRecords implements ResumeStore, ReadingStore {
       'settings': changes.settings,
       'resumes': changes.resumes,
       'bookmarks': changes.bookmarks,
+      'history': changes.history,
     });
     return owner._change(
       accountKey,
       copied['settings'] as Map<String, dynamic>,
       reading: true,
       records: (_) => {
-        for (final entry in (copied['bookmarks'] as Map).entries)
-          jsonEncode(['reading', 'bookmarks', entry.key]):
-              entry.value as Map<String, dynamic>?,
+        for (final collection in ['bookmarks', 'history'])
+          for (final entry in (copied[collection] as Map).entries)
+            jsonEncode(['reading', collection, entry.key]):
+                entry.value as Map<String, dynamic>?,
         ..._flatten({
           'reading': {'resumes': copied['resumes']},
         }, reading: true),
@@ -1198,9 +1219,35 @@ class ReadingRecords implements ResumeStore, ReadingStore {
   bool setAside(String accountKey) => owner.setAside(accountKey);
 }
 
+/// The collections of each domain that this build reads.
+const _collections = {
+  'audio': {'bookmarks', 'history', 'resumes'},
+  'reading': {'bookmarks', 'history', 'resumes'},
+};
+
+/// Whether this build knows the domain and the collection of [address].
+bool _knownAddress(List<dynamic> address) =>
+    _collections[address[0]]?.contains(address[1]) ?? false;
+
+/// Whether this build reads the record at [record] with [value], or its
+/// deletion when [value] is null: this build knows its address, and a
+/// history entry names a kind of move that this build knows. A kind that is
+/// not a string is no newer kind, so its record counts as read, and its
+/// decoding fails as damage.
+bool _readable(String record, Map<String, dynamic>? value) {
+  final address = jsonDecode(record) as List;
+  if (!_knownAddress(address)) return false;
+  final kind = value?['kind'];
+  return address[1] != 'history' ||
+      kind is! String ||
+      HistoryAction.values.any((known) => known.name == kind);
+}
+
+/// Throws a [FormatException] when the value of [action] is damaged: this
+/// build reads its record ([_readable]), but the value does not decode.
 void _validateActionValue(Map<String, dynamic> action) {
   final value = action['value'] as Map<String, dynamic>?;
-  if (value == null) return;
+  if (value == null || !_readable(action['record'] as String, value)) return;
   final address = jsonDecode(action['record'] as String) as List;
   final reading = address[0] == 'reading';
   try {
@@ -1208,15 +1255,17 @@ void _validateActionValue(Map<String, dynamic> action) {
       case 'bookmarks':
         if (value['id'] != address[2]) throw const FormatException();
         if (reading) {
-          TextBookmark.fromJson(value);
+          Bookmark.fromJson(value, decodeTextPosition);
         } else {
-          AudioBookmark.fromJson(value);
+          Bookmark.fromJson(value, decodePosition);
         }
       case 'history':
-        if (reading || value['id'] != address[2]) {
-          throw const FormatException();
+        if (value['id'] != address[2]) throw const FormatException();
+        if (reading) {
+          HistoryEvent.fromJson(value, decodeTextPosition);
+        } else {
+          HistoryEvent.fromJson(value, decodePosition);
         }
-        ListeningEvent.fromJson(value);
       case 'resumes':
         if (reading) {
           decodeTextPosition(value);
@@ -1277,8 +1326,9 @@ Map<String, dynamic> _metadata(Map<String, dynamic> snapshot) {
 
 /// The listening or reading snapshot of an account with [metadata] and the
 /// record [values] of [RecordJournal.values]: the domain's settings plus
-/// the current value of each of its records, as a fresh copy. It changes
-/// the listening resumes of [values].
+/// the current value of each of its records that this build reads
+/// ([_readable]), as a fresh copy. It changes the listening resumes of
+/// [values].
 Map<String, dynamic> _snapshot(
   Map<String, dynamic> metadata,
   Map<String, Map<String, dynamic>> values, {
@@ -1290,12 +1340,12 @@ Map<String, dynamic> _snapshot(
         ? metadata['reading'] as Map<String, dynamic>
         : (Map.of(metadata)..remove('reading')),
     'bookmarks': <dynamic>[],
-    if (!reading) 'history': <dynamic>[],
+    'history': <dynamic>[],
     'resumes': reading ? <dynamic>[] : <String, dynamic>{},
   };
   for (final entry in values.entries) {
     final address = jsonDecode(entry.key) as List;
-    if (address[0] != domain) continue;
+    if (address[0] != domain || !_readable(entry.key, entry.value)) continue;
     final collection = address[1] as String;
     final value = entry.value;
     if (!reading && collection == 'resumes') {
@@ -1826,11 +1876,7 @@ Iterable<MapEntry<String, Map<String, dynamic>>> _records(
     final snapshot = reading ? combined['reading'] : combined;
     if (snapshot is! Map<String, dynamic>) continue;
     final pieces = <Map<String, dynamic>>[
-      for (final collection in [
-        'bookmarks',
-        if (!reading) 'history',
-        if (reading) 'resumes',
-      ])
+      for (final collection in ['bookmarks', 'history', if (reading) 'resumes'])
         if (snapshot[collection] case final List values)
           for (final value in values)
             {
@@ -1899,11 +1945,7 @@ Map<String, Map<String, dynamic>> _flatten(
       ? combined['reading'] as Map<String, dynamic>?
       : combined;
   if (snapshot == null) return {};
-  for (final collection in [
-    'bookmarks',
-    if (!reading) 'history',
-    if (reading) 'resumes',
-  ]) {
+  for (final collection in ['bookmarks', 'history', if (reading) 'resumes']) {
     final values = snapshot[collection];
     if (values != null &&
         (values is! List ||
@@ -1917,7 +1959,7 @@ Map<String, Map<String, dynamic>> _flatten(
       snapshot['resumes'] is! Map<String, dynamic>) {
     throw const FormatException('Listening resumes must be an object.');
   }
-  for (final collection in ['bookmarks', if (!reading) 'history']) {
+  for (final collection in ['bookmarks', 'history']) {
     for (final value in (snapshot[collection] as List? ?? []).cast<Map>()) {
       result[jsonEncode([domain, collection, value['id']])] =
           Map<String, dynamic>.from(value);

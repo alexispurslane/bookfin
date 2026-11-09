@@ -293,13 +293,13 @@ class RecordJournal {
         (action['value'] != null && action['value'] is! Map<String, dynamic>)) {
       throw const FormatException('Invalid personal-record sync action.');
     }
+    // NOTE: The journal accepts any domain and collection, so that a build
+    // keeps and syncs the records of a newer build. Its owner decides which
+    // records it reads.
     final address = jsonDecode(record);
     if (address is! List ||
         address.length != 3 ||
-        !const ['audio', 'reading'].contains(address[0]) ||
-        !const ['bookmarks', 'history', 'resumes'].contains(address[1]) ||
-        address[2] is! String ||
-        (address[2] as String).isEmpty) {
+        address.any((part) => part is! String || part.isEmpty)) {
       throw const FormatException('Invalid personal-record address.');
     }
   }

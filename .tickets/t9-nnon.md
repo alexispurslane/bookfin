@@ -37,3 +37,4 @@ Build in `ReaderSession`:
 - Go back on a move returns to its before. Go to returns to its after. Each records a "historyRestore" move.
 - A change of the text size records no move, and the Undo offer stays.
 - `bookmarkHere` names the bookmark on the shown page, and none after a page turn away from it.
+- A failed save keeps the recorded move pending in the session. The reader says that records are not saved, and the next save writes the move once. This test moved here from t9-mqtx, because t9-mqtx adds no verb that records a move. `ReaderSession._save` takes no moves yet: add a `history` argument that fills `ReadingChanges.history`.

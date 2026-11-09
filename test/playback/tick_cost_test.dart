@@ -79,10 +79,10 @@ void main() {
         'version': 3,
         'history': [
           for (var i = 0; i < entries; i++)
-            ListeningEvent(
+            HistoryEvent(
               id: 'jump $i',
               at: now.subtract(Duration(minutes: 10 * i)),
-              kind: ListeningAction.jump,
+              kind: HistoryAction.jump,
               before: place(0),
               after: place(30000),
               bookTitle: title.title,
@@ -104,8 +104,7 @@ void main() {
           home: Scaffold(
             body: Builder(
               builder: (context) => TextButton(
-                onPressed: () =>
-                    openListeningTimeline(context, playback, book: title),
+                onPressed: () => openHistory(context, playback, book: title),
                 child: const Text('Open'),
               ),
             ),
@@ -118,7 +117,7 @@ void main() {
 
     int builtRows() => find
         .descendant(
-          of: find.byType(ListeningTimeline),
+          of: find.byType(HistoryTimeline),
           matching: find.byType(InkWell),
           skipOffstage: false,
         )
@@ -150,7 +149,7 @@ void main() {
       expect(playback.measured, greaterThan(0));
       expect(
         find.descendant(
-          of: find.byType(ListeningTimeline),
+          of: find.byType(HistoryTimeline),
           matching: find.text('Bookmark'),
         ),
         findsOneWidget,
@@ -161,7 +160,7 @@ void main() {
       await openTimeline(tester);
       await tester.dragUntilVisible(
         find.text('Yesterday'),
-        find.byType(ListeningTimeline),
+        find.byType(HistoryTimeline),
         const Offset(0, -600),
       );
       expect(find.text('Yesterday'), findsOneWidget);

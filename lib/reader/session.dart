@@ -31,8 +31,8 @@ typedef TimeLeft = ({Duration chapter, Duration book});
 /// uses it.
 abstract class ReadingStore {
   /// The saved reading snapshot of [accountKey], or null when the account
-  /// has none: `version`, `fontSize`, `resumes` and `bookmarks`, and
-  /// `sizesMainText` when it is true.
+  /// has none: `version`, `fontSize`, `resumes`, `bookmarks` and `history`,
+  /// and `sizesMainText` when it is true.
   Future<Map<String, dynamic>?> read(String accountKey);
 
   /// Saves [changes] to the reading records of [accountKey].
@@ -55,13 +55,15 @@ abstract class ReadingStore {
 
 /// The reading records that one save changes.
 ///
-/// A save carries the whole small [settings], but only the resumes and
-/// bookmarks that changed.
+/// A save carries the whole small [settings], but only the resumes,
+/// bookmarks and moves that changed. One store transaction saves all of
+/// them, so a move and the place where it ended save together.
 class ReadingChanges {
   ReadingChanges(
     this.settings, {
     this.resumes = const [],
     this.bookmarks = const {},
+    this.history = const {},
   });
 
   /// The version and the font size.
@@ -74,6 +76,9 @@ class ReadingChanges {
   /// The changed bookmarks as JSON, by id. A null value deletes it.
   final Map<String, Map<String, dynamic>?> bookmarks;
 
+  /// The changed reading moves as JSON, by id. A null value deletes it.
+  final Map<String, Map<String, dynamic>?> history;
+
   /// These changes followed by [later]: the later value of each record and
   /// the later settings win.
   ReadingChanges followedBy(ReadingChanges later) => ReadingChanges(
@@ -84,14 +89,29 @@ class ReadingChanges {
       ...later.resumes,
     ],
     bookmarks: {...bookmarks, ...later.bookmarks},
+    history: {...history, ...later.history},
   );
 
   /// The reading snapshot that results when these changes apply to
   /// [snapshot]. A changed resume goes last, as the session orders its
-  /// places. A changed bookmark keeps its place, a new one goes last, and a
-  /// deleted one is removed.
+  /// places. A changed bookmark or move keeps its place, a new one goes
+  /// last, and a deleted one is removed.
   Map<String, dynamic> applyTo(Map<String, dynamic>? snapshot) {
-    final unplaced = Map.of(bookmarks);
+    List<Map<String, dynamic>> byId(
+      String collection,
+      Map<String, Map<String, dynamic>?> changes,
+    ) {
+      final unplaced = Map.of(changes);
+      return [
+        for (final value in snapshot?[collection] as List? ?? const [])
+          if (!unplaced.containsKey(value['id']))
+            Map<String, dynamic>.from(value as Map)
+          else
+            ?unplaced.remove(value['id']),
+        ...unplaced.values.nonNulls,
+      ];
+    }
+
     return {
       ...settings,
       'resumes': [
@@ -100,14 +120,8 @@ class ReadingChanges {
             Map<String, dynamic>.from(value as Map),
         ...resumes,
       ],
-      'bookmarks': [
-        for (final value in snapshot?['bookmarks'] as List? ?? const [])
-          if (!unplaced.containsKey(value['id']))
-            Map<String, dynamic>.from(value as Map)
-          else
-            ?unplaced.remove(value['id']),
-        ...unplaced.values.nonNulls,
-      ],
+      'bookmarks': byId('bookmarks', bookmarks),
+      'history': byId('history', history),
     };
   }
 
@@ -163,6 +177,7 @@ class ReaderSession extends ChangeNotifier {
         ),
       ),
       _bookmarkChanges = _Signal(() => (_bookmarks, _edition, _recordsReady)),
+      _historyChanges = _Signal(() => _history),
       _searchChanges = _Signal(() => (_searching, _hits, _searchError)),
       _fontSizeChanges = _Signal(() => (_fontSize, _sizesMainText)),
       _saveStatusChanges = _Signal(() => saveFailed),
@@ -242,7 +257,12 @@ class ReaderSession extends ChangeNotifier {
   final List<TextPosition> _resumes = [];
   // NOTE: Replace this list on each change, never change it in place.
   // [bookmarkChanges] compares lists by identity.
-  List<TextBookmark> _bookmarks = const [];
+  List<Bookmark<TextPosition>> _bookmarks = const [];
+
+  /// The reading moves of the account, newest first.
+  // NOTE: Replace this list on each change, never change it in place.
+  // [historyChanges] compares lists by identity.
+  List<HistoryEvent<TextPosition>> _history = const [];
   bool _disposed = false;
   bool _recordsReady = false;
   int _accountGeneration = 0;
@@ -268,6 +288,14 @@ class ReaderSession extends ChangeNotifier {
   /// signal and [placeChanges].
   Listenable get bookmarkChanges => _bookmarkChanges;
 
+  /// The reading moves of the account in every edition, newest first. It
+  /// follows the saved records, which the session reads at [bind] and at
+  /// [refreshPersonalRecords].
+  List<HistoryEvent<TextPosition>> get history => _history;
+
+  /// Notifies when [history] changes.
+  Listenable get historyChanges => _historyChanges;
+
   /// Notifies when [searching], [hits] or [searchError] changes.
   Listenable get searchChanges => _searchChanges;
 
@@ -283,6 +311,7 @@ class ReaderSession extends ChangeNotifier {
   late final _Signal _placeChanges;
   late final _Signal _documentChanges;
   late final _Signal _bookmarkChanges;
+  late final _Signal _historyChanges;
   late final _Signal _searchChanges;
   late final _Signal _fontSizeChanges;
   late final _Signal _saveStatusChanges;
@@ -338,12 +367,12 @@ class ReaderSession extends ChangeNotifier {
 
   /// The place of [bookmark] in the open book, or null when the bookmark
   /// belongs to other content.
-  ReaderAddress? addressOf(TextBookmark bookmark) =>
+  ReaderAddress? addressOf(Bookmark<TextPosition> bookmark) =>
       _compatible(bookmark.position);
 
   bool get ready => document != null && _navigator != null;
   bool get canBookmark => _recordsReady && position != null;
-  List<TextBookmark> get bookmarks => List.unmodifiable(
+  List<Bookmark<TextPosition>> get bookmarks => List.unmodifiable(
     _bookmarks.where((mark) => mark.position.editionId == edition?.id),
   );
 
@@ -367,6 +396,7 @@ class ReaderSession extends ChangeNotifier {
     _clear();
     _resumes.clear();
     _bookmarks = const [];
+    _history = const [];
     _recordsReady = false;
     _fontSize = _defaultFontSize;
     _sizesMainText = false;
@@ -399,7 +429,10 @@ class ReaderSession extends ChangeNotifier {
               .toList();
           final bookmarks = (saved['bookmarks'] as List)
               .map(
-                (value) => TextBookmark.fromJson(value as Map<String, dynamic>),
+                (value) => Bookmark.fromJson(
+                  value as Map<String, dynamic>,
+                  decodeTextPosition,
+                ),
               )
               .toList();
           if (bookmarks.map((mark) => mark.id).toSet().length !=
@@ -408,6 +441,7 @@ class ReaderSession extends ChangeNotifier {
           }
           _resumes.addAll(resumes);
           _bookmarks = bookmarks;
+          _history = _moves(saved);
           final size = saved['fontSize'];
           if (size is num && size.isFinite) {
             _fontSize = size.toDouble().clamp(14, 40);
@@ -700,10 +734,12 @@ class ReaderSession extends ChangeNotifier {
   Future<void> addBookmark({String? title, String? note}) async {
     final current = position;
     if (current == null || !_recordsReady) return;
-    final added = TextBookmark(
+    final added = Bookmark(
       id: recordId(),
       position: current,
       createdAt: DateTime.now(),
+      bookTitle: _book?.title,
+      editionLabel: _edition?.label,
       title: title,
       note: note,
     );
@@ -716,10 +752,14 @@ class ReaderSession extends ChangeNotifier {
     final index = _bookmarks.indexWhere((value) => value.id == id);
     if (index < 0) return;
     final old = _bookmarks[index];
-    final edited = TextBookmark(
+    // An edit names the book and the edition as they are now, so a
+    // bookmark saved before book names gets them.
+    final edited = Bookmark(
       id: old.id,
       position: old.position,
       createdAt: old.createdAt,
+      bookTitle: _book?.title ?? old.bookTitle,
+      editionLabel: _edition?.label ?? old.editionLabel,
       title: title,
       note: note,
     );
@@ -904,7 +944,7 @@ class ReaderSession extends ChangeNotifier {
   /// saves them.
   Future<void> _save({
     List<TextPosition> resumes = const [],
-    Map<String, TextBookmark?> bookmarks = const {},
+    Map<String, Bookmark<TextPosition>?> bookmarks = const {},
   }) async {
     final key = _account;
     if (key == null || !_recordsReady || _disposed) return;
@@ -973,17 +1013,32 @@ class ReaderSession extends ChangeNotifier {
         .toList();
     final bookmarks = (saved['bookmarks'] as List)
         .map(
-          (value) =>
-              TextBookmark.fromJson(Map<String, dynamic>.from(value as Map)),
+          (value) => Bookmark.fromJson(
+            Map<String, dynamic>.from(value as Map),
+            decodeTextPosition,
+          ),
         )
         .toList();
     _resumes
       ..clear()
       ..addAll(resumes);
     _bookmarks = bookmarks;
+    _history = _moves(saved);
     store.acceptSnapshot(account, saved);
     _emit();
   }
+
+  /// The reading moves of the reading [snapshot], newest first. A snapshot
+  /// without moves, as stores before reading history give, has none.
+  static List<HistoryEvent<TextPosition>> _moves(
+    Map<String, dynamic> snapshot,
+  ) => [
+    for (final value in snapshot['history'] as List? ?? const [])
+      HistoryEvent.fromJson(
+        Map<String, dynamic>.from(value as Map),
+        decodeTextPosition,
+      ),
+  ]..sort((first, second) => second.at.compareTo(first.at));
 
   /// Throws a [StateError] when an invariant of the class comment does not
   /// hold. It runs on demand, in every build.
@@ -991,6 +1046,7 @@ class ReaderSession extends ChangeNotifier {
     if ((_account == null &&
             (document != null ||
                 _bookmarks.isNotEmpty ||
+                _history.isNotEmpty ||
                 _resumes.isNotEmpty)) ||
         (document != null && (edition == null || !_current(edition!))) ||
         (_bookMap != null && document == null) ||
