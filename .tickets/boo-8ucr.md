@@ -1,6 +1,6 @@
 ---
 id: boo-8ucr
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-09T14:42:53Z
