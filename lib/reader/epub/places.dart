@@ -22,8 +22,12 @@ String spineStep(String opf, int index) => spineSteps(opf)[index];
 
 /// The spine step of each spine item of the package document [opf], in
 /// spine order, as [spineStep] gives it. It reads [opf] once.
-List<String> spineSteps(String opf) {
-  final package = XmlDocument.parse(opf).rootElement;
+List<String> spineSteps(String opf) =>
+    spineStepsOf(XmlDocument.parse(opf).rootElement);
+
+/// The spine steps of [spineSteps], from the parsed root element of the
+/// package document, [package].
+List<String> spineStepsOf(XmlElement package) {
   final elements = package.childElements.toList();
   final spine = elements.indexWhere((element) => element.localName == 'spine');
   final itemrefs = elements[spine].childElements.where(

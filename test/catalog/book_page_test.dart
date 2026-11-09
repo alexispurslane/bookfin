@@ -22,6 +22,7 @@ import 'model_test.dart' show entry;
 import '../playback/playback_test.dart'
     show LocalFiles, MemoryResume, TestEngine, account, first, title, recording;
 import '../real_time.dart';
+import '../downloads/verified_reads.dart';
 
 void main() {
   late _RecordingCatalog catalog;
@@ -616,7 +617,7 @@ void main() {
 
 /// Downloads that report [state] for every edition without a state of its
 /// own, and record the changes asked of them.
-class StaticDownloads extends Downloads {
+class StaticDownloads extends Downloads with VerifiedReads {
   StaticDownloads() : super(MediaPolicy());
   EditionDownload state = const EditionDownload();
   final _states = <String, EditionDownload>{};

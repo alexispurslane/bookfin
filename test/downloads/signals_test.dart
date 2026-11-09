@@ -682,7 +682,7 @@ void main() {
           final bytes = await overlapRebind(
             () => downloads.readLocalFile(
               fixture.text.files.single,
-              (uri) => File.fromUri(uri).readAsBytes(),
+              (file) => File.fromUri(file.uri).readAsBytes(),
             ),
             fixture.session(),
             textOnly(),

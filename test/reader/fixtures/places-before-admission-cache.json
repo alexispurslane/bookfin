@@ -1,0 +1,38 @@
+{
+  "comment": "Places that Bookfin saved before t7-rcyp kept admitted books, made by the code of commit 6a20329. Each must still open.",
+  "books": {
+    "showcase-frost.epub": {
+      "version": 1,
+      "processed": "0d134ea94ae37a73b2916bbe8af28852bb64e504d3c619de71bbfe98d29fb643",
+      "original": "86022e096358cb5c70af938769d2918be6e26b2c079d9b1bccefb052b3c55ee1",
+      "policy": "bookfin-passive-epub-1",
+      "engine": "epubjs-0.3.93-bookfin.1",
+      "cfi": "epubcfi(/6/4!/4/2/8/1:39)",
+      "resource": "OEBPS/chapter2.xhtml",
+      "quote": "In some years it held a single word. Rain. Bees. Gone. The year that Wren was born, it said Hers, and she did not know w",
+      "progress": 0.591176
+    },
+    "broken-image.epub": {
+      "version": 1,
+      "processed": "52a612ff863b7acec721989256d58d19bacf5a691efe57d47093692ea9e11e32",
+      "original": "e32510ae63fc29bee696c400cab3a4d5b638c12657cd17c50ff77d33a5573956",
+      "policy": "bookfin-passive-epub-1",
+      "engine": "epubjs-0.3.93-bookfin.1",
+      "cfi": "epubcfi(/6/4!/4/34/1:0)",
+      "resource": "OPS/s1.xhtml",
+      "quote": "Late paragraph 14 keeps the lamp lit by the harbour wall while the tide turns over the stones and the boats rest.Late pa",
+      "progress": 0.587814
+    },
+    "pg11-kf8.mobi": {
+      "version": 1,
+      "processed": "3d0b0318cf5d0455722a2b8ccf93ac5ec0be08e0c198a831d41d4990be1f10d7",
+      "original": "d8211269aed55ded8302f289950936db8368b4d4d384c463b722034152f8f1d2",
+      "policy": "bookfin-mobi-epub-1-libmobi-0.12/bookfin-passive-epub-1",
+      "engine": "epubjs-0.3.93-bookfin.1",
+      "cfi": "epubcfi(/6/4!/4/2[pg-header]/6[pg-machine-header]/2/2/1:0)",
+      "resource": "OEBPS/part00001.html",
+      "quote": "Title: Alice's Adventures in Wonderland\n\nAuthor: Lewis Carroll\n\n\n        \nRelease date: June 27, 2008 [eBook #11]\n      ",
+      "progress": 0.565986
+    }
+  }
+}

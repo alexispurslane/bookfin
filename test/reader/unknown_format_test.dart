@@ -7,6 +7,8 @@ import 'package:bookfin/reader/platform_io.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pdfrx_engine/pdfrx_engine.dart';
 
+import '../downloads/verified_reads.dart';
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   Pdfrx.pdfiumModulePath = Platform.environment['PDFIUM_LIBRARY'];
@@ -39,7 +41,7 @@ void main() {
             .writeAsBytes(original);
         expect(source.container, isEmpty);
         expect(source.isItemOriginal, isTrue);
-        final document = await loadReadingDocument(file.uri, source);
+        final document = await loadReadingDocument(verified(file), source);
         addTearDown(document.dispose);
         if (fixture.endsWith('.pdf')) {
           expect(document, isA<PdfBook>());
@@ -63,12 +65,12 @@ void main() {
     final file = await File('${directory.path}/complete')
         .writeAsString('not an ebook');
     await expectLater(
-      loadReadingDocument(file.uri, source),
+      loadReadingDocument(verified(file), source),
       throwsFormatException,
     );
     final link = await Link('${directory.path}/linked').create(file.path);
     await expectLater(
-      loadReadingDocument(link.uri, source),
+      loadReadingDocument(verified(File(link.path)), source),
       throwsFormatException,
     );
     expect(await file.readAsString(), 'not an ebook');

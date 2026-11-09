@@ -15,9 +15,9 @@ import 'epub/publication.dart';
 import 'page_previews.dart';
 import 'pdf.dart';
 
-typedef PublicationLoader = Future<Publication> Function(Uri uri);
+typedef PublicationLoader = Future<Publication> Function(VerifiedFile file);
 typedef DocumentLoader = Future<ReaderDocument> Function(
-  Uri uri,
+  VerifiedFile file,
   SourceFile source,
 );
 typedef VisibleLocation = ReadingLocation;
@@ -455,15 +455,15 @@ class ReaderSession extends ChangeNotifier {
       }
       final admitted = await downloads.readLocalFile<ReaderDocument>(
         selected.files.single,
-        (uri) async {
-          if (uri.scheme != 'file') {
+        (file) async {
+          if (file.uri.scheme != 'file') {
             throw const FormatException(
               'The reader requires a verified local download.',
             );
           }
           return loadDocument == null
-              ? EpubDocument(await load(uri))
-              : await loadDocument!(uri, selected.files.single);
+              ? EpubDocument(await load(file))
+              : await loadDocument!(file, selected.files.single);
         },
       );
       if (admitted == null) {
@@ -485,7 +485,7 @@ class ReaderSession extends ChangeNotifier {
           if (!available()) return null;
           bool Function() owned = () => true;
           return downloads.readLocalFile<PdfText>(selected.files.single, (
-            uri,
+            file,
           ) async {
             if (!available()) {
               return const PdfText(
@@ -495,7 +495,7 @@ class ReaderSession extends ChangeNotifier {
                 status: PdfTextStatus.absent,
               );
             }
-            return read(uri, () => owned() && available());
+            return read(file.uri, () => owned() && available());
           }, onOwnership: (live) => owned = live);
         });
       }

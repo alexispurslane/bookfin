@@ -124,8 +124,8 @@ void main() {
       downloads: downloads,
       store: MemoryResume(),
       load: loadPublication,
-      loadDocument: (uri, source) =>
-          loadReadingDocument(uri, source, textSupply: BundledEnglishText()),
+      loadDocument: (file, source) =>
+          loadReadingDocument(file, source, textSupply: BundledEnglishText()),
     );
     await reader.bind(account(), [book, _otherBook]);
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger

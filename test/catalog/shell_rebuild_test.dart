@@ -18,10 +18,11 @@ import 'controller_test.dart'
 import 'layout_test.dart' show MemoryLayoutStore;
 import 'model_test.dart' show entry;
 import '../real_time.dart';
+import '../downloads/verified_reads.dart';
 
 /// Download state that a test sets by hand. Every file is on the phone, so
 /// the player can open any book.
-class _Downloads extends Downloads {
+class _Downloads extends Downloads with VerifiedReads {
   _Downloads() : super(MediaPolicy()..network = MediaNetwork.disconnected);
   final _states = <String, EditionDownload>{};
 

@@ -15,6 +15,7 @@ import '../playback/playback_test.dart' show account, LocalFiles, MemoryResume;
 import 'pdf_document_test.dart' show pdfSource;
 import 'pdf_screen_test.dart' show settleNative;
 import 'pdf_session_test.dart' show book, edition;
+import '../downloads/verified_reads.dart';
 
 /// The widgets that rebuilt while [during] ran.
 Future<List<Widget>> _rebuildsDuring(Future<void> Function() during) async {
@@ -56,7 +57,7 @@ void main() {
   // Closing the session closes its document, so each test loads its own.
   setUp(() async {
     document = await loadReadingDocument(
-      File('tool/research/readers/fixtures/simple.pdf').absolute.uri,
+      verified(File('tool/research/readers/fixtures/simple.pdf').absolute),
       pdfSource,
     ) as PdfBook;
   });

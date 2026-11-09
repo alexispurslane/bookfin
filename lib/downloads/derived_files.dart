@@ -8,17 +8,25 @@ class DerivedBookFiles {
   static Directory mobiDirectory(File original) =>
       Directory('${original.parent.path}/.bookfin-mobi');
 
-  static Directory _directory(Directory source) =>
-      mobiDirectory(File('${source.path}/complete'));
+  /// The admitted book that the reader keeps for [original].
+  static Directory admittedDirectory(File original) =>
+      Directory('${original.parent.path}/.bookfin-admitted');
+
+  /// Every derived directory of the download in [source].
+  static List<Directory> _directories(Directory source) {
+    final original = File('${source.path}/complete');
+    return [
+      mobiDirectory(original),
+      ocrDirectory(original),
+      admittedDirectory(original),
+    ];
+  }
 
   /// Actual regular derived-file bytes; symbolic links never contribute.
   static Future<int> bytes(Directory source) async {
     try {
       var total = 0;
-      for (final directory in [
-        _directory(source),
-        ocrDirectory(File('${source.path}/complete')),
-      ]) {
+      for (final directory in _directories(source)) {
         if (await FileSystemEntity.type(directory.path, followLinks: false) !=
             FileSystemEntityType.directory) {
           continue;
@@ -43,10 +51,7 @@ class DerivedBookFiles {
 
   /// Remove only the derived subtree, without traversing symbolic links.
   static Future<void> remove(Directory source) async {
-    for (final directory in [
-      _directory(source),
-      ocrDirectory(File('${source.path}/complete')),
-    ]) {
+    for (final directory in _directories(source)) {
       if (await FileSystemEntity.type(directory.path, followLinks: false) ==
           FileSystemEntityType.directory) {
         await directory.delete(recursive: true);

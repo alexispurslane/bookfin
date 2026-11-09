@@ -20,11 +20,12 @@ import 'controller_test.dart'
     show FixtureClient, MemoryCatalogStore, MemoryCredentials;
 import 'model_test.dart' show entry;
 import '../real_time.dart';
+import '../downloads/verified_reads.dart';
 
 /// Download state that a test sets by hand. It records which editions the
 /// library asked about, apart from the questions that Downloads itself asks
 /// to update its per-edition watches.
-class _Downloads extends Downloads {
+class _Downloads extends Downloads with VerifiedReads {
   _Downloads() : super(MediaPolicy()..network = MediaNetwork.disconnected);
   final _states = <String, EditionDownload>{};
   final asked = <String>[];

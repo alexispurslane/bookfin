@@ -1,32 +1,49 @@
 import 'dart:convert';
 import 'dart:ffi';
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:crypto/crypto.dart';
 import 'package:ffi/ffi.dart';
 import 'package:flutter/foundation.dart';
 
 import '../downloads/derived_files.dart';
+import 'admitted_books.dart';
 import 'document.dart';
 import 'epub/publication.dart';
 
 Future<void> _imports = Future.value();
 
-Future<EpubDocument> importMobi(File original) {
-  final imported = _imports.then((_) => compute(_convert, original.path));
+/// The document of the downloaded MOBI [original], whose bytes have the
+/// SHA-256 [digest]. Its first open converts it to EPUB and admits that
+/// EPUB. Later opens read the admitted book that Bookfin kept, and neither
+/// convert, read nor hash the MOBI.
+Future<EpubDocument> importMobi(File original, String digest) {
+  final path = original.path;
+  final imported = _imports.then(
+    (_) => Isolate.run(() async {
+      final publication = await AdmittedBooks.open(
+        File(path),
+        digest,
+        EpubDocument.mobiPolicy,
+        () => _convert(path, digest),
+      );
+      return EpubDocument.mobi(publication, digest);
+    }),
+  );
   _imports = imported.then<void>((_) {}, onError: (Object error) {});
   return imported;
 }
 
-Future<EpubDocument> _convert(String path) async {
+/// The admitted EPUB of the MOBI at [path], whose SHA-256 is [digest]: from
+/// the conversion that Bookfin kept, else from a new conversion.
+Future<Publication> _convert(String path, String digest) async {
   final original = File(path);
   if (await original.length() > Publication.maxArchiveBytes) {
     throw const FormatException(
       'This MOBI exceeds the 64 MiB import limit. The original download was kept.',
     );
   }
-  final bytes = await original.readAsBytes();
-  final digest = sha256.convert(bytes).toString();
   final cacheRoot = DerivedBookFiles.mobiDirectory(original);
   final rootType = await FileSystemEntity.type(
     cacheRoot.path,
@@ -44,8 +61,7 @@ Future<EpubDocument> _convert(String path) async {
   if (cached != null) return cached;
   final work = await cacheRoot.createTemp('conversion-');
   try {
-    final input = await File('${work.path}/book.mobi')
-        .writeAsBytes(bytes, flush: true);
+    final input = await original.copy('${work.path}/book.mobi');
     final library = DynamicLibrary.open(
       Platform.isAndroid
           ? 'libbookfin_mobi.so'
@@ -73,20 +89,21 @@ Future<EpubDocument> _convert(String path) async {
       );
     }
     final converted = await output.readAsBytes();
-    final publication = Publication.admit(converted);
+    final epub = sha256.convert(converted).toString();
+    final publication = Publication.admit(converted, epub);
     await input.delete();
     await File('${work.path}/manifest.json').writeAsString(
       jsonEncode({
         'version': 1,
         'original': digest,
         'policy': EpubDocument.mobiPolicy,
-        'epub': sha256.convert(converted).toString(),
+        'epub': epub,
       }),
       flush: true,
     );
     if (await destination.exists()) await destination.delete(recursive: true);
     await work.rename(destination.path);
-    return EpubDocument.mobi(publication, digest);
+    return publication;
   } on ArgumentError {
     throw const FormatException(
       'The bundled MOBI converter is unavailable in this build. The original download was kept.',
@@ -96,7 +113,7 @@ Future<EpubDocument> _convert(String path) async {
   }
 }
 
-Future<EpubDocument?> _cached(Directory folder, String digest) async {
+Future<Publication?> _cached(Directory folder, String digest) async {
   try {
     if (await FileSystemEntity.type(folder.path, followLinks: false) !=
         FileSystemEntityType.directory) {
@@ -112,14 +129,15 @@ Future<EpubDocument?> _cached(Directory folder, String digest) async {
       return null;
     }
     final Uint8List bytes = await output.readAsBytes();
+    final epub = sha256.convert(bytes).toString();
     if (manifest is! Map ||
         manifest['version'] != 1 ||
         manifest['original'] != digest ||
         manifest['policy'] != EpubDocument.mobiPolicy ||
-        manifest['epub'] != sha256.convert(bytes).toString()) {
+        manifest['epub'] != epub) {
       return null;
     }
-    return EpubDocument.mobi(Publication.admit(bytes), digest);
+    return Publication.admit(bytes, epub);
   } on Exception {
     return null;
   }

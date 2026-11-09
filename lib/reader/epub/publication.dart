@@ -7,6 +7,7 @@ import 'package:image/image.dart' as raster;
 import 'package:xml/xml.dart';
 
 import '../document.dart';
+import 'places.dart';
 
 class Publication {
   Publication._(
@@ -21,6 +22,7 @@ class Publication {
     this.imageSizes,
     this.contents,
     this.language,
+    this.spineSteps,
   );
 
   static const policy = 'bookfin-passive-epub-1';
@@ -56,7 +58,7 @@ class Publication {
   final Map<String, String> bookStyles;
 
   /// The pixel width and height of each admitted PNG and JPEG, by path, from
-  /// the raster check that admission already runs.
+  /// the image's header, which admission checks.
   final Map<String, (int, int)> imageSizes;
 
   /// The contents: the EPUB 3 navigation document's toc, else the NCX navMap,
@@ -70,17 +72,141 @@ class Publication {
   /// elements name none. Null when the package names none.
   final String? language;
 
+  /// The spine step of each section's CFIs, in spine order, as
+  /// [spineSteps] in places.dart reads it from the admitted package
+  /// document.
+  final List<String> spineSteps;
+
   Uri get base => Uri(scheme: 'https', host: host, path: '/$identity/');
 
-  static Publication admit(Uint8List bytes) {
+  /// The revision of admission's output and of [encode]'s format. A kept
+  /// admitted book of another revision admits again. Raise it when either
+  /// changes. It does not move a saved place, which [policy] and the
+  /// original digest key.
+  static const revision = 1;
+
+  /// The publication of the EPUB [bytes], whose SHA-256 is [digest]: the
+  /// digest that Downloads verified, so admission does not hash the bytes
+  /// again. Without [digest], admission hashes them. Throws a
+  /// [FormatException] that a person can read when the book cannot be
+  /// admitted.
+  static Publication admit(Uint8List bytes, [String? digest]) {
     try {
-      return _Admission(_unpack(bytes), sha256.convert(bytes).toString()).run();
+      return _Admission(
+        _unpack(bytes),
+        digest ?? sha256.convert(bytes).toString(),
+      ).run();
     } on FormatException {
       rethrow;
     } catch (_) {
       throw const FormatException(
         'This EPUB is damaged or uses an unsupported resource.',
       );
+    }
+  }
+
+  /// The publication as bytes that [decode] reads back into an equal
+  /// publication: every admitted file and every admitted fact.
+  ///
+  /// The bytes are the length of a JSON header as a 32-bit little-endian
+  /// number, that header in UTF-8, and then each resource's bytes in the
+  /// order that the header lists them.
+  Uint8List encode() {
+    final header = utf8.encode(
+      jsonEncode({
+        'originalDigest': originalDigest,
+        'identity': identity,
+        'packagePath': packagePath,
+        'spine': spine,
+        'spineSteps': spineSteps,
+        'warnings': warnings,
+        'language': language,
+        'contents': [
+          for (final entry in contents) [entry.title, entry.href, entry.depth],
+        ],
+        'bookStyles': bookStyles,
+        'imageSizes': {
+          for (final MapEntry(key: path, value: (width, height))
+              in imageSizes.entries)
+            path: [width, height],
+        },
+        'resources': [
+          for (final MapEntry(key: path, value: bytes) in resources.entries)
+            [path, mediaTypes[path], bytes.length],
+        ],
+      }),
+    );
+    final output = BytesBuilder(copy: false)
+      ..add(
+        Uint8List(4)
+          ..buffer.asByteData().setUint32(0, header.length, Endian.little),
+      )
+      ..add(header);
+    for (final bytes in resources.values) {
+      output.add(bytes);
+    }
+    return output.takeBytes();
+  }
+
+  /// The publication that [encode] wrote into [bytes]. Each resource gets
+  /// bytes of its own, so a resource that goes to a worker does not take
+  /// the others along. Throws a [FormatException] when [bytes] are not such
+  /// a record, for example when they were cut short.
+  static Publication decode(Uint8List bytes) {
+    try {
+      final length = ByteData.sublistView(bytes).getUint32(0, Endian.little);
+      final header = jsonDecode(
+        utf8.decode(Uint8List.sublistView(bytes, 4, 4 + length)),
+      ) as Map<String, dynamic>;
+      List<String> strings(Object? value) =>
+          List.unmodifiable((value as List).cast<String>());
+      final resources = <String, Uint8List>{};
+      final types = <String, String>{};
+      var offset = 4 + length;
+      for (final entry in header['resources'] as List) {
+        final path = (entry as List)[0] as String;
+        final size = entry[2] as int;
+        types[path] = entry[1] as String;
+        resources[path] = Uint8List.fromList(
+          Uint8List.sublistView(bytes, offset, offset += size),
+        ).asUnmodifiableView();
+      }
+      if (offset != bytes.length || resources.length != types.length) {
+        throw const FormatException('The record has bytes left over.');
+      }
+      final spine = strings(header['spine']);
+      final spineSteps = strings(header['spineSteps']);
+      return Publication._(
+        Map.unmodifiable(resources),
+        Map.unmodifiable({
+          for (final path in types.keys.toList()..sort()) path: types[path]!,
+        }),
+        header['originalDigest'] as String,
+        header['identity'] as String,
+        header['packagePath'] as String,
+        spine,
+        strings(header['warnings']),
+        Map.unmodifiable((header['bookStyles'] as Map).cast<String, String>()),
+        Map.unmodifiable({
+          for (final MapEntry(key: path as String, value: size as List)
+              in (header['imageSizes'] as Map).entries)
+            path: (size[0] as int, size[1] as int),
+        }),
+        List.unmodifiable([
+          for (final entry in header['contents'] as List)
+            ContentsEntry(
+              (entry as List)[0] as String,
+              entry[1] as String,
+              depth: entry[2] as int,
+            ),
+        ]),
+        header['language'] as String?,
+        spineSteps,
+      );
+    } on FormatException {
+      rethrow;
+    } catch (_) {
+      throw const FormatException('The kept admitted book is unreadable.');
     }
   }
 
@@ -109,7 +235,8 @@ class Publication {
   /// - [bookStyles] holds exactly the admitted style sheets;
   /// - [imageSizes] holds exactly the admitted PNG and JPEG images;
   /// - every contents entry points into the spine at a depth of at most
-  ///   [maxContentsDepth].
+  ///   [maxContentsDepth];
+  /// - [spineSteps] has one step for each spine item.
   void checkInvariants() {
     bool typed(Iterable<String> paths, Set<String> types) {
       final wanted = {
@@ -145,6 +272,9 @@ class Publication {
       throw StateError(
         'Publication styles, image sizes, or contents disagree with its resources.',
       );
+    }
+    if (spineSteps.length != spine.length) {
+      throw StateError('Publication spine steps disagree with its spine.');
     }
   }
 }
@@ -567,6 +697,7 @@ class _Admission {
       'application/oebps-package+xml',
       utf8.encode(opf.rootElement.toXmlString()),
     );
+    final steps = spineStepsOf(opf.rootElement);
     _put(
       'META-INF/container.xml',
       'application/xml',
@@ -625,6 +756,7 @@ class _Admission {
           .map((node) => node.innerText.trim())
           .where((language) => language.isNotEmpty)
           .firstOrNull,
+      List.unmodifiable(steps),
     );
   }
 
@@ -749,6 +881,11 @@ class _Admission {
     );
   }
 
+  /// The width and height of the PNG or JPEG at [path], from its header,
+  /// or null when the header is unreadable, the image has more than one
+  /// frame, or it has more than 16 million pixels. Admission does not
+  /// decode the pixels: layout needs only the size, and the page draws the
+  /// image's alt text when its pixels do not decode.
   (int, int)? _raster(String path, String mime) {
     try {
       final bytes = raw[path]!;
@@ -760,8 +897,7 @@ class _Admission {
           info.width < 1 ||
           info.height < 1 ||
           info.width * info.height > 16000000 ||
-          info.numFrames != 1 ||
-          decoder.decode(bytes) == null) {
+          info.numFrames != 1) {
         return null;
       }
       return (info.width, info.height);

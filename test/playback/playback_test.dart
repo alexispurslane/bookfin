@@ -7,6 +7,8 @@ import 'package:bookfin/playback/playback.dart';
 import 'package:bookfin/reader/session.dart' show ReadingChanges, ReadingStore;
 import 'package:flutter_test/flutter_test.dart';
 
+import '../downloads/verified_reads.dart';
+
 const first = SourceFile(
   itemId: 'one',
   displayName: 'Part one',
@@ -541,7 +543,7 @@ class TestEngine implements AudioEngine {
   }
 }
 
-class LocalFiles extends Downloads {
+class LocalFiles extends Downloads with VerifiedReads {
   LocalFiles() : super(MediaPolicy()..network = MediaNetwork.disconnected);
   final files = {
     first.key: Uri.file('/one.wav'),

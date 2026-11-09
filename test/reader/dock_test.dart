@@ -24,6 +24,7 @@ import 'pdf_screen_test.dart' show settleNative;
 import 'pdf_session_test.dart' as pdf show book, edition;
 import 'screen_test.dart' show ControlNavigator;
 import 'session_test.dart' show source, edition, book;
+import '../downloads/verified_reads.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -431,9 +432,9 @@ void main() {
       document =
           (await tester.runAsync(
                 () => loadReadingDocument(
-                  File('tool/research/readers/fixtures/simple.pdf')
-                      .absolute
-                      .uri,
+                  verified(
+                    File('tool/research/readers/fixtures/simple.pdf').absolute,
+                  ),
                   pdfSource,
                 ),
               ))!

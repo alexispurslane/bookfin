@@ -104,3 +104,27 @@ Two smaller costs stay as they are. The first frame after the shown page takes 2
 3. Read the results with `adb -s <device> logcat -d | grep OPEN_BENCHMARK`. The comment at the top of the tool describes the plan and each result.
 
 The first launch after an install only finds the saved addresses. An install clears them, because they are in the app's cache directory.
+
+## After t7-rcyp: the kept admitted book
+
+Ticket t7-rcyp, 2026-11-09. Three changes remove admission from the path of an open:
+
+- Admission reads only the header of each PNG and JPEG: its width, height, pixel count and frame count. Layout needs only the size. A page draws an image's alt text when its pixels do not decode.
+- The reader takes the SHA-256 digest that Downloads computed when the download completed. An open does not hash the book.
+- The first open of a downloaded file keeps the admitted book in the download's `.bookfin-admitted` folder: the admitted files, every admitted fact, and the CFI spine steps. The key is the file's digest, the reading policy and `Publication.revision`. Later opens read this record in one worker call. A MOBI keeps the record of its converted EPUB under the MOBI's own digest and policy.
+
+The emulator measurement could not run. The Mac's only disk had 5.1 GB free, and the Android 36 image needs 7.4 GB for an emulator's data partition. So the numbers below come from the host (an Apple silicon Mac, `flutter test`, a load of 30 to 37 on 10 cores). They are medians of 11 runs, in milliseconds. The runs of the three columns alternate, so the load affects all three in the same way.
+
+| Book | Open before | First open after a download | Later open | File (KiB) | Record (KiB) | Images |
+| --- | --- | --- | --- | --- | --- | --- |
+| Frankenstein | 257 | 141 | 3.2 | 429 | 722 | 1 |
+| Hamlet | 695 | 315 | 5.7 | 635 | 1,146 | 5 |
+| Keats | 981 | 586 | 5.1 | 554 | 1,414 | 5 |
+| Jane Eyre | 1,336 | 400 | 5.2 | 3,023 | 3,743 | 29 |
+| Moby-Dick (MOBI) | 802 | 462 | 13.3 | 1,480 | 2,220 | 2 |
+
+"Open before" is the work of the old open in one worker: the read, the hash, the admission and the full decode of each image. For the MOBI, it also reads its kept conversion and hashes it. "First open after a download" is a full admission without the image decodes, and the write of the record. "Later open" is the read and decode of the record in a worker.
+
+A later open reads the whole record at once. A lazy read of each resource would save at most the 3 to 13 ms of the read, but every user of `Publication.resources` would have to wait for a file read. On the emulator, the read can take a few times longer, but it stays small next to the 190 to 950 ms of admission that it replaces.
+
+Ticket t6-0yez measures the same five books on an emulator and on the Pixel 8 when the disk has room.

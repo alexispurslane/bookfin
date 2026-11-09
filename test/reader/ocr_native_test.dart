@@ -162,8 +162,8 @@ void main() {
       downloads: downloads,
       store: MemoryResume(),
       load: loadPublication,
-      loadDocument: (uri, source) =>
-          loadReadingDocument(uri, source, textSupply: BundledEnglishText()),
+      loadDocument: (file, source) =>
+          loadReadingDocument(file, source, textSupply: BundledEnglishText()),
     );
     try {
       await reader.bind(account(), [book]);

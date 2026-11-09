@@ -24,9 +24,16 @@ abstract class ReaderDocument {
     ...address.toJson(),
   };
 
+  /// The address of the saved place [value], when it belongs to this
+  /// document: to the same original file, read under the same policy and
+  /// engine. A place that an older admission of the same file saved can
+  /// carry another processed identity. One example is a book whose image
+  /// header is sound but whose pixels do not decode: admission refused that
+  /// image before t7-rcyp and keeps it now. Such a place still restores,
+  /// because the pager opens it only where its CFI and its quote still
+  /// match the text.
   ReaderAddress? restore(Map<String, dynamic> value) {
     if (value['version'] != 1 ||
-        value['processed'] != identity ||
         value['original'] != originalDigest ||
         value['policy'] != policy ||
         value['engine'] != engine) {
