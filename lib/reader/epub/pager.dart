@@ -76,6 +76,9 @@ class EpubPager implements DocumentNavigator {
   /// The pager of [document]. It opens at [initial] once the first
   /// [present] gives it page settings. [onPlace] receives each new place of
   /// the shown page. [onWarning] receives a message for the person.
+  /// [onShow] hears each new shown page: with the visible characters of the
+  /// page before when the person turned forward from that page, else with
+  /// null.
   ///
   /// The pager owns [source], which defaults to a page source of the book
   /// with its kept page maps, and disposes it. [hop] runs each batch of a
@@ -85,6 +88,7 @@ class EpubPager implements DocumentNavigator {
     this._initial,
     required this._onPlace,
     required this._onWarning,
+    this._onShow,
     PageSource? source,
     this._hop = compute,
   }) : _publication = document.publication,
@@ -105,6 +109,7 @@ class EpubPager implements DocumentNavigator {
   final Publication _publication;
   final ValueChanged<EpubAddress> _onPlace;
   final ValueChanged<String> _onWarning;
+  final ValueChanged<int?>? _onShow;
   final PageSource _source;
   final IsolateHop _hop;
 
@@ -327,7 +332,13 @@ class EpubPager implements DocumentNavigator {
         ? await _source.after(shown.page)
         : await _source.before(shown.page);
     if (page == null) return;
-    _show(page, page.startPlace ?? _place!, steps, report: true);
+    _show(
+      page,
+      page.startPlace ?? _place!,
+      steps,
+      report: true,
+      read: forward ? shown.page : null,
+    );
   });
 
   /// Shows the page of [address], and reports it. Throws when the address
@@ -611,12 +622,14 @@ class EpubPager implements DocumentNavigator {
   }
 
   /// Shows [page] at [place], and reports the page's address when
-  /// [report]. [steps] are the spine steps of the book's CFIs.
+  /// [report]. [steps] are the spine steps of the book's CFIs. [read] is the
+  /// page that the person turned forward from, if any.
   void _show(
     LaidPage page,
     EpubPlace place,
     List<String> steps, {
     bool report = false,
+    LaidPage? read,
   }) {
     if (_disposed) throw StateError('The pager is disposed.');
     _source.show(page);
@@ -627,6 +640,7 @@ class EpubPager implements DocumentNavigator {
     _shown.value = ShownPage(page, _source.draft(page));
     _sharpen(page);
     _count(page);
+    _onShow?.call(read == null ? null : read.endVisible - read.startVisible);
     final start = page.startPlace;
     if (!report || start == null) return;
     final dom = section.dom;

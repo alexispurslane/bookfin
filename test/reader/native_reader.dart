@@ -7,6 +7,7 @@ import 'dart:async';
 import 'package:bookfin/foundation/theme.dart';
 import 'package:bookfin/reader/epub/pager.dart';
 import 'package:bookfin/reader/epub/publication.dart';
+import 'package:bookfin/reader/reading_speed.dart';
 import 'package:bookfin/reader/screen.dart';
 import 'package:bookfin/reader/session.dart';
 import 'package:flutter/material.dart';
@@ -85,6 +86,7 @@ Future<ReaderSession> openNative(
   WidgetTester tester, {
   Publication? publication,
   ReadingStore? store,
+  ReadingSpeed? speed,
 }) async {
   final downloads = LocalFiles()
     ..files[source.key] = Uri.file('/verified.epub');
@@ -93,6 +95,7 @@ Future<ReaderSession> openNative(
     downloads: downloads,
     store: store ?? MemoryResume(),
     load: (_) async => opened,
+    speed: speed,
   );
   addTearDown(downloads.dispose);
   await reader.bind(account(), [book]);

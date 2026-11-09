@@ -7,6 +7,7 @@ import 'package:xml/xml_events.dart';
 import '../catalog/jellyfin.dart';
 import '../catalog/model.dart';
 import '../downloads/downloads.dart';
+import '../foundation/time.dart' show roundEstimate;
 import '../playback/playback.dart';
 import 'book_map.dart';
 import 'document.dart';
@@ -14,6 +15,7 @@ import 'epub/pager.dart';
 import 'epub/publication.dart';
 import 'page_previews.dart';
 import 'pdf.dart';
+import 'reading_speed.dart';
 
 typedef PublicationLoader = Future<Publication> Function(VerifiedFile file);
 typedef DocumentLoader = Future<ReaderDocument> Function(
@@ -21,6 +23,9 @@ typedef DocumentLoader = Future<ReaderDocument> Function(
   SourceFile source,
 );
 typedef VisibleLocation = ReadingLocation;
+
+/// The estimated reading time left in the chapter and in the book.
+typedef TimeLeft = ({Duration chapter, Duration book});
 
 /// The owner of each account's saved reading records, as [ReaderSession]
 /// uses it.
@@ -139,6 +144,7 @@ class ReaderSession extends ChangeNotifier {
     required this.store,
     required this.load,
     this.loadDocument,
+    this.speed,
   }) {
     _signals = [
       _placeChanges = _Signal(() => (_visibleAddress, _position)),
@@ -162,12 +168,18 @@ class ReaderSession extends ChangeNotifier {
       _saveStatusChanges = _Signal(() => saveFailed),
       _reflowChanges = _Signal(() => _reflow),
       _bookMapChanges = _Signal(() => _bookMap),
+      _timeLeftChanges = _Signal(() => timeLeft),
     ];
+    speed?.charactersPerMinute.addListener(_emit);
   }
   final Downloads downloads;
   final ReadingStore store;
   final PublicationLoader load;
   final DocumentLoader? loadDocument;
+
+  /// The person's reading speed, which the pager's page turns feed and
+  /// [timeLeft] reads. Without it, the session estimates no time.
+  final ReadingSpeed? speed;
   ReaderDocument? _document;
   ReaderDocument? get document => _document;
   Book? _book;
@@ -275,6 +287,7 @@ class ReaderSession extends ChangeNotifier {
   late final _Signal _fontSizeChanges;
   late final _Signal _saveStatusChanges;
   late final _Signal _bookMapChanges;
+  late final _Signal _timeLeftChanges;
   late final List<_Signal> _signals;
 
   BookMap? _bookMap;
@@ -302,6 +315,26 @@ class ReaderSession extends ChangeNotifier {
 
   /// Notifies when [bookMap] changes.
   Listenable get bookMapChanges => _bookMapChanges;
+
+  /// The reading time left from the visible place to the end of its chapter
+  /// and to the end of the book, at the person's [speed], each rounded as
+  /// [roundEstimate] rounds it. Null while the speed is not known, and in a
+  /// PDF. The place, the book map and the speed decide it.
+  TimeLeft? get timeLeft {
+    final perMinute = speed?.charactersPerMinute.value;
+    final (place, map) = (_visibleAddress, _bookMap);
+    if (perMinute == null || place == null || map == null) return null;
+    final left = map.charactersLeft(place);
+    if (left == null) return null;
+    Duration time(double characters) => roundEstimate(
+      Duration(milliseconds: (characters / perMinute * 60000).round()),
+    );
+    return (chapter: time(left.chapter), book: time(left.book));
+  }
+
+  /// Notifies when [timeLeft] changes. A page turn that leaves the rounded
+  /// times as they were notifies nothing.
+  Listenable get timeLeftChanges => _timeLeftChanges;
 
   /// The place of [bookmark] in the open book, or null when the bookmark
   /// belongs to other content.
@@ -538,6 +571,9 @@ class ReaderSession extends ChangeNotifier {
           initial: _initialAddress,
           onPlace: (address) => acceptAddress(generation, address),
           onWarning: (message) => warn(generation, message),
+          onShow: (read) {
+            if (_live(generation)) speed?.pageShown(read: read);
+          },
         );
         pager.bookPages.addListener(_repage);
         attachDocument(generation, pager, contents);
@@ -988,6 +1024,7 @@ class ReaderSession extends ChangeNotifier {
   @override
   void dispose() {
     _disposed = true;
+    speed?.charactersPerMinute.removeListener(_emit);
     _clear();
     unawaited(_retryPending());
     for (final signal in _signals) {

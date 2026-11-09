@@ -17,6 +17,32 @@ String duration(int milliseconds) {
   return minutes < 60 ? '$minutes m' : '${minutes ~/ 60} h ${minutes % 60} m';
 }
 
+/// An estimate of a reading time, rounded to a step that reads at a glance
+/// and does not change on every page: to the minute under 10 minutes, to 5
+/// minutes under an hour, and to 10 minutes from an hour on. Under half a
+/// minute it is zero. A rounded estimate stays as it is.
+Duration roundEstimate(Duration time) {
+  final minutes = time.inMilliseconds / Duration.millisecondsPerMinute;
+  int to(int step) => (minutes / step).round() * step;
+  final rounded = minutes < 9.5
+      ? to(1)
+      : to(5) < 60
+      ? to(5)
+      : to(10);
+  return Duration(minutes: rounded);
+}
+
+/// An estimate of a reading time as [roundEstimate] rounds it, for example
+/// "less than 1 min", "6 min", "1 h 20 min" or "3 h". It differs from
+/// [duration], which shows a measured time to the minute.
+String estimatedTime(Duration time) {
+  final minutes = roundEstimate(time).inMinutes;
+  if (minutes == 0) return 'less than 1 min';
+  if (minutes < 60) return '$minutes min';
+  final hours = '${minutes ~/ 60} h';
+  return minutes % 60 == 0 ? hours : '$hours ${minutes % 60} min';
+}
+
 const _weekdays = [
   'Monday',
   'Tuesday',

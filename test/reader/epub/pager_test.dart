@@ -85,6 +85,7 @@ void main() {
   EpubPager? opened;
   final reported = <EpubAddress>[];
   final warnings = <String>[];
+  final turns = <int?>[];
 
   EpubPager pager() => opened!;
 
@@ -96,12 +97,14 @@ void main() {
     opened?.dispose();
     reported.clear();
     warnings.clear();
+    turns.clear();
     source = PageSource(publication, schedule: scheduler.schedule);
     final made = EpubPager(
       EpubDocument(publication),
       initial: initial,
       onPlace: reported.add,
       onWarning: warnings.add,
+      onShow: turns.add,
       source: source,
       hop: hop ?? _inline,
     );
@@ -175,6 +178,25 @@ void main() {
       ).toJson(),
     );
     expect(warnings, isEmpty);
+  });
+
+  test('each new page reports the visible characters of the page that the '
+      'person turned forward from, and any other move reports none', () async {
+    open(linkedBook());
+    final first = (await present()).page;
+    expect(turns, [null], reason: 'Opening the book turns no page.');
+
+    await until(pager().move(true));
+    expect(first.endVisible - first.startVisible, greaterThan(100));
+    expect(turns.last, first.endVisible - first.startVisible);
+
+    await until(pager().move(false));
+    expect(turns.last, isNull, reason: 'A turn back reads no page.');
+    await until(pager().seek(1, .5));
+    expect(turns.last, isNull, reason: 'A jump reads no page.');
+    await present(largerText);
+    expect(turns.last, isNull, reason: 'New page settings read no page.');
+    expect(turns, hasLength(5));
   });
 
   test('present notifies later, never during the call, and the same '

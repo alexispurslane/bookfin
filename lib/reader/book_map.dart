@@ -298,6 +298,67 @@ class BookMap {
     return before;
   }
 
+  /// The visible characters, white space left out, from [place] to the
+  /// start of the next chapter that the contents list, or to the book's end
+  /// when no chapter starts after it, and from [place] to the book's end.
+  /// Null for a place that is not in this book, and for a PDF, whose pages
+  /// count no characters.
+  ///
+  /// A section counts its characters once a main run laid it out
+  /// ([paged]). Until then, as for a section that a kept page map gave
+  /// (t5-q0hs), its bytes estimate them, at the characters per byte of the
+  /// sections that count theirs, or at [_charactersPerByte] before any
+  /// does.
+  ({double chapter, double book})? charactersLeft(ReaderAddress place) {
+    if (place is! EpubAddress) return null;
+    final part = _parts[place.location.resource];
+    if (part == null) return null;
+    final through = (place.location.progress ?? 0.0).clamp(0.0, 1.0);
+    final lengths = _lengths;
+    // Places measured on two paths can differ in the last bits.
+    const near = 1e-9;
+    final next = _chapters
+        .where(
+          (chapter) =>
+              chapter.part > part ||
+              chapter.part == part && chapter.progress > through + near,
+        )
+        .firstOrNull;
+    double before(int part, double progress) =>
+        lengths.take(part).fold(0.0, (sum, length) => sum + length) +
+        lengths[part] * progress;
+    final at = before(part, through);
+    final end = before(lengths.length - 1, 1);
+    return (
+      chapter: (next == null ? end : before(next.part, next.progress)) - at,
+      book: end - at,
+    );
+  }
+
+  /// The visible characters of each part: counted where a main run laid
+  /// the part out, else estimated from its bytes.
+  late final List<double> _lengths = () {
+    final known = _pages?.parts;
+    var characters = 0;
+    var bytes = 0;
+    for (final (index, part) in (known ?? const []).indexed) {
+      if (part?.visible case final visible?) {
+        characters += visible.length;
+        bytes += _sizes[index];
+      }
+    }
+    final perByte = bytes > 0 ? characters / bytes : _charactersPerByte;
+    return [
+      for (final (index, size) in _sizes.indexed)
+        known?[index]?.visible?.length.toDouble() ?? size * perByte,
+    ];
+  }();
+
+  /// The visible characters per byte of a typical EPUB section, which
+  /// estimates the characters of a book before any section is laid out.
+  /// The markup takes about half of a section's bytes.
+  static const _charactersPerByte = .5;
+
   /// Where the place [through] of the way through part [part] sits, by the
   /// rule that [targetAt] reverses, so that equal places give equal
   /// fractions.

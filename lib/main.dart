@@ -25,6 +25,7 @@ import 'playback/native.dart';
 import 'playback/playback.dart';
 import 'playback/store.dart';
 import 'playback/database.dart';
+import 'reader/reading_speed.dart';
 import 'reader/session.dart';
 import 'reader/platform.dart';
 import 'reader/licenses.dart';
@@ -72,6 +73,10 @@ Future<void> runBookfin({bool gallery = false}) async {
     ),
     openCovers: () => opening,
   );
+  // The reading speed is derived data, so the first frame does not wait
+  // for it. Pages that count before it is read join the saved ones.
+  final speed = ReadingSpeed(LocalReadingSpeedStore());
+  unawaited(speed.restore());
   final reader = downloads == null
       ? null
       : ReaderSession(
@@ -79,6 +84,7 @@ Future<void> runBookfin({bool gallery = false}) async {
           store: records.reading,
           load: loadPublication,
           loadDocument: loadReadingDocument,
+          speed: speed,
         );
   runApp(
     BookfinApp(
