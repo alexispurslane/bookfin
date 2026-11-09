@@ -15,11 +15,13 @@ import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
 import 'dart:isolate';
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
 
+import '../book_pages.dart';
 import 'dom.dart';
 import 'fonts.dart';
 import 'layout.dart';
@@ -107,6 +109,10 @@ class PageRequestStopped implements Exception {
 ///   counts as ended. Kept maps are read only for the current and the
 ///   previous settings.
 /// - Every request of the work around the shown page is in progress.
+/// - Each true page start of a section that no kept map seeded has its
+///   visible start, and a section whose main run ended lists them in the
+///   page index. A seeded section lists its page count only.
+/// - The published page index is the current settings' one.
 class PageSource {
   /// The pages of [publication]. [schedule] runs each layout step; it
   /// defaults to [scheduleBetweenFrames]. Each step lays out
@@ -258,6 +264,7 @@ class PageSource {
     }
     _reading.removeWhere((kept, _) => kept != value && kept != _previous);
     _readMap(value);
+    _bookPages.value = _bookPagesIn(value);
   }
 
   /// Section [index] prepared for the current settings, in a worker.
@@ -347,6 +354,27 @@ class PageSource {
       _Rank.shownRun,
       abandon,
       (request) => _known(layout, end ? null : page.start, request),
+    );
+  }
+
+  /// The whole-book page index of the current settings: the true pages of
+  /// each section whose main run ended. It notifies once a section is laid
+  /// out and once the settings change, never once a page.
+  ValueListenable<BookPages> get bookPages => _bookPages;
+  late final _bookPages = ValueNotifier(_bookPagesIn(_settings));
+
+  /// The number of [page] among the true pages of the whole book, and the
+  /// book's page count, once every section of [page]'s settings is laid
+  /// out. Null before then, and while the main run of [page]'s section has
+  /// not passed its start.
+  PageNumber? bookNumberOf(LaidPage page) {
+    final number = numberOf(page);
+    final index = _bookPagesIn(page.settings);
+    final count = index.count;
+    if (number == null || count == null) return null;
+    return (
+      number: index.numberOf(page.section, number.number - 1)!,
+      count: count,
     );
   }
 
@@ -482,6 +510,7 @@ class PageSource {
     _images.clear();
     _reading.clear();
     _shown = null;
+    _bookPages.dispose();
     _keptMapDropped.dispose();
   }
 
@@ -511,6 +540,20 @@ class PageSource {
         check(
           starts[at].compareTo(starts[at - 1]) > 0,
           'the page starts of section $index do not increase',
+        );
+      }
+      check(
+        layout.visibleStarts.length ==
+            (layout.seeded ? 0 : layout.starts.length),
+        'a true page start of section $index has no visible start',
+      );
+      if (layout.pages case final pages?) {
+        check(
+          pages.count == layout.starts.length &&
+              (layout.seeded
+                  ? pages.visible == null
+                  : listEquals(pages.visible?.starts, layout.visibleStarts)),
+          'the page index of section $index is not its true pages',
         );
       }
       for (final MapEntry(key: start, value: next)
@@ -565,6 +608,14 @@ class PageSource {
       );
       check(!cached.disposed, 'a cached page is disposed');
     }
+    final published = _bookPages.value.parts;
+    final index = _bookPagesIn(_settings).parts;
+    check(
+      published.length == index.length &&
+          [for (var at = 0; at < index.length; at++) published[at] == index[at]]
+              .every((same) => same),
+      'the published page index is not the current settings\' one',
+    );
     check(
       _around.every(_requests.contains),
       'a request around the shown page ended but is kept',
@@ -938,9 +989,21 @@ class PageSource {
       if (run.main) {
         if (layout.starts.isEmpty ||
             page.start.compareTo(layout.starts.last) > 0) {
+          // NOTE: A page counts the visible characters before its first
+          // text or image, and the DOM also counts text that no line draws,
+          // such as a title that the book's style hides. So the first page
+          // of a section can count some, and a page can count more than the
+          // next one. The index starts at 0 and never goes back.
+          layout.visibleStarts.add(
+            layout.starts.isEmpty
+                ? 0
+                : math.max(page.startVisible, layout.visibleStarts.last),
+          );
           layout.starts.add(page.start);
         }
-        if (page.last) layout.mainDone = true;
+        if (page.last) {
+          _finish(layout, length: layout.prepared!.dom.visibleLength);
+        }
       }
     }
     if (!ended && layout.mainDone) _keepMap(layout.settings);
@@ -978,6 +1041,31 @@ class PageSource {
       layout.anchored = null;
     }
   }
+
+  /// Marks the main run of [layout] as ended, so that its true page starts
+  /// and their visible starts are all known, and publishes the page index.
+  /// [length] is the section's number of visible characters. A section
+  /// whose starts come from elsewhere, such as a kept page map, ends here
+  /// too, and then counts as laid out.
+  void _finish(_SectionLayout layout, {required int length}) {
+    layout.pages = (
+      count: layout.starts.length,
+      visible: (
+        starts: UnmodifiableListView(layout.visibleStarts),
+        length: length,
+      ),
+    );
+    if (layout.settings == _settings) {
+      _bookPages.value = _bookPagesIn(_settings);
+    }
+  }
+
+  /// The page index of [settings]: the true pages of each section whose
+  /// main run ended in them.
+  BookPages _bookPagesIn(PageSettings? settings) => BookPages([
+    for (var index = 0; index < _sectionCount; index++)
+      settings == null ? null : _layouts[(index, settings)]?.pages,
+  ]);
 
   /// Whether a request waits for the page of [layout] at [start], or for a
   /// main run that this page lets it know about.
@@ -1038,9 +1126,10 @@ class PageSource {
         continue;
       }
       layout.starts.addAll(kept.starts);
-      layout.mainDone = true;
+      layout.pages = (count: kept.starts.length, visible: null);
       layout.seeded = true;
     }
+    if (settings == _settings) _bookPages.value = _bookPagesIn(settings);
   }
 
   /// Whether [sections] can be this book's true page starts: one complete
@@ -1071,10 +1160,12 @@ class PageSource {
       if (layout.settings == settings && layout.seeded) {
         layout
           ..seeded = false
-          ..mainDone = false
-          ..starts.clear();
+          ..pages = null
+          ..starts.clear()
+          ..visibleStarts.clear();
       }
     }
+    if (settings == _settings) _bookPages.value = _bookPagesIn(settings);
     unawaited(_pageMaps!.forget(settings));
     final shown = _shown?.layout;
     if (shown != null && shown.settings == settings) {
@@ -1519,12 +1610,21 @@ class _SectionLayout {
   /// The run from a page start that the main run did not reach.
   _Run? anchored;
 
-  /// The true page starts that the main run reached, in order.
+  /// The true page starts that the main run reached, in order, and the
+  /// number of the section's visible characters before each of them.
   final starts = <PageStart>[];
-  bool mainDone = false;
+  final visibleStarts = <int>[];
+
+  /// The section's true pages for the page index, once the main run ended
+  /// or a kept page map seeded the section.
+  PartPages? pages;
+
+  /// Whether the main run ended, so that every true page start is known.
+  bool get mainDone => pages != null;
 
   /// Whether [starts] came from a kept page map that no page contradicted
-  /// yet. Then [mainDone] holds and no main run ran.
+  /// yet. Then [mainDone] holds, no main run ran, and the visible starts
+  /// are not known.
   bool seeded = false;
 
   /// The start of the page after each page that a run cut, by the page's

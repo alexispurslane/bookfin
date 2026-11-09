@@ -424,6 +424,8 @@ void main() {
         'is counted again', () async {
       final publication = _sixSections();
       final (truth, _) = await layOutWhole(publication);
+      int total(List<KeptSection> sections) =>
+          sections.fold(0, (sum, section) => sum + section.starts.length);
       final pageMaps = mapsOf(publication);
       final wrong = [...truth];
       wrong[0] = KeptSection([...truth[0].starts]..removeAt(2), complete: true);
@@ -431,19 +433,80 @@ void main() {
 
       final pager = openPager(publication, pageMaps: pageMaps);
       await present(pager);
-      expect(pager.pageNumber.value, (
-        number: 1,
-        count: wrong[0].starts.length,
-      ));
+      expect(pager.pageNumber.value, (number: 1, count: total(wrong)));
       await scheduler.settle();
 
-      expect(pager.pageNumber.value, (
-        number: 1,
-        count: truth[0].starts.length,
-      ));
+      expect(pager.pageNumber.value, (number: 1, count: total(truth)));
       await _eventually(() async => await pageMaps.read(readerPage) != null);
       expect(await pageMaps.read(readerPage), truth);
     });
+
+    test('a second open of a book with its kept map shows whole-book page '
+        'numbers at once', () async {
+      final publication = _sixSections();
+      final (truth, _) = await layOutWhole(publication);
+      final count = truth.fold(
+        0,
+        (sum, section) => sum + section.starts.length,
+      );
+      final pager = openPager(publication, pageMaps: mapsOf(publication));
+
+      await present(pager);
+
+      expect(pager.bookPages.value.complete, isTrue);
+      expect(pager.pageNumber.value, (number: 1, count: count));
+      await scheduler.until(pager.move(true));
+      expect(pager.pageNumber.value, (number: 2, count: count));
+    });
+
+    test(
+      'a kept map that a page contradicts drops its pages from the index, '
+      'and the shown page keeps its number until another page shows',
+      () async {
+        final publication = _sixSections();
+        final (truth, _) = await layOutWhole(publication);
+        int total(List<KeptSection> sections) =>
+            sections.fold(0, (sum, section) => sum + section.starts.length);
+        final before = total(truth.take(3).toList());
+        final pageMaps = mapsOf(publication);
+        // Section 3's map has one start too many, inside its second page, so
+        // the map's count is one higher than the book's. The first page agrees
+        // with the map, and its neighbor, the second page, contradicts it.
+        final wrong = [...truth];
+        final extra = truth[3].starts[2];
+        wrong[3] = KeptSection([
+          ...truth[3].starts.take(2),
+          PageStart(extra.item, extra.line - 1),
+          ...truth[3].starts.skip(2),
+        ], complete: true);
+        expect(extra.line, greaterThan(0));
+        await pageMaps.write(readerPage, wrong);
+        final pager = openPager(publication, pageMaps: pageMaps);
+        final shown = await present(pager);
+        await scheduler.until(pager.contents('text/s3.xhtml'));
+        final numbers = [pager.pageNumber.value];
+        pager.pageNumber.addListener(() => numbers.add(pager.pageNumber.value));
+        expect(numbers.single, (number: before + 1, count: total(wrong)));
+        expect(shown.page.section, 0);
+
+        await _eventually(() async {
+          await scheduler.until(Future<void>.delayed(Duration.zero));
+          return await pageMaps.read(readerPage) == null;
+        });
+        expect(pager.bookPages.value.complete, isFalse);
+        await scheduler.settle();
+
+        expect(pager.bookPages.value.count, total(truth));
+        expect(numbers.toSet(), {
+          (number: before + 1, count: total(wrong)),
+        }, reason: 'The shown page\'s number never went back.');
+        await scheduler.until(pager.move(true));
+        expect(pager.pageNumber.value, (
+          number: before + 2,
+          count: total(truth),
+        ));
+      },
+    );
   });
 }
 

@@ -296,7 +296,8 @@ class ReaderSession extends ChangeNotifier {
 
   /// Where places sit along the whole open book, for the scrub bar. It is
   /// null while no book is open and until the viewport lists the book's
-  /// contents.
+  /// contents. In an EPUB or MOBI book it changes as the pager lays out
+  /// sections, and after a change of the page settings.
   BookMap? get bookMap => _bookMap;
 
   /// Notifies when [bookMap] changes.
@@ -417,6 +418,7 @@ class ReaderSession extends ChangeNotifier {
     ++_search;
     previews.close();
     _navigator = null;
+    _pager?.bookPages.removeListener(_repage);
     _pager?.dispose();
     _pager = null;
     final previous = _document;
@@ -537,6 +539,7 @@ class ReaderSession extends ChangeNotifier {
           onPlace: (address) => acceptAddress(generation, address),
           onWarning: (message) => warn(generation, message),
         );
+        pager.bookPages.addListener(_repage);
         attachDocument(generation, pager, contents);
       }
     } on FormatException catch (error) {
@@ -589,7 +592,19 @@ class ReaderSession extends ChangeNotifier {
     final map = await BookMap.of(document, contents);
     if (!_live(eventToken)) return;
     _mapping = false;
-    _bookMap = map;
+    _bookMap = switch ((map, _pager)) {
+      (final map?, final pager?) => map.paged(pager.bookPages.value),
+      _ => map,
+    };
+    _emit();
+  }
+
+  /// Spaces the book map by the pages that the pager laid out, once a
+  /// section is laid out or the page settings change.
+  void _repage() {
+    final (map, pager) = (_bookMap, _pager);
+    if (map == null || pager == null) return;
+    _bookMap = map.paged(pager.bookPages.value);
     _emit();
   }
 

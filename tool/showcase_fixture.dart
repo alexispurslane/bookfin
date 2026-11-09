@@ -13,6 +13,9 @@
 // Add --footnotes to give First Frost's EPUB endnotes, with a note
 // reference at the end of each of the first chapter's first paragraphs, and
 // a footnote without a number after them.
+// Add --long-ebook=<path> to serve the EPUB file at <path>, such as a
+// public-domain book of .cache/epub-trial/books, as Salt and Lantern's
+// ebook, so that the reader has a long book of many sections to lay out.
 // Add --ebooks-library to serve the ebooks in a second book library,
 // Ebooks, beside a Movies library that is not a book library. Without it,
 // one book library, Audiobooks, holds every book.
@@ -451,6 +454,11 @@ Future<void> main(List<String> arguments) async {
   final storage = arguments.contains('--sync-conflict') ? _Storage() : null;
   final footnotes = arguments.contains('--footnotes');
   final ebooksLibrary = arguments.contains('--ebooks-library');
+  final longEbook = [
+    for (final argument in arguments)
+      if (argument.startsWith('--long-ebook='))
+        await File(argument.substring('--long-ebook='.length)).readAsBytes(),
+  ].firstOrNull;
   final port = arguments.where((argument) => !argument.startsWith('--'));
   final server = await HttpServer.bind(
     InternetAddress.loopbackIPv4,
@@ -468,7 +476,9 @@ Future<void> main(List<String> arguments) async {
   final ebooks = {
     for (final book in _books)
       if (book.ebook != null)
-        '${book.id}-text': _ebook(book, footnotes: footnotes),
+        '${book.id}-text': book.id == 'salt' && longEbook != null
+            ? longEbook
+            : _ebook(book, footnotes: footnotes),
   };
   final items = [
     for (final book in _books) ...[

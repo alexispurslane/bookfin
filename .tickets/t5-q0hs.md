@@ -17,3 +17,8 @@ Found in boo-ystu (docs/research/epub-layout-cache.md). A jump or an open finds 
 
 A corpus test shows that, for every true page start's first place and for places inside pages, the lookup gives the same page as lineStart and trueStart. A jump into the middle of Roget's Thesaurus' largest section with a page map does no line search.
 
+
+## Notes (2026-11-09, boo-jglf and boo-ok9i)
+
+- The whole-book page index (`BookPages` in lib/reader/book_pages.dart) gives a seeded section its page count only (`PartPages.visible` is null). So a second open shows whole-book page numbers at once, but inside a seeded section the scrub bar places text by its progress and names no page. Keep the visible starts and the section's visible length in the map, and seed `PartPages.visible` from them through `_finish` in page_source.dart. Then the bar is exact to the page in seeded sections too.
+- `LaidPage.startVisible` can count text that the book hides (Standard Ebooks title pages). The page index makes the first start 0 and never lets a start go back. Keep the index's values, not raw `startVisible`.

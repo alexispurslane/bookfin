@@ -1,6 +1,6 @@
 ---
 id: boo-ok9i
-status: open
+status: in_progress
 deps: [t7-bbv1]
 links: []
 created: 2026-11-09T17:13:34Z

@@ -12,6 +12,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 
 import '../../foundation/hop.dart';
+import '../book_pages.dart';
 import '../document.dart';
 import 'dom.dart';
 import 'layout.dart';
@@ -69,7 +70,8 @@ class LaidNote {
 /// - The shown page holds the shown place, or starts at the line that holds
 ///   it. A page that shows no place keeps the place of the page before.
 /// - The pager holds the prepared section of the shown page.
-/// - The published page number, where known, is the shown page's.
+/// - The published page number, where known, is the shown page's, unless a
+///   dropped kept page map gave the shown page a higher one.
 class EpubPager implements DocumentNavigator {
   /// The pager of [document]. It opens at [initial] once the first
   /// [present] gives it page settings. [onPlace] receives each new place of
@@ -89,6 +91,7 @@ class EpubPager implements DocumentNavigator {
        _source =
            source ??
            PageSource(document.publication, pageMaps: document.pageMaps) {
+    _source.bookPages.addListener(_renumber);
     _source.keptMapDropped.addListener(_recount);
   }
 
@@ -140,12 +143,20 @@ class EpubPager implements DocumentNavigator {
   /// shown.
   ValueListenable<ShownPage?> get shown => _shown;
 
-  /// The number of the shown page in its section, and the section's page
-  /// count, as far as the section's main run knows them. The number is null
-  /// until the main run passes the shown page's start, and the count until
-  /// the main run ends. The reader shows "Page N", then "Page N of M".
+  /// The number of the shown page and a page count. Once every section of
+  /// the shown page's settings is laid out, they count the pages of the
+  /// whole book. Before then, they count the pages of the shown page's
+  /// section, as far as the section's main run knows them: the number is
+  /// null until the main run passes the shown page's start, and the count
+  /// until the main run ends. While a page stays shown, neither goes back.
+  /// The reader shows "Page N", then "Page N of M".
   ValueListenable<PageNumber?> get pageNumber => _number;
   final _number = ValueNotifier<PageNumber?>(null);
+
+  /// The whole-book page index of the current page settings, which the
+  /// scrub bar spaces the book's pages by. It notifies once a section is
+  /// laid out and once the settings change.
+  ValueListenable<BookPages> get bookPages => _source.bookPages;
 
   /// Where the shown page ends: its section and the text progress of its
   /// last place, or null before the first page and for a page that shows
@@ -480,6 +491,7 @@ class EpubPager implements DocumentNavigator {
     _search = null;
     if (!_presented.isCompleted) _presented.complete();
     _counting?.complete();
+    _source.bookPages.removeListener(_renumber);
     _shown.dispose();
     _number.dispose();
     _source.keptMapDropped.removeListener(_recount);
@@ -515,9 +527,10 @@ class EpubPager implements DocumentNavigator {
       'the held section is not the shown page\'s',
     );
     final number = _number.value;
-    final known = _source.numberOf(page);
+    final known = _numberOf(page);
     check(
-      number == null ||
+      _numberHeld ||
+          number == null ||
           (number.number == known?.number &&
               (number.count == null || number.count == known?.count)),
       'the page number is not the shown page\'s',
@@ -661,6 +674,18 @@ class EpubPager implements DocumentNavigator {
     );
   }
 
+  /// The number of [page] in the whole book once the whole book is laid out
+  /// in its settings, else in its section.
+  PageNumber? _numberOf(LaidPage page) =>
+      _source.bookNumberOf(page) ?? _source.numberOf(page);
+
+  /// Publishes the shown page's number again once the page index changes.
+  /// It reads the index of the page's own settings, so an index of new
+  /// settings changes nothing until a page of them is shown.
+  void _renumber() {
+    if (_shown.value case final shown? when !_disposed) _publish(shown.page);
+  }
+
   /// Counts the shown page again, after a page contradicted the kept page
   /// map that gave its number.
   void _recount() {
@@ -668,24 +693,22 @@ class EpubPager implements DocumentNavigator {
   }
 
   /// Publishes the number of [page], and again each time the main run of
-  /// its section learns more, while [page] is shown.
+  /// its section learns more, while [page] is shown. The page index tells
+  /// [_renumber] when the whole book is laid out.
   void _count(LaidPage page) {
     _counting?.complete();
-    final number = _number.value = _source.numberOf(page);
-    if (number?.count != null) {
-      _counting = null;
-      return;
-    }
+    _counting = null;
+    _publish(page);
+    final known = _source.numberOf(page);
+    if (known?.count != null) return;
     final stop = _counting = Completer<void>();
     void update() {
-      if (!_disposed && identical(_shown.value?.page, page)) {
-        _number.value = _source.numberOf(page);
-      }
+      if (!_disposed && identical(_shown.value?.page, page)) _publish(page);
     }
 
     unawaited(() async {
       try {
-        if (number == null) {
+        if (known == null) {
           await _source.mainRun(page, abandon: stop.future);
           update();
         }
@@ -696,6 +719,29 @@ class EpubPager implements DocumentNavigator {
       }
     }());
   }
+
+  /// Publishes the number of [page]. While a page stays shown, its number
+  /// and its count never go back. Only a kept page map that a page
+  /// contradicted can lower them: its starts drop, and the book is laid out
+  /// again. The higher number then stays until another page is shown.
+  void _publish(LaidPage page) {
+    final number = _numberOf(page);
+    final published = _number.value;
+    _numberHeld =
+        identical(page, _numbered) &&
+        published != null &&
+        (number == null ||
+            number.number < published.number ||
+            (number.count ?? 0) < (published.count ?? 0));
+    if (_numberHeld) return;
+    _numbered = page;
+    _number.value = number;
+  }
+
+  /// The page whose number [pageNumber] holds, and whether it holds a
+  /// higher number than the page's, which a dropped kept map gave.
+  LaidPage? _numbered;
+  bool _numberHeld = false;
 
   /// The spine index and the decoded fragment, or null for none, of
   /// [href], relative to the package document's directory. Throws when it
