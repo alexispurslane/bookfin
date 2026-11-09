@@ -3,7 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../catalog/book_cover.dart';
-import '../catalog/glass.dart' show confirmAction, showGlassSheet;
+import '../catalog/glass.dart'
+    show GlassSheetAction, confirmAction, showGlassSheet;
 import '../catalog/library_view.dart' show BookRow, ShelfFilterChips;
 import '../catalog/model.dart';
 import '../catalog/shelf.dart' show ShelfFilter, bookMatches;
@@ -765,10 +766,16 @@ class _ReaderFixtureState extends State<_ReaderFixture> {
     super.dispose();
   }
 
-  /// Shows the panel that [builder] builds on the reader's plain sheet.
-  Future<void> _sheet(WidgetBuilder builder) => showGlassSheet<void>(
+  /// Shows the panel that [builder] builds on a glass sheet under [title]
+  /// and its [action], if any, as the reader does.
+  Future<void> _sheet(
+    WidgetBuilder builder, {
+    String? title,
+    GlassSheetAction? action,
+  }) => showGlassSheet<void>(
     context,
-    glass: false,
+    title: title,
+    action: action,
     isScrollControlled: true,
     builder: builder,
   );
@@ -821,6 +828,7 @@ class _ReaderFixtureState extends State<_ReaderFixture> {
           onNightChanged: (night) => _night.value = night,
         ),
       ),
+      title: 'Reading settings',
     ),
   );
 
@@ -852,8 +860,13 @@ class _ReaderFixtureState extends State<_ReaderFixture> {
           error: null,
           onSearch: _search,
           onOpenHit: (_) => Navigator.pop(sheet),
-          onCancelSearch: () => Navigator.pop(sheet),
         ),
+      ),
+      title: 'Search',
+      action: GlassSheetAction(
+        'Close',
+        icon: Icons.close_rounded,
+        onPressed: () {},
       ),
     );
     _hits.value = [];
@@ -880,7 +893,6 @@ class _ReaderFixtureState extends State<_ReaderFixture> {
       title: bookmark.title,
       note: bookmark.note,
       place: 'Saved ${dayAndTime(context, bookmark.createdAt)}',
-      glass: false,
     );
     if (edited == null) return;
     _bookmarks.value = [
@@ -903,7 +915,6 @@ class _ReaderFixtureState extends State<_ReaderFixture> {
       title: 'Delete reading bookmark?',
       message: 'Remove this sample bookmark from the gallery.',
       action: 'Delete',
-      glass: false,
     )) {
       _bookmarks.value = [
         for (final kept in _bookmarks.value)

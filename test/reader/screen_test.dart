@@ -176,6 +176,14 @@ void main() {
     }
 
     await askToDelete();
+    expect(
+      find.ancestor(
+        of: find.text('Delete reading bookmark?'),
+        matching: find.byType(CoverGlass),
+      ),
+      findsOneWidget,
+      reason: 'The confirmation is glass too.',
+    );
     await tester.tap(find.widgetWithText(TextButton, 'Cancel'));
     await tester.pumpAndSettle();
     expect(reader.bookmarks, hasLength(1));
@@ -269,18 +277,11 @@ void main() {
         await tester.tap(find.text('Edit title and note'));
         await tester.pumpAndSettle();
         expect(find.text('Edit reading bookmark'), findsOneWidget);
-        // The reader keeps its own plain look, so its editor is no glass pane.
+        // Every layer over the reader is glass, the editor included.
         expect(
           find.ancestor(
             of: find.text('Edit reading bookmark'),
             matching: find.byType(CoverGlass),
-          ),
-          findsNothing,
-        );
-        expect(
-          find.ancestor(
-            of: find.text('Edit reading bookmark'),
-            matching: find.byType(AlertDialog),
           ),
           findsOneWidget,
         );
@@ -333,14 +334,14 @@ void main() {
   );
 
   testWidgets(
-    'closing search with its button or a tap outside the sheet ends the '
-    'search',
+    'closing search with Close in its title row or a tap outside the sheet '
+    'ends the search',
     (tester) async {
       final navigator = ControlNavigator();
       await openReader(tester, navigator);
       await tester.tap(find.byTooltip('Search book'));
       await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('Cancel search'));
+      await tester.tap(find.widgetWithText(TextButton, 'Close'));
       await tester.pumpAndSettle();
       expect(navigator.log, ['closed a route', 'cancel search']);
 
@@ -356,36 +357,43 @@ void main() {
   );
 
   testWidgets(
-    'the reader panels open on the plain sheet that the reader always had',
+    'every reader sheet is a glass pane that shows the open book, with the '
+    'heading in its title row',
     (tester) async {
       await openReader(
         tester,
         ControlNavigator(),
         contents: const [ContentsEntry('River heading', 'one.xhtml')],
       );
-      final context = tester.element(find.byType(ReaderScreen));
-      final surface = Theme.of(context).bottomSheetTheme.backgroundColor;
-      for (final panel in ['Contents', 'Search book', 'Reading settings']) {
-        await tester.tap(find.byTooltip(panel));
+      for (final (tool, shown, heading) in [
+        ('Contents', 'River heading', null),
+        ('Search book', 'Find in this book', 'Search'),
+        ('Reading settings', 'Text size', 'Reading settings'),
+      ]) {
+        await tester.tap(find.byTooltip(tool));
         await tester.pumpAndSettle();
-        final sheet = find.byType(BottomSheet);
-        expect(tester.widget<BottomSheet>(sheet).showDragHandle, isTrue);
-        expect(
-          tester
-              .widget<Material>(
-                find
-                    .descendant(of: sheet, matching: find.byType(Material))
-                    .first,
-              )
-              .color,
-          surface,
-          reason: '$panel sheet surface',
+        final glass = find.ancestor(
+          of: find.text(shown),
+          matching: find.byType(CoverGlass),
         );
-        expect(
-          find.descendant(of: sheet, matching: find.byType(CoverGlass)),
-          findsNothing,
-          reason: panel,
-        );
+        expect(glass, findsOneWidget, reason: tool);
+        expect(tester.widget<CoverGlass>(glass).book, book, reason: tool);
+        if (heading != null) {
+          expect(
+            find.descendant(
+              of: glass,
+              matching: find.byWidgetPredicate(
+                (widget) =>
+                    widget is Semantics &&
+                    widget.properties.header == true &&
+                    widget.child is Text &&
+                    (widget.child! as Text).data == heading,
+              ),
+            ),
+            findsOneWidget,
+            reason: '$tool has its heading in the glass title row',
+          );
+        }
         await tester.tapAt(const Offset(20, 20));
         await tester.pumpAndSettle();
       }
@@ -535,7 +543,8 @@ void main() {
     }, variant: TargetPlatformVariant.only(TargetPlatform.android));
 
     /// A two-chapter book whose first page has a note reference to an
-    /// endnote at the end of the second chapter.
+    /// endnote at the end of the second chapter. The endnote ends with a
+    /// back link to the reference, as Standard Ebooks writes one.
     Publication noteChapterBook() => Publication.admit(
       navBook(
         [
@@ -544,7 +553,9 @@ void main() {
               '${paragraphs(24)}',
           '<h1 id="two">Two</h1>${paragraphs(24, label: 'Near')}'
               '<ol epub:type="endnotes"><li id="note-1" epub:type="endnote">'
-              '<p>The lantern note explains the harbour.</p></li></ol>',
+              '<p>The lantern note explains the harbour. <a '
+              'href="s0.xhtml#ref-1" role="doc-backlink">\u21a9</a></p>'
+              '</li></ol>',
         ],
         [('One', 'text/s0.xhtml#one'), ('Two', 'text/s1.xhtml#two')],
       ),
@@ -567,8 +578,9 @@ void main() {
       fail('The first page shows no such link.');
     }
 
-    testWidgets('a tap on a note reference shows the note\'s text in a '
-        'sheet, and the page and the saved place stay', (tester) async {
+    testWidgets('a tap on a note reference shows the note\'s text on a glass '
+        'sheet headed Note, with Go to note in its title row and no back '
+        'link, and the page and the saved place stay', (tester) async {
       final handle = tester.ensureSemantics();
       final reader = await openNative(tester, publication: noteChapterBook());
       final first = shownOf(reader)!.page;
@@ -581,15 +593,39 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Note'), findsOneWidget);
+      final glass = find.ancestor(
+        of: find.byType(EpubNoteView),
+        matching: find.byType(CoverGlass),
+      );
+      expect(glass, findsOneWidget);
+      expect(tester.widget<CoverGlass>(glass).book, reader.book);
+      final heading = find.descendant(of: glass, matching: find.text('Note'));
+      final action = find.descendant(
+        of: glass,
+        matching: find.widgetWithText(TextButton, 'Go to note'),
+      );
+      expect(heading, findsOneWidget);
+      expect(
+        tester.getCenter(action).dy,
+        moreOrLessEquals(tester.getCenter(heading).dy, epsilon: 1),
+        reason: 'Note and Go to note share the title row.',
+      );
+      expect(
+        tester.getRect(action).bottom,
+        lessThan(tester.getRect(find.byType(EpubNoteView)).top),
+        reason: 'Go to note sits above the note, not under it.',
+      );
+      expect(
+        tester.getSemantics(action),
+        isSemantics(label: 'Go to note', isButton: true, hasTapAction: true),
+      );
+      expect(tester.getSize(action).height, greaterThanOrEqualTo(48));
       expect(
         find.semantics.byLabel('The lantern note explains the harbour.'),
         findsOneWidget,
+        reason: 'The back link is left out of the sheet.',
       );
-      expect(
-        tester.getSemantics(find.widgetWithText(FilledButton, 'Go to note')),
-        isSemantics(label: 'Go to note', isButton: true, hasTapAction: true),
-      );
+      expect(find.semantics.byLabel(RegExp('\u21a9')), findsNothing);
       expect(shownOf(reader)!.page, same(first));
       expect(reader.visibleAddress, same(saved));
       handle.dispose();
@@ -606,7 +642,12 @@ void main() {
         () => find.text('Go to note').evaluate().isNotEmpty,
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Go to note'));
+      expect(
+        (reader.visibleAddress! as EpubAddress).location.resource,
+        'OPS/text/s0.xhtml',
+        reason: 'Only Go to note moves the saved place.',
+      );
+      await tester.tap(find.widgetWithText(TextButton, 'Go to note'));
       await waitForPage(tester, reader, (shown) => shown.page.section == 1);
       await settleReader(
         tester,

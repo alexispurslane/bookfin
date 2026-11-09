@@ -200,6 +200,59 @@ void main() {
     expect(answers, [true, false, false]);
   });
 
+  testWidgets('a sheet\'s title row holds its heading and one quiet action, '
+      'which closes the sheet and reports the tap', (tester) async {
+    final handle = tester.ensureSemantics();
+    final log = <String>[];
+    await showPage(
+      tester,
+      open: (context) async {
+        await showGlassSheet<void>(
+          context,
+          title: 'Note',
+          action: GlassSheetAction(
+            'Go to note',
+            icon: Icons.arrow_forward_rounded,
+            onPressed: () => log.add('Go to note'),
+          ),
+          builder: (_) => const Text('The note.'),
+        );
+        log.add('sheet closed');
+      },
+    );
+    final heading = find.text('Note');
+    final action = find.widgetWithText(TextButton, 'Go to note');
+    expect(glassAround('Note'), findsOneWidget);
+    expect(glassAround('Go to note'), findsOneWidget);
+    expect(
+      tester.getCenter(action).dy,
+      moreOrLessEquals(tester.getCenter(heading).dy, epsilon: 1),
+      reason: 'The heading and the action share one row.',
+    );
+    expect(
+      tester.getCenter(action).dx,
+      greaterThan(tester.getCenter(heading).dx),
+      reason: 'The action sits at the end of the row.',
+    );
+    expect(
+      tester.getCenter(find.text('The note.')).dy,
+      greaterThan(tester.getRect(action).bottom),
+      reason: 'The content sits under the title row.',
+    );
+    expect(tester.getSize(action).height, greaterThanOrEqualTo(48));
+    expect(
+      tester.getSemantics(action),
+      isSemantics(label: 'Go to note', isButton: true, hasTapAction: true),
+    );
+    expect(tester.getSemantics(heading), isSemantics(isHeader: true));
+
+    await tester.tap(action);
+    await tester.pumpAndSettle();
+    expect(find.text('The note.'), findsNothing);
+    expect(log, ['Go to note', 'sheet closed']);
+    handle.dispose();
+  });
+
   testWidgets('a glass sheet steps back while another layer covers it', (
     tester,
   ) async {
