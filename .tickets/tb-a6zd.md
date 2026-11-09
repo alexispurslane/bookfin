@@ -18,3 +18,9 @@ Found in t1-qtde. LayoutRun._layOut lays out the whole paragraph again after eac
 - The step of Darcy's letter takes at most a small multiple of one layout of the paragraph at both corpus page settings.
 - The hyphens and lines of every hyphenated paragraph stay the same: the trial's hyphenated saved places, the fidelity test and the corpus runs of the Standard Ebooks books.
 
+
+## Notes
+
+**2026-11-09T07:20:16Z**
+
+Found in t1-um08: after tables lay out a row per unit, the slowest table units of Standard Ebooks' Plato, Dialogues are hyphenation passes. Section 30 at 360 x 640 at 26 pixels: one row unit (table item 1244) takes 199 ms with 158 paragraph layouts (135 ms in Paragraph.layout); paragraph items 180 and 185 take 98 and 114 ms with 17 and 18 layouts. Host, JIT, load about 10.

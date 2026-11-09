@@ -37,7 +37,7 @@ The run admits each book with `Publication.admit`, as Bookfin does. It converts 
 | The main run, one flow item per step | The stepped run and a run in one step cut different pages, or `LayoutRun.checkInvariants` fails. |
 | The CFI round trip of every page start | The CFI that Bookfin saves for a page start opens another page. The run also counts the page starts whose CFI and quote come back unchanged. |
 | Blank pages | A page shows no line of text and no image. |
-| A run from a page start | It cuts other pages than the main run, over the 5 pages that it cuts first. A section with more than 100 page starts uses 100 evenly spaced ones, which include its last page (see "Limits"). |
+| A run from a page start | It cuts other pages than the main run, over the 5 pages that it cuts first. The run starts from every page start of every section. |
 | Drawing | The first, middle and last page of each section draw with their images at 2.625 image pixels per layout pixel. |
 | Support report | It lists the features that the renderer approximates, and the features that it does not support, by section. It is not a failure. |
 | Slow items | It lists each paragraph or table whose layout step takes more than 8 ms, and the layout time per 10,000 visible characters. It is not a failure. |
@@ -80,7 +80,7 @@ The renderer is main at merge 6d5afc1, after tc-z7au (hyphenation), tc-n6wv (fra
 | Pages with only the border of an empty block | 2 at each size | The Divine Comedy, Through the Looking-Glass (Gutenberg) | t1-9vc1 |
 | Runs from a page start that differ | 3 at 20 px | The blank pages of Hamlet, Dialogues and Roget's Thesaurus | t1-6ta8 |
 | Slow paragraphs with many lines | Up to 3.6 s in one step (318 ms after t1-qtde) | Leaves of Grass (Song of Myself in `pre`), Hong Lou Meng, the index of The Origin of Species, verse with `br` | t1-qtde, tb-2l69 |
-| Slow tables | Up to 51 s in one step | Roget's Thesaurus, Plato's Dialogues, Ulysses chapter 15, Standard Ebooks plays | t1-um08 |
+| Slow tables | Up to 51 s in one step (121 ms after t1-um08) | Roget's Thesaurus, Plato's Dialogues, Ulysses chapter 15, Standard Ebooks plays | t1-um08, tb-i6wg, tb-a6zd |
 | Unsupported features | 0 | | |
 
 - Broken saved places. `wordStart` copies epub.js, which saves the first space-delimited word at or after the page start. Chinese text has about one space per 100 characters. At 26 pixels a page holds about 200 characters, so the next space can lie on a later page. Then the saved place opens one or two pages later. The fix changes what Bookfin saves, so t1-7l9c asks for a product choice between two designs.
@@ -102,6 +102,25 @@ t1-qtde finds a paragraph's line starts with one binary search per line (`Paragr
 | Pride and Prejudice (Standard Ebooks), Darcy's letter | 36, 19 | 138 | 256 | 107 | 194 |
 
 The rest of these steps is the engine's own work on one paragraph. On a lightly loaded host, Song of Myself takes 96 ms at 20 pixels and 143 ms at 26 pixels, of which `Paragraph.layout` takes 69 ms and 120 ms (tb-2l69). Darcy's letter lays out 20 and 32 times, once more after each word joiner that hyphenation adds (tb-a6zd). The on-demand benchmark `BOOKFIN_EPUB_STEPS=1 flutter test test/reader/epub/step_budget_test.dart` holds the step of a paragraph of 4,000 lines to less than 8 times the step of 1,000 lines. Before t1-qtde the factor was 14 (815 ms and 11,246 ms). After it the factor is 5.5 to 5.7.
+
+### Layout steps after t1-um08
+
+t1-um08 lays out a table one row in each unit of work, so a step stops after the row that crosses its budget. A page start inside a table names a row and a fragment of that row, so a run from it lays out no row above it. The column widths need each row measured: the run measures one row in each unit, once per table item, and other runs of the section reuse the widths. The corpus check now runs from every page start of every section.
+
+The table gives the slowest layout step of a table, in milliseconds, from the corpus run before (under heavy load) and runs after (load 4 to 15 on 10 cores). The Ulysses numbers after come from a run of t1-um08 alone. The others come from a run with t1-6ta8 and t1-9vc1 too, which change no table step.
+
+| Book | Section, item | Before, 20 px | Before, 26 px | After, 20 px | After, 26 px |
+| --- | --- | --- | --- | --- | --- |
+| Roget's Thesaurus | 1, 39 | 8,618 | 51,143 | 10 | 121 |
+| Plato's Dialogues, Gorgias | 21, 458 | 706 | 1,431 | 23 | 41 |
+| Plato's Dialogues, slowest table | | 706 | 1,431 | 89 | 194 |
+| Ulysses (Standard Ebooks), chapter 15 | 18, 6 | 826 | 1,225 | 19 | 25 |
+| Hamlet (Standard Ebooks) | 5, 24 | 86 | 119 | under 8 | under 8 |
+
+- Two kinds of cost remain. Roget's slowest row has about 9,700 characters in 10 to 16 paragraphs, and one unit lays out a whole row (tb-i6wg). The slow rows of Plato's Dialogues are hyphenation passes: one row lays out its paragraphs 158 times (tb-a6zd).
+- At 412 x 671 at 20 pixels, Roget's Thesaurus has two table steps over 8 ms (at most 10 ms), and Gorgias has six (at most 23 ms).
+- With runs from every page start, the six books of the second run (Roget's Thesaurus, Plato's Dialogues, Hamlet, Moby-Dick, The Divine Comedy, Through the Looking-Glass) took 15 minutes together. Before, Roget's Thesaurus alone took 116 minutes with runs from 100 page starts per section.
+- The on-demand benchmark `test/reader/epub/step_budget_test.dart` lays out a dialogue table of 1,000 rows. Before t1-um08, its slowest step took 248 ms, a run from a page start in its middle took 277 ms to its first page, and a place in a late row took 537 ms to open. After it, they take 5 to 9 ms, under 1 ms and under 1 ms.
 
 ### The run before the merge
 
@@ -130,8 +149,8 @@ No book uses a feature that the renderer does not support. The table gives the n
 
 ## Limits
 
-- Runs from page starts. A run that starts inside a long table or a paragraph with many lines lays it out again (t1-um08, t1-qtde). With every page start, Plato's Dialogues took 67 minutes and Roget's Thesaurus did not finish in two hours. So the run limits the runs to 100 evenly spaced page starts per section. When those tickets are fixed, raise the limit (`runsPerSection` in `test/reader/epub/corpus/check.dart`). The CFI round trip still covers every page start.
-- Run time. The run without Roget's Thesaurus takes about 90 minutes on a loaded host, and Roget's Thesaurus alone takes about two hours. Most of the time goes to the books of t1-um08 and t1-qtde.
+- Runs from page starts. A run that starts inside a paragraph lays out the whole paragraph again, so that the orphans and widows rules see it. Since t1-qtde and t1-um08, a run that starts inside a table lays out only its own row, and the run starts from every page start.
+- Run time. Before t1-qtde and t1-um08, the run without Roget's Thesaurus took about 90 minutes on a loaded host, and Roget's Thesaurus alone took about two hours. Nobody ran the whole corpus after them yet.
 - The run measures on the host only. Phone timing is separate work.
 - The run draws three pages of each section. It does not compare the drawing with Chromium. `test/reader/epub/fidelity_test.dart` does that for the trial books.
 - The run does not check right-to-left or vertical text. No book in the corpus uses them.
