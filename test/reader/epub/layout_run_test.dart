@@ -92,6 +92,18 @@ SectionSource verseSection() => section(
   css: 'pre{white-space:pre-wrap}.poem{hyphens:auto;text-align:justify}',
 );
 
+/// Long paragraphs without hard breaks: an index of many short runs in
+/// one justified paragraph, as Gutenberg sets Roget's Thesaurus,
+/// hyphenated prose, and Chinese, which has no spaces.
+SectionSource longParagraphSection() => section(
+  '<p class="index">${[for (var entry = 0; entry < 600; entry++) '<i>Entry $entry</i> ${100 + entry}, <b>${700 + entry}</b>;'].join(' ')}</p>'
+  '<p lang="en" class="prose">${prose(150)}</p>'
+  '<p>${'天下大勢分久必合合久必分周末七國分爭并入於秦。' * 180}</p>',
+  css:
+      '.index{text-align:justify}'
+      '.prose{hyphens:auto;text-align:justify}',
+);
+
 /// The sections that the page tests run over, each prepared for each page
 /// size.
 List<PreparedSection> sampleSections() => [
@@ -99,6 +111,7 @@ List<PreparedSection> sampleSections() => [
     ...prepareSections([
       richSection(),
       verseSection(),
+      longParagraphSection(),
       section('<p>${prose(80)}</p>'),
       section(
         [for (var i = 0; i < 40; i++) '<p>${prose(3, 'Part $i')}</p>'].join(),
@@ -189,7 +202,9 @@ void main() {
       for (final section in sampleSections()) {
         final whole = runToEnd(section);
         // Each step lays out a unit of work: a flow item, or a segment of a
-        // long paragraph, which is at least 1,024 code units long.
+        // long paragraph. A segment is at least 1,024 code units long, and
+        // its last line, which here is shorter than 256 code units, is the
+        // next segment's first.
         final units =
             section.flow.length +
             [
@@ -198,7 +213,7 @@ void main() {
                   item.text.runs
                           .map((run) => run is TextRun ? run.text.length : 1)
                           .fold(0, (sum, length) => sum + length) ~/
-                      1024,
+                      (1024 - 256),
             ].fold(0, (sum, segments) => sum + segments);
         final stepped = LayoutRun(section);
         var steps = 0;
@@ -673,6 +688,120 @@ void main() {
       text.order,
       text.text.indexOf('line 150'),
     );
+    final search = LineSearch(fresh, place);
+    var steps = 0;
+    while (search.found == null) {
+      search.step(Duration.zero);
+      steps++;
+    }
+    expect(steps, greaterThan(2));
+    final run = LayoutRun(fresh, from: search.found)..step(forever, want: 1);
+    final [first, second, ...] = [
+      for (final slice in run.pages.first.slices) slice.start!,
+    ];
+    expect(
+      atOrBefore(order(fresh.dom, first), order(fresh.dom, place)),
+      isTrue,
+    );
+    expect(
+      atOrBefore(order(fresh.dom, second), order(fresh.dom, place)),
+      isFalse,
+    );
+    disposeAll(run.pages);
+    run.dispose();
+  });
+
+  test('a long paragraph without hard breaks lays out over several units '
+      'of work, each of a few lines', () {
+    for (final settings in [readerPage, smallPage]) {
+      final section = prepareSections([
+        longParagraphSection(),
+      ], settings).single;
+      final run = LayoutRun(section);
+      final units = <int, int>{};
+      var largest = 0;
+      while (!run.done) {
+        final item = run.reached;
+        final before = LayoutRun.laidOutUnits;
+        run
+          ..step(Duration.zero)
+          ..checkInvariants();
+        if (section.flow[item] is ParagraphItem) {
+          units[item] = (units[item] ?? 0) + 1;
+          if (LayoutRun.laidOutUnits - before > largest) {
+            largest = LayoutRun.laidOutUnits - before;
+          }
+        }
+      }
+      expect(units, hasLength(3));
+      expect(units.values, everyElement(greaterThan(3)));
+      // A unit lays out about a thousand code units, and a hyphenated one
+      // marks its hyphens a few lines at a time first.
+      expect(largest, lessThan(4096), reason: '${settings.fontSize} px');
+      disposeAll(run.pages);
+      run.dispose();
+    }
+  });
+
+  test('long paragraphs without hard breaks keep the lines and pages that '
+      'they had as one engine paragraph each', () {
+    // A digest of what each page shows, without the paragraphs that hold
+    // the lines, as in the verse test above. Recorded before tb-3xvr split
+    // a long paragraph at its line starts.
+    const recorded = {
+      20: 'd428aabc3ac10d3d23d11450c217657f01d5053cf597cd2f4c55f17094db44f4',
+      26: '970b8dd93a1970c127cd92637c70e4950655dbfd760e1851d9331e61fda43431',
+    };
+    for (final settings in [
+      readerPage,
+      const PageSettings(width: 360, height: 640, fontSize: 26, night: false),
+    ]) {
+      final pages = runToEnd(
+        prepareSections([longParagraphSection()], settings).single,
+      );
+      final shown = [
+        for (final page in pages) [...pageKey(page)]..removeAt(10),
+      ];
+      expect(
+        sha256.convert(utf8.encode('$shown')).toString(),
+        recorded[settings.fontSize.round()],
+        reason: '${settings.fontSize} px',
+      );
+      disposeAll(pages);
+    }
+  });
+
+  test('a run from a page start deep in a long paragraph that no run laid '
+      'out yet cuts the same pages as the main run', () {
+    for (final settings in [readerPage, smallPage]) {
+      final main = runToEnd(
+        prepareSections([longParagraphSection()], settings).single,
+      );
+      for (final page in [main.length ~/ 5, main.length ~/ 2]) {
+        // A section prepared again, whose segments no run counted.
+        final fresh = prepareSections([
+          longParagraphSection(),
+        ], settings).single;
+        final resumed = runToEnd(fresh, from: main[page].start);
+        expect(
+          keys(resumed),
+          keys(main.skip(page)),
+          reason: '${settings.fontSize} px, page $page',
+        );
+        disposeAll(resumed);
+      }
+      disposeAll(main);
+    }
+  });
+
+  test('a search for a place deep in a long paragraph without hard breaks '
+      'counts the lines before it in steps, and finds the line that holds '
+      'the place', () {
+    final fresh = prepareSections([longParagraphSection()], readerPage).single;
+    final text = fresh.dom.texts.firstWhere(
+      (text) => text.text.contains('Entry 550'),
+    );
+    final place = EpubPlace(fresh.index, text.order, 2);
     final search = LineSearch(fresh, place);
     var steps = 0;
     while (search.found == null) {

@@ -47,6 +47,27 @@ const longWords =
     'nevertheless accommodated the administrative responsibilities of '
     'international communication. ';
 
+/// The start of Darcy's letter in Pride and Prejudice: ordinary prose.
+const darcysLetter =
+    'Be not alarmed, madam, on receiving this letter, by the apprehension '
+    'of its containing any repetition of those sentiments or renewal of '
+    'those offers which were last night so disgusting to you. I write '
+    'without any intention of paining you, or humbling myself, by dwelling '
+    'on wishes which, for the happiness of both, cannot be too soon '
+    'forgotten; and the effort which the formation and the perusal of this '
+    'letter must occasion, should have been spared, had not my character '
+    'required it to be written and read. You must, therefore, pardon the '
+    'freedom with which I demand your attention; your feelings, I know, '
+    'will bestow it unwillingly, but I demand it of your justice. ';
+
+/// How many times layout lays out the text of [section], one paragraph,
+/// at its width: the code units that it lays out over the paragraph's.
+double passes(PreparedSection section) {
+  final before = LayoutRun.laidOutUnits;
+  layoutSection(section).dispose();
+  return (LayoutRun.laidOutUnits - before) / textOf(section).length;
+}
+
 /// A section of [longWords] in English, hyphenated when [hyphens] is
 /// `auto`, aligned by [align].
 PreparedSection longText(
@@ -520,6 +541,60 @@ void main() {
           reason: '${settings.fontSize} px',
         );
         layout.dispose();
+      }
+    });
+
+    test('a hyphenated paragraph of ordinary prose lays out in about two '
+        'passes at every width, however its hyphens kern', () {
+      // One pass marks the line ends a few lines at a time, and one lays
+      // out the paragraph with its hyphens. Each word joiner lays out a few
+      // lines again. A hyphen whose kerning made it not fit after all cost
+      // another pass over the paragraph, and the marks after it again: up
+      // to 20 passes before tb-o242.
+      for (final size in [20.0, 26.0]) {
+        for (var width = 200.0; width <= 400; width += 5) {
+          final section = prepared(
+            '<div lang="en"><p>${darcysLetter * 8}</p></div>',
+            css: 'p{hyphens:auto;text-align:justify}',
+            settings: PageSettings(
+              width: width,
+              height: 640,
+              fontSize: size,
+              night: false,
+            ),
+          );
+          expect(
+            passes(section),
+            lessThan(3.5),
+            reason: '$width px wide at $size px',
+          );
+        }
+      }
+    });
+
+    test('a hyphenated paragraph of long words lays out in a few passes at '
+        'every width, however its hyphens kern', () {
+      // Most lines of these words end in a word joiner, and each joiner
+      // lays out a few lines again: 2 to 7 passes. A hyphen whose kerning
+      // made it not fit after all cost up to 32 passes before tb-o242.
+      for (final size in [20.0, 26.0]) {
+        for (var width = 200.0; width <= 400; width += 7) {
+          final section = prepared(
+            '<div lang="en"><p>${longWords * 24}</p></div>',
+            css: 'p{hyphens:auto;text-align:justify}',
+            settings: PageSettings(
+              width: width,
+              height: 640,
+              fontSize: size,
+              night: false,
+            ),
+          );
+          expect(
+            passes(section),
+            lessThan(8),
+            reason: '$width px wide at $size px',
+          );
+        }
       }
     });
 

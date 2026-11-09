@@ -188,6 +188,53 @@ void main() {
     }
   }, timeout: Timeout.none);
 
+  test('no layout step of a long paragraph without hard breaks takes much '
+      'longer than its budget', () {
+    // Each section of the index of Gutenberg's Roget's Thesaurus is one
+    // justified paragraph of up to 54,000 characters in 6,000 style runs,
+    // with no hard break. A step stops between its segments of whole
+    // lines. Each measure lays out a text of its own, so that the text
+    // engine's cache of shaped paragraphs serves none of it.
+    var serial = 0;
+    PreparedSection index(PageSettings settings) {
+      final run = ++serial;
+      return prepared(
+        '<p>${[for (var entry = 0; entry < 3000; entry++) '<i>Entry $run.$entry</i> ${100 + entry}, ${400 + entry};'].join(' ')}</p>',
+        css: 'p{text-align:justify}',
+        settings: settings,
+      );
+    }
+
+    const budget = Duration(milliseconds: 4);
+    const segment = Duration(milliseconds: 4);
+    for (final settings in _settings) {
+      var characters = 0;
+      final slowest = _fastest(() {
+        final section = index(settings);
+        characters = section.dom.visibleLength;
+        var slowest = Duration.zero;
+        final run = LayoutRun(section);
+        while (!run.done) {
+          final begin = _watch.elapsed;
+          run.step(budget);
+          final took = _watch.elapsed - begin;
+          if (took > slowest) slowest = took;
+        }
+        for (final page in run.pages) {
+          page.dispose();
+        }
+        run.dispose();
+        return slowest;
+      });
+      stdout.writeln(
+        '${settings.fontSize} px: slowest step of a paragraph of '
+        '$characters characters in 6,000 runs '
+        '${_ms(slowest)} ms',
+      );
+      expect(slowest, lessThan(budget + segment));
+    }
+  }, timeout: Timeout.none);
+
   test('no step of a table of tall rows takes much longer than its budget', () {
     // Roget's Thesaurus has table rows of about 9,700 characters in 10 to
     // 16 paragraphs, and Plato's dialogues rows of up to 27 paragraphs. A
@@ -230,23 +277,32 @@ void main() {
     // Darcy's letter in Standard Ebooks' Pride and Prejudice is one
     // justified paragraph of 14,920 characters with 841 soft hyphens. Each
     // hyphen that does not fit in its line becomes a word joiner, and its
-    // line breaks again.
-    final words = [
-      for (var copy = 0; copy < 70; copy++)
-        'The extraordinary typesetter $copy considered the unbelievable '
-            'hyphenation of characteristically incomprehensible '
-            'representations, which nevertheless accommodated the '
-            'administrative responsibilities of international communication.',
-    ].join(' ');
+    // line breaks again. The text engine keeps the paragraphs that it shaped
+    // and serves the same text and styles again from that cache, so each
+    // measure lays out a text of its own.
+    var serial = 0;
+    String words() {
+      serial++;
+      return [
+        for (var copy = 0; copy < 70; copy++)
+          'The extraordinary typesetter $serial-$copy considered the '
+              'unbelievable hyphenation of characteristically '
+              'incomprehensible representations, which nevertheless '
+              'accommodated the administrative responsibilities of '
+              'international communication.',
+      ].join(' ');
+    }
+
     for (final settings in _settings) {
-      Duration step(String hyphens) {
-        final section = prepared(
-          '<div lang="en"><p>$words</p></div>',
-          css: 'p{hyphens:$hyphens;text-align:justify}',
-          settings: settings,
-        );
-        return _fastest(() => _slowestStep(section));
-      }
+      Duration step(String hyphens) => _fastest(
+        () => _slowestStep(
+          prepared(
+            '<div lang="en"><p>${words()}</p></div>',
+            css: 'p{hyphens:$hyphens;text-align:justify}',
+            settings: settings,
+          ),
+        ),
+      );
 
       final plain = step('manual');
       final hyphenated = step('auto');
@@ -254,7 +310,12 @@ void main() {
         '${settings.fontSize} px: without hyphens ${_ms(plain)} ms, '
         'with hyphens ${_ms(hyphenated)} ms',
       );
-      expect(hyphenated, lessThan(plain * 4));
+      // A unit of work is a segment of the paragraph. With hyphens it lays
+      // out about 3.3 times its code units, and measures the lines that end
+      // near a soft hyphen alone and with the hyphen (tb-o242). When each
+      // word joiner laid out the whole paragraph again, it took more than
+      // 100 times as long.
+      expect(hyphenated, lessThan(plain * 6));
     }
   }, timeout: Timeout.none);
 

@@ -165,6 +165,43 @@ tb-i6wg lays out a table row one flow item of a cell in each unit of work, or on
 - A page dump of 48 corpus books at both page settings is the same before and after, for all 4,886 section layouts.
 - Roget's Thesaurus still has slow paragraphs. Each section of its index is one justified paragraph of up to 54,000 characters with no hard break, so it is one unit of work: up to 71 ms at 20 pixels and 76 ms at 26 pixels in the corpus run (tb-3xvr).
 
+### Layout steps after tb-o242 and tb-3xvr
+
+tb-o242 judges a hyphen near the end of its line by two measures: the line alone and the line with its hyphen. So fewer hyphens are misjudged. A misjudged hyphen cost one more layout of the whole paragraph and new marks to its end. tb-3xvr lays out every long paragraph in segments of whole lines that end at a cut, with or without hard breaks (see `docs/plans/native-epub-reader.md`, "Steps"). The on-demand tool `test/reader/epub/corpus_steps_test.dart` timed the main run of every section of the 93 corpus books before (eb75d1c) and after. Both runs ran at the same time on the host (load 5 to 13 on 10 cores). Each unit of work counts at its fastest of three runs. The table gives the longest step of the page source's budget of 4 ms, in milliseconds. It lists each book with a step over 10 ms before or over 8 ms after.
+
+| Book | Before, 20 px | Before, 26 px | After, 20 px | After, 26 px |
+| --- | --- | --- | --- | --- |
+| Ulysses (Standard Ebooks) | 24.1 | 39.5 | 5.5 | 5.5 |
+| Roget's Thesaurus (Gutenberg) | 38.1 | 39.2 | 8.7 | 9.2 |
+| The Wealth of Nations (Standard Ebooks) | 36.0 | 32.4 | 5.4 | 5.6 |
+| Plato's Dialogues | 25.2 | 33.3 | 19.6 | 18.3 |
+| Hong Lou Meng (Gutenberg) | 26.5 | 26.7 | 5.6 | 5.6 |
+| Crime and Punishment | 16.1 | 17.8 | 5.2 | 5.3 |
+| The Divine Comedy | 14.6 | 10.7 | 5.4 | 6.0 |
+| Pride and Prejudice | 14.1 | 8.4 | 5.2 | 5.5 |
+| The Adventures of Sherlock Holmes | 5.3 | 13.9 | 8.0 | 9.5 |
+| A Tale of Two Cities | 12.3 | 9.2 | 6.1 | 6.0 |
+| The Origin of Species (Standard Ebooks) | 9.2 | 11.7 | 5.4 | 5.5 |
+| Heart of Darkness | 10.2 | 11.4 | 5.2 | 5.4 |
+| The Wealth of Nations (Gutenberg, Kindle) | 10.9 | 9.5 | 4.4 | 4.4 |
+| Household Management (Gutenberg) | 9.5 | 10.7 | 4.7 | 4.7 |
+| Emma | 7.5 | 10.1 | 5.4 | 5.3 |
+| Poe's short fiction | 8.2 | 9.0 | 7.1 | 11.7 |
+
+- Over 186 book and page settings pairs, 23 had a step over 10 ms before and 3 after. The longest step fell from 39.5 ms to 19.6 ms.
+- The slowest unit left is a table row measure of Plato's Dialogues (section 30, item 1244): 17 to 19 ms before and after. A row measure lays out every paragraph of the row's cells at an infinite width in one unit, and this row has 22 paragraphs (t2-wcab).
+- The after steps of Sherlock Holmes and Poe were pauses of the host. Their slowest units take under 3 ms when timed alone, before and after.
+- Timed alone and warm, a segment of Roget's index (section 76, item 12) takes 3 to 6 ms. Each segment builds about 110 style runs. The whole paragraph took 43 to 56 ms warm and up to 119 ms cold. Darcy's letter (Pride and Prejudice, 36, 19) and the slowest paragraph of Plato's Dialogues (30, 184) have no unit over 3 ms. They took 9 to 26 ms and 26 to 29 ms before.
+- The text engine keeps paragraphs that it shaped, and it serves the same text and styles again from that cache. So the second and third runs of a section can take less time than a first layout. The old code gains more from this, because it makes fewer distinct paragraphs. A first, cold layout of a hyphenated paragraph of 15,000 characters takes 22 to 28 ms in total, before and after. Its slowest unit took 22 to 28 ms before and takes 1.6 to 1.8 ms after.
+- The on-demand benchmark `step_budget_test.dart` now lays out a new text in each timed run, for its hyphenated paragraph and its index paragraph. A cold index paragraph of 60,000 characters in 6,000 style runs has steps of at most 5.0 ms with a budget of 4 ms. A cold segment of the hyphenated paragraph takes 2.1 ms, 3.5 to 4.2 times a plain segment.
+- tb-o242 counts the code units that runs give the text engine. Darcy's letter laid out 4.2 times its code units at 20 pixels and now 2.3 times. Plato's 30, 184 laid out 4.0 and 5.4 times and now 2.2 times.
+
+The page dumps compare by line, to a tenth of a pixel, because a paragraph now draws in other pieces. Of 9,146 section layouts, 324 differ.
+
+- 285 sections of Standard Ebooks books changed hyphens. In 431 changed lines, the old hyphen was too wide by the line alone, by 0.01 to 0.68 pixels. In 132 changed lines, the old word joiner's hyphen fit both alone and drawn.
+- 36 sections changed a line at the very limit of its width. 32 of them are in Gutenberg books (22 in Hong Lou Meng), and 4 in Standard Ebooks books. A segment measures with less float error than the whole paragraph, so its line breaks otherwise. The longer of the two lines passes the width by at most 0.0098 pixels, and the new line is sometimes the longer one. So these changes are not proved wrong before.
+- 3 sections of Calculus Made Easy differ only in where a line's text sits, by the rounding to a tenth of a pixel.
+
 ### The run before the merge
 
 The same corpus ran first on the renderer at 0bc7a08, before the merge. 90 of 92 books passed. It found the broken places of Hong Lou Meng (53 at 26 pixels) and 19 runs of the Kindle Wealth of Nations that differed by 0.001 pixels (t1-tqhs). tc-n6wv fixed the second. That run had no blank-page check.
@@ -192,7 +229,7 @@ No book uses a feature that the renderer does not support. The table gives the n
 
 ## Limits
 
-- Runs from page starts. A run that starts inside a paragraph lays out the whole paragraph again, so that the orphans and widows rules see it. Since t1-qtde and t1-um08, a run that starts inside a table lays out only its own row, and the run starts from every page start. Since tb-2l69, a run that starts inside a long paragraph with hard breaks lays out only the segment that holds its start line, once another run counted the lines before it.
+- Runs from page starts. A run that starts inside a paragraph lays out the whole paragraph again, so that the orphans and widows rules see it. Since t1-qtde and t1-um08, a run that starts inside a table lays out only its own row, and the run starts from every page start. Since tb-2l69 and tb-3xvr, a run that starts inside a long paragraph lays out only the segment that holds its start line, once another run found the segments before it.
 - Run time. Before t1-qtde and t1-um08, the run without Roget's Thesaurus took about 90 minutes on a loaded host, and Roget's Thesaurus alone took about two hours. Nobody ran the whole corpus after them yet.
 - The run measures on the host only. Phone timing is separate work.
 - The run draws three pages of each section. It does not compare the drawing with Chromium. `test/reader/epub/fidelity_test.dart` does that for the trial books.
