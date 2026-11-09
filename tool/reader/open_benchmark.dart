@@ -48,7 +48,12 @@
 //   whole book within stayLimitMs); the frame times in that window and in
 //   three seconds after it; the duration of each layout step; and the
 //   process's resident memory: before the open, its peak in the window,
-//   and at its end.
+//   and at its end. The page source uses the book's kept page maps
+//   (t5-4l4d), so a second launch with the same plan opens with the map
+//   that the first one kept. It also gives the time from the shown page
+//   until its section's page count is known (countKnown), the steps' total
+//   time (stepTotalMs), whether a kept map seeded every section at open
+//   (seeded), and whether a map file is kept at the end (keptMaps).
 //
 // The first open, turn and jump of a launch are cold: the first in the
 // process. Then each runs [warm] more times on new pagers. The stay runs
@@ -149,10 +154,7 @@ class _BenchmarkState extends State<_Benchmark> {
         await local.parent.create(recursive: true);
         await local.writeAsBytes(await _fetch(book), flush: true);
       }
-      final path = local.path;
-      _digest = await Isolate.run(
-        () async => (await sha256.bind(File(path).openRead()).first).toString(),
-      );
+      _digest = await _sha256(local.path);
       final addresses = File('${local.path}.addresses.json');
       final known = await addresses.exists()
           ? jsonDecode(await addresses.readAsString()) as Map
@@ -167,8 +169,16 @@ class _BenchmarkState extends State<_Benchmark> {
       if (mounted) setState(() => _status = 'Done');
     } catch (error, stack) {
       _log({'error': '$error', 'stack': '$stack'});
+      // Logcat cuts a long line, so the stack comes again line by line.
+      debugPrint('OPEN_BENCHMARK_STACK\n$stack');
     }
   }
+
+  /// The SHA-256 of the file at [path], hashed in a worker. It is static,
+  /// so that the worker's closure holds only the path, not this state.
+  static Future<String> _sha256(String path) => Isolate.run(
+    () async => (await sha256.bind(File(path).openRead()).first).toString(),
+  );
 
   Future<EpubDocument> _load(Map plan, File local) async =>
       await loadReadingDocument(
@@ -371,6 +381,7 @@ class _BenchmarkState extends State<_Benchmark> {
     final source = PageSource(
       publication,
       schedule: (step, {required urgent}) => _measuredStep(step, steps, urgent),
+      pageMaps: document.pageMaps,
     );
     final pager = EpubPager(
       document,
@@ -391,12 +402,18 @@ class _BenchmarkState extends State<_Benchmark> {
       for (var index = 0; index < sections; index++)
         if (source.laidOut(index)) index,
     ].length;
+    final seeded = laid() == sections;
     int? whole;
+    int? countKnown;
     while (Timeline.now - shown < limit * 1000) {
       final rss = ProcessInfo.currentRss;
       if (rss > peak) peak = rss;
+      if (countKnown == null && pager.pageNumber.value?.count != null) {
+        countKnown = Timeline.now - shown;
+      }
       if (laid() == sections) {
         whole = Timeline.now - shown;
+        countKnown ??= whole;
         break;
       }
       await Future<void>.delayed(const Duration(milliseconds: 20));
@@ -408,12 +425,23 @@ class _BenchmarkState extends State<_Benchmark> {
     final idleEnd = Timeline.now;
     _ticking?.cancel();
     final durations = [for (final (from, to, _) in steps) to - from]..sort();
+    final layout = DerivedBookFiles.layoutDirectory(local);
+    final keptMaps = await layout.exists()
+        ? await layout
+              .list()
+              .where((entry) => entry.path.endsWith('.map'))
+              .length
+        : 0;
     _log({
       'kind': 'stay',
       'book': plan['book'],
       'sections': sections,
       'laidOut': laidOut,
+      'seeded': seeded,
       'wholeBook': whole == null ? null : _ms(whole),
+      'countKnown': countKnown == null ? null : _ms(countKnown),
+      'stepTotalMs': _ms(durations.fold(0, (sum, time) => sum + time)),
+      'keptMaps': keptMaps,
       'work': _frameStats(shown, end, steps),
       'idle': _frameStats(end, idleEnd, steps),
       'steps': durations.length,

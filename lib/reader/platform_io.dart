@@ -3,8 +3,10 @@ import 'dart:isolate';
 
 import '../catalog/model.dart';
 import '../downloads/downloads.dart';
+import '../sync/device.dart';
 import 'admitted_books.dart';
 import 'document.dart';
+import 'epub/page_maps.dart';
 import 'epub/publication.dart';
 import 'mobi.dart';
 import 'ocr.dart';
@@ -44,7 +46,14 @@ Future<ReaderDocument> loadReadingDocument(
           textSupply ?? (Platform.isAndroid ? BundledEnglishText() : null),
     );
   }
-  return EpubDocument(await _admitted(file, original.digest));
+  // The fingerprint names the page maps' key. Its first call asks the
+  // platform, beside the admission.
+  final engine = textEngineFingerprint();
+  final publication = await _admitted(file, original.digest);
+  return EpubDocument(
+    publication,
+    pageMaps: BookPageMaps(file, book: publication.identity, engine: engine),
+  );
 }
 
 Future<Publication> loadPublication(VerifiedFile original) async =>
