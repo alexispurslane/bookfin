@@ -39,6 +39,7 @@ Future<ReaderDocument> loadReadingDocument(
   if (container == 'pdf') {
     return PdfRuntime.instance.open(
       await file.readAsBytes(),
+      original.digest,
       textSupply:
           textSupply ?? (Platform.isAndroid ? BundledEnglishText() : null),
     );
