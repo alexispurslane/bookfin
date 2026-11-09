@@ -1,6 +1,6 @@
 ---
 id: tf-gnuk
-status: open
+status: closed
 deps: [boo-ju83]
 links: []
 created: 2026-11-08T16:27:49Z
@@ -27,3 +27,7 @@ The macOS app opens a downloaded EPUB from the fixture, turns pages, and keeps i
 **2026-11-08T19:23:53Z**
 
 Obsolete. User decision 2026-11-08 (epic boo-b2ey): the Flutter renderer becomes the only EPUB and MOBI reader on every platform, with no WebView. tc-1yif makes the native viewport the reader on macOS and iOS. Close when tc-1yif merges. tf-mqh6 and boo-eisp now also depend on tc-1yif.
+
+**2026-11-09T01:00:50Z**
+
+Superseded (orchestrator, 2026-11-08): since tc-1yif, every platform reads EPUB and MOBI in the Flutter-native renderer (epic boo-b2ey), so the reader no longer uses a WebView. tc-rap6 deletes the WebView reader.
