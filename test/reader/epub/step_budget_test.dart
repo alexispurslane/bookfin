@@ -65,13 +65,14 @@ void main() {
   }
   setUpAll(loadReaderFont);
 
-  test('the layout step of a verse paragraph grows in proportion to its '
-      'lines', () {
+  test('the layout of a verse paragraph grows in proportion to its lines', () {
     // Song of Myself in Gutenberg's Leaves of Grass is one pre element of
     // thousands of lines. Four times the lines take about four times as
     // long when each line costs the same, and sixteen times when each line
     // costs as much as the lines before it. The limit lies between, above
     // the engine's own shaping, which grows a little faster than the lines.
+    // The run lays the paragraph out in segments, one step each, so the
+    // whole run counts.
     String verse(int count) => [
       for (var line = 0; line < count; line++)
         'I celebrate myself, and sing line $line',
@@ -82,7 +83,16 @@ void main() {
           '<pre>${verse(lines)}</pre>',
           settings: settings,
         );
-        return _fastest(() => _slowestStep(section));
+        return _fastest(() {
+          final begin = _watch.elapsed;
+          final run = LayoutRun(section)..step(forever);
+          final took = _watch.elapsed - begin;
+          for (final page in run.pages) {
+            page.dispose();
+          }
+          run.dispose();
+          return took;
+        });
       }
 
       final short = step(1000);
@@ -92,6 +102,89 @@ void main() {
         '4,000 lines ${_ms(long)} ms',
       );
       expect(long, lessThan(short * 8));
+    }
+  }, timeout: Timeout.none);
+
+  test('no layout step of a long verse paragraph takes much longer than its '
+      'budget, and a page or a place deep inside it opens in steps', () {
+    // Song of Myself in Gutenberg's Leaves of Grass is one pre element of
+    // 91,000 characters. A step stops between its segments of hard-broken
+    // lines, and a search for a place counts the lines of the segments
+    // before it in steps.
+    String verse(int count) => [
+      for (var line = 0; line < count; line++)
+        'I celebrate myself, and sing myself, line $line',
+    ].join('\n');
+    const budget = Duration(milliseconds: 4);
+    const segment = Duration(milliseconds: 8);
+    final body = '<pre>${verse(2000)}</pre>';
+    for (final settings in _settings) {
+      final section = prepared(body, settings: settings);
+      late List<LaidPage> pages;
+      final slowest = _fastest(() {
+        var slowest = Duration.zero;
+        final main = LayoutRun(section);
+        while (!main.done) {
+          final begin = _watch.elapsed;
+          main.step(budget);
+          final took = _watch.elapsed - begin;
+          if (took > slowest) slowest = took;
+        }
+        main.dispose();
+        pages = main.pages;
+        return slowest;
+      });
+      final middle = pages[pages.length * 3 ~/ 4].start;
+      final fromMiddle = _fastest(() {
+        final begin = _watch.elapsed;
+        final run = LayoutRun(section, from: middle)..step(forever, want: 1);
+        final took = _watch.elapsed - begin;
+        for (final page in run.pages) {
+          page.dispose();
+        }
+        run.dispose();
+        return took;
+      });
+      for (final page in pages) {
+        page.dispose();
+      }
+      // Sections that no run laid out yet.
+      late LineSearch search;
+      late PreparedSection fresh;
+      final slowestSearch = _fastest(() {
+        fresh = prepared(body, settings: settings);
+        final text = fresh.dom.texts.single;
+        search = LineSearch(
+          fresh,
+          EpubPlace(fresh.index, text.order, text.text.indexOf('line 1900')),
+        );
+        var slowest = Duration.zero;
+        while (search.found == null) {
+          final begin = _watch.elapsed;
+          search.step(budget);
+          final took = _watch.elapsed - begin;
+          if (took > slowest) slowest = took;
+        }
+        return slowest;
+      });
+      final begin = _watch.elapsed;
+      final opened = LayoutRun(fresh, from: search.found)
+        ..step(forever, want: 1);
+      final opening = _watch.elapsed - begin;
+      for (final page in opened.pages) {
+        page.dispose();
+      }
+      opened.dispose();
+      stdout.writeln(
+        '${settings.fontSize} px: slowest step of 2,000 lines of verse '
+        '${_ms(slowest)} ms, first page from three quarters in '
+        '${_ms(fromMiddle)} ms, slowest search step for a late place '
+        '${_ms(slowestSearch)} ms, its first page ${_ms(opening)} ms',
+      );
+      expect(slowest, lessThan(budget + segment));
+      expect(fromMiddle, lessThan(segment));
+      expect(slowestSearch, lessThan(budget + segment));
+      expect(opening, lessThan(segment));
     }
   }, timeout: Timeout.none);
 
@@ -139,16 +232,20 @@ void main() {
     const row = Duration(milliseconds: 30);
     for (final settings in _settings) {
       final section = prepared(body, settings: settings);
-      var slowest = Duration.zero;
-      final main = LayoutRun(section);
-      while (!main.done) {
-        final begin = _watch.elapsed;
-        main.step(budget);
-        final took = _watch.elapsed - begin;
-        if (took > slowest) slowest = took;
-      }
-      main.dispose();
-      final pages = main.pages;
+      late List<LaidPage> pages;
+      final slowest = _fastest(() {
+        var slowest = Duration.zero;
+        final main = LayoutRun(section);
+        while (!main.done) {
+          final begin = _watch.elapsed;
+          main.step(budget);
+          final took = _watch.elapsed - begin;
+          if (took > slowest) slowest = took;
+        }
+        main.dispose();
+        pages = main.pages;
+        return slowest;
+      });
       final middle = pages[pages.length ~/ 2].start;
       final fromMiddle = _fastest(() {
         final begin = _watch.elapsed;

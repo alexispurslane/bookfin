@@ -136,6 +136,19 @@ tb-a6zd marks the hyphens of a paragraph a part of about 256 code units at a tim
 - The paragraphs of Plato's Dialogues have many word joiners, so their parts cost 3 to 6 times one layout of the paragraph.
 - A part measures its lines with less float error than the whole paragraph. Over 47 corpus books at both page settings, 5 of 4,822 section layouts changed, all at 26 pixels. `docs/plans/native-epub-reader.md` ("Hyphenation") explains why each old line was wrong.
 
+### Layout steps after tb-2l69
+
+tb-2l69 lays out a long paragraph with hard breaks in segments: whole lines that end after a hard break, at least 1,024 code units each. Each segment is a unit of work, so a step stops between segments. The run keeps the number of lines before each segment, so a run from a page start or a search for a place inside the paragraph lays out only the segment that holds it. The table gives the slowest layout unit, in milliseconds, from the main run on the host before and after (load 6 to 16 on 10 cores).
+
+| Book | Section, item | Before, 20 px | Before, 26 px | After, 20 px | After, 26 px |
+| --- | --- | --- | --- | --- | --- |
+| Leaves of Grass (Gutenberg), Song of Myself | 27, 9 | 79 | 122 | under 4 | under 4 |
+| The Origin of Species (Gutenberg), index | 17, 6 | 23 | 19 | 6 | under 4 |
+
+- The corpus run of Leaves of Grass (EPUB and Kindle) and The Origin of Species lists no paragraph over 8 ms at either page setting, and all three pass every check.
+- The on-demand benchmark lays out 2,000 lines of verse in one `pre` element. Its slowest step with a budget of 4 ms took 23 ms before and 4.3 ms after. A run from a page start three quarters in cuts its first page in 0.5 ms. A search for a place near the end, in a section that no run laid out, takes steps of at most 4.3 ms.
+- A page dump of 47 corpus books at both page settings is the same before and after, for all 4,822 section layouts.
+
 ### The run before the merge
 
 The same corpus ran first on the renderer at 0bc7a08, before the merge. 90 of 92 books passed. It found the broken places of Hong Lou Meng (53 at 26 pixels) and 19 runs of the Kindle Wealth of Nations that differed by 0.001 pixels (t1-tqhs). tc-n6wv fixed the second. That run had no blank-page check.
@@ -163,7 +176,7 @@ No book uses a feature that the renderer does not support. The table gives the n
 
 ## Limits
 
-- Runs from page starts. A run that starts inside a paragraph lays out the whole paragraph again, so that the orphans and widows rules see it. Since t1-qtde and t1-um08, a run that starts inside a table lays out only its own row, and the run starts from every page start.
+- Runs from page starts. A run that starts inside a paragraph lays out the whole paragraph again, so that the orphans and widows rules see it. Since t1-qtde and t1-um08, a run that starts inside a table lays out only its own row, and the run starts from every page start. Since tb-2l69, a run that starts inside a long paragraph with hard breaks lays out only the segment that holds its start line, once another run counted the lines before it.
 - Run time. Before t1-qtde and t1-um08, the run without Roget's Thesaurus took about 90 minutes on a loaded host, and Roget's Thesaurus alone took about two hours. Nobody ran the whole corpus after them yet.
 - The run measures on the host only. Phone timing is separate work.
 - The run draws three pages of each section. It does not compare the drawing with Chromium. `test/reader/epub/fidelity_test.dart` does that for the trial books.
