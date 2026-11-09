@@ -122,6 +122,20 @@ The table gives the slowest layout step of a table, in milliseconds, from the co
 - With runs from every page start, the six books of the second run (Roget's Thesaurus, Plato's Dialogues, Hamlet, Moby-Dick, The Divine Comedy, Through the Looking-Glass) took 15 minutes together. Before, Roget's Thesaurus alone took 116 minutes with runs from 100 page starts per section.
 - The on-demand benchmark `test/reader/epub/step_budget_test.dart` lays out a dialogue table of 1,000 rows. Before t1-um08, its slowest step took 248 ms, a run from a page start in its middle took 277 ms to its first page, and a place in a late row took 537 ms to open. After it, they take 5 to 9 ms, under 1 ms and under 1 ms.
 
+### Layout steps after tb-a6zd
+
+tb-a6zd marks the hyphens of a paragraph a part of about 256 code units at a time, built from a line's start. A word joiner then lays out only that part again, not the whole paragraph. The whole paragraph is laid out once at the end, and again only when a mark changes. The table gives the slowest layout steps, in milliseconds, from the main run on the host before and after (load 5 to 16 on 10 cores). "Plato's Dialogues, row" is one table row unit with many paragraphs (tb-i6wg).
+
+| Book | Section, item | Before, 20 px | Before, 26 px | After, 20 px | After, 26 px |
+| --- | --- | --- | --- | --- | --- |
+| Pride and Prejudice (Standard Ebooks), Darcy's letter | 36, 19 | 105 (20 layouts) | 187 (32 layouts) | 17 | 14 |
+| Plato's Dialogues, slowest paragraph | 30, 184 | 125 (20 layouts) | 126 (17 layouts) | 28 | 39 to 49 |
+| Plato's Dialogues, row | 30, 1244 | 110 | 212 (158 layouts) | 59 | 73 |
+
+- The on-demand benchmark `step_budget_test.dart` lays out a justified paragraph of about 15,000 characters of long words. With hyphens, its step took 669 ms before and 14 to 17 ms after. Without hyphens it takes 4 to 6 ms.
+- The paragraphs of Plato's Dialogues have many word joiners, so their parts cost 3 to 6 times one layout of the paragraph.
+- A part measures its lines with less float error than the whole paragraph. Over 47 corpus books at both page settings, 5 of 4,822 section layouts changed, all at 26 pixels. `docs/plans/native-epub-reader.md` ("Hyphenation") explains why each old line was wrong.
+
 ### The run before the merge
 
 The same corpus ran first on the renderer at 0bc7a08, before the merge. 90 of 92 books passed. It found the broken places of Hong Lou Meng (53 at 26 pixels) and 19 runs of the Kindle Wealth of Nations that differed by 0.001 pixels (t1-tqhs). tc-n6wv fixed the second. That run had no blank-page check.

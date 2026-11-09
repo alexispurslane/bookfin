@@ -1463,15 +1463,21 @@ class LayoutRun {
   }
 
   /// Builds the paragraph of [text], [width] pixels wide, from its code
-  /// unit [from] on. Returns the paragraph, its map, what each of its
-  /// placeholders holds (null for the indent, an image's path, or a raised
-  /// paragraph) and its soft hyphens. [marks] replaces the soft hyphen at
-  /// a code unit of the paragraph with another code unit.
+  /// unit [from] on, or only that paragraph's code units [start, end).
+  /// Returns the paragraph, its map, what each of its placeholders holds
+  /// (null for the indent, an image's path, or a raised paragraph) and its
+  /// soft hyphens. [marks] replaces the soft hyphen at a code unit of the
+  /// whole paragraph with another code unit.
+  ///
+  /// A part stops after the space or the newline at or after [end], or
+  /// at the end of the run of text that holds [end].
   _Built _build(
     StyledText text,
     double indent,
     double width, {
     int from = 0,
+    int start = 0,
+    int? end,
     Map<int, int> marks = const {},
   }) {
     final builder = ui.ParagraphBuilder(_paragraphStyle(text));
@@ -1479,29 +1485,38 @@ class LayoutRun {
     final inlines = <Object?>[];
     final softHyphens = <int>[];
     final texts = <_Text>[];
+    final stop = end ?? _unbounded;
+    // The code units of [text] read so far, and of the whole paragraph.
     var unit = 0;
+    var whole = 0;
     if (indent > 0 && from == 0) {
-      builder.addPlaceholder(
-        indent,
-        0,
-        ui.PlaceholderAlignment.baseline,
-        baseline: ui.TextBaseline.alphabetic,
-        baselineOffset: 0,
-      );
-      map.addPlaceholder(-1);
-      inlines.add(null);
+      if (start == 0) {
+        builder.addPlaceholder(
+          indent,
+          0,
+          ui.PlaceholderAlignment.baseline,
+          baseline: ui.TextBaseline.alphabetic,
+          baselineOffset: 0,
+        );
+        map.addPlaceholder(-1);
+        inlines.add(null);
+      }
       unit = 1;
+      whole = 1;
     }
+
+    /// Whether the code unit [at] of the whole paragraph is in the part.
+    bool shown(int at) => at >= start && at < stop;
     // A continued paragraph starts after the line that it continues, whose
     // last space ends that line.
     var trim = from > 0;
     for (final run in text.runs) {
       switch (run) {
         case TextRun(text: final written, :final style, :final node):
-          final start = unit;
+          final first = unit;
           unit += written.length;
           if (unit <= from) continue;
-          var skip = math.max(0, from - start);
+          var skip = math.max(0, from - first);
           if (trim) {
             while (skip < written.length && written.codeUnitAt(skip) == 0x20) {
               skip++;
@@ -1509,41 +1524,61 @@ class LayoutRun {
             if (skip == written.length) continue;
             trim = false;
           }
-          final added = written.substring(skip);
-          final first = map.length;
+          // The run's code units [skip, written.length) are the whole
+          // paragraph's [at, whole).
+          final at = whole;
+          whole += written.length - skip;
+          if (whole <= start || at >= stop) continue;
+          final low = skip + math.max<int>(0, start - at);
+          var high = skip + math.min<int>(written.length - skip, stop - at);
+          // A part that stops inside the run stops after a space or a
+          // newline, so that its last word is shaped as in the whole
+          // paragraph, or at the run's end.
+          if (high < written.length) {
+            while (high < written.length &&
+                written.codeUnitAt(high - 1) != 0x20 &&
+                written.codeUnitAt(high - 1) != 0x0a) {
+              high++;
+            }
+          }
+          final added = written.substring(low, high);
+          final local = map.length;
+          final offset = start + local;
           var marked = false;
           for (
             var at = added.indexOf(_softHyphen);
             at >= 0;
             at = added.indexOf(_softHyphen, at + 1)
           ) {
-            softHyphens.add(first + at);
-            marked |= marks.containsKey(first + at);
+            softHyphens.add(local + at);
+            marked |= marks.containsKey(offset + at);
           }
-          final shown = marked
+          final drawn = marked
               ? String.fromCharCodes([
                   for (var at = 0; at < added.length; at++)
-                    marks[first + at] ?? added.codeUnitAt(at),
+                    marks[offset + at] ?? added.codeUnitAt(at),
                 ])
               : added;
-          texts.add((start: first, text: shown, style: style));
+          texts.add((start: local, text: drawn, style: style));
           builder
             ..pushStyle(_textStyles[style])
-            ..addText(shown)
+            ..addText(drawn)
             ..pop();
-          map.addText(node, Int32List.sublistView(run.offsets, skip));
+          map.addText(node, Int32List.sublistView(run.offsets, low, high));
         case BreakRun(:final node):
-          final start = unit;
+          final first = unit;
           unit += 1;
-          if (start < from) continue;
+          if (first < from) continue;
           trim = false;
+          if (!shown(whole++)) continue;
           builder.addText('\n');
           map.addPlaceholder(node);
         case ImageRun(:final node, :final image, :final sizing):
-          final start = unit;
+          final first = unit;
           unit += 1;
-          if (start < from) continue;
+          if (first < from) continue;
           trim = false;
+          if (!shown(whole++)) continue;
           final (imageWidth, imageHeight) = sizing.sizeIn(width);
           builder.addPlaceholder(
             imageWidth,
@@ -1555,10 +1590,11 @@ class LayoutRun {
           map.addPlaceholder(node);
           inlines.add(image);
         case RaisedRun(:final node, text: final inner, :final shift):
-          final start = unit;
+          final first = unit;
           unit += 1;
-          if (start < from) continue;
+          if (first < from) continue;
           trim = false;
+          if (!shown(whole++)) continue;
           final raised = _build(inner, 0, width).paragraph
             ..layout(const ui.ParagraphConstraints(width: double.infinity));
           final lines = raised.computeLineMetrics();
@@ -1574,8 +1610,19 @@ class LayoutRun {
           inlines.add(raised);
       }
     }
-    return _Built(builder.build(), map, inlines, softHyphens, texts);
+    return _Built(
+      builder.build(),
+      map,
+      inlines,
+      softHyphens,
+      texts,
+      start: start,
+      length: whole,
+    );
   }
+
+  /// An end past every paragraph's last code unit.
+  static const _unbounded = 1 << 52;
 
   static final _softHyphen = String.fromCharCode(softHyphen);
 
@@ -1597,101 +1644,153 @@ class LayoutRun {
   /// line. A soft hyphen whose hyphen would not fit becomes a word joiner,
   /// so its line breaks earlier, and the lines after it are hyphenated
   /// again.
+  ///
+  /// A line breaks at the last place where its text fits, so its break
+  /// depends only on where it starts. So the line ends are marked from the
+  /// top a part at a time: a part of a few lines, built from a line's start
+  /// ([_markLines]). A word joiner then lays out a few lines again, not the
+  /// whole paragraph (tb-a6zd). Then the whole paragraph is laid out with
+  /// the marks, and again until no mark changes. A part measures its lines
+  /// with less float error than the whole paragraph, because its glyphs sit
+  /// nearer its start, so a line at the very limit of the width can break
+  /// differently in the two.
   _Built _layOut(StyledText text, double indent, double width, {int from = 0}) {
+    final constraints = ui.ParagraphConstraints(width: width);
     final marks = <int, int>{};
-    final justified = text.align == Align.justify;
-    // The code units from which the hyphens are checked and the line ends
-    // are marked, or null when no line end is left to mark.
-    var check = 0;
-    int? scan = 0;
-    while (true) {
-      final built = _build(text, indent, width, from: from, marks: marks);
-      built.paragraph.layout(ui.ParagraphConstraints(width: width));
-      if (built.softHyphens.isEmpty) return built;
-      final next = _markHyphens(
-        built,
-        marks,
+    _Built layOut([int start = 0, int? end]) {
+      final built = _build(
+        text,
+        indent,
         width,
-        check: check,
-        scan: scan,
-        justified: justified,
+        from: from,
+        start: start,
+        end: end,
+        marks: marks,
       );
-      if (next == null) return built;
-      (check, scan) = next;
-      built.dispose();
+      built.paragraph.layout(constraints);
+      return built;
+    }
+
+    if (!_hyphenated(text)) return layOut();
+    final justified = text.align == Align.justify;
+    // Marks the line ends a part at a time from the top, and returns the
+    // whole paragraph laid out with the marks: a part that starts at the
+    // paragraph's start and reaches its end is the whole paragraph.
+    _Built byParts() {
+      var next = 0;
+      var span = _part;
+      while (true) {
+        final part = layOut(next, next + span);
+        if (next == 0 && part.toEnd) return part;
+        final count = marks.length;
+        final after = _markLines(part, marks, width, justified: justified);
+        part.dispose();
+        if (after == null) return layOut();
+        // A part of one line leaves that line for a longer part.
+        span = after == next && marks.length == count ? span * 2 : _part;
+        next = after;
+      }
+    }
+
+    var whole = byParts();
+    // The whole paragraph, laid out again until no mark changes. Its lines
+    // can differ from a part's by float noise in their widths, as can the
+    // judged widths: each hyphen must end its line, and each line that
+    // ends at a soft hyphen gets its mark here.
+    while (true) {
+      if (_hyphensEndLines(whole, marks)) {
+        final count = marks.length;
+        _markLines(whole, marks, width, justified: justified);
+        if (marks.length == count) return whole;
+      }
+      whole.dispose();
+      whole = layOut();
     }
   }
 
-  /// Marks the soft hyphens of [built], a paragraph laid out [width] pixels
-  /// wide, in [marks]. Returns null when no mark changed, so the paragraph
-  /// is final; else from which code units the next layout's hyphens are
-  /// checked and its line ends are marked (null when none is left).
+  /// How many code units of a paragraph [_layOut] lays out at a time while
+  /// it marks its line ends: a few lines.
+  static const _part = 256;
+
+  /// Whether [text] holds a soft hyphen.
+  static bool _hyphenated(StyledText text) =>
+      text.runs.any((run) => run is TextRun && run.text.contains(_softHyphen));
+
+  /// Marks the soft hyphens that end the lines of [part], a part of a
+  /// paragraph laid out [width] pixels wide that starts at a line start, in
+  /// [marks]. Returns where the first line whose end is not marked starts,
+  /// or null when every line's end is marked.
   ///
-  /// A hyphen marked from code unit [check] on must end its line. If one
-  /// does not, the width of its justified line was misjudged: it becomes a
-  /// word joiner, and the hyphens after it are unmarked.
-  ///
-  /// Each soft hyphen that ends a line from the line that holds code unit
-  /// [scan] on becomes a hyphen when the hyphen fits in the line, and else
-  /// a word joiner. The line of a word joiner and the lines after it break
-  /// again, so marking stops there.
-  ///
-  /// Each call adds a word joiner or marks every line end, and word joiners
-  /// stay. So a paragraph with n soft hyphens is laid out at most 2n + 2
-  /// times, and once more than it has word joiners when no width is
-  /// misjudged.
-  (int, int?)? _markHyphens(
-    _Built built,
+  /// Each soft hyphen that ends a line becomes a hyphen when the hyphen
+  /// fits in the line, and else a word joiner. The line of a word joiner
+  /// breaks again, so marking stops there. A part that stops before the
+  /// paragraph's end can break its last line early, so that line is left
+  /// for the next part.
+  int? _markLines(
+    _Built part,
     Map<int, int> marks,
     double width, {
-    required int check,
-    required int? scan,
     required bool justified,
   }) {
-    final paragraph = built.paragraph;
-    final length = built.map.length;
+    final paragraph = part.paragraph;
+    final length = part.map.length;
     final metrics = paragraph.computeLineMetrics();
     final starts = _lineStarts(paragraph, length, metrics.length);
     // The end of each line before its hard break's newline.
     int end(int line) => line + 1 < starts.length
         ? starts[line + 1] - (metrics[line].hardBreak ? 1 : 0)
         : length;
-    for (final unit in built.softHyphens) {
-      if (unit < check || marks[unit] != _hyphen) continue;
-      final line = paragraph.getLineNumberAt(unit)!;
-      if (end(line) != unit + 1) {
-        marks[unit] = _joiner;
-        marks.removeWhere((other, mark) => other > unit && mark == _hyphen);
-        // The line before it broke early, and breaks again.
-        return (unit, line > 0 ? starts[line - 1] : 0);
-      }
-    }
-    if (scan == null) return null;
-    var changed = false;
-    for (
-      var line = paragraph.getLineNumberAt(math.min(scan, length - 1))!;
-      line < starts.length;
-      line++
-    ) {
+    final marked = part.toEnd ? starts.length : starts.length - 1;
+    for (var line = 0; line < marked; line++) {
       final unit = end(line) - 1;
-      if (unit + 1 >= length ||
-          marks.containsKey(unit) ||
-          built.unitAt(unit) != softHyphen) {
+      final at = part.start + unit;
+      if (at + 1 >= part.length ||
+          marks.containsKey(at) ||
+          part.unitAt(unit) != softHyphen) {
         continue;
       }
       final natural = justified
-          ? _naturalWidth(built, metrics[line], starts[line], unit)
+          ? _naturalWidth(part, metrics[line], starts[line], unit)
           : metrics[line].width;
-      final hyphen = _advances.hyphen(built.styleAt(unit), _textStyles);
+      final hyphen = _advances.hyphen(part.styleAt(unit), _textStyles);
       if (natural + hyphen > width + _fitTolerance) {
-        marks[unit] = _joiner;
+        marks[at] = _joiner;
         // The line breaks earlier, maybe at another soft hyphen.
-        return (scan, starts[line]);
+        return part.start + starts[line];
       }
-      marks[unit] = _hyphen;
-      changed = true;
+      marks[at] = _hyphen;
     }
-    return changed ? (scan, null) : null;
+    return part.toEnd ? null : part.start + starts[marked];
+  }
+
+  /// Whether each hyphen of [built], the whole paragraph laid out with
+  /// [marks], ends its line.
+  ///
+  /// When one does not, the width of its justified line was misjudged, or
+  /// float noise broke its line otherwise in a part: it becomes a word
+  /// joiner, and the marks after it are dropped, as they were decided for
+  /// lines that are gone. The line before it broke early, and breaks again.
+  bool _hyphensEndLines(_Built built, Map<int, int> marks) {
+    final paragraph = built.paragraph;
+    final length = built.map.length;
+    final metrics = paragraph.computeLineMetrics();
+    int? lineOf(int unit) =>
+        unit < length ? paragraph.getLineNumberAt(unit) : null;
+    for (final unit in built.softHyphens) {
+      if (marks[unit] != _hyphen) continue;
+      final line = paragraph.getLineNumberAt(unit)!;
+      // A hard break's newline belongs to the line that it ends.
+      final ends = line + 1 >= metrics.length
+          ? unit + 1 == length
+          : metrics[line].hardBreak
+          ? lineOf(unit + 1) == line && lineOf(unit + 2) != line
+          : lineOf(unit + 1) != line;
+      if (ends) continue;
+      marks[unit] = _joiner;
+      marks.removeWhere((other, mark) => other > unit);
+      return false;
+    }
+    return true;
   }
 
   /// How far past the line width a hyphen may reach and still fit: float
@@ -2458,8 +2557,25 @@ class _Advances {
 }
 
 class _Built {
-  _Built(this.paragraph, this.map, this.inlines, this.softHyphens, this.texts);
+  _Built(
+    this.paragraph,
+    this.map,
+    this.inlines,
+    this.softHyphens,
+    this.texts, {
+    required this.start,
+    required this.length,
+  });
   final ui.Paragraph paragraph;
+
+  /// The code unit of the whole paragraph that [paragraph] starts at, when
+  /// it is a part of it (see [LayoutRun._build]), and the whole
+  /// paragraph's length in code units.
+  final int start;
+  final int length;
+
+  /// Whether [paragraph] runs to the whole paragraph's end.
+  bool get toEnd => start + map.length >= length;
   final TextMap map;
   final List<Object?> inlines;
 

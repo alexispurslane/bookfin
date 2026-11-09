@@ -95,6 +95,39 @@ void main() {
     }
   }, timeout: Timeout.none);
 
+  test('the layout step of a long hyphenated paragraph takes a few times one '
+      'layout of it', () {
+    // Darcy's letter in Standard Ebooks' Pride and Prejudice is one
+    // justified paragraph of 14,920 characters with 841 soft hyphens. Each
+    // hyphen that does not fit in its line becomes a word joiner, and its
+    // line breaks again.
+    final words = [
+      for (var copy = 0; copy < 70; copy++)
+        'The extraordinary typesetter $copy considered the unbelievable '
+            'hyphenation of characteristically incomprehensible '
+            'representations, which nevertheless accommodated the '
+            'administrative responsibilities of international communication.',
+    ].join(' ');
+    for (final settings in _settings) {
+      Duration step(String hyphens) {
+        final section = prepared(
+          '<div lang="en"><p>$words</p></div>',
+          css: 'p{hyphens:$hyphens;text-align:justify}',
+          settings: settings,
+        );
+        return _fastest(() => _slowestStep(section));
+      }
+
+      final plain = step('manual');
+      final hyphenated = step('auto');
+      stdout.writeln(
+        '${settings.fontSize} px: without hyphens ${_ms(plain)} ms, '
+        'with hyphens ${_ms(hyphenated)} ms',
+      );
+      expect(hyphenated, lessThan(plain * 4));
+    }
+  }, timeout: Timeout.none);
+
   test('no step of a long dialogue table takes much longer than its budget, '
       'and a page or a place inside it opens without the rows above it', () {
     // Gorgias in Standard Ebooks' Plato, Dialogues is one table of 1,082

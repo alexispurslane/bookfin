@@ -463,6 +463,66 @@ void main() {
       expect(inside, greaterThan(0));
     });
 
+    test('a long justified paragraph keeps the hyphens and lines that it had '
+        'when each word joiner laid out the whole paragraph again', () {
+      // The visible-character index of each line start, recorded before
+      // tb-a6zd marked the hyphens of a long paragraph a few lines at a
+      // time. The paragraph places about 30 word joiners at 20 pixels and
+      // 47 at 26 pixels.
+      const recorded = {
+        20:
+            '0 36 70 108 143 180 215 252 289 324 358 396 430 463 500 537 572 '
+            '608 644 679 716 751 787 823 859 895 934 966 1005 1041 1076 1112 '
+            '1149 1185 1221 1256 1292 1328 1363 1398 1435 1471 1505 1543 1578 '
+            '1615 1650 1687 1724 1759 1793 1831 1865 1898 1935 1972 2007 2043 '
+            '2079 2114 2151 2186 2222 2258 2294 2330 2369 2401 2440 2476 2511 '
+            '2547 2584 2620 2656 2691 2727 2763 2798 2833 2870 2906 2940 2978 '
+            '3013 3050 3085 3122 3159 3194 3228 3266 3300 3333 3370 3407 3442 '
+            '3478 3514 3549 3586 3621 3657 3693 3729 3765 3804 3836 3875 3911 '
+            '3946 3982 4019 4055 4091 4126 4162 4198 4233 4268 4305 4341 4375 '
+            '4413 4448 4485 4520 4557 4594 4629 4663 4701 4735 4768 4805 4842 '
+            '4877 4913',
+        26:
+            '0 26 51 75 98 122 146 172 196 221 244 269 295 319 341 365 390 413 '
+            '436 461 485 508 532 556 582 606 631 654 679 705 729 751 775 800 '
+            '823 846 871 895 918 942 966 992 1016 1041 1064 1089 1115 1139 1161 '
+            '1185 1210 1233 1256 1281 1305 1328 1352 1376 1402 1426 1451 1474 '
+            '1499 1525 1549 1571 1595 1620 1643 1666 1691 1715 1738 1762 1786 '
+            '1812 1836 1861 1884 1909 1935 1959 1981 2005 2030 2053 2076 2101 '
+            '2125 2148 2172 2196 2222 2246 2271 2294 2319 2345 2369 2391 2415 '
+            '2440 2463 2486 2511 2535 2558 2582 2606 2632 2656 2681 2704 2729 '
+            '2755 2779 2801 2825 2850 2873 2896 2921 2945 2968 2992 3016 3042 '
+            '3066 3091 3114 3139 3165 3189 3211 3235 3260 3283 3306 3331 3355 '
+            '3378 3402 3426 3452 3476 3501 3524 3549 3575 3599 3621 3645 3670 '
+            '3693 3716 3741 3765 3788 3812 3836 3862 3886 3911 3934 3959 3985 '
+            '4009 4031 4055 4080 4103 4126 4151 4175 4198 4222 4246 4272 4296 '
+            '4321 4344 4369 4395 4419 4441 4465 4490 4513 4536 4561 4585 4608 '
+            '4632 4656 4682 4706 4731 4754 4779 4805 4829 4851 4875 4900',
+      };
+      for (final settings in [
+        readerPage,
+        const PageSettings(width: 360, height: 640, fontSize: 26, night: false),
+      ]) {
+        final layout = layoutSection(
+          prepared(
+            '<div lang="en"><p>${longWords * 24}</p></div>',
+            css: 'p{hyphens:auto;text-align:justify}',
+            settings: settings,
+          ),
+        );
+        final dom = layout.section.dom;
+        final starts = [
+          for (final line in layout.slices) dom.visibleBefore(line.start!),
+        ];
+        expect(
+          starts.join(' '),
+          recorded[settings.fontSize.round()],
+          reason: '${settings.fontSize} px',
+        );
+        layout.dispose();
+      }
+    });
+
     test('a run from any page start of hyphenated text cuts the same pages '
         'as the main run', () {
       for (final width in [214.0, 262.0]) {
