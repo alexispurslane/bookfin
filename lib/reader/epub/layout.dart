@@ -1732,7 +1732,6 @@ class LayoutRun {
     }
 
     if (!_hyphenated(text)) return layOut(start, end);
-    final justified = text.align == Align.justify;
     // Marks the line ends a part at a time from the line that starts at
     // code unit [next] on, and returns the whole paragraph laid out with
     // the marks: a part that starts at the paragraph's start and reaches
@@ -1746,13 +1745,7 @@ class LayoutRun {
         final last = part.reaches(end);
         if (next == start && last) return part;
         final count = marks.length;
-        final after = _markLines(
-          part,
-          marks,
-          width,
-          justified: justified,
-          last: last,
-        );
+        final after = _markLines(part, marks, width, text: text, last: last);
         part.dispose();
         if (after == null) return layOut(start, end);
         // A part of one line leaves that line for a longer part.
@@ -1774,13 +1767,7 @@ class LayoutRun {
       next = _misjudged(whole, marks);
       if (next == null) {
         final count = marks.length;
-        next = _markLines(
-          whole,
-          marks,
-          width,
-          justified: justified,
-          last: true,
-        );
+        next = _markLines(whole, marks, width, text: text, last: true);
         if (marks.length == count) return whole;
       }
       whole.dispose();
@@ -1812,9 +1799,10 @@ class LayoutRun {
     _Built part,
     Map<int, int> marks,
     double width, {
-    required bool justified,
+    required StyledText text,
     required bool last,
   }) {
+    final justified = text.align == Align.justify;
     final paragraph = part.paragraph;
     final length = part.map.length;
     final metrics = paragraph.computeLineMetrics();
@@ -1844,10 +1832,13 @@ class LayoutRun {
       // paragraph with its marks draws it (tb-o242).
       var fits = natural + hyphen <= width + _fitTolerance;
       if ((natural + hyphen - width).abs() <= hyphen / 2) {
-        if (_hyphenatedLine(part, starts[line], unit) case (
-          :final alone,
-          :final drawn,
-        )) {
+        // A line whose measure alone differs from its width in the
+        // paragraph by more than kerning can, for example by a fallback
+        // font that the paragraph picked otherwise for another script,
+        // keeps the sum.
+        if (_hyphenatedLine(text, part, starts[line], unit)
+            case (:final alone, :final drawn)
+            when (alone - natural).abs() <= hyphen / 2) {
           fits =
               alone + hyphen <= width + _fitTolerance &&
               drawn <= width + _fitTolerance;
@@ -1874,21 +1865,27 @@ class LayoutRun {
   /// [alone] plus the hyphen's width. The drawn hyphen kerns with the
   /// letters on both sides of it.
   ({double alone, double drawn})? _hyphenatedLine(
+    StyledText text,
     _Built part,
     int start,
     int end,
   ) {
-    final line = ui.ParagraphBuilder(ui.ParagraphStyle());
-    final hyphenated = ui.ParagraphBuilder(ui.ParagraphStyle());
+    // The paragraph's own style, whose font family picks the fallback
+    // fonts of the line's other scripts.
+    final line = ui.ParagraphBuilder(_paragraphStyle(text));
+    final hyphenated = ui.ParagraphBuilder(_paragraphStyle(text));
     var unit = start;
     while (unit < end) {
-      final text = part._textAt(unit);
-      if (text == null) return null;
-      final stop = math.min(end, text.start + text.text.length);
-      final added = text.text.substring(unit - text.start, stop - text.start);
+      final piece = part._textAt(unit);
+      if (piece == null) return null;
+      final stop = math.min(end, piece.start + piece.text.length);
+      final added = piece.text.substring(
+        unit - piece.start,
+        stop - piece.start,
+      );
       for (final builder in [line, hyphenated]) {
         builder
-          ..pushStyle(_textStyles[text.style])
+          ..pushStyle(_textStyles[piece.style])
           ..addText(added)
           ..pop();
       }
