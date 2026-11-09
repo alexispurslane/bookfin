@@ -17,3 +17,13 @@ Found in boo-rw7u (docs/research/epub-first-page-timing.md). When a page is show
 
 The turn of the open benchmark into Keats' section 4 and Hamlet's act 2 takes about as long as that section's own prepare and its first page, and the pages and saved places stay the same.
 
+
+## Decisions (user, 2026-11-09)
+
+This ticket now covers the whole order of prepare and layout work, not only the turn into the next section.
+
+1. The UI waits only for the page that the reader opens or jumps to. Prepare that section and cut that exact page first (the anchored page), and show it.
+2. Then lay out the shown section around that page: its neighbors and its main run.
+3. Then two independent directions of work go outward from the shown section. One prepares and lays out the sections after it, in order to the right (S+1, S+2, ...). The other does the sections before it, in order to the left (S−1, S−2, ...). Each direction has its own worker, so neither waits for the other.
+4. The work goes on, within the frame budget between frames, until every section of the book has its main run, so the whole book is laid out.
+5. A jump starts the same order again from the page that the reader jumped to.

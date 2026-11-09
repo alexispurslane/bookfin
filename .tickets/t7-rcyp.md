@@ -17,3 +17,9 @@ Found in boo-rw7u (docs/research/epub-first-page-timing.md). On an arm64 Android
 
 The open benchmark (tool/reader/open_benchmark.dart) on the emulator and on the Pixel 8 shows the admission time before and after for the five books of boo-rw7u, and a book that changed or a new policy still admits in full.
 
+
+## Decisions (user, 2026-11-09)
+
+- Remove the full image decode from admission. Layout needs only the width and height, which the image header gives.
+- Do not hash the book at open. Downloads already computes the SHA-256 of each file when its download completes (`record.digest` in lib/downloads/local_downloads.dart). The reader uses that digest as the original digest.
+- Keep the admitted book on disk: the unzipped and admitted files and every admitted fact (identity, spine, spine steps, contents, styles, image sizes, warnings). An open reads that record and does not unzip, sanitize or hash again. A changed file or a new policy admits in full.
