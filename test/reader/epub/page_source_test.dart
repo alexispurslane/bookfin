@@ -106,14 +106,18 @@ class TestScheduler {
 }
 
 /// An EPUB of one spine section for each of [bodies], styled by [css], with
-/// [files] beside them, admitted as the reader admits a book.
+/// [files] beside them, admitted as the reader admits a book. Its package
+/// names [language] as its `dc:language`, or no language.
 Publication book(
   List<String> bodies, {
   String css = '',
   Map<String, List<int>> files = const {},
+  String? language,
 }) {
   String type(String path) => switch (path.split('.').last) {
     'png' => 'image/png',
+    'jpg' => 'image/jpeg',
+    'svg' => 'image/svg+xml',
     'woff' => 'font/woff',
     _ => 'application/octet-stream',
   };
@@ -125,7 +129,8 @@ Publication book(
     ),
     'OPS/book.opf': utf8.encode(
       '<package xmlns="http://www.idpf.org/2007/opf" version="3.0">'
-      '<metadata/><manifest>'
+      '${language == null ? '<metadata/>' : '<metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:language>$language</dc:language></metadata>'}'
+      '<manifest>'
       '<item id="css" href="css/book.css" media-type="text/css"/>'
       '${[for (var i = 0; i < bodies.length; i++) '<item id="s$i" href="text/s$i.xhtml" media-type="application/xhtml+xml"/>'].join()}'
       '${[for (final (i, path) in files.keys.indexed) '<item id="f$i" href="$path" media-type="${type(path)}"/>'].join()}'

@@ -4,9 +4,22 @@ import 'dart:ui' as ui;
 
 import 'package:bookfin/reader/epub/layout.dart';
 import 'package:bookfin/reader/epub/prepare.dart';
+import 'package:flutter/material.dart';
 import 'package:image/image.dart' as img;
 
 bool _fontLoaded = false;
+
+/// [child] with what every screen of the app gives it: English Material
+/// texts, left to right, and an overlay for the selection handles and
+/// menu. Unlike an app, it builds [child] again on each pump.
+Widget onScreen(Widget child) => Localizations(
+  locale: const Locale('en'),
+  delegates: const [
+    DefaultMaterialLocalizations.delegate,
+    DefaultWidgetsLocalizations.delegate,
+  ],
+  child: Overlay.wrap(child: child),
+);
 
 /// Loads the reader's font under the family that layout draws with.
 Future<void> loadReaderFont() async {
@@ -110,7 +123,8 @@ List<Object?> pageKey(LaidPage page) {
     ],
     [
       for (final piece in page.pieces)
-        '${_px(piece.x)} ${_px(piece.y - top)} ${_px(piece.paragraph.width)}',
+        '${_px(piece.x)} ${_px(piece.y - top)} ${_px(piece.paragraph.width)} '
+            '${_px(piece.shown)}',
     ],
     [
       for (final decoration in page.decorations)

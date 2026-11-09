@@ -1,0 +1,47 @@
+English hyphenation patterns of the hyph-utf8 project
+https://github.com/hyphenation/tex-hyphen, tag CTAN-2024.12.31
+(commit 29e003ea905f6740a0d66e114db9f60b26d07516)
+
+Bookfin's reader hyphenates English text with the patterns and exceptions
+of hyph-en-us and hyph-en-gb, as Dart data in
+lib/reader/epub/hyphenation_en.dart.
+
+------------------------------------------------------------------------
+hyph-en-us: Hyphenation patterns for American English
+
+Copyright (C) 1990, 2004, 2005 Gerard D.C. Kuiken
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
+
+The file also contains the original patterns and hyphenations from
+Donald E. Knuth's hyphen.tex.
+
+------------------------------------------------------------------------
+hyph-en-gb: Hyphenation patterns for British English
+
+Copyright (C) 1992, 1996, 2005, 2016 Dominik Wujastyk, Graham Toal
+
+MIT License
+
+Permission is hereby granted, free of charge, to any person
+obtaining a copy of this software and associated documentation
+files (the “Software”), to deal in the Software without
+restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or
+sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following
+conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.

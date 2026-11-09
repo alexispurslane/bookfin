@@ -33,6 +33,11 @@ typedef StepScheduler = void Function(
   required bool urgent,
 });
 
+/// The number of a page among the true pages of its section, from 1, and
+/// the number of true pages in the section, or null while the section's
+/// main run has not ended.
+typedef PageNumber = ({int number, int? count});
+
 /// A request that stopped before its page was ready: its abandon future
 /// completed, another page was shown, the source was disposed, or the
 /// settings of its page were dropped.
@@ -86,13 +91,33 @@ class PageSource {
   static const _maxPages = 24;
   static const _maxImageBytes = 32 * 1024 * 1024;
 
+  /// Runs [step] as a Flutter task. A step that is not [urgent] waits while
+  /// an animation runs: transient frame callbacks are registered. It waits
+  /// outside the task queue, for the end of the next frame, and then asks
+  /// again. So it wakes the event loop at most once a frame.
+  ///
+  /// Both kinds of step use [Priority.animation], so that Flutter's default
+  /// strategy never holds them in the queue. A held task makes the queue
+  /// ask again at once with a zero timer, a busy loop between frames for
+  /// as long as the animation runs.
+  ///
+  /// Transient callbacks schedule a frame when they are registered, and an
+  /// animation that goes on registers them again during each frame. So a
+  /// frame always comes after a step starts to wait, and the step runs
+  /// after the first frame at whose end no animation is registered.
   static void _scheduleTask(void Function() step, {required bool urgent}) {
-    unawaited(
-      SchedulerBinding.instance.scheduleTask(
-        step,
-        urgent ? Priority.animation : Priority.idle,
-      ),
-    );
+    final binding = SchedulerBinding.instance;
+    void task() {
+      if (urgent || binding.transientCallbackCount == 0) {
+        step();
+      } else {
+        binding.addPostFrameCallback(
+          (_) => unawaited(binding.scheduleTask(task, Priority.animation)),
+        );
+      }
+    }
+
+    unawaited(binding.scheduleTask(task, Priority.animation));
   }
 
   final Publication _publication;
@@ -210,12 +235,56 @@ class PageSource {
     return layout != null && layout.isTrueStart(page.start);
   }
 
+  /// The number of [page] among the true pages of its section: the number
+  /// of true page starts at or before its start. Null while the section's
+  /// main run has not passed its start.
+  PageNumber? numberOf(LaidPage page) {
+    final layout = _layoutOf(page);
+    if (page.start == const PageStart(0, 0)) {
+      return (
+        number: 1,
+        count: layout?.mainDone ?? false ? layout!.starts.length : null,
+      );
+    }
+    if (layout == null || !layout.knows(page.start)) return null;
+    return (
+      number: layout._search(page.start).$1 + 1,
+      count: layout.mainDone ? layout.starts.length : null,
+    );
+  }
+
+  /// Completes once the main run of [page]'s section passed [page]'s start,
+  /// or reached the section end when [end]. It waits with the shown
+  /// section's main run. [abandon] stops the wait, and the future fails
+  /// with [PageRequestStopped].
+  Future<void> mainRun(
+    LaidPage page, {
+    bool end = false,
+    Future<void>? abandon,
+  }) {
+    final layout = _layoutOf(page) ?? _settingsChanged();
+    return _ask(
+      _Rank.shownRun,
+      abandon,
+      (request) => _known(layout, end ? null : page.start, request),
+    );
+  }
+
+  /// The page that [show] showed last, while it is in the cache.
+  LaidPage? get shown => _pages[_shown]?.page;
+
+  /// The prepared section of [page], which must be in the cache. It stays
+  /// prepared while [page] is shown or pinned.
+  PreparedSection sectionOf(LaidPage page) => _cachedOf(page).layout.prepared!;
+
   /// A picture now, with outlines for images not decoded yet.
   ui.Picture draft(LaidPage page) {
     final cached = _cachedOf(page);
     final wanted = _imagesOf(page, 1);
     if (wanted.isEmpty) return cached.plain();
     return cached.draft ??= drawPage(page, {
+      for (final key in _broken)
+        if (wanted.containsKey(key.path)) key.path: null,
       for (final MapEntry(key: key, value: image) in _images.entries)
         if (wanted.containsKey(key.path)) key.path: image,
     });
@@ -240,7 +309,7 @@ class PageSource {
       if (cached.pictures[scale] case final drawn?) return drawn;
       cached.images.addAll(keys);
       return cached.pictures[scale] = drawPage(page, {
-        for (final (index, key) in keys.indexed) key.path: ?images[index],
+        for (final (index, key) in keys.indexed) key.path: images[index],
       });
     } finally {
       for (final key in keys) {
@@ -826,6 +895,7 @@ class PageSource {
             ],
             _publication.bookStyles,
             _publication.imageSizes,
+            _publication.language,
             _fontPrefix,
             settings,
           );
@@ -868,6 +938,7 @@ class PageSource {
     List<Uint8List> xhtml,
     Map<String, String> styleSheets,
     Map<String, (int, int)> imageSizes,
+    String? language,
     String fontPrefix,
     PageSettings settings,
   ) => Isolate.run(
@@ -880,6 +951,7 @@ class PageSource {
           fontPrefix: fontPrefix,
           styleSheets: styleSheets,
           imageSizes: imageSizes,
+          language: language,
         ),
     ], settings),
   );
@@ -963,7 +1035,7 @@ class PageSource {
     );
     for (final piece in page.pieces) {
       for (final (box, held) in piece.inlines) {
-        if (held is String) add(held, box);
+        if (held is DrawnImage) add(held.path, box);
       }
     }
     for (final decoration in page.decorations) {
@@ -973,7 +1045,7 @@ class PageSource {
   }
 
   /// The image of [key], decoded at its width. Null when it cannot decode;
-  /// the page then draws an outline.
+  /// the page then draws its alt text.
   Future<ui.Image?> _decode(_ImageKey key) async {
     if (_images.remove(key) case final image?) {
       _images[key] = image;

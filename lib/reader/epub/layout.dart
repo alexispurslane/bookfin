@@ -6,8 +6,12 @@
 // document would. Each line, image, rule and table row is a slice of the
 // strip. A page is a window [top, bottom) of the strip that holds whole
 // slices, so a paragraph splits across pages between its lines, and a table
-// between its rows. The breaks follow CSS
-// fragmentation as Chromium applies it to the WebView reader's columns:
+// between its rows. A row taller than a page is a slice for each of its
+// fragments (table.dart), so it splits between the lines of its cells.
+// Lines sit at their exact CSS positions, as in Chromium, and not where
+// Flutter's whole-pixel line heights put them (see [Piece.tops]). The
+// breaks follow CSS fragmentation as Chromium applies it to the WebView
+// reader's columns:
 // margins at a break are dropped, `break-before: page` is ignored as the
 // columns ignore it, and a break picks the latest place with the best
 // "appeal" (orphans, widows and avoid rules).
@@ -48,9 +52,10 @@ abstract final class Appeal {
 /// Where a page begins: line [line] of flow item [item].
 ///
 /// A paragraph's lines count from its first line, a hanging first line
-/// included. An image, and a box without content that is a slice of its
-/// own (such as a rule), start at line 0 of their item. The section's first
-/// page starts at `PageStart(0, 0)`.
+/// included. A table's lines are its slices: a row, or a fragment of a row
+/// taller than a page. An image, and a box without content that is a slice
+/// of its own (such as a rule), start at line 0 of their item. The
+/// section's first page starts at `PageStart(0, 0)`.
 class PageStart implements Comparable<PageStart> {
   const PageStart(this.item, this.line);
   final int item;
@@ -72,8 +77,8 @@ class PageStart implements Comparable<PageStart> {
   String toString() => 'PageStart($item, $line)';
 }
 
-/// A slice of the strip that a page holds whole: a line, an image, a rule
-/// or a table row.
+/// A slice of the strip that a page holds whole: a line, an image, a rule,
+/// a table row or a fragment of a row taller than a page.
 class Slice {
   Slice(
     this.top,
@@ -84,7 +89,7 @@ class Slice {
     this.line = -1,
     this.start,
     this.units = (0, 0),
-    this.rowPieces = const [],
+    this.cellSlices = const [],
   });
   final double top;
   final double bottom;
@@ -109,42 +114,105 @@ class Slice {
   /// The code units of [piece]'s text that the line shows, [start, end).
   final (int, int) units;
 
-  /// The paragraphs in the cells of a table row, which the slice shows
-  /// whole, in document order. Empty for any other slice.
-  final List<Piece> rowPieces;
+  /// The slices of the cells' content that a table row, or a fragment of
+  /// a row taller than a page, shows: cell by cell, in document order. Their
+  /// [at] is a place in their cell's flow. Empty for any other slice.
+  final List<Slice> cellSlices;
 }
 
 /// One laid-out paragraph: a Flutter paragraph at a place on the strip,
 /// and where each of its characters comes from in the DOM.
 ///
 /// The run that builds a piece and each page that shows it hold it. Its
-/// paragraphs are disposed when the last holder lets it go.
+/// paragraphs are disposed when the last holder lets it go. A piece moved
+/// to another place, as a split table row shows one paragraph on several
+/// pages, shares its paragraphs and their holders.
 class Piece {
-  Piece(this.paragraph, this.x, this.y, this.map);
-  final ui.Paragraph paragraph;
+  /// The laid-out [paragraph] at ([x], [y]), with its lines where Flutter
+  /// puts them.
+  Piece(ui.Paragraph paragraph, this.x, this.y, this.map)
+    : _paragraphs = _Paragraphs(paragraph, exact: false);
+
+  Piece._of(this._paragraphs, this.x, this.y, this.map);
+
+  /// [piece] moved down by [dy], holding its paragraphs once more.
+  Piece._moved(Piece piece, double dy, this.shown)
+    : x = piece.x,
+      y = piece.y + dy,
+      map = piece.map,
+      _paragraphs = piece._paragraphs {
+    _hold();
+  }
+
+  ui.Paragraph get paragraph => _paragraphs.paragraph;
   final double x;
   final double y;
   final TextMap map;
 
-  /// Images and raised text drawn in the paragraph's placeholders.
-  final List<(ui.Rect, Object)> inlines = [];
+  /// Images ([DrawnImage]) and raised text ([ui.Paragraph]) drawn in the
+  /// paragraph's placeholders, at their place from the piece's top left.
+  List<(ui.Rect, Object)> get inlines => _paragraphs.inlines;
+
+  /// The top of each line from the piece's top, and the bottom of the last
+  /// line. Flutter rounds each line's height to a whole pixel, but Chromium
+  /// does not, so an exact line's height is Flutter's height before it
+  /// rounds: its ascent and descent. That is the CSS line height, or the
+  /// height of the line's tallest inline content.
+  List<double> get tops => _paragraphs.tops;
+
+  /// How far each line draws below the place where Flutter draws it, so
+  /// that its baseline sits at its exact place.
+  List<double> get shifts => _paragraphs.shifts;
 
   /// The height of the lines that this piece shows, from its top. A hanging
   /// first line is a paragraph of its own that shows only its first line.
+  /// A page of a split table row shows a cell's lines down to the first
+  /// line that the next page shows.
   double shown = double.infinity;
 
-  int _holders = 1;
+  final _Paragraphs _paragraphs;
 
-  void _hold() => _holders++;
+  void _hold() => _paragraphs.holders++;
 
   void _release() {
-    assert(_holders > 0, 'A piece was released more often than held.');
-    if (--_holders > 0) return;
-    paragraph.dispose();
-    for (final (_, held) in inlines) {
+    final paragraphs = _paragraphs;
+    assert(
+      paragraphs.holders > 0,
+      'A piece was released more often than held.',
+    );
+    if (--paragraphs.holders > 0) return;
+    paragraphs.paragraph.dispose();
+    for (final (_, held) in paragraphs.inlines) {
       if (held is ui.Paragraph) held.dispose();
     }
   }
+}
+
+/// The paragraphs that one or more pieces show, and how many holders they
+/// have.
+class _Paragraphs {
+  /// The lines of [paragraph] at their exact CSS positions when [exact],
+  /// and where Flutter puts them otherwise (see [Piece.tops]).
+  _Paragraphs(this.paragraph, {required bool exact}) {
+    final metrics = paragraph.computeLineMetrics();
+    var top = 0.0;
+    for (final (index, line) in metrics.indexed) {
+      tops.add(top);
+      shifts.add(exact ? top + line.ascent - line.baseline : 0);
+      top = exact
+          ? top + line.ascent + line.descent
+          : index == metrics.length - 1
+          ? paragraph.height
+          : line.baseline + line.descent;
+    }
+    tops.add(top);
+  }
+
+  final ui.Paragraph paragraph;
+  final List<(ui.Rect, Object)> inlines = [];
+  final tops = <double>[];
+  final shifts = <double>[];
+  int holders = 1;
 }
 
 /// A drawn thing on the strip that is not text: a border, a list marker or
@@ -157,9 +225,10 @@ class RuleDecoration extends Decoration {
 }
 
 class ImageDecoration extends Decoration {
-  ImageDecoration(this.rect, this.path);
+  ImageDecoration(this.rect, this.image);
   final ui.Rect rect;
-  final String path;
+  final DrawnImage image;
+  String get path => image.path;
 }
 
 class MarkerDecoration extends Decoration {
@@ -197,6 +266,9 @@ class LaidPage {
   /// The section's spine index.
   int get section => _section.index;
   PageSettings get settings => _section.settings;
+
+  /// The DOM of the page's section, where its places point.
+  DomSection get dom => _section.dom;
   final PageStart start;
 
   /// Where the page begins and ends on its run's strip.
@@ -239,8 +311,8 @@ class LaidPage {
     final dom = _section.dom;
     for (final slice in slices.reversed) {
       final shown = [
-        if (slice.piece case final piece?) (piece, slice.units),
-        for (final piece in slice.rowPieces) (piece, (0, piece.map.length)),
+        for (final line in [slice, ...slice.cellSlices])
+          if (line.piece case final piece?) (piece, line.units),
       ];
       for (final (piece, (start, end)) in shown.reversed) {
         for (var unit = end - 1; unit >= start; unit--) {
@@ -286,12 +358,13 @@ class LaidPage {
   Iterable<Piece> get _lines sync* {
     Piece? previous;
     for (final slice in slices) {
-      final piece = slice.piece;
-      if (piece != null && !identical(piece, previous)) {
-        yield piece;
-        previous = piece;
+      for (final line in [slice, ...slice.cellSlices]) {
+        final piece = line.piece;
+        if (piece != null && !identical(piece, previous)) {
+          yield piece;
+          previous = piece;
+        }
       }
-      yield* slice.rowPieces;
     }
   }
 
@@ -344,7 +417,8 @@ class LayoutRun {
        _textStyles = [
          for (final style in section.styles)
            _textStyle(style, section.settings.ink),
-       ] {
+       ],
+       _advances = _Advances() {
     final start = from ?? const PageStart(0, 0);
     if (start.item < 0 || start.item > section.flow.length) {
       throw RangeError.range(start.item, 0, section.flow.length, 'from.item');
@@ -365,7 +439,8 @@ class LayoutRun {
       _flow = flow,
       _clock = outer._clock,
       _root = (left, width),
-      _textStyles = outer._textStyles;
+      _textStyles = outer._textStyles,
+      _advances = outer._advances;
 
   static final _watch = Stopwatch()..start();
   static Duration _elapsed() => _watch.elapsed;
@@ -380,6 +455,7 @@ class LayoutRun {
   /// outermost boxes: the page, or a cell's column.
   final (double, double) _root;
   final List<ui.TextStyle> _textStyles;
+  final _Advances _advances;
 
   final _pages = <LaidPage>[];
   bool _done = false;
@@ -465,8 +541,10 @@ class LayoutRun {
         if (slice.piece case final piece?) {
           check(held.contains(piece), 'a pending line is not held');
         }
-        for (final piece in slice.rowPieces) {
-          check(held.contains(piece), 'a pending table row is not held');
+        for (final line in slice.cellSlices) {
+          if (line.piece case final piece?) {
+            check(held.contains(piece), 'a pending table row is not held');
+          }
         }
       }
       for (final decoration in _decorations) {
@@ -478,7 +556,7 @@ class LayoutRun {
         }
       }
       for (final piece in _held) {
-        check(piece._holders > 0, 'a held piece is disposed');
+        check(piece._paragraphs.holders > 0, 'a held piece is disposed');
       }
     }
     for (var index = 1; index < _pages.length; index++) {
@@ -630,11 +708,10 @@ class LayoutRun {
 
   /// Publishes every page that the slices laid out so far decide.
   void _cut() {
-    const epsilon = 0.01;
     final atEnd = _item == _flow.length;
     while (!_done) {
       final count = _pending.length;
-      final limit = _pageTop + _section.settings.height + epsilon;
+      final limit = _pageTop + _section.settings.height + fitTolerance;
       var end = 0;
       while (end < count && _pending[end].bottom <= limit) {
         end++;
@@ -673,8 +750,12 @@ class LayoutRun {
   }
 
   /// Publishes the page of the first [count] pending slices, which ends at
-  /// [bottom], and starts the next page after it.
-  void _publish(int count, double bottom, {required bool last}) {
+  /// [end], and starts the next page after it. The section's [last] page
+  /// also holds the bottom padding and borders of the boxes that close
+  /// after its last slice, so it ends at the run's strip position if that
+  /// is lower.
+  void _publish(int count, double end, {required bool last}) {
+    final bottom = last ? math.max(end, _y) : end;
     assert(count <= _pending.length && bottom >= _pageTop);
     final width = _section.settings.width;
     final window = ui.Rect.fromLTRB(0, _pageTop, width, bottom);
@@ -724,7 +805,8 @@ class LayoutRun {
   /// Lets go of the pieces that no page after the published ones can show.
   void _releaseUnreachable() {
     final reachable = <Piece>{
-      for (final slice in _pending) ...[?slice.piece, ...slice.rowPieces],
+      for (final slice in _pending)
+        for (final line in [slice, ...slice.cellSlices]) ?line.piece,
       for (final decoration in _decorations)
         if (decoration is MarkerDecoration) decoration.piece,
     };
@@ -770,7 +852,7 @@ class LayoutRun {
     int line = -1,
     EpubPlace? start,
     (int, int) units = (0, 0),
-    List<Piece> rowPieces = const [],
+    List<Slice> cellSlices = const [],
   }) {
     var finalAppeal = appeal;
     if (_avoidNext) {
@@ -797,7 +879,7 @@ class LayoutRun {
       line: line,
       start: start,
       units: units,
-      rowPieces: rowPieces,
+      cellSlices: cellSlices,
     );
     _pending.add(slice);
     _added++;
@@ -860,23 +942,24 @@ class LayoutRun {
       bottom,
     ),
     block.start.border,
-    closed: closed,
+    bottom: closed,
   );
 
   /// The rules of a border box [rect] whose borders are [border] pixels
-  /// wide, from top to left. Without [closed], the box has no bottom
-  /// border.
+  /// wide, from top to left. Without [top] or [bottom], the box has no top
+  /// or bottom border there, as at a page break.
   static List<RuleDecoration> _rules(
     ui.Rect rect,
     List<double> border, {
-    bool closed = true,
+    bool top = true,
+    bool bottom = true,
   }) {
     return [
-      if (border[0] > 0)
+      if (top && border[0] > 0)
         RuleDecoration(
           ui.Rect.fromLTWH(rect.left, rect.top, rect.width, border[0]),
         ),
-      if (closed && border[2] > 0)
+      if (bottom && border[2] > 0)
         RuleDecoration(
           ui.Rect.fromLTWH(
             rect.left,
@@ -920,7 +1003,7 @@ class LayoutRun {
   double _maxContent(int from, double available) {
     final flow = _flow;
     if (flow[from] case final TableItem table) {
-      return gridMaxContent(_extents(table)).ceilToDouble();
+      return gridMaxContent(_extents(table), table.spacing.$1).ceilToDouble();
     }
     var widest = 0.0;
     for (var index = from; flow[index] is ParagraphItem; index++) {
@@ -943,9 +1026,7 @@ class LayoutRun {
     _margin(image.marginTop);
     _resolveMargin();
     final rect = ui.Rect.fromLTWH(left, _y, imageWidth, imageHeight);
-    if (image.path case final path?) {
-      _decorations.add(ImageDecoration(rect, path));
-    }
+    _decorations.add(ImageDecoration(rect, image.image));
     final slice = _add(
       _y,
       _y + imageHeight,
@@ -961,17 +1042,23 @@ class LayoutRun {
   // Tables.
 
   /// Lays out [table], flow item [index], in the content box of the table's
-  /// own box, and adds its rows from row [from] on as strip slices. A run
-  /// that starts at a row lays out the whole table and places it so that
-  /// row [from] sits at the current strip position.
+  /// own box, and adds its slices from slice [from] on: a slice for each
+  /// row, or for each fragment of a row taller than a page. A run that
+  /// starts at a slice lays out the whole table and places it so that slice
+  /// [from] sits at the current strip position.
   void _table(TableItem table, int index, int from) {
     final (x, width) = _containing;
-    final widths = columnWidths(_extents(table), width);
-    // Each cell's box, its content laid out at strip position 0, and the
-    // height of its box.
-    final rows = <List<(ui.Rect, TableCell, _Cell, double)>>[];
+    final (across, down) = table.spacing;
+    final widths = columnWidths(_extents(table), width, across);
+    // Each cell's box, its left edge and width, and its content laid out
+    // at strip position 0.
+    final rows = <List<(double, double, TableCell, _Cell)>>[];
     for (final row in table.rows) {
-      final boxes = cellBoxes([for (final cell in row) cell.colspan], widths);
+      final boxes = cellBoxes(
+        [for (final cell in row) cell.colspan],
+        widths,
+        across,
+      );
       rows.add([
         for (final (column, cell) in row.indexed)
           () {
@@ -980,77 +1067,100 @@ class LayoutRun {
               for (var side = 0; side < 4; side++)
                 cell.padding[side] + cell.border[side],
             ];
-            final content = _layOutCell(
-              cell.flow,
-              x + left + start,
-              math.max(0, cellWidth - start - right),
-            );
             return (
-              ui.Rect.fromLTWH(x + left, 0, cellWidth, 0),
+              x + left,
+              cellWidth,
               cell,
-              content,
-              top + content.height + bottom,
+              _layOutCell(
+                cell.flow,
+                x + left + start,
+                math.max(0, cellWidth - start - right),
+              ),
             );
           }(),
       ]);
     }
-    final heights = [
+    final fragments = [
       for (final row in rows)
-        row.fold(0.0, (tallest, cell) => math.max(tallest, cell.$4)),
+        rowFragments([
+          for (final (_, _, cell, content) in row)
+            () {
+              final top = cell.padding[0] + cell.border[0];
+              return (
+                slices: [
+                  for (final slice in content.slices)
+                    (top + slice.top, top + slice.bottom),
+                ],
+                height: top + content.height + cell.padding[2] + cell.border[2],
+                align: cell.align,
+              );
+            }(),
+        ], _section.settings.height),
     ];
+    // The top of each slice of the table from the grid's top.
     final tops = <double>[];
-    var bottom = cellSpacing;
-    for (final height in heights) {
-      tops.add(bottom);
-      bottom += height + cellSpacing;
+    var bottom = down;
+    for (final row in fragments) {
+      for (final fragment in row) {
+        tops.add(bottom);
+        bottom += fragment.height;
+      }
+      bottom += down;
     }
     _resolveMargin();
-    // Row [from] starts where the run is. From the table's start, the grid
-    // does.
+    // Slice [from] starts where the run is. From the table's start, the
+    // grid does.
     final gridTop = from == 0
         ? _y
         : _y - (from < tops.length ? tops[from] : bottom);
-    for (var row = 0; row < rows.length; row++) {
-      if (row < from) {
-        for (final (_, _, content, _) in rows[row]) {
-          content.release();
+    var number = 0;
+    for (final (row, cells) in rows.indexed) {
+      for (final (part, fragment) in fragments[row].indexed) {
+        final slice = number++;
+        if (slice < from) continue;
+        final top = gridTop + tops[slice];
+        final shown = <Slice>[];
+        for (final (column, (left, cellWidth, cell, content))
+            in cells.indexed) {
+          final (from: first, :to, :offset, top: band, bottom: end) =
+              fragment.cells[column];
+          final inset = cell.padding[0] + cell.border[0];
+          final moved = content.show(
+            first,
+            to,
+            top + offset + inset,
+            band - inset,
+            end - inset,
+          );
+          shown.addAll(moved.slices);
+          _held.addAll(moved.held);
+          // A cell's box is as tall as its row. A row split between pages
+          // has no top border after its first page and no bottom border
+          // before its last.
+          _decorations
+            ..addAll(
+              _rules(
+                ui.Rect.fromLTWH(left, top, cellWidth, fragment.height),
+                cell.border,
+                top: part == 0,
+                bottom: part == fragments[row].length - 1,
+              ),
+            )
+            ..addAll(moved.decorations);
         }
-        continue;
-      }
-      final top = gridTop + tops[row];
-      final height = heights[row];
-      final pieces = <Piece>[];
-      EpubPlace? start;
-      for (final (box, cell, content, boxHeight) in rows[row]) {
-        // A cell's box is as tall as its row, and its content sits where
-        // its vertical-align asks.
-        final moved = content.moveTo(
-          top +
-              cell.padding[0] +
-              cell.border[0] +
-              (height - boxHeight) * cell.align,
+        final added = _add(
+          top,
+          top + fragment.height,
+          Appeal.perfect,
+          PageStart(index, slice),
+          start: shown.map((line) => line.start).nonNulls.firstOrNull,
+          cellSlices: shown,
         );
-        pieces.addAll(moved.pieces);
-        _held.addAll([...moved.pieces, ...moved.markers]);
-        _decorations
-          ..addAll(
-            _rules(
-              ui.Rect.fromLTWH(box.left, top, box.width, height),
-              cell.border,
-            ),
-          )
-          ..addAll(moved.decorations);
-        start ??= moved.start;
+        if (slice == 0) _takeMarker(added);
       }
-      final slice = _add(
-        top,
-        top + height,
-        Appeal.perfect,
-        PageStart(index, row),
-        start: start,
-        rowPieces: pieces,
-      );
-      if (row == 0) _takeMarker(slice);
+      for (final (_, _, _, content) in cells) {
+        content.release();
+      }
     }
     _y = gridTop + bottom;
   }
@@ -1132,13 +1242,7 @@ class LayoutRun {
     for (final piece in run._held) {
       if (!lines.contains(piece) && !markers.contains(piece)) piece._release();
     }
-    return _Cell(
-      lines,
-      markers,
-      run._decorations,
-      run._pending.map((slice) => slice.start).nonNulls.firstOrNull,
-      run._y,
-    );
+    return _Cell(run._pending, lines, markers, run._decorations, run._y);
   }
 
   void _takeMarker(Slice slice) {
@@ -1152,7 +1256,8 @@ class LayoutRun {
     if (piece != null) {
       final lines = piece.paragraph.computeLineMetrics();
       if (slice.line < lines.length) {
-        baseline = piece.y + lines[slice.line].baseline;
+        baseline =
+            piece.y + lines[slice.line].baseline + piece.shifts[slice.line];
       }
     }
     final held = Piece(
@@ -1243,13 +1348,22 @@ class LayoutRun {
   }
 
   /// Builds the paragraph of [text], [width] pixels wide, from its code
-  /// unit [from] on. Returns the paragraph, its map, and what each of its
-  /// placeholders holds: null for the indent, an image's path, or a raised
-  /// paragraph.
-  _Built _build(StyledText text, double indent, double width, {int from = 0}) {
+  /// unit [from] on. Returns the paragraph, its map, what each of its
+  /// placeholders holds (null for the indent, an image's path, or a raised
+  /// paragraph) and its soft hyphens. [marks] replaces the soft hyphen at
+  /// a code unit of the paragraph with another code unit.
+  _Built _build(
+    StyledText text,
+    double indent,
+    double width, {
+    int from = 0,
+    Map<int, int> marks = const {},
+  }) {
     final builder = ui.ParagraphBuilder(_paragraphStyle(text));
     final map = TextMap(_section.index);
     final inlines = <Object?>[];
+    final softHyphens = <int>[];
+    final texts = <_Text>[];
     var unit = 0;
     if (indent > 0 && from == 0) {
       builder.addPlaceholder(
@@ -1280,9 +1394,27 @@ class LayoutRun {
             if (skip == written.length) continue;
             trim = false;
           }
+          final added = written.substring(skip);
+          final first = map.length;
+          var marked = false;
+          for (
+            var at = added.indexOf(_softHyphen);
+            at >= 0;
+            at = added.indexOf(_softHyphen, at + 1)
+          ) {
+            softHyphens.add(first + at);
+            marked |= marks.containsKey(first + at);
+          }
+          final shown = marked
+              ? String.fromCharCodes([
+                  for (var at = 0; at < added.length; at++)
+                    marks[first + at] ?? added.codeUnitAt(at),
+                ])
+              : added;
+          texts.add((start: first, text: shown, style: style));
           builder
             ..pushStyle(_textStyles[style])
-            ..addText(written.substring(skip))
+            ..addText(shown)
             ..pop();
           map.addText(node, Int32List.sublistView(run.offsets, skip));
         case BreakRun(:final node):
@@ -1292,7 +1424,7 @@ class LayoutRun {
           trim = false;
           builder.addText('\n');
           map.addPlaceholder(node);
-        case ImageRun(:final node, :final path, :final sizing):
+        case ImageRun(:final node, :final image, :final sizing):
           final start = unit;
           unit += 1;
           if (start < from) continue;
@@ -1306,7 +1438,7 @@ class LayoutRun {
             baselineOffset: imageHeight,
           );
           map.addPlaceholder(node);
-          inlines.add(path);
+          inlines.add(image);
         case RaisedRun(:final node, text: final inner, :final shift):
           final start = unit;
           unit += 1;
@@ -1327,7 +1459,168 @@ class LayoutRun {
           inlines.add(raised);
       }
     }
-    return _Built(builder.build(), map, inlines);
+    return _Built(builder.build(), map, inlines, softHyphens, texts);
+  }
+
+  static final _softHyphen = String.fromCharCode(softHyphen);
+
+  /// The hyphen that ends a line inside a word, which Chromium draws when
+  /// the font has it.
+  static const _hyphen = 0x2010;
+
+  /// A word joiner: no line break, and nothing drawn.
+  static const _joiner = 0x2060;
+
+  /// The paragraph of [text] built from its code unit [from] on and laid
+  /// out [width] pixels wide, with a hyphen at the end of each line that
+  /// ends inside a word.
+  ///
+  /// Flutter breaks a line at a soft hyphen, but draws no hyphen there. So
+  /// each soft hyphen that ends a line becomes a hyphen, and the paragraph
+  /// is laid out again. The line then holds its hyphen, as in Chromium: a
+  /// justified line ends at it. As in Chromium, the hyphen must fit in the
+  /// line. A soft hyphen whose hyphen would not fit becomes a word joiner,
+  /// so its line breaks earlier, and the lines after it are hyphenated
+  /// again.
+  _Built _layOut(StyledText text, double indent, double width, {int from = 0}) {
+    final marks = <int, int>{};
+    final justified = text.align == Align.justify;
+    // The code units from which the hyphens are checked and the line ends
+    // are marked, or null when no line end is left to mark.
+    var check = 0;
+    int? scan = 0;
+    while (true) {
+      final built = _build(text, indent, width, from: from, marks: marks);
+      built.paragraph.layout(ui.ParagraphConstraints(width: width));
+      if (built.softHyphens.isEmpty) return built;
+      final next = _markHyphens(
+        built,
+        marks,
+        width,
+        check: check,
+        scan: scan,
+        justified: justified,
+      );
+      if (next == null) return built;
+      (check, scan) = next;
+      built.dispose();
+    }
+  }
+
+  /// Marks the soft hyphens of [built], a paragraph laid out [width] pixels
+  /// wide, in [marks]. Returns null when no mark changed, so the paragraph
+  /// is final; else from which code units the next layout's hyphens are
+  /// checked and its line ends are marked (null when none is left).
+  ///
+  /// A hyphen marked from code unit [check] on must end its line. If one
+  /// does not, the width of its justified line was misjudged: it becomes a
+  /// word joiner, and the hyphens after it are unmarked.
+  ///
+  /// Each soft hyphen that ends a line from the line that holds code unit
+  /// [scan] on becomes a hyphen when the hyphen fits in the line, and else
+  /// a word joiner. The line of a word joiner and the lines after it break
+  /// again, so marking stops there.
+  ///
+  /// Each call adds a word joiner or marks every line end, and word joiners
+  /// stay. So a paragraph with n soft hyphens is laid out at most 2n + 2
+  /// times, and once more than it has word joiners when no width is
+  /// misjudged.
+  (int, int?)? _markHyphens(
+    _Built built,
+    Map<int, int> marks,
+    double width, {
+    required int check,
+    required int? scan,
+    required bool justified,
+  }) {
+    final paragraph = built.paragraph;
+    for (final unit in built.softHyphens) {
+      if (unit < check || marks[unit] != _hyphen) continue;
+      final line = paragraph.getLineBoundary(ui.TextPosition(offset: unit));
+      if (line.end != unit + 1) {
+        marks[unit] = _joiner;
+        marks.removeWhere((other, mark) => other > unit && mark == _hyphen);
+        // The line before it broke early, and breaks again.
+        final before = line.start > 0
+            ? paragraph
+                  .getLineBoundary(ui.TextPosition(offset: line.start - 1))
+                  .start
+            : 0;
+        return (unit, before);
+      }
+    }
+    if (scan == null) return null;
+    var changed = false;
+    final length = built.map.length;
+    var offset = paragraph
+        .getLineBoundary(ui.TextPosition(offset: math.min(scan, length - 1)))
+        .start;
+    while (offset < length) {
+      final line = paragraph.getLineBoundary(ui.TextPosition(offset: offset));
+      final unit = line.end - 1;
+      offset = math.max(line.end, offset + 1);
+      if (unit + 1 >= length ||
+          marks.containsKey(unit) ||
+          built.unitAt(unit) != softHyphen) {
+        continue;
+      }
+      final metrics = paragraph.getLineMetricsAt(
+        paragraph.getLineNumberAt(unit)!,
+      )!;
+      final natural = justified
+          ? _naturalWidth(built, metrics, line.start, unit)
+          : metrics.width;
+      final hyphen = _advances.hyphen(built.styleAt(unit), _textStyles);
+      if (natural + hyphen > width + _fitTolerance) {
+        marks[unit] = _joiner;
+        // The line breaks earlier, maybe at another soft hyphen.
+        return (scan, line.start);
+      }
+      marks[unit] = _hyphen;
+      changed = true;
+    }
+    return changed ? (scan, null) : null;
+  }
+
+  /// How far past the line width a hyphen may reach and still fit: float
+  /// noise. A hyphen judged to fit that does not makes its line break
+  /// earlier, and [_markHyphens] then refuses it.
+  static const _fitTolerance = 0.01;
+
+  /// The width of [line], a justified line of [built] from code unit
+  /// [start] to its soft hyphen [end], before Flutter justified it.
+  ///
+  /// Flutter widens each run of spaces between words by the same amount.
+  /// One gap, measured against the space's own width, gives that amount.
+  double _naturalWidth(_Built built, ui.LineMetrics line, int start, int end) {
+    // The runs of spaces between words: their count, and the first one.
+    var runs = 0;
+    int? first;
+    int? last;
+    var inRun = false;
+    for (var unit = start; unit < end; unit++) {
+      if (built.unitAt(unit) == 0x20) {
+        if (!inRun && unit > start) {
+          runs++;
+          first ??= unit;
+        }
+        inRun = true;
+        if (runs == 1 && first != null) last = unit;
+      } else {
+        inRun = false;
+      }
+    }
+    if (runs == 0 || first == null) return line.width;
+    final paragraph = built.paragraph;
+    final before = paragraph.getBoxesForRange(first - 1, first);
+    final after = paragraph.getBoxesForRange(last! + 1, last + 2);
+    if (before.isEmpty || after.isEmpty) return line.width;
+    final gap = after.first.left - before.last.right;
+    var natural = 0.0;
+    for (var unit = first; unit <= last; unit++) {
+      natural += _advances.space(built.styleAt(unit), _textStyles);
+    }
+    return line.width - runs * (gap - natural);
   }
 
   /// Lays out paragraph [item], flow item [index], at [x] and [width]
@@ -1344,23 +1637,20 @@ class LayoutRun {
     final indent = item.indent.resolve(width);
     _resolveMargin();
     if (indent >= 0) {
-      final built = _build(item.text, indent, width);
-      built.paragraph.layout(ui.ParagraphConstraints(width: width));
+      final built = _layOut(item.text, indent, width);
       _place(built, x, item, index, from: from);
       return;
     }
     // A negative indent hangs the first line out to the left: lay it out
     // wider, then lay out the rest at the block's width.
-    final first = _build(item.text, 0, width - indent);
-    first.paragraph.layout(ui.ParagraphConstraints(width: width - indent));
+    final first = _layOut(item.text, 0, width - indent);
     final count = first.paragraph.computeLineMetrics().length;
     if (count <= 1) {
       _place(first, x + indent, item, index, from: from);
       return;
     }
     final end = _lineStarts(first.paragraph, 2)[1];
-    final rest = _build(item.text, 0, width, from: end);
-    rest.paragraph.layout(ui.ParagraphConstraints(width: width));
+    final rest = _layOut(item.text, 0, width, from: end);
     final total = 1 + rest.paragraph.computeLineMetrics().length;
     if (from == 0) {
       _place(first, x + indent, item, index, lines: 1, total: total);
@@ -1397,25 +1687,35 @@ class LayoutRun {
     final metrics = paragraph.computeLineMetrics();
     final count = lines ?? metrics.length;
     final all = total ?? metrics.length;
-    double bottomOf(int line) => line == metrics.length - 1
-        ? paragraph.height
-        : metrics[line].baseline + metrics[line].descent;
-    var top = from == 0 ? 0.0 : bottomOf(from - 1);
-    final piece = Piece(paragraph, x, _y - top, built.map);
+    // Chromium rounds the font's metrics for `line-height: normal`, so only
+    // a CSS line height is fractional there.
+    final exact = _section.styles[item.text.style].lineHeight != null;
+    final paragraphs = _Paragraphs(paragraph, exact: exact);
+    final tops = paragraphs.tops;
+    var top = tops[from];
+    final piece = Piece._of(paragraphs, x, _y - top, built.map);
     _held.add(piece);
     final boxes = paragraph.getBoxesForPlaceholders();
     for (var slot = 0; slot < built.inlines.length; slot++) {
       final held = built.inlines[slot];
       if (held == null) continue;
       if (slot < boxes.length) {
-        piece.inlines.add((boxes[slot].toRect(), held));
+        // A placeholder draws with the line that holds it.
+        final rect = boxes[slot].toRect();
+        var line = 0;
+        while (line + 1 < metrics.length &&
+            metrics[line].baseline + metrics[line].descent <= rect.center.dy) {
+          line++;
+        }
+        final shift = line < metrics.length ? piece.shifts[line] : 0.0;
+        piece.inlines.add((rect.shift(ui.Offset(0, shift)), held));
       } else if (held is ui.Paragraph) {
         held.dispose();
       }
     }
     final starts = _lineStarts(paragraph, math.min(count + 1, metrics.length));
     for (var line = from; line < count; line++) {
-      final bottom = bottomOf(line);
+      final bottom = tops[line + 1];
       final above = before + line;
       // Chromium keeps the orphans rule first. It keeps the widows rule
       // only when the paragraph is long enough to keep both.
@@ -1443,7 +1743,7 @@ class LayoutRun {
       top = bottom;
     }
     if (lines != null) piece.shown = top;
-    _y = piece.y + (lines == null ? paragraph.height : top);
+    _y = piece.y + (lines == null ? tops.last : top);
   }
 
   /// The first code unit of each of a paragraph's [count] lines.
@@ -1464,9 +1764,9 @@ class LayoutRun {
   }
 }
 
-/// The page start of the line that holds [place], a place in [section]: the
-/// last line that starts at or before it. A place in white space counts as
-/// the next visible character of its node. It lays out one paragraph.
+/// The page start of the line that holds [place], a place in [section]
+/// (see [_holder]). It lays out the paragraph of the place, and the next
+/// one when the place is in white space after it.
 PageStart lineStart(PreparedSection section, EpubPlace place) {
   if (place.section != section.index) {
     throw ArgumentError.value(place, 'place', 'is not in this section');
@@ -1482,25 +1782,103 @@ PageStart lineStart(PreparedSection section, EpubPlace place) {
   if (item < 0) return const PageStart(0, 0);
   final run = LayoutRun(section, from: PageStart(item, 0));
   try {
-    while (run._item <= item) {
-      run._layOutItem();
+    ({Slice? holder, bool past}) holderUpTo(int last) {
+      while (run._item <= last) {
+        run._layOutItem();
+      }
+      return _holder(dom, place, [
+        for (final slice in run._pending)
+          for (final line in _lines(slice)) (line, slice),
+      ]);
     }
-    Slice? found;
-    for (final slice in run._pending) {
-      if (slice.at.item != item) continue;
-      final start = slice.start;
-      if (found == null ||
-          (start != null && _compare(_order(dom, start), key) <= 0)) {
-        found = slice;
+
+    var (:holder, :past) = holderUpTo(item);
+    if (past) {
+      // A place in white space after the item's lines is on the first line
+      // of the next item that shows something.
+      for (var next = item + 1; next < flow.length; next++) {
+        if (_firstPlace(section.index, flow[next]) == null) continue;
+        (:holder, :past) = holderUpTo(next);
+        break;
       }
     }
     // The item's first line starts where the run starts: at the section
     // start when nothing comes before it.
-    if (found == null || found.at.line == 0) return run._from;
-    return found.at;
+    if (holder == null || holder.at == PageStart(item, 0)) return run._from;
+    return holder.at;
   } finally {
     run.dispose();
   }
+}
+
+/// The owner of the line of [lines] that holds [place], and whether the
+/// place lies after everything that the lines show. [lines] pairs each
+/// line with its owner, in any order.
+///
+/// The line that holds a place is the last line that starts at or before
+/// it in document order. But a place after the last thing that this line
+/// shows, such as a place in white space between two paragraphs, belongs
+/// to the next line: the line of its next visible character or image.
+/// Null when no line starts at or after the place either.
+({T? holder, bool past}) _holder<T>(
+  DomSection dom,
+  EpubPlace place,
+  Iterable<(Slice, T)> lines,
+) {
+  final key = _order(dom, place);
+  (Slice, T)? before;
+  (int, int)? beforeOrder;
+  T? after;
+  (int, int)? afterOrder;
+  for (final entry in lines) {
+    final start = entry.$1.start;
+    if (start == null) continue;
+    final order = _order(dom, start);
+    if (_compare(order, key) <= 0) {
+      if (beforeOrder == null || _compare(order, beforeOrder) >= 0) {
+        before = entry;
+        beforeOrder = order;
+      }
+    } else if (afterOrder == null || _compare(order, afterOrder) < 0) {
+      after = entry.$2;
+      afterOrder = order;
+    }
+  }
+  if (before == null) return (holder: after, past: false);
+  final (line, owner) = before;
+  final last = _lastShown(dom, line);
+  if (last == null || _compare(key, last) <= 0) {
+    return (holder: owner, past: false);
+  }
+  return after == null
+      ? (holder: owner, past: true)
+      : (holder: after, past: false);
+}
+
+/// The order of the last thing that [line] shows: its last visible
+/// character or placeholder, or its start when it shows only white space.
+/// Null when it ends with raised text, whose places the line does not map:
+/// it then shows everything up to the next line.
+(int, int)? _lastShown(DomSection dom, Slice line) {
+  final start = _order(dom, line.start!);
+  final piece = line.piece;
+  if (piece == null) return start;
+  final (first, end) = line.units;
+  for (var unit = end - 1; unit >= first; unit--) {
+    final text = piece.map.textPlaceAt(unit);
+    if (text == null) {
+      // A placeholder: an image or a line break at its element, raised
+      // text at its first text node, or an indent at no node.
+      final node = piece.map.nodes[piece.map._segment(unit)];
+      if (node < 0) continue;
+      return dom.nodeAt(node) is DomText ? null : (node, 0);
+    }
+    final data = dom.textAt(text)!.text;
+    if (text.offset < data.length && !isSpace(data.codeUnitAt(text.offset))) {
+      return (text.node, text.offset);
+    }
+  }
+  return start;
 }
 
 /// The first place that flow [item] of section [section] shows, or null
@@ -1549,6 +1927,11 @@ EpubPlace? _firstPlace(int section, FlowItem item) {
   return (place.node, offset);
 }
 
+/// The lines of [slice]: the slice, or the slices of the cells of a table
+/// row.
+Iterable<Slice> _lines(Slice slice) =>
+    slice.cellSlices.isEmpty ? [slice] : slice.cellSlices;
+
 int _compare((int, int) a, (int, int) b) =>
     a.$1 != b.$1 ? a.$1.compareTo(b.$1) : a.$2.compareTo(b.$2);
 
@@ -1568,19 +1951,15 @@ class ChapterLayout {
   List<Decoration> get decorations =>
       {for (final page in pages) ...page.decorations}.toList();
 
-  /// The index of the page that holds [place]: the last page that starts
-  /// at or before it in document order.
-  int pageAt(EpubPlace place) {
-    final key = _order(section.dom, place);
-    var found = 0;
-    for (var index = 0; index < pages.length; index++) {
-      final start = pages[index].startPlace;
-      if (start != null && _compare(_order(section.dom, start), key) <= 0) {
-        found = index;
-      }
-    }
-    return found;
-  }
+  /// The index of the page that holds [place]: the page of the line that
+  /// holds it (see [_holder]).
+  int pageAt(EpubPlace place) =>
+      _holder(section.dom, place, [
+        for (final (index, page) in pages.indexed)
+          for (final slice in page.slices)
+            for (final line in _lines(slice)) (line, index),
+      ]).holder ??
+      0;
 
   /// The index of the page that holds [visible], a visible character
   /// index.
@@ -1664,6 +2043,11 @@ class TextMap {
     return null;
   }
 
+  /// The [DomNode.order] of the node that code unit [index] comes from:
+  /// its text node, or the node that a placeholder starts at. -1 for a
+  /// placeholder that no node owns, such as an indent.
+  int nodeAt(int index) => nodes[_segment(index)];
+
   /// The text place of code unit [index], or null when it is a
   /// placeholder.
   EpubPlace? textPlaceAt(int index) {
@@ -1720,43 +2104,75 @@ class _OpenBlock {
   double get contentLeft => left + start.border[3] + start.padding[3];
 }
 
-/// The content of a table cell laid out at strip position 0: its
-/// paragraphs, its list markers and other decorations, its first place and
-/// its height. It holds its pieces until [moveTo] or [release].
+/// The content of a table cell laid out at strip position 0: its slices,
+/// the paragraphs that they show, its list markers and other decorations,
+/// and its height. It holds its paragraphs and markers until [release].
 class _Cell {
-  _Cell(this.pieces, this.markers, this.decorations, this.start, this.height);
+  _Cell(this.slices, this.pieces, this.markers, this.decorations, this.height);
+
+  final List<Slice> slices;
   final List<Piece> pieces;
   final List<Piece> markers;
   final List<Decoration> decorations;
-  final EpubPlace? start;
   final double height;
 
-  /// The content with its top at strip position [top]. Its pieces move to
-  /// the result, which then holds them.
-  _Cell moveTo(double top) {
-    final moved = <Piece, Piece>{
-      for (final piece in [...pieces, ...markers])
-        piece: Piece(piece.paragraph, piece.x, piece.y + top, piece.map)
-          ..inlines.addAll(piece.inlines)
-          ..shown = piece.shown,
-    };
-    final offset = ui.Offset(0, top);
-    return _Cell(
-      [for (final piece in pieces) moved[piece]!],
-      [for (final piece in markers) moved[piece]!],
-      [
+  /// What a row, or a fragment of a row, shows of the content: its slices
+  /// [from, to) and what it draws in the band [top, bottom) of the content,
+  /// moved down by [dy]. Lines below the band are hidden. The moved pieces
+  /// hold their paragraphs; [held] lists them.
+  ({List<Slice> slices, List<Decoration> decorations, List<Piece> held}) show(
+    int from,
+    int to,
+    double dy,
+    double top,
+    double bottom,
+  ) {
+    final moved = <Piece, Piece>{};
+    Piece move(Piece piece) => moved[piece] ??= Piece._moved(
+      piece,
+      dy,
+      math.min(piece.shown, bottom - piece.y),
+    );
+    final offset = ui.Offset(0, dy);
+    return (
+      slices: [
+        for (final slice in slices.sublist(from, to))
+          Slice(
+            slice.top + dy,
+            slice.bottom + dy,
+            slice.appeal,
+            slice.at,
+            piece: slice.piece == null ? null : move(slice.piece!),
+            line: slice.line,
+            start: slice.start,
+            units: slice.units,
+          ),
+      ],
+      decorations: [
         for (final decoration in decorations)
           switch (decoration) {
-            RuleDecoration(:final rect) => RuleDecoration(rect.shift(offset)),
-            ImageDecoration(:final rect, :final path) => ImageDecoration(
-              rect.shift(offset),
-              path,
-            ),
-            MarkerDecoration(:final piece) => MarkerDecoration(moved[piece]!),
+            RuleDecoration(:final rect)
+                when math.min(rect.bottom, bottom) > math.max(rect.top, top) =>
+              RuleDecoration(
+                ui.Rect.fromLTRB(
+                  rect.left,
+                  math.max(rect.top, top),
+                  rect.right,
+                  math.min(rect.bottom, bottom),
+                ).shift(offset),
+              ),
+            ImageDecoration(:final rect, :final image)
+                when rect.top >= top && rect.top < bottom =>
+              ImageDecoration(rect.shift(offset), image),
+            MarkerDecoration(:final piece)
+                when piece.y >= top && piece.y < bottom =>
+              MarkerDecoration(
+                moved[piece] ??= Piece._moved(piece, dy, piece.shown),
+              ),
+            _ => null,
           },
-      ],
-      start,
-      height,
+      ].nonNulls.toList(),
+      held: moved.values.toList(),
     );
   }
 
@@ -1768,11 +2184,78 @@ class _Cell {
   }
 }
 
+/// Text that a paragraph shows from code unit [start] on, in run style
+/// [style].
+typedef _Text = ({int start, String text, int style});
+
+/// The widths that a run style draws a hyphen and a space with, measured
+/// once per layout run and the runs of its table cells.
+class _Advances {
+  final _hyphens = <int, double>{};
+  final _spaces = <int, double>{};
+
+  /// The width of a hyphen in run style [style] of [styles].
+  double hyphen(int style, List<ui.TextStyle> styles) =>
+      _hyphens[style] ??= _measure(styles[style], '\u2010', 0);
+
+  /// The width of a space between two words in run style [style].
+  double space(int style, List<ui.TextStyle> styles) =>
+      _spaces[style] ??= _measure(styles[style], 'x x', 1);
+
+  /// The width that code unit [unit] of [text] takes in [style].
+  static double _measure(ui.TextStyle style, String text, int unit) {
+    final paragraph =
+        (ui.ParagraphBuilder(ui.ParagraphStyle())
+              ..pushStyle(style)
+              ..addText(text))
+            .build()
+          ..layout(const ui.ParagraphConstraints(width: double.infinity));
+    final boxes = paragraph.getBoxesForRange(unit, unit + 1);
+    paragraph.dispose();
+    return boxes.fold(0.0, (width, box) => width + box.right - box.left);
+  }
+}
+
 class _Built {
-  _Built(this.paragraph, this.map, this.inlines);
+  _Built(this.paragraph, this.map, this.inlines, this.softHyphens, this.texts);
   final ui.Paragraph paragraph;
   final TextMap map;
   final List<Object?> inlines;
+
+  /// The code units of [paragraph] that hold a soft hyphen of the text, in
+  /// increasing order, whatever marks replaced them with.
+  final List<int> softHyphens;
+
+  /// The text of [paragraph], in order. Placeholders are not in it.
+  final List<_Text> texts;
+
+  /// The text piece that holds code unit [unit], or null for a
+  /// placeholder.
+  _Text? _textAt(int unit) {
+    var low = 0;
+    var high = texts.length - 1;
+    while (low <= high) {
+      final middle = (low + high) >> 1;
+      final text = texts[middle];
+      if (unit < text.start) {
+        high = middle - 1;
+      } else if (unit >= text.start + text.text.length) {
+        low = middle + 1;
+      } else {
+        return text;
+      }
+    }
+    return null;
+  }
+
+  /// Code unit [unit] of the paragraph, or -1 for a placeholder.
+  int unitAt(int unit) {
+    final text = _textAt(unit);
+    return text == null ? -1 : text.text.codeUnitAt(unit - text.start);
+  }
+
+  /// The run style of code unit [unit], which is text.
+  int styleAt(int unit) => _textAt(unit)!.style;
 
   /// Disposes the paragraph and the raised paragraphs in its placeholders.
   void dispose() {

@@ -246,10 +246,9 @@ void main() {
     await show(tester, reader);
     expect(bar(tester).value, closeTo(inTwo(0), 1e-9));
     expect(
-      find.bySemanticsLabel(
-        'Current chapter unavailable · ${percent(inTwo(0))}',
-      ),
+      find.bySemanticsLabel('Two · ${percent(inTwo(0))}'),
       findsOneWidget,
+      reason: 'The book map names the chapter of a place without a title.',
     );
   }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
 

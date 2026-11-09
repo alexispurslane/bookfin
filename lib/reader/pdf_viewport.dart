@@ -291,12 +291,6 @@ class _PdfViewportState extends State<PdfViewport>
   }
 
   @override
-  Future<void> configure({
-    required double fontSize,
-    required bool night,
-  }) async {}
-
-  @override
   Future<void> cancelSearch(int request) async {
     if (_search == request) _search++;
   }

@@ -1,6 +1,6 @@
 ---
 id: tf-z3wm
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-11-08T16:40:03Z
@@ -19,3 +19,7 @@ Found in boo-duaq (2026-11-08). The EPUB WebView sets useShouldInterceptRequest,
 **2026-11-08T19:23:53Z**
 
 Obsolete (epic boo-b2ey, docs/plans/native-epub-reader.md). The native reader has no WebView, so no resource request reaches the main thread. tc-rap6 deletes the WebView reader. Close when tc-rap6 merges.
+
+**2026-11-09T01:00:50Z**
+
+Superseded (orchestrator, 2026-11-08): since tc-1yif, every platform reads EPUB and MOBI in the Flutter-native renderer (epic boo-b2ey), so the reader no longer uses a WebView. tc-rap6 deletes the WebView reader.

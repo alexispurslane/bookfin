@@ -41,7 +41,7 @@ A contents entry opens, as reader.js `resolveDestination` finds it, the first te
 - In Keats, the entries "Sleep and Poetry" and "Mrs. Cameron and Ben Nevis" open on a page that shows only the last line of the poem before. The person does not see the poem that they chose.
 - In A Christmas Carol, the entry "IN PROSE" opens on a page that starts one line before the heading. The page shows the heading.
 
-No saved place moves: epub.js page starts and search hits never pointed into such a node. Ticket t9-ousp records the fix. Until it merges, the on-demand run of `saved_places_test.dart` fails on the se-poetry contents test.
+No saved place moves: epub.js page starts and search hits never pointed into such a node. Ticket t9-ousp fixed it: a place after the last thing that its line shows belongs to the next line. All 729 contents entries now open on a page whose first line holds them, and `saved_places_test.dart` asks this of them.
 
 ## The fixtures
 
@@ -65,7 +65,7 @@ The fixture books are zipped again with a fixed file time (`showcaseBooks` in `t
 | --- | --- | --- |
 | `test/reader/epub/saved_places_test.dart`, fixture books | Always | The fixture belongs to the same book. Each saved page start resolves (`placeOf`), its quote matches, and the anchored page (`PageSource.pageAt(anchored: true)`) has a first line that holds it. Each native page that starts on an epub.js page start saves the same JSON (`pageLocation`). Each contents entry (`destination`) and each search hit (`placeOf`) saves the same JSON (`hitLocation`). Each opens on a page that shows it. |
 | `saved_places_test.dart`, downloaded books | On demand (`BOOKFIN_EPUB_TRIAL=1`), for each file with the recorded SHA-256 | The same checks |
-| `test/reader/epub/fidelity_test.dart` | On demand (`BOOKFIN_EPUB_TRIAL=1`) | Native line starts and page starts against `chromium-layout.json`, by group, at both sizes. It asks body text at 20 pixels for 99.9 % of line starts and 98 % of page starts. It writes `.cache/epub-trial/results/fidelity-native.json`. |
+| `test/reader/epub/fidelity_test.dart` | On demand (`BOOKFIN_EPUB_TRIAL=1`) | Native line starts and page starts against `chromium-layout.json`, by group, at both sizes. It asks body text at 20 pixels for 99.9 % of line starts and 98 % of page starts. It turns automatic hyphenation off in each book style sheet, as compare.cjs turned it off in Chromium. It writes `.cache/epub-trial/results/fidelity-native.json`. |
 
 The design asks contents entries and search hits to open "on the page that shows their target". The ticket asked that each recorded place open on a page whose first line holds it. The tests follow the design for contents entries and search hits, and the ticket for saved page starts. All search hits also pass the stricter check.
 

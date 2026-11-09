@@ -211,7 +211,8 @@ Phone numbers are not measured. The phone is probably 1.5 to 2.5 times slower th
 
 - A step lays out paragraphs until its time budget is spent. The budget starts at 4 ms. The Pixel 8 can draw at 120 Hz, so a frame has 8.3 ms. E20 tunes the budget on the phone.
 - A paragraph is the unit of work. A step stops after the paragraph that crosses the budget. A paragraph whose shaping alone takes longer than the budget runs in a step of its own. The corpus test (E19) lists such paragraphs.
-- The page source schedules steps with `SchedulerBinding.instance.scheduleTask`. Work for the shown page and its two neighbors uses `Priority.animation`, so it runs while the scrub deck animates. Other work uses `Priority.idle`. Flutter's default strategy holds idle tasks back while an animation runs.
+- The page source schedules steps with `SchedulerBinding.instance.scheduleTask`. Work for the shown page and its two neighbors is urgent, so it runs while the scrub deck animates. Other work is idle work, and it waits while an animation runs.
+- Both kinds of step use `Priority.animation`. An idle step that runs while transient frame callbacks are registered does no layout. It waits for the end of the next frame in a post-frame callback, and then goes back into the task queue. So it wakes the event loop at most once a frame. With `Priority.idle`, Flutter's default strategy keeps the task in the queue and asks again at once with a zero timer, a busy loop between frames for as long as the animation runs (t7-hufl).
 - The page source takes the scheduler as a constructor parameter, so tests run steps one at a time.
 
 ### Order of work, from the shown place outward
@@ -387,6 +388,17 @@ The trial showed that every epub.js place lands on the page that shows it (661 o
 - A line that ends at a soft hyphen gets a drawn hyphen. E16 first finds out whether Flutter's paragraph already draws one.
 - Words of fewer than 5 letters do not break. A break keeps at least 2 letters before it and 3 after it, the TeX defaults for English.
 
+What E16 found and decided (tc-z7au):
+
+- Flutter's paragraph breaks a line at a soft hyphen but draws no hyphen. So layout writes a hyphen (U+2010, as Chromium draws when the font has it) in place of each soft hyphen that ends a line, and lays the paragraph out again. The line then holds its hyphen: the hyphen must fit, and a justified line ends at it, as in Chromium. A drawn decoration after the line would hang past the right edge of justified text.
+- Before it lays out again, layout checks that each hyphen fits: the line's width before justification plus the hyphen's width must not pass the line width. A justified line's width before justification follows from one gap between words, because Flutter widens each gap by the same amount. A soft hyphen whose hyphen does not fit becomes a word joiner (U+2060), and its line breaks earlier. A paragraph with hyphenated lines lays out at least twice, and once more for each word joiner.
+- Cost on the host (2026-11-08, under load): with hyphenation, layout of whole Standard Ebooks books (Frankenstein, Moby-Dick, Pride and Prejudice) takes 2.4 to 2.6 times as long, and prepare about twice as long. Frankenstein lays out in 622 ms instead of 242 ms, about 1 ms per page.
+- An inserted soft hyphen, hyphen or word joiner maps to the letter before it in the text map. So a line that ends with one ends at that letter. Places, quotes, search and CFIs read the DOM, which never holds them.
+- `xml:lang` wins over `lang`, as in HTML and in the `:lang()` selector. An empty value names an unknown language.
+- As in Chromium, a word runs between spaces, hyphens and dashes, without the punctuation around it. Only words of the letters a to z break, so a word with the book's own soft hyphen breaks only there. A capitalized English word does not break. `-webkit-hyphens` is another name of `hyphens`, and `hyphens: none` also removes the book's own soft hyphens.
+- `SectionSource.language` carries `dc:language`. Admission reads the package's first `dc:language` that is not blank into `Publication.language`, beside `bookStyles` and outside the identity, and the page source passes it to prepare (t0-2yee).
+- The fidelity fixtures were recorded with hyphenation turned off (compare.cjs). So `fidelity_test.dart` turns it off in the book's style sheets too.
+
 ### Fractional line positions (E15)
 
 Flutter rounds each line's height to a whole pixel. Chromium does not. Layout records each line's exact top: the sum of the unrounded CSS line heights before it. Paint draws each line at its exact top, clipped to that line. Page cuts use the exact positions. Pages then match Chromium at every text size, not only at sizes whose line height is a whole pixel.
@@ -395,7 +407,8 @@ Flutter rounds each line's height to a whole pixel. Chromium does not. Layout re
 
 - A table with rows lays out as a grid. Column widths come from each cell's minimum and maximum content widths (Flutter's `minIntrinsicWidth` and `maxIntrinsicWidth`), in a simple form of CSS automatic table layout.
 - `colspan` works. `rowspan` counts as 1. A caption is a block above the table. Cell padding and borders follow the computed style. A table inside a cell lays out as blocks.
-- A row is one strip slice, so a page breaks between rows. A row taller than a page gets a page of its own and is cut at the page edge.
+- `border-spacing` spaces the columns and rows, 2 pixels unless the book sets it (te-orei). With `border-collapse: collapse`, the table has no spacing and no padding. Two cells that touch share one border, the widest of the cell, row and table borders that meet there, as CSS 2.1 collapses borders. Each cell and the table draw their half of each border. Row group and column borders and `hidden` borders do not take part (t6-hwgc).
+- A row is one strip slice, so a page breaks between rows. A row taller than a page splits into fragments between the lines of its cells (te-4cez), so no text is lost. Each fragment but the last fills one page, and each cell goes on from its first line that did not fit. A split cell starts at the top of the row, because no page shows the whole row that vertical-align centers in. A fragment is a strip slice, and a page can start at it.
 - Every cell's text has places, so CFIs, quotes and search work in tables.
 - Flex rows, grids, floats, and absolute or fixed boxes flow as blocks. A box moved off the page by a negative offset stays out, as in the trial.
 
@@ -404,6 +417,12 @@ Flutter rounds each line's height to a whole pixel. Chromium does not. Layout re
 - Admission keeps PNG and JPEG images. It replaces an SVG wrapper of a JPEG with the JPEG. It replaces inline SVG and other images with a span "[Unsupported image: alt]". The native renderer draws that span as text.
 - The page source decodes each image at its drawn size. A page draws an outline until its image arrives, then draws again.
 - E17 adds `filter: invert()` on images. Standard Ebooks sets it on black line art in its dark color scheme, so line art stays visible in the night theme. An image that fails to decode draws its alt text.
+
+What E17 decided (tc-cl77):
+
+- The computed style keeps one value of `filter`: how far it inverts, from 0 to 1. Each `invert()` composes with the ones before it (by a, then by b, inverts by a + b − 2ab). The other filter functions are ignored. `filter` is not inherited, so only the image's own filter counts.
+- Image items and inline image runs carry a `DrawnImage`: the path, the invert amount and the alt text. Paint draws an inverted image through a color matrix.
+- A page's images have three states: decoded, not decoded yet (an outline), and unable to decode (the alt text in the reader font, clipped to the image's box, or an outline without alt text). Admission already decodes every image that it keeps, so the third state is rare. A palette PNG without its palette is one example.
 
 ### Footnote links
 

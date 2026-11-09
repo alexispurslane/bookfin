@@ -3,119 +3,20 @@ import 'dart:async';
 import 'package:bookfin/appearance/appearance.dart';
 import 'package:bookfin/appearance/preferences.dart';
 import 'package:bookfin/foundation/theme.dart';
+import 'package:bookfin/reader/document.dart';
+import 'package:bookfin/reader/epub/dom.dart' show EpubPlace;
+import 'package:bookfin/reader/epub/pager.dart';
 import 'package:bookfin/reader/screen.dart';
 import 'package:bookfin/reader/session.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_epub_viewer/publication.dart';
-import 'package:flutter_epub_viewer/resources.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../playback/playback_test.dart' show account, LocalFiles, MemoryResume;
 import '../appearance/preferences_test.dart' show MemoryAppearanceStore;
-import 'publication_test.dart' show epub;
-import 'session_test.dart' show source, edition, book, visible;
+import 'epub/helpers.dart' show loadReaderFont;
+import 'native_reader.dart';
+import 'session_test.dart' show source, edition, book;
 import 'reader_settings.dart';
-
-class BridgePlatform extends InAppWebViewPlatform {
-  Completer<void>? openGate;
-  final controllers = <RecordingBridge>[];
-  @override
-  PlatformInAppWebViewWidget createPlatformInAppWebViewWidget(
-    PlatformInAppWebViewWidgetCreationParams params,
-  ) {
-    return BridgeView(params, this);
-  }
-}
-
-class BridgeView extends PlatformInAppWebViewWidget {
-  BridgeView(super.params, this.owner) : super.implementation();
-  final BridgePlatform owner;
-  @override
-  T controllerFromPlatform<T>(PlatformInAppWebViewController controller) =>
-      params.controllerFromPlatform!(controller) as T;
-  @override
-  Widget build(BuildContext context) =>
-      BridgeSurface(params: params, owner: owner);
-  @override
-  void dispose() {}
-}
-
-class BridgeSurface extends StatefulWidget {
-  const BridgeSurface({super.key, required this.params, required this.owner});
-  final PlatformInAppWebViewWidgetCreationParams params;
-  final BridgePlatform owner;
-  @override
-  State<BridgeSurface> createState() => _BridgeSurfaceState();
-}
-
-class _BridgeSurfaceState extends State<BridgeSurface> {
-  @override
-  void initState() {
-    super.initState();
-    final bridge = RecordingBridge()..openGate = widget.owner.openGate;
-    widget.owner.controllers.add(bridge);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final controller = widget.params.controllerFromPlatform!(bridge);
-      widget.params.onWebViewCreated!(controller);
-      widget.params.onLoadStop!(
-        controller,
-        WebUri.uri(ReaderResources.runtimeUrl),
-      );
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) => const SizedBox.expand();
-}
-
-class RecordingBridge extends PlatformInAppWebViewController {
-  Completer<void>? openGate;
-  RecordingBridge()
-    : super.implementation(
-        const PlatformInAppWebViewControllerCreationParams(id: 'reader-test'),
-      );
-  final calls = <({String body, Map<String, dynamic> arguments})>[];
-  final handlers = <String, Function>{};
-  @override
-  void addJavaScriptHandler({
-    required String handlerName,
-    required Function callback,
-  }) {
-    handlers[handlerName] = callback;
-  }
-
-  /// The pages that the reader asked to load. The surface reports the load
-  /// of the reader's page itself.
-  final loads = <URLRequest>[];
-  @override
-  Future<void> loadUrl({
-    required URLRequest urlRequest,
-    Uri? iosAllowingReadAccessTo,
-    WebUri? allowingReadAccessTo,
-  }) async => loads.add(urlRequest);
-
-  @override
-  Future<CallAsyncJavaScriptResult?> callAsyncJavaScript({
-    required String functionBody,
-    Map<String, dynamic> arguments = const {},
-    ContentWorld? contentWorld,
-  }) async {
-    calls.add((body: functionBody, arguments: arguments));
-    if (functionBody.contains('openBook')) await openGate?.future;
-    return CallAsyncJavaScriptResult(
-      value: functionBody.contains('openBook') ? <dynamic>[] : null,
-    );
-  }
-}
-
-Future<void> finishLoading(WidgetTester tester) async {
-  await tester.runAsync(() async {
-    await Future<void>.delayed(const Duration(milliseconds: 100));
-  });
-  await tester.pumpAndSettle();
-  await tester.pumpAndSettle();
-}
 
 Widget readerApp({
   required ReaderSession reader,
@@ -144,136 +45,151 @@ Widget readerApp({
 );
 
 void main() {
-  testWidgets(
-    'appearance changes during attachment wait for the renderer to open',
-    (tester) async {
-      final platform = BridgePlatform()..openGate = Completer<void>();
-      InAppWebViewPlatform.instance = platform;
-      final downloads = LocalFiles()
-        ..files[source.key] = Uri.file('/verified.epub');
-      final publication = Publication.admit(epub());
-      final reader = ReaderSession(
-        downloads: downloads,
-        store: MemoryResume(),
-        load: (_) async => publication,
-      );
-      await reader.bind(account(), [book]);
-      await reader.open(book, edition);
-      final appearance = AppearanceController(MemoryAppearanceStore());
-      addTearDown(appearance.dispose);
-      await tester.pumpWidget(
-        readerApp(
-          reader: reader,
-          appearance: appearance,
-          builder: (context, child) => MediaQuery(
+  setUpAll(loadReaderFont);
+
+  /// Whether [shown] is laid out at [fontSize] pixels, in night or cream.
+  bool laidOut(ShownPage shown, double fontSize, bool night) =>
+      shown.page.settings.fontSize == fontSize &&
+      shown.page.settings.night == night;
+
+  /// Whether [shown] shows [place]: the place is from its first place to
+  /// its last.
+  bool holds(ShownPage shown, EpubPlace place) =>
+      shown.page.startPlace!.compareTo(place) <= 0 &&
+      (shown.page.endPlace ?? shown.page.startPlace!).compareTo(place) >= 0;
+
+  /// A reader session of the test account over [twoChapterBook].
+  (ReaderSession, LocalFiles) session() {
+    final downloads = LocalFiles()
+      ..files[source.key] = Uri.file('/verified.epub');
+    final publication = twoChapterBook();
+    final reader = ReaderSession(
+      downloads: downloads,
+      store: MemoryResume(),
+      load: (_) async => publication,
+    );
+    return (reader, downloads);
+  }
+
+  testWidgets('a text size change while the book opens shows the first page '
+      'at the new size, at the book\'s start', (tester) async {
+    final (reader, downloads) = session();
+    await reader.bind(account(), [book]);
+    await reader.open(book, edition);
+    final appearance = AppearanceController(MemoryAppearanceStore());
+    addTearDown(appearance.dispose);
+    await tester.pumpWidget(
+      readerApp(
+        reader: reader,
+        appearance: appearance,
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context)
+              .copyWith(textScaler: const TextScaler.linear(2)),
+          child: child!,
+        ),
+      ),
+    );
+    await chooseSetting(tester, 'Larger text', settle: tester.pump);
+    final shown = await waitForPage(
+      tester,
+      reader,
+      (shown) => laidOut(shown, 44, false),
+    );
+    expect(shown.page.section, 0);
+    expect(shown.page.start.item, 0, reason: 'The book opens at its start.');
+    expect(reader.fontSize, 22);
+    await tester.pumpWidget(const SizedBox());
+    reader.dispose();
+    await finishReader(tester, reader.flush());
+    downloads.dispose();
+  }, variant: TargetPlatformVariant.only(TargetPlatform.android));
+
+  testWidgets('text size, theme and the system text scale reach the page and '
+      'keep the reading place, also after the book opens again', (
+    tester,
+  ) async {
+    final (reader, downloads) = session();
+    await reader.bind(account(), [book]);
+    await reader.open(book, edition);
+    final scale = ValueNotifier<double>(2);
+    final appearance = AppearanceController(MemoryAppearanceStore());
+    addTearDown(appearance.dispose);
+    await tester.pumpWidget(
+      readerApp(
+        reader: reader,
+        appearance: appearance,
+        builder: (context, child) => ValueListenableBuilder<double>(
+          valueListenable: scale,
+          builder: (context, value, _) => MediaQuery(
             data: MediaQuery.of(context)
-                .copyWith(textScaler: const TextScaler.linear(2)),
+                .copyWith(textScaler: TextScaler.linear(value)),
             child: child!,
           ),
         ),
-      );
-      await finishLoading(tester);
-      expect(reader.ready, isFalse);
-      final bridge = platform.controllers.single;
-      await chooseSetting(tester, 'Larger text');
-      expect(bridge.calls, hasLength(1));
-      platform.openGate!.complete();
-      await tester.pumpAndSettle();
-      expect(reader.ready, isTrue);
-      expect(bridge.calls.last.arguments, {
-        'argument0': 44.0,
-        'argument1': false,
-      });
-      expect(bridge.calls, hasLength(2));
-      await tester.pumpWidget(const SizedBox());
-      reader.dispose();
-      await reader.flush();
-      downloads.dispose();
-    },
-    variant: TargetPlatformVariant.only(TargetPlatform.android),
-  );
+      ),
+    );
+    final first = await waitForPage(
+      tester,
+      reader,
+      (shown) => laidOut(shown, 40, false),
+    );
+    expect(reader.ready, isTrue);
+    await finishReader(tester, reader.move(true));
+    final turned = await waitForPage(
+      tester,
+      reader,
+      (shown) => !identical(shown.page, first.page),
+    );
+    await settleReader(tester, () => reader.position != null);
+    final address = reader.visibleAddress;
+    final anchor = reader.position!.anchor;
+    final place = turned.page.startPlace;
 
-  testWidgets(
-    '200 percent text scaling sends one final size and preserves the reading place',
-    (tester) async {
-      final platform = BridgePlatform();
-      final previous = InAppWebViewPlatform.instance;
-      InAppWebViewPlatform.instance = platform;
-      addTearDown(() {
-        if (previous != null) InAppWebViewPlatform.instance = previous;
-      });
-      final downloads = LocalFiles()
-        ..files[source.key] = Uri.file('/verified.epub');
-      final publication = Publication.admit(epub());
-      final reader = ReaderSession(
-        downloads: downloads,
-        store: MemoryResume(),
-        load: (_) async => publication,
+    for (final (change, fontSize, night) in [
+      (() => chooseSetting(tester, 'Larger text'), 44.0, false),
+      (() => chooseSetting(tester, 'Night reading theme'), 44.0, true),
+      (
+        () async {
+          scale.value = 1.5;
+          await tester.pump();
+        },
+        33.0,
+        true,
+      ),
+    ]) {
+      await change();
+      final shown = await waitForPage(
+        tester,
+        reader,
+        (shown) => laidOut(shown, fontSize, night),
       );
-      await reader.bind(account(), [book]);
-      await reader.open(book, edition);
-      final scale = ValueNotifier<double>(2);
-      final appearance = AppearanceController(MemoryAppearanceStore());
-      addTearDown(appearance.dispose);
-      await tester.pumpWidget(
-        readerApp(
-          reader: reader,
-          appearance: appearance,
-          builder: (context, child) => ValueListenableBuilder<double>(
-            valueListenable: scale,
-            builder: (context, value, _) => MediaQuery(
-              data: MediaQuery.of(context)
-                  .copyWith(textScaler: TextScaler.linear(value)),
-              child: child!,
-            ),
-          ),
-        ),
-      );
-      await finishLoading(tester);
-      expect(reader.ready, isTrue);
-      final bridge = platform.controllers.single;
       expect(
-        (bridge.calls.single.arguments['argument0'] as Map)['fontSize'],
-        40,
+        holds(shown, place!),
+        isTrue,
+        reason: 'The page at $fontSize px still holds the place.',
       );
-      bridge.handlers['readerLocation']!([visible.toJson()]);
-      await tester.pumpAndSettle();
-      final anchor = reader.position!.anchor;
-      bridge.calls.clear();
-      await chooseSetting(tester, 'Larger text');
-      expect(reader.fontSize, 22);
-      expect(bridge.calls.map((call) => call.arguments).toList(), [
-        {'argument0': 44.0, 'argument1': false},
-      ]);
+      expect(reader.visibleAddress, same(address));
       expect(reader.position!.anchor, anchor);
-      bridge.calls.clear();
-      await chooseSetting(tester, 'Night reading theme');
-      expect(bridge.calls.map((call) => call.arguments).toList(), [
-        {'argument0': 44.0, 'argument1': true},
-      ]);
-      expect(reader.position!.anchor, anchor);
-      bridge.calls.clear();
-      scale.value = 1.5;
-      await tester.pumpAndSettle();
-      expect(bridge.calls.map((call) => call.arguments).toList(), [
-        {'argument0': 33.0, 'argument1': true},
-      ]);
-      expect(reader.position!.anchor, anchor);
-      expect(reader.fontSize, 22);
-      await reader.open(book, edition);
-      await tester.pumpAndSettle();
-      await finishLoading(tester);
-      final reopened =
-          platform.controllers.last.calls.single.arguments['argument0'] as Map;
-      expect(reopened['fontSize'], 33);
-      expect(reopened['night'], true);
-      expect((reopened['initial'] as Map)['cfi'], visible.cfi);
-      await tester.pumpWidget(const SizedBox());
-      reader.dispose();
-      await reader.flush();
-      scale.dispose();
-      downloads.dispose();
-    },
-    variant: TargetPlatformVariant.only(TargetPlatform.android),
-  );
+    }
+    expect(reader.fontSize, 22);
+
+    await reader.open(book, edition);
+    final reopened = await waitForPage(
+      tester,
+      reader,
+      (shown) => laidOut(shown, 33, true),
+    );
+    await settleReader(tester, () => reader.visibleAddress != null);
+    expect(holds(reopened, place!), isTrue);
+    expect(
+      (reader.initialAddress! as EpubAddress).location.cfi,
+      (address! as EpubAddress).location.cfi,
+    );
+    expect(reader.position!.anchor, anchor);
+    await tester.pumpWidget(const SizedBox());
+    reader.dispose();
+    await finishReader(tester, reader.flush());
+    scale.dispose();
+    downloads.dispose();
+  }, variant: TargetPlatformVariant.only(TargetPlatform.android));
 }

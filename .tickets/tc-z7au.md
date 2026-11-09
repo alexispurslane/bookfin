@@ -1,6 +1,6 @@
 ---
 id: tc-z7au
-status: open
+status: closed
 deps: [tc-n6wv]
 links: []
 created: 2026-11-08T19:23:13Z
@@ -36,3 +36,9 @@ docs/plans/native-epub-reader.md (epic boo-b2ey). Read the sections named in the
 - Places, quotes and copied text contain no soft hyphens.
 - E3's properties still hold.
 
+
+## Notes
+
+**2026-11-08T23:10:19Z**
+
+Flutter breaks at U+00AD but draws no hyphen. Layout writes U+2010 in place of each soft hyphen that ends a line (after a fit check) and lays the paragraph out again, so justified lines end at the hyphen as in Chromium; a hyphen that does not fit becomes U+2060. This replaces the ticket's marker-decoration fallback, which would hang the hyphen past the right edge of justified text. xml:lang wins over lang (HTML rule, as :lang() already did). Capitalized English words do not break (Chromium). dc:language goes through SectionSource.language; the page source does not fill it yet (t0-2yee). fidelity_test and saved_places_test (downloaded books) compare with hyphenation off, as epub.js recorded; saved_places_test adds a hyphenated check. Layout cost: t0-z3m1.

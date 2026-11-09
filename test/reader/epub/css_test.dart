@@ -153,11 +153,57 @@ void main() {
     expect(style.margin[3].value, 0);
   });
 
+  group('table borders', () {
+    const tables =
+        '<table id="one"><tr><td id="cell">A</td></tr></table>'
+        '<table id="two"><tr><td>B</td></tr></table>'
+        '<table id="plain"><tr><td>C</td></tr></table>'
+        '<table id="bad"><tr><td>D</td></tr></table>';
+
+    test('border-spacing takes one length for both directions, or one '
+        'across and one down, and cells inherit it', () {
+      const css =
+          '#one{border-spacing:0.5em;font-size:12px}'
+          '#two{border-spacing:4px 10px}';
+      expect(styleOf('one', tables, css).borderSpacing, (6.0, 6.0));
+      expect(styleOf('cell', tables, css).borderSpacing, (6.0, 6.0));
+      expect(styleOf('two', tables, css).borderSpacing, (4.0, 10.0));
+    });
+
+    test('a table has Chromium\'s border-spacing of 2 pixels unless a rule '
+        'sets one, and a negative or percentage spacing is ignored', () {
+      const css = '#bad{border-spacing:-3px}#bad{border-spacing:10%}';
+      expect(styleOf('plain', tables, css).borderSpacing, (2.0, 2.0));
+      expect(styleOf('bad', tables, css).borderSpacing, (2.0, 2.0));
+    });
+
+    test('a table separates its borders unless border-collapse collapses '
+        'them, and its cells inherit the choice', () {
+      const css =
+          '#one{border-collapse:collapse}#two{border-collapse:separate}';
+      expect(styleOf('one', tables, css).collapseBorders, isTrue);
+      expect(styleOf('cell', tables, css).collapseBorders, isTrue);
+      expect(styleOf('two', tables, css).collapseBorders, isFalse);
+      expect(styleOf('plain', tables, css).collapseBorders, isFalse);
+    });
+  });
+
   test('the user agent sheet gives headings their size and weight', () {
     final style = styleOf('x', '<h2 id="x">T</h2>', '');
     expect(style.fontSize, 30);
     expect(style.fontWeight, 700);
     expect(style.display, Display.block);
+  });
+
+  test('a book rule beats a user agent rule of higher specificity', () {
+    // The user agent sets `section h1 { font-size: 1.5em }`.
+    final style = styleOf(
+      'x',
+      '<section><h1 id="x">T</h1></section>',
+      'h1{font-size:1.4em;margin:1.5em 0 1em}',
+    );
+    expect(style.fontSize, closeTo(28, 1e-9));
+    expect(style.margin[0].value, closeTo(42, 1e-9));
   });
 
   test('a page-break property names the same break as break-before', () {

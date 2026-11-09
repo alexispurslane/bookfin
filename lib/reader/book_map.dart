@@ -187,7 +187,7 @@ class BookMap {
       PdfAddress(:final sourcePage) => (sourcePage - 1, 1.0),
     };
     if (part == null || part < 0 || part + 1 >= _starts.length) return null;
-    return _starts[part] + (_starts[part + 1] - _starts[part]) * through;
+    return _within(part, through);
   }
 
   /// Where the place [place] sits in the book, the reverse of [targetAt]. A
@@ -195,22 +195,36 @@ class BookMap {
   double fractionAt(BookPlace place) {
     final part = place.part.clamp(0, _starts.length - 2);
     if (part != place.part) return place.part < 0 ? 0 : 1;
-    return _starts[part] +
-        (_starts[part + 1] - _starts[part]) * place.progress.clamp(0.0, 1.0);
+    return _within(part, place.progress.clamp(0.0, 1.0));
   }
 
-  /// Where the chapter that a chapter arrow goes to from the place [at]
-  /// starts. Forward, that is the first chapter that starts after [at].
-  /// Back, it is the last chapter that starts before [at]: the start of the
-  /// chapter that holds [at], or the chapter before when [at] is that start.
-  /// The book's start counts as a chapter start, so back reaches the text
-  /// before the first chapter. Null when no chapter starts that way.
-  double? chapterStep(double at, {required bool forward}) {
+  /// Where the chapter that a chapter arrow goes to from the [shown] page
+  /// starts, given by the address that the viewport reported for it, and
+  /// [end], the place of the page's last visible character where the shown
+  /// page knows it.
+  ///
+  /// Forward, that is the first chapter that starts after the shown page:
+  /// after [end], else after its first place. So a chapter that starts on
+  /// the shown page, which is already in view, is skipped (t6-0cjf). Back, it is the last chapter that starts before the page's
+  /// first place: the start of the chapter that holds it, or the chapter
+  /// before when the page starts that chapter. The book's start counts as a
+  /// chapter start, so back reaches the text before the first chapter.
+  ///
+  /// Null when no chapter starts that way, or when [shown] is not in this
+  /// book.
+  double? chapterStep(
+    ReaderAddress shown, {
+    required bool forward,
+    BookPlace? end,
+  }) {
+    final at = fractionOf(shown);
+    if (at == null) return null;
     // Places measured on two paths can differ in the last bits.
     const near = 1e-9;
     if (forward) {
+      final last = end == null ? at : fractionAt(end);
       for (final chapter in chapters) {
-        if (chapter.start > at + near) return chapter.start;
+        if (chapter.start > last + near) return chapter.start;
       }
       return null;
     }
@@ -221,6 +235,12 @@ class BookMap {
     }
     return before;
   }
+
+  /// Where the place [through] of the way through part [part] sits, by the
+  /// rule that [of] places chapters with, so that equal places give equal
+  /// fractions.
+  double _within(int part, double through) =>
+      _starts[part] + (_starts[part + 1] - _starts[part]) * through;
 
   /// The place at [fraction] of the book. A fraction outside 0 to 1 is the
   /// book's start or end.

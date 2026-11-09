@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_epub_viewer/publication.dart';
 import 'package:flutter_epub_viewer/navigation.dart';
+import 'package:xml/xml_events.dart';
 
 import '../catalog/jellyfin.dart';
 import '../catalog/model.dart';
@@ -11,6 +12,7 @@ import '../downloads/downloads.dart';
 import '../playback/playback.dart';
 import 'book_map.dart';
 import 'document.dart';
+import 'epub/pager.dart';
 import 'page_previews.dart';
 import 'pdf.dart';
 
@@ -121,6 +123,18 @@ class ReadingChanges {
 /// of its visible state. Each part also has its own signal, so a widget can
 /// follow only the part that it shows. A change that leaves every part as it
 /// was, such as a finished write, notifies nothing.
+///
+/// Invariants, which [checkInvariants] checks:
+/// - Without an account, no document is open and no records are held.
+/// - An open document belongs to a current edition of the account.
+/// - A navigator and a book map exist only while a document is open.
+/// - A pager exists only while an EPUB or MOBI document is open, and every
+///   such document that finished opening has one. The pager's own
+///   invariants hold.
+/// - The visible address and the saved position are both set or both
+///   absent. The position fits the open document, and its saved form
+///   restores the visible address.
+/// - Every account whose save failed still has its changes pending.
 class ReaderSession extends ChangeNotifier {
   ReaderSession({
     required this.downloads,
@@ -137,6 +151,7 @@ class ReaderSession extends ChangeNotifier {
           _edition,
           _document,
           _navigator,
+          _pager,
           _loading,
           _message,
           _contents,
@@ -198,6 +213,13 @@ class ReaderSession extends ChangeNotifier {
   List<ReaderHit> get hits => _hits;
   List<ContentsEntry> get contents => _contents;
   DocumentNavigator? _navigator;
+
+  /// The pager of the open EPUB or MOBI book, which the session creates when
+  /// the book opens and disposes when it closes. The viewport shows its
+  /// pages and presents the page settings to it. Null while no such book is
+  /// open. It follows [documentChanges].
+  EpubPager? get pager => _pager;
+  EpubPager? _pager;
   String? _account;
   String? _credential;
   List<Book> _books = [];
@@ -386,6 +408,8 @@ class ReaderSession extends ChangeNotifier {
     ++_search;
     previews.close();
     _navigator = null;
+    _pager?.dispose();
+    _pager = null;
     final previous = _document;
     if (previous is PdfBook) previous.textSupply?.cancel();
     _document = null;
@@ -494,6 +518,17 @@ class ReaderSession extends ChangeNotifier {
         _message = 'Reading records could not be opened. Existing records were kept. Restart before saving new places.';
       } else if (store.setAside(_account!)) {
         _message ??= 'Saved reading records were damaged. Bookfin kept a copy and restored the places that it could read. The next sync restores the rest.';
+      }
+      if (admitted is EpubDocument) {
+        final contents = await _contentsOf(admitted.publication);
+        if (!_live(generation)) return;
+        final pager = _pager = EpubPager(
+          admitted,
+          initial: _initialAddress,
+          onPlace: (address) => acceptAddress(generation, address),
+          onWarning: (message) => warn(generation, message),
+        );
+        attachDocument(generation, pager, contents);
       }
     } on FormatException catch (error) {
       if (_live(generation)) _message = error.message;
@@ -690,8 +725,9 @@ class ReaderSession extends ChangeNotifier {
     final map = _bookMap;
     if (map == null || map.chapters.isEmpty) return move(forward);
     final place = _visibleAddress;
-    final at = place == null ? null : map.fractionOf(place);
-    final start = at == null ? null : map.chapterStep(at, forward: forward);
+    final start = place == null
+        ? null
+        : map.chapterStep(place, forward: forward, end: _pager?.shownEnd);
     if (start != null) await goTo(map.targetAt(start));
   }
 
@@ -858,6 +894,8 @@ class ReaderSession extends ChangeNotifier {
     _emit();
   }
 
+  /// Throws a [StateError] when an invariant of the class comment does not
+  /// hold. It runs on demand, in every build.
   void checkInvariants() {
     if ((_account == null &&
             (document != null ||
@@ -865,6 +903,9 @@ class ReaderSession extends ChangeNotifier {
                 _resumes.isNotEmpty)) ||
         (document != null && (edition == null || !_current(edition!))) ||
         (_bookMap != null && document == null) ||
+        (_navigator != null && document == null) ||
+        (_pager != null && document is! EpubDocument) ||
+        (document is EpubDocument && !_loading && _pager == null) ||
         (position != null && _compatible(position!) == null) ||
         ((_visibleAddress == null) != (position == null)) ||
         (_visibleAddress != null &&
@@ -875,6 +916,7 @@ class ReaderSession extends ChangeNotifier {
         'Reading state must belong to one current account, source, and processed publication.',
       );
     }
+    _pager?.checkInvariants();
   }
 
   /// Notifies each signal whose part changed, then the session once if any
@@ -900,6 +942,61 @@ class ReaderSession extends ChangeNotifier {
     super.dispose();
   }
 }
+
+/// The contents that the session lists for [publication]: its own, or, when
+/// it has none, one "Chapter N" entry for each linear section of its spine,
+/// as the WebView reader listed them (reader.js). Each href is relative to
+/// the package document's directory, as contents hrefs are.
+Future<List<ContentsEntry>> _contentsOf(Publication publication) async {
+  if (publication.contents.isNotEmpty) return publication.contents;
+  final package = publication.resources[publication.packagePath]!;
+  // NOTE: A hop costs a few milliseconds, more than reading a small package
+  // document.
+  final linear = package.length < 64 << 10
+      ? _linearSpine(package)
+      : await compute(_linearSpine, package);
+  final directory = publication.packagePath.split('/')..removeLast();
+  String relative(String path) {
+    final parts = path.split('/');
+    var shared = 0;
+    while (shared < directory.length &&
+        shared < parts.length - 1 &&
+        directory[shared] == parts[shared]) {
+      shared++;
+    }
+    return [
+      for (var up = shared; up < directory.length; up++) '..',
+      ...parts.skip(shared).map(Uri.encodeComponent),
+    ].join('/');
+  }
+
+  final sections = [
+    for (final (index, path) in publication.spine.indexed)
+      if (index < linear.length && linear[index]) path,
+  ];
+  return List.unmodifiable([
+    for (final (index, path) in sections.indexed)
+      ContentsEntry('Chapter ${index + 1}', relative(path)),
+  ]);
+}
+
+/// Whether each spine item of the package document [package] is linear, in
+/// spine order. As in epub.js, an item is linear unless its `linear`
+/// attribute has a value other than `yes`.
+List<bool> _linearSpine(Uint8List package) => [
+  for (final event in parseEvents(utf8.decode(package)))
+    if (event case XmlStartElementEvent(
+      localName: 'itemref',
+      :final attributes,
+    ))
+      switch (attributes
+          .where((attribute) => attribute.localName == 'linear')
+          .firstOrNull
+          ?.value) {
+        null || '' || 'yes' => true,
+        _ => false,
+      },
+];
 
 /// The change signal of one part of the session's visible state.
 class _Signal extends ChangeNotifier {

@@ -55,6 +55,10 @@ enum VerticalAlign { baseline, superscript, subscript, top, middle, bottom }
 
 enum Transform { none, upper, lower, capitalize }
 
+/// The `hyphens` property: whether a line may break inside a word with a
+/// hyphen. `manual` breaks only at the book's own soft hyphens.
+enum Hyphens { none, manual, auto }
+
 /// The computed style of one element.
 class Style {
   Style._();
@@ -103,6 +107,11 @@ class Style {
   Length height = const Length.auto();
   Length maxHeight = const Length.none();
   bool borderBox = false;
+
+  /// How far `filter: invert()` moves the colors of an image toward their
+  /// inverse, from 0 (unchanged) to 1 (inverted). Other filters are
+  /// ignored.
+  double invert = 0;
   BreakRule breakBefore = BreakRule.auto;
   BreakRule breakAfter = BreakRule.auto;
   bool avoidBreakInside = false;
@@ -125,12 +134,27 @@ class Style {
   double wordSpacing = 0;
   Transform transform = Transform.none;
   WhiteSpace whiteSpace = WhiteSpace.normal;
+  Hyphens hyphens = Hyphens.manual;
+
+  /// The element's language, a BCP 47 tag such as `en-GB`: that of its
+  /// [languageAttribute], or else of its parent. Null when no element up
+  /// to the root names one, and empty when the nearest names an unknown
+  /// language.
+  String? language;
   bool underline = false;
   bool lineThrough = false;
   String listStyleType = 'disc';
   bool listStyleInside = false;
   int orphans = 2;
   int widows = 2;
+
+  /// A table's `border-spacing` in pixels: across, between its columns,
+  /// and down, between its rows.
+  (double, double) borderSpacing = (0, 0);
+
+  /// Whether a table's borders collapse (`border-collapse: collapse`): two
+  /// cells that touch share one border.
+  bool collapseBorders = false;
   VerticalAlign verticalAlign = VerticalAlign.baseline;
 
   /// The line height in pixels, or null for `normal`.
@@ -155,6 +179,8 @@ class Style {
     ..wordSpacing = wordSpacing
     ..transform = transform
     ..whiteSpace = whiteSpace
+    ..hyphens = hyphens
+    ..language = language
     // Text decorations are not inherited, but they draw across every
     // descendant's text, which comes to the same here.
     ..underline = underline
@@ -162,7 +188,9 @@ class Style {
     ..listStyleType = listStyleType
     ..listStyleInside = listStyleInside
     ..orphans = orphans
-    ..widows = widows;
+    ..widows = widows
+    ..borderSpacing = borderSpacing
+    ..collapseBorders = collapseBorders;
 }
 
 enum BreakRule { auto, page, avoid }
@@ -861,7 +889,7 @@ class _PseudoClass {
         return selectors.any((selector) => selector.matches(element));
       case 'lang':
         for (DomElement? node = element; node != null; node = node.parent) {
-          final lang = node.attributes['xml:lang'] ?? node.attributes['lang'];
+          final lang = languageAttribute(node);
           if (lang != null) {
             final wanted = argument.toLowerCase();
             final actual = lang.toLowerCase();
@@ -1143,8 +1171,17 @@ class _SelectorParser {
 /// The rules of one section's sheets, indexed for matching, and the
 /// cascade over them.
 class Cascade {
-  Cascade(Iterable<StyleRule> rules, {this.overrides = const {}}) {
-    for (final rule in rules) {
+  /// The cascade over [userAgent], the browser's default rules, and
+  /// [rules], the book's and the reader's. A normal declaration of [rules]
+  /// beats every normal declaration of [userAgent], whatever their
+  /// specificity, as the origins of CSS cascade. The user agent rules have
+  /// no important declarations.
+  Cascade(
+    Iterable<StyleRule> rules, {
+    Iterable<StyleRule> userAgent = const [],
+    this.overrides = const {},
+  }) : _userAgent = Set.identity()..addAll(userAgent) {
+    for (final rule in [...userAgent, ...rules]) {
       final key = rule.selector.compounds.last;
       if (key.id != null) {
         (_byId[key.id!] ??= []).add(rule);
@@ -1158,6 +1195,7 @@ class Cascade {
     }
   }
 
+  final Set<StyleRule> _userAgent;
   final _byId = <String, List<StyleRule>>{};
   final _byClass = <String, List<StyleRule>>{};
   final _byTag = <String, List<StyleRule>>{};
@@ -1193,7 +1231,12 @@ class Cascade {
     for (final rule in candidates) {
       if (!rule.selector.matches(element)) continue;
       for (final declaration in rule.declarations) {
-        offer(declaration, 0, rule.selector.specificity, rule.order);
+        offer(
+          declaration,
+          _userAgent.contains(rule) ? -1 : 0,
+          rule.selector.specificity,
+          rule.order,
+        );
       }
     }
     final attribute = element.attributes['style'];
@@ -1206,6 +1249,9 @@ class Cascade {
       offer(declaration, 1, 0, 1);
     }
     final style = parent.inherit();
+    if (languageAttribute(element) case final language?) {
+      style.language = language;
+    }
     // Font size comes first: em lengths of the other properties use it.
     final size = winners.remove('font-size')?.$4;
     if (size != null) {
@@ -1345,9 +1391,62 @@ Iterable<(String, String)> _expand(Declaration declaration) sync* {
       for (final longhand in _longhands) {
         yield (longhand, value);
       }
+    // A value that is not valid drops the declaration, so the one that it
+    // would replace stays, as in Chromium.
+    case 'border-spacing':
+      if (_keyword(value) || _spacing(value, 16, 16) != null) {
+        yield (property, value);
+      }
+    case 'border-collapse':
+      if (_keyword(value) ||
+          const {'collapse', 'separate'}.contains(value.trim().toLowerCase())) {
+        yield (property, value);
+      }
+    // Chromium parses -webkit-hyphens as another name of hyphens.
+    case 'hyphens' || '-webkit-hyphens':
+      if (_keyword(value) ||
+          const {
+            'none',
+            'manual',
+            'auto',
+          }.contains(value.trim().toLowerCase())) {
+        yield ('hyphens', value);
+      }
     default:
       yield (property, value);
   }
+}
+
+/// The language that [element] names for itself: its `xml:lang`
+/// attribute, which wins as in HTML, or its `lang` attribute. Null when it
+/// names none.
+String? languageAttribute(DomElement element) =>
+    element.attributes['xml:lang'] ?? element.attributes['lang'];
+
+/// Whether [value] is `inherit`, `initial` or `unset`.
+bool _keyword(String value) =>
+    const {'inherit', 'initial', 'unset'}.contains(value.trim().toLowerCase());
+
+/// The `border-spacing` that [value] gives, across and down in pixels, in
+/// an element whose font is [fontSize] pixels: one length for both, or
+/// two. Null when [value] is not valid: a percentage or a negative length.
+(double, double)? _spacing(String value, double fontSize, double root) {
+  final lengths = [
+    for (final token in _tokens(value)) parseLength(token, fontSize, root),
+  ];
+  if (lengths.isEmpty || lengths.length > 2) return null;
+  final pixels = <double>[];
+  for (final length in lengths) {
+    if (length == null ||
+        length.isAuto ||
+        length.isNone ||
+        length.unit == LengthUnit.percent ||
+        length.value < 0) {
+      return null;
+    }
+    pixels.add(length.resolve(0));
+  }
+  return (pixels.first, pixels.last);
 }
 
 const _borderStyles = {
@@ -1407,6 +1506,44 @@ Length? parseLength(
     '%' => Length.percent(number),
     _ => null,
   };
+}
+
+/// How far the `filter` value [value] inverts colors, from 0 to 1, or null
+/// when it is not a filter list. Chromium composes each `invert()` with the
+/// filters before it, and inverting by a and then by b inverts by
+/// a + b − 2ab. The other filter functions are ignored.
+double? _invertOf(String value) {
+  final text = value.trim();
+  if (text == 'none') return 0;
+  final name = RegExp(r'\s*([a-z-]+)\(');
+  var invert = 0.0;
+  var at = 0;
+  var functions = 0;
+  while (text.substring(at).trim().isNotEmpty) {
+    final match = name.matchAsPrefix(text, at);
+    if (match == null) return null;
+    var close = match.end;
+    for (var depth = 1; ; close++) {
+      if (close == text.length) return null;
+      if (text[close] == '(') depth++;
+      if (text[close] == ')' && --depth == 0) break;
+    }
+    if (match[1] == 'invert') {
+      final argument = text.substring(match.end, close).trim();
+      final percent = argument.endsWith('%');
+      final number = argument.isEmpty
+          ? 1.0
+          : double.tryParse(
+              percent ? argument.substring(0, argument.length - 1) : argument,
+            );
+      if (number == null || number < 0) return null;
+      final amount = math.min(percent ? number / 100 : number, 1.0);
+      invert = invert + amount - 2 * invert * amount;
+    }
+    functions++;
+    at = close + 1;
+  }
+  return functions == 0 ? null : invert;
 }
 
 double _fontSize(String value, double parent, double root) {
@@ -1532,6 +1669,8 @@ void _apply(
       }
     case 'box-sizing':
       style.borderBox = lower == 'border-box';
+    case 'filter':
+      style.invert = _invertOf(lower) ?? style.invert;
     case 'break-before' || 'break-after':
       final rule = switch (lower) {
         'page' ||
@@ -1629,6 +1768,12 @@ void _apply(
     case 'text-decoration-line':
       style.underline = lower.contains('underline');
       style.lineThrough = lower.contains('line-through');
+    case 'hyphens':
+      style.hyphens = switch (lower) {
+        'none' => Hyphens.none,
+        'auto' => Hyphens.auto,
+        _ => Hyphens.manual,
+      };
     case 'list-style-type':
       style.listStyleType = lower;
     case 'list-style-position':
@@ -1637,6 +1782,11 @@ void _apply(
       style.orphans = int.tryParse(lower) ?? style.orphans;
     case 'widows':
       style.widows = int.tryParse(lower) ?? style.widows;
+    case 'border-spacing':
+      style.borderSpacing =
+          _spacing(lower, style.fontSize, root) ?? style.borderSpacing;
+    case 'border-collapse':
+      style.collapseBorders = lower == 'collapse';
     case 'vertical-align':
       style.verticalAlign = switch (lower) {
         'super' => VerticalAlign.superscript,
@@ -1663,10 +1813,13 @@ const _inheritedProperties = {
   'word-spacing',
   'text-transform',
   'white-space',
+  'hyphens',
   'list-style-type',
   'list-style-position',
   'orphans',
   'widows',
+  'border-spacing',
+  'border-collapse',
 };
 
 /// The longhand properties that the renderer computes, which `all`
@@ -1682,6 +1835,7 @@ const _longhands = [
   'height',
   'max-height',
   'box-sizing',
+  'filter',
   'break-before',
   'break-after',
   'break-inside',
@@ -1714,11 +1868,14 @@ const _longhands = [
   'word-spacing',
   'text-transform',
   'white-space',
+  'hyphens',
   'text-decoration-line',
   'list-style-type',
   'list-style-position',
   'orphans',
   'widows',
+  'border-spacing',
+  'border-collapse',
   'vertical-align',
 ];
 
@@ -1762,6 +1919,8 @@ void _copyFrom(Style style, Style source, String property) {
       style.maxHeight = source.maxHeight;
     case 'box-sizing':
       style.borderBox = source.borderBox;
+    case 'filter':
+      style.invert = source.invert;
     case 'break-before':
       style.breakBefore = source.breakBefore;
     case 'break-after':
@@ -1795,6 +1954,8 @@ void _copyFrom(Style style, Style source, String property) {
       style.transform = source.transform;
     case 'white-space':
       style.whiteSpace = source.whiteSpace;
+    case 'hyphens':
+      style.hyphens = source.hyphens;
     case 'text-decoration-line':
       style.underline = source.underline;
       style.lineThrough = source.lineThrough;
@@ -1806,6 +1967,10 @@ void _copyFrom(Style style, Style source, String property) {
       style.orphans = source.orphans;
     case 'widows':
       style.widows = source.widows;
+    case 'border-spacing':
+      style.borderSpacing = source.borderSpacing;
+    case 'border-collapse':
+      style.collapseBorders = source.collapseBorders;
     case 'vertical-align':
       style.verticalAlign = source.verticalAlign;
   }

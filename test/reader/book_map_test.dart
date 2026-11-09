@@ -10,7 +10,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'publication_test.dart' show epub;
 
 /// Three sections: "one" with one chapter, "two" with a second chapter
-/// that starts half way through its text, and "three".
+/// that starts half way through its text, and "three". Its navigation
+/// document lists [contents], so the reader lists them too.
 Publication threeSections({String? two}) => Publication.admit(
   epub(
     extra: {
@@ -19,6 +20,8 @@ Publication threeSections({String? two}) => Publication.admit(
         '<item id="one" href="one.xhtml" media-type="application/xhtml+xml"/>'
         '<item id="two" href="two.xhtml" media-type="application/xhtml+xml"/>'
         '<item id="three" href="three.xhtml" media-type="application/xhtml+xml"/>'
+        '<item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" '
+        'properties="nav"/>'
         '</manifest><spine><itemref idref="one"/><itemref idref="two"/>'
         '<itemref idref="three"/></spine></package>',
       ),
@@ -34,6 +37,7 @@ Publication threeSections({String? two}) => Publication.admit(
             ),
       ),
       'OPS/three.xhtml': utf8.encode(section('<p>${'t' * 600}</p>')),
+      'OPS/nav.xhtml': utf8.encode(navigation(contents)),
     },
   ),
 );
@@ -41,6 +45,34 @@ Publication threeSections({String? two}) => Publication.admit(
 String section(String body) =>
     '<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Part</title></head>'
     '<body>\n  $body\n</body></html>';
+
+/// A navigation document whose toc lists [entries], nested by depth.
+String navigation(List<ContentsEntry> entries) {
+  final items = StringBuffer();
+  var depth = 0;
+  for (final (index, entry) in entries.indexed) {
+    if (index > 0) {
+      if (entry.depth > depth) {
+        items.write('<ol>');
+      } else {
+        items.write('</li>');
+        for (; depth > entry.depth; depth--) {
+          items.write('</ol></li>');
+        }
+      }
+    }
+    depth = entry.depth;
+    items.write('<li><a href="${entry.href}">${entry.title}</a>');
+  }
+  items.write('</li>');
+  for (; depth > 0; depth--) {
+    items.write('</ol></li>');
+  }
+  return '<html xmlns="http://www.w3.org/1999/xhtml" '
+      'xmlns:epub="http://www.idpf.org/2007/ops"><head><title>Contents'
+      '</title></head><body><nav epub:type="toc"><ol>$items</ol></nav>'
+      '</body></html>';
+}
 
 const contents = [
   ContentsEntry('One', 'one.xhtml'),
@@ -205,6 +237,97 @@ void main() {
       jsonDecode(jsonEncode(document.save(reported))) as Map<String, dynamic>,
     )!;
     expect((await map()).fractionOf(restored), closeTo(inTwo(.5), 1e-9));
+  });
+
+  group('the chapter arrows', () {
+    /// A shown page of "two" whose first place is [start] of the way
+    /// through its text.
+    EpubAddress page(double start, {double? end}) => EpubAddress(
+      ReadingLocation(
+        'epubcfi(/6/4!/4/2/1:0)',
+        'OPS/two.xhtml',
+        '',
+        progress: start,
+        end: end,
+      ),
+    );
+
+    /// The place [progress] of the way through the text of "two".
+    BookPlace two(double progress) => (part: 1, progress: progress);
+
+    test('next chapter skips a chapter that starts in the middle of the '
+        'shown page', () async {
+      final book = await map();
+      expect(
+        book.chapterStep(page(.25), end: two(.75), forward: true),
+        closeTo(inTwo(1), 1e-9),
+        reason: '"Half" starts on the shown page, so next goes to "Three".',
+      );
+    });
+
+    test('next chapter skips a chapter whose first character is the last '
+        'one of the shown page', () async {
+      final book = await map();
+      expect(
+        book.chapterStep(page(.25), end: two(.5), forward: true),
+        closeTo(inTwo(1), 1e-9),
+      );
+    });
+
+    test('next chapter goes to a chapter that starts just after the shown '
+        'page', () async {
+      final book = await map();
+      expect(
+        book.chapterStep(page(.25), end: two(.49), forward: true),
+        closeTo(inTwo(.5), 1e-9),
+      );
+    });
+
+    test('next chapter steps from the start of a page whose end is not '
+        'known', () async {
+      final book = await map();
+      expect(
+        book.chapterStep(page(.25), forward: true),
+        closeTo(inTwo(.5), 1e-9),
+      );
+    });
+
+    test('next chapter takes the page\'s end from the shown page, not from '
+        'the reported address, which can be an older saved one', () async {
+      final book = await map();
+      expect(
+        book.chapterStep(page(.25, end: .49), end: two(.75), forward: true),
+        closeTo(inTwo(1), 1e-9),
+      );
+      expect(
+        book.chapterStep(page(.25, end: .75), forward: true),
+        closeTo(inTwo(.5), 1e-9),
+      );
+    });
+
+    test('previous chapter steps from the start of the shown page, not its '
+        'end', () async {
+      final book = await map();
+      expect(
+        book.chapterStep(page(.25), end: two(.75), forward: false),
+        closeTo(inTwo(0), 1e-9),
+        reason: 'The page starts in "Two", before "Half".',
+      );
+      expect(
+        book.chapterStep(page(.5), end: two(.75), forward: false),
+        closeTo(inTwo(0), 1e-9),
+        reason: 'At the start of "Half", back goes to the chapter before.',
+      );
+    });
+
+    test('a shown page outside the book has no chapter step', () async {
+      final book = await map();
+      final elsewhere = EpubAddress(
+        ReadingLocation('epubcfi(/6/2!/4/2/1:0)', 'OPS/notes.xhtml', ''),
+      );
+      expect(book.chapterStep(elsewhere, forward: true), isNull);
+      expect(book.chapterStep(elsewhere, forward: false), isNull);
+    });
   });
 
   test('a reported progress outside the section is not a place', () {
