@@ -1,7 +1,7 @@
 ---
 id: t5-4lbx
 status: open
-deps: []
+deps: [t7-rcyp]
 links: []
 created: 2026-11-09T18:18:38Z
 type: task
