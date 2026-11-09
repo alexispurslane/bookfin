@@ -189,13 +189,19 @@ const _scannedPage = [
 ///
 /// With [endnotes], the end of paragraph N of the first chapter holds a note
 /// reference to note N, as Standard Ebooks marks one, and a last section,
-/// Notes, lists the notes, each with a back link to its reference.
+/// Notes, lists the notes, each with a back link to its reference. A blank
+/// line in a note's text starts a new paragraph.
+///
+/// With [footnotes], the paragraphs of the first chapter after those with
+/// endnote references hold a reference `*` to a footnote each, without a
+/// number: an aside at the end of the chapter.
 Uint8List epub(
   String id,
   String title,
   String author,
   List<Chapter> chapters, {
   List<String> endnotes = const [],
+  List<String> footnotes = const [],
 }) {
   String escape(String text) =>
       const HtmlEscape(HtmlEscapeMode.element)
@@ -267,12 +273,20 @@ Uint8List epub(
       ),
     ),
   );
-  String reference(int chapter, int paragraph) =>
-      chapter > 0 || paragraph >= endnotes.length
-      ? ''
-      : '<a href="endnotes.xhtml#note-${paragraph + 1}" '
-            'id="noteref-${paragraph + 1}" epub:type="noteref">'
-            '<sup>${paragraph + 1}</sup></a>';
+  String paragraphsOf(String text) =>
+      [for (final part in text.split('\n\n')) '<p>${escape(part)}</p>'].join();
+  String reference(int chapter, int paragraph) {
+    final footnote = paragraph - endnotes.length;
+    if (chapter > 0 || footnote >= footnotes.length) return '';
+    if (footnote < 0) {
+      return '<a href="endnotes.xhtml#note-${paragraph + 1}" '
+          'id="noteref-${paragraph + 1}" epub:type="noteref">'
+          '<sup>${paragraph + 1}</sup></a>';
+    }
+    return '<a href="#footnote-${footnote + 1}" epub:type="noteref">'
+        '<sup>*</sup></a>';
+  }
+
   for (var i = 0; i < chapters.length; i++) {
     final (heading, paragraphs) = chapters[i];
     archive.add(
@@ -282,6 +296,7 @@ Uint8List epub(
           heading,
           '<section epub:type="chapter"><h1>${escape(heading)}</h1>'
           '${[for (final (index, text) in paragraphs.indexed) '<p>${escape(text)}${reference(i, index)}</p>'].join()}'
+          '${i > 0 ? '' : [for (final (index, text) in footnotes.indexed) '<aside id="footnote-${index + 1}" epub:type="footnote">${paragraphsOf(text)}</aside>'].join()}'
           '</section>',
         ),
       ),
@@ -294,7 +309,7 @@ Uint8List epub(
         page(
           'Notes',
           '<section epub:type="endnotes"><h1>Notes</h1><ol>'
-              '${[for (final (index, text) in endnotes.indexed) '<li id="note-${index + 1}" epub:type="endnote"><p>${escape(text)} <a href="chapter1.xhtml#noteref-${index + 1}" epub:type="backlink">↩</a></p></li>'].join()}'
+              '${[for (final (index, text) in endnotes.indexed) '<li id="note-${index + 1}" epub:type="endnote">${paragraphsOf(text).replaceFirst(RegExp(r'</p>$'), ' <a href="chapter1.xhtml#noteref-${index + 1}" epub:type="backlink">↩</a></p>')}</li>'].join()}'
               '</ol></section>',
         ),
       ),

@@ -111,7 +111,9 @@ void main() {
           () => Future<void>.delayed(const Duration(milliseconds: 1)),
         );
       }
-      await tester.pump();
+      // A zero duration also fires the zero timers between the steps of a
+      // note's layout.
+      await tester.pump(Duration.zero);
       pager().checkInvariants();
       if ((done?.call() ?? true) && quiet >= 10) return;
     }

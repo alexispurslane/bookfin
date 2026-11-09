@@ -3,6 +3,7 @@ import 'package:bookfin/catalog/glass.dart';
 import 'package:bookfin/catalog/model.dart';
 import 'package:bookfin/foundation/theme.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 const playing = Book(
@@ -251,6 +252,41 @@ void main() {
     expect(find.text('The note.'), findsNothing);
     expect(log, ['Go to note', 'sheet closed']);
     handle.dispose();
+  });
+
+  testWidgets('at the largest text size, a sheet\'s heading keeps its words '
+      'whole, and its action moves under it to the end of the row', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 2.625;
+    tester.platformDispatcher.textScaleFactorTestValue = 3;
+    addTearDown(tester.view.reset);
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    await showPage(
+      tester,
+      open: (context) => showGlassSheet<void>(
+        context,
+        title: 'Note',
+        action: GlassSheetAction('Go to note', onPressed: () {}),
+        builder: (_) => const Text('The note.'),
+      ),
+    );
+    final heading = tester.getRect(find.text('Note'));
+    final action = tester.getRect(
+      find.widgetWithText(TextButton, 'Go to note'),
+    );
+    final pane = tester.getRect(glassAround('Note'));
+
+    final line = tester.renderObject<RenderParagraph>(find.text('Note'));
+    expect(
+      line.getMinIntrinsicWidth(double.infinity),
+      lessThanOrEqualTo(heading.width),
+      reason: 'The heading has room for its longest word.',
+    );
+    expect(heading.left, pane.left + 20, reason: 'The heading stays first.');
+    expect(action.top, greaterThanOrEqualTo(heading.bottom));
+    expect(action.right, moreOrLessEquals(pane.right - 8, epsilon: 1));
   });
 
   testWidgets('a glass sheet steps back while another layer covers it', (

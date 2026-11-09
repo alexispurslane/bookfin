@@ -10,7 +10,9 @@ import '../catalog/glass.dart'
         GlassSheetAction,
         PageBook,
         confirmAction,
-        glassSheetWidth,
+        glassSheetTextBottom,
+        glassSheetTextInset,
+        glassSheetTextWidth,
         showGlassSheet;
 import '../catalog/model.dart' show Book;
 import '../foundation/listenable_selector.dart';
@@ -176,7 +178,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
   Future<void> _followLink(EpubPager pager, EpubLink link) async {
     LaidNote? note;
     try {
-      note = await pager.note(link, width: glassSheetWidth(context));
+      note = await pager.note(link, width: glassSheetTextWidth(context));
     } on ArgumentError {
       // The link names no section of the book.
     } on Exception {
@@ -866,7 +868,7 @@ class ReaderContentsPanel extends StatelessWidget {
 
 /// A note of the book, [note], for a sheet headed Note. A long note
 /// scrolls. Copy of selected text reports [onCopy].
-class ReaderNotePanel extends StatelessWidget {
+class ReaderNotePanel extends StatefulWidget {
   const ReaderNotePanel({super.key, required this.note, required this.onCopy});
   final LaidNote note;
 
@@ -874,16 +876,70 @@ class ReaderNotePanel extends StatelessWidget {
   final ValueChanged<String> onCopy;
 
   @override
+  State<ReaderNotePanel> createState() => _ReaderNotePanelState();
+}
+
+class _ReaderNotePanelState extends State<ReaderNotePanel> {
+  final _scroll = ScrollController();
+
+  /// How far a scrolled note fades out under the title row: the room that
+  /// the title row leaves below its text.
+  static const _topFade = 16.0;
+
+  @override
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) => SafeArea(
     child: ConstrainedBox(
       constraints: BoxConstraints(
         maxHeight: MediaQuery.sizeOf(context).height * .7,
       ),
-      // The gap below keeps the note's last line off the sheet's edge.
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.only(bottom: 16),
-        child: Center(
-          child: EpubNoteView(note: note, onCopy: onCopy),
+      // A long note fades out under the title row once it scrolls, and in
+      // the space above the sheet's bottom edge while more of it follows.
+      // At its end that space is empty.
+      child: ListenableBuilder(
+        listenable: _scroll,
+        builder: (context, child) {
+          final top = _scroll.hasClients
+              ? _scroll.offset.clamp(0.0, _topFade)
+              : 0.0;
+          return ShaderMask(
+            blendMode: BlendMode.dstIn,
+            shaderCallback: (bounds) => LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: const [
+                Colors.transparent,
+                Colors.black,
+                Colors.black,
+                Colors.transparent,
+              ],
+              stops: [
+                0,
+                math.min(1, top / bounds.height),
+                math.max(0, 1 - glassSheetTextBottom / bounds.height),
+                1,
+              ],
+            ).createShader(bounds),
+            child: child,
+          );
+        },
+        // The note lines up with the sheet's title, right under its row.
+        child: SingleChildScrollView(
+          controller: _scroll,
+          padding: const EdgeInsets.fromLTRB(
+            glassSheetTextInset,
+            0,
+            glassSheetTextInset,
+            glassSheetTextBottom,
+          ),
+          child: Center(
+            child: EpubNoteView(note: widget.note, onCopy: widget.onCopy),
+          ),
         ),
       ),
     ),
