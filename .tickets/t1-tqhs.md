@@ -1,6 +1,6 @@
 ---
 id: t1-tqhs
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-11-09T02:25:32Z
