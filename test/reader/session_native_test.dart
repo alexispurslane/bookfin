@@ -172,18 +172,7 @@ Uint8List navBook(List<String> bodies, List<(String, String)> toc) {
           '<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Part'
           '</title></head><body>$body</body></html>',
   };
-  final archive = Archive()
-    ..add(
-      ArchiveFile.noCompress(
-        'mimetype',
-        20,
-        utf8.encode('application/epub+zip'),
-      ),
-    );
-  for (final MapEntry(key: path, value: text) in entries.entries) {
-    archive.add(ArchiveFile.string(path, text));
-  }
-  return ZipEncoder().encodeBytes(archive);
+  return _epub(entries);
 }
 
 /// An EPUB 2 book without contents whose spine lists [bodies] in order,
@@ -205,6 +194,17 @@ Uint8List bookWithoutContents(List<(String, String?)> bodies) {
           '<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Part'
           '</title></head><body>$body</body></html>',
   };
+  return _epub(entries);
+}
+
+/// The EPUB archive of [entries], after the uncompressed mimetype entry.
+///
+/// Every entry has one fixed time. The archive library otherwise stamps
+/// each entry with the time of the encode, which a ZIP file keeps to two
+/// seconds. Then a book built twice can get other bytes, and so another
+/// digest, and the reader rightly takes a place saved in one for a place
+/// in other content.
+Uint8List _epub(Map<String, String> entries) {
   final archive = Archive()
     ..add(
       ArchiveFile.noCompress(
@@ -216,10 +216,25 @@ Uint8List bookWithoutContents(List<(String, String?)> bodies) {
   for (final MapEntry(key: path, value: text) in entries.entries) {
     archive.add(ArchiveFile.string(path, text));
   }
+  for (final file in archive.files) {
+    file.lastModTime = _builtAt;
+  }
   return ZipEncoder().encodeBytes(archive);
 }
 
+/// The time of every entry of a test EPUB, in seconds from the epoch.
+final _builtAt = DateTime.utc(2026).millisecondsSinceEpoch ~/ 1000;
+
 void main() {
+  test('a test book built twice has the same bytes, so the reader takes it '
+      'for the same book', () async {
+    Uint8List build() => navBook(['<p>Same text.</p>'], const []);
+    final first = build();
+    // A ZIP file keeps times to two seconds, so this crosses a step.
+    await Future<void>.delayed(const Duration(milliseconds: 2100));
+    expect(build(), first);
+  });
+
   TestWidgetsFlutterBinding.ensureInitialized();
   setUpAll(loadReaderFont);
 
