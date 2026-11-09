@@ -33,7 +33,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'corpus/book.dart';
 import 'corpus/check.dart';
 import 'corpus/list.dart';
-import 'helpers.dart';
 
 final _name = Platform.environment['BOOKFIN_EPUB_CORPUS_PREPARE'];
 
