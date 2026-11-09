@@ -76,7 +76,7 @@ The renderer is main at merge 6d5afc1, after tc-z7au (hyphenation), tc-n6wv (fra
 | --- | --- | --- | --- |
 | Exceptions | 0 | | |
 | Broken saved places | 62 page starts at 26 px | Hong Lou Meng (Chinese) | t1-7l9c |
-| Blank pages from a split table row | 8 at 20 px | Hamlet, Plato's Dialogues, Roget's Thesaurus | t1-6ta8 |
+| Blank pages from a split table row | 8 at 20 px (none after t1-6ta8) | Hamlet, Plato's Dialogues, Roget's Thesaurus | t1-6ta8 |
 | Pages with only the border of an empty block | 2 at each size | The Divine Comedy, Through the Looking-Glass (Gutenberg) | t1-9vc1 |
 | Runs from a page start that differ | 3 at 20 px | The blank pages of Hamlet, Dialogues and Roget's Thesaurus | t1-6ta8 |
 | Slow paragraphs with many lines | Up to 3.6 s in one step (318 ms after t1-qtde) | Leaves of Grass (Song of Myself in `pre`), Hong Lou Meng, the index of The Origin of Species, verse with `br` | t1-qtde, tb-2l69 |
@@ -84,7 +84,7 @@ The renderer is main at merge 6d5afc1, after tc-z7au (hyphenation), tc-n6wv (fra
 | Unsupported features | 0 | | |
 
 - Broken saved places. `wordStart` copies epub.js, which saves the first space-delimited word at or after the page start. Chinese text has about one space per 100 characters. At 26 pixels a page holds about 200 characters, so the next space can lie on a later page. Then the saved place opens one or two pages later. The fix changes what Bookfin saves, so t1-7l9c asks for a product choice between two designs.
-- Blank pages. A table row taller than a page splits into fragments since te-4cez. A fragment of 10 pixels with no line can become a page of its own. A run from such a page also gives it another visible-character index than the main run.
+- Blank pages. A table row taller than a page splits into fragments since te-4cez. A fragment of 10 pixels with no line can become a page of its own. A run from such a page also gives it another visible-character index than the main run. t1-6ta8 found the cause: when the last lines of a split row fill a page, the cells' bottom padding became a fragment of its own, and a next row taller than a page left that fragment alone on a page. Now that padding is dropped at the break when no cell has a line left, as the space above a line is, so every fragment shows a line. After t1-6ta8, Hamlet, Plato's Dialogues and Roget's Thesaurus have no blank page and no run that cuts other pages, at both page settings, with runs from every page start.
 - Border pages. A first page that overflows (an image page of 682 pixels, a table page of 704 pixels, on a 671-pixel page) pushes the 2-pixel border of a following empty block onto a page of its own. Nobody knows yet whether Chromium does the same, so t1-9vc1 starts with a comparison.
 - Slow paragraphs. `LayoutRun._lineStarts` asks the engine for one line boundary per line, and the engine builds the metrics of every line on each call. So a paragraph with n lines costs on the order of n squared, and every run that resumes inside it pays again. Song of Myself takes 1,531 ms at 20 pixels and 3,553 ms at 26 pixels in one step.
 - Slow tables. A table is one flow item, so one step lays out the whole table. A run that starts inside a table lays out the whole table again. Standard Ebooks sets dialogue as tables, so Plato's Gorgias is one table of 266,000 characters (706 ms at 20 pixels). Roget's Thesaurus is one table of 1.74 million characters: 8.6 s at 20 pixels and 51 s at 26 pixels.

@@ -388,12 +388,24 @@ void main() {
     });
 
     test('the bottom padding of a cell that does not fit goes on the next '
-        'fragment', () {
+        'fragment when another cell goes on there', () {
       final fragments = rowFragments([
         (slices: [(0.0, 50.0), (50.0, 98.0)], height: 104, align: 0),
+        (slices: lines(5, 20), height: 106, align: 0),
       ], 100);
-      expect([for (final fragment in fragments) fragment.height], [100, 6]);
+      expect([for (final fragment in fragments) fragment.height], [100, 23]);
       expect([for (final fragment in fragments) fragment.cells[0].to], [2, 2]);
+      expect(fragments.last.cells[0].bottom, double.infinity);
+    });
+
+    test('the bottom padding of cells that have no slice left is dropped at '
+        'the break, so that every fragment shows a slice', () {
+      final fragments = rowFragments([
+        (slices: [(0.0, 50.0), (50.0, 98.0)], height: 104, align: 0),
+        (slices: lines(4, 20), height: 86, align: 0),
+      ], 100);
+      expect([for (final fragment in fragments) fragment.height], [100]);
+      expect([for (final cell in fragments.single.cells) cell.to], [2, 4]);
     });
   });
 
@@ -651,6 +663,30 @@ void main() {
         final resumed = runToEnd(section, from: main[page].start);
         expect(keys(resumed), keys(main.skip(page)), reason: 'page $page');
         expect(await pixels(resumed.first), await pixels(main[page]));
+        disposeAll(resumed);
+      }
+      disposeAll(main);
+    });
+
+    test('leaves no page that holds only the bottom padding of a row whose '
+        'lines fill its last page, before another row taller than a page', () {
+      // Each row is 26 lines of exactly 20 pixels: two pages of 260
+      // pixels, and then 10 pixels of bottom padding.
+      String row(String label) =>
+          '<tr><td>${[for (var line = 0; line < 26; line++) '$label line $line'].join('<br/>')}</td></tr>';
+      final section = prepared(
+        '<table>${row('First')}${row('Second')}</table>',
+        css: 'td{padding:0 0 10px;line-height:20px}',
+        settings: smallPage,
+      );
+      final main = runToEnd(section);
+      for (final (index, page) in main.indexed) {
+        expect(page.pieces, isNotEmpty, reason: 'page $index is blank');
+      }
+      expect(main, hasLength(4));
+      for (var page = 1; page < main.length; page++) {
+        final resumed = runToEnd(section, from: main[page].start);
+        expect(keys(resumed), keys(main.skip(page)), reason: 'page $page');
         disposeAll(resumed);
       }
       disposeAll(main);
