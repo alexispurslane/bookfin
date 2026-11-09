@@ -225,6 +225,9 @@ class EpubPager implements DocumentNavigator {
   /// such as a note that the book's style hides. It moves no place and
   /// reports nothing.
   ///
+  /// The note leaves out its back links: a link that the book marks as one
+  /// ([isBackLink]), or that points at a link to the note.
+  ///
   /// The note's flow lays out in steps between frames. Its images are
   /// decoded at the screen's pixel ratio before it is drawn.
   Future<LaidNote?> note(EpubLink link, {required double width}) async {
@@ -246,6 +249,12 @@ class EpubPager implements DocumentNavigator {
               fontSize: prepared.settings.fontSize,
               night: prepared.settings.night,
             ),
+            omit: [
+              for (final back in _linksIn(note))
+                if (isBackLink(back) ||
+                    await _pointsBack(back, index, (index, fragment)))
+                  back,
+            ],
           );
     if (excerpt == null) return null;
     final run = LayoutRun(excerpt);
@@ -670,22 +679,65 @@ class EpubPager implements DocumentNavigator {
   /// The spine index and the decoded fragment, or null for none, of
   /// [href], relative to the package document's directory. Throws when it
   /// names no section of the spine.
-  (int, String?) _destinationOf(String href) {
-    final url = Uri(
-      scheme: 'https',
-      host: 'book',
-      path: '/${_publication.packagePath}',
-    ).resolve(href);
+  (int, String?) _destinationOf(String href) =>
+      _hrefTarget(_publication.packagePath, href) ??
+      (throw ArgumentError.value(href, 'href', 'is not a section of the book'));
+
+  /// The section index and the fragment that [href] names, relative to the
+  /// book file at [base], or null when it names no section of the book.
+  (int, String?)? _hrefTarget(String base, String href) {
+    final Uri url;
+    try {
+      url = Uri(scheme: 'https', host: 'book', path: '/$base').resolve(href);
+    } on FormatException {
+      return null;
+    }
     final index = url.scheme == 'https' && url.host == 'book' && !url.hasQuery
         ? _publication.spine.indexOf(url.pathSegments.join('/'))
         : -1;
-    if (index < 0) {
-      throw ArgumentError.value(href, 'href', 'is not a section of the book');
-    }
+    if (index < 0) return null;
     final fragment = url.hasFragment && url.fragment.isNotEmpty
         ? Uri.decodeComponent(url.fragment)
         : null;
     return (index, fragment);
+  }
+
+  /// The `a` elements with an href at or inside [element], in document
+  /// order.
+  static Iterable<DomElement> _linksIn(DomElement element) sync* {
+    if (element.name == 'a' && element.attributes['href'] != null) {
+      yield element;
+    }
+    for (final child in element.elements) {
+      yield* _linksIn(child);
+    }
+  }
+
+  /// Whether [link], in section [section], points at a link to
+  /// [destination]: a link at, around or inside the element that it names.
+  Future<bool> _pointsBack(
+    DomElement link,
+    int section,
+    (int, String?) destination,
+  ) async {
+    final target = _hrefTarget(
+      _publication.spine[section],
+      link.attributes['href']!,
+    );
+    if (target == null) return false;
+    final (index, fragment) = target;
+    if (fragment == null) return false;
+    final named = (await _source.section(index)).dom.elementById(fragment);
+    if (named == null) return false;
+    final base = _publication.spine[index];
+    bool leads(DomElement element) =>
+        _hrefTarget(base, element.attributes['href']!) == destination;
+    for (DomElement? around = named; around != null; around = around.parent) {
+      if (around.name == 'a' && around.attributes['href'] != null) {
+        return leads(around);
+      }
+    }
+    return _linksIn(named).any(leads);
   }
 
   /// The nearest link that holds [place], or null when none does.

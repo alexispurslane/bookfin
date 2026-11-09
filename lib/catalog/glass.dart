@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -112,38 +113,23 @@ class PageBook extends InheritedTheme {
 ///
 /// [book] is the book the sheet is about, if any. A [title] heads the sheet
 /// below its drag handle, in the one heading style of glass sheets, and
-/// stays put while the content below it scrolls. An [expand]ed sheet fills
-/// the screen and brings its own close control, so it has no drag handle
-/// and no title.
-///
-/// The sheet is a glass pane, except with [glass] false, which draws the
-/// plain sheet of the theme with a drag handle, for a screen that keeps its
-/// own look, such as the reader. A plain sheet has no [book], [title] or
-/// [expand].
+/// stays put while the content below it scrolls. An [action] sits at the
+/// end of the title's row, as a quiet text button. A tap on it closes the
+/// sheet and reports [GlassSheetAction.onPressed]. An [expand]ed sheet
+/// fills the screen and brings its own close control, so it has no drag
+/// handle and no title.
 Future<T?> showGlassSheet<T>(
   BuildContext context, {
   Book? book,
   String? title,
+  GlassSheetAction? action,
   bool isScrollControlled = false,
   bool expand = false,
-  bool glass = true,
   AnimationStyle? sheetAnimationStyle,
   required WidgetBuilder builder,
 }) {
   assert(!expand || title == null, 'An expanded sheet draws its own top.');
-  assert(
-    glass || (book == null && title == null && !expand),
-    'A plain sheet has no glass parts.',
-  );
-  if (!glass) {
-    return showModalBottomSheet<T>(
-      context: context,
-      isScrollControlled: isScrollControlled,
-      showDragHandle: true,
-      sheetAnimationStyle: sheetAnimationStyle,
-      builder: builder,
-    );
-  }
+  assert(action == null || title != null, 'An action sits in the title row.');
   return showModalBottomSheet<T>(
     context: context,
     isScrollControlled: isScrollControlled || expand,
@@ -152,14 +138,16 @@ Future<T?> showGlassSheet<T>(
     backgroundColor: Colors.transparent,
     elevation: 0,
     barrierColor: Colors.black.withValues(alpha: 0.3),
-    constraints: expand ? const BoxConstraints.expand() : null,
+    constraints: expand
+        ? const BoxConstraints.expand()
+        : const BoxConstraints(maxWidth: _sheetWidth),
     sheetAnimationStyle: sheetAnimationStyle,
     builder: (context) {
       final handle = Theme.of(context).colorScheme.onSurfaceVariant;
       return SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.all(8),
+          padding: const EdgeInsets.all(_sheetInset),
           child: _StepBack(
             radius: 28,
             child: CoverGlass(
@@ -182,7 +170,7 @@ Future<T?> showGlassSheet<T>(
                               borderRadius: BorderRadius.circular(2),
                             ),
                           ),
-                          if (title != null) _SheetTitle(title),
+                          if (title != null) _SheetTitle(title, action: action),
                           Flexible(child: builder(context)),
                         ],
                       ),
@@ -195,28 +183,77 @@ Future<T?> showGlassSheet<T>(
   );
 }
 
+/// The widest that a glass sheet is, as a Material 3 bottom sheet is.
+const _sheetWidth = 640.0;
+
+/// The gap between a glass sheet and the screen edges.
+const _sheetInset = 8.0;
+
+/// The width of the content of a glass sheet on the screen of [context]:
+/// the screen's, at most [_sheetWidth], less the gaps at the sides.
+double glassSheetWidth(BuildContext context) =>
+    math.min(MediaQuery.sizeOf(context).width, _sheetWidth) - 2 * _sheetInset;
+
+/// The one quiet action at the end of a glass sheet's title row: [label],
+/// with [icon] after it, if any. A tap closes the sheet and reports
+/// [onPressed].
+class GlassSheetAction {
+  const GlassSheetAction(this.label, {this.icon, required this.onPressed});
+  final String label;
+  final IconData? icon;
+  final VoidCallback onPressed;
+}
+
 class _SheetTitle extends StatelessWidget {
-  const _SheetTitle(this.text);
+  const _SheetTitle(this.text, {this.action});
   final String text;
+  final GlassSheetAction? action;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final ink = theme.colorScheme.onSurface;
+    final action = this.action;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
-      child: Align(
-        alignment: AlignmentDirectional.centerStart,
-        child: Semantics(
-          header: true,
-          child: Text(
-            text,
-            style: theme.textTheme.headlineSmall?.copyWith(
-              fontFamily: 'Source Serif 4',
-              fontWeight: FontWeight.w600,
-              color: theme.colorScheme.onSurface,
+      // The action's own padding lines its label up with the sheet's edge.
+      padding: EdgeInsetsDirectional.fromSTEB(
+        20,
+        0,
+        action == null ? 20 : 8,
+        8,
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Semantics(
+              header: true,
+              child: Text(
+                text,
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  fontFamily: 'Source Serif 4',
+                  fontWeight: FontWeight.w600,
+                  color: ink,
+                ),
+              ),
             ),
           ),
-        ),
+          if (action != null)
+            TextButton.icon(
+              onPressed: () {
+                Navigator.pop(context);
+                action.onPressed();
+              },
+              icon: action.icon == null ? null : Icon(action.icon, size: 18),
+              iconAlignment: IconAlignment.end,
+              label: Text(action.label),
+              style: TextButton.styleFrom(
+                foregroundColor: ink,
+                minimumSize: const Size(48, 48),
+                tapTargetSize: MaterialTapTargetSize.padded,
+                textStyle: theme.textTheme.labelLarge,
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -363,21 +400,19 @@ Future<void> showGlassChoices<T>(
 /// [title] and [message], a [cancel] button, and a filled button labeled
 /// [action]. It is true only when the person chose [action]; Cancel and a tap
 /// outside the dialog are false.
-///
-/// The dialog is a glass pane, except with [glass] false, which draws a plain
-/// dialog for a screen that keeps its own look, such as the reader.
 Future<bool> confirmAction(
   BuildContext context, {
   required String title,
   required String message,
   required String action,
   String cancel = 'Cancel',
-  bool glass = true,
 }) async =>
     await showDialog<bool>(
       context: context,
-      builder: (context) {
-        final actions = [
+      builder: (context) => GlassDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
             child: Text(cancel),
@@ -386,19 +421,8 @@ Future<bool> confirmAction(
             onPressed: () => Navigator.pop(context, true),
             child: Text(action),
           ),
-        ];
-        return glass
-            ? GlassDialog(
-                title: Text(title),
-                content: Text(message),
-                actions: actions,
-              )
-            : AlertDialog(
-                title: Text(title),
-                content: Text(message),
-                actions: actions,
-              );
-      },
+        ],
+      ),
     ) ??
     false;
 

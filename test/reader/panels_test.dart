@@ -52,11 +52,10 @@ void main() {
     expect(chosen, ['two.xhtml']);
   });
 
-  testWidgets('the search panel reports a submitted query, a chosen hit and '
-      'Cancel search', (tester) async {
+  testWidgets('the search panel reports a submitted query and a chosen '
+      'hit', (tester) async {
     final queries = <String>[];
     final opened = <ReaderHit>[];
-    var cancels = 0;
     final hit = ReaderHit(PdfAddress(2, 0), 'the river follows the road');
     await _show(
       tester,
@@ -66,7 +65,6 @@ void main() {
         error: null,
         onSearch: queries.add,
         onOpenHit: opened.add,
-        onCancelSearch: () => cancels++,
       ),
     );
     await tester.enterText(find.byType(TextField), 'river');
@@ -77,10 +75,6 @@ void main() {
     await tester.tap(find.text('the river follows the road'));
     await tester.pump();
     expect(opened, [hit]);
-
-    await tester.tap(find.byTooltip('Cancel search'));
-    await tester.pump();
-    expect(cancels, 1);
   });
 
   testWidgets('the search panel says No matches only after a query found '
@@ -91,7 +85,6 @@ void main() {
       error: null,
       onSearch: (_) {},
       onOpenHit: (_) {},
-      onCancelSearch: () {},
     );
     await _show(tester, panel(searching: false));
     expect(find.text('No matches.'), findsNothing);

@@ -134,14 +134,23 @@ class PreparedSection {
   /// of [element], inside the boxes that are open before the first one. So
   /// its lines sit across the page as they do in the whole section, with
   /// their list markers. A paragraph that holds a node of [element] comes
-  /// whole. [settings] has the text size and the theme of [this.settings];
-  /// its width and its height can differ.
-  PreparedSection? excerpt(DomElement element, PageSettings settings) {
-    var last = element as DomNode;
-    while (last is DomElement && last.children.isNotEmpty) {
-      last = last.children.last;
+  /// whole, without the runs of the elements of [omit], and a paragraph
+  /// that [omit] leaves with no text but white space goes. [settings] has the text size
+  /// and the theme of [this.settings]; its width and its height can differ.
+  PreparedSection? excerpt(
+    DomElement element,
+    PageSettings settings, {
+    List<DomElement> omit = const [],
+  }) {
+    (int, int) span(DomElement element) {
+      var last = element as DomNode;
+      while (last is DomElement && last.children.isNotEmpty) {
+        last = last.children.last;
+      }
+      return (element.order, last.order);
     }
-    final (from, to) = (element.order, last.order);
+
+    final (from, to) = span(element);
     bool inside(int node) => node >= from && node <= to;
     bool runShows(InlineRun run) => switch (run) {
       TextRun(:final node) ||
@@ -158,6 +167,34 @@ class PreparedSection {
       ),
       BlockStart() || BlockEnd() => false,
     };
+    final omitted = [for (final element in omit) span(element)];
+    bool kept(InlineRun run) => !omitted.any(
+      (span) => _nodeOf(run) >= span.$1 && _nodeOf(run) <= span.$2,
+    );
+    StyledText strip(StyledText text) => StyledText(text.style, text.align, [
+      for (final run in text.runs)
+        if (kept(run))
+          run is RaisedRun
+              ? RaisedRun(run.node, strip(run.text), run.shift)
+              : run,
+    ]);
+    bool omits(StyledText text) => text.runs.any(
+      (run) => !kept(run) || (run is RaisedRun && omits(run.text)),
+    );
+    FlowItem? without(FlowItem item) {
+      if (item is! ParagraphItem || !omits(item.text)) return item;
+      final text = strip(item.text);
+      if (text.runs.every((run) => run is TextRun && run.text.trim().isEmpty)) {
+        return null;
+      }
+      return ParagraphItem(
+        text: text,
+        indent: item.indent,
+        orphans: item.orphans,
+        widows: item.widows,
+      );
+    }
+
     final first = flow.indexWhere(shows);
     if (first < 0) return null;
     final end = flow.lastIndexWhere(shows) + 1;
@@ -177,7 +214,7 @@ class PreparedSection {
       dom,
       [
         ...open,
-        ...flow.getRange(first, end),
+        for (final item in flow.getRange(first, end)) ?without(item),
         for (var close = 0; close < depth; close++) const BlockEnd(),
       ],
       styles,
@@ -185,6 +222,14 @@ class PreparedSection {
     );
   }
 }
+
+/// The [DomNode.order] of the node that [run] shows.
+int _nodeOf(InlineRun run) => switch (run) {
+  TextRun(:final node) ||
+  BreakRun(:final node) ||
+  ImageRun(:final node) ||
+  RaisedRun(:final node) => node,
+};
 
 /// Prepares each of [sources] for a page of [settings].
 List<PreparedSection> prepareSections(

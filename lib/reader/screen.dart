@@ -5,7 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../catalog/glass.dart'
-    show CoverGlass, PageBook, confirmAction, showGlassSheet;
+    show
+        CoverGlass,
+        GlassSheetAction,
+        PageBook,
+        confirmAction,
+        glassSheetWidth,
+        showGlassSheet;
 import '../catalog/model.dart' show Book;
 import '../foundation/listenable_selector.dart';
 import '../foundation/scrub_bar.dart';
@@ -54,11 +60,18 @@ class _ReaderScreenState extends State<ReaderScreen> {
     super.dispose();
   }
 
-  /// Shows the panel that [builder] builds on the reader's plain sheet, and
-  /// completes when the sheet closes.
-  Future<void> _sheet(WidgetBuilder builder) => showGlassSheet<void>(
+  /// Shows the panel that [builder] builds on a glass sheet that shows the
+  /// open book, under [title] and its [action], if any, and completes when
+  /// the sheet closes.
+  Future<void> _sheet(
+    WidgetBuilder builder, {
+    String? title,
+    GlassSheetAction? action,
+  }) => showGlassSheet<void>(
     context,
-    glass: false,
+    book: reader.book,
+    title: title,
+    action: action,
     isScrollControlled: true,
     builder: builder,
   );
@@ -116,30 +129,39 @@ class _ReaderScreenState extends State<ReaderScreen> {
           onReflowChanged: reader.setReflow,
         ),
       ),
+      title: 'Reading settings',
     ),
   );
 
   /// Shows the search panel, and ends the search when the sheet is gone,
-  /// however it closed.
+  /// however it closed: with Close, a hit, Back or a tap outside it.
   Future<void> _openSearch() async {
     ModalRoute<Object?>? route;
-    await _sheet((sheet) {
-      route ??= ModalRoute.of(sheet);
-      return ListenableBuilder(
-        listenable: reader.searchChanges,
-        builder: (_, _) => ReaderSearchPanel(
-          searching: reader.searching,
-          hits: reader.hits,
-          error: reader.searchError,
-          onSearch: (query) => unawaited(reader.search(query)),
-          onOpenHit: (hit) {
-            unawaited(reader.openHit(hit));
-            Navigator.pop(sheet);
-          },
-          onCancelSearch: () => Navigator.pop(sheet),
-        ),
-      );
-    });
+    await _sheet(
+      (sheet) {
+        route ??= ModalRoute.of(sheet);
+        return ListenableBuilder(
+          listenable: reader.searchChanges,
+          builder: (_, _) => ReaderSearchPanel(
+            searching: reader.searching,
+            hits: reader.hits,
+            error: reader.searchError,
+            onSearch: (query) => unawaited(reader.search(query)),
+            onOpenHit: (hit) {
+              unawaited(reader.openHit(hit));
+              Navigator.pop(sheet);
+            },
+          ),
+        );
+      },
+      title: 'Search',
+      // Close only closes the sheet. The search ends below, with the sheet.
+      action: GlassSheetAction(
+        'Close',
+        icon: Icons.close_rounded,
+        onPressed: () {},
+      ),
+    );
     // The sheet closes at once but slides away for a moment. Waiting until it
     // is gone keeps its results in place while it slides.
     await route?.completed;
@@ -147,14 +169,14 @@ class _ReaderScreenState extends State<ReaderScreen> {
   }
 
   /// Follows [link] of [pager]'s shown page. A link to a note shows the
-  /// note on the reader's plain sheet, and the page and the saved place
-  /// stay. The sheet's Go to note then shows the note in the book. Any
+  /// note on a glass sheet, and the page and the saved place stay. Go to
+  /// note in the sheet's title row then shows the note in the book. Any
   /// other link goes to its destination. A link that the pager cannot read
   /// goes to its destination too, which reports the failure.
   Future<void> _followLink(EpubPager pager, EpubLink link) async {
     LaidNote? note;
     try {
-      note = await pager.note(link, width: _noteWidth(context));
+      note = await pager.note(link, width: glassSheetWidth(context));
     } on ArgumentError {
       // The link names no section of the book.
     } on Exception {
@@ -167,18 +189,22 @@ class _ReaderScreenState extends State<ReaderScreen> {
     if (note == null) return reader.goToContents(link.href);
     var go = false;
     ModalRoute<Object?>? route;
-    await _sheet((sheet) {
-      route ??= ModalRoute.of(sheet);
-      return ReaderNotePanel(
-        note: note!,
-        onCopy: (text) =>
-            unawaited(Clipboard.setData(ClipboardData(text: text))),
-        onGoToNote: () {
-          go = true;
-          Navigator.pop(sheet);
-        },
-      );
-    });
+    await _sheet(
+      (sheet) {
+        route ??= ModalRoute.of(sheet);
+        return ReaderNotePanel(
+          note: note!,
+          onCopy: (text) =>
+              unawaited(Clipboard.setData(ClipboardData(text: text))),
+        );
+      },
+      title: 'Note',
+      action: GlassSheetAction(
+        'Go to note',
+        icon: Icons.arrow_forward_rounded,
+        onPressed: () => go = true,
+      ),
+    );
     // The sheet slides away for a moment after it closes, and draws the note
     // until it is gone.
     await route?.completed;
@@ -187,11 +213,6 @@ class _ReaderScreenState extends State<ReaderScreen> {
       await reader.goToContents(link.href);
     }
   }
-
-  /// The width that a note lays out at: the plain sheet's, which is the
-  /// screen's, at most 640 pixels, as a Material 3 bottom sheet is.
-  static double _noteWidth(BuildContext context) =>
-      math.min(MediaQuery.sizeOf(context).width, 640);
 
   /// Asks for a new title and note for [bookmark] in the shared bookmark
   /// editor, and saves them unless the person cancels.
@@ -202,7 +223,6 @@ class _ReaderScreenState extends State<ReaderScreen> {
       title: bookmark.title,
       note: bookmark.note,
       place: 'Saved ${dayAndTime(context, bookmark.createdAt)}',
-      glass: false,
     );
     if (edited == null) return;
     await reader.editBookmark(
@@ -219,7 +239,6 @@ class _ReaderScreenState extends State<ReaderScreen> {
       title: 'Delete reading bookmark?',
       message: 'Remove this bookmark on synced devices. Your reading place and other bookmarks stay.',
       action: 'Delete',
-      glass: false,
     )) {
       await reader.deleteBookmark(bookmark.id);
     }
@@ -599,8 +618,8 @@ class ReaderTools extends StatelessWidget {
 }
 
 /// The reading settings: the text size, the reading theme and, for a PDF,
-/// whether its pages show as reflowed text. A size button whose callback is
-/// null shows but is off.
+/// whether its pages show as reflowed text, for a sheet headed Reading
+/// settings. A size button whose callback is null shows but is off.
 class ReaderSettingsPanel extends StatelessWidget {
   const ReaderSettingsPanel({
     super.key,
@@ -659,7 +678,6 @@ class ReaderSettingsPanel extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Reading settings', style: theme.textTheme.headlineSmall),
             row(
               'Text size',
               Row(
@@ -846,20 +864,11 @@ class ReaderContentsPanel extends StatelessWidget {
   );
 }
 
-/// A note of the book, [note], on the reader's sheet, under the heading
-/// Note, with Go to note under it. A long note scrolls. Go to note reports
-/// [onGoToNote], and Copy of selected text reports [onCopy].
+/// A note of the book, [note], for a sheet headed Note. A long note
+/// scrolls. Copy of selected text reports [onCopy].
 class ReaderNotePanel extends StatelessWidget {
-  const ReaderNotePanel({
-    super.key,
-    required this.note,
-    required this.onGoToNote,
-    required this.onCopy,
-  });
+  const ReaderNotePanel({super.key, required this.note, required this.onCopy});
   final LaidNote note;
-
-  /// Reports a tap on Go to note.
-  final VoidCallback onGoToNote;
 
   /// Reports the text that the person chose to copy.
   final ValueChanged<String> onCopy;
@@ -870,45 +879,20 @@ class ReaderNotePanel extends StatelessWidget {
       constraints: BoxConstraints(
         maxHeight: MediaQuery.sizeOf(context).height * .7,
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Semantics(
-              header: true,
-              child: Text(
-                'Note',
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-            ),
-          ),
-          Flexible(
-            child: SingleChildScrollView(
-              child: Center(
-                child: EpubNoteView(note: note, onCopy: onCopy),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: FilledButton.tonal(
-                onPressed: onGoToNote,
-                child: const Text('Go to note'),
-              ),
-            ),
-          ),
-        ],
+      // The gap below keeps the note's last line off the sheet's edge.
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: Center(
+          child: EpubNoteView(note: note, onCopy: onCopy),
+        ),
       ),
     ),
   );
 }
 
-/// A search field over the [hits] of the last search. [searching] shows
-/// that a search runs, and [error] says why a search is incomplete.
+/// A search field over the [hits] of the last search, for a sheet headed
+/// Search. [searching] shows that a search runs, and [error] says why a
+/// search is incomplete.
 class ReaderSearchPanel extends StatefulWidget {
   const ReaderSearchPanel({
     super.key,
@@ -917,7 +901,6 @@ class ReaderSearchPanel extends StatefulWidget {
     required this.error,
     required this.onSearch,
     required this.onOpenHit,
-    required this.onCancelSearch,
   });
   final bool searching;
   final List<ReaderHit> hits;
@@ -928,9 +911,6 @@ class ReaderSearchPanel extends StatefulWidget {
 
   /// Reports the hit that the person chose.
   final ValueChanged<ReaderHit> onOpenHit;
-
-  /// Reports a tap on Cancel search.
-  final VoidCallback onCancelSearch;
   @override
   State<ReaderSearchPanel> createState() => _ReaderSearchPanelState();
 }
@@ -956,21 +936,6 @@ class _ReaderSearchPanelState extends State<ReaderSearchPanel> {
         height: MediaQuery.sizeOf(context).height * .7,
         child: Column(
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    'Search',
-                    style: Theme.of(context).textTheme.headlineSmall,
-                  ),
-                ),
-                IconButton(
-                  tooltip: 'Cancel search',
-                  onPressed: widget.onCancelSearch,
-                  icon: const Icon(Icons.close_rounded),
-                ),
-              ],
-            ),
             TextField(
               controller: _query,
               autofocus: true,

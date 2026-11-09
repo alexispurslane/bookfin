@@ -38,7 +38,7 @@ Future<void> runBookfin({bool gallery = false}) async {
   WidgetsFlutterBinding.ensureInitialized();
   LicenseRegistry.addLicense(readerLicenses);
   LicenseRegistry.addLicense(() async* {
-    for (final font in ['Outfit', 'Source-Serif-4']) {
+    for (final font in ['Outfit', 'Source-Serif-4', 'Noto-Sans-Math']) {
       yield LicenseEntryWithLineBreaks([
         font,
       ], await rootBundle.loadString('assets/fonts/OFL-$font.txt'));

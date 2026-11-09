@@ -43,6 +43,9 @@ flutter:
     - family: Source Serif 4
       fonts:
         - asset: assets/fonts/SourceSerif4.ttf
+    - family: Noto Sans Math Arrows
+      fonts:
+        - asset: assets/fonts/NotoSansMath-Arrows.ttf
   assets:
     - assets/licenses/reader/
     - assets/licenses/ocr/
@@ -51,3 +54,4 @@ flutter:
     - assets/cities/NOTICE.txt
     - assets/fonts/OFL-Outfit.txt
     - assets/fonts/OFL-Source-Serif-4.txt
+    - assets/fonts/OFL-Noto-Sans-Math.txt

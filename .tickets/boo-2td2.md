@@ -1,6 +1,6 @@
 ---
 id: boo-2td2
-status: open
+status: in_progress
 deps: []
 links: []
 created: 2026-11-09T13:15:58Z
