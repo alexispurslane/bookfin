@@ -1,6 +1,6 @@
 ---
 id: t1-qtde
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-08T23:49:54Z
