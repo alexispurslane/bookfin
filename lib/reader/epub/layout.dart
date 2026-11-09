@@ -2512,7 +2512,7 @@ EpubPlace? _firstPlace(int section, FlowItem item) {
             return EpubPlace(section, node, offsets[0]);
           case BreakRun(:final node) when node >= 0:
             return EpubPlace(section, node, 0);
-          case ImageRun(:final node) || RaisedRun(:final node):
+          case ImageRun(:final node) || RaisedRun(:final node) when node >= 0:
             return EpubPlace(section, node, 0);
           default:
             continue;

@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:ui' as ui;
 
 import 'package:bookfin/catalog/glass.dart' show CoverGlass;
 import 'package:bookfin/foundation/theme.dart';
 import 'package:bookfin/reader/document.dart';
+import 'package:bookfin/reader/epub/layout.dart' show Slice;
 import 'package:bookfin/reader/epub/pager.dart';
 import 'package:bookfin/reader/epub/publication.dart';
 import 'package:bookfin/reader/epub/viewport.dart';
@@ -629,6 +631,66 @@ void main() {
       expect(shownOf(reader)!.page, same(first));
       expect(reader.visibleAddress, same(saved));
       handle.dispose();
+      await closeNative(tester, reader);
+    }, variant: TargetPlatformVariant.only(TargetPlatform.android));
+
+    testWidgets('the note\'s text lines up with the sheet\'s heading, and '
+        'the space between the heading\'s letters and the note\'s equals '
+        'the space between the note\'s letters and the sheet\'s edge', (
+      tester,
+    ) async {
+      final reader = await openNative(tester, publication: noteChapterBook());
+
+      await tester.tapAt(linkPoint(tester, reader, (link) => link.noteref));
+      await settleReader(
+        tester,
+        () => find.byType(EpubNoteView).evaluate().isNotEmpty,
+      );
+      await tester.pumpAndSettle();
+
+      final view = find.byType(EpubNoteView);
+      final note = tester.getRect(view);
+      final pane = tester.getRect(
+        find.ancestor(of: view, matching: find.byType(CoverGlass)),
+      );
+      final title = find.descendant(
+        of: find.byType(CoverGlass),
+        matching: find.text('Note'),
+      );
+      final heading = tester.getRect(title);
+      expect(note.left, heading.left);
+      expect(
+        note.right,
+        moreOrLessEquals(pane.right - (heading.left - pane.left)),
+      );
+
+      // The heading, Note, has no descenders, so its letters end at its
+      // baseline. The note's letters reach from its first line's ascent to
+      // its last line's descent.
+      final headingBox = tester.renderObject<RenderBox>(title);
+      final headingBaseline =
+          heading.top +
+          headingBox.getDryBaseline(
+            BoxConstraints(maxWidth: headingBox.size.width),
+            TextBaseline.alphabetic,
+          )!;
+      final page = tester.widget<EpubNoteView>(view).note.page;
+      ui.LineMetrics metrics(Slice slice) =>
+          slice.piece!.paragraph.computeLineMetrics()[slice.line];
+      double lineTop(Slice slice) =>
+          note.top + slice.piece!.y - page.top + metrics(slice).baseline;
+      final lines = page.slices.where((slice) => slice.piece != null);
+      final above =
+          lineTop(lines.first) - metrics(lines.first).ascent - headingBaseline;
+      final below =
+          pane.bottom - lineTop(lines.last) - metrics(lines.last).descent;
+      expect(
+        above,
+        moreOrLessEquals(below, epsilon: 5),
+        reason:
+            'The font\'s ascent and descent reach a little past its '
+            'letters, so the bands match to within 5 pixels.',
+      );
       await closeNative(tester, reader);
     }, variant: TargetPlatformVariant.only(TargetPlatform.android));
 

@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 
 import 'book_cover.dart';
 import 'model.dart';
@@ -149,10 +150,10 @@ Future<T?> showGlassSheet<T>(
         child: Padding(
           padding: const EdgeInsets.all(_sheetInset),
           child: _StepBack(
-            radius: 28,
+            radius: _sheetRadius,
             child: CoverGlass(
               book: book,
-              radius: 28,
+              radius: _sheetRadius,
               tint: 0.65,
               child: Material(
                 type: MaterialType.transparency,
@@ -189,10 +190,26 @@ const _sheetWidth = 640.0;
 /// The gap between a glass sheet and the screen edges.
 const _sheetInset = 8.0;
 
-/// The width of the content of a glass sheet on the screen of [context]:
-/// the screen's, at most [_sheetWidth], less the gaps at the sides.
-double glassSheetWidth(BuildContext context) =>
-    math.min(MediaQuery.sizeOf(context).width, _sheetWidth) - 2 * _sheetInset;
+/// The radius of a glass sheet's corners.
+const _sheetRadius = 28.0;
+
+/// The space between a glass sheet's sides and its text. The title row
+/// keeps it, so text that keeps it too lines up with the title.
+const glassSheetTextInset = 20.0;
+
+/// The space between a glass sheet's text and its bottom edge: the radius
+/// of its corners, so the last line clears their curve. Text right under
+/// the title row then sits as far from the title's letters as from the
+/// sheet's edge, because the title row leaves room below its text.
+const glassSheetTextBottom = _sheetRadius;
+
+/// The width of text that lines up with a glass sheet's title on the
+/// screen of [context]: the sheet's width, the screen's at most
+/// [_sheetWidth] less the gaps at the sides, less [glassSheetTextInset] at
+/// each side.
+double glassSheetTextWidth(BuildContext context) =>
+    math.min(MediaQuery.sizeOf(context).width, _sheetWidth) -
+    2 * (_sheetInset + glassSheetTextInset);
 
 /// The one quiet action at the end of a glass sheet's title row: [label],
 /// with [icon] after it, if any. A tap closes the sheet and reports
@@ -214,49 +231,124 @@ class _SheetTitle extends StatelessWidget {
     final theme = Theme.of(context);
     final ink = theme.colorScheme.onSurface;
     final action = this.action;
+    final heading = Semantics(
+      header: true,
+      child: Text(
+        text,
+        style: theme.textTheme.headlineSmall?.copyWith(
+          fontFamily: 'Source Serif 4',
+          fontWeight: FontWeight.w600,
+          color: ink,
+        ),
+      ),
+    );
     return Padding(
       // The action's own padding lines its label up with the sheet's edge.
       padding: EdgeInsetsDirectional.fromSTEB(
-        20,
+        glassSheetTextInset,
         0,
-        action == null ? 20 : 8,
+        action == null ? glassSheetTextInset : 8,
         8,
       ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Semantics(
-              header: true,
-              child: Text(
-                text,
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  fontFamily: 'Source Serif 4',
-                  fontWeight: FontWeight.w600,
-                  color: ink,
+      child: action == null
+          ? heading
+          : _TitleRow(
+              heading: heading,
+              action: TextButton.icon(
+                onPressed: () {
+                  Navigator.pop(context);
+                  action.onPressed();
+                },
+                icon: action.icon == null ? null : Icon(action.icon, size: 18),
+                iconAlignment: IconAlignment.end,
+                label: Text(action.label),
+                style: TextButton.styleFrom(
+                  foregroundColor: ink,
+                  minimumSize: const Size(48, 48),
+                  tapTargetSize: MaterialTapTargetSize.padded,
+                  textStyle: theme.textTheme.labelLarge,
                 ),
               ),
             ),
-          ),
-          if (action != null)
-            TextButton.icon(
-              onPressed: () {
-                Navigator.pop(context);
-                action.onPressed();
-              },
-              icon: action.icon == null ? null : Icon(action.icon, size: 18),
-              iconAlignment: IconAlignment.end,
-              label: Text(action.label),
-              style: TextButton.styleFrom(
-                foregroundColor: ink,
-                minimumSize: const Size(48, 48),
-                tapTargetSize: MaterialTapTargetSize.padded,
-                textStyle: theme.textTheme.labelLarge,
-              ),
-            ),
-        ],
-      ),
     );
   }
+}
+
+/// A sheet's [heading] and its [action] in one row, the heading at the
+/// start and the action at the end, both centered on the row. When the
+/// heading's longest word does not fit beside the action, as at a large text
+/// size, the heading takes the whole width and the action moves under it,
+/// to the end.
+class _TitleRow extends MultiChildRenderObjectWidget {
+  _TitleRow({required Widget heading, required Widget action})
+    : super(children: [heading, action]);
+
+  @override
+  _RenderTitleRow createRenderObject(BuildContext context) =>
+      _RenderTitleRow(Directionality.of(context));
+
+  @override
+  void updateRenderObject(BuildContext context, _RenderTitleRow row) =>
+      row.textDirection = Directionality.of(context);
+}
+
+class _TitleRowParentData extends ContainerBoxParentData<RenderBox> {}
+
+class _RenderTitleRow extends RenderBox
+    with
+        ContainerRenderObjectMixin<RenderBox, _TitleRowParentData>,
+        RenderBoxContainerDefaultsMixin<RenderBox, _TitleRowParentData> {
+  _RenderTitleRow(this._textDirection);
+
+  TextDirection _textDirection;
+  set textDirection(TextDirection value) {
+    if (value == _textDirection) return;
+    _textDirection = value;
+    markNeedsLayout();
+  }
+
+  @override
+  void setupParentData(RenderBox child) {
+    if (child.parentData is! _TitleRowParentData) {
+      child.parentData = _TitleRowParentData();
+    }
+  }
+
+  @override
+  void performLayout() {
+    final heading = firstChild!;
+    final action = childAfter(heading)!;
+    final width = constraints.maxWidth;
+    action.layout(constraints.loosen(), parentUsesSize: true);
+    final beside =
+        heading.getMinIntrinsicWidth(double.infinity) <=
+        width - action.size.width;
+    heading.layout(
+      BoxConstraints(maxWidth: beside ? width - action.size.width : width),
+      parentUsesSize: true,
+    );
+    final ltr = _textDirection == TextDirection.ltr;
+    final height = beside
+        ? math.max(heading.size.height, action.size.height)
+        : heading.size.height + action.size.height;
+    (heading.parentData! as _TitleRowParentData).offset = Offset(
+      ltr ? 0 : width - heading.size.width,
+      beside ? (height - heading.size.height) / 2 : 0,
+    );
+    (action.parentData! as _TitleRowParentData).offset = Offset(
+      ltr ? width - action.size.width : 0,
+      beside ? (height - action.size.height) / 2 : heading.size.height,
+    );
+    size = constraints.constrain(Size(width, height));
+  }
+
+  @override
+  void paint(PaintingContext context, Offset offset) =>
+      defaultPaint(context, offset);
+
+  @override
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) =>
+      defaultHitTestChildren(result, position: position);
 }
 
 /// Makes a glass pane step back, smaller and darker, while another route
