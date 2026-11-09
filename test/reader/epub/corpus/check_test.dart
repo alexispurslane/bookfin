@@ -60,6 +60,24 @@ void main() {
     expect(found.runs, found.pages - 1);
   });
 
+  test('a page that shows only the border of an empty block after an '
+      'overflowing page is not blank, as Chromium shows it too', () async {
+    final report = await checkBook(
+      'border',
+      _made(
+        madeUpEpub([
+          '<p style="line-height:700px">Tall</p>'
+              '<div style="border-top:2px solid"></div>',
+        ]),
+      ),
+    );
+    expect(report.exceptions, isEmpty);
+    for (final each in report.settings) {
+      expect(each.pages, 2);
+      expect(each.blankPages, isEmpty);
+    }
+  });
+
   test('a page that shows only an image is not blank', () async {
     final tall = img.encodePng(img.Image(width: 100, height: 1000));
     final report = await checkBook(

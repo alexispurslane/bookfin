@@ -90,7 +90,7 @@ class SettingsReport {
   /// The page starts whose CFI does not open their own page.
   final brokenPlaces = <String>[];
 
-  /// The pages that show no line of text and no image.
+  /// The pages that draw nothing: no line of text, no image and no rule.
   final blankPages = <String>[];
 
   /// The runs from a page start, the pages that they cut, and the runs
@@ -337,7 +337,7 @@ ChapterLayout _layOut(
 }
 
 /// The CFI round trip: the CFI of each page start opens the same page. A
-/// page with no line and no image is blank.
+/// page that draws nothing, no line, image or rule, is blank.
 void _checkPlaces(
   CorpusBook book,
   ChapterLayout chapter,
@@ -347,8 +347,10 @@ void _checkPlaces(
   final dom = chapter.section.dom;
   for (var page = 0; page < chapter.pages.length; page++) {
     final laid = chapter.pages[page];
-    if (laid.pieces.isEmpty &&
-        !laid.decorations.any((shown) => shown is ImageDecoration)) {
+    // A page that draws only a rule is not blank: Chromium also shows the
+    // border of an empty block on a page of its own after a page that
+    // overflows (t1-9vc1).
+    if (laid.pieces.isEmpty && laid.decorations.isEmpty) {
       found.blankPages.add('section $index page $page');
     }
     final start = laid.startPlace;
