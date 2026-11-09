@@ -488,4 +488,55 @@ void main() {
       disposeAll(pages);
     }
   });
+
+  test('a paragraph\'s lines start at each soft wrap and after each hard '
+      'break, whose newline ends the line that it breaks', () async {
+    // The code units [start, end) of each line, as the renderer cut them
+    // when it asked the engine for one line boundary per line.
+    final expected = {
+      '<p>${prose(1, 'Wrapped')}<br/>Short line<br/><br/>After an empty '
+          'line<br/>Trailing ${prose(1, 'Last')}<br/></p>': [
+        (0, 39), (39, 81), (81, 89), (89, 100), (100, 101), //
+        (101, 121), (121, 157), (157, 196), (196, 216), (216, 216),
+      ],
+      '<pre>one\ntwo two\n\nfour four four four four four four four four '
+          'four four four four four four four four\n</pre>': [
+        (0, 4), (4, 12), (12, 13), (13, 28), (28, 43), //
+        (43, 58), (58, 73), (73, 88), (88, 98), (98, 98),
+      ],
+      '<p lang="en" style="hyphens:auto;text-align:justify">'
+          '${prose(2, 'Extraordinarily')} incomprehensibilities<br/>'
+          'characteristically</p>': [
+        (0, 43), (43, 80), (80, 121), (121, 165), //
+        (165, 205), (205, 231), (231, 254),
+      ],
+      '<p>Ancient 𝔊𝔬𝔱𝔥𝔦𝔠 letters 𝔊𝔬𝔱𝔥𝔦𝔠 𝔊𝔬𝔱𝔥𝔦𝔠 𝔊𝔬𝔱𝔥𝔦𝔠 𝔊𝔬𝔱𝔥𝔦𝔠 and more '
+          '𝔊𝔬𝔱𝔥𝔦𝔠 𝔊𝔬𝔱𝔥𝔦𝔠 𝔊𝔬𝔱𝔥𝔦𝔠 words<br/>end</p>': [
+        (0, 55),
+        (55, 103),
+        (103, 135),
+        (135, 138),
+      ],
+      '<p style="padding-left:2em;text-indent:-2em">'
+          '${prose(1, 'Hanging')}<br/>second<br/></p>': [
+        (0, 39),
+        (0, 36),
+        (36, 50),
+        (50, 57),
+        (57, 57),
+      ],
+    };
+    for (final MapEntry(key: body, value: lines) in expected.entries) {
+      final chapter = await lay(body);
+      expect(
+        [
+          for (final slice in chapter.slices)
+            if (slice.piece != null) slice.units,
+        ],
+        lines,
+        reason: body,
+      );
+      chapter.dispose();
+    }
+  });
 }

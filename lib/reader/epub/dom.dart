@@ -5,6 +5,9 @@
 // element children, and each text node's index among its parent's text
 // children. epub.js numbers CFI steps from the same two indices. Nothing
 // here uses dart:ui, so a worker isolate can build it.
+import 'dart:math' as math;
+import 'dart:typed_data';
+
 import 'package:xml/xml.dart';
 
 /// A place in an EPUB: a section, a node's document order in it, and a
@@ -65,6 +68,31 @@ final class DomText extends DomNode {
   /// The number of visible characters (white space left out) in the
   /// section's body before this node. Set by [DomSection].
   int visibleBefore = 0;
+
+  /// The number of visible characters in [text] before code unit [offset].
+  ///
+  /// It counts from the nearest of the counts kept at every [_chunk] code
+  /// units, so that the pages of a long text node, such as a poem in one
+  /// `pre` element, do not each count from the node's start.
+  int visibleTo(int offset) {
+    final end = math.min(offset, text.length);
+    if (text.length <= _chunk) return visibleCount(text, 0, end);
+    final chunk = end ~/ _chunk;
+    return _chunks[chunk] + visibleCount(text, chunk * _chunk, end);
+  }
+
+  static const _chunk = 256;
+
+  /// The visible characters before each multiple of [_chunk] code units.
+  late final Int32List _chunks = () {
+    final counts = Int32List(text.length ~/ _chunk + 1);
+    for (var chunk = 1; chunk < counts.length; chunk++) {
+      counts[chunk] =
+          counts[chunk - 1] +
+          visibleCount(text, (chunk - 1) * _chunk, chunk * _chunk);
+    }
+    return counts;
+  }();
 }
 
 final class DomElement extends DomNode {
@@ -183,7 +211,7 @@ class DomSection {
   int visibleBefore(EpubPlace place) {
     final node = _nodes[place.node];
     if (node is DomText) {
-      return node.visibleBefore + visibleCount(node.text, 0, place.offset);
+      return node.visibleBefore + node.visibleTo(place.offset);
     }
     return textFrom(node)?.visibleBefore ?? visibleLength;
   }

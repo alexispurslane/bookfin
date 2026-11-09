@@ -79,7 +79,7 @@ The renderer is main at merge 6d5afc1, after tc-z7au (hyphenation), tc-n6wv (fra
 | Blank pages from a split table row | 8 at 20 px | Hamlet, Plato's Dialogues, Roget's Thesaurus | t1-6ta8 |
 | Pages with only the border of an empty block | 2 at each size | The Divine Comedy, Through the Looking-Glass (Gutenberg) | t1-9vc1 |
 | Runs from a page start that differ | 3 at 20 px | The blank pages of Hamlet, Dialogues and Roget's Thesaurus | t1-6ta8 |
-| Slow paragraphs with many lines | Up to 3.6 s in one step | Leaves of Grass (Song of Myself in `pre`), Hong Lou Meng, the index of The Origin of Species, verse with `br` | t1-qtde |
+| Slow paragraphs with many lines | Up to 3.6 s in one step (318 ms after t1-qtde) | Leaves of Grass (Song of Myself in `pre`), Hong Lou Meng, the index of The Origin of Species, verse with `br` | t1-qtde, tb-2l69 |
 | Slow tables | Up to 51 s in one step | Roget's Thesaurus, Plato's Dialogues, Ulysses chapter 15, Standard Ebooks plays | t1-um08 |
 | Unsupported features | 0 | | |
 
@@ -89,6 +89,19 @@ The renderer is main at merge 6d5afc1, after tc-z7au (hyphenation), tc-n6wv (fra
 - Slow paragraphs. `LayoutRun._lineStarts` asks the engine for one line boundary per line, and the engine builds the metrics of every line on each call. So a paragraph with n lines costs on the order of n squared, and every run that resumes inside it pays again. Song of Myself takes 1,531 ms at 20 pixels and 3,553 ms at 26 pixels in one step.
 - Slow tables. A table is one flow item, so one step lays out the whole table. A run that starts inside a table lays out the whole table again. Standard Ebooks sets dialogue as tables, so Plato's Gorgias is one table of 266,000 characters (706 ms at 20 pixels). Roget's Thesaurus is one table of 1.74 million characters: 8.6 s at 20 pixels and 51 s at 26 pixels.
 - Hyphenation cost. Against the run before the merge, the median layout time per 10,000 characters doubled for the Standard Ebooks books, which ask for hyphenation, and fell to 0.88 times for the Gutenberg books, which do not. The note is on t0-z3m1.
+
+### Layout steps after t1-qtde
+
+t1-qtde finds a paragraph's line starts with one binary search per line (`Paragraph.getLineNumberAt`), not with one `getLineBoundary` call per line. It also counts the visible characters of a long text node from a count kept every 256 code units, and releases pieces once per flow item, not once per page. Each of the three costs grew with the square of a paragraph's lines. The table gives the slowest layout step of each book, in milliseconds, from the corpus run before (under heavy load) and a run of the four books after (load 5 to 15 on 10 cores).
+
+| Book | Section, item | Before, 20 px | Before, 26 px | After, 20 px | After, 26 px |
+| --- | --- | --- | --- | --- | --- |
+| Leaves of Grass (Gutenberg), Song of Myself | 27, 9 | 1,531 | 3,553 | 70 | 318 |
+| Hong Lou Meng | 2, 17 | 1,082 | 1,897 | 57 | 59 |
+| The Origin of Species (Gutenberg), index | 17, 6 | 424 | 656 | 32 | 34 |
+| Pride and Prejudice (Standard Ebooks), Darcy's letter | 36, 19 | 138 | 256 | 107 | 194 |
+
+The rest of these steps is the engine's own work on one paragraph. On a lightly loaded host, Song of Myself takes 96 ms at 20 pixels and 143 ms at 26 pixels, of which `Paragraph.layout` takes 69 ms and 120 ms (tb-2l69). Darcy's letter lays out 20 and 32 times, once more after each word joiner that hyphenation adds (tb-a6zd). The on-demand benchmark `BOOKFIN_EPUB_STEPS=1 flutter test test/reader/epub/step_budget_test.dart` holds the step of a paragraph of 4,000 lines to less than 8 times the step of 1,000 lines. Before t1-qtde the factor was 14 (815 ms and 11,246 ms). After it the factor is 5.5 to 5.7.
 
 ### The run before the merge
 

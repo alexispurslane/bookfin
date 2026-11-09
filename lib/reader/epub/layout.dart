@@ -706,8 +706,17 @@ class LayoutRun {
     }
   }
 
-  /// Publishes every page that the slices laid out so far decide.
+  /// Publishes every page that the slices laid out so far decide, and lets
+  /// go of the pieces that no later page can show.
   void _cut() {
+    final published = _pages.length;
+    _publishDecided();
+    // NOTE: Once per flow item, not once per page, because the release reads
+    // every pending slice: one long paragraph can leave thousands (t1-qtde).
+    if (_pages.length > published) _releaseUnreachable();
+  }
+
+  void _publishDecided() {
     final atEnd = _item == _flow.length;
     while (!_done) {
       final count = _pending.length;
@@ -790,7 +799,6 @@ class LayoutRun {
         MarkerDecoration(:final offset) => offset.dy < bottom,
       },
     );
-    _releaseUnreachable();
     if (last) _done = true;
   }
 
@@ -1534,47 +1542,44 @@ class LayoutRun {
     required bool justified,
   }) {
     final paragraph = built.paragraph;
+    final length = built.map.length;
+    final metrics = paragraph.computeLineMetrics();
+    final starts = _lineStarts(paragraph, length, metrics.length);
+    // The end of each line before its hard break's newline.
+    int end(int line) => line + 1 < starts.length
+        ? starts[line + 1] - (metrics[line].hardBreak ? 1 : 0)
+        : length;
     for (final unit in built.softHyphens) {
       if (unit < check || marks[unit] != _hyphen) continue;
-      final line = paragraph.getLineBoundary(ui.TextPosition(offset: unit));
-      if (line.end != unit + 1) {
+      final line = paragraph.getLineNumberAt(unit)!;
+      if (end(line) != unit + 1) {
         marks[unit] = _joiner;
         marks.removeWhere((other, mark) => other > unit && mark == _hyphen);
         // The line before it broke early, and breaks again.
-        final before = line.start > 0
-            ? paragraph
-                  .getLineBoundary(ui.TextPosition(offset: line.start - 1))
-                  .start
-            : 0;
-        return (unit, before);
+        return (unit, line > 0 ? starts[line - 1] : 0);
       }
     }
     if (scan == null) return null;
     var changed = false;
-    final length = built.map.length;
-    var offset = paragraph
-        .getLineBoundary(ui.TextPosition(offset: math.min(scan, length - 1)))
-        .start;
-    while (offset < length) {
-      final line = paragraph.getLineBoundary(ui.TextPosition(offset: offset));
-      final unit = line.end - 1;
-      offset = math.max(line.end, offset + 1);
+    for (
+      var line = paragraph.getLineNumberAt(math.min(scan, length - 1))!;
+      line < starts.length;
+      line++
+    ) {
+      final unit = end(line) - 1;
       if (unit + 1 >= length ||
           marks.containsKey(unit) ||
           built.unitAt(unit) != softHyphen) {
         continue;
       }
-      final metrics = paragraph.getLineMetricsAt(
-        paragraph.getLineNumberAt(unit)!,
-      )!;
       final natural = justified
-          ? _naturalWidth(built, metrics, line.start, unit)
-          : metrics.width;
+          ? _naturalWidth(built, metrics[line], starts[line], unit)
+          : metrics[line].width;
       final hyphen = _advances.hyphen(built.styleAt(unit), _textStyles);
       if (natural + hyphen > width + _fitTolerance) {
         marks[unit] = _joiner;
         // The line breaks earlier, maybe at another soft hyphen.
-        return (scan, line.start);
+        return (scan, starts[line]);
       }
       marks[unit] = _hyphen;
       changed = true;
@@ -1649,7 +1654,7 @@ class LayoutRun {
       _place(first, x + indent, item, index, from: from);
       return;
     }
-    final end = _lineStarts(first.paragraph, 2)[1];
+    final end = _lineStarts(first.paragraph, first.map.length, 2)[1];
     final rest = _layOut(item.text, 0, width, from: end);
     final total = 1 + rest.paragraph.computeLineMetrics().length;
     if (from == 0) {
@@ -1713,7 +1718,11 @@ class LayoutRun {
         held.dispose();
       }
     }
-    final starts = _lineStarts(paragraph, math.min(count + 1, metrics.length));
+    final starts = _lineStarts(
+      paragraph,
+      built.map.length,
+      math.min(count + 1, metrics.length),
+    );
     for (var line = from; line < count; line++) {
       final bottom = tops[line + 1];
       final above = before + line;
@@ -1746,19 +1755,39 @@ class LayoutRun {
     _y = piece.y + (lines == null ? tops.last : top);
   }
 
-  /// The first code unit of each of a paragraph's [count] lines.
-  static List<int> _lineStarts(ui.Paragraph paragraph, int count) {
+  /// The first code unit of each of the first [count] lines of [paragraph],
+  /// whose text is [length] code units long. A hard break's newline belongs
+  /// to the line that it ends.
+  ///
+  /// It asks the engine only for the line of a code unit, which is a binary
+  /// search over the lines. NOTE: Paragraph.getLineBoundary builds the
+  /// metrics of every line on each call, so one call per line costs on the
+  /// order of n squared for a paragraph of n lines (t1-qtde).
+  static List<int> _lineStarts(ui.Paragraph paragraph, int length, int count) {
     final starts = <int>[];
-    var offset = 0;
+    var start = 0;
     for (var line = 0; line < count; line++) {
-      starts.add(offset);
-      final range = paragraph.getLineBoundary(ui.TextPosition(offset: offset));
-      var next = math.max(range.end, offset + 1);
-      // A hard break's newline belongs to the line that it ends.
-      while (paragraph.getLineNumberAt(next) == line) {
-        next++;
+      starts.add(start);
+      // The next line starts at the first code unit after [start] that is
+      // not on this line, or at the end. Gallop forward, then halve.
+      bool onLine(int unit) =>
+          unit < length && paragraph.getLineNumberAt(unit) == line;
+      var low = start;
+      var step = 1;
+      while (onLine(low + step)) {
+        low += step;
+        step *= 2;
       }
-      offset = next;
+      var high = math.min(low + step, length);
+      while (high - low > 1) {
+        final middle = (low + high) >> 1;
+        if (onLine(middle)) {
+          low = middle;
+        } else {
+          high = middle;
+        }
+      }
+      start = high;
     }
     return starts;
   }
