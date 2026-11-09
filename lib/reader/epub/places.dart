@@ -109,67 +109,15 @@ EpubPlace? placeOf(DomSection dom, int section, String cfi) {
   );
 }
 
-/// The place that epub.js saved for a page of [dom] whose first character
-/// is at [place]. The reader no longer saves it (see [firstVisible]). Only
-/// the comparison with Chromium in test/reader/epub/trial uses it.
-///
-/// epub.js (mapping.js `splitTextNodeIntoRanges` and `findTextStartRange`)
-/// trims the text node and finds each space in the trimmed text. It cuts
-/// the node into ranges: one from the node start, and one after each space
-/// but the first, each up to the next space. It uses these trimmed offsets
-/// as offsets in the untrimmed node, so in a node that starts with white
-/// space each range starts before its word. It saves the start of the first
-/// range on the page. A range is on the page when it starts at or after
-/// [place], or when it starts in the white space just before [place] and
-/// holds a visible character. Chromium leaves the space that ends the line
-/// before out of a range's bounds unless the range holds nothing else, as
-/// the trial books show. When the page starts at the node's first visible
-/// character, the
-/// saved place is the node start. When no range of the node is on the page,
-/// [place] stays, where epub.js would fall back to the node start on the
-/// page before.
-EpubPlace wordStart(DomSection dom, EpubPlace place) {
-  final text = dom.textAt(place);
-  if (text == null) return place;
-  final data = text.text;
-  var lastVisible = place.offset - 1;
-  while (lastVisible >= 0 && isSpace(data.codeUnitAt(lastVisible))) {
-    lastVisible--;
-  }
-  if (lastVisible < 0) return EpubPlace(place.section, place.node, 0);
-  var lead = 0;
-  while (lead < data.length && isSpace(data.codeUnitAt(lead))) {
-    lead++;
-  }
-  var end = data.length;
-  while (end > lead && isSpace(data.codeUnitAt(end - 1))) {
-    end--;
-  }
-  final trimmed = data.substring(lead, end);
-  final first = trimmed.indexOf(' ');
-  if (first < 0) return place;
-  for (var space = trimmed.indexOf(' ', first + 1); space > 0;) {
-    final start = space + 1;
-    final next = trimmed.indexOf(' ', start);
-    final stop = next < 0 ? trimmed.length : next;
-    if (start >= place.offset ||
-        (start > lastVisible && visibleCount(data, start, stop) > 0)) {
-      return EpubPlace(place.section, place.node, start);
-    }
-    space = next;
-  }
-  return place;
-}
-
 /// The place that a page of [dom] saves when it starts at [start] and its
 /// last visible character is at [end]: the page's first visible character,
 /// the first one at or after [start]. It can be in a later text node than
 /// [start], when [start] is in white space at the end of its node. When the
 /// page shows no visible character from [start] to [end], [start] stays.
 ///
-/// epub.js saved the start of the first space-delimited word instead (see
-/// [wordStart]). In text with few spaces, such as Chinese, that word can
-/// start on a later page.
+/// epub.js saved the start of the first space-delimited word at or after
+/// the page start instead. In text with few spaces, such as Chinese, that
+/// word can start on a later page (t1-7l9c).
 EpubPlace firstVisible(DomSection dom, EpubPlace start, EpubPlace end) {
   if (dom.textAt(start) == null) return start;
   final wanted = dom.visibleBefore(start);

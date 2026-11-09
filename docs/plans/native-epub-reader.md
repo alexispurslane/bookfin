@@ -351,7 +351,7 @@ A saved EPUB place has the same JSON form as today. `ReaderDocument.save` writes
 
 A page saves its first visible character (`firstVisible` in `places.dart`). This is the first character at or after the page start that is not white space, up to the page's last visible character. It can be in the next text node, when the page starts in white space at the end of a node. A page without a visible character saves its start.
 
-Until t1-7l9c, the reader saved epub.js's word start (`wordStart`). epub.js saves the start of the first space-delimited range at or after the page start. In text with few spaces, such as Chinese, the next space can lie on a later page. Then the saved place opened one or two pages later: 62 of 2,790 page starts of Hong Lou Meng at 360 × 640 at 26 pixels. The user chose the first visible character (design B, 2026-11-09). It never opens another page.
+Until t1-7l9c, the reader saved epub.js's word start (`wordStart`, now deleted). epub.js saves the start of the first space-delimited range at or after the page start. In text with few spaces, such as Chinese, the next space can lie on a later page. Then the saved place opened one or two pages later: 62 of 2,790 page starts of Hong Lou Meng at 360 × 640 at 26 pixels. The user chose the first visible character (design B, 2026-11-09). It never opens another page.
 
 What changed and what did not:
 
@@ -359,7 +359,6 @@ What changed and what did not:
 - `placeOf` did not change. Every place that epub.js saved, and every place that an older Bookfin saved, opens on a page whose first line holds it.
 - Opening a saved place still reports the saved address unchanged (rule 1 below). So an old place is never rewritten only because the book opens. It changes only when the person moves.
 - Search hits and contents entries did not change. They save the start of the match or the destination, as reader.js does.
-- `wordStart` stays only for the Chromium comparison in `test/reader/epub/trial/`. E22 deletes that tool, and then tf-2h4e deletes `wordStart`.
 
 ### Data safety
 

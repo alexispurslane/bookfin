@@ -525,47 +525,6 @@ void main() {
     });
   });
 
-  group('epub.js\'s word start, for the comparison with Chromium', () {
-    test('a page that starts at a node\'s first word saves the node start', () {
-      final section = dom('<p>\n  Call me Ishmael.</p>');
-      final start = at(section, '\n', 3);
-      expect(wordStart(section, start), at(section, '\n'));
-    });
-
-    test('a text node that starts with white space saves the space before '
-        'the page\'s first word, as epub.js does', () {
-      // A Gutenberg paragraph starts with a line break, so epub.js's ranges
-      // start one character before their words.
-      final section = dom('<p>\nwe felt the speech</p>');
-      final start = at(section, '\n', 9);
-      expect(wordStart(section, start), at(section, '\n', 8));
-    });
-
-    test(
-      'a range of white space alone before a page is on the line before',
-      () {
-        // Frankenstein, letter 4, and Pride and Prejudice, chapter 43, at 23
-        // pixels: the page starts at "a", whose range holds only the space
-        // before it, so epub.js saved the next range.
-        final section = dom('<p>\nwe felt a speech coming</p>');
-        final start = at(section, '\n', 9);
-        expect(wordStart(section, start), at(section, '\n', 10));
-      },
-    );
-
-    test('the word after a node\'s first space is never a saved start, as '
-        'epub.js splits a node', () {
-      final section = dom('<p>one two three four</p>');
-      expect(wordStart(section, at(section, 'one', 4)), at(section, 'one', 8));
-    });
-
-    test('a page start with no later word start in its node keeps its own '
-        'place, so it never moves to the page before', () {
-      final section = dom('<p>one two</p>');
-      expect(wordStart(section, at(section, 'one', 4)), at(section, 'one', 4));
-    });
-  });
-
   group('CFIs', () {
     test('a range resolves to its start', () {
       final section = dom('<p>Call me Ishmael.</p>');
