@@ -11,7 +11,8 @@ import 'playback.dart';
 import '../sync/journal.dart';
 import '../catalog/jellyfin.dart';
 import 'database.dart';
-import '../reader/session.dart' show ReadingChanges, ReadingStore;
+import '../catalog/model.dart' show Edition;
+import '../reader/session.dart' show PlaceOrigin, ReadingChanges, ReadingStore;
 
 /// Which domains of an account hold records that changed outside their
 /// writer since the writer last took in a snapshot that the store handed
@@ -1217,6 +1218,31 @@ class ReadingRecords implements ResumeStore, ReadingStore {
 
   @override
   bool setAside(String accountKey) => owner.setAside(accountKey);
+
+  /// Reads the journal: the value of this installation's last action on
+  /// the edition's saved place, and the action of the current version.
+  /// While two versions compete, no device saved the current place.
+  @override
+  Future<PlaceOrigin> origin(String accountKey, Edition edition) {
+    final file = edition.files.single;
+    final record = jsonEncode([
+      'reading',
+      'resumes',
+      jsonEncode([edition.id, file.key, file.revision]),
+    ]);
+    return owner._query(accountKey, (journal) {
+      final own = journal.lastOwn(record)?['value'];
+      final versions = journal.versionsByRecord[record] ?? const [];
+      final current = versions.length == 1 ? versions.single : null;
+      final elsewhere =
+          current != null && current['replica'] != journal.replica;
+      return (
+        own: own is Map<String, dynamic> ? decodeTextPosition(own) : null,
+        elsewhere: elsewhere,
+        device: elsewhere ? current['device'] as String? : null,
+      );
+    });
+  }
 }
 
 /// The collections of each domain that this build reads.

@@ -73,6 +73,7 @@ class HistoryEvent<P extends Place> {
     required this.after,
     required this.bookTitle,
     required this.editionLabel,
+    this.device,
   });
   final String id;
   final DateTime at;
@@ -87,6 +88,10 @@ class HistoryEvent<P extends Place> {
   /// The names of the book and of its edition at the time of the move.
   final String bookTitle;
   final String editionLabel;
+
+  /// The name of the device that saved [after], for a book that opened at
+  /// a place that another device saved, or null.
+  final String? device;
 
   bool get changesPosition => switch (kind) {
     HistoryAction.seek ||
@@ -109,6 +114,7 @@ class HistoryEvent<P extends Place> {
     'after': encodePlace(after),
     'bookTitle': bookTitle,
     'editionLabel': editionLabel,
+    'device': ?device,
   };
 
   /// The move that [value] holds, whose places [decodePlace] decodes, for
@@ -125,7 +131,8 @@ class HistoryEvent<P extends Place> {
         .firstOrNull;
     if (value['id'] is! String ||
         (value['id'] as String).isEmpty ||
-        kind == null) {
+        kind == null ||
+        (value['device'] != null && value['device'] is! String)) {
       throw const FormatException('Invalid history action');
     }
     return HistoryEvent(
@@ -136,9 +143,14 @@ class HistoryEvent<P extends Place> {
       after: after,
       bookTitle: value['bookTitle'] as String,
       editionLabel: value['editionLabel'] as String,
+      device: value['device'] as String?,
     );
   }
 }
+
+/// The move of medium [P] that Undo can take back, and whether the place
+/// where it began is saved on this device.
+typedef UndoOffer<P extends Place> = ({HistoryEvent<P> action, bool saved});
 
 /// A place in edition [P] that the person marked.
 class Bookmark<P extends Place> {

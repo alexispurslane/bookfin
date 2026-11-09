@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 
 import 'package:bookfin/catalog/glass.dart' show CoverGlass;
 import 'package:bookfin/foundation/theme.dart';
+import 'package:bookfin/playback/records.dart' show HistoryAction;
 import 'package:bookfin/reader/document.dart';
 import 'package:bookfin/reader/epub/layout.dart' show Slice;
 import 'package:bookfin/reader/epub/pager.dart';
@@ -729,6 +730,14 @@ void main() {
         inInclusiveRange(page.startPlace!.node, page.endPlace!.node),
         reason: 'The shown page holds the note.',
       );
+      expect(
+        [
+          for (final event in reader.history)
+            if (event.kind != HistoryAction.open) event.kind,
+        ],
+        [HistoryAction.link],
+        reason: 'Go to note records one link move.',
+      );
       await closeNative(tester, reader);
     }, variant: TargetPlatformVariant.only(TargetPlatform.android));
 
@@ -757,6 +766,14 @@ void main() {
         (reader.visibleAddress! as EpubAddress).location.progress,
         greaterThan(.7),
         reason: 'The far shore is near the end of the second chapter.',
+      );
+      expect(
+        [
+          for (final event in reader.history)
+            if (event.kind != HistoryAction.open) event.kind,
+        ],
+        [HistoryAction.link],
+        reason: 'A link records one link move.',
       );
       expect(find.byType(ReaderDock), findsOneWidget);
       await closeNative(tester, reader);
