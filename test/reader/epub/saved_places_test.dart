@@ -110,55 +110,63 @@ void _placeTests(
     }
   }, timeout: const Timeout(Duration(minutes: 10)));
 
-  test('a page of $name that starts on the character where an epub.js page '
-      'started saves the place that epub.js saved', () async {
-    final book = _Book(publication());
-    for (final size in recordedSizes) {
-      final source = immediateSource(book.publication)..settings = pageAt(size);
-      var starts = 0;
-      var same = 0;
-      try {
-        for (final MapEntry(key: key, value: section) in sections.entries) {
-          final index = int.parse(key);
-          final resource = section['resource'] as String;
-          final layout = layoutSection(await source.section(index));
-          final dom = layout.section.dom;
-          final native = {
-            for (final page in layout.pages)
-              if (page.startPlace case final start?
-                  when dom.textAt(start) != null)
-                page.startVisible: page,
-          };
-          for (final saved in (section['$size'] as List).cast<Map>()) {
-            if (saved['start'] == null) continue;
-            starts++;
-            final page = native[saved['start']];
-            if (page == null) continue;
-            same++;
-            final start = page.startPlace!;
-            final location = pageLocation(
-              book.spine(index),
-              resource,
-              dom,
-              start,
-              page.endPlace ?? start,
-              book.chapter(dom, start, resource),
-            );
-            expect(location.toJson(), {
-              'cfi': saved['cfi'],
-              'resource': resource,
-              'quote': saved['quote'],
-              'progress': saved['progress'],
-            }, reason: '$name $size px section $index page ${saved['start']}');
+  test(
+    'a page of $name that starts on the character where an epub.js page '
+    'started saves that character, and the saved place opens the page',
+    () async {
+      final book = _Book(publication());
+      for (final size in recordedSizes) {
+        final source = immediateSource(book.publication)
+          ..settings = pageAt(size);
+        var starts = 0;
+        var same = 0;
+        var sameCfi = 0;
+        try {
+          for (final MapEntry(key: key, value: section) in sections.entries) {
+            final index = int.parse(key);
+            final resource = section['resource'] as String;
+            final layout = layoutSection(await source.section(index));
+            final dom = layout.section.dom;
+            final native = {
+              for (final (number, page) in layout.pages.indexed)
+                if (page.startPlace case final start?
+                    when dom.textAt(start) != null)
+                  page.startVisible: (number, page),
+            };
+            for (final saved in (section['$size'] as List).cast<Map>()) {
+              if (saved['start'] == null) continue;
+              starts++;
+              final (number, page) = native[saved['start']] ?? (-1, null);
+              if (page == null) continue;
+              same++;
+              final start = page.startPlace!;
+              final where =
+                  '$name $size px section $index page ${saved['start']}';
+              final location = pageLocation(
+                book.spine(index),
+                resource,
+                dom,
+                start,
+                page.endPlace ?? start,
+                book.chapter(dom, start, resource),
+              );
+              final place = placeOf(dom, index, location.cfi)!;
+              expect(dom.visibleBefore(place), saved['start'], reason: where);
+              expect(location.quote.trimLeft(), location.quote, reason: where);
+              expect(layout.pageAt(place), number, reason: where);
+              if (location.cfi == saved['cfi']) sameCfi++;
+            }
+            layout.dispose();
           }
-          layout.dispose();
+        } finally {
+          source.dispose();
         }
-      } finally {
-        source.dispose();
+        _report(name, '$size px pages that start where epub.js', same, starts);
+        _report(name, '$size px of them saved as epub.js saved', sameCfi, same);
       }
-      _report(name, '$size px pages that start where epub.js', same, starts);
-    }
-  }, timeout: const Timeout(Duration(minutes: 10)));
+    },
+    timeout: const Timeout(Duration(minutes: 10)),
+  );
 
   test('every contents entry of $name opens where epub.js opened it, on a page '
       'whose first line holds it', () async {

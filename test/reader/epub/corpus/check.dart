@@ -356,7 +356,7 @@ void _checkPlaces(
     final start = laid.startPlace;
     if (start == null) continue;
     found.pageStarts++;
-    final place = wordStart(dom, start);
+    final place = firstVisible(dom, start, laid.endPlace ?? start);
     final cfi = cfiOf(book.spine(index), dom, place);
     final back = placeOf(dom, index, cfi);
     if (spineIndexOf(cfi) != index || back == null) {

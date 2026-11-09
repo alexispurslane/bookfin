@@ -45,7 +45,7 @@ void main() {
   late PageSource source;
   EpubPager? opened;
   final turns = <bool>[];
-  final links = <String>[];
+  final links = <EpubLink>[];
   var taps = 0;
 
   EpubPager pager() => opened!;
@@ -266,7 +266,7 @@ void main() {
 
     link.owner!.performAction(link.id, SemanticsAction.tap);
 
-    expect(links, ['text/s1.xhtml#target']);
+    expect(links, [(href: 'text/s1.xhtml#target', noteref: false)]);
     expect(taps, 0);
     handle.dispose();
   });

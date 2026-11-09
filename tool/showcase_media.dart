@@ -186,7 +186,17 @@ const _scannedPage = [
 ];
 
 /// An EPUB 3 book with a navigation document and one XHTML file per chapter.
-Uint8List epub(String id, String title, String author, List<Chapter> chapters) {
+///
+/// With [endnotes], the end of paragraph N of the first chapter holds a note
+/// reference to note N, as Standard Ebooks marks one, and a last section,
+/// Notes, lists the notes, each with a back link to its reference.
+Uint8List epub(
+  String id,
+  String title,
+  String author,
+  List<Chapter> chapters, {
+  List<String> endnotes = const [],
+}) {
   String escape(String text) =>
       const HtmlEscape(HtmlEscapeMode.element)
           .convert(text)
@@ -210,6 +220,7 @@ Uint8List epub(String id, String title, String author, List<Chapter> chapters) {
     );
   final names = [
     for (var i = 0; i < chapters.length; i++) 'chapter${i + 1}.xhtml',
+    if (endnotes.isNotEmpty) 'endnotes.xhtml',
   ];
   archive.add(
     ArchiveFile.string(
@@ -256,6 +267,12 @@ Uint8List epub(String id, String title, String author, List<Chapter> chapters) {
       ),
     ),
   );
+  String reference(int chapter, int paragraph) =>
+      chapter > 0 || paragraph >= endnotes.length
+      ? ''
+      : '<a href="endnotes.xhtml#note-${paragraph + 1}" '
+            'id="noteref-${paragraph + 1}" epub:type="noteref">'
+            '<sup>${paragraph + 1}</sup></a>';
   for (var i = 0; i < chapters.length; i++) {
     final (heading, paragraphs) = chapters[i];
     archive.add(
@@ -264,8 +281,21 @@ Uint8List epub(String id, String title, String author, List<Chapter> chapters) {
         page(
           heading,
           '<section epub:type="chapter"><h1>${escape(heading)}</h1>'
-          '${[for (final text in paragraphs) '<p>${escape(text)}</p>'].join()}'
+          '${[for (final (index, text) in paragraphs.indexed) '<p>${escape(text)}${reference(i, index)}</p>'].join()}'
           '</section>',
+        ),
+      ),
+    );
+  }
+  if (endnotes.isNotEmpty) {
+    archive.add(
+      ArchiveFile.string(
+        'OEBPS/endnotes.xhtml',
+        page(
+          'Notes',
+          '<section epub:type="endnotes"><h1>Notes</h1><ol>'
+              '${[for (final (index, text) in endnotes.indexed) '<li id="note-${index + 1}" epub:type="endnote"><p>${escape(text)} <a href="chapter1.xhtml#noteref-${index + 1}" epub:type="backlink">↩</a></p></li>'].join()}'
+              '</ol></section>',
         ),
       ),
     );

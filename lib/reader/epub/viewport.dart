@@ -12,6 +12,10 @@
 // selection gestures, the handles and the menu. Its Copy and the copy
 // shortcut report the selected text through onCopy, and the screen writes
 // the clipboard.
+//
+// EpubNoteView draws a note that the pager laid out for the note sheet. It
+// shares the page's semantics nodes, selection and Copy, and has no
+// gestures of its own.
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -54,9 +58,10 @@ class EpubViewport extends StatefulWidget {
   /// the previous one.
   final ValueChanged<bool> onTurn;
 
-  /// A tap on an internal link, with its destination for `contents`,
-  /// relative to the package document's directory.
-  final ValueChanged<String> onLink;
+  /// A tap on an internal link: its destination for `contents`, relative
+  /// to the package document's directory, and whether it is a note
+  /// reference.
+  final ValueChanged<EpubLink> onLink;
 
   /// The person chose Copy for the selected text.
   final ValueChanged<String> onCopy;
@@ -184,31 +189,6 @@ class _EpubViewportState extends State<EpubViewport> {
     PointerDeviceKind.mouse || PointerDeviceKind.trackpad => false,
   };
 
-  /// The selection menu: Copy, through onCopy, and Select all. On Android,
-  /// Copy ends the selection, and elsewhere it hides the menu, as Flutter's
-  /// own menu does.
-  Widget _menu(BuildContext context, SelectableRegionState region) {
-    void copied() {
-      _copy();
-      if (defaultTargetPlatform == TargetPlatform.android) {
-        region.clearSelection();
-      } else {
-        region.hideToolbar();
-      }
-    }
-
-    return AdaptiveTextSelectionToolbar.buttonItems(
-      anchors: region.contextMenuAnchors,
-      buttonItems: [
-        for (final item in region.contextMenuButtonItems)
-          if (item.type == ContextMenuButtonType.copy)
-            item.copyWith(onPressed: copied)
-          else if (item.type == ContextMenuButtonType.selectAll)
-            item,
-      ],
-    );
-  }
-
   void _panned(PointerPanZoomUpdateEvent event) {
     _pan = event.pan;
     if (_panTurned ||
@@ -251,58 +231,101 @@ class _EpubViewportState extends State<EpubViewport> {
   }
 
   @override
+  Widget build(BuildContext context) => _CopyArea(
+    area: _area,
+    focusNode: _focus,
+    onCopy: _copy,
+    child: Listener(
+      onPointerSignal: _signal,
+      onPointerPanZoomStart: (_) {
+        _pan = Offset.zero;
+        _panTurned = false;
+      },
+      onPointerPanZoomUpdate: _panned,
+      onPointerDown: _pointerDown,
+      onPointerUp: _pointerUp,
+      onPointerCancel: (event) {
+        if (event.pointer == _swipePointer) _swipeEnded();
+      },
+      child: RawGestureDetector(
+        behavior: HitTestBehavior.opaque,
+        // The page's own semantics turn pages and follow links. The
+        // recognizer's default action would tap the page's corner.
+        excludeFromSemantics: true,
+        gestures: {
+          TapGestureRecognizer:
+              GestureRecognizerFactoryWithHandlers<TapGestureRecognizer>(
+                () => TapGestureRecognizer(debugOwner: this),
+                (tap) => tap
+                  ..onTapDown = ((_) =>
+                      _selectedAtDown = _selection?.selecting ?? false)
+                  ..onTapUp = (details) =>
+                      _tapAt(details.localPosition, selected: _selectedAtDown),
+              ),
+        },
+        child: _Page(
+          key: _page,
+          pager: widget.pager,
+          fontSize: widget.fontSize,
+          night: widget.night,
+          onTurn: widget.onTurn,
+          onTapAt: _tapAt,
+        ),
+      ),
+    ),
+  );
+}
+
+/// A selection region whose Copy, in its menu and by its shortcut, calls
+/// [onCopy], and which writes no clipboard of its own. Its menu offers Copy
+/// and Select all. On Android, Copy ends the selection, and elsewhere it
+/// hides the menu, as Flutter's own menu does.
+class _CopyArea extends StatelessWidget {
+  const _CopyArea({
+    this.area,
+    this.focusNode,
+    required this.onCopy,
+    required this.child,
+  });
+  final GlobalKey<SelectionAreaState>? area;
+  final FocusNode? focusNode;
+  final VoidCallback onCopy;
+  final Widget child;
+
+  Widget _menu(BuildContext context, SelectableRegionState region) {
+    void copied() {
+      onCopy();
+      if (defaultTargetPlatform == TargetPlatform.android) {
+        region.clearSelection();
+      } else {
+        region.hideToolbar();
+      }
+    }
+
+    return AdaptiveTextSelectionToolbar.buttonItems(
+      anchors: region.contextMenuAnchors,
+      buttonItems: [
+        for (final item in region.contextMenuButtonItems)
+          if (item.type == ContextMenuButtonType.copy)
+            item.copyWith(onPressed: copied)
+          else if (item.type == ContextMenuButtonType.selectAll)
+            item,
+      ],
+    );
+  }
+
+  @override
   Widget build(BuildContext context) => Actions(
-    // The copy shortcut reports the text through onCopy, and the region
-    // writes no clipboard of its own.
     actions: {
       CopySelectionTextIntent: CallbackAction<CopySelectionTextIntent>(
-        onInvoke: (_) => _copy(),
+        onInvoke: (_) => onCopy(),
       ),
     },
     child: SelectionArea(
-      key: _area,
-      focusNode: _focus,
+      key: area,
+      focusNode: focusNode,
       contextMenuBuilder: _menu,
-      child: Listener(
-        onPointerSignal: _signal,
-        onPointerPanZoomStart: (_) {
-          _pan = Offset.zero;
-          _panTurned = false;
-        },
-        onPointerPanZoomUpdate: _panned,
-        onPointerDown: _pointerDown,
-        onPointerUp: _pointerUp,
-        onPointerCancel: (event) {
-          if (event.pointer == _swipePointer) _swipeEnded();
-        },
-        child: RawGestureDetector(
-          behavior: HitTestBehavior.opaque,
-          // The page's own semantics turn pages and follow links. The
-          // recognizer's default action would tap the page's corner.
-          excludeFromSemantics: true,
-          gestures: {
-            TapGestureRecognizer:
-                GestureRecognizerFactoryWithHandlers<TapGestureRecognizer>(
-                  () => TapGestureRecognizer(debugOwner: this),
-                  (tap) => tap
-                    ..onTapDown = ((_) =>
-                        _selectedAtDown = _selection?.selecting ?? false)
-                    ..onTapUp = (details) => _tapAt(
-                      details.localPosition,
-                      selected: _selectedAtDown,
-                    ),
-                ),
-          },
-          child: _Page(
-            key: _page,
-            pager: widget.pager,
-            fontSize: widget.fontSize,
-            night: widget.night,
-            onTurn: widget.onTurn,
-            onTapAt: _tapAt,
-          ),
-        ),
-      ),
+      child: child,
     ),
   );
 }
@@ -508,7 +531,9 @@ class _RenderPage extends RenderBox {
     final page = _pager.shown.value?.page;
     if (!identical(page, _read)) {
       _read = page;
-      _blocks = page == null ? const [] : _nodes(pageBlocks(page));
+      _blocks = page == null
+          ? const []
+          : _blockNodes(pageBlocks(page), size, onTapAt);
     }
     node.updateWith(config: config, childrenInInversePaintOrder: _blocks);
   }
@@ -518,51 +543,6 @@ class _RenderPage extends RenderBox {
     super.clearSemantics();
     _read = null;
     _blocks = const [];
-  }
-
-  /// A node for each of [blocks], in their order.
-  List<SemanticsNode> _nodes(List<PageBlock> blocks) {
-    final area = Offset.zero & size;
-    SemanticsNode node(
-      Rect rect,
-      int index,
-      SemanticsConfiguration config, [
-      List<SemanticsNode> children = const [],
-    ]) => SemanticsNode()
-      ..rect = rect.intersect(area)
-      ..updateWith(
-        config: config..sortKey = OrdinalSortKey(index.toDouble()),
-        childrenInInversePaintOrder: children,
-      );
-    SemanticsConfiguration span(PageSpan span, bool header) {
-      final config = SemanticsConfiguration()
-        ..label = span.label
-        // The renderer lays every book out left to right.
-        ..textDirection = TextDirection.ltr
-        ..isHeader = header
-        ..isImage = span.image;
-      if (span.link case final point?) {
-        config
-          ..isLink = true
-          ..onTap = () => onTapAt(point);
-      }
-      return config;
-    }
-
-    return [
-      for (final (index, block) in blocks.indexed)
-        block.spans.length == 1
-            ? node(block.rect, index, span(block.spans.single, block.header))
-            : node(
-                block.rect,
-                index,
-                SemanticsConfiguration()..isHeader = block.header,
-                [
-                  for (final (index, part) in block.spans.indexed)
-                    node(part.rect, index, span(part, block.header)),
-                ],
-              ),
-    ];
   }
 
   @override
@@ -577,6 +557,179 @@ class _RenderPage extends RenderBox {
       ..clipRect(area)
       ..translate(offset.dx, offset.dy)
       ..drawPicture(shown.picture)
+      ..restore();
+    selection.paint(context, offset, _selectionColor);
+  }
+}
+
+/// A semantics node for each of [blocks] of a page [size] big, in their
+/// order. A block of one span is one node. A block of several, such as a
+/// paragraph with a link, holds a node for each span. With [onTapAt], a
+/// link is marked as one, and its tap action taps the page at the link.
+List<SemanticsNode> _blockNodes(
+  List<PageBlock> blocks,
+  Size size,
+  ValueChanged<Offset>? onTapAt,
+) {
+  final area = Offset.zero & size;
+  SemanticsNode node(
+    Rect rect,
+    int index,
+    SemanticsConfiguration config, [
+    List<SemanticsNode> children = const [],
+  ]) => SemanticsNode()
+    ..rect = rect.intersect(area)
+    ..updateWith(
+      config: config..sortKey = OrdinalSortKey(index.toDouble()),
+      childrenInInversePaintOrder: children,
+    );
+  SemanticsConfiguration span(PageSpan span, bool header) {
+    final config = SemanticsConfiguration()
+      ..label = span.label
+      // The renderer lays every book out left to right.
+      ..textDirection = TextDirection.ltr
+      ..isHeader = header
+      ..isImage = span.image;
+    if ((span.link, onTapAt) case (final point?, final tap?)) {
+      config
+        ..isLink = true
+        ..onTap = () => tap(point);
+    }
+    return config;
+  }
+
+  return [
+    for (final (index, block) in blocks.indexed)
+      block.spans.length == 1
+          ? node(block.rect, index, span(block.spans.single, block.header))
+          : node(
+              block.rect,
+              index,
+              SemanticsConfiguration()..isHeader = block.header,
+              [
+                for (final (index, part) in block.spans.indexed)
+                  node(part.rect, index, span(part, block.header)),
+              ],
+            ),
+  ];
+}
+
+/// Draws [note] at its own size: as wide as the width that it was laid out
+/// at, and as tall as its text. A screen reader reads it block by block, as
+/// it reads a page, and its links are plain text. The person can select
+/// its text, and Copy reports the selected text through [onCopy].
+class EpubNoteView extends StatefulWidget {
+  const EpubNoteView({super.key, required this.note, required this.onCopy});
+  final LaidNote note;
+
+  /// The person chose Copy for the selected text.
+  final ValueChanged<String> onCopy;
+
+  @override
+  State<EpubNoteView> createState() => _EpubNoteViewState();
+}
+
+class _EpubNoteViewState extends State<EpubNoteView> {
+  final _note = GlobalKey();
+
+  void _copy() {
+    final note = _note.currentContext?.findRenderObject() as _RenderNote?;
+    if (note?.selection.text case final text?) widget.onCopy(text);
+  }
+
+  @override
+  Widget build(BuildContext context) => _CopyArea(
+    onCopy: _copy,
+    child: _Note(key: _note, note: widget.note),
+  );
+}
+
+class _Note extends LeafRenderObjectWidget {
+  const _Note({super.key, required this.note});
+  final LaidNote note;
+
+  @override
+  _RenderNote createRenderObject(BuildContext context) => _RenderNote(note)
+    ..registrar = SelectionContainer.maybeOf(context)
+    ..selectionColor = _Page._selectionColor(context);
+
+  @override
+  void updateRenderObject(BuildContext context, _RenderNote note) => note
+    ..note = this.note
+    ..registrar = SelectionContainer.maybeOf(context)
+    ..selectionColor = _Page._selectionColor(context);
+}
+
+/// Paints a note's picture at the note's size, with its selection in
+/// [selectionColor], and gives a screen reader its blocks.
+class _RenderNote extends RenderBox {
+  _RenderNote(this._note) {
+    selection.page = _note.page;
+  }
+
+  late final selection = PageSelection(this);
+
+  set registrar(SelectionRegistrar? value) => selection.registrar = value;
+
+  Color _selectionColor = DefaultSelectionStyle.defaultColor;
+  set selectionColor(Color value) {
+    if (value == _selectionColor) return;
+    _selectionColor = value;
+    markNeedsPaint();
+  }
+
+  LaidNote _note;
+  set note(LaidNote value) {
+    if (identical(value, _note)) return;
+    _note = value;
+    selection.page = value.page;
+    markNeedsLayout();
+    markNeedsSemanticsUpdate();
+  }
+
+  @override
+  bool get sizedByParent => true;
+
+  @override
+  Size computeDryLayout(BoxConstraints constraints) =>
+      constraints.constrain(Size(_note.page.settings.width, _note.page.height));
+
+  @override
+  bool hitTestSelf(Offset position) => true;
+
+  @override
+  void dispose() {
+    selection.dispose();
+    super.dispose();
+  }
+
+  @override
+  void describeSemanticsConfiguration(SemanticsConfiguration config) {
+    super.describeSemanticsConfiguration(config);
+    config.isSemanticBoundary = true;
+  }
+
+  @override
+  void assembleSemanticsNode(
+    SemanticsNode node,
+    SemanticsConfiguration config,
+    Iterable<SemanticsNode> children,
+  ) => node.updateWith(
+    config: config,
+    childrenInInversePaintOrder: _blockNodes(
+      pageBlocks(_note.page),
+      size,
+      null,
+    ),
+  );
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    context.canvas
+      ..save()
+      ..clipRect(offset & size)
+      ..translate(offset.dx, offset.dy)
+      ..drawPicture(_note.picture)
       ..restore();
     selection.paint(context, offset, _selectionColor);
   }

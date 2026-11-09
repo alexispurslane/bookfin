@@ -18,6 +18,7 @@ import 'package:bookfin/reader/epub/places.dart';
 import 'package:bookfin/reader/epub/prepare.dart';
 import 'package:bookfin/reader/epub/publication.dart';
 import 'package:bookfin/reader/epub/search.dart';
+import 'package:bookfin/reader/epub/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../tool/showcase_media.dart' as media;
@@ -56,6 +57,25 @@ Publication linkedBook() => book([
       'waits here.</p>${paragraphs(4, label: 'Late')}',
   paragraphs(3, label: 'End'),
 ]);
+
+/// A book of two sections. The first has a note reference to an endnote
+/// in the second, and a plain link to a paragraph before the endnotes.
+Publication noteBook() => book([
+  '<p>Before the note.<a id="ref-1" epub:type="noteref" '
+      'href="s1.xhtml#note-1">1</a> After the note. <a href="s1.xhtml#plain">'
+      'A plain link</a> ends the paragraph.</p>${paragraphs(6)}',
+  '<p id="plain">The plain target.</p>${paragraphs(8, label: 'Late')}'
+      '<ol epub:type="endnotes"><li id="note-1" epub:type="endnote"><p>The '
+      'lantern note explains the harbour.</p><p>Its second paragraph ends '
+      'it. <a href="s0.xhtml#ref-1" epub:type="backlink">Back</a></p></li>'
+      '</ol>',
+]);
+
+/// What a screen reader reads of [page], block by block.
+List<String> readOf(LaidPage page) => [
+  for (final block in pageBlocks(page))
+    block.spans.map((span) => span.label).join(' '),
+];
 
 void main() {
   setUpAll(loadReaderFont);
@@ -223,6 +243,51 @@ void main() {
     )!;
     expect(opened.page.start, lineStart(prepared, place));
     expect(content(opened.page), leftContent);
+    expect(warnings, isEmpty);
+  });
+
+  test('a place that epub.js saved before a page\'s first visible character '
+      'opens on that page and is reported as the identical address '
+      'object, so opening never rewrites it', () async {
+    // epub.js saved the start of a Gutenberg paragraph's text node, the
+    // line break before its first word. The pager saves the page's first
+    // visible character instead.
+    final publication = book([
+      '${paragraphs(8)}<p>\nWe felt a speech coming.</p>${paragraphs(4)}',
+    ]);
+    open(publication);
+    await present();
+    final dom = (await section(0)).dom;
+    final text = dom.texts.firstWhere((text) => text.text.startsWith('\nWe'));
+    final old = EpubPlace(0, text.order, 0);
+    final saved = EpubAddress(
+      ReadingLocation(
+        cfiOf('/6/2', dom, old),
+        'OPS/text/s0.xhtml',
+        quoteAt(dom, old),
+        progress: progressAt(dom, old),
+      ),
+    );
+
+    open(publication, initial: saved);
+    final opened = await present();
+
+    expect(reported, hasLength(1));
+    expect(reported.single, same(saved));
+    final prepared = await section(0);
+    expect(opened.page.start, lineStart(prepared, old));
+    expect(
+      pageLocation(
+        '/6/2',
+        'OPS/text/s0.xhtml',
+        dom,
+        opened.page.startPlace!,
+        opened.page.endPlace!,
+        'Start',
+      ).cfi,
+      cfiOf('/6/2', dom, EpubPlace(0, text.order, 1)),
+      reason: 'the page itself saves its first visible character',
+    );
     expect(warnings, isEmpty);
   });
 
@@ -427,11 +492,14 @@ void main() {
 
     final onLink = _pointOf(first.page, EpubPlace(0, link.order, 4));
     final onText = _pointOf(first.page, EpubPlace(0, plain.order, 2));
-    expect(pager().linkAt(onLink), 'text/s1.xhtml#target');
+    expect(pager().linkAt(onLink), (
+      href: 'text/s1.xhtml#target',
+      noteref: false,
+    ));
     expect(pager().linkAt(onText), isNull);
     expect(pager().linkAt(const ui.Offset(406, 668)), isNull);
 
-    await until(pager().contents(pager().linkAt(onLink)!));
+    await until(pager().contents(pager().linkAt(onLink)!.href));
     final prepared = await section(1);
     expect(
       _holdsLine(
@@ -455,12 +523,201 @@ void main() {
     final link = dom.texts.firstWhere((text) => text.text == 'Linked cell');
     final plain = dom.texts.firstWhere((text) => text.text == 'Plain cell');
 
-    expect(
-      pager().linkAt(_pointOf(first.page, EpubPlace(0, link.order, 3))),
-      'text/s1.xhtml#target',
-    );
+    expect(pager().linkAt(_pointOf(first.page, EpubPlace(0, link.order, 3))), (
+      href: 'text/s1.xhtml#target',
+      noteref: false,
+    ));
     expect(
       pager().linkAt(_pointOf(first.page, EpubPlace(0, plain.order, 3))),
+      isNull,
+    );
+  });
+
+  test('linkAt says whether the link under a point is a note '
+      'reference', () async {
+    open(noteBook());
+    final first = await present();
+    final dom = (await section(0)).dom;
+    final reference = dom.texts.firstWhere((text) => text.text == '1');
+    final plain = dom.texts.firstWhere((text) => text.text == 'A plain link');
+
+    expect(
+      pager().linkAt(_pointOf(first.page, EpubPlace(0, reference.order, 0))),
+      (href: 'text/s1.xhtml#note-1', noteref: true),
+    );
+    expect(pager().linkAt(_pointOf(first.page, EpubPlace(0, plain.order, 3))), (
+      href: 'text/s1.xhtml#plain',
+      noteref: false,
+    ));
+  });
+
+  test('note lays out the note of a note reference with the book\'s own '
+      'text, at the width asked for, and moves no place', () async {
+    open(noteBook());
+    final first = await present();
+    final end = pager().shownEnd;
+    reported.clear();
+
+    final note = (await until(
+      pager().note((href: 'text/s1.xhtml#note-1', noteref: true), width: 300),
+    ))!;
+    addTearDown(note.dispose);
+
+    expect(readOf(note.page), [
+      'The lantern note explains the harbour.',
+      'Its second paragraph ends it.',
+    ]);
+    expect(note.page.settings.width, 300);
+    expect(note.page.height, greaterThan(0));
+    expect(shown().page, same(first.page));
+    expect(pager().shownEnd, end);
+    expect(reported, isEmpty);
+  });
+
+  test('note finds the note of a link to an endnote even when the link is '
+      'not marked as a note reference', () async {
+    open(noteBook());
+    await present();
+
+    final note = (await until(
+      pager().note((href: 'text/s1.xhtml#note-1', noteref: false), width: 412),
+    ))!;
+    addTearDown(note.dispose);
+
+    expect(readOf(note.page).first, 'The lantern note explains the harbour.');
+  });
+
+  test('a superscript note reference of a showcase book with endnotes, '
+      'marked as Standard Ebooks marks one, shows its endnote', () async {
+    open(
+      Publication.admit(
+        media.epub(
+          'frost',
+          'First Frost',
+          'Bookfin Showcase',
+          media.firstFrost,
+          endnotes: ['The first note.', 'The second note.'],
+        ),
+      ),
+    );
+    final first = await present();
+    // The superscript draws as a small paragraph of its own in its line.
+    final links = {
+      for (var y = 0.0; y < first.page.height; y += 2)
+        for (var x = 0.0; x < first.page.settings.width; x += 2)
+          ?pager().linkAt(ui.Offset(x, y)),
+    };
+    expect(links, {
+      (href: 'endnotes.xhtml#note-1', noteref: true),
+      (href: 'endnotes.xhtml#note-2', noteref: true),
+    });
+
+    final link = links.last;
+    final note = (await until(pager().note(link, width: 412)))!;
+    addTearDown(note.dispose);
+
+    expect(link, (href: 'endnotes.xhtml#note-2', noteref: true));
+    expect(readOf(note.page), ['The second note.']);
+  });
+
+  /// The note of the reference in [book]'s first section, laid out 412
+  /// pixels wide, read block by block.
+  Future<List<String>> noteRead(Publication book) async {
+    open(book);
+    await present();
+    final note = (await until(
+      pager().note((href: 'text/s1.xhtml#n', noteref: true), width: 412),
+    ))!;
+    addTearDown(note.dispose);
+    return readOf(note.page);
+  }
+
+  /// A book whose first section has a note reference, ref-1, to the note
+  /// n in the second section, whose paragraphs are [note].
+  Publication backBook(String note) => book([
+    '<p>Text<a id="ref-1" epub:type="noteref" href="s1.xhtml#n">1</a>.</p>',
+    '<p id="other">Other text.</p><aside id="n" epub:type="footnote">'
+        '$note</aside>',
+  ]);
+
+  test('a note leaves out a back link that the book marks with the role '
+      'doc-backlink', () async {
+    expect(
+      await noteRead(
+        backBook(
+          '<p>The note. <a href="s0.xhtml#ref-1" role="doc-backlink">'
+          '\u21a9</a></p>',
+        ),
+      ),
+      ['The note.'],
+    );
+  });
+
+  test('a note leaves out a link back to its note reference, and keeps its '
+      'other links', () async {
+    expect(
+      await noteRead(
+        backBook(
+          '<p>See <a href="s1.xhtml#other">the other text</a> too. '
+          '<a href="s0.xhtml#ref-1">Return</a></p>',
+        ),
+      ),
+      ['See the other text too.'],
+    );
+  });
+
+  test('a note leaves out a back link drawn as a superscript, and keeps the '
+      'note\'s own superscripts', () async {
+    expect(
+      await noteRead(
+        backBook(
+          '<p>The note<sup>2</sup>.<a href="s0.xhtml#ref-1" '
+          'role="doc-backlink"><sup>back</sup></a></p>',
+        ),
+      ),
+      ['The note2.'],
+    );
+  });
+
+  test('a note leaves out a paragraph that holds only its back link', () async {
+    expect(
+      await noteRead(
+        backBook(
+          '<p>The note.</p><p><a href="s0.xhtml#ref-1" '
+          'epub:type="backlink">Back to the text</a></p>',
+        ),
+      ),
+      ['The note.'],
+    );
+  });
+
+  test('note has nothing for a link that is no note reference, so the link '
+      'jumps', () async {
+    open(noteBook());
+    await present();
+
+    expect(
+      await until(
+        pager().note((href: 'text/s1.xhtml#plain', noteref: false), width: 412),
+      ),
+      isNull,
+    );
+  });
+
+  test('note has nothing for a note that the book\'s style hides, so the '
+      'link jumps', () async {
+    open(
+      book([
+        '<p>Text<a epub:type="noteref" href="#n">1</a>.</p>'
+            '<aside id="n" epub:type="footnote"><p>Hidden.</p></aside>',
+      ], css: 'aside { display: none }'),
+    );
+    await present();
+
+    expect(
+      await until(
+        pager().note((href: 'text/s0.xhtml#n', noteref: true), width: 412),
+      ),
       isNull,
     );
   });

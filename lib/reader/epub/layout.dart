@@ -1442,8 +1442,9 @@ class LayoutRun {
       color: ink,
       fontFamily: family,
       // A character that a face lacks draws in the reader font, not in the
-      // platform's default font.
-      fontFamilyFallback: const [readerFontFamily],
+      // platform's default font, and an arrow that both lack draws in the
+      // arrow font, not in the platform's emoji font.
+      fontFamilyFallback: const [readerFontFamily, arrowFontFamily],
       fontSize: style.size,
       fontWeight: _weight(style.weight),
       fontStyle: style.italic ? ui.FontStyle.italic : ui.FontStyle.normal,
@@ -3013,3 +3014,9 @@ class _Built {
     }
   }
 }
+
+/// The family of the bundled arrow font, a subset of Noto Sans Math with
+/// the Unicode arrow blocks. Text draws an arrow that its face lacks, such
+/// as the leftwards arrow with hook (U+21A9) of a back link, in this font.
+/// Without it, the platform draws such an arrow with its color emoji font.
+const arrowFontFamily = 'Noto Sans Math Arrows';

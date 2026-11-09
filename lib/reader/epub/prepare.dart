@@ -126,7 +126,110 @@ class PreparedSection {
   /// The embedded faces that [styles] draw with. Each must be registered
   /// (`BookFonts.load`) before the section lays out.
   final List<FontFaceRule> fonts;
+
+  /// The flow of [element] alone, as a section to lay out on a page of
+  /// [settings], or null when no flow item shows a node of [element].
+  ///
+  /// It holds the flow items from the first to the last that shows a node
+  /// of [element], inside the boxes that are open before the first one. So
+  /// its lines sit across the page as they do in the whole section, with
+  /// their list markers. A paragraph that holds a node of [element] comes
+  /// whole, without the runs of the elements of [omit], and a paragraph
+  /// that [omit] leaves with no text but white space goes. [settings] has the text size
+  /// and the theme of [this.settings]; its width and its height can differ.
+  PreparedSection? excerpt(
+    DomElement element,
+    PageSettings settings, {
+    List<DomElement> omit = const [],
+  }) {
+    (int, int) span(DomElement element) {
+      var last = element as DomNode;
+      while (last is DomElement && last.children.isNotEmpty) {
+        last = last.children.last;
+      }
+      return (element.order, last.order);
+    }
+
+    final (from, to) = span(element);
+    bool inside(int node) => node >= from && node <= to;
+    bool runShows(InlineRun run) => switch (run) {
+      TextRun(:final node) ||
+      BreakRun(:final node) ||
+      ImageRun(:final node) => inside(node),
+      RaisedRun(:final node, :final text) =>
+        inside(node) || text.runs.any(runShows),
+    };
+    bool shows(FlowItem item) => switch (item) {
+      ParagraphItem(:final text) => text.runs.any(runShows),
+      ImageItem(:final node) => inside(node),
+      TableItem(:final rows) => rows.any(
+        (row) => row.any((cell) => cell.flow.any(shows)),
+      ),
+      BlockStart() || BlockEnd() => false,
+    };
+    final omitted = [for (final element in omit) span(element)];
+    bool kept(InlineRun run) => !omitted.any(
+      (span) => _nodeOf(run) >= span.$1 && _nodeOf(run) <= span.$2,
+    );
+    StyledText strip(StyledText text) => StyledText(text.style, text.align, [
+      for (final run in text.runs)
+        if (kept(run))
+          run is RaisedRun
+              ? RaisedRun(run.node, strip(run.text), run.shift)
+              : run,
+    ]);
+    bool omits(StyledText text) => text.runs.any(
+      (run) => !kept(run) || (run is RaisedRun && omits(run.text)),
+    );
+    FlowItem? without(FlowItem item) {
+      if (item is! ParagraphItem || !omits(item.text)) return item;
+      final text = strip(item.text);
+      if (text.runs.every((run) => run is TextRun && run.text.trim().isEmpty)) {
+        return null;
+      }
+      return ParagraphItem(
+        text: text,
+        indent: item.indent,
+        orphans: item.orphans,
+        widows: item.widows,
+      );
+    }
+
+    final first = flow.indexWhere(shows);
+    if (first < 0) return null;
+    final end = flow.lastIndexWhere(shows) + 1;
+    final open = <FlowItem>[];
+    for (final item in flow.take(first)) {
+      if (item is BlockStart) open.add(item);
+      if (item is BlockEnd) open.removeLast();
+    }
+    var depth = open.length;
+    for (final item in flow.getRange(first, end)) {
+      if (item is BlockStart) depth++;
+      if (item is BlockEnd) depth--;
+    }
+    return PreparedSection._(
+      index,
+      settings,
+      dom,
+      [
+        ...open,
+        for (final item in flow.getRange(first, end)) ?without(item),
+        for (var close = 0; close < depth; close++) const BlockEnd(),
+      ],
+      styles,
+      fonts,
+    );
+  }
 }
+
+/// The [DomNode.order] of the node that [run] shows.
+int _nodeOf(InlineRun run) => switch (run) {
+  TextRun(:final node) ||
+  BreakRun(:final node) ||
+  ImageRun(:final node) ||
+  RaisedRun(:final node) => node,
+};
 
 /// Prepares each of [sources] for a page of [settings].
 List<PreparedSection> prepareSections(
