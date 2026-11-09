@@ -39,7 +39,10 @@ void main() {
       );
       await restarted.bind(account(), [title]);
       expect(restarted.editionMilliseconds, 30000);
-      expect(await records.reading.read(key), reading);
+      expect(await records.reading.read(key), {
+        ...reading,
+        'history': <dynamic>[],
+      });
       await restarted.close();
       downloads.dispose();
     },

@@ -421,6 +421,7 @@ void main() {
               // text. The records stay as they were.
               expect(store.values[accountKey], {
                 ...stored,
+                'history': <dynamic>[],
                 if (size != 20) 'sizesMainText': true,
               }, reason: where);
               reader.dispose();

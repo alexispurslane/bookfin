@@ -1,57 +1,17 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:bookfin/playback/database.dart';
-import 'package:bookfin/playback/store.dart';
 import 'package:bookfin/sync/journal.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'fixture.dart';
+import 'phone.dart';
 
 // A newer build can save a kind of personal record that this build does not
 // know yet. These tests show that this build keeps such a record, syncs past
 // it, and shows nothing of it.
-
-/// A phone: one SQLite record file and the store that a fresh app start
-/// would build over it.
-class _Phone {
-  _Phone._(this.path, this.database);
-  final String path;
-  RecordDatabase database;
-  late LocalResumeStore store = LocalResumeStore(
-    openDatabase: () async => database,
-  );
-
-  static Future<_Phone> open(String name) async {
-    final directory = await Directory.systemTemp.createTemp('bookfin-$name-');
-    addTearDown(() => directory.delete(recursive: true));
-    final path = '${directory.path}/records.sqlite';
-    final phone = _Phone._(
-      path,
-      await RecordDatabase.open(factory: databaseFactoryFfi, path: path),
-    );
-    addTearDown(() => phone.database.close());
-    return phone;
-  }
-
-  /// Drops everything that the app held in memory, as a killed process does,
-  /// and starts again from the file.
-  Future<void> restart() async {
-    await database.close();
-    database = await RecordDatabase.open(
-      factory: databaseFactoryFfi,
-      path: path,
-    );
-    store = LocalResumeStore(openDatabase: () async => database);
-  }
-
-  /// The addresses of the records that the record file holds a current
-  /// version of for [account].
-  Future<Iterable<String>> savedRecords(String account) async =>
-      ((await database.load(account))!['current'] as Map).keys.cast<String>();
-}
 
 /// Another installation, [replica], that uploads its actions to [server] as
 /// a newer build writes them.
@@ -145,7 +105,7 @@ void main() {
 
   group('a record of a kind that this build does not know', () {
     test('is kept by sync, and the records after it still arrive', () async {
-      final phone = await _Phone.open('unknown-kept');
+      final phone = await Phone.open('unknown-kept');
       final newer = _NewerBuild(server, 'newer')
         ..upload(_highlight, _highlightValue)
         ..upload(['audio', 'bookmarks', 'mark'], _bookmark('mark'));
@@ -164,7 +124,7 @@ void main() {
     test(
       'shows no change in either view and leaves both writers current',
       () async {
-        final phone = await _Phone.open('unknown-hidden');
+        final phone = await Phone.open('unknown-hidden');
         _NewerBuild(
           server,
           'newer',
@@ -191,7 +151,7 @@ void main() {
     test(
       'stays through a restart and through whole saves of both domains',
       () async {
-        final phone = await _Phone.open('unknown-saved');
+        final phone = await Phone.open('unknown-saved');
         _NewerBuild(server, 'newer').upload(_highlight, _highlightValue);
         await phone.store.synchronize(server.session, server.client);
 
@@ -214,7 +174,7 @@ void main() {
     test(
       'is not offered as a choice when two of its versions compete',
       () async {
-        final phone = await _Phone.open('unknown-choice');
+        final phone = await Phone.open('unknown-choice');
         _NewerBuild(server, 'first').upload(_highlight, _highlightValue);
         _NewerBuild(server, 'second').upload(_highlight, {
           ..._highlightValue,
@@ -230,23 +190,14 @@ void main() {
     test(
       'a kill during its save keeps all of that save or none of it',
       () async {
-        final phone = await _Phone.open('unknown-kill');
+        final phone = await Phone.open('unknown-kill');
         _NewerBuild(server, 'newer')
           ..upload(_highlight, _highlightValue)
           ..upload(['audio', 'bookmarks', 'mark'], _bookmark('mark'));
-        final sql = await databaseFactoryFfi.openDatabase(
-          phone.path,
-          options: OpenDatabaseOptions(singleInstance: false),
+        await phone.killDuring(
+          'record_versions',
+          () => phone.store.synchronize(server.session, server.client),
         );
-        await sql.execute(
-          "CREATE TRIGGER cut AFTER INSERT ON record_versions BEGIN SELECT RAISE(ABORT, 'killed'); END",
-        );
-        await expectLater(
-          phone.store.synchronize(server.session, server.client),
-          throwsA(anything),
-        );
-        await sql.execute('DROP TRIGGER cut');
-        await sql.close();
 
         await phone.restart();
         expect(await phone.database.load(account), isNull);
@@ -262,7 +213,7 @@ void main() {
 
   group('a listening event', () {
     test('of a kind that this build does not know is kept and not shown, and the rest of the history shows', () async {
-      final phone = await _Phone.open('unknown-kind');
+      final phone = await Phone.open('unknown-kind');
       _NewerBuild(server, 'newer')
         ..upload(['audio', 'history', 'later'], _event('later', 'rewind'))
         ..upload(['audio', 'history', 'known'], _event('known', 'seek'));
@@ -279,7 +230,7 @@ void main() {
     test(
       'of a known kind that does not decode still counts as damage',
       () async {
-        final phone = await _Phone.open('malformed-event');
+        final phone = await Phone.open('malformed-event');
         _NewerBuild(server, 'newer').upload([
           'audio',
           'history',

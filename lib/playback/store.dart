@@ -1193,15 +1193,17 @@ class ReadingRecords implements ResumeStore, ReadingStore {
       'settings': changes.settings,
       'resumes': changes.resumes,
       'bookmarks': changes.bookmarks,
+      'history': changes.history,
     });
     return owner._change(
       accountKey,
       copied['settings'] as Map<String, dynamic>,
       reading: true,
       records: (_) => {
-        for (final entry in (copied['bookmarks'] as Map).entries)
-          jsonEncode(['reading', 'bookmarks', entry.key]):
-              entry.value as Map<String, dynamic>?,
+        for (final collection in ['bookmarks', 'history'])
+          for (final entry in (copied[collection] as Map).entries)
+            jsonEncode(['reading', collection, entry.key]):
+                entry.value as Map<String, dynamic>?,
         ..._flatten({
           'reading': {'resumes': copied['resumes']},
         }, reading: true),
@@ -1220,7 +1222,7 @@ class ReadingRecords implements ResumeStore, ReadingStore {
 /// The collections of each domain that this build reads.
 const _collections = {
   'audio': {'bookmarks', 'history', 'resumes'},
-  'reading': {'bookmarks', 'resumes'},
+  'reading': {'bookmarks', 'history', 'resumes'},
 };
 
 /// Whether this build knows the domain and the collection of [address].
@@ -1258,10 +1260,12 @@ void _validateActionValue(Map<String, dynamic> action) {
           Bookmark.fromJson(value, decodePosition);
         }
       case 'history':
-        if (reading || value['id'] != address[2]) {
-          throw const FormatException();
+        if (value['id'] != address[2]) throw const FormatException();
+        if (reading) {
+          HistoryEvent.fromJson(value, decodeTextPosition);
+        } else {
+          HistoryEvent.fromJson(value, decodePosition);
         }
-        HistoryEvent.fromJson(value, decodePosition);
       case 'resumes':
         if (reading) {
           decodeTextPosition(value);
@@ -1336,7 +1340,7 @@ Map<String, dynamic> _snapshot(
         ? metadata['reading'] as Map<String, dynamic>
         : (Map.of(metadata)..remove('reading')),
     'bookmarks': <dynamic>[],
-    if (!reading) 'history': <dynamic>[],
+    'history': <dynamic>[],
     'resumes': reading ? <dynamic>[] : <String, dynamic>{},
   };
   for (final entry in values.entries) {
@@ -1872,11 +1876,7 @@ Iterable<MapEntry<String, Map<String, dynamic>>> _records(
     final snapshot = reading ? combined['reading'] : combined;
     if (snapshot is! Map<String, dynamic>) continue;
     final pieces = <Map<String, dynamic>>[
-      for (final collection in [
-        'bookmarks',
-        if (!reading) 'history',
-        if (reading) 'resumes',
-      ])
+      for (final collection in ['bookmarks', 'history', if (reading) 'resumes'])
         if (snapshot[collection] case final List values)
           for (final value in values)
             {
@@ -1945,11 +1945,7 @@ Map<String, Map<String, dynamic>> _flatten(
       ? combined['reading'] as Map<String, dynamic>?
       : combined;
   if (snapshot == null) return {};
-  for (final collection in [
-    'bookmarks',
-    if (!reading) 'history',
-    if (reading) 'resumes',
-  ]) {
+  for (final collection in ['bookmarks', 'history', if (reading) 'resumes']) {
     final values = snapshot[collection];
     if (values != null &&
         (values is! List ||
@@ -1963,7 +1959,7 @@ Map<String, Map<String, dynamic>> _flatten(
       snapshot['resumes'] is! Map<String, dynamic>) {
     throw const FormatException('Listening resumes must be an object.');
   }
-  for (final collection in ['bookmarks', if (!reading) 'history']) {
+  for (final collection in ['bookmarks', 'history']) {
     for (final value in (snapshot[collection] as List? ?? []).cast<Map>()) {
       result[jsonEncode([domain, collection, value['id']])] =
           Map<String, dynamic>.from(value);
