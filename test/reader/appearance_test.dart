@@ -60,7 +60,6 @@ void main() {
 
   /// A reader session of the test account over [twoChapterBook].
   (ReaderSession, LocalFiles) session() {
-    runIdleStepsDuringAnimations();
     final downloads = LocalFiles()
       ..files[source.key] = Uri.file('/verified.epub');
     final publication = twoChapterBook();

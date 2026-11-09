@@ -9,7 +9,6 @@ import 'package:bookfin/reader/epub/pager.dart';
 import 'package:bookfin/reader/screen.dart';
 import 'package:bookfin/reader/session.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter_epub_viewer/publication.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -33,22 +32,6 @@ Publication twoChapterBook() => Publication.admit(
     [('One', 'text/s0.xhtml#one'), ('Two', 'text/s1.xhtml#two')],
   ),
 );
-
-/// Lets the page source's idle layout steps run while an animation runs,
-/// until the test ends.
-///
-/// Flutter's default strategy holds an idle step back during an animation
-/// and asks again with a zero timer. Under the test clock that never ends:
-/// each run adds the timer again before a pump can finish.
-void runIdleStepsDuringAnimations() {
-  final binding = SchedulerBinding.instance;
-  final previous = binding.schedulingStrategy;
-  binding.schedulingStrategy = ({
-    required int priority,
-    required SchedulerBinding scheduler,
-  }) => true;
-  addTearDown(() => binding.schedulingStrategy = previous);
-}
 
 /// Pumps frames and lets real time pass until [done] holds, for up to 30
 /// seconds of real time.
@@ -112,7 +95,6 @@ Future<ReaderSession> openNative(
     load: (_) async => opened,
   );
   addTearDown(downloads.dispose);
-  runIdleStepsDuringAnimations();
   await reader.bind(account(), [book]);
   await reader.open(book, edition);
   await tester.pumpWidget(
