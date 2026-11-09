@@ -1,6 +1,6 @@
 ---
 id: t5-9tbu
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-09T18:18:38Z
