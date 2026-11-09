@@ -182,6 +182,48 @@ void main() {
     );
   });
 
+  testWidgets('when the front card turns to another page, it never shows two '
+      'pages at once, and the new page is the only one on it at rest', (
+    tester,
+  ) async {
+    await show(tester);
+    final before = drawn(3);
+    final after = drawn(4);
+    deck.value = DeckView(front: DeckCard(page: before));
+    await tester.pumpAndSettle();
+    deck.value = DeckView(front: DeckCard(page: after));
+    await tester.pump();
+    for (var frame = 0; frame < 12; frame++) {
+      final images = imageOn(front);
+      expect(images, findsOneWidget, reason: 'Frame $frame of the turn.');
+      expect(
+        tester.widget<RawImage>(images).image!.isCloneOf(after.image),
+        isTrue,
+        reason: 'Frame $frame shows the new page.',
+      );
+      await tester.pump(const Duration(milliseconds: 16));
+    }
+    await tester.pumpAndSettle();
+    expect(imageOn(front), findsOneWidget);
+  });
+
+  testWidgets('while the thumb passes several pages quickly, the front card '
+      'shows only the newest page', (tester) async {
+    await show(tester);
+    final pages = [for (var page = 0; page < 4; page++) drawn(page)];
+    deck.value = DeckView(front: DeckCard(page: pages.first));
+    await tester.pumpAndSettle();
+    for (final page in pages.skip(1)) {
+      deck.value = DeckView(front: DeckCard(page: page));
+      await tester.pump(const Duration(milliseconds: 40));
+      expect(imageOn(front), findsOneWidget);
+      expect(
+        tester.widget<RawImage>(imageOn(front)).image!.isCloneOf(page.image),
+        isTrue,
+      );
+    }
+  });
+
   testWidgets('a wide drawn page fits the width of its card', (tester) async {
     await show(tester);
     deck.value = DeckView(
