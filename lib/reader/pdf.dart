@@ -200,8 +200,6 @@ abstract class PdfTextSupply {
   Future<void> close();
 }
 
-String _digest(Uint8List bytes) => sha256.convert(bytes).toString();
-
 class PdfRuntime {
   PdfRuntime._();
   static final PdfRuntime instance = PdfRuntime._();
@@ -218,15 +216,16 @@ class PdfRuntime {
     return operation;
   }
 
-  /// Opens the PDF [bytes]. Each page text is prepared through [hop].
+  /// Opens the PDF [bytes], whose SHA-256 is [digest]. Downloads computed
+  /// the digest when the download completed, so the open does not hash the
+  /// file again. Each page text is prepared through [hop].
   Future<PdfBook> open(
-    Uint8List bytes, {
+    Uint8List bytes,
+    String digest, {
     PdfTextSupply? textSupply,
     IsolateHop hop = compute,
   }) => _admit(() async {
     await (_initialization ??= pdfrxFlutterInitialize());
-    // Scanned PDFs can be large enough to freeze the UI while hashing.
-    final digest = await compute(_digest, bytes);
     final document = await native.PdfDocument.openData(
       bytes,
       sourceName: digest,

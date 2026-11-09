@@ -1,11 +1,16 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
 import 'dart:typed_data';
 
 import 'package:bookfin/catalog/model.dart';
+import 'package:bookfin/downloads/downloads.dart';
+import 'package:bookfin/reader/document.dart';
+import 'package:bookfin/reader/ocr.dart';
 import 'package:bookfin/reader/platform_io.dart';
 import 'package:bookfin/reader/pdf.dart';
+import 'package:flutter/services.dart';
 import 'package:pdfrx_engine/pdfrx_engine.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -21,13 +26,17 @@ const pdfSource = SourceFile(
   sizeBytes: 1000,
 );
 
+/// The SHA-256 of simple.pdf, as Downloads records it.
+const simpleDigest =
+    '51d05de2a89dd83fb8f04301ac254419b2d616d48f6e8bb9fbe0938745bc04ce';
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   Pdfrx.pdfiumModulePath = Platform.environment['PDFIUM_LIBRARY'];
   Pdfrx.cacheDirectoryPath = Directory.systemTemp.path;
   test('an extraction isolate cannot initialize a second native font-callback owner', () async {
     await expectLater(
-      Isolate.run(() async => PdfRuntime.instance.open(Uint8List(0))),
+      Isolate.run(() async => PdfRuntime.instance.open(Uint8List(0), '')),
       throwsStateError,
     );
   });
@@ -52,28 +61,108 @@ void main() {
     },
   );
 
-  test('an opened PDF keeps the digest and identity that saved places and OCR caches use', () async {
-    final bytes = await File('tool/research/readers/fixtures/simple.pdf')
-        .readAsBytes();
-    final book = await PdfRuntime.instance.open(bytes);
-    addTearDown(book.dispose);
-    // Saved reading places and OCR caches are keyed by these values, so a
-    // change here would orphan them.
-    expect(
-      book.originalDigest,
-      '51d05de2a89dd83fb8f04301ac254419b2d616d48f6e8bb9fbe0938745bc04ce',
+  test('opening a downloaded PDF takes its original digest from Downloads '
+      'instead of hashing the file', () async {
+    // Downloads hashed the file when its download completed. A digest that
+    // differs from the file's own hash shows that the open did not hash it.
+    final recorded = 'd' * 64;
+    final document = await loadReadingDocument(
+      VerifiedFile(
+        File('tool/research/readers/fixtures/simple.pdf').absolute.uri,
+        recorded,
+      ),
+      pdfSource,
     );
-    expect(
-      book.identity,
-      '39cd1ab8b3cd4b412994d1e5bfd7174075542b35c2a7866b9978d48edaf4a823',
+    addTearDown(document.dispose);
+    expect(document.originalDigest, recorded);
+  });
+
+  test('a PDF place saved before t6-doxp opens at the same place', () async {
+    // The place that the reader saved for simple.pdf before t6-doxp, when
+    // each open hashed the file itself.
+    const saved = {
+      'version': 1,
+      'processed':
+          '39cd1ab8b3cd4b412994d1e5bfd7174075542b35c2a7866b9978d48edaf4a823',
+      'original':
+          '51d05de2a89dd83fb8f04301ac254419b2d616d48f6e8bb9fbe0938745bc04ce',
+      'policy': 'bookfin-pdf-source-pages-1',
+      'engine': 'pdfrx-0.9.0-pdfium-8125',
+      'page': 2,
+      'character': 12,
+      'quote':
+          'r 2\r\nThe river follows the old road.\r\nA reader can change the '
+          'text size without changing\r\nthe saved source location.',
+      'representation':
+          'bookfin-pdf-source-pages-1/pdfrx-0.9.0-pdfium-8125/extracted/'
+          '578cbaabc45fbdc4510f6166f42cc3a7a72654e9c4cbcff31581c7dbb88cccc4',
+    };
+    final pdf = await loadReadingDocument(
+      verified(File('tool/research/readers/fixtures/simple.pdf').absolute),
+      pdfSource,
+    ) as PdfBook;
+    addTearDown(pdf.dispose);
+    expect(pdf.identity, saved['processed']);
+    final place = pdf.restore(saved)! as PdfAddress;
+    final resolved = pdf.resolveAddress(place, await pdf.text(2))!;
+    expect(resolved.sourcePage, 2);
+    expect(resolved.character, 12);
+    expect(resolved.representation, saved['representation']);
+  });
+
+  test('a recognized page keeps its cached text after t6-doxp', () async {
+    final root = await Directory.systemTemp.createTemp('bookfin-pdf-digest-');
+    addTearDown(() => root.delete(recursive: true));
+    final original = File('${root.path}/complete');
+    await File('tool/research/readers/fixtures/scanned.pdf')
+        .copy(original.path);
+    // The cache file that recognition of page 1 of scanned.pdf wrote before
+    // t6-doxp, under the key that the original digest names.
+    const key =
+        '2463ffa5ec92806519a3759dd66fc0510d2b116eec33209727ddf72aed29af3f';
+    const hocr =
+        '<div class="ocr_page"><span class="ocr_line" title="bbox 10 10 500 '
+        '40"><span class="ocrx_word" title="bbox 10 10 100 40">The</span> '
+        '<span class="ocrx_word" title="bbox 110 10 300 40">quiet</span> '
+        '<span class="ocrx_word" title="bbox 310 10 500 40">garden.</span>'
+        '</span></div>';
+    await Directory('${root.path}/.bookfin-ocr').create();
+    await File('${root.path}/.bookfin-ocr/$key.json').writeAsString(
+      jsonEncode({
+        'key': key,
+        'hocr': hocr,
+        'sha256':
+            '5b6d5021081a776932423066a6b0c95410f9a2a66dace270ee4cb8abf352b661',
+      }),
     );
+    var recognitions = 0;
+    const channel = MethodChannel('bookfin/ocr');
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, (call) async {
+          if (call.method == 'recognize') recognitions++;
+          return null;
+        });
+    addTearDown(
+      () => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, null),
+    );
+    final supply = BundledEnglishText();
+    final scan = await loadReadingDocument(
+      verified(original),
+      pdfSource,
+      textSupply: supply,
+    ) as PdfBook;
+    addTearDown(scan.dispose);
+    supply.bind((read) => read(original.uri, () => true));
+    expect((await scan.text(1)).text, 'The quiet garden.');
+    expect(recognitions, 0);
   });
 
   test('an address inside an extracted page keeps the representation that '
       'saved places use', () async {
     final bytes = await File('tool/research/readers/fixtures/simple.pdf')
         .readAsBytes();
-    final book = await PdfRuntime.instance.open(bytes);
+    final book = await PdfRuntime.instance.open(bytes, simpleDigest);
     addTearDown(book.dispose);
     // Saved places inside a page compare this value, so a change here
     // would move every such place back to the start of its page.
@@ -98,7 +187,11 @@ void main() {
         return output;
       }
 
-      final book = await PdfRuntime.instance.open(bytes, hop: hop);
+      final book = await PdfRuntime.instance.open(
+        bytes,
+        simpleDigest,
+        hop: hop,
+      );
       addTearDown(book.dispose);
       final text = await book.text(1);
       await book.text(1);
@@ -156,8 +249,8 @@ void main() {
       final bytes = await File('tool/research/readers/fixtures/simple.pdf')
           .readAsBytes();
       final books = await Future.wait([
-        PdfRuntime.instance.open(bytes),
-        PdfRuntime.instance.open(bytes),
+        PdfRuntime.instance.open(bytes, simpleDigest),
+        PdfRuntime.instance.open(bytes, simpleDigest),
       ]);
       final rendering = books.first.render(1, 360);
       final text = books.last.text(2);
@@ -167,7 +260,7 @@ void main() {
       await closing;
       await expectLater(books.first.render(1, 360), throwsStateError);
       PdfRuntime.instance.checkInvariants();
-      final reopened = await PdfRuntime.instance.open(bytes);
+      final reopened = await PdfRuntime.instance.open(bytes, simpleDigest);
       expect((await reopened.text(1)).text, contains('River chapter 1'));
       await reopened.dispose();
     },
