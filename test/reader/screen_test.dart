@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:bookfin/catalog/glass.dart' show CoverGlass;
+import 'package:bookfin/reader/document.dart';
+import 'package:bookfin/reader/epub/viewport.dart';
 import 'package:bookfin/reader/screen.dart';
 import 'package:bookfin/reader/session.dart';
 import 'package:bookfin/foundation/theme.dart';
@@ -9,6 +11,8 @@ import 'package:flutter_epub_viewer/publication.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../playback/playback_test.dart' show account, LocalFiles, MemoryResume;
+import 'epub/helpers.dart' show loadReaderFont;
+import 'native_reader.dart';
 import 'publication_test.dart' show epub;
 import 'reader_settings.dart';
 import 'session_test.dart' show source, edition, book, visible;
@@ -88,8 +92,11 @@ void main() {
       reader.acceptVisible(reader.token, visible);
       await tester.pumpAndSettle();
       expect(
-        find.bySemanticsLabel('Current chapter unavailable · 0%'),
+        find.bySemanticsLabel('Chapter 1 · 0%'),
         findsOneWidget,
+        reason:
+            'A place with no chapter title takes its chapter from the book '
+            'map, which lists one chapter for this book without contents.',
       );
       expect(
         tester.widget<Slider>(find.byType(Slider)).value,
@@ -460,6 +467,99 @@ void main() {
     },
     variant: TargetPlatformVariant.only(TargetPlatform.linux),
   );
+
+  group('the native page', () {
+    setUpAll(loadReaderFont);
+
+    testWidgets(
+      'an EPUB shows the pager\'s page, laid out for the page area',
+      (tester) async {
+        final reader = await openNative(tester);
+        expect(find.byType(EpubViewport), findsOneWidget);
+        expect(
+          find.textContaining('available in the Android app'),
+          findsNothing,
+        );
+        expect(find.bySemanticsLabel('Laying out the book'), findsNothing);
+        final settings = shownOf(reader)!.page.settings;
+        final area = tester.getSize(find.byType(EpubViewport));
+        expect((settings.width, settings.height), (area.width, area.height));
+        expect(
+          (reader.visibleAddress! as EpubAddress).location.resource,
+          'OPS/text/s0.xhtml',
+        );
+        await closeNative(tester, reader);
+      },
+      variant: TargetPlatformVariant({
+        TargetPlatform.android,
+        TargetPlatform.iOS,
+        TargetPlatform.macOS,
+        TargetPlatform.linux,
+        TargetPlatform.windows,
+      }),
+    );
+
+    testWidgets('a swipe to the left shows the next page, and a swipe to the '
+        'right shows the page before again', (tester) async {
+      final reader = await openNative(tester);
+      final first = shownOf(reader)!.page;
+      final address = reader.visibleAddress! as EpubAddress;
+
+      await tester.drag(find.byType(EpubViewport), const Offset(-120, 0));
+      final next = (await waitForPage(
+        tester,
+        reader,
+        (shown) => !identical(shown.page, first),
+      )).page;
+      expect(next.section, first.section);
+      expect(next.start.compareTo(first.start), greaterThan(0));
+      final moved = reader.visibleAddress! as EpubAddress;
+      expect(
+        moved.location.progress,
+        greaterThan(address.location.progress ?? 0),
+        reason: 'The next page is the visible place.',
+      );
+
+      await tester.drag(find.byType(EpubViewport), const Offset(120, 0));
+      final back = (await waitForPage(
+        tester,
+        reader,
+        (shown) => !identical(shown.page, next),
+      )).page;
+      expect((back.section, back.start), (first.section, first.start));
+      await closeNative(tester, reader);
+    }, variant: TargetPlatformVariant.only(TargetPlatform.android));
+
+    testWidgets('a tap on a link shows its destination, and the controls '
+        'stay', (tester) async {
+      final reader = await openNative(tester);
+      final pager = reader.pager!;
+      final area = tester.getRect(find.byType(EpubViewport));
+      Offset? link;
+      for (var y = 0.0; y < area.height / 2 && link == null; y += 4) {
+        for (var x = 0.0; x < area.width && link == null; x += 8) {
+          if (pager.linkAt(Offset(x, y)) != null) link = Offset(x, y);
+        }
+      }
+      expect(link, isNotNull, reason: 'The first page shows the link.');
+
+      await tester.tapAt(area.topLeft + link!);
+      await waitForPage(tester, reader, (shown) => shown.page.section == 1);
+      await settleReader(
+        tester,
+        () =>
+            (reader.visibleAddress! as EpubAddress).location.resource ==
+            'OPS/text/s1.xhtml',
+      );
+      expect(
+        (reader.visibleAddress! as EpubAddress).location.progress,
+        greaterThan(.7),
+        reason: 'The far shore is near the end of the second chapter.',
+      );
+      expect(find.byType(ReaderDock), findsOneWidget);
+      await closeNative(tester, reader);
+    }, variant: TargetPlatformVariant.only(TargetPlatform.android));
+  });
 }
 
 /// Adds 'closed a route' to [log] each time a route closes.

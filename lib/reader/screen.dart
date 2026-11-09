@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:flutter_epub_viewer/flutter_epub_viewer.dart';
+import 'package:flutter/services.dart';
 
 import '../catalog/glass.dart'
     show CoverGlass, PageBook, confirmAction, showGlassSheet;
@@ -17,6 +17,8 @@ import '../playback/screen.dart';
 import 'book_map.dart';
 import 'session.dart';
 import 'document.dart';
+import 'epub/page_source.dart' show PageNumber;
+import 'epub/viewport.dart';
 import 'pdf.dart';
 import 'pdf_viewport.dart';
 import 'scrub_deck.dart';
@@ -328,26 +330,6 @@ class _ReaderScreenState extends State<ReaderScreen> {
                         icon: const Icon(Icons.more_horiz_rounded),
                       ),
                     ),
-                  Positioned.fill(
-                    child: ListenableBuilder(
-                      listenable: Listenable.merge([
-                        reader.documentChanges,
-                        reader.saveStatusChanges,
-                      ]),
-                      builder: (_, _) =>
-                          reader.publication != null &&
-                              !reader.ready &&
-                              epubViewportSupported &&
-                              reader.message == null
-                          ? Center(
-                              child: Semantics(
-                                label: 'Laying out the book',
-                                child: const CircularProgressIndicator(),
-                              ),
-                            )
-                          : const SizedBox.shrink(),
-                    ),
-                  ),
                 ],
               ),
             ),
@@ -403,13 +385,14 @@ class _ReaderScreenState extends State<ReaderScreen> {
   }
 
   /// The view of the open document, or what stands in its place while the
-  /// book opens or cannot open. It follows the document, the text size, the
-  /// reader message and the reflow choice.
+  /// book opens or cannot open: the PDF viewport, or the native viewport of
+  /// an EPUB or MOBI book's pager on every platform. It follows the
+  /// document, the text size, the reader message and the reflow choice.
   Widget _viewport(BuildContext context, bool night) {
     _viewToken = reader.token;
     final token = reader.token;
     final document = reader.document;
-    final publication = reader.publication;
+    final pager = reader.pager;
     final fontSize = MediaQuery.textScalerOf(context).scale(reader.fontSize);
     if (document is PdfBook) {
       final viewport = PdfViewport(
@@ -428,20 +411,8 @@ class _ReaderScreenState extends State<ReaderScreen> {
       final book = reader.book;
       return book == null ? viewport : PageBook(book: book, child: viewport);
     }
-    if (!epubViewportSupported) {
-      return const Center(
-        child: Padding(
-          padding: EdgeInsets.all(24),
-          child: Text(
-            'EPUB reading is available in the Android app. Your downloads and listening are unchanged.',
-          ),
-        ),
-      );
-    }
     if (reader.loading ||
-        (reader.edition == null &&
-            publication == null &&
-            reader.message == null)) {
+        (reader.edition == null && pager == null && reader.message == null)) {
       return Center(
         child: Semantics(
           label: 'Checking the downloaded EPUB',
@@ -449,7 +420,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
         ),
       );
     }
-    if (publication == null) {
+    if (pager == null) {
       return const Center(
         child: Padding(
           padding: EdgeInsets.all(24),
@@ -457,20 +428,19 @@ class _ReaderScreenState extends State<ReaderScreen> {
         ),
       );
     }
+    // The pager opens the book at the session's saved place, so the page
+    // is ready as soon as the viewport presents its size.
     return EpubViewport(
       key: ValueKey(token),
-      publication: publication,
-      initial: reader.initialLocation,
+      pager: pager,
       fontSize: fontSize,
       night: night,
-      onReady: (controller, contents) =>
-          reader.attach(token, controller, contents),
-      onLocation: (location) => reader.acceptVisible(token, location),
-      onFailure: (message) => reader.failed(token, message),
-      onWarning: (message) => reader.warn(token, message),
       onTap: () {
         if (mounted) setState(() => _controls = !_controls);
       },
+      onTurn: (forward) => unawaited(reader.move(forward)),
+      onLink: (href) => unawaited(reader.goToContents(href)),
+      onCopy: (text) => unawaited(Clipboard.setData(ClipboardData(text: text))),
     );
   }
 }
@@ -975,10 +945,9 @@ class ReaderScrubBar extends StatelessWidget {
   /// place until the returned future completes.
   final Future<void> Function(BookTarget target) onScrubEnd;
 
-  /// The visible page, such as "Page 2 of 8".
-  static String _pageLabel(ReaderAddress? place) {
-    final page = place?.page;
-    final pages = place?.pages;
+  /// The visible page, such as "Page 2 of 8", or "Page 2" while the count
+  /// of pages is not known.
+  static String _pageLabel(int? page, int? pages) {
     return page == null
         ? 'Page progress unavailable'
         : pages == null
@@ -998,6 +967,7 @@ class ReaderScrubBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) => ListenableBuilder(
     listenable: Listenable.merge([
+      reader.documentChanges,
       reader.placeChanges,
       reader.bookmarkChanges,
       reader.bookMapChanges,
@@ -1058,14 +1028,32 @@ class ReaderScrubBar extends StatelessWidget {
           ),
         ],
       );
-      // In a book, the visible place is its share of the book, as the label
-      // of a dragged place is. A PDF names its page.
-      Widget visible() => label(
-        place?.chapter ?? 'Current chapter unavailable',
-        map != null && at != null && map.pages == null
-            ? _placeAt(map, at)
-            : _pageLabel(place),
-      );
+      // A PDF names its page. A native EPUB page names its number in its
+      // section, which the pager learns as it lays the section out, and
+      // only that label follows it. Until the number is known, the visible
+      // place is its share of the book, as the label of a dragged place is.
+      // A saved place has no chapter title, so the book map names the
+      // chapter of a place that the pager opened at, as it does for a
+      // dragged place.
+      final chapter =
+          place?.chapter ??
+          (at == null ? null : map?.targetAt(at).chapter) ??
+          'Current chapter unavailable';
+      final share = map != null && at != null && map.pages == null
+          ? _placeAt(map, at)
+          : null;
+      Widget visible() => switch (reader.pager?.pageNumber) {
+        null => label(chapter, share ?? _pageLabel(place?.page, place?.pages)),
+        final numbers => ValueListenableBuilder<PageNumber?>(
+          valueListenable: numbers,
+          builder: (_, number, _) => label(
+            chapter,
+            number == null
+                ? share ?? _pageLabel(null, null)
+                : _pageLabel(number.number, number.count),
+          ),
+        ),
+      };
       if (map == null || at == null) {
         return arranged(
           visible(),

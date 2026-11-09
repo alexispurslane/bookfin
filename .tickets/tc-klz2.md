@@ -1,6 +1,6 @@
 ---
 id: tc-klz2
-status: open
+status: in_progress
 deps: []
 links: []
 created: 2026-11-08T22:37:50Z
@@ -19,3 +19,7 @@ When the pager opens at a saved place, it reports the saved address object itsel
 **2026-11-08T22:42:56Z**
 
 Decision (orchestrator, 2026-11-08): the second option. The pager keeps reporting the saved address object unchanged (design rule 1), and the chapter step reads the shown page's end from the pager, because the shown page owns its end. Done together with tc-1yif.
+
+**2026-11-09T00:23:36Z**
+
+Done in this branch, as decided: the pager keeps reporting the saved address unchanged. EpubPager gained BookPlace? get shownEnd (the shown page's section and the text progress of its last place, null before the first page and for a page with no place). BookMap.chapterStep takes it as end: and no longer reads ReadingLocation.end, so the page end has one source, the shown page. ReaderSession.moveChapter passes _pager?.shownEnd. Proof: session_native_test 'next chapter skips a chapter that starts in the middle of the first page after opening at a saved place (tc-klz2)' (red before: Next chapter stayed on Birch), and book_map_test, which also checks that the end comes from the shown page, not from an older reported address. pager.dart change: one getter, 13 lines, after pageNumber.

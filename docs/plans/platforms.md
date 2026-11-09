@@ -15,7 +15,7 @@ The Dart code under `lib/` is the same on every platform. The platform differenc
 | Personal records | `RecordDatabase.open` in `lib/playback/database.dart`, chosen in `lib/main.dart` | sqflite's `databaseFactory` | Every native platform keeps records in the database. sqflite has a plugin on Android, iOS and macOS. Linux and Windows must set `databaseFactory` to sqflite_common_ffi's factory first. |
 | Credentials | `SecureCredentialStore` in `lib/catalog/store.dart` | flutter_secure_storage, with options per platform | The plugin supports all five platforms. The options choose the keychain or keystore. |
 | Listening | `createPlayback` in `lib/playback/native.dart` | just_audio, audio_service and audio_session | `_playingPlatforms` lists the platforms where just_audio and audio_service both have a native implementation: Android, iOS and macOS. On iOS and macOS, `createPlayback` also gives the engine a link directory, because AVFoundation picks its decoder by the file extension (`lib/playback/apple_audio_files.dart`). |
-| Reading | `loadReadingDocument` in `lib/reader/platform_io.dart`, `epubViewportSupported` in `packages/flutter_epub_viewer` | PDFium code asset, the libmobi converter library, the `bookfin/ocr` channel, a WebView | PDF works wherever PDFium loads. Recognition of scanned pages is on where the runner has an OCR worker (Android). The EPUB viewport says itself where its WebView can serve the reader. |
+| Reading | `loadReadingDocument` in `lib/reader/platform_io.dart` | PDFium code asset, the libmobi converter library, the `bookfin/ocr` channel | PDF works wherever PDFium loads. Flutter draws EPUB pages on every platform (`lib/reader/epub/`), with no WebView. A MOBI or AZW3 book opens where the runner bundles libmobi. Recognition of scanned pages is on where the runner has an OCR worker (Android). |
 | Window | The runner | `macos/Runner/MainFlutterWindow.swift` and the later desktop runners | The runner sets the starting size and the minimum size. The Dart layout stays phone-shaped. |
 
 The runner channels form one contract. A port implements the contract in its runner, and the Dart side needs no change:
@@ -39,7 +39,7 @@ flowchart LR
     P[createPlayback]
     R[RecordDatabase.open]
     C[SecureCredentialStore]
-    X[loadReadingDocument / EpubViewport]
+    X[loadReadingDocument / EpubPager]
   end
   subgraph Runner["Runner (one per platform)"]
     M["bookfin/media + media-network"]
@@ -51,7 +51,7 @@ flowchart LR
     A[just_audio, audio_service]
     S[sqflite]
     K[flutter_secure_storage]
-    F[PDFium, libmobi, WebView]
+    F[PDFium, libmobi]
   end
   D --> M
   N --> V
@@ -83,8 +83,8 @@ Each table lists the platform-specific parts, whether they work, what blocks the
 | Records, credentials | Works | None | sqflite, EncryptedSharedPreferences. |
 | Listening and background audio | Works | None | audio_service foreground service in `AndroidManifest.xml`. |
 | PDF | Works | None | PDFium `android-arm64` from Nix, seeded by `tool/reader/native_package.py prepare`. |
-| EPUB | Works | None | `shouldInterceptRequest` serves `https://bookfin-runtime.invalid` and `https://bookfin-publication.invalid`. |
-| MOBI and AZW3 | Works | None | Gradle builds `native/mobi/CMakeLists.txt` with the NDK. |
+| EPUB | Works | None | Flutter draws the pages (`lib/reader/epub/`). |
+| MOBI and AZW3 | Works | None | Gradle builds `native/mobi/CMakeLists.txt` with the NDK. libmobi converts the book to EPUB, and Flutter draws its pages. |
 | OCR | Works | None | Tesseract4Android AAR from Nix (`nix/ocr.nix`), `OcrChannel.kt`. |
 | Nix build | Works on aarch64-darwin and x86_64-linux | No emulator on Linux (t9-ifmy) | `bash tool/bookfin build-android` in the default shell. |
 
@@ -92,7 +92,7 @@ Each table lists the platform-specific parts, whether they work, what blocks the
 
 `tool/bookfin accept-macos` ran `integration_test/macos_desktop_test.dart` on this Mac on 2026-11-08 and passed. The run drives the real app against the fixture server. It signs in, opens the library, downloads and plays First Frost, pauses, downloads and opens the Windfall PDF, syncs twice, lays out the library at two window sizes, and signs out. The images are in `docs/evidence/macos/`.
 
-`screencapture` cannot take these images here, because the process that runs the commands has no Screen Recording permission. The test draws each frame to a PNG file instead. That image shows only Flutter's own layers. An embedded WebView, such as the EPUB reader, shows as an empty area in it.
+`screencapture` cannot take these images here, because the process that runs the commands has no Screen Recording permission. The test draws each frame to a PNG file instead. That image shows only Flutter's own layers. Flutter draws the EPUB reader, so its pages show in these images (`docs/evidence/reader/native/macos-*.png`, tc-1yif).
 
 | Part | State | Blocker | Fix |
 | --- | --- | --- | --- |
@@ -102,8 +102,8 @@ Each table lists the platform-specific parts, whether they work, what blocks the
 | Credentials | Works, with a dialog after a rebuild | The data protection keychain needs a signing team. The login keychain asks the user again after each ad-hoc signed rebuild. | `MacOsOptions(useDataProtectionKeyChain: false)`. A stable signing identity removes the dialog (ticket). |
 | Listening | Works | AVFoundation picks its decoder by the file extension, and Downloads names every file `complete`. | The engine plays each download through a temporary link whose extension names the format of the file's first bytes. Ogg and Opus files have no such extension, so they do not play. |
 | PDF | Works | None | pdfium_flutter's PDFium XCFramework, pinned by its Swift package checksum. |
-| EPUB | Blocked | WKWebView cannot intercept `https`. The plugin's custom-scheme replies carry no HTTP status or headers, so the reader loses its Content-Security-Policy and cross-origin rules. | Design decision (ticket). The reader shows its existing message. |
-| MOBI and AZW3 | Blocked | Needs the EPUB viewport. The app does not bundle the converter library yet. | Follows the EPUB ticket. |
+| EPUB | Works | None | Flutter draws the pages (`lib/reader/epub/`). |
+| MOBI and AZW3 | Blocked | The app does not bundle the libmobi converter library yet. | tf-mqh6. |
 | OCR | Not available | No macOS worker for `bookfin/ocr`. | Ticket. Scanned pages show the original page and the existing note. |
 | Window | Works | None | Opens at 430 × 820 points. The minimum is 360 × 600 points. At 1280 × 800 points the library grid shows six columns. |
 | Quit | Works | A desktop app quits from its menu with no lifecycle change. | `didRequestAppExit` saves the listening and reading places first. `test/durability/background_test.dart` tests it. |
@@ -117,7 +117,8 @@ Each table lists the platform-specific parts, whether they work, what blocks the
 | Records, credentials | Not built | None in the code | sqflite_darwin. `IOSOptions(first_unlock_this_device)` is already set. |
 | Listening and background audio | Not built | Background audio needs `UIBackgroundModes` `audio` in `Info.plist`. | audio_service and audio_session support iOS. The extension links of macOS apply unchanged. |
 | PDF | Not built | None in the code | pdfium_flutter's XCFramework, as on macOS. |
-| EPUB, MOBI | Blocked | The same WKWebView limit as macOS. | The EPUB ticket covers both Apple platforms. |
+| EPUB | Not built | None in the code | Flutter draws the pages, as on macOS. |
+| MOBI and AZW3 | Not built | The runner must bundle libmobi. | Build `native/mobi` into the iOS runner. |
 | OCR | Not available | No iOS worker. | The macOS OCR ticket can share a Vision-based worker. |
 
 ### Linux
@@ -131,7 +132,8 @@ Each table lists the platform-specific parts, whether they work, what blocks the
 | Credentials | Not built | Needs libsecret at run time. | flutter_secure_storage_linux. |
 | Listening | Not available | just_audio and audio_service have no Linux implementation. | just_audio_media_kit, and audio_service_mpris for media keys. |
 | PDF | Builds in tests | None | The pdfium_dart hook bundles PDFium `linux-x64`. |
-| EPUB, MOBI | Blocked | flutter_inappwebview_linux is a beta on WPE WebKit. Its request interception is unknown. | Decide with the EPUB ticket. CMake builds `native/mobi` directly in the runner. |
+| EPUB | Builds in tests | No runner yet | Flutter draws the pages. The host tests read EPUB books on Linux. |
+| MOBI and AZW3 | Builds in tests | The runner must bundle libmobi. | CMake builds `native/mobi` directly in the runner. |
 | OCR | Not available | No worker. | Tesseract from Nix can back a host worker. |
 
 ### Windows
@@ -144,7 +146,8 @@ Each table lists the platform-specific parts, whether they work, what blocks the
 | Credentials | Not built | None | flutter_secure_storage_windows. |
 | Listening | Not available | just_audio and audio_service have no Windows implementation. | just_audio_media_kit, and a System Media Transport Controls plugin. |
 | PDF | Not built | None | The pdfium_dart hook bundles PDFium for Windows. |
-| EPUB, MOBI | Blocked | flutter_inappwebview_windows (WebView2) is a beta. | Decide with the EPUB ticket. CMake builds `native/mobi` in the runner. |
+| EPUB | Not built | None in the code | Flutter draws the pages. |
+| MOBI and AZW3 | Not built | The runner must bundle libmobi. | CMake builds `native/mobi` in the runner. |
 | OCR | Not available | No worker. | Same as Linux. |
 
 ## Nix
