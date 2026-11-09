@@ -13,6 +13,7 @@ import 'package:flutter/foundation.dart';
 
 import '../../downloads/derived_files.dart';
 import 'layout.dart';
+import 'prepare.dart';
 
 /// What a page map depends on: the book, the page size and text size, and
 /// the text engine that laid it out.
@@ -23,7 +24,9 @@ import 'layout.dart';
 class PageMapKey {
   /// [book] is the admitted book's identity. [width] and [height] are the
   /// page size and [textSize] is the text size after the system text scale,
-  /// all in logical pixels, and compared as exact 64-bit values. [engine]
+  /// all in logical pixels, and compared as exact 64-bit values.
+  /// [sizesMainText] says whether [textSize] sizes the book's main text or
+  /// its body ([PageSettings.sizesMainText]). [engine]
   /// is the text-engine fingerprint (t5-9tbu): it changes with the app's
   /// install, the system's build and the platform's locales.
   PageMapKey({
@@ -31,6 +34,7 @@ class PageMapKey {
     required this.width,
     required this.height,
     required this.textSize,
+    required this.sizesMainText,
     required this.engine,
   }) {
     for (final (name, value) in [
@@ -48,7 +52,58 @@ class PageMapKey {
   final double width;
   final double height;
   final double textSize;
+  final bool sizesMainText;
   final String engine;
+}
+
+/// The page maps of one downloaded book, for each value of the page
+/// settings: the store that the page source of the open book reads, writes
+/// and forgets its page maps through.
+class BookPageMaps {
+  /// The maps of the download [original], whose admitted book has the
+  /// identity [book]. [engine] gives the text-engine fingerprint of this
+  /// process (`textEngineFingerprint` in lib/sync/device.dart). When it
+  /// gives null, as in a debug build, the book keeps no maps: every read
+  /// gives null, and writes and forgets touch no file.
+  BookPageMaps(this._original, {required this.book, required this.engine});
+
+  final File _original;
+  final String book;
+  final Future<String?> engine;
+
+  /// The kept map for pages of [settings], or null. See [PageMaps.read].
+  Future<List<KeptSection>?> read(PageSettings settings) async {
+    final key = await _key(settings);
+    return key == null ? null : PageMaps.read(_original, key);
+  }
+
+  /// Keeps [sections] as the map for pages of [settings]. See
+  /// [PageMaps.write].
+  Future<void> write(PageSettings settings, List<KeptSection> sections) async {
+    final key = await _key(settings);
+    if (key != null) await PageMaps.write(_original, key, sections);
+  }
+
+  /// Removes the map for pages of [settings]. See [PageMaps.forget].
+  Future<void> forget(PageSettings settings) async {
+    final key = await _key(settings);
+    if (key != null) await PageMaps.forget(_original, key);
+  }
+
+  /// The key of the map for pages of [settings]. The theme is not in it.
+  Future<PageMapKey?> _key(PageSettings settings) async {
+    final engine = await this.engine;
+    return engine == null
+        ? null
+        : PageMapKey(
+            book: book,
+            width: settings.width,
+            height: settings.height,
+            textSize: settings.fontSize,
+            sizesMainText: settings.sizesMainText,
+            engine: engine,
+          );
+  }
 }
 
 /// The true page starts of one section, in order, and whether its main run
@@ -82,7 +137,8 @@ class KeptSection {
 /// maps of another engine fingerprint, which no later read can use.
 ///
 /// A file is: the magic number `BKPM`, the format [version] and the whole
-/// key, then the section count, then for each section its complete flag,
+/// key (the book, the page size, the text size and whether it sizes the
+/// main text, and the engine), then the section count, then for each section its complete flag,
 /// its start count and its starts, then a CRC-32 of all bytes before it.
 /// Counts and starts are unsigned variable-length integers (LEB128). A
 /// start is the step of its item from the previous start's item, then its
@@ -100,8 +156,9 @@ class KeptSection {
 /// 2 ms (boo-rw7u).
 abstract final class PageMaps {
   /// The format of the file. It is part of the key, so a file of another
-  /// format reads as another key's map.
-  static const version = 1;
+  /// format reads as another key's map. Version 2 added
+  /// [PageMapKey.sizesMainText].
+  static const version = 2;
 
   /// The most settings values that one book keeps maps for. A reader
   /// changes the text size or turns the phone now and then, so four values
@@ -261,7 +318,8 @@ abstract final class PageMaps {
       ..addAll(book)
       ..float64(key.width)
       ..float64(key.height)
-      ..float64(key.textSize);
+      ..float64(key.textSize)
+      ..unsigned(key.sizesMainText ? 1 : 0);
     final engine = utf8.encode(key.engine);
     out
       ..unsigned(engine.length)

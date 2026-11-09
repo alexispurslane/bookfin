@@ -8,8 +8,10 @@ import 'package:ffi/ffi.dart';
 import 'package:flutter/foundation.dart';
 
 import '../downloads/derived_files.dart';
+import '../sync/device.dart';
 import 'admitted_books.dart';
 import 'document.dart';
+import 'epub/page_maps.dart';
 import 'epub/publication.dart';
 
 Future<void> _imports = Future.value();
@@ -18,21 +20,32 @@ Future<void> _imports = Future.value();
 /// SHA-256 [digest]. Its first open converts it to EPUB and admits that
 /// EPUB. Later opens read the admitted book that Bookfin kept, and neither
 /// convert, read nor hash the MOBI.
-Future<EpubDocument> importMobi(File original, String digest) {
+Future<EpubDocument> importMobi(File original, String digest) async {
   final path = original.path;
+  // The fingerprint names the page maps' key. Its first call asks the
+  // platform, beside the import.
+  final engine = textEngineFingerprint();
   final imported = _imports.then(
-    (_) => Isolate.run(() async {
-      final publication = await AdmittedBooks.open(
+    (_) => Isolate.run(
+      () => AdmittedBooks.open(
         File(path),
         digest,
         EpubDocument.mobiPolicy,
         () => _convert(path, digest),
-      );
-      return EpubDocument.mobi(publication, digest);
-    }),
+      ),
+    ),
   );
   _imports = imported.then<void>((_) {}, onError: (Object error) {});
-  return imported;
+  final publication = await imported;
+  return EpubDocument.mobi(
+    publication,
+    digest,
+    pageMaps: BookPageMaps(
+      original,
+      book: publication.identity,
+      engine: engine,
+    ),
+  );
 }
 
 /// The admitted EPUB of the MOBI at [path], whose SHA-256 is [digest]: from

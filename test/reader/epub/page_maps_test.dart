@@ -50,12 +50,14 @@ PageMapKey _key({
   double width = 412,
   double height = 671,
   double textSize = 20,
+  bool sizesMainText = false,
   String engine = 'install-1|build-1|en-US',
 }) => PageMapKey(
   book: book,
   width: width,
   height: height,
   textSize: textSize,
+  sizesMainText: sizesMainText,
   engine: engine,
 );
 
@@ -108,6 +110,7 @@ void main() {
     ('another page width', _key(width: 412.00000000000006)),
     ('another page height', _key(height: 640)),
     ('another text size', _key(textSize: 26)),
+    ("a text size that sizes the book's main text", _key(sizesMainText: true)),
     ('another book', _key(book: 'other-identity')),
   ]) {
     test('a map for $name is not returned', () async {

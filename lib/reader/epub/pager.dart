@@ -75,8 +75,9 @@ class EpubPager implements DocumentNavigator {
   /// [present] gives it page settings. [onPlace] receives each new place of
   /// the shown page. [onWarning] receives a message for the person.
   ///
-  /// The pager owns [source], which defaults to a page source of the book,
-  /// and disposes it. [hop] runs each batch of a search in another isolate.
+  /// The pager owns [source], which defaults to a page source of the book
+  /// with its kept page maps, and disposes it. [hop] runs each batch of a
+  /// search in another isolate.
   EpubPager(
     EpubDocument document, {
     this._initial,
@@ -85,7 +86,11 @@ class EpubPager implements DocumentNavigator {
     PageSource? source,
     this._hop = compute,
   }) : _publication = document.publication,
-       _source = source ?? PageSource(document.publication);
+       _source =
+           source ??
+           PageSource(document.publication, pageMaps: document.pageMaps) {
+    _source.keptMapDropped.addListener(_recount);
+  }
 
   static const _mismatch =
       'The saved place does not match this text. Reading starts at the '
@@ -477,6 +482,7 @@ class EpubPager implements DocumentNavigator {
     _counting?.complete();
     _shown.dispose();
     _number.dispose();
+    _source.keptMapDropped.removeListener(_recount);
     _source.dispose();
   }
 
@@ -653,6 +659,12 @@ class EpubPager implements DocumentNavigator {
         onError: (Object _) {},
       ),
     );
+  }
+
+  /// Counts the shown page again, after a page contradicted the kept page
+  /// map that gave its number.
+  void _recount() {
+    if (_shown.value case final shown? when !_disposed) _count(shown.page);
   }
 
   /// Publishes the number of [page], and again each time the main run of
