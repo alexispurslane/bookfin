@@ -29,7 +29,7 @@ void main() {
       store: MemoryResume(),
     );
     await catalog.connect('https://books.example', 'alice', 'fixture-password');
-    await catalog.refresh(selected: {'books'});
+    await catalog.refresh();
     final book = catalog.books.first;
     final edition = book.editions.first;
     for (final file in edition.files) {

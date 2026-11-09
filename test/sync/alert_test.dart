@@ -80,7 +80,7 @@ void main() {
         tester,
         catalog.connect('https://books.example', 'alice', 'password'),
       );
-      await finish(tester, catalog.refresh(selected: {'books'}));
+      await finish(tester, catalog.refresh());
       await tester.pumpWidget(
         MaterialApp(
           theme: bookfinTheme(Brightness.light),
@@ -190,7 +190,7 @@ void main() {
         tester,
         catalog.connect('https://books.example', 'alice', 'password'),
       );
-      await finish(tester, catalog.refresh(selected: {'books'}));
+      await finish(tester, catalog.refresh());
       await tester.pumpWidget(
         MaterialApp(
           theme: bookfinTheme(Brightness.light),

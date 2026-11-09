@@ -14,7 +14,6 @@ enum CatalogFailureKind {
   incomplete,
   cancelled,
   invalidServer,
-  invalidSelection,
 }
 
 class CatalogFailure implements Exception {
@@ -39,8 +38,6 @@ class CatalogFailure implements Exception {
     CatalogFailureKind.cancelled => 'Refresh cancelled.',
     CatalogFailureKind.invalidServer =>
       'Use an HTTPS server address without a password, query, or fragment.',
-    CatalogFailureKind.invalidSelection =>
-      'Choose only book libraries available to this account.',
   };
   @override
   String toString() => message;
@@ -140,13 +137,13 @@ class BookLibrary {
 /// The number of catalog items in a full page from Jellyfin.
 const catalogPageSize = 200;
 
-/// The pages of one selected book library as Jellyfin sent them: the id of
+/// The pages of one shown book library as Jellyfin sent them: the id of
 /// the library, how many items Jellyfin counted in it, and the body of each
 /// page, in order. Page `n` starts at item `n * catalogPageSize`.
 typedef LibraryPages = ({String libraryId, int total, List<Uint8List> pages});
 
 /// Jellyfin's answer to a catalog read, not yet decoded: the pages of each
-/// selected book library, in order, and the names of the collections that
+/// shown book library, in order, and the names of the collections that
 /// hold each item. [catalogEntries] decodes and checks it. Page bodies cross
 /// to another isolate as block copies, so that isolate can decode them and
 /// build the entries, and the UI isolate never holds them as maps.
@@ -413,25 +410,28 @@ class JellyfinClient {
     }
   }
 
-  /// Reads the catalog of the [selected] book libraries from Jellyfin,
-  /// with the collections of its items, and returns the pages undecoded.
-  /// For each library, a request for one item gives Jellyfin's count, and
-  /// the pages of that count follow. [catalogEntries] checks and builds them.
+  /// Reads the catalog of the [shown] book libraries from Jellyfin, with
+  /// the collections of its items, and returns the pages undecoded. For
+  /// each library, a request for one item gives Jellyfin's count, and the
+  /// pages of that count follow. [catalogEntries] checks and builds them.
+  /// Throws an incomplete failure when a library of [shown] is not a book
+  /// library of the account, for example because Jellyfin removed it since
+  /// the caller read the libraries.
   Future<CatalogPages> catalog(
     JellyfinSession session,
-    Set<String> selected,
+    Set<String> shown,
   ) async {
     final available = (await libraries(session))
         .map((library) => library.id)
         .toSet();
-    if (!available.containsAll(selected)) {
-      throw const CatalogFailure(CatalogFailureKind.invalidSelection);
+    if (!available.containsAll(shown)) {
+      throw const CatalogFailure(CatalogFailureKind.incomplete);
     }
     final collections = _collections(session);
     final List<LibraryPages> pages;
     try {
       pages = [
-        for (final library in selected.toList()..sort())
+        for (final library in shown.toList()..sort())
           await _libraryPages(session, library),
       ];
     } catch (_) {

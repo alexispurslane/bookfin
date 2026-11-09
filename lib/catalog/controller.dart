@@ -55,28 +55,29 @@ typedef CatalogStatus = ({
 });
 
 /// The signed-in account and what it may read: its session, whether access
-/// is blocked, its Jellyfin book libraries, and the ids of the selected
-/// ones. Two accounts are equal when these values are equal, so a refresh of
-/// the same account does not change it.
+/// is blocked, its Jellyfin book libraries, and the ids of the ones that the
+/// user hid. Every other book library shows. Two accounts are equal when
+/// these values are equal, so a refresh of the same account does not change
+/// it.
 ///
 /// [restoring] says that a restore from storage runs, so the account is not
 /// fully known yet. Without a [session], the saved credentials are still
 /// being read, so the person may be signed in. With one, the saved catalog
-/// is still being read, so the libraries, the selection and the blocked
+/// is still being read, so the libraries, the hidden ones and the blocked
 /// access are not known yet.
 class CatalogAccount {
   const CatalogAccount({
     this.session,
     this.accessBlocked = false,
     this.libraries = const [],
-    this.selected = const {},
+    this.hidden = const {},
     this.restoring = false,
   });
   final JellyfinSession? session;
   final bool restoring;
   final bool accessBlocked;
   final List<BookLibrary> libraries;
-  final Set<String> selected;
+  final Set<String> hidden;
 
   @override
   bool operator ==(Object other) =>
@@ -85,7 +86,7 @@ class CatalogAccount {
       restoring == other.restoring &&
       accessBlocked == other.accessBlocked &&
       listEquals(_names(libraries), _names(other.libraries)) &&
-      setEquals(selected, other.selected);
+      setEquals(hidden, other.hidden);
 
   @override
   int get hashCode => Object.hash(
@@ -93,7 +94,7 @@ class CatalogAccount {
     restoring,
     accessBlocked,
     Object.hashAll(_names(libraries)),
-    Object.hashAllUnordered(selected),
+    Object.hashAllUnordered(hidden),
   );
 
   static bool _sameSession(JellyfinSession? left, JellyfinSession? right) =>
@@ -113,14 +114,14 @@ class CatalogAccount {
 /// What the catalog is doing.
 enum _Work { idle, restore, refresh }
 
-/// A refresh that runs: its [generation], the [selected] libraries that it
-/// was asked to read, or null for the saved selection, when it is [done],
+/// A refresh that runs: its [generation], the [hidden] libraries that it
+/// was asked to save, or null to keep the saved ones, when it is [done],
 /// and whether a caller asked for its outcome. A refresh asked for while it
 /// runs joins it, so [reported] can turn true while it runs.
 class _Refreshing {
-  _Refreshing(this.generation, this.selected, {required this.reported});
+  _Refreshing(this.generation, this.hidden, {required this.reported});
   final int generation;
-  final Set<String>? selected;
+  final Set<String>? hidden;
   bool reported;
   late final Future<void> done;
 }
@@ -164,7 +165,7 @@ _Built _reviseCatalog(_Revision revision) {
     CatalogCache(
       scope: saved.scope,
       libraries: saved.libraries,
-      selected: saved.selected,
+      hidden: saved.hidden,
       entries: saved.entries,
       edits: revision.edits,
       completedAt: saved.completedAt,
@@ -174,12 +175,12 @@ _Built _reviseCatalog(_Revision revision) {
 }
 
 /// A refresh's answer from Jellyfin for [scope]: its book [libraries], the
-/// [selected] ones, and their catalog [pages], not yet decoded. The catalog
-/// keeps [edits].
+/// [hidden] ones, and the catalog [pages] of the others, not yet decoded.
+/// The catalog keeps [edits].
 typedef _Refresh = ({
   AccountScope scope,
   List<BookLibrary> libraries,
-  Set<String> selected,
+  Set<String> hidden,
   CatalogPages pages,
   CatalogEdits? edits,
   DateTime completedAt,
@@ -193,7 +194,7 @@ _Built _refreshCatalog(_Refresh refresh) => _saveCatalog(
   CatalogCache(
     scope: refresh.scope,
     libraries: refresh.libraries,
-    selected: refresh.selected,
+    hidden: refresh.hidden,
     entries: catalogEntries(refresh.pages),
     edits: refresh.edits,
     completedAt: refresh.completedAt,
@@ -230,8 +231,8 @@ CatalogLibrary _libraryOf(CatalogCache cache) {
 ///   [CatalogLibrary.search], [CatalogLibrary.series],
 ///   [CatalogLibrary.seriesOf], [CatalogLibrary.book] and
 ///   [CatalogLibrary.matches].
-/// - [session], [accessBlocked], [libraries] and the selection in [cache]:
-///   [accountNotifier].
+/// - [session], [accessBlocked], [libraries] and the hidden libraries in
+///   [cache]: [accountNotifier].
 /// - [busy], [verified] and [message]: [statusNotifier]. [busy] also
 ///   covers a restore.
 /// [readingOrder] stays: [CatalogLibrary] series are in reading order.
@@ -241,7 +242,7 @@ CatalogLibrary _libraryOf(CatalogCache cache) {
 /// - A verified catalog reached Jellyfin, and its access is not blocked.
 ///   So the status never says [CatalogReach.accessRevoked] and verified.
 /// - The cache belongs to the active account, and each cached item belongs
-///   to a selected book library.
+///   to a shown book library: one that the user did not hide.
 /// - The saved text is present exactly when the cache is, and it encodes the
 ///   cache.
 /// - Each source belongs to exactly one edition, and a text edition has one
@@ -334,7 +335,7 @@ class CatalogController extends ChangeNotifier {
     restoring: _work == _Work.restore,
     accessBlocked: _accessBlocked,
     libraries: _libraries,
-    selected: _cache?.selected ?? const {},
+    hidden: _cache?.hidden ?? const {},
   );
 
   CatalogStatus get _status => (
@@ -367,13 +368,13 @@ class CatalogController extends ChangeNotifier {
                 _cache!.content)) {
       throw StateError('The saved text must encode the cache.');
     }
-    if (_cache != null &&
-        _cache!.entries.any(
-          (entry) => !_cache!.selected.contains(entry.libraryId),
-        )) {
-      throw StateError(
-        'Every cached item must belong to a selected book library.',
-      );
+    if (_cache case final cache?) {
+      final shown = cache.shown;
+      if (cache.entries.any((entry) => !shown.contains(entry.libraryId))) {
+        throw StateError(
+          'Every cached item must belong to a shown book library.',
+        );
+      }
     }
     final sources = <String>{};
     for (final book in _built.books) {
@@ -513,7 +514,21 @@ class CatalogController extends ChangeNotifier {
     }
   }
 
+  /// Signs in to Jellyfin, then reads the account's catalog, as [refresh]
+  /// does: every book library that the user did not hide. A new account
+  /// hides none, so it shows every book library. A saved catalog that
+  /// cannot be read stays as it is until the user asks for a refresh.
   Future<void> connect(String server, String username, String password) async {
+    if (await _signIn(server, username, password) && !_disposed) {
+      await refresh(byUser: true);
+    }
+  }
+
+  /// Signs in, and returns whether the catalog can be read now: the
+  /// sign-in succeeded, and a saved catalog of the account was readable or
+  /// absent. A refresh replaces the saved catalog, so a saved catalog that
+  /// cannot be read waits for the user to ask for a refresh.
+  Future<bool> _signIn(String server, String username, String password) async {
     final generation = _begin();
     _clearVisible();
     _notify();
@@ -521,49 +536,45 @@ class CatalogController extends ChangeNotifier {
       await _writeCredentials(null);
       final address = parseServer(server);
       final device = await _credentials.deviceId();
-      if (!_current(generation)) return;
+      if (!_current(generation)) return false;
       final client = _clientFactory(address, device);
       _active = client;
       final signedIn = await client.signIn(username.trim(), password);
-      if (!_current(generation)) return;
+      if (!_current(generation)) return false;
       _reach = CatalogReach.reached;
       if (signedIn.scope.server != address) {
         throw const CatalogFailure(CatalogFailureKind.unauthorized);
       }
       await _writeCredentials(signedIn);
-      if (!_current(generation)) return;
+      if (!_current(generation)) return false;
       _session = signedIn;
       _Built? saved;
+      var readable = true;
       try {
         saved = await _readSaved(signedIn.scope);
       } catch (_) {
+        readable = false;
         if (_current(generation)) {
           _message =
               'Saved books could not be read. Refresh your book libraries.';
         }
       }
-      if (!_current(generation)) return;
+      if (!_current(generation)) return false;
       if (saved != null) _adopt(saved);
       final views = await client.libraries(signedIn);
-      if (!_current(generation)) return;
+      if (!_current(generation)) return false;
       _libraries = views;
-      if (_cache != null &&
-          !views
-              .map((library) => library.id)
-              .toSet()
-              .containsAll(_cache!.selected)) {
-        throw const CatalogFailure(CatalogFailureKind.invalidSelection);
-      }
       try {
         await _saveAccess(blocked: false, generation: generation);
       } catch (_) {
         if (_current(generation)) {
           _message = 'Access is back, but your saved books could not be updated. Refresh your book libraries.';
         }
-        return;
+        return false;
       }
-      if (!_current(generation)) return;
+      if (!_current(generation)) return false;
       _verified = true;
+      return readable;
     } catch (error) {
       if (_current(generation)) {
         if (error is CatalogFailure) {
@@ -581,11 +592,17 @@ class CatalogController extends ChangeNotifier {
         _notify();
       }
     }
+    return false;
   }
 
-  /// Reads the account's book libraries and the catalog of [selected], or
-  /// of the saved selection, from Jellyfin, then saves and shows them. The
-  /// future ends when the refresh ends.
+  /// Reads the account's book libraries from Jellyfin, and the catalog of
+  /// each one that shows, then saves and shows them. The future ends when
+  /// the refresh ends.
+  ///
+  /// A library shows unless it is [hidden], or, without [hidden], unless
+  /// the user hid it before. So a library that Jellyfin adds later shows by
+  /// default. A hidden library that Jellyfin no longer lists leaves the
+  /// hidden set, so it shows if it comes back.
   ///
   /// [byUser] says that the person asked for this refresh, for example with
   /// pull to refresh, Retry or Save libraries. A refresh reports a failure
@@ -595,29 +612,28 @@ class CatalogController extends ChangeNotifier {
   /// an expired sign-in and revoked access. A refresh that cannot reach
   /// Jellyfin says so through [CatalogStatus.reach].
   ///
-  /// One refresh runs at a time. A refresh while another runs, of the same
-  /// selection or with none given, joins it and sends no second request.
-  /// With [byUser], it asks for the outcome of the running refresh. A
-  /// refresh of another selection replaces the running one. A refresh
-  /// during a restore starts after the restore, from the restored catalog.
-  Future<void> refresh({Set<String>? selected, bool byUser = false}) {
+  /// One refresh runs at a time. A refresh while another runs, with the
+  /// same hidden libraries or with none given, joins it and sends no second
+  /// request. With [byUser], it asks for the outcome of the running
+  /// refresh. A refresh with other hidden libraries replaces the running
+  /// one. A refresh during a restore starts after the restore, from the
+  /// restored catalog.
+  Future<void> refresh({Set<String>? hidden, bool byUser = false}) {
     if (_work == _Work.restore) {
-      return _restoring!.then(
-        (_) => refresh(selected: selected, byUser: byUser),
-      );
+      return _restoring!.then((_) => refresh(hidden: hidden, byUser: byUser));
     }
     final running = _refreshing;
     if (running != null &&
         _work == _Work.refresh &&
         running.generation == _generation &&
-        (selected == null || setEquals(selected, running.selected))) {
+        (hidden == null || setEquals(hidden, running.hidden))) {
       running.reported |= byUser;
       return running.done;
     }
     if (_session == null) return Future<void>.value();
     final refreshing = _refreshing = _Refreshing(
       _begin(),
-      selected,
+      hidden,
       reported: byUser,
     );
     return refreshing.done = _refresh(refreshing);
@@ -626,7 +642,6 @@ class CatalogController extends ChangeNotifier {
   Future<void> _refresh(_Refreshing refreshing) async {
     final currentSession = _session!;
     final generation = refreshing.generation;
-    final selected = refreshing.selected;
     _notify();
     try {
       final device = await _credentials.deviceId();
@@ -639,22 +654,22 @@ class CatalogController extends ChangeNotifier {
       final views = await client.libraries(validated);
       if (!_current(generation)) return;
       _libraries = views;
-      final selection = Set<String>.from(
-        selected ?? _cache?.selected ?? const <String>{},
-      );
-      if (!views.map((library) => library.id).toSet().containsAll(selection)) {
-        throw const CatalogFailure(CatalogFailureKind.invalidSelection);
-      }
-      final pages = selection.isEmpty
+      final hidden = {...?(refreshing.hidden ?? _cache?.hidden)}
+        ..retainAll(views.map((library) => library.id));
+      final shown = {
+        for (final library in views)
+          if (!hidden.contains(library.id)) library.id,
+      };
+      final pages = shown.isEmpty
           ? const CatalogPages()
-          : await client.catalog(validated, selection);
+          : await client.catalog(validated, shown);
       if (!_current(generation)) return;
       final write = (_cacheWrites ?? Future<void>.value()).then((_) async {
         if (!_current(generation)) return;
         final built = await _build(_refreshCatalog, (
           scope: validated.scope,
           libraries: views,
-          selected: selection,
+          hidden: hidden,
           pages: pages,
           edits: _cache?.edits,
           completedAt: DateTime.now().toUtc(),
@@ -699,8 +714,7 @@ class CatalogController extends ChangeNotifier {
     _message = switch (failure.kind) {
       CatalogFailureKind.unavailable when _session != null => null,
       CatalogFailureKind.unauthorized ||
-      CatalogFailureKind.forbidden ||
-      CatalogFailureKind.invalidSelection => failure.message,
+      CatalogFailureKind.forbidden => failure.message,
       _ => report ? failure.message : null,
     };
     _reach = switch (failure.kind) {
@@ -719,8 +733,7 @@ class CatalogController extends ChangeNotifier {
       } catch (_) {
         if (_current(generation)) _message = 'Secure sign-out could not be saved. Retry sign-out before leaving this device.';
       }
-    } else if (failure.kind == CatalogFailureKind.forbidden ||
-        failure.kind == CatalogFailureKind.invalidSelection) {
+    } else if (failure.kind == CatalogFailureKind.forbidden) {
       _accessBlocked = true;
       if (_session == null) return;
       try {
@@ -737,7 +750,7 @@ class CatalogController extends ChangeNotifier {
 
   /// Saves Jellyfin's latest answer about access, [blocked], in the saved
   /// catalog after the writes before it, and adopts the result. A denial
-  /// and a sign-in that lists the selected libraries both answer it; a
+  /// and a sign-in that lists the book libraries both answer it; a
   /// refresh saves a whole new catalog, which is not blocked. The catalog
   /// keeps its entries and corrections. Without a saved catalog, an allowed
   /// account needs none, and a blocked one gets an empty one. Throws when

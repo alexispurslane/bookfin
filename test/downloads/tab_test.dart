@@ -35,7 +35,7 @@ void main() {
       clientFactory: (server, device) => client,
     );
     await catalog.connect('https://books.example', 'alice', 'password');
-    await catalog.refresh(selected: {'books'});
+    await catalog.refresh();
     Edition edition(String title) => catalog.books
         .singleWhere((book) => book.title == title)
         .editions

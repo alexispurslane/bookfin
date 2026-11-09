@@ -39,7 +39,7 @@ class SettingsTab extends StatelessWidget {
       if (session == null) return const SizedBox.shrink();
       final theme = Theme.of(context);
       final shown = account.libraries
-          .where((library) => account.selected.contains(library.id))
+          .where((library) => !account.hidden.contains(library.id))
           .map((library) => library.name)
           .toList();
       return ListView(
@@ -185,7 +185,7 @@ class SettingsTab extends StatelessWidget {
         body: BookfinSurface(
           child: Material(
             type: MaterialType.transparency,
-            child: LibrarySelector(catalog: catalog, closeOnSave: true),
+            child: LibrarySelector(catalog: catalog),
           ),
         ),
       ),

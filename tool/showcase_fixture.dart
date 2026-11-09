@@ -12,6 +12,9 @@
 // conflict to choose from.
 // Add --footnotes to give First Frost's EPUB endnotes, with a note
 // reference at the end of each of the first chapter's first paragraphs.
+// Add --ebooks-library to serve the ebooks in a second book library,
+// Ebooks, beside a Movies library that is not a book library. Without it,
+// one book library, Audiobooks, holds every book.
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
@@ -415,6 +418,7 @@ Future<void> main(List<String> arguments) async {
   final fullSize = arguments.contains('--full-size');
   final storage = arguments.contains('--sync-conflict') ? _Storage() : null;
   final footnotes = arguments.contains('--footnotes');
+  final ebooksLibrary = arguments.contains('--ebooks-library');
   final port = arguments.where((argument) => !argument.startsWith('--'));
   final server = await HttpServer.bind(
     InternetAddress.loopbackIPv4,
@@ -482,6 +486,10 @@ Future<void> main(List<String> arguments) async {
       data = {
         'Items': [
           {'Id': 'books', 'Name': 'Audiobooks', 'CollectionType': 'books'},
+          if (ebooksLibrary) ...[
+            {'Id': 'ebooks', 'Name': 'Ebooks', 'CollectionType': 'books'},
+            {'Id': 'movies', 'Name': 'Movies', 'CollectionType': 'movies'},
+          ],
         ],
       };
     } else if (parts.length >= 2 && parts[parts.length - 2] == 'Items') {
@@ -493,9 +501,16 @@ Future<void> main(List<String> arguments) async {
         'CanDownload': true,
       };
     } else if (parts.isNotEmpty && parts.last == 'Items') {
+      final parent = request.uri.queryParameters['parentId'];
+      final listed = !ebooksLibrary || parent == null
+          ? items
+          : [
+              for (final item in items)
+                if ((item['Type'] == 'Book') == (parent == 'ebooks')) item,
+            ];
       data = {
-        'Items': items,
-        'TotalRecordCount': items.length,
+        'Items': listed,
+        'TotalRecordCount': listed.length,
         'StartIndex': 0,
       };
     } else if (parts.isNotEmpty && parts.last == 'Download') {

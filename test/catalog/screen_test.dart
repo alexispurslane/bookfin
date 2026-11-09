@@ -64,7 +64,7 @@ void main() {
       tester,
       controller.connect('https://books.example', 'alice', 'password'),
     );
-    await finish(tester, controller.refresh(selected: {'books'}));
+    await finish(tester, controller.refresh());
   }
 
   List<CatalogEntry> orchardCycle() => [
@@ -190,7 +190,7 @@ void main() {
         tester,
         first.connect('https://books.example', 'alice', 'password'),
       );
-      await finish(tester, first.refresh(selected: {'books'}));
+      await finish(tester, first.refresh());
       first.dispose();
       controller.dispose();
       controller = CatalogController(
@@ -270,12 +270,8 @@ void main() {
                 onPressed: () => Navigator.push<void>(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => Scaffold(
-                      body: LibrarySelector(
-                        catalog: controller,
-                        closeOnSave: true,
-                      ),
-                    ),
+                    builder: (_) =>
+                        Scaffold(body: LibrarySelector(catalog: controller)),
                   ),
                 ),
                 child: const Text('Libraries'),
@@ -288,7 +284,7 @@ void main() {
         client.failure = const CatalogFailure(CatalogFailureKind.unavailable);
         await tester.tap(find.text('Save libraries'));
         await tester.pumpAndSettle();
-        expect(find.text('Choose book libraries'), findsOneWidget);
+        expect(find.text('Book libraries to show'), findsOneWidget);
         expect(find.textContaining('Cannot reach Jellyfin'), findsOneWidget);
       },
     );
@@ -429,8 +425,9 @@ void main() {
       );
       await tester.ensureVisible(find.widgetWithText(FilledButton, 'Sign in'));
       await tester.tap(find.widgetWithText(FilledButton, 'Sign in'));
+      await runUntil(tester, () => !controller.busy);
       await tester.pumpAndSettle();
-      expect(find.text('Choose book libraries'), findsOneWidget);
+      expect(find.text('The Orchard'), findsOneWidget);
       expect(find.textContaining('Development gallery'), findsNothing);
       expect(find.byIcon(Icons.play_arrow_rounded), findsNothing);
     },
@@ -462,28 +459,55 @@ void main() {
     },
   );
 
-  testWidgets(
-    'selecting a book library reveals saved books and their real editions',
-    (tester) async {
-      await finish(
-        tester,
-        controller.connect('https://books.example', 'alice', 'password'),
-      );
-      await show(tester);
-      await tester.tap(find.widgetWithText(CheckboxListTile, 'Books'));
-      await tester.tap(find.widgetWithText(FilledButton, 'Save libraries'));
-      await runUntil(tester, () => !controller.busy);
-      await tester.pumpAndSettle();
-      expect(find.text('The Orchard'), findsOneWidget);
-      await tester.tap(find.text('The Orchard'));
-      await tester.pumpAndSettle();
-      await tester.scrollUntilVisible(find.text('Audiobook'), 300);
-      expect(find.text('Audiobook'), findsOneWidget);
-      expect(find.text('Not downloaded'), findsOneWidget);
-      expect(find.widgetWithText(FilledButton, 'Play'), findsNothing);
-      expect(find.widgetWithText(FilledButton, 'Download'), findsNothing);
-    },
-  );
+  testWidgets('while the first catalog read after sign-in runs, the empty '
+      'shelf says that it reads the book libraries', (tester) async {
+    final pending = client.pendingCatalog = Completer();
+    await show(tester);
+    final connecting = controller.connect(
+      'https://books.example',
+      'alice',
+      'password',
+    );
+    await runUntil(tester, () => client.catalogReads == 1);
+    await tester.pump();
+    expect(find.text('Reading your book libraries.'), findsOneWidget);
+    expect(find.text('No books found.'), findsNothing);
+    pending.complete([]);
+    await finish(tester, connecting);
+    await tester.pumpAndSettle();
+    expect(find.text('No books found.'), findsOneWidget);
+  });
+
+  testWidgets('sign-in lands on the books of every book library and their real '
+      'editions, with no library choice', (tester) async {
+    client.views = [
+      const BookLibrary('books', 'Audiobooks'),
+      const BookLibrary('ebooks', 'Ebooks'),
+    ];
+    client.entries = [
+      entry('one'),
+      CatalogEntry.fromJson(
+        entry('atlas', title: 'The Atlas', type: 'Book', source: 'atlas').json,
+        libraryId: 'ebooks',
+      ),
+    ];
+    await finish(
+      tester,
+      controller.connect('https://books.example', 'alice', 'password'),
+    );
+    await show(tester);
+    await tester.pumpAndSettle();
+    expect(find.byType(CheckboxListTile), findsNothing);
+    expect(find.text('The Atlas'), findsOneWidget);
+    expect(find.text('The Orchard'), findsOneWidget);
+    await tester.tap(find.text('The Orchard'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.text('Audiobook'), 300);
+    expect(find.text('Audiobook'), findsOneWidget);
+    expect(find.text('Not downloaded'), findsOneWidget);
+    expect(find.widgetWithText(FilledButton, 'Play'), findsNothing);
+    expect(find.widgetWithText(FilledButton, 'Download'), findsNothing);
+  });
 
   testWidgets('book search filters the real cached catalog', (tester) async {
     client.entries = [entry('one'), entry('two', title: 'The River')];

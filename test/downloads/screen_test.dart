@@ -36,7 +36,7 @@ void main() {
       clientFactory: (_, _) => _CatalogFixture(fixture),
     );
     await catalog.connect(fixture.uri.toString(), 'alice', 'unused');
-    await catalog.refresh(selected: {'books'});
+    await catalog.refresh();
     await catalog.linkBooks('book:text', 'book:audio1');
     policy = MediaPolicy()..network = MediaNetwork.wifi;
     downloads = _CountedLeftovers(
@@ -451,7 +451,7 @@ void main() {
         await downloads.request(text);
         await downloads.idle;
         await show(tester);
-        await catalog.refresh(selected: {});
+        await catalog.refresh(hidden: {'books'});
         await downloads.idle;
         await tester.tap(find.text('Downloads'));
       });
@@ -517,7 +517,7 @@ void main() {
   );
 
   testWidgets(
-    'deselected libraries move files out of the catalog and reselection restores them',
+    'hidden libraries move files out of the catalog and showing them again restores them',
     (tester) async {
       final text = catalog.books
           .expand((book) => book.editions)
@@ -526,7 +526,7 @@ void main() {
         await downloads.request(text);
         await downloads.idle;
         await show(tester);
-        await catalog.refresh(selected: {});
+        await catalog.refresh(hidden: {'books'});
         await downloads.idle;
         await tester.tap(find.text('Downloads'));
         await tester.pump();
@@ -535,7 +535,7 @@ void main() {
       expect(catalog.books, isEmpty);
       expect(find.text('Leftover files'), findsOneWidget);
       await tester.runAsync(() async {
-        await catalog.refresh(selected: {'books'});
+        await catalog.refresh(hidden: {});
         await downloads.idle;
       });
       await _settleStorage(tester, downloads);
@@ -582,9 +582,9 @@ class _CatalogFixture extends JellyfinClient {
   @override
   Future<CatalogPages> catalog(
     JellyfinSession session,
-    Set<String> selected,
+    Set<String> shown,
   ) async => pagesOf([
-    if (selected.contains('books'))
+    if (shown.contains('books'))
       for (final id in ['audio1', 'audio2', 'text'])
         CatalogEntry.fromJson(fixture.dto(id), libraryId: 'books'),
   ]);

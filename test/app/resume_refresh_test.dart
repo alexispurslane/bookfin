@@ -64,7 +64,7 @@ void main() {
       tester,
       catalog.connect('https://books.example', 'alice', 'password'),
     );
-    await finish(tester, catalog.refresh(selected: {'books'}));
+    await finish(tester, catalog.refresh());
     client.refreshes = 0;
   }
 
@@ -169,7 +169,8 @@ void main() {
       client.pendingLibraries!.complete();
       await finish(tester, signingIn);
       await tester.pumpAndSettle();
-      expect(client.refreshes, 0);
+      // Only the sign-in's own catalog read, not one for the return.
+      expect(client.refreshes, 1);
       expect(catalog.statusNotifier.value.verified, isTrue);
     });
 

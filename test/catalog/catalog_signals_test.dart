@@ -102,8 +102,8 @@ class _PagedClient extends FixtureClient {
       );
   final JellyfinClient _pages;
   @override
-  Future<CatalogPages> catalog(JellyfinSession session, Set<String> selected) =>
-      _pages.catalog(session, selected);
+  Future<CatalogPages> catalog(JellyfinSession session, Set<String> shown) =>
+      _pages.catalog(session, shown);
 }
 
 void main() {
@@ -146,17 +146,15 @@ void main() {
     reports.close();
   });
 
-  Future<void> connectAndSelect() async {
-    await controller.connect('https://books.example', 'alice', 'password');
-    await controller.refresh(selected: {'books'});
-  }
+  Future<void> signIn() =>
+      controller.connect('https://books.example', 'alice', 'password');
 
   group('the library signal', () {
     test(
       'a refresh that changes no book notifies status and not library',
       () async {
         client.entries = _largeLibrary();
-        await connectAndSelect();
+        await signIn();
         final published = controller.libraryNotifier.value;
         var libraryNotices = 0, statusNotices = 0;
         controller.libraryNotifier.addListener(() => libraryNotices++);
@@ -171,7 +169,7 @@ void main() {
     );
 
     test('a refresh that changes a book publishes the new books', () async {
-      await connectAndSelect();
+      await signIn();
       var libraryNotices = 0;
       controller.libraryNotifier.addListener(() => libraryNotices++);
       client.entries = [entry('one', title: 'The River')];
@@ -183,7 +181,7 @@ void main() {
     });
 
     test('a correction publishes the corrected books', () async {
-      await connectAndSelect();
+      await signIn();
       var libraryNotices = 0;
       controller.libraryNotifier.addListener(() => libraryNotices++);
       await controller.correctBook(
@@ -195,7 +193,7 @@ void main() {
     });
 
     test('signing out and losing access publish the empty library', () async {
-      await connectAndSelect();
+      await signIn();
       client.failure = const CatalogFailure(CatalogFailureKind.forbidden);
       await controller.refresh();
       expect(controller.libraryNotifier.value.books, isEmpty);
@@ -214,10 +212,10 @@ void main() {
       controller.accountNotifier.addListener(
         () => accounts.add(controller.accountNotifier.value),
       );
-      await connectAndSelect();
+      await signIn();
       final signedIn = accounts.length;
       expect(controller.accountNotifier.value.session!.username, 'alice');
-      expect(controller.accountNotifier.value.selected, {'books'});
+      expect(controller.accountNotifier.value.hidden, isEmpty);
       expect(controller.accountNotifier.value.libraries.single.id, 'books');
       await controller.refresh();
       expect(accounts, hasLength(signedIn));
@@ -226,7 +224,7 @@ void main() {
     });
 
     test('says when access is blocked', () async {
-      await connectAndSelect();
+      await signIn();
       client.failure = const CatalogFailure(CatalogFailureKind.forbidden);
       await controller.refresh();
       expect(controller.accountNotifier.value.accessBlocked, isTrue);
@@ -235,7 +233,7 @@ void main() {
 
   group('the status signal', () {
     test('is refreshing while a refresh runs, and only then', () async {
-      await connectAndSelect();
+      await signIn();
       expect(controller.statusNotifier.value.refreshing, isFalse);
       client.pendingCatalog = Completer();
       final refreshing = controller.refresh();
@@ -246,7 +244,7 @@ void main() {
     });
 
     test('a restore from storage is not a refresh', () async {
-      await connectAndSelect();
+      await signIn();
       final refreshing = <bool>[];
       final restarted = newController();
       addTearDown(restarted.dispose);
@@ -261,13 +259,13 @@ void main() {
     test(
       'a refresh that reaches Jellyfin reports that Jellyfin is reachable',
       () async {
-        await connectAndSelect();
+        await signIn();
         expect(controller.statusNotifier.value.reach, CatalogReach.reached);
       },
     );
 
     test('a refresh that cannot reach Jellyfin reports it, and a later successful refresh clears it', () async {
-      await connectAndSelect();
+      await signIn();
       client.failure = const CatalogFailure(CatalogFailureKind.unavailable);
       await controller.refresh();
       expect(controller.statusNotifier.value.reach, CatalogReach.unreachable);
@@ -278,7 +276,7 @@ void main() {
     });
 
     test('Jellyfin stays unreachable while a retry runs', () async {
-      await connectAndSelect();
+      await signIn();
       client.failure = const CatalogFailure(CatalogFailureKind.unavailable);
       await controller.refresh();
       client.failure = null;
@@ -292,7 +290,7 @@ void main() {
     });
 
     test('a cancelled retry leaves Jellyfin unreachable', () async {
-      await connectAndSelect();
+      await signIn();
       client.failure = const CatalogFailure(CatalogFailureKind.unavailable);
       await controller.refresh();
       client.failure = null;
@@ -307,7 +305,7 @@ void main() {
     test(
       'an expired sign-in is reported as expired, not as unreachable',
       () async {
-        await connectAndSelect();
+        await signIn();
         client.failure = const CatalogFailure(CatalogFailureKind.unauthorized);
         await controller.refresh();
         final status = controller.statusNotifier.value;
@@ -318,7 +316,7 @@ void main() {
     );
 
     test('revoked access is reported as revoked, not as unreachable', () async {
-      await connectAndSelect();
+      await signIn();
       client.failure = const CatalogFailure(CatalogFailureKind.forbidden);
       await controller.refresh();
       final status = controller.statusNotifier.value;
@@ -327,7 +325,7 @@ void main() {
     });
 
     test('a saved denial is revoked access after a restart', () async {
-      await connectAndSelect();
+      await signIn();
       client.failure = const CatalogFailure(CatalogFailureKind.forbidden);
       await controller.refresh();
       final restarted = newController();
@@ -337,7 +335,7 @@ void main() {
     });
 
     test('a refresh that Jellyfin answers with an incomplete catalog still reaches Jellyfin', () async {
-      await connectAndSelect();
+      await signIn();
       client.failure = const CatalogFailure(CatalogFailureKind.unavailable);
       await controller.refresh();
       client.failure = const CatalogFailure(CatalogFailureKind.incomplete);
@@ -353,7 +351,7 @@ void main() {
     });
 
     test('signing out forgets that Jellyfin was unreachable', () async {
-      await connectAndSelect();
+      await signIn();
       client.failure = const CatalogFailure(CatalogFailureKind.unavailable);
       await controller.refresh();
       await controller.signOut();
@@ -367,7 +365,7 @@ void main() {
     test(
       'a refresh that cannot reach Jellyfin leaves the telling to the reach',
       () async {
-        await connectAndSelect();
+        await signIn();
         client.failure = const CatalogFailure(CatalogFailureKind.unavailable);
         await controller.refresh();
         expect(message(), isNull);
@@ -378,7 +376,7 @@ void main() {
     );
 
     test('a background refresh that Jellyfin answers with an incomplete catalog says nothing', () async {
-      await connectAndSelect();
+      await signIn();
       client.failure = const CatalogFailure(CatalogFailureKind.incomplete);
       await controller.refresh();
       expect(message(), isNull);
@@ -387,7 +385,7 @@ void main() {
     test(
       'a background refresh whose catalog cannot be saved says nothing',
       () async {
-        await connectAndSelect();
+        await signIn();
         store.failWrites = true;
         client.entries = [entry('two')];
         await controller.refresh();
@@ -396,7 +394,7 @@ void main() {
     );
 
     test('a refresh that the person asked for reports a catalog that cannot be saved', () async {
-      await connectAndSelect();
+      await signIn();
       store.failWrites = true;
       client.entries = [entry('two')];
       await controller.refresh(byUser: true);
@@ -404,7 +402,7 @@ void main() {
     });
 
     test('a background refresh still reports an expired sign-in and revoked access', () async {
-      await connectAndSelect();
+      await signIn();
       client.failure = const CatalogFailure(CatalogFailureKind.forbidden);
       await controller.refresh();
       expect(message(), 'This account does not have access.');
@@ -438,7 +436,7 @@ void main() {
     const incomplete = CatalogFailure(CatalogFailureKind.incomplete);
 
     test('joins a background refresh and reports its failure after Jellyfin answered', () async {
-      await connectAndSelect();
+      await signIn();
       client.pendingCatalog = Completer();
       final background = controller.refresh();
       await pumpEventQueue();
@@ -452,7 +450,7 @@ void main() {
     });
 
     test('starts no second request to Jellyfin', () async {
-      await connectAndSelect();
+      await signIn();
       final before = client.catalogReads;
       client.pendingCatalog = Completer();
       final background = controller.refresh();
@@ -471,7 +469,7 @@ void main() {
     });
 
     test('a background refresh that joins one the person asked for keeps it reported', () async {
-      await connectAndSelect();
+      await signIn();
       client.pendingCatalog = Completer();
       final asked = controller.refresh(byUser: true);
       await pumpEventQueue();
@@ -482,7 +480,7 @@ void main() {
     });
 
     test('a background refresh that nobody asked about stays silent', () async {
-      await connectAndSelect();
+      await signIn();
       client.pendingCatalog = Completer();
       final first = controller.refresh();
       await pumpEventQueue();
@@ -492,28 +490,31 @@ void main() {
       expect(message(), isNull);
     });
 
-    test('a refresh of another selection replaces the running one', () async {
-      client.views = [
-        const BookLibrary('books', 'Books'),
-        const BookLibrary('more', 'More'),
-      ];
-      await connectAndSelect();
-      final before = client.catalogReads;
-      final pending = client.pendingCatalog = Completer();
-      final background = controller.refresh();
-      await pumpEventQueue();
-      client.pendingCatalog = null;
-      await controller.refresh(selected: {'books', 'more'}, byUser: true);
-      pending.complete([entry('late', title: 'Late')]);
-      await background;
-      expect(controller.books.single.title, isNot('Late'));
-      expect(client.catalogReads, before + 2);
-      expect(controller.accountNotifier.value.selected, {'books', 'more'});
-      expect(controller.statusNotifier.value.verified, isTrue);
-    });
+    test(
+      'a refresh with other hidden libraries replaces the running one',
+      () async {
+        client.views = [
+          const BookLibrary('books', 'Books'),
+          const BookLibrary('more', 'More'),
+        ];
+        await signIn();
+        final before = client.catalogReads;
+        final pending = client.pendingCatalog = Completer();
+        final background = controller.refresh();
+        await pumpEventQueue();
+        client.pendingCatalog = null;
+        await controller.refresh(hidden: {'more'}, byUser: true);
+        pending.complete([entry('late', title: 'Late')]);
+        await background;
+        expect(controller.books.single.title, isNot('Late'));
+        expect(client.catalogReads, before + 2);
+        expect(controller.accountNotifier.value.hidden, {'more'});
+        expect(controller.statusNotifier.value.verified, isTrue);
+      },
+    );
 
     test('a refresh asked for during a restore runs after it, from the restored catalog', () async {
-      await connectAndSelect();
+      await signIn();
       final restarted = newController();
       addTearDown(restarted.dispose);
       store.readGate = Completer();
@@ -539,7 +540,7 @@ void main() {
     test(
       'a refresh has not succeeded while it runs, and has when it ends',
       () async {
-        await connectAndSelect();
+        await signIn();
         client.pendingCatalog = Completer();
         final refreshing = controller.refresh();
         expect(verified(), isFalse);
@@ -550,7 +551,7 @@ void main() {
     );
 
     test('a restore from storage has not reached Jellyfin, so it has not succeeded', () async {
-      await connectAndSelect();
+      await signIn();
       final restarted = newController();
       addTearDown(restarted.dispose);
       await restarted.restore();
@@ -559,34 +560,34 @@ void main() {
     });
 
     test('a refresh that cannot reach Jellyfin did not succeed', () async {
-      await connectAndSelect();
+      await signIn();
       client.failure = const CatalogFailure(CatalogFailureKind.unavailable);
       await controller.refresh();
       expect(verified(), isFalse);
     });
 
     test('an expired sign-in did not succeed', () async {
-      await connectAndSelect();
+      await signIn();
       client.failure = const CatalogFailure(CatalogFailureKind.unauthorized);
       await controller.refresh();
       expect(verified(), isFalse);
     });
 
     test('revoked access did not succeed', () async {
-      await connectAndSelect();
+      await signIn();
       client.failure = const CatalogFailure(CatalogFailureKind.forbidden);
       await controller.refresh();
       expect(verified(), isFalse);
     });
 
     test('signing out forgets the last success', () async {
-      await connectAndSelect();
+      await signIn();
       await controller.signOut();
       expect(verified(), isFalse);
     });
 
     test('a cancelled refresh did not succeed', () async {
-      await connectAndSelect();
+      await signIn();
       client.pendingCatalog = Completer();
       final refreshing = controller.refresh();
       controller.cancel();
@@ -596,7 +597,7 @@ void main() {
     });
 
     test('a correction after a refresh keeps the refresh a success', () async {
-      await connectAndSelect();
+      await signIn();
       await controller.correctBook(
         'book:one',
         const BookDetails(title: 'Corrected', author: 'Writer'),
@@ -608,7 +609,7 @@ void main() {
     test(
       'a correction that cannot be saved keeps the refresh a success',
       () async {
-        await connectAndSelect();
+        await signIn();
         store.failWrites = true;
         await controller.correctBook(
           'book:one',
@@ -622,7 +623,7 @@ void main() {
     // In the next two, Jellyfin answered, the refresh ended, and it still
     // failed. So the reach and the refresh state cannot tell a success.
     test('a refresh that Jellyfin answers with an incomplete catalog reached Jellyfin and did not succeed', () async {
-      await connectAndSelect();
+      await signIn();
       client.failure = const CatalogFailure(CatalogFailureKind.incomplete);
       await controller.refresh();
       final status = controller.statusNotifier.value;
@@ -631,7 +632,7 @@ void main() {
     });
 
     test('a refresh whose catalog cannot be saved reached Jellyfin and did not succeed', () async {
-      await connectAndSelect();
+      await signIn();
       store.failWrites = true;
       await controller.refresh();
       final status = controller.statusNotifier.value;
@@ -651,7 +652,7 @@ void main() {
           controller.statusNotifier,
           controller.checkInvariants,
         );
-        await connectAndSelect();
+        await signIn();
         await controller.correctBook(
           'book:one',
           const BookDetails(title: 'Corrected', author: 'Writer'),
@@ -681,7 +682,7 @@ void main() {
     /// deny access, and signs out, so the account's saved catalog holds the
     /// denial and the correction.
     Future<void> deniedThenSignedOut() async {
-      await connectAndSelect();
+      await signIn();
       await controller.correctBook(
         'book:one',
         const BookDetails(title: 'Corrected', author: 'Writer'),
@@ -753,24 +754,23 @@ void main() {
       expect(controller.libraryNotifier.value.books.single.title, 'Corrected');
     });
 
-    test(
-      'a sign-in whose libraries lack the selection keeps the denial',
-      () async {
-        await deniedThenSignedOut();
-        client.views = [const BookLibrary('other', 'Other')];
-        await signInAgain();
-        final status = controller.statusNotifier.value;
-        expect(status.reach, CatalogReach.accessRevoked);
-        expect(status.verified, isFalse);
-        expect(controller.libraryNotifier.value.books, isEmpty);
-      },
-    );
+    test('a sign-in after a denial shows only the book libraries that Jellyfin '
+        'lists now', () async {
+      await deniedThenSignedOut();
+      client.views = [const BookLibrary('other', 'Other')];
+      await signInAgain();
+      final status = controller.statusNotifier.value;
+      expect(status.reach, CatalogReach.reached);
+      expect(status.verified, isTrue);
+      expect(controller.accountNotifier.value.libraries.single.id, 'other');
+      expect(controller.libraryNotifier.value.books, isEmpty);
+    });
   });
 
   group('the build of the books', () {
     test('a restore builds the books once, in another isolate', () async {
       client.entries = _largeLibrary();
-      await connectAndSelect();
+      await signIn();
       final restarted = newController();
       addTearDown(restarted.dispose);
       await settleReports();
@@ -785,7 +785,7 @@ void main() {
     });
 
     test('a refresh builds the books once, in another isolate', () async {
-      await connectAndSelect();
+      await signIn();
       client.entries = _largeLibrary();
       await settleReports();
       builds.clear();
@@ -799,7 +799,7 @@ void main() {
 
     test('a correction builds the books once, in another isolate', () async {
       client.entries = _largeLibrary();
-      await connectAndSelect();
+      await signIn();
       await settleReports();
       builds.clear();
       final here = booksBuilt;
@@ -814,7 +814,7 @@ void main() {
     });
 
     test('a one-book library builds in another isolate, because its build costs more than a hop', () async {
-      await connectAndSelect();
+      await signIn();
       await controller.correctBook(
         'book:one',
         const BookDetails(title: 'Corrected', author: 'Writer'),
@@ -835,7 +835,7 @@ void main() {
       'an empty library builds here, because a hop costs more than its build',
       () async {
         client.entries = [];
-        await connectAndSelect();
+        await signIn();
         final restarted = newController();
         addTearDown(restarted.dispose);
         await restarted.restore();
@@ -857,7 +857,7 @@ void main() {
         ]);
         controller.dispose();
         controller = newController();
-        await connectAndSelect();
+        await signIn();
         await settleReports();
         expect(crossings, [false]);
         expect(builds, [('catalog worker', 1)]);
@@ -867,7 +867,7 @@ void main() {
 
     test('a catalog that the worker finds incomplete is reported to a person who asked, and the saved books stay', () async {
       client.entries = _largeLibrary(prefix: 'Saved');
-      await connectAndSelect();
+      await signIn();
       final saved = store.values[account('alice').scope.key];
       client = _PagedClient(Uri.parse('https://books.example'), [
         for (final value in _largeLibrary()) {...value.json},
@@ -894,7 +894,7 @@ void main() {
       'a correction hands the worker the saved text, not the entries',
       () async {
         client.entries = _largeLibrary();
-        await connectAndSelect();
+        await signIn();
         crossings.clear();
         await controller.correctBook(
           'book:item1',
@@ -919,7 +919,7 @@ void main() {
       'a saved denial hands the worker the saved text, not the entries',
       () async {
         client.entries = _largeLibrary();
-        await connectAndSelect();
+        await signIn();
         crossings.clear();
         client.failure = const CatalogFailure(CatalogFailureKind.forbidden);
         await controller.refresh();
@@ -940,7 +940,7 @@ void main() {
 
     test('corrections in a row each start from the last saved one', () async {
       client.entries = _largeLibrary();
-      await connectAndSelect();
+      await signIn();
       await Future.wait([
         controller.correctBook(
           'book:item1',
@@ -968,7 +968,7 @@ void main() {
       'access that returns after a saved denial brings the books back',
       () async {
         client.entries = _largeLibrary();
-        await connectAndSelect();
+        await signIn();
         client.failure = const CatalogFailure(CatalogFailureKind.forbidden);
         await controller.refresh();
         expect(controller.books, isEmpty);
@@ -1003,11 +1003,13 @@ void main() {
       );
     }
 
-    test('a corrupt catalog at sign-in keeps the sign-in', () async {
+    test('a corrupt catalog at sign-in keeps the sign-in, and stays saved '
+        'until the user asks for a refresh', () async {
       store.values[account('alice').scope.key] = 'not a catalog';
       await controller.connect('https://books.example', 'alice', 'password');
       expect(controller.session!.scope.userId, 'alice');
       expect(controller.books, isEmpty);
+      expect(store.values[account('alice').scope.key], 'not a catalog');
     });
   });
 }

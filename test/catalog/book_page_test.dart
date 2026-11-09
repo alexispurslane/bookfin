@@ -50,7 +50,7 @@ void main() {
       tester,
       catalog.connect('https://books.example', 'alice', 'password'),
     );
-    await finish(tester, catalog.refresh(selected: {'books'}));
+    await finish(tester, catalog.refresh());
     await tester.pumpWidget(
       MaterialApp(
         theme: bookfinTheme(Brightness.light),
@@ -231,7 +231,7 @@ void main() {
         tester,
         catalog.connect('https://books.example', 'alice', 'password'),
       );
-      await finish(tester, catalog.refresh(selected: {'books'}));
+      await finish(tester, catalog.refresh());
       await openMore(
         tester,
         BookPage(services: services(), bookId: catalog.books.single.id),
@@ -252,7 +252,7 @@ void main() {
         tester,
         catalog.connect('https://books.example', 'alice', 'password'),
       );
-      await finish(tester, catalog.refresh(selected: {'books'}));
+      await finish(tester, catalog.refresh());
       await tester.pumpWidget(
         MaterialApp(
           theme: bookfinTheme(Brightness.light),
@@ -279,7 +279,7 @@ void main() {
         _hour('tide', 'Tidewater'),
       ];
       await catalog.connect('https://books.example', 'alice', 'password');
-      await catalog.refresh(selected: {'books'});
+      await catalog.refresh();
       engine = TestEngine();
       playback = _Playback(
         downloads: downloads,
@@ -489,7 +489,7 @@ void main() {
         ),
       ];
       await catalog.connect('https://books.example', 'alice', 'password');
-      await catalog.refresh(selected: {'books'});
+      await catalog.refresh();
     });
 
     Future<void> showGraft(WidgetTester tester) async {
