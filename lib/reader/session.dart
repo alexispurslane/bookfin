@@ -26,7 +26,8 @@ typedef VisibleLocation = ReadingLocation;
 /// uses it.
 abstract class ReadingStore {
   /// The saved reading snapshot of [accountKey], or null when the account
-  /// has none: `version`, `fontSize`, `resumes` and `bookmarks`.
+  /// has none: `version`, `fontSize`, `resumes` and `bookmarks`, and
+  /// `sizesMainText` when it is true.
   Future<Map<String, dynamic>?> read(String accountKey);
 
   /// Saves [changes] to the reading records of [accountKey].
@@ -157,7 +158,7 @@ class ReaderSession extends ChangeNotifier {
       ),
       _bookmarkChanges = _Signal(() => (_bookmarks, _edition, _recordsReady)),
       _searchChanges = _Signal(() => (_searching, _hits, _searchError)),
-      _fontSizeChanges = _Signal(() => _fontSize),
+      _fontSizeChanges = _Signal(() => (_fontSize, _sizesMainText)),
       _saveStatusChanges = _Signal(() => saveFailed),
       _reflowChanges = _Signal(() => _reflow),
       _bookMapChanges = _Signal(() => _bookMap),
@@ -180,7 +181,8 @@ class ReaderSession extends ChangeNotifier {
   String? _message;
   bool _loading = false;
   bool _searching = false;
-  double _fontSize = 20;
+  double _fontSize = _defaultFontSize;
+  bool _sizesMainText = false;
   String? _searchError;
   List<ReaderHit> _hits = const [];
   List<ContentsEntry> _contents = const [];
@@ -206,6 +208,11 @@ class ReaderSession extends ChangeNotifier {
   bool get loading => _loading;
   bool get searching => _searching;
   double get fontSize => _fontSize;
+
+  /// Whether [fontSize] is the size of each book's main text
+  /// (`PageSettings.sizesMainText`). It turns on with the first
+  /// [setFontSize], and each book keeps its own type sizes until then.
+  bool get sizesMainText => _sizesMainText;
   String? get searchError => _searchError;
   List<ReaderHit> get hits => _hits;
   List<ContentsEntry> get contents => _contents;
@@ -252,7 +259,7 @@ class ReaderSession extends ChangeNotifier {
   /// Notifies when [searching], [hits] or [searchError] changes.
   Listenable get searchChanges => _searchChanges;
 
-  /// Notifies when [fontSize] changes.
+  /// Notifies when [fontSize] or [sizesMainText] changes.
   Listenable get fontSizeChanges => _fontSizeChanges;
 
   /// Notifies when [saveFailed] changes.
@@ -327,7 +334,8 @@ class ReaderSession extends ChangeNotifier {
     _resumes.clear();
     _bookmarks = const [];
     _recordsReady = false;
-    _fontSize = 20;
+    _fontSize = _defaultFontSize;
+    _sizesMainText = false;
     final generation = ++_accountGeneration;
     final key = _account;
     final previous = _binding;
@@ -370,6 +378,10 @@ class ReaderSession extends ChangeNotifier {
           if (size is num && size.isFinite) {
             _fontSize = size.toDouble().clamp(14, 40);
           }
+          // A text size other than the default, saved before the choice
+          // was saved, came from the size buttons.
+          _sizesMainText =
+              saved['sizesMainText'] == true || _fontSize != _defaultFontSize;
         }
         if (pending == null) store.acceptSnapshot(key, saved);
         _recordsReady = true;
@@ -753,9 +765,12 @@ class ReaderSession extends ChangeNotifier {
     _emit();
   }
 
+  /// Sets the text size to [size], from 14 to 40 pixels, as the size of
+  /// each book's main text from now on ([sizesMainText]).
   Future<void> setFontSize(double size) async {
     if (!size.isFinite) return;
     _fontSize = size.clamp(14, 40);
+    _sizesMainText = true;
     await _save();
     _emit();
   }
@@ -812,7 +827,11 @@ class ReaderSession extends ChangeNotifier {
     if (key == null || !_recordsReady || _disposed) return;
     ++_recordRevision;
     final changes = ReadingChanges(
-      {'version': 1, 'fontSize': fontSize},
+      {
+        'version': 1,
+        'fontSize': fontSize,
+        if (sizesMainText) 'sizesMainText': true,
+      },
       resumes: resumes.map(encodeTextPosition).toList(),
       bookmarks: {
         for (final MapEntry(key: id, value: mark) in bookmarks.entries)
@@ -986,6 +1005,9 @@ List<bool> _linearSpine(Uint8List package) => [
         _ => false,
       },
 ];
+
+/// The text size of an account that has not used the size buttons.
+const _defaultFontSize = 20.0;
 
 /// The change signal of one part of the session's visible state.
 class _Signal extends ChangeNotifier {

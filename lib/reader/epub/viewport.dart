@@ -31,14 +31,15 @@ import 'semantics.dart';
 /// Draws what [pager] shows and reports taps, links, page turns and copies.
 ///
 /// It fills the space that its parent gives it, which must be bounded. It
-/// presents that size, [fontSize] and [night] to [pager] whenever one of
-/// them changes, and keeps the last page painted until the pager shows the
-/// page for the new settings.
+/// presents that size, [fontSize], [sizesMainText] and [night] to [pager]
+/// whenever one of them changes, and keeps the last page painted until the
+/// pager shows the page for the new settings.
 class EpubViewport extends StatefulWidget {
   const EpubViewport({
     super.key,
     required this.pager,
     required this.fontSize,
+    this.sizesMainText = false,
     required this.night,
     required this.onTap,
     required this.onTurn,
@@ -49,6 +50,10 @@ class EpubViewport extends StatefulWidget {
 
   /// The text size in pixels, after the system text scale.
   final double fontSize;
+
+  /// Whether [fontSize] sizes the book's main text
+  /// ([PageSettings.sizesMainText]).
+  final bool sizesMainText;
   final bool night;
 
   /// A tap that hit no link and ended no selection.
@@ -267,6 +272,7 @@ class _EpubViewportState extends State<EpubViewport> {
           key: _page,
           pager: widget.pager,
           fontSize: widget.fontSize,
+          sizesMainText: widget.sizesMainText,
           night: widget.night,
           onTurn: widget.onTurn,
           onTapAt: _tapAt,
@@ -337,12 +343,14 @@ class _Page extends LeafRenderObjectWidget {
     super.key,
     required this.pager,
     required this.fontSize,
+    required this.sizesMainText,
     required this.night,
     required this.onTurn,
     required this.onTapAt,
   });
   final EpubPager pager;
   final double fontSize;
+  final bool sizesMainText;
   final bool night;
 
   /// A screen reader's scroll action asks for a page.
@@ -353,7 +361,7 @@ class _Page extends LeafRenderObjectWidget {
 
   @override
   _RenderPage createRenderObject(BuildContext context) =>
-      _RenderPage(pager, fontSize, night, onTurn, onTapAt)
+      _RenderPage(pager, fontSize, sizesMainText, night, onTurn, onTapAt)
         ..registrar = SelectionContainer.maybeOf(context)
         ..selectionColor = _selectionColor(context);
 
@@ -361,6 +369,7 @@ class _Page extends LeafRenderObjectWidget {
   void updateRenderObject(BuildContext context, _RenderPage page) => page
     ..pager = pager
     ..fontSize = fontSize
+    ..sizesMainText = sizesMainText
     ..night = night
     ..onTurn = onTurn
     ..onTapAt = onTapAt
@@ -392,6 +401,7 @@ class _RenderPage extends RenderBox {
   _RenderPage(
     this._pager,
     this._fontSize,
+    this._sizesMainText,
     this._night,
     this.onTurn,
     this.onTapAt,
@@ -431,6 +441,13 @@ class _RenderPage extends RenderBox {
     markNeedsLayout();
   }
 
+  bool _sizesMainText;
+  set sizesMainText(bool value) {
+    if (value == _sizesMainText) return;
+    _sizesMainText = value;
+    markNeedsLayout();
+  }
+
   bool _night;
   set night(bool value) {
     if (value == _night) return;
@@ -457,6 +474,7 @@ class _RenderPage extends RenderBox {
     height: size.height,
     fontSize: _fontSize,
     night: _night,
+    sizesMainText: _sizesMainText,
   );
 
   @override

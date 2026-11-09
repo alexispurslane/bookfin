@@ -248,6 +248,7 @@ class EpubPager implements DocumentNavigator {
               height: _noteHeight,
               fontSize: prepared.settings.fontSize,
               night: prepared.settings.night,
+              sizesMainText: prepared.settings.sizesMainText,
             ),
             omit: [
               for (final back in _linksIn(note))

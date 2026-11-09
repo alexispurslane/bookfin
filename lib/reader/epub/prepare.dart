@@ -33,17 +33,27 @@ class PageSettings {
     required this.height,
     required this.fontSize,
     required this.night,
+    this.sizesMainText = false,
   });
 
   /// The page size in logical pixels.
   final double width;
   final double height;
 
-  /// The text size in pixels, after the system text scale.
+  /// The text size in pixels, after the system text scale. See
+  /// [sizesMainText] for the text that it sizes.
   final double fontSize;
 
   /// Whether the page uses the night colors rather than cream.
   final bool night;
+
+  /// Whether [fontSize] is the size of the book's main text. Then the book
+  /// keeps its own proportions: each of its type sizes, and each length
+  /// that follows one, scales by [fontSize] over the book's main text size
+  /// (see [SectionSource.mainTextSize]). Otherwise [fontSize] is the size of
+  /// the body element, as epub.js sets it, and a type size that the book
+  /// fixes stays as the book fixes it.
+  final bool sizesMainText;
 
   @override
   bool operator ==(Object other) =>
@@ -51,15 +61,17 @@ class PageSettings {
       other.width == width &&
       other.height == height &&
       other.fontSize == fontSize &&
-      other.night == night;
+      other.night == night &&
+      other.sizesMainText == sizesMainText;
 
   @override
-  int get hashCode => Object.hash(width, height, fontSize, night);
+  int get hashCode =>
+      Object.hash(width, height, fontSize, night, sizesMainText);
 
   @override
   String toString() =>
       'PageSettings(${width}x$height, ${fontSize}px'
-      '${night ? ', night' : ''})';
+      '${sizesMainText ? ' main text' : ''}${night ? ', night' : ''})';
 }
 
 /// One spine section and what preparing it reads from the publication.
@@ -72,6 +84,7 @@ class SectionSource {
     this.styleSheets = const {},
     this.imageSizes = const {},
     this.language,
+    this.mainTextSize = defaultMainTextSize,
   });
 
   /// The section's spine index.
@@ -98,6 +111,66 @@ class SectionSource {
   /// The package's `dc:language`: the language of text whose elements name
   /// none.
   final String? language;
+
+  /// The book's main text size in pixels, as [measureMainTextSize] gives
+  /// it. Only preparing for [PageSettings.sizesMainText] reads it.
+  final double mainTextSize;
+}
+
+/// The main text size of a book that sets no type size of its own: the
+/// browser's initial font size, in pixels.
+const defaultMainTextSize = 16.0;
+
+/// The spine indices of the sections that [measureMainTextSize] reads, of
+/// a book whose sections are [lengths] bytes long: the three longest, in
+/// spine order.
+///
+/// The longest sections hold most of a book's text. On each of the 90 books
+/// of the corpus (docs/research/native-epub-corpus.md), the three longest
+/// give the same main text size as the whole book, at a fraction of the
+/// cost of styling every section.
+List<int> mainTextSamples(List<int> lengths) {
+  final longest = [for (var index = 0; index < lengths.length; index++) index]
+    ..sort((a, b) => lengths[b].compareTo(lengths[a]));
+  return longest.take(3).toList()..sort();
+}
+
+/// The book's main text size: the font size in pixels that covers the most
+/// visible characters of [samples] (white space, text that the book's style
+/// hides and text of size 0 left out), with the book's own type sizes on a page of the
+/// size of [settings]. The reader's text size does not change it. On a tie
+/// the size that comes first wins. A book with no visible text in
+/// [samples] gets [defaultMainTextSize], and a sample that does not parse
+/// counts no characters.
+///
+/// A whole book decides it, not each section, so that a section that is all
+/// small print, such as the notes, stays smaller than the main text.
+double measureMainTextSize(List<SectionSource> samples, PageSettings settings) {
+  final characters = <double, int>{};
+  for (final source in samples) {
+    final DomSection dom;
+    try {
+      dom = DomSection.parse(source.xhtml);
+    } on Exception {
+      // NOTE: Preparing the section reports it when the reader reaches it.
+      continue;
+    }
+    final (:styles, faces: _) = _styleSection(source, dom, settings, 1);
+    bool hidden(DomElement element) =>
+        styles[element]!.display == Display.none ||
+        (element.parent != null && hidden(element.parent!));
+    for (final text in dom.texts) {
+      if (hidden(text.parent!)) continue;
+      final size = styles[text.parent!]!.fontSize;
+      final count = visibleCount(text.text, 0, text.text.length);
+      if (size <= 0 || count == 0) continue;
+      characters.update(size, (total) => total + count, ifAbsent: () => count);
+    }
+  }
+  if (characters.isEmpty) return defaultMainTextSize;
+  return characters.entries
+      .reduce((most, next) => next.value > most.value ? next : most)
+      .key;
 }
 
 /// One section parsed, styled for one [PageSettings] value, and turned into
@@ -779,6 +852,22 @@ class ImageSizing {
   SectionSource source,
   DomSection dom,
   PageSettings settings,
+) => _styleSection(
+  source,
+  dom,
+  settings,
+  settings.sizesMainText ? settings.fontSize / source.mainTextSize : null,
+);
+
+/// [styleSection] with each of the book's own type sizes grown by
+/// [fontScale] (see [Cascade.fontScale]), or, when [fontScale] is null,
+/// with the body's font size set to the reader's text size, as epub.js
+/// sets it.
+({Map<DomElement, Style> styles, List<FontFaceRule> faces}) _styleSection(
+  SectionSource source,
+  DomSection dom,
+  PageSettings settings,
+  double? fontScale,
 ) {
   final media = MediaContext(
     width: settings.width,
@@ -797,10 +886,17 @@ class ImageSizing {
   final cascade = Cascade(
     rules,
     userAgent: _userAgentSheet.rules,
-    overrides: {dom.body: _bodyOverrides(settings)},
+    overrides: {
+      dom.body: [
+        if (fontScale == null)
+          Declaration('font-size', '${settings.fontSize}px', false),
+        ..._bodyOverrides(settings),
+      ],
+    },
+    fontScale: fontScale ?? 1,
   );
   final styles = <DomElement, Style>{};
-  final initial = Style.initial();
+  final initial = Style.initial()..fontSize *= fontScale ?? 1;
   final rootStyle = cascade.compute(dom.root, initial, initial.fontSize);
   styles[dom.root] = rootStyle;
   void visit(DomElement element, Style parent) {
@@ -886,11 +982,11 @@ String _readerCss(PageSettings settings) {
       'img{max-width:100%!important;height:auto}';
 }
 
-/// The declarations that epub.js sets on the body element itself.
+/// The declarations that epub.js sets on the body element itself, but for
+/// its font size.
 List<Declaration> _bodyOverrides(PageSettings settings) {
   final side = _sideMargin(settings.width);
   return [
-    Declaration('font-size', '${settings.fontSize}px', false),
     const Declaration('margin', '0', true),
     const Declaration('padding-top', '20px', false),
     const Declaration('padding-bottom', '20px', false),
