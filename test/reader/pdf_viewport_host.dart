@@ -42,6 +42,8 @@ class _PdfViewportHostState extends State<PdfViewportHost> {
           onAddress: widget.onAddress,
           reflow: _reflow,
           onCancelRecognition: () => widget.book.textSupply?.cancel(),
+          onTap: () {},
+          onTurn: (_) {},
         ),
       ),
       ReaderSettingsPanel(

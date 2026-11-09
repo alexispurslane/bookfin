@@ -5,6 +5,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 
 import 'document.dart';
+import 'page_swipes.dart';
 import 'pdf.dart';
 
 /// The pages of an open PDF, as the original page or as reflowed text.
@@ -19,6 +20,10 @@ import 'pdf.dart';
 /// The book owns page text and recognition. The owner keeps the reflow
 /// choice and offers its control. The viewport keeps only the shown page
 /// and its layout.
+///
+/// Like every reader view, it reports a tap on the page through [onTap]
+/// and a swipe across it through [onTurn]. A swipe on a zoomed original
+/// page moves the page instead.
 class PdfViewport extends StatefulWidget {
   const PdfViewport({
     super.key,
@@ -28,6 +33,8 @@ class PdfViewport extends StatefulWidget {
     required this.onAddress,
     required this.reflow,
     required this.onCancelRecognition,
+    required this.onTap,
+    required this.onTurn,
     this.initial,
   });
   final PdfBook book;
@@ -44,6 +51,13 @@ class PdfViewport extends StatefulWidget {
   /// page: the person left the page, or chose the original page, before
   /// its text arrived.
   final VoidCallback onCancelRecognition;
+
+  /// A tap on the page that hit no control on it.
+  final VoidCallback onTap;
+
+  /// A swipe, or a screen reader's scroll action, that asks for the next
+  /// page (true) or the previous one.
+  final ValueChanged<bool> onTurn;
   @override
   State<PdfViewport> createState() => _PdfViewportState();
 }
@@ -51,6 +65,10 @@ class PdfViewport extends StatefulWidget {
 class _PdfViewportState extends State<PdfViewport>
     implements DocumentNavigator {
   final _scroll = ScrollController();
+
+  /// The zoom and pan of the original page.
+  final _zoom = TransformationController();
+  bool get _zoomed => _zoom.value.getMaxScaleOnAxis() > 1.01;
   PdfText? _text;
   ui.Image? _image;
   TextPainter? _layout;
@@ -115,6 +133,7 @@ class _PdfViewportState extends State<PdfViewport>
     _generation++;
     _search++;
     _scroll.dispose();
+    _zoom.dispose();
     _image?.dispose();
     _layout?.dispose();
     super.dispose();
@@ -127,6 +146,7 @@ class _PdfViewportState extends State<PdfViewport>
     _search++;
     if (_loading) widget.onCancelRecognition();
     final generation = ++_generation;
+    _zoom.value = Matrix4.identity();
     setState(() {
       _page = address.sourcePage;
       _address = address;
@@ -477,6 +497,7 @@ class _PdfViewportState extends State<PdfViewport>
           label: 'Original source page $_page',
           image: true,
           child: InteractiveViewer(
+            transformationController: _zoom,
             minScale: 1,
             maxScale: 6,
             child: Center(
@@ -486,7 +507,28 @@ class _PdfViewportState extends State<PdfViewport>
         );
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => Semantics(
+    container: true,
+    // The page, its quiet line and its text keep their own nodes.
+    explicitChildNodes: true,
+    onScrollLeft: () => widget.onTurn(true),
+    onScrollRight: () => widget.onTurn(false),
+    child: PageSwipes(
+      onTurn: widget.onTurn,
+      swipes: () => !_zoomed,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        // The page's own semantics turn pages. The screen offers the
+        // controls to a screen reader.
+        excludeFromSemantics: true,
+        onTap: widget.onTap,
+        child: _view(),
+      ),
+    ),
+  );
+
+  /// The shown page in the chosen view.
+  Widget _view() {
     if (!widget.reflow || _usingText) return _shownPage();
     // The reflow view shows the original page while the text is on its way,
     // or when reflow cannot work on the page, under a quiet line in place

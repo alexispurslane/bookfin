@@ -110,6 +110,8 @@ Widget viewport(
       onReady: (navigator, _) => reports.navigator = navigator,
       onAddress: reports.addresses.add,
       onCancelRecognition: () => reports.cancels++,
+      onTap: () {},
+      onTurn: (_) {},
     ),
   ),
 );

@@ -4,7 +4,8 @@
 // It causes one effect of its own: from its layout, it presents the page
 // settings to the pager, which is a request for pages, like an Image that
 // resolves its image. Every other action goes up through a callback: a tap,
-// a link, a page turn and a copy. A render object subscribes to the shown
+// a link, a page turn and a copy. PageSwipes, which every reader view
+// shares, reports the swipes. A render object subscribes to the shown
 // page, so a new page repaints the viewport, updates its semantics and
 // clears its selection without a rebuild.
 //
@@ -22,6 +23,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 
+import '../page_swipes.dart';
 import 'layout.dart';
 import 'pager.dart';
 import 'prepare.dart';
@@ -66,16 +68,6 @@ class EpubViewport extends StatefulWidget {
   /// The person chose Copy for the selected text.
   final ValueChanged<String> onCopy;
 
-  /// A swipe turns the page when it moves more than [swipeDistance] logical
-  /// pixels across and less than [swipeSlant] up or down. These are
-  /// reader.js's numbers.
-  static const swipeDistance = 60.0;
-  static const swipeSlant = 50.0;
-
-  /// A trackpad scroll turns the page once it moves [scrollDistance]
-  /// logical pixels across, more than it moves up or down.
-  static const scrollDistance = 80.0;
-
   @override
   State<EpubViewport> createState() => _EpubViewportState();
 }
@@ -93,22 +85,8 @@ class _EpubViewportState extends State<EpubViewport> {
   PageSelection? get _selection =>
       (_page.currentContext?.findRenderObject() as _RenderPage?)?.selection;
 
-  /// The touch that may be a swipe: its pointer and where it went down, in
-  /// global logical pixels. A second finger ends it.
-  int? _swipePointer;
-  Offset? _swipeStart;
-
   /// Whether text was selected when the tap in progress went down.
   bool _selectedAtDown = false;
-
-  /// How far the trackpad gesture in progress moved, and whether it turned
-  /// the page already.
-  Offset _pan = Offset.zero;
-  bool _panTurned = false;
-
-  /// How far the scroll signals moved across since the last turn. A
-  /// trackpad that sends signals instead of gestures has no gesture end.
-  double _scrolled = 0;
 
   @override
   void didChangeDependencies() {
@@ -148,74 +126,6 @@ class _EpubViewportState extends State<EpubViewport> {
     if (_selection?.text case final text?) widget.onCopy(text);
   }
 
-  /// A touch or a pen that goes down may start a swipe. It watches the
-  /// pointer itself, as reader.js did, because the selection region claims
-  /// horizontal drags.
-  void _pointerDown(PointerDownEvent event) {
-    if (!_swipes(event.kind)) return;
-    if (_swipePointer == null) {
-      _swipePointer = event.pointer;
-      _swipeStart = event.position;
-    } else {
-      _swipeEnded();
-    }
-  }
-
-  void _pointerUp(PointerUpEvent event) {
-    if (event.pointer != _swipePointer) return;
-    final start = _swipeStart!;
-    _swipeEnded();
-    // A drag with text selected adjusts the selection.
-    if (_selection?.selecting ?? false) return;
-    final move = event.position - start;
-    if (move.dx.abs() > EpubViewport.swipeDistance &&
-        move.dy.abs() < EpubViewport.swipeSlant) {
-      widget.onTurn(move.dx < 0);
-    }
-  }
-
-  void _swipeEnded() {
-    _swipePointer = null;
-    _swipeStart = null;
-  }
-
-  /// A mouse drag selects text and a trackpad scrolls, so only a touch or a
-  /// pen swipes.
-  static bool _swipes(PointerDeviceKind kind) => switch (kind) {
-    PointerDeviceKind.touch ||
-    PointerDeviceKind.stylus ||
-    PointerDeviceKind.invertedStylus ||
-    PointerDeviceKind.unknown => true,
-    PointerDeviceKind.mouse || PointerDeviceKind.trackpad => false,
-  };
-
-  void _panned(PointerPanZoomUpdateEvent event) {
-    _pan = event.pan;
-    if (_panTurned ||
-        _pan.dx.abs() < EpubViewport.scrollDistance ||
-        _pan.dx.abs() <= _pan.dy.abs()) {
-      return;
-    }
-    _panTurned = true;
-    // The fingers move left to scroll the page to the right.
-    widget.onTurn(_pan.dx < 0);
-  }
-
-  void _signal(PointerSignalEvent event) {
-    if (event is! PointerScrollEvent) return;
-    final delta = event.scrollDelta;
-    if (delta.dx.abs() <= delta.dy.abs()) return;
-    GestureBinding.instance.pointerSignalResolver.register(event, (_) {
-      // A scroll the other way starts again from nothing.
-      if (_scrolled != 0 && _scrolled.sign != delta.dx.sign) _scrolled = 0;
-      _scrolled += delta.dx;
-      if (_scrolled.abs() < EpubViewport.scrollDistance) return;
-      final forward = _scrolled > 0;
-      _scrolled = 0;
-      widget.onTurn(forward);
-    });
-  }
-
   KeyEventResult _key(FocusNode _, KeyEvent event) {
     if (event is KeyUpEvent) return KeyEventResult.ignored;
     final forward = switch (event.logicalKey) {
@@ -235,18 +145,11 @@ class _EpubViewportState extends State<EpubViewport> {
     area: _area,
     focusNode: _focus,
     onCopy: _copy,
-    child: Listener(
-      onPointerSignal: _signal,
-      onPointerPanZoomStart: (_) {
-        _pan = Offset.zero;
-        _panTurned = false;
-      },
-      onPointerPanZoomUpdate: _panned,
-      onPointerDown: _pointerDown,
-      onPointerUp: _pointerUp,
-      onPointerCancel: (event) {
-        if (event.pointer == _swipePointer) _swipeEnded();
-      },
+    // The selection region claims horizontal drags, so the swipe watches the
+    // pointers. A drag with text selected adjusts the selection.
+    child: PageSwipes(
+      onTurn: widget.onTurn,
+      swipes: () => !(_selection?.selecting ?? false),
       child: RawGestureDetector(
         behavior: HitTestBehavior.opaque,
         // The page's own semantics turn pages and follow links. The
