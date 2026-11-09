@@ -415,7 +415,13 @@ void main() {
                 reason: '$where saved a changed resume',
               );
               expect(store.savedBookmarks, isEmpty, reason: where);
-              expect(store.values[accountKey], stored, reason: where);
+              // A saved size other than the default came from the size
+              // buttons, so the settings now say that it sizes the main
+              // text. The records stay as they were.
+              expect(store.values[accountKey], {
+                ...stored,
+                if (size != 20) 'sizesMainText': true,
+              }, reason: where);
               reader.dispose();
               sessions.remove(reader);
               opened++;

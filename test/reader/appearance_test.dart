@@ -104,6 +104,33 @@ void main() {
     downloads.dispose();
   }, variant: TargetPlatformVariant.only(TargetPlatform.android));
 
+  testWidgets('a size button lays the page out with the book\'s main text at '
+      'the reader\'s text size', (tester) async {
+    final (reader, downloads) = session();
+    await reader.bind(account(), [book]);
+    await reader.open(book, edition);
+    final appearance = AppearanceController(MemoryAppearanceStore());
+    addTearDown(appearance.dispose);
+    await tester.pumpWidget(readerApp(reader: reader, appearance: appearance));
+    final own = await waitForPage(
+      tester,
+      reader,
+      (shown) => laidOut(shown, 20, false),
+    );
+    expect(own.page.settings.sizesMainText, isFalse);
+    await chooseSetting(tester, 'Smaller text');
+    final chosen = await waitForPage(
+      tester,
+      reader,
+      (shown) => laidOut(shown, 18, false),
+    );
+    expect(chosen.page.settings.sizesMainText, isTrue);
+    await tester.pumpWidget(const SizedBox());
+    reader.dispose();
+    await finishReader(tester, reader.flush());
+    downloads.dispose();
+  }, variant: TargetPlatformVariant.only(TargetPlatform.android));
+
   testWidgets('text size, theme and the system text scale reach the page and '
       'keep the reading place, also after the book opens again', (
     tester,

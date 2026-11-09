@@ -129,6 +129,10 @@ class PageSource {
   PageSettings? _previous;
   bool _disposed = false;
 
+  /// The book's main text size on pages of one size, the last size that
+  /// asked for it (see [measureMainTextSize]).
+  ({double width, double height, Future<double> size})? _mainTextSize;
+
   /// Every section's layout in the current and previous settings, by
   /// section and settings. A layout keeps its page starts after the cache
   /// drops its prepared section.
@@ -888,6 +892,9 @@ class PageSource {
       unawaited(() async {
         try {
           final spine = _publication.spine;
+          final mainTextSize = settings.sizesMainText
+              ? await _measureMainText(settings)
+              : defaultMainTextSize;
           final prepared = await _prepareInWorker(
             [for (final layout in layouts) layout.index],
             [for (final layout in layouts) spine[layout.index]],
@@ -899,6 +906,7 @@ class PageSource {
             _publication.imageSizes,
             _publication.language,
             _fontPrefix,
+            mainTextSize,
             settings,
           );
           final fonts = [for (final section in prepared) ...section.fonts];
@@ -932,6 +940,65 @@ class PageSource {
     }
   }
 
+  /// The book's main text size on pages of the size of [settings],
+  /// measured once per page size in a worker.
+  Future<double> _measureMainText(PageSettings settings) {
+    final known = _mainTextSize;
+    if (known != null &&
+        known.width == settings.width &&
+        known.height == settings.height) {
+      return known.size;
+    }
+    final spine = _publication.spine;
+    final samples = mainTextSamples([
+      for (final path in spine) _publication.resources[path]!.length,
+    ]);
+    final size = _measureInWorker(
+      samples,
+      [for (final index in samples) spine[index]],
+      [for (final index in samples) _publication.resources[spine[index]]!],
+      _publication.bookStyles,
+      _fontPrefix,
+      // The page's theme does not change the book's type sizes.
+      PageSettings(
+        width: settings.width,
+        height: settings.height,
+        fontSize: settings.fontSize,
+        night: false,
+      ),
+    );
+    _mainTextSize = (
+      width: settings.width,
+      height: settings.height,
+      size: size,
+    );
+    return size;
+  }
+
+  /// Measures the main text size of the sections in a worker isolate. It is
+  /// static, so that the worker's closure holds only its arguments. A
+  /// section that is not UTF-8 still counts what it can, so that the
+  /// measurement never fails: preparing that section reports it.
+  static Future<double> _measureInWorker(
+    List<int> indices,
+    List<String> paths,
+    List<Uint8List> xhtml,
+    Map<String, String> styleSheets,
+    String fontPrefix,
+    PageSettings settings,
+  ) => Isolate.run(
+    () => measureMainTextSize([
+      for (var at = 0; at < indices.length; at++)
+        SectionSource(
+          index: indices[at],
+          path: paths[at],
+          xhtml: utf8.decode(xhtml[at], allowMalformed: true),
+          fontPrefix: fontPrefix,
+          styleSheets: styleSheets,
+        ),
+    ], settings),
+  );
+
   /// Prepares the sections in a worker isolate. It is static, so that the
   /// worker's closure holds only its arguments.
   static Future<List<PreparedSection>> _prepareInWorker(
@@ -942,6 +1009,7 @@ class PageSource {
     Map<String, (int, int)> imageSizes,
     String? language,
     String fontPrefix,
+    double mainTextSize,
     PageSettings settings,
   ) => Isolate.run(
     () => prepareSections([
@@ -954,6 +1022,7 @@ class PageSource {
           styleSheets: styleSheets,
           imageSizes: imageSizes,
           language: language,
+          mainTextSize: mainTextSize,
         ),
     ], settings),
   );

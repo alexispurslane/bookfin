@@ -1180,6 +1180,7 @@ class Cascade {
     Iterable<StyleRule> rules, {
     Iterable<StyleRule> userAgent = const [],
     this.overrides = const {},
+    this.fontScale = 1,
   }) : _userAgent = Set.identity()..addAll(userAgent) {
     for (final rule in [...userAgent, ...rules]) {
       final key = rule.selector.compounds.last;
@@ -1204,6 +1205,15 @@ class Cascade {
   /// Declarations that act as an element's style attribute, by element,
   /// such as the ones that epub.js sets on the body.
   final Map<DomElement, List<Declaration>> overrides;
+
+  /// The factor by which every type size grows, so that the sizes keep
+  /// their proportions to each other. A font size that no other font size
+  /// sets (a length in absolute units, a keyword, `initial`) grows by it,
+  /// and so does an absolute line height. A font size relative to another
+  /// (em, rem, percent, `smaller`, `larger`) follows the grown size, as do
+  /// em lengths. Other absolute lengths, such as margins in pixels, stay.
+  /// The root's inherited size must have grown by it too.
+  final double fontScale;
 
   /// The computed style of [element], whose parent has [parent].
   Style compute(DomElement element, Style parent, double rootFontSize) {
@@ -1255,11 +1265,23 @@ class Cascade {
     // Font size comes first: em lengths of the other properties use it.
     final size = winners.remove('font-size')?.$4;
     if (size != null) {
-      style.fontSize = _fontSize(size, parent.fontSize, rootFontSize);
+      style.fontSize = _fontSize(
+        size,
+        parent.fontSize,
+        rootFontSize,
+        fontScale,
+      );
     }
     if (element.parent == null) rootFontSize = style.fontSize;
     for (final MapEntry(key: property, value: winner) in winners.entries) {
-      _apply(style, parent, property, winner.$4.trim(), rootFontSize);
+      _apply(
+        style,
+        parent,
+        property,
+        winner.$4.trim(),
+        rootFontSize,
+        fontScale,
+      );
     }
     // A float and a positioned box are blocks. So is a flex or grid item.
     if ((style.floated ||
@@ -1546,7 +1568,14 @@ double? _invertOf(String value) {
   return functions == 0 ? null : invert;
 }
 
-double _fontSize(String value, double parent, double root) {
+/// Whether the length [value] is relative to a font size: in em, rem, ex,
+/// ch or percent.
+bool _followsFont(String value) =>
+    RegExp(r'(em|ex|ch|%)$').hasMatch(value.trim().toLowerCase());
+
+/// The font size in pixels that [value] gives an element whose parent's
+/// font size is [parent], with [scale] as [Cascade.fontScale].
+double _fontSize(String value, double parent, double root, double scale) {
   final text = value.trim().toLowerCase();
   const keywords = {
     'xx-small': 9.0,
@@ -1558,16 +1587,15 @@ double _fontSize(String value, double parent, double root) {
     'xx-large': 32.0,
     'xxx-large': 48.0,
   };
-  if (keywords.containsKey(text)) return keywords[text]!;
+  if (keywords.containsKey(text)) return keywords[text]! * scale;
   if (text == 'smaller') return parent / 1.2;
   if (text == 'larger') return parent * 1.2;
   if (text == 'inherit' || text == 'unset') return parent;
-  if (text == 'initial') return 16;
+  if (text == 'initial') return 16 * scale;
   final length = parseLength(text, parent, root);
   if (length == null || length.isAuto || length.isNone) return parent;
-  return length.unit == LengthUnit.percent
-      ? parent * length.value / 100
-      : length.value;
+  if (length.unit == LengthUnit.percent) return parent * length.value / 100;
+  return _followsFont(text) ? length.value : length.value * scale;
 }
 
 void _apply(
@@ -1576,6 +1604,7 @@ void _apply(
   String property,
   String value,
   double root,
+  double scale,
 ) {
   final lower = value.toLowerCase();
   Length? length() => parseLength(lower, style.fontSize, root);
@@ -1739,7 +1768,9 @@ void _apply(
       } else if (length() case final parsed?) {
         style.lineHeight = parsed.unit == LengthUnit.percent
             ? style.fontSize * parsed.value / 100
-            : parsed.value;
+            : _followsFont(lower)
+            ? parsed.value
+            : parsed.value * scale;
         style.lineHeightFactor = false;
       }
     case 'letter-spacing' || 'word-spacing':

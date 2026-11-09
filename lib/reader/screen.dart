@@ -503,6 +503,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
       key: ValueKey(token),
       pager: pager,
       fontSize: fontSize,
+      sizesMainText: reader.sizesMainText,
       night: night,
       onTap: () {
         if (mounted) setState(() => _controls = !_controls);
