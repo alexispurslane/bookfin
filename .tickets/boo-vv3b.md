@@ -1,6 +1,6 @@
 ---
 id: boo-vv3b
-status: open
+status: in_progress
 deps: []
 links: []
 created: 2026-11-09T20:51:20Z
