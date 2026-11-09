@@ -321,3 +321,14 @@ The user settled four open points of the conformance epic (boo-bquq):
 - If the record store cannot be read, the app renames the damaged data and keeps it, starts a new store at once, and copies every record that still parses into the new store. Most history and places show at once, even offline, and the next sync refills the rest (td-rvpm).
 - A damaged action whose local copy differs from the server copy takes the server copy. The local copy is kept aside, sync continues, and the Sync page's quiet line reports it (ta-tso8).
 - Kept copies of damaged records come back automatically. At each launch, while kept copies exist, the app tries again to read them with the current code and merges every readable record by time. Older data never replaces newer data. The Sync page's quiet line reports how many records came back. The same line offers Discard while kept copies exist. Discard deletes them only after a confirmation (ta-tk3b).
+
+## Quiet PDF reading and reader gestures — November 9, 2026 decision
+
+The user asked for a reader without notices and with direct gestures (boo-981b, boo-hcxq).
+
+- A PDF always opens on its original pages. The original view never starts recognition.
+- The reflow view reflows a page from its text layer. A page without a usable text layer is recognized without a prompt. While that runs, the original page shows under a thin progress line.
+- When reflow cannot work on the shown page, one quiet line over the original page says why. The reader shows no other notice about recognition, text quality, language or search matching.
+- Every reader view shares one gesture model: a horizontal swipe turns the page, and a tap on the page enters or leaves full screen. Full screen shows only the page and hides Android's system bars.
+- The reader has no top bar. The person leaves a book with Android's Back. The bottom bar lies over the page as glass.
+- The page keeps the room of Android's system bars when they hide, so showing or hiding the controls or the bars never moves, resizes or lays out the page again.
