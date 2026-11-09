@@ -51,27 +51,27 @@ String _hash(Object? key) => sha1
     .toString()
     .substring(0, 16);
 
-String _px(double value) => value.toStringAsFixed(3);
-
 /// What a reader sees of [page], as [pageKey] gives it, but by line, not
 /// by the paragraph pieces that draw the lines: each line's place, its
-/// first and last character, and where its text sits.
+/// first and last character, and where its text sits, to a tenth of a
+/// pixel. A segment of a paragraph measures with less float noise than the
+/// whole paragraph, which moves its lines by thousandths of a pixel.
 List<Object?> lineKey(LaidPage page) {
   final top = page.top;
+  String tenth(double value) => value.toStringAsFixed(1);
   List<Object?> sliceKey(Slice slice) {
     final piece = slice.piece;
     final line = piece == null
         ? null
         : piece.paragraph.computeLineMetrics()[slice.line];
     return [
-      _px(slice.top - top),
-      _px(slice.bottom - top),
+      tenth(slice.top - top),
+      tenth(slice.bottom - top),
       slice.start,
       if (piece != null && line != null) ...[
         piece.map.placeAtUnit(slice.units.$1),
         piece.map.textPlaceAt(slice.units.$2 - 1),
-        _px(piece.x + line.left),
-        _px(line.width),
+        tenth(piece.x + line.left),
       ],
       [for (final cell in slice.cellSlices) ...sliceKey(cell)],
     ];
@@ -79,7 +79,8 @@ List<Object?> lineKey(LaidPage page) {
 
   final key = pageKey(page);
   return [
-    ...key.take(9),
+    ...key.take(8),
+    tenth(page.height),
     [for (final each in page.slices) sliceKey(each)],
     key.last,
   ];
@@ -123,13 +124,20 @@ void main() {
               opened.fontPrefix,
             );
           }
-          // Each unit of work timed in three runs, at its fastest.
+          // Each unit of work timed in three runs, at its fastest. Each run
+          // lays out the section prepared again, because a run keeps what it
+          // found for the other runs of its prepared section, such as a
+          // table's column widths, so that the units of later runs differ.
           List<double>? fastest;
           late List<int> items;
           late List<String> hashes;
           late List<String> lines;
           for (var time = 0; time < _times; time++) {
-            final run = LayoutRun(section);
+            final run = LayoutRun(
+              time == 0
+                  ? section
+                  : prepareSections([opened.source(index)], settings).single,
+            );
             final took = <double>[];
             final reached = <int>[];
             while (!run.done) {

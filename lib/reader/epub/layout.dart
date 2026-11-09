@@ -1786,22 +1786,24 @@ class LayoutRun {
       };
     }
 
+    // The last code unit before the spaces that end before [unit].
+    int beforeSpaces(int unit) {
+      var last = unit - 1;
+      while (last > 0 && codeUnit(last) == 0x20) {
+        last--;
+      }
+      return codeUnit(last);
+    }
+
     for (var unit = math.max(1, at - shift); unit < length; unit++) {
       final before = codeUnit(unit - 1);
       final after = codeUnit(unit);
-      if (before == 0x0a ||
-          _ideograph(before) && _ideograph(after) ||
-          before == 0x20 &&
-              _startsWord(after) &&
-              !_opens(() {
-                var last = unit - 1;
-                while (last > 0 && codeUnit(last) == 0x20) {
-                  last--;
-                }
-                return codeUnit(last);
-              }())) {
-        return unit + shift;
-      }
+      final cut = switch (before) {
+        0x0a => true,
+        0x20 => _startsWord(after) && !_opens(beforeSpaces(unit)),
+        _ => _ideograph(before) && _ideograph(after),
+      };
+      if (cut) return unit + shift;
     }
     return null;
   }
