@@ -16,9 +16,11 @@ import 'dart:ui' as ui;
 import 'package:bookfin/catalog/model.dart' show EditionKind;
 import 'package:bookfin/catalog/book_page.dart' show EditionPanel;
 import 'package:bookfin/main.dart';
+import 'package:bookfin/reader/epub/viewport.dart' show EpubViewport;
 import 'package:bookfin/reader/pdf_viewport.dart' show PdfViewport;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
@@ -173,6 +175,48 @@ void main() {
     await tester.tap(find.byTooltip('Pause').hitTestable().first);
     await wait(tester, find.byTooltip('Play'));
     await capture(tester, '07-paused');
+
+    // Reading an EPUB: download the EPUB edition of First Frost, open it in
+    // the native viewport, and turn a page with the right arrow key.
+    await back(tester, until: find.text('Read'));
+    final epub = find.byWidgetPredicate(
+      (widget) =>
+          widget is EditionPanel && widget.edition.kind == EditionKind.text,
+    );
+    final epubDownload = find.descendant(
+      of: epub,
+      matching: find.widgetWithText(OutlinedButton, 'Download'),
+    );
+    final epubRemove = find.descendant(
+      of: epub,
+      matching: find.widgetWithText(TextButton, 'Remove'),
+    );
+    await scrollTo(
+      tester,
+      epubRemove.evaluate().isEmpty ? epubDownload : epubRemove,
+    );
+    if (epubDownload.evaluate().isNotEmpty) {
+      await tester.tap(epubDownload.hitTestable());
+    }
+    await wait(tester, epubRemove, timeout: const Duration(minutes: 3));
+    await scrollTo(tester, find.text('Read'), dy: 300);
+    await tester.tap(find.text('Read').hitTestable().first);
+    await wait(tester, find.byType(EpubViewport));
+    // The book opens at the place that an earlier run saved, so the step
+    // compares the page label before and after the key.
+    final pageLabel = RegExp(r'Page \d+( of \d+)?$');
+    Finder labelOtherThan(String? shown) => find.byWidgetPredicate(
+      (widget) =>
+          widget is Text &&
+          pageLabel.hasMatch(widget.data ?? '') &&
+          widget.data != shown,
+    );
+    await wait(tester, labelOtherThan(null));
+    final before = (labelOtherThan(null).evaluate().first.widget as Text).data;
+    await capture(tester, '07a-epub');
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+    await wait(tester, labelOtherThan(before));
+    await capture(tester, '07b-epub-turned');
 
     // Reading: download the PDF edition of Windfall and open it.
     await back(tester, until: orchard);

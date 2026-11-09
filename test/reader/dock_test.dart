@@ -5,26 +5,25 @@ import 'package:bookfin/foundation/theme.dart';
 import 'package:bookfin/playback/playback.dart';
 import 'package:bookfin/playback/screen.dart';
 import 'package:bookfin/reader/document.dart';
+import 'package:bookfin/reader/epub/viewport.dart';
 import 'package:bookfin/reader/pdf.dart';
 import 'package:bookfin/reader/platform_io.dart';
 import 'package:bookfin/reader/screen.dart';
 import 'package:bookfin/reader/session.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_epub_viewer/publication.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pdfrx_engine/pdfrx_engine.dart';
 
 import '../playback/playback_test.dart'
     show LocalFiles, MemoryResume, TestEngine, account, recording, title;
-import 'appearance_test.dart' show BridgePlatform, finishLoading;
 import 'book_map_test.dart' show contents, threeSections;
+import 'epub/helpers.dart' show loadReaderFont;
+import 'native_reader.dart';
 import 'pdf_document_test.dart' show pdfSource;
 import 'pdf_screen_test.dart' show settleNative;
 import 'pdf_session_test.dart' as pdf show book, edition;
-import 'publication_test.dart' show epub;
 import 'screen_test.dart' show ControlPort;
-import 'session_test.dart' show source, edition, book, visible;
+import 'session_test.dart' show source, edition, book;
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -200,48 +199,93 @@ void main() {
     }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
 
     testWidgets('hides with a tap on the page and shows again with a second '
-        'tap', (tester) async {
-      final platform = BridgePlatform();
-      final previous = InAppWebViewPlatform.instance;
-      InAppWebViewPlatform.instance = platform;
-      addTearDown(() {
-        if (previous != null) InAppWebViewPlatform.instance = previous;
-      });
-      final downloads = LocalFiles()
-        ..files[source.key] = Uri.file('/verified.epub');
-      final reader = ReaderSession(
-        downloads: downloads,
-        store: MemoryResume(),
-        load: (_) async => Publication.admit(epub()),
+        'tap, on the same page', (tester) async {
+      final reader = await openNative(tester);
+      final viewport = tester.state(find.byType(EpubViewport));
+      final address = reader.visibleAddress;
+      final first = shownOf(reader)!.page;
+      bool fits() =>
+          shownOf(reader)!.page.settings.height ==
+          tester.getSize(find.byType(EpubViewport)).height;
+
+      await tester.tap(find.byType(EpubViewport));
+      await settleReader(
+        tester,
+        () => find.byType(ReaderDock).evaluate().isEmpty,
       );
-      await reader.bind(account(), [book]);
-      await reader.open(book, edition);
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: bookfinTheme(Brightness.light),
-          home: ReaderScreen(reader: reader, onNightChanged: (_) {}),
-        ),
-      );
-      await finishLoading(tester);
-      final bridge = platform.controllers.single;
-      bridge.handlers['readerLocation']!([visible.toJson()]);
-      await tester.pumpAndSettle();
-      expect(find.byType(ReaderDock), findsOneWidget);
-      bridge.handlers['readerTap']!([]);
-      await tester.pumpAndSettle();
+      await settleReader(tester, fits, reason: 'no page for the taller area');
       expect(find.byType(ReaderDock), findsNothing);
-      bridge.handlers['readerTap']!([]);
-      await tester.pumpAndSettle();
-      expect(find.byType(ReaderDock), findsOneWidget);
       expect(
-        platform.controllers,
-        hasLength(1),
+        (shownOf(reader)!.page.section, shownOf(reader)!.page.startPlace),
+        (first.section, first.startPlace),
+      );
+
+      await tester.tap(find.byType(EpubViewport));
+      await settleReader(
+        tester,
+        () => find.byType(ReaderDock).evaluate().isNotEmpty,
+      );
+      await settleReader(tester, fits, reason: 'no page for the shorter area');
+      expect(
+        tester.state(find.byType(EpubViewport)),
+        same(viewport),
         reason: 'The page stays open while the controls hide and show.',
       );
-      await tester.pumpWidget(const SizedBox());
-      reader.dispose();
-      await reader.flush();
-      downloads.dispose();
+      expect(reader.visibleAddress, same(address), reason: 'Nothing moved.');
+      await closeNative(tester, reader);
+    }, variant: TargetPlatformVariant.only(TargetPlatform.android));
+  });
+
+  group('the place label of a native page', () {
+    setUpAll(loadReaderFont);
+
+    /// The page part of the dock's place label, such as "Page 2 of 8".
+    String? pageLabel(WidgetTester tester) => tester
+        .widgetList<Text>(inDock(find.byType(Text)))
+        .map((text) => text.data ?? '')
+        .map(RegExp(r'Page \d+( of \d+)?$').firstMatch)
+        .nonNulls
+        .map((match) => match[0])
+        .firstOrNull;
+
+    testWidgets('names the shown page in its chapter and the chapter\'s page '
+        'count, and follows a turn', (tester) async {
+      final reader = await openNative(tester);
+      await settleReader(
+        tester,
+        () => reader.pager!.pageNumber.value?.count != null,
+        reason: 'the first chapter was never counted',
+      );
+      final count = reader.pager!.pageNumber.value!.count!;
+      expect(count, greaterThan(1));
+      expect(find.bySemanticsLabel('One · Page 1 of $count'), findsOneWidget);
+
+      await finishReader(tester, reader.move(true));
+      await settleReader(tester, () => pageLabel(tester) == 'Page 2 of $count');
+      expect(find.bySemanticsLabel('One · Page 2 of $count'), findsOneWidget);
+      await closeNative(tester, reader);
+    }, variant: TargetPlatformVariant.only(TargetPlatform.android));
+
+    testWidgets('names the chapter after the book opens at a saved place, '
+        'whose saved form has no chapter title', (tester) async {
+      final reader = await openNative(tester);
+      await finishReader(tester, reader.goToContents('text/s1.xhtml#two'));
+      await settleReader(tester, () => reader.position != null);
+      await finishReader(tester, reader.open(book, edition));
+      await waitForPage(tester, reader, (shown) => shown.page.section == 1);
+      await settleReader(
+        tester,
+        () => reader.pager!.pageNumber.value?.count != null,
+        reason: 'the second chapter was never counted',
+      );
+      expect(
+        (reader.visibleAddress! as EpubAddress).location.chapter,
+        isNull,
+        reason: 'The pager reports the saved place as saved.',
+      );
+      final count = reader.pager!.pageNumber.value!.count!;
+      expect(find.bySemanticsLabel('Two · Page 1 of $count'), findsOneWidget);
+      await closeNative(tester, reader);
     }, variant: TargetPlatformVariant.only(TargetPlatform.android));
   });
 
