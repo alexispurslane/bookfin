@@ -127,4 +127,48 @@ void main() {
       expect(first.values, isEmpty);
     },
   );
+
+  test('an action at an address that this build does not know is kept and applied in causal order', () {
+    final newer = RecordJournal('alice', 'newer');
+    final highlight = jsonEncode(['reading', 'highlights', 'one']);
+    final older = RecordJournal('alice', 'older');
+    older.receive([
+      {
+        'version': 1,
+        'account': 'alice',
+        'replica': 'newer',
+        'sequence': 1,
+        'context': <String, int>{},
+        'record': highlight,
+        'value': {'quote': 'A dark night'},
+        'preserve': <String>[],
+      },
+    ]);
+    newer.receive(older.encode()['actions'].cast<Map<String, dynamic>>());
+    newer.change(record('bookmarks', 'two'), {'id': 'two'});
+    older.receive(newer.uploads);
+    expect(
+      older.values.keys,
+      unorderedEquals([highlight, record('bookmarks', 'two')]),
+    );
+    older.checkInvariants();
+  });
+
+  test('an action whose address is not a domain, a collection and an id is refused', () {
+    final journal = RecordJournal('alice', 'first');
+    for (final address in [
+      ['audio', 'bookmarks'],
+      ['audio', '', 'one'],
+      ['', 'bookmarks', 'one'],
+      ['audio', 'bookmarks', ''],
+      ['audio', 7, 'one'],
+    ]) {
+      expect(
+        () => journal.change(jsonEncode(address), {'id': 'one'}),
+        throwsFormatException,
+        reason: '$address',
+      );
+    }
+    expect(journal.values, isEmpty);
+  });
 }
