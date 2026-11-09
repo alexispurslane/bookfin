@@ -1,6 +1,6 @@
 ---
 id: boo-ystu
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-09T17:13:34Z
