@@ -29,16 +29,13 @@ class PendingScan extends HeldPdf {
   final BundledEnglishText textSupply = BundledEnglishText();
   Future<void>? _closing;
 
+  /// A scan has no text layer.
   @override
-  Future<PdfText> text(int sourcePage) => textSupply.text(
-    this,
-    sourcePage,
-    const PdfText(
-      source: '',
-      text: '',
-      sourceOffsets: [],
-      status: PdfTextStatus.absent,
-    ),
+  Future<PdfText> textLayer(int sourcePage) async => const PdfText(
+    source: '',
+    text: '',
+    sourceOffsets: [],
+    status: PdfTextStatus.absent,
   );
 
   @override
@@ -62,10 +59,20 @@ Future<void> waitFor(WidgetTester tester, bool Function() ready) async {
   fail('The reader did not reach the expected visible state.');
 }
 
-/// Whether the reflowed view is done with the page text: it no longer
-/// checks the text, and shows the text or says why it cannot.
+/// The reflowed text of the shown page.
+final reflowed = find.descendant(
+  of: find.byType(PdfViewport),
+  matching: find.byType(SingleChildScrollView),
+);
+
+/// Whether the reflowed view is done with the page text: it shows the text,
+/// or one quiet line over the original page that says why it cannot.
 bool textSettled() =>
-    find.text('Checking source-page text.').evaluate().isEmpty;
+    reflowed.evaluate().isNotEmpty ||
+    find
+        .descendant(of: find.byType(PdfViewport), matching: find.byType(Text))
+        .evaluate()
+        .isNotEmpty;
 
 void main() {
   const channel = MethodChannel('bookfin/ocr');
@@ -114,7 +121,10 @@ void main() {
     expect(reader.message, isNull);
   });
 
+  /// Shows the reader in reflow, and waits until the shown page is
+  /// recognized.
   Future<void> showReader(WidgetTester tester) async {
+    reader.setReflow(true);
     addTearDown(() async {
       await tester.pumpWidget(const SizedBox());
       await native(tester, () async {
@@ -140,7 +150,7 @@ void main() {
   }
 
   testWidgets(
-    'cancel and retry preserve an unresolved nonzero saved place until an explicit source-page choice',
+    'leaving reflow and reflowing again keep an unresolved nonzero saved place until an explicit source-page choice',
     (tester) async {
       await native(tester, () async {
         reader.acceptAddress(
@@ -160,13 +170,10 @@ void main() {
       final savedAnchor = reader.bookmarks.single.position.anchor;
       expect((reader.initialAddress as PdfAddress).character, 10);
       await showReader(tester);
-      await tester.tap(find.text('Stop waiting'));
-      await tester.pump();
+      await chooseSetting(tester, 'Original page', settle: tester.pump);
       expect(find.byType(ErrorWidget), findsNothing);
       expect(reader.position!.anchor, savedAnchor);
       expect(reader.position!.sourceKey, pdfSource.key);
-      await tester.tap(find.text('Retry recognition'));
-      await tester.pump();
       pdf.finishRender();
       await waitFor(
         tester,
@@ -187,7 +194,7 @@ void main() {
         findsNothing,
       );
       expect(
-        find.textContaining('The saved text position is not available'),
+        find.text('The saved place does not match the text of this page.'),
         findsOneWidget,
       );
       expect(reader.position!.anchor, savedAnchor);
@@ -208,7 +215,7 @@ void main() {
   for (final pending in ['render', 'native recognition']) {
     for (final outcome in ['success', 'failure']) {
       testWidgets(
-        'cancel during pending $pending keeps controls and original fallback through retry $outcome',
+        'leaving reflow during pending $pending keeps the controls and the original page, and reflow again ends in $outcome',
         (tester) async {
           retryFails = outcome == 'failure';
           holdFirstNative = pending == 'native recognition';
@@ -223,11 +230,9 @@ void main() {
               findsNothing,
             );
           }
-          expect(find.text('Recognizing English text…'), findsOneWidget);
-          await tester.tap(find.text('Stop waiting'));
-          await tester.pump();
+          await chooseSetting(tester, 'Original page', settle: tester.pump);
+          expect(pdf.textSupply.recognizing.value, isFalse);
           expect(find.byType(ErrorWidget), findsNothing);
-          expect(find.text('Retry recognition'), findsOneWidget);
           expect(find.byTooltip('Next page'), findsOneWidget);
           expect((reader.visibleAddress as PdfAddress).toJson(), {
             'page': 1,
@@ -238,27 +243,26 @@ void main() {
           // The scrub bar counts the shown page of the two as read.
           expect(tester.widget<Slider>(find.byType(Slider)).value, .5);
 
-          await tester.tap(find.text('Retry recognition'));
-          await tester.pump();
+          await chooseSetting(tester, 'Reflow text', settle: tester.pump);
           expect(
             nativeCalls,
             pending == 'render' ? 0 : 1,
-            reason: 'Retry joins the page that started.',
+            reason: 'Reflow again joins the page that started.',
           );
           pdf.finishRender();
           firstRecognition.complete(englishPage);
-          await waitFor(
-            tester,
-            () => find
-                .bySemanticsLabel('Original source page 1')
-                .evaluate()
-                .isNotEmpty,
-          );
-          await chooseSetting(tester, 'Reflow text', settle: tester.pump);
           await waitFor(tester, textSettled);
           expect(nativeCalls, 1);
           expect(find.byType(ErrorWidget), findsNothing);
           if (retryFails) {
+            // The original page decodes in real time.
+            await waitFor(
+              tester,
+              () => find
+                  .bySemanticsLabel('Original source page 1')
+                  .evaluate()
+                  .isNotEmpty,
+            );
             expect(
               find.descendant(
                 of: find.byType(PdfViewport),
@@ -270,7 +274,10 @@ void main() {
               find.bySemanticsLabel('Original source page 1'),
               findsOneWidget,
             );
-            expect(find.text('Retry recognition'), findsOneWidget);
+            expect(
+              find.text('Text recognition failed on this page.'),
+              findsOneWidget,
+            );
           } else {
             expect(find.text('The quiet garden.'), findsOneWidget);
             expect(reader.position!.sourceKey, pdfSource.key);

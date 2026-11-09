@@ -174,19 +174,13 @@ class BundledEnglishText implements PdfTextSupply {
   bool _fatal = false;
   bool _holding = false;
   final Set<_Wait> _waits = {};
-  final Set<int> _requested = {};
   final Map<int, ({PdfText text, bool saved})> _selected = {};
   _OwnedTextRead? _read;
   final _recognizing = ValueNotifier(false);
   @override
   ValueListenable<bool> get recognizing => _recognizing;
   @override
-  bool get canRetry => !_closed && !_fatal;
-
-  @override
   void bind(PdfTextLease lease) => _lease = lease;
-  @override
-  void retry(int page) => _requested.add(page);
 
   /// Stops every wait of this reader. A page that started still finishes
   /// and is saved; a page that did not start leaves the queue.
@@ -245,16 +239,10 @@ class BundledEnglishText implements PdfTextSupply {
       }
       if (_closed || generation != _generation) return _canceled;
       if (_fatal) return _fatalFallback;
-      if (extracted.status == PdfTextStatus.unreliable &&
-          !_requested.contains(page)) {
-        return extracted;
-      }
     }
     final lease = _lease;
     if (lease == null) {
-      return _fallback(
-        'English scan recognition requires an owned local download.',
-      );
+      return _fallback('Text recognition needs the downloaded book.');
     }
     if (!_holding) {
       _holding = true;
@@ -375,18 +363,8 @@ Future<_Recognized> _recognizePage(
     });
     if (!saved) return (text: _gone, saved: false);
   } on Exception {
-    return (
-      text: PdfText(
-        source: result.source,
-        text: result.text,
-        sourceOffsets: result.sourceOffsets,
-        status: result.status,
-        recognition: result.recognition,
-        digest: result.digest,
-        reason: 'English text is available, but could not be cached. Free storage to save recognition.',
-      ),
-      saved: false,
-    );
+    // The text still shows. It is recognized again after the book closes.
+    return (text: result, saved: false);
   }
   return (text: result, saved: true);
 }
@@ -451,17 +429,13 @@ const _canceled = PdfText(
   text: '',
   sourceOffsets: [],
   status: PdfTextStatus.absent,
-  reason: 'Recognition canceled. The original page is available.',
+  reason: 'Recognition stopped.',
 );
 
-final _gone = _fallback(
-  'The download is no longer available. The original page remains open.',
-);
-final _recognitionFailure = _fallback(
-  'English recognition failed. Retry or read the original page.',
-);
+final _gone = _fallback('The download of this book is no longer available.');
+final _recognitionFailure = _fallback('Text recognition failed on this page.');
 final _fatalFallback = _fallback(
-  'English recognition cannot continue safely. Restart Bookfin. The original page remains available.',
+  'Text recognition stopped working. Restart Bookfin to recognize pages.',
 );
 
 PdfText _fallback(String reason) => PdfText(
@@ -528,12 +502,12 @@ PdfText decodeRecognizedPage(String hocr) {
   }
   final raw = source.toString();
   if (raw.trim().isEmpty) {
-    return _fallback('No English text was recognized. Read the original page.');
+    return _fallback('No text was found on this page.');
   }
   if (raw.length > 2000000 ||
       raw.contains('\uFFFD') ||
       raw.contains('\u0000')) {
-    return _fallback('Recognized text is unreliable. Read the original page.');
+    return _fallback('The recognized text of this page cannot be read.');
   }
   var parallelRows = 0;
   final rows = <int, ({int minimumRight, int maximumLeft})>{};
@@ -572,7 +546,7 @@ PdfText decodeRecognizedPage(String hocr) {
     status: unreliable ? PdfTextStatus.unreliable : PdfTextStatus.candidate,
     digest: unreliable ? null : pdfTextDigest(raw),
     reason: unreliable
-        ? 'Recognized text order is unreliable. Read the original page.'
+        ? 'The text of this page cannot be put in reading order.'
         : null,
   );
 }

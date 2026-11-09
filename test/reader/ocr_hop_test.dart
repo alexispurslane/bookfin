@@ -173,7 +173,7 @@ void main() {
         final pdf = await open();
         final canceled = await textWhileCanceled(pdf);
         expect(canceled.status, PdfTextStatus.absent);
-        expect(canceled.reason, contains('Recognition canceled'));
+        expect(canceled.reason, 'Recognition stopped.');
         expect((await pdf.text(1)).text, 'The quiet garden.');
         expect(
           calls,
@@ -191,7 +191,7 @@ void main() {
         final pdf = await open();
         final canceled = await textWhileCanceled(pdf);
         expect(canceled.status, PdfTextStatus.absent);
-        expect(canceled.reason, contains('Recognition canceled'));
+        expect(canceled.reason, 'Recognition stopped.');
         expect((await pdf.text(1)).text, 'The quiet garden.');
         expect(calls, 1);
       },
@@ -201,7 +201,7 @@ void main() {
       recognize = () async => '<div><span class="ocr_line"><span class="ocrx_word">Text</span></span></div>';
       final text = await (await open()).text(1);
       expect(text.status, PdfTextStatus.absent);
-      expect(text.reason, contains('English recognition failed'));
+      expect(text.reason, 'Text recognition failed on this page.');
     });
   });
 }

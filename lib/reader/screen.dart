@@ -474,7 +474,6 @@ class _ReaderScreenState extends State<ReaderScreen> {
         onAddress: (address) => reader.acceptAddress(token, address),
         reflow: reader.reflow,
         onCancelRecognition: () => document.textSupply?.cancel(),
-        onRetryRecognition: (page) => document.textSupply?.retry(page),
       );
       // The glass layers over the page show the open book.
       final book = reader.book;
@@ -1014,9 +1013,6 @@ class _ReaderSearchPanelState extends State<ReaderSearchPanel> {
                         color: Theme.of(context).colorScheme.error,
                       ),
                     ),
-                  const Text(
-                    'Search uses basic lowercase matching. Some language-specific letter forms differ. Spaces, tabs, and line breaks match as one space. Accents must match. Different Unicode spellings are not combined. Text hidden only by a stylesheet can appear in results.',
-                  ),
                   if (!widget.searching &&
                       widget.hits.isEmpty &&
                       _query.text.isNotEmpty &&

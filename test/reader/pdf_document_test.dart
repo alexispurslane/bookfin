@@ -140,7 +140,7 @@ void main() {
         final text = await document.text(1);
         expect(text.source, isNotEmpty);
         expect(text.status, PdfTextStatus.unreliable);
-        expect(text.reason, contains('original page'));
+        expect(text.reason, contains('reading order'));
         expect((await document.render(1, 360)).width, 360);
       },
     );

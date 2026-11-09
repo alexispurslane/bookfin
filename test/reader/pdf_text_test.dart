@@ -64,7 +64,7 @@ void main() {
   test('a page without extracted text offers the original page', () {
     final text = prepared(' \n ');
     expect(text.status, PdfTextStatus.absent);
-    expect(text.reason, contains('original page'));
+    expect(text.reason, 'This page has no text to reflow.');
     expect(text.digest, isNull);
   });
 
@@ -74,7 +74,7 @@ void main() {
       final text = preparePdfPage((source: 'river', boxes: oneLine('rive')));
       expect(text.text, 'river');
       expect(text.status, PdfTextStatus.unreliable);
-      expect(text.reason, contains('original page'));
+      expect(text.reason, contains('reading order'));
     },
   );
 
@@ -84,7 +84,7 @@ void main() {
       final boxes = oneLine('river')..[2 * 4 + 1] = double.infinity;
       final text = preparePdfPage((source: 'river', boxes: boxes));
       expect(text.status, PdfTextStatus.unreliable);
-      expect(text.reason, contains('original page'));
+      expect(text.reason, contains('reading order'));
     },
   );
 

@@ -20,11 +20,16 @@ addresses. Recognition supplies `PdfText` through that same document. It does no
 create another reader, source identity, search index, bookmark store or position
 store. EPUB and MOBI behavior do not use recognition.
 
-An image-only page starts English recognition when its text is requested.
-An unreliable existing text layer keeps its conservative original-page fallback.
-The reader offers “Try English recognition” for that page. This does not claim
-that the source text layer itself is defective. Ordinary usable text does not
-start recognition.
+A PDF always opens on its original pages. The original view asks the document
+only for the page's text layer (`PdfBook.textLayer`), so it never starts
+recognition. The reflow view and search ask for the text for reading
+(`PdfBook.text`). That text is the text layer when it is usable. A page with no
+text layer, or with a text layer that is out of order, is recognized then,
+without a prompt (boo-981b, 2026-11-09). Ordinary usable text does not start
+recognition. While a page is recognized, the reflow view shows its original page
+under a thin progress line. When reflow cannot work on the shown page, the reflow
+view shows the original page under one quiet line that says why. The reader shows
+no other notice about recognition, text quality or language.
 
 The existing reflow and search operations consume recognized page text. Character
 offsets refer to that page's recognized text. Addresses, resume records and
@@ -35,10 +40,8 @@ The existing conservative fragmentation and parallel-row counts also screen
 recognized lines. This is not a general table, column or reading-order repair.
 
 The document owns the selected page text for every reader operation. Search and
-the viewport do not choose different text layers. An unreliable extracted layer
-stays selected until the user requests recognition or verified recognition already
-exists for that source page. The explicit request remains in effect for the open
-document. Successful recognition stays selected for later requests and reopening.
+the reflow view use the same text for reading. Successful recognition stays
+selected for later requests and reopening.
 The document keeps at most sixteen disk-backed recognized pages in memory.
 Selections whose cache could not be saved remain in memory until document close;
 this memory grows with unsaved selections rather than discarding their only copy.

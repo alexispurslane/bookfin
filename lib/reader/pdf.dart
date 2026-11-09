@@ -89,9 +89,7 @@ PdfText preparePdfPage(({String source, Float64List boxes}) page) {
     text: output.toString(),
     sourceOffsets: offsets,
     status: status,
-    reason: offsets.isEmpty
-        ? 'This source page has no extracted text. The original page is available.'
-        : unreliable,
+    reason: offsets.isEmpty ? 'This page has no text to reflow.' : unreliable,
     digest: status == PdfTextStatus.candidate ? pdfTextDigest(source) : null,
   );
 }
@@ -119,9 +117,23 @@ class PdfRaster {
 }
 
 abstract class PdfBook extends ReaderDocument {
+  /// Recognizes the text of pages whose text layer cannot be read, or null
+  /// when this book has no recognition.
   PdfTextSupply? get textSupply => null;
   int get pageCount;
-  Future<PdfText> text(int sourcePage);
+
+  /// The text layer of [sourcePage]: the text that the page itself holds.
+  /// It never runs recognition, so it answers quickly.
+  Future<PdfText> textLayer(int sourcePage);
+
+  /// The text of [sourcePage] for reading, which reflow and search use: its
+  /// text layer when that is a candidate, and otherwise the text that
+  /// [textSupply] gives for the page.
+  Future<PdfText> text(int sourcePage) async {
+    final layer = await textLayer(sourcePage);
+    return textSupply?.text(this, sourcePage, layer) ?? layer;
+  }
+
   Future<PdfRaster> render(int sourcePage, double width);
 
   PdfAddress addressFor(int sourcePage, PdfText text, int character) {
@@ -170,12 +182,20 @@ typedef PdfTextLease = Future<PdfText?> Function(
   Future<PdfText> Function(Uri original, bool Function() owned) read,
 );
 
+/// Gives the text of pages whose text layer cannot be read, by recognizing
+/// the page. Recognition takes seconds, so only the reflow view and search
+/// ask for it, through [PdfBook.text].
 abstract class PdfTextSupply {
+  /// Whether this reader waits for a page that is recognized.
   ValueListenable<bool> get recognizing;
-  bool get canRetry;
   void bind(PdfTextLease lease);
+
+  /// Stops every wait of this reader. A page that started still finishes.
   void cancel();
-  void retry(int page);
+
+  /// The text of [page] of [book] for reading: [extracted], the page's text
+  /// layer, when it is a candidate, and otherwise the recognized text, or a
+  /// text without content whose reason says why there is none.
   Future<PdfText> text(PdfBook book, int page, PdfText extracted);
   Future<void> close();
 }
@@ -320,12 +340,13 @@ class _NativePdfBook extends PdfBook {
 
   @override
   Future<PdfText> text(int sourcePage) => _run(() async {
-    final extracted = await _extractedText(sourcePage);
+    final extracted = await textLayer(sourcePage);
     if (_closing != null) return extracted;
     return textSupply?.text(this, sourcePage, extracted) ?? extracted;
   });
 
-  Future<PdfText> _extractedText(int sourcePage) {
+  @override
+  Future<PdfText> textLayer(int sourcePage) {
     if (_closing != null) {
       return Future.error(StateError('This PDF is closed.'));
     }
@@ -344,7 +365,7 @@ class _NativePdfBook extends PdfBook {
             text: '',
             sourceOffsets: [],
             status: PdfTextStatus.unreliable,
-            reason: 'This source page has too much text to reflow safely.',
+            reason: 'This page has too much text to reflow.',
           );
         }
         // The boxes cross to the worker as one typed list. Packing them
@@ -417,8 +438,7 @@ class _NativePdfBook extends PdfBook {
 /// Why the extracted page [text] with its character [boxes] (see
 /// [preparePdfPage]) cannot be trusted to read in order, or null if it can.
 String? _textWarning(String text, Float64List boxes) {
-  const warning =
-      'Text order or character mapping is unreliable on this source page. Read the original page instead.';
+  const warning = 'The text of this page cannot be put in reading order.';
   if (boxes.length != text.length * 4 ||
       text.contains('\uFFFD') ||
       text.contains('\u0000')) {

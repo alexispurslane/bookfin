@@ -18,22 +18,17 @@ import 'pdf_session_test.dart' show book, edition;
 import 'reader_settings.dart';
 
 /// A text supply that fails the test when anything asks it to act. It only
-/// shows whether recognition runs and whether a retry is possible.
+/// shows whether recognition runs.
 class RefusingSupply implements PdfTextSupply {
   RefusingSupply({bool recognizing = false})
     : recognizing = ValueNotifier(recognizing);
   @override
   final ValueNotifier<bool> recognizing;
   @override
-  bool get canRetry => true;
-  @override
   void bind(PdfTextLease lease) => throw StateError('bind');
   @override
   void cancel() =>
       throw StateError('The viewport canceled recognition itself.');
-  @override
-  void retry(int page) =>
-      throw StateError('The viewport retried recognition itself.');
   @override
   Future<PdfText> text(PdfBook book, int page, PdfText extracted) =>
       throw StateError('The viewport asked the supply for text.');
@@ -41,8 +36,8 @@ class RefusingSupply implements PdfTextSupply {
   Future<void> close() => throw StateError('close');
 }
 
-/// A scanned PDF with a drawn original page. Its page text is [pending]
-/// while that is set, and otherwise has no extracted text.
+/// A scanned PDF with a drawn original page and no text layer. Its text for
+/// reading is [pending] while that is set, and otherwise has no text.
 class ScannedPdf extends HeldPdf {
   ScannedPdf(this.textSupply) {
     rendering.complete(
@@ -53,6 +48,13 @@ class ScannedPdf extends HeldPdf {
   final PdfTextSupply textSupply;
   Future<PdfText>? pending;
   final requests = <int>[];
+  @override
+  Future<PdfText> textLayer(int sourcePage) async => const PdfText(
+    source: '',
+    text: '',
+    sourceOffsets: [],
+    status: PdfTextStatus.absent,
+  );
   @override
   Future<PdfText> text(int sourcePage) {
     requests.add(sourcePage);
@@ -80,15 +82,14 @@ class DrawnPdf extends HeldPdf {
 class LateTextPdf extends DrawnPdf {
   final textArrives = Completer<void>();
   @override
-  Future<PdfText> text(int sourcePage) async {
+  Future<PdfText> textLayer(int sourcePage) async {
     await textArrives.future;
-    return super.text(sourcePage);
+    return super.textLayer(sourcePage);
   }
 }
 
 /// What a viewport reported to its owner.
 class Reports {
-  final retries = <int>[];
   final addresses = <PdfAddress>[];
   var cancels = 0;
   DocumentNavigator? navigator;
@@ -109,7 +110,6 @@ Widget viewport(
       onReady: (navigator, _) => reports.navigator = navigator,
       onAddress: reports.addresses.add,
       onCancelRecognition: () => reports.cancels++,
-      onRetryRecognition: reports.retries.add,
     ),
   ),
 );
@@ -153,145 +153,46 @@ ScrollController reflowScroll(WidgetTester tester) => tester
 void main() {
   group('the viewport reports recognition choices to its owner', () {
     testWidgets(
-      'while the shown page is recognized, a glass layer dims the page and '
-      'shows the recognition progress',
+      'while the shown page is recognized in reflow, its original page shows '
+      'under a thin progress line, and nothing dims or covers it',
       (tester) async {
         final supply = RefusingSupply(recognizing: true);
         addTearDown(supply.recognizing.dispose);
         final pdf = ScannedPdf(supply)..pending = Completer<PdfText>().future;
         final reports = Reports();
-        await tester.pumpWidget(viewport(pdf, reports));
+        await tester.pumpWidget(viewport(pdf, reports, reflow: true));
         await drawn(tester);
-        final layer = find.ancestor(
-          of: find.text('Recognizing English text…'),
-          matching: find.byType(CoverGlass),
-        );
-        expect(layer, findsOneWidget);
         expect(
-          find.descendant(
-            of: layer,
-            matching: find.byType(CircularProgressIndicator),
-          ),
+          find.bySemanticsLabel('Recognizing the text of this page'),
           findsOneWidget,
         );
-        expect(
-          find.descendant(of: layer, matching: find.text('Stop waiting')),
-          findsOneWidget,
-        );
-        expect(dimmed(), isTrue);
+        expect(dimmed(), isFalse);
+        expect(find.byType(CoverGlass), findsNothing);
         expect(find.bySemanticsLabel('Original source page 1'), findsOneWidget);
         expect(reports.cancels, 0, reason: 'Opening a page cancels nothing.');
         await tester.pumpWidget(const SizedBox());
       },
     );
 
-    testWidgets(
-      'Stop waiting reports up, and the layer leaves the original page with '
-      'a note',
-      (tester) async {
-        final supply = RefusingSupply(recognizing: true);
-        addTearDown(supply.recognizing.dispose);
-        final pdf = ScannedPdf(supply)..pending = Completer<PdfText>().future;
-        final reports = Reports();
-        await tester.pumpWidget(viewport(pdf, reports));
-        await drawn(tester);
-        await tester.tap(find.text('Stop waiting'));
-        await tester.pump();
-        expect(reports.cancels, 1);
-        expect(find.text('Recognizing English text…'), findsNothing);
-        expect(dimmed(), isFalse);
-        expect(find.bySemanticsLabel('Original source page 1'), findsOneWidget);
-        expect(
-          find.textContaining('Stopped waiting for recognition.'),
-          findsOneWidget,
-        );
-        expect(reports.addresses.last.sourcePage, 1);
-        await tester.pumpWidget(const SizedBox());
-      },
-    );
-
-    testWidgets(
-      'when the page text arrives, the layer stops dimming and keeps only '
-      'the English-only note',
-      (tester) async {
-        final supply = RefusingSupply(recognizing: true);
-        addTearDown(supply.recognizing.dispose);
-        final text = Completer<PdfText>();
-        final pdf = ScannedPdf(supply)..pending = text.future;
-        final reports = Reports();
-        await tester.pumpWidget(viewport(pdf, reports));
-        await drawn(tester);
-        expect(dimmed(), isTrue);
-        // Recognition of another page, such as for a search, can go on.
-        const garden = 'The quiet garden.';
-        text.complete(
-          PdfText(
-            source: garden,
-            text: garden,
-            sourceOffsets: List.generate(garden.length, (index) => index),
-            status: PdfTextStatus.candidate,
-            digest: 'garden-text',
-          ),
-        );
-        await tester.pump();
-        await tester.pump();
-        expect(find.text('Recognizing English text…'), findsNothing);
-        expect(find.text('Stop waiting'), findsNothing);
-        expect(dimmed(), isFalse);
-        expect(
-          find.ancestor(
-            of: find.textContaining('Other languages are not supported.'),
-            matching: find.byType(CoverGlass),
-          ),
-          findsOneWidget,
-        );
-        expect(reports.cancels, 0);
-        await tester.pumpWidget(const SizedBox());
-      },
-    );
-
-    testWidgets(
-      'a page without reliable text keeps its reason and Retry on a quiet '
-      'glass note under the page, which neither dims nor covers the page',
-      (tester) async {
-        final supply = RefusingSupply();
-        addTearDown(supply.recognizing.dispose);
-        final pdf = ScannedPdf(supply)
-          ..pending = Future.value(
-            const PdfText(
-              source: '',
-              text: '',
-              sourceOffsets: [],
-              status: PdfTextStatus.absent,
-              reason: 'This page has no text layer.',
-            ),
-          );
-        final reports = Reports();
-        await tester.pumpWidget(viewport(pdf, reports));
-        await drawn(tester);
-        for (final message in [
-          find.text('This page has no text layer.'),
-          find.text('Retry recognition'),
-        ]) {
-          expect(
-            find.ancestor(of: message, matching: find.byType(CoverGlass)),
-            findsOneWidget,
-          );
-        }
-        expect(dimmed(), isFalse);
-        final page = tester.getRect(
-          find.bySemanticsLabel('Original source page 1'),
-        );
-        final note = tester.getRect(
-          find.ancestor(
-            of: find.text('Retry recognition'),
-            matching: find.byType(CoverGlass),
-          ),
-        );
-        expect(note.top, greaterThanOrEqualTo(page.bottom));
-        await tester.pumpWidget(const SizedBox());
-      },
-    );
+    testWidgets('choosing the original page while the shown page is '
+        'recognized reports that its text is no longer wanted', (tester) async {
+      final supply = RefusingSupply(recognizing: true);
+      addTearDown(supply.recognizing.dispose);
+      final pdf = ScannedPdf(supply)..pending = Completer<PdfText>().future;
+      final reports = Reports();
+      await tester.pumpWidget(viewport(pdf, reports, reflow: true));
+      await drawn(tester);
+      await tester.pumpWidget(viewport(pdf, reports));
+      await tester.pump();
+      expect(reports.cancels, 1);
+      expect(
+        find.bySemanticsLabel('Recognizing the text of this page'),
+        findsNothing,
+      );
+      expect(find.bySemanticsLabel('Original source page 1'), findsOneWidget);
+      expect(reports.addresses.last.sourcePage, 1);
+      await tester.pumpWidget(const SizedBox());
+    });
 
     testWidgets('leaving a page whose text is still pending reports that its '
         'recognition is no longer wanted', (tester) async {
@@ -299,7 +200,7 @@ void main() {
       addTearDown(supply.recognizing.dispose);
       final pdf = ScannedPdf(supply)..pending = Completer<PdfText>().future;
       final reports = Reports();
-      await tester.pumpWidget(viewport(pdf, reports));
+      await tester.pumpWidget(viewport(pdf, reports, reflow: true));
       await drawn(tester);
       // The next page's text never arrives either, so the turn stays open.
       unawaited(reports.navigator!.move(true));
@@ -309,23 +210,24 @@ void main() {
       await tester.pumpWidget(const SizedBox());
     });
 
-    testWidgets(
-      'Retry recognition reports the shown page, then asks the document for '
-      'its text again',
-      (tester) async {
-        final supply = RefusingSupply();
-        addTearDown(supply.recognizing.dispose);
-        final pdf = ScannedPdf(supply);
-        final reports = Reports();
-        await tester.pumpWidget(viewport(pdf, reports));
-        await drawn(tester);
-        await tester.tap(find.text('Retry recognition'));
-        await tester.pump();
-        expect(reports.retries, [1]);
-        expect(pdf.requests, [1, 1]);
-        await tester.pumpWidget(const SizedBox());
-      },
-    );
+    testWidgets('the original view never asks for the text for reading', (
+      tester,
+    ) async {
+      final supply = RefusingSupply();
+      addTearDown(supply.recognizing.dispose);
+      final pdf = ScannedPdf(supply)..pending = Completer<PdfText>().future;
+      final reports = Reports();
+      await tester.pumpWidget(viewport(pdf, reports));
+      await drawn(tester);
+      await reports.navigator!.move(true);
+      await drawn(
+        tester,
+        shown: find.bySemanticsLabel('Original source page 2'),
+      );
+      expect(pdf.requests, isEmpty);
+      expect(reports.cancels, 0);
+      await tester.pumpWidget(const SizedBox());
+    });
   });
 
   group('the reflow choice belongs to the viewport owner', () {
