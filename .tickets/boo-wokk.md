@@ -1,6 +1,6 @@
 ---
 id: boo-wokk
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-09T12:56:52Z
