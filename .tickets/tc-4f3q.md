@@ -39,3 +39,9 @@ docs/plans/native-epub-reader.md (epic boo-b2ey). Read the sections named in the
 - A full host run has no exception and a 100 percent round trip of page starts, or each failure has its own ticket.
 - docs/research/native-epub-corpus.md holds the summary table and the commands.
 
+
+## Notes
+
+**2026-11-09T04:25:03Z**
+
+Built. tool/reader/epub_corpus.json pins 93 books (41 Standard Ebooks, 41 Gutenberg EPUB 3, 8 Gutenberg KF8, 3 showcase) by SHA-256 and size; tool/reader/fetch_epub_corpus.py (tests: tool/reader/test_fetch_epub_corpus.py) downloads them one at a time with a 3-second pause, and --pin records new books. test/reader/epub/corpus/ holds the book (TrialBook moved and renamed CorpusBook; it reads Publication.bookStyles, imageSizes and language as PageSource does), the support report (moved), the list and the per-book checks; test/reader/epub/corpus_test.dart replaces trial/corpus_test.dart and benchmark.dart and keeps their checks (support, CFI round trip, stepped run, runs from page starts, drawing). Departures: (1) a section with more than 100 page starts runs from 100 evenly spaced ones, because t1-um08 and t1-qtde make every run inside a long table or paragraph lay it out again; (2) the run also reports blank pages, which the round trip skipped; (3) the support report counts automatic hyphenation only where the language has no patterns, since tc-z7au. Findings and tickets: docs/research/native-epub-corpus.md (t1-7l9c, t1-6ta8, t1-9vc1, t1-qtde, t1-um08; t1-tqhs fixed by tc-n6wv).

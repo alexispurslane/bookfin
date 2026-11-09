@@ -36,46 +36,63 @@ The run admits each book with `Publication.admit`, as Bookfin does. It converts 
 | Admission, conversion, support report, prepare, fonts, layout, places, runs from page starts, drawing | Any exception. The run notes the check, the section and the page settings, and goes on with the next section. |
 | The main run, one flow item per step | The stepped run and a run in one step cut different pages, or `LayoutRun.checkInvariants` fails. |
 | The CFI round trip of every page start | The CFI that Bookfin saves for a page start opens another page. The run also counts the page starts whose CFI and quote come back unchanged. |
+| Blank pages | A page shows no line of text and no image. |
 | A run from a page start | It cuts other pages than the main run, over the 5 pages that it cuts first. A section with more than 100 page starts uses 100 evenly spaced ones, which include its last page (see "Limits"). |
 | Drawing | The first, middle and last page of each section draw with their images at 2.625 image pixels per layout pixel. |
 | Support report | It lists the features that the renderer approximates, and the features that it does not support, by section. It is not a failure. |
 | Slow items | It lists each paragraph or table whose layout step takes more than 8 ms, and the layout time per 10,000 visible characters. It is not a failure. |
 
-## Results of 2026-11-08
+## Results of 2026-11-08 and 2026-11-09
 
 The results come from a host run under `flutter test`, with JIT code and CPU raster. Other agents loaded the machine to 4 to 40 on 10 cores. Times are therefore high and noisy. Compare them only with each other.
 
-The run checked all 93 books, in three parts. The first part ran the books in list order and stopped at its two-hour limit during Roget's Thesaurus. The second part ran the 22 books after Roget's, and the third part ran Roget's alone.
+The renderer is main at merge 6d5afc1, after tc-z7au (hyphenation), tc-n6wv (fractional line positions) and te-4cez (split table rows) merged. The run checked 92 books in 88 minutes. Five books with pages that have no start place ran again with the blank-page check, which came later. Roget's Thesaurus ran alone, in 116 minutes. `.cache/epub-corpus/results.json` joins the three runs.
 
 | | 412 x 671 at 20 px | 360 x 640 at 26 px |
 | --- | --- | --- |
-| Pages | 116,904 | 233,698 |
-| Page starts whose CFI opens their own page | 116,900 of 116,900 | 233,641 of 233,694 |
+| Pages | 124,166 | 250,361 |
+| Page starts whose CFI opens their own page | 124,155 of 124,155 | 250,296 of 250,358 |
 | Page starts whose CFI and quote come back unchanged | all | all |
-| Runs from a page start | 89,574 | 154,406 |
-| Runs that cut other pages | 19 (one book) | 0 |
-| Sections whose runs were limited to 100 page starts | 169 | 494 |
-| Paragraphs and tables over 8 ms | 420 (in 40 books) | 636 (in 39 books) |
-| Layout time per 10,000 visible characters, median of the books | 9.8 ms | 11.9 ms |
-| Layout time per 10,000 visible characters, highest | 74 ms (Hong Lou Meng) | 129 ms (Leaves of Grass) |
+| Blank pages | 10 (five books) | 2 (two books) |
+| Runs from a page start | 92,353 | 159,956 |
+| Runs that cut other pages | 3 (from blank pages) | 0 |
+| Sections whose runs were limited to 100 page starts | 171 | 488 |
+| Paragraphs and tables over 8 ms | 986 (in 49 books) | 1,907 (in 58 books) |
+| Layout time per 10,000 visible characters, median of the books | 15.2 ms | 20.5 ms |
+| Layout time per 10,000 visible characters, highest | 94 ms (Roget's Thesaurus) | 269 ms (Roget's Thesaurus) |
 
-ROGET_ROW
+87 of the 93 books pass every check. No check raised an exception.
+
+| Source | Format | Books | Passed |
+| --- | --- | --- | --- |
+| Standard Ebooks | EPUB | 41 | 39 |
+| Project Gutenberg | EPUB | 41 | 37 |
+| Project Gutenberg | Kindle (KF8) | 8 | 8 |
+| Bookfin's test fixture | EPUB | 3 | 3 |
 
 ### Findings
 
 | Category | Count | Books | Ticket |
 | --- | --- | --- | --- |
 | Exceptions | 0 | | |
-| Broken saved places | 53 page starts at 26 px | Hong Lou Meng (Chinese) | t1-7l9c |
-| Runs from a page start that differ | 19, by at most 0.001 px | Wealth of Nations, Kindle conversion | t1-tqhs |
+| Broken saved places | 62 page starts at 26 px | Hong Lou Meng (Chinese) | t1-7l9c |
+| Blank pages from a split table row | 8 at 20 px | Hamlet, Plato's Dialogues, Roget's Thesaurus | t1-6ta8 |
+| Pages with only the border of an empty block | 2 at each size | The Divine Comedy, Through the Looking-Glass (Gutenberg) | t1-9vc1 |
+| Runs from a page start that differ | 3 at 20 px | The blank pages of Hamlet, Dialogues and Roget's Thesaurus | t1-6ta8 |
 | Slow paragraphs with many lines | Up to 3.6 s in one step | Leaves of Grass (Song of Myself in `pre`), Hong Lou Meng, the index of The Origin of Species, verse with `br` | t1-qtde |
-| Slow tables | Up to 0.75 s in one step | Plato's Dialogues, Ulysses chapter 15, Standard Ebooks plays, Roget's Thesaurus | t1-um08 |
+| Slow tables | Up to 51 s in one step | Roget's Thesaurus, Plato's Dialogues, Ulysses chapter 15, Standard Ebooks plays | t1-um08 |
 | Unsupported features | 0 | | |
 
 - Broken saved places. `wordStart` copies epub.js, which saves the first space-delimited word at or after the page start. Chinese text has about one space per 100 characters. At 26 pixels a page holds about 200 characters, so the next space can lie on a later page. Then the saved place opens one or two pages later. The fix changes what Bookfin saves, so t1-7l9c asks for a product choice between two designs.
-- Runs that differ. The 19 runs of the Kindle Wealth of Nations hold the same text on each page. Only page heights and line positions differ, by 0.001 pixels. A resumed run sums positions from the page top, and the main run sums them from the section start. A line that ends that close to the page bottom can get a different cut.
-- Slow paragraphs. `LayoutRun._lineStarts` asks the engine for one line boundary per line, and the engine builds the metrics of every line on each call. So a paragraph with n lines costs on the order of n squared, and every run that resumes inside it pays again. Song of Myself takes 1,580 ms at 20 pixels and 3,593 ms at 26 pixels in one step.
-- Slow tables. A table is one flow item, so one step lays out the whole table. A run that starts inside a table lays out the whole table again. Standard Ebooks sets dialogue as tables, so Plato's Gorgias is one table of 266,000 characters: 1,086 ms for the section, and 562 ms for one run from a page in its middle.
+- Blank pages. A table row taller than a page splits into fragments since te-4cez. A fragment of 10 pixels with no line can become a page of its own. A run from such a page also gives it another visible-character index than the main run.
+- Border pages. A first page that overflows (an image page of 682 pixels, a table page of 704 pixels, on a 671-pixel page) pushes the 2-pixel border of a following empty block onto a page of its own. Nobody knows yet whether Chromium does the same, so t1-9vc1 starts with a comparison.
+- Slow paragraphs. `LayoutRun._lineStarts` asks the engine for one line boundary per line, and the engine builds the metrics of every line on each call. So a paragraph with n lines costs on the order of n squared, and every run that resumes inside it pays again. Song of Myself takes 1,531 ms at 20 pixels and 3,553 ms at 26 pixels in one step.
+- Slow tables. A table is one flow item, so one step lays out the whole table. A run that starts inside a table lays out the whole table again. Standard Ebooks sets dialogue as tables, so Plato's Gorgias is one table of 266,000 characters (706 ms at 20 pixels). Roget's Thesaurus is one table of 1.74 million characters: 8.6 s at 20 pixels and 51 s at 26 pixels.
+- Hyphenation cost. Against the run before the merge, the median layout time per 10,000 characters doubled for the Standard Ebooks books, which ask for hyphenation, and fell to 0.88 times for the Gutenberg books, which do not. The note is on t0-z3m1.
+
+### The run before the merge
+
+The same corpus ran first on the renderer at 0bc7a08, before the merge. 90 of 92 books passed. It found the broken places of Hong Lou Meng (53 at 26 pixels) and 19 runs of the Kindle Wealth of Nations that differed by 0.001 pixels (t1-tqhs). tc-n6wv fixed the second. That run had no blank-page check.
 
 ### Approximated features
 
@@ -84,7 +101,6 @@ No book uses a feature that the renderer does not support. The table gives the n
 | Feature | Books |
 | --- | --- |
 | the `all` property (Gutenberg's license and header) | 48 |
-| automatic hyphenation | 41 |
 | `text-wrap: pretty` or `balance` | 41 |
 | text moved off the page is left out | 41 |
 | `vertical-align` other than `super` and `sub` | 23 |
@@ -102,7 +118,8 @@ No book uses a feature that the renderer does not support. The table gives the n
 ## Limits
 
 - Runs from page starts. A run that starts inside a long table or a paragraph with many lines lays it out again (t1-um08, t1-qtde). With every page start, Plato's Dialogues took 67 minutes and Roget's Thesaurus did not finish in two hours. So the run limits the runs to 100 evenly spaced page starts per section. When those tickets are fixed, raise the limit (`runsPerSection` in `test/reader/epub/corpus/check.dart`). The CFI round trip still covers every page start.
-- Run time. The whole run takes about three hours on a loaded host, most of it in the books of t1-um08 and t1-qtde.
+- Run time. The run without Roget's Thesaurus takes about 90 minutes on a loaded host, and Roget's Thesaurus alone takes about two hours. Most of the time goes to the books of t1-um08 and t1-qtde.
 - The run measures on the host only. Phone timing is separate work.
 - The run draws three pages of each section. It does not compare the drawing with Chromium. `test/reader/epub/fidelity_test.dart` does that for the trial books.
 - The run does not check right-to-left or vertical text. No book in the corpus uses them.
+- Automatic hyphenation counts as approximated only in a language without hyphenation patterns. The renderer hyphenates English since tc-z7au, and no corpus book asks for hyphenation in another language.
