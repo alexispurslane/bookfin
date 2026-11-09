@@ -5,7 +5,8 @@
 // settings to the pager, which is a request for pages, like an Image that
 // resolves its image. Every other action goes up through a callback: a tap,
 // a link, a page turn and, later, a copy. A render object subscribes to the
-// shown page, so a new page repaints the viewport without a rebuild.
+// shown page, so a new page repaints the viewport and updates its semantics
+// without a rebuild.
 import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -14,6 +15,7 @@ import 'package:flutter/widgets.dart';
 import 'layout.dart';
 import 'pager.dart';
 import 'prepare.dart';
+import 'semantics.dart';
 
 /// Draws what [pager] shows and reports taps, links, page turns and copies.
 ///
@@ -89,9 +91,11 @@ class _EpubViewportState extends State<EpubViewport> {
     super.dispose();
   }
 
-  void _tap(TapUpDetails details) {
+  /// A tap at [point], in logical pixels from the page's top left corner,
+  /// by a person or by a screen reader's action on a link.
+  void _tapAt(Offset point) {
     _focus.requestFocus();
-    final link = widget.pager.linkAt(details.localPosition);
+    final link = widget.pager.linkAt(point);
     if (link != null) {
       widget.onLink(link);
     } else {
@@ -174,11 +178,16 @@ class _EpubViewportState extends State<EpubViewport> {
       onPointerPanZoomUpdate: _panned,
       child: RawGestureDetector(
         behavior: HitTestBehavior.opaque,
+        // The page's own semantics turn pages and follow links. The
+        // recognizers' default actions would tap the page's corner and
+        // scroll nowhere.
+        excludeFromSemantics: true,
         gestures: {
           TapGestureRecognizer:
               GestureRecognizerFactoryWithHandlers<TapGestureRecognizer>(
                 () => TapGestureRecognizer(debugOwner: this),
-                (tap) => tap.onTapUp = _tap,
+                (tap) =>
+                    tap.onTapUp = (details) => _tapAt(details.localPosition),
               ),
           // A mouse drag selects text and a trackpad scrolls, so only a
           // touch or a pen swipes.
@@ -205,52 +214,82 @@ class _EpubViewportState extends State<EpubViewport> {
           pager: widget.pager,
           fontSize: widget.fontSize,
           night: widget.night,
+          onTurn: widget.onTurn,
+          onTapAt: _tapAt,
         ),
       ),
     ),
   );
 }
 
-/// The page itself: it paints the shown picture and presents its size.
+/// The page itself: it paints the shown picture, presents its size, and
+/// tells a screen reader what the page shows.
 class _Page extends LeafRenderObjectWidget {
   const _Page({
     required this.pager,
     required this.fontSize,
     required this.night,
+    required this.onTurn,
+    required this.onTapAt,
   });
   final EpubPager pager;
   final double fontSize;
   final bool night;
 
+  /// A screen reader's scroll action asks for a page.
+  final ValueChanged<bool> onTurn;
+
+  /// A screen reader's tap on a link taps it at this point of the page.
+  final ValueChanged<Offset> onTapAt;
+
   @override
   _RenderPage createRenderObject(BuildContext context) =>
-      _RenderPage(pager, fontSize, night);
+      _RenderPage(pager, fontSize, night, onTurn, onTapAt);
 
   @override
   void updateRenderObject(BuildContext context, _RenderPage page) => page
     ..pager = pager
     ..fontSize = fontSize
-    ..night = night;
+    ..night = night
+    ..onTurn = onTurn
+    ..onTapAt = onTapAt;
 }
 
 /// Paints the pager's shown picture at logical size, over the paper of the
 /// current theme. Before the first page, it paints the paper only.
 ///
 /// It listens to the shown page while it is attached, so that a new page
-/// repaints it alone. Its layout presents the page settings whenever they
-/// differ from the ones that it presented last.
+/// repaints it and updates its semantics alone. Its layout presents the
+/// page settings whenever they differ from the ones that it presented last.
+///
+/// Its semantics node is the page. Its scroll left action asks for the
+/// next page and its scroll right action for the previous one, as a swipe
+/// does. Its children are the shown page's text blocks and block images,
+/// in reading order (see [pageBlocks]). A block of one span is one node. A
+/// block of several, such as a paragraph with a link, holds a node for
+/// each span. A link's tap action taps the page at the link.
 class _RenderPage extends RenderBox {
-  _RenderPage(this._pager, this._fontSize, this._night);
+  _RenderPage(
+    this._pager,
+    this._fontSize,
+    this._night,
+    this.onTurn,
+    this.onTapAt,
+  );
 
   EpubPager _pager;
   set pager(EpubPager value) {
     if (identical(value, _pager)) return;
-    if (attached) _pager.shown.removeListener(markNeedsPaint);
+    if (attached) _pager.shown.removeListener(_shownChanged);
     _pager = value;
-    if (attached) _pager.shown.addListener(markNeedsPaint);
+    if (attached) _pager.shown.addListener(_shownChanged);
     _presented = null;
     markNeedsLayout();
+    _shownChanged();
   }
+
+  ValueChanged<bool> onTurn;
+  ValueChanged<Offset> onTapAt;
 
   double _fontSize;
   set fontSize(double value) {
@@ -311,13 +350,100 @@ class _RenderPage extends RenderBox {
   @override
   void attach(PipelineOwner owner) {
     super.attach(owner);
-    _pager.shown.addListener(markNeedsPaint);
+    _pager.shown.addListener(_shownChanged);
   }
 
   @override
   void detach() {
-    _pager.shown.removeListener(markNeedsPaint);
+    _pager.shown.removeListener(_shownChanged);
     super.detach();
+  }
+
+  void _shownChanged() {
+    markNeedsPaint();
+    markNeedsSemanticsUpdate();
+  }
+
+  /// The page that [_blocks] read, and the nodes of its blocks. The pager
+  /// shows a page twice when it has images, first without them, so the
+  /// nodes stay the same for the same page, and a screen reader keeps its
+  /// place.
+  LaidPage? _read;
+  List<SemanticsNode> _blocks = const [];
+
+  @override
+  void describeSemanticsConfiguration(SemanticsConfiguration config) {
+    super.describeSemanticsConfiguration(config);
+    config
+      ..isSemanticBoundary = true
+      ..onScrollLeft = (() => onTurn(true))
+      ..onScrollRight = (() => onTurn(false));
+  }
+
+  @override
+  void assembleSemanticsNode(
+    SemanticsNode node,
+    SemanticsConfiguration config,
+    Iterable<SemanticsNode> children,
+  ) {
+    final page = _pager.shown.value?.page;
+    if (!identical(page, _read)) {
+      _read = page;
+      _blocks = page == null ? const [] : _nodes(pageBlocks(page));
+    }
+    node.updateWith(config: config, childrenInInversePaintOrder: _blocks);
+  }
+
+  @override
+  void clearSemantics() {
+    super.clearSemantics();
+    _read = null;
+    _blocks = const [];
+  }
+
+  /// A node for each of [blocks], in their order.
+  List<SemanticsNode> _nodes(List<PageBlock> blocks) {
+    final area = Offset.zero & size;
+    SemanticsNode node(
+      Rect rect,
+      int index,
+      SemanticsConfiguration config, [
+      List<SemanticsNode> children = const [],
+    ]) => SemanticsNode()
+      ..rect = rect.intersect(area)
+      ..updateWith(
+        config: config..sortKey = OrdinalSortKey(index.toDouble()),
+        childrenInInversePaintOrder: children,
+      );
+    SemanticsConfiguration span(PageSpan span, bool header) {
+      final config = SemanticsConfiguration()
+        ..label = span.label
+        // The renderer lays every book out left to right.
+        ..textDirection = TextDirection.ltr
+        ..isHeader = header
+        ..isImage = span.image;
+      if (span.link case final point?) {
+        config
+          ..isLink = true
+          ..onTap = () => onTapAt(point);
+      }
+      return config;
+    }
+
+    return [
+      for (final (index, block) in blocks.indexed)
+        block.spans.length == 1
+            ? node(block.rect, index, span(block.spans.single, block.header))
+            : node(
+                block.rect,
+                index,
+                SemanticsConfiguration()..isHeader = block.header,
+                [
+                  for (final (index, part) in block.spans.indexed)
+                    node(part.rect, index, span(part, block.header)),
+                ],
+              ),
+    ];
   }
 
   @override

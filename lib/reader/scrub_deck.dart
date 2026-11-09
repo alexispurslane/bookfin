@@ -231,7 +231,8 @@ class _ScrubDeckState extends State<ScrubDeck>
   static const _radius = 18.0;
 
   /// A glass card that holds its drawn page, if any. With [animate], a new
-  /// page slides in from the way the thumb moved.
+  /// page slides in from the way the thumb moved, over the empty glass, and
+  /// the old page is gone at once.
   Widget _card(DeckCard card, {required bool animate}) {
     final page = card.page;
     final face = page == null
@@ -266,21 +267,20 @@ class _ScrubDeckState extends State<ScrubDeck>
           ? face
           : AnimatedSwitcher(
               duration: _instant ? Duration.zero : _shuffle,
-              transitionBuilder: (child, animation) {
-                // A new page slides in from the way the thumb moved, and the
-                // old page slides out the other way.
-                final entering = child.key == face.key;
-                return FadeTransition(
-                  opacity: animation,
-                  child: SlideTransition(
-                    position: Tween(
-                      begin: Offset((entering ? .08 : -.08) * _direction, 0),
-                      end: Offset.zero,
-                    ).animate(animation),
-                    child: child,
-                  ),
-                );
-              },
+              // The old page leaves at once, so the card never shows the
+              // text of two pages over each other.
+              layoutBuilder: (current, _) => current ?? const SizedBox.shrink(),
+              // The new page slides in from the way the thumb moved.
+              transitionBuilder: (child, animation) => FadeTransition(
+                opacity: animation,
+                child: SlideTransition(
+                  position: Tween(
+                    begin: Offset(.08 * _direction, 0),
+                    end: Offset.zero,
+                  ).animate(animation),
+                  child: child,
+                ),
+              ),
               child: face,
             ),
     );
