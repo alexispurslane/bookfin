@@ -565,7 +565,7 @@ void main() {
 
     expect(readOf(note.page), [
       'The lantern note explains the harbour.',
-      'Its second paragraph ends it. Back',
+      'Its second paragraph ends it.',
     ]);
     expect(note.page.settings.width, 300);
     expect(note.page.height, greaterThan(0));
@@ -617,7 +617,78 @@ void main() {
     addTearDown(note.dispose);
 
     expect(link, (href: 'endnotes.xhtml#note-2', noteref: true));
-    expect(readOf(note.page), ['The second note. ↩']);
+    expect(readOf(note.page), ['The second note.']);
+  });
+
+  /// The note of the reference in [book]'s first section, laid out 412
+  /// pixels wide, read block by block.
+  Future<List<String>> noteRead(Publication book) async {
+    open(book);
+    await present();
+    final note = (await until(
+      pager().note((href: 'text/s1.xhtml#n', noteref: true), width: 412),
+    ))!;
+    addTearDown(note.dispose);
+    return readOf(note.page);
+  }
+
+  /// A book whose first section has a note reference, ref-1, to the note
+  /// n in the second section, whose paragraphs are [note].
+  Publication backBook(String note) => book([
+    '<p>Text<a id="ref-1" epub:type="noteref" href="s1.xhtml#n">1</a>.</p>',
+    '<p id="other">Other text.</p><aside id="n" epub:type="footnote">'
+        '$note</aside>',
+  ]);
+
+  test('a note leaves out a back link that the book marks with the role '
+      'doc-backlink', () async {
+    expect(
+      await noteRead(
+        backBook(
+          '<p>The note. <a href="s0.xhtml#ref-1" role="doc-backlink">'
+          '\u21a9</a></p>',
+        ),
+      ),
+      ['The note.'],
+    );
+  });
+
+  test('a note leaves out a link back to its note reference, and keeps its '
+      'other links', () async {
+    expect(
+      await noteRead(
+        backBook(
+          '<p>See <a href="s1.xhtml#other">the other text</a> too. '
+          '<a href="s0.xhtml#ref-1">Return</a></p>',
+        ),
+      ),
+      ['See the other text too.'],
+    );
+  });
+
+  test('a note leaves out a back link drawn as a superscript, and keeps the '
+      'note\'s own superscripts', () async {
+    expect(
+      await noteRead(
+        backBook(
+          '<p>The note<sup>2</sup>.<a href="s0.xhtml#ref-1" '
+          'role="doc-backlink"><sup>back</sup></a></p>',
+        ),
+      ),
+      ['The note2.'],
+    );
+  });
+
+  test('a note leaves out a paragraph that holds only its back link', () async {
+    expect(
+      await noteRead(
+        backBook(
+          '<p>The note.</p><p><a href="s0.xhtml#ref-1" '
+          'epub:type="backlink">Back to the text</a></p>',
+        ),
+      ),
+      ['The note.'],
+    );
   });
 
   test('note has nothing for a link that is no note reference, so the link '

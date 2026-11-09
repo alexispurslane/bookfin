@@ -376,6 +376,11 @@ ReadingLocation hitLocation(
 bool isNoteReference(DomElement link) =>
     _types(link).contains('noteref') || _roles(link).contains('doc-noteref');
 
+/// Whether [link], an `a` element, is a note's link back to its reference:
+/// its `epub:type` has the token `backlink`, or its role is `doc-backlink`.
+bool isBackLink(DomElement link) =>
+    _types(link).contains('backlink') || _roles(link).contains('doc-backlink');
+
 /// The note that a link to [target] shows over the page, or null when the
 /// link jumps to [target]. [reference] is whether the link is a note
 /// reference ([isNoteReference]).
