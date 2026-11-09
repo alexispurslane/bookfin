@@ -1223,7 +1223,45 @@ class Cascade {
       _expanded[declaration] ??= _expand(declaration).toList();
 
   /// The computed style of [element], whose parent has [parent].
+  ///
+  /// Elements that match the same rules and have the same parent style,
+  /// style attribute, overrides, language attribute and root font size
+  /// share one style object, as browsers share styles. Nothing changes a
+  /// style once the cascade returns it.
   Style compute(DomElement element, Style parent, double rootFontSize) {
+    final matched = <StyleRule>[];
+    void match(List<StyleRule>? rules) {
+      if (rules == null) return;
+      for (final rule in rules) {
+        if (rule.selector.matches(element)) matched.add(rule);
+      }
+    }
+
+    match(_universal);
+    match(_byTag[element.name]);
+    for (final name in element.classes) {
+      match(_byClass[name]);
+    }
+    if (element.id != null) match(_byId[element.id]);
+    final attribute = element.attributes['style'];
+    final key = _ShareKey(
+      parent,
+      matched,
+      attribute,
+      overrides[element],
+      languageAttribute(element),
+      element.parent == null,
+      rootFontSize,
+    );
+    return _shared[key] ??= _computed(key);
+  }
+
+  /// The styles that [compute] made, by what they depend on.
+  final _shared = <_ShareKey, Style>{};
+
+  Style _computed(_ShareKey key) {
+    final _ShareKey(:parent, :attribute, :language) = key;
+    var rootFontSize = key.rootFontSize;
     final winners = <String, (int, int, int, String)>{};
     void offer(Declaration declaration, int level, int specificity, int order) {
       for (final (property, value) in _longhands(declaration)) {
@@ -1239,40 +1277,26 @@ class Cascade {
       }
     }
 
-    void match(List<StyleRule>? rules) {
-      if (rules == null) return;
-      for (final rule in rules) {
-        if (!rule.selector.matches(element)) continue;
-        for (final declaration in rule.declarations) {
-          offer(
-            declaration,
-            _userAgent.contains(rule) ? -1 : 0,
-            rule.selector.specificity,
-            rule.order,
-          );
-        }
+    for (final rule in key.rules) {
+      for (final declaration in rule.declarations) {
+        offer(
+          declaration,
+          _userAgent.contains(rule) ? -1 : 0,
+          rule.selector.specificity,
+          rule.order,
+        );
       }
     }
-
-    match(_universal);
-    match(_byTag[element.name]);
-    for (final name in element.classes) {
-      match(_byClass[name]);
-    }
-    if (element.id != null) match(_byId[element.id]);
-    final attribute = element.attributes['style'];
     if (attribute != null) {
       for (final declaration in parseDeclarations(attribute)) {
         offer(declaration, 1, 0, 0);
       }
     }
-    for (final declaration in overrides[element] ?? const <Declaration>[]) {
+    for (final declaration in key.overrides ?? const <Declaration>[]) {
       offer(declaration, 1, 0, 1);
     }
     final style = parent.inherit();
-    if (languageAttribute(element) case final language?) {
-      style.language = language;
-    }
+    if (language != null) style.language = language;
     // Font size comes first: em lengths of the other properties use it.
     final size = winners.remove('font-size')?.$4;
     if (size != null) {
@@ -1283,7 +1307,7 @@ class Cascade {
         fontScale,
       );
     }
-    if (element.parent == null) rootFontSize = style.fontSize;
+    if (key.root) rootFontSize = style.fontSize;
     for (final MapEntry(key: property, value: winner) in winners.entries) {
       _apply(
         style,
@@ -1307,6 +1331,61 @@ class Cascade {
       style.display = Display.block;
     }
     return style;
+  }
+}
+
+/// What [Cascade.compute] makes an element's style from: its parent's
+/// style, the rules that match it in the order that they offer their
+/// declarations, its style attribute, its overrides, its language
+/// attribute, whether it is the root, and the root's font size. Styles and
+/// rules compare by identity.
+final class _ShareKey {
+  _ShareKey(
+    this.parent,
+    this.rules,
+    this.attribute,
+    this.overrides,
+    this.language,
+    this.root,
+    this.rootFontSize,
+  ) : hashCode = Object.hash(
+        identityHashCode(parent),
+        Object.hashAll(rules),
+        attribute,
+        identityHashCode(overrides),
+        language,
+        root,
+        rootFontSize,
+      );
+
+  final Style parent;
+  final List<StyleRule> rules;
+  final String? attribute;
+  final List<Declaration>? overrides;
+  final String? language;
+  final bool root;
+  final double rootFontSize;
+
+  @override
+  final int hashCode;
+
+  @override
+  bool operator ==(Object other) {
+    if (other is! _ShareKey ||
+        other.hashCode != hashCode ||
+        !identical(other.parent, parent) ||
+        other.rules.length != rules.length ||
+        other.attribute != attribute ||
+        !identical(other.overrides, overrides) ||
+        other.language != language ||
+        other.root != root ||
+        other.rootFontSize != rootFontSize) {
+      return false;
+    }
+    for (var index = 0; index < rules.length; index++) {
+      if (!identical(other.rules[index], rules[index])) return false;
+    }
+    return true;
   }
 }
 
