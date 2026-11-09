@@ -6,7 +6,7 @@ This check measured the product renderer (`lib/reader/epub`) against epub.js one
 
 ## Result
 
-Body text breaks lines and pages where epub.js breaks them, above both targets. Every page start that epub.js saved opens on a native page whose first line holds it. Where a native page starts on the same character as an epub.js page, the native reader saves the same JSON as epub.js. Two contents entries of one book open on the page before their target. Ticket t9-ousp records that bug.
+Body text breaks lines and pages where epub.js breaks them, above both targets. Every page start that epub.js saved opens on a native page whose first line holds it. Where a native page starts on the same character as an epub.js page, the native reader saved the same JSON as epub.js. Since t1-7l9c, it saves the page's first visible character instead, and that place opens the same page. Two contents entries of one book open on the page before their target. Ticket t9-ousp records that bug.
 
 | Check | 20 pixels | 23 pixels | Target |
 | --- | --- | --- | --- |
@@ -63,7 +63,7 @@ The fixture books are zipped again with a fixed file time (`showcaseBooks` in `t
 
 | Test | When it runs | What it checks |
 | --- | --- | --- |
-| `test/reader/epub/saved_places_test.dart`, fixture books | Always | The fixture belongs to the same book. Each saved page start resolves (`placeOf`), its quote matches, and the anchored page (`PageSource.pageAt(anchored: true)`) has a first line that holds it. Each native page that starts on an epub.js page start saves the same JSON (`pageLocation`). Each contents entry (`destination`) and each search hit (`placeOf`) saves the same JSON (`hitLocation`). Each opens on a page that shows it. |
+| `test/reader/epub/saved_places_test.dart`, fixture books | Always | The fixture belongs to the same book. Each saved page start resolves (`placeOf`), its quote matches, and the anchored page (`PageSource.pageAt(anchored: true)`) has a first line that holds it. Each native page that starts on an epub.js page start saves that character, and the saved place opens that page (`pageLocation`). Before t1-7l9c, this check asked for epub.js's JSON. Each contents entry (`destination`) and each search hit (`placeOf`) saves the same JSON (`hitLocation`). Each opens on a page that shows it. |
 | `saved_places_test.dart`, downloaded books | On demand (`BOOKFIN_EPUB_TRIAL=1`), for each file with the recorded SHA-256 | The same checks |
 | `test/reader/epub/fidelity_test.dart` | On demand (`BOOKFIN_EPUB_TRIAL=1`) | Native line starts and page starts against `chromium-layout.json`, by group, at both sizes. It asks body text at 20 pixels for 99.9 % of line starts and 98 % of page starts. It turns automatic hyphenation off in each book style sheet, as compare.cjs turned it off in Chromium. It writes `.cache/epub-trial/results/fidelity-native.json`. |
 

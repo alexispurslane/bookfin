@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:bookfin/reader/document.dart';
 import 'package:bookfin/reader/epub/dom.dart';
+import 'package:bookfin/reader/epub/layout.dart';
 import 'package:bookfin/reader/epub/places.dart';
 import 'package:bookfin/reader/epub/publication.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -398,18 +399,57 @@ void main() {
     expect(spineIndexOf(cfi), 1);
   });
 
+  /// Expects that the place that each page of [chapter] saves opens that
+  /// page again, and that its quote starts at the page's first visible
+  /// character.
+  void expectEveryPageReopens(ChapterLayout chapter) {
+    final dom = chapter.section.dom;
+    final elsewhere = <String>[];
+    final notFirst = <String>[];
+    for (var page = 0; page < chapter.pages.length; page++) {
+      final laid = chapter.pages[page];
+      final start = laid.startPlace!;
+      final location = pageLocation(
+        '/6/2',
+        'text/one.xhtml',
+        dom,
+        start,
+        laid.endPlace ?? start,
+        'Harbour',
+      );
+      final back = placeOf(dom, 0, location.cfi)!;
+      if (chapter.pageAt(back) case final opened when opened != page) {
+        elsewhere.add('page $page saves ${location.cfi}, which opens $opened');
+      }
+      if (dom.visibleBefore(back) != laid.startVisible ||
+          location.quote.trimLeft() != location.quote) {
+        notFirst.add('page $page saves ${location.cfi}');
+      }
+    }
+    expect(elsewhere, isEmpty);
+    expect(notFirst, isEmpty, reason: 'not the first visible character');
+  }
+
   test('every page start opens on its own page again', () async {
     final chapter = await lay(
       '<h1>Harbour</h1>${[for (var i = 0; i < 25; i++) '<p>${prose(3, 'Part $i')}</p>'].join()}',
     );
     expect(chapter.pages.length, greaterThan(2));
-    for (var page = 0; page < chapter.pages.length; page++) {
-      final dom = chapter.section.dom;
-      final start = chapter.pages[page].startPlace!;
-      final cfi = cfiOf('/6/2', dom, wordStart(dom, start));
-      final back = placeOf(dom, 0, cfi)!;
-      expect(chapter.pageAt(back), page, reason: cfi);
-    }
+    expectEveryPageReopens(chapter);
+  });
+
+  test('every page start of text with few spaces opens on its own page '
+      'again', () async {
+    // Hong Lou Meng has about one space per 100 characters. Here a space
+    // comes after every 1,500 ideographs, more than twice what a page
+    // holds, so the next space after a page start is often on a later page.
+    final run = [
+      for (var i = 0; i < 1500; i++) String.fromCharCode(0x4e00 + i),
+    ];
+    final text = List.filled(8, run.join()).join(' ');
+    final chapter = await lay('<p>\n$text</p>');
+    expect(chapter.pages.length, greaterThan(4));
+    expectEveryPageReopens(chapter);
   });
 
   test('the quote and progress of a place follow reader.js', () {
@@ -439,43 +479,49 @@ void main() {
   });
 
   group('the saved start of a page', () {
-    test('a page that starts at a node\'s first word saves the node start', () {
+    /// The CFI that a page of [section] that starts at [start] and ends at
+    /// [end] saves.
+    String saved(DomSection section, EpubPlace start, EpubPlace end) =>
+        pageLocation(
+          '/6/2',
+          'text/one.xhtml',
+          section,
+          start,
+          end,
+          'Harbour',
+        ).cfi;
+
+    test('a page saves its first visible character, after the white space '
+        'that starts its text', () {
       final section = dom('<p>\n  Call me Ishmael.</p>');
-      final start = at(section, '\n', 3);
-      expect(wordStart(section, start), at(section, '\n'));
+      expect(
+        saved(section, at(section, '\n'), at(section, '\n', 18)),
+        'epubcfi(/6/2!/4/2/1:3)',
+      );
     });
 
-    test('a text node that starts with white space saves the space before '
-        'the page\'s first word, as epub.js does', () {
-      // A Gutenberg paragraph starts with a line break, so epub.js's ranges
-      // start one character before their words.
-      final section = dom('<p>\nwe felt the speech</p>');
-      final start = at(section, '\n', 9);
-      expect(wordStart(section, start), at(section, '\n', 8));
-    });
-
-    test(
-      'a range of white space alone before a page is on the line before',
-      () {
-        // Frankenstein, letter 4, and Pride and Prejudice, chapter 43, at 23
-        // pixels: the page starts at "a", whose range holds only the space
-        // before it, so epub.js saved the next range.
-        final section = dom('<p>\nwe felt a speech coming</p>');
-        final start = at(section, '\n', 9);
-        expect(wordStart(section, start), at(section, '\n', 10));
-      },
-    );
-
-    test('the word after a node\'s first space is never a saved start, as '
-        'epub.js splits a node', () {
+    test('a page that starts inside a line of words saves that character, '
+        'not the start of a later word', () {
       final section = dom('<p>one two three four</p>');
-      expect(wordStart(section, at(section, 'one', 4)), at(section, 'one', 8));
+      expect(
+        saved(section, at(section, 'one', 4), at(section, 'one', 17)),
+        'epubcfi(/6/2!/4/2/1:4)',
+      );
     });
 
-    test('a page start with no later word start in its node keeps its own '
-        'place, so it never moves to the page before', () {
-      final section = dom('<p>one two</p>');
-      expect(wordStart(section, at(section, 'one', 4)), at(section, 'one', 4));
+    test('a page that starts in the white space between two paragraphs saves '
+        'the next paragraph\'s first character', () {
+      final section = dom('<p>One two</p>\n<p>three</p>');
+      expect(
+        saved(section, at(section, '\n'), at(section, 'three', 4)),
+        'epubcfi(/6/2!/4/4/1:0)',
+      );
+    });
+
+    test('a page without a visible character keeps its start', () {
+      final section = dom('<p>One two</p>\n<p>three</p>');
+      final start = at(section, '\n');
+      expect(saved(section, start, start), 'epubcfi(/6/2!/4/1:0)');
     });
   });
 
@@ -699,7 +745,8 @@ void main() {
   });
 
   group('saved locations', () {
-    test('a page saves the CFI, quote and progress of its word start', () {
+    test('a page saves the CFI, quote and progress of its first visible '
+        'character', () {
       final section = dom('<p>\nwe felt a speech coming</p>');
       final location = pageLocation(
         '/6/2',
@@ -709,11 +756,11 @@ void main() {
         at(section, '\n', 22),
         'Harbour',
       );
-      expect(location.cfi, 'epubcfi(/6/2!/4/2/1:10)');
+      expect(location.cfi, 'epubcfi(/6/2!/4/2/1:9)');
       expect(location.resource, 'text/one.xhtml');
-      expect(location.quote, ' speech coming');
-      // "wefelta" comes before the word start, of 19 visible characters.
-      expect(location.progress, 0.368421);
+      expect(location.quote, 'a speech coming');
+      // "wefelt" comes before the page start, of 19 visible characters.
+      expect(location.progress, 0.315789);
       expect(location.chapter, 'Harbour');
     });
 
