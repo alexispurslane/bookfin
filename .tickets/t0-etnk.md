@@ -13,3 +13,7 @@ parent: t0-t799
 
 Gate for the voice choice in docs/research/on-device-tts.md. With a throwaway debug build and the user's permission on the user's Pixel 8, measure for each model at 2 and 4 threads: sustained RTF over 30 minutes of a real book, CPU temperature and thermal status, battery percent per hour of speech, peak memory, model load time, and the first clause time with a cold and a warm model. Also measure a Kokoro fp16 export against fp32. Use the passage in docs/research/on-device-tts/passage.txt for intelligibility. Report the numbers in docs/research/on-device-tts.md. Kokoro passes if sustained RTF stays at or below 0.6 with at most 4 threads.
 
+
+## Scope (orchestrator, 2026-11-09)
+
+The user chose Kokoro and allowed one test on the Pixel 8 now, described to the user as a 30-minute test. Keep the phone time to about 45 minutes: one sustained 30-minute run of Kokoro fp32 at 4 threads, plus short runs (a few minutes each) for Kokoro at 2 threads, Kokoro fp16, Supertonic 3 and Kitten nano for reference.
