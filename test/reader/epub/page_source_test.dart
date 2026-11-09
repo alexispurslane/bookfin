@@ -223,6 +223,26 @@ void main() {
     expect(scheduler.ran.length - before, greaterThan(opening * 10));
   });
 
+  test('opening a place deep in a long table that no run measured measures '
+      'one row of it in each step, not all of them in one', () async {
+    open(
+      book([
+        '<table>${[for (var i = 0; i < 60; i++) '<tr><td>Speaker $i</td><td>${prose(1, 'Speech $i')}</td></tr>'].join()}</table>',
+      ]),
+      budget: Duration.zero,
+    );
+    final section = await scheduler.until(source.section(0));
+    final place = placeIn(section, .9);
+
+    final before = scheduler.ran.length;
+    final page = await scheduler.until(
+      source.pageAt(place, anchored: true, urgent: true),
+    );
+
+    expect(scheduler.ran.length - before, greaterThanOrEqualTo(60));
+    expect(page.start, lineStart(section, place));
+  });
+
   test('pageAt that is not anchored waits for the true page that holds the '
       'place', () async {
     open(book([paragraphs(60)]));

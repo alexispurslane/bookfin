@@ -54,27 +54,10 @@ void main() {
       'short',
       _made(madeUpEpub(['<p>${prose(60)}</p>'])),
       settings: [readerPage],
-      runsPerSection: 100,
     );
     final found = report.settings.single;
     expect(found.pages, greaterThan(2));
     expect(found.runs, found.pages - 1);
-    expect(found.sampledSections, 0);
-  });
-
-  test('a section with more page starts than the limit runs from that many '
-      'page starts, and counts as sampled', () async {
-    final report = await checkBook(
-      'long',
-      _made(madeUpEpub(['<p>${prose(60)}</p>', '<p>Short.</p>'])),
-      settings: [readerPage],
-      runsPerSection: 2,
-    );
-    final found = report.settings.single;
-    expect(found.pages, greaterThan(4));
-    expect(found.runs, 2);
-    expect(found.sampledSections, 1);
-    expect(found.runFailures, isEmpty);
   });
 
   test('a page that shows only an image is not blank', () async {

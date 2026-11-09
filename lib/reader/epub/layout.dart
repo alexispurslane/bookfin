@@ -49,32 +49,41 @@ abstract final class Appeal {
   static const perfect = 3;
 }
 
-/// Where a page begins: line [line] of flow item [item].
+/// Where a page begins: line [line] of flow item [item], from fragment
+/// [part] of that line.
 ///
 /// A paragraph's lines count from its first line, a hanging first line
-/// included. A table's lines are its slices: a row, or a fragment of a row
-/// taller than a page. An image, and a box without content that is a slice
-/// of its own (such as a rule), start at line 0 of their item. The
+/// included. A table's lines are its rows, and a row taller than a page
+/// splits into fragments (table.dart), which count from 0. Every other
+/// start is at fragment 0. An image, and a box without content that is a
+/// slice of its own (such as a rule), start at line 0 of their item. The
 /// section's first page starts at `PageStart(0, 0)`.
 class PageStart implements Comparable<PageStart> {
-  const PageStart(this.item, this.line);
+  const PageStart(this.item, this.line, [this.part = 0]);
   final int item;
   final int line;
+  final int part;
 
   @override
   int compareTo(PageStart other) => item != other.item
       ? item.compareTo(other.item)
-      : line.compareTo(other.line);
+      : line != other.line
+      ? line.compareTo(other.line)
+      : part.compareTo(other.part);
 
   @override
   bool operator ==(Object other) =>
-      other is PageStart && other.item == item && other.line == line;
+      other is PageStart &&
+      other.item == item &&
+      other.line == line &&
+      other.part == part;
 
   @override
-  int get hashCode => Object.hash(item, line);
+  int get hashCode => Object.hash(item, line, part);
 
   @override
-  String toString() => 'PageStart($item, $line)';
+  String toString() =>
+      part == 0 ? 'PageStart($item, $line)' : 'PageStart($item, $line, $part)';
 }
 
 /// A slice of the strip that a page holds whole: a line, an image, a rule,
@@ -406,6 +415,13 @@ class LayoutRun {
   /// A run of [section] from [from], or from the section start. [clock]
   /// gives the time now for the step budget; it defaults to a monotonic
   /// clock.
+  ///
+  /// A run measures each row of a table for its column widths, once per
+  /// table item, one row in each unit of work. NOTE: A run that starts
+  /// inside a shrink-to-fit box that holds a table not yet measured, as a
+  /// table's own box is, measures the whole table here. The page source
+  /// starts such runs only at page starts of the main run or of
+  /// [lineStart], which measure the table first, in steps.
   LayoutRun(
     PreparedSection section, {
     PageStart? from,
@@ -424,6 +440,7 @@ class LayoutRun {
       throw RangeError.range(start.item, 0, section.flow.length, 'from.item');
     }
     if (start.line < 0) throw RangeError.value(start.line, 'from.line');
+    if (start.part < 0) throw RangeError.value(start.part, 'from.part');
     _resume(start);
   }
 
@@ -465,9 +482,19 @@ class LayoutRun {
   /// before it.
   PageStart _from = const PageStart(0, 0);
 
-  /// The next flow item, and the line of it to start at.
+  /// The next flow item, and the line and fragment of it to start at.
   int _item = 0;
   int _firstLine = 0;
+  int _firstPart = 0;
+
+  /// The table that the run lays out a row at a time, while it is not done.
+  /// [_item] is its flow item until then.
+  _Rows? _rows;
+
+  /// The table that the next item needs measured, and its rows measured so
+  /// far.
+  TableItem? _measuringTable;
+  final _measuring = <List<GridCell>>[];
 
   /// The slices of the page being filled and after it, its start and its
   /// top.
@@ -569,7 +596,12 @@ class LayoutRun {
       check(_pending.first.top == _pageTop, 'the next page has no top');
       check(_pending.first.at == _pageStart, 'the next page has no start');
     }
+    if (_rows case final rows?) {
+      check(rows.item == _item, 'a table in progress is not the next item');
+      check(rows.row < rows.table.rows.length, 'a table has no row left');
+    }
     if (_done) {
+      check(_rows == null, 'a done run has a table in progress');
       check(_item == _flow.length, 'a done run has items left');
       check(_pending.isEmpty, 'a done run has slices left');
     }
@@ -623,11 +655,13 @@ class LayoutRun {
           marker = null;
       }
     }
-    if (!sliceBefore && start.line == 0) return;
+    final atItemStart = start.line == 0 && start.part == 0;
+    if (!sliceBefore && atItemStart) return;
     _from = start;
     _pageStart = start;
     _item = start.item;
     _firstLine = start.line;
+    _firstPart = start.part;
     _dropMargins = true;
     // Each block is placed in the content box of the block that holds it.
     final placed = <int, (double, double)>{};
@@ -654,7 +688,7 @@ class LayoutRun {
     }
     // A marker waits for the first line of its item. Past that line, the
     // run from the section start already drew it.
-    if (marker != null && start.line == 0) {
+    if (marker != null && atItemStart) {
       final block = flow[marker] as BlockStart;
       final (left, _) = contentBox([...markerParents, marker]);
       _marker(block.marker!.text, block.marker!.style, left);
@@ -685,12 +719,32 @@ class LayoutRun {
 
   // Cutting pages.
 
+  /// Lays out the next unit of work: a flow item, one row of a table, or
+  /// the measure of one row of a table whose column widths the next item
+  /// needs.
   void _layOutItem() {
     final flow = _flow;
     if (_item == flow.length) return;
+    if (_rows case final rows?) {
+      _tableRow(rows);
+      return;
+    }
+    // An item that needs the column widths of a table waits until each row
+    // of the table is measured, one row in each unit of work.
+    if (_unmeasuredTable() case final table?) {
+      // Another run or a search can measure the table first.
+      if (!identical(table, _measuringTable)) {
+        _measuringTable = table;
+        _measuring.clear();
+      }
+      _measureRow(table, _measuring);
+      return;
+    }
     final index = _item++;
     final line = _firstLine;
+    final part = _firstPart;
     _firstLine = 0;
+    _firstPart = 0;
     switch (flow[index]) {
       case final BlockStart start:
         _openBlock(start, index);
@@ -702,7 +756,10 @@ class LayoutRun {
       case final ImageItem image:
         _blockImage(image, index);
       case final TableItem table:
-        _table(table, index, line);
+        if (_startTable(table, index, line, part) case final rows?) {
+          _item = index;
+          _tableRow(_rows = rows);
+        }
     }
   }
 
@@ -831,9 +888,17 @@ class LayoutRun {
   int _visibleAtStart() {
     final flow = _flow;
     for (var index = _from.item; index < flow.length; index++) {
-      if (_firstPlace(_section.index, flow[index]) case final place?) {
-        return _section.dom.visibleBefore(place);
-      }
+      final place = switch (flow[index]) {
+        // A run that starts at a row of a table shows no row above it.
+        TableItem(:final rows) when index == _from.item =>
+          rows
+              .skip(_from.line)
+              .map((row) => _firstPlaceOfRow(_section.index, row))
+              .nonNulls
+              .firstOrNull,
+        final item => _firstPlace(_section.index, item),
+      };
+      if (place != null) return _section.dom.visibleBefore(place);
     }
     return _section.dom.visibleLength;
   }
@@ -1011,7 +1076,7 @@ class LayoutRun {
   double _maxContent(int from, double available) {
     final flow = _flow;
     if (flow[from] case final TableItem table) {
-      return gridMaxContent(_extents(table), table.spacing.$1).ceilToDouble();
+      return gridMaxContent(_extentsOf(table), table.spacing.$1).ceilToDouble();
     }
     var widest = 0.0;
     for (var index = from; flow[index] is ParagraphItem; index++) {
@@ -1049,135 +1114,177 @@ class LayoutRun {
 
   // Tables.
 
-  /// Lays out [table], flow item [index], in the content box of the table's
-  /// own box, and adds its slices from slice [from] on: a slice for each
-  /// row, or for each fragment of a row taller than a page. A run that
-  /// starts at a slice lays out the whole table and places it so that slice
-  /// [from] sits at the current strip position.
-  void _table(TableItem table, int index, int from) {
-    final (x, width) = _containing;
-    final (across, down) = table.spacing;
-    final widths = columnWidths(_extents(table), width, across);
-    // Each cell's box, its left edge and width, and its content laid out
-    // at strip position 0.
-    final rows = <List<(double, double, TableCell, _Cell)>>[];
-    for (final row in table.rows) {
-      final boxes = cellBoxes(
-        [for (final cell in row) cell.colspan],
-        widths,
-        across,
-      );
-      rows.add([
-        for (final (column, cell) in row.indexed)
-          () {
-            final (left, cellWidth) = boxes[column];
-            final [top, right, bottom, start] = [
-              for (var side = 0; side < 4; side++)
-                cell.padding[side] + cell.border[side],
-            ];
-            return (
-              x + left,
-              cellWidth,
-              cell,
-              _layOutCell(
-                cell.flow,
-                x + left + start,
-                math.max(0, cellWidth - start - right),
-              ),
-            );
-          }(),
-      ]);
-    }
-    final fragments = [
-      for (final row in rows)
-        rowFragments([
-          for (final (_, _, cell, content) in row)
-            () {
-              final top = cell.padding[0] + cell.border[0];
-              return (
-                slices: [
-                  for (final slice in content.slices)
-                    (top + slice.top, top + slice.bottom),
-                ],
-                height: top + content.height + cell.padding[2] + cell.border[2],
-                align: cell.align,
-              );
-            }(),
-        ], _section.settings.height),
-    ];
-    // The top of each slice of the table from the grid's top.
-    final tops = <double>[];
-    var bottom = down;
-    for (final row in fragments) {
-      for (final fragment in row) {
-        tops.add(bottom);
-        bottom += fragment.height;
-      }
-      bottom += down;
-    }
+  /// The narrowest and the widest content width of each cell of a table
+  /// item, once measured. A table item belongs to one prepared section,
+  /// whose fonts load before it lays out, so its cells measure the same in
+  /// every run of the section.
+  static final _measured = Expando<List<List<GridCell>>>('table extents');
+
+  /// Starts [table], flow item [index], at its row [row], from fragment
+  /// [part] of that row, or returns null when the table has no such row. A
+  /// run that starts inside the table lays out no row above it: row [row]
+  /// starts at the current strip position.
+  _Rows? _startTable(TableItem table, int index, int row, int part) {
     _resolveMargin();
-    // Slice [from] starts where the run is. From the table's start, the
-    // grid does.
-    final gridTop = from == 0
-        ? _y
-        : _y - (from < tops.length ? tops[from] : bottom);
-    var number = 0;
-    for (final (row, cells) in rows.indexed) {
-      for (final (part, fragment) in fragments[row].indexed) {
-        final slice = number++;
-        if (slice < from) continue;
-        final top = gridTop + tops[slice];
-        final shown = <Slice>[];
-        for (final (column, (left, cellWidth, cell, content))
-            in cells.indexed) {
-          final (from: first, :to, :offset, top: band, bottom: end) =
-              fragment.cells[column];
-          final inset = cell.padding[0] + cell.border[0];
-          final moved = content.show(
-            first,
-            to,
-            top + offset + inset,
-            band - inset,
-            end - inset,
-          );
-          shown.addAll(moved.slices);
-          _held.addAll(moved.held);
-          // A cell's box is as tall as its row. A row split between pages
-          // has no top border after its first page and no bottom border
-          // before its last.
-          _decorations
-            ..addAll(
-              _rules(
-                ui.Rect.fromLTWH(left, top, cellWidth, fragment.height),
-                cell.border,
-                top: part == 0,
-                bottom: part == fragments[row].length - 1,
-              ),
-            )
-            ..addAll(moved.decorations);
-        }
-        final added = _add(
-          top,
-          top + fragment.height,
-          Appeal.perfect,
-          PageStart(index, slice),
-          start: shown.map((line) => line.start).nonNulls.firstOrNull,
-          cellSlices: shown,
-        );
-        if (slice == 0) _takeMarker(added);
-      }
-      for (final (_, _, _, content) in cells) {
-        content.release();
-      }
-    }
-    _y = gridTop + bottom;
+    // From the table's start, the grid's top spacing comes first.
+    if (row == 0 && part == 0) _y += table.spacing.$2;
+    if (row >= table.rows.length) return null;
+    final (left, width) = _containing;
+    return _Rows(
+      table,
+      index,
+      left,
+      columnWidths(_extentsOf(table), width, table.spacing.$1),
+      row,
+      part,
+    );
   }
 
-  /// The narrowest and the widest content width of each cell of [table].
-  List<List<GridCell>> _extents(TableItem table) => [
-    for (final row in table.rows)
-      [for (final cell in row) _extent(cell, table.width)],
-  ];
+  /// The table that the next flow item needs measured, or null when it
+  /// needs none or the table is measured: the next item when it is a
+  /// table, or the table that starts the shrink-to-fit box that it opens.
+  TableItem? _unmeasuredTable() {
+    final flow = _flow;
+    final table = switch (flow[_item]) {
+      final TableItem table => table,
+      BlockStart(shrinkToFit: true) when _item + 1 < flow.length =>
+        switch (flow[_item + 1]) {
+          final TableItem table => table,
+          _ => null,
+        },
+      _ => null,
+    };
+    return table != null && _measured[table] == null ? table : null;
+  }
+
+  /// Measures the next row of [table] that [measured] lacks. Returns the
+  /// extents of every cell of the table once every row is measured, and
+  /// keeps them for the other runs of the section; null until then.
+  List<List<GridCell>>? _measureRow(
+    TableItem table,
+    List<List<GridCell>> measured,
+  ) {
+    if (measured.length < table.rows.length) {
+      measured.add([
+        for (final cell in table.rows[measured.length])
+          _extent(cell, table.width),
+      ]);
+    }
+    if (measured.length < table.rows.length) return null;
+    return _measured[table] = List.unmodifiable(measured);
+  }
+
+  /// Lays out the next row of [rows] and adds its slices at the current
+  /// strip position, from the row's fragment [_Rows.part] on: one slice, or
+  /// one for each fragment of a row taller than a page.
+  void _tableRow(_Rows rows) {
+    final table = rows.table;
+    final number = rows.row;
+    final row = table.rows[number];
+    final (across, down) = table.spacing;
+    final x = rows.left;
+    final boxes = cellBoxes(
+      [for (final cell in row) cell.colspan],
+      rows.widths,
+      across,
+    );
+    // Each cell's box, its left edge and width, and its content laid out at
+    // strip position 0.
+    final cells = [
+      for (final (column, cell) in row.indexed)
+        () {
+          final (left, cellWidth) = boxes[column];
+          final [top, right, bottom, start] = [
+            for (var side = 0; side < 4; side++)
+              cell.padding[side] + cell.border[side],
+          ];
+          return (
+            x + left,
+            cellWidth,
+            cell,
+            _layOutCell(
+              cell.flow,
+              x + left + start,
+              math.max(0, cellWidth - start - right),
+            ),
+          );
+        }(),
+    ];
+    final fragments = rowFragments([
+      for (final (_, _, cell, content) in cells)
+        () {
+          final top = cell.padding[0] + cell.border[0];
+          return (
+            slices: [
+              for (final slice in content.slices)
+                (top + slice.top, top + slice.bottom),
+            ],
+            height: top + content.height + cell.padding[2] + cell.border[2],
+            align: cell.align,
+          );
+        }(),
+    ], _section.settings.height);
+    var top = _y;
+    for (var part = rows.part; part < fragments.length; part++) {
+      final fragment = fragments[part];
+      final shown = <Slice>[];
+      for (final (column, (left, cellWidth, cell, content)) in cells.indexed) {
+        final (from: first, :to, :offset, top: band, bottom: end) =
+            fragment.cells[column];
+        final inset = cell.padding[0] + cell.border[0];
+        final moved = content.show(
+          first,
+          to,
+          top + offset + inset,
+          band - inset,
+          end - inset,
+        );
+        shown.addAll(moved.slices);
+        _held.addAll(moved.held);
+        // A cell's box is as tall as its row. A row split between pages has
+        // no top border after its first page and no bottom border before
+        // its last.
+        _decorations
+          ..addAll(
+            _rules(
+              ui.Rect.fromLTWH(left, top, cellWidth, fragment.height),
+              cell.border,
+              top: part == 0,
+              bottom: part == fragments.length - 1,
+            ),
+          )
+          ..addAll(moved.decorations);
+      }
+      final added = _add(
+        top,
+        top + fragment.height,
+        Appeal.perfect,
+        PageStart(rows.item, number, part),
+        start: shown.map((line) => line.start).nonNulls.firstOrNull,
+        cellSlices: shown,
+      );
+      if (number == 0 && part == 0) _takeMarker(added);
+      top += fragment.height;
+    }
+    for (final (_, _, _, content) in cells) {
+      content.release();
+    }
+    _y = top + down;
+    rows.row++;
+    rows.part = 0;
+    if (rows.row >= table.rows.length) {
+      _rows = null;
+      _item = rows.item + 1;
+    }
+  }
+
+  /// The narrowest and the widest content width of each cell of [table],
+  /// measured once per table item.
+  List<List<GridCell>> _extentsOf(TableItem table) =>
+      _measured[table] ??= List.unmodifiable([
+        for (final row in table.rows)
+          [for (final cell in row) _extent(cell, table.width)],
+      ]);
 
   /// The narrowest and the widest content width of [cell], whose lengths
   /// resolve against [width]: those of its widest paragraph or image, with
@@ -1794,12 +1901,120 @@ class LayoutRun {
 }
 
 /// The page start of the line that holds [place], a place in [section]
-/// (see [_holder]). It lays out the paragraph of the place, and the next
-/// one when the place is in white space after it.
-PageStart lineStart(PreparedSection section, EpubPlace place) {
-  if (place.section != section.index) {
-    throw ArgumentError.value(place, 'place', 'is not in this section');
+/// (see [_holder]). It lays out the paragraph or the table row of the
+/// place, and the next one when the place is in white space after it. A
+/// table needs each row measured for its column widths first, once per
+/// table item: [LineSearch] does that in steps.
+PageStart lineStart(PreparedSection section, EpubPlace place) =>
+    (LineSearch(section, place)..step(const Duration(days: 1))).found!;
+
+/// The search of [lineStart] in steps, so that frames go on while it
+/// measures the column widths of a long table.
+///
+/// It holds no paragraph between steps, so a search that stops before it
+/// finds its start needs no disposal.
+class LineSearch {
+  /// A search for the page start of the line that holds [place], a place in
+  /// [section].
+  LineSearch(PreparedSection section, EpubPlace place)
+    : _section = section,
+      _place = place {
+    if (place.section != section.index) {
+      throw ArgumentError.value(place, 'place', 'is not in this section');
+    }
   }
+
+  final PreparedSection _section;
+  final EpubPlace _place;
+
+  /// The rows of the place's table measured so far.
+  final _rows = <List<GridCell>>[];
+
+  /// The page start, once a step found it.
+  PageStart? get found => _found;
+  PageStart? _found;
+
+  /// Works toward [found] until [budget] is spent. A step ends after the
+  /// unit of work that crosses the budget: the measure of one row of the
+  /// place's table, or the search itself once the table is measured.
+  ///
+  /// NOTE: Only the place's own table is measured in steps. A place in white
+  /// space after its item's last line opens on the next item, which the
+  /// search measures in its last step if it is a table not yet measured.
+  void step(Duration budget) {
+    if (_found != null) return;
+    final begin = LayoutRun._elapsed();
+    final item = _itemOf(_section, _place);
+    if (item >= 0) {
+      if (_section.flow[item] case final TableItem table
+          when LayoutRun._measured[table] == null) {
+        final measure = LayoutRun(_section);
+        while (measure._measureRow(table, _rows) == null) {
+          if (LayoutRun._elapsed() - begin >= budget) return;
+        }
+      }
+    }
+    _found = _search(item);
+  }
+
+  PageStart _search(int item) {
+    final section = _section;
+    final place = _place;
+    if (item < 0) return const PageStart(0, 0);
+    final dom = section.dom;
+    final flow = section.flow;
+    // In a table, the row of the place: the last row whose first place is
+    // at or before it.
+    var row = 0;
+    if (flow[item] case TableItem(:final rows)) {
+      final key = _order(dom, place);
+      for (var index = 1; index < rows.length; index++) {
+        final first = _firstPlaceOfRow(section.index, rows[index]);
+        if (first != null && _compare(_order(dom, first), key) <= 0) {
+          row = index;
+        }
+      }
+    }
+    final run = LayoutRun(section, from: PageStart(item, row));
+    try {
+      /// Lays out units of work until one adds a line that shows a place,
+      /// or to the section end. Returns the holder of the place among the
+      /// lines laid out.
+      ({Slice? holder, bool past}) layOutShown() {
+        final before = run._pending.length;
+        while (run._item < flow.length) {
+          run._layOutItem();
+          if (run._pending
+              .skip(before)
+              .any(
+                (slice) => _lines(slice).any((line) => line.start != null),
+              )) {
+            break;
+          }
+        }
+        return _holder(dom, place, [
+          for (final slice in run._pending)
+            for (final line in _lines(slice)) (line, slice),
+        ]);
+      }
+
+      var (:holder, :past) = layOutShown();
+      // A place in white space after the lines is on the first line of the
+      // next item or row that shows something.
+      if (past) (:holder, :past) = layOutShown();
+      // The item's first line starts where the run starts: at the section
+      // start when nothing comes before it.
+      if (holder == null || holder.at == PageStart(item, 0)) return run._from;
+      return holder.at;
+    } finally {
+      run.dispose();
+    }
+  }
+}
+
+/// The index of the last flow item of [section] whose first place is at or
+/// before [place], or -1 when none is.
+int _itemOf(PreparedSection section, EpubPlace place) {
   final dom = section.dom;
   final key = _order(dom, place);
   final flow = section.flow;
@@ -1808,36 +2023,7 @@ PageStart lineStart(PreparedSection section, EpubPlace place) {
     final first = _firstPlace(section.index, flow[index]);
     if (first != null && _compare(_order(dom, first), key) <= 0) item = index;
   }
-  if (item < 0) return const PageStart(0, 0);
-  final run = LayoutRun(section, from: PageStart(item, 0));
-  try {
-    ({Slice? holder, bool past}) holderUpTo(int last) {
-      while (run._item <= last) {
-        run._layOutItem();
-      }
-      return _holder(dom, place, [
-        for (final slice in run._pending)
-          for (final line in _lines(slice)) (line, slice),
-      ]);
-    }
-
-    var (:holder, :past) = holderUpTo(item);
-    if (past) {
-      // A place in white space after the item's lines is on the first line
-      // of the next item that shows something.
-      for (var next = item + 1; next < flow.length; next++) {
-        if (_firstPlace(section.index, flow[next]) == null) continue;
-        (:holder, :past) = holderUpTo(next);
-        break;
-      }
-    }
-    // The item's first line starts where the run starts: at the section
-    // start when nothing comes before it.
-    if (holder == null || holder.at == PageStart(item, 0)) return run._from;
-    return holder.at;
-  } finally {
-    run.dispose();
-  }
+  return item;
 }
 
 /// The owner of the line of [lines] that holds [place], and whether the
@@ -1932,16 +2118,23 @@ EpubPlace? _firstPlace(int section, FlowItem item) {
       return null;
     case TableItem(:final rows):
       for (final row in rows) {
-        for (final cell in row) {
-          for (final inner in cell.flow) {
-            if (_firstPlace(section, inner) case final place?) return place;
-          }
-        }
+        if (_firstPlaceOfRow(section, row) case final place?) return place;
       }
       return null;
     case BlockStart() || BlockEnd():
       return null;
   }
+}
+
+/// The first place that table row [row] of section [section] shows, or
+/// null when it shows none.
+EpubPlace? _firstPlaceOfRow(int section, List<TableCell> row) {
+  for (final cell in row) {
+    for (final inner in cell.flow) {
+      if (_firstPlace(section, inner) case final place?) return place;
+    }
+  }
+  return null;
 }
 
 /// The order of [place] in the document. A place in white space counts as
@@ -2131,6 +2324,25 @@ class _OpenBlock {
   final int firstSlice;
 
   double get contentLeft => left + start.border[3] + start.padding[3];
+}
+
+/// A table that a run lays out a row at a time.
+class _Rows {
+  _Rows(this.table, this.item, this.left, this.widths, this.row, this.part);
+  final TableItem table;
+
+  /// The index of [table] in the flow.
+  final int item;
+
+  /// The left edge of the box that holds the table.
+  final double left;
+
+  /// The width of each column.
+  final List<double> widths;
+
+  /// The next row to lay out, and its first fragment to add.
+  int row;
+  int part;
 }
 
 /// The content of a table cell laid out at strip position 0: its slices,

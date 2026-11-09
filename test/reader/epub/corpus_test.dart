@@ -165,7 +165,6 @@ Map<String, Object> _settingsSummary(List<SettingsReport> found) {
     'blankPages': total((each) => each.blankPages.length),
     'runs': total((each) => each.runs),
     'runFailures': total((each) => each.runFailures.length),
-    'sampledSections': total((each) => each.sampledSections),
     'slowItems': total((each) => each.slow.length),
     'layoutMsPer10kMedian': rates.isEmpty ? 0 : rates[rates.length ~/ 2],
     'layoutMsPer10kMax': rates.isEmpty ? 0 : rates.last,

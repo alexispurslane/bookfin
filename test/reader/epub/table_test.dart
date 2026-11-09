@@ -938,6 +938,108 @@ void main() {
     }
   });
 
+  group('a long table', () {
+    // Dialogue set as a table of speaker and speech, as Standard Ebooks sets
+    // its plays and Plato's dialogues.
+    final body =
+        '<p>${prose(1, 'Before')}</p><table>'
+        '${[for (var i = 0; i < 40; i++) '<tr><td>Speaker $i</td><td>${prose(1, 'Speech $i')}</td></tr>'].join()}'
+        '</table><p>${prose(2, 'After')}</p>';
+
+    test('lays out one row in each step that one row spends, and the steps '
+        'cut the pages of one long step', () {
+      final section = prepared(body);
+      final table = section.flow.indexWhere((item) => item is TableItem);
+      // A clock that moves on 1 ms each time the run reads it, so that a
+      // step with a budget of 1 ms ends after its first unit of work.
+      var now = Duration.zero;
+      final run = LayoutRun(
+        section,
+        clock: () => now += const Duration(milliseconds: 1),
+      );
+      var stepsInTable = 0;
+      while (!run.done) {
+        run
+          ..step(const Duration(milliseconds: 1))
+          ..checkInvariants();
+        if (run.reached == table) stepsInTable++;
+      }
+      run.dispose();
+      expect(stepsInTable, greaterThanOrEqualTo(40));
+      final whole = runToEnd(section);
+      expect(keys(run.pages), keys(whole));
+      disposeAll(run.pages);
+      disposeAll(whole);
+    });
+
+    test('finds the line of a place in it in steps of one measured row when '
+        'no run measured it, and at once after', () {
+      final place = placeOf(prepared(body), 'Speech 30 passage 1.');
+      final expected = lineStart(prepared(body), place);
+      final section = prepared(body);
+      final search = LineSearch(section, place);
+      var steps = 0;
+      while (search.found == null) {
+        search.step(Duration.zero);
+        steps++;
+      }
+      expect(steps, greaterThanOrEqualTo(40));
+      expect(search.found, expected);
+      expect((LineSearch(section, place)..step(Duration.zero)).found, expected);
+    });
+
+    test('a run whose table a search measured meanwhile measures the next '
+        'table by its own cells', () {
+      final twoTables =
+          '<table>${[for (var i = 0; i < 6; i++) '<tr><td>Antidisestablishmentarianism$i</td><td>Short</td></tr>'].join()}</table>'
+          '<table>${[for (var i = 0; i < 6; i++) '<tr><td>A$i</td><td>${prose(1, 'Wide $i')}</td></tr>'].join()}</table>';
+      final whole = runToEnd(prepared(twoTables));
+      final section = prepared(twoTables);
+      final run = LayoutRun(section);
+      // The table's own box asks for its widths, so the run measures the
+      // table there: four of its six rows, one in each step.
+      final table = section.flow.indexWhere((item) => item is TableItem);
+      while (run.reached < table - 1) {
+        run.step(Duration.zero);
+      }
+      for (var row = 0; row < 4; row++) {
+        run.step(Duration.zero);
+      }
+      lineStart(section, placeOf(section, 'Antidisestablishmentarianism0'));
+      run.step(forever);
+      run.dispose();
+      expect(keys(run.pages), keys(whole));
+      disposeAll(run.pages);
+      disposeAll(whole);
+    });
+
+    test('opens a place in any of its rows on a page that starts at that '
+        'row, as the run from the section start places it', () {
+      for (final settings in [readerPage, smallPage]) {
+        final section = prepared(body, settings: settings);
+        final chapter = layoutSection(section);
+        // The page start of each row in the run from the section start.
+        final rows = [
+          for (final slice in chapter.slices)
+            if (slice.cellSlices.isNotEmpty) slice.at,
+        ];
+        expect(rows, hasLength(40));
+        for (var row = 1; row < 40; row += 3) {
+          for (final text in ['Speaker $row', 'Speech $row passage 1.']) {
+            final place = placeOf(section, text);
+            final start = lineStart(section, place);
+            expect(start, rows[row], reason: '$text, $settings');
+            final run = LayoutRun(section, from: start)..step(forever, want: 1);
+            expect(_shows(run.pages.first, place, section), isTrue);
+            disposeAll(run.pages);
+            run.dispose();
+          }
+        }
+        chapter.dispose();
+      }
+    });
+  });
+
   group('other layout', () {
     for (final display in ['flex', 'grid']) {
       test('a $display box shows its children as blocks in order', () {
