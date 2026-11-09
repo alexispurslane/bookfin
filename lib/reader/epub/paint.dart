@@ -12,19 +12,20 @@ import 'prepare.dart';
 /// without alt text.
 typedef PageImages = Map<String, ui.Image?>;
 
-/// Draws [page], with the images in [images].
+/// Draws [page], with the images in [images], over its paper unless
+/// [paper] is false.
 ///
 /// Everything draws at its place on the page, from the page's top: the
 /// strip position minus the page's top, in double precision. The canvas
 /// does not move to the page's top, because its single-precision
 /// transform could round a glyph to another pixel row far down the strip,
 /// and a page laid out again from its start must draw the same pixels.
-ui.Picture drawPage(LaidPage page, PageImages images) {
+ui.Picture drawPage(LaidPage page, PageImages images, {bool paper = true}) {
   final settings = page.settings;
   final recorder = ui.PictureRecorder();
   final canvas = ui.Canvas(recorder);
   final bounds = ui.Rect.fromLTWH(0, 0, settings.width, settings.height);
-  canvas.drawRect(bounds, ui.Paint()..color = settings.paper);
+  if (paper) canvas.drawRect(bounds, ui.Paint()..color = settings.paper);
   final height = page.height.clamp(0, settings.height).toDouble();
   canvas
     ..save()

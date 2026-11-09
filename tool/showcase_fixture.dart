@@ -10,6 +10,8 @@
 // second device, a made-up "Pixel Tablet", saves a different place in the
 // same file without having seen the phone's, so the next sync shows a
 // conflict to choose from.
+// Add --footnotes to give First Frost's EPUB endnotes, with a note
+// reference at the end of each of the first chapter's first paragraphs.
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
@@ -246,14 +248,26 @@ Uint8List _cover(_Book book) {
 }
 
 /// The ebook file of a book: a made-up EPUB, or a PDF with a scanned page.
-Uint8List _ebook(_Book book) => switch (book.ebook) {
+/// With [footnotes], First Frost has [_frostNotes].
+Uint8List _ebook(_Book book, {bool footnotes = false}) => switch (book.ebook) {
   'pdf' => media.pdfWithScan(),
   _ => media.epub(book.id, book.title, book.author, switch (book.id) {
     'frost' => media.firstFrost,
     'salt' => media.saltAndLantern,
     _ => media.winterLedger,
-  }),
+  }, endnotes: footnotes && book.id == 'frost' ? _frostNotes : const []),
 };
+
+/// The endnotes of First Frost with --footnotes.
+const _frostNotes = [
+  'The lane runs north from the Pell crossroads. Locals still call it the '
+      'Frost Road, after the family that planted the first rows.',
+  'Russets are apples with rough, brownish skin. The old trees on the south '
+      'wall were Egremont Russets, planted in the spring of 1961.',
+  'Grafting joins a cut branch, the scion, to a rooted tree, the stock, so '
+      'that the two grow as one. The union stays visible as a ridge in the '
+      'bark for years.',
+];
 
 Map<String, Object?> _item(
   _Book book, {
@@ -400,6 +414,7 @@ class _Storage {
 Future<void> main(List<String> arguments) async {
   final fullSize = arguments.contains('--full-size');
   final storage = arguments.contains('--sync-conflict') ? _Storage() : null;
+  final footnotes = arguments.contains('--footnotes');
   final port = arguments.where((argument) => !argument.startsWith('--'));
   final server = await HttpServer.bind(
     InternetAddress.loopbackIPv4,
@@ -416,7 +431,8 @@ Future<void> main(List<String> arguments) async {
   );
   final ebooks = {
     for (final book in _books)
-      if (book.ebook != null) '${book.id}-text': _ebook(book),
+      if (book.ebook != null)
+        '${book.id}-text': _ebook(book, footnotes: footnotes),
   };
   final items = [
     for (final book in _books) ...[

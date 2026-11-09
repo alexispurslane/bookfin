@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:bookfin/catalog/glass.dart' show CoverGlass;
 import 'package:bookfin/foundation/theme.dart';
 import 'package:bookfin/reader/document.dart';
+import 'package:bookfin/reader/epub/pager.dart';
 import 'package:bookfin/reader/epub/publication.dart';
 import 'package:bookfin/reader/epub/viewport.dart';
 import 'package:bookfin/reader/screen.dart';
@@ -12,9 +13,11 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../playback/playback_test.dart' show account, LocalFiles, MemoryResume;
 import 'epub/helpers.dart' show loadReaderFont;
+import 'epub/page_source_test.dart' show paragraphs;
 import 'native_reader.dart';
 import 'publication_test.dart' show epub;
 import 'reader_settings.dart';
+import 'session_native_test.dart' show navBook;
 import 'session_test.dart' show source, edition, book, visible;
 
 void main() {
@@ -528,6 +531,101 @@ void main() {
         (shown) => !identical(shown.page, next),
       )).page;
       expect((back.section, back.start), (first.section, first.start));
+      await closeNative(tester, reader);
+    }, variant: TargetPlatformVariant.only(TargetPlatform.android));
+
+    /// A two-chapter book whose first page has a note reference to an
+    /// endnote at the end of the second chapter.
+    Publication noteChapterBook() => Publication.admit(
+      navBook(
+        [
+          '<h1 id="one">One</h1><p>The harbour<a id="ref-1" '
+              'epub:type="noteref" href="s1.xhtml#note-1">1</a> waits.</p>'
+              '${paragraphs(24)}',
+          '<h1 id="two">Two</h1>${paragraphs(24, label: 'Near')}'
+              '<ol epub:type="endnotes"><li id="note-1" epub:type="endnote">'
+              '<p>The lantern note explains the harbour.</p></li></ol>',
+        ],
+        [('One', 'text/s0.xhtml#one'), ('Two', 'text/s1.xhtml#two')],
+      ),
+    );
+
+    /// A point of the shown page, from the viewport's top left corner,
+    /// whose link passes [test].
+    Offset linkPoint(
+      WidgetTester tester,
+      ReaderSession reader,
+      bool Function(EpubLink link) test,
+    ) {
+      final area = tester.getRect(find.byType(EpubViewport));
+      for (var y = 0.0; y < area.height / 2; y += 4) {
+        for (var x = 0.0; x < area.width; x += 4) {
+          final link = reader.pager!.linkAt(Offset(x, y));
+          if (link != null && test(link)) return area.topLeft + Offset(x, y);
+        }
+      }
+      fail('The first page shows no such link.');
+    }
+
+    testWidgets('a tap on a note reference shows the note\'s text in a '
+        'sheet, and the page and the saved place stay', (tester) async {
+      final handle = tester.ensureSemantics();
+      final reader = await openNative(tester, publication: noteChapterBook());
+      final first = shownOf(reader)!.page;
+      final saved = reader.visibleAddress;
+
+      await tester.tapAt(linkPoint(tester, reader, (link) => link.noteref));
+      await settleReader(
+        tester,
+        () => find.byType(EpubNoteView).evaluate().isNotEmpty,
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Note'), findsOneWidget);
+      expect(
+        find.semantics.byLabel('The lantern note explains the harbour.'),
+        findsOneWidget,
+      );
+      expect(
+        tester.getSemantics(find.widgetWithText(FilledButton, 'Go to note')),
+        isSemantics(label: 'Go to note', isButton: true, hasTapAction: true),
+      );
+      expect(shownOf(reader)!.page, same(first));
+      expect(reader.visibleAddress, same(saved));
+      handle.dispose();
+      await closeNative(tester, reader);
+    }, variant: TargetPlatformVariant.only(TargetPlatform.android));
+
+    testWidgets('Go to note closes the sheet and shows the note, which '
+        'becomes the saved place', (tester) async {
+      final reader = await openNative(tester, publication: noteChapterBook());
+
+      await tester.tapAt(linkPoint(tester, reader, (link) => link.noteref));
+      await settleReader(
+        tester,
+        () => find.text('Go to note').evaluate().isNotEmpty,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Go to note'));
+      await waitForPage(tester, reader, (shown) => shown.page.section == 1);
+      await settleReader(
+        tester,
+        () =>
+            (reader.visibleAddress! as EpubAddress).location.resource ==
+            'OPS/text/s1.xhtml',
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byType(EpubNoteView), findsNothing);
+      final page = shownOf(reader)!.page;
+      expect(
+        page.dom.texts
+            .where((text) => text.text.startsWith('The lantern note'))
+            .single
+            .order,
+        inInclusiveRange(page.startPlace!.node, page.endPlace!.node),
+        reason: 'The shown page holds the note.',
+      );
       await closeNative(tester, reader);
     }, variant: TargetPlatformVariant.only(TargetPlatform.android));
 

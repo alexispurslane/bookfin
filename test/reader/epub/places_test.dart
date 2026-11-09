@@ -863,4 +863,90 @@ void main() {
       expect(quoteMatches(section, place, saved['quote']! as String), isTrue);
     }
   });
+
+  group('notes', () {
+    /// The first `a` element of [section].
+    DomElement link(DomSection section) => section.body.texts
+        .map((text) => text.parent!)
+        .firstWhere((element) => element.name == 'a');
+
+    test('a link marked as a note reference by its epub:type or its role is '
+        'a note reference, and other links are not', () {
+      for (final (markup, reference) in [
+        ('<a epub:type="noteref" href="#n">1</a>', true),
+        ('<a epub:type="glossref noteref" href="#n">1</a>', true),
+        ('<a role="doc-noteref" href="#n">1</a>', true),
+        ('<a href="#n">1</a>', false),
+        ('<a epub:type="backlink" href="#n">1</a>', false),
+        ('<a epub:type="noterefs" href="#n">1</a>', false),
+      ]) {
+        expect(
+          isNoteReference(link(dom('<p>Text$markup</p>'))),
+          reference,
+          reason: markup,
+        );
+      }
+    });
+
+    test('a link to a footnote, an endnote, a rearnote or a note shows that '
+        'note, whatever marks the link', () {
+      for (final type in ['footnote', 'endnote', 'rearnote', 'note']) {
+        final section = dom(
+          '<p>Text</p><aside id="n" epub:type="$type"><p>The note.</p>'
+          '</aside>',
+        );
+        final note = section.elementById('n');
+        expect(noteOf(note, reference: false), same(note), reason: type);
+        expect(noteOf(note, reference: true), same(note), reason: type);
+      }
+      final aria = dom('<aside id="n" role="doc-endnote"><p>Aria.</p></aside>');
+      expect(
+        noteOf(aria.elementById('n'), reference: false),
+        same(aria.elementById('n')),
+      );
+    });
+
+    test('a link into a note shows the whole note that holds its target', () {
+      final section = dom(
+        '<ol epub:type="endnotes"><li id="note-1" epub:type="endnote">'
+        '<p id="inner">The first part.</p><p>The second part.</p></li></ol>',
+      );
+      expect(
+        noteOf(section.elementById('inner'), reference: false),
+        same(section.elementById('note-1')),
+      );
+    });
+
+    test(
+      'a note reference to an element that is no note shows that '
+      'element, and a link that is no note reference to it shows nothing',
+      () {
+        final section = dom('<p id="n">1. A note without a type.</p>');
+        final target = section.elementById('n');
+        expect(noteOf(target, reference: true), same(target));
+        expect(noteOf(target, reference: false), isNull);
+      },
+    );
+
+    test('a note reference to an anchor without text shows the element that '
+        'holds the anchor', () {
+      final section = dom(
+        '<div><p><a id="n"/>The text after an empty anchor.</p></div>',
+      );
+      expect(
+        noteOf(section.elementById('n'), reference: true),
+        same(section.elementById('n')!.parent),
+      );
+    });
+
+    test('a link to a section of notes, and a link without a target, show '
+        'no note', () {
+      final section = dom(
+        '<section id="notes" epub:type="endnotes rearnotes"><p>Notes</p>'
+        '</section>',
+      );
+      expect(noteOf(section.elementById('notes'), reference: false), isNull);
+      expect(noteOf(null, reference: true), isNull);
+    });
+  });
 }

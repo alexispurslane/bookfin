@@ -392,3 +392,47 @@ ReadingLocation hitLocation(
   quoteAt(dom, start),
   chapter: chapter,
 );
+
+/// Whether [link], an `a` element, is a note reference: its `epub:type` has
+/// the token `noteref`, or its role is `doc-noteref`.
+bool isNoteReference(DomElement link) =>
+    _types(link).contains('noteref') || _roles(link).contains('doc-noteref');
+
+/// The note that a link to [target] shows over the page, or null when the
+/// link jumps to [target]. [reference] is whether the link is a note
+/// reference ([isNoteReference]).
+///
+/// The note is the nearest element at or around [target] whose `epub:type`
+/// has the token `footnote`, `endnote`, `rearnote` or `note`, or whose role
+/// is `doc-footnote` or `doc-endnote`. Without one, a note reference shows
+/// [target] itself, or when [target] has no visible text, such as an empty
+/// anchor, the nearest element around it with text. A link without a
+/// target shows no note.
+DomElement? noteOf(DomElement? target, {required bool reference}) {
+  for (var element = target; element != null; element = element.parent) {
+    if (_types(element).any(_noteTypes.contains) ||
+        _roles(element).any(_noteRoles.contains)) {
+      return element;
+    }
+  }
+  if (!reference) return null;
+  var element = target;
+  while (element != null &&
+      !element.texts.any(
+        (text) => visibleCount(text.text, 0, text.text.length) > 0,
+      )) {
+    element = element.parent;
+  }
+  return element;
+}
+
+const _noteTypes = {'footnote', 'endnote', 'rearnote', 'note'};
+const _noteRoles = {'doc-footnote', 'doc-endnote'};
+
+/// The tokens of [element]'s `epub:type` and of its `role`.
+Iterable<String> _types(DomElement element) => _tokens(element, 'epub:type');
+Iterable<String> _roles(DomElement element) => _tokens(element, 'role');
+Iterable<String> _tokens(DomElement element, String attribute) =>
+    (element.attributes[attribute] ?? '')
+        .split(RegExp(r'\s+'))
+        .where((token) => token.isNotEmpty);
