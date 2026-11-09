@@ -1,6 +1,6 @@
 ---
 id: boo-rw7u
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-09T15:30:53Z
