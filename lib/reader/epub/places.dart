@@ -1,11 +1,13 @@
 // Converts between places in the native DOM and the EPUB CFIs, quotes and
 // text progress that Bookfin saves today.
 //
-// The WebView reader saves a place as epub.js writes it (reader.js
+// The WebView reader saved a place as epub.js writes it (reader.js
 // `visibleLocation`): a collapsed CFI, the first 120 characters of the
 // body's text from the place on, and the share of the section's visible
-// characters before the place. These functions write the same three
-// values, so a place saved by one renderer opens in the other.
+// characters before the place. These functions read and write the same
+// three values, so every place that epub.js saved opens here, and every
+// place saved here opens in epub.js. A page saves its first visible
+// character ([firstVisible]), not epub.js's word start.
 import 'dart:math' as math;
 
 import 'package:flutter_epub_viewer/navigation.dart';
@@ -107,8 +109,9 @@ EpubPlace? placeOf(DomSection dom, int section, String cfi) {
   );
 }
 
-/// The place that epub.js saves for a page of [dom] whose first character
-/// is at [place].
+/// The place that epub.js saved for a page of [dom] whose first character
+/// is at [place]. The reader no longer saves it (see [firstVisible]). Only
+/// the comparison with Chromium in test/reader/epub/trial uses it.
 ///
 /// epub.js (mapping.js `splitTextNodeIntoRanges` and `findTextStartRange`)
 /// trims the text node and finds each space in the trimmed text. It cuts
@@ -158,6 +161,23 @@ EpubPlace wordStart(DomSection dom, EpubPlace place) {
   return place;
 }
 
+/// The place that a page of [dom] saves when it starts at [start] and its
+/// last visible character is at [end]: the page's first visible character,
+/// the first one at or after [start]. It can be in a later text node than
+/// [start], when [start] is in white space at the end of its node. When the
+/// page shows no visible character from [start] to [end], [start] stays.
+///
+/// epub.js saved the start of the first space-delimited word instead (see
+/// [wordStart]). In text with few spaces, such as Chinese, that word can
+/// start on a later page.
+EpubPlace firstVisible(DomSection dom, EpubPlace start, EpubPlace end) {
+  if (dom.textAt(start) == null) return start;
+  final wanted = dom.visibleBefore(start);
+  if (wanted >= dom.visibleLength) return start;
+  final first = _visibleAt(dom, start.section, wanted);
+  return first.compareTo(end) <= 0 ? first : start;
+}
+
 /// The first 120 characters of the body's text of [dom] from [place] on,
 /// as reader.js `quoteAt` gives them.
 String quoteAt(DomSection dom, EpubPlace place) {
@@ -199,7 +219,18 @@ EpubPlace placeAt(DomSection dom, int section, double progress) {
   }
   final total = dom.visibleLength;
   if (total == 0) return EpubPlace(section, dom.body.order, 0);
-  final wanted = math.min(total - 1, (progress * total).floor());
+  return _visibleAt(
+    dom,
+    section,
+    math.min(total - 1, (progress * total).floor()),
+  );
+}
+
+/// The place of the visible character of [dom], the section with spine
+/// index [section], that [wanted] visible characters come before.
+///
+/// [wanted] runs from 0 to [DomSection.visibleLength] − 1.
+EpubPlace _visibleAt(DomSection dom, int section, int wanted) {
   final texts = dom.texts;
   // The last text node that starts at or before the wanted character holds
   // it, because a node without visible characters starts where the next
@@ -350,12 +381,12 @@ int _compareSteps((List<int>, int) a, (List<int>, int) b) {
 }
 
 /// The saved location of a page of [dom] that starts at [start] and whose
-/// last visible character is at [end], as reader.js `visibleLocation`
-/// writes it for a shown page: the CFI, quote and progress of the
-/// [wordStart] of [start], in the section at [sectionPath] whose spine step
-/// is [spine]. [chapter] is the page's [chapterTitle], which is the same at
-/// [start] and at its word start. Its [ReadingLocation.end] is the
-/// progress of [end], and it has no page number.
+/// last visible character is at [end], in the form that reader.js
+/// `visibleLocation` writes for a shown page: the CFI, quote and progress
+/// of the page's [firstVisible] character, in the section at [sectionPath]
+/// whose spine step is [spine]. [chapter] is the [chapterTitle] of that
+/// character. Its [ReadingLocation.end] is the progress of [end], and it
+/// has no page number.
 ReadingLocation pageLocation(
   String spine,
   String sectionPath,
@@ -364,13 +395,13 @@ ReadingLocation pageLocation(
   EpubPlace end,
   String chapter,
 ) {
-  final word = wordStart(dom, start);
+  final first = firstVisible(dom, start, end);
   return ReadingLocation(
-    cfiOf(spine, dom, word),
+    cfiOf(spine, dom, first),
     sectionPath,
-    quoteAt(dom, word),
+    quoteAt(dom, first),
     chapter: chapter,
-    progress: progressAt(dom, word),
+    progress: progressAt(dom, first),
     end: progressAt(dom, end),
   );
 }

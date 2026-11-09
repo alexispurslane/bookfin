@@ -21,7 +21,7 @@ Ticket keys E1 to E22 name the tickets. The table in "Order of work" maps each k
 ## What stays the same
 
 - The look of a page. The native reader draws the pages that the WebView reader draws today. It uses Source Serif 4 at the reader's text size, line height 1.65, the same margins, and the same night and cream colors. It keeps two Chromium details that the trial copied. Bold text is the regular face thickened, as the WebView draws it. `break-before: page` does not start a new page, because Chromium ignores it in the reader's columns. Reason: the user approved this look, and the fidelity check (E18) can compare only like with like. A change of typography is separate work after epub.js is gone.
-- The saved data. A saved place has the same JSON fields and values as today (see "Places").
+- The saved data. A saved place has the same JSON fields as today, and every place that epub.js saved still opens. A new save names the page's first visible character, not epub.js's word start (t1-7l9c, see "Places").
 - The admitted publication. `Publication.admit` keeps its output byte for byte, so the publication identity of every book stays the same.
 - The owners around the reader. `ReaderSession` stays the one navigation owner. `DocumentNavigator` stays, without `configure`. `BookMap`, `PagePreviews`, `ScrubDeck`, `ReaderDock` and `ReaderScrubBar` stay.
 - The features. Contents, bookmarks, search, text size, night and cream themes, the scrub bar with its deck of pages, and the chapter arrows all stay.
@@ -315,7 +315,7 @@ String? linkAt(Offset point);
 
 ### The saved form stays
 
-A saved EPUB place is the same JSON as today. `ReaderDocument.save` writes it. If every field matches, `ReaderDocument.restore` accepts it. Otherwise it refuses it.
+A saved EPUB place has the same JSON form as today. `ReaderDocument.save` writes it. If every field matches, `ReaderDocument.restore` accepts it. Otherwise it refuses it.
 
 ```json
 {"version":1,"processed":"<publication identity>","original":"<sha-256 of the download>",
@@ -324,7 +324,7 @@ A saved EPUB place is the same JSON as today. `ReaderDocument.save` writes it. I
  "quote":"<the first 120 characters from the place on>","progress":0.25}
 ```
 
-- `engine` names the CFI dialect. The native renderer writes the same dialect, epub.js's word-start rule. So the value stays, and an older Bookfin on another device keeps accepting places that the new version writes.
+- `engine` names the CFI dialect: epub.js's CFI syntax, quote and progress. The native renderer writes the same dialect. Since t1-7l9c it names a different character of the page (see "The saved start of a page"), but epub.js opens that place on the same page. So the value stays, and an older Bookfin on another device keeps accepting places that the new version writes.
 - `processed` is a hash of every admitted file. If admission output changes by one byte, every saved place of that book stops matching, and the reader starts at the beginning. So admission stays byte for byte. E2 adds a test that pins the identity of the fixture books.
 - What the native renderer needs beyond the admitted files comes beside them, outside the identity. These are the book's own style sheet texts, image sizes and the contents.
 - Do not fix te-9m1y in the sanitizer, because that changes the identity of every Standard Ebooks book.
@@ -336,7 +336,7 @@ A saved EPUB place is the same JSON as today. `ReaderDocument.save` writes it. I
 
 | Need | Rule |
 | --- | --- |
-| Page start to saved place | `wordStart` of the page start, then the CFI (`cfiOf`), the quote (120 characters), the progress (6 decimals) and the chapter label |
+| Page start to saved place | `firstVisible`: the page's first visible character, after the white space at the page start. Then the CFI (`cfiOf`), the quote (120 characters), the progress (6 decimals) and the chapter label. See "The saved start of a page". |
 | CFI to place | `positionOf`. An offset past the end of its text node stops at that end. A range resolves to its start. |
 | Open a saved place | Resolve the CFI. The text at the place must start with the saved quote (reader.js `verifyLocation`). If it does not, see rule 4 below. |
 | Progress to place (scrub bar) | `placeAt`: the visible character at `floor(progress × total)`, at most the last one |
@@ -345,6 +345,20 @@ A saved EPUB place is the same JSON as today. `ReaderDocument.save` writes it. I
 | Chapter label | The last contents entry of the same section at or before the place, else the section's first `h1` or `title`, else "Chapter N" |
 | Page end | The progress of the last visible character on the page. It is for display only and is not saved. The chapter arrows use it (t6-0cjf). |
 | Whole-book fraction | `BookMap`, unchanged: section byte shares and text progress |
+
+### The saved start of a page
+
+A page saves its first visible character (`firstVisible` in `places.dart`). This is the first character at or after the page start that is not white space, up to the page's last visible character. It can be in the next text node, when the page starts in white space at the end of a node. A page without a visible character saves its start.
+
+Until t1-7l9c, the reader saved epub.js's word start (`wordStart`). epub.js saves the start of the first space-delimited range at or after the page start. In text with few spaces, such as Chinese, the next space can lie on a later page. Then the saved place opened one or two pages later: 62 of 2,790 page starts of Hong Lou Meng at 360 × 640 at 26 pixels. The user chose the first visible character (design B, 2026-11-09). It never opens another page.
+
+What changed and what did not:
+
+- New saves differ from epub.js's for many pages. Take the pages of the trial books that start on the same character as an epub.js page. Standard Ebooks books still save epub.js's CFI for 57 to 98 percent of them, and Gutenberg books for 3 to 38 percent. A Gutenberg paragraph starts with a line break, so there the new place is usually one character later.
+- `placeOf` did not change. Every place that epub.js saved, and every place that an older Bookfin saved, opens on a page whose first line holds it.
+- Opening a saved place still reports the saved address unchanged (rule 1 below). So an old place is never rewritten only because the book opens. It changes only when the person moves.
+- Search hits and contents entries did not change. They save the start of the match or the destination, as reader.js does.
+- `wordStart` stays only for the Chromium comparison in `test/reader/epub/trial/`. E22 deletes that tool, and then tf-2h4e deletes `wordStart`.
 
 ### Data safety
 
@@ -358,7 +372,7 @@ Places follow the engine rule: never lose a place in a book.
 
 ### Places that epub.js saved
 
-The trial showed that every epub.js place lands on the page that shows it (661 of 661 at 20 pixels, 706 of 706 at 23). E18 makes this a permanent test. While epub.js exists, it records the places that epub.js writes: each page start at 20 and 23 pixels, search hits and contents targets. It records them for the committed fixture books of `tool/showcase_media.dart` and for the corpus books. The committed fixture file stays after epub.js is gone. The native renderer must open each place on a page whose first line holds the start of its quote.
+The trial showed that every epub.js place lands on the page that shows it (661 of 661 at 20 pixels, 706 of 706 at 23). E18 makes this a permanent test. While epub.js exists, it records the places that epub.js writes: each page start at 20 and 23 pixels, search hits and contents targets. It records them for the committed fixture books of `tool/showcase_media.dart` and for the corpus books. The committed fixture file stays after epub.js is gone. The native renderer must open each place on a page whose first line holds the start of its quote. Where a native page starts on the same character as an epub.js page, it saves that character, and the saved place opens that page. Before t1-7l9c, this test asked for epub.js's JSON instead.
 
 ## Coverage beyond the trial
 
@@ -487,7 +501,8 @@ E18 runs the trial's Chromium comparison against the product renderer, with the 
 ### Data-safety tests
 
 - Admission pins the identity of the fixture books (E2).
-- The anchor JSON that the native reader writes equals the JSON that epub.js wrote for the same page start (E4, E18).
+- The anchor that the native reader writes for a page names the page's first visible character and opens that page, for pages that start where epub.js pages started (E4, E18, t1-7l9c). Every page start of the corpus books opens its own page (E19).
+- Every place that epub.js saved opens on a page whose first line holds it (E18).
 - Opening at a saved place, and a settings change, add no record to the store (E8, E10).
 - A place saved at the last turn opens on the same page after a restart (E10).
 - A place whose quote does not match keeps the old record until the person moves (E8, E10).

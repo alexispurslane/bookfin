@@ -521,6 +521,7 @@ class EpubPager implements DocumentNavigator {
     if (!report || start == null) return;
     final dom = section.dom;
     final path = _publication.spine[page.section];
+    final end = page.endPlace ?? start;
     _onPlace(
       EpubAddress(
         pageLocation(
@@ -528,10 +529,10 @@ class EpubPager implements DocumentNavigator {
           path,
           dom,
           start,
-          page.endPlace ?? start,
+          end,
           chapterTitle(
             dom,
-            start,
+            firstVisible(dom, start, end),
             _publication.contents,
             _publication.packagePath,
             path,
