@@ -15,6 +15,7 @@ import 'package:pdfrx_engine/pdfrx_engine.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../downloads/verified_reads.dart';
+import 'ocr_test.dart' show englishPage;
 
 const pdfSource = SourceFile(
   itemId: 'pdf',
@@ -110,14 +111,16 @@ void main() {
     expect(resolved.representation, saved['representation']);
   });
 
-  test('a recognized page keeps its cached text after t6-doxp', () async {
+  test('a page recognized before t6-doxp and t0-0hl7 still finds its cached '
+      'text', () async {
     final root = await Directory.systemTemp.createTemp('bookfin-pdf-digest-');
     addTearDown(() => root.delete(recursive: true));
     final original = File('${root.path}/complete');
     await File('tool/research/readers/fixtures/scanned.pdf')
         .copy(original.path);
     // The cache file that recognition of page 1 of scanned.pdf wrote before
-    // t6-doxp, under the key that the original digest names.
+    // t6-doxp, under the key that the original digest names. The code before
+    // t0-0hl7, which hashed the file for the cache, wrote the same file.
     const key =
         '2463ffa5ec92806519a3759dd66fc0510d2b116eec33209727ddf72aed29af3f';
     const hocr =
@@ -153,10 +156,49 @@ void main() {
       textSupply: supply,
     ) as PdfBook;
     addTearDown(scan.dispose);
-    supply.bind((read) => read(original.uri, () => true));
+    supply.bind((read) => read(verified(original), () => true));
     expect((await scan.text(1)).text, 'The quiet garden.');
     expect(recognitions, 0);
   });
+
+  test(
+    'the first recognized page of a scanned PDF does not hash the file',
+    () async {
+      final root = await Directory.systemTemp.createTemp('bookfin-pdf-trust-');
+      addTearDown(() => root.delete(recursive: true));
+      final original = File('${root.path}/complete');
+      await File('tool/research/readers/fixtures/scanned.pdf')
+          .copy(original.path);
+      const channel = MethodChannel('bookfin/ocr');
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(
+            channel,
+            (call) async => call.method == 'recognize' ? englishPage : null,
+          );
+      addTearDown(
+        () => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(channel, null),
+      );
+      final supply = BundledEnglishText();
+      final scan = await loadReadingDocument(
+        verified(original),
+        pdfSource,
+        textSupply: supply,
+      ) as PdfBook;
+      addTearDown(scan.dispose);
+      // Downloads gives the digest of the book that it verified. The bytes
+      // on disk no longer have it, so a cache that hashed the file again
+      // would refuse the page.
+      await original.writeAsBytes([1, 2, 3]);
+      supply.bind(
+        (read) =>
+            read(VerifiedFile(original.uri, scan.originalDigest), () => true),
+      );
+
+      expect((await scan.text(1)).text, 'The quiet garden.');
+      expect(await Directory('${root.path}/.bookfin-ocr').list().length, 1);
+    },
+  );
 
   test('an address inside an extracted page keeps the representation that '
       'saved places use', () async {

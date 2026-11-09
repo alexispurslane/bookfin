@@ -42,30 +42,6 @@ const book = Book(
   editions: [edition],
 );
 
-// Hold the real original-byte stream, without changing its contents or cache I/O.
-class HeldOriginal extends Fake implements File {
-  HeldOriginal(this.original, this.started, this.release, this.fileZone);
-  final Zone fileZone;
-  final File original;
-  final Completer<void> started;
-  final Completer<void> release;
-  @override
-  String get path => original.path;
-  @override
-  Directory get parent => original.parent;
-  @override
-  Future<RandomAccessFile> open({FileMode mode = FileMode.read}) =>
-      fileZone.run(() => original.open(mode: mode));
-  // The cache checks the original with a stat on this isolate before it
-  // hashes the bytes in a hop, so holding the stat holds the check.
-  @override
-  Future<FileStat> stat() async {
-    if (!started.isCompleted) started.complete();
-    await release.future;
-    return fileZone.run(original.stat);
-  }
-}
-
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   Pdfrx.pdfiumModulePath = Platform.environment['PDFIUM_LIBRARY'];
@@ -170,7 +146,7 @@ void main() {
         bool Function() owned = () => false;
         return downloads.readLocalFile<PdfText>(
           pdfSource,
-          (file) => read(file.uri, owned),
+          (file) => read(file, owned),
           onOwnership: (live) => owned = live,
         );
       });
@@ -191,7 +167,7 @@ void main() {
           acquiring.complete();
           await acquired.future;
         }
-        return read(file.uri, owned);
+        return read(file, owned);
       }, onOwnership: (live) => owned = live);
     });
     final second = pdf.text(2);
@@ -214,39 +190,45 @@ void main() {
     }
   });
 
-  test('ordinary native failure does not expire selected text while its original bytes are being verified', () async {
+  test('ordinary native failure does not expire selected text while its cache read waits', () async {
     final second = pdf.text(2);
     await nativeStarted.future;
-    final verifying = Completer<void>();
-    final verified = Completer<void>();
+    final reading = Completer<void>();
+    final release = Completer<void>();
     final parent = Zone.current;
-    // The download lookup runs outside the zone with the held file, so only
-    // the cache check of the original sees it.
+    // The download lookup runs outside the zone that holds the type query of
+    // the original, so only the cache read of page 1 waits.
     pdf.textSupply!.bind(
       (read) => parent.run(() {
         bool Function() owned = () => false;
         return downloads.readLocalFile<PdfText>(
           pdfSource,
-          (file) => read(file.uri, () => owned()),
+          (file) => read(file, () => owned()),
           onOwnership: (live) => owned = live,
         );
       }),
     );
     final first = IOOverrides.runZoned(
       () => pdf.text(1),
-      createFile: (path) => path == original.path
-          ? HeldOriginal(original, verifying, verified, parent)
-          : parent.run(() => File(path)),
+      fseGetType: (path, followLinks) async {
+        if (path == original.path) {
+          if (!reading.isCompleted) reading.complete();
+          await release.future;
+        }
+        return parent.run(
+          () => FileSystemEntity.type(path, followLinks: followLinks),
+        );
+      },
     );
     try {
-      await verifying.future.timeout(const Duration(seconds: 5));
+      await reading.future.timeout(const Duration(seconds: 5));
       nativeResult.completeError(PlatformException(code: 'recognition'));
       expect((await second).status, PdfTextStatus.absent);
-      verified.complete();
+      release.complete();
       expect((await first).text, 'The quiet garden.');
       expect(calls, 2);
     } finally {
-      if (!verified.isCompleted) verified.complete();
+      if (!release.isCompleted) release.complete();
       await first;
     }
   });

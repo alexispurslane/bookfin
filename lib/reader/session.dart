@@ -507,7 +507,7 @@ class ReaderSession extends ChangeNotifier {
                 status: PdfTextStatus.absent,
               );
             }
-            return read(file.uri, () => owned() && available());
+            return read(file, () => owned() && available());
           }, onOwnership: (live) => owned = live);
         });
       }
