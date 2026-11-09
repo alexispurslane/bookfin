@@ -310,8 +310,7 @@ void main() {
   });
 
   group('the main text size', () {
-    double measure(List<SectionSource> samples) =>
-        measureMainTextSize(samples, settings(20));
+    double measure(List<SectionSource> samples) => measureMainTextSize(samples);
 
     test('is the size that covers the most characters, not the most '
         'elements', () {
@@ -362,10 +361,24 @@ void main() {
       );
     });
 
-    test('does not change with the reader\'s text size', () {
+    test('is the book\'s own size, not the reader\'s text size', () {
       final samples = [sized('<p>${prose(3)}</p>', 'p{font-size:0.9em}')];
-      expect(measureMainTextSize(samples, settings(14)), closeTo(14.4, 1e-9));
-      expect(measureMainTextSize(samples, settings(40)), closeTo(14.4, 1e-9));
+      expect(measure(samples), closeTo(14.4, 1e-9));
+    });
+
+    test('is kept with the admitted book, which the page source sizes the '
+        'main text by', () async {
+      // The book's main text is 9 points, 12 pixels.
+      final publication = book([
+        _paragraphs(12, 'Planet'),
+      ], css: 'p { font-size: 9pt }');
+      expect(publication.mainTextSize, 12);
+      final planet = await section(
+        sourceOf(publication),
+        settings(26, sizesMainText: true),
+        0,
+      );
+      expect(styleOf(planet, 'Planet').size, closeTo(26, 1e-9));
     });
 
     test('is the browser\'s initial size for a book with no visible text, '
@@ -382,6 +395,43 @@ void main() {
           sized('<p>${prose(2)}</p>', 'p{font-size:15px}'),
         ]),
         15,
+      );
+    });
+
+    group('as a page shows it', () {
+      test('is the book\'s fixed size before the size buttons are used', () {
+        final samples = [sized('<p>${prose(3)}</p>', 'p{font-size:12pt}')];
+        for (final size in [14.0, 20.0, 26.0]) {
+          expect(shownMainTextSize(samples, settings(size)), 16);
+        }
+      });
+
+      test('follows the reader\'s text size in a book that sizes its text '
+          'relative to the body', () {
+        final samples = [sized('<p>${prose(3)}</p>', 'p{font-size:0.9em}')];
+        expect(shownMainTextSize(samples, settings(20)), closeTo(18, 1e-9));
+      });
+
+      test('is the reader\'s text size once the size buttons are used', () {
+        final samples = [
+          sized('<p>${prose(3)}</p>', 'p{font-size:12pt}', mainTextSize: 16),
+        ];
+        expect(
+          shownMainTextSize(samples, settings(26, sizesMainText: true)),
+          closeTo(26, 1e-9),
+        );
+      });
+
+      test(
+        'the page source gives it for pages of the shown settings',
+        () async {
+          final source = sourceOf(fixedBook());
+          expect(await source.shownMainText(settings(26)), 16);
+          expect(
+            await source.shownMainText(settings(26, sizesMainText: true)),
+            26,
+          );
+        },
       );
     });
 

@@ -154,6 +154,17 @@ class EpubPager implements DocumentNavigator {
     return (part: page.section, progress: progressAt(section.dom, end));
   }
 
+  /// The size of the book's main text on the shown page, as a factor of the
+  /// text size that the page was laid out for ([PageSettings.fontSize]), or
+  /// null before a page is shown. It is 1 when the reader's text size sizes
+  /// the main text. Otherwise a book that fixes its own type sizes shows its
+  /// main text at its own size. It measures in a worker.
+  Future<double?> shownMainTextRatio() async {
+    final settings = _shown.value?.page.settings;
+    if (settings == null) return null;
+    return await _source.shownMainText(settings) / settings.fontSize;
+  }
+
   /// Completes when the shown page changes, which stops the waits for its
   /// number.
   Completer<void>? _counting;
