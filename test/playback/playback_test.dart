@@ -4,7 +4,8 @@ import 'package:bookfin/catalog/jellyfin.dart';
 import 'package:bookfin/catalog/model.dart';
 import 'package:bookfin/downloads/downloads.dart';
 import 'package:bookfin/playback/playback.dart';
-import 'package:bookfin/reader/session.dart' show ReadingChanges, ReadingStore;
+import 'package:bookfin/reader/session.dart'
+    show PlaceOrigin, ReadingChanges, ReadingStore;
 import 'package:flutter_test/flutter_test.dart';
 
 import '../downloads/verified_reads.dart';
@@ -478,6 +479,10 @@ class MemoryResume extends ResumeStore implements ListeningStore, ReadingStore {
   Future<void> save(String accountKey, ListeningChanges changes) async {
     values[accountKey] = changes.applyTo(values[accountKey]);
   }
+
+  @override
+  Future<PlaceOrigin> origin(String accountKey, Edition edition) async =>
+      (own: null, elsewhere: false, device: null);
 
   @override
   Future<void> saveReading(String accountKey, ReadingChanges changes) async {

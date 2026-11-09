@@ -1,6 +1,6 @@
 ---
 id: t9-4vsl
-status: open
+status: in_progress
 deps: [t9-nnon]
 links: []
 created: 2026-11-09T21:59:37Z
@@ -27,3 +27,9 @@ Build:
 - A sync while the book is open does not move the shown page and records nothing.
 - A kill right after the open keeps the `open` move or the old resume, never neither.
 - Design 2B: an open and a Back record one "Opened" and one "Closed" entry with their places. A trip to the background and back records nothing.
+
+## Notes
+
+**2026-11-09T23:55:15Z**
+
+Built: RecordJournal.lastOwn (an index of this installation's last action on each record, checked in checkInvariants); ReadingStore.origin gives the own last place and the device of the current place; HistoryEvent.device. ReaderSession: each open records an Opened entry at the first shown place; a book that opens at another device's place records it as a move from this phone's own place, with device, and offers Undo, once for each pair of places; Back (closeView) and the open of another book record Closed. The background records nothing. If Android kills the app, the visit has no Closed entry and the saved place says where it ended. The History tool and labels are t9-7fxw and t9-9ffz.

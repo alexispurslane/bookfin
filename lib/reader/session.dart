@@ -27,6 +27,11 @@ typedef VisibleLocation = ReadingLocation;
 /// The estimated reading time left in the chapter and in the book.
 typedef TimeLeft = ({Duration chapter, Duration book});
 
+/// Where the saved place of an edition came from: [own], the last place
+/// that this installation saved there, whether another installation saved
+/// the current place ([elsewhere]), and the name of its [device].
+typedef PlaceOrigin = ({TextPosition? own, bool elsewhere, String? device});
+
 /// The owner of each account's saved reading records, as [ReaderSession]
 /// uses it.
 abstract class ReadingStore {
@@ -45,6 +50,10 @@ abstract class ReadingStore {
   /// Records [value] as the snapshot that the writer of [accountKey] now
   /// shows, so later saves compare their records with it.
   void acceptSnapshot(String accountKey, Map<String, dynamic>? value) {}
+
+  /// Where the saved place of [edition] in [accountKey] came from.
+  Future<PlaceOrigin> origin(String accountKey, Edition edition) async =>
+      (own: null, elsewhere: false, device: null);
 
   /// Whether this store found the saved records of [accountKey] damaged
   /// while this app ran, kept the damaged data aside, and started the
@@ -162,6 +171,15 @@ class ReadingChanges {
 /// that fails, or the open of another book, drops it. The move saves with
 /// its new place in one change set, and becomes the Undo offer
 /// ([undoOffer]). Page turns and changes of the text size are not moves.
+///
+/// Each [open] starts a reading visit: the first place that the book shows
+/// records an Opened entry there. If another device saved that place, and
+/// this phone last showed another place, the entry is a move from this
+/// phone's place, which names the device and becomes the Undo offer. Back
+/// ([closeView]) and the open of another book end the visit with a Closed
+/// entry at the shown place. The background records nothing. If Android
+/// stops Bookfin, the visit has no Closed entry, and the saved place still
+/// says where it ended.
 class ReaderSession extends ChangeNotifier {
   ReaderSession({
     required this.downloads,
@@ -568,6 +586,7 @@ class ReaderSession extends ChangeNotifier {
     (HistoryAction, TextPosition)? move,
   }) async {
     if (_disposed || _account == null || !_current(selected)) return;
+    if (at == null) _closeVisit();
     _clear();
     _book = book;
     _edition = selected;
@@ -579,6 +598,15 @@ class ReaderSession extends ChangeNotifier {
     _emit();
     await _binding;
     if (!_live(generation) || !_current(selected)) return;
+    // The query runs while the book loads. A failed query knows nothing.
+    final origin = at != null || selected.files.length != 1
+        ? null
+        : store
+              .origin(_account!, selected)
+              .then<PlaceOrigin?>(
+                (value) => value,
+                onError: (Object _) => null,
+              );
     try {
       await _closing;
       if (_releaseFailed) {
@@ -607,6 +635,7 @@ class ReaderSession extends ChangeNotifier {
           'Download this ebook before reading. Only verified local files can open.',
         );
       }
+      final known = await origin;
       if (!_live(generation) || !_current(selected)) {
         await admitted.dispose();
         return;
@@ -651,6 +680,19 @@ class ReaderSession extends ChangeNotifier {
         if (initialAddress == null) {
           _message = 'The saved place belongs to different source or processed content. The old place and bookmarks were kept. Reading starts at the beginning.';
         }
+      }
+      // The first place that the book shows starts the visit. A book that
+      // opens at another device's place moves there from this phone's own.
+      if (at == null) {
+        final own = saved == null || initialAddress == null
+            ? null
+            : _ownPlace(known, saved);
+        _pending = _Move(
+          HistoryAction.open,
+          own,
+          device: own == null ? null : known!.device,
+          token: generation,
+        );
       }
       if (!_recordsReady) {
         _message = 'Reading records could not be opened. Existing records were kept. Restart before saving new places.';
@@ -757,8 +799,12 @@ class ReaderSession extends ChangeNotifier {
     _emit();
   }
 
+  /// Closes the shown book when the reader leaves it, as Back does, and
+  /// ends its reading visit.
   void closeView(int eventToken) {
-    if (_live(eventToken)) _clear();
+    if (!_live(eventToken)) return;
+    _closeVisit();
+    _clear();
   }
 
   void acceptVisible(int eventToken, VisibleLocation location) =>
@@ -807,22 +853,73 @@ class ReaderSession extends ChangeNotifier {
     _pending = null;
     if (move == null ||
         move.token != token ||
-        (move.before.editionId == edition!.id &&
+        (move.before?.editionId == edition!.id &&
             _onPage(after, move.shown, move.end))) {
       return null;
     }
+    final event = _record(
+      move.kind,
+      move.before ?? position!,
+      position!,
+      device: move.device,
+    );
+    if (move.before != null) {
+      _undo = move.kind == HistoryAction.undo ? null : event;
+    }
+    return event;
+  }
+
+  /// Adds an entry of [kind] from [before] to [after] in the open book to
+  /// [history], and gives it.
+  HistoryEvent<TextPosition> _record(
+    HistoryAction kind,
+    TextPosition before,
+    TextPosition after, {
+    String? device,
+  }) {
     final event = HistoryEvent(
       id: recordId(),
       at: DateTime.now().toUtc(),
-      kind: move.kind,
-      before: move.before,
-      after: position!,
+      kind: kind,
+      before: before,
+      after: after,
       bookTitle: _book!.title,
       editionLabel: edition!.label,
+      device: device,
     );
     _history = [event, ..._history];
-    _undo = move.kind == HistoryAction.undo ? null : event;
     return event;
+  }
+
+  /// Ends the reading visit of the shown book: records a Closed entry at
+  /// the shown place. Without a shown place, the visit records nothing.
+  void _closeVisit() {
+    final place = position;
+    if (place == null || !_recordsReady) return;
+    final event = _record(HistoryAction.close, place, place);
+    unawaited(_save(history: {event.id: event}));
+  }
+
+  /// This phone's own last place in the open edition, when the book opens
+  /// at [opened], a place that another device saved, as [origin] says. Null
+  /// when the two places are the same, when this phone never read the
+  /// edition, and when an earlier open recorded that move already.
+  TextPosition? _ownPlace(PlaceOrigin? origin, TextPosition opened) {
+    final own = origin?.own;
+    if (own == null ||
+        !origin!.elsewhere ||
+        own.anchor == opened.anchor ||
+        _compatible(own) == null) {
+      return null;
+    }
+    final recorded = _history.any(
+      (event) =>
+          event.kind == HistoryAction.open &&
+          event.before.editionId == opened.editionId &&
+          event.before.anchor == own.anchor &&
+          event.after.anchor == opened.anchor,
+    );
+    return recorded ? null : own;
   }
 
   /// Whether [place] lies on the page that showed [shown], from its start
@@ -993,9 +1090,11 @@ class ReaderSession extends ChangeNotifier {
       final navigator = _navigator;
       if (navigator == null || !_live(generation)) return false;
       final before = position;
-      final move = _pending = before == null
+      // A jump before the book shows a place has no place to begin from,
+      // and leaves the start of the visit pending.
+      final move = before == null
           ? null
-          : _Move(
+          : _pending = _Move(
               kind,
               before,
               shown: _visibleAddress,
@@ -1396,13 +1495,26 @@ List<bool> _linearSpine(Uint8List package) => [
 const _unknownPlace =
     'This place belongs to different source or processed content and cannot be applied.';
 
-/// A jump that a session asked for, whose place has not shown yet.
+/// A jump that a session asked for, or the open of a book, whose place has
+/// not shown yet.
 class _Move {
-  _Move(this.kind, this.before, {required this.token, this.shown, this.end});
+  _Move(
+    this.kind,
+    this.before, {
+    required this.token,
+    this.shown,
+    this.end,
+    this.device,
+  });
   final HistoryAction kind;
 
-  /// The place that showed when the jump began.
-  final TextPosition before;
+  /// The place that showed when the jump began, or for an open from another
+  /// device's place, this phone's own last place. Null for the start of a
+  /// visit, which begins where it ends.
+  final TextPosition? before;
+
+  /// The name of the device that saved the place where an open ends.
+  final String? device;
 
   /// The address and the last place of the page that showed when the jump
   /// began, or null when that page belongs to another book.

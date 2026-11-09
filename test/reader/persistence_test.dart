@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:bookfin/catalog/model.dart' show Edition;
 import 'package:bookfin/playback/playback.dart';
 import 'package:bookfin/playback/store.dart';
 import 'package:bookfin/reader/epub/publication.dart';
@@ -27,6 +28,12 @@ class FailingRecords extends ResumeStore
       records.acceptSnapshot(key, value);
   @override
   bool setAside(String key) => records.setAside(key);
+  @override
+  Future<PlaceOrigin> origin(String key, Edition edition) async =>
+      switch (records) {
+        final ReadingStore reading => reading.origin(key, edition),
+        _ => (own: null, elsewhere: false, device: null),
+      };
   @override
   Future<void> write(String key, Map<String, dynamic> value) async {
     await gate?.future;

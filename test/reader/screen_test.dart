@@ -731,8 +731,11 @@ void main() {
         reason: 'The shown page holds the note.',
       );
       expect(
-        reader.history.single.kind,
-        HistoryAction.link,
+        [
+          for (final event in reader.history)
+            if (event.kind != HistoryAction.open) event.kind,
+        ],
+        [HistoryAction.link],
         reason: 'Go to note records one link move.',
       );
       await closeNative(tester, reader);
@@ -765,8 +768,11 @@ void main() {
         reason: 'The far shore is near the end of the second chapter.',
       );
       expect(
-        reader.history.single.kind,
-        HistoryAction.link,
+        [
+          for (final event in reader.history)
+            if (event.kind != HistoryAction.open) event.kind,
+        ],
+        [HistoryAction.link],
         reason: 'A link records one link move.',
       );
       expect(find.byType(ReaderDock), findsOneWidget);

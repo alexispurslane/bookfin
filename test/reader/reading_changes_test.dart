@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:bookfin/catalog/model.dart' show Edition;
 import 'package:bookfin/playback/database.dart';
 import 'package:bookfin/playback/playback.dart';
 import 'package:bookfin/playback/store.dart';
@@ -32,6 +33,10 @@ class RecordingReading extends ResumeStore implements ReadingStore {
     written.add(snapshot);
     value = snapshot;
   }
+
+  @override
+  Future<PlaceOrigin> origin(String accountKey, Edition edition) async =>
+      (own: null, elsewhere: false, device: null);
 
   @override
   Future<void> saveReading(String accountKey, ReadingChanges changes) async {

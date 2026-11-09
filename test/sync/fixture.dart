@@ -3,8 +3,10 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:bookfin/catalog/jellyfin.dart';
+import 'package:bookfin/catalog/model.dart' show Edition;
 import 'package:bookfin/playback/playback.dart';
-import 'package:bookfin/reader/session.dart' show ReadingChanges, ReadingStore;
+import 'package:bookfin/reader/session.dart'
+    show PlaceOrigin, ReadingChanges, ReadingStore;
 import 'package:bookfin/sync/journal.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -139,6 +141,12 @@ class HeldRecords extends ResumeStore implements ListeningStore, ReadingStore {
   @override
   void acceptSnapshot(String accountKey, Map<String, dynamic>? value) =>
       delegate.acceptSnapshot(accountKey, value);
+  @override
+  Future<PlaceOrigin> origin(String accountKey, Edition edition) async =>
+      switch (delegate) {
+        final ReadingStore reading => reading.origin(accountKey, edition),
+        _ => (own: null, elsewhere: false, device: null),
+      };
   Completer<void>? readReady;
   Completer<void>? readRelease;
   Completer<void>? writeReady;

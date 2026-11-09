@@ -418,12 +418,28 @@ void main() {
               expect(store.savedBookmarks, isEmpty, reason: where);
               // A saved size other than the default came from the size
               // buttons, so the settings now say that it sizes the main
-              // text. The records stay as they were.
-              expect(store.values[accountKey], {
-                ...stored,
-                'history': <dynamic>[],
-                if (size != 20) 'sizesMainText': true,
-              }, reason: where);
+              // text. The records stay as they were, and the open starts a
+              // reading visit at the saved place.
+              final records = store.values[accountKey]!;
+              expect(
+                {...records, 'history': <dynamic>[]},
+                {
+                  ...stored,
+                  'history': <dynamic>[],
+                  if (size != 20) 'sizesMainText': true,
+                },
+                reason: where,
+              );
+              expect(
+                [
+                  for (final entry in records['history'] as List)
+                    [entry['kind'], entry['before'], entry['after']],
+                ],
+                [
+                  ['open', stored['resumes'].single, stored['resumes'].single],
+                ],
+                reason: where,
+              );
               reader.dispose();
               sessions.remove(reader);
               opened++;

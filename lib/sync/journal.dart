@@ -47,6 +47,10 @@ class RecordJournal {
   final Map<String, Map<String, dynamic>> _actions = {};
   final Map<String, int> _coverage = {};
   final Map<String, List<Map<String, dynamic>>> _records = {};
+
+  /// The identity of the last action of this installation on each record
+  /// that it changed, by address.
+  final Map<String, String> _ownLast = {};
   final Set<String> _pending = {};
   Set<String> get pending => UnmodifiableSetView(_pending);
   int cursor = 0;
@@ -87,6 +91,13 @@ class RecordJournal {
   /// The retained action [identity], or null when the journal lacks it.
   /// Do not change it.
   Map<String, dynamic>? retained(String identity) => _actions[identity];
+
+  /// The last retained action of this installation on [record], or null
+  /// when it made none. Do not change it.
+  Map<String, dynamic>? lastOwn(String record) => switch (_ownLast[record]) {
+    null => null,
+    final identity => _actions[identity],
+  };
 
   static String identity(Map<String, dynamic> action) =>
       'action.${action['replica']}.${action['sequence']}';
@@ -209,6 +220,7 @@ class RecordJournal {
         _actions[id] = action;
         additions[id] = action;
         candidates.add(id);
+        if (action['replica'] == replica) _noteOwn(action);
       }
     }
     while (candidates.isNotEmpty) {
@@ -267,6 +279,17 @@ class RecordJournal {
     return applied;
   }
 
+  /// Makes [action] of this installation the last on its record, unless a
+  /// later one is.
+  void _noteOwn(Map<String, dynamic> action) {
+    final record = action['record'] as String;
+    final last = lastOwn(record);
+    if (last == null ||
+        (last['sequence'] as int) < (action['sequence'] as int)) {
+      _ownLast[record] = identity(action);
+    }
+  }
+
   void _validate(Map<String, dynamic> action) {
     final author = action['replica'];
     final sequence = action['sequence'];
@@ -305,6 +328,23 @@ class RecordJournal {
   }
 
   void checkInvariants() {
+    final ownLast = <String, Map<String, dynamic>>{};
+    for (final action in _actions.values) {
+      if (action['replica'] != replica) continue;
+      final last = ownLast[action['record'] as String];
+      if (last == null ||
+          (last['sequence'] as int) < (action['sequence'] as int)) {
+        ownLast[action['record'] as String] = action;
+      }
+    }
+    if (ownLast.length != _ownLast.length ||
+        ownLast.entries.any(
+          (entry) => _ownLast[entry.key] != identity(entry.value),
+        )) {
+      throw StateError(
+        'The last own action of each record must be the newest one.',
+      );
+    }
     final held = <String>{};
     for (final entry in _waiting.entries) {
       for (final threshold in entry.value.entries) {

@@ -4,9 +4,15 @@
 // change of the text size are not moves. These tests drive the session with
 // the real pager, as the reader screen does (see session_native_test.dart).
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:bookfin/catalog/jellyfin.dart' show JellyfinSession;
 import 'package:bookfin/catalog/model.dart';
+import 'package:bookfin/playback/store.dart' show LocalResumeStore;
+import 'package:bookfin/sync/journal.dart' show RecordJournal;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart' show sqfliteFfiInit;
 import 'package:bookfin/playback/records.dart';
 import 'package:bookfin/reader/book_map.dart';
 import 'package:bookfin/reader/document.dart';
@@ -19,6 +25,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:pdfrx_engine/pdfrx_engine.dart';
 
 import '../playback/playback_test.dart' show account, LocalFiles, MemoryResume;
+import '../sync/fixture.dart' show SyncFixture;
+import '../sync/phone.dart' show Phone;
 import 'epub/helpers.dart' show loadReaderFont, readerPage;
 import 'epub/page_source_test.dart' show paragraphs;
 import 'pdf_document_test.dart' show pdfSource;
@@ -38,12 +46,29 @@ class MoveStore extends MemoryResume {
     return super.saveReading(accountKey, changes);
   }
 
-  /// The reading moves that the store holds, as JSON.
-  List<Map<String, dynamic>> get moves => [
+  /// The reading history that the store holds, as JSON.
+  List<Map<String, dynamic>> get history => [
     for (final value in values[accountKey]?['history'] as List? ?? const [])
       value as Map<String, dynamic>,
   ];
+
+  /// The jumps of [history]: every entry but the start and the end of a
+  /// visit.
+  List<Map<String, dynamic>> get moves => [
+    for (final value in history)
+      if (!visits.contains(value['kind'])) value,
+  ];
 }
+
+/// The kinds of the entries that start and end a reading visit, as JSON.
+const visits = ['open', 'close'];
+
+/// The jumps of the reading history of [reader], newest first: every entry
+/// but the start and the end of a visit.
+List<HistoryEvent<TextPosition>> moves(ReaderSession reader) => [
+  for (final event in reader.history)
+    if (!visits.contains(event.kind.name)) event,
+];
 
 /// A three-chapter book. Each chapter fills several pages. The first page
 /// links to a word in the third chapter, which search also finds.
@@ -144,26 +169,36 @@ void main() {
         .whenComplete(() => reader.bookMapChanges.removeListener(listener));
   }
 
-  /// A new session of the account, bound to [book].
-  Future<ReaderSession> sessionOf(Book book) async {
+  /// A new session of [user], or of the test account, over [records], or
+  /// over [store], bound to [book].
+  Future<ReaderSession> sessionOf(
+    Book book, {
+    ReadingStore? records,
+    JellyfinSession? user,
+  }) async {
     final reader = ReaderSession(
       downloads: downloads,
-      store: store,
+      store: records ?? store,
       load: (_) async => publication,
     );
     sessions.add(reader);
-    await reader.bind(account(), [book]);
+    await reader.bind(user ?? account(), [book]);
     return reader;
   }
 
-  /// Opens the three-chapter book at its start, shows its first page, and
-  /// waits for its map.
-  Future<ReaderSession> openBook() async {
-    final book = bookOf(epubEdition);
-    final reader = await sessionOf(book);
-    await reader.open(book, epubEdition);
+  /// Opens the three-chapter book in [reader] at its saved place, shows its
+  /// first page, and waits for its map.
+  Future<void> openIn(ReaderSession reader) async {
+    await reader.open(bookOf(epubEdition), epubEdition);
     await present(reader);
     await mapped(reader);
+  }
+
+  /// Opens the three-chapter book in a new session at its start, shows its
+  /// first page, and waits for its map.
+  Future<ReaderSession> openBook() async {
+    final reader = await sessionOf(bookOf(epubEdition));
+    await openIn(reader);
     return reader;
   }
 
@@ -190,7 +225,7 @@ void main() {
     );
 
     expect(shownSection(reader), 2);
-    final move = reader.history.single;
+    final move = moves(reader).single;
     expect(move.kind, HistoryAction.seek);
     expect(json(move.before), json(start));
     expect(json(move.after), json(reader.position!));
@@ -204,7 +239,7 @@ void main() {
 
     await after(reader, () => reader.goToContents('text/s2.xhtml#cedar'));
 
-    final move = reader.history.single;
+    final move = moves(reader).single;
     final changes = store.saves.single;
     expect(changes.history.keys, [move.id]);
     expect(changes.history[move.id], move.toJson());
@@ -246,7 +281,7 @@ void main() {
         await after(reader, () => jump(reader));
 
         expect(shownSection(reader), greaterThan(0));
-        final move = reader.history.single;
+        final move = moves(reader).single;
         expect(move.kind, kind);
         expect(json(move.before), json(start));
         expect(json(move.after), json(reader.position!));
@@ -266,8 +301,8 @@ void main() {
         () => reader.restoreBookmark(reader.bookmarks.single.id),
       );
 
-      expect(reader.history, hasLength(3));
-      final move = reader.history.first;
+      expect(moves(reader), hasLength(3));
+      final move = moves(reader).first;
       expect(move.kind, HistoryAction.bookmarkRestore);
       expect(json(move.before), json(start));
       expect(json(move.after), json(cedar));
@@ -281,7 +316,7 @@ void main() {
     await after(reader, () => reader.move(true));
     await after(reader, () => reader.move(false));
 
-    expect(reader.history, isEmpty);
+    expect(moves(reader), isEmpty);
     expect(store.moves, isEmpty);
   });
 
@@ -293,7 +328,7 @@ void main() {
     await after(reader, () => reader.goTo(reader.bookMap!.targetAt(0)));
 
     expect(json(reader.position!), json(start));
-    expect(reader.history, isEmpty);
+    expect(moves(reader), isEmpty);
     expect(reader.undoOffer, isNull);
   });
 
@@ -306,12 +341,12 @@ void main() {
 
     expect(reader.message, contains('Your saved place was kept'));
     expect(json(reader.position!), json(start));
-    expect(reader.history, isEmpty);
+    expect(moves(reader), isEmpty);
     expect(store.saves.expand((changes) => changes.history.keys), isEmpty);
 
     await after(reader, () => reader.move(true));
     expect(
-      reader.history,
+      moves(reader),
       isEmpty,
       reason: 'The next page turn does not end the failed jump.',
     );
@@ -326,7 +361,7 @@ void main() {
 
       await after(reader, () => reader.goToContents('text/s2.xhtml#cedar'));
 
-      expect(reader.undoOffer?.action, same(reader.history.single));
+      expect(reader.undoOffer?.action, same(moves(reader).single));
       expect(reader.undoOffer?.saved, isTrue);
       expect(changes, greaterThan(0));
     });
@@ -342,7 +377,7 @@ void main() {
 
       expect(shownSection(reader), 0);
       expect(json(reader.position!), json(start));
-      final undo = reader.history.first;
+      final undo = moves(reader).first;
       expect(undo.kind, HistoryAction.undo);
       expect(json(undo.before), json(cedar));
       expect(json(undo.after), json(start));
@@ -354,14 +389,14 @@ void main() {
       () async {
         final reader = await openBook();
         await after(reader, () => reader.goToContents('text/s1.xhtml#birch'));
-        final first = reader.history.single;
+        final first = moves(reader).single;
 
         await after(reader, () => reader.move(true));
         expect(reader.undoOffer?.action, same(first));
 
         await after(reader, () => reader.goToContents('text/s2.xhtml#cedar'));
-        expect(reader.undoOffer?.action, same(reader.history.first));
-        expect(reader.history.first, isNot(same(first)));
+        expect(reader.undoOffer?.action, same(moves(reader).first));
+        expect(moves(reader).first, isNot(same(first)));
       },
     );
 
@@ -372,7 +407,7 @@ void main() {
       reader.dismissUndo();
 
       expect(reader.undoOffer, isNull);
-      expect(reader.history, hasLength(1));
+      expect(moves(reader), hasLength(1));
     });
 
     test('the open of another book ends the offer', () async {
@@ -382,7 +417,7 @@ void main() {
       await reader.open(reader.book!, epubEdition);
 
       expect(reader.undoOffer, isNull);
-      expect(reader.history, hasLength(1));
+      expect(moves(reader), hasLength(1));
     });
 
     test(
@@ -390,7 +425,7 @@ void main() {
       () async {
         final reader = await openBook();
         await after(reader, () => reader.goToContents('text/s2.xhtml#cedar'));
-        final move = reader.history.single;
+        final move = moves(reader).single;
 
         await reader.setFontSize(26);
         await present(
@@ -403,7 +438,7 @@ void main() {
           ),
         );
 
-        expect(reader.history.single, same(move));
+        expect(moves(reader).single, same(move));
         expect(reader.undoOffer?.action, same(move));
       },
     );
@@ -414,17 +449,17 @@ void main() {
     final reader = await openBook();
     final start = reader.position!;
     await after(reader, () => reader.goToContents('text/s2.xhtml#cedar'));
-    final move = reader.history.single;
+    final move = moves(reader).single;
 
     await after(reader, () => reader.restoreHistory(move.id));
     expect(json(reader.position!), json(start));
-    expect(reader.history.first.kind, HistoryAction.historyRestore);
+    expect(moves(reader).first.kind, HistoryAction.historyRestore);
 
     await after(reader, () => reader.restoreHistory(move.id, previous: false));
     expect(json(reader.position!), json(move.after));
-    expect(reader.history.first.kind, HistoryAction.historyRestore);
-    expect(reader.history, hasLength(3));
-    expect(reader.undoOffer?.action, same(reader.history.first));
+    expect(moves(reader).first.kind, HistoryAction.historyRestore);
+    expect(moves(reader), hasLength(3));
+    expect(reader.undoOffer?.action, same(moves(reader).first));
   });
 
   test('Go to on a move into another ebook edition of the book opens that '
@@ -456,7 +491,7 @@ void main() {
     await reader.open(book, epubEdition);
     await present(reader);
     await after(reader, () => reader.goToContents('text/s2.xhtml#cedar'));
-    final move = reader.history.single;
+    final move = moves(reader).single;
     // The two editions hold the same text, so a place keeps its anchor.
     final there = TextPosition(
       editionId: other.id,
@@ -473,7 +508,10 @@ void main() {
       bookTitle: 'River',
       editionLabel: 'Other EPUB',
     );
-    store.values[accountKey]!['history'] = [...store.moves, crossing.toJson()];
+    store.values[accountKey]!['history'] = [
+      ...store.history,
+      crossing.toJson(),
+    ];
     await reader.refreshPersonalRecords();
     final cedar = reader.position!;
 
@@ -483,7 +521,7 @@ void main() {
 
     expect(reader.edition?.id, other.id);
     expect(shownSection(reader), 2);
-    final restore = reader.history.first;
+    final restore = moves(reader).first;
     expect(restore.kind, HistoryAction.historyRestore);
     expect(json(restore.before), json(cedar));
     expect(json(restore.after), json(there));
@@ -506,12 +544,12 @@ void main() {
     await reader.flush();
 
     expect(shownSection(reader), 0, reason: 'The waiting jump did not run.');
-    expect(reader.history, isEmpty);
+    expect(moves(reader), isEmpty);
     reader.checkInvariants();
 
     await after(reader, () => reader.goToContents('text/s2.xhtml#cedar'));
     expect(
-      reader.history.single.kind,
+      moves(reader).single.kind,
       HistoryAction.chapter,
       reason: 'The new book does not wait for the old jump.',
     );
@@ -542,7 +580,7 @@ void main() {
 
     await after(reader, () => reader.goToContents('text/s2.xhtml#cedar'));
 
-    final move = reader.history.single;
+    final move = moves(reader).single;
     expect(reader.saveFailed, isTrue);
     expect(reader.message, contains('not saved'));
     expect(reader.undoOffer?.action, same(move));
@@ -560,6 +598,272 @@ void main() {
       json(move.after),
     );
     reader.checkInvariants();
+  });
+
+  group('a reading visit', () {
+    test('an open and a Back record one Opened and one Closed entry with '
+        'their places', () async {
+      final reader = await openBook();
+      final start = reader.position!;
+      final opened = reader.history.single;
+      expect(opened.kind, HistoryAction.open);
+      expect(json(opened.before), json(start));
+      expect(json(opened.after), json(start));
+      expect(opened.device, isNull);
+      expect(reader.undoOffer, isNull, reason: 'A visit is no move.');
+
+      await after(reader, () => reader.move(true));
+      await after(reader, () => reader.move(true));
+      final last = reader.position!;
+      reader.closeView(reader.token);
+      await reader.flush();
+
+      final closed = reader.history.first;
+      expect(reader.history, hasLength(2));
+      expect(closed.kind, HistoryAction.close);
+      expect(json(closed.before), json(last));
+      expect(json(closed.after), json(last));
+      expect(
+        [for (final entry in store.history) entry['kind']],
+        ['open', 'close'],
+      );
+    });
+
+    test('a jump asked for before the book shows its first place keeps the '
+        'start of the visit', () async {
+      final reader = await sessionOf(bookOf(epubEdition));
+      await reader.open(bookOf(epubEdition), epubEdition);
+      final jump = reader.goToContents('text/s2.xhtml#cedar');
+
+      await present(reader);
+      await jump;
+      await reader.flush();
+
+      expect(
+        reader.history.where((event) => event.kind == HistoryAction.open),
+        hasLength(1),
+      );
+      reader.checkInvariants();
+    });
+
+    test('a trip to the background and back records nothing', () async {
+      final reader = await openBook();
+
+      // The app saves the open book when it goes to the background.
+      await reader.flush();
+      await after(reader, () => reader.move(true));
+
+      expect(reader.history.single.kind, HistoryAction.open);
+    });
+
+    test('the open of another book ends the visit of the shown book', () async {
+      final reader = await openBook();
+      await after(reader, () => reader.move(true));
+      final last = reader.position!;
+
+      await openIn(reader);
+      await reader.flush();
+
+      expect(
+        [for (final entry in reader.history) entry.kind],
+        [HistoryAction.open, HistoryAction.close, HistoryAction.open],
+      );
+      expect(json(reader.history[1].after), json(last));
+    });
+  });
+
+  group('the opened place from another device', () {
+    late SyncFixture server;
+    late LocalResumeStore phoneB;
+    setUp(() async {
+      HttpOverrides.global = null;
+      SharedPreferences.setMockInitialValues({});
+      server = await SyncFixture.open();
+      addTearDown(server.close);
+      phoneB = LocalResumeStore(deviceName: () async => 'Phone B');
+    });
+
+    /// The actions on the server, as each device downloads them.
+    List<Map<String, dynamic>> served() => [
+      for (final object in server.objects.values)
+        jsonDecode(object['Payload'] as String) as Map<String, dynamic>,
+    ];
+
+    /// Phone A, which saw every action on the server, reads on to the place
+    /// with [anchor] and uploads it.
+    void phoneAReadsTo(String anchor) {
+      final file = epubEdition.files.single;
+      server.publish(
+        RecordJournal(server.session.scope.key, 'phone-a')
+          ..receive(served())
+          ..change(
+            jsonEncode([
+              'reading',
+              'resumes',
+              jsonEncode([epubEdition.id, file.key, file.revision]),
+            ]),
+            {
+              'edition': epubEdition.id,
+              'source': file.key,
+              'revision': file.revision,
+              'anchor': anchor,
+            },
+            device: 'Phone A',
+          ),
+      );
+    }
+
+    /// Phone B's reader, after it read to Birch (its own last place) and
+    /// left the book, and synced. Gives the reader and the anchor of Cedar.
+    Future<(ReaderSession, String)> phoneBReadToBirch(
+      ReadingStore records,
+      Future<void> Function() sync,
+    ) async {
+      final reader = await sessionOf(
+        bookOf(epubEdition),
+        records: records,
+        user: server.session,
+      );
+      await openIn(reader);
+      await after(reader, () => reader.goToContents('text/s2.xhtml#cedar'));
+      final cedar = reader.position!.anchor;
+      await after(reader, () => reader.goToContents('text/s1.xhtml#birch'));
+      reader.closeView(reader.token);
+      await reader.flush();
+      await sync();
+      return (reader, cedar);
+    }
+
+    Future<void> syncB() => phoneB.synchronize(server.session, server.client);
+
+    test('Phone A reads on and syncs. Phone B, which last showed an earlier '
+        'page, syncs and opens the book at A\'s place. It records "Opened at '
+        'the place from Phone A" from its own place, and offers Undo, which '
+        'goes back there', () async {
+      final (reader, cedar) = await phoneBReadToBirch(phoneB.reading, syncB);
+      final birch = reader.history
+          .firstWhere((event) => event.kind == HistoryAction.close)
+          .after;
+      phoneAReadsTo(cedar);
+      await syncB();
+      await reader.refreshPersonalRecords();
+
+      await openIn(reader);
+      await reader.flush();
+
+      expect(shownSection(reader), 2);
+      final opened = reader.history.first;
+      expect(opened.kind, HistoryAction.open);
+      expect(opened.device, 'Phone A');
+      expect(json(opened.before), json(birch));
+      expect(opened.after.anchor, cedar);
+      expect(reader.undoOffer?.action, same(opened));
+
+      await after(reader, reader.undoMove);
+      expect(shownSection(reader), 1);
+      expect(json(reader.position!), json(birch));
+      expect(reader.history.first.kind, HistoryAction.undo);
+    });
+
+    test('a second open at the same place from Phone A records only the '
+        'visit', () async {
+      final (reader, cedar) = await phoneBReadToBirch(phoneB.reading, syncB);
+      phoneAReadsTo(cedar);
+      await syncB();
+      await reader.refreshPersonalRecords();
+      await openIn(reader);
+      reader.closeView(reader.token);
+
+      await openIn(reader);
+      await reader.flush();
+
+      final opened = reader.history.first;
+      expect(opened.kind, HistoryAction.open);
+      expect(json(opened.before), json(opened.after));
+      expect(opened.device, isNull);
+      expect(
+        reader.history.where((event) => event.device != null),
+        hasLength(1),
+      );
+    });
+
+    test('a book that opens at this phone\'s own last place records no such '
+        'move', () async {
+      final (reader, _) = await phoneBReadToBirch(phoneB.reading, syncB);
+
+      await openIn(reader);
+      await reader.flush();
+
+      final opened = reader.history.first;
+      expect(shownSection(reader), 1);
+      expect(opened.kind, HistoryAction.open);
+      expect(json(opened.before), json(opened.after));
+      expect(opened.device, isNull);
+      expect(reader.undoOffer, isNull);
+    });
+
+    test('a sync while the book is open does not move the shown page and '
+        'records nothing', () async {
+      final (reader, cedar) = await phoneBReadToBirch(phoneB.reading, syncB);
+      await openIn(reader);
+      await reader.flush();
+      final shown = reader.visibleAddress;
+      final entries = reader.history.length;
+
+      phoneAReadsTo(cedar);
+      await syncB();
+      await reader.refreshPersonalRecords();
+      await after(reader, () => reader.move(true));
+
+      expect(shownSection(reader), 1);
+      expect(reader.visibleAddress, isNot(same(shown)));
+      expect(reader.history, hasLength(entries));
+    });
+
+    test('a kill right after the open keeps the open move or the old place, '
+        'never neither', () async {
+      sqfliteFfiInit();
+      final phone = await Phone.open('opened-kill');
+      Future<void> sync() =>
+          phone.store.synchronize(server.session, server.client);
+      final (first, cedar) = await phoneBReadToBirch(phone.store.reading, sync);
+      phoneAReadsTo(cedar);
+      await sync();
+      await first.refreshPersonalRecords();
+
+      // The kill stops the save of the open, at the row of its entry.
+      final sql = await phone.separateConnection();
+      await sql.execute(
+        "CREATE TRIGGER cut AFTER INSERT ON record_versions WHEN NEW.record "
+        "LIKE '[\"reading\",\"history\",%' BEGIN SELECT RAISE(ABORT, "
+        "'killed'); END",
+      );
+      await openIn(first);
+      await first.flush();
+      expect(first.saveFailed, isTrue);
+      first.dispose();
+      sessions.remove(first);
+      await sql.execute('DROP TRIGGER cut');
+      await phone.restart();
+
+      final origin = await phone.store.reading.origin(
+        server.session.scope.key,
+        epubEdition,
+      );
+      expect(origin.own?.anchor, isNot(cedar), reason: 'The old place stays.');
+      expect(origin.device, 'Phone A');
+      final reader = await sessionOf(
+        bookOf(epubEdition),
+        records: phone.store.reading,
+        user: server.session,
+      );
+      await openIn(reader);
+      await reader.flush();
+      final opened = reader.history.first;
+      expect(opened.device, 'Phone A');
+      expect(opened.after.anchor, cedar);
+      await phone.store.checkInvariants();
+    });
   });
 
   group('in a PDF', () {
@@ -609,7 +913,7 @@ void main() {
       await after(reader, () => reader.moveChapter(true));
 
       expect((reader.visibleAddress! as PdfAddress).sourcePage, 2);
-      expect(reader.history, isEmpty);
+      expect(moves(reader), isEmpty);
     });
 
     test('a contents entry records a move between source pages', () async {
@@ -617,7 +921,7 @@ void main() {
 
       await after(reader, () => reader.goToContents('page:2'));
 
-      final move = reader.history.single;
+      final move = moves(reader).single;
       expect(move.kind, HistoryAction.chapter);
       expect(move.before.sourcePage, 1);
       expect(move.after.sourcePage, 2);
