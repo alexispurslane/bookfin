@@ -674,8 +674,8 @@ double _sideMargin(double width) {
   return (section.isEven ? section : section - 1) / 2;
 }
 
-/// The rules that the WebView reader adds to each section: epub.js's theme
-/// and image rules and the reader's own style.
+/// The rules that the former WebView reader added to each section: epub.js's
+/// theme and image rules and the reader's own style.
 String _readerCss(PageSettings settings) {
   final side = _sideMargin(settings.width);
   final imageWidth = settings.width - 2 * side;

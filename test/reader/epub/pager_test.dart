@@ -16,9 +16,8 @@ import 'package:bookfin/reader/epub/page_source.dart';
 import 'package:bookfin/reader/epub/pager.dart';
 import 'package:bookfin/reader/epub/places.dart';
 import 'package:bookfin/reader/epub/prepare.dart';
+import 'package:bookfin/reader/epub/publication.dart';
 import 'package:bookfin/reader/epub/search.dart';
-import 'package:flutter_epub_viewer/navigation.dart';
-import 'package:flutter_epub_viewer/publication.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../tool/showcase_media.dart' as media;

@@ -2,10 +2,10 @@ import 'package:bookfin/app/account_binding.dart';
 import 'package:bookfin/catalog/controller.dart';
 import 'package:bookfin/catalog/screen.dart';
 import 'package:bookfin/foundation/theme.dart';
+import 'package:bookfin/reader/epub/publication.dart';
 import 'package:bookfin/reader/screen.dart';
 import 'package:bookfin/reader/session.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_epub_viewer/publication.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../catalog/controller_test.dart'

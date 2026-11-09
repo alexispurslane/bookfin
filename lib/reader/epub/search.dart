@@ -1,5 +1,5 @@
 // Searches an EPUB's spine sections for a phrase, with the rules of the
-// WebView reader (reader.js `searchBook` and passive-search.js
+// former WebView reader (reader.js `searchBook` and passive-search.js
 // `searchPublicationText`), so that a search finds the same hits, in the
 // same order, with the same excerpts and saved locations.
 //
@@ -14,7 +14,6 @@ import 'dart:convert';
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter_epub_viewer/navigation.dart';
 
 import '../../foundation/hop.dart';
 import '../document.dart';

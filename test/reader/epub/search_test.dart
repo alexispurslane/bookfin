@@ -5,10 +5,9 @@ import 'dart:io';
 import 'package:bookfin/reader/document.dart';
 import 'package:bookfin/reader/epub/dom.dart';
 import 'package:bookfin/reader/epub/places.dart';
+import 'package:bookfin/reader/epub/publication.dart';
 import 'package:bookfin/reader/epub/search.dart';
 import 'package:crypto/crypto.dart';
-import 'package:flutter_epub_viewer/navigation.dart';
-import 'package:flutter_epub_viewer/publication.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../tool/showcase_media.dart' as media;

@@ -1,6 +1,6 @@
 ---
 id: tc-rap6
-status: open
+status: in_progress
 deps: [tc-1yif, tc-fz4n, tc-iwqp, tc-pshi, tc-4f3q]
 links: []
 created: 2026-11-08T19:23:13Z
@@ -46,3 +46,7 @@ docs/plans/native-epub-reader.md (epic boo-b2ey). Read the sections named in the
 **2026-11-08T21:57:18Z**
 
 tc-4f3q moved test/reader/epub/trial/book.dart (TrialBook, now CorpusBook, which reads Publication.bookStyles and imageSizes as PageSource does) and support.dart into test/reader/epub/corpus/, and replaced trial/corpus_test.dart and benchmark.dart with test/reader/epub/corpus_test.dart. saved_places_test.dart now imports corpus/book.dart, so deleting test/reader/epub/trial/ leaves it intact. trial/ holds only fidelity_test.dart (the Chromium tooling).
+
+**2026-11-09T06:39:37Z**
+
+Deleted packages/flutter_epub_viewer/ (WebView viewport, resources.dart, navigation.dart, epub.js and reader.js assets, engine sources, engine tests, compare.cjs, licenses), test/reader/epub/trial/, EpubNavigator, ReaderSession.attach, the epub.js license entry, the ReaderResources tests and the EPUB PagePicture preview test. Moved publication.dart to lib/reader/epub/publication.dart (only its import of navigation.dart changed, to ../document.dart). Moved ReadingLocation, ContentsEntry, SearchHit and SearchReport into lib/reader/document.dart unchanged. Test fakes ControlNavigator (was ControlPort) and DeferredSearch now implement DocumentNavigator. pubspec drops flutter_epub_viewer and flutter_inappwebview; the lock loses 10 packages; macOS plugin registration loses InAppWebViewFlutterPlugin. Acceptance differences: grep still finds epub.js and reader.js in lib/ and test/ comments that name where the saved CFI dialect and the kept fixtures came from, as the design keeps those records; flake.nix still lists nodejs_22 (td-yglw); the macOS build and a device open were outside this run. Rewrote docs/reader-implementation.md for the native reader; platforms.md was already current; README's macOS paragraph now says EPUB opens. Tests 1874 -> 1868: the 3 env-gated trial tests and 3 WebView-only tests went away.

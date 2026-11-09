@@ -47,12 +47,6 @@ Future<void> runBookfin({bool gallery = false}) async {
       ['GeoNames city data'],
       '${await rootBundle.loadString('assets/cities/NOTICE.txt')}\n\n${await rootBundle.loadString('assets/cities/CC-BY-4.0.txt')}',
     );
-    yield LicenseEntryWithLineBreaks(
-      ['Bookfin EPUB navigator'],
-      await rootBundle.loadString(
-        'packages/flutter_epub_viewer/assets/THIRD-PARTY-LICENSES.txt',
-      ),
-    );
   });
   final appearance = AppearanceController(LocalAppearanceStore());
   // Every native platform keeps personal records in the record database.

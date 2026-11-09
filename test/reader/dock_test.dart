@@ -22,7 +22,7 @@ import 'native_reader.dart';
 import 'pdf_document_test.dart' show pdfSource;
 import 'pdf_screen_test.dart' show settleNative;
 import 'pdf_session_test.dart' as pdf show book, edition;
-import 'screen_test.dart' show ControlPort;
+import 'screen_test.dart' show ControlNavigator;
 import 'session_test.dart' show source, edition, book;
 
 void main() {
@@ -47,12 +47,12 @@ void main() {
         'progress': progress,
       });
 
-  /// Opens the three-section book on [port], at a place [progress] of the
+  /// Opens the three-section book on [navigator], at a place [progress] of the
   /// way through "two", and shows the reader. With [playback], the reader
   /// offers that audiobook. [night] reports each theme the person chose.
   Future<ReaderSession> openReader(
     WidgetTester tester, {
-    ControlPort? port,
+    ControlNavigator? navigator,
     Playback? playback,
     List<bool>? night,
   }) async {
@@ -69,7 +69,11 @@ void main() {
     });
     await reader.bind(account(), [book]);
     await reader.open(book, edition);
-    reader.attach(reader.token, port ?? ControlPort(), contents);
+    reader.attachDocument(
+      reader.token,
+      navigator ?? ControlNavigator(),
+      contents,
+    );
     await tester.runAsync(pumpEventQueue);
     reader.acceptVisible(
       reader.token,
@@ -292,45 +296,45 @@ void main() {
   group('the chapter arrows', () {
     testWidgets('go to the start of the next chapter, also one that starts '
         'inside a section', (tester) async {
-      final port = ControlPort();
-      final reader = await openReader(tester, port: port);
+      final navigator = ControlNavigator();
+      final reader = await openReader(tester, navigator: navigator);
       await tester.tap(find.byTooltip('Next chapter'));
       await tester.pumpAndSettle();
-      expect(port.seeks.single.$1, 1);
-      expect(port.seeks.single.$2, closeTo(.5, 1e-9), reason: 'Half');
+      expect(navigator.seeks.single.$1, 1);
+      expect(navigator.seeks.single.$2, closeTo(.5, 1e-9), reason: 'Half');
 
       reader.acceptVisible(reader.token, at('OPS/two.xhtml', .75));
       await tester.tap(find.byTooltip('Next chapter'));
       await tester.pumpAndSettle();
-      expect(port.seeks.last, (2, 0.0), reason: 'Three');
+      expect(navigator.seeks.last, (2, 0.0), reason: 'Three');
     }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
 
     testWidgets('go back to the start of the shown chapter, or to the '
         'chapter before when the page is that start', (tester) async {
-      final port = ControlPort();
-      final reader = await openReader(tester, port: port);
+      final navigator = ControlNavigator();
+      final reader = await openReader(tester, navigator: navigator);
       await tester.tap(find.byTooltip('Previous chapter'));
       await tester.pumpAndSettle();
-      expect(port.seeks.single, (1, 0.0), reason: 'the start of Two');
+      expect(navigator.seeks.single, (1, 0.0), reason: 'the start of Two');
 
       reader.acceptVisible(reader.token, at('OPS/two.xhtml', 0));
       await tester.tap(find.byTooltip('Previous chapter'));
       await tester.pumpAndSettle();
-      expect(port.seeks.last, (0, 0.0), reason: 'the start of One');
+      expect(navigator.seeks.last, (0, 0.0), reason: 'the start of One');
     }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
 
     testWidgets('stay put past the last chapter start and before the first', (
       tester,
     ) async {
-      final port = ControlPort();
-      final reader = await openReader(tester, port: port);
+      final navigator = ControlNavigator();
+      final reader = await openReader(tester, navigator: navigator);
       reader.acceptVisible(reader.token, at('OPS/three.xhtml', .5));
       await tester.tap(find.byTooltip('Next chapter'));
       await tester.pumpAndSettle();
       reader.acceptVisible(reader.token, at('OPS/one.xhtml', 0));
       await tester.tap(find.byTooltip('Previous chapter'));
       await tester.pumpAndSettle();
-      expect(port.seeks, isEmpty);
+      expect(navigator.seeks, isEmpty);
       expect(reader.message, isNull);
     }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
   });
@@ -386,8 +390,8 @@ void main() {
     testWidgets('opens a sheet with a Contents tab and a Bookmarks tab', (
       tester,
     ) async {
-      final port = ControlPort();
-      final reader = await openReader(tester, port: port);
+      final navigator = ControlNavigator();
+      final reader = await openReader(tester, navigator: navigator);
       await reader.addBookmark(title: 'River mark');
       await tester.tap(find.byTooltip('Contents'));
       await tester.pumpAndSettle();
@@ -401,7 +405,7 @@ void main() {
       await tester.tap(find.text('River mark'));
       await tester.pumpAndSettle();
       expect(find.byType(ReaderContentsPanel), findsNothing);
-      expect(port.destinations, hasLength(1));
+      expect(navigator.destinations, hasLength(1));
     }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
 
     testWidgets('says how to add a bookmark when there is none', (

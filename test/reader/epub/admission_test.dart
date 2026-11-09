@@ -11,7 +11,7 @@ import 'dart:typed_data';
 import 'package:archive/archive.dart';
 import 'package:bookfin/reader/book_map.dart';
 import 'package:bookfin/reader/document.dart';
-import 'package:flutter_epub_viewer/publication.dart';
+import 'package:bookfin/reader/epub/publication.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as raster;
 

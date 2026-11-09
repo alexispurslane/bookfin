@@ -1,13 +1,13 @@
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter_epub_viewer/publication.dart';
 
 import '../catalog/model.dart';
 import 'document.dart';
-import 'pdf.dart';
+import 'epub/publication.dart';
 import 'mobi.dart';
 import 'ocr.dart';
+import 'pdf.dart';
 
 Future<ReaderDocument> loadReadingDocument(
   Uri uri,

@@ -12,7 +12,7 @@ import 'dart:typed_data';
 import 'package:archive/archive.dart';
 import 'package:bookfin/reader/epub/places.dart';
 import 'package:bookfin/reader/epub/prepare.dart';
-import 'package:flutter_epub_viewer/publication.dart';
+import 'package:bookfin/reader/epub/publication.dart';
 
 import '../../../../tool/showcase_media.dart' as media;
 
