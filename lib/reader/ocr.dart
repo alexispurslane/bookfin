@@ -11,7 +11,8 @@ import '../foundation/hop.dart';
 import 'ocr_storage.dart';
 import 'pdf.dart';
 
-/// The text of a recognized page, and whether its cache file holds it.
+/// The text of a recognized page, and whether its cache file holds the
+/// recognition output.
 typedef _Recognized = ({PdfText text, bool saved});
 
 /// The one owner of English page recognition while Bookfin runs. Android
@@ -336,11 +337,14 @@ class BundledEnglishText implements PdfTextSupply {
   }
 }
 
-/// Recognizes source [page] of [book] and saves its text in the cache
-/// under [key]. The render starts before the first await, so the book
-/// stays open until the page is drawn. After that it needs only the
-/// download: [lease] reads the original for the cache write alone, so a
-/// running page never holds the download while the native worker runs.
+/// Recognizes source [page] of [book] and saves the recognition output in
+/// the cache under [key]. The output is saved whether or not it holds usable
+/// text, so a later visit to a page without text does not run recognition
+/// again. A failure saves nothing. The render starts before the first
+/// await, so the book stays open until the page is drawn. After that it
+/// needs only the download: [lease] reads the original for the cache write
+/// alone, so a running page never holds the download while the native
+/// worker runs.
 Future<_Recognized> _recognizePage(
   PdfBook book,
   int page,
@@ -353,14 +357,12 @@ Future<_Recognized> _recognizePage(
     'recognize',
     {'width': raster.width, 'height': raster.height, 'bgra': raster.bgra},
   );
-  final result = await hop(decodeRecognizedPage, hocr ?? '');
-  if (result.status != PdfTextStatus.candidate) {
-    return (text: result, saved: false);
-  }
+  final output = hocr ?? '';
+  final result = await hop(decodeRecognizedPage, output);
   var saved = false;
   try {
     await lease((original, owned) async {
-      await writeOcrCache(original, book.originalDigest, key, hocr!, owned);
+      await writeOcrCache(original, book.originalDigest, key, output, owned);
       saved = owned();
       return result;
     });
