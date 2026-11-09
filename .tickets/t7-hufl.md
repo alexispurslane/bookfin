@@ -1,6 +1,6 @@
 ---
 id: t7-hufl
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-09T00:24:12Z
