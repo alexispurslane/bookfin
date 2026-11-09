@@ -609,6 +609,12 @@ class LayoutRun {
     if (_rows case final rows?) {
       check(rows.item == _item, 'a table in progress is not the next item');
       check(rows.row < rows.table.rows.length, 'a table has no row left');
+      check(
+        rows.cells.length < rows.table.rows[rows.row].length ||
+            rows.table.rows[rows.row].isEmpty,
+        'a row in progress has all its cells',
+      );
+      rows.cell?.checkInvariants();
     }
     if (_segments case final segments?) {
       check(
@@ -640,6 +646,7 @@ class LayoutRun {
     _held.clear();
     _pendingMarker?.$1.dispose();
     _pendingMarker = null;
+    _rows?.release();
   }
 
   // Starting.
@@ -1201,9 +1208,12 @@ class LayoutRun {
     return _measured[table] = List.unmodifiable(measured);
   }
 
-  /// Lays out the next row of [rows] and adds its slices at the current
-  /// strip position, from the row's fragment [_Rows.part] on: one slice, or
-  /// one for each fragment of a row taller than a page.
+  /// Lays out the next flow item of a cell of the next row of [rows], or
+  /// one segment of a long paragraph. Once each cell is laid out, adds the
+  /// row's slices at the current strip position, from the row's fragment
+  /// [_Rows.part] on: one slice, or one for each fragment of a row taller
+  /// than a page. A row's fragments need the content of all its cells, so
+  /// [rows] keeps the cells laid out until the row is done (tb-i6wg).
   void _tableRow(_Rows rows) {
     final table = rows.table;
     final number = rows.row;
@@ -1215,28 +1225,38 @@ class LayoutRun {
       rows.widths,
       across,
     );
-    // Each cell's box, its left edge and width, and its content laid out at
-    // strip position 0.
+    // The content of each cell laid out at strip position 0, one flow item
+    // in each unit of work, or one segment of a long paragraph.
+    var laid = false;
+    while (rows.cells.length < row.length) {
+      final column = rows.cells.length;
+      final run = rows.cell ??= () {
+        final cell = row[column];
+        final (left, cellWidth) = boxes[column];
+        final start = cell.padding[3] + cell.border[3];
+        final right = cell.padding[1] + cell.border[1];
+        return LayoutRun._cell(
+          this,
+          cell.flow,
+          x + left + start,
+          math.max(0, cellWidth - start - right),
+        );
+      }();
+      if (run._item < run._flow.length) {
+        if (laid) return;
+        run._layOutItem();
+        laid = true;
+        continue;
+      }
+      rows.cells.add(_cellContent(run));
+      rows.cell = null;
+    }
+    // Each cell's box, its left edge and width, and its content.
     final cells = [
       for (final (column, cell) in row.indexed)
-        () {
-          final (left, cellWidth) = boxes[column];
-          final [top, right, bottom, start] = [
-            for (var side = 0; side < 4; side++)
-              cell.padding[side] + cell.border[side],
-          ];
-          return (
-            x + left,
-            cellWidth,
-            cell,
-            _layOutCell(
-              cell.flow,
-              x + left + start,
-              math.max(0, cellWidth - start - right),
-            ),
-          );
-        }(),
+        (x + boxes[column].$1, boxes[column].$2, cell, rows.cells[column]),
     ];
+    rows.cells.clear();
     final fragments = rowFragments([
       for (final (_, _, cell, content) in cells)
         () {
@@ -1358,14 +1378,10 @@ class LayoutRun {
     );
   }
 
-  /// Lays out [flow], the content of a table cell, in a content box that
-  /// starts at [left] and is [width] pixels wide, with its top at strip
-  /// position 0.
-  _Cell _layOutCell(List<FlowItem> flow, double left, double width) {
-    final run = LayoutRun._cell(this, flow, left, width);
-    while (run._item < flow.length) {
-      run._layOutItem();
-    }
+  /// The content of a table cell that [run], a run of the cell's flow,
+  /// laid out to its end. The content takes over the paragraphs that it
+  /// shows, and the paragraphs that show nothing are let go.
+  static _Cell _cellContent(LayoutRun run) {
     // A cell holds the margins of its content.
     run._resolveMargin();
     run._pendingMarker?.$1.dispose();
@@ -2801,6 +2817,21 @@ class _Rows {
   /// The next row to lay out, and its first fragment to add.
   int row;
   int part;
+
+  /// The next row's cells whose content is laid out, and the run of the
+  /// next cell's content while it lays it out.
+  final cells = <_Cell>[];
+  LayoutRun? cell;
+
+  /// Lets go of what the next row laid out.
+  void release() {
+    for (final cell in cells) {
+      cell.release();
+    }
+    cells.clear();
+    cell?.dispose();
+    cell = null;
+  }
 }
 
 /// The content of a table cell laid out at strip position 0: its slices,

@@ -188,6 +188,43 @@ void main() {
     }
   }, timeout: Timeout.none);
 
+  test('no step of a table of tall rows takes much longer than its budget', () {
+    // Roget's Thesaurus has table rows of about 9,700 characters in 10 to
+    // 16 paragraphs, and Plato's dialogues rows of up to 27 paragraphs. A
+    // step stops between the paragraphs of a row's cells.
+    final body =
+        '<table>${[
+          for (var row = 0; row < 30; row++) '<tr><td>Speaker $row</td><td>${[for (var i = 0; i < 16; i++) '<p>${prose(8, 'Speech $row part $i')}</p>'].join()}</td></tr>',
+        ].join()}'
+        '</table>';
+    const budget = Duration(milliseconds: 4);
+    const paragraph = Duration(milliseconds: 4);
+    for (final settings in _settings) {
+      final section = prepared(body, settings: settings);
+      final slowest = _fastest(() {
+        var slowest = Duration.zero;
+        final run = LayoutRun(section);
+        while (!run.done) {
+          final begin = _watch.elapsed;
+          run.step(budget);
+          final took = _watch.elapsed - begin;
+          if (took > slowest) slowest = took;
+        }
+        for (final page in run.pages) {
+          page.dispose();
+        }
+        run.dispose();
+        return slowest;
+      });
+      stdout.writeln(
+        '${settings.fontSize} px: slowest step of 30 rows of 10,000 '
+        'characters in 16 paragraphs '
+        '${_ms(slowest)} ms',
+      );
+      expect(slowest, lessThan(budget + paragraph));
+    }
+  }, timeout: Timeout.none);
+
   test('the layout step of a long hyphenated paragraph takes a few times one '
       'layout of it', () {
     // Darcy's letter in Standard Ebooks' Pride and Prejudice is one

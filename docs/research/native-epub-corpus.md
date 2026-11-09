@@ -124,13 +124,12 @@ The table gives the slowest layout step of a table, in milliseconds, from the co
 
 ### Layout steps after tb-a6zd
 
-tb-a6zd marks the hyphens of a paragraph a part of about 256 code units at a time, built from a line's start. A word joiner then lays out only that part again, not the whole paragraph. The whole paragraph is laid out once at the end, and again only when a mark changes. The table gives the slowest layout steps, in milliseconds, from the main run on the host before and after (load 5 to 16 on 10 cores). "Plato's Dialogues, row" is one table row unit with many paragraphs (tb-i6wg).
+tb-a6zd marks the hyphens of a paragraph a part of about 256 code units at a time, built from a line's start. A word joiner then lays out only that part again, not the whole paragraph. The whole paragraph is laid out once at the end, and again only when a mark changes. After a mark changes there, the parts go on from the line before the changed mark. The table gives the slowest layout steps, in milliseconds, from the main run on the host before and after (load 5 to 16 before, 8 to 12 after, on 10 cores).
 
 | Book | Section, item | Before, 20 px | Before, 26 px | After, 20 px | After, 26 px |
 | --- | --- | --- | --- | --- | --- |
-| Pride and Prejudice (Standard Ebooks), Darcy's letter | 36, 19 | 105 (20 layouts) | 187 (32 layouts) | 17 | 14 |
-| Plato's Dialogues, slowest paragraph | 30, 184 | 125 (20 layouts) | 126 (17 layouts) | 28 | 39 to 49 |
-| Plato's Dialogues, row | 30, 1244 | 110 | 212 (158 layouts) | 59 | 73 |
+| Pride and Prejudice (Standard Ebooks), Darcy's letter | 36, 19 | 105 (20 layouts) | 187 (32 layouts) | 16 | 15 |
+| Plato's Dialogues, slowest paragraph | 30, 184 | 125 (20 layouts) | 126 (17 layouts) | 26 | 34 |
 
 - The on-demand benchmark `step_budget_test.dart` lays out a justified paragraph of about 15,000 characters of long words. With hyphens, its step took 669 ms before and 14 to 17 ms after. Without hyphens it takes 4 to 6 ms.
 - The paragraphs of Plato's Dialogues have many word joiners, so their parts cost 3 to 6 times one layout of the paragraph.
@@ -148,6 +147,23 @@ tb-2l69 lays out a long paragraph with hard breaks in segments: whole lines that
 - The corpus run of Leaves of Grass (EPUB and Kindle) and The Origin of Species lists no paragraph over 8 ms at either page setting, and all three pass every check.
 - The on-demand benchmark lays out 2,000 lines of verse in one `pre` element. Its slowest step with a budget of 4 ms took 23 ms before and 4.3 ms after. A run from a page start three quarters in cuts its first page in 0.5 ms. A search for a place near the end, in a section that no run laid out, takes steps of at most 4.3 ms.
 - A page dump of 47 corpus books at both page settings is the same before and after, for all 4,822 section layouts.
+
+### Layout steps after tb-i6wg
+
+tb-i6wg lays out a table row one flow item of a cell in each unit of work, or one segment of a long paragraph. The row keeps its laid-out cells until the last one is done, because the row's fragments need the content of all its cells. Then the row adds its slices in the same unit. The table gives the slowest table unit, in milliseconds, from the main run on the host before and after (load 8 to 12 on 10 cores).
+
+| Book | Section, item | Before, 20 px | Before, 26 px | After, 20 px | After, 26 px |
+| --- | --- | --- | --- | --- | --- |
+| Roget's Thesaurus | 1, 39 | 7 to 12 | 7 to 12 | under 6 | under 6 |
+| Plato's Dialogues, row of 22 paragraphs | 30, 1244 | 110 | 212 (158 layouts) | 6 | 8 |
+| Plato's Dialogues, slowest table unit | 30, 1292 | not measured | not measured | 13 | 16 |
+
+- The ticket's 121 ms for Roget's slowest row came from a cold corpus run under heavy load. In a warm run on a lighter host, the row took 7 to 12 ms before tb-i6wg.
+- The slowest table unit of Plato's Dialogues is now one paragraph of a cell, a hyphenated paragraph of row 14 of item 1292. Its cost is the cost of one paragraph (see "Layout steps after tb-a6zd").
+- The on-demand benchmark `step_budget_test.dart` lays out a table of 30 rows, each with 16 paragraphs in one cell. Its slowest step with a budget of 4 ms took 8.2 ms before and 4.3 to 5.4 ms after.
+- The corpus run times each section once, from cold caches, so its numbers are higher. It lists no table unit of Roget's Thesaurus over 8 ms at either page setting. The slowest table unit of Plato's Dialogues takes 17 ms at 20 pixels and 18 ms at 26 pixels. After t1-um08 they took 89 and 194 ms. Both books pass every check, with runs from every page start.
+- A page dump of 48 corpus books at both page settings is the same before and after, for all 4,886 section layouts.
+- Roget's Thesaurus still has slow paragraphs. Each section of its index is one justified paragraph of up to 54,000 characters with no hard break, so it is one unit of work: up to 71 ms at 20 pixels and 76 ms at 26 pixels in the corpus run (tb-3xvr).
 
 ### The run before the merge
 
