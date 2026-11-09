@@ -104,3 +104,36 @@ Two smaller costs stay as they are. The first frame after the shown page takes 2
 3. Read the results with `adb -s <device> logcat -d | grep OPEN_BENCHMARK`. The comment at the top of the tool describes the plan and each result.
 
 The first launch after an install only finds the saved addresses. An install clears them, because they are in the app's cache directory.
+
+## After t7-bbv1: the whole book, in two directions
+
+Ticket t7-bbv1 changed the order of work (docs/plans/native-epub-reader.md, "Order of work"). Each section now has a worker call of its own. Two directions lay out the sections after and before the shown one until the whole book is laid out. An idle layout step also waits while a frame is scheduled.
+
+The device was a new arm64 Android 36 emulator (bookfin-bbv1: Pixel 7 profile, 4 virtual CPUs, 2 GB) with host graphics (`-gpu host`). With software graphics, the raster thread took 64 ms per frame, so frame times showed only the raster thread. Other agents loaded the Mac (a load of 7 to 21 on 10 cores), so times vary by 20 to 50 percent between runs. Each build had 3 launches per book, which gives 15 warm samples. The tables give warm medians in milliseconds. The jump plans used the place's section as jumpFrom, except Keats (5). Hamlet's place is act 1 (section 4), and its turn goes from act 2 (section 5) into act 3.
+
+| Book | Turn before | Turn after | Turn to the shown page after | Jump before | Jump after | Open before | Open after |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Frankenstein | 35 | 15 | 10 | 33 | 21 | 305 | 219 |
+| Hamlet | 214 | 184 | 115 | 100 | 90 | 733 | 689 |
+| Keats | 492 | 51 | 23 | 532 | 521 | 1,439 | 1,679 |
+| Jane Eyre | 30 | 33 | 22 | 38 | 36 | 1,011 | 1,160 |
+| Moby-Dick (MOBI) | 37 | 27 | 17 | 33 | 24 | 525 | 495 |
+
+The turn into Keats' section 4 no longer waits for section 2. Hamlet's turn reaches the shown page in about the time of act 3's own prepare (46 to 68 ms) and its first page (24 ms). The open and the jump do not change: the new order starts only after the first page is shown, and the open's differences follow admission, which the change does not touch.
+
+The stay opens each book at its place and stays there, while the app asks for a frame every 50 ms. A frame is late when its UI part, from the vsync to the end of its build, takes more than 16.7 ms.
+
+| Book | Sections | Whole book laid out | Frames, late, late frames that waited for an idle step | Peak resident memory (MB) | Baseline: late frames in its first 5 s |
+| --- | --- | --- | --- | --- | --- |
+| Frankenstein | 32 | 0.7 to 1.0 s | 50, 0, 0 | 274 to 289 | 0 of 201 |
+| Hamlet | 12 | 1.3 to 1.5 s | 85, 3, 0 | 276 to 277 | 4 of 198 |
+| Keats | 6 | 2.6 to 3.5 s | 155, 50, 0 | 305 to 308 | 22 of 185 |
+| Jane Eyre | 57 | 2.1 to 2.2 s | 131, 0, 0 | 284 to 285 | 0 of 200 |
+| Moby-Dick (MOBI) | 144 | 2.6 to 4.9 s | 208, 3, 0 | 285 to 288 | 0 of 202 |
+| Ulysses (Standard Ebooks) | 25 | 4.7 to 4.9 s | 191, 6, 0 | 295 | 14 of 194 |
+
+No late frame waited for an idle step. Every late frame in Hamlet, Keats and Ulysses waited for urgent steps: the main run up to the shown page, which the previous page needs. The baseline has the same frames. Moby-Dick's 3 late frames waited for no step. Ticket tc-yxhv follows up the urgent steps. Before the new rule for idle steps, a requested frame waited for about five idle steps in a row (20 to 44 ms), and Keats missed 53 to 64 vsyncs while its book was laid out.
+
+Ulysses gives the clean comparison of memory, because both builds ran its stay alone in a new process. Its peak resident memory was 279 to 280 MB in the baseline's first 5 s, which laid out 3 sections, and 295 MB with the whole book laid out (25 sections). In the other books, the stay followed the open, turn and jump runs in the same process, so their peaks also hold what those runs left. They stayed from 273 to 308 MB. The page starts of every section stay, but a section more than one section away from the shown one lets go of its prepared text once its main run ends.
+
+A worker call per section costs the calling isolate 0.1 to 3 ms to start (`startCall`, the copy of its arguments). Its result comes back through the worker's exit without a copy. A long-lived worker per direction would copy each result back on the UI isolate: 89 ms for Keats' section 2 (see above). So each direction is a chain of `Isolate.run` calls, one section each.
