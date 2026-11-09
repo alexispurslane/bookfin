@@ -24,7 +24,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'helpers.dart';
 import 'page_source_test.dart' show TestScheduler;
-import 'pager_test.dart' show linkedBook, showcaseBook;
+import 'pager_test.dart' show linkedBook, noteBook, showcaseBook;
 
 void main() {
   setUpAll(loadReaderFont);
@@ -35,7 +35,7 @@ void main() {
   final reported = <EpubAddress>[];
   final warnings = <String>[];
   final turns = <bool>[];
-  final links = <String>[];
+  final links = <EpubLink>[];
   var taps = 0;
   final boundary = GlobalKey();
 
@@ -273,7 +273,7 @@ void main() {
     );
 
     await tester.tapAt(pointOf(link, 4));
-    expect(links, ['text/s1.xhtml#target']);
+    expect(links, [(href: 'text/s1.xhtml#target', noteref: false)]);
     expect(taps, 0);
 
     await tester.tapAt(pointOf(plain, 2));
@@ -493,5 +493,99 @@ void main() {
     expect(tester.state(find.byType(EpubViewport)), same(state));
     await settle(tester);
     expect(pager().shown.value, same(before));
+  });
+
+  group('the note view', () {
+    /// The note of the note reference of [noteBook], laid out at [width],
+    /// after the viewport shows the book's first page.
+    Future<LaidNote> laidNote(WidgetTester tester, {double width = 412}) async {
+      open(noteBook());
+      await show(tester);
+      await settle(tester, () => pager().shown.value != null);
+      LaidNote? note;
+      await finish(
+        tester,
+        pager()
+            .note((href: 'text/s1.xhtml#note-1', noteref: true), width: width)
+            .then((laid) => note = laid),
+      );
+      addTearDown(note!.dispose);
+      return note!;
+    }
+
+    /// The point of [note]'s view at code unit [index] of the first text
+    /// that holds [word].
+    Offset pointIn(LaidNote note, String word, [int index = 0]) {
+      final page = note.page;
+      final text = page.dom.texts.firstWhere(
+        (text) => text.text.contains(word),
+      );
+      final place = EpubPlace(
+        page.section,
+        text.order,
+        text.text.indexOf(word) + index,
+      );
+      for (final piece in page.pieces) {
+        for (var unit = 0; unit < piece.map.length; unit++) {
+          if (piece.map.textPlaceAt(unit) != place) continue;
+          return piece.paragraph
+              .getBoxesForRange(unit, unit + 1)
+              .first
+              .toRect()
+              .shift(Offset(piece.x, piece.y - page.top))
+              .center;
+        }
+      }
+      throw StateError('$word is not in the note.');
+    }
+
+    testWidgets('the note view is as tall as the note, and a screen reader '
+        'reads its text block by block', (tester) async {
+      final handle = tester.ensureSemantics();
+      final note = await laidNote(tester, width: 300);
+      await tester.pumpWidget(
+        onScreen(
+          Align(
+            alignment: Alignment.topLeft,
+            child: EpubNoteView(note: note, onCopy: (_) {}),
+          ),
+        ),
+      );
+
+      expect(
+        tester.getSize(find.byType(EpubNoteView)),
+        Size(300, note.page.height),
+      );
+      expect(
+        find.semantics.byLabel('The lantern note explains the harbour.'),
+        findsOneWidget,
+      );
+      expect(
+        find.semantics.byLabel('Its second paragraph ends it.'),
+        findsOneWidget,
+      );
+      handle.dispose();
+    });
+
+    testWidgets('a long press selects a word of the note, and Copy reports '
+        'it through onCopy', (tester) async {
+      final note = await laidNote(tester);
+      final copies = <String>[];
+      await tester.pumpWidget(
+        onScreen(
+          Align(
+            alignment: Alignment.topLeft,
+            child: EpubNoteView(note: note, onCopy: copies.add),
+          ),
+        ),
+      );
+
+      await tester.longPressAt(pointIn(note, 'lantern', 2));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Copy'));
+      await tester.pumpAndSettle();
+
+      expect(copies, ['lantern']);
+    });
   });
 }

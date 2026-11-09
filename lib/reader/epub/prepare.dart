@@ -126,6 +126,64 @@ class PreparedSection {
   /// The embedded faces that [styles] draw with. Each must be registered
   /// (`BookFonts.load`) before the section lays out.
   final List<FontFaceRule> fonts;
+
+  /// The flow of [element] alone, as a section to lay out on a page of
+  /// [settings], or null when no flow item shows a node of [element].
+  ///
+  /// It holds the flow items from the first to the last that shows a node
+  /// of [element], inside the boxes that are open before the first one. So
+  /// its lines sit across the page as they do in the whole section, with
+  /// their list markers. A paragraph that holds a node of [element] comes
+  /// whole. [settings] has the text size and the theme of [this.settings];
+  /// its width and its height can differ.
+  PreparedSection? excerpt(DomElement element, PageSettings settings) {
+    var last = element as DomNode;
+    while (last is DomElement && last.children.isNotEmpty) {
+      last = last.children.last;
+    }
+    final (from, to) = (element.order, last.order);
+    bool inside(int node) => node >= from && node <= to;
+    bool runShows(InlineRun run) => switch (run) {
+      TextRun(:final node) ||
+      BreakRun(:final node) ||
+      ImageRun(:final node) => inside(node),
+      RaisedRun(:final node, :final text) =>
+        inside(node) || text.runs.any(runShows),
+    };
+    bool shows(FlowItem item) => switch (item) {
+      ParagraphItem(:final text) => text.runs.any(runShows),
+      ImageItem(:final node) => inside(node),
+      TableItem(:final rows) => rows.any(
+        (row) => row.any((cell) => cell.flow.any(shows)),
+      ),
+      BlockStart() || BlockEnd() => false,
+    };
+    final first = flow.indexWhere(shows);
+    if (first < 0) return null;
+    final end = flow.lastIndexWhere(shows) + 1;
+    final open = <FlowItem>[];
+    for (final item in flow.take(first)) {
+      if (item is BlockStart) open.add(item);
+      if (item is BlockEnd) open.removeLast();
+    }
+    var depth = open.length;
+    for (final item in flow.getRange(first, end)) {
+      if (item is BlockStart) depth++;
+      if (item is BlockEnd) depth--;
+    }
+    return PreparedSection._(
+      index,
+      settings,
+      dom,
+      [
+        ...open,
+        ...flow.getRange(first, end),
+        for (var close = 0; close < depth; close++) const BlockEnd(),
+      ],
+      styles,
+      fonts,
+    );
+  }
 }
 
 /// Prepares each of [sources] for a page of [settings].

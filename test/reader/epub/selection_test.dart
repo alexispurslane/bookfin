@@ -52,7 +52,7 @@ void main() {
   late PageSource source;
   EpubPager? opened;
   final turns = <bool>[];
-  final links = <String>[];
+  final links = <EpubLink>[];
   final copies = <String>[];
   var taps = 0;
 
@@ -335,7 +335,7 @@ void main() {
     expect(copies, ['lantern']);
     expect(links, isEmpty);
     await tester.tapAt(pointOf('lantern', 2));
-    expect(links, ['text/s1.xhtml#target']);
+    expect(links, [(href: 'text/s1.xhtml#target', noteref: false)]);
   });
 
   testWidgets('a long press that moves before it lifts extends the selection '

@@ -211,4 +211,84 @@ void main() {
     expect(cache[settings(night: true)], isNull);
     expect(cache[settings(fontSize: 23)], isNull);
   });
+
+  group('excerpt', () {
+    /// The DOM text that the lines of [chapter] show, line by line.
+    List<String> linesOf(ChapterLayout chapter) => [
+      for (final slice in chapter.slices)
+        if (slice.piece case final piece?)
+          [
+            for (var unit = slice.units.$1; unit < slice.units.$2; unit++)
+              if (piece.map.textPlaceAt(unit) case final place?)
+                String.fromCharCode(
+                  chapter.section.dom
+                      .textAt(place)!
+                      .text
+                      .codeUnitAt(place.offset),
+                ),
+          ].join().trim(),
+    ];
+
+    const notes =
+        '<h1>Chapter</h1><p>Before the notes.</p><ol epub:type="endnotes">'
+        '<li id="note-1" epub:type="endnote"><p>The first note.</p></li>'
+        '<li id="note-2" epub:type="endnote"><p>The second note.</p>'
+        '<p>Its second paragraph.</p></li></ol><p>After the notes.</p>';
+
+    test('the excerpt of an element lays out only the element\'s text, on a '
+        'page of the given settings', () async {
+      await loadReaderFont();
+      final whole = prepared(notes);
+      const sheet = PageSettings(
+        width: 300,
+        height: 100000,
+        fontSize: 20,
+        night: true,
+      );
+      final excerpt = whole.excerpt(whole.dom.elementById('note-2')!, sheet)!;
+      final chapter = layoutSection(excerpt);
+      addTearDown(chapter.dispose);
+
+      expect(linesOf(chapter), ['The second note.', 'Its second paragraph.']);
+      expect(chapter.pages, hasLength(1));
+      expect(chapter.settings, sheet);
+      expect(excerpt.dom, same(whole.dom));
+    });
+
+    test('an excerpt keeps the boxes around the element, so its lines and '
+        'its list marker sit as they do on the page', () async {
+      await loadReaderFont();
+      final whole = prepared(notes);
+      final page = layoutSection(whole);
+      addTearDown(page.dispose);
+      final excerpt = layoutSection(
+        whole.excerpt(whole.dom.elementById('note-2')!, readerPage)!,
+      );
+      addTearDown(excerpt.dispose);
+
+      double leftOf(ChapterLayout chapter, String text) => chapter.slices
+          .firstWhere(
+            (slice) =>
+                slice.start != null &&
+                chapter.section.dom.textAt(slice.start!)?.text == text,
+          )
+          .piece!
+          .x;
+      expect(
+        leftOf(excerpt, 'The second note.'),
+        leftOf(page, 'The second note.'),
+      );
+      expect(excerpt.decorations.whereType<MarkerDecoration>(), hasLength(1));
+    });
+
+    test('an element that no flow item shows, such as one that the style '
+        'hides, has no excerpt', () {
+      final whole = prepared(
+        '<p>Text.</p><aside id="n"><p>Hidden.</p></aside><aside id="e"/>',
+        css: '#n { display: none }',
+      );
+      expect(whole.excerpt(whole.dom.elementById('n')!, readerPage), isNull);
+      expect(whole.excerpt(whole.dom.elementById('e')!, readerPage), isNull);
+    });
+  });
 }

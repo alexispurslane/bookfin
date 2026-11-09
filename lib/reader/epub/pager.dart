@@ -18,6 +18,7 @@ import '../document.dart';
 import 'dom.dart';
 import 'layout.dart';
 import 'page_source.dart';
+import 'paint.dart';
 import 'places.dart';
 import 'prepare.dart';
 import 'publication.dart';
@@ -31,6 +32,28 @@ class ShownPage {
   /// The page's picture. The page source owns it, and it stays usable while
   /// the page is shown.
   final ui.Picture picture;
+}
+
+/// A link on the shown page: its destination, relative to the package
+/// document's directory, and whether it is a note reference
+/// ([isNoteReference]).
+typedef EpubLink = ({String href, bool noteref});
+
+/// A note laid out for the note sheet: one page that holds the note's
+/// flow, and its picture, which draws no paper. Its owner disposes it.
+class LaidNote {
+  LaidNote._(this.page, this.picture, this._images);
+  final LaidPage page;
+  final ui.Picture picture;
+  final Iterable<ui.Image> _images;
+
+  void dispose() {
+    picture.dispose();
+    page.dispose();
+    for (final image in _images) {
+      image.dispose();
+    }
+  }
 }
 
 /// The owner of the shown place and the shown page of one open book.
@@ -168,7 +191,7 @@ class EpubPager implements DocumentNavigator {
   /// The destination of the link under [point] of the shown page, relative
   /// to the package document's directory, or null. [point] is in logical
   /// pixels from the page's top left corner.
-  String? linkAt(ui.Offset point) {
+  EpubLink? linkAt(ui.Offset point) {
     final shown = _shown.value;
     final section = _section;
     if (shown == null || section == null) return null;
@@ -196,6 +219,69 @@ class EpubPager implements DocumentNavigator {
     return null;
   }
 
+  /// The note that [link] shows over the page, laid out [width] pixels
+  /// wide with the shown page's text size and theme, or null when the link
+  /// jumps instead (see [noteOf]), or when no flow item shows its note,
+  /// such as a note that the book's style hides. It moves no place and
+  /// reports nothing.
+  ///
+  /// The note's flow lays out in steps between frames. Its images are
+  /// decoded at the screen's pixel ratio before it is drawn.
+  Future<LaidNote?> note(EpubLink link, {required double width}) async {
+    if (_settings == null) throw StateError('No page is shown yet.');
+    if (!(width > 0 && width.isFinite)) {
+      throw ArgumentError.value(width, 'width', 'must be above 0');
+    }
+    final (index, fragment) = _destinationOf(link.href);
+    final prepared = await _source.section(index);
+    final target = fragment == null ? null : prepared.dom.elementById(fragment);
+    final note = noteOf(target, reference: link.noteref);
+    final excerpt = note == null
+        ? null
+        : prepared.excerpt(
+            note,
+            PageSettings(
+              width: width,
+              height: _noteHeight,
+              fontSize: prepared.settings.fontSize,
+              night: prepared.settings.night,
+            ),
+          );
+    if (excerpt == null) return null;
+    final run = LayoutRun(excerpt);
+    try {
+      while (!run.done) {
+        run.step(_noteStep);
+        // The next step waits for the event loop, so frames go on.
+        if (!run.done) await Future<void>.delayed(Duration.zero);
+        if (_disposed) throw StateError('The pager is disposed.');
+      }
+    } finally {
+      run.dispose();
+    }
+    final page = run.pages.single;
+    final scale =
+        ui.PlatformDispatcher.instance.implicitView?.devicePixelRatio ?? 1;
+    final images = await decodeImages(
+      [page],
+      (path) => _publication.resources[path],
+      scale: scale,
+    );
+    return LaidNote._(
+      page,
+      drawPage(page, images, paper: false),
+      images.values,
+    );
+  }
+
+  /// The page height that a note lays out on, so that one page holds it.
+  static const _noteHeight = 1e6;
+
+  /// The time that one step of a note's layout takes at most, about a
+  /// quarter of a frame.
+  static const _noteStep = Duration(milliseconds: 4);
+
+  /// Turns to the page after or before the shown page, and reports it. At
   /// Turns to the page after or before the shown page, and reports it. At
   /// the book's ends it does nothing.
   @override
@@ -233,21 +319,8 @@ class EpubPager implements DocumentNavigator {
     await _presented.future;
     return _run(() async {
       final steps = await _spineSteps();
-      final url = Uri(
-        scheme: 'https',
-        host: 'book',
-        path: '/${_publication.packagePath}',
-      ).resolve(href);
-      final index = url.scheme == 'https' && url.host == 'book' && !url.hasQuery
-          ? _publication.spine.indexOf(url.pathSegments.join('/'))
-          : -1;
-      if (index < 0) {
-        throw ArgumentError.value(href, 'href', 'is not a section of the book');
-      }
+      final (index, fragment) = _destinationOf(href);
       final dom = (await _source.section(index)).dom;
-      final fragment = url.hasFragment && url.fragment.isNotEmpty
-          ? Uri.decodeComponent(url.fragment)
-          : null;
       final place = destination(dom, index, fragment);
       if (place == null) {
         throw ArgumentError.value(href, 'href', 'names no element');
@@ -594,9 +667,29 @@ class EpubPager implements DocumentNavigator {
     }());
   }
 
-  /// The destination of the nearest link that holds [place], relative to
-  /// the package document's directory, or null when none does.
-  String? _linkOf(PreparedSection section, EpubPlace place) {
+  /// The spine index and the decoded fragment, or null for none, of
+  /// [href], relative to the package document's directory. Throws when it
+  /// names no section of the spine.
+  (int, String?) _destinationOf(String href) {
+    final url = Uri(
+      scheme: 'https',
+      host: 'book',
+      path: '/${_publication.packagePath}',
+    ).resolve(href);
+    final index = url.scheme == 'https' && url.host == 'book' && !url.hasQuery
+        ? _publication.spine.indexOf(url.pathSegments.join('/'))
+        : -1;
+    if (index < 0) {
+      throw ArgumentError.value(href, 'href', 'is not a section of the book');
+    }
+    final fragment = url.hasFragment && url.fragment.isNotEmpty
+        ? Uri.decodeComponent(url.fragment)
+        : null;
+    return (index, fragment);
+  }
+
+  /// The nearest link that holds [place], or null when none does.
+  EpubLink? _linkOf(PreparedSection section, EpubPlace place) {
     final node = section.dom.nodeAt(place.node);
     var element = node is DomText ? node.parent : node as DomElement;
     while (element != null &&
@@ -625,8 +718,12 @@ class EpubPager implements DocumentNavigator {
       directory.removeAt(0);
       parts.removeAt(0);
     }
-    return '${[...directory.map((_) => '..'), ...parts.map(Uri.encodeComponent)].join('/')}'
-        '${url.hasFragment ? '#${url.fragment}' : ''}';
+    return (
+      href:
+          '${[...directory.map((_) => '..'), ...parts.map(Uri.encodeComponent)].join('/')}'
+          '${url.hasFragment ? '#${url.fragment}' : ''}',
+      noteref: isNoteReference(element),
+    );
   }
 
   /// The spine step of each section's CFIs, read once from the package

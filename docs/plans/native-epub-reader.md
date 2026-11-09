@@ -440,7 +440,14 @@ What E17 decided (tc-cl77):
 
 ### Footnote links
 
-This is a product fork. See "Product fork for the user".
+On 2026-11-08 the user chose option B of "Product fork for the user" (tc-406m). The owners:
+
+- `places.dart` decides what a note is. `isNoteReference` reads a link's `epub:type` (`noteref`) or role (`doc-noteref`). `noteOf` gives the note that a link to a target shows: the nearest element at or around the target whose `epub:type` has `footnote`, `endnote`, `rearnote` or `note`, or whose role is `doc-footnote` or `doc-endnote`. Without one, a note reference shows its target, or the nearest element around it with text.
+- `linkAt` gives an `EpubLink`: the destination and whether the link is a note reference. The viewport reports it through `onLink`.
+- `PreparedSection.excerpt` (prepare.dart) gives the flow of one element inside the boxes that are open around it. So a note lays out with the renderer, in the book's own text and style, with its list number.
+- `EpubPager.note` lays the excerpt out on one tall page at the sheet's width, in steps, and draws it without paper. It moves no place and reports nothing.
+- `ReaderScreen` is the controller. It asks the pager for the note, shows `ReaderNotePanel` on the plain sheet, and owns the note until the sheet is gone. Go to note calls `goToContents` with the link's destination. A link without a note, or a note that no flow item shows, jumps as before.
+- `EpubNoteView` draws the note. It shares the page's semantics nodes, selection and Copy.
 
 ### MOBI
 

@@ -18,6 +18,7 @@ import 'book_map.dart';
 import 'session.dart';
 import 'document.dart';
 import 'epub/page_source.dart' show PageNumber;
+import 'epub/pager.dart' show EpubLink, EpubPager, LaidNote;
 import 'epub/viewport.dart';
 import 'pdf.dart';
 import 'pdf_viewport.dart';
@@ -144,6 +145,53 @@ class _ReaderScreenState extends State<ReaderScreen> {
     await route?.completed;
     reader.cancelSearch();
   }
+
+  /// Follows [link] of [pager]'s shown page. A link to a note shows the
+  /// note on the reader's plain sheet, and the page and the saved place
+  /// stay. The sheet's Go to note then shows the note in the book. Any
+  /// other link goes to its destination. A link that the pager cannot read
+  /// goes to its destination too, which reports the failure.
+  Future<void> _followLink(EpubPager pager, EpubLink link) async {
+    LaidNote? note;
+    try {
+      note = await pager.note(link, width: _noteWidth(context));
+    } on ArgumentError {
+      // The link names no section of the book.
+    } on Exception {
+      // Its section could not be prepared.
+    }
+    if (!mounted || !identical(reader.pager, pager)) {
+      note?.dispose();
+      return;
+    }
+    if (note == null) return reader.goToContents(link.href);
+    var go = false;
+    ModalRoute<Object?>? route;
+    await _sheet((sheet) {
+      route ??= ModalRoute.of(sheet);
+      return ReaderNotePanel(
+        note: note!,
+        onCopy: (text) =>
+            unawaited(Clipboard.setData(ClipboardData(text: text))),
+        onGoToNote: () {
+          go = true;
+          Navigator.pop(sheet);
+        },
+      );
+    });
+    // The sheet slides away for a moment after it closes, and draws the note
+    // until it is gone.
+    await route?.completed;
+    note.dispose();
+    if (go && mounted && identical(reader.pager, pager)) {
+      await reader.goToContents(link.href);
+    }
+  }
+
+  /// The width that a note lays out at: the plain sheet's, which is the
+  /// screen's, at most 640 pixels, as a Material 3 bottom sheet is.
+  static double _noteWidth(BuildContext context) =>
+      math.min(MediaQuery.sizeOf(context).width, 640);
 
   /// Asks for a new title and note for [bookmark] in the shared bookmark
   /// editor, and saves them unless the person cancels.
@@ -439,7 +487,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
         if (mounted) setState(() => _controls = !_controls);
       },
       onTurn: (forward) => unawaited(reader.move(forward)),
-      onLink: (href) => unawaited(reader.goToContents(href)),
+      onLink: (link) => unawaited(_followLink(pager, link)),
       onCopy: (text) => unawaited(Clipboard.setData(ClipboardData(text: text))),
     );
   }
@@ -793,6 +841,67 @@ class ReaderContentsPanel extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    ),
+  );
+}
+
+/// A note of the book, [note], on the reader's sheet, under the heading
+/// Note, with Go to note under it. A long note scrolls. Go to note reports
+/// [onGoToNote], and Copy of selected text reports [onCopy].
+class ReaderNotePanel extends StatelessWidget {
+  const ReaderNotePanel({
+    super.key,
+    required this.note,
+    required this.onGoToNote,
+    required this.onCopy,
+  });
+  final LaidNote note;
+
+  /// Reports a tap on Go to note.
+  final VoidCallback onGoToNote;
+
+  /// Reports the text that the person chose to copy.
+  final ValueChanged<String> onCopy;
+
+  @override
+  Widget build(BuildContext context) => SafeArea(
+    child: ConstrainedBox(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.sizeOf(context).height * .7,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Semantics(
+              header: true,
+              child: Text(
+                'Note',
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+            ),
+          ),
+          Flexible(
+            child: SingleChildScrollView(
+              child: Center(
+                child: EpubNoteView(note: note, onCopy: onCopy),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: FilledButton.tonal(
+                onPressed: onGoToNote,
+                child: const Text('Go to note'),
+              ),
+            ),
+          ),
+        ],
       ),
     ),
   );
