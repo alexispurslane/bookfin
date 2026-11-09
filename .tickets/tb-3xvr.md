@@ -1,6 +1,6 @@
 ---
 id: tb-3xvr
-status: in_progress
+status: closed
 deps: [t7-bbv1]
 links: []
 created: 2026-11-09T14:49:11Z
@@ -31,3 +31,7 @@ This ticket comes right after t7-bbv1. Whole-book layout in the background visit
 - Roget's index (76, 12) took 43 to 56 ms warm and up to 119 ms cold in one unit. Its segments take 3 to 6 ms warm. The corpus's longest step fell from 39.5 ms to 19.6 ms, and steps over 10 ms from 23 book and settings pairs to 3. The 19.6 ms step is a table row measure of Plato's Dialogues, the same before (t2-wcab).
 - Runs from every page start cut the same pages, and saved places resolve (corpus test and trial tests).
 - Page dump. 36 section layouts changed a line at the very limit of its width, 22 of them in Hong Lou Meng. A segment measures with less float error than the whole paragraph. The longer of the two lines passes the width by at most 0.0098 px, and the new line is sometimes the longer one, so these are not proved wrong before. This needs the user's decision.
+
+## Decision (orchestrator, 2026-11-09)
+
+Accepted: 36 section layouts break one line differently after segmentation, where the line sits within the 0.01 px fit tolerance of the line width and neither break can be shown wrong. Saved places keep the first visible character, so no place moves. Each app install changes the page map key (t5-9tbu), so no kept page map from before this change is used.
