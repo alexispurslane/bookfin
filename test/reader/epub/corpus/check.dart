@@ -90,7 +90,7 @@ class SettingsReport {
   /// The page starts whose CFI does not open their own page.
   final brokenPlaces = <String>[];
 
-  /// The pages that show no line of text and no image.
+  /// The pages that draw nothing: no line of text, no image and no rule.
   final blankPages = <String>[];
 
   /// The runs from a page start, the pages that they cut, and the runs
@@ -98,10 +98,6 @@ class SettingsReport {
   int runs = 0;
   int pagesCompared = 0;
   final runFailures = <String>[];
-
-  /// The sections with more page starts than the run limit, whose runs
-  /// start from evenly spaced page starts.
-  int sampledSections = 0;
 
   int pages = 0;
   int visibleCharacters = 0;
@@ -132,7 +128,6 @@ class SettingsReport {
     'runs': runs,
     'pagesCompared': pagesCompared,
     'runFailures': runFailures,
-    'sampledSections': sampledSections,
     'prepareMs': _round(prepareMs),
     'layoutMs': _round(layoutMs),
     'layoutMsPer10k': _round(layoutMsPer10k),
@@ -190,24 +185,16 @@ double _round(double value) => (value * 100).round() / 100;
 /// Runs every check on the book that [open] admits, at each of [settings].
 /// A flow item whose layout takes longer than [slow] is listed. Each run
 /// from a page start is compared over the [compared] pages that it cuts
-/// first, from at most [runsPerSection] page starts of each section. [clock]
-/// gives the time for the measurements.
+/// first, from every page start. [clock] gives the time for the
+/// measurements.
 Future<BookReport> checkBook(
   String id,
   Future<CorpusBook> Function() open, {
   List<PageSettings> settings = corpusSettings,
   Duration slow = const Duration(milliseconds: 8),
   int compared = 5,
-  int runsPerSection = 100,
   Duration Function()? clock,
 }) async {
-  if (runsPerSection < 2) {
-    throw RangeError.value(
-      runsPerSection,
-      'runsPerSection',
-      'must be 2 or more',
-    );
-  }
   final now = clock ?? _monotonic;
   final report = BookReport(id);
   final CorpusBook book;
@@ -269,7 +256,7 @@ Future<BookReport> checkBook(
         caught('places', error, stack);
       }
       try {
-        _checkRuns(chapter, found, compared, runsPerSection);
+        _checkRuns(chapter, found, compared);
       } catch (error, stack) {
         caught('page starts', error, stack);
       }
@@ -350,7 +337,7 @@ ChapterLayout _layOut(
 }
 
 /// The CFI round trip: the CFI of each page start opens the same page. A
-/// page with no line and no image is blank.
+/// page that draws nothing, no line, image or rule, is blank.
 void _checkPlaces(
   CorpusBook book,
   ChapterLayout chapter,
@@ -360,8 +347,10 @@ void _checkPlaces(
   final dom = chapter.section.dom;
   for (var page = 0; page < chapter.pages.length; page++) {
     final laid = chapter.pages[page];
-    if (laid.pieces.isEmpty &&
-        !laid.decorations.any((shown) => shown is ImageDecoration)) {
+    // A page that draws only a rule is not blank: Chromium also shows the
+    // border of an empty block on a page of its own after a page that
+    // overflows (t1-9vc1).
+    if (laid.pieces.isEmpty && laid.decorations.isEmpty) {
       found.blankPages.add('section $index page $page');
     }
     final start = laid.startPlace;
@@ -388,27 +377,10 @@ void _checkPlaces(
 }
 
 /// A run from a page start cuts the same [compared] pages as the main run
-/// after it. The runs start from every page start of the section, or from
-/// [limit] evenly spaced ones that include the last page, when it has more.
-/// A run that starts inside a table or a long paragraph lays it out again,
-/// so the limit keeps a book such as Roget's Thesaurus, one 1.7-million-
-/// character table, within minutes.
-void _checkRuns(
-  ChapterLayout chapter,
-  SettingsReport found,
-  int compared,
-  int limit,
-) {
+/// after it, from every page start of the section.
+void _checkRuns(ChapterLayout chapter, SettingsReport found, int compared) {
   final main = chapter.pages;
-  final starts = main.length - 1;
-  if (starts > limit) found.sampledSections++;
-  final pages = starts <= limit
-      ? [for (var page = 1; page < main.length; page++) page]
-      : {
-          for (var at = 0; at < limit; at++)
-            1 + at * (starts - 1) ~/ (limit - 1),
-        }.toList();
-  for (final page in pages) {
+  for (var page = 1; page < main.length; page++) {
     final run = LayoutRun(chapter.section, from: main[page].start)
       ..step(const Duration(days: 1), want: compared);
     found.runs++;

@@ -247,7 +247,9 @@ typedef RowFragment = ({double height, List<CellFragment> cells});
 /// at the fragment's top: the space above that slice is dropped, as
 /// margins at a page break are. The space below a cell's last slice, its
 /// bottom padding and border, goes last, and on the next fragment when it
-/// does not fit.
+/// does not fit and another cell goes on there. When no cell has a slice
+/// left, that space is dropped at the break too, so every fragment shows a
+/// slice and no page shows only the space of a row.
 List<RowFragment> rowFragments(List<FragmentCell> cells, double pageHeight) {
   final height = cells.fold(
     0.0,
@@ -284,6 +286,14 @@ List<RowFragment> rowFragments(List<FragmentCell> cells, double pageHeight) {
   bool done(int cell) => next[cell] == units[cell].length;
   bool allDone() => next.indexed.every((entry) => done(entry.$1));
   while (fragments.isEmpty || !allDone()) {
+    // When no cell has a slice left, the space below the last slices is
+    // dropped at the break, so that no fragment shows only space.
+    if (fragments.isNotEmpty &&
+        next.indexed.every(
+          (entry) => entry.$2 >= cells[entry.$1].slices.length,
+        )) {
+      break;
+    }
     // The box position at the fragment's top, for each cell.
     final tops = [
       for (var cell = 0; cell < cells.length; cell++)

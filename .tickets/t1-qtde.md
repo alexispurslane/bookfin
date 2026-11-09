@@ -1,6 +1,6 @@
 ---
 id: t1-qtde
-status: open
+status: in_progress
 deps: []
 links: []
 created: 2026-11-08T23:49:54Z
@@ -31,3 +31,7 @@ Corpus numbers (host JIT, machine load 10 to 40 on 10 cores, so absolute times a
 **2026-11-09T02:26:01Z**
 
 More corpus numbers: Gutenberg's Hong Lou Meng (Chinese, long paragraphs that wrap into many lines) has paragraph steps of 1,117 to 1,677 ms at 412 x 671 at 20 pixels and up to 1,723 ms at 360 x 640 at 26 pixels, and the highest layout time per 10,000 visible characters at 20 pixels (74 ms, against a corpus median of 10 ms). The Kindle conversion of Leaves of Grass repeats the Song of Myself numbers (1,566 and 3,161 ms).
+
+**2026-11-09T06:50:54Z**
+
+Fixed: line starts come from one binary search per line over Paragraph.getLineNumberAt (also in the hyphen pass), visible characters of a long text node count from a count kept every 256 code units (dom.dart), and pieces are released once per flow item. Slowest steps after (host, load 5 to 15): Leaves of Grass 70 ms at 20 px and 318 ms at 26 px, Hong Lou Meng 57 and 59 ms, Origin of Species index 32 and 34 ms. What is left is the engine's shaping of one paragraph (tb-2l69) and hyphenation passes (tb-a6zd). Numbers are in docs/research/native-epub-corpus.md.

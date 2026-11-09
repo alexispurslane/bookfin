@@ -707,7 +707,9 @@ class PageSource {
     final prepared = layout.prepared!;
     switch (need) {
       case _LineNeed():
-        need.found = lineStart(prepared, need.place);
+        final search = need.search ??= LineSearch(prepared, need.place);
+        search.step(_stepBudget);
+        need.found = search.found;
       case _PageNeed(:final start):
         final run = _runAt(layout, start);
         run.run.step(_stepBudget, want: 1);
@@ -1164,6 +1166,9 @@ sealed class _Need {
 class _LineNeed extends _Need {
   _LineNeed(super.layout, this.place);
   final EpubPlace place;
+
+  /// The search, which goes on over steps while it measures a table.
+  LineSearch? search;
   PageStart? found;
 }
 

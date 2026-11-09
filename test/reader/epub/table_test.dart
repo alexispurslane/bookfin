@@ -388,12 +388,24 @@ void main() {
     });
 
     test('the bottom padding of a cell that does not fit goes on the next '
-        'fragment', () {
+        'fragment when another cell goes on there', () {
       final fragments = rowFragments([
         (slices: [(0.0, 50.0), (50.0, 98.0)], height: 104, align: 0),
+        (slices: lines(5, 20), height: 106, align: 0),
       ], 100);
-      expect([for (final fragment in fragments) fragment.height], [100, 6]);
+      expect([for (final fragment in fragments) fragment.height], [100, 23]);
       expect([for (final fragment in fragments) fragment.cells[0].to], [2, 2]);
+      expect(fragments.last.cells[0].bottom, double.infinity);
+    });
+
+    test('the bottom padding of cells that have no slice left is dropped at '
+        'the break, so that every fragment shows a slice', () {
+      final fragments = rowFragments([
+        (slices: [(0.0, 50.0), (50.0, 98.0)], height: 104, align: 0),
+        (slices: lines(4, 20), height: 86, align: 0),
+      ], 100);
+      expect([for (final fragment in fragments) fragment.height], [100]);
+      expect([for (final cell in fragments.single.cells) cell.to], [2, 4]);
     });
   });
 
@@ -651,6 +663,30 @@ void main() {
         final resumed = runToEnd(section, from: main[page].start);
         expect(keys(resumed), keys(main.skip(page)), reason: 'page $page');
         expect(await pixels(resumed.first), await pixels(main[page]));
+        disposeAll(resumed);
+      }
+      disposeAll(main);
+    });
+
+    test('leaves no page that holds only the bottom padding of a row whose '
+        'lines fill its last page, before another row taller than a page', () {
+      // Each row is 26 lines of exactly 20 pixels: two pages of 260
+      // pixels, and then 10 pixels of bottom padding.
+      String row(String label) =>
+          '<tr><td>${[for (var line = 0; line < 26; line++) '$label line $line'].join('<br/>')}</td></tr>';
+      final section = prepared(
+        '<table>${row('First')}${row('Second')}</table>',
+        css: 'td{padding:0 0 10px;line-height:20px}',
+        settings: smallPage,
+      );
+      final main = runToEnd(section);
+      for (final (index, page) in main.indexed) {
+        expect(page.pieces, isNotEmpty, reason: 'page $index is blank');
+      }
+      expect(main, hasLength(4));
+      for (var page = 1; page < main.length; page++) {
+        final resumed = runToEnd(section, from: main[page].start);
+        expect(keys(resumed), keys(main.skip(page)), reason: 'page $page');
         disposeAll(resumed);
       }
       disposeAll(main);
@@ -936,6 +972,108 @@ void main() {
       expect(visible, section.dom.visibleLength);
       disposeAll(pages);
     }
+  });
+
+  group('a long table', () {
+    // Dialogue set as a table of speaker and speech, as Standard Ebooks sets
+    // its plays and Plato's dialogues.
+    final body =
+        '<p>${prose(1, 'Before')}</p><table>'
+        '${[for (var i = 0; i < 40; i++) '<tr><td>Speaker $i</td><td>${prose(1, 'Speech $i')}</td></tr>'].join()}'
+        '</table><p>${prose(2, 'After')}</p>';
+
+    test('lays out one row in each step that one row spends, and the steps '
+        'cut the pages of one long step', () {
+      final section = prepared(body);
+      final table = section.flow.indexWhere((item) => item is TableItem);
+      // A clock that moves on 1 ms each time the run reads it, so that a
+      // step with a budget of 1 ms ends after its first unit of work.
+      var now = Duration.zero;
+      final run = LayoutRun(
+        section,
+        clock: () => now += const Duration(milliseconds: 1),
+      );
+      var stepsInTable = 0;
+      while (!run.done) {
+        run
+          ..step(const Duration(milliseconds: 1))
+          ..checkInvariants();
+        if (run.reached == table) stepsInTable++;
+      }
+      run.dispose();
+      expect(stepsInTable, greaterThanOrEqualTo(40));
+      final whole = runToEnd(section);
+      expect(keys(run.pages), keys(whole));
+      disposeAll(run.pages);
+      disposeAll(whole);
+    });
+
+    test('finds the line of a place in it in steps of one measured row when '
+        'no run measured it, and at once after', () {
+      final place = placeOf(prepared(body), 'Speech 30 passage 1.');
+      final expected = lineStart(prepared(body), place);
+      final section = prepared(body);
+      final search = LineSearch(section, place);
+      var steps = 0;
+      while (search.found == null) {
+        search.step(Duration.zero);
+        steps++;
+      }
+      expect(steps, greaterThanOrEqualTo(40));
+      expect(search.found, expected);
+      expect((LineSearch(section, place)..step(Duration.zero)).found, expected);
+    });
+
+    test('a run whose table a search measured meanwhile measures the next '
+        'table by its own cells', () {
+      final twoTables =
+          '<table>${[for (var i = 0; i < 6; i++) '<tr><td>Antidisestablishmentarianism$i</td><td>Short</td></tr>'].join()}</table>'
+          '<table>${[for (var i = 0; i < 6; i++) '<tr><td>A$i</td><td>${prose(1, 'Wide $i')}</td></tr>'].join()}</table>';
+      final whole = runToEnd(prepared(twoTables));
+      final section = prepared(twoTables);
+      final run = LayoutRun(section);
+      // The table's own box asks for its widths, so the run measures the
+      // table there: four of its six rows, one in each step.
+      final table = section.flow.indexWhere((item) => item is TableItem);
+      while (run.reached < table - 1) {
+        run.step(Duration.zero);
+      }
+      for (var row = 0; row < 4; row++) {
+        run.step(Duration.zero);
+      }
+      lineStart(section, placeOf(section, 'Antidisestablishmentarianism0'));
+      run.step(forever);
+      run.dispose();
+      expect(keys(run.pages), keys(whole));
+      disposeAll(run.pages);
+      disposeAll(whole);
+    });
+
+    test('opens a place in any of its rows on a page that starts at that '
+        'row, as the run from the section start places it', () {
+      for (final settings in [readerPage, smallPage]) {
+        final section = prepared(body, settings: settings);
+        final chapter = layoutSection(section);
+        // The page start of each row in the run from the section start.
+        final rows = [
+          for (final slice in chapter.slices)
+            if (slice.cellSlices.isNotEmpty) slice.at,
+        ];
+        expect(rows, hasLength(40));
+        for (var row = 1; row < 40; row += 3) {
+          for (final text in ['Speaker $row', 'Speech $row passage 1.']) {
+            final place = placeOf(section, text);
+            final start = lineStart(section, place);
+            expect(start, rows[row], reason: '$text, $settings');
+            final run = LayoutRun(section, from: start)..step(forever, want: 1);
+            expect(_shows(run.pages.first, place, section), isTrue);
+            disposeAll(run.pages);
+            run.dispose();
+          }
+        }
+        chapter.dispose();
+      }
+    });
   });
 
   group('other layout', () {
