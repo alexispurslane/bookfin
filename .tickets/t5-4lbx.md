@@ -1,6 +1,6 @@
 ---
 id: t5-4lbx
-status: open
+status: in_progress
 deps: [t7-rcyp]
 links: []
 created: 2026-11-09T18:18:38Z
@@ -17,3 +17,9 @@ Found in boo-ystu (docs/research/epub-layout-cache.md). A page map is the true p
 
 Tests show that a written page map reads back equal, that a kill between the temporary write and the rename leaves the old map, that a broken file is set aside and gives no map, that another key's file gives no map, that a fifth settings value evicts the least recently used one, and that removing the download removes the maps.
 
+
+## Notes
+
+**2026-11-09T19:53:33Z**
+
+Built lib/reader/epub/page_maps.dart (PageMaps.read, write, forget; PageMapKey; KeptSection) and DerivedBookFiles.layoutDirectory (.bookfin-layout), which bytes and remove now include. File names begin with the first 16 hex digits of the SHA-256 of the engine fingerprint, so a write removes another engine's maps without reading them. A read marks its map as used, so the limit of four is least recently used, not least recently written. Measured on the host's debug build under load: 11,393 pages encode in 0.6 ms and decode in 0.3 ms; 23,000 pages in 1.6 ms and 1.0 ms. The codec stays in the calling isolate because a worker would copy the same object graph. New work: ta-ukpf.

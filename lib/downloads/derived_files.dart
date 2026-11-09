@@ -12,6 +12,10 @@ class DerivedBookFiles {
   static Directory admittedDirectory(File original) =>
       Directory('${original.parent.path}/.bookfin-admitted');
 
+  /// The page maps that the reader keeps for [original] (t5-4lbx).
+  static Directory layoutDirectory(File original) =>
+      Directory('${original.parent.path}/.bookfin-layout');
+
   /// Every derived directory of the download in [source].
   static List<Directory> _directories(Directory source) {
     final original = File('${source.path}/complete');
@@ -19,6 +23,7 @@ class DerivedBookFiles {
       mobiDirectory(original),
       ocrDirectory(original),
       admittedDirectory(original),
+      layoutDirectory(original),
     ];
   }
 
