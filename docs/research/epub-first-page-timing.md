@@ -113,7 +113,7 @@ Ticket t7-rcyp, 2026-11-09. Three changes remove admission from the path of an o
 - The reader takes the SHA-256 digest that Downloads computed when the download completed. An open does not hash the book.
 - The first open of a downloaded file keeps the admitted book in the download's `.bookfin-admitted` folder: the admitted files, every admitted fact, and the CFI spine steps. The key is the file's digest, the reading policy and `Publication.revision`. Later opens read this record in one worker call. A MOBI keeps the record of its converted EPUB under the MOBI's own digest and policy.
 
-The emulator measurement could not run. The Mac's only disk had 5.1 GB free, and the Android 36 image needs 7.4 GB for an emulator's data partition. So the numbers below come from the host (an Apple silicon Mac, `flutter test`, a load of 30 to 37 on 10 cores). They are medians of 11 runs, in milliseconds. The runs of the three columns alternate, so the load affects all three in the same way.
+The emulator measurement could not run. At first, the Mac's only disk had 5.1 GB free, and the Android 36 image needs 7.4 GB for an emulator's data partition. Later the new emulator started, but T3's device tool refused each app launch with DEVICE_IN_USE: another thread's session still held the emulator's serial. So the numbers below come from the host (an Apple silicon Mac, `flutter test`, a load of 30 to 37 on 10 cores). They are medians of 11 runs, in milliseconds. The runs of the three columns alternate, so the load affects all three in the same way.
 
 | Book | Open before | First open after a download | Later open | File (KiB) | Record (KiB) | Images |
 | --- | --- | --- | --- | --- | --- | --- |
