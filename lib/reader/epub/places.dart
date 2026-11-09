@@ -4,9 +4,10 @@
 // Bookfin's former WebView reader saved a place as epub.js writes it
 // (reader.js `visibleLocation`): a collapsed CFI, the first 120 characters
 // of the body's text from the place on, and the share of the section's
-// visible characters before the place. These functions write the same three
-// values, so a place that the WebView reader saved still opens, and an
-// older Bookfin opens a place that this one saves.
+// visible characters before the place. These functions read and write the
+// same three values, so a place that the WebView reader saved still opens,
+// and an older Bookfin opens a place that this one saves. A page saves its
+// first visible character ([firstVisible]), not epub.js's word start.
 import 'dart:math' as math;
 
 import 'package:xml/xml.dart';
@@ -108,55 +109,21 @@ EpubPlace? placeOf(DomSection dom, int section, String cfi) {
   );
 }
 
-/// The place that epub.js saves for a page of [dom] whose first character
-/// is at [place].
+/// The place that a page of [dom] saves when it starts at [start] and its
+/// last visible character is at [end]: the page's first visible character,
+/// the first one at or after [start]. It can be in a later text node than
+/// [start], when [start] is in white space at the end of its node. When the
+/// page shows no visible character from [start] to [end], [start] stays.
 ///
-/// epub.js (mapping.js `splitTextNodeIntoRanges` and `findTextStartRange`)
-/// trims the text node and finds each space in the trimmed text. It cuts
-/// the node into ranges: one from the node start, and one after each space
-/// but the first, each up to the next space. It uses these trimmed offsets
-/// as offsets in the untrimmed node, so in a node that starts with white
-/// space each range starts before its word. It saves the start of the first
-/// range on the page. A range is on the page when it starts at or after
-/// [place], or when it starts in the white space just before [place] and
-/// holds a visible character. Chromium leaves the space that ends the line
-/// before out of a range's bounds unless the range holds nothing else, as
-/// the trial books show. When the page starts at the node's first visible
-/// character, the
-/// saved place is the node start. When no range of the node is on the page,
-/// [place] stays, where epub.js would fall back to the node start on the
-/// page before.
-EpubPlace wordStart(DomSection dom, EpubPlace place) {
-  final text = dom.textAt(place);
-  if (text == null) return place;
-  final data = text.text;
-  var lastVisible = place.offset - 1;
-  while (lastVisible >= 0 && isSpace(data.codeUnitAt(lastVisible))) {
-    lastVisible--;
-  }
-  if (lastVisible < 0) return EpubPlace(place.section, place.node, 0);
-  var lead = 0;
-  while (lead < data.length && isSpace(data.codeUnitAt(lead))) {
-    lead++;
-  }
-  var end = data.length;
-  while (end > lead && isSpace(data.codeUnitAt(end - 1))) {
-    end--;
-  }
-  final trimmed = data.substring(lead, end);
-  final first = trimmed.indexOf(' ');
-  if (first < 0) return place;
-  for (var space = trimmed.indexOf(' ', first + 1); space > 0;) {
-    final start = space + 1;
-    final next = trimmed.indexOf(' ', start);
-    final stop = next < 0 ? trimmed.length : next;
-    if (start >= place.offset ||
-        (start > lastVisible && visibleCount(data, start, stop) > 0)) {
-      return EpubPlace(place.section, place.node, start);
-    }
-    space = next;
-  }
-  return place;
+/// epub.js saved the start of the first space-delimited word at or after
+/// the page start instead. In text with few spaces, such as Chinese, that
+/// word can start on a later page (t1-7l9c).
+EpubPlace firstVisible(DomSection dom, EpubPlace start, EpubPlace end) {
+  if (dom.textAt(start) == null) return start;
+  final wanted = dom.visibleBefore(start);
+  if (wanted >= dom.visibleLength) return start;
+  final first = _visibleAt(dom, start.section, wanted);
+  return first.compareTo(end) <= 0 ? first : start;
 }
 
 /// The first 120 characters of the body's text of [dom] from [place] on,
@@ -200,7 +167,18 @@ EpubPlace placeAt(DomSection dom, int section, double progress) {
   }
   final total = dom.visibleLength;
   if (total == 0) return EpubPlace(section, dom.body.order, 0);
-  final wanted = math.min(total - 1, (progress * total).floor());
+  return _visibleAt(
+    dom,
+    section,
+    math.min(total - 1, (progress * total).floor()),
+  );
+}
+
+/// The place of the visible character of [dom], the section with spine
+/// index [section], that [wanted] visible characters come before.
+///
+/// [wanted] runs from 0 to [DomSection.visibleLength] − 1.
+EpubPlace _visibleAt(DomSection dom, int section, int wanted) {
   final texts = dom.texts;
   // The last text node that starts at or before the wanted character holds
   // it, because a node without visible characters starts where the next
@@ -351,12 +329,12 @@ int _compareSteps((List<int>, int) a, (List<int>, int) b) {
 }
 
 /// The saved location of a page of [dom] that starts at [start] and whose
-/// last visible character is at [end], as reader.js `visibleLocation`
-/// writes it for a shown page: the CFI, quote and progress of the
-/// [wordStart] of [start], in the section at [sectionPath] whose spine step
-/// is [spine]. [chapter] is the page's [chapterTitle], which is the same at
-/// [start] and at its word start. Its [ReadingLocation.end] is the
-/// progress of [end], and it has no page number.
+/// last visible character is at [end], in the form that reader.js
+/// `visibleLocation` writes for a shown page: the CFI, quote and progress
+/// of the page's [firstVisible] character, in the section at [sectionPath]
+/// whose spine step is [spine]. [chapter] is the [chapterTitle] of that
+/// character. Its [ReadingLocation.end] is the progress of [end], and it
+/// has no page number.
 ReadingLocation pageLocation(
   String spine,
   String sectionPath,
@@ -365,13 +343,13 @@ ReadingLocation pageLocation(
   EpubPlace end,
   String chapter,
 ) {
-  final word = wordStart(dom, start);
+  final first = firstVisible(dom, start, end);
   return ReadingLocation(
-    cfiOf(spine, dom, word),
+    cfiOf(spine, dom, first),
     sectionPath,
-    quoteAt(dom, word),
+    quoteAt(dom, first),
     chapter: chapter,
-    progress: progressAt(dom, word),
+    progress: progressAt(dom, first),
     end: progressAt(dom, end),
   );
 }

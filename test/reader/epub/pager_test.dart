@@ -246,6 +246,51 @@ void main() {
     expect(warnings, isEmpty);
   });
 
+  test('a place that epub.js saved before a page\'s first visible character '
+      'opens on that page and is reported as the identical address '
+      'object, so opening never rewrites it', () async {
+    // epub.js saved the start of a Gutenberg paragraph's text node, the
+    // line break before its first word. The pager saves the page's first
+    // visible character instead.
+    final publication = book([
+      '${paragraphs(8)}<p>\nWe felt a speech coming.</p>${paragraphs(4)}',
+    ]);
+    open(publication);
+    await present();
+    final dom = (await section(0)).dom;
+    final text = dom.texts.firstWhere((text) => text.text.startsWith('\nWe'));
+    final old = EpubPlace(0, text.order, 0);
+    final saved = EpubAddress(
+      ReadingLocation(
+        cfiOf('/6/2', dom, old),
+        'OPS/text/s0.xhtml',
+        quoteAt(dom, old),
+        progress: progressAt(dom, old),
+      ),
+    );
+
+    open(publication, initial: saved);
+    final opened = await present();
+
+    expect(reported, hasLength(1));
+    expect(reported.single, same(saved));
+    final prepared = await section(0);
+    expect(opened.page.start, lineStart(prepared, old));
+    expect(
+      pageLocation(
+        '/6/2',
+        'OPS/text/s0.xhtml',
+        dom,
+        opened.page.startPlace!,
+        opened.page.endPlace!,
+        'Start',
+      ).cfi,
+      cfiOf('/6/2', dom, EpubPlace(0, text.order, 1)),
+      reason: 'the page itself saves its first visible character',
+    );
+    expect(warnings, isEmpty);
+  });
+
   test('a saved place with a wrong quote opens at the start with the warning '
       'and reports nothing until a move', () async {
     final publication = linkedBook();
