@@ -22,6 +22,7 @@ import 'package:bookfin/reader/epub/fonts.dart';
 import 'package:bookfin/reader/epub/layout.dart';
 import 'package:bookfin/reader/epub/prepare.dart';
 import 'package:bookfin/reader/mobi.dart';
+import 'package:crypto/crypto.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../reader/epub/corpus/book.dart';
@@ -66,7 +67,12 @@ void main() {
           ? showcaseBooks()[book.id]!
           : await book.file.readAsBytes();
       final corpus = book.format == 'azw3'
-          ? CorpusBook((await importMobi(book.file)).publication)
+          ? CorpusBook(
+              (await importMobi(
+                book.file,
+                sha256.convert(bytes).toString(),
+              )).publication,
+            )
           : CorpusBook.open(bytes);
       final found = await _survey(corpus);
       results[book.id] = found.numbers;

@@ -1,6 +1,6 @@
 ---
 id: boo-0ari
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-09T18:00:04Z
