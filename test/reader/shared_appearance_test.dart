@@ -50,7 +50,6 @@ class ReadingApp {
   );
 
   Future<void> prepare(WidgetTester tester, AppearanceMode mode) async {
-    runIdleStepsDuringAnimations();
     addTearDown(() async {
       await tester.pumpWidget(const SizedBox());
       await tester.pumpAndSettle();
@@ -197,6 +196,10 @@ void main() {
         await app.pageAt(tester, fontSize: 22, night: choice.night);
         expect(app.cfi, cfi, reason: 'The book opens at the saved place.');
         expect(app.reader.bookmarks.single.title, 'A saved river');
+        // Layout that waited for the last animation goes on in the next
+        // frames, so the test closes the reader before its timers are
+        // checked.
+        await app.leaveReader(tester);
       },
       variant: TargetPlatformVariant.only(TargetPlatform.android),
     );

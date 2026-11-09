@@ -211,7 +211,8 @@ Phone numbers are not measured. The phone is probably 1.5 to 2.5 times slower th
 
 - A step lays out paragraphs until its time budget is spent. The budget starts at 4 ms. The Pixel 8 can draw at 120 Hz, so a frame has 8.3 ms. E20 tunes the budget on the phone.
 - A paragraph is the unit of work. A step stops after the paragraph that crosses the budget. A paragraph whose shaping alone takes longer than the budget runs in a step of its own. The corpus test (E19) lists such paragraphs.
-- The page source schedules steps with `SchedulerBinding.instance.scheduleTask`. Work for the shown page and its two neighbors uses `Priority.animation`, so it runs while the scrub deck animates. Other work uses `Priority.idle`. Flutter's default strategy holds idle tasks back while an animation runs.
+- The page source schedules steps with `SchedulerBinding.instance.scheduleTask`. Work for the shown page and its two neighbors is urgent, so it runs while the scrub deck animates. Other work is idle work, and it waits while an animation runs.
+- Both kinds of step use `Priority.animation`. An idle step that runs while transient frame callbacks are registered does no layout. It waits for the end of the next frame in a post-frame callback, and then goes back into the task queue. So it wakes the event loop at most once a frame. With `Priority.idle`, Flutter's default strategy keeps the task in the queue and asks again at once with a zero timer, a busy loop between frames for as long as the animation runs (t7-hufl).
 - The page source takes the scheduler as a constructor parameter, so tests run steps one at a time.
 
 ### Order of work, from the shown place outward
