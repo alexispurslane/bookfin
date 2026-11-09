@@ -122,6 +122,18 @@ class EpubPager implements DocumentNavigator {
   ValueListenable<PageNumber?> get pageNumber => _number;
   final _number = ValueNotifier<PageNumber?>(null);
 
+  /// Where the shown page ends: its section and the text progress of its
+  /// last place, or null before the first page and for a page that shows
+  /// no place. The shown page owns its end, and the address that the pager
+  /// reports at a saved place has none, so the chapter arrows read it here.
+  BookPlace? get shownEnd {
+    final page = _shown.value?.page;
+    final section = _section;
+    final end = page?.endPlace ?? page?.startPlace;
+    if (page == null || section == null || end == null) return null;
+    return (part: page.section, progress: progressAt(section.dom, end));
+  }
+
   /// Completes when the shown page changes, which stops the waits for its
   /// number.
   Completer<void>? _counting;

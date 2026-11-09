@@ -670,6 +670,47 @@ void main() {
     expect(next.start.compareTo(first.start), greaterThan(0));
   });
 
+  test('next chapter skips a chapter that starts in the middle of the first '
+      'page after opening at a saved place (tc-klz2)', () async {
+    final publication = Publication.admit(
+      navBook(
+        [
+          '<h1 id="a">Alder</h1><p>The first chapter is short.</p>'
+              '<h1 id="b">Birch</h1><p>The second starts on the same page.</p>'
+              '${paragraphs(12)}<h1 id="c">Cedar</h1>${paragraphs(4)}',
+        ],
+        [
+          ('Alder', 'text/s0.xhtml#a'),
+          ('Birch', 'text/s0.xhtml#b'),
+          ('Cedar', 'text/s0.xhtml#c'),
+        ],
+      ),
+    );
+    final first = await open(publication);
+    await present(first);
+    final anchor = first.position!.anchor;
+    first.dispose();
+    sessions.remove(first);
+    store
+      ..values[accountKey] = snapshot(resumes: [anchor])
+      ..saves.clear();
+
+    final reader = await open(publication);
+    final page = await present(reader);
+    await mapped(reader);
+    final dom = await domOf(publication, 0);
+    expect(
+      (reader.visibleAddress! as EpubAddress).location.end,
+      isNull,
+      reason: 'The saved place is reported as saved, without its end.',
+    );
+    expect(holds(page, dom, destination(dom, 0, 'b')!), isTrue);
+
+    final next = await after(reader, () => reader.moveChapter(true));
+    expect(holds(next, dom, destination(dom, 0, 'c')!), isTrue);
+    expect(next.start.compareTo(page.start), greaterThan(0));
+  });
+
   group('places stay as saved', () {
     test(
       'a text size change keeps the shown place and adds no record',

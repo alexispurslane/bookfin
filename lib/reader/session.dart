@@ -727,7 +727,7 @@ class ReaderSession extends ChangeNotifier {
     final place = _visibleAddress;
     final start = place == null
         ? null
-        : map.chapterStep(place, forward: forward);
+        : map.chapterStep(place, forward: forward, end: _pager?.shownEnd);
     if (start != null) await goTo(map.targetAt(start));
   }
 

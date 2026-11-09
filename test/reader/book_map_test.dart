@@ -240,7 +240,8 @@ void main() {
   });
 
   group('the chapter arrows', () {
-    /// A shown page of "two" from [start] to [end] through its text.
+    /// A shown page of "two" whose first place is [start] of the way
+    /// through its text.
     EpubAddress page(double start, {double? end}) => EpubAddress(
       ReadingLocation(
         'epubcfi(/6/4!/4/2/1:0)',
@@ -251,11 +252,14 @@ void main() {
       ),
     );
 
+    /// The place [progress] of the way through the text of "two".
+    BookPlace two(double progress) => (part: 1, progress: progress);
+
     test('next chapter skips a chapter that starts in the middle of the '
         'shown page', () async {
       final book = await map();
       expect(
-        book.chapterStep(page(.25, end: .75), forward: true),
+        book.chapterStep(page(.25), end: two(.75), forward: true),
         closeTo(inTwo(1), 1e-9),
         reason: '"Half" starts on the shown page, so next goes to "Three".',
       );
@@ -265,7 +269,7 @@ void main() {
         'one of the shown page', () async {
       final book = await map();
       expect(
-        book.chapterStep(page(.25, end: .5), forward: true),
+        book.chapterStep(page(.25), end: two(.5), forward: true),
         closeTo(inTwo(1), 1e-9),
       );
     });
@@ -274,16 +278,29 @@ void main() {
         'page', () async {
       final book = await map();
       expect(
-        book.chapterStep(page(.25, end: .49), forward: true),
+        book.chapterStep(page(.25), end: two(.49), forward: true),
         closeTo(inTwo(.5), 1e-9),
       );
     });
 
     test('next chapter steps from the start of a page whose end is not '
-        'known, such as a place that epub.js reported', () async {
+        'known', () async {
       final book = await map();
       expect(
         book.chapterStep(page(.25), forward: true),
+        closeTo(inTwo(.5), 1e-9),
+      );
+    });
+
+    test('next chapter takes the page\'s end from the shown page, not from '
+        'the reported address, which can be an older saved one', () async {
+      final book = await map();
+      expect(
+        book.chapterStep(page(.25, end: .49), end: two(.75), forward: true),
+        closeTo(inTwo(1), 1e-9),
+      );
+      expect(
+        book.chapterStep(page(.25, end: .75), forward: true),
         closeTo(inTwo(.5), 1e-9),
       );
     });
@@ -292,12 +309,12 @@ void main() {
         'end', () async {
       final book = await map();
       expect(
-        book.chapterStep(page(.25, end: .75), forward: false),
+        book.chapterStep(page(.25), end: two(.75), forward: false),
         closeTo(inTwo(0), 1e-9),
         reason: 'The page starts in "Two", before "Half".',
       );
       expect(
-        book.chapterStep(page(.5, end: .75), forward: false),
+        book.chapterStep(page(.5), end: two(.75), forward: false),
         closeTo(inTwo(0), 1e-9),
         reason: 'At the start of "Half", back goes to the chapter before.',
       );

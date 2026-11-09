@@ -1,8 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter_epub_viewer/navigation.dart'
-    show ContentsEntry, ReadingLocation;
+import 'package:flutter_epub_viewer/navigation.dart' show ContentsEntry;
 import 'package:xml/xml_events.dart';
 
 import '../foundation/hop.dart';
@@ -200,32 +199,30 @@ class BookMap {
   }
 
   /// Where the chapter that a chapter arrow goes to from the [shown] page
-  /// starts, given by the address that the viewport reported for it.
+  /// starts, given by the address that the viewport reported for it, and
+  /// [end], the place of the page's last visible character where the shown
+  /// page knows it.
   ///
   /// Forward, that is the first chapter that starts after the shown page:
-  /// after its last visible character, where the address knows it
-  /// ([ReadingLocation.end]), else after its first place. So a chapter that
-  /// starts on the shown page, which is already in view, is skipped
-  /// (t6-0cjf). Back, it is the last chapter that starts before the page's
+  /// after [end], else after its first place. So a chapter that starts on
+  /// the shown page, which is already in view, is skipped (t6-0cjf). Back, it is the last chapter that starts before the page's
   /// first place: the start of the chapter that holds it, or the chapter
   /// before when the page starts that chapter. The book's start counts as a
   /// chapter start, so back reaches the text before the first chapter.
   ///
   /// Null when no chapter starts that way, or when [shown] is not in this
   /// book.
-  double? chapterStep(ReaderAddress shown, {required bool forward}) {
+  double? chapterStep(
+    ReaderAddress shown, {
+    required bool forward,
+    BookPlace? end,
+  }) {
     final at = fractionOf(shown);
     if (at == null) return null;
     // Places measured on two paths can differ in the last bits.
     const near = 1e-9;
     if (forward) {
-      final last = switch (shown) {
-        EpubAddress(:final location) when location.end != null => _within(
-          _parts[location.resource]!,
-          location.end!,
-        ),
-        _ => at,
-      };
+      final last = end == null ? at : fractionAt(end);
       for (final chapter in chapters) {
         if (chapter.start > last + near) return chapter.start;
       }
