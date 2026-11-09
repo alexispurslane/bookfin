@@ -1,6 +1,6 @@
 ---
 id: tb-i6wg
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-09T07:34:20Z

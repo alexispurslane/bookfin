@@ -1,6 +1,6 @@
 ---
 id: tb-a6zd
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-09T06:50:32Z
