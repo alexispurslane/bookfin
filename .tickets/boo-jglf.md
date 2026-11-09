@@ -1,6 +1,6 @@
 ---
 id: boo-jglf
-status: in_progress
+status: closed
 deps: [t7-bbv1]
 links: []
 created: 2026-11-09T17:13:34Z
