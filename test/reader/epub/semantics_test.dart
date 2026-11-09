@@ -83,9 +83,8 @@ void main() {
       ..devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(
-      Directionality(
-        textDirection: TextDirection.ltr,
-        child: EpubViewport(
+      onScreen(
+        EpubViewport(
           pager: pager(),
           fontSize: fontSize,
           night: false,

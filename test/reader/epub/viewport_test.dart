@@ -89,9 +89,8 @@ void main() {
       ..devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(
-      Directionality(
-        textDirection: TextDirection.ltr,
-        child: RepaintBoundary(
+      onScreen(
+        RepaintBoundary(
           key: boundary,
           child: viewport(fontSize: fontSize, night: night),
         ),
