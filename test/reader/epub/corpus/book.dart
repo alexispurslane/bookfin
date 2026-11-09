@@ -77,8 +77,12 @@ Map<String, Uint8List> showcaseBooks() => {
 };
 
 /// A made-up EPUB with one section for each of [bodies], all styled by one
-/// style sheet, [css].
-Uint8List madeUpEpub(List<String> bodies, {String css = ''}) {
+/// style sheet, [css], with the PNG images of [images] by path.
+Uint8List madeUpEpub(
+  List<String> bodies, {
+  String css = '',
+  Map<String, Uint8List> images = const {},
+}) {
   final sections = [for (var index = 0; index < bodies.length; index++) index];
   final items = sections
       .map(
@@ -88,6 +92,10 @@ Uint8List madeUpEpub(List<String> bodies, {String css = ''}) {
       )
       .join();
   final spine = sections.map((index) => '<itemref idref="s$index"/>').join();
+  final pictures = [
+    for (final (index, path) in images.keys.indexed)
+      '<item id="i$index" href="$path" media-type="image/png"/>',
+  ].join();
   final archive = Archive()
     ..add(
       ArchiveFile.noCompress(
@@ -106,12 +114,15 @@ Uint8List madeUpEpub(List<String> bodies, {String css = ''}) {
     ..add(
       ArchiveFile.string(
         'book.opf',
-        '<package version="3.0"><metadata/><manifest>$items'
+        '<package version="3.0"><metadata/><manifest>$items$pictures'
             '<item id="css" href="book.css" media-type="text/css"/>'
             '</manifest><spine>$spine</spine></package>',
       ),
     )
     ..add(ArchiveFile.string('book.css', css));
+  for (final MapEntry(key: path, value: bytes) in images.entries) {
+    archive.add(ArchiveFile.noCompress(path, bytes.length, bytes));
+  }
   for (final (index, body) in bodies.indexed) {
     archive.add(
       ArchiveFile.string(

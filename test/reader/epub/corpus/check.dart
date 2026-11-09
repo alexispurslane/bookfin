@@ -90,6 +90,9 @@ class SettingsReport {
   /// The page starts whose CFI does not open their own page.
   final brokenPlaces = <String>[];
 
+  /// The pages that show no line of text and no image.
+  final blankPages = <String>[];
+
   /// The runs from a page start, the pages that they cut, and the runs
   /// that cut other pages than the main run.
   int runs = 0;
@@ -125,6 +128,7 @@ class SettingsReport {
     'sameCfi': sameCfi,
     'sameQuote': sameQuote,
     'brokenPlaces': brokenPlaces,
+    'blankPages': blankPages,
     'runs': runs,
     'pagesCompared': pagesCompared,
     'runFailures': runFailures,
@@ -149,12 +153,15 @@ class BookReport {
   /// The report at each page settings value, in the order of the run.
   final settings = <SettingsReport>[];
 
-  /// Whether the book has no exception, no broken place and no run that
-  /// cut other pages.
+  /// Whether the book has no exception, no broken place, no blank page and
+  /// no run that cut other pages.
   bool get passed =>
       exceptions.isEmpty &&
       settings.every(
-        (report) => report.brokenPlaces.isEmpty && report.runFailures.isEmpty,
+        (report) =>
+            report.brokenPlaces.isEmpty &&
+            report.blankPages.isEmpty &&
+            report.runFailures.isEmpty,
       );
 
   Map<String, Object?> toJson() => {
@@ -342,7 +349,8 @@ ChapterLayout _layOut(
   }
 }
 
-/// The CFI round trip: the CFI of each page start opens the same page.
+/// The CFI round trip: the CFI of each page start opens the same page. A
+/// page with no line and no image is blank.
 void _checkPlaces(
   CorpusBook book,
   ChapterLayout chapter,
@@ -351,7 +359,12 @@ void _checkPlaces(
   final index = chapter.section.index;
   final dom = chapter.section.dom;
   for (var page = 0; page < chapter.pages.length; page++) {
-    final start = chapter.pages[page].startPlace;
+    final laid = chapter.pages[page];
+    if (laid.pieces.isEmpty &&
+        !laid.decorations.any((shown) => shown is ImageDecoration)) {
+      found.blankPages.add('section $index page $page');
+    }
+    final start = laid.startPlace;
     if (start == null) continue;
     found.pageStarts++;
     final place = wordStart(dom, start);

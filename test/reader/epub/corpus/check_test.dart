@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:bookfin/reader/epub/prepare.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:image/image.dart' as img;
 
 import '../helpers.dart';
 import 'book.dart';
@@ -74,6 +75,24 @@ void main() {
     expect(found.runs, 2);
     expect(found.sampledSections, 1);
     expect(found.runFailures, isEmpty);
+  });
+
+  test('a page that shows only an image is not blank', () async {
+    final tall = img.encodePng(img.Image(width: 100, height: 1000));
+    final report = await checkBook(
+      'image',
+      _made(
+        madeUpEpub(
+          ['<p>Before.</p><div><img src="tall.png" alt=""/></div><p>After.</p>'],
+          images: {'tall.png': tall},
+        ),
+      ),
+    );
+    expect(report.exceptions, isEmpty);
+    for (final each in report.settings) {
+      expect(each.pages, greaterThanOrEqualTo(2));
+      expect(each.blankPages, isEmpty);
+    }
   });
 
   test('a smaller page with larger text cuts more pages', () async {

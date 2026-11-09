@@ -54,6 +54,7 @@ void main() {
       expect(report.exceptions.map((each) => each.toJson()), isEmpty);
       for (final each in report.settings) {
         expect(each.brokenPlaces, isEmpty, reason: settingsName(each.settings));
+        expect(each.blankPages, isEmpty, reason: settingsName(each.settings));
         expect(each.runFailures, isEmpty, reason: settingsName(each.settings));
       }
     }, timeout: Timeout.none);
@@ -161,6 +162,7 @@ Map<String, Object> _settingsSummary(List<SettingsReport> found) {
     'sameCfi': total((each) => each.sameCfi),
     'sameQuote': total((each) => each.sameQuote),
     'brokenPlaces': total((each) => each.brokenPlaces.length),
+    'blankPages': total((each) => each.blankPages.length),
     'runs': total((each) => each.runs),
     'runFailures': total((each) => each.runFailures.length),
     'sampledSections': total((each) => each.sampledSections),
