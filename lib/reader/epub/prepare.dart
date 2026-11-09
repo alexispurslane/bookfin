@@ -12,6 +12,7 @@ import 'dart:typed_data';
 
 import 'css.dart';
 import 'dom.dart';
+import 'hyphenate.dart';
 import 'table.dart';
 
 // Section sources name publication paths, so their callers resolve
@@ -70,6 +71,7 @@ class SectionSource {
     required this.fontPrefix,
     this.styleSheets = const {},
     this.imageSizes = const {},
+    this.language,
   });
 
   /// The section's spine index.
@@ -92,6 +94,10 @@ class SectionSource {
   /// The width and height in pixels of each image, by its publication path.
   /// An image without an entry has no intrinsic size.
   final Map<String, (int, int)> imageSizes;
+
+  /// The package's `dc:language`: the language of text whose elements name
+  /// none.
+  final String? language;
 }
 
 /// One section parsed, styled for one [PageSettings] value, and turned into
@@ -224,7 +230,7 @@ final class ParagraphItem extends FlowItem {
 final class ImageItem extends FlowItem {
   const ImageItem({
     required this.node,
-    required this.path,
+    required this.image,
     required this.sizing,
     required this.marginLeft,
     required this.centered,
@@ -234,9 +240,7 @@ final class ImageItem extends FlowItem {
 
   /// The image element's [DomNode.order].
   final int node;
-
-  /// The image's publication path, or null when it leaves the publication.
-  final String? path;
+  final DrawnImage image;
 
   /// How the image's size follows from the width of the block that holds
   /// it.
@@ -310,12 +314,21 @@ final class StyledText {
   final List<InlineRun> runs;
 }
 
+/// A soft hyphen: a place where a line can break inside a word, and gets a
+/// hyphen when it does.
+const softHyphen = 0xad;
+
 /// A piece of inline content.
 sealed class InlineRun {
   const InlineRun();
 }
 
 /// Text in one style, after white space collapsing and text transform.
+///
+/// Where the text asks for hyphenation, it holds a soft hyphen at each
+/// place where the line can break inside a word. Such a soft hyphen is not
+/// in the text node, and its offset is that of the letter before it. So a
+/// line that ends with it ends at that letter.
 final class TextRun extends InlineRun {
   const TextRun(this.text, this.style, this.node, this.offsets);
   final String text;
@@ -340,13 +353,11 @@ final class BreakRun extends InlineRun {
 
 /// An image in a line.
 final class ImageRun extends InlineRun {
-  const ImageRun(this.node, this.path, this.sizing);
+  const ImageRun(this.node, this.image, this.sizing);
 
   /// The image element's [DomNode.order].
   final int node;
-
-  /// The image's publication path, or empty when it leaves the publication.
-  final String path;
+  final DrawnImage image;
 
   /// How the image's size follows from the paragraph's width.
   final ImageSizing sizing;
@@ -490,6 +501,24 @@ class BoxPlacement {
     }
     return (left, contentWidth);
   }
+}
+
+/// What a page draws for an image: the decoded file at [path], with its
+/// colors inverted by [invert], or else [alt] in the image's box. A page
+/// draws an outline while the file is not decoded yet, and in place of a
+/// file that cannot decode and has no [alt].
+final class DrawnImage {
+  const DrawnImage(this.path, {this.invert = 0, this.alt = ''});
+
+  /// The image's publication path, or empty when it leaves the publication.
+  final String path;
+
+  /// How far `filter: invert()` moves the image's colors toward their
+  /// inverse, from 0 (unchanged) to 1 (inverted).
+  final double invert;
+
+  /// The image's `alt` text, or empty.
+  final String alt;
 }
 
 /// How an image's used size follows from the width of the block that holds
@@ -1216,7 +1245,7 @@ class _Flattener {
     flow.add(
       ImageItem(
         node: box.element.order,
-        path: resolvePath(source.path, box.element.attributes['src'] ?? ''),
+        image: _drawn(box.element, style),
         sizing: _sizing(box.element, style),
         marginLeft: style.margin[3].resolve(width),
         centered: style.margin[3].isAuto && style.margin[1].isAuto,
@@ -1225,6 +1254,12 @@ class _Flattener {
       ),
     );
   }
+
+  DrawnImage _drawn(DomElement element, Style style) => DrawnImage(
+    resolvePath(source.path, element.attributes['src'] ?? '') ?? '',
+    invert: style.invert,
+    alt: element.attributes['alt'] ?? '',
+  );
 
   ImageSizing _sizing(DomElement element, Style style) {
     final path = resolvePath(source.path, element.attributes['src'] ?? '');
@@ -1242,9 +1277,11 @@ class _Flattener {
   }
 
   /// The runs of [items], with white space collapsed as CSS collapses it
-  /// in one block.
+  /// in one block, and hyphenated where they ask for it.
   List<InlineRun> _runs(List<_Item> items) {
     final runs = <InlineRun>[];
+    // The language that hyphenates each run, or null.
+    final languages = <String?>[];
     // Collapsible white space: whether the last code unit written is a
     // space, or the start of the paragraph.
     var space = true;
@@ -1256,10 +1293,14 @@ class _Flattener {
               style.whiteSpace == WhiteSpace.normal ||
               style.whiteSpace == WhiteSpace.nowrap;
           final keepBreaks = !collapse;
+          // With hyphens: none, a line does not break at the book's own
+          // soft hyphens either.
+          final keepSoftHyphens = style.hyphens != Hyphens.none;
           final out = StringBuffer();
           final offsets = <int>[];
           for (var index = 0; index < text.length; index++) {
             var code = text.codeUnitAt(index);
+            if (code == softHyphen && !keepSoftHyphens) continue;
             if (keepBreaks && code == 0x0a) {
               out.writeCharCode(0x0a);
               offsets.add(index);
@@ -1294,6 +1335,12 @@ class _Flattener {
               Int32List.fromList(offsets),
             ),
           );
+          // An empty lang names an unknown language, which has no patterns.
+          languages.add(
+            style.hyphens == Hyphens.auto
+                ? style.language ?? source.language
+                : null,
+          );
         case _BreakItem(:final element):
           space = true;
           runs.add(BreakRun(element.order));
@@ -1302,7 +1349,7 @@ class _Flattener {
           runs.add(
             ImageRun(
               element.order,
-              resolvePath(source.path, element.attributes['src'] ?? '') ?? '',
+              _drawn(element, style),
               _sizing(element, style),
             ),
           );
@@ -1322,8 +1369,95 @@ class _Flattener {
             ),
           );
       }
+      if (languages.length < runs.length) languages.add(null);
     }
-    return runs;
+    return _hyphenate(runs, languages);
+  }
+
+  /// [runs] with a soft hyphen at each break that hyphenation allows, in
+  /// text runs that [languages] gives a language with patterns. Runs of text
+  /// next to each other form one text, so a word can span several of them.
+  /// A word breaks by the patterns of the language at its start, and only
+  /// where the text before the break asks for hyphenation.
+  static List<InlineRun> _hyphenate(
+    List<InlineRun> runs,
+    List<String?> languages,
+  ) {
+    if (languages.every((language) => language == null)) return runs;
+    final hyphenators = <String, Hyphenator?>{};
+    Hyphenator? hyphenatorOf(int run) => switch (languages[run]) {
+      final language? => hyphenators.putIfAbsent(
+        language,
+        () => Hyphenator.forLanguage(language),
+      ),
+      null => null,
+    };
+    // For each run, the places in its text that get a soft hyphen.
+    final breaks = List.generate(runs.length, (_) => <int>[]);
+    var first = 0;
+    while (first < runs.length) {
+      if (runs[first] is! TextRun) {
+        first++;
+        continue;
+      }
+      // The text of the runs from [first] to [end], and the run and the
+      // place in it of each of its code units.
+      var end = first;
+      final joined = StringBuffer();
+      final owners = <int>[];
+      final places = <int>[];
+      for (; end < runs.length && runs[end] is TextRun; end++) {
+        final text = (runs[end] as TextRun).text;
+        joined.write(text);
+        for (var at = 0; at < text.length; at++) {
+          owners.add(end);
+          places.add(at);
+        }
+      }
+      final text = joined.toString();
+      for (final (start, stop) in hyphenationWords(text)) {
+        final hyphenator = hyphenatorOf(owners[start]);
+        if (hyphenator == null) continue;
+        for (final at in hyphenator.breaks(text.substring(start, stop))) {
+          final letter = start + at - 1;
+          if (hyphenatorOf(owners[letter]) == null) continue;
+          breaks[owners[letter]].add(places[letter] + 1);
+        }
+      }
+      first = end;
+    }
+    return [
+      for (final (index, run) in runs.indexed)
+        if (run is TextRun && breaks[index].isNotEmpty)
+          _withSoftHyphens(run, breaks[index])
+        else
+          run,
+    ];
+  }
+
+  /// [run] with a soft hyphen before each of [places] in its text, in
+  /// increasing order. Each soft hyphen has the offset of the letter
+  /// before it.
+  static TextRun _withSoftHyphens(TextRun run, List<int> places) {
+    final text = StringBuffer();
+    final offsets = Int32List(run.offsets.length + places.length);
+    var unit = 0;
+    void copy(int from, int to) {
+      text.write(run.text.substring(from, to));
+      for (var at = from; at < to; at++) {
+        offsets[unit++] = run.offsets[at];
+      }
+    }
+
+    var from = 0;
+    for (final place in places) {
+      copy(from, place);
+      text.writeCharCode(softHyphen);
+      offsets[unit++] = run.offsets[place - 1];
+      from = place;
+    }
+    copy(from, run.text.length);
+    return TextRun(text.toString(), run.style, run.node, offsets);
   }
 
   /// The index of the run style of [style].

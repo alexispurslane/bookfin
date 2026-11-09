@@ -280,6 +280,55 @@ void main() {
     }
   });
 
+  group("the publication's language", () {
+    Publication withMetadata(String metadata) => Publication.admit(
+      archive({
+        'OPS/book.opf': package(
+          '<item id="one" href="one.xhtml" media-type="application/xhtml+xml"/>',
+          '<itemref idref="one"/>',
+        ).replaceFirst('<metadata/>', metadata),
+        'OPS/one.xhtml': xhtml('<p>One</p>'),
+      }),
+    );
+
+    test("is the package's first dc:language, without the space around it", () {
+      expect(
+        withMetadata(
+          '<metadata xmlns:dc="http://purl.org/dc/elements/1.1/">'
+          '<dc:language>\n  en-GB\n</dc:language><dc:language>fr</dc:language>'
+          '</metadata>',
+        ).language,
+        'en-GB',
+      );
+    });
+
+    test('is unknown when the package names no language', () {
+      expect(withMetadata('<metadata/>').language, isNull);
+      expect(
+        withMetadata(
+          '<metadata xmlns:dc="http://purl.org/dc/elements/1.1/">'
+          '<dc:language> </dc:language></metadata>',
+        ).language,
+        isNull,
+      );
+    });
+
+    test('of each showcase book is English, and the identity that saved '
+        'places match on stays the same', () {
+      for (final (name, title, author, chapters) in [
+        ('frost', 'First Frost', 'Mara Ellison', media.firstFrost),
+        ('salt', 'Salt and Lantern', 'J. Okafor', media.saltAndLantern),
+        ('ledger', 'Winter Ledger', 'S. Moreau', media.winterLedger),
+      ]) {
+        final publication = Publication.admit(
+          showcase(name, title, author, chapters),
+        );
+        expect(publication.language, 'en', reason: name);
+        expect(publication.identity, identities[name]!.$2, reason: name);
+      }
+    });
+  });
+
   test('a Standard Ebooks style sheet keeps its full text beside the admitted '
       'sheet, which stays as before', () {
     final publication = Publication.admit(standardEbook());

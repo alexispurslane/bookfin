@@ -4,10 +4,13 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'layout.dart';
+import 'prepare.dart';
 
-/// The decoded images of a section, by path. A page whose image is missing
-/// draws an outline in its place.
-typedef PageImages = Map<String, ui.Image>;
+/// The decoded images of a page, by path. A path without an entry is not
+/// decoded yet, and its image draws as an outline. A path whose entry is
+/// null cannot decode, and its image draws its alt text, or an outline
+/// without alt text.
+typedef PageImages = Map<String, ui.Image?>;
 
 /// Draws [page], with the images in [images].
 ///
@@ -28,6 +31,8 @@ ui.Picture drawPage(LaidPage page, PageImages images) {
     ..clipRect(ui.Rect.fromLTWH(0, 0, settings.width, height));
   final up = ui.Offset(0, -page.top);
   final ink = ui.Paint()..color = settings.ink;
+  void image(DrawnImage image, ui.Rect rect) =>
+      _image(canvas, image, images, rect, settings);
   for (final piece in page.pieces) {
     final y = piece.y - page.top;
     _lines(canvas, piece, y, height, settings.width);
@@ -39,8 +44,8 @@ ui.Picture drawPage(LaidPage page, PageImages images) {
       final rect = box.shift(ui.Offset(piece.x, y));
       if (held is ui.Paragraph) {
         canvas.drawParagraph(held, rect.topLeft);
-      } else if (held is String) {
-        _image(canvas, images[held], rect, ink);
+      } else if (held is DrawnImage) {
+        image(held, rect);
       }
     }
     canvas.restore();
@@ -49,8 +54,8 @@ ui.Picture drawPage(LaidPage page, PageImages images) {
     switch (decoration) {
       case RuleDecoration(:final rect):
         canvas.drawRect(rect.shift(up), ink);
-      case ImageDecoration(:final rect, :final path):
-        _image(canvas, images[path], rect.shift(up), ink);
+      case ImageDecoration(:final rect, image: final drawn):
+        image(drawn, rect.shift(up));
       case MarkerDecoration(:final paragraph, :final offset):
         canvas.drawParagraph(paragraph, offset + up);
     }
@@ -103,28 +108,78 @@ void _lines(
   }
 }
 
-void _image(ui.Canvas canvas, ui.Image? image, ui.Rect rect, ui.Paint ink) {
-  if (image == null) {
-    canvas.drawRect(
+/// Draws [image] in [rect]: its decoded file from [images], else its alt
+/// text in the reader's font, clipped to [rect], when the file cannot
+/// decode, else an outline.
+void _image(
+  ui.Canvas canvas,
+  DrawnImage image,
+  PageImages images,
+  ui.Rect rect,
+  PageSettings settings,
+) {
+  final decoded = images[image.path];
+  if (decoded != null) {
+    final paint = ui.Paint()..filterQuality = ui.FilterQuality.medium;
+    if (image.invert > 0) {
+      // CSS invert(p) maps each channel c in 0 to 1 to (1 − 2p)c + p. The
+      // matrix's last column is in 0 to 255.
+      final scale = 1 - 2 * image.invert;
+      final offset = 255 * image.invert;
+      paint.colorFilter = ui.ColorFilter.matrix([
+        scale, 0, 0, 0, offset, //
+        0, scale, 0, 0, offset, //
+        0, 0, scale, 0, offset, //
+        0, 0, 0, 1, 0, //
+      ]);
+    }
+    canvas.drawImageRect(
+      decoded,
+      ui.Rect.fromLTWH(
+        0,
+        0,
+        decoded.width.toDouble(),
+        decoded.height.toDouble(),
+      ),
       rect,
-      ui.Paint()
-        ..color = ink.color.withValues(alpha: .3)
-        ..style = ui.PaintingStyle.stroke,
+      paint,
     );
     return;
   }
-  canvas.drawImageRect(
-    image,
-    ui.Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble()),
+  if (images.containsKey(image.path) && image.alt.isNotEmpty) {
+    final builder =
+        ui.ParagraphBuilder(
+            ui.ParagraphStyle(
+              fontFamily: readerFontFamily,
+              fontSize: settings.fontSize,
+            ),
+          )
+          ..pushStyle(ui.TextStyle(color: settings.ink))
+          ..addText(image.alt);
+    final alt = builder.build()
+      ..layout(ui.ParagraphConstraints(width: rect.width));
+    canvas
+      ..save()
+      ..clipRect(rect)
+      ..drawParagraph(alt, rect.topLeft)
+      ..restore();
+    alt.dispose();
+    return;
+  }
+  canvas.drawRect(
     rect,
-    ui.Paint()..filterQuality = ui.FilterQuality.medium,
+    ui.Paint()
+      ..color = settings.ink.withValues(alpha: .3)
+      ..style = ui.PaintingStyle.stroke,
   );
 }
 
 /// Decodes the images that [pages] show, from the bytes that [bytes] gives
 /// for a publication path, at the size that they are drawn at [scale] image
-/// pixels per layout pixel.
-Future<PageImages> decodeImages(
+/// pixels per layout pixel. An image that cannot decode has no entry, so it
+/// draws as an outline. The trial tests use it; the reader decodes through
+/// its page source.
+Future<Map<String, ui.Image>> decodeImages(
   Iterable<LaidPage> pages,
   Uint8List? Function(String path) bytes, {
   double scale = 1,
@@ -133,7 +188,7 @@ Future<PageImages> decodeImages(
   for (final page in pages) {
     for (final piece in page.pieces) {
       for (final (box, held) in piece.inlines) {
-        if (held is String) wanted[held] = box;
+        if (held is DrawnImage) wanted[held.path] = box;
       }
     }
     for (final decoration in page.decorations) {
