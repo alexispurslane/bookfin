@@ -188,6 +188,46 @@ void main() {
     }
   }, timeout: Timeout.none);
 
+  test('no layout step of a long paragraph without hard breaks takes much '
+      'longer than its budget', () {
+    // Each section of the index of Gutenberg's Roget's Thesaurus is one
+    // justified paragraph of up to 54,000 characters in 6,000 style runs,
+    // with no hard break. A step stops between its segments of whole
+    // lines.
+    final body =
+        '<p>${[for (var entry = 0; entry < 3000; entry++) '<i>Entry $entry</i> ${100 + entry}, ${400 + entry};'].join(' ')}</p>';
+    const budget = Duration(milliseconds: 4);
+    const segment = Duration(milliseconds: 4);
+    for (final settings in _settings) {
+      final section = prepared(
+        body,
+        css: 'p{text-align:justify}',
+        settings: settings,
+      );
+      final slowest = _fastest(() {
+        var slowest = Duration.zero;
+        final run = LayoutRun(section);
+        while (!run.done) {
+          final begin = _watch.elapsed;
+          run.step(budget);
+          final took = _watch.elapsed - begin;
+          if (took > slowest) slowest = took;
+        }
+        for (final page in run.pages) {
+          page.dispose();
+        }
+        run.dispose();
+        return slowest;
+      });
+      stdout.writeln(
+        '${settings.fontSize} px: slowest step of a paragraph of '
+        '${section.dom.visibleLength} characters in 6,000 runs '
+        '${_ms(slowest)} ms',
+      );
+      expect(slowest, lessThan(budget + segment));
+    }
+  }, timeout: Timeout.none);
+
   test('no step of a table of tall rows takes much longer than its budget', () {
     // Roget's Thesaurus has table rows of about 9,700 characters in 10 to
     // 16 paragraphs, and Plato's dialogues rows of up to 27 paragraphs. A
