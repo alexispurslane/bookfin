@@ -221,7 +221,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
       note?.dispose();
       return;
     }
-    if (note == null) return reader.goToContents(link.href);
+    if (note == null) return reader.followLink(link.href);
     var go = false;
     ModalRoute<Object?>? route;
     await _sheet(
@@ -245,7 +245,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
     await route?.completed;
     note.dispose();
     if (go && mounted && identical(reader.pager, pager)) {
-      await reader.goToContents(link.href);
+      await reader.followLink(link.href);
     }
   }
 

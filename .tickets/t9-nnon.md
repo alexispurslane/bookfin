@@ -1,6 +1,6 @@
 ---
 id: t9-nnon
-status: open
+status: in_progress
 deps: [t9-mqtx]
 links: []
 created: 2026-11-09T21:59:37Z
@@ -38,3 +38,9 @@ Build in `ReaderSession`:
 - A change of the text size records no move, and the Undo offer stays.
 - `bookmarkHere` names the bookmark on the shown page, and none after a page turn away from it.
 - A failed save keeps the recorded move pending in the session. The reader says that records are not saved, and the next save writes the move once. This test moved here from t9-mqtx, because t9-mqtx adds no verb that records a move. `ReaderSession._save` takes no moves yet: add a `history` argument that fills `ReadingChanges.history`.
+
+## Notes
+
+**2026-11-09T23:37:06Z**
+
+Built in ReaderSession: the pending move (_Move), goTo, moveChapter, goToContents, followLink, openHit, restoreBookmark, restoreHistory and undoMove as moves; undoOffer with undoChanges; dismissUndo; bookmarkHere; _save takes history. Jumps in one book run one after another; the open of another book drops a waiting jump. The reader screen calls followLink for a link and for Go to note. The Undo row and the Bookmarked tool are t9-7fxw. Known limit: a page turn whose page shows after a jump began, and before the jump's page, ends that jump's move.

@@ -140,6 +140,10 @@ class HistoryEvent<P extends Place> {
   }
 }
 
+/// The move of medium [P] that Undo can take back, and whether the place
+/// where it began is saved on this device.
+typedef UndoOffer<P extends Place> = ({HistoryEvent<P> action, bool saved});
+
 /// A place in edition [P] that the person marked.
 class Bookmark<P extends Place> {
   const Bookmark({

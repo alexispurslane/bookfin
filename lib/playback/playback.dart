@@ -165,10 +165,6 @@ typedef PlaybackSettings = ({double speed, int backward, int forward});
 /// records of the bound account failed to save.
 typedef PlaybackStatus = ({String? message, bool saveFailed});
 
-/// The action that Undo can take back, and whether the place before it is
-/// saved on this device.
-typedef UndoOffer = ({HistoryEvent<AudioPosition> action, bool saved});
-
 class Playback extends ChangeNotifier {
   Playback({
     required this.downloads,
@@ -279,7 +275,7 @@ class Playback extends ChangeNotifier {
   late final _librarySignal = ValueNotifier<List<Book>>(_books);
   late final _settingsSignal = ValueNotifier<PlaybackSettings>(_settings);
   late final _statusSignal = ValueNotifier<PlaybackStatus>(_status);
-  late final _undoSignal = ValueNotifier<UndoOffer?>(_undoOffer);
+  late final _undoSignal = ValueNotifier<UndoOffer<AudioPosition>?>(_undoOffer);
   late final _startingSignal = ValueNotifier<Edition?>(_starting);
 
   // Playback notifies through these narrow signals for one kind of change
@@ -328,7 +324,7 @@ class Playback extends ChangeNotifier {
   /// notifies when the offer comes or goes, and when the place before the
   /// change is saved. A save of the place where audio plays now does not
   /// change it.
-  ValueListenable<UndoOffer?> get undoNotifier => _undoSignal;
+  ValueListenable<UndoOffer<AudioPosition>?> get undoNotifier => _undoSignal;
 
   /// The edition that a Play or Listen command is starting, or null. It
   /// notifies at the command, before any wait, and again when the edition's
@@ -1762,7 +1758,7 @@ class Playback extends ChangeNotifier {
 
   /// The undo offer. Its action is saved once no unconfirmed write of the
   /// bound account holds it.
-  UndoOffer? get _undoOffer => switch (_undo) {
+  UndoOffer<AudioPosition>? get _undoOffer => switch (_undo) {
     null => null,
     final action => (
       action: action,
