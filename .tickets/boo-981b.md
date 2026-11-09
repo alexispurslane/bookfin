@@ -1,6 +1,6 @@
 ---
 id: boo-981b
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-09T17:56:11Z
