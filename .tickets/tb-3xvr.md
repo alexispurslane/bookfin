@@ -1,11 +1,11 @@
 ---
 id: tb-3xvr
 status: open
-deps: []
+deps: [t7-bbv1]
 links: []
 created: 2026-11-09T14:49:11Z
 type: task
-priority: 3
+priority: 1
 assignee: Alexis Purslane
 parent: boo-b2ey
 ---
@@ -19,3 +19,7 @@ Found in tb-i6wg. The index of Roget's Thesaurus (Gutenberg) is one justified pa
 - A page dump of the corpus is the same as before, or each changed line is proved wrong before.
 - Runs from every page start cut the same pages, and saved places still resolve.
 
+
+## Order (user, 2026-11-09)
+
+This ticket comes right after t7-bbv1. Whole-book layout in the background visits every paragraph of the book, so one long layout step can drop a frame during a page turn.
