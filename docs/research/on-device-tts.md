@@ -10,6 +10,8 @@ Kokoro-82M v1.0 is still the best-sounding text-to-speech model that a Pixel 8 c
 
 Kokoro is heavy for a phone. On the host Mac it needs about 0.7 seconds of computation per second of speech on two CPU threads. On the Pixel 8 it will probably need three or four threads to keep ahead, which costs heat and battery. Its int8 (8-bit) version is not a way out: it dropped a third of the test passage. The recommendation is Kokoro fp32 with a Bookfin-owned English text front end, gated by one measurement on the Pixel 8. The real product fork is Kokoro (best quality, about 330 MB, English) against Supertonic 3 (faster, 129 MB, 31 languages, more misreadings). Both designs share everything else in the design below.
 
+The Pixel 8 measurement (t0-etnk) did not run yet. Until it does, "Pixel 8 estimates (not measured)" extrapolates from the Mac: Kokoro fp32 at 4 threads probably fails the gate of RTF 0.6, with an estimate of 0.64 to 0.95 on a cool phone.
+
 ## Terms
 
 | Term | Meaning |
@@ -167,6 +169,117 @@ Estimate for the Pixel 8. From public single-core benchmark scores, one Cortex-X
 
 At 1.5x playback speed, Kokoro needs a phone RTF below 0.67. That is likely at four threads and unlikely at two. Every second of Kokoro speech costs roughly 1.5 to 3 seconds of CPU core time on the phone, against about 0.4 to 0.6 for Supertonic. The CPU work per book is fixed, so caching matters: a second listen costs only Opus decoding.
 
+The next section replaces this first estimate with a more careful one.
+
+## Pixel 8 estimates (not measured)
+
+Date: 2026-11-09. Ticket: t0-etnk. Status: no voice ran on the Pixel 8 so far. All Pixel numbers in this section are extrapolations from Mac runs.
+
+### Why there are no Pixel numbers
+
+The user allowed one 30-minute test on the Pixel 8. The throwaway test app was built, installed and loaded with its models. The launch failed: the T3 device command reported `Error (DEVICE_IN_USE): Device is already in use by session "t3-1d501db2f62c9df22f84352f".` That session was a stale one from 2026-11-07. Agents must not close another session. The user then chose to run the test later with one tap. Ticket t0-etnk says how.
+
+### Verdict on the gate
+
+The gate is: Kokoro fp32 keeps a sustained RTF at or below 0.6 for 30 minutes, with at most 4 threads.
+
+Estimated verdict: Kokoro probably fails the gate. The estimate for a cool Pixel 8 at 4 threads is RTF 0.64 to 0.95, and 0.64 to 1.5 after 30 minutes of heat. Even the best case is just above 0.6. Kokoro probably keeps ahead of a listener at 1.0x speed on a cool phone (RTF below 1), but probably not at 1.5x. Over 30 minutes it can fall behind even at 1.0x. The uncertainty is large, about ±30 percent, so only the phone run decides. Kokoro fp16 does not change the speed. It only halves the download.
+
+### What the later run will settle
+
+- The sustained RTF over 30 minutes, minute by minute, and so the gate itself.
+- How much heat throttling costs. Android's thermal status and thermal headroom are recorded every 30 s.
+- Battery percent per hour of speech. The estimate below is only a power budget.
+- Peak memory, model load time, and the first clause with a cold and a warm model, on the phone's own storage and cores.
+- Whether fp16 Kokoro is faster, slower or equal on the Tensor G3, and whether it sounds the same there.
+
+### Method
+
+1. Measure each voice on the host Mac with the same runtime and the same input as the phone app: sherpa_onnx 2.0.1 (ONNX Runtime 1.28.2), 60 s of Jane Eyre from chapter I, one sentence per call.
+2. Find how much slower a Pixel 8 core is than an M1 Max performance core, from published Geekbench 6 single-core scores.
+3. Multiply the Mac RTF by that factor for the cores that 2 or 4 threads use on the phone.
+4. Multiply again by a heat factor for 30 minutes of sustained load, from published throttling tests.
+
+The core speed factor:
+
+| Core | Geekbench 6 single-core | Speed relative to one M1 Max performance core |
+| --- | --- | --- |
+| M1 Max performance core (3.2 GHz) | 2,130 to 2,450 | 1 |
+| Pixel 8 Cortex-X3 (2.91 GHz), one core | 1,560 to 1,590 | 0.64 to 0.75 |
+| Pixel 8 Cortex-A715 (2.37 GHz), four cores | not published. Estimate from Cortex-A78 phones, scaled by clock: about 900 | 0.37 to 0.43 |
+
+Four threads run on the X3 and three A715 cores at best. ONNX Runtime splits each operator into parts for the threads. If faster threads take more parts, 4 threads do 0.44 to 0.51 of the Mac's 4-thread work. If each operator waits for its slowest thread, they do 0.37 to 0.43. So the phone needs 2.0 to 2.7 times the Mac's time at 4 threads. At 2 threads (X3 and one A715), the factor is 1.7 to 2.7.
+
+The heat factor comes from published throttling tests of the Pixel 8 and 8 Pro. Beebom found that a Pixel 8 Pro lost 40 percent of its CPU performance in 15 minutes of full load on all cores. A Notebookcheck headline reports up to 47.5 percent for the Pixel 8 and 8 Pro under sustained load. Four threads heat the phone less than a test on all cores. So the estimate uses a factor of 1.0 (no throttling) to 1.6 (40 percent throttling).
+
+Limits of the method:
+
+- The A715 score is an estimate. No published benchmark runs on the A715 cores alone.
+- Android can move threads to the A510 cores, which are much slower. That makes the phone slower than this estimate.
+- Geekbench measures general code. ONNX Runtime's matrix kernels can scale differently, for example through memory bandwidth.
+- Other agents loaded the Mac heavily during the runs (load average 17 to 45 on 10 cores). So the Mac RTF is pessimistic, by an unknown amount. An earlier quieter Kokoro run at 4 threads gave 0.32, against 0.35 here.
+
+### Mac runs with sherpa_onnx 2.0.1
+
+Same text, same phoneme input and same plans as the phone app. Each run is 60 s of synthesis. Load and first clause are wall times inside the process.
+
+| Run | Mac load average (1 min) | Model load s | First clause cold s | First clause warm s | Audio made, min | RTF |
+| --- | --- | --- | --- | --- | --- | --- |
+| Kokoro fp32, 4 threads | 17 | 1.01 | 0.47 | 0.55 | 3.0 | 0.348 |
+| Kokoro fp32, 2 threads | 28 | 1.21 | 1.05 | 0.80 | 1.8 | 0.559 |
+| Kokoro fp16, 4 threads | 32 | 0.92 | 0.47 | 0.50 | 3.1 | 0.343 |
+| Kokoro fp16, 2 threads | 42 | 1.01 | 0.92 | 0.85 | 2.0 | 0.545 |
+| Supertonic 3 int8, 5 steps, 4 threads | 37 | 0.42 | 0.38 | 0.35 | 6.0 | 0.174 |
+| Supertonic 3 int8, 5 steps, 2 threads | 44 | 0.36 | 0.54 | 0.48 | 5.2 | 0.195 |
+| Kitten nano fp32, 4 threads | 37 | 0.32 | 0.16 | 0.18 | 15.4 | 0.065 |
+| Kitten nano fp32, 2 threads | 34 | 0.31 | 0.24 | 0.23 | 11.3 | 0.089 |
+
+The first clause is "He read the letter twice," (1.4 s of Kokoro audio). The book lines have up to 400 phoneme characters. The 6 percent of lines above that were left out for every voice, because Kitten fails on them.
+
+Kokoro fp16 and fp32 run at the same speed on the Mac, within 3 percent. Both read the test passage completely under whisper.cpp base.en, with the same words. So on an ARM CPU, fp16 halves the download (163 MB against 326 MB) and costs nothing that this test found. Whether it is the same on the Tensor G3 is for the phone run.
+
+### Estimates for the Pixel 8
+
+| Voice | Threads | Mac RTF | Pixel 8 RTF, cool | Pixel 8 RTF after 30 min | Keeps ahead at 1.0x / 1.5x |
+| --- | --- | --- | --- | --- | --- |
+| Kokoro fp32 | 4 | 0.32 to 0.35 | 0.64 to 0.95 | 0.64 to 1.5 | Cool: yes, after 30 min: not sure / unlikely |
+| Kokoro fp32 | 2 | 0.56 to 0.78 | 0.95 to 2.1 | 0.95 to 3.4 | Unlikely / no |
+| Kokoro fp16 | 4 | 0.34 | 0.69 to 0.93 | 0.69 to 1.5 | Same as fp32 |
+| Kokoro fp16 | 2 | 0.55 | 0.93 to 1.5 | 0.93 to 2.4 | Unlikely / no |
+| Supertonic 3 int8, 5 steps | 4 | 0.14 to 0.17 | 0.28 to 0.47 | 0.28 to 0.75 | Yes / cool: yes, after 30 min: probably |
+| Supertonic 3 int8, 5 steps | 2 | 0.14 to 0.20 | 0.24 to 0.53 | 0.24 to 0.84 | Yes / cool: yes, after 30 min: probably |
+| Kitten nano fp32 | 4 | 0.065 to 0.07 | 0.13 to 0.19 | 0.13 to 0.30 | Yes / yes |
+| Kitten nano fp32 | 2 | 0.09 to 0.10 | 0.15 to 0.27 | 0.15 to 0.43 | Yes / yes |
+
+The Mac RTF range joins the runs above and the earlier sherpa-onnx 1.13.8 runs in "Host Mac". Cool = Mac RTF × 2.0 to 2.7 at 4 threads, or × 1.7 to 2.7 at 2 threads. After 30 min = cool × 1.0 to 1.6. "Keeps ahead" needs an RTF below 1 at 1.0x speed and below 0.67 at 1.5x.
+
+Other estimates for Kokoro fp32 on the phone:
+
+| Quantity | Mac | Pixel 8 estimate | Reason |
+| --- | --- | --- | --- |
+| Model load | 0.9 to 1.2 s | 2 to 3.5 s | Slower cores and flash storage. Mostly reading 326 MB and building the session. |
+| First clause, cold model | 0.47 s (4 threads) | 1.0 to 1.3 s | Core factor 2.0 to 2.7 |
+| First clause, warm model | 0.50 to 0.55 s | 1.0 to 1.5 s | Same |
+| Time to first audio, cold | about 1.5 s | 3 to 5 s | Load plus first clause |
+| Peak memory | 600 to 660 MB (earlier runs) | 550 to 700 MB | Same ONNX Runtime arena and weights |
+| Battery per hour of speech at 1.0x | not applicable | 11 to 34 percent | With RTF 0.64 to 1.0, the CPU works 0.64 to 1 h per hour of speech. Four threads draw 3 to 6 W (an assumption, not measured). The battery holds about 17.7 Wh (4,575 mAh). |
+
+The same budget for Supertonic at 4 threads (cool RTF 0.28 to 0.47) gives about 5 to 16 percent per hour of speech. Both budgets leave out the screen and audio playback.
+
+### Front end in this test
+
+sherpa_onnx 2.0.1 removed espeak-ng from its library. Its Kokoro reads words only from the misaki lexicon and skips every word that the lexicon lacks. In Jane Eyre it skipped names ("Eliza", "Georgiana"), inflected words ("reclined", "privileges") and words that touch a quotation mark or a dash. A front end that skips words fails a book reader.
+
+So this test turned the text into phonemes on the Mac with espeak-ng 1.52. The apps passed these phonemes to the model (`phonemeCodepoints`). The phone app has no espeak-ng and no GPL code. The phone measures the model alone, as with the Bookfin-owned front end of the design. espeak-ng made the same book-convention errors as before ("Roman 12", "Baker sent", "pound three tens", "noss"). It read "St. John", "Oct. 5", "i.e." and "7.30 p.m." correctly in this run.
+
+Effect on the runtime choice: sherpa_onnx 2.0.1 no longer brings the GPL, but it also no longer reads text without an outside front end. The recommendation stays the ONNX Runtime C API through `dart:ffi`, because Bookfin needs Kokoro's durations and owns the front end either way.
+
+### The test app
+
+`tool/research/tts_bench/` is a small Flutter app with the application ID `dev.bookfin.ttsbench`. It is separate from Bookfin. It uses sherpa_onnx 2.0.1 (ONNX Runtime 1.28.2, CPU), the runtime family that the design ships. It runs a list of plans from one launch, in a worker isolate. It writes one JSON line per event to `results.jsonl` in its external files directory. Every 30 s it also records Android's thermal status, thermal headroom, battery level, battery current and battery temperature. `scripts/summarize.py` turns the file into the tables of this section. The scripts that prepared the book text (`book_sentences.py`), the phonemes (`phonemize.py`) and the fp16 model (`kokoro_fp16.py`) are beside it.
+
+The fp16 model is `onnx/model_fp16.onnx` of onnx-community/Kokoro-82M-v1.0-ONNX, with the sherpa-onnx metadata copied in. A local conversion of the sherpa-onnx fp32 model with onnxconverter-common did not load (type mismatches at a MatMul and a Cast).
+
 ## The situation each technique was made for
 
 | Technique | Made for | Fit for Bookfin |
@@ -191,7 +304,7 @@ At 1.5x playback speed, Kokoro needs a phone RTF below 0.67. That is likely at f
 
 | Runtime | State in November 2026 | Fit |
 | --- | --- | --- |
-| sherpa_onnx (pub.dev 1.13.8, Apache-2.0) | Supports Kokoro, Kitten, VITS, Matcha, Supertonic, Pocket, ZipVoice. CPU only on Android. 26.7 MB native library per arm64 ABI. Links espeak-ng. Returns samples per sentence, without durations. | Fast to prototype. It hides the durations that word highlighting needs and brings the GPL. |
+| sherpa_onnx (pub.dev 1.13.8, Apache-2.0) | Supports Kokoro, Kitten, VITS, Matcha, Supertonic, Pocket, ZipVoice. CPU only on Android. 26.7 MB native library per arm64 ABI. Links espeak-ng. Returns samples per sentence, without durations. Version 2.0.1 removed espeak-ng (see "Front end in this test"). | Fast to prototype. It hides the durations that word highlighting needs. 1.13.8 brings the GPL. 2.0.1 needs an outside front end. |
 | ONNX Runtime C API through `dart:ffi` (official `onnxruntime-android` library, MIT) | Runs every model above. Gives every model output, including Kokoro's durations. | Recommended. One code path on Android, macOS, Linux and Windows, testable on the host Mac. |
 | flutter_onnxruntime (1.9.0, MIT) | Official ORT with NNAPI and XNNPACK, raw tensors only. Conflicts with sherpa_onnx over `libonnxruntime.so`. | Usable, but a plugin adds a platform channel hop per call |
 | LiteRT, ExecuTorch | No TTS models for phones. A Kokoro ExecuTorch build ran out of memory with XNNPACK. | Not now |
@@ -391,6 +504,14 @@ Benchmarks and comparisons:
 - Lectern, Android TTS against Piper and Kokoro: https://lecternreader.app/blog/android-tts-vs-piper-kokoro
 - NimbleEdge, Kokoro on phones: https://www.nimbleedge.com/blog/how-to-run-kokoro-tts-model-on-device/
 - On-device speech in mid-2026: https://offlinetts.com/blog/tts-stt-landscape-h1-2026/
+
+Pixel 8 estimates (t0-etnk):
+
+- Pixel 8 and Tensor G3 Geekbench 6 scores and a 15-minute throttling test: https://beebom.com/google-tensor-g3-benchmarks
+- Pixel 8 and 8 Pro throttling under sustained load (Notebookcheck): https://www.notebookcheck.com/Google-Pixel-8-und-Pixel-8-Pro-drosseln-Leistung-um-bis-zu-47-5-unter-Dauerlast-laut-Performance-Vergleich.757278.0.html
+- A Pixel 8 Geekbench 6 result on Android 17: https://browser.geekbench.com/v6/cpu/baseline/18889686
+- M1 Max Geekbench 6 results: https://browser.geekbench.com/v6/cpu/baseline/8971260 and https://browser.geekbench.com/v6/cpu/baseline/16276706
+- Kokoro fp16 export: https://huggingface.co/onnx-community/Kokoro-82M-v1.0-ONNX
 
 Runtimes and platform:
 
