@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:xml/xml.dart';
 
+import '../downloads/downloads.dart';
 import '../foundation/hop.dart';
 import 'ocr_storage.dart';
 import 'pdf.dart';
@@ -204,10 +205,11 @@ class BundledEnglishText implements PdfTextSupply {
     final key = sha256
         .convert(utf8.encode('$version/${book.originalDigest}/$page'))
         .toString();
-    Future<PdfText?> reuse(Uri original, bool Function() owned) async {
+    Future<PdfText?> reuse(VerifiedFile original, bool Function() owned) async {
       bool live() => !_closed && generation == _generation && owned();
       if (!live()) return _canceled;
-      // Cache access also verifies original bytes before reusing selected text.
+      // Cache access also makes sure that the download still holds this
+      // book before this reader reuses its selected text.
       final cached = await readOcrCache(original, book.originalDigest, key);
       if (!live()) return _canceled;
       final selected = _selected[page];
@@ -276,7 +278,8 @@ class BundledEnglishText implements PdfTextSupply {
   }
 
   Future<PdfText?> _withRead(
-    Future<PdfText?> Function(Uri original, bool Function() owned) action,
+    Future<PdfText?> Function(VerifiedFile original, bool Function() owned)
+    action,
   ) {
     final lease = _lease;
     if (_closed || lease == null) return Future.value(null);
@@ -375,7 +378,7 @@ Future<_Recognized> _recognizePage(
 class _OwnedTextRead {
   _OwnedTextRead(this._lease);
   final PdfTextLease _lease;
-  final _ready = Completer<({Uri original, bool Function() owned})?>();
+  final _ready = Completer<({VerifiedFile original, bool Function() owned})?>();
   final _drained = Completer<void>();
   Future<void>? _done;
   int _users = 0;
@@ -383,7 +386,8 @@ class _OwnedTextRead {
   Future<void>? get done => _done;
 
   Future<PdfText?> use(
-    Future<PdfText?> Function(Uri original, bool Function() owned) action,
+    Future<PdfText?> Function(VerifiedFile original, bool Function() owned)
+    action,
   ) async {
     assert(accepting);
     _users++;

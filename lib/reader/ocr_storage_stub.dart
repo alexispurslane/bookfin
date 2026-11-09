@@ -1,7 +1,12 @@
-Future<String?> readOcrCache(Uri original, String digest, String key) async =>
-    null;
+import '../downloads/downloads.dart';
+
+Future<String?> readOcrCache(
+  VerifiedFile original,
+  String digest,
+  String key,
+) async => null;
 Future<void> writeOcrCache(
-  Uri original,
+  VerifiedFile original,
   String digest,
   String key,
   String hocr,

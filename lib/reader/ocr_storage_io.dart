@@ -1,71 +1,26 @@
-import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart' show compute;
 
+import '../downloads/downloads.dart';
 import '../foundation/hop.dart';
 import '../downloads/derived_files.dart';
 
-/// The check of the original PDF that the last cache access made: its path,
-/// the digest that it was checked against, its size and modification time
-/// at that moment, and whether its bytes had that digest.
-///
-/// One open document reads and writes the cache for each recognized page,
-/// so the check runs once for the document. A changed size or modification
-/// time, another document, or a failed check starts a new check.
-({
-  String path,
-  String digest,
-  int size,
-  DateTime modified,
-  Future<bool> matches,
-})?
-_lastCheck;
-
-/// Whether the original PDF [file] has [digest]. The hash runs in a hop.
-Future<bool> _matches(File file, String digest, IsolateHop hop) async {
-  final stat = await file.stat();
-  final last = _lastCheck;
-  if (last != null &&
-      last.path == file.path &&
-      last.digest == digest &&
-      last.size == stat.size &&
-      last.modified == stat.modified) {
-    return last.matches;
-  }
-  final matches = hop(_digestOf, file.path).then((actual) => actual == digest);
-  _lastCheck = (
-    path: file.path,
-    digest: digest,
-    size: stat.size,
-    modified: stat.modified,
-    matches: matches,
-  );
-  var matched = false;
-  try {
-    return matched = await matches;
-  } finally {
-    // A failed check is not kept, so the next access checks again.
-    if (!matched && identical(_lastCheck?.matches, matches)) _lastCheck = null;
-  }
-}
-
-Future<String> _digestOf(String path) async =>
-    (await sha256.bind(File(path).openRead()).first).toString();
-
-Future<Directory> _directory(
-  Uri original,
-  String digest,
-  IsolateHop hop,
-) async {
-  final file = File.fromUri(original);
-  if (original.scheme != 'file' ||
-      original.host.isNotEmpty ||
+/// The cache directory of the downloaded PDF [original], whose pages the
+/// reader opened from bytes with [digest]. Downloads made sure that the file
+/// of [original] has the digest of [original], so the cache trusts that
+/// digest and does not hash the file again. Throws a [FormatException] when
+/// the download now holds another PDF than the open book, or when the file or
+/// its cache directory is not a plain file or directory.
+Future<Directory> _directory(VerifiedFile original, String digest) async {
+  final file = File.fromUri(original.uri);
+  if (original.digest != digest ||
+      original.uri.scheme != 'file' ||
+      original.uri.host.isNotEmpty ||
       await FileSystemEntity.type(file.path, followLinks: false) !=
-          FileSystemEntityType.file ||
-      !await _matches(file, digest, hop)) {
+          FileSystemEntityType.file) {
     throw const FormatException(
       'The original PDF changed. Reopen its download.',
     );
@@ -106,13 +61,16 @@ String _encodePage(({String key, String hocr}) page) => jsonEncode({
   'sha256': sha256.convert(utf8.encode(page.hocr)).toString(),
 });
 
+/// The recognition output that the cache keeps under [key] for the
+/// downloaded PDF [original], or null when it keeps none. [digest] names the
+/// PDF that the reader opened. Decoding runs in a hop.
 Future<String?> readOcrCache(
-  Uri original,
+  VerifiedFile original,
   String digest,
   String key, {
   IsolateHop hop = compute,
 }) async {
-  final directory = await _directory(original, digest, hop);
+  final directory = await _directory(original, digest);
   final file = File('${directory.path}/$key.json');
   if (await FileSystemEntity.type(file.path, followLinks: false) !=
           FileSystemEntityType.file ||
@@ -122,15 +80,18 @@ Future<String?> readOcrCache(
   return hop(_readPage, (path: file.path, key: key));
 }
 
+/// Keeps the recognition output [hocr] under [key] for the downloaded PDF
+/// [original], while [live] holds. [digest] names the PDF that the reader
+/// opened. Encoding runs in a hop, and the write replaces the file whole.
 Future<void> writeOcrCache(
-  Uri original,
+  VerifiedFile original,
   String digest,
   String key,
   String hocr,
   bool Function() live, {
   IsolateHop hop = compute,
 }) async {
-  final directory = await _directory(original, digest, hop);
+  final directory = await _directory(original, digest);
   if (!live()) return;
   await directory.create();
   final file = File('${directory.path}/$key.json');
