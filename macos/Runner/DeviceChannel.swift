@@ -9,10 +9,13 @@ import Foundation
 #endif
 
 /// The Apple side of the `bookfin/device` channel, which Android's
-/// MainActivity also implements. Its one method, `name`, returns the name
-/// that the owner gave this device: the computer name of the Sharing
-/// settings on macOS, and the device name on iOS. Dart's `deviceName` is its
-/// only caller. Reading the name needs no permission or entitlement.
+/// MainActivity also implements. Its method `name` returns the name that the
+/// owner gave this device: the computer name of the Sharing settings on
+/// macOS, and the device name on iOS. Dart's `deviceName` is its only caller.
+/// Its method `build` returns the facts behind Dart's
+/// `textEngineFingerprint`: the modification time of the app bundle's
+/// executable, which changes with every build, and the system's version with
+/// its build number. Neither method needs a permission or entitlement.
 final class DeviceChannel {
   private let channel: FlutterMethodChannel
 
@@ -22,6 +25,8 @@ final class DeviceChannel {
       switch call.method {
       case "name":
         result(DeviceChannel.name())
+      case "build":
+        result(DeviceChannel.installedBuild())
       default:
         result(FlutterMethodNotImplemented)
       }
@@ -34,5 +39,17 @@ final class DeviceChannel {
     #else
       return SCDynamicStoreCopyComputerName(nil, nil) as String?
     #endif
+  }
+
+  private static func installedBuild() -> [String: Any]? {
+    guard
+      let executable = Bundle.main.executableURL,
+      let modified = try? executable.resourceValues(forKeys: [.contentModificationDateKey])
+        .contentModificationDate
+    else { return nil }
+    return [
+      "installTime": Int64(modified.timeIntervalSince1970 * 1000),
+      "system": ProcessInfo.processInfo.operatingSystemVersionString,
+    ]
   }
 }

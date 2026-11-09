@@ -5,6 +5,7 @@ import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
 import android.content.Context
+import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
@@ -46,6 +47,19 @@ class MainActivity : AudioServiceActivity() {
         return named?.takeIf { it.isNotBlank() } ?: Build.MODEL
     }
 
+    // The facts that decide how Flutter's text engine lays out a book: when
+    // this package was installed or updated, which changes with every APK
+    // install, and the system's build, which holds the fallback fonts.
+    private fun installedBuild(): Map<String, Any> {
+        val info = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            packageManager.getPackageInfo(packageName, PackageManager.PackageInfoFlags.of(0))
+        } else {
+            @Suppress("DEPRECATION")
+            packageManager.getPackageInfo(packageName, 0)
+        }
+        return mapOf("installTime" to info.lastUpdateTime, "system" to Build.FINGERPRINT)
+    }
+
     private fun publishNetwork() {
         mainHandler.post { networkEvents?.success(mediaNetwork()) }
     }
@@ -74,6 +88,7 @@ class MainActivity : AudioServiceActivity() {
             .setMethodCallHandler { call, result ->
                 when (call.method) {
                     "name" -> result.success(deviceName())
+                    "build" -> result.success(installedBuild())
                     else -> result.notImplemented()
                 }
             }

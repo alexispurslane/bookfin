@@ -1,6 +1,6 @@
 ---
 id: t5-9tbu
-status: open
+status: in_progress
 deps: []
 links: []
 created: 2026-11-09T18:18:38Z
@@ -17,3 +17,7 @@ Found in boo-ystu (docs/research/epub-layout-cache.md). A disk cache of layout r
 
 On the Android emulator, the fingerprint changes after an APK install and stays the same across launches of one install. On macOS it changes after a rebuild. A debug build gives no fingerprint. A runner without the channel gives no fingerprint, and nothing fails.
 
+
+## Notes
+
+Built on branch t3/27f1b118. `textEngineFingerprint` in lib/sync/device.dart asks the `build` method of the `bookfin/device` channel once per process and reads the locales on each call. A profile probe on a new API 36 emulator gave the same fingerprint in two launches of one install, and a new one after `adb install -r` of the same APK. A debug build of the probe gave null. A macOS profile probe gave the same fingerprint in two launches, and a new one after a rebuild with changed Dart code. The ad-hoc signature rewrites the bundle's executable on every build, so its time also changes when only App.framework changes.
