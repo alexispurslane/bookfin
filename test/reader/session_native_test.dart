@@ -30,7 +30,7 @@ import 'epub/epubjs_fixtures.dart'
     show fixture, immediateSource, pageAt, recordedSizes;
 import 'epub/helpers.dart' show loadReaderFont, readerPage;
 import 'epub/page_source_test.dart' show paragraphs;
-import 'epub/trial/book.dart' show showcaseBooks;
+import 'epub/corpus/book.dart' show showcaseBooks;
 
 SourceFile file(String container) => SourceFile(
   itemId: 'ebook',

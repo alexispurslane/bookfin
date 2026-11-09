@@ -1,54 +1,12 @@
-// Tool code: tests of the trial's support check, which the corpus run
-// reports. Nothing in lib/ uses the check.
-import 'dart:convert';
-import 'dart:typed_data';
-
-import 'package:archive/archive.dart';
+// Tool code: tests of the support report, which the corpus run lists.
+// Nothing in lib/ uses the check.
 import 'package:flutter_test/flutter_test.dart';
 
 import 'book.dart';
 import 'support.dart';
 
-/// A one-section EPUB whose body is [body] and whose style sheet is [css].
-Uint8List epub(String body, {String css = ''}) {
-  final archive = Archive()
-    ..add(
-      ArchiveFile.noCompress(
-        'mimetype',
-        20,
-        utf8.encode('application/epub+zip'),
-      ),
-    )
-    ..add(
-      ArchiveFile.string(
-        'META-INF/container.xml',
-        '<container><rootfiles><rootfile full-path="book.opf"/></rootfiles>'
-            '</container>',
-      ),
-    )
-    ..add(
-      ArchiveFile.string(
-        'book.opf',
-        '<package version="3.0"><metadata/><manifest>'
-            '<item id="one" href="one.xhtml" media-type="application/xhtml+xml"/>'
-            '<item id="css" href="book.css" media-type="text/css"/>'
-            '</manifest><spine><itemref idref="one"/></spine></package>',
-      ),
-    )
-    ..add(ArchiveFile.string('book.css', css))
-    ..add(
-      ArchiveFile.string(
-        'one.xhtml',
-        '<html xmlns="http://www.w3.org/1999/xhtml"><head>'
-            '<link rel="stylesheet" href="book.css"/></head>'
-            '<body>$body</body></html>',
-      ),
-    );
-  return Uint8List.fromList(ZipEncoder().encode(archive));
-}
-
 SupportReport check(String body, {String css = ''}) =>
-    checkSupport(TrialBook.open(epub(body, css: css)));
+    checkSupport(CorpusBook.open(madeUpEpub([body], css: css)));
 
 void main() {
   test('a plain prose book passes the support check', () {
@@ -114,5 +72,35 @@ void main() {
       report.approximated.keys,
       contains('::first-letter and ::first-line'),
     );
+  });
+
+  test('automatic hyphenation of English text is not an approximation', () {
+    final report = check(
+      '<div lang="en-GB"><p>Text</p></div>',
+      css: 'p{hyphens:auto}',
+    );
+    expect(report.approximated, isEmpty);
+  });
+
+  test('automatic hyphenation of text without hyphenation patterns is '
+      'an approximation', () {
+    for (final body in [
+      '<div lang="de"><p>Text</p></div>',
+      '<p>Text with no language</p>',
+    ]) {
+      final report = check(body, css: 'p{hyphens:auto}');
+      expect(report.approximated.keys, [
+        'automatic hyphenation without patterns',
+      ], reason: body);
+    }
+  });
+
+  test('a hyphenation style attribute follows the element language', () {
+    final english = check('<p lang="en" style="hyphens:auto">Text</p>');
+    final german = check('<p lang="de" style="hyphens:auto">Text</p>');
+    expect(english.approximated, isEmpty);
+    expect(german.approximated.keys, [
+      'automatic hyphenation without patterns',
+    ]);
   });
 }

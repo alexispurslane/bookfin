@@ -57,7 +57,7 @@ A visible character index counts the characters of the section's body that are n
 
 There are three search phrases. "morning" is a word that also starts sentences. "the door" is two words that a line can break between. "lantern" is a rare word. Ticket tc-866u can hold native search against these hits.
 
-The fixture books are zipped again with a fixed file time (`showcaseBooks` in `test/reader/epub/trial/book.dart`), because the publication identity also hashes the archive bytes.
+The fixture books are zipped again with a fixed file time (`showcaseBooks` in `test/reader/epub/corpus/book.dart`), because the publication identity also hashes the archive bytes.
 
 ## The tests
 

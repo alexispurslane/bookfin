@@ -18,9 +18,9 @@ import 'package:bookfin/reader/epub/places.dart';
 import 'package:flutter_epub_viewer/publication.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'corpus/book.dart';
 import 'epubjs_fixtures.dart';
 import 'helpers.dart';
-import 'trial/book.dart';
 
 void main() {
   setUpAll(loadReaderFont);

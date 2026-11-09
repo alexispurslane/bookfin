@@ -40,3 +40,9 @@ docs/plans/native-epub-reader.md (epic boo-b2ey). Read the sections named in the
 - saved_places_test and the full test suite pass. flutter analyze is clean.
 - The Android APK and the macOS app build and open a fixture EPUB.
 
+
+## Notes
+
+**2026-11-08T21:57:18Z**
+
+tc-4f3q moved test/reader/epub/trial/book.dart (TrialBook, now CorpusBook, which reads Publication.bookStyles and imageSizes as PageSource does) and support.dart into test/reader/epub/corpus/, and replaced trial/corpus_test.dart and benchmark.dart with test/reader/epub/corpus_test.dart. saved_places_test.dart now imports corpus/book.dart, so deleting test/reader/epub/trial/ leaves it intact. trial/ holds only fidelity_test.dart (the Chromium tooling).

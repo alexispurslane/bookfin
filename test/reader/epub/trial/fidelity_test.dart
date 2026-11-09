@@ -43,8 +43,8 @@ import 'package:flutter_epub_viewer/publication.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;
 
+import '../corpus/book.dart';
 import '../helpers.dart';
-import 'book.dart';
 
 final _plan = Platform.environment['BOOKFIN_EPUB_TRIAL_PLAN'] == '1';
 final _compare = Platform.environment['BOOKFIN_EPUB_TRIAL_FIDELITY'] == '1';
@@ -67,15 +67,32 @@ const _phrases = ['morning', 'the door', 'lantern'];
 /// The books to compare, by trial name: each downloaded book with the
 /// SHA-256 of its file, and each showcase book without one.
 Map<String, (Uint8List, String?)> _books() => {
-  for (final file in trialBooks())
-    if (!bookName(file).startsWith('showcase-'))
-      bookName(file): (
+  for (final file in _trialBooks())
+    if (!_bookName(file).startsWith('showcase-'))
+      _bookName(file): (
         file.readAsBytesSync(),
         sha256.convert(file.readAsBytesSync()).toString(),
       ),
   for (final MapEntry(:key, :value) in showcaseBooks().entries)
     key: (value, null),
 };
+
+/// The test books in .cache/epub-trial/books, which the trial downloads
+/// from Standard Ebooks and Project Gutenberg. Empty when they are absent.
+List<File> _trialBooks() {
+  final directory = Directory('.cache/epub-trial/books');
+  if (!directory.existsSync()) return [];
+  return directory
+      .listSync()
+      .whereType<File>()
+      .where((file) => file.path.endsWith('.epub'))
+      .toList()
+    ..sort((a, b) => a.path.compareTo(b.path));
+}
+
+String _bookName(File file) =>
+    file.uri.pathSegments.last.replaceAll('.epub', '');
+
 final _settings = PageSettings(
   width: readerPage.width,
   height: readerPage.height,
@@ -85,7 +102,7 @@ final _settings = PageSettings(
 
 /// The sections of [book] to compare: its two longest, and the first one
 /// with an image and some text.
-List<int> _chosen(TrialBook book) {
+List<int> _chosen(CorpusBook book) {
   final lengths = <int, int>{};
   int? illustrated;
   for (var index = 0; index < book.sections; index++) {
@@ -103,7 +120,7 @@ List<int> _chosen(TrialBook book) {
   return {...longest.take(2), ?illustrated}.toList()..sort();
 }
 
-ChapterLayout _layout(TrialBook book, int index) =>
+ChapterLayout _layout(CorpusBook book, int index) =>
     layoutSection(prepareSections([book.source(index)], _settings).single);
 
 /// Writes the admitted publication of [bytes] into [root], with the book's
@@ -136,7 +153,7 @@ void main() {
       for (final MapEntry(key: name, value: (bytes, digest))
           in _books().entries) {
         _unpack(bytes, Directory('.cache/epub-trial/admitted/$name'));
-        final book = TrialBook.open(bytes);
+        final book = CorpusBook.open(bytes);
         final sections = <Object>[];
         // A showcase book is short, so every section and page counts.
         final showcase = digest == null;
@@ -184,7 +201,7 @@ void main() {
       final report = <Object>[];
       Directory('$_directory/side-by-side').createSync(recursive: true);
       for (final entry in chromium.cast<Map<String, dynamic>>()) {
-        final book = TrialBook.open(books[entry['book']]!.$1);
+        final book = CorpusBook.open(books[entry['book']]!.$1);
         for (final section in (entry['sections'] as List).cast<Map>()) {
           final index = section['index'] as int;
           final chapter = _layout(book, index);
@@ -446,7 +463,7 @@ bool _sameList(List<int> a, List<int> b) {
 /// [chapter], a section of [book], side by side, both at twice the layout
 /// size.
 Future<void> _sideBySide(
-  TrialBook book,
+  CorpusBook book,
   ChapterLayout chapter,
   int page,
   String name,
