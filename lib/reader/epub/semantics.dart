@@ -65,21 +65,13 @@ List<PageBlock> pageBlocks(LaidPage page) {
         if (_imageBlock(page, line) case final block?) blocks.add(block);
         continue;
       }
-      if (lines.isNotEmpty && !_continues(lines.last, line)) close();
+      if (lines.isNotEmpty && !continuesParagraph(lines.last, line)) close();
       lines.add(line);
     }
   }
   close();
   return blocks;
 }
-
-/// Whether [line] is the line of the same paragraph after [before]: in
-/// the same flow item and the next line of it, of the same piece or after
-/// a hanging first line.
-bool _continues(Slice before, Slice line) =>
-    line.at.item == before.at.item &&
-    line.at.line == before.at.line + 1 &&
-    (identical(line.piece, before.piece) || before.at.line == 0);
 
 /// The block of a block image [line], or null for a slice that shows no
 /// image, such as a rule.
@@ -109,24 +101,56 @@ String _alt(DomElement image) {
   return alt.isEmpty ? 'Image' : alt;
 }
 
-/// The block of the paragraph [lines], or null when they read as nothing.
-PageBlock? _textBlock(LaidPage page, List<Slice> lines) {
+/// What one code unit of a line on a page shows of the book.
+sealed class BookUnit {
+  const BookUnit(this.line, this.unit, this.node);
+
+  /// The line, and the code unit of its piece's text.
+  final Slice line;
+  final int unit;
+
+  /// The DOM node that the unit shows: a text node or an element.
+  final DomNode node;
+}
+
+/// A character of the book's text, or the whole text of raised text, such
+/// as a note number. The book's soft hyphens are left out.
+final class BookText extends BookUnit {
+  const BookText(super.line, super.unit, super.node, this.text);
+
+  /// The DOM's own text. White space is as the DOM has it: a space, a tab
+  /// or a line end.
+  final String text;
+}
+
+/// A line break: a `br` element.
+final class BookBreak extends BookUnit {
+  const BookBreak(super.line, super.unit, super.node);
+}
+
+/// An inline image.
+final class BookImage extends BookUnit {
+  const BookImage(super.line, super.unit, DomElement super.image);
+  DomElement get image => node as DomElement;
+}
+
+/// The book's own text that [page] shows in [runs], unit by unit, in
+/// order. Each run is a text line of the page and the code units of its
+/// piece, [from, to). Each DOM character comes once, so the hyphens, soft
+/// hyphens and word joiners that layout inserts never appear. A
+/// placeholder that no node owns, such as an indent, shows nothing.
+Iterable<BookUnit> bookUnits(
+  LaidPage page,
+  Iterable<(Slice, int, int)> runs,
+) sync* {
   final dom = page.dom;
-  final spans = _Spans(page);
   EpubPlace? last;
-  var rect = ui.Rect.zero;
-  for (final (index, line) in lines.indexed) {
-    final piece = line.piece!;
-    final map = piece.map;
-    final box = ui.Rect.fromLTWH(
-      piece.x,
-      line.top - page.top,
-      piece.paragraph.width,
-      line.bottom - line.top,
-    );
-    rect = index == 0 ? box : rect.expandToInclude(box);
-    final (first, end) = line.units;
-    for (var unit = first; unit < end; unit++) {
+  for (final (line, from, to) in runs) {
+    final map = line.piece!.map;
+    // A run that starts after its paragraph's first unit, as a selection
+    // can, starts after the unit before it.
+    if (from > 0) last = map.textPlaceAt(from - 1) ?? last;
+    for (var unit = from; unit < to; unit++) {
       if (map.textPlaceAt(unit) case final place?) {
         // Layout maps a hyphen, soft hyphen or word joiner that it inserts
         // to the letter before it, and a letter that a text transform
@@ -136,26 +160,56 @@ PageBlock? _textBlock(LaidPage page, List<Slice> lines) {
         final text = dom.textAt(place)!;
         final char = text.text.codeUnitAt(place.offset);
         if (char == softHyphen) continue;
-        spans.text(String.fromCharCode(char), _linkOf(text), line, unit);
+        yield BookText(line, unit, text, String.fromCharCode(char));
         continue;
       }
       final order = map.nodeAt(unit);
-      // A placeholder that no node owns is an indent.
       if (order < 0) continue;
       switch (dom.nodeAt(order)) {
         case final DomElement image when image.name == 'img':
-          spans.image(_alt(image), _linkOf(image), line, unit);
+          yield BookImage(line, unit, image);
         case final DomElement element:
-          // A line break.
-          spans.text(' ', _linkOf(element), line, unit);
+          yield BookBreak(line, unit, element);
         case final DomText raised:
-          spans.text(
-            _raised(dom, raised, map, unit),
-            _linkOf(raised),
-            line,
-            unit,
-          );
+          yield BookText(line, unit, raised, _raised(dom, raised, map, unit));
       }
+    }
+  }
+}
+
+/// Whether [line] is the line of the same paragraph after [before]: in
+/// the same flow item and the next line of it, of the same piece or after
+/// a hanging first line.
+bool continuesParagraph(Slice before, Slice line) =>
+    line.at.item == before.at.item &&
+    line.at.line == before.at.line + 1 &&
+    (identical(line.piece, before.piece) || before.at.line == 0);
+
+/// The block of the paragraph [lines], or null when they read as nothing.
+PageBlock? _textBlock(LaidPage page, List<Slice> lines) {
+  final dom = page.dom;
+  final spans = _Spans(page);
+  var rect = ui.Rect.zero;
+  for (final (index, line) in lines.indexed) {
+    final piece = line.piece!;
+    final box = ui.Rect.fromLTWH(
+      piece.x,
+      line.top - page.top,
+      piece.paragraph.width,
+      line.bottom - line.top,
+    );
+    rect = index == 0 ? box : rect.expandToInclude(box);
+  }
+  final runs = [for (final line in lines) (line, line.units.$1, line.units.$2)];
+  for (final shown in bookUnits(page, runs)) {
+    final BookUnit(:line, :unit, :node) = shown;
+    switch (shown) {
+      case BookText(:final text):
+        spans.text(text, _linkOf(node), line, unit);
+      case BookBreak():
+        spans.text(' ', _linkOf(node), line, unit);
+      case BookImage(:final image):
+        spans.image(_alt(image), _linkOf(image), line, unit);
     }
   }
   final read = spans.finish();

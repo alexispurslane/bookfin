@@ -4,17 +4,24 @@
 // It causes one effect of its own: from its layout, it presents the page
 // settings to the pager, which is a request for pages, like an Image that
 // resolves its image. Every other action goes up through a callback: a tap,
-// a link, a page turn and, later, a copy. A render object subscribes to the
-// shown page, so a new page repaints the viewport and updates its semantics
-// without a rebuild.
+// a link, a page turn and a copy. A render object subscribes to the shown
+// page, so a new page repaints the viewport, updates its semantics and
+// clears its selection without a rebuild.
+//
+// The page is the one selectable of a SelectionArea, which owns the
+// selection gestures, the handles and the menu. Its Copy and the copy
+// shortcut report the selected text through onCopy, and the screen writes
+// the clipboard.
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 
 import 'layout.dart';
 import 'pager.dart';
 import 'prepare.dart';
+import 'selection.dart';
 import 'semantics.dart';
 
 /// Draws what [pager] shows and reports taps, links, page turns and copies.
@@ -69,12 +76,25 @@ class EpubViewport extends StatefulWidget {
 }
 
 class _EpubViewportState extends State<EpubViewport> {
-  final _focus = FocusNode(debugLabel: 'EPUB page');
+  /// The page's key focus, which the selection region shares. Its keys turn
+  /// pages before the region's shortcuts see them.
+  late final _focus = FocusNode(debugLabel: 'EPUB page', onKeyEvent: _key);
+  bool _autofocused = false;
 
-  /// Where the touch of the drag in progress went down and where it is
-  /// now, in logical pixels from the page's top left corner.
-  Offset? _dragStart;
-  Offset? _dragEnd;
+  final _area = GlobalKey<SelectionAreaState>();
+  final _page = GlobalKey();
+
+  /// The selection on the shown page, which the page's render object owns.
+  PageSelection? get _selection =>
+      (_page.currentContext?.findRenderObject() as _RenderPage?)?.selection;
+
+  /// The touch that may be a swipe: its pointer and where it went down, in
+  /// global logical pixels. A second finger ends it.
+  int? _swipePointer;
+  Offset? _swipeStart;
+
+  /// Whether text was selected when the tap in progress went down.
+  bool _selectedAtDown = false;
 
   /// How far the trackpad gesture in progress moved, and whether it turned
   /// the page already.
@@ -86,41 +106,107 @@ class _EpubViewportState extends State<EpubViewport> {
   double _scrolled = 0;
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // The page takes the key focus when it first shows, as Focus's
+    // autofocus does.
+    if (!_autofocused) {
+      _autofocused = true;
+      FocusScope.of(context).autofocus(_focus);
+    }
+  }
+
+  @override
   void dispose() {
     _focus.dispose();
     super.dispose();
   }
 
   /// A tap at [point], in logical pixels from the page's top left corner,
-  /// by a person or by a screen reader's action on a link.
-  void _tapAt(Offset point) {
+  /// by a person or by a screen reader's action on a link. A tap on a link
+  /// follows it. Any other tap clears the selection, or with none, calls
+  /// onTap.
+  void _tapAt(Offset point, {bool selected = false}) {
     _focus.requestFocus();
     final link = widget.pager.linkAt(point);
     if (link != null) {
       widget.onLink(link);
+    } else if (selected) {
+      _area.currentState?.selectableRegion.clearSelection();
     } else {
       widget.onTap();
     }
   }
 
-  void _dragDown(DragDownDetails details) =>
-      _dragStart = _dragEnd = details.localPosition;
+  /// Copies the selected text, if any, through onCopy.
+  void _copy() {
+    if (_selection?.text case final text?) widget.onCopy(text);
+  }
 
-  void _dragMoved(DragUpdateDetails details) =>
-      _dragEnd = details.localPosition;
+  /// A touch or a pen that goes down may start a swipe. It watches the
+  /// pointer itself, as reader.js did, because the selection region claims
+  /// horizontal drags.
+  void _pointerDown(PointerDownEvent event) {
+    if (!_swipes(event.kind)) return;
+    if (_swipePointer == null) {
+      _swipePointer = event.pointer;
+      _swipeStart = event.position;
+    } else {
+      _swipeEnded();
+    }
+  }
 
-  void _dragCancelled() => _dragStart = _dragEnd = null;
-
-  void _dragEnded(DragEndDetails _) {
-    final start = _dragStart;
-    final end = _dragEnd;
-    _dragCancelled();
-    if (start == null || end == null) return;
-    final move = end - start;
+  void _pointerUp(PointerUpEvent event) {
+    if (event.pointer != _swipePointer) return;
+    final start = _swipeStart!;
+    _swipeEnded();
+    // A drag with text selected adjusts the selection.
+    if (_selection?.selecting ?? false) return;
+    final move = event.position - start;
     if (move.dx.abs() > EpubViewport.swipeDistance &&
         move.dy.abs() < EpubViewport.swipeSlant) {
       widget.onTurn(move.dx < 0);
     }
+  }
+
+  void _swipeEnded() {
+    _swipePointer = null;
+    _swipeStart = null;
+  }
+
+  /// A mouse drag selects text and a trackpad scrolls, so only a touch or a
+  /// pen swipes.
+  static bool _swipes(PointerDeviceKind kind) => switch (kind) {
+    PointerDeviceKind.touch ||
+    PointerDeviceKind.stylus ||
+    PointerDeviceKind.invertedStylus ||
+    PointerDeviceKind.unknown => true,
+    PointerDeviceKind.mouse || PointerDeviceKind.trackpad => false,
+  };
+
+  /// The selection menu: Copy, through onCopy, and Select all. On Android,
+  /// Copy ends the selection, and elsewhere it hides the menu, as Flutter's
+  /// own menu does.
+  Widget _menu(BuildContext context, SelectableRegionState region) {
+    void copied() {
+      _copy();
+      if (defaultTargetPlatform == TargetPlatform.android) {
+        region.clearSelection();
+      } else {
+        region.hideToolbar();
+      }
+    }
+
+    return AdaptiveTextSelectionToolbar.buttonItems(
+      anchors: region.contextMenuAnchors,
+      buttonItems: [
+        for (final item in region.contextMenuButtonItems)
+          if (item.type == ContextMenuButtonType.copy)
+            item.copyWith(onPressed: copied)
+          else if (item.type == ContextMenuButtonType.selectAll)
+            item,
+      ],
+    );
   }
 
   void _panned(PointerPanZoomUpdateEvent event) {
@@ -165,57 +251,56 @@ class _EpubViewportState extends State<EpubViewport> {
   }
 
   @override
-  Widget build(BuildContext context) => Focus(
-    focusNode: _focus,
-    autofocus: true,
-    onKeyEvent: _key,
-    child: Listener(
-      onPointerSignal: _signal,
-      onPointerPanZoomStart: (_) {
-        _pan = Offset.zero;
-        _panTurned = false;
-      },
-      onPointerPanZoomUpdate: _panned,
-      child: RawGestureDetector(
-        behavior: HitTestBehavior.opaque,
-        // The page's own semantics turn pages and follow links. The
-        // recognizers' default actions would tap the page's corner and
-        // scroll nowhere.
-        excludeFromSemantics: true,
-        gestures: {
-          TapGestureRecognizer:
-              GestureRecognizerFactoryWithHandlers<TapGestureRecognizer>(
-                () => TapGestureRecognizer(debugOwner: this),
-                (tap) =>
-                    tap.onTapUp = (details) => _tapAt(details.localPosition),
-              ),
-          // A mouse drag selects text and a trackpad scrolls, so only a
-          // touch or a pen swipes.
-          PanGestureRecognizer:
-              GestureRecognizerFactoryWithHandlers<PanGestureRecognizer>(
-                () => PanGestureRecognizer(
-                  debugOwner: this,
-                  supportedDevices: const {
-                    PointerDeviceKind.touch,
-                    PointerDeviceKind.stylus,
-                    PointerDeviceKind.invertedStylus,
-                    PointerDeviceKind.unknown,
-                  },
-                ),
-                (pan) => pan
-                  ..dragStartBehavior = DragStartBehavior.down
-                  ..onDown = _dragDown
-                  ..onUpdate = _dragMoved
-                  ..onEnd = _dragEnded
-                  ..onCancel = _dragCancelled,
-              ),
+  Widget build(BuildContext context) => Actions(
+    // The copy shortcut reports the text through onCopy, and the region
+    // writes no clipboard of its own.
+    actions: {
+      CopySelectionTextIntent: CallbackAction<CopySelectionTextIntent>(
+        onInvoke: (_) => _copy(),
+      ),
+    },
+    child: SelectionArea(
+      key: _area,
+      focusNode: _focus,
+      contextMenuBuilder: _menu,
+      child: Listener(
+        onPointerSignal: _signal,
+        onPointerPanZoomStart: (_) {
+          _pan = Offset.zero;
+          _panTurned = false;
         },
-        child: _Page(
-          pager: widget.pager,
-          fontSize: widget.fontSize,
-          night: widget.night,
-          onTurn: widget.onTurn,
-          onTapAt: _tapAt,
+        onPointerPanZoomUpdate: _panned,
+        onPointerDown: _pointerDown,
+        onPointerUp: _pointerUp,
+        onPointerCancel: (event) {
+          if (event.pointer == _swipePointer) _swipeEnded();
+        },
+        child: RawGestureDetector(
+          behavior: HitTestBehavior.opaque,
+          // The page's own semantics turn pages and follow links. The
+          // recognizer's default action would tap the page's corner.
+          excludeFromSemantics: true,
+          gestures: {
+            TapGestureRecognizer:
+                GestureRecognizerFactoryWithHandlers<TapGestureRecognizer>(
+                  () => TapGestureRecognizer(debugOwner: this),
+                  (tap) => tap
+                    ..onTapDown = ((_) =>
+                        _selectedAtDown = _selection?.selecting ?? false)
+                    ..onTapUp = (details) => _tapAt(
+                      details.localPosition,
+                      selected: _selectedAtDown,
+                    ),
+                ),
+          },
+          child: _Page(
+            key: _page,
+            pager: widget.pager,
+            fontSize: widget.fontSize,
+            night: widget.night,
+            onTurn: widget.onTurn,
+            onTapAt: _tapAt,
+          ),
         ),
       ),
     ),
@@ -226,6 +311,7 @@ class _EpubViewportState extends State<EpubViewport> {
 /// tells a screen reader what the page shows.
 class _Page extends LeafRenderObjectWidget {
   const _Page({
+    super.key,
     required this.pager,
     required this.fontSize,
     required this.night,
@@ -244,7 +330,9 @@ class _Page extends LeafRenderObjectWidget {
 
   @override
   _RenderPage createRenderObject(BuildContext context) =>
-      _RenderPage(pager, fontSize, night, onTurn, onTapAt);
+      _RenderPage(pager, fontSize, night, onTurn, onTapAt)
+        ..registrar = SelectionContainer.maybeOf(context)
+        ..selectionColor = _selectionColor(context);
 
   @override
   void updateRenderObject(BuildContext context, _RenderPage page) => page
@@ -252,7 +340,13 @@ class _Page extends LeafRenderObjectWidget {
     ..fontSize = fontSize
     ..night = night
     ..onTurn = onTurn
-    ..onTapAt = onTapAt;
+    ..onTapAt = onTapAt
+    ..registrar = SelectionContainer.maybeOf(context)
+    ..selectionColor = _selectionColor(context);
+
+  static Color _selectionColor(BuildContext context) =>
+      DefaultSelectionStyle.of(context).selectionColor ??
+      DefaultSelectionStyle.defaultColor;
 }
 
 /// Paints the pager's shown picture at logical size, over the paper of the
@@ -268,6 +362,9 @@ class _Page extends LeafRenderObjectWidget {
 /// in reading order (see [pageBlocks]). A block of one span is one node. A
 /// block of several, such as a paragraph with a link, holds a node for
 /// each span. A link's tap action taps the page at the link.
+///
+/// It owns the [selection] of the shown page, which it paints over the
+/// page in [selectionColor], with the selection handles' layers.
 class _RenderPage extends RenderBox {
   _RenderPage(
     this._pager,
@@ -275,7 +372,20 @@ class _RenderPage extends RenderBox {
     this._night,
     this.onTurn,
     this.onTapAt,
-  );
+  ) {
+    selection.page = _pager.shown.value?.page;
+  }
+
+  late final selection = PageSelection(this);
+
+  set registrar(SelectionRegistrar? value) => selection.registrar = value;
+
+  Color _selectionColor = DefaultSelectionStyle.defaultColor;
+  set selectionColor(Color value) {
+    if (value == _selectionColor) return;
+    _selectionColor = value;
+    markNeedsPaint();
+  }
 
   EpubPager _pager;
   set pager(EpubPager value) {
@@ -359,7 +469,16 @@ class _RenderPage extends RenderBox {
     super.detach();
   }
 
+  @override
+  void dispose() {
+    selection.dispose();
+    super.dispose();
+  }
+
   void _shownChanged() {
+    // The same page shows again once its images are decoded, and keeps its
+    // selection.
+    selection.page = _pager.shown.value?.page;
     markNeedsPaint();
     markNeedsSemanticsUpdate();
   }
@@ -459,5 +578,6 @@ class _RenderPage extends RenderBox {
       ..translate(offset.dx, offset.dy)
       ..drawPicture(shown.picture)
       ..restore();
+    selection.paint(context, offset, _selectionColor);
   }
 }
