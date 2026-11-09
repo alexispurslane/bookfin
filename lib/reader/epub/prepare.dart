@@ -131,12 +131,23 @@ class PreparedSection {
   /// [settings], or null when no flow item shows a node of [element].
   ///
   /// It holds the flow items from the first to the last that shows a node
-  /// of [element], inside the boxes that are open before the first one. So
-  /// its lines sit across the page as they do in the whole section, with
-  /// their list markers. A paragraph that holds a node of [element] comes
-  /// whole, without the runs of the elements of [omit], and a paragraph
-  /// that [omit] leaves with no text but white space goes. [settings] has the text size
-  /// and the theme of [this.settings]; its width and its height can differ.
+  /// of [element]. A paragraph that holds a node of [element] comes whole,
+  /// without the runs of the elements of [omit], and a paragraph that
+  /// [omit] leaves with no text but white space goes. [settings] has the
+  /// text size and the theme of [this.settings]; its width and its height
+  /// can differ.
+  ///
+  /// The excerpt lays out as a fragment of its own, which starts at the
+  /// left edge and the top of its page and ends at its last line:
+  /// - The boxes around [element] are left out, with their margins,
+  ///   padding and borders. The box of [element] is the excerpt's root, and
+  ///   has no margins.
+  /// - The top margins that meet the excerpt's top are cut, as at a page
+  ///   break. Layout cuts the bottom margins at its end.
+  /// - The first paragraph has no first-line indent.
+  /// - The list marker that the page draws left of the first line, of
+  ///   [element] or of a box around it, comes before the first word, as a
+  ///   label that no node owns.
   PreparedSection? excerpt(
     DomElement element,
     PageSettings settings, {
@@ -198,24 +209,87 @@ class PreparedSection {
     final first = flow.indexWhere(shows);
     if (first < 0) return null;
     final end = flow.lastIndexWhere(shows) + 1;
-    final open = <FlowItem>[];
+    final open = <BlockStart>[];
     for (final item in flow.take(first)) {
       if (item is BlockStart) open.add(item);
       if (item is BlockEnd) open.removeLast();
     }
-    var depth = open.length;
+    var depth = 0;
     for (final item in flow.getRange(first, end)) {
       if (item is BlockStart) depth++;
       if (item is BlockEnd) depth--;
+    }
+    final around = <int>{
+      for (var parent = element.parent; parent != null; parent = parent.parent)
+        parent.order,
+    };
+    final labeled = open.reversed
+        .where((box) => box.marker != null)
+        .firstOrNull;
+    final label =
+        labeled != null &&
+            (around.contains(labeled.node) || labeled.node == element.order)
+        ? labeled.marker
+        : null;
+    final boxes = <BlockStart>[];
+    var top = true;
+    for (final box in open) {
+      if (around.contains(box.node)) continue;
+      final root = box.node == element.order;
+      boxes.add(
+        BlockStart(
+          node: box.node,
+          placement: root ? box.placement.withoutMargins() : box.placement,
+          marginTop: top ? 0 : box.marginTop,
+          marginBottom: root ? 0 : box.marginBottom,
+          padding: box.padding,
+          border: box.border,
+          marker: label != null && root ? null : box.marker,
+          shrinkToFit: box.shrinkToFit,
+          avoidBreakBefore: box.avoidBreakBefore,
+          avoidBreakAfter: box.avoidBreakAfter,
+          avoidBreakInside: box.avoidBreakInside,
+        ),
+      );
+      // A margin inside a box's top padding or border does not meet the top.
+      top = top && box.padding[0] == 0 && box.border[0] == 0;
+    }
+    final items = [
+      for (final item in flow.getRange(first, end)) ?without(item),
+    ];
+    if (items.firstOrNull case final ParagraphItem paragraph) {
+      items[0] = ParagraphItem(
+        text: label == null
+            ? paragraph.text
+            : StyledText(paragraph.text.style, paragraph.text.align, [
+                RaisedRun(
+                  -1,
+                  StyledText(label.style, Align.left, [
+                    TextRun(
+                      label.text,
+                      label.style,
+                      -1,
+                      Int32List(label.text.length),
+                    ),
+                  ]),
+                  0,
+                ),
+                ...paragraph.text.runs,
+              ]),
+        indent: const Length.px(0),
+        orphans: paragraph.orphans,
+        widows: paragraph.widows,
+      );
     }
     return PreparedSection._(
       index,
       settings,
       dom,
       [
-        ...open,
-        for (final item in flow.getRange(first, end)) ?without(item),
-        for (var close = 0; close < depth; close++) const BlockEnd(),
+        ...boxes,
+        ...items,
+        for (var close = 0; close < boxes.length + depth; close++)
+          const BlockEnd(),
       ],
       styles,
       fonts,
@@ -265,6 +339,7 @@ sealed class FlowItem {
 /// content box of the block that holds it.
 final class BlockStart extends FlowItem {
   const BlockStart({
+    required this.node,
     required this.placement,
     required this.marginTop,
     required this.marginBottom,
@@ -276,6 +351,9 @@ final class BlockStart extends FlowItem {
     this.avoidBreakAfter = false,
     this.avoidBreakInside = false,
   });
+
+  /// The [DomNode.order] of the element whose box this is.
+  final int node;
 
   /// Where the box sits across its containing block.
   final BoxPlacement placement;
@@ -472,7 +550,9 @@ final class RaisedRun extends InlineRun {
   const RaisedRun(this.node, this.text, this.shift);
 
   /// The [DomNode.order] of the raised text's first text node, or of its
-  /// element when it has no text.
+  /// element when it has no text. -1 for a label that no node owns, such
+  /// as a list marker before an excerpt's first word: its text is not the
+  /// book's.
   final int node;
   final StyledText text;
 
@@ -573,6 +653,18 @@ class BoxPlacement {
   /// The text alignment of an inline-block's parent, which places a
   /// narrow inline-block. Null for any other box.
   final Align? parentAlign;
+
+  /// This placement with no side margins: the box starts at the left of
+  /// its containing block.
+  BoxPlacement withoutMargins() => BoxPlacement(
+    marginLeft: 0,
+    marginRight: 0,
+    horizontal: horizontal,
+    used: used,
+    autoLeft: false,
+    autoRight: false,
+    parentAlign: null,
+  );
 
   /// The content width when the box fills a containing block [width]
   /// pixels wide.
@@ -1228,6 +1320,7 @@ class _Flattener {
     );
     flow.add(
       BlockStart(
+        node: element.order,
         placement: placement,
         marginTop: style.margin[0].resolve(width),
         marginBottom: style.margin[2].resolve(width),

@@ -4,8 +4,8 @@ Date: 2026-11-09. Device: a disposable emulator, `bookfin-boo2td2` (Android 16, 
 
 | Screenshot | Step | Result |
 | --- | --- | --- |
-| `01-note-sheet-cream.png` | In Cream, tap the note reference 2 in chapter one. | A glass sheet shows the note. Its title row holds the heading Note on the left and the quiet action Go to note, with a forward arrow, on the right. The back link of the note is not in the sheet. The page behind it does not move. |
-| `02-note-sheet-night.png` | Choose Night, then tap the note reference 2 again. | The same glass sheet in the night colors. The note text uses the reader's night ink and stays readable on the glass. |
+| `01-note-sheet-cream.png` | In Cream, tap the note reference 2 in chapter one. | A glass sheet shows the note. Its title row holds the heading Note on the left and the quiet action Go to note, with a forward arrow, on the right. The back link of the note is not in the sheet. The page behind it does not move. Retaken for boo-8ucr: the note starts at the heading's left edge with its number before the first word, and the space above and below it is even (see `../footnotes/refined/README.md`). |
+| `02-note-sheet-night.png` | Choose Night, then tap the note reference 2 again. | The same glass sheet in the night colors. The note text uses the reader's night ink and stays readable on the glass. Retaken for boo-8ucr. |
 | `03-contents-sheet-cream.png` | Tap Contents. | The contents and bookmarks tabs on a glass sheet. |
 | `04-search-sheet-cream.png` | Tap Search book and search for "orchard". | A glass sheet with the heading Search and the action Close in its title row, over the field and three hits. |
 | `05-settings-sheet-cream.png` | Tap Reading settings. | A glass sheet with the heading Reading settings in its title row, over the text size and theme controls. |

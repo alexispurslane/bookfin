@@ -11,7 +11,8 @@
 // same file without having seen the phone's, so the next sync shows a
 // conflict to choose from.
 // Add --footnotes to give First Frost's EPUB endnotes, with a note
-// reference at the end of each of the first chapter's first paragraphs.
+// reference at the end of each of the first chapter's first paragraphs, and
+// a footnote without a number after them.
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
@@ -248,25 +249,56 @@ Uint8List _cover(_Book book) {
 }
 
 /// The ebook file of a book: a made-up EPUB, or a PDF with a scanned page.
-/// With [footnotes], First Frost has [_frostNotes].
+/// With [footnotes], First Frost has [_frostNotes] and [_frostFootnotes].
 Uint8List _ebook(_Book book, {bool footnotes = false}) => switch (book.ebook) {
   'pdf' => media.pdfWithScan(),
-  _ => media.epub(book.id, book.title, book.author, switch (book.id) {
-    'frost' => media.firstFrost,
-    'salt' => media.saltAndLantern,
-    _ => media.winterLedger,
-  }, endnotes: footnotes && book.id == 'frost' ? _frostNotes : const []),
+  _ => media.epub(
+    book.id,
+    book.title,
+    book.author,
+    switch (book.id) {
+      'frost' => media.firstFrost,
+      'salt' => media.saltAndLantern,
+      _ => media.winterLedger,
+    },
+    endnotes: footnotes && book.id == 'frost' ? _frostNotes : const [],
+    footnotes: footnotes && book.id == 'frost' ? _frostFootnotes : const [],
+  ),
 };
 
-/// The endnotes of First Frost with --footnotes.
+/// The endnotes of First Frost with --footnotes: a note of one line, a
+/// note of a few lines, a note of several paragraphs, and a note long
+/// enough to scroll.
 const _frostNotes = [
-  'The lane runs north from the Pell crossroads. Locals still call it the '
-      'Frost Road, after the family that planted the first rows.',
+  'The Frost Road, as the village still calls it.',
   'Russets are apples with rough, brownish skin. The old trees on the south '
       'wall were Egremont Russets, planted in the spring of 1961.',
   'Grafting joins a cut branch, the scion, to a rooted tree, the stock, so '
       'that the two grow as one. The union stays visible as a ridge in the '
-      'bark for years.',
+      'bark for years.\n\n'
+      'A whip graft joins a scion and a stock of the same width. A cleft '
+      'graft sets one or two thin scions into a split in a thick stock, as '
+      'on the old russets.\n\n'
+      'Either way, the cut faces must meet along their green inner bark.',
+  'Mrs. Pell kept the shop for forty years. She took it over from her '
+      'father, who sold seed and paraffin from the same counter and kept the '
+      'post office in a cupboard behind it. In the hard winter of 1963 the '
+      'lane was closed for six weeks, and the shop fed the village from its '
+      'cellar: flour, tinned milk, dried peas and the last of the autumn '
+      'apples, which Wren\'s grandmother brought down on a sledge. Every '
+      'family in the parish owed the shop money by the thaw, and Mrs. Pell\'s '
+      'father wrote none of it down. When he died, the village paid for his '
+      'stone. Mrs. Pell still keeps his scales on the counter, though they '
+      'have not weighed anything since decimal money came in, and she still '
+      'opens at six, in case the lane is closed again and somebody needs '
+      'bread before the plough comes through. People who have moved away '
+      'send her cards at Christmas. She keeps them in the cupboard where the '
+      'post office was, in a biscuit tin, sorted by year.',
+];
+
+/// The footnote of First Frost with --footnotes, which has no number.
+const _frostFootnotes = [
+  'The postman, Tom Ash, has walked the same round since 1989.',
 ];
 
 Map<String, Object?> _item(

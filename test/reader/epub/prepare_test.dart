@@ -4,6 +4,7 @@ import 'package:bookfin/reader/epub/css.dart';
 import 'package:bookfin/reader/epub/dom.dart';
 import 'package:bookfin/reader/epub/layout.dart';
 import 'package:bookfin/reader/epub/prepare.dart';
+import 'package:bookfin/reader/epub/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;
 
@@ -255,30 +256,123 @@ void main() {
       expect(excerpt.dom, same(whole.dom));
     });
 
-    test('an excerpt keeps the boxes around the element, so its lines and '
-        'its list marker sit as they do on the page', () async {
-      await loadReaderFont();
-      final whole = prepared(notes);
+    /// A style that gives paragraphs a first-line indent and space below
+    /// them, as many books do.
+    const bookCss = 'p { margin: 0 0 0.8em; text-indent: 1.2em }';
+
+    /// The excerpt of the element [id] of [body], laid out on a sheet 300
+    /// pixels wide.
+    ChapterLayout sheetOf(String body, String id, {String css = bookCss}) {
+      final whole = prepared(body, css: css);
+      final chapter = layoutSection(
+        whole.excerpt(
+          whole.dom.elementById(id)!,
+          const PageSettings(
+            width: 300,
+            height: 100000,
+            fontSize: 20,
+            night: false,
+          ),
+        )!,
+      );
+      addTearDown(chapter.dispose);
+      return chapter;
+    }
+
+    /// The left edge of the first letter of [text] that [chapter] shows.
+    double letterLeft(ChapterLayout chapter, String text) {
+      for (final slice in chapter.slices) {
+        final piece = slice.piece;
+        if (piece == null) continue;
+        for (var unit = slice.units.$1; unit < slice.units.$2; unit++) {
+          final place = piece.map.textPlaceAt(unit);
+          if (place == null ||
+              !chapter.section.dom.textAt(place)!.text.startsWith(text) ||
+              place.offset != 0) {
+            continue;
+          }
+          final box = piece.paragraph.getBoxesForRange(unit, unit + 1).first;
+          return piece.x + box.left;
+        }
+      }
+      throw StateError('No line shows "$text".');
+    }
+
+    test('an excerpt has no space above its first line or below its last: '
+        'the margins and padding of the page around it are left out', () {
+      final chapter = sheetOf(notes, 'note-2');
+      final page = chapter.pages.single;
+
+      expect(chapter.slices.first.top, page.top);
+      expect(page.bottom, chapter.slices.last.bottom);
+    });
+
+    test('a note\'s first line starts at the excerpt\'s left edge, without '
+        'the page\'s side margins, the list\'s padding or a first-line '
+        'indent', () {
+      final chapter = sheetOf(
+        '<p>Before.</p><aside id="n" epub:type="footnote"><p>A note '
+            'without a number.</p></aside>',
+        'n',
+      );
+
+      expect(letterLeft(chapter, 'A note'), 0);
+    });
+
+    test('a numbered note shows its number before its first word, not '
+        'hanging in a margin', () {
+      final chapter = sheetOf(notes, 'note-2');
+      final first = chapter.slices.first.piece!;
+
+      expect(chapter.decorations.whereType<MarkerDecoration>(), isEmpty);
+      expect(first.x, 0);
+      final indent = letterLeft(chapter, 'The second note.');
+      expect(indent, greaterThan(10), reason: 'The number "2. " comes first.');
+      expect(indent, lessThan(40));
+    });
+
+    test('a note\'s number is not book text: it is not in the text that '
+        'the excerpt shows to copy and to a screen reader', () {
+      final chapter = sheetOf(notes, 'note-2');
+      final line = chapter.slices.first;
+      final text = bookUnits(chapter.pages.single, [
+        (line, line.units.$1, line.units.$2),
+      ]).whereType<BookText>().map((unit) => unit.text).join();
+
+      expect(text, startsWith('The second note.'));
+    });
+
+    test('a later paragraph of a note keeps its first-line indent and the '
+        'space above it', () {
+      final whole = prepared(notes, css: bookCss);
       final page = layoutSection(whole);
       addTearDown(page.dispose);
-      final excerpt = layoutSection(
-        whole.excerpt(whole.dom.elementById('note-2')!, readerPage)!,
-      );
-      addTearDown(excerpt.dispose);
+      final chapter = sheetOf(notes, 'note-2');
 
-      double leftOf(ChapterLayout chapter, String text) => chapter.slices
-          .firstWhere(
-            (slice) =>
-                slice.start != null &&
-                chapter.section.dom.textAt(slice.start!)?.text == text,
-          )
-          .piece!
-          .x;
+      double gap(ChapterLayout chapter) {
+        final lines = chapter.slices.where((slice) => slice.piece != null);
+        final first = lines.lastWhere(
+          (slice) => chapter.section.dom
+              .textAt(slice.start!)!
+              .text
+              .startsWith(
+                'The '
+                'second',
+              ),
+        );
+        final second = lines.firstWhere(
+          (slice) =>
+              chapter.section.dom.textAt(slice.start!)!.text.startsWith('Its'),
+        );
+        return second.top - first.bottom;
+      }
+
       expect(
-        leftOf(excerpt, 'The second note.'),
-        leftOf(page, 'The second note.'),
+        letterLeft(chapter, 'Its second'),
+        24,
+        reason: 'The second paragraph keeps its indent of 1.2em at 20px.',
       );
-      expect(excerpt.decorations.whereType<MarkerDecoration>(), hasLength(1));
+      expect(gap(chapter), moreOrLessEquals(gap(page), epsilon: 1e-9));
     });
 
     test('an element that no flow item shows, such as one that the style '
