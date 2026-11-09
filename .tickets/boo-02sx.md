@@ -13,3 +13,7 @@ parent: boo-b2ey
 
 Requested by the user on 2026-11-09. Show an estimate of the reading time left in the book and in the chapter. The reading speed comes from this reader's own page turns (pages or characters per minute, ignoring very short and very long pauses). The amount left comes from the whole-book page starts of t7-bbv1, or from visible characters before the book is laid out. Decide where the speed is stored and whether it is per book or per reader; it is derived data and must never put listening history or reading places at risk. Show nothing until the estimate has enough samples.
 
+
+## Decision (user, 2026-11-09)
+
+The bottom bar label adds the time left in the chapter, for example "Page 134 of 412 · 6 min left in chapter". The time left in the book shows in the contents sheet.
