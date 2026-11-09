@@ -1,109 +1,67 @@
 # EPUB reader implementation
 
-This is an implementation candidate for `t3-9r9u` and `boo-9wgg`, not Android or release acceptance. The two tickets remain in progress. No device, browser, app installation, production server, or credentials were used for this task.
+Bookfin reads EPUB and MOBI books in a Flutter-native renderer in `lib/reader/epub/`. It draws the pages itself, with no WebView, on every platform. `docs/plans/native-epub-reader.md` is its design: modules, owners, layout off the frame path, places and testing. `docs/plans/platforms.md` lists where each format opens.
+
+Until ticket tc-rap6, Bookfin read EPUB books in an Android WebView with a fork of epub.js 0.3.93. That reader and its engine are gone. Git history holds them. The research documents in `docs/research/` and the evidence in `tool/evidence/reader/` keep their record.
 
 ## Boundaries and ownership
 
-Review correction R1 keeps one canonical XML tree from passive admission through search, location validation, and the iframe. The iframe imports the serialized XML tree rather than passing it through `document.write` and the HTML parser. It therefore does not insert implicit table bodies, move table text, or split paragraph blocks. Source IDs, text, local styles, passive-resource rules, processed bytes, and processed-content identity remain unchanged. Actual iframe-boundary tests reproduce all three prior failures and exercise viewport-to-source saving plus source-to-viewport search and contents destinations. These host tests do not prove Android layout, resource loading, or native sandbox enforcement.
+`Publication.admit` in `lib/reader/epub/publication.dart` is the only owner of publication admission. It reads a bounded ZIP archive and makes new, passive XHTML and CSS resources. No raw chapter or SVG reaches the renderer. An admitted publication has immutable resource bytes, an original-file SHA-256 digest, and a processed-content SHA-256 identity. The identity covers the admission-policy version, the original digest, the paths, the media types and the processed bytes.
 
-`Publication.admit` is the only owner of publication admission. It reads a bounded ZIP archive and creates new, passive XHTML and CSS resources. No raw chapter or SVG is passed to the viewport. A processed publication has immutable resource bytes, an original-file SHA-256 digest, and a processed-content SHA-256 identity. The processed identity includes the admission-policy version, original digest, paths, media types, and processed bytes. Changing admission rules must change `Publication.policy`.
+Admission output stays byte for byte the same, because the identity is part of every saved place. If admission output changes, every saved place of a book stops matching. A change to the admission rules must change `Publication.policy`. What the renderer needs beyond the admitted files sits beside them, outside the identity: the book's own style sheet texts (`Publication.bookStyles`), image sizes, the contents and the language.
 
-`ReaderResources` owns request admission for that processed publication and the exact bundled runtime assets. It returns an explicit denial for every unlisted request; it never delegates a request to the network. Trusted runtime and publication resources have separate reserved HTTPS origins and content-security policies. The runtime policy permits admitted local styles, images, and fonts. Publication documents prohibit scripts, connections, forms, frames, and objects. The engine retains its no-script iframe sandbox. Flutter also denies native network loading, unlisted navigation, permissions, geolocation, windows, downloads, file access, content access, storage, and third-party cookies. App-wide network policy and Android manifests are unchanged.
+`ReaderSession` owns the current account, the source edition, the admitted publication, the saved reading position, the search generation and the reader commands. Asynchronous results carry a session generation. A change of account, credential, source or book makes old results void. Only a complete file from `Downloads.localFile` reaches the file loader. The loader refuses URLs that are not files and symbolic-link files, checks the archive size, and runs admission outside the UI isolate.
 
-`ReaderSession` owns the current account, source edition, admitted publication, visible reading position, search generation, and reader commands. Asynchronous results carry a session generation; account, credential, source, or book changes invalidate old results. Only a complete file supplied by `Downloads.localFile` can reach the file loader. The production loader rejects non-file URLs and symbolic-link files, checks the archive size, and runs admission outside the UI thread.
+`EpubPager` owns the shown place and the shown page. It reports each new place to the session once, through `onPlace`. `PageSource` owns the prepared sections, the layout runs, the laid pages, the decoded images and the embedded fonts of one open book. `EpubViewport` draws the shown page and reports gestures. The design document lists every owner.
 
-Reading positions and bookmarks use the existing `TextPosition`, record identifiers, account keys, and personal-record persistence. `LocalResumeStore.reading` is an adapter for a reading section within the existing account record, not another bookmark database. Serialized record merges retain audio and reading sections. Audio positions are not converted to text positions.
+Reading positions and bookmarks use the existing `TextPosition`, record identifiers, account keys and personal-record persistence. `LocalResumeStore.reading` is an adapter for a reading section in the account record, not a second bookmark database. Record merges keep both the audio and the reading sections. Audio positions do not convert to text positions.
 
-Review correction R2 retains the newest unsaved reading snapshot for each account until that exact snapshot is written successfully. A new save, account binding, `flush`, and disposal retry pending snapshots through the same reading adapter and shared audio/reading merge queue. Returning to an account reads its pending snapshot before disk records. A delayed old-account failure retains its warning for that account, not the new account. Only `Exception` failures are recoverable in this write path. Contract failures remain errors and propagate. A rejected preference write is an `Exception`, not a contract failure. Malformed reading records use explicit input guards and `FormatException`, so narrowing error recovery does not turn damaged input into a programming failure or overwrite the damaged record. This is in-memory retry, not a second bookmark store. Records still cannot survive process termination while every storage write fails.
+The session keeps the newest unsaved reading snapshot of each account until that snapshot is written. A new save, an account binding, `flush` and disposal retry pending snapshots through the same adapter and merge queue. Only `Exception` failures are recoverable in this write path. Contract failures are errors and propagate. Malformed reading records fail with `FormatException`, so damaged input does not overwrite the damaged record.
 
-`Publication.checkInvariants()` checks canonical resource paths, matching media types, and a reading order made only of admitted documents. `ReaderSession.checkInvariants()` checks that account records, the current publication, and its reading position belong to the current account and source. Its transient visible location must match its saved position, and every account with a failed write must retain a pending snapshot. These methods run on demand, including in tests; a failed check is a bug, not a recovery path.
+`Publication.checkInvariants()` checks canonical resource paths, matching media types, and a reading order of admitted documents only. `ReaderSession.checkInvariants()` checks that the account records, the publication and the reading position belong to the current account and source. These methods run on demand, for example in tests. A failed check is a bug, not a recovery path.
 
-Review correction R4 makes `EpubViewport` the sole sender of renderer appearance commands. `ReaderSession.setFontSize` stores only the requested size, bounded to 14–40 logical pixels before system text scaling. The screen passes the system-scaled size and palette to `EpubViewport`. For example, 200% scaling changes a requested 22-pixel size into one 44-CSS-pixel command, never an intermediate 22-CSS-pixel command. The engine preserves the current visible-start CFI during that command. Theme changes, system text-scaling changes, and reopening follow the same viewport owner. Changes during renderer startup wait for opening to finish, then apply the latest appearance before attachment is announced.
+`ReaderSession.setFontSize` stores only the requested text size, from 14 to 40 logical pixels before the system text scale. The viewport presents the scaled size and the theme to the pager as page settings. A settings change keeps the shown place and saves nothing.
 
 ## Supported content and bounds
 
-Review correction R3 restores the approved chapter label and progress rail in the reading controls. The chapter is the nearest preceding contents destination in the displayed source document, with a document-heading/title or reading-order chapter fallback. A source document is one XHTML file in the EPUB reading order. The rail measures the current displayed page divided by the total displayed pages in that source document. The chapter label can change within one source document. Pages are one-based viewport pages, not print pages, audio progress, or a whole-book text percentage. Unknown page counts show “Page progress unavailable” and no filled rail. Page counts are transient viewport data. They are not saved in anchors or reused after bookmark restore, reopening, or appearance changes. A new visible-location event supplies the new chapter and page counts.
-
-The 16 MiB resource limit and 128 MiB total limit also apply to processed bytes. Short wrapper references cannot expand into an oversized published chapter.
+The 16 MiB resource limit and the 128 MiB total limit also apply to processed bytes. A short wrapper reference cannot expand into an oversized chapter.
 
 | Input | Admission or behavior |
 | --- | --- |
-| Archive | At most 64 MiB, 4096 entries, 16 MiB per expanded resource, and 128 MiB total expansion. Stored and deflated entries only; CRC and declared output length must match. Entries larger than 1 MiB must have a compression ratio of at most 250. No encryption, symbolic links, duplicate paths, overlapping entries, absolute paths, or path traversal. |
-| XML documents | UTF-8, at most 4 MiB each, 200000 nodes, and depth 128. Entity declarations are rejected. One local OPF package and a nonempty XHTML reading order are required. |
-| XHTML | Rebuilt from an explicit tag and attribute allowlist. Headings, local links, language, direction, image descriptions, and accessibility attributes remain. Scripts, event handlers, active objects, media, frames, and unsafe namespaces are removed. |
-| CSS | Local stylesheets, local imports, images, and fonts are admitted. Escaped or active CSS and external URL references are blocked with a visible warning. This is deliberately bounded CSS support, not full CSS compatibility. Native request admission remains authoritative for other CSS URL syntax. |
-| PNG and JPEG | Decoded independently according to the admitted media type. At most 16 million pixels and one frame. Invalid images become an explicit unsupported-image description. |
-| SVG | Never served or executed. Only the researched exact single-local-JPEG wrapper with matching dimensions is replaced by its validated JPEG. Other SVG becomes an explicit unsupported-image description. This is not generic SVG sanitization. |
-| Fonts | Local TTF, OTF, WOFF, and WOFF2 signatures and bounded bytes are admitted. Font parsing remains the platform's job. Delivered bytes are not proof of an applied font. |
-| Unsupported editions | Fixed-layout metadata, encrypted or obfuscated resources, and non-EPUB files report an error. MOBI conversions are corpus fixtures only. Standalone HTML and Markdown are not supported. |
+| Archive | At most 64 MiB, 4096 entries, 16 MiB per expanded resource, and 128 MiB total expansion. Stored and deflated entries only. The CRC and the declared output length must match. Entries larger than 1 MiB must have a compression ratio of at most 250. No encryption, symbolic links, duplicate paths, overlapping entries, absolute paths or path traversal. |
+| XML documents | UTF-8, at most 4 MiB each, 200000 nodes, and depth 128. Entity declarations are refused. One local OPF package and a reading order of XHTML documents are required. |
+| XHTML | Rebuilt from an explicit list of allowed tags and attributes. Headings, local links, language, direction, image descriptions and accessibility attributes stay. Scripts, event handlers, active objects, media, frames and unsafe namespaces are removed. |
+| CSS | The native CSS parser reads the book's style sheets in a worker isolate. It resolves `url()` and `@import` only to files in the publication and loads nothing else. It limits the rules, the selector length and the nesting depth of each sheet. Unknown properties and values are left out. |
+| PNG and JPEG | Decoded according to the admitted media type. At most 16 million pixels and one frame. An image that does not decode becomes an explicit unsupported-image description. |
+| SVG | Never drawn as SVG. Only an exact wrapper of one local JPEG with matching dimensions is replaced by its JPEG. Other SVG becomes an unsupported-image description, which the renderer draws as text. |
+| Fonts | Local TTF, OTF, WOFF and WOFF2 files are admitted. The renderer registers TTF, OTF and WOFF 1 faces. A WOFF 2 face, or a face that does not load, draws in the reader font. |
+| Unsupported editions | Fixed-layout metadata, encrypted or obfuscated resources, and files that are not EPUB report an error. A MOBI or AZW3 book converts to an EPUB with libmobi first. |
 
-The reader uses real XHTML/CSS in the bundled EPUB engine, not an extracted-text preview. It provides contents, internal fragment links, page controls, text sizing, cream/sepia and night palettes, search, bookmarks with editable titles and notes, and resume. It keeps the existing audio mini-player. Web and other platforms show an explicit unsupported-reader message without disabling the existing web app.
+The renderer lays out real XHTML and CSS: block layout, tables, images, embedded fonts and hyphenation. It provides contents, internal links, page turns, text sizes, and cream and night themes. It also provides search, bookmarks with titles and notes, resume, screen reader semantics and text selection. "What stays unsupported" in the design document lists what it approximates.
 
 ## Locations and search
 
-A locator stores the visible-start EPUB CFI, meaning the engine's document-and-text position, with a resource path and nearby text. The personal record also binds it to its edition, source key, original source revision, original-file digest, processed identity, admission-policy version, and engine version. Incompatible records remain stored but are not applied. The engine verifies both the resource and nearby text before navigating. Host tests exercise encoded and nested fragments and a fresh engine reopen. They do not prove which character is physically visible on Android.
+A saved place keeps the JSON form that the WebView reader wrote. It holds the EPUB CFI of the first visible word and the resource path. It also holds the first 120 characters of text from the place on and the text progress through the section. The CFI follows epub.js's dialect, so the `engine` value `epubjs-0.3.93-bookfin.1` stays. The personal record also binds the place to its edition, source key, original source revision, original-file digest, processed identity, admission-policy version and engine value. A record that does not match stays stored but does not apply. Before it opens a place, the reader makes sure that the text at the place starts with the saved quote.
 
-Search joins body text across inline nodes and retains repeated matches and short documents. It folds whitespace and lowercases text while mapping results back to original UTF-16 text offsets. It excludes explicitly hidden elements and inline hidden styles, but does not evaluate all stylesheet visibility. It does not perform Unicode normalization, accent folding, locale-specific case matching, or full Unicode case folding. These bounds are visible in the search sheet.
+The committed fixtures in `test/reader/epub/fixtures/` hold the places that epub.js saved and the line and page starts that Chromium measured. `saved_places_test.dart`, `places_test.dart`, `session_native_test.dart` and `fidelity_test.dart` read them, so places that the WebView reader saved keep opening on the right page.
 
-Queries are limited to 256 UTF-16 code units. Results are limited to 500 per chapter and 500 per book. Truncation or a failed chapter produces a visible incomplete-search message. Search cancellation and session generations prevent old results from replacing a newer search or another account's results.
+Search joins body text across inline nodes and keeps repeated matches. It folds white space and lowercases text, and it maps results back to the original UTF-16 offsets. It leaves out hidden elements. It does not normalize Unicode, fold accents, match case by locale or fold case fully. Queries hold at most 256 UTF-16 code units. Results stop at 500 per section and 500 per book. Truncation or a failed section shows a visible incomplete-search message. Cancellation and session generations stop old results from replacing a newer search or another account's results.
 
-## Provenance and reproduction
+## Reproduction
 
-`packages/flutter_epub_viewer/UPSTREAM.json` pins the selected `flutter_epub_viewer` 2.2.1 source archive and the separately obtained, clean `epubjs` 0.3.93 source archive by SHA-256. The upstream wrapper's different bundled engine is not used. The fork narrows the wrapper API and vendors the clean engine source modules. Changes belong in those modules, not in generated assets.
-
-Two unused or equivalent transitive paths changed during the bounded fork. The unexposed visual-annotation path and its `marks-pane` dependency were removed; Bookfin bookmarks use personal records, not SVG highlights. The `path-webpack` shim was replaced by pinned `path-browserify` 1.0.1. Both original packages declare MIT but omit license text. The replacement has license text. These changes do not select a different EPUB navigator, and both are recorded for parent review.
-
-The npm lockfile pins build and runtime dependencies by integrity. The Nix shell supplies Node.js and Flutter. Bundled assets need no CDN, runtime installation, or network bootstrap. BSD license files and generated dependency license texts are retained and registered with Flutter's license registry. `ASSETS.sha256` records the checked-in runtime assets; rebuilding and verifying them checks reproducibility.
+Run these commands from the repository root:
 
 ```sh
-nix develop --command bash -c 'cd packages/flutter_epub_viewer/engine && npm ci --ignore-scripts --no-audit --no-fund && npm run build && npm run verify && npm test'
 nix develop --command flutter test test/reader --reporter expanded
 nix develop --command bash tool/bookfin test
 nix develop --command flutter analyze
 nix develop --command bash tool/bookfin build-android
-nix develop --command flutter build web --no-wasm-dry-run
 ```
 
-The nine-edition corpus is the existing pinned public-domain navigator corpus. If its cache is absent, prepare it with `nix develop ./tool/research/readers#navigator --command bash tool/research/readers/navigator/run`. Then run production admission and the engine tests against the resulting processed bytes:
+`tool/reader/fetch_epub_corpus.py` downloads the public-domain corpus of `tool/reader/epub_corpus.json` into `.cache/epub-corpus/`. Then this command runs the renderer over every book:
 
 ```sh
-nix develop --command flutter test tool/reader/corpus_test.dart --reporter expanded
-nix develop --command bash -c 'cd packages/flutter_epub_viewer/engine && node --test test/corpus.cjs'
+BOOKFIN_EPUB_CORPUS=1 nix develop --command flutter test test/reader/epub/corpus_test.dart
 ```
 
-## Acceptance still required
-
-The `t2-42og` candidate adds an exact converted Alice KF8 regression for a
-saved character position at a column boundary. See
-`docs/evidence/reader/kf8-character-restoration.md` for the cause, byte-exact
-corpus reconstruction, six meaningful restoration failures, and host results.
-The existing layout test command now also needs the project Flutter
-dependencies, because its fixture uses the production importer and admission.
-Run `nix develop --command flutter pub get` before the engine tests.
-The whitespace follow-up preserves addressable spaces and line breaks under
-publication CSS, including preformatted content and nonbreaking spaces. Only
-CSS-collapsible whitespace may move the temporary destination measurement.
-Android visible-passage acceptance remains separate.
-
-The `t8-jj2s` candidate adds real Chromium iframe layout tests for delayed local
-styles/fonts, initial height changes, intentional navigation, bookmark restore,
-appearance ordering, and fractional-pixel page labels. The current reading
-address remains authoritative across reflow. See
-`docs/evidence/reader/layout-restoration.md` for the red tests, ownership model,
-host proof, and Android stop. This host proof does not establish Android
-restoration acceptance. The candidate changes no source identity or theme
-lifetime rule.
-
-The host tests cover real preprocessing, request replies, actual engine document navigation/search, download verification, account and source isolation, record restart, and production Flutter controls. DOM tests do not render pages and do not enforce Android WebView security. Most widget tests use the actual unsupported-platform boundary. The appearance regression tests replace only the native WebView platform boundary to record commands from the real screen, session, and viewport. A separate actual-engine test checks applied CSS size and the CFI passed to the layout/display boundary. Neither test simulates Android geometry or establishes Android acceptance.
-
-Parent acceptance still needs actual Android XHTML/CSS layout after XML tree import, PNG/JPEG display, applied embedded and fallback fonts, large-text pagination, visible-start stability after local styles/images/fonts load, visible-start resume after force-stop or process death, TalkBack reading order and focus, offline operation, and native request/navigation/permission interception. A failed attempt must not be replaced by inferred device acceptance. Readium remains the documented fallback if a concrete impossibility is established; this implementation does not silently switch navigators or drop required features.
-
-Coverage and mutation testing are intentionally deferred to the parent after user acceptance. Exact commands, test counts, build results, and historical red tests are indexed in `tool/evidence/reader/README.md`.
-
-## Missing Jellyfin format metadata correction
-
-Android acceptance of d9d238b downloaded an exact EPUB from a normal Jellyfin 12.4 Book whose DTO omitted Container and MediaSources, but the reader refused it before admission. The regression now constructs that catalog shape, restores a real verified local file, runs real EPUB admission and reopens its saved position. It failed before the correction while the named-format control passed.
-
-Single-file text editions now proceed from verified local lookup to bounded EPUB admission without requiring a catalog format label. Actual EPUB structure remains authoritative; neither a filename nor a guessed MIME type bypasses the admission boundary. A verified non-EPUB payload with matching saved length/hash is rejected. Tampered files still fail LocalDownloads verification first.
-
-Parent Nix checks: two downloaded-reader cases and all 335 application tests pass; analysis and formatting pass. Android chapter rendering after this change is not yet observed. This is independent of the concurrent R1–R4 correction work and must be combined before final acceptance. Ticket tb-zqvc remains open for the named-build Android rerun.
+`docs/research/native-epub-corpus.md` and `docs/research/native-epub-fidelity.md` record the corpus and fidelity results.

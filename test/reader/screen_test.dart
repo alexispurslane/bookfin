@@ -1,13 +1,13 @@
 import 'dart:async';
 
 import 'package:bookfin/catalog/glass.dart' show CoverGlass;
+import 'package:bookfin/foundation/theme.dart';
 import 'package:bookfin/reader/document.dart';
+import 'package:bookfin/reader/epub/publication.dart';
 import 'package:bookfin/reader/epub/viewport.dart';
 import 'package:bookfin/reader/screen.dart';
 import 'package:bookfin/reader/session.dart';
-import 'package:bookfin/foundation/theme.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_epub_viewer/publication.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../playback/playback_test.dart' show account, LocalFiles, MemoryResume;
@@ -30,8 +30,8 @@ void main() {
       );
       await reader.bind(account(), [book]);
       await reader.open(book, edition);
-      final port = ControlPort();
-      reader.attach(reader.token, port, []);
+      final navigator = ControlNavigator();
+      reader.attachDocument(reader.token, navigator, []);
       await tester.pumpWidget(
         MaterialApp(
           home: ReaderScreen(reader: reader, onNightChanged: (_) {}),
@@ -74,7 +74,7 @@ void main() {
       expect(tester.widget<Slider>(find.byType(Slider)).value, .75);
       await reader.restoreBookmark(bookmark.id);
       await tester.pumpAndSettle();
-      expect(port.destinations.single.cfi, visible.cfi);
+      expect(navigator.destinations.single.cfi, visible.cfi);
       expect(find.bySemanticsLabel('The bridge · 75%'), findsOneWidget);
       reader.acceptVisible(
         reader.token,
@@ -114,7 +114,7 @@ void main() {
   /// bookmark there, and shows the Bookmarks tab of its Contents sheet.
   Future<ReaderSession> openBookmarks(
     WidgetTester tester, {
-    ControlPort? port,
+    ControlNavigator? navigator,
   }) async {
     final downloads = LocalFiles()
       ..files[source.key] = Uri.file('/verified.epub');
@@ -129,12 +129,12 @@ void main() {
     });
     await reader.bind(account(), [book]);
     await reader.open(book, edition);
-    reader.attach(reader.token, port ?? ControlPort(), []);
+    reader.attachDocument(reader.token, navigator ?? ControlNavigator(), []);
     reader.acceptVisible(reader.token, visible);
     await reader.addBookmark();
     await tester.pumpWidget(
       MaterialApp(
-        navigatorObservers: [if (port != null) PopLog(port.log)],
+        navigatorObservers: [if (navigator != null) PopLog(navigator.log)],
         home: ReaderScreen(reader: reader, onNightChanged: (_) {}),
       ),
     );
@@ -184,12 +184,11 @@ void main() {
     await tester.pumpWidget(const SizedBox());
   }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
 
-  /// Opens the reader on [book] at a visible place, with [port] as its
-  /// navigator and the [contents] entries. [port]'s log also records each
-  /// closed route.
+  /// Opens the reader on [book] at a visible place, with [navigator] and the
+  /// [contents] entries. [navigator]'s log also records each closed route.
   Future<ReaderSession> openReader(
     WidgetTester tester,
-    ControlPort port, {
+    ControlNavigator navigator, {
     List<ContentsEntry> contents = const [],
   }) async {
     final downloads = LocalFiles()
@@ -205,12 +204,12 @@ void main() {
     });
     await reader.bind(account(), [book]);
     await reader.open(book, edition);
-    reader.attach(reader.token, port, contents);
+    reader.attachDocument(reader.token, navigator, contents);
     reader.acceptVisible(reader.token, visible);
     await tester.pumpWidget(
       MaterialApp(
         theme: bookfinTheme(Brightness.light),
-        navigatorObservers: [PopLog(port.log)],
+        navigatorObservers: [PopLog(navigator.log)],
         home: ReaderScreen(reader: reader, onNightChanged: (_) {}),
       ),
     );
@@ -221,10 +220,10 @@ void main() {
   testWidgets(
     'choosing a contents entry closes the sheet, then goes to that place',
     (tester) async {
-      final port = ControlPort();
+      final navigator = ControlNavigator();
       await openReader(
         tester,
-        port,
+        navigator,
         contents: const [
           ContentsEntry('River heading', 'one.xhtml#start'),
           ContentsEntry('The bridge', 'two.xhtml'),
@@ -234,7 +233,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('The bridge'));
       await tester.pumpAndSettle();
-      expect(port.log, ['closed a route', 'contents two.xhtml']);
+      expect(navigator.log, ['closed a route', 'contents two.xhtml']);
       expect(find.text('The bridge'), findsNothing);
       await tester.pumpWidget(const SizedBox());
     },
@@ -244,12 +243,12 @@ void main() {
   testWidgets(
     'tapping a reading bookmark closes the sheet and returns to its place',
     (tester) async {
-      final port = ControlPort();
-      await openBookmarks(tester, port: port);
+      final navigator = ControlNavigator();
+      await openBookmarks(tester, navigator: navigator);
       await tester.tap(find.text('Saved reading place'));
       await tester.pumpAndSettle();
-      expect(port.destinations.single.cfi, visible.cfi);
-      expect(port.log, contains('closed a route'));
+      expect(navigator.destinations.single.cfi, visible.cfi);
+      expect(navigator.log, contains('closed a route'));
       expect(find.text('Saved reading place'), findsNothing);
       await tester.pumpWidget(const SizedBox());
     },
@@ -309,9 +308,11 @@ void main() {
   testWidgets(
     'choosing a search hit goes to it, and the search ends with the sheet',
     (tester) async {
-      final port = ControlPort()
-        ..report = const SearchReport([SearchHit(visible, 'river excerpt')]);
-      final reader = await openReader(tester, port);
+      final navigator = ControlNavigator()
+        ..report = ReaderSearchReport([
+          ReaderHit(EpubAddress(visible), 'river excerpt'),
+        ]);
+      final reader = await openReader(tester, navigator);
       await tester.tap(find.byTooltip('Search book'));
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField), 'river');
@@ -319,8 +320,8 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('river excerpt'));
       await tester.pumpAndSettle();
-      expect(port.destinations.single.cfi, visible.cfi);
-      expect(port.log, ['closed a route', 'cancel search']);
+      expect(navigator.destinations.single.cfi, visible.cfi);
+      expect(navigator.log, ['closed a route', 'cancel search']);
       expect(reader.hits, isEmpty);
       expect(find.text('river excerpt'), findsNothing);
       await tester.pumpWidget(const SizedBox());
@@ -332,20 +333,20 @@ void main() {
     'closing search with its button or a tap outside the sheet ends the '
     'search',
     (tester) async {
-      final port = ControlPort();
-      await openReader(tester, port);
+      final navigator = ControlNavigator();
+      await openReader(tester, navigator);
       await tester.tap(find.byTooltip('Search book'));
       await tester.pumpAndSettle();
       await tester.tap(find.byTooltip('Cancel search'));
       await tester.pumpAndSettle();
-      expect(port.log, ['closed a route', 'cancel search']);
+      expect(navigator.log, ['closed a route', 'cancel search']);
 
-      port.log.clear();
+      navigator.log.clear();
       await tester.tap(find.byTooltip('Search book'));
       await tester.pumpAndSettle();
       await tester.tapAt(const Offset(20, 20));
       await tester.pumpAndSettle();
-      expect(port.log, ['closed a route', 'cancel search']);
+      expect(navigator.log, ['closed a route', 'cancel search']);
       await tester.pumpWidget(const SizedBox());
     },
     variant: TargetPlatformVariant.only(TargetPlatform.linux),
@@ -356,7 +357,7 @@ void main() {
     (tester) async {
       await openReader(
         tester,
-        ControlPort(),
+        ControlNavigator(),
         contents: const [ContentsEntry('River heading', 'one.xhtml')],
       );
       final context = tester.element(find.byType(ReaderScreen));
@@ -402,7 +403,7 @@ void main() {
       );
       await reader.bind(account(), [book]);
       await reader.open(book, edition);
-      reader.attach(reader.token, ControlPort(), [
+      reader.attachDocument(reader.token, ControlNavigator(), [
         const ContentsEntry('River heading', 'one.xhtml#start'),
       ]);
       reader.acceptVisible(reader.token, visible);
@@ -439,7 +440,7 @@ void main() {
       );
       await reader.bind(account(), [book]);
       await reader.open(book, edition);
-      reader.attach(reader.token, ControlPort(), []);
+      reader.attachDocument(reader.token, ControlNavigator(), []);
       await tester.pumpWidget(
         MaterialApp(
           theme: bookfinTheme(Brightness.light),
@@ -571,7 +572,7 @@ class PopLog extends NavigatorObserver {
       log.add('closed a route');
 }
 
-class ControlPort implements NavigatorPort {
+class ControlNavigator implements DocumentNavigator {
   final destinations = <ReadingLocation>[];
 
   /// The section and the progress of each seek, in order.
@@ -580,55 +581,46 @@ class ControlPort implements NavigatorPort {
   /// Whether each seek fails.
   bool failSeeks = false;
 
-  /// What the port did, in order, apart from [destinations].
+  /// What the navigator did, in order, apart from [destinations].
   final log = <String>[];
 
   /// What a search finds.
-  SearchReport report = const SearchReport(
+  ReaderSearchReport report = const ReaderSearchReport(
     [],
     error: 'Search is incomplete. Chapter failed.',
   );
   @override
   Future<void> cancelSearch(int request) async => log.add('cancel search');
   @override
-  Future<void> configure({
-    required double fontSize,
-    required bool night,
-  }) async {}
-  @override
   Future<void> contents(String href) async => log.add('contents $href');
   @override
-  Future<void> display(ReadingLocation location) async {
-    destinations.add(location);
+  Future<void> display(ReaderAddress address) async {
+    destinations.add((address as EpubAddress).location);
   }
 
   @override
   Future<void> move(bool forward) async {}
   @override
-  Future<void> seek(int section, double progress) async {
+  Future<void> seek(int part, double progress) async {
     if (failSeeks) throw StateError('The seek did not finish.');
-    seeks.add((section, progress));
+    seeks.add((part, progress));
   }
 
   @override
-  Future<SearchReport> search(String query, int request) async => report;
+  Future<ReaderSearchReport> search(String query, int request) async => report;
 
   /// The section, the progress and the width of each page preview, in
   /// order.
   final previews = <(int, double, double)>[];
 
-  /// What each page preview returns, or null to keep it waiting.
-  PagePicture? picture;
+  /// Notes each page preview, which then waits for ever.
   @override
-  Future<PagePicture> preview(
-    int section,
-    double progress,
+  Future<PagePreview> preview(
+    BookPlace place,
     double width,
     Future<void> abandon,
   ) {
-    previews.add((section, progress, width));
-    return picture == null
-        ? Completer<PagePicture>().future
-        : Future.value(picture);
+    previews.add((place.part, place.progress, width));
+    return Completer<PagePreview>().future;
   }
 }

@@ -5,10 +5,10 @@ import 'dart:io';
 import 'package:crypto/crypto.dart';
 import 'package:ffi/ffi.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_epub_viewer/publication.dart';
 
-import 'document.dart';
 import '../downloads/derived_files.dart';
+import 'document.dart';
+import 'epub/publication.dart';
 
 Future<void> _imports = Future.value();
 

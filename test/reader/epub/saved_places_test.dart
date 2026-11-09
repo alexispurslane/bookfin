@@ -15,7 +15,7 @@ import 'dart:io';
 import 'package:bookfin/reader/epub/dom.dart';
 import 'package:bookfin/reader/epub/layout.dart';
 import 'package:bookfin/reader/epub/places.dart';
-import 'package:flutter_epub_viewer/publication.dart';
+import 'package:bookfin/reader/epub/publication.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'corpus/book.dart';

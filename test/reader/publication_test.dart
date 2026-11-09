@@ -3,11 +3,10 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
-import 'package:flutter_epub_viewer/publication.dart';
-import 'package:flutter_epub_viewer/resources.dart';
+import 'package:bookfin/reader/epub/publication.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xml/xml.dart';
 import 'package:image/image.dart' as raster;
+import 'package:xml/xml.dart';
 
 Uint8List epub({String? chapter, Map<String, List<int>> extra = const {}}) {
   final entries = <String, List<int>>{
@@ -122,106 +121,26 @@ void main() {
     );
   });
 
-  test(
-    'the resource boundary denies remote requests rather than delegating them',
-    () {
-      final resources = ReaderResources(Publication.admit(epub()), {});
-      final reply = resources.reply(
-        Uri.parse('https://evil.invalid/track.png'),
-      );
-      expect(reply.status, 403);
-    },
-  );
-
-  test('the inherited runtime policy admits local publication styles but not their scripts', () {
-    final resources = ReaderResources(Publication.admit(epub()), {
-      'index.html': Uint8List.fromList(utf8.encode('Trusted')),
-    });
-    final policy = resources
-        .reply(ReaderResources.runtimeUrl)
-        .headers['Content-Security-Policy']!;
-    final directives = {
-      for (final directive in policy.split(';'))
-        if (directive.trim().isNotEmpty)
-          directive.trim().split(RegExp(r'\s+')).first: directive
-              .trim()
-              .split(RegExp(r'\s+'))
-              .skip(1)
-              .toList(),
-    };
+  test('an admitted publication keeps its resources unchanged and its identity '
+      'follows its content', () {
+    final publication = Publication.admit(epub());
     expect(
-      directives['style-src'],
-      contains('https://bookfin-publication.invalid'),
+      publication.resources['OPS/dot.png'],
+      File('tool/research/readers/fixtures/dot.png').readAsBytesSync(),
     );
-    expect(directives['script-src'], ["'self'"]);
-    expect(directives['base-uri'], ['https://bookfin-publication.invalid']);
+    expect(
+      () => publication.resources['OPS/dot.png']![0] = 0,
+      throwsUnsupportedError,
+    );
+    expect(Publication.admit(epub()).identity, publication.identity);
+    expect(
+      Publication.admit(
+        epub(chapter: '<html><head/><body>Changed</body></html>'),
+      ).identity,
+      isNot(publication.identity),
+    );
+    publication.checkInvariants();
   });
-
-  test(
-    'only admitted resources of this immutable publication can be requested',
-    () {
-      final publication = Publication.admit(epub());
-      final resources = ReaderResources(publication, {
-        'index.html': Uint8List.fromList(utf8.encode('Trusted')),
-      });
-      expect(
-        resources.reply(publication.base.resolve('OPS/dot.png')).bytes,
-        File('tool/research/readers/fixtures/dot.png').readAsBytesSync(),
-      );
-      for (final url in [
-        'https://bookfin-publication.invalid/wrong/OPS/dot.png',
-        '${publication.base}OPS/active.svg',
-        '${publication.base}OPS/%2e%2e/one.xhtml',
-        'file:///etc/passwd',
-        'data:text/html,bad',
-        'https://bookfin-runtime.invalid',
-        'https://bookfin-runtime.invalid/unknown.js',
-      ]) {
-        expect(resources.reply(Uri.parse(url)).status, 403, reason: url);
-      }
-      expect(
-        resources
-            .reply(publication.base.resolve('OPS/dot.png'), method: 'POST')
-            .status,
-        403,
-      );
-      expect(resources.reply(ReaderResources.runtimeUrl).status, 200);
-      expect(
-        resources.allowsNavigation(
-          Uri.parse('https://evil.invalid'),
-          mainFrame: true,
-        ),
-        isFalse,
-      );
-      expect(
-        resources.allowsNavigation(Uri.parse('about:blank'), mainFrame: true),
-        isFalse,
-      );
-      expect(
-        resources.allowsNavigation(Uri.parse('about:blank'), mainFrame: false),
-        isTrue,
-      );
-      expect(
-        resources.allowsNavigation(
-          publication.base.resolve('OPS/one.xhtml'),
-          mainFrame: true,
-        ),
-        isFalse,
-      );
-      expect(
-        () => publication.resources['OPS/dot.png']![0] = 0,
-        throwsUnsupportedError,
-      );
-      expect(Publication.admit(epub()).identity, publication.identity);
-      expect(
-        Publication.admit(
-          epub(chapter: '<html><head/><body>Changed</body></html>'),
-        ).identity,
-        isNot(publication.identity),
-      );
-      publication.checkInvariants();
-    },
-  );
 
   test('local styles, PNG, fonts, headings, and encoded destination fragments survive', () {
     final font = File('docs/mockups/fonts/source-serif-4-latin.woff2')

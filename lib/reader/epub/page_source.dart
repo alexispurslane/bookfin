@@ -18,13 +18,13 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/scheduler.dart';
-import 'package:flutter_epub_viewer/publication.dart';
 
 import 'dom.dart';
 import 'fonts.dart';
 import 'layout.dart';
 import 'paint.dart';
 import 'prepare.dart';
+import 'publication.dart';
 
 /// Runs [step] once, between frames. An [urgent] step runs even while an
 /// animation runs. Other steps wait for idle time.

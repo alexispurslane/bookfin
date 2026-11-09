@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:ui' as ui;
 
 import 'package:crypto/crypto.dart';
-import 'package:flutter_epub_viewer/publication.dart';
-import 'package:flutter_epub_viewer/navigation.dart';
+
+import 'epub/publication.dart';
 
 abstract class ReaderDocument {
   String get format;
@@ -70,6 +70,97 @@ class EpubDocument extends ReaderDocument {
       EpubAddress(ReadingLocation.fromJson(value));
   @override
   Future<void> dispose() async {}
+}
+
+class ReadingLocation {
+  const ReadingLocation(
+    this.cfi,
+    this.resource,
+    this.quote, {
+    this.chapter,
+    this.page,
+    this.pages,
+    this.progress,
+    this.end,
+  });
+  final String cfi;
+  final String resource;
+  final String quote;
+  final String? chapter;
+  final int? page;
+  final int? pages;
+
+  /// The text progress of the place through its section, from 0 to 1: the
+  /// share of the section's visible characters, white space left out, that
+  /// come before it. It places the location along the whole book, so it is
+  /// saved with the place. A place saved before it existed has none.
+  final double? progress;
+
+  /// The text progress of the last visible character of the shown page, in
+  /// the same measure as [progress]. It is for display only, such as the
+  /// chapter arrows, so [toJson] does not write it and [fromJson] does not
+  /// read it.
+  final double? end;
+  Map<String, dynamic> toJson() => {
+    'cfi': cfi,
+    'resource': resource,
+    'quote': quote,
+    if (progress != null) 'progress': progress,
+  };
+  factory ReadingLocation.fromJson(Map<String, dynamic> value) {
+    if (value['cfi'] is! String ||
+        value['resource'] is! String ||
+        value['quote'] is! String) {
+      throw const FormatException('The reader returned an invalid location.');
+    }
+    final progress = value['progress'];
+    if (progress != null &&
+        (progress is! num || !(progress >= 0 && progress <= 1))) {
+      throw const FormatException('The reader returned an invalid location.');
+    }
+    final location = ReadingLocation(
+      value['cfi'] as String,
+      value['resource'] as String,
+      value['quote'] as String,
+      chapter: value['chapter'] is String ? value['chapter'] as String : null,
+      page: value['page'] is int ? value['page'] as int : null,
+      pages: value['pages'] is int ? value['pages'] as int : null,
+      progress: (progress as num?)?.toDouble(),
+    );
+    if (!location.cfi.startsWith('epubcfi(') ||
+        !location.cfi.endsWith(')') ||
+        location.cfi.length > 4096 ||
+        location.resource.length > 512 ||
+        location.quote.length > 160 ||
+        (location.chapter?.length ?? 0) > 512 ||
+        (location.page != null &&
+            (location.page! < 1 ||
+                location.pages == null ||
+                location.pages! < location.page!)) ||
+        (location.pages != null && location.page == null)) {
+      throw const FormatException('The reader returned an invalid location.');
+    }
+    return location;
+  }
+}
+
+class ContentsEntry {
+  const ContentsEntry(this.title, this.href, {this.depth = 0});
+  final String title;
+  final String href;
+  final int depth;
+}
+
+class SearchHit {
+  const SearchHit(this.location, this.excerpt);
+  final ReadingLocation location;
+  final String excerpt;
+}
+
+class SearchReport {
+  const SearchReport(this.hits, {this.error});
+  final List<SearchHit> hits;
+  final String? error;
 }
 
 sealed class ReaderAddress {
@@ -209,66 +300,4 @@ abstract interface class DocumentNavigator {
   );
   Future<ReaderSearchReport> search(String query, int request);
   Future<void> cancelSearch(int request);
-}
-
-class EpubNavigator implements DocumentNavigator {
-  EpubNavigator(this.port);
-  final NavigatorPort port;
-  @override
-  Future<void> move(bool forward) => port.move(forward);
-  @override
-  Future<void> display(ReaderAddress address) {
-    if (address is! EpubAddress) {
-      throw ArgumentError('Choose a location in this EPUB.');
-    }
-    return port.display(address.location);
-  }
-
-  @override
-  Future<void> contents(String href) => port.contents(href);
-  @override
-  Future<void> seek(int part, double progress) => port.seek(part, progress);
-  @override
-  Future<PagePreview> preview(
-    BookPlace place,
-    double width,
-    Future<void> abandon,
-  ) async {
-    final picture = await port.preview(
-      place.part,
-      place.progress,
-      width,
-      abandon,
-    );
-    // The engine decodes the image on another thread.
-    final codec = await ui.instantiateImageCodec(picture.image);
-    final ui.Image image;
-    try {
-      image = (await codec.getNextFrame()).image;
-    } finally {
-      codec.dispose();
-    }
-    BookPlace? at((int, double)? place) =>
-        place == null ? null : (part: place.$1, progress: place.$2);
-    return PagePreview(
-      part: picture.section,
-      start: picture.start,
-      end: picture.end,
-      image: image,
-      previous: at(picture.previous),
-      next: at(picture.next),
-    );
-  }
-
-  @override
-  Future<ReaderSearchReport> search(String query, int request) async {
-    final report = await port.search(query, request);
-    return ReaderSearchReport([
-      for (final hit in report.hits)
-        ReaderHit(EpubAddress(hit.location), hit.excerpt),
-    ], error: report.error);
-  }
-
-  @override
-  Future<void> cancelSearch(int request) => port.cancelSearch(request);
 }

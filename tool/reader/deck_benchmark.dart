@@ -29,8 +29,8 @@ import 'dart:async';
 import 'package:bookfin/reader/document.dart';
 import 'package:bookfin/reader/epub/pager.dart';
 import 'package:bookfin/reader/epub/prepare.dart';
+import 'package:bookfin/reader/epub/publication.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_epub_viewer/publication.dart';
 
 import '../showcase_media.dart' as media;
 

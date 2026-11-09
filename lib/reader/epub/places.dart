@@ -1,16 +1,17 @@
 // Converts between places in the native DOM and the EPUB CFIs, quotes and
 // text progress that Bookfin saves today.
 //
-// The WebView reader saves a place as epub.js writes it (reader.js
-// `visibleLocation`): a collapsed CFI, the first 120 characters of the
-// body's text from the place on, and the share of the section's visible
-// characters before the place. These functions write the same three
-// values, so a place saved by one renderer opens in the other.
+// Bookfin's former WebView reader saved a place as epub.js writes it
+// (reader.js `visibleLocation`): a collapsed CFI, the first 120 characters
+// of the body's text from the place on, and the share of the section's
+// visible characters before the place. These functions write the same three
+// values, so a place that the WebView reader saved still opens, and an
+// older Bookfin opens a place that this one saves.
 import 'dart:math' as math;
 
-import 'package:flutter_epub_viewer/navigation.dart';
 import 'package:xml/xml.dart';
 
+import '../document.dart';
 import 'dom.dart';
 
 /// The spine step of a CFI for spine item [index] of the package document

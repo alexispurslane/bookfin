@@ -1,7 +1,8 @@
 // What epub.js measured and saved while Bookfin still had it (ticket
 // tc-pshi), and the native pages to hold it against. The fixtures in
-// fixtures/ outlive epub.js; test/reader/epub/trial/fidelity_test.dart
-// wrote them, and docs/research/native-epub-fidelity.md describes them.
+// fixtures/ outlive epub.js. test/reader/epub/trial/fidelity_test.dart
+// wrote them before tc-rap6 deleted it with epub.js (see git history), and
+// docs/research/native-epub-fidelity.md describes them.
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -10,8 +11,8 @@ import 'dart:typed_data';
 import 'package:archive/archive.dart';
 import 'package:bookfin/reader/epub/page_source.dart';
 import 'package:bookfin/reader/epub/prepare.dart';
+import 'package:bookfin/reader/epub/publication.dart';
 import 'package:crypto/crypto.dart';
-import 'package:flutter_epub_viewer/publication.dart';
 
 import 'helpers.dart';
 
@@ -57,10 +58,10 @@ PageSource immediateSource(Publication publication) => PageSource(
 
 /// [book], a downloaded book, as epub.js laid it out when it recorded the
 /// fixtures: with automatic hyphenation turned off in each style sheet.
-/// compare.cjs turned it off in Chromium, and the WebView reader never
-/// hyphenated, because the sanitizer empties the Standard Ebooks sheets
-/// that ask for it. Native pages can start where epub.js pages started
-/// only without it.
+/// The Chromium comparison (compare.cjs, deleted in tc-rap6) turned it off,
+/// and the WebView reader never hyphenated, because the sanitizer empties
+/// the Standard Ebooks sheets that ask for it. Native pages can start where
+/// epub.js pages started only without it.
 Uint8List asRecorded(Uint8List book) {
   final archive = Archive();
   for (final file in ZipDecoder().decodeBytes(book).files) {
