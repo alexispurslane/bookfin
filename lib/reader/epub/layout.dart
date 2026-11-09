@@ -1707,14 +1707,16 @@ class LayoutRun {
 
     if (!_hyphenated(text)) return layOut(start, end);
     final justified = text.align == Align.justify;
-    // Marks the line ends a part at a time from the top, and returns the
-    // whole paragraph laid out with the marks: a part that starts at the
-    // paragraph's start and reaches its end is the whole paragraph.
-    _Built byParts() {
-      var next = start;
+    // Marks the line ends a part at a time from the line that starts at
+    // code unit [next] on, and returns the whole paragraph laid out with
+    // the marks: a part that starts at the paragraph's start and reaches
+    // its end is the whole paragraph. With no [next], it lays out the whole
+    // paragraph.
+    _Built byParts(int? next) {
+      if (next == null) return layOut(start, end);
       var span = _part;
       while (true) {
-        final part = layOut(next, next + span);
+        final part = layOut(next!, next + span);
         final last = part.reaches(end);
         if (next == start && last) return part;
         final count = marks.length;
@@ -1733,19 +1735,29 @@ class LayoutRun {
       }
     }
 
-    var whole = byParts();
-    // The whole paragraph, laid out again until no mark changes. Its lines
-    // can differ from a part's by float noise in their widths, as can the
-    // judged widths: each hyphen must end its line, and each line that
-    // ends at a soft hyphen gets its mark here.
+    // The whole paragraph is laid out with the marks until no mark changes.
+    // Its lines can differ from a part's by float noise in their widths, as
+    // can the judged widths: each hyphen must end its line, and each line
+    // that ends at a soft hyphen gets its mark. A line that breaks again is
+    // marked a part at a time from there. Each change makes the marks later
+    // in one order (none, hyphen, joiner at the first code unit that
+    // changes), so the loop ends.
+    int? next = start;
     while (true) {
-      if (_hyphensEndLines(whole, marks)) {
+      final whole = byParts(next);
+      next = _misjudged(whole, marks);
+      if (next == null) {
         final count = marks.length;
-        _markLines(whole, marks, width, justified: justified, last: true);
+        next = _markLines(
+          whole,
+          marks,
+          width,
+          justified: justified,
+          last: true,
+        );
         if (marks.length == count) return whole;
       }
       whole.dispose();
-      whole = layOut(start, end);
     }
   }
 
@@ -1808,14 +1820,15 @@ class LayoutRun {
     return last ? null : part.start + starts[marked];
   }
 
-  /// Whether each hyphen of [built], the whole paragraph laid out with
-  /// [marks], ends its line.
+  /// Checks that each hyphen of [built], the whole paragraph laid out with
+  /// [marks], ends its line. Returns null when each does.
   ///
   /// When one does not, the width of its justified line was misjudged, or
   /// float noise broke its line otherwise in a part: it becomes a word
   /// joiner, and the marks after it are dropped, as they were decided for
-  /// lines that are gone. The line before it broke early, and breaks again.
-  bool _hyphensEndLines(_Built built, Map<int, int> marks) {
+  /// lines that are gone. Returns where the line before it starts: that
+  /// line broke early, and breaks again.
+  int? _misjudged(_Built built, Map<int, int> marks) {
     final paragraph = built.paragraph;
     final length = built.map.length;
     final metrics = paragraph.computeLineMetrics();
@@ -1834,9 +1847,10 @@ class LayoutRun {
       if (ends) continue;
       marks[at] = _joiner;
       marks.removeWhere((other, mark) => other > at);
-      return false;
+      return built.start +
+          (line > 0 ? _lineStarts(paragraph, length, line).last : 0);
     }
-    return true;
+    return null;
   }
 
   /// How far past the line width a hyphen may reach and still fit: float
