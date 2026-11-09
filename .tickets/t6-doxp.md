@@ -1,8 +1,8 @@
 ---
 id: t6-doxp
-status: open
+status: closed
 deps: [boo-981b]
-links: []
+links: [t0-0hl7]
 created: 2026-11-09T17:35:49Z
 type: task
 priority: 2

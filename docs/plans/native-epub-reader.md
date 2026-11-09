@@ -362,7 +362,9 @@ A page that shows no text, such as a full-page image inside a section, has no vi
 
 Saved places do not change. They still save the first visible character.
 
-A section that a kept page map seeds (t5-4l4d) counts as laid out. The seed must give the visible start of each page start and the section's visible character count too.
+A section that a kept page map seeds (t5-4l4d) counts as laid out, so a second open of a book shows whole-book numbers at once. The map keeps page starts, not their visible characters, so a seeded section knows its page count only. The bar gives it a share by its count. Inside it, the bar places text by its progress and names no page, except in a section of one page, so a drag never lands on a page other than the one that the bar names. t5-q0hs keeps the visible characters in the map and closes this gap.
+
+When a page contradicts a kept map, the page source forgets the map, drops its sections from the index, and lays the book out again. The label then counts the section's pages until the book is laid out again. While a page stays shown, its number and its count never go back: the higher number that the map gave stays until another page shows.
 
 ### The saved start of a page
 

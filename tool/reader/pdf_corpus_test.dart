@@ -27,13 +27,14 @@ void main() {
       () async {
         final bytes = await File('.cache/reader-corpus/${entry.$1}')
             .readAsBytes();
+        final digest = sha256.convert(bytes).toString();
         expect(
-          sha256.convert(bytes).toString(),
+          digest,
           samples.singleWhere(
             (sample) => sample['filename'] == entry.$1,
           )['sha256'],
         );
-        final document = await PdfRuntime.instance.open(bytes);
+        final document = await PdfRuntime.instance.open(bytes, digest);
         addTearDown(document.dispose);
         final text = await document.text(entry.$2);
         expect(text.status, entry.$3);

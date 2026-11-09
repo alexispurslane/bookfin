@@ -30,6 +30,7 @@ import 'epub/corpus/book.dart' show showcaseBooks;
 import 'epub/epubjs_fixtures.dart'
     show fixture, immediateSource, pageAt, recordedSizes;
 import 'epub/helpers.dart' show loadReaderFont, readerPage;
+import 'epub/page_source_test.dart' as pages show book;
 import 'epub/page_source_test.dart' show paragraphs;
 
 SourceFile file(String container) => SourceFile(
@@ -822,6 +823,121 @@ void main() {
         (store.values[accountKey]!['resumes'] as List).single['anchor'],
         reader.position!.anchor,
       );
+    });
+  });
+
+  group('the first press of a text size button', () {
+    // Before the first press, a book that fixes its body text shows it at
+    // its own size, not at the reader's text size of 20 pixels. The first
+    // press steps from the size that the book shows (t9-esjw).
+
+    /// Opens a book whose paragraphs are [size] and shows its first page
+    /// with the text size [shown], the reader's 20 pixels after the system
+    /// text scale.
+    Future<ReaderSession> opened(String size, {double shown = 20}) async {
+      final reader = await open(
+        pages.book([
+          paragraphs(3, sentences: 8),
+          paragraphs(9, sentences: 8),
+        ], css: 'p { font-size: $size }'),
+      );
+      await present(
+        reader,
+        PageSettings(width: 412, height: 671, fontSize: shown, night: false),
+      );
+      return reader;
+    }
+
+    test('the first Smaller press on a fixed-size book makes its text '
+        'smaller', () async {
+      // The book shows its 12-point text at 16 pixels.
+      final reader = await opened('12pt');
+      await reader.stepFontSize(larger: false);
+      expect(reader.sizesMainText, isTrue);
+      expect(reader.fontSize, 14);
+    });
+
+    test('the first Larger press makes it larger', () async {
+      // The book shows its 18-point text at 24 pixels, above the reader's
+      // 20.
+      final reader = await opened('18pt');
+      await reader.stepFontSize(larger: true);
+      expect(reader.sizesMainText, isTrue);
+      expect(reader.fontSize, 26);
+    });
+
+    test('a book whose text follows the reader\'s text size steps from what '
+        'it shows', () async {
+      for (final (size, larger, stepped) in [
+        ('1em', false, 18.0),
+        ('1em', true, 22.0),
+        // A tenth smaller: 18 pixels.
+        ('0.9em', false, 16.0),
+      ]) {
+        // Each case starts before any press of the account.
+        store = SpyStore();
+        final reader = await opened(size);
+        await reader.stepFontSize(larger: larger);
+        expect(reader.fontSize, stepped, reason: '$size, larger: $larger');
+        reader.dispose();
+        sessions.remove(reader);
+      }
+    });
+
+    test('a Smaller press does nothing when the book shows text at or below '
+        'the smallest size', () async {
+      // The book shows its 9-point text at 12 pixels.
+      final reader = await opened('9pt');
+      var notified = 0;
+      reader.fontSizeChanges.addListener(() => notified++);
+      await reader.stepFontSize(larger: false);
+      expect(reader.sizesMainText, isFalse);
+      expect(reader.fontSize, 20);
+      expect(notified, 0);
+      expect([
+        for (final changes in store.saves) changes.settings['sizesMainText'],
+      ], everyElement(isNull));
+    });
+
+    test('the first press steps in the reader\'s own units under a system '
+        'text scale', () async {
+      // At a text scale of 1.3, the reader's 20 pixels are 26, and the
+      // book's 16-pixel text is 16 / 1.3 = 12.3 of the reader's pixels. So
+      // Smaller has no smaller size left, and Larger gives 14.
+      final reader = await opened('12pt', shown: 26);
+      await reader.stepFontSize(larger: false);
+      expect(reader.sizesMainText, isFalse);
+      await reader.stepFontSize(larger: true);
+      expect(reader.fontSize, 14);
+    });
+
+    test('later presses step from the reader\'s text size', () async {
+      final reader = await opened('12pt');
+      await reader.stepFontSize(larger: false);
+      await present(
+        reader,
+        const PageSettings(
+          width: 412,
+          height: 671,
+          fontSize: 14,
+          night: false,
+          sizesMainText: true,
+        ),
+      );
+      await reader.stepFontSize(larger: true);
+      expect(reader.fontSize, 16);
+      await reader.stepFontSize(larger: true);
+      expect(reader.fontSize, 18);
+    });
+
+    test('two quick presses each take a step', () async {
+      final reader = await opened('12pt');
+      await Future.wait([
+        reader.stepFontSize(larger: false),
+        reader.stepFontSize(larger: true),
+      ]);
+      expect(reader.fontSize, 16);
+      expect(reader.sizesMainText, isTrue);
     });
   });
 

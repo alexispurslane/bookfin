@@ -87,8 +87,7 @@ class BookMap {
         const {},
         const [],
         BookPages([
-          for (var page = 0; page < pages; page++)
-            (starts: const [0], length: 0),
+          for (var page = 0; page < pages; page++) (count: 1, visible: null),
         ]),
       );
 
@@ -203,7 +202,7 @@ class BookMap {
     var bytes = 0;
     for (final (index, part) in (known ?? const []).indexed) {
       if (part == null) continue;
-      pages += part.starts.length;
+      pages += part.count;
       bytes += _sizes[index];
     }
     // Each part's pages, known or estimated, or its bytes before any part's
@@ -211,7 +210,7 @@ class BookMap {
     final weights = [
       for (final (index, size) in _sizes.indexed)
         if (known?[index] case final part?)
-          part.starts.length.toDouble()
+          part.count.toDouble()
         else if (pages > 0 && bytes > 0)
           math.max(1.0, size * pages / bytes)
         else
@@ -305,7 +304,7 @@ class BookMap {
   double _within(int part, double through) {
     final start = _starts[part];
     final share = _starts[part + 1] - start;
-    final pages = _pages?.parts[part];
+    final pages = _pages?.parts[part]?.visible;
     if (pages == null || pages.length == 0) return start + share * through;
     final starts = pages.starts;
     // The place names a visible character, at most the last one, as the
@@ -355,7 +354,7 @@ class BookMap {
       part: low,
       progress: progress,
       chapter: chapter.start < 0 ? null : chapter.title,
-      page: page == null ? null : _pages!.numberOf(low, page),
+      page: page == null ? null : _pages?.numberOf(low, page),
     );
   }
 
@@ -367,9 +366,15 @@ class BookMap {
   /// of the page, a quarter of the way into it, so that the reader goes to
   /// that character and so to that page. A page without text has none: its
   /// share names the first character after it, on the page that holds it.
+  ///
+  /// A part whose pages a kept page map gave knows their count but not
+  /// where they start (t5-q0hs). There the progress is the share of the
+  /// part's text, and no page is named, unless the part has one page.
   (double, int?) _onPage(int part, double through) {
-    final pages = _pages?.parts[part];
-    if (pages == null) return (through, null);
+    final known = _pages?.parts[part];
+    if (known == null) return (through, null);
+    final pages = known.visible;
+    if (pages == null) return (through, known.count == 1 ? 0 : null);
     final starts = pages.starts;
     if (pages.length == 0) return (through, 0);
     // A tiny tolerance, so that the start of a page's share, reached from

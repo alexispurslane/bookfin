@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 
 import 'package:crypto/crypto.dart';
 
+import 'epub/page_maps.dart';
 import 'epub/publication.dart';
 
 abstract class ReaderDocument {
@@ -45,12 +46,12 @@ abstract class ReaderDocument {
 }
 
 class EpubDocument extends ReaderDocument {
-  EpubDocument(this.publication)
+  EpubDocument(this.publication, {this.pageMaps})
     : format = 'epub',
       originalDigest = publication.originalDigest,
       identity = publication.identity,
       policy = Publication.policy;
-  EpubDocument.mobi(this.publication, this.originalDigest)
+  EpubDocument.mobi(this.publication, this.originalDigest, {this.pageMaps})
     : format = 'mobi',
       policy = mobiPolicy,
       identity = sha256
@@ -59,6 +60,10 @@ class EpubDocument extends ReaderDocument {
   static const mobiPolicy =
       'bookfin-mobi-epub-1-libmobi-0.12/${Publication.policy}';
   final Publication publication;
+
+  /// Where Bookfin keeps the page maps of this book's download, or null
+  /// when it keeps none.
+  final BookPageMaps? pageMaps;
   @override
   final String format;
   @override

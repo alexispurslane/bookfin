@@ -509,7 +509,7 @@ class ReaderSession extends ChangeNotifier {
                 status: PdfTextStatus.absent,
               );
             }
-            return read(file.uri, () => owned() && available());
+            return read(file, () => owned() && available());
           }, onOwnership: (live) => owned = live);
         });
       }
@@ -789,6 +789,38 @@ class ReaderSession extends ChangeNotifier {
     await _save();
     _emit();
   }
+
+  /// Makes the open book's main text one step (2 pixels) larger or
+  /// smaller, from 14 to 40 pixels, with [setFontSize]. A step goes from
+  /// the main text size that the open book shows, in the reader's pixels
+  /// before the system text scale. That is [fontSize] once [sizesMainText]
+  /// is on. Before that, a book that fixes its own type sizes shows its own
+  /// main text size, so the first step goes from that size, and each step
+  /// moves the text the way that it names. A step that has no size left
+  /// that way does nothing. Each step waits for the one before it. When the
+  /// shown size cannot be measured, the step goes from [fontSize].
+  Future<void> stepFontSize({required bool larger}) {
+    final step = _steps.then((_) async {
+      final pager = _pager;
+      var from = _fontSize;
+      if (!_sizesMainText && pager != null) {
+        try {
+          from *= await pager.shownMainTextRatio() ?? 1;
+        } catch (_) {
+          // NOTE: Preparing the book's sections reports what the
+          // measurement could not read.
+        }
+        if (_disposed) return;
+      }
+      final size = (from + (larger ? 2 : -2)).roundToDouble().clamp(14.0, 40.0);
+      if (larger ? size > from : size < from) await setFontSize(size);
+    });
+    _steps = step.then((_) {}, onError: (Object _) {});
+    return step;
+  }
+
+  /// The end of the last [stepFontSize].
+  Future<void> _steps = Future.value();
 
   Future<void> search(String query) async {
     final navigator = _navigator;

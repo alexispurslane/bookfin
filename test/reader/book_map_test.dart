@@ -240,11 +240,15 @@ void main() {
   });
 
   group('the pages of the book', () {
+    /// A laid-out section whose pages start at [starts], of [length]
+    /// visible characters.
+    PartPages measured(List<int> starts, int length) =>
+        (count: starts.length, visible: (starts: starts, length: length));
+
     /// One laid-out section of [pages] pages of 100 visible characters.
-    PartPages laid(int pages) => (
-      starts: [for (var page = 0; page < pages; page++) page * 100],
-      length: pages * 100,
-    );
+    PartPages laid(int pages) => measured([
+      for (var page = 0; page < pages; page++) page * 100,
+    ], pages * 100);
 
     test('before any section is laid out, each section takes its share of '
         'the bytes and the bar names no page', () async {
@@ -323,7 +327,7 @@ void main() {
       // As Standard Ebooks' title pages, whose image follows a hidden title.
       final book = (await map()).paged(
         BookPages([
-          (starts: const [0], length: 26),
+          measured(const [0], 26),
           laid(1),
           laid(2),
         ]),
@@ -337,7 +341,7 @@ void main() {
         'the reader lands', () async {
       final book = (await map()).paged(
         BookPages([
-          (starts: const [0, 50, 50], length: 100),
+          measured(const [0, 50, 50], 100),
           laid(1),
           laid(1),
         ]),
@@ -352,7 +356,7 @@ void main() {
       final book = (await map()).paged(
         BookPages([
           laid(2),
-          (starts: const [0, 96], length: 192),
+          measured(const [0, 96], 192),
           laid(2),
         ]),
       );
@@ -362,6 +366,30 @@ void main() {
       expect(half.start, closeTo(3 / 6, 1e-9));
       expect(book.targetAt(half.start).chapter, 'Half');
     });
+
+    test('a section that a kept page map gave takes a share by its page '
+        'count, and the bar names no page inside it', () async {
+      final book = (await map()).paged(
+        BookPages([(count: 3, visible: null), laid(1), laid(2)]),
+      );
+      expect(book.pages, 6);
+      expect(book.fractionAt((part: 1, progress: 0)), closeTo(3 / 6, 1e-9));
+      expect(book.fractionAt((part: 0, progress: .5)), closeTo(1.5 / 6, 1e-9));
+      final inside = book.targetAt(1.2 / 6);
+      expect((inside.part, inside.page), (0, null));
+      expect(inside.progress, closeTo(.4, 1e-9));
+      expect(book.targetAt(4.5 / 6).page, 5);
+    });
+
+    test(
+      'a one-page section that a kept page map gave names its page',
+      () async {
+        final book = (await map()).paged(
+          BookPages([(count: 1, visible: null), laid(1), laid(2)]),
+        );
+        expect(book.targetAt(.1).page, 1);
+      },
+    );
 
     test('a PDF names each source page among its pages', () {
       final book = BookMap.pages(4);

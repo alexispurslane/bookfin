@@ -20,6 +20,19 @@ import 'pdf_session_test.dart' show book, edition;
 const englishPage =
     '''<div class="ocr_page"><span class="ocr_line" title="bbox 10 10 500 40"><span class="ocrx_word" title="bbox 10 10 100 40">The</span> <span class="ocrx_word" title="bbox 110 10 300 40">quiet</span> <span class="ocrx_word" title="bbox 310 10 500 40">garden.</span></span></div>''';
 
+/// Recognition output of a page where recognition found no text.
+const blankPage = '<div class="ocr_page"></div>';
+
+/// Recognition output of a page whose short lines cannot be put in reading
+/// order.
+const scatteredPage =
+    '<div class="ocr_page">'
+    '<span class="ocr_line" title="bbox 10 10 60 40"><span class="ocrx_word">One</span></span>'
+    '<span class="ocr_line" title="bbox 10 50 60 80"><span class="ocrx_word">two</span></span>'
+    '<span class="ocr_line" title="bbox 10 90 60 120"><span class="ocrx_word">three</span></span>'
+    '<span class="ocr_line" title="bbox 10 130 60 160"><span class="ocrx_word">four</span></span>'
+    '</div>';
+
 // A real blank PDF keeps native rendering in the coordinator regressions.
 List<int> blankPages(int count) {
   final objects = <String>[
@@ -179,6 +192,54 @@ void main() {
       expect(calls, 2);
     },
   );
+
+  test(
+    'a page with no text is not recognized again on a second visit',
+    () async {
+      recognize = () async => blankPage;
+      final pdf = await open();
+      expect((await pdf.text(1)).reason, 'No text was found on this page.');
+      expect((await pdf.text(1)).reason, 'No text was found on this page.');
+      reader.closeView(reader.token);
+      expect(
+        (await (await open()).text(1)).reason,
+        'No text was found on this page.',
+      );
+      expect(calls, 1);
+    },
+  );
+
+  test('a page whose recognized text is out of reading order is not recognized '
+      'again on a second visit', () async {
+    recognize = () async => scatteredPage;
+    expect((await (await open()).text(1)).status, PdfTextStatus.unreliable);
+    reader.closeView(reader.token);
+    expect((await (await open()).text(1)).status, PdfTextStatus.unreliable);
+    expect(calls, 1);
+  });
+
+  test('a new recognition version recognizes a no-text page again', () async {
+    recognize = () async => blankPage;
+    final pdf = await open();
+    await pdf.text(1);
+    reader.closeView(reader.token);
+    final cache = (await Directory(
+      '${root.path}/.bookfin-ocr',
+    ).list().toList()).whereType<File>().single;
+    final previousKey = sha256
+        .convert(
+          utf8.encode('previous-engine/previous-model/${pdf.originalDigest}/1'),
+        )
+        .toString();
+    final record =
+        jsonDecode(await cache.readAsString()) as Map<String, dynamic>;
+    record['key'] = previousKey;
+    await cache.writeAsString(jsonEncode(record));
+    await cache.rename('${cache.parent.path}/$previousKey.json');
+    recognize = () async => englishPage;
+    expect((await (await open()).text(1)).text, 'The quiet garden.');
+    expect(calls, 2);
+  });
 
   test(
     'reopening uses verified cached text without running the engine again',

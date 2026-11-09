@@ -71,6 +71,7 @@ Map<String, Object?> _facts(Publication publication) => {
       path: [width, height],
   },
   'mediaTypes': publication.mediaTypes,
+  'mainTextSize': publication.mainTextSize,
   'resources': {
     for (final MapEntry(key: path, value: bytes)
         in publication.resources.entries)
@@ -234,6 +235,107 @@ void main() {
         await Directory('${directory.path}/.bookfin-admitted').exists(),
         isFalse,
       );
+    });
+  });
+
+  group('the main text size', () {
+    /// A book with a heading and a paragraph in [size].
+    Uint8List sized(String size) => epub(
+      chapter:
+          '<html xmlns="http://www.w3.org/1999/xhtml"><head><title>River'
+          '</title><link rel="stylesheet" href="book.css"/></head><body>'
+          '<h1>River</h1><p>${prose(4)}</p></body></html>',
+      extra: {'OPS/book.css': utf8.encode('p{font-size:$size}')},
+    );
+
+    test('the first open measures the book\'s main text', () async {
+      final bytes = sized('9pt');
+      final document = await _open(
+        await _download(bytes),
+        _digest(bytes),
+        'epub',
+      );
+      expect(document.publication.mainTextSize, 12);
+    });
+
+    test(
+      'a second open of a book does not measure its main text again',
+      () async {
+        final bytes = sized('9pt');
+        final file = await _download(bytes);
+        await _open(file, _digest(bytes), 'epub');
+
+        // The kept record is the only source left: the file is no EPUB now.
+        await file.writeAsBytes(List.filled(bytes.length, 0));
+        final second = await _open(file, _digest(bytes), 'epub');
+
+        expect(second.publication.mainTextSize, 12);
+      },
+    );
+
+    test('a book whose file changed measures again', () async {
+      final first = sized('9pt');
+      final changed = sized('18pt');
+      final file = await _download(first);
+      await _open(file, _digest(first), 'epub');
+
+      await file.writeAsBytes(changed);
+      final after = await _open(file, _digest(changed), 'epub');
+
+      expect(after.publication.mainTextSize, 24);
+    });
+
+    test('a kept size that is no type size is set aside, and the book '
+        'measures again', () async {
+      final bytes = sized('9pt');
+      final file = await _download(bytes);
+      await _open(file, _digest(bytes), 'epub');
+      final record = _record(file);
+      // The same number of bytes, so the record's header keeps its length.
+      final damaged = latin1.encode(
+        latin1
+            .decode(await record.readAsBytes())
+            .replaceFirst('"mainTextSize":12.0', '"mainTextSize":-1.0'),
+      );
+      expect(damaged, isNot(await record.readAsBytes()));
+      await record.writeAsBytes(damaged);
+
+      final second = await _open(file, _digest(bytes), 'epub');
+
+      expect(second.publication.mainTextSize, 12);
+      expect(await File('${record.path}.unreadable').exists(), isTrue);
+    });
+
+    test('a book admitted before main text sizes were kept admits again, '
+        'and so measures its main text', () async {
+      final bytes = sized('9pt');
+      final digest = _digest(bytes);
+      final file = await _download(bytes);
+      var admissions = 0;
+      Future<Publication> admit() async {
+        admissions++;
+        return Publication.admit(bytes, digest);
+      }
+
+      await AdmittedBooks.open(file, digest, 'policy-1', admit);
+      // The record as revision 1 kept it, before it held the size.
+      final record = _record(file);
+      final kept = await record.readAsBytes();
+      final end = kept.indexOf(0x0a);
+      await record.writeAsBytes([
+        ...utf8.encode(jsonEncode([1, 'policy-1', digest])),
+        ...kept.sublist(end),
+      ]);
+
+      final reopened = await AdmittedBooks.open(
+        file,
+        digest,
+        'policy-1',
+        admit,
+      );
+
+      expect(admissions, 2);
+      expect(reopened.mainTextSize, 12);
     });
   });
 

@@ -213,7 +213,7 @@ void main() {
 
       await until(source.mainRun(first.page, end: true));
       final pages = await truePages();
-      expect(source.bookPages.value.parts[0]?.starts, pages[0]);
+      expect(source.bookPages.value.parts[0]?.visible?.starts, pages[0]);
       expect(source.bookPages.value.complete, isFalse);
       expect(source.bookPages.value.count, isNull);
 
@@ -221,9 +221,9 @@ void main() {
       final index = source.bookPages.value;
       expect(index.complete, isTrue);
       for (final (section, starts) in pages.indexed) {
-        expect(index.parts[section]!.starts, starts);
+        expect(index.parts[section]!.visible!.starts, starts);
         expect(
-          index.parts[section]!.length,
+          index.parts[section]!.visible!.length,
           (await until(source.section(section))).dom.visibleLength,
         );
       }
@@ -251,7 +251,7 @@ void main() {
       await scheduler.settle();
       final index = source.bookPages.value;
       expect(index.complete, isTrue);
-      expect(index.parts[0]!.starts.first, 0);
+      expect(index.parts[0]!.visible!.starts.first, 0);
       expect(pager().pageNumber.value?.count, index.count);
     });
   });
