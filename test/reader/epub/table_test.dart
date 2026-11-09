@@ -974,6 +974,83 @@ void main() {
     }
   });
 
+  group('a row of many paragraphs', () {
+    // Speeches of many paragraphs beside their speaker, as in Plato's
+    // dialogues and Roget's Thesaurus, in rows taller than a page.
+    final body =
+        '<p>${prose(1, 'Before')}</p><table>'
+        '${[
+          for (var row = 0; row < 3; row++) '<tr><td>Speaker $row</td><td>${[for (var i = 0; i < 12; i++) '<p>${prose(2, 'Speech $row part $i')}</p>'].join()}</td></tr>',
+        ].join()}'
+        '</table><p>${prose(2, 'After')}</p>';
+
+    test('lays out one paragraph of its cells in each step, and the steps cut '
+        'the pages of one long step', () {
+      final section = prepared(body, settings: smallPage);
+      final table = section.flow.indexWhere((item) => item is TableItem);
+      // A clock that moves on 1 ms each time the run reads it, so that a
+      // step with a budget of 1 ms ends after its first unit of work.
+      var now = Duration.zero;
+      final run = LayoutRun(
+        section,
+        clock: () => now += const Duration(milliseconds: 1),
+      );
+      var stepsInTable = 0;
+      while (!run.done) {
+        run
+          ..step(const Duration(milliseconds: 1))
+          ..checkInvariants();
+        if (run.reached == table) stepsInTable++;
+      }
+      run.dispose();
+      // Twelve paragraphs in each of three rows.
+      expect(stepsInTable, greaterThanOrEqualTo(3 * 12));
+      final whole = runToEnd(section);
+      expect(keys(run.pages), keys(whole));
+      disposeAll(run.pages);
+      disposeAll(whole);
+    });
+
+    test('lays out again from every page start inside it as the main run '
+        'does', () {
+      for (final settings in [readerPage, smallPage]) {
+        final section = prepared(body, settings: settings);
+        final main = runToEnd(section);
+        for (var page = 1; page < main.length; page++) {
+          final resumed = runToEnd(section, from: main[page].start);
+          expect(
+            keys(resumed),
+            keys(main.skip(page)),
+            reason: '$settings, page $page',
+          );
+          disposeAll(resumed);
+        }
+        disposeAll(main);
+      }
+    });
+
+    test('a run stopped inside a row lets go of what it laid out', () {
+      final section = prepared(body, settings: smallPage);
+      final table = section.flow.indexWhere((item) => item is TableItem);
+      var now = Duration.zero;
+      final run = LayoutRun(
+        section,
+        clock: () => now += const Duration(milliseconds: 1),
+      );
+      while (run.reached < table) {
+        run.step(const Duration(milliseconds: 1));
+      }
+      for (var unit = 0; unit < 8; unit++) {
+        run.step(const Duration(milliseconds: 1));
+      }
+      run
+        ..checkInvariants()
+        ..dispose()
+        ..checkInvariants();
+      disposeAll(run.pages);
+    });
+  });
+
   group('a long table', () {
     // Dialogue set as a table of speaker and speech, as Standard Ebooks sets
     // its plays and Plato's dialogues.

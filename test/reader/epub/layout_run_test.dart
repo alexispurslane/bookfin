@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:ui' as ui;
 
+import 'package:crypto/crypto.dart';
+
 import 'package:bookfin/reader/epub/dom.dart';
 import 'package:bookfin/reader/epub/layout.dart';
 import 'package:bookfin/reader/epub/paint.dart';
@@ -73,12 +75,30 @@ List<SectionSource> fixtureSections() => [
     }(),
 ];
 
+/// [count] lines of verse, every seventh of them long enough to wrap.
+String verse(int count) => [
+  for (var line = 0; line < count; line++)
+    'I celebrate myself, and sing myself, line $line'
+        '${line % 7 == 3 ? ', and what I assume you shall assume, for every '
+                  'atom belonging to me as good belongs to you' : ''}',
+].join('\n');
+
+/// Long verse paragraphs: a `pre` element, as Gutenberg sets Song of
+/// Myself, and hyphenated verse with `br` elements, as Standard Ebooks
+/// sets poems.
+SectionSource verseSection() => section(
+  '<pre>${verse(160)}</pre>'
+  '<p lang="en" class="poem">${verse(120).replaceAll('\n', '<br/>')}</p>',
+  css: 'pre{white-space:pre-wrap}.poem{hyphens:auto;text-align:justify}',
+);
+
 /// The sections that the page tests run over, each prepared for each page
 /// size.
 List<PreparedSection> sampleSections() => [
   for (final settings in [readerPage, smallPage])
     ...prepareSections([
       richSection(),
+      verseSection(),
       section('<p>${prose(80)}</p>'),
       section(
         [for (var i = 0; i < 40; i++) '<p>${prose(3, 'Part $i')}</p>'].join(),
@@ -168,6 +188,18 @@ void main() {
     () {
       for (final section in sampleSections()) {
         final whole = runToEnd(section);
+        // Each step lays out a unit of work: a flow item, or a segment of a
+        // long paragraph, which is at least 1,024 code units long.
+        final units =
+            section.flow.length +
+            [
+              for (final item in section.flow)
+                if (item is ParagraphItem)
+                  item.text.runs
+                          .map((run) => run is TextRun ? run.text.length : 1)
+                          .fold(0, (sum, length) => sum + length) ~/
+                      1024,
+            ].fold(0, (sum, segments) => sum + segments);
         final stepped = LayoutRun(section);
         var steps = 0;
         while (!stepped.done) {
@@ -175,7 +207,7 @@ void main() {
             ..step(Duration.zero)
             ..checkInvariants();
           steps++;
-          expect(steps, lessThanOrEqualTo(section.flow.length + 1));
+          expect(steps, lessThanOrEqualTo(units + 1));
         }
         expect(keys(stepped.pages), keys(whole));
         final paged = LayoutRun(section);
@@ -538,5 +570,129 @@ void main() {
       );
       chapter.dispose();
     }
+  });
+
+  test('a long verse paragraph lays out over several steps that stop '
+      'between its hard-broken lines', () {
+    final section = prepareSections([verseSection()], readerPage).single;
+    final paragraph = section.flow.indexWhere((item) => item is ParagraphItem);
+    final run = LayoutRun(section);
+    var steps = 0;
+    while (run.reached <= paragraph) {
+      if (run.reached == paragraph) steps++;
+      run
+        ..step(Duration.zero)
+        ..checkInvariants();
+    }
+    expect(steps, greaterThan(2));
+    run.step(forever);
+    disposeAll(run.pages);
+    run.dispose();
+  });
+
+  test('long verse paragraphs keep the lines and pages that they had as one '
+      'engine paragraph each', () {
+    // A digest of what each page shows: its start and end, its lines and
+    // where they sit, and what it draws, without the paragraphs that hold
+    // the lines. Recorded before tb-2l69 split a long paragraph after its
+    // hard breaks.
+    const recorded = {
+      20: 'e66223dee667f9dcb8c5011625618f332fa890dadaae52b61e8ac690f1a1a39b',
+      26: '1b6f8c6743010559b62666f170d3836651a0b18a9416b5d60479149de28a5ca2',
+    };
+    for (final settings in [
+      readerPage,
+      const PageSettings(width: 360, height: 640, fontSize: 26, night: false),
+    ]) {
+      final pages = runToEnd(
+        prepareSections([verseSection()], settings).single,
+      );
+      final shown = [
+        for (final page in pages) [...pageKey(page)]..removeAt(10),
+      ];
+      expect(
+        sha256.convert(utf8.encode('$shown')).toString(),
+        recorded[settings.fontSize.round()],
+        reason: '${settings.fontSize} px',
+      );
+      disposeAll(pages);
+    }
+  });
+
+  test('the last line of a long verse paragraph never stands alone on a '
+      'page', () {
+    // Lines are 29.7 pixels high, so a 75 pixel page holds two lines.
+    const twoLines = PageSettings(
+      width: 320,
+      height: 75,
+      fontSize: 18,
+      night: false,
+    );
+    for (var count = 101; count < 109; count++) {
+      final pages = runToEnd(
+        prepared(
+          '<pre>${[for (var line = 0; line < count; line++) 'Line $line of the verse'].join('\n')}</pre>',
+          css: 'pre{margin:0}',
+          settings: twoLines,
+        ),
+      );
+      expect(pages.last.slices, hasLength(2), reason: '$count lines');
+      disposeAll(pages);
+    }
+  });
+
+  test('a run from a page start deep in a long verse paragraph that no run '
+      'laid out yet cuts the same pages as the main run', () {
+    for (final settings in [readerPage, smallPage]) {
+      final main = runToEnd(prepareSections([verseSection()], settings).single);
+      for (final page in [main.length ~/ 3, main.length * 2 ~/ 3]) {
+        // A section prepared again, whose segments no run counted.
+        final fresh = prepareSections([verseSection()], settings).single;
+        final resumed = runToEnd(fresh, from: main[page].start);
+        expect(
+          keys(resumed),
+          keys(main.skip(page)),
+          reason: '${settings.fontSize} px, page $page',
+        );
+        disposeAll(resumed);
+      }
+      disposeAll(main);
+    }
+  });
+
+  test('a search for a place deep in a long verse paragraph counts the lines '
+      'before it in steps, and finds the line that holds the place', () {
+    final fresh = prepareSections([verseSection()], readerPage).single;
+    final text = fresh.dom.texts.firstWhere(
+      (text) => text.text.contains('line 150'),
+    );
+    // Line 150 of the pre element wraps, so the place is on its second
+    // line.
+    final place = EpubPlace(
+      fresh.index,
+      text.order,
+      text.text.indexOf('line 150'),
+    );
+    final search = LineSearch(fresh, place);
+    var steps = 0;
+    while (search.found == null) {
+      search.step(Duration.zero);
+      steps++;
+    }
+    expect(steps, greaterThan(2));
+    final run = LayoutRun(fresh, from: search.found)..step(forever, want: 1);
+    final [first, second, ...] = [
+      for (final slice in run.pages.first.slices) slice.start!,
+    ];
+    expect(
+      atOrBefore(order(fresh.dom, first), order(fresh.dom, place)),
+      isTrue,
+    );
+    expect(
+      atOrBefore(order(fresh.dom, second), order(fresh.dom, place)),
+      isFalse,
+    );
+    disposeAll(run.pages);
+    run.dispose();
   });
 }

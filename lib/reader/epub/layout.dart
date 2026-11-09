@@ -406,10 +406,13 @@ class LaidPage {
 ///
 /// Invariants, which [checkInvariants] checks:
 /// - The run holds every piece that a slice or a marker not yet published
-///   shows, and every piece that it holds is alive.
+///   shows, or a line that waits for its widows rule, and every piece that
+///   it holds is alive.
 /// - Published pages follow each other: their starts increase, and each
 ///   page's top is the previous page's bottom.
 /// - The slices not yet published start at the top of the next page.
+/// - A table or a long paragraph in progress is the next flow item, and has
+///   a row or a segment left.
 /// - Once the run is done, it laid out every flow item and holds no slice.
 class LayoutRun {
   /// A run of [section] from [from], or from the section start. [clock]
@@ -490,6 +493,10 @@ class LayoutRun {
   /// The table that the run lays out a row at a time, while it is not done.
   /// [_item] is its flow item until then.
   _Rows? _rows;
+
+  /// The long paragraph that the run lays out a segment at a time, while it
+  /// is not done. [_item] is its flow item until then.
+  _Segments? _segments;
 
   /// The table that the next item needs measured, and its rows measured so
   /// far.
@@ -582,6 +589,9 @@ class LayoutRun {
           );
         }
       }
+      for (final line in _segments?.waiting ?? const <_Line>[]) {
+        check(held.contains(line.piece), 'a waiting line is not held');
+      }
       for (final piece in _held) {
         check(piece._paragraphs.holders > 0, 'a held piece is disposed');
       }
@@ -599,9 +609,27 @@ class LayoutRun {
     if (_rows case final rows?) {
       check(rows.item == _item, 'a table in progress is not the next item');
       check(rows.row < rows.table.rows.length, 'a table has no row left');
+      check(
+        rows.cells.length < rows.table.rows[rows.row].length ||
+            rows.table.rows[rows.row].isEmpty,
+        'a row in progress has all its cells',
+      );
+      rows.cell?.checkInvariants();
+    }
+    if (_segments case final segments?) {
+      check(
+        segments.index == _item,
+        'a paragraph in progress is not the next item',
+      );
+      check(
+        segments.next + 1 < segments.starts.length,
+        'a paragraph has no segment left',
+      );
+      check(_rows == null, 'a table and a paragraph are both in progress');
     }
     if (_done) {
       check(_rows == null, 'a done run has a table in progress');
+      check(_segments == null, 'a done run has a paragraph in progress');
       check(_item == _flow.length, 'a done run has items left');
       check(_pending.isEmpty, 'a done run has slices left');
     }
@@ -618,6 +646,7 @@ class LayoutRun {
     _held.clear();
     _pendingMarker?.$1.dispose();
     _pendingMarker = null;
+    _rows?.release();
   }
 
   // Starting.
@@ -719,14 +748,18 @@ class LayoutRun {
 
   // Cutting pages.
 
-  /// Lays out the next unit of work: a flow item, one row of a table, or
-  /// the measure of one row of a table whose column widths the next item
-  /// needs.
+  /// Lays out the next unit of work: a flow item, one row of a table, one
+  /// segment of a long paragraph, or the measure of one row of a table
+  /// whose column widths the next item needs.
   void _layOutItem() {
     final flow = _flow;
     if (_item == flow.length) return;
     if (_rows case final rows?) {
       _tableRow(rows);
+      return;
+    }
+    if (_segments case final segments?) {
+      _segment(segments);
       return;
     }
     // An item that needs the column widths of a table waits until each row
@@ -872,6 +905,7 @@ class LayoutRun {
     final reachable = <Piece>{
       for (final slice in _pending)
         for (final line in [slice, ...slice.cellSlices]) ?line.piece,
+      for (final line in _segments?.waiting ?? const <_Line>[]) line.piece,
       for (final decoration in _decorations)
         if (decoration is MarkerDecoration) decoration.piece,
     };
@@ -1174,9 +1208,12 @@ class LayoutRun {
     return _measured[table] = List.unmodifiable(measured);
   }
 
-  /// Lays out the next row of [rows] and adds its slices at the current
-  /// strip position, from the row's fragment [_Rows.part] on: one slice, or
-  /// one for each fragment of a row taller than a page.
+  /// Lays out the next flow item of a cell of the next row of [rows], or
+  /// one segment of a long paragraph. Once each cell is laid out, adds the
+  /// row's slices at the current strip position, from the row's fragment
+  /// [_Rows.part] on: one slice, or one for each fragment of a row taller
+  /// than a page. A row's fragments need the content of all its cells, so
+  /// [rows] keeps the cells laid out until the row is done (tb-i6wg).
   void _tableRow(_Rows rows) {
     final table = rows.table;
     final number = rows.row;
@@ -1188,28 +1225,38 @@ class LayoutRun {
       rows.widths,
       across,
     );
-    // Each cell's box, its left edge and width, and its content laid out at
-    // strip position 0.
+    // The content of each cell laid out at strip position 0, one flow item
+    // in each unit of work, or one segment of a long paragraph.
+    var laid = false;
+    while (rows.cells.length < row.length) {
+      final column = rows.cells.length;
+      final run = rows.cell ??= () {
+        final cell = row[column];
+        final (left, cellWidth) = boxes[column];
+        final start = cell.padding[3] + cell.border[3];
+        final right = cell.padding[1] + cell.border[1];
+        return LayoutRun._cell(
+          this,
+          cell.flow,
+          x + left + start,
+          math.max(0, cellWidth - start - right),
+        );
+      }();
+      if (run._item < run._flow.length) {
+        if (laid) return;
+        run._layOutItem();
+        laid = true;
+        continue;
+      }
+      rows.cells.add(_cellContent(run));
+      rows.cell = null;
+    }
+    // Each cell's box, its left edge and width, and its content.
     final cells = [
       for (final (column, cell) in row.indexed)
-        () {
-          final (left, cellWidth) = boxes[column];
-          final [top, right, bottom, start] = [
-            for (var side = 0; side < 4; side++)
-              cell.padding[side] + cell.border[side],
-          ];
-          return (
-            x + left,
-            cellWidth,
-            cell,
-            _layOutCell(
-              cell.flow,
-              x + left + start,
-              math.max(0, cellWidth - start - right),
-            ),
-          );
-        }(),
+        (x + boxes[column].$1, boxes[column].$2, cell, rows.cells[column]),
     ];
+    rows.cells.clear();
     final fragments = rowFragments([
       for (final (_, _, cell, content) in cells)
         () {
@@ -1331,14 +1378,10 @@ class LayoutRun {
     );
   }
 
-  /// Lays out [flow], the content of a table cell, in a content box that
-  /// starts at [left] and is [width] pixels wide, with its top at strip
-  /// position 0.
-  _Cell _layOutCell(List<FlowItem> flow, double left, double width) {
-    final run = LayoutRun._cell(this, flow, left, width);
-    while (run._item < flow.length) {
-      run._layOutItem();
-    }
+  /// The content of a table cell that [run], a run of the cell's flow,
+  /// laid out to its end. The content takes over the paragraphs that it
+  /// shows, and the paragraphs that show nothing are let go.
+  static _Cell _cellContent(LayoutRun run) {
     // A cell holds the margins of its content.
     run._resolveMargin();
     run._pendingMarker?.$1.dispose();
@@ -1464,15 +1507,21 @@ class LayoutRun {
   }
 
   /// Builds the paragraph of [text], [width] pixels wide, from its code
-  /// unit [from] on. Returns the paragraph, its map, what each of its
-  /// placeholders holds (null for the indent, an image's path, or a raised
-  /// paragraph) and its soft hyphens. [marks] replaces the soft hyphen at
-  /// a code unit of the paragraph with another code unit.
+  /// unit [from] on, or only that paragraph's code units [start, end).
+  /// Returns the paragraph, its map, what each of its placeholders holds
+  /// (null for the indent, an image's path, or a raised paragraph) and its
+  /// soft hyphens. [marks] replaces the soft hyphen at a code unit of the
+  /// whole paragraph with another code unit.
+  ///
+  /// A part stops after the space or the newline at or after [end], or
+  /// at the end of the run of text that holds [end].
   _Built _build(
     StyledText text,
     double indent,
     double width, {
     int from = 0,
+    int start = 0,
+    int? end,
     Map<int, int> marks = const {},
   }) {
     final builder = ui.ParagraphBuilder(_paragraphStyle(text));
@@ -1480,29 +1529,38 @@ class LayoutRun {
     final inlines = <Object?>[];
     final softHyphens = <int>[];
     final texts = <_Text>[];
+    final stop = end ?? _unbounded;
+    // The code units of [text] read so far, and of the whole paragraph.
     var unit = 0;
+    var whole = 0;
     if (indent > 0 && from == 0) {
-      builder.addPlaceholder(
-        indent,
-        0,
-        ui.PlaceholderAlignment.baseline,
-        baseline: ui.TextBaseline.alphabetic,
-        baselineOffset: 0,
-      );
-      map.addPlaceholder(-1);
-      inlines.add(null);
+      if (start == 0) {
+        builder.addPlaceholder(
+          indent,
+          0,
+          ui.PlaceholderAlignment.baseline,
+          baseline: ui.TextBaseline.alphabetic,
+          baselineOffset: 0,
+        );
+        map.addPlaceholder(-1);
+        inlines.add(null);
+      }
       unit = 1;
+      whole = 1;
     }
+
+    /// Whether the code unit [at] of the whole paragraph is in the part.
+    bool shown(int at) => at >= start && at < stop;
     // A continued paragraph starts after the line that it continues, whose
     // last space ends that line.
     var trim = from > 0;
     for (final run in text.runs) {
       switch (run) {
         case TextRun(text: final written, :final style, :final node):
-          final start = unit;
+          final first = unit;
           unit += written.length;
           if (unit <= from) continue;
-          var skip = math.max(0, from - start);
+          var skip = math.max(0, from - first);
           if (trim) {
             while (skip < written.length && written.codeUnitAt(skip) == 0x20) {
               skip++;
@@ -1510,41 +1568,61 @@ class LayoutRun {
             if (skip == written.length) continue;
             trim = false;
           }
-          final added = written.substring(skip);
-          final first = map.length;
+          // The run's code units [skip, written.length) are the whole
+          // paragraph's [at, whole).
+          final at = whole;
+          whole += written.length - skip;
+          if (whole <= start || at >= stop) continue;
+          final low = skip + math.max<int>(0, start - at);
+          var high = skip + math.min<int>(written.length - skip, stop - at);
+          // A part that stops inside the run stops after a space or a
+          // newline, so that its last word is shaped as in the whole
+          // paragraph, or at the run's end.
+          if (high < written.length) {
+            while (high < written.length &&
+                written.codeUnitAt(high - 1) != 0x20 &&
+                written.codeUnitAt(high - 1) != 0x0a) {
+              high++;
+            }
+          }
+          final added = written.substring(low, high);
+          final local = map.length;
+          final offset = start + local;
           var marked = false;
           for (
             var at = added.indexOf(_softHyphen);
             at >= 0;
             at = added.indexOf(_softHyphen, at + 1)
           ) {
-            softHyphens.add(first + at);
-            marked |= marks.containsKey(first + at);
+            softHyphens.add(local + at);
+            marked |= marks.containsKey(offset + at);
           }
-          final shown = marked
+          final drawn = marked
               ? String.fromCharCodes([
                   for (var at = 0; at < added.length; at++)
-                    marks[first + at] ?? added.codeUnitAt(at),
+                    marks[offset + at] ?? added.codeUnitAt(at),
                 ])
               : added;
-          texts.add((start: first, text: shown, style: style));
+          texts.add((start: local, text: drawn, style: style));
           builder
             ..pushStyle(_textStyles[style])
-            ..addText(shown)
+            ..addText(drawn)
             ..pop();
-          map.addText(node, Int32List.sublistView(run.offsets, skip));
+          map.addText(node, Int32List.sublistView(run.offsets, low, high));
         case BreakRun(:final node):
-          final start = unit;
+          final first = unit;
           unit += 1;
-          if (start < from) continue;
+          if (first < from) continue;
           trim = false;
+          if (!shown(whole++)) continue;
           builder.addText('\n');
           map.addPlaceholder(node);
         case ImageRun(:final node, :final image, :final sizing):
-          final start = unit;
+          final first = unit;
           unit += 1;
-          if (start < from) continue;
+          if (first < from) continue;
           trim = false;
+          if (!shown(whole++)) continue;
           final (imageWidth, imageHeight) = sizing.sizeIn(width);
           builder.addPlaceholder(
             imageWidth,
@@ -1556,10 +1634,11 @@ class LayoutRun {
           map.addPlaceholder(node);
           inlines.add(image);
         case RaisedRun(:final node, text: final inner, :final shift):
-          final start = unit;
+          final first = unit;
           unit += 1;
-          if (start < from) continue;
+          if (first < from) continue;
           trim = false;
+          if (!shown(whole++)) continue;
           final raised = _build(inner, 0, width).paragraph
             ..layout(const ui.ParagraphConstraints(width: double.infinity));
           final lines = raised.computeLineMetrics();
@@ -1575,8 +1654,19 @@ class LayoutRun {
           inlines.add(raised);
       }
     }
-    return _Built(builder.build(), map, inlines, softHyphens, texts);
+    return _Built(
+      builder.build(),
+      map,
+      inlines,
+      softHyphens,
+      texts,
+      start: start,
+      length: whole,
+    );
   }
+
+  /// An end past every paragraph's last code unit.
+  static const _unbounded = 1 << 52;
 
   static final _softHyphen = String.fromCharCode(softHyphen);
 
@@ -1598,101 +1688,186 @@ class LayoutRun {
   /// line. A soft hyphen whose hyphen would not fit becomes a word joiner,
   /// so its line breaks earlier, and the lines after it are hyphenated
   /// again.
-  _Built _layOut(StyledText text, double indent, double width, {int from = 0}) {
+  ///
+  /// A line breaks at the last place where its text fits, so its break
+  /// depends only on where it starts. So the line ends are marked from the
+  /// top a part at a time: a part of a few lines, built from a line's start
+  /// ([_markLines]). A word joiner then lays out a few lines again, not the
+  /// whole paragraph (tb-a6zd). Then the whole paragraph is laid out with
+  /// the marks, and again until no mark changes. A part measures its lines
+  /// with less float error than the whole paragraph, because its glyphs sit
+  /// nearer its start, so a line at the very limit of the width can break
+  /// differently in the two.
+  _Built _layOut(
+    StyledText text,
+    double indent,
+    double width, {
+    int from = 0,
+    int start = 0,
+    int? end,
+  }) {
+    final constraints = ui.ParagraphConstraints(width: width);
     final marks = <int, int>{};
-    final justified = text.align == Align.justify;
-    // The code units from which the hyphens are checked and the line ends
-    // are marked, or null when no line end is left to mark.
-    var check = 0;
-    int? scan = 0;
-    while (true) {
-      final built = _build(text, indent, width, from: from, marks: marks);
-      built.paragraph.layout(ui.ParagraphConstraints(width: width));
-      if (built.softHyphens.isEmpty) return built;
-      final next = _markHyphens(
-        built,
-        marks,
+    _Built layOut(int first, int? stop) {
+      final built = _build(
+        text,
+        indent,
         width,
-        check: check,
-        scan: scan,
-        justified: justified,
+        from: from,
+        start: first,
+        end: stop,
+        marks: marks,
       );
-      if (next == null) return built;
-      (check, scan) = next;
-      built.dispose();
+      built.paragraph.layout(constraints);
+      return built;
+    }
+
+    if (!_hyphenated(text)) return layOut(start, end);
+    final justified = text.align == Align.justify;
+    // Marks the line ends a part at a time from the line that starts at
+    // code unit [next] on, and returns the whole paragraph laid out with
+    // the marks: a part that starts at the paragraph's start and reaches
+    // its end is the whole paragraph. With no [next], it lays out the whole
+    // paragraph.
+    _Built byParts(int? next) {
+      if (next == null) return layOut(start, end);
+      var span = _part;
+      while (true) {
+        final part = layOut(next!, next + span);
+        final last = part.reaches(end);
+        if (next == start && last) return part;
+        final count = marks.length;
+        final after = _markLines(
+          part,
+          marks,
+          width,
+          justified: justified,
+          last: last,
+        );
+        part.dispose();
+        if (after == null) return layOut(start, end);
+        // A part of one line leaves that line for a longer part.
+        span = after == next && marks.length == count ? span * 2 : _part;
+        next = after;
+      }
+    }
+
+    // The whole paragraph is laid out with the marks until no mark changes.
+    // Its lines can differ from a part's by float noise in their widths, as
+    // can the judged widths: each hyphen must end its line, and each line
+    // that ends at a soft hyphen gets its mark. A line that breaks again is
+    // marked a part at a time from there. Each change makes the marks later
+    // in one order (none, hyphen, joiner at the first code unit that
+    // changes), so the loop ends.
+    int? next = start;
+    while (true) {
+      final whole = byParts(next);
+      next = _misjudged(whole, marks);
+      if (next == null) {
+        final count = marks.length;
+        next = _markLines(
+          whole,
+          marks,
+          width,
+          justified: justified,
+          last: true,
+        );
+        if (marks.length == count) return whole;
+      }
+      whole.dispose();
     }
   }
 
-  /// Marks the soft hyphens of [built], a paragraph laid out [width] pixels
-  /// wide, in [marks]. Returns null when no mark changed, so the paragraph
-  /// is final; else from which code units the next layout's hyphens are
-  /// checked and its line ends are marked (null when none is left).
+  /// How many code units of a paragraph [_layOut] lays out at a time while
+  /// it marks its line ends: a few lines.
+  static const _part = 256;
+
+  /// Whether [text] holds a soft hyphen. Kept per text, because a long
+  /// paragraph asks once for each segment.
+  static bool _hyphenated(StyledText text) => _softHyphens[text] ??= text.runs
+      .any((run) => run is TextRun && run.text.contains(_softHyphen));
+
+  static final _softHyphens = Expando<bool>('soft hyphens');
+
+  /// Marks the soft hyphens that end the lines of [part], a part of a
+  /// paragraph laid out [width] pixels wide that starts at a line start, in
+  /// [marks]. Returns where the first line whose end is not marked starts,
+  /// or null when every line's end is marked.
   ///
-  /// A hyphen marked from code unit [check] on must end its line. If one
-  /// does not, the width of its justified line was misjudged: it becomes a
-  /// word joiner, and the hyphens after it are unmarked.
-  ///
-  /// Each soft hyphen that ends a line from the line that holds code unit
-  /// [scan] on becomes a hyphen when the hyphen fits in the line, and else
-  /// a word joiner. The line of a word joiner and the lines after it break
-  /// again, so marking stops there.
-  ///
-  /// Each call adds a word joiner or marks every line end, and word joiners
-  /// stay. So a paragraph with n soft hyphens is laid out at most 2n + 2
-  /// times, and once more than it has word joiners when no width is
-  /// misjudged.
-  (int, int?)? _markHyphens(
-    _Built built,
+  /// Each soft hyphen that ends a line becomes a hyphen when the hyphen
+  /// fits in the line, and else a word joiner. The line of a word joiner
+  /// breaks again, so marking stops there. A part that stops before the
+  /// paragraph's end can break its last line early, so that line is left
+  /// for the next part.
+  int? _markLines(
+    _Built part,
     Map<int, int> marks,
     double width, {
-    required int check,
-    required int? scan,
     required bool justified,
+    required bool last,
   }) {
-    final paragraph = built.paragraph;
-    final length = built.map.length;
+    final paragraph = part.paragraph;
+    final length = part.map.length;
     final metrics = paragraph.computeLineMetrics();
     final starts = _lineStarts(paragraph, length, metrics.length);
     // The end of each line before its hard break's newline.
     int end(int line) => line + 1 < starts.length
         ? starts[line + 1] - (metrics[line].hardBreak ? 1 : 0)
         : length;
-    for (final unit in built.softHyphens) {
-      if (unit < check || marks[unit] != _hyphen) continue;
-      final line = paragraph.getLineNumberAt(unit)!;
-      if (end(line) != unit + 1) {
-        marks[unit] = _joiner;
-        marks.removeWhere((other, mark) => other > unit && mark == _hyphen);
-        // The line before it broke early, and breaks again.
-        return (unit, line > 0 ? starts[line - 1] : 0);
-      }
-    }
-    if (scan == null) return null;
-    var changed = false;
-    for (
-      var line = paragraph.getLineNumberAt(math.min(scan, length - 1))!;
-      line < starts.length;
-      line++
-    ) {
+    final marked = last ? starts.length : starts.length - 1;
+    for (var line = 0; line < marked; line++) {
       final unit = end(line) - 1;
-      if (unit + 1 >= length ||
-          marks.containsKey(unit) ||
-          built.unitAt(unit) != softHyphen) {
+      final at = part.start + unit;
+      if (last && unit + 1 >= length ||
+          marks.containsKey(at) ||
+          part.unitAt(unit) != softHyphen) {
         continue;
       }
       final natural = justified
-          ? _naturalWidth(built, metrics[line], starts[line], unit)
+          ? _naturalWidth(part, metrics[line], starts[line], unit)
           : metrics[line].width;
-      final hyphen = _advances.hyphen(built.styleAt(unit), _textStyles);
+      final hyphen = _advances.hyphen(part.styleAt(unit), _textStyles);
       if (natural + hyphen > width + _fitTolerance) {
-        marks[unit] = _joiner;
+        marks[at] = _joiner;
         // The line breaks earlier, maybe at another soft hyphen.
-        return (scan, starts[line]);
+        return part.start + starts[line];
       }
-      marks[unit] = _hyphen;
-      changed = true;
+      marks[at] = _hyphen;
     }
-    return changed ? (scan, null) : null;
+    return last ? null : part.start + starts[marked];
+  }
+
+  /// Checks that each hyphen of [built], the whole paragraph laid out with
+  /// [marks], ends its line. Returns null when each does.
+  ///
+  /// When one does not, the width of its justified line was misjudged, or
+  /// float noise broke its line otherwise in a part: it becomes a word
+  /// joiner, and the marks after it are dropped, as they were decided for
+  /// lines that are gone. Returns where the line before it starts: that
+  /// line broke early, and breaks again.
+  int? _misjudged(_Built built, Map<int, int> marks) {
+    final paragraph = built.paragraph;
+    final length = built.map.length;
+    final metrics = paragraph.computeLineMetrics();
+    int? lineOf(int unit) =>
+        unit < length ? paragraph.getLineNumberAt(unit) : null;
+    for (final unit in built.softHyphens) {
+      final at = built.start + unit;
+      if (marks[at] != _hyphen) continue;
+      final line = paragraph.getLineNumberAt(unit)!;
+      // A hard break's newline belongs to the line that it ends.
+      final ends = line + 1 >= metrics.length
+          ? unit + 1 == length
+          : metrics[line].hardBreak
+          ? lineOf(unit + 1) == line && lineOf(unit + 2) != line
+          : lineOf(unit + 1) != line;
+      if (ends) continue;
+      marks[at] = _joiner;
+      marks.removeWhere((other, mark) => other > at);
+      return built.start +
+          (line > 0 ? _lineStarts(paragraph, length, line).last : 0);
+    }
+    return null;
   }
 
   /// How far past the line width a hyphen may reach and still fit: float
@@ -1750,6 +1925,14 @@ class LayoutRun {
     final indent = item.indent.resolve(width);
     _resolveMargin();
     if (indent >= 0) {
+      final starts = _segmentsOf(item.text, indent);
+      if (starts.length > 2) {
+        _item = index;
+        _segment(
+          _segments = _Segments(item, index, x, width, indent, starts, from),
+        );
+        return;
+      }
       final built = _layOut(item.text, indent, width);
       _place(built, x, item, index, from: from);
       return;
@@ -1781,6 +1964,128 @@ class LayoutRun {
     );
   }
 
+  /// How many code units long a segment of a long paragraph is, at least:
+  /// a few dozen lines of verse.
+  static const _segmentLength = 1024;
+
+  /// Where the segments of [text], a paragraph whose first line is indented
+  /// by [indent], start, in code units of the paragraph, and its length.
+  ///
+  /// A segment is whole lines that end after a hard break, at least
+  /// [_segmentLength] code units long, except the last. A line never breaks
+  /// across a hard break, so the lines of a paragraph built from a
+  /// segment's start are the paragraph's lines from there (tb-2l69). A
+  /// paragraph without such a break is one segment.
+  static List<int> _segmentsOf(StyledText text, double indent) {
+    final starts = _segmentStarts[text] ??= () {
+      final starts = [0];
+      var unit = 0;
+      for (final run in text.runs) {
+        switch (run) {
+          case TextRun(text: final written):
+            for (
+              var at = written.indexOf('\n');
+              at >= 0;
+              at = written.indexOf('\n', at + 1)
+            ) {
+              if (unit + at + 1 - starts.last >= _segmentLength) {
+                starts.add(unit + at + 1);
+              }
+            }
+            unit += written.length;
+          case BreakRun():
+            unit += 1;
+            if (unit - starts.last >= _segmentLength) starts.add(unit);
+          case ImageRun() || RaisedRun():
+            unit += 1;
+        }
+      }
+      // A hard break at the paragraph's end ends its last segment.
+      if (starts.length > 1 && starts.last == unit) starts.removeLast();
+      return List<int>.unmodifiable(starts..add(unit));
+    }();
+    // An indent is the paragraph's first code unit.
+    return indent > 0
+        ? [0, for (final start in starts.skip(1)) start + 1]
+        : starts;
+  }
+
+  /// The segment starts of each paragraph's text, in code units of its
+  /// text.
+  static final _segmentStarts = Expando<List<int>>('segment starts');
+
+  /// The number of lines before each segment of a long paragraph, as far
+  /// as a run laid its segments out. A paragraph item belongs to one
+  /// prepared section and sits in one column, so its segments break the
+  /// same lines in every run of the section.
+  static final _linesBefore = Expando<List<int>>('lines before segments');
+
+  /// Lays out the next segment of [segments] and adds its lines from line
+  /// [_Segments.from] on. A line waits until the lines after it decide its
+  /// widows rule. A run that starts at a later line skips the segments
+  /// whose lines another run counted, and counts the others.
+  void _segment(_Segments segments) {
+    final item = segments.item;
+    final starts = segments.starts;
+    final counted = _linesBefore[item] ??= [0];
+    if (segments.next == 0 && segments.from > 0) {
+      var known = 0;
+      while (known + 1 < counted.length &&
+          known + 2 < starts.length &&
+          counted[known + 1] <= segments.from) {
+        known++;
+      }
+      segments
+        ..next = known
+        ..lines = counted[known];
+    }
+    final next = segments.next;
+    final last = next + 2 == starts.length;
+    final built = _layOut(
+      item.text,
+      segments.indent,
+      segments.width,
+      start: starts[next],
+      end: last ? null : starts[next + 1],
+    );
+    // A segment that ends after a hard break has an empty line after it,
+    // which is the next segment's first line.
+    final count = built.paragraph.computeLineMetrics().length - (last ? 0 : 1);
+    final before = segments.lines;
+    if (counted.length == next + 1) counted.add(before + count);
+    if (before + count <= segments.from) {
+      built.dispose();
+    } else {
+      final (lines, _) = _lines(
+        built,
+        segments.x,
+        item,
+        lines: count,
+        before: before,
+        from: math.max(0, segments.from - before),
+      );
+      segments.waiting.addAll(lines);
+    }
+    segments
+      ..lines = before + count
+      ..next = next + 1;
+    // A line with enough lines after it is no widow.
+    final waiting = segments.waiting;
+    var ready = 0;
+    while (ready < waiting.length &&
+        (last || segments.lines - waiting[ready].above >= item.widows)) {
+      ready++;
+    }
+    for (final line in waiting.take(ready)) {
+      _addLine(line, item, segments.index, segments.lines);
+    }
+    waiting.removeRange(0, ready);
+    if (last) {
+      _segments = null;
+      _item = segments.index + 1;
+    }
+  }
+
   /// Adds the lines of [built], drawn at [x], to the strip: all of them,
   /// or the first [lines], from its line [from] on, which sits at the
   /// current strip position. They are lines [before] on of a paragraph of
@@ -1796,17 +2101,44 @@ class LayoutRun {
     int? total,
     int from = 0,
   }) {
+    final (placed, count) = _lines(
+      built,
+      x,
+      item,
+      lines: lines,
+      shows: lines != null,
+      before: before,
+      from: from,
+    );
+    for (final line in placed) {
+      _addLine(line, item, index, total ?? before + count);
+    }
+  }
+
+  /// Lays out the piece of [built], a part of paragraph [item] drawn at
+  /// [x], with its line [from] at the current strip position, and moves the
+  /// strip position past its first [lines] lines (all by default). Returns
+  /// those lines from line [from] on, which are lines [before] on of the
+  /// paragraph, and how many lines [built] has. The run holds the piece.
+  /// When the piece [shows] only those lines, it is clipped below them.
+  (List<_Line>, int) _lines(
+    _Built built,
+    double x,
+    ParagraphItem item, {
+    int? lines,
+    bool shows = false,
+    int before = 0,
+    int from = 0,
+  }) {
     final paragraph = built.paragraph;
     final metrics = paragraph.computeLineMetrics();
     final count = lines ?? metrics.length;
-    final all = total ?? metrics.length;
     // Chromium rounds the font's metrics for `line-height: normal`, so only
     // a CSS line height is fractional there.
     final exact = _section.styles[item.text.style].lineHeight != null;
     final paragraphs = _Paragraphs(paragraph, exact: exact);
     final tops = paragraphs.tops;
-    var top = tops[from];
-    final piece = Piece._of(paragraphs, x, _y - top, built.map);
+    final piece = Piece._of(paragraphs, x, _y - tops[from], built.map);
     _held.add(piece);
     final boxes = paragraph.getBoxesForPlaceholders();
     for (var slot = 0; slot < built.inlines.length; slot++) {
@@ -1831,36 +2163,51 @@ class LayoutRun {
       built.map.length,
       math.min(count + 1, metrics.length),
     );
-    for (var line = from; line < count; line++) {
-      final bottom = tops[line + 1];
-      final above = before + line;
-      // Chromium keeps the orphans rule first. It keeps the widows rule
-      // only when the paragraph is long enough to keep both.
-      final widows =
-          all >= item.orphans + item.widows && all - above < item.widows;
-      final appeal = above == 0
-          ? Appeal.perfect
-          : above < item.orphans || widows
-          ? Appeal.violatingOrphansWidows
-          : Appeal.perfect;
-      final slice = _add(
-        piece.y + top,
-        piece.y + bottom,
-        appeal,
-        PageStart(index, above),
-        piece: piece,
-        line: line,
-        start: built.map.placeAtUnit(starts[line]),
-        units: (
-          starts[line],
-          line + 1 < starts.length ? starts[line + 1] : built.map.length,
+    final placed = [
+      for (var line = from; line < count; line++)
+        (
+          piece: piece,
+          line: line,
+          top: piece.y + tops[line],
+          bottom: piece.y + tops[line + 1],
+          start: built.map.placeAtUnit(starts[line]),
+          units: (
+            starts[line],
+            line + 1 < starts.length ? starts[line + 1] : built.map.length,
+          ),
+          above: before + line,
         ),
-      );
-      if (above == 0) _takeMarker(slice);
-      top = bottom;
-    }
-    if (lines != null) piece.shown = top;
-    _y = piece.y + (lines == null ? tops.last : top);
+    ];
+    if (shows) piece.shown = tops[count];
+    _y = piece.y + tops[count];
+    return (placed, metrics.length);
+  }
+
+  /// Adds [line] of paragraph [item], flow item [index], which has [all]
+  /// lines, to the strip. With fewer lines after it than the widows rule
+  /// asks for, [all] must be the paragraph's true count.
+  void _addLine(_Line line, ParagraphItem item, int index, int all) {
+    final above = line.above;
+    // Chromium keeps the orphans rule first. It keeps the widows rule only
+    // when the paragraph is long enough to keep both.
+    final widows =
+        all >= item.orphans + item.widows && all - above < item.widows;
+    final appeal = above == 0
+        ? Appeal.perfect
+        : above < item.orphans || widows
+        ? Appeal.violatingOrphansWidows
+        : Appeal.perfect;
+    final slice = _add(
+      line.top,
+      line.bottom,
+      appeal,
+      PageStart(index, above),
+      piece: line.piece,
+      line: line.line,
+      start: line.start,
+      units: line.units,
+    );
+    if (above == 0) _takeMarker(slice);
   }
 
   /// The first code unit of each of the first [count] lines of [paragraph],
@@ -1910,7 +2257,8 @@ PageStart lineStart(PreparedSection section, EpubPlace place) =>
     (LineSearch(section, place)..step(const Duration(days: 1))).found!;
 
 /// The search of [lineStart] in steps, so that frames go on while it
-/// measures the column widths of a long table.
+/// measures the column widths of a long table, or counts the lines of the
+/// segments of a long paragraph before the place.
 ///
 /// It holds no paragraph between steps, so a search that stops before it
 /// finds its start needs no disposal.
@@ -1937,7 +2285,8 @@ class LineSearch {
 
   /// Works toward [found] until [budget] is spent. A step ends after the
   /// unit of work that crosses the budget: the measure of one row of the
-  /// place's table, or the search itself once the table is measured.
+  /// place's table, the count of the lines of one segment of the place's
+  /// paragraph, or the search itself once those are known.
   ///
   /// NOTE: Only the place's own table is measured in steps. A place in white
   /// space after its item's last line opens on the next item, which the
@@ -1946,6 +2295,7 @@ class LineSearch {
     if (_found != null) return;
     final begin = LayoutRun._elapsed();
     final item = _itemOf(_section, _place);
+    var line = 0;
     if (item >= 0) {
       if (_section.flow[item] case final TableItem table
           when LayoutRun._measured[table] == null) {
@@ -1954,11 +2304,59 @@ class LineSearch {
           if (LayoutRun._elapsed() - begin >= budget) return;
         }
       }
+      if (_section.flow[item] case final ParagraphItem paragraph) {
+        final counted = _segmentLines(paragraph, item, begin, budget);
+        if (counted == null) return;
+        line = counted;
+      }
     }
-    _found = _search(item);
+    _found = _search(item, line);
   }
 
-  PageStart _search(int item) {
+  /// The paragraph's lines before the segment of [paragraph], flow item
+  /// [item], that holds the place: 0 for a paragraph of one segment. Counts
+  /// the lines of one segment in each unit of work, and returns null when
+  /// [budget], which began at [begin], is spent first.
+  int? _segmentLines(
+    ParagraphItem paragraph,
+    int item,
+    Duration begin,
+    Duration budget,
+  ) {
+    final starts = LayoutRun._segmentsOf(paragraph.text, 0);
+    if (starts.length <= 2) return 0;
+    // The place's segment: the last one whose first place is at or before
+    // it.
+    final dom = _section.dom;
+    final key = _order(dom, _place);
+    var segment = 0;
+    for (var index = 1; index + 1 < starts.length; index++) {
+      final first = _placeAt(_section.index, paragraph.text, starts[index]);
+      if (first != null && _compare(_order(dom, first), key) <= 0) {
+        segment = index;
+      }
+    }
+    final counted = LayoutRun._linesBefore[paragraph] ??= [0];
+    while (counted.length <= segment) {
+      // A run from the first line not counted lays out its segment, which
+      // counts its lines. A paragraph with a hanging first line lays out
+      // in one unit, and is one segment.
+      final run = LayoutRun(_section, from: PageStart(item, counted.last));
+      final known = counted.length;
+      while (run._item <= item && counted.length == known) {
+        run._layOutItem();
+      }
+      final whole = counted.length == known;
+      run.dispose();
+      if (whole) return 0;
+      if (counted.length <= segment && LayoutRun._elapsed() - begin >= budget) {
+        return null;
+      }
+    }
+    return counted[segment];
+  }
+
+  PageStart _search(int item, int line) {
     final section = _section;
     final place = _place;
     if (item < 0) return const PageStart(0, 0);
@@ -1976,7 +2374,7 @@ class LineSearch {
         }
       }
     }
-    final run = LayoutRun(section, from: PageStart(item, row));
+    final run = LayoutRun(section, from: PageStart(item, math.max(row, line)));
     try {
       /// Lays out units of work until one adds a line that shows a place,
       /// or to the section end. Returns the holder of the place among the
@@ -2000,6 +2398,10 @@ class LineSearch {
       }
 
       var (:holder, :past) = layOutShown();
+      // A long paragraph's later segments can hold the place.
+      while (past && run._segments != null) {
+        (:holder, :past) = layOutShown();
+      }
       // A place in white space after the lines is on the first line of the
       // next item or row that shows something.
       if (past) (:holder, :past) = layOutShown();
@@ -2133,6 +2535,27 @@ EpubPlace? _firstPlaceOfRow(int section, List<TableCell> row) {
   for (final cell in row) {
     for (final inner in cell.flow) {
       if (_firstPlace(section, inner) case final place?) return place;
+    }
+  }
+  return null;
+}
+
+/// The place of code unit [unit] of [text], a paragraph's text without its
+/// indent, or of the next code unit that has one; null when none has.
+EpubPlace? _placeAt(int section, StyledText text, int unit) {
+  var at = 0;
+  for (final run in text.runs) {
+    switch (run) {
+      case TextRun(:final node, :final offsets):
+        if (unit < at + offsets.length) {
+          return EpubPlace(section, node, offsets[math.max(0, unit - at)]);
+        }
+        at += offsets.length;
+      case BreakRun(:final node) ||
+          ImageRun(:final node) ||
+          RaisedRun(:final node):
+        if (unit <= at && node >= 0) return EpubPlace(section, node, 0);
+        at += 1;
     }
   }
   return null;
@@ -2327,6 +2750,57 @@ class _OpenBlock {
   double get contentLeft => left + start.border[3] + start.padding[3];
 }
 
+/// A line of a paragraph laid out on the strip but not added yet: line
+/// [line] of [piece], from [top] to [bottom] on the strip, whose first
+/// place is [start] and whose code units of the piece are [units]. It is
+/// line [above] of its paragraph.
+typedef _Line = ({
+  Piece piece,
+  int line,
+  double top,
+  double bottom,
+  EpubPlace? start,
+  (int, int) units,
+  int above,
+});
+
+/// A long paragraph that a run lays out a segment at a time (see
+/// [LayoutRun._segmentsOf]).
+class _Segments {
+  _Segments(
+    this.item,
+    this.index,
+    this.x,
+    this.width,
+    this.indent,
+    this.starts,
+    this.from,
+  );
+  final ParagraphItem item;
+
+  /// The index of [item] in the flow.
+  final int index;
+
+  /// Where the paragraph sits, and its first line's indent.
+  final double x;
+  final double width;
+  final double indent;
+
+  /// Where each segment starts, in code units of the paragraph, and the
+  /// paragraph's length.
+  final List<int> starts;
+
+  /// The first line that the run adds.
+  final int from;
+
+  /// The next segment to lay out, and the paragraph's lines before it.
+  int next = 0;
+  int lines = 0;
+
+  /// The lines laid out whose widows rule waits for the lines after them.
+  final waiting = <_Line>[];
+}
+
 /// A table that a run lays out a row at a time.
 class _Rows {
   _Rows(this.table, this.item, this.left, this.widths, this.row, this.part);
@@ -2344,6 +2818,21 @@ class _Rows {
   /// The next row to lay out, and its first fragment to add.
   int row;
   int part;
+
+  /// The next row's cells whose content is laid out, and the run of the
+  /// next cell's content while it lays it out.
+  final cells = <_Cell>[];
+  LayoutRun? cell;
+
+  /// Lets go of what the next row laid out.
+  void release() {
+    for (final cell in cells) {
+      cell.release();
+    }
+    cells.clear();
+    cell?.dispose();
+    cell = null;
+  }
 }
 
 /// The content of a table cell laid out at strip position 0: its slices,
@@ -2459,8 +2948,26 @@ class _Advances {
 }
 
 class _Built {
-  _Built(this.paragraph, this.map, this.inlines, this.softHyphens, this.texts);
+  _Built(
+    this.paragraph,
+    this.map,
+    this.inlines,
+    this.softHyphens,
+    this.texts, {
+    required this.start,
+    required this.length,
+  });
   final ui.Paragraph paragraph;
+
+  /// The code unit of the whole paragraph that [paragraph] starts at, when
+  /// it is a part of it (see [LayoutRun._build]), and the whole
+  /// paragraph's length in code units.
+  final int start;
+  final int length;
+
+  /// Whether [paragraph] runs to code unit [end] of the whole paragraph,
+  /// or to its end.
+  bool reaches(int? end) => start + map.length >= (end ?? length);
   final TextMap map;
   final List<Object?> inlines;
 
