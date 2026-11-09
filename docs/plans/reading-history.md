@@ -339,3 +339,9 @@ Engine rule 3 applies to reading history and to reading bookmarks with the new f
 | 8 | t9-gtps | Record a listening move for a book that opens at another device's place | 5 |
 
 Tickets 1 and 2 can run in parallel. Ticket 4 does not wait for a decision. Ticket 6 builds the reader's timeline with its own entries first, and decision 1 decides whether it also merges the listening entries.
+
+## Decisions (user, 2026-11-09)
+
+1. Timeline scope: design A. One timeline per book mixes listening and reading moves, each entry shows a glyph for its medium, and Go to opens the player or the reader there.
+2. Reading visits: design B. Jumps, plus "Opened · p. N" and "Closed · p. N" for each visit.
+3. History in the reader: design A. A History tool in the reader's bottom bar.
