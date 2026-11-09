@@ -10,6 +10,7 @@
 import 'package:bookfin/reader/epub/css.dart';
 import 'package:bookfin/reader/epub/dom.dart';
 import 'package:bookfin/reader/epub/fonts.dart';
+import 'package:bookfin/reader/epub/hyphenate.dart';
 import 'package:bookfin/reader/epub/prepare.dart';
 
 import 'book.dart';
@@ -77,15 +78,25 @@ SupportReport checkSupport(
           pseudo ? rule.selector.pseudoElement : null,
         );
         if (findings.isEmpty) continue;
-        if (!elements.any(rule.selector.matches)) continue;
-        findings.forEach(note);
+        final matched = elements.where(rule.selector.matches).toList();
+        if (matched.isEmpty) continue;
+        for (final finding in findings) {
+          if (finding.byLanguage &&
+              matched.every((element) => _hyphenates(element, input))) {
+            continue;
+          }
+          note(finding);
+        }
       }
     }
     for (final element in elements) {
       _checkElement(element).forEach(note);
       final style = element.attributes['style'];
       if (style != null) {
-        _classify(parseDeclarations(style), null).forEach(note);
+        for (final finding in _classify(parseDeclarations(style), null)) {
+          if (finding.byLanguage && _hyphenates(element, input)) continue;
+          note(finding);
+        }
       }
     }
   }
@@ -93,9 +104,29 @@ SupportReport checkSupport(
 }
 
 class _Finding {
-  const _Finding(this.feature, {this.unsupported = false});
+  const _Finding(
+    this.feature, {
+    this.unsupported = false,
+    this.byLanguage = false,
+  });
   final String feature;
   final bool unsupported;
+
+  /// Whether the renderer supports the feature in a language with
+  /// hyphenation patterns, so it counts only where an element's language
+  /// has none.
+  final bool byLanguage;
+}
+
+/// Whether the renderer hyphenates the text of [element]: whether its
+/// language, else the book's, has hyphenation patterns, as prepare decides.
+bool _hyphenates(DomElement element, SectionSource input) {
+  for (DomElement? at = element; at != null; at = at.parent) {
+    if (languageAttribute(at) case final language?) {
+      return Hyphenator.forLanguage(language) != null;
+    }
+  }
+  return Hyphenator.forLanguage(input.language) != null;
 }
 
 List<_Finding> _classify(List<Declaration> declarations, String? pseudo) {
@@ -161,7 +192,12 @@ List<_Finding> _classify(List<Declaration> declarations, String? pseudo) {
     found.add(const _Finding('vertical-align other than super and sub'));
   }
   if (values['hyphens'] == 'auto' || values['-webkit-hyphens'] == 'auto') {
-    found.add(const _Finding('automatic hyphenation'));
+    found.add(
+      const _Finding(
+        'automatic hyphenation without patterns',
+        byLanguage: true,
+      ),
+    );
   }
   final wrap = values['text-wrap'];
   if (wrap == 'pretty' || wrap == 'balance') {

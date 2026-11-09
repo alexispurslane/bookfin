@@ -3,8 +3,9 @@
 //
 // A test book: the publication that Bookfin's sanitizer admits, read as
 // the page source reads it. Each section is styled by the book's own style
-// sheets (Publication.bookStyles) and sized by the admitted image sizes
-// (Publication.imageSizes).
+// sheets (Publication.bookStyles), sized by the admitted image sizes
+// (Publication.imageSizes) and hyphenated in the book's language
+// (Publication.language).
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -49,6 +50,7 @@ class CorpusBook {
       fontPrefix: fontPrefix,
       styleSheets: publication.bookStyles,
       imageSizes: publication.imageSizes,
+      language: publication.language,
     );
   }
 

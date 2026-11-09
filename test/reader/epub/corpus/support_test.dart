@@ -73,4 +73,34 @@ void main() {
       contains('::first-letter and ::first-line'),
     );
   });
+
+  test('automatic hyphenation of English text is not an approximation', () {
+    final report = check(
+      '<div lang="en-GB"><p>Text</p></div>',
+      css: 'p{hyphens:auto}',
+    );
+    expect(report.approximated, isEmpty);
+  });
+
+  test('automatic hyphenation of text without hyphenation patterns is '
+      'an approximation', () {
+    for (final body in [
+      '<div lang="de"><p>Text</p></div>',
+      '<p>Text with no language</p>',
+    ]) {
+      final report = check(body, css: 'p{hyphens:auto}');
+      expect(report.approximated.keys, [
+        'automatic hyphenation without patterns',
+      ], reason: body);
+    }
+  });
+
+  test('a hyphenation style attribute follows the element language', () {
+    final english = check('<p lang="en" style="hyphens:auto">Text</p>');
+    final german = check('<p lang="de" style="hyphens:auto">Text</p>');
+    expect(english.approximated, isEmpty);
+    expect(german.approximated.keys, [
+      'automatic hyphenation without patterns',
+    ]);
+  });
 }
