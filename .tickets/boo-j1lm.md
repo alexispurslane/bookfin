@@ -1,6 +1,6 @@
 ---
 id: boo-j1lm
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-09T15:08:24Z
