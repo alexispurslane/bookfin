@@ -65,7 +65,7 @@ class ReadingApp {
       tester,
       catalog.connect('https://books.example', 'alice', 'fixture-password'),
     );
-    await finish(tester, catalog.refresh(selected: {'books'}));
+    await finish(tester, catalog.refresh());
     downloads.files[catalog.books.single.editions.single.files.single.key] =
         Uri.file('/verified.epub');
     await tester.pumpWidget(build());

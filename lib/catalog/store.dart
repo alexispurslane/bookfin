@@ -25,27 +25,39 @@ abstract interface class CatalogStore {
   Future<void> write(AccountScope scope, String text);
 }
 
+/// The saved catalog of one account: its Jellyfin book [libraries], the ids
+/// of the ones that the user [hidden], and the [entries] of the others.
+///
+/// A library shows unless the user hid it, so a library that Jellyfin adds
+/// later shows by default. Each entry belongs to a shown library.
 class CatalogCache {
   CatalogCache({
     required this.scope,
     List<BookLibrary> libraries = const [],
-    Set<String> selected = const {},
+    Set<String> hidden = const {},
     List<CatalogEntry> entries = const [],
     CatalogEdits? edits,
     this.completedAt,
     this.accessBlocked = false,
     this.content,
   }) : libraries = List.unmodifiable(libraries),
-       selected = Set.unmodifiable(selected),
+       hidden = Set.unmodifiable(hidden),
        entries = List.unmodifiable(entries),
        edits = edits ?? CatalogEdits();
   final AccountScope scope;
   final List<BookLibrary> libraries;
-  final Set<String> selected;
+  final Set<String> hidden;
   final List<CatalogEntry> entries;
   final CatalogEdits edits;
   final DateTime? completedAt;
   final bool accessBlocked;
+
+  /// The ids of the [libraries] that show: every library that the user did
+  /// not hide.
+  Set<String> get shown => {
+    for (final library in libraries)
+      if (!hidden.contains(library.id)) library.id,
+  };
 
   /// A digest of [entries] and [edits], which decide the books, or null when
   /// it is not known. Two caches with the same content have the same books.
@@ -56,7 +68,7 @@ class CatalogCache {
   CatalogCache withContent() => CatalogCache(
     scope: scope,
     libraries: libraries,
-    selected: selected,
+    hidden: hidden,
     entries: entries,
     edits: edits,
     completedAt: completedAt,
@@ -74,11 +86,11 @@ class CatalogCache {
   );
 
   String encode() => jsonEncode({
-    'version': 1,
+    'version': 2,
     'accessBlocked': accessBlocked,
     'scope': scope.toJson(),
     'libraries': libraries.map((library) => library.toJson()).toList(),
-    'selected': selected.toList(),
+    'hidden': hidden.toList(),
     'entries': entries.map((entry) => entry.toJson()).toList(),
     'edits': edits.toJson(),
     'completedAt': completedAt?.toIso8601String(),
@@ -89,15 +101,20 @@ class CatalogCache {
   /// text is not a catalog of [scope]. The catalog builds the books from the
   /// result in the same isolate hop, and a failed build also counts as an
   /// unreadable catalog there.
+  ///
+  /// Version 1 saved the libraries that the user selected, under a rule
+  /// where a library showed only when selected. Those choices did not hide
+  /// anything, so a version 1 catalog decodes with no hidden library, and
+  /// keeps its entries and corrections.
   static CatalogCache decode(AccountScope scope, String value) {
     try {
       final json = jsonDecode(value) as Map<String, dynamic>;
-      if (json['version'] != 1 ||
+      final version = json['version'];
+      if ((version != 1 && version != 2) ||
           AccountScope.fromJson(json['scope'] as Map<String, dynamic>).key !=
               scope.key) {
         throw const FormatException();
       }
-      final selected = Set<String>.from(json['selected'] as List);
       final entries = (json['entries'] as List)
           .cast<Map<String, dynamic>>()
           .map(
@@ -107,27 +124,27 @@ class CatalogCache {
             ),
           )
           .toList();
-      if (entries.any((entry) => !selected.contains(entry.libraryId)) ||
-          entries.map((entry) => entry.id).toSet().length != entries.length) {
-        throw const FormatException();
-      }
       final result = CatalogCache(
         scope: scope,
         accessBlocked: json['accessBlocked'] as bool? ?? false,
-        libraries: List.unmodifiable(
-          (json['libraries'] as List).cast<Map<String, dynamic>>().map(
-            (library) =>
-                BookLibrary(library['id'] as String, library['name'] as String),
-          ),
-        ),
-        selected: Set.unmodifiable(selected),
-        entries: List.unmodifiable(entries),
+        libraries: [
+          for (final library
+              in (json['libraries'] as List).cast<Map<String, dynamic>>())
+            BookLibrary(library['id'] as String, library['name'] as String),
+        ],
+        hidden: version == 1 ? const {} : Set.from(json['hidden'] as List),
+        entries: entries,
         edits: CatalogEdits.fromJson(json['edits'] as Map<String, dynamic>),
         completedAt: json['completedAt'] == null
             ? null
             : DateTime.parse(json['completedAt'] as String),
         content: json['content'] as String?,
       );
+      final shown = result.shown;
+      if (entries.any((entry) => !shown.contains(entry.libraryId)) ||
+          entries.map((entry) => entry.id).toSet().length != entries.length) {
+        throw const FormatException();
+      }
       return result;
     } catch (_) {
       throw const FormatException(

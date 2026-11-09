@@ -94,14 +94,19 @@ class FixtureClient extends JellyfinClient {
     return views;
   }
 
+  /// The pages of the entries of the [shown] libraries.
   @override
   Future<CatalogPages> catalog(
     JellyfinSession session,
-    Set<String> selected,
+    Set<String> shown,
   ) async {
     catalogReads++;
     if (failure != null) throw failure!;
-    return pagesOf(await (pendingCatalog?.future ?? entries));
+    final List<CatalogEntry> all = await pendingCatalog?.future ?? entries;
+    return pagesOf([
+      for (final each in all)
+        if (shown.contains(each.libraryId)) each,
+    ]);
   }
 }
 
@@ -155,15 +160,13 @@ void main() {
     controller.dispose();
     client.close();
   });
-  Future<void> connectAndSelect() async {
-    await controller.connect('https://books.example', 'alice', 'password');
-    await controller.refresh(selected: {'books'});
-  }
+  Future<void> signIn() =>
+      controller.connect('https://books.example', 'alice', 'password');
 
   test(
     'known denial survives an offline restart until access succeeds',
     () async {
-      await connectAndSelect();
+      await signIn();
       client.failure = const CatalogFailure(CatalogFailureKind.forbidden);
       await controller.refresh();
       final restarted = CatalogController(
@@ -192,7 +195,7 @@ void main() {
         entry('two', track: 2),
         entry('three', track: 3),
       ];
-      await connectAndSelect();
+      await signIn();
       await controller.linkBooks('book:two', 'book:one');
       await controller.linkBooks('book:three', 'book:one');
       await controller.combineAudio('book:one', [
@@ -224,7 +227,7 @@ void main() {
         entry('apple', title: 'Apple'),
         entry('zebra', title: 'Zebra'),
       ];
-      await connectAndSelect();
+      await signIn();
       await controller.separateEdition('zebra:source');
       final target = controller.books
           .firstWhere((book) => book.title == 'Zebra')
@@ -240,7 +243,7 @@ void main() {
   test(
     'a complete selected catalog is available after a fresh offline restart',
     () async {
-      await connectAndSelect();
+      await signIn();
       expect(controller.books.map((book) => book.title), ['The Orchard']);
       final restarted = CatalogController(
         credentials: credentials,
@@ -257,7 +260,7 @@ void main() {
   test(
     'sign-out clears visible books and token but preserves the account cache',
     () async {
-      await connectAndSelect();
+      await signIn();
       final signingOut = controller.signOut();
       expect(controller.books, isEmpty);
       expect(controller.session, isNull);
@@ -274,15 +277,13 @@ void main() {
   test(
     'another user never sees the previous account books or corrections',
     () async {
-      await connectAndSelect();
+      await signIn();
       await controller.correctBook(
         controller.books.single.id,
         const BookDetails(title: 'Private correction', author: 'Alice'),
       );
       await controller.signOut();
       await controller.connect('https://books.example', 'bob', 'password');
-      expect(controller.books, isEmpty);
-      await controller.refresh(selected: {'books'});
       expect(controller.books.single.title, 'The Orchard');
       expect(controller.cache!.edits.details, isEmpty);
     },
@@ -291,7 +292,7 @@ void main() {
   test(
     'the same user name on a different server never restores another catalog',
     () async {
-      await connectAndSelect();
+      await signIn();
       await controller.signOut();
       final other = account('alice', server: 'https://other.example');
       credentials.value = other;
@@ -307,7 +308,7 @@ void main() {
   test(
     'a failed refresh retains the last complete persisted catalog',
     () async {
-      await connectAndSelect();
+      await signIn();
       final saved = store.values[account('alice').scope.key];
       client.failure = const CatalogFailure(CatalogFailureKind.incomplete);
       await controller.refresh(byUser: true);
@@ -318,7 +319,7 @@ void main() {
   );
 
   test('a stale refresh cannot repopulate a signed-out account', () async {
-    await connectAndSelect();
+    await signIn();
     client.pendingCatalog = Completer();
     final refreshing = controller.refresh();
     await Future<void>.delayed(Duration.zero);
@@ -332,7 +333,7 @@ void main() {
   test(
     'cancelled refresh keeps cached books and ignores its late response',
     () async {
-      await connectAndSelect();
+      await signIn();
       client.pendingCatalog = Completer();
       final refreshing = controller.refresh();
       await Future<void>.delayed(Duration.zero);
@@ -363,7 +364,7 @@ void main() {
   });
 
   test('revoked authorization hides cached books without deleting the complete cache', () async {
-    await connectAndSelect();
+    await signIn();
     client.failure = const CatalogFailure(CatalogFailureKind.unauthorized);
     await controller.refresh();
     expect(controller.books, isEmpty);
@@ -374,7 +375,7 @@ void main() {
   test(
     'forbidden catalog access hides books but does not destroy offline records',
     () async {
-      await connectAndSelect();
+      await signIn();
       client.failure = const CatalogFailure(CatalogFailureKind.forbidden);
       await controller.refresh();
       expect(controller.books, isEmpty);
@@ -391,7 +392,7 @@ void main() {
         entry('two', track: 2),
         entry('ebook', type: 'Book', container: 'epub'),
       ];
-      await connectAndSelect();
+      await signIn();
       await controller.linkBooks('book:two', 'book:one');
       await controller.linkBooks('book:ebook', 'book:one');
       expect(controller.books.single.editions, hasLength(3));
@@ -431,7 +432,7 @@ void main() {
   test(
     'a failed correction save leaves the previous visible correction intact',
     () async {
-      await connectAndSelect();
+      await signIn();
       store.failWrites = true;
       await controller.correctBook(
         'book:one',
@@ -452,7 +453,7 @@ void main() {
   test(
     'refresh cancellation does not discard a correction already being saved',
     () async {
-      await connectAndSelect();
+      await signIn();
       store.gate = Completer();
       final correcting = controller.correctBook(
         'book:one',
@@ -468,7 +469,7 @@ void main() {
 
   test('overlapping correction saves retain both decisions', () async {
     client.entries = [entry('one'), entry('two')];
-    await connectAndSelect();
+    await signIn();
     store.gate = Completer();
     final first = controller.correctBook(
       'book:one',
@@ -486,18 +487,16 @@ void main() {
     );
   });
 
-  test(
-    'a new sign-in never exposes libraries whose access has been removed',
-    () async {
-      await connectAndSelect();
-      await controller.signOut();
-      client.views = [];
-      await controller.connect('https://books.example', 'alice', 'password');
-      expect(controller.books, isEmpty);
-      expect(controller.accessBlocked, isTrue);
-      expect(store.values, isNotEmpty);
-    },
-  );
+  test('a new sign-in never exposes libraries that the account can no longer '
+      'read', () async {
+    await signIn();
+    await controller.signOut();
+    client.views = [];
+    await controller.connect('https://books.example', 'alice', 'password');
+    expect(controller.books, isEmpty);
+    expect(controller.libraries, isEmpty);
+    expect(store.values, isNotEmpty);
+  });
 
   test(
     'an unreadable catalog does not discard successful secure sign-in',
@@ -507,6 +506,7 @@ void main() {
       expect(controller.session!.scope.userId, 'alice');
       expect(controller.libraries.single.id, 'books');
       expect(controller.books, isEmpty);
+      expect(controller.message, contains('could not be read'));
       expect(credentials.value!.scope.userId, 'alice');
     },
   );
@@ -514,7 +514,7 @@ void main() {
   test(
     'an invalid account switch cannot restore the old token on restart',
     () async {
-      await connectAndSelect();
+      await signIn();
       await controller.connect('http://untrusted.example', 'bob', 'password');
       expect(controller.session, isNull);
       expect(controller.books, isEmpty);
@@ -531,7 +531,7 @@ void main() {
         entry('two', track: 2),
         entry('three', track: 3),
       ];
-      await connectAndSelect();
+      await signIn();
       await controller.linkBooks('book:two', 'book:one');
       await controller.linkBooks('book:three', 'book:one');
       await controller.combineAudio('book:one', [
@@ -560,7 +560,7 @@ void main() {
   group('a restore at launch', () {
     late CatalogController restarted;
     setUp(() async {
-      await connectAndSelect();
+      await signIn();
       restarted = CatalogController(
         credentials: credentials,
         store: store,
@@ -593,7 +593,7 @@ void main() {
       store.readGate!.complete();
       await restoring;
       expect(restarted.accountNotifier.value.restoring, isFalse);
-      expect(restarted.accountNotifier.value.selected, {'books'});
+      expect(restarted.accountNotifier.value.hidden, isEmpty);
       expect(restarted.libraryNotifier.value.books, hasLength(1));
       restarted.checkInvariants();
     });

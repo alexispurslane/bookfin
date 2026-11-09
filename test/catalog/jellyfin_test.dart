@@ -231,25 +231,22 @@ void main() {
     );
   });
 
-  test(
-    'an unselected or non-book parent is rejected before item fetching',
-    () async {
-      await expectLater(
-        client.catalog(session, {'movies'}),
-        throwsA(
-          isA<CatalogFailure>().having(
-            (failure) => failure.kind,
-            'kind',
-            CatalogFailureKind.invalidSelection,
-          ),
+  test('a parent that is not a book library of the account is rejected before item fetching', () async {
+    await expectLater(
+      client.catalog(session, {'movies'}),
+      throwsA(
+        isA<CatalogFailure>().having(
+          (failure) => failure.kind,
+          'kind',
+          CatalogFailureKind.incomplete,
         ),
-      );
-      expect(
-        requests.any((request) => request.uri.path.endsWith('/Items')),
-        isFalse,
-      );
-    },
-  );
+      ),
+    );
+    expect(
+      requests.any((request) => request.uri.path.endsWith('/Items')),
+      isFalse,
+    );
+  });
 
   test('a truncated page sequence never becomes a complete catalog', () async {
     respond = (request) {

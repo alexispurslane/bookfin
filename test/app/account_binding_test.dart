@@ -139,7 +139,7 @@ void main() {
       clientFactory: (_, _) => client,
     );
     await catalog.connect('https://books.example', 'alice', 'password');
-    await catalog.refresh(selected: {'books'});
+    await catalog.refresh();
     log = _Log();
     downloads = _Downloads(log);
     playback = _Playback(log, downloads);

@@ -39,8 +39,8 @@ Each `SourceFile` retains the Jellyfin item ID and media-source ID. Its `key` id
 | Operation | Contract |
 | --- | --- |
 | `CatalogController.restore()` | Restore the secure session and its saved catalog without making a network request. Restored permission information is not fresh authorization. |
-| `connect(server, username, password)` | Authenticate, save the token securely, restore only this account's cache, and list this account's book libraries. |
-| `refresh(selected: ids)` | Validate the account, validate the selected book libraries, fetch all pages, and save one complete replacement snapshot. Omitting `selected` keeps the saved selection. |
+| `connect(server, username, password)` | Authenticate, save the token securely, restore only this account's cache, list this account's book libraries, and then read the catalog as `refresh` does. If the saved catalog cannot be read, the catalog is not read, so the saved catalog stays until the user asks for a refresh. |
+| `refresh(hidden: ids)` | Validate the account, list its book libraries, fetch all pages of every library that is not hidden, and save one complete replacement snapshot. Omitting `hidden` keeps the saved hidden libraries. A hidden library that Jellyfin no longer lists leaves the hidden set. |
 | `cancel()` | Abort catalog network work and ignore late responses. Keep saved books and accepted correction saves. |
 | `signOut()` | Immediately hide account data and delete the locally stored session. Keep the scoped catalog for a later authenticated return to that account. This is local sign-out, not remote token revocation. |
 | `linkBooks(source, target)` | Confirm a shared book without combining recordings or equating audio and text positions. Keep the target book's details. |
@@ -54,7 +54,7 @@ No title comparison silently merges books. Matching titles and provider identifi
 
 ## Refresh and failure rules
 
-`UserViews` supplies allowed libraries. Only views with `CollectionType` equal to `books` can be selected. Item requests always specify a selected parent and `AudioBook,Book,Audio` types. General `Audio` items enter only from these selected book libraries, never from a music or mixed library. The client does not search other libraries or fetch media to infer book relationships.
+`UserViews` supplies allowed libraries. Only views with `CollectionType` equal to `books` are book libraries. Every book library shows unless the user hides it in Settings, so a library that Jellyfin adds later shows by default. The saved catalog stores the hidden library IDs, not the shown ones. A saved catalog of version 1, which stored selected libraries, decodes with no hidden library and keeps its entries and corrections. Item requests always specify a shown parent and `AudioBook,Book,Audio` types. General `Audio` items enter only from shown book libraries, never from a music or mixed library. The client does not search other libraries or fetch media to infer book relationships.
 
 The requested optional fields use the Jellyfin v12.4 `ItemFields` contract, including `Etag`. `DateModified` is not requested as an `ItemFields` value. Returned modification metadata is retained when present, but the revision also supports the returned item tag. A strict local server fixture rejects unsupported field names.
 
@@ -62,7 +62,7 @@ Pages contain at most 200 items. Publication requires stable reported totals, un
 
 Account replacement invalidates old responses. Network cancellation does not cancel an accepted local correction. Catalog and credential writes are serialized separately. A correction becomes visible only after its save succeeds. A catalog save failure leaves the previous saved catalog intact.
 
-HTTP 401 hides cached account data and clears the local session. HTTP 403 and unavailable selected libraries hide the catalog until access is resolved. Network failures keep the last complete saved catalog available. No failure deletes the saved catalog as a fallback.
+HTTP 401 hides cached account data and clears the local session. HTTP 403 hides the catalog until access is resolved. A library that Jellyfin stops listing leaves the catalog at the next refresh, and its books go with it. Network failures keep the last complete saved catalog available. No failure deletes the saved catalog as a fallback.
 
 `CatalogController.checkInvariants()` is an on-demand diagnostic for tests or a debug command. It checks account ownership, selected-library membership, one owner for every source, and one source for a text edition. It does not recover from a failure. Internal publication has a debug-only account-ownership precondition.
 

@@ -66,7 +66,7 @@ void main() {
     downloads = LocalFiles();
     store = MemoryResume();
     await catalog.connect('https://books.example', 'alice', 'fixture-password');
-    await catalog.refresh(selected: {'books'});
+    await catalog.refresh();
     for (final book in catalog.books) {
       for (final file in audio(book).files) {
         downloads.files[file.key] = Uri.file('/fixture.wav');

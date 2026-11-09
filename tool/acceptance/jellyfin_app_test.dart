@@ -51,7 +51,11 @@ void main() {
         (edition) => edition.files.any((source) => source.itemId == item(path)),
       ),
     );
-    Future<void> connect(String name, {Set<String>? selected}) async {
+
+    /// Signs in as [name] with the [hidden] book libraries hidden. By
+    /// default it hides the private library, so the account reads only the
+    /// public one.
+    Future<void> connect(String name, {Set<String>? hidden}) async {
       await catalog.connect(
         origin.toString(),
         'research-$name',
@@ -59,7 +63,7 @@ void main() {
       );
       expect(catalog.message, isNull);
       expect(catalog.session?.scope.userId, accounts[name]['id']);
-      await catalog.refresh(selected: selected ?? {library('public')});
+      await catalog.refresh(hidden: hidden ?? {library('private')});
       expect(catalog.message, isNull);
       expect(catalog.verified, isTrue);
       catalog.checkInvariants();
@@ -187,8 +191,8 @@ void main() {
       );
     });
 
-    test('ordinary accounts see only authorized book libraries and selected sources', () async {
-      await connect('alice', selected: {library('public'), library('private')});
+    test('ordinary accounts see only authorized book libraries and the sources of shown ones', () async {
+      await connect('alice', hidden: {});
       expect(catalog.libraries.map((value) => value.id).toSet(), {
         library('public'),
         library('private'),
@@ -207,7 +211,7 @@ void main() {
           item(hiddenTrack),
         },
       );
-      await catalog.refresh(selected: {library('private')});
+      await catalog.refresh(hidden: {library('public')});
       expect(catalog.books, hasLength(1));
       expect(edition(hiddenTrack).files.single.itemId, item(hiddenTrack));
       await connect('bob');
@@ -237,7 +241,7 @@ void main() {
               isA<CatalogFailure>().having(
                 (failure) => failure.kind,
                 'kind',
-                CatalogFailureKind.invalidSelection,
+                CatalogFailureKind.incomplete,
               ),
             ),
           );
@@ -492,7 +496,7 @@ void main() {
     });
 
     test('inaccessible and nonexistent sources never publish bytes or fall back to File', () async {
-      await connect('alice', selected: {library('private')});
+      await connect('alice', hidden: {library('public')});
       final hidden = edition(hiddenTrack);
       final aliceBooks = catalog.books;
       await connect('bob');
@@ -542,8 +546,8 @@ void main() {
       });
     });
 
-    test('library revocation hides cached content across restoration and permits explicit recovery', () async {
-      await connect('alice', selected: {library('private')});
+    test('library revocation hides cached content across restoration and access brings it back', () async {
+      await connect('alice', hidden: {library('public')});
       final original = Map<String, dynamic>.from(
         (await accountDetails('alice'))['Policy'],
       );
@@ -553,7 +557,7 @@ void main() {
           'EnabledFolders': [library('public'), library('music')],
         });
         await catalog.refresh();
-        expect(catalog.accessBlocked, isTrue);
+        expect(catalog.accessBlocked, isFalse);
         expect(catalog.books, isEmpty);
         catalog.dispose();
         catalog = CatalogController(
@@ -561,17 +565,16 @@ void main() {
           store: DiskCatalog(directory),
         );
         await catalog.restore();
-        expect(catalog.accessBlocked, isTrue);
         expect(catalog.books, isEmpty);
         await setPolicy('alice', original);
-        await catalog.refresh(selected: {library('private')});
+        await catalog.refresh();
         expect(catalog.accessBlocked, isFalse);
         expect(catalog.books, hasLength(1));
         expect(edition(hiddenTrack).files.single.itemId, item(hiddenTrack));
         catalog.checkInvariants();
         record('library-revocation-and-recovery', {
-          'blockedCacheRemainsHiddenOnRestore': true,
-          'restoredPermissionAndExplicitSelectionRecover': true,
+          'revokedLibraryRemainsHiddenOnRestore': true,
+          'restoredPermissionShowsTheLibraryAgain': true,
         });
       } finally {
         await setPolicy('alice', original);

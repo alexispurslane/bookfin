@@ -61,7 +61,6 @@ void main() {
       final cache = CatalogCache(
         scope: scope,
         libraries: [const BookLibrary('books', 'Books')],
-        selected: {'books'},
         entries: [
           entry('one'),
           entry('ebook', type: 'Book'),
@@ -92,8 +91,8 @@ void main() {
   test('another account cannot decode the same cached catalog', () {
     final cache = CatalogCache(
       scope: account('alice').scope,
+      libraries: [const BookLibrary('books', 'Books')],
       entries: [entry('private')],
-      selected: {'books'},
     );
     expect(
       () => CatalogCache.decode(account('bob').scope, cache.encode()),
@@ -101,13 +100,13 @@ void main() {
     );
   });
 
-  test('cached entries outside the saved selected libraries are rejected', () {
+  test('cached entries of a hidden library are rejected', () {
     final scope = account('alice').scope;
     final encoded = jsonEncode({
-      'version': 1,
+      'version': 2,
       'scope': scope.toJson(),
-      'libraries': [],
-      'selected': [],
+      'libraries': [const BookLibrary('books', 'Books').toJson()],
+      'hidden': ['books'],
       'entries': [entry('one').toJson()],
       'edits': CatalogEdits().toJson(),
     });

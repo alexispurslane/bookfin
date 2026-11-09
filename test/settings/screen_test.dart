@@ -11,6 +11,7 @@ import 'package:flutter_test/flutter_test.dart';
 import '../catalog/controller_test.dart'
     show FixtureClient, MemoryCatalogStore, MemoryCredentials;
 import '../catalog/model_test.dart' show entry;
+import '../real_time.dart';
 import '../sync/status_test.dart' show ControlledRecords;
 
 void main() {
@@ -62,7 +63,7 @@ void main() {
     // The catalog talks to the fixture client in real time.
     Future<void> signIn(WidgetTester tester) => tester.runAsync(() async {
       await catalog.connect('https://books.example', 'alice', 'password');
-      await catalog.refresh(selected: {'books'});
+      await catalog.refresh();
     });
 
     Future<void> showTab(WidgetTester tester, {RecordSync? sync}) =>
@@ -98,7 +99,7 @@ void main() {
       );
     });
 
-    testWidgets('the tab follows the selected libraries of the account', (
+    testWidgets('the Libraries row names the libraries that show', (
       tester,
     ) async {
       client.views = [
@@ -107,9 +108,36 @@ void main() {
       ];
       await signIn(tester);
       await showTab(tester);
-      expect(find.text('Books · 1 of 2 shown'), findsOneWidget);
-      await tester.runAsync(() => catalog.refresh(selected: {'books', 'more'}));
+      expect(find.text('Books, More books · 2 of 2 shown'), findsOneWidget);
+      await tester.runAsync(() => catalog.refresh(hidden: {'more'}));
       await tester.pump();
+      expect(find.text('Books · 1 of 2 shown'), findsOneWidget);
+    });
+
+    testWidgets('unticking a library in Settings hides it, and ticking it '
+        'again shows it', (tester) async {
+      client.views = [
+        const BookLibrary('books', 'Books'),
+        const BookLibrary('more', 'More books'),
+      ];
+      await signIn(tester);
+      await showTab(tester);
+      Future<void> toggle(String library) async {
+        await tester.tap(find.text('Libraries'));
+        await tester.pumpAndSettle();
+        expect(find.byType(CheckboxListTile), findsNWidgets(2));
+        await tester.tap(find.widgetWithText(CheckboxListTile, library));
+        await tester.pump();
+        await tester.tap(find.widgetWithText(FilledButton, 'Save libraries'));
+        await runUntil(tester, () => !catalog.busy);
+        await tester.pumpAndSettle();
+      }
+
+      await toggle('More books');
+      expect(catalog.accountNotifier.value.hidden, {'more'});
+      expect(find.text('Books · 1 of 2 shown'), findsOneWidget);
+      await toggle('More books');
+      expect(catalog.accountNotifier.value.hidden, isEmpty);
       expect(find.text('Books, More books · 2 of 2 shown'), findsOneWidget);
     });
 

@@ -11,7 +11,7 @@ import 'layout.dart';
 import 'library_services.dart';
 import 'model.dart';
 import 'controller.dart';
-import 'screen.dart' show LibrarySelector, TabFrame, TabPage;
+import 'screen.dart' show TabFrame, TabPage;
 import 'shelf.dart';
 
 /// The Library tab below its top bar: filters, then the grouped shelf. A tap
@@ -84,14 +84,24 @@ class _LibraryShelfState extends State<LibraryShelf> {
               child: Center(
                 child: Padding(
                   padding: const EdgeInsets.all(32),
-                  child: Text(
-                    catalog.accountNotifier.value.accessBlocked
-                        ? 'Choose available book libraries to continue.'
-                        : shown == ShelfFilter.downloaded
-                        ? 'No downloaded books yet.'
-                        : 'No books found.',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodySmall,
+                  // An account without a saved catalog has no books until
+                  // its first refresh ends, so the shelf says that it reads.
+                  child: ListenableSelector(
+                    listenable: catalog.statusNotifier,
+                    select: () =>
+                        catalog.statusNotifier.value.refreshing &&
+                        catalog.cache == null,
+                    builder: (context, reading, _) => Text(
+                      catalog.accountNotifier.value.accessBlocked
+                          ? 'This account cannot read its book libraries.'
+                          : shown == ShelfFilter.downloaded
+                          ? 'No downloaded books yet.'
+                          : reading
+                          ? 'Reading your book libraries.'
+                          : 'No books found.',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
                   ),
                 ),
               ),
@@ -826,16 +836,16 @@ class SeriesPage extends StatelessWidget {
 }
 
 /// The Library tab: nothing while a restore reads the account's saved
-/// catalog, then the library selector until the account has chosen book
-/// libraries, then the shelf. Search and the layout toggle join the top bar
-/// with the shelf. The tab opens the pages of the entries that the shelf
+/// catalog, then the shelf, with search and the layout toggle in the top
+/// bar. Every book library that the user did not hide shows, so the tab
+/// needs no library choice. The tab opens the pages of the entries that the shelf
 /// reports, and saves the view that the layout toggle reports.
 class LibraryTab extends StatelessWidget {
   const LibraryTab({super.key, required this.services});
   final LibraryServices services;
 
-  /// The tab follows only the account, whether its saved catalog is still
-  /// being read, and whether it chose book libraries.
+  /// The tab follows only the account, and whether its saved catalog is
+  /// still being read.
   @override
   Widget build(BuildContext context) {
     final catalog = services.catalog;
@@ -845,13 +855,12 @@ class LibraryTab extends StatelessWidget {
       select: () => (
         account: account.value.session?.scope.key,
         restoring: account.value.restoring,
-        choosing: account.value.selected.isEmpty,
       ),
       builder: (context, library, _) => TabFrame(
         bar: AppBar(
           title: const Text('Library'),
           actions: [
-            if (!library.restoring && !library.choosing) ...[
+            if (!library.restoring) ...[
               IconButton(
                 tooltip: 'Search',
                 onPressed: () => openSearch(context, services),
@@ -867,11 +876,6 @@ class LibraryTab extends StatelessWidget {
           playback: services.playback,
           child: library.restoring
               ? const SizedBox.shrink()
-              : library.choosing
-              ? LibrarySelector(
-                  key: ValueKey(library.account),
-                  catalog: catalog,
-                )
               : LibraryShelf(
                   key: ValueKey(library.account),
                   services: services,

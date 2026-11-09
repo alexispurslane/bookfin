@@ -573,83 +573,104 @@ class _SignInFormState extends State<_SignInForm> {
   );
 }
 
+/// The Libraries page of Settings, and the controller of that screen: a
+/// tick box for each book library of the account. A ticked library shows,
+/// and an unticked one is hidden. Every book library shows until the user
+/// hides it, including one that Jellyfin adds later. Save libraries
+/// refreshes the catalog with the unticked libraries hidden, and closes the
+/// page when the refresh succeeds.
 class LibrarySelector extends StatefulWidget {
-  const LibrarySelector({
-    super.key,
-    required this.catalog,
-    this.closeOnSave = false,
-  });
+  const LibrarySelector({super.key, required this.catalog});
   final CatalogController catalog;
-  final bool closeOnSave;
   @override
   State<LibrarySelector> createState() => _LibrarySelectorState();
 }
 
 class _LibrarySelectorState extends State<LibrarySelector> {
-  late final Set<String> _selected = {...?widget.catalog.cache?.selected}
-    ..retainAll(widget.catalog.libraries.map((library) => library.id));
+  /// The ids of the libraries that are unticked on this page. Only Save
+  /// libraries hides them.
+  late final Set<String> _hidden = {
+    ...widget.catalog.accountNotifier.value.hidden,
+  };
+
+  Future<void> _save() async {
+    final catalog = widget.catalog;
+    await catalog.refresh(hidden: {..._hidden}, byUser: true);
+    if (mounted && catalog.statusNotifier.value.verified) {
+      Navigator.pop(context);
+    }
+  }
+
   @override
-  Widget build(BuildContext context) => ListenableBuilder(
-    listenable: widget.catalog,
-    builder: (context, _) => ListView(
-      padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + floatingBarInset(context)),
-      children: [
-        Text(
-          'Choose book libraries',
-          style: Theme.of(context).textTheme.headlineMedium,
-        ),
-        const SizedBox(height: 16),
-        for (final library in widget.catalog.libraries)
-          CheckboxListTile(
-            contentPadding: EdgeInsets.zero,
-            title: Text(library.name),
-            value: _selected.contains(library.id),
-            onChanged: widget.catalog.busy
-                ? null
-                : (value) => setState(() {
-                    if (value == true) {
-                      _selected.add(library.id);
-                    } else {
-                      _selected.remove(library.id);
-                    }
-                  }),
+  Widget build(BuildContext context) {
+    final catalog = widget.catalog;
+    return ListenableBuilder(
+      listenable: Listenable.merge([
+        catalog.accountNotifier,
+        catalog.statusNotifier,
+      ]),
+      builder: (context, _) {
+        final libraries = catalog.accountNotifier.value.libraries;
+        final status = catalog.statusNotifier.value;
+        final busy = catalog.busy;
+        return ListView(
+          padding: EdgeInsets.fromLTRB(
+            24,
+            24,
+            24,
+            24 + floatingBarInset(context),
           ),
-        if (widget.catalog.libraries.isEmpty && !widget.catalog.busy)
-          const Text('No book libraries are available to this account.'),
-        const SizedBox(height: 20),
-        FilledButton(
-          onPressed: widget.catalog.busy || widget.catalog.libraries.isEmpty
-              ? null
-              : () async {
-                  await widget.catalog.refresh(
-                    selected: _selected,
-                    byUser: true,
-                  );
-                  if (context.mounted &&
-                      widget.closeOnSave &&
-                      widget.catalog.statusNotifier.value.verified) {
-                    Navigator.pop(context);
-                  }
-                },
-          child: const Text('Save libraries'),
-        ),
-        TextButton(
-          onPressed: widget.catalog.busy
-              ? widget.catalog.cancel
-              : () => unawaited(widget.catalog.refresh(byUser: true)),
-          child: Text(
-            widget.catalog.busy ? 'Cancel refresh' : 'Refresh libraries',
-          ),
-        ),
-        if (widget.closeOnSave)
-          if (widget.catalog.message ??
-                  (widget.catalog.statusNotifier.value.reach ==
-                          CatalogReach.unreachable
-                      ? _unreachable
-                      : null)
-              case final message?)
-            Text(message),
-      ],
-    ),
-  );
+          children: [
+            Text(
+              'Book libraries to show',
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Bookfin shows every book library on your server, including '
+              'new ones. Untick a library to hide it.',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            const SizedBox(height: 16),
+            for (final library in libraries)
+              CheckboxListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text(library.name),
+                value: !_hidden.contains(library.id),
+                onChanged: busy
+                    ? null
+                    : (shown) => setState(() {
+                        if (shown == true) {
+                          _hidden.remove(library.id);
+                        } else {
+                          _hidden.add(library.id);
+                        }
+                      }),
+              ),
+            if (libraries.isEmpty && !busy)
+              const Text('No book libraries are available to this account.'),
+            const SizedBox(height: 20),
+            FilledButton(
+              onPressed: busy || libraries.isEmpty
+                  ? null
+                  : () => unawaited(_save()),
+              child: const Text('Save libraries'),
+            ),
+            TextButton(
+              onPressed: busy
+                  ? catalog.cancel
+                  : () => unawaited(catalog.refresh(byUser: true)),
+              child: Text(busy ? 'Cancel refresh' : 'Refresh libraries'),
+            ),
+            if (status.message ??
+                    (status.reach == CatalogReach.unreachable
+                        ? _unreachable
+                        : null)
+                case final message?)
+              Text(message),
+          ],
+        );
+      },
+    );
+  }
 }
