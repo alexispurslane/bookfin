@@ -1,0 +1,934 @@
+{
+  "books": [
+    {
+      "id": "se-moby-dick",
+      "title": "Moby-Dick",
+      "source": "standard-ebooks",
+      "url": "https://standardebooks.org/ebooks/herman-melville/moby-dick/downloads/herman-melville_moby-dick.epub?source=download",
+      "sha256": "4f0a70cac781ab8f30b5efb8d20ee78db9e7e1fc23e0c261e35c8690f48db34c",
+      "bytes": 1165503,
+      "format": "epub",
+      "why": "Trial book: long novel, 145 sections, 1,000,000 visible characters"
+    },
+    {
+      "id": "se-pride-and-prejudice",
+      "title": "Pride and Prejudice",
+      "source": "standard-ebooks",
+      "url": "https://standardebooks.org/ebooks/jane-austen/pride-and-prejudice/downloads/jane-austen_pride-and-prejudice.epub?source=download",
+      "sha256": "85814417c1a74d2ca7f3b077b47454d0cfc728392d40d846d1c97d44f24c5279",
+      "bytes": 831959,
+      "format": "epub",
+      "why": "Trial book: dialogue-heavy novel"
+    },
+    {
+      "id": "se-frankenstein",
+      "title": "Frankenstein",
+      "source": "standard-ebooks",
+      "url": "https://standardebooks.org/ebooks/mary-shelley/frankenstein/downloads/mary-shelley_frankenstein.epub?source=download",
+      "sha256": "0b5c070e2cde4d8bb36ef707f9d024465b00d0c49c078f0a148270f55b8c8780",
+      "bytes": 685797,
+      "format": "epub",
+      "why": "Trial book: novel with letters and epigraphs"
+    },
+    {
+      "id": "se-alices-adventures-in-wonderland",
+      "title": "Alice's Adventures in Wonderland (Tenniel)",
+      "source": "standard-ebooks",
+      "url": "https://standardebooks.org/ebooks/lewis-carroll/alices-adventures-in-wonderland/john-tenniel/downloads/lewis-carroll_alices-adventures-in-wonderland_john-tenniel.epub?source=download",
+      "sha256": "431719c25bcb0b6a67fc03938b4633723d775324ac2c62a06a04f98862148bef",
+      "bytes": 18398869,
+      "format": "epub",
+      "why": "Trial book: 45 images in figures, a shaped poem"
+    },
+    {
+      "id": "se-poetry",
+      "title": "Keats, Poetry",
+      "source": "standard-ebooks",
+      "url": "https://standardebooks.org/ebooks/john-keats/poetry/downloads/john-keats_poetry.epub?source=download",
+      "sha256": "93468bc5a4cbb523809171b99d27ad418e5f4f764762ffc4f4cb1386fabcbdfe",
+      "bytes": 567640,
+      "format": "epub",
+      "why": "Trial book: verse with hanging indents, one 430,000-character section"
+    },
+    {
+      "id": "pg-84-frankenstein",
+      "title": "Frankenstein",
+      "source": "gutenberg",
+      "url": "https://www.gutenberg.org/cache/epub/84/pg84-images-3.epub",
+      "sha256": "0bfcc8cacdc72e132272844ed465c6198f1049a8d2b9e3f16806d02beee452e3",
+      "bytes": 440131,
+      "format": "epub",
+      "why": "Trial book: plain Gutenberg markup and CSS"
+    },
+    {
+      "id": "pg-46-christmas-carol",
+      "title": "A Christmas Carol",
+      "source": "gutenberg",
+      "url": "https://www.gutenberg.org/cache/epub/46/pg46-images-3.epub",
+      "sha256": "8557960c8d5e62e23ebfeedacad8ad0a4ebf8d056c1ad37210b2a528c2a2d6cb",
+      "bytes": 641217,
+      "format": "epub",
+      "why": "Trial book: Gutenberg illustrations and a contents table"
+    },
+    {
+      "id": "showcase-frost",
+      "title": "First Frost",
+      "source": "bookfin-showcase",
+      "url": null,
+      "sha256": "86022e096358cb5c70af938769d2918be6e26b2c079d9b1bccefb052b3c55ee1",
+      "bytes": 3864,
+      "format": "epub",
+      "why": "Trial book: a small EPUB that tool/showcase_media.dart makes for Bookfin's own tests"
+    },
+    {
+      "id": "showcase-salt",
+      "title": "Salt and Lantern",
+      "source": "bookfin-showcase",
+      "url": null,
+      "sha256": "fc79e7a7842bdf2a4a234c105fa20e901c940db033592f97daf31560811e9bea",
+      "bytes": 2633,
+      "format": "epub",
+      "why": "Trial book: a small EPUB that tool/showcase_media.dart makes for Bookfin's own tests"
+    },
+    {
+      "id": "showcase-winter",
+      "title": "The Winter Ledger",
+      "source": "bookfin-showcase",
+      "url": null,
+      "sha256": "871e43d138d9617f74a232688ba28e97d68af47ac6f5017c49f694d4726a337e",
+      "bytes": 2364,
+      "format": "epub",
+      "why": "Trial book: a small EPUB that tool/showcase_media.dart makes for Bookfin's own tests"
+    },
+    {
+      "id": "se-hamlet",
+      "title": "Hamlet",
+      "source": "standard-ebooks",
+      "url": "https://standardebooks.org/ebooks/william-shakespeare/hamlet/downloads/william-shakespeare_hamlet.epub?source=download",
+      "sha256": "62528b6e10db1c2a7a971678775c0c88e8ec7282e0ce682cc9a7e54658e9f73d",
+      "bytes": 650898,
+      "format": "epub",
+      "why": "Play: Standard Ebooks sets dialogue in tables"
+    },
+    {
+      "id": "se-the-importance-of-being-earnest",
+      "title": "The Importance of Being Earnest",
+      "source": "standard-ebooks",
+      "url": "https://standardebooks.org/ebooks/oscar-wilde/the-importance-of-being-earnest/downloads/oscar-wilde_the-importance-of-being-earnest.epub?source=download",
+      "sha256": "1b9d41ec39fdcd23c939fb60f7d8191ff51ea9a4b40d106c63a1e1c172691064",
+      "bytes": 419067,
+      "format": "epub",
+      "why": "Play with stage directions"
+    },
+    {
+      "id": "se-pygmalion",
+      "title": "Pygmalion",
+      "source": "standard-ebooks",
+      "url": "https://standardebooks.org/ebooks/george-bernard-shaw/pygmalion/downloads/george-bernard-shaw_pygmalion.epub?source=download",
+      "sha256": "d88187d9f2a3d5969b7947640dafde62e2539356603b143e7aee45abbfb75ee1",
+      "bytes": 543984,
+      "format": "epub",
+      "why": "Play with a long preface and an afterword"
+    },
+    {
+      "id": "se-van-dyke-poetry",
+      "title": "Henry van Dyke, Poetry",
+      "source": "standard-ebooks",
+      "url": "https://standardebooks.org/ebooks/henry-van-dyke-jr/poetry/downloads/henry-van-dyke-jr_poetry.epub?source=download",
+      "sha256": "8204df6a3058fba69a7a8424db4bf6798eb9ece0c64e8e4152c9c2280813e406",
+      "bytes": 530787,
+      "format": "epub",
+      "why": "Poetry: lyric verse with indents"
+    },
+    {
+      "id": "se-leaves-of-grass",
+      "title": "Leaves of Grass",
+      "source": "standard-ebooks",
+      "url": "https://standardebooks.org/ebooks/walt-whitman/leaves-of-grass/downloads/walt-whitman_leaves-of-grass.epub?source=download",
+      "sha256": "1f1b04ff3c5967dc16cff36f02ae1ec6ac1f23110eef0420b547c82d33519645",
+      "bytes": 947021,
+      "format": "epub",
+      "why": "Long free verse with long lines"
+    },
+    {
+      "id": "se-poe-poetry",
+      "title": "Edgar Allan Poe, Poetry",
+      "source": "standard-ebooks",
+      "url": "https://standardebooks.org/ebooks/edgar-allan-poe/poetry/downloads/edgar-allan-poe_poetry.epub?source=download",
+      "sha256": "8f8a135634305659d8048facfab07ee293065710a5e7ffef522c62de730836a9",
+      "bytes": 698274,
+      "format": "epub",
+      "why": "Verse with indents and refrains"
+    },
+    {
+      "id": "se-poe-short-fiction",
+      "title": "Edgar Allan Poe, Short Fiction",
+      "source": "standard-ebooks",
+      "url": "https://standardebooks.org/ebooks/edgar-allan-poe/short-fiction/downloads/edgar-allan-poe_short-fiction.epub?source=download",
+      "sha256": "75d96ec3eb836cb8017c4e38f26ab15bf0213581b319b964a1af29ecc1f0f570",
+      "bytes": 1279652,
+      "format": "epub",
+      "why": "Many short sections"
+    },
+    {
+      "id": "se-the-adventures-of-sherlock-holmes",
+      "title": "The Adventures of Sherlock Holmes",
+      "source": "standard-ebooks",
+      "url": "https://standardebooks.org/ebooks/arthur-conan-doyle/the-adventures-of-sherlock-holmes/downloads/arthur-conan-doyle_the-adventures-of-sherlock-holmes.epub?source=download",
+      "sha256": "328a1cdb370d8f6d990ac1107b403c6fae8e5fc5ce80258aa785a4ba9ffb3e68",
+      "bytes": 742054,
+      "format": "epub",
+      "why": "Short stories with letters and notes"
+    },
+    {
+      "id": "se-a-tale-of-two-cities",
+      "title": "A Tale of Two Cities",
+      "source": "standard-ebooks",
+      "url": "https://standardebooks.org/ebooks/charles-dickens/a-tale-of-two-cities/downloads/charles-dickens_a-tale-of-two-cities.epub?source=download",
+      "sha256": "43865c0ca61af77c2fd042dbd8457832857d2247bb2df97b5d0919d25028c783",
+      "bytes": 815019,
+      "format": "epub",
+      "why": "Novel in books and chapters"
+    },
+    {
+      "id": "se-bleak-house",
+      "title": "Bleak House",
+      "source": "standard-ebooks",
+      "url": "https://standardebooks.org/ebooks/charles-dickens/bleak-house/downloads/charles-dickens_bleak-house.epub?source=download",
+      "sha256": "a754136758c042ae9a2b9fbd29eb04b761f8524e04c0b840850d8cc28bc88b1e",
+      "bytes": 1238512,
+      "format": "epub",
+      "why": "Long novel with many chapters"
+    },
+    {
+      "id": "se-emma",
+      "title": "Emma",
+      "source": "standard-ebooks",
+      "url": "https://standardebooks.org/ebooks/jane-austen/emma/downloads/jane-austen_emma.epub?source=download",
+      "sha256": "72117dec3a2f6162bc9ea9d930bc40d84bb06872427cce32ccb5b4c33b958aca",
+      "bytes": 798849,
+      "format": "epub",
+      "why": "Novel with letters"
+    },
+    {
+      "id": "se-jane-eyre",
+      "title": "Jane Eyre",
+      "source": "standard-ebooks",
+      "url": "https://standardebooks.org/ebooks/charlotte-bronte/jane-eyre/downloads/charlotte-bronte_jane-eyre.epub?source=download",
+      "sha256": "9edf2fb3fe2ff39b72f393ef28eb1b378d22fc60cec41a209016e0490e18f049",
+      "bytes": 933423,
+      "format": "epub",
+      "why": "First-person novel"
+    },
+    {
+      "id": "se-wuthering-heights",
+      "title": "Wuthering Heights",
+      "source": "standard-ebooks",
+      "url": "https://standardebooks.org/ebooks/emily-bronte/wuthering-heights/downloads/emily-bronte_wuthering-heights.epub?source=download",
+      "sha256": "900446c891686a18eaae14c0fef7e505ef6796cb5df7b7ac12ca35bb69a6a251",
+      "bytes": 820444,
+      "format": "epub",
+      "why": "Novel with dialect speech"
+    },
+    {
+      "id": "se-the-adventures-of-huckleberry-finn",
+      "title": "Adventures of Huckleberry Finn",
+      "source": "standard-ebooks",
+      "url": "https://standardebooks.org/ebooks/mark-twain/the-adventures-of-huckleberry-finn/downloads/mark-twain_the-adventures-of-huckleberry-finn.epub?source=download",
+      "sha256": "11c0c55ffcf6a6fa14d8a10e3210bf2d637025ef7999c84e4e03f35fa2cdd8e6",
+      "bytes": 807151,
+      "format": "epub",
+      "why": "Dialect and italics"
+    },
+    {
+      "id": "se-the-time-machine",
+      "title": "The Time Machine",
+      "source": "standard-ebooks",
+      "url": "https://standardebooks.org/ebooks/h-g-wells/the-time-machine/downloads/h-g-wells_the-time-machine.epub?source=download",
+      "sha256": "3931b56fecfb0b0d00737f5fabcd00a46a96c26a6b1c9b8a60751d154057d9a6",
+      "bytes": 535571,
+      "format": "epub",
+      "why": "Short novel"
+    },
+    {
+      "id": "se-dracula",
+      "title": "Dracula",
+      "source": "standard-ebooks",
+      "url": "https://standardebooks.org/ebooks/bram-stoker/dracula/downloads/bram-stoker_dracula.epub?source=download",
+      "sha256": "7189e267ffd12aeb59eed09850d5ba0c4caa9ccefcffc3025b38d25563c138f3",
+      "bytes": 633843,
+      "format": "epub",
+      "why": "Diaries, letters and telegrams"
+    },
+    {
+      "id": "se-heart-of-darkness",
+      "title": "Heart of Darkness",
+      "source": "standard-ebooks",
+      "url": "https://standardebooks.org/ebooks/joseph-conrad/heart-of-darkness/downloads/joseph-conrad_heart-of-darkness.epub?source=download",
+      "sha256": "211d720ea7a59505616e0926d602f7a4ade9acdf2396edb75b65024b0992197e",
+      "bytes": 1544603,
+      "format": "epub",
+      "why": "Novella in three long sections"
+    },
+    {
+      "id": "se-treasure-island",
+      "title": "Treasure Island",
+      "source": "standard-ebooks",
+      "url": "https://standardebooks.org/ebooks/robert-louis-stevenson/treasure-island/downloads/robert-louis-stevenson_treasure-island.epub?source=download",
+      "sha256": "775d91f9c0ee3b10e7f9e45c0fffaf4a4524f3a4a724e3ba5c72a7705f8a29ca",
+      "bytes": 720595,
+      "format": "epub",
+      "why": "Novel with a song and a map"
+    },
+    {
+      "id": "se-the-odyssey",
+      "title": "The Odyssey (Bryant)",
+      "source": "standard-ebooks",
+      "url": "https://standardebooks.org/ebooks/homer/the-odyssey/william-cullen-bryant/downloads/homer_the-odyssey_william-cullen-bryant.epub?source=download",
+      "sha256": "ad89e2274f845428966f37683c14ba05211b4c1c6fcfba23d88e902d22f456d1",
+      "bytes": 976071,
+      "format": "epub",
+      "why": "Verse translation in long books"
+    },
+    {
+      "id": "se-the-divine-comedy",
+      "title": "The Divine Comedy (Longfellow)",
+      "source": "standard-ebooks",
+      "url": "https://standardebooks.org/ebooks/dante-alighieri/the-divine-comedy/henry-wadsworth-longfellow/downloads/dante-alighieri_the-divine-comedy_henry-wadsworth-longfellow.epub?source=download",
+      "sha256": "0967637b28326932bdac0738703bc4b7dc6f508574a67c38ee6f55a8f74a1c16",
+      "bytes": 1539040,
+      "format": "epub",
+      "why": "Verse translation with many cantos and endnotes"
+    },
+    {
+      "id": "se-meditations",
+      "title": "Meditations (Long)",
+      "source": "standard-ebooks",
+      "url": "https://standardebooks.org/ebooks/marcus-aurelius/meditations/george-long/downloads/marcus-aurelius_meditations_george-long.epub?source=download",
+      "sha256": "0c7075533db188d50a544cb1876a52a4af63cf6b1541496c2981656257b2723d",
+      "bytes": 733253,
+      "format": "epub",
+      "why": "Numbered short passages"
+    },
+    {
+      "id": "se-the-origin-of-species",
+      "title": "The Origin of Species",
+      "source": "standard-ebooks",
+      "url": "https://standardebooks.org/ebooks/charles-darwin/the-origin-of-species/downloads/charles-darwin_the-origin-of-species.epub?source=download",
+      "sha256": "6bb25ec0e8149055a4aad7dfbee7b5d08fc3d7ed26f6ab40af65a267fd07f6f4",
+      "bytes": 973354,
+      "format": "epub",
+      "why": "Nonfiction with a figure and a glossary"
+    },
+    {
+      "id": "se-the-art-of-war",
+      "title": "The Art of War (Giles)",
+      "source": "standard-ebooks",
+      "url": "https://standardebooks.org/ebooks/sun-tzu/the-art-of-war/lionel-giles/downloads/sun-tzu_the-art-of-war_lionel-giles.epub?source=download",
+      "sha256": "5070fa08bb9c683731fcaff1e89d011b3d55be5c71bed5b4d6e55398c004d88e",
+      "bytes": 592844,
+      "format": "epub",
+      "why": "Short numbered verses with commentary"
+    },
+    {
+      "id": "se-the-great-gatsby",
+      "title": "The Great Gatsby",
+      "source": "standard-ebooks",
+      "url": "https://standardebooks.org/ebooks/f-scott-fitzgerald/the-great-gatsby/downloads/f-scott-fitzgerald_the-great-gatsby.epub?source=download",
+      "sha256": "abc9787fbce767ea980448a104f4321821475dc41a365d49715c71573d822825",
+      "bytes": 442470,
+      "format": "epub",
+      "why": "Twentieth-century novel"
+    },
+    {
+      "id": "se-mrs-dalloway",
+      "title": "Mrs. Dalloway",
+      "source": "standard-ebooks",
+      "url": "https://standardebooks.org/ebooks/virginia-woolf/mrs-dalloway/downloads/virginia-woolf_mrs-dalloway.epub?source=download",
+      "sha256": "9f435b72ab9fadfafa75789d97dc8f354cc6b038c1b14edcc87c71c5ac50bb4f",
+      "bytes": 756214,
+      "format": "epub",
+      "why": "Long paragraphs without chapter breaks"
+    },
+    {
+      "id": "se-ulysses",
+      "title": "Ulysses",
+      "source": "standard-ebooks",
+      "url": "https://standardebooks.org/ebooks/james-joyce/ulysses/downloads/james-joyce_ulysses.epub?source=download",
+      "sha256": "8d55735ce3d4b929e4f6c8daf6e28b6605dff5718e82e059c4cfa6c80eb8161c",
+      "bytes": 1434008,
+      "format": "epub",
+      "why": "Unusual typography: a play section, run-on text"
+    },
+    {
+      "id": "se-the-devils-dictionary",
+      "title": "The Devil's Dictionary",
+      "source": "standard-ebooks",
+      "url": "https://standardebooks.org/ebooks/ambrose-bierce/the-devils-dictionary/downloads/ambrose-bierce_the-devils-dictionary.epub?source=download",
+      "sha256": "5125c20eefeb83571ce4bf800d0e7159695afa8285e718c1898566954b54b181",
+      "bytes": 625060,
+      "format": "epub",
+      "why": "Reference book: a dictionary of definitions"
+    },
+    {
+      "id": "se-the-prince",
+      "title": "The Prince (Marriott)",
+      "source": "standard-ebooks",
+      "url": "https://standardebooks.org/ebooks/niccolo-machiavelli/the-prince/w-k-marriott/downloads/niccolo-machiavelli_the-prince_w-k-marriott.epub?source=download",
+      "sha256": "4b86754467b0217e5c13feb5d3f08fca2a49843d4321c31b9b1441b46a2bc0d5",
+      "bytes": 459471,
+      "format": "epub",
+      "why": "Short political treatise"
+    },
+    {
+      "id": "se-dialogues",
+      "title": "Dialogues (Jowett)",
+      "source": "standard-ebooks",
+      "url": "https://standardebooks.org/ebooks/plato/dialogues/benjamin-jowett/downloads/plato_dialogues_benjamin-jowett.epub?source=download",
+      "sha256": "eeb16d78a039488afc4adc4dcf5016ca4e15e1fd118d554282e314ff343d50eb",
+      "bytes": 2973107,
+      "format": "epub",
+      "why": "Very long book of dialogues with introductions"
+    },
+    {
+      "id": "se-the-wind-in-the-willows",
+      "title": "The Wind in the Willows",
+      "source": "standard-ebooks",
+      "url": "https://standardebooks.org/ebooks/kenneth-grahame/the-wind-in-the-willows/downloads/kenneth-grahame_the-wind-in-the-willows.epub?source=download",
+      "sha256": "d874ac24670373ea53c0a0d7a52601ca191e95d02270c7571bbd7ccf29cc6b1c",
+      "bytes": 848274,
+      "format": "epub",
+      "why": "Children's novel with songs"
+    },
+    {
+      "id": "se-the-jungle-book",
+      "title": "The Jungle Book",
+      "source": "standard-ebooks",
+      "url": "https://standardebooks.org/ebooks/rudyard-kipling/the-jungle-book/downloads/rudyard-kipling_the-jungle-book.epub?source=download",
+      "sha256": "865adff5b443b90616759040dbc86576ae9d30390ffa1afd73325f13c0fee0f7",
+      "bytes": 599533,
+      "format": "epub",
+      "why": "Stories with songs between them"
+    },
+    {
+      "id": "se-walden",
+      "title": "Walden",
+      "source": "standard-ebooks",
+      "url": "https://standardebooks.org/ebooks/henry-david-thoreau/walden/downloads/henry-david-thoreau_walden.epub?source=download",
+      "sha256": "4e8251fb472fd35bf8727515d54de6e32efc247d734e84455f709e433e529711",
+      "bytes": 997164,
+      "format": "epub",
+      "why": "Essays with a table of accounts"
+    },
+    {
+      "id": "se-anna-karenina",
+      "title": "Anna Karenina (Garnett)",
+      "source": "standard-ebooks",
+      "url": "https://standardebooks.org/ebooks/leo-tolstoy/anna-karenina/constance-garnett/downloads/leo-tolstoy_anna-karenina_constance-garnett.epub?source=download",
+      "sha256": "2ff0a3add436f73bca5c6c4dd82b0497fa70d576bff7ffcc7150717bef3d97cc",
+      "bytes": 1367365,
+      "format": "epub",
+      "why": "Long translated novel in parts"
+    },
+    {
+      "id": "se-crime-and-punishment",
+      "title": "Crime and Punishment (Garnett)",
+      "source": "standard-ebooks",
+      "url": "https://standardebooks.org/ebooks/fyodor-dostoevsky/crime-and-punishment/constance-garnett/downloads/fyodor-dostoevsky_crime-and-punishment_constance-garnett.epub?source=download",
+      "sha256": "777a1437a33f9c396154d76a49bced5cd2f8f5781f4f2b1b62754ebcd308200a",
+      "bytes": 1217856,
+      "format": "epub",
+      "why": "Long translated novel"
+    },
+    {
+      "id": "se-the-wealth-of-nations",
+      "title": "The Wealth of Nations",
+      "source": "standard-ebooks",
+      "url": "https://standardebooks.org/ebooks/adam-smith/the-wealth-of-nations/downloads/adam-smith_the-wealth-of-nations.epub?source=download",
+      "sha256": "b80443600402edb995d0e654bf80c82619ccc54c93417811230dafab19778d58",
+      "bytes": 1354536,
+      "format": "epub",
+      "why": "Long nonfiction with tables of prices"
+    },
+    {
+      "id": "se-the-war-of-the-worlds",
+      "title": "The War of the Worlds",
+      "source": "standard-ebooks",
+      "url": "https://standardebooks.org/ebooks/h-g-wells/the-war-of-the-worlds/downloads/h-g-wells_the-war-of-the-worlds.epub?source=download",
+      "sha256": "d1456a82234399d0e004ed5d9fe9a9c6d411f63cbc5413e048bc27e24c3ff210",
+      "bytes": 800674,
+      "format": "epub",
+      "why": "Novel in two books"
+    },
+    {
+      "id": "pg-1322-leaves-of-grass",
+      "title": "Leaves of Grass",
+      "source": "gutenberg",
+      "url": "https://www.gutenberg.org/cache/epub/1322/pg1322-images-3.epub",
+      "sha256": "82a7fbe96015c9e03ecab4480d3fa3f243d274b38210ea3b2b4175dac4b5c1d5",
+      "bytes": 859766,
+      "format": "epub",
+      "why": "Poetry"
+    },
+    {
+      "id": "pg-12242-dickinson-poems",
+      "title": "Poems by Emily Dickinson, Three Series",
+      "source": "gutenberg",
+      "url": "https://www.gutenberg.org/cache/epub/12242/pg12242-images-3.epub",
+      "sha256": "9c3c36f97691252d22442c7f48b4053b89199975f23628f90af8aee8d3da7be5",
+      "bytes": 500172,
+      "format": "epub",
+      "why": "Poetry: many short poems"
+    },
+    {
+      "id": "pg-1065-the-raven",
+      "title": "The Raven",
+      "source": "gutenberg",
+      "url": "https://www.gutenberg.org/cache/epub/1065/pg1065-images-3.epub",
+      "sha256": "78ec6d29bb857353933a0ac966f2338c0812322b90f3eebecbac549ac5de54c5",
+      "bytes": 240693,
+      "format": "epub",
+      "why": "Poetry: one short poem"
+    },
+    {
+      "id": "pg-8800-divine-comedy",
+      "title": "The Divine Comedy (Longfellow)",
+      "source": "gutenberg",
+      "url": "https://www.gutenberg.org/cache/epub/8800/pg8800-images-3.epub",
+      "sha256": "473b2643f40e8a9872f6f118b6c49fe6a23d8063c9d7a5893c40198f21738183",
+      "bytes": 30908718,
+      "format": "epub",
+      "why": "Poetry: cantos with line numbers"
+    },
+    {
+      "id": "pg-6130-iliad",
+      "title": "The Iliad (Pope)",
+      "source": "gutenberg",
+      "url": "https://www.gutenberg.org/cache/epub/6130/pg6130-images-3.epub",
+      "sha256": "18593d9bdd6775c05ed28387d90794670be10d9f54895b6127e2d889dc064b18",
+      "bytes": 2292050,
+      "format": "epub",
+      "why": "Poetry: rhymed couplets with footnotes"
+    },
+    {
+      "id": "pg-16328-beowulf",
+      "title": "Beowulf",
+      "source": "gutenberg",
+      "url": "https://www.gutenberg.org/cache/epub/16328/pg16328-images-3.epub",
+      "sha256": "2c3134860acd333c0c72b0f192846df483a1a05989168be46b8dc296291afb5e",
+      "bytes": 401073,
+      "format": "epub",
+      "why": "Poetry: verse translation with notes"
+    },
+    {
+      "id": "pg-1524-hamlet",
+      "title": "Hamlet",
+      "source": "gutenberg",
+      "url": "https://www.gutenberg.org/cache/epub/1524/pg1524-images-3.epub",
+      "sha256": "4fb9bbd5602cc4b20c4bb42880771a9229d159ad68715cf94bcab00639037d13",
+      "bytes": 355047,
+      "format": "epub",
+      "why": "Play"
+    },
+    {
+      "id": "pg-1513-romeo-and-juliet",
+      "title": "Romeo and Juliet",
+      "source": "gutenberg",
+      "url": "https://www.gutenberg.org/cache/epub/1513/pg1513-images-3.epub",
+      "sha256": "0dea6a849392a1e669f368f7ab7bd746fc4473418453fb956343ae297acf4412",
+      "bytes": 341144,
+      "format": "epub",
+      "why": "Play"
+    },
+    {
+      "id": "pg-2542-a-dolls-house",
+      "title": "A Doll's House",
+      "source": "gutenberg",
+      "url": "https://www.gutenberg.org/cache/epub/2542/pg2542-images-3.epub",
+      "sha256": "a125cc7ac19582b5b9b1af5e917694852f40c970ec35b86181cc40ebef8b870b",
+      "bytes": 305811,
+      "format": "epub",
+      "why": "Play"
+    },
+    {
+      "id": "pg-844-the-importance-of-being-earnest",
+      "title": "The Importance of Being Earnest",
+      "source": "gutenberg",
+      "url": "https://www.gutenberg.org/cache/epub/844/pg844-images-3.epub",
+      "sha256": "0c96ea822cad5a3aa52325a2bbec0b8c2fd57390853896b608403ee035606945",
+      "bytes": 311728,
+      "format": "epub",
+      "why": "Play with illustrations"
+    },
+    {
+      "id": "pg-100-complete-shakespeare",
+      "title": "The Complete Works of William Shakespeare",
+      "source": "gutenberg",
+      "url": "https://www.gutenberg.org/cache/epub/100/pg100-images-3.epub",
+      "sha256": "72397ff2459a5948eda764bae9b036c0037ccbf3fd93c8aba610208815784e88",
+      "bytes": 2880260,
+      "format": "epub",
+      "why": "Very long book of plays and sonnets"
+    },
+    {
+      "id": "pg-3300-wealth-of-nations",
+      "title": "The Wealth of Nations",
+      "source": "gutenberg",
+      "url": "https://www.gutenberg.org/cache/epub/3300/pg3300-images-3.epub",
+      "sha256": "52c8c5b9cc2b18d1edc87a326b76f0d8aee568932995d407083b394aaa9165ab",
+      "bytes": 947727,
+      "format": "epub",
+      "why": "Tables of numbers"
+    },
+    {
+      "id": "pg-10136-household-management",
+      "title": "The Book of Household Management",
+      "source": "gutenberg",
+      "url": "https://www.gutenberg.org/cache/epub/10136/pg10136-images-3.epub",
+      "sha256": "2221b7e401ab0d4245da00f2130446442353cd6fec12adac747dd65ebc09a2b1",
+      "bytes": 1248867,
+      "format": "epub",
+      "why": "Tables, recipes and illustrations"
+    },
+    {
+      "id": "pg-33283-calculus-made-easy",
+      "title": "Calculus Made Easy",
+      "source": "gutenberg",
+      "url": "https://www.gutenberg.org/cache/epub/33283/pg33283-images-3.epub",
+      "sha256": "a82a353c67ddedeef19267fe225ff29077fe989c8909734054fbbc78365e123b",
+      "bytes": 13215877,
+      "format": "epub",
+      "why": "Formulas as images, tables"
+    },
+    {
+      "id": "pg-1228-origin-of-species",
+      "title": "On the Origin of Species",
+      "source": "gutenberg",
+      "url": "https://www.gutenberg.org/cache/epub/1228/pg1228-images-3.epub",
+      "sha256": "49bb913c0d267c786846805ce8b90a2e92bc4b2ee7cc0ab9492821bd85c6819b",
+      "bytes": 610265,
+      "format": "epub",
+      "why": "Nonfiction with a contents table"
+    },
+    {
+      "id": "pg-11-alice",
+      "title": "Alice's Adventures in Wonderland",
+      "source": "gutenberg",
+      "url": "https://www.gutenberg.org/cache/epub/11/pg11-images-3.epub",
+      "sha256": "4f81245d31380ac1d6eafb9a321e3691369bc70985736ae4bccf849a4f784036",
+      "bytes": 189249,
+      "format": "epub",
+      "why": "Illustrated children's book"
+    },
+    {
+      "id": "pg-12-through-the-looking-glass",
+      "title": "Through the Looking-Glass",
+      "source": "gutenberg",
+      "url": "https://www.gutenberg.org/cache/epub/12/pg12-images-3.epub",
+      "sha256": "8a95cb420af5409f043f856849e48949d6f44118dc73b218f3c89b736ed9a2cf",
+      "bytes": 520657,
+      "format": "epub",
+      "why": "Illustrated children's book with a chess diagram"
+    },
+    {
+      "id": "pg-14838-peter-rabbit",
+      "title": "The Tale of Peter Rabbit",
+      "source": "gutenberg",
+      "url": "https://www.gutenberg.org/cache/epub/14838/pg14838-images-3.epub",
+      "sha256": "ab69fdc47fdb7e419da47821bde0d707ac557f26d39437d7ef4f427263532f9b",
+      "bytes": 1510457,
+      "format": "epub",
+      "why": "Illustrated children's book: a picture on every page"
+    },
+    {
+      "id": "pg-16-peter-pan",
+      "title": "Peter Pan",
+      "source": "gutenberg",
+      "url": "https://www.gutenberg.org/cache/epub/16/pg16-images-3.epub",
+      "sha256": "c8a39c829d858c72d7ac80143a86fa7908d5f8af5dfdd4505bc37fb3fdaec707",
+      "bytes": 392049,
+      "format": "epub",
+      "why": "Children's novel"
+    },
+    {
+      "id": "pg-55-wizard-of-oz",
+      "title": "The Wonderful Wizard of Oz",
+      "source": "gutenberg",
+      "url": "https://www.gutenberg.org/cache/epub/55/pg55-images-3.epub",
+      "sha256": "800f7cc528cf22ad7c2424bb3d8ebcffcc8f5f3b3453c4e6a0e70957c0150c71",
+      "bytes": 350637,
+      "format": "epub",
+      "why": "Children's novel"
+    },
+    {
+      "id": "pg-236-jungle-book",
+      "title": "The Jungle Book",
+      "source": "gutenberg",
+      "url": "https://www.gutenberg.org/cache/epub/236/pg236-images-3.epub",
+      "sha256": "202a0aa6bd19f4ec1752f639b664e5a842cdf4ad3b7788f9a98600b5d450dac5",
+      "bytes": 11175692,
+      "format": "epub",
+      "why": "Stories with songs"
+    },
+    {
+      "id": "pg-289-wind-in-the-willows",
+      "title": "The Wind in the Willows",
+      "source": "gutenberg",
+      "url": "https://www.gutenberg.org/cache/epub/289/pg289-images-3.epub",
+      "sha256": "b71d88e27d5a3cf179c004f1c8dfe6ca5c3fa8f7733cb097627f6e6c677b45d0",
+      "bytes": 371406,
+      "format": "epub",
+      "why": "Children's novel"
+    },
+    {
+      "id": "pg-76-huckleberry-finn",
+      "title": "Adventures of Huckleberry Finn",
+      "source": "gutenberg",
+      "url": "https://www.gutenberg.org/cache/epub/76/pg76-images-3.epub",
+      "sha256": "dfb3a02e17da641f14d834cb5bb123016c8df44df4dbbef5c0f94ded290d8663",
+      "bytes": 16021345,
+      "format": "epub",
+      "why": "Illustrated novel"
+    },
+    {
+      "id": "pg-2591-grimms-fairy-tales",
+      "title": "Grimms' Fairy Tales",
+      "source": "gutenberg",
+      "url": "https://www.gutenberg.org/cache/epub/2591/pg2591-images-3.epub",
+      "sha256": "5a735764974c07c57c595aae16dd56c8d295698555705528865c9a7112ef2f6e",
+      "bytes": 531098,
+      "format": "epub",
+      "why": "Many short tales"
+    },
+    {
+      "id": "pg-10681-rogets-thesaurus",
+      "title": "Roget's Thesaurus",
+      "source": "gutenberg",
+      "url": "https://www.gutenberg.org/cache/epub/10681/pg10681-images-3.epub",
+      "sha256": "ee56ff13f9ba00c0fa8d8c2ff10b05c57234bf8155fcbe90543c2dcfb95c0b7c",
+      "bytes": 2203504,
+      "format": "epub",
+      "why": "Reference book: numbered entries"
+    },
+    {
+      "id": "pg-972-devils-dictionary",
+      "title": "The Devil's Dictionary",
+      "source": "gutenberg",
+      "url": "https://www.gutenberg.org/cache/epub/972/pg972-images-3.epub",
+      "sha256": "d39f7c8601c833ee06fa55b2c03a6b4cc78c3d9dae57607aa62a63304b2613ef",
+      "bytes": 469805,
+      "format": "epub",
+      "why": "Reference book: a dictionary"
+    },
+    {
+      "id": "pg-2701-moby-dick",
+      "title": "Moby Dick",
+      "source": "gutenberg",
+      "url": "https://www.gutenberg.org/cache/epub/2701/pg2701-images-3.epub",
+      "sha256": "e247676589c02a65bc80ff7bf7aaaf146d7c69eadfcfb96633c5f606a08602db",
+      "bytes": 699614,
+      "format": "epub",
+      "why": "Long novel"
+    },
+    {
+      "id": "pg-1260-jane-eyre",
+      "title": "Jane Eyre",
+      "source": "gutenberg",
+      "url": "https://www.gutenberg.org/cache/epub/1260/pg1260-images-3.epub",
+      "sha256": "7dbcc5804e9875f4c15c4b54f14168a0d19ab5b155d42acbbfc3d309d889db0b",
+      "bytes": 3095830,
+      "format": "epub",
+      "why": "Novel"
+    },
+    {
+      "id": "pg-345-dracula",
+      "title": "Dracula",
+      "source": "gutenberg",
+      "url": "https://www.gutenberg.org/cache/epub/345/pg345-images-3.epub",
+      "sha256": "be5b12d762ceaacab5bfd0c1e510c8d36a0498cdde43790d6575d198fa9cd94d",
+      "bytes": 602902,
+      "format": "epub",
+      "why": "Novel of letters and diaries"
+    },
+    {
+      "id": "pg-4300-ulysses",
+      "title": "Ulysses",
+      "source": "gutenberg",
+      "url": "https://www.gutenberg.org/cache/epub/4300/pg4300-images-3.epub",
+      "sha256": "3f143d2a6c566633233ba27e88dd6e0c84affee4c4de3d43534a7f41126bcfe0",
+      "bytes": 1494525,
+      "format": "epub",
+      "why": "Unusual typography"
+    },
+    {
+      "id": "pg-2600-war-and-peace",
+      "title": "War and Peace",
+      "source": "gutenberg",
+      "url": "https://www.gutenberg.org/cache/epub/2600/pg2600-images-3.epub",
+      "sha256": "c856e9e16693084763aa3fd68f1b1b6dbc41123db6c1e5bb48af78302f2f921e",
+      "bytes": 1832425,
+      "format": "epub",
+      "why": "Very long novel"
+    },
+    {
+      "id": "pg-174-dorian-gray",
+      "title": "The Picture of Dorian Gray",
+      "source": "gutenberg",
+      "url": "https://www.gutenberg.org/cache/epub/174/pg174-images-3.epub",
+      "sha256": "a3b36ca499124ae52132ad20a6b8654657dbe3cda0f7a22b8e10c904fa4e8e03",
+      "bytes": 461435,
+      "format": "epub",
+      "why": "Novel"
+    },
+    {
+      "id": "pg-5200-metamorphosis",
+      "title": "Metamorphosis",
+      "source": "gutenberg",
+      "url": "https://www.gutenberg.org/cache/epub/5200/pg5200-images-3.epub",
+      "sha256": "81a841cac683831522c7ae24ba6de819f1e360494ed0a122895efe93b4feeb97",
+      "bytes": 317251,
+      "format": "epub",
+      "why": "Short novella"
+    },
+    {
+      "id": "pg-1952-yellow-wallpaper",
+      "title": "The Yellow Wallpaper",
+      "source": "gutenberg",
+      "url": "https://www.gutenberg.org/cache/epub/1952/pg1952-images-3.epub",
+      "sha256": "8583beb8b65f32a4d1147a2ef2dc189507e9e4360be6f90616f98518b2a18148",
+      "bytes": 228881,
+      "format": "epub",
+      "why": "Short story"
+    },
+    {
+      "id": "pg-26184-simple-sabotage",
+      "title": "Simple Sabotage Field Manual",
+      "source": "gutenberg",
+      "url": "https://www.gutenberg.org/cache/epub/26184/pg26184-images-3.epub",
+      "sha256": "1fc0842db3149f802f901bd5aec08b1c3b00c406f65f35f88f16e7131925bdc9",
+      "bytes": 220506,
+      "format": "epub",
+      "why": "Government manual with numbered lists"
+    },
+    {
+      "id": "pg-205-walden",
+      "title": "Walden",
+      "source": "gutenberg",
+      "url": "https://www.gutenberg.org/cache/epub/205/pg205-images-3.epub",
+      "sha256": "0b757000593518f64818283abc6e337e9f0c174a276d027d41e87194675ab0c0",
+      "bytes": 686085,
+      "format": "epub",
+      "why": "Essays with tables of accounts"
+    },
+    {
+      "id": "pg-1934-songs-of-innocence-and-experience",
+      "title": "Songs of Innocence and of Experience",
+      "source": "gutenberg",
+      "url": "https://www.gutenberg.org/cache/epub/1934/pg1934-images-3.epub",
+      "sha256": "45b37699055e95a3e3cc2e8309078a3224d5d53f77cdf787a4a8bded33850a05",
+      "bytes": 36776152,
+      "format": "epub",
+      "why": "Poetry"
+    },
+    {
+      "id": "pg-22367-die-verwandlung",
+      "title": "Die Verwandlung",
+      "source": "gutenberg",
+      "url": "https://www.gutenberg.org/cache/epub/22367/pg22367-images-3.epub",
+      "sha256": "bfd98560075632c0b805720a00c3143044df38dae447e8c3c04f117bc4560d25",
+      "bytes": 99771,
+      "format": "epub",
+      "why": "German text"
+    },
+    {
+      "id": "pg-24264-hong-lou-meng",
+      "title": "Hong Lou Meng",
+      "source": "gutenberg",
+      "url": "https://www.gutenberg.org/cache/epub/24264/pg24264-images-3.epub",
+      "sha256": "b387660f0a27441ab6f724b0e3a0da30d4776e90158b9aad9e1f36b518ef3d21",
+      "bytes": 1228855,
+      "format": "epub",
+      "why": "Chinese text: line breaks without spaces"
+    },
+    {
+      "id": "pg-11-alice-kf8",
+      "title": "Alice's Adventures in Wonderland",
+      "source": "gutenberg",
+      "url": "https://www.gutenberg.org/cache/epub/11/pg11-images-kf8.mobi",
+      "sha256": "d8211269aed55ded8302f289950936db8368b4d4d384c463b722034152f8f1d2",
+      "bytes": 255506,
+      "format": "azw3",
+      "why": "Kindle: illustrated children's book"
+    },
+    {
+      "id": "pg-1342-pride-and-prejudice-kf8",
+      "title": "Pride and Prejudice",
+      "source": "gutenberg",
+      "url": "https://www.gutenberg.org/cache/epub/1342/pg1342-images-kf8.mobi",
+      "sha256": "f6d7254e848d577d5baf6fa1f157b22f799ba1769bcdac1fb76028d71ff47148",
+      "bytes": 26420500,
+      "format": "azw3",
+      "why": "Kindle: illustrated novel"
+    },
+    {
+      "id": "pg-76-huckleberry-finn-kf8",
+      "title": "Adventures of Huckleberry Finn",
+      "source": "gutenberg",
+      "url": "https://www.gutenberg.org/cache/epub/76/pg76-images-kf8.mobi",
+      "sha256": "7aa52631130fb2ae6ef5944dd493fbb70940f638a1ac2134eadea1970f423efd",
+      "bytes": 16172407,
+      "format": "azw3",
+      "why": "Kindle: illustrated novel"
+    },
+    {
+      "id": "pg-1524-hamlet-kf8",
+      "title": "Hamlet",
+      "source": "gutenberg",
+      "url": "https://www.gutenberg.org/cache/epub/1524/pg1524-images-kf8.mobi",
+      "sha256": "43818406989bd5976ebcfd99284df717881320c6c8d1a4d97a341850e73faf6d",
+      "bytes": 679747,
+      "format": "azw3",
+      "why": "Kindle: play"
+    },
+    {
+      "id": "pg-1322-leaves-of-grass-kf8",
+      "title": "Leaves of Grass",
+      "source": "gutenberg",
+      "url": "https://www.gutenberg.org/cache/epub/1322/pg1322-images-kf8.mobi",
+      "sha256": "26e34c98137b75c6050a04e995bf6f81b5d9278598185c49c955b25757be8445",
+      "bytes": 963023,
+      "format": "azw3",
+      "why": "Kindle: poetry"
+    },
+    {
+      "id": "pg-14838-peter-rabbit-kf8",
+      "title": "The Tale of Peter Rabbit",
+      "source": "gutenberg",
+      "url": "https://www.gutenberg.org/cache/epub/14838/pg14838-images-kf8.mobi",
+      "sha256": "2e6f7bfb5e74eddb2d61b8602d740046bfd7856878e43b815d063418428607c0",
+      "bytes": 1543586,
+      "format": "azw3",
+      "why": "Kindle: a picture on every page"
+    },
+    {
+      "id": "pg-3300-wealth-of-nations-kf8",
+      "title": "The Wealth of Nations",
+      "source": "gutenberg",
+      "url": "https://www.gutenberg.org/cache/epub/3300/pg3300-images-kf8.mobi",
+      "sha256": "7d18200ed433bc654c8aadd130b84b020b61a9054331b246a3bfdb887decfb7d",
+      "bytes": 2169296,
+      "format": "azw3",
+      "why": "Kindle: tables"
+    },
+    {
+      "id": "pg-2701-moby-dick-kf8",
+      "title": "Moby Dick",
+      "source": "gutenberg",
+      "url": "https://www.gutenberg.org/cache/epub/2701/pg2701-images-kf8.mobi",
+      "sha256": "265cbd74f2121ca1923bec2573e37135b4aa6a64a9897aaa7c0d29757966ee0f",
+      "bytes": 1515736,
+      "format": "azw3",
+      "why": "Kindle: long novel"
+    }
+  ]
+}

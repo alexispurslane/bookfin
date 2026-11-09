@@ -1,9 +1,8 @@
-// Tool code for the on-demand trial runs (BOOKFIN_EPUB_TRIAL=1). It is not
-// part of Bookfin and nothing in lib/ uses it.
+// Tool code for the on-demand corpus run (BOOKFIN_EPUB_CORPUS=1). It is
+// not part of Bookfin and nothing in lib/ uses it.
 //
-// The support check of the trial: whether a book uses anything outside the
-// subset that the renderer lays out as Chromium does. The corpus run
-// reports it.
+// The support report: whether a book uses anything outside the subset that
+// the renderer lays out as Chromium does. The corpus run reports it.
 //
 // A feature counts only where a section uses it: an element of the
 // section, or a style rule whose selector matches an element of the
@@ -38,7 +37,7 @@ class SupportReport {
 /// Checks every section of [book], styled for a page [width] by [height]
 /// pixels.
 SupportReport checkSupport(
-  TrialBook book, {
+  CorpusBook book, {
   double width = 412,
   double height = 671,
 }) {

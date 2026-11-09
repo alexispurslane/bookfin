@@ -232,6 +232,6 @@ A product version needs these tickets (not created):
 All commands run in the dev shell (`nix develop --command bash -c '...'`) from the repository root.
 
 1. Download the books into `.cache/epub-trial/books/` from Standard Ebooks (`https://standardebooks.org/ebooks/<author>/<title>/downloads/<author>_<title>.epub?source=download`) and Project Gutenberg (`https://www.gutenberg.org/ebooks/84.epub3.images`, `https://www.gutenberg.org/ebooks/46.epub3.images`).
-2. Run `BOOKFIN_EPUB_TRIAL=1 flutter test test/reader/native_epub/corpus_test.dart`. It writes the fixture books beside them, then the support check, the CFI round trip and the host benchmark to `.cache/epub-trial/results/`.
+2. The trial's own run (`test/reader/native_epub/corpus_test.dart`) wrote the support check, the CFI round trip and the host benchmark to `.cache/epub-trial/results/`. The corpus run replaced it. It holds the ten trial books, and `docs/research/native-epub-corpus.md` gives its commands.
 3. Run `cd tool/epub_trial && dart run bin/unpack.dart ../../.cache/epub-trial/admitted ../../.cache/epub-trial/books/*.epub`. It writes each admitted publication, with its own style sheets, for Chromium.
 4. Follow the three steps at the top of `test/reader/native_epub/fidelity_test.dart`: write the plan, run `compare.cjs`, compare. Set `BOOKFIN_EPUB_TRIAL_FONT_SIZE=23` for the second size. Chromium must be at `/Applications/Chromium.app`, or set `CHROME_BIN`.
