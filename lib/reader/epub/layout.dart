@@ -26,6 +26,8 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart' show visibleForTesting;
+
 import 'css.dart';
 import 'dom.dart';
 import 'fonts.dart';
@@ -464,6 +466,12 @@ class LayoutRun {
 
   static final _watch = Stopwatch()..start();
   static Duration _elapsed() => _watch.elapsed;
+
+  /// The code units of paragraphs that runs gave the text engine to lay out
+  /// at a width, in this process. Tests read it to count the passes over a
+  /// paragraph.
+  @visibleForTesting
+  static int laidOutUnits = 0;
 
   final PreparedSection _section;
 
@@ -1719,6 +1727,7 @@ class LayoutRun {
         marks: marks,
       );
       built.paragraph.layout(constraints);
+      laidOutUnits += built.map.length;
       return built;
     }
 
@@ -1827,7 +1836,24 @@ class LayoutRun {
           ? _naturalWidth(part, metrics[line], starts[line], unit)
           : metrics[line].width;
       final hyphen = _advances.hyphen(part.styleAt(unit), _textStyles);
-      if (natural + hyphen > width + _fitTolerance) {
+      // A part's line counts the kerning of its last letter with the letter
+      // after the soft hyphen, and the hyphen's width counts none of its
+      // own. Each moved a hyphen across the line's end by up to a fifth of
+      // its width in the corpus. Near the line's end, the line is measured
+      // alone, as Chromium measures it, and with its hyphen, as the
+      // paragraph with its marks draws it (tb-o242).
+      var fits = natural + hyphen <= width + _fitTolerance;
+      if ((natural + hyphen - width).abs() <= hyphen / 2) {
+        if (_hyphenatedLine(part, starts[line], unit) case (
+          :final alone,
+          :final drawn,
+        )) {
+          fits =
+              alone + hyphen <= width + _fitTolerance &&
+              drawn <= width + _fitTolerance;
+        }
+      }
+      if (!fits) {
         marks[at] = _joiner;
         // The line breaks earlier, maybe at another soft hyphen.
         return part.start + starts[line];
@@ -1837,11 +1863,65 @@ class LayoutRun {
     return last ? null : part.start + starts[marked];
   }
 
+  /// The widths of the line of [part] from code unit [start] to its soft
+  /// hyphen [end], from measures of the line alone: [alone] without the
+  /// soft hyphen, and [drawn] to the right edge of a hyphen in its place,
+  /// as the paragraph with its marks draws it. Null when the line holds a
+  /// placeholder.
+  ///
+  /// Chromium shapes the line up to the soft hyphen without the letters
+  /// after it, and the hyphen apart, so the line's width with its hyphen is
+  /// [alone] plus the hyphen's width. The drawn hyphen kerns with the
+  /// letters on both sides of it.
+  ({double alone, double drawn})? _hyphenatedLine(
+    _Built part,
+    int start,
+    int end,
+  ) {
+    final line = ui.ParagraphBuilder(ui.ParagraphStyle());
+    final hyphenated = ui.ParagraphBuilder(ui.ParagraphStyle());
+    var unit = start;
+    while (unit < end) {
+      final text = part._textAt(unit);
+      if (text == null) return null;
+      final stop = math.min(end, text.start + text.text.length);
+      final added = text.text.substring(unit - text.start, stop - text.start);
+      for (final builder in [line, hyphenated]) {
+        builder
+          ..pushStyle(_textStyles[text.style])
+          ..addText(added)
+          ..pop();
+      }
+      unit = stop;
+    }
+    hyphenated
+      ..pushStyle(_textStyles[part.styleAt(end)])
+      ..addText(String.fromCharCode(_hyphen))
+      ..pop();
+    if (part._textAt(end + 1) case final next?) {
+      hyphenated
+        ..pushStyle(_textStyles[next.style])
+        ..addText(next.text[end + 1 - next.start])
+        ..pop();
+    }
+    const unbounded = ui.ParagraphConstraints(width: double.infinity);
+    final alone = line.build()..layout(unbounded);
+    final drawn = hyphenated.build()..layout(unbounded);
+    final boxes = drawn.getBoxesForRange(end - start, end - start + 1);
+    final widths = boxes.isEmpty
+        ? null
+        : (alone: alone.maxIntrinsicWidth, drawn: boxes.last.right);
+    alone.dispose();
+    drawn.dispose();
+    return widths;
+  }
+
   /// Checks that each hyphen of [built], the whole paragraph laid out with
   /// [marks], ends its line. Returns null when each does.
   ///
-  /// When one does not, the width of its justified line was misjudged, or
-  /// float noise broke its line otherwise in a part: it becomes a word
+  /// When one does not, its line's width with the hyphen was misjudged far
+  /// from the line's end, or float noise broke its line otherwise in a
+  /// part: it becomes a word
   /// joiner, and the marks after it are dropped, as they were decided for
   /// lines that are gone. Returns where the line before it starts: that
   /// line broke early, and breaks again.
@@ -1872,7 +1952,7 @@ class LayoutRun {
 
   /// How far past the line width a hyphen may reach and still fit: float
   /// noise. A hyphen judged to fit that does not makes its line break
-  /// earlier, and [_markHyphens] then refuses it.
+  /// earlier, and [_misjudged] then refuses it.
   static const _fitTolerance = 0.01;
 
   /// The width of [line], a justified line of [built] from code unit
