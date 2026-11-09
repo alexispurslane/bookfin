@@ -170,7 +170,7 @@ void main() {
       await playback.play();
       final counts = heard(playback);
       await playback.pause();
-      expect(playback.history.first.kind, ListeningAction.pause);
+      expect(playback.history.first.kind, HistoryAction.pause);
       expect(counts['records'], 1);
     });
 
@@ -202,7 +202,7 @@ void main() {
       final counts = heard(playback);
       await playback.seekEdition(75000);
       final offer = playback.undoNotifier.value;
-      expect(offer?.action.kind, ListeningAction.seek);
+      expect(offer?.action.kind, HistoryAction.seek);
       expect(offer?.saved, isTrue);
       expect(counts['undo'], 1);
     });

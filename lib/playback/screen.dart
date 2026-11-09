@@ -209,7 +209,7 @@ class PlayerView extends StatelessWidget {
       const SizedBox(height: 12),
       Center(
         child: TextButton(
-          onPressed: () => openListeningTimeline(context, playback),
+          onPressed: () => openHistory(context, playback),
           child: const Text('History'),
         ),
       ),
@@ -493,7 +493,7 @@ class PlayerView extends StatelessWidget {
               // reads Bookmarked, and a tap names that bookmark. The place
               // moves away from the bookmark as audio plays.
               Expanded(
-                child: ListenableSelector<AudioBookmark?>(
+                child: ListenableSelector<Bookmark<AudioPosition>?>(
                   listenable: Listenable.merge([
                     playback.positionNotifier,
                     playback.recordsNotifier,
@@ -555,11 +555,8 @@ class PlayerView extends StatelessWidget {
                 child: _Tool(
                   label: 'History',
                   top: Icon(Icons.history_rounded, color: accent),
-                  onTap: () => openListeningTimeline(
-                    context,
-                    playback,
-                    book: playback.book,
-                  ),
+                  onTap: () =>
+                      openHistory(context, playback, book: playback.book),
                 ),
               ),
             ],

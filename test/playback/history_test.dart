@@ -123,11 +123,11 @@ void main() {
       engine.emit(0, 11000);
       await playback.pause();
       expect(playback.history.take(2).map((event) => event.kind), [
-        ListeningAction.pause,
-        ListeningAction.interruption,
+        HistoryAction.pause,
+        HistoryAction.interruption,
       ]);
       expect(
-        playback.history.where((event) => event.kind == ListeningAction.pause),
+        playback.history.where((event) => event.kind == HistoryAction.pause),
         hasLength(1),
       );
     },
@@ -159,7 +159,7 @@ void main() {
         gated.gate!.complete();
         await Future.wait([writing, firstRelease, jumping, secondRelease]);
         final seeks = playback.history
-            .where((event) => event.kind == ListeningAction.seek)
+            .where((event) => event.kind == HistoryAction.seek)
             .toList()
             .reversed
             .toList();
@@ -168,7 +168,7 @@ void main() {
         expect(seeks[0].after.milliseconds, 35000);
         if (interveningJump) {
           expect(playback.editionMilliseconds, 125000);
-          expect(playback.history.first.kind, ListeningAction.jump);
+          expect(playback.history.first.kind, HistoryAction.jump);
           await playback.undoSeek();
           expect(playback.editionMilliseconds, 95000);
           return;
@@ -227,7 +227,7 @@ void main() {
       await playback.undoSeek();
       expect(playback.editionMilliseconds, 0);
       expect(playback.undoAction, isNull);
-      expect(playback.history.first.kind, ListeningAction.undo);
+      expect(playback.history.first.kind, HistoryAction.undo);
     },
   );
 
@@ -237,9 +237,9 @@ void main() {
       await playback.pause();
       await playback.stop();
       await playback.stop();
-      expect(playback.history.first.kind, ListeningAction.stop);
+      expect(playback.history.first.kind, HistoryAction.stop);
       expect(
-        playback.history.where((event) => event.kind == ListeningAction.stop),
+        playback.history.where((event) => event.kind == HistoryAction.stop),
         hasLength(1),
       );
     },
@@ -312,7 +312,7 @@ void main() {
       engine.emit(0, 13000, playing: true);
       await playback.finishSliderSeek(95000);
       final seek = playback.history
-          .where((event) => event.kind == ListeningAction.seek)
+          .where((event) => event.kind == HistoryAction.seek)
           .single;
       expect(seek.before.milliseconds, 11000);
       expect(seek.after.sourceKey, second.key);
@@ -320,7 +320,7 @@ void main() {
       await playback.undoSeek();
       expect(playback.position?.sourceKey, first.key);
       expect(playback.position?.milliseconds, 11000);
-      expect(playback.history.first.kind, ListeningAction.undo);
+      expect(playback.history.first.kind, HistoryAction.undo);
       expect(
         playback.history.where((event) => event.id == seek.id),
         hasLength(1),
@@ -336,7 +336,7 @@ void main() {
       await Future.wait([playback.undoSeek(), playback.jump(forward: true)]);
       expect(playback.editionMilliseconds, 75000);
       expect(playback.history.first.before.milliseconds, 45000);
-      expect(playback.history[1].kind, ListeningAction.undo);
+      expect(playback.history[1].kind, HistoryAction.undo);
       expect(playback.history[1].before.milliseconds, 15000);
       expect(playback.history[1].after.milliseconds, 45000);
     },
@@ -357,7 +357,7 @@ void main() {
     await playback.restoreHistory(jump.id);
     expect(playback.editionMilliseconds, 45000);
     expect(playback.history, hasLength(count + 1));
-    expect(playback.history.first.kind, ListeningAction.historyRestore);
+    expect(playback.history.first.kind, HistoryAction.historyRestore);
     await playback.restoreHistory(jump.id, previous: false);
     expect(playback.editionMilliseconds, 75000);
     expect(playback.history, hasLength(count + 2));
@@ -394,7 +394,7 @@ void main() {
       expect(playback.bookmarks.single.note, 'New note');
       await playback.restoreBookmark(bookmark.id);
       expect(playback.editionMilliseconds, 75000);
-      expect(playback.history.first.kind, ListeningAction.bookmarkRestore);
+      expect(playback.history.first.kind, HistoryAction.bookmarkRestore);
       await playback.editBookmark(bookmark.id);
       expect(playback.bookmarks.single.title, isNull);
       expect(playback.bookmarks.single.note, isNull);
@@ -516,7 +516,7 @@ void main() {
     await playback.bind(account(), [title]);
     expect(playback.bookmarks.single.title, 'Keep me');
     expect(
-      playback.history.any((event) => event.kind == ListeningAction.seek),
+      playback.history.any((event) => event.kind == HistoryAction.seek),
       isTrue,
     );
   });
@@ -572,15 +572,15 @@ void main() {
       expect(playback.history.first.before.milliseconds, 0);
       expect(playback.history.first.after.sourceKey, second.key);
       await handler.rewind();
-      expect(playback.history.first.kind, ListeningAction.jump);
+      expect(playback.history.first.kind, HistoryAction.jump);
       expect(playback.history.first.after.milliseconds, 5000);
       await playback.undoSeek();
       expect(playback.position?.milliseconds, 15000);
       await handler.pause();
-      expect(playback.history.first.kind, ListeningAction.pause);
+      expect(playback.history.first.kind, HistoryAction.pause);
       expect(playback.history.first.after.milliseconds, 15000);
       await handler.play();
-      expect(playback.history.first.kind, ListeningAction.resume);
+      expect(playback.history.first.kind, HistoryAction.resume);
     },
   );
 
@@ -618,7 +618,7 @@ void main() {
       gated.gate!.complete();
       await seeking;
       expect(playback.playing, isFalse);
-      expect(playback.history.first.kind, ListeningAction.interruption);
+      expect(playback.history.first.kind, HistoryAction.interruption);
       expect(playback.history.first.after.milliseconds, 15000);
     },
   );
@@ -685,7 +685,7 @@ void main() {
     expect(playback.bookmarks.single.position.milliseconds, 18000);
     expect(playback.position?.milliseconds, 30000);
     expect(
-      playback.history.any((event) => event.kind == ListeningAction.seek),
+      playback.history.any((event) => event.kind == HistoryAction.seek),
       isTrue,
     );
   });

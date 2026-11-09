@@ -230,7 +230,7 @@ class ReaderSession extends ChangeNotifier {
   final List<TextPosition> _resumes = [];
   // NOTE: Replace this list on each change, never change it in place.
   // [bookmarkChanges] compares lists by identity.
-  List<TextBookmark> _bookmarks = const [];
+  List<Bookmark<TextPosition>> _bookmarks = const [];
   bool _disposed = false;
   bool _recordsReady = false;
   int _accountGeneration = 0;
@@ -305,12 +305,12 @@ class ReaderSession extends ChangeNotifier {
 
   /// The place of [bookmark] in the open book, or null when the bookmark
   /// belongs to other content.
-  ReaderAddress? addressOf(TextBookmark bookmark) =>
+  ReaderAddress? addressOf(Bookmark<TextPosition> bookmark) =>
       _compatible(bookmark.position);
 
   bool get ready => document != null && _navigator != null;
   bool get canBookmark => _recordsReady && position != null;
-  List<TextBookmark> get bookmarks => List.unmodifiable(
+  List<Bookmark<TextPosition>> get bookmarks => List.unmodifiable(
     _bookmarks.where((mark) => mark.position.editionId == edition?.id),
   );
 
@@ -366,7 +366,10 @@ class ReaderSession extends ChangeNotifier {
               .toList();
           final bookmarks = (saved['bookmarks'] as List)
               .map(
-                (value) => TextBookmark.fromJson(value as Map<String, dynamic>),
+                (value) => Bookmark.fromJson(
+                  value as Map<String, dynamic>,
+                  decodeTextPosition,
+                ),
               )
               .toList();
           if (bookmarks.map((mark) => mark.id).toSet().length !=
@@ -664,10 +667,12 @@ class ReaderSession extends ChangeNotifier {
   Future<void> addBookmark({String? title, String? note}) async {
     final current = position;
     if (current == null || !_recordsReady) return;
-    final added = TextBookmark(
+    final added = Bookmark(
       id: recordId(),
       position: current,
       createdAt: DateTime.now(),
+      bookTitle: _book?.title,
+      editionLabel: _edition?.label,
       title: title,
       note: note,
     );
@@ -680,10 +685,14 @@ class ReaderSession extends ChangeNotifier {
     final index = _bookmarks.indexWhere((value) => value.id == id);
     if (index < 0) return;
     final old = _bookmarks[index];
-    final edited = TextBookmark(
+    // An edit names the book and the edition as they are now, so a
+    // bookmark saved before book names gets them.
+    final edited = Bookmark(
       id: old.id,
       position: old.position,
       createdAt: old.createdAt,
+      bookTitle: _book?.title ?? old.bookTitle,
+      editionLabel: _edition?.label ?? old.editionLabel,
       title: title,
       note: note,
     );
@@ -868,7 +877,7 @@ class ReaderSession extends ChangeNotifier {
   /// saves them.
   Future<void> _save({
     List<TextPosition> resumes = const [],
-    Map<String, TextBookmark?> bookmarks = const {},
+    Map<String, Bookmark<TextPosition>?> bookmarks = const {},
   }) async {
     final key = _account;
     if (key == null || !_recordsReady || _disposed) return;
@@ -937,8 +946,10 @@ class ReaderSession extends ChangeNotifier {
         .toList();
     final bookmarks = (saved['bookmarks'] as List)
         .map(
-          (value) =>
-              TextBookmark.fromJson(Map<String, dynamic>.from(value as Map)),
+          (value) => Bookmark.fromJson(
+            Map<String, dynamic>.from(value as Map),
+            decodeTextPosition,
+          ),
         )
         .toList();
     _resumes

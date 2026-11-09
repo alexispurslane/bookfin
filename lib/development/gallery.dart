@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide TextPosition;
 
 import '../catalog/book_cover.dart';
 import '../catalog/glass.dart'
@@ -232,14 +232,14 @@ AudioPosition _place(Book book, int milliseconds) => AudioPosition(
 /// The sample listening records of every sample book, newest first, as of
 /// [now].
 List<TimelineEntry> _sampleTimeline(DateTime now) {
-  ListeningEvent event(
+  HistoryEvent<AudioPosition> event(
     String id,
     Duration ago,
-    ListeningAction kind,
+    HistoryAction kind,
     Book book,
     int before,
     int after,
-  ) => ListeningEvent(
+  ) => HistoryEvent(
     id: id,
     at: now.subtract(ago),
     kind: kind,
@@ -253,7 +253,7 @@ List<TimelineEntry> _sampleTimeline(DateTime now) {
       event(
         'pause',
         const Duration(minutes: 12),
-        ListeningAction.pause,
+        HistoryAction.pause,
         _timeMachine,
         5234000,
         5234000,
@@ -263,14 +263,14 @@ List<TimelineEntry> _sampleTimeline(DateTime now) {
       event(
         'jump',
         const Duration(minutes: 25),
-        ListeningAction.jump,
+        HistoryAction.jump,
         _timeMachine,
         3729000,
         4320000,
       ),
     ),
     BookmarkEntry(
-      AudioBookmark(
+      Bookmark(
         id: 'eloi',
         position: _place(_timeMachine, 4800000),
         createdAt: now.subtract(const Duration(minutes: 40)),
@@ -283,7 +283,7 @@ List<TimelineEntry> _sampleTimeline(DateTime now) {
       event(
         'chapter',
         const Duration(days: 1),
-        ListeningAction.chapter,
+        HistoryAction.chapter,
         _poisonBelt,
         900000,
         1800000,
@@ -362,7 +362,8 @@ class _SamplePlayer {
   /// The bookmarks of the open book, where the position slider marks them.
   List<EditionBookmark> get bookmarks => [
     for (final entry in timeline.value)
-      if (entry case BookmarkEntry(:final bookmark)
+      if (entry
+          case BookmarkEntry(bookmark: final Bookmark<AudioPosition> bookmark)
           when bookmark.position.editionId == book.value.editions.first.id)
         (bookmark: bookmark, at: bookmark.position.milliseconds),
   ];
@@ -391,8 +392,10 @@ class _SamplePlayer {
     position.value = milliseconds.clamp(0, _length);
   }
 
-  /// Opens the book of [place], then moves to it.
-  void goTo(AudioPosition place) {
+  /// Opens the book of [place], then moves to it. The sample has listening
+  /// places only.
+  void goTo(Place place) {
+    if (place is! AudioPosition) return;
     open(
       _library
           .map((entry) => entry.book)
@@ -424,12 +427,12 @@ class _SamplePlayer {
       if (kept.id != entry.id) kept,
   ];
 
-  void rename(AudioBookmark bookmark, String title, String note) =>
+  void rename(Bookmark<AudioPosition> bookmark, String title, String note) =>
       timeline.value = [
         for (final entry in timeline.value)
           entry.id == bookmark.id
               ? BookmarkEntry(
-                  AudioBookmark(
+                  Bookmark(
                     id: bookmark.id,
                     position: bookmark.position,
                     createdAt: bookmark.createdAt,
@@ -582,7 +585,10 @@ class _PlayerFixture extends StatelessWidget {
     );
   }
 
-  Future<void> _rename(BuildContext context, AudioBookmark bookmark) async {
+  Future<void> _rename(
+    BuildContext context,
+    Bookmark<AudioPosition> bookmark,
+  ) async {
     final edited = await showBookmarkEditor(
       context,
       heading: 'Edit bookmark',
@@ -690,7 +696,7 @@ class _PlayerFixture extends StatelessWidget {
         const SectionLabel('HISTORY'),
         SizedBox(
           height: 320,
-          child: ListeningTimeline(
+          child: HistoryTimeline(
             entries: sample.timeline,
             editionTime: (place) => place.milliseconds,
             showBooks: true,
@@ -699,7 +705,11 @@ class _PlayerFixture extends StatelessWidget {
               ActionEntry(:final event) => event.after,
               BookmarkEntry(:final bookmark) => bookmark.position,
             }),
-            onRename: (bookmark) => unawaited(_rename(context, bookmark)),
+            onRename: (bookmark) {
+              if (bookmark is Bookmark<AudioPosition>) {
+                unawaited(_rename(context, bookmark));
+              }
+            },
             onDelete: (entry) => unawaited(_confirmDelete(context, entry)),
           ),
         ),
@@ -752,7 +762,7 @@ class _ReaderFixtureState extends State<_ReaderFixture> {
   /// The index in [_readerChapters] of the shown chapter.
   int _chapter = 0;
   int _nextBookmark = 0;
-  final _bookmarks = ValueNotifier<List<TextBookmark>>([]);
+  final _bookmarks = ValueNotifier<List<Bookmark<TextPosition>>>([]);
   final _hits = ValueNotifier<List<ReaderHit>>([]);
   final _scroll = ScrollController();
 
@@ -874,7 +884,7 @@ class _ReaderFixtureState extends State<_ReaderFixture> {
 
   void _addBookmark() => _bookmarks.value = [
     ..._bookmarks.value,
-    TextBookmark(
+    Bookmark(
       id: 'sample-${_nextBookmark++}',
       position: TextPosition(
         editionId: 'sample-epub',
@@ -886,7 +896,7 @@ class _ReaderFixtureState extends State<_ReaderFixture> {
     ),
   ];
 
-  Future<void> _editBookmark(TextBookmark bookmark) async {
+  Future<void> _editBookmark(Bookmark<TextPosition> bookmark) async {
     final edited = await showBookmarkEditor(
       context,
       heading: 'Edit reading bookmark',
@@ -898,7 +908,7 @@ class _ReaderFixtureState extends State<_ReaderFixture> {
     _bookmarks.value = [
       for (final kept in _bookmarks.value)
         kept.id == bookmark.id
-            ? TextBookmark(
+            ? Bookmark(
                 id: kept.id,
                 position: kept.position,
                 createdAt: kept.createdAt,
@@ -909,7 +919,7 @@ class _ReaderFixtureState extends State<_ReaderFixture> {
     ];
   }
 
-  Future<void> _deleteBookmark(TextBookmark bookmark) async {
+  Future<void> _deleteBookmark(Bookmark<TextPosition> bookmark) async {
     if (await confirmAction(
       context,
       title: 'Delete reading bookmark?',

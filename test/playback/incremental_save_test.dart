@@ -29,17 +29,17 @@ AudioPosition at(int milliseconds) => AudioPosition(
   milliseconds: milliseconds,
 );
 
-Map<String, dynamic> event(String id, int milliseconds) => ListeningEvent(
+Map<String, dynamic> event(String id, int milliseconds) => HistoryEvent(
   id: id,
   at: DateTime.utc(2026, 11, 7, 12),
-  kind: ListeningAction.seek,
+  kind: HistoryAction.seek,
   before: at(0),
   after: at(milliseconds),
   bookTitle: 'Book',
   editionLabel: 'Audio',
 ).toJson();
 
-Map<String, dynamic> bookmark(String id, {String? title}) => AudioBookmark(
+Map<String, dynamic> bookmark(String id, {String? title}) => Bookmark(
   id: id,
   position: at(5000),
   createdAt: DateTime.utc(2026, 11, 7, 12),
@@ -186,7 +186,7 @@ void main() {
       await playback.pause();
       await playback.flush();
       final paused = playback.history.first;
-      expect(paused.kind, ListeningAction.pause);
+      expect(paused.kind, HistoryAction.pause);
       expect(store.saves.expand((changes) => changes.history.keys), [
         paused.id,
       ]);
@@ -250,7 +250,7 @@ void main() {
 
     test('deleting a history event saves only its deletion', () async {
       final seek = playback.history.firstWhere(
-        (event) => event.kind == ListeningAction.seek,
+        (event) => event.kind == HistoryAction.seek,
       );
       await playback.deleteHistory(seek.id);
       expect(store.saves.last.history, {seek.id: null});

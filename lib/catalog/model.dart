@@ -689,13 +689,23 @@ dynamic _freeze(dynamic value) {
   return value;
 }
 
-class AudioPosition {
+/// A place in one edition of a book: an [AudioPosition] or a
+/// [TextPosition]. A switch on a place must cover both media.
+sealed class Place {
+  const Place();
+
+  /// The id of the edition that holds the place.
+  String get editionId;
+}
+
+class AudioPosition extends Place {
   const AudioPosition({
     required this.editionId,
     required this.sourceKey,
     required this.revision,
     required this.milliseconds,
   });
+  @override
   final String editionId;
   final String sourceKey;
   final String revision;
@@ -714,7 +724,7 @@ class AudioPosition {
       );
 }
 
-class TextPosition {
+class TextPosition extends Place {
   const TextPosition({
     required this.editionId,
     required this.sourceKey,
@@ -722,6 +732,7 @@ class TextPosition {
     required this.anchor,
     this.sourcePage,
   });
+  @override
   final String editionId;
   final String sourceKey;
   final String revision;

@@ -35,17 +35,17 @@ AudioPosition _audio(int milliseconds) => AudioPosition(
   milliseconds: milliseconds,
 );
 
-final _event = ListeningEvent(
+final _event = HistoryEvent(
   id: 'event',
   at: DateTime.utc(2026, 11, 9, 21, 40),
-  kind: ListeningAction.seek,
+  kind: HistoryAction.seek,
   before: _audio(1000),
   after: _audio(61000),
   bookTitle: 'Middlemarch',
   editionLabel: 'Recording',
 );
 
-final _mark = AudioBookmark(
+final _mark = Bookmark(
   id: 'mark',
   position: _audio(15000),
   createdAt: DateTime.utc(2026, 11, 7, 12),
@@ -54,7 +54,7 @@ final _mark = AudioBookmark(
   title: 'Mark',
 );
 
-final _page = TextBookmark(
+final _page = Bookmark(
   id: 'page',
   position: const TextPosition(
     editionId: 'ebook',
@@ -86,8 +86,9 @@ void main() {
     expect(jsonEncode(_event.toJson()), _listeningEvent);
     expect(
       jsonEncode(
-        ListeningEvent.fromJson(
+        HistoryEvent.fromJson(
           jsonDecode(_listeningEvent) as Map<String, dynamic>,
+          decodePosition,
         ).toJson(),
       ),
       _listeningEvent,
@@ -98,8 +99,9 @@ void main() {
     expect(jsonEncode(_mark.toJson()), _listeningBookmark);
     expect(
       jsonEncode(
-        AudioBookmark.fromJson(
+        Bookmark.fromJson(
           jsonDecode(_listeningBookmark) as Map<String, dynamic>,
+          decodePosition,
         ).toJson(),
       ),
       _listeningBookmark,
@@ -110,8 +112,9 @@ void main() {
     expect(jsonEncode(_page.toJson()), _readingBookmark);
     expect(
       jsonEncode(
-        TextBookmark.fromJson(
+        Bookmark.fromJson(
           jsonDecode(_readingBookmark) as Map<String, dynamic>,
+          decodeTextPosition,
         ).toJson(),
       ),
       _readingBookmark,

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../catalog/model.dart' show AudioPosition;
 import '../foundation/theme.dart';
 import '../foundation/time.dart';
 import 'playback.dart';
@@ -54,7 +55,7 @@ class RecordSaveNotice extends StatelessWidget {
 Future<void> editAudioBookmark(
   BuildContext context,
   Playback playback, {
-  AudioBookmark? bookmark,
+  Bookmark<AudioPosition>? bookmark,
 }) async {
   final position = bookmark?.position ?? playback.position;
   if (position == null) return;

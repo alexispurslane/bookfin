@@ -3,7 +3,7 @@ import 'package:bookfin/foundation/theme.dart';
 import 'package:bookfin/playback/records.dart';
 import 'package:bookfin/reader/document.dart';
 import 'package:bookfin/reader/screen.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide TextPosition;
 import 'package:flutter_test/flutter_test.dart';
 
 // The reader panels take values and callbacks, and no ReaderSession. So
@@ -17,7 +17,7 @@ Future<void> _show(WidgetTester tester, Widget panel) => tester.pumpWidget(
   ),
 );
 
-final _mark = TextBookmark(
+final _mark = Bookmark(
   id: 'river-mark',
   position: const TextPosition(
     editionId: 'edition',
@@ -98,9 +98,9 @@ void main() {
 
   testWidgets('a bookmark row on the Bookmarks tab reports a tap as a return '
       'to its place, and its menu reports Edit and Delete', (tester) async {
-    final restored = <TextBookmark>[];
-    final edited = <TextBookmark>[];
-    final deleted = <TextBookmark>[];
+    final restored = <Bookmark<TextPosition>>[];
+    final edited = <Bookmark<TextPosition>>[];
+    final deleted = <Bookmark<TextPosition>>[];
     await _show(
       tester,
       ReaderContentsPanel(

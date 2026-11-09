@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide TextPosition;
 import 'package:flutter/semantics.dart' show CustomSemanticsAction;
 import 'package:flutter/services.dart';
 
@@ -15,7 +15,7 @@ import '../catalog/glass.dart'
         glassSheetTextInset,
         glassSheetTextWidth,
         showGlassSheet;
-import '../catalog/model.dart' show Book;
+import '../catalog/model.dart' show Book, TextPosition;
 import '../foundation/listenable_selector.dart';
 import '../foundation/scrub_bar.dart';
 import '../foundation/theme.dart' show PillChoice;
@@ -244,7 +244,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
 
   /// Asks for a new title and note for [bookmark] in the shared bookmark
   /// editor, and saves them unless the person cancels.
-  Future<void> _editBookmark(TextBookmark bookmark) async {
+  Future<void> _editBookmark(Bookmark<TextPosition> bookmark) async {
     final edited = await showBookmarkEditor(
       context,
       heading: 'Edit reading bookmark',
@@ -261,7 +261,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
   }
 
   /// Deletes [bookmark] after the person confirms it.
-  Future<void> _deleteBookmark(TextBookmark bookmark) async {
+  Future<void> _deleteBookmark(Bookmark<TextPosition> bookmark) async {
     if (await confirmAction(
       context,
       title: 'Delete reading bookmark?',
@@ -874,16 +874,16 @@ class ReaderContentsPanel extends StatelessWidget {
   final ValueChanged<String> onContents;
 
   /// The reading bookmarks of the open edition.
-  final List<TextBookmark> bookmarks;
+  final List<Bookmark<TextPosition>> bookmarks;
 
   /// Reports a tap on a bookmark, to return to its place.
-  final ValueChanged<TextBookmark> onRestore;
+  final ValueChanged<Bookmark<TextPosition>> onRestore;
 
   /// Reports that the person chose Edit title and note for a bookmark.
-  final ValueChanged<TextBookmark> onEdit;
+  final ValueChanged<Bookmark<TextPosition>> onEdit;
 
   /// Reports that the person chose Delete for a bookmark.
-  final ValueChanged<TextBookmark> onDelete;
+  final ValueChanged<Bookmark<TextPosition>> onDelete;
 
   @override
   Widget build(BuildContext context) => SafeArea(

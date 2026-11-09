@@ -1238,7 +1238,7 @@ bool _readable(String record, Map<String, dynamic>? value) {
   final kind = value?['kind'];
   return address[1] != 'history' ||
       kind is! String ||
-      ListeningAction.values.any((known) => known.name == kind);
+      HistoryAction.values.any((known) => known.name == kind);
 }
 
 /// Throws a [FormatException] when the value of [action] is damaged: this
@@ -1253,15 +1253,15 @@ void _validateActionValue(Map<String, dynamic> action) {
       case 'bookmarks':
         if (value['id'] != address[2]) throw const FormatException();
         if (reading) {
-          TextBookmark.fromJson(value);
+          Bookmark.fromJson(value, decodeTextPosition);
         } else {
-          AudioBookmark.fromJson(value);
+          Bookmark.fromJson(value, decodePosition);
         }
       case 'history':
         if (reading || value['id'] != address[2]) {
           throw const FormatException();
         }
-        ListeningEvent.fromJson(value);
+        HistoryEvent.fromJson(value, decodePosition);
       case 'resumes':
         if (reading) {
           decodeTextPosition(value);

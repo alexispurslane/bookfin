@@ -83,20 +83,20 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  Future<void> openHistory(WidgetTester tester) async {
+  Future<void> showTimeline(WidgetTester tester) async {
     await showPlayer(tester);
     await tester.tap(find.text('History'));
     await tester.pumpAndSettle();
   }
 
   Finder inTimeline(Finder finder) =>
-      find.descendant(of: find.byType(ListeningTimeline), matching: finder);
+      find.descendant(of: find.byType(HistoryTimeline), matching: finder);
 
   testWidgets('History in the tool row opens a glass timeline', (tester) async {
-    await openHistory(tester);
+    await showTimeline(tester);
     expect(
       find.ancestor(
-        of: find.byType(ListeningTimeline),
+        of: find.byType(HistoryTimeline),
         matching: find.byType(CoverGlass),
       ),
       findsOneWidget,
@@ -107,7 +107,7 @@ void main() {
   testWidgets('the player timeline shows only this book, newest first', (
     tester,
   ) async {
-    await openHistory(tester);
+    await showTimeline(tester);
     final jump = inTimeline(find.text('Jumped ahead 30 s'));
     final bookmark = inTimeline(find.text('Bookmark'));
     expect(jump, findsOneWidget);
@@ -122,7 +122,7 @@ void main() {
   testWidgets('each time of day fits on one line, so entries stay dense', (
     tester,
   ) async {
-    await openHistory(tester);
+    await showTimeline(tester);
     final line = tester.getSize(inTimeline(find.text('Today'))).height;
     final times = inTimeline(find.textContaining(RegExp(r'^\d{1,2}:\d\d')));
     expect(times, findsWidgets);
@@ -134,7 +134,7 @@ void main() {
   testWidgets('a tap on an action offers going back to where it began', (
     tester,
   ) async {
-    await openHistory(tester);
+    await showTimeline(tester);
     await tester.tap(inTimeline(find.text('Jumped ahead 30 s')));
     await tester.pumpAndSettle();
     await tester.runAsync(() async {
@@ -146,7 +146,7 @@ void main() {
   });
 
   testWidgets('Go to on an action returns to where it ended', (tester) async {
-    await openHistory(tester);
+    await showTimeline(tester);
     await tester.tap(inTimeline(find.text('Jumped ahead 30 s')));
     await tester.pumpAndSettle();
     await tester.runAsync(() async {
@@ -155,12 +155,12 @@ void main() {
     });
     await tester.pumpAndSettle();
     expect(playback.editionMilliseconds, 30000);
-    expect(find.byType(ListeningTimeline), findsNothing);
+    expect(find.byType(HistoryTimeline), findsNothing);
   });
 
   testWidgets('a tap on a bookmark offers going to it', (tester) async {
     await tester.runAsync(() => playback.seekEdition(10000));
-    await openHistory(tester);
+    await showTimeline(tester);
     await tester.tap(inTimeline(find.text('Bookmark')));
     await tester.pumpAndSettle();
     await tester.runAsync(() async {
@@ -170,12 +170,12 @@ void main() {
     await tester.pumpAndSettle();
     expect(playback.editionMilliseconds, 75000);
     // Going somewhere closes the timeline, so the player shows the new place.
-    expect(find.byType(ListeningTimeline), findsNothing);
+    expect(find.byType(HistoryTimeline), findsNothing);
   });
 
   testWidgets('an open timeline measures its places again when the library '
       'changes the length of an earlier file', (tester) async {
-    await openHistory(tester);
+    await showTimeline(tester);
     expect(inTimeline(find.text('01:15')), findsWidgets);
     // A refresh of the same account finds that part one runs ten seconds
     // longer, so the bookmark in part two is ten seconds later in the book.
@@ -213,7 +213,7 @@ void main() {
   testWidgets('a playing tick redraws no entry of an open timeline', (
     tester,
   ) async {
-    await openHistory(tester);
+    await showTimeline(tester);
     void tick() =>
         engine.emit(engine.index, engine.milliseconds + 200, playing: true);
     // The first report starts playing, which records an action.
@@ -235,7 +235,7 @@ void main() {
   });
 
   testWidgets('an action can be deleted from the timeline', (tester) async {
-    await openHistory(tester);
+    await showTimeline(tester);
     await tester.tap(inTimeline(find.text('Jumped ahead 30 s')));
     await tester.pumpAndSettle();
     await tester.runAsync(
@@ -252,7 +252,7 @@ void main() {
     expect(
       playback.history.where(
         (event) =>
-            event.kind == ListeningAction.jump &&
+            event.kind == HistoryAction.jump &&
             event.after.editionId == recording.id,
       ),
       isEmpty,
@@ -262,7 +262,7 @@ void main() {
   testWidgets('Cancel in the delete confirmation keeps the action', (
     tester,
   ) async {
-    await openHistory(tester);
+    await showTimeline(tester);
     await tester.tap(inTimeline(find.text('Jumped ahead 30 s')));
     await tester.pumpAndSettle();
     await tester.tap(inTimeline(find.byTooltip('Delete')));
@@ -271,7 +271,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(inTimeline(find.text('Jumped ahead 30 s')), findsOneWidget);
     expect(
-      playback.history.where((event) => event.kind == ListeningAction.jump),
+      playback.history.where((event) => event.kind == HistoryAction.jump),
       hasLength(2),
     );
   });
@@ -279,7 +279,7 @@ void main() {
   testWidgets('Name on a bookmark saves the title that the listener types', (
     tester,
   ) async {
-    await openHistory(tester);
+    await showTimeline(tester);
     await tester.tap(inTimeline(find.text('Bookmark')));
     await tester.pumpAndSettle();
     // The save runs in real time, so it starts outside the fake clock.
@@ -312,7 +312,7 @@ void main() {
         home: Scaffold(
           body: Builder(
             builder: (context) => TextButton(
-              onPressed: () => openListeningTimeline(context, playback),
+              onPressed: () => openHistory(context, playback),
               child: const Text('Open'),
             ),
           ),
@@ -333,16 +333,16 @@ void main() {
       revision: recording.files.first.revision,
       milliseconds: milliseconds,
     );
-    final jump = ListeningEvent(
+    final jump = HistoryEvent(
       id: 'jump',
       at: at.subtract(const Duration(minutes: 2)),
-      kind: ListeningAction.jump,
+      kind: HistoryAction.jump,
       before: placeAt(0),
       after: placeAt(30000),
       bookTitle: title.title,
       editionLabel: recording.label,
     );
-    final mark = AudioBookmark(
+    final mark = Bookmark(
       id: 'mark',
       position: placeAt(75000),
       createdAt: at.subtract(const Duration(minutes: 1)),
@@ -364,7 +364,7 @@ void main() {
         MaterialApp(
           theme: bookfinTheme(Brightness.light),
           home: Scaffold(
-            body: ListeningTimeline(
+            body: HistoryTimeline(
               entries: entries,
               editionTime: (place) => place.milliseconds,
               onGoBack: (event) => reports.add(('back', event)),
@@ -433,7 +433,7 @@ void main() {
       await showTimeline(tester);
       entries.value = [
         BookmarkEntry(
-          AudioBookmark(
+          Bookmark(
             id: 'storm',
             position: placeAt(5000),
             createdAt: at,
@@ -447,5 +447,57 @@ void main() {
       await tester.pump();
       expect(find.text('The storm'), findsOneWidget);
     });
+  });
+
+  testWidgets('the timeline names the moves of reading', (tester) async {
+    AudioPosition at(int milliseconds) => AudioPosition(
+      editionId: recording.id,
+      sourceKey: first.key,
+      revision: first.revision,
+      milliseconds: milliseconds,
+    );
+    final kinds = [
+      HistoryAction.link,
+      HistoryAction.search,
+      HistoryAction.open,
+      HistoryAction.close,
+    ];
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: bookfinTheme(Brightness.light),
+        home: Scaffold(
+          body: HistoryTimeline(
+            entries: ValueNotifier([
+              for (final (minute, kind) in kinds.indexed)
+                ActionEntry(
+                  HistoryEvent(
+                    id: kind.name,
+                    at: DateTime(2026, 11, 9, 20, minute),
+                    kind: kind,
+                    before: at(0),
+                    after: at(60000),
+                    bookTitle: title.title,
+                    editionLabel: recording.label,
+                  ),
+                ),
+            ]),
+            editionTime: (_) => null,
+            onGoBack: (_) {},
+            onGoTo: (_) {},
+            onRename: (_) {},
+            onDelete: (_) {},
+          ),
+        ),
+      ),
+    );
+
+    for (final label in [
+      'Followed a link',
+      'Went to a search result',
+      'Opened',
+      'Closed',
+    ]) {
+      expect(find.text(label, findRichText: true), findsOneWidget);
+    }
   });
 }

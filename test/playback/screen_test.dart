@@ -235,7 +235,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(playback.editionMilliseconds, 95000);
       expect(
-        playback.history.where((event) => event.kind == ListeningAction.seek),
+        playback.history.where((event) => event.kind == HistoryAction.seek),
         hasLength(1),
       );
       await tester.scrollUntilVisible(find.text('Undo'), 150);

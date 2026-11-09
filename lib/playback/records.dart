@@ -2,7 +2,9 @@ import 'dart:math';
 
 import '../catalog/model.dart';
 
-enum ListeningAction {
+/// The one closed set of kinds of moves, of listening and of reading. Each
+/// name is the kind's stored JSON name, so a kind is never renamed.
+enum HistoryAction {
   seek,
   jump,
   chapter,
@@ -14,6 +16,19 @@ enum ListeningAction {
   interruption,
   stop,
   completion,
+
+  /// A link on the page, or Go to note.
+  link,
+
+  /// A search result.
+  search,
+
+  /// The start of a reading visit, or a book that opened at a place that
+  /// another device saved.
+  open,
+
+  /// The end of a reading visit.
+  close,
 }
 
 String recordId() => List.generate(
@@ -28,7 +43,7 @@ Map<String, dynamic> encodePosition(AudioPosition position) => {
   'milliseconds': position.milliseconds,
 };
 
-AudioPosition decodePosition(dynamic value) {
+AudioPosition decodePosition(Object? value) {
   if (value is! Map ||
       value['edition'] is! String ||
       (value['edition'] as String).isEmpty ||
@@ -48,8 +63,9 @@ AudioPosition decodePosition(dynamic value) {
   );
 }
 
-class ListeningEvent {
-  const ListeningEvent({
+/// One move between two places of the same medium [P].
+class HistoryEvent<P extends Place> {
+  const HistoryEvent({
     required this.id,
     required this.at,
     required this.kind,
@@ -60,19 +76,28 @@ class ListeningEvent {
   });
   final String id;
   final DateTime at;
-  final ListeningAction kind;
-  final AudioPosition before;
-  final AudioPosition after;
+  final HistoryAction kind;
+
+  /// The place where the move began.
+  final P before;
+
+  /// The place where the move ended.
+  final P after;
+
+  /// The names of the book and of its edition at the time of the move.
   final String bookTitle;
   final String editionLabel;
 
   bool get changesPosition => switch (kind) {
-    ListeningAction.seek ||
-    ListeningAction.jump ||
-    ListeningAction.chapter ||
-    ListeningAction.undo ||
-    ListeningAction.historyRestore ||
-    ListeningAction.bookmarkRestore => true,
+    HistoryAction.seek ||
+    HistoryAction.jump ||
+    HistoryAction.chapter ||
+    HistoryAction.undo ||
+    HistoryAction.historyRestore ||
+    HistoryAction.bookmarkRestore ||
+    HistoryAction.link ||
+    HistoryAction.search ||
+    HistoryAction.open => true,
     _ => false,
   };
 
@@ -80,24 +105,30 @@ class ListeningEvent {
     'id': id,
     'at': at.toUtc().toIso8601String(),
     'kind': kind.name,
-    'before': encodePosition(before),
-    'after': encodePosition(after),
+    'before': encodePlace(before),
+    'after': encodePlace(after),
     'bookTitle': bookTitle,
     'editionLabel': editionLabel,
   };
 
-  factory ListeningEvent.fromJson(Map<String, dynamic> value) {
-    final before = decodePosition(value['before']);
-    final after = decodePosition(value['after']);
-    final kind = ListeningAction.values
+  /// The move that [value] holds, whose places [decodePlace] decodes, for
+  /// example [decodePosition] for listening. Throws a [FormatException] or
+  /// a [TypeError] when [value] is not a valid move.
+  factory HistoryEvent.fromJson(
+    Map<String, dynamic> value,
+    P Function(Object? value) decodePlace,
+  ) {
+    final before = decodePlace(value['before']);
+    final after = decodePlace(value['after']);
+    final kind = HistoryAction.values
         .where((kind) => kind.name == value['kind'])
         .firstOrNull;
     if (value['id'] is! String ||
         (value['id'] as String).isEmpty ||
         kind == null) {
-      throw const FormatException('Invalid listening action');
+      throw const FormatException('Invalid history action');
     }
-    return ListeningEvent(
+    return HistoryEvent(
       id: value['id'] as String,
       at: DateTime.parse(value['at'] as String),
       kind: kind,
@@ -109,49 +140,80 @@ class ListeningEvent {
   }
 }
 
-class AudioBookmark {
-  const AudioBookmark({
+/// A place in edition [P] that the person marked.
+class Bookmark<P extends Place> {
+  const Bookmark({
     required this.id,
     required this.position,
     required this.createdAt,
-    required this.bookTitle,
-    required this.editionLabel,
+    this.bookTitle,
+    this.editionLabel,
     this.title,
     this.note,
   });
   final String id;
-  final AudioPosition position;
+  final P position;
   final DateTime createdAt;
-  final String bookTitle;
-  final String editionLabel;
+
+  /// The names of the book and of its edition when the bookmark was saved.
+  /// A listening bookmark always has both. A reading bookmark saved before
+  /// reading history has neither.
+  final String? bookTitle;
+  final String? editionLabel;
   final String? title;
   final String? note;
 
+  /// The bookmark as JSON. A bookmark without book names writes no names,
+  /// so it keeps the bytes of the release that saved it.
   Map<String, dynamic> toJson() => {
     'id': id,
-    'position': encodePosition(position),
+    'position': encodePlace(position),
     'createdAt': createdAt.toUtc().toIso8601String(),
-    'bookTitle': bookTitle,
-    'editionLabel': editionLabel,
+    'bookTitle': ?bookTitle,
+    'editionLabel': ?editionLabel,
     'title': title,
     'note': note,
   };
 
-  factory AudioBookmark.fromJson(Map<String, dynamic> value) {
-    if (value['id'] is! String || (value['id'] as String).isEmpty) {
-      throw const FormatException('Invalid bookmark');
+  /// The bookmark that [value] holds, whose place [decodePlace] decodes,
+  /// for example [decodeTextPosition] for reading. Throws a
+  /// [FormatException] when [value] is not a valid bookmark, or a listening
+  /// bookmark without book names.
+  factory Bookmark.fromJson(
+    Map<String, dynamic> value,
+    P Function(Object? value) decodePlace,
+  ) {
+    if (value['id'] is! String ||
+        (value['id'] as String).isEmpty ||
+        value['createdAt'] is! String ||
+        [
+          for (final name in ['bookTitle', 'editionLabel', 'title', 'note'])
+            value[name],
+        ].any((text) => text != null && text is! String)) {
+      throw const FormatException('Invalid bookmark.');
     }
-    return AudioBookmark(
+    final position = decodePlace(value['position']);
+    if (position is AudioPosition &&
+        (value['bookTitle'] == null || value['editionLabel'] == null)) {
+      throw const FormatException('A listening bookmark must name its book.');
+    }
+    return Bookmark(
       id: value['id'] as String,
-      position: decodePosition(value['position']),
+      position: position,
       createdAt: DateTime.parse(value['createdAt'] as String),
-      bookTitle: value['bookTitle'] as String,
-      editionLabel: value['editionLabel'] as String,
+      bookTitle: value['bookTitle'] as String?,
+      editionLabel: value['editionLabel'] as String?,
       title: value['title'] as String?,
       note: value['note'] as String?,
     );
   }
 }
+
+/// The JSON of [place], as its medium writes it.
+Map<String, dynamic> encodePlace(Place place) => switch (place) {
+  AudioPosition() => encodePosition(place),
+  TextPosition() => encodeTextPosition(place),
+};
 
 Map<String, dynamic> encodeTextPosition(TextPosition position) => {
   'edition': position.editionId,
@@ -160,7 +222,10 @@ Map<String, dynamic> encodeTextPosition(TextPosition position) => {
   'anchor': position.anchor,
 };
 
-TextPosition decodeTextPosition(Map<String, dynamic> value) {
+TextPosition decodeTextPosition(Object? value) {
+  if (value is! Map<String, dynamic>) {
+    throw const FormatException('Invalid saved reading position.');
+  }
   for (final name in ['edition', 'source', 'revision', 'anchor']) {
     if (value[name] is! String || (value[name] as String).isEmpty) {
       throw const FormatException('Invalid saved reading position.');
@@ -174,56 +239,20 @@ TextPosition decodeTextPosition(Map<String, dynamic> value) {
   );
 }
 
-class TextBookmark {
-  const TextBookmark({
-    required this.id,
-    required this.position,
-    required this.createdAt,
-    this.title,
-    this.note,
-  });
-  final String id;
-  final TextPosition position;
-  final DateTime createdAt;
-  final String? title;
-  final String? note;
-  Map<String, dynamic> toJson() => {
-    'id': id,
-    'position': encodeTextPosition(position),
-    'createdAt': createdAt.toUtc().toIso8601String(),
-    'title': title,
-    'note': note,
-  };
-  factory TextBookmark.fromJson(Map<String, dynamic> value) {
-    if (value['id'] is! String ||
-        (value['id'] as String).isEmpty ||
-        value['position'] is! Map<String, dynamic> ||
-        value['createdAt'] is! String ||
-        (value['title'] != null && value['title'] is! String) ||
-        (value['note'] != null && value['note'] is! String)) {
-      throw const FormatException('Invalid reading bookmark.');
-    }
-    return TextBookmark(
-      id: value['id'] as String,
-      position: decodeTextPosition(value['position'] as Map<String, dynamic>),
-      createdAt: DateTime.parse(value['createdAt'] as String),
-      title: value['title'] as String?,
-      note: value['note'] as String?,
-    );
-  }
-}
-
-/// One moment in listening: an action or a bookmark.
+/// One moment of a book's timeline: a move or a bookmark.
 sealed class TimelineEntry {
   const TimelineEntry();
   String get id;
   DateTime get at;
-  String get bookTitle;
+
+  /// The name of the book at the time of the entry, or null for a reading
+  /// bookmark saved before reading history.
+  String? get bookTitle;
 }
 
 final class ActionEntry extends TimelineEntry {
   const ActionEntry(this.event);
-  final ListeningEvent event;
+  final HistoryEvent<Place> event;
   @override
   String get id => event.id;
   @override
@@ -234,11 +263,11 @@ final class ActionEntry extends TimelineEntry {
 
 final class BookmarkEntry extends TimelineEntry {
   const BookmarkEntry(this.bookmark);
-  final AudioBookmark bookmark;
+  final Bookmark<Place> bookmark;
   @override
   String get id => bookmark.id;
   @override
   DateTime get at => bookmark.createdAt;
   @override
-  String get bookTitle => bookmark.bookTitle;
+  String? get bookTitle => bookmark.bookTitle;
 }
