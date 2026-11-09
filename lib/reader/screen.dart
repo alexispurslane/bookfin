@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart' show CustomSemanticsAction;
 import 'package:flutter/services.dart';
@@ -16,6 +17,7 @@ import '../catalog/glass.dart'
         glassSheetTextWidth,
         showGlassSheet;
 import '../catalog/model.dart' show Book;
+import '../foundation/derived_value.dart';
 import '../foundation/listenable_selector.dart';
 import '../foundation/scrub_bar.dart';
 import '../foundation/theme.dart' show PillChoice;
@@ -111,6 +113,11 @@ class _ReaderScreenState extends State<ReaderScreen> {
       (sheet) => ListenableBuilder(
         listenable: reader.bookmarkChanges,
         builder: (_, _) => ReaderContentsPanel(
+          timeLeft: DerivedValue(
+            reader.timeLeftChanges,
+            () => reader.timeLeft?.book,
+            source: reader,
+          ),
           contents: reader.contents,
           onContents: (href) {
             Navigator.pop(sheet);
@@ -861,6 +868,7 @@ class ReaderSettingsPanel extends StatelessWidget {
 class ReaderContentsPanel extends StatelessWidget {
   const ReaderContentsPanel({
     super.key,
+    this.timeLeft,
     required this.contents,
     required this.onContents,
     required this.bookmarks,
@@ -868,6 +876,11 @@ class ReaderContentsPanel extends StatelessWidget {
     required this.onEdit,
     required this.onDelete,
   });
+
+  /// The estimated reading time left in the book, which the Contents tab
+  /// shows above the contents while it is known.
+  final ValueListenable<Duration?>? timeLeft;
+
   final List<ContentsEntry> contents;
 
   /// Reports the href of the entry that the person chose.
@@ -905,6 +918,21 @@ class ReaderContentsPanel extends StatelessWidget {
                   ListView(
                     padding: const EdgeInsets.all(16),
                     children: [
+                      if (timeLeft case final timeLeft?)
+                        ValueListenableBuilder<Duration?>(
+                          valueListenable: timeLeft,
+                          builder: (context, left, _) => left == null
+                              ? const SizedBox.shrink()
+                              : Padding(
+                                  padding: const EdgeInsets.only(bottom: 8),
+                                  child: Text(
+                                    '${estimatedTime(left)} left in book',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodySmall,
+                                  ),
+                                ),
+                        ),
                       for (final entry in contents)
                         ListTile(
                           contentPadding: EdgeInsets.only(
@@ -1282,18 +1310,34 @@ class _ReaderScrubBarState extends State<ReaderScrubBar> {
       final share = map != null && at != null && map.pages == null
           ? _placeAt(map, at)
           : null;
-      Widget visible() => switch (reader.pager?.pageNumber) {
-        null => label(chapter, share ?? _pageLabel(place?.page, place?.pages)),
-        final numbers => ValueListenableBuilder<PageNumber?>(
-          valueListenable: numbers,
-          builder: (_, number, _) => label(
-            chapter,
-            number == null
-                ? share ?? _pageLabel(null, null)
-                : _pageLabel(number.number, number.count),
-          ),
-        ),
-      };
+      // The visible place adds the time left in its chapter once the
+      // reader knows the person's speed. Only the label follows it.
+      Widget visible() => ListenableBuilder(
+        listenable: reader.timeLeftChanges,
+        builder: (_, _) {
+          final left = reader.timeLeft;
+          String timed(String place) => left == null
+              ? place
+              : '$place · ${estimatedTime(left.chapter)} left in chapter';
+          return switch (reader.pager?.pageNumber) {
+            null => label(
+              chapter,
+              timed(share ?? _pageLabel(place?.page, place?.pages)),
+            ),
+            final numbers => ValueListenableBuilder<PageNumber?>(
+              valueListenable: numbers,
+              builder: (_, number, _) => label(
+                chapter,
+                timed(
+                  number == null
+                      ? share ?? _pageLabel(null, null)
+                      : _pageLabel(number.number, number.count),
+                ),
+              ),
+            ),
+          };
+        },
+      );
       if (map == null || at == null) {
         return arranged(
           visible(),

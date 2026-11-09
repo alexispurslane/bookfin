@@ -490,6 +490,77 @@ void main() {
     });
   });
 
+  group('the characters left', () {
+    /// A laid-out section of [length] visible characters on one page.
+    PartPages whole(int length) =>
+        (count: 1, visible: (starts: const [0], length: length));
+
+    // "one" holds 203 visible characters, "two" 192 with "Half" from the
+    // 96th on, and "three" 600.
+    BookPages known() => BookPages([whole(203), whole(192), whole(600)]);
+
+    test('the chapter left runs from a place to the start of the next '
+        'chapter, and the book left to its end', () async {
+      final book = (await map()).paged(known());
+      final left = book.charactersLeft(place('OPS/two.xhtml', progress: .25))!;
+      expect(left.chapter, closeTo(48, 1e-9));
+      expect(left.book, closeTo(144 + 600, 1e-9));
+    });
+
+    test('the chapter left can span the sections up to the next chapter, '
+        'and the last chapter ends with the book', () async {
+      final book = (await map()).paged(known());
+      final start = book.charactersLeft(place('OPS/one.xhtml', progress: 0))!;
+      expect(start.chapter, closeTo(203, 1e-9));
+      expect(start.book, closeTo(203 + 192 + 600, 1e-9));
+      final last = book.charactersLeft(place('OPS/three.xhtml', progress: .5))!;
+      expect(last.chapter, closeTo(300, 1e-9));
+      expect(last.book, closeTo(300, 1e-9));
+    });
+
+    test('a section whose characters are not known yet counts the '
+        'characters that its bytes estimate, at the characters per byte of '
+        'the known sections', () async {
+      // The first section's pages come from a kept page map, which knows
+      // their count but not their characters.
+      final book = (await map()).paged(
+        BookPages([(count: 2, visible: null), whole(192), null]),
+      );
+      final perByte = 192 / size('OPS/two.xhtml');
+      final left = book.charactersLeft(place('OPS/one.xhtml', progress: .5))!;
+      expect(left.chapter, closeTo(size('OPS/one.xhtml') * perByte / 2, 1e-6));
+      expect(
+        left.book,
+        closeTo(
+          (size('OPS/one.xhtml') / 2 + size('OPS/three.xhtml')) * perByte + 192,
+          1e-6,
+        ),
+      );
+    });
+
+    test('before any section is laid out, every section counts the '
+        'characters that its bytes estimate', () async {
+      final book = await map();
+      final left = book.charactersLeft(place('OPS/three.xhtml', progress: 0))!;
+      expect(left.book, greaterThan(0));
+      expect(left.chapter, left.book);
+    });
+
+    test('a place outside the book and a PDF page have no characters '
+        'left', () async {
+      final book = (await map()).paged(known());
+      expect(
+        book.charactersLeft(
+          EpubAddress(
+            ReadingLocation('epubcfi(/6/2!/4/2/1:0)', 'OPS/notes.xhtml', ''),
+          ),
+        ),
+        isNull,
+      );
+      expect(BookMap.pages(4).charactersLeft(PdfAddress(2, 0)), isNull);
+    });
+  });
+
   test('a reported progress outside the section is not a place', () {
     for (final progress in [-.1, 1.1, 'half']) {
       expect(
