@@ -1,6 +1,6 @@
 ---
 id: t7-bbv1
-status: open
+status: in_progress
 deps: []
 links: []
 created: 2026-11-09T16:08:24Z
@@ -27,3 +27,11 @@ This ticket now covers the whole order of prepare and layout work, not only the 
 3. Then two independent directions of work go outward from the shown section. One prepares and lays out the sections after it, in order to the right (S+1, S+2, ...). The other does the sections before it, in order to the left (S−1, S−2, ...). Each direction has its own worker, so neither waits for the other.
 4. The work goes on, within the frame budget between frames, until every section of the book has its main run, so the whole book is laid out.
 5. A jump starts the same order again from the page that the reader jumped to.
+
+## Notes (2026-11-09)
+
+- PageSource prepares each section in a worker call of its own (no batch). `show` starts the shown section's neighbors, its main run and the next section's first page as before, and then two directions (`_outward`): one through S+1, S+2, ..., the other through S-1, S-2, ... Each direction starts one section's worker call at a time, after the main run of its last section ended. Their layout steps take turns. A section more than one section away from the shown one lets go of its prepared text once its main run ends. A show, a settings change and dispose end the directions.
+- New query `laidOut(section)`: whether a section's main run ended in the current settings. The benchmark tool uses it.
+- The default scheduler, now public as `PageSource.scheduleBetweenFrames`, holds idle steps while a frame is scheduled and while frames are disabled (the app in the background). A waiting step decides at the end of the frame and holds no timer. Without this rule, a requested frame waited for about five idle steps in a row on the emulator (20 to 44 ms).
+- Measurements: docs/research/epub-first-page-timing.md, "After t7-bbv1". The turn into Keats' section 4 went from 492 to 51 ms, Hamlet's turn into act 3 from 214 to 184 ms (115 ms to the shown page). Every book of the five and Ulysses is laid out in 0.7 to 4.9 s, and no frame waited for an idle step.
+- New work: tc-yxhv (a frame still waits for several urgent steps). Long steps in Ulysses (up to 53 ms) are tb-3xvr.

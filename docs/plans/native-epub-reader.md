@@ -196,7 +196,7 @@ Flutter builds and lays out `dart:ui` paragraphs only on the UI isolate. Everyth
 | Work | Where | Cost on the host (trial) | Why there |
 | --- | --- | --- | --- |
 | Admission: unzip, sanitize, identity | `compute`, as today | | It needs no `dart:ui`. |
-| Parse XHTML, cascade CSS, hyphenate, build flow items | `Isolate.run`, one call per batch of sections | Median 1.0 ms per section | It needs no `dart:ui`. `Isolate.run` returns its result through `Isolate.exit`, so the prepared section comes back without a copy. |
+| Parse XHTML, cascade CSS, hyphenate, build flow items | `Isolate.run`, one call per section (t7-bbv1) | Median 1.0 ms per section | It needs no `dart:ui`. `Isolate.run` returns its result through `Isolate.exit`, so the prepared section comes back without a copy. |
 | WOFF to SFNT conversion | The prepare worker | | It needs no `dart:ui`. |
 | Search | `Isolate.run`, one call per batch of sections | | It needs no `dart:ui`. A batch boundary is where a cancel takes effect. |
 | Build paragraphs, shape, break lines, flow blocks, cut pages | The UI isolate, in steps | Median 5.5 ms per section, 927 ms for 430,000 characters | `dart:ui` paragraphs exist only on the UI isolate. |
@@ -213,25 +213,26 @@ Phone numbers are not measured. The phone is probably 1.5 to 2.5 times slower th
 - A paragraph is the unit of work. A step stops after the paragraph that crosses the budget. A paragraph whose shaping alone takes longer than the budget runs in a step of its own. The corpus test (E19) lists such paragraphs.
 - A segment of a long paragraph is a unit of work too (tb-2l69). A segment is whole lines that end after a hard break, at least 1,024 code units long, except the last. A line never breaks across a hard break, so a Flutter paragraph built from a segment's start has the paragraph's lines from there. Each segment is a paragraph and a piece of its own. A line waits until the lines after it decide its widows rule. The run keeps the number of lines before each segment, once per paragraph item. So a run from a page start inside the paragraph lays out only the segment that holds the start line, and `LineSearch` lays out only the segment that holds the place. When no run counted the segments before it yet, they are counted one segment per unit. A paragraph with a hanging first line stays one unit. Song of Myself in Gutenberg's Leaves of Grass (91,000 characters) had one step of 79 ms at 20 pixels and 122 ms at 26 pixels. Now no step of it takes more than 4 ms.
 - A table row is a unit of work too (t1-um08). A table's column widths need each of its rows measured, so the run first measures one row per unit, once per table item, and keeps the widths for the other runs of the section. A page start inside a table names a row and a fragment of that row, so a run from it lays out no row above it. `LineSearch` finds the line of a place in steps for the same reason. A row lays out its cells one flow item per unit, or one segment of a long paragraph (tb-i6wg). It keeps the content of its laid-out cells until the last cell is done, because its fragments need all of them, and then adds its slices.
-- The page source schedules steps with `SchedulerBinding.instance.scheduleTask`. Work for the shown page and its two neighbors is urgent, so it runs while the scrub deck animates. Other work is idle work, and it waits while an animation runs.
-- Both kinds of step use `Priority.animation`. An idle step that runs while transient frame callbacks are registered does no layout. It waits for the end of the next frame in a post-frame callback, and then goes back into the task queue. So it wakes the event loop at most once a frame. With `Priority.idle`, Flutter's default strategy keeps the task in the queue and asks again at once with a zero timer, a busy loop between frames for as long as the animation runs (t7-hufl).
+- The page source schedules steps with `SchedulerBinding.instance.scheduleTask`. Work for the shown page and its two neighbors is urgent, so it runs while the scrub deck animates. Other work is idle work. It waits while a frame is scheduled, for example while an animation runs, and while the app is in the background, where Flutter disables frames (t7-bbv1). So a frame waits for at most one idle step. On an Android emulator, a requested frame waited for about five idle steps in a row (20 to 44 ms) before this rule.
+- Both kinds of step use `Priority.animation`. An idle step that runs while a frame is scheduled does no layout. It waits for the end of the next frame in a post-frame callback, and then goes back into the task queue. So it wakes the event loop at most once a frame. With `Priority.idle`, Flutter's default strategy keeps the task in the queue and asks again at once with a zero timer, a busy loop between frames for as long as the animation runs (t7-hufl).
 - The page source takes the scheduler as a constructor parameter, so tests run steps one at a time.
 
 ### Order of work, from the shown place outward
 
-1. Prepare the shown section, then lay out the shown page (anchored or true).
+1. Prepare the shown section, then lay out the shown page (anchored or true). The reader waits only for this page.
 2. Lay out the next page and the previous page.
 3. Run the main run of the shown section.
-4. Lay out the first page of the next section, then run the main run of the previous section.
-5. While a drag runs, a deck preview comes before items 3 and 4.
+4. Lay out the first page of the next section.
+5. Run two directions at the same time. One runs the main runs of the sections after the shown one, in order (S+1, S+2, ...). The other runs the main runs of the sections before it, in order (S-1, S-2, ...). Each direction prepares one section at a time, in a worker call of its own, so that neither direction waits for the other's prepare. Their layout steps take turns.
+6. While a drag runs, a deck preview comes before items 3 to 5.
 
-Nothing lays out the whole book.
+If the reader stays, the directions reach both ends of the book, so the whole book is laid out: every section knows its true page starts (t7-bbv1). A section more than one section away from the shown one lets go of its prepared text and its pages once its main run ends. A direction starts its next prepare only after its section's main run ended, so it pauses with the idle steps. Each show and each settings change starts the order again from the shown page. Closing the reader ends it.
 
 ### Cache policy
 
 | Cache | Key | Limit to start | Never evicted | Empties on |
 | --- | --- | --- | --- | --- |
-| Prepared sections | Section and settings | 6 sections and 1.5 million visible characters | The shown section | Book close. A settings change keeps the previous settings' entries until the next change. |
+| Prepared sections | Section and settings | 6 sections and 1.5 million visible characters. A section more than one section away from the shown one leaves once its main run ends. | The shown section | Book close. A settings change keeps the previous settings' entries until the next change. |
 | Page starts | Section and settings | Every section laid out in this session. They are integers only. | | Book close. The previous settings' starts stay as above. |
 | Laid pages: paragraphs, strip slices and the picture | Section, settings and page start | 24 pages | The shown page and its two neighbors | Eviction disposes the paragraphs and the picture. |
 | Decoded images | Path and decode width | 32 MiB | Images of the shown page | Book close |

@@ -1,9 +1,10 @@
 // The pages of one open book: its prepared sections, layout runs, page
 // starts, laid pages, decoded images and embedded fonts.
 //
-// Preparing a section runs in a worker isolate. Layout runs on the UI
-// isolate, in steps that a scheduler runs between frames, from the shown
-// place outward. Nothing lays out the whole book.
+// Preparing a section runs in a worker isolate, one worker call for each
+// section. Layout runs on the UI isolate, in steps that a scheduler runs
+// between frames, from the shown place outward until the whole book is
+// laid out: every section knows its true page starts.
 //
 // A page cut depends only on the strip from its start down to one page
 // height below it (layout.dart). So the page that starts at a page start is
@@ -51,6 +52,27 @@ class PageRequestStopped implements Exception {
 
 /// The owner of the pages of one open book.
 ///
+/// The order of work: a caller's urgent request goes first, such as the
+/// anchored page that the reader opens or jumps to. Once a page is shown,
+/// the work goes from it outward: its next and previous pages, then its
+/// section's main run, then the next section's first page. Then two
+/// directions go on at the same time, one through the sections after the
+/// shown one in order (S+1, S+2, ...), the other through the sections
+/// before it (S-1, S-2, ...). Each direction prepares one section at a
+/// time in a worker call of its own, so neither waits for the other's
+/// prepare, and their layout steps take turns. A direction ends at the
+/// book's end, so the whole book is laid out if the reader stays. Each
+/// show, settings change and dispose starts the order again or ends it.
+///
+/// Layout steps that a caller did not ask for urgently wait while an
+/// animation runs and while the app is in the background. A direction
+/// starts its next prepare only after its section's main run ended, so
+/// that it pauses with them.
+///
+/// The whole book laid out keeps every section's page starts, not its
+/// prepared text: once its main run ends, a section more than one section
+/// away from the shown one lets go of its prepared text and its pages.
+///
 /// It keeps the work of the current page settings and of the previous
 /// ones, so that a change back costs no worker call. The previous settings
 /// are those of the shown page when the settings change, or the settings
@@ -69,9 +91,10 @@ class PageRequestStopped implements Exception {
 /// - Each cache is within its limit, or holds nothing that it may evict.
 /// - A section has at most one main run and one anchored run, and only
 ///   while its prepared section is cached.
+/// - Every request of the work around the shown page is in progress.
 class PageSource {
   /// The pages of [publication]. [schedule] runs each layout step; it
-  /// defaults to [SchedulerBinding.scheduleTask]. Each step lays out
+  /// defaults to [scheduleBetweenFrames]. Each step lays out
   /// paragraphs until [budget] is spent, and then stops after the paragraph
   /// that crosses it. Set [settings] before the first request.
   PageSource(
@@ -79,7 +102,7 @@ class PageSource {
     StepScheduler? schedule,
     Duration budget = const Duration(milliseconds: 4),
   }) : _publication = publication,
-       _schedule = schedule ?? _scheduleTask,
+       _schedule = schedule ?? scheduleBetweenFrames,
        _stepBudget = budget,
        _fontPrefix = 'bookfin-${publication.identity.substring(0, 12)}';
 
@@ -92,32 +115,54 @@ class PageSource {
   static const _maxImageBytes = 32 * 1024 * 1024;
 
   /// Runs [step] as a Flutter task. A step that is not [urgent] waits while
-  /// an animation runs: transient frame callbacks are registered. It waits
-  /// outside the task queue, for the end of the next frame, and then asks
-  /// again. So it wakes the event loop at most once a frame.
+  /// a frame is scheduled, for example while an animation runs, and while
+  /// the app is in the background, where frames are disabled. It waits
+  /// outside the task queue, for the end of the next frame. There it runs at
+  /// once, unless a new frame is scheduled, and then it waits for the end of
+  /// that frame. So it wakes the event loop at most once a frame, a frame
+  /// waits for at most one idle step, and a waiting step holds no timer.
+  ///
+  /// IMPORTANT: Flutter's task queue runs one task for each turn of the
+  /// event loop, but on an Android emulator a requested frame still waited
+  /// for about five idle steps in a row, 20 to 44 ms (t7-bbv1). So an idle
+  /// step does not run while a frame is scheduled.
   ///
   /// Both kinds of step use [Priority.animation], so that Flutter's default
   /// strategy never holds them in the queue. A held task makes the queue
   /// ask again at once with a zero timer, a busy loop between frames for
   /// as long as the animation runs.
   ///
-  /// Transient callbacks schedule a frame when they are registered, and an
-  /// animation that goes on registers them again during each frame. So a
-  /// frame always comes after a step starts to wait, and the step runs
-  /// after the first frame at whose end no animation is registered.
-  static void _scheduleTask(void Function() step, {required bool urgent}) {
+  /// An animation that goes on schedules the next frame during each frame.
+  /// The app's return from the background enables frames and schedules
+  /// one. So a frame always comes after a step starts to wait, and the step
+  /// runs at the end of the first frame after which no frame is scheduled
+  /// and the app is in the foreground. A screen that asks for a frame at
+  /// the end of every frame holds idle steps back, as an animation does
+  /// (boo-2mn9).
+  static void scheduleBetweenFrames(
+    void Function() step, {
+    required bool urgent,
+  }) {
     final binding = SchedulerBinding.instance;
-    void task() {
-      if (urgent || binding.transientCallbackCount == 0) {
-        step();
+    bool held() =>
+        !urgent && (binding.hasScheduledFrame || !binding.framesEnabled);
+    void afterFrame(Duration _) {
+      if (held()) {
+        binding.addPostFrameCallback(afterFrame);
       } else {
-        binding.addPostFrameCallback(
-          (_) => unawaited(binding.scheduleTask(task, Priority.animation)),
-        );
+        step();
       }
     }
 
-    unawaited(binding.scheduleTask(task, Priority.animation));
+    unawaited(
+      binding.scheduleTask(() {
+        if (held()) {
+          binding.addPostFrameCallback(afterFrame);
+        } else {
+          step();
+        }
+      }, Priority.animation),
+    );
   }
 
   final Publication _publication;
@@ -142,9 +187,6 @@ class PageSource {
   /// first.
   final _prepared = LinkedHashSet<_SectionLayout>.identity();
 
-  /// The sections that wait for the next worker call.
-  final _batch = <_SectionLayout, Completer<PreparedSection>>{};
-
   /// The cached pages, least recently used first.
   final _pages = <_PageKey, _CachedPage>{};
 
@@ -168,6 +210,10 @@ class PageSource {
   final _around = <_Request>[];
   int _order = 0;
 
+  /// The number of times that the work around the shown page started
+  /// again or ended. A direction ends when it changes.
+  int _generation = 0;
+
   bool _urgentScheduled = false;
   bool _idleScheduled = false;
 
@@ -187,6 +233,7 @@ class PageSource {
       _previous = kept == value ? current : kept;
     }
     _settings = value;
+    _stopAround(const PageRequestStopped('The page settings changed.'));
     for (final layout in [..._layouts.values]) {
       if (layout.settings != value && layout.settings != _previous) {
         _drop(layout);
@@ -274,6 +321,10 @@ class PageSource {
     );
   }
 
+  /// Whether the main run of [section] ended in the current settings, so
+  /// that every true page start of the section is known.
+  bool laidOut(int section) => _layouts[(section, _current)]?.mainDone ?? false;
+
   /// The page that [show] showed last, while it is in the cache.
   LaidPage? get shown => _pages[_shown]?.page;
 
@@ -325,58 +376,42 @@ class PageSource {
 
   /// The shown page: pin it and its neighbors, and plan work around it.
   ///
-  /// The work goes from the shown place outward: the next and previous
-  /// pages, then the shown section's main run, then the next section's
-  /// first page and the previous section's main run.
+  /// The work goes from the shown place outward, in the order of the class
+  /// comment, and replaces the work around the page shown before.
   void show(LaidPage page) {
     final cached = _cachedOf(page);
     final key = (layout: cached.layout, start: page.start);
-    for (final request in _around) {
-      request.stop(const PageRequestStopped('Another page is shown.'));
-    }
-    _around.clear();
+    _stopAround(const PageRequestStopped('Another page is shown.'));
     _shown = key;
     _pinned
       ..clear()
       ..add(key);
     _touchPage(key);
     final layout = cached.layout;
-    void around(
-      _Rank rank,
-      Future<Object?> Function(_Request request) work, {
-      bool pin = false,
-    }) {
-      final (request, done) = _start(rank, null, work);
-      _around.add(request);
-      done.then(
-        (result) {
-          _around.remove(request);
-          if (pin && result is LaidPage && _shown == key) {
+    void neighbor(Future<LaidPage?> Function(_Request request) work) =>
+        _aroundShown(_Rank.neighbor, work).then((result) {
+          if (result != null && _shown == key) {
             if (_layoutOf(result) case final at?) {
               _pinned.add((layout: at, start: result.start));
             }
           }
-        },
-        onError: (Object _) {
-          _around.remove(request);
-        },
-      );
-    }
+        }, onError: (Object _) {});
 
-    around(_Rank.neighbor, (request) => _after(page, request), pin: true);
-    around(_Rank.neighbor, (request) => _before(page, request), pin: true);
-    around(_Rank.shownRun, (request) => _known(layout, null, request));
+    neighbor((request) => _after(page, request));
+    neighbor((request) => _before(page, request));
+    _aroundShown(
+      _Rank.shownRun,
+      (request) => _known(layout, null, request),
+    ).ignore();
     if (page.section + 1 < _sectionCount) {
       final next = _layoutFor(page.section + 1, layout.settings);
-      around(
+      _aroundShown(
         _Rank.nextStart,
         (request) => _page(next, const PageStart(0, 0), request),
-      );
+      ).ignore();
     }
-    if (page.section > 0) {
-      final previous = _layoutFor(page.section - 1, layout.settings);
-      around(_Rank.previousRun, (request) => _known(previous, null, request));
-    }
+    unawaited(_outward(layout, -1));
+    unawaited(_outward(layout, 1));
     _trim();
   }
 
@@ -384,6 +419,7 @@ class PageSource {
   void dispose() {
     if (_disposed) return;
     _disposed = true;
+    _generation++;
     for (final request in [..._requests]) {
       request.stop(const PageRequestStopped('The page source is disposed.'));
     }
@@ -469,6 +505,10 @@ class PageSource {
       check(!cached.disposed, 'a cached page is disposed');
     }
     check(
+      _around.every(_requests.contains),
+      'a request around the shown page ended but is kept',
+    );
+    check(
       _shown == null || _pinned.contains(_shown),
       'the shown page is not pinned',
     );
@@ -525,12 +565,73 @@ class PageSource {
         return await work(request);
       } finally {
         _requests.remove(request);
+        _around.remove(request);
         request.need = null;
         if (!_disposed) _trim();
       }
     }
 
     return (request, run());
+  }
+
+  /// Runs [work] as the source's own request of [rank] around the shown
+  /// page. The next show or settings change stops it.
+  Future<T> _aroundShown<T>(
+    _Rank rank,
+    Future<T> Function(_Request request) work,
+  ) {
+    final (request, done) = _start(rank, null, work);
+    _around.add(request);
+    return done;
+  }
+
+  /// Stops the work around the shown page with [reason], and ends the
+  /// directions.
+  void _stopAround(PageRequestStopped reason) {
+    _generation++;
+    for (final request in [..._around]) {
+      request.stop(reason);
+    }
+    _around.clear();
+  }
+
+  /// One direction of the work around the shown page: the main run of each
+  /// section beyond [shown] in the direction of [step] (1 or -1), nearest
+  /// first, until the book's end or until the work around the shown page
+  /// starts again. Its first section is the one next to [shown].
+  ///
+  /// A section that cannot be prepared or laid out is passed by; the reader
+  /// meets its error on a page of it. A section more than one section away
+  /// from [shown] lets go of its prepared text once its main run ends,
+  /// unless a pinned page or another request keeps it.
+  Future<void> _outward(_SectionLayout shown, int step) async {
+    final generation = _generation;
+    for (
+      var index = shown.index + step;
+      index >= 0 && index < _sectionCount;
+      index += step
+    ) {
+      if (_disposed || _generation != generation) return;
+      final layout = _layoutFor(index, shown.settings);
+      if (layout.mainDone) continue;
+      try {
+        await _aroundShown(
+          _Rank.outward,
+          (request) => _known(layout, null, request),
+        );
+      } on PageRequestStopped {
+        return;
+      } catch (_) {
+        continue;
+      }
+      // A newer show can be near this section.
+      if (_disposed || _generation != generation) return;
+      if ((index - shown.index).abs() > 1 &&
+          layout.prepared != null &&
+          !_keptLayouts().contains(layout)) {
+        _unprepare(layout);
+      }
+    }
   }
 
   Future<LaidPage?> _after(LaidPage page, _Request request) async {
@@ -691,6 +792,9 @@ class PageSource {
     }
     if (first != null) {
       final need = first.need!;
+      // The two directions take turns: the request of one goes behind the
+      // other's after each step.
+      if (first.rank == _Rank.outward) first.order = _order++;
       try {
         _step(need);
       } catch (error, stack) {
@@ -874,69 +978,43 @@ class PageSource {
     if (cached != null) _pages[key] = cached;
   }
 
-  /// Lays out the sections of the batch in one worker call per settings
-  /// value, registers their fonts, and caches them.
-  Future<PreparedSection> _prepare(_SectionLayout layout) {
-    if (_batch.isEmpty) scheduleMicrotask(_flush);
-    return (_batch[layout] = Completer<PreparedSection>()).future;
-  }
-
-  void _flush() {
-    final batch = {..._batch};
-    _batch.clear();
-    final groups = <PageSettings, List<_SectionLayout>>{};
-    for (final layout in batch.keys) {
-      (groups[layout.settings] ??= []).add(layout);
-    }
-    for (final MapEntry(key: settings, value: layouts) in groups.entries) {
-      unawaited(() async {
-        try {
-          final spine = _publication.spine;
-          final mainTextSize = settings.sizesMainText
-              ? await _measureMainText(settings)
-              : defaultMainTextSize;
-          final prepared = await _prepareInWorker(
-            [for (final layout in layouts) layout.index],
-            [for (final layout in layouts) spine[layout.index]],
-            [
-              for (final layout in layouts)
-                _publication.resources[spine[layout.index]]!,
-            ],
-            _publication.bookStyles,
-            _publication.imageSizes,
-            _publication.language,
-            _fontPrefix,
-            mainTextSize,
-            settings,
-          );
-          final fonts = [for (final section in prepared) ...section.fonts];
-          if (fonts.isNotEmpty) {
-            await BookFonts.load(
-              fonts,
-              (path) => _publication.resources[path],
-              _fontPrefix,
-            );
-          }
-          for (final (index, layout) in layouts.indexed) {
-            layout.preparing = null;
-            if (!_disposed &&
-                identical(_layouts[(layout.index, settings)], layout)) {
-              layout.prepared = prepared[index];
-              _prepared.add(layout);
-            }
-            batch[layout]!.complete(prepared[index]);
-          }
-          if (!_disposed) {
-            _trim();
-            _plan();
-          }
-        } catch (error, stack) {
-          for (final layout in layouts) {
-            layout.preparing = null;
-            batch[layout]!.completeError(error, stack);
-          }
-        }
-      }());
+  /// Prepares the section of [layout] in a worker call of its own,
+  /// registers its fonts, and caches it. No section waits for another
+  /// section's prepare.
+  Future<PreparedSection> _prepare(_SectionLayout layout) async {
+    try {
+      final path = _publication.spine[layout.index];
+      final mainTextSize = layout.settings.sizesMainText
+          ? await _measureMainText(layout.settings)
+          : defaultMainTextSize;
+      final prepared = await _prepareInWorker(
+        layout.index,
+        path,
+        _publication.resources[path]!,
+        _publication.bookStyles,
+        _publication.imageSizes,
+        _publication.language,
+        _fontPrefix,
+        mainTextSize,
+        layout.settings,
+      );
+      if (prepared.fonts.isNotEmpty) {
+        await BookFonts.load(
+          prepared.fonts,
+          (path) => _publication.resources[path],
+          _fontPrefix,
+        );
+      }
+      if (!_disposed &&
+          identical(_layouts[(layout.index, layout.settings)], layout)) {
+        layout.prepared = prepared;
+        _prepared.add(layout);
+        _trim();
+        _plan();
+      }
+      return prepared;
+    } finally {
+      layout.preparing = null;
     }
   }
 
@@ -999,12 +1077,13 @@ class PageSource {
     ], settings),
   );
 
-  /// Prepares the sections in a worker isolate. It is static, so that the
-  /// worker's closure holds only its arguments.
-  static Future<List<PreparedSection>> _prepareInWorker(
-    List<int> indices,
-    List<String> paths,
-    List<Uint8List> xhtml,
+  /// Prepares one section in a worker isolate, whose exit hands the result
+  /// over without a copy. It is static, so that the worker's closure holds
+  /// only its arguments.
+  static Future<PreparedSection> _prepareInWorker(
+    int index,
+    String path,
+    Uint8List xhtml,
     Map<String, String> styleSheets,
     Map<String, (int, int)> imageSizes,
     String? language,
@@ -1013,18 +1092,17 @@ class PageSource {
     PageSettings settings,
   ) => Isolate.run(
     () => prepareSections([
-      for (var at = 0; at < indices.length; at++)
-        SectionSource(
-          index: indices[at],
-          path: paths[at],
-          xhtml: utf8.decode(xhtml[at]),
-          fontPrefix: fontPrefix,
-          styleSheets: styleSheets,
-          imageSizes: imageSizes,
-          language: language,
-          mainTextSize: mainTextSize,
-        ),
-    ], settings),
+      SectionSource(
+        index: index,
+        path: path,
+        xhtml: utf8.decode(xhtml),
+        fontPrefix: fontPrefix,
+        styleSheets: styleSheets,
+        imageSizes: imageSizes,
+        language: language,
+        mainTextSize: mainTextSize,
+      ),
+    ], settings).single,
   );
 
   /// Drops [layout]: the settings that it belongs to are gone.
@@ -1171,8 +1249,9 @@ enum _Rank {
   /// The next section's first page.
   nextStart,
 
-  /// The previous section's main run.
-  previousRun;
+  /// The main runs of the sections after and before the shown one, in two
+  /// directions that take turns.
+  outward;
 
   /// Whether its steps run while an animation runs.
   bool get urgent => index <= neighbor.index;
@@ -1184,7 +1263,7 @@ class _Request {
   final _Rank rank;
 
   /// Earlier requests of one rank go first.
-  final int order;
+  int order;
 
   /// The step that the request waits for, or null when it waits for none.
   _Need? need;

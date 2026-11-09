@@ -1,7 +1,9 @@
 // The page source's default scheduler runs layout steps as Flutter tasks
 // between frames. While an animation runs, urgent steps go on, and idle
 // steps wait without keeping the event loop busy. Idle steps go on after
-// the animation ends.
+// the animation ends. An idle step also gives way to any frame that is
+// scheduled, so that a frame never waits for a row of idle steps. While the
+// app is in the background, idle steps wait for the app to come back.
 import 'dart:async';
 
 import 'package:bookfin/reader/epub/prepare.dart';
@@ -41,6 +43,27 @@ class TaskPolls {
 
 /// A widget that animates for as long as it is shown.
 const animation = Center(child: CircularProgressIndicator());
+
+/// A widget that asks for a new frame at the end of each frame, without an
+/// animation, as a screen that changes at every frame does.
+class Redraws extends StatefulWidget {
+  const Redraws({super.key});
+
+  @override
+  State<Redraws> createState() => _RedrawsState();
+}
+
+class _RedrawsState extends State<Redraws> {
+  int frames = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (mounted) setState(() => frames++);
+    });
+    return Text('$frames', textDirection: TextDirection.ltr);
+  }
+}
 
 const frame = Duration(milliseconds: 16);
 
@@ -125,6 +148,49 @@ void main() {
       await tester.pump(frame);
     }
 
+    expect(far(), isTrue);
+    await close(tester);
+  });
+
+  testWidgets('idle layout waits while the app is in the background, and '
+      'goes on when the app comes back', (tester) async {
+    final section = await open(tester);
+    TaskPolls();
+    final far = completes(source.pageAt(placeIn(section, .9), anchored: false));
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+    for (var i = 0; i < 10; i++) {
+      await tester.pump(frame);
+    }
+    expect(far(), isFalse, reason: 'idle layout ran in the background');
+
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    for (var i = 0; i < 10 && !far(); i++) {
+      await tester.pump(frame);
+    }
+
+    expect(far(), isTrue);
+    await close(tester);
+  });
+
+  testWidgets('idle layout gives way to each frame that is scheduled, and '
+      'goes on once no frame is scheduled', (tester) async {
+    final section = await open(tester);
+    final polls = TaskPolls();
+    final far = completes(source.pageAt(placeIn(section, .9), anchored: false));
+    await tester.pumpWidget(const Redraws());
+    final before = polls.count;
+    const frames = 10;
+    for (var i = 0; i < frames; i++) {
+      await tester.pump(frame);
+    }
+
+    expect(polls.count - before, lessThanOrEqualTo(frames + 1));
+    expect(far(), isFalse, reason: 'idle steps ran in a row between frames');
+
+    await tester.pumpWidget(const SizedBox());
+    for (var i = 0; i < 10 && !far(); i++) {
+      await tester.pump(frame);
+    }
     expect(far(), isTrue);
     await close(tester);
   });

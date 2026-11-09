@@ -39,10 +39,21 @@
 //   hop, the hyphenation patterns' load and the work; the same work in a
 //   worker that prepared before, and the copy of its result through a port;
 //   the font registration; and the layout and picture of the section's
-//   middle page on a page source of its own.
+//   middle page on a page source of its own. It also gives the time that
+//   the calling isolate spends to start a worker call (startCall).
+// - stay (t7-bbv1): the book opens at the saved place and stays, while the
+//   app asks for a frame every 50 ms, as a screen that changes now and then
+//   does. It gives the time from the shown page until every section is
+//   laid out (wholeBook, or null when the page source does not lay out the
+//   whole book within stayLimitMs); the frame times in that window and in
+//   three seconds after it; the duration of each layout step; and the
+//   process's resident memory: before the open, its peak in the window,
+//   and at its end.
 //
 // The first open, turn and jump of a launch are cold: the first in the
-// process. Then each runs [warm] more times on new pagers.
+// process. Then each runs [warm] more times on new pagers. The stay runs
+// once at the end of a launch. A plan with "stayOnly": true runs only the
+// stay.
 //
 // Build and run it as a profile build on a device that no one else uses:
 //
@@ -111,6 +122,11 @@ class _BenchmarkState extends State<_Benchmark> {
   /// Every frame's timing that the engine reported, in arrival order.
   final _frames = <ui.FrameTiming>[];
 
+  /// The timer that asks for a frame every 50 ms, and the number of those
+  /// frames, which a small label shows.
+  Timer? _ticking;
+  final _ticks = ValueNotifier<int>(0);
+
   @override
   void initState() {
     super.initState();
@@ -144,7 +160,8 @@ class _BenchmarkState extends State<_Benchmark> {
       if (_targets(plan).any((at) => !known.containsKey('${at.$1}:${at.$2}'))) {
         await _calibrate(plan, local, addresses);
       } else {
-        await _measure(plan, local, known);
+        if (plan['stayOnly'] != true) await _measure(plan, local, known);
+        await _stay(plan, local, known);
       }
       _log({'done': book});
       if (mounted) setState(() => _status = 'Done');
@@ -340,6 +357,161 @@ class _BenchmarkState extends State<_Benchmark> {
     }
   }
 
+  /// Opens the book at its saved place and stays there while a frame is
+  /// drawn at every vsync, until every section is laid out, and then three
+  /// seconds more with no work, for comparison.
+  Future<void> _stay(Map plan, File local, Map addresses) async {
+    final [place, _, _] = _targets(plan);
+    final document = await _load(plan, local);
+    final publication = document.publication;
+    final sections = publication.spine.length;
+    final limit = (plan['stayLimitMs'] as int?) ?? 120000;
+    final before = ProcessInfo.currentRss;
+    final steps = <(int, int, bool)>[];
+    final source = PageSource(
+      publication,
+      schedule: (step, {required urgent}) => _measuredStep(step, steps, urgent),
+    );
+    final pager = EpubPager(
+      document,
+      initial: document.decodeAddress(
+        (addresses['${place.$1}:${place.$2}'] as Map).cast<String, dynamic>(),
+      ),
+      source: source,
+      onPlace: (_) {},
+      onWarning: (_) {},
+    );
+    _ticking = Timer.periodic(
+      const Duration(milliseconds: 50),
+      (_) => _ticks.value++,
+    );
+    final (shown, _) = await _showPager(pager, draw: false);
+    var peak = ProcessInfo.currentRss;
+    int laid() => [
+      for (var index = 0; index < sections; index++)
+        if (source.laidOut(index)) index,
+    ].length;
+    int? whole;
+    while (Timeline.now - shown < limit * 1000) {
+      final rss = ProcessInfo.currentRss;
+      if (rss > peak) peak = rss;
+      if (laid() == sections) {
+        whole = Timeline.now - shown;
+        break;
+      }
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+    }
+    final end = Timeline.now;
+    final after = ProcessInfo.currentRss;
+    final laidOut = laid();
+    await Future<void>.delayed(const Duration(seconds: 3));
+    final idleEnd = Timeline.now;
+    _ticking?.cancel();
+    final durations = [for (final (from, to, _) in steps) to - from]..sort();
+    _log({
+      'kind': 'stay',
+      'book': plan['book'],
+      'sections': sections,
+      'laidOut': laidOut,
+      'wholeBook': whole == null ? null : _ms(whole),
+      'work': _frameStats(shown, end, steps),
+      'idle': _frameStats(end, idleEnd, steps),
+      'steps': durations.length,
+      'stepP50': _at(durations, .5),
+      'stepP99': _at(durations, .99),
+      'stepMax': _at(durations, 1),
+      'stepsOver8ms': durations.where((time) => time > 8000).length,
+      'urgentSteps': steps.where((step) => step.$3).length,
+      'rssBeforeMb': before ~/ (1 << 20),
+      'rssPeakMb': peak ~/ (1 << 20),
+      'rssEndMb': after ~/ (1 << 20),
+    });
+    await _hide();
+    pager.dispose();
+  }
+
+  /// Runs [step] with the page source's own scheduler, and records when it
+  /// ran in [steps].
+  static void _measuredStep(
+    void Function() step,
+    List<(int, int, bool)> steps,
+    bool urgent,
+  ) => PageSource.scheduleBetweenFrames(() {
+    final start = Timeline.now;
+    step();
+    steps.add((start, Timeline.now, urgent));
+  }, urgent: urgent);
+
+  /// The timing of the frames from [from] to [to]. A frame is late when
+  /// its UI part, from the vsync to the end of the build, takes more than
+  /// 16.7 ms. A late frame waited for a step when a layout step in [steps]
+  /// ran between its vsync and its build.
+  Map<String, Object?> _frameStats(
+    int from,
+    int to,
+    List<(int, int, bool)> steps,
+  ) {
+    final frames = [
+      for (final frame in _frames)
+        if (frame.timestampInMicroseconds(ui.FramePhase.vsyncStart) >= from &&
+            frame.timestampInMicroseconds(ui.FramePhase.rasterFinish) <= to)
+          frame,
+    ];
+    final uiTimes = <int>[];
+    var late = 0;
+    var lateAfterStep = 0;
+    var longestWait = 0;
+    // For the late frames: their waits for the build, and the time that
+    // steps ran and the number of steps in those waits.
+    var lateWait = 0;
+    var lateStepTime = 0;
+    var lateUrgentTime = 0;
+    var lateSteps = 0;
+    for (final frame in frames) {
+      final vsync = frame.timestampInMicroseconds(ui.FramePhase.vsyncStart);
+      final build = frame.timestampInMicroseconds(ui.FramePhase.buildStart);
+      final time =
+          frame.timestampInMicroseconds(ui.FramePhase.buildFinish) - vsync;
+      uiTimes.add(time);
+      if (time > 16667) {
+        late++;
+        lateWait += build - vsync;
+        var overlapping = 0;
+        for (final (start, end, urgent) in steps) {
+          if (start < build && end > vsync) {
+            overlapping++;
+            final time =
+                (end < build ? end : build) - (start > vsync ? start : vsync);
+            lateStepTime += time;
+            if (urgent) lateUrgentTime += time;
+          }
+        }
+        lateSteps += overlapping;
+        if (overlapping > 0) lateAfterStep++;
+      }
+      if (build - vsync > longestWait) longestWait = build - vsync;
+    }
+    uiTimes.sort();
+    return {
+      'ms': _ms(to - from),
+      'frames': frames.length,
+      'late': late,
+      'lateAfterStep': lateAfterStep,
+      'uiP50': _at(uiTimes, .5),
+      'uiP99': _at(uiTimes, .99),
+      'uiMax': _at(uiTimes, 1),
+      'longestWaitForBuild': _ms(longestWait),
+      'lateWait': _ms(lateWait),
+      'lateStepTime': _ms(lateStepTime),
+      'lateUrgentStepTime': _ms(lateUrgentTime),
+      'lateSteps': lateSteps,
+    };
+  }
+
+  static double _at(List<int> sorted, double fraction) => sorted.isEmpty
+      ? 0
+      : _ms(sorted[((sorted.length - 1) * fraction).round()]);
+
   /// Measures the parts of preparing [section] and of showing its first
   /// page.
   Future<void> _parts(Map plan, EpubDocument document, int section) async {
@@ -366,9 +538,10 @@ class _BenchmarkState extends State<_Benchmark> {
     final hop = Timeline.now - mark;
 
     // A new worker, as each call is today: the hyphenation patterns load
-    // first.
+    // first. The calling isolate copies the arguments when it starts the
+    // call.
     mark = Timeline.now;
-    final (hyphenation, work, prepared) = await Isolate.run(() {
+    final calling = Isolate.run(() {
       final watch = Stopwatch()..start();
       Hyphenator.forLanguage(language)?.breaks('representation');
       final hyphenation = watch.elapsedMicroseconds;
@@ -376,6 +549,8 @@ class _BenchmarkState extends State<_Benchmark> {
       final prepared = prepareSections([source()], settings).single;
       return (hyphenation, watch.elapsedMicroseconds, prepared);
     });
+    final startCall = Timeline.now - mark;
+    final (hyphenation, work, prepared) = await calling;
     final call = Timeline.now - mark;
 
     // A worker that prepared before, as a long-lived worker would be. It
@@ -428,6 +603,7 @@ class _BenchmarkState extends State<_Benchmark> {
       'flowItems': prepared.flow.length,
       'faces': prepared.fonts.length,
       'emptyHop': _ms(hop),
+      'startCall': _ms(startCall),
       'workerCall': _ms(call),
       'hyphenationLoad': _ms(hyphenation),
       'prepare': _ms(work),
@@ -487,20 +663,36 @@ class _BenchmarkState extends State<_Benchmark> {
       body: SafeArea(
         child: pager == null
             ? Center(child: Text(_status))
-            : Padding(
-                padding: const EdgeInsets.fromLTRB(24, 40, 24, 56),
-                child: EpubViewport(
-                  key: ObjectKey(pager),
-                  pager: pager,
-                  fontSize: 20,
-                  night: false,
-                  onTap: () {},
-                  onTurn: (_) {},
-                  onLink: (_) {},
-                  onCopy: (_) {},
-                ),
+            : Stack(
+                fit: StackFit.expand,
+                children: [
+                  _viewport(pager),
+                  // Only the label rebuilds at each tick.
+                  Positioned(
+                    left: 0,
+                    top: 0,
+                    child: ValueListenableBuilder(
+                      valueListenable: _ticks,
+                      builder: (context, ticks, _) => Text('$ticks'),
+                    ),
+                  ),
+                ],
               ),
       ),
     );
   }
+
+  Widget _viewport(EpubPager pager) => Padding(
+    padding: const EdgeInsets.fromLTRB(24, 40, 24, 56),
+    child: EpubViewport(
+      key: ObjectKey(pager),
+      pager: pager,
+      fontSize: 20,
+      night: false,
+      onTap: () {},
+      onTurn: (_) {},
+      onLink: (_) {},
+      onCopy: (_) {},
+    ),
+  );
 }

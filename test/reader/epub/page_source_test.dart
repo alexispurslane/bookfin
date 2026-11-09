@@ -533,6 +533,235 @@ void main() {
     expect(drawn.g, lessThan(.2));
   });
 
+  group('the order of work around the shown page', () {
+    /// Shows the anchored page at [fraction] of section [index].
+    Future<LaidPage> showAt(int index, double fraction) async {
+      final section = await scheduler.until(source.section(index));
+      final page = await scheduler.until(
+        source.pageAt(placeIn(section, fraction), anchored: true, urgent: true),
+      );
+      source.show(page);
+      return page;
+    }
+
+    /// The sections of a book of [count] sections in the order in which
+    /// their main runs end from now on, after each step.
+    List<int> laidOutOrder(int count) {
+      final order = <int>[];
+      final before = {
+        for (var index = 0; index < count; index++)
+          if (source.laidOut(index)) index,
+      };
+      scheduler.afterStep = () {
+        for (var index = 0; index < count; index++) {
+          if (!before.contains(index) &&
+              !order.contains(index) &&
+              source.laidOut(index)) {
+            order.add(index);
+          }
+        }
+      };
+      return order;
+    }
+
+    test("a turn into the next section waits only for that section's "
+        "prepare, not for the previous section's", () async {
+      open(
+        book([
+          paragraphs(500, sentences: 12),
+          paragraphs(12),
+          paragraphs(2, label: 'Brief'),
+        ]),
+      );
+      final shown = await scheduler.until(source.section(1));
+      final last = await scheduler.until(
+        source.pageAt(placeIn(shown, 1), anchored: true, urgent: true),
+      );
+      expect(last.last, isTrue);
+      source.show(last);
+
+      final ended = <String>[];
+      final turn = source.after(last).then((page) {
+        ended.add('turn');
+        return page;
+      });
+      final previous = source.section(0).then((_) => ended.add('previous'));
+      final next = await scheduler.until(turn);
+      await scheduler.until(previous);
+
+      expect(next!.section, 2);
+      expect(ended, ['turn', 'previous']);
+    });
+
+    test('after the shown section, the sections after it are laid out in '
+        'order to the right and the sections before it in order to the '
+        'left', () async {
+      open(book([for (var i = 0; i < 7; i++) paragraphs(6, label: 'S$i')]));
+      final order = laidOutOrder(7);
+      await showAt(3, .5);
+      await scheduler.settle();
+
+      expect(order.first, 3);
+      expect(order.where((index) => index > 3), [4, 5, 6]);
+      expect(order.where((index) => index < 3), [2, 1, 0]);
+    });
+
+    test('the sections after the shown one do not wait for a large section '
+        'before it', () async {
+      open(
+        book([
+          paragraphs(2, label: 'Opening'),
+          paragraphs(500, sentences: 12),
+          paragraphs(10),
+          for (var i = 0; i < 3; i++) paragraphs(2, label: 'Brief $i'),
+        ]),
+      );
+      final order = laidOutOrder(6);
+      await showAt(2, .5);
+      await scheduler.settle();
+
+      expect(order.first, 2);
+      expect(order.indexOf(5), lessThan(order.indexOf(1)));
+      expect(order.indexOf(1), lessThan(order.indexOf(0)));
+    });
+
+    test(
+      'the two directions take turns, so the sections after the shown '
+      'one do not wait for the main run of a large section before it',
+      () async {
+        // A step lays out one paragraph, so the large section needs hundreds.
+        open(
+          book([
+            paragraphs(400),
+            paragraphs(6),
+            for (var i = 0; i < 6; i++) paragraphs(12, label: 'After $i'),
+          ]),
+          budget: Duration.zero,
+        );
+        await scheduler.until(source.section(0));
+        final order = laidOutOrder(8);
+        await showAt(1, .5);
+        await scheduler.settle();
+
+        expect(order.indexOf(7), lessThan(order.indexOf(0)));
+      },
+    );
+
+    test('the whole book is laid out when the reader stays, and the '
+        'sections next to the shown one stay ready for a turn', () async {
+      const count = 10;
+      open(book([for (var i = 0; i < count; i++) paragraphs(30)]));
+      scheduler.afterStep = source.checkInvariants;
+      await showAt(5, .5);
+      await scheduler.settle();
+
+      expect([
+        for (var index = 0; index < count; index++) source.laidOut(index),
+      ], everyElement(isTrue));
+      source.checkInvariants();
+
+      final section = await scheduler.until(source.section(5));
+      final first = await scheduler.until(
+        source.pageAt(placeIn(section, 0), anchored: false),
+      );
+      var last = await scheduler.until(
+        source.pageAt(placeIn(section, 1), anchored: false),
+      );
+      while (!last.last) {
+        last = (await scheduler.until(source.after(last)))!;
+      }
+      final before = scheduler.ran.length;
+      final back = await scheduler.until(source.before(first));
+      final forward = await scheduler.until(source.after(last));
+
+      expect(back!.section, 4);
+      expect(forward!.section, 6);
+      expect(scheduler.ran.length - before, 0);
+    });
+
+    test('a jump restarts the order from the jumped-to page', () async {
+      const count = 9;
+      open(book([for (var i = 0; i < count; i++) paragraphs(8)]));
+      final page = await showAt(1, .5);
+      await scheduler.until(source.mainRun(page, end: true));
+
+      await showAt(7, .5);
+      final order = laidOutOrder(count);
+      await scheduler.settle();
+
+      expect(order.first, 7);
+      expect(order.where((index) => index > 7), [8]);
+      final left = order.where((index) => index < 7).toList();
+      expect(left, isNotEmpty);
+      expect(left, [...left]..sort((a, b) => b.compareTo(a)));
+      expect([
+        for (var index = 0; index < count; index++) source.laidOut(index),
+      ], everyElement(isTrue));
+    });
+
+    test('the work waits while idle steps are held, as during an animation '
+        'or in the background, and goes on after', () async {
+      const count = 5;
+      open(book([for (var i = 0; i < count; i++) paragraphs(6)]));
+      scheduler.animating = true;
+      await showAt(2, .5);
+      await scheduler.settle();
+      // The shown page's neighbors are urgent, and in a short section they
+      // can reach its end. No other section is laid out.
+      expect([
+        for (var index = 0; index < count; index++)
+          if (index != 2) source.laidOut(index),
+      ], everyElement(isFalse));
+
+      scheduler.animating = false;
+      await scheduler.settle();
+      expect([
+        for (var index = 0; index < count; index++) source.laidOut(index),
+      ], everyElement(isTrue));
+    });
+
+    test('closing the reader stops the work without errors', () async {
+      const count = 8;
+      open(book([for (var i = 0; i < count; i++) paragraphs(20)]));
+      await showAt(4, .5);
+      for (var step = 0; step < 6; step++) {
+        scheduler.runOne();
+        await Future<void>.delayed(const Duration(milliseconds: 5));
+      }
+      source.dispose();
+      final ran = scheduler.ran.length;
+      await scheduler.settle();
+      // The steps that were scheduled before the close do nothing.
+      expect(scheduler.ran.length - ran, lessThanOrEqualTo(2));
+      expect(scheduler.idleWaiting, 0);
+    });
+
+    test('after a settings change the whole book is laid out for the new '
+        'settings, and a change back finds the layout of the settings '
+        'before', () async {
+      const count = 5;
+      open(book([for (var i = 0; i < count; i++) paragraphs(6)]));
+      final page = await showAt(2, .5);
+      await scheduler.settle();
+
+      source.settings = smallPage;
+      expect(source.laidOut(0), isFalse);
+      final small = await scheduler.until(
+        source.pageAt(page.startPlace!, anchored: true, urgent: true),
+      );
+      source.show(small);
+      await scheduler.settle();
+      expect([
+        for (var index = 0; index < count; index++) source.laidOut(index),
+      ], everyElement(isTrue));
+
+      source.settings = readerPage;
+      expect([
+        for (var index = 0; index < count; index++) source.laidOut(index),
+      ], everyElement(isTrue));
+    });
+  });
+
   test('the host benchmark shows no step longer than the budget plus the '
       'longest paragraph', () async {
     const budget = Duration(milliseconds: 4);
