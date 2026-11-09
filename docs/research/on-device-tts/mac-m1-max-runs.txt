@@ -1,0 +1,53 @@
+# Host: Apple M1 Max (8 performance + 2 efficiency cores, 64 GB), macOS, sherpa-onnx 1.13.8 CLI from nixpkgs (ONNX Runtime 1.27.1), CPU provider.
+# The machine was shared with other agents: load average 6 to 15 on 10 cores during the runs, so the numbers are pessimistic.
+# gen = synthesis time without model load; wall = whole process; rtf = gen / audio; peakMB = peak memory footprint of the process.
+# Text: passage.txt (126 words) unless the line starts with SENT (one 17-word sentence) or the model ran on 'He read the letter twice,' (clause runs, last 12 lines).
+kokoro t=2 gen=28.421s audio=41.442s rtf=.685 wall=29.68s peakMB=596
+kokoro t=2 gen=32.284s audio=41.442s rtf=.779 wall=33.28s peakMB=612
+SENT kokoro t=2 gen=3.541s audio=4.504s rtf=.786 wall=5.00s peakMB=613
+kokoro-int8 t=2 gen=39.958s audio=41.193s rtf=.970 wall=40.96s peakMB=399
+kokoro-int8 t=2 gen=33.095s audio=41.201s rtf=.803 wall=33.89s peakMB=403
+SENT kokoro-int8 t=2 gen=3.392s audio=4.453s rtf=.761 wall=4.21s peakMB=444
+kitten-nano t=2 gen=5.214s audio=51.426s rtf=.101 wall=5.56s peakMB=212
+kitten-nano t=2 gen=5.289s audio=51.403s rtf=.102 wall=5.60s peakMB=220
+SENT kitten-nano t=2 gen=0.627s audio=6.525s rtf=.096 wall=0.95s peakMB=209
+kitten-mini t=2 gen=19.903s audio=43.750s rtf=.454 wall=20.30s peakMB=292
+kitten-mini t=2 gen=18.461s audio=43.753s rtf=.421 wall=18.86s peakMB=300
+SENT kitten-mini t=2 gen=2.079s audio=5.042s rtf=.412 wall=2.48s peakMB=293
+supertonic5 t=2 gen=7.852s audio=54.851s rtf=.143 wall=8.28s peakMB=409
+supertonic5 t=2 gen=7.851s audio=54.851s rtf=.143 wall=8.26s peakMB=406
+SENT supertonic5 t=2 gen=0.942s audio=6.300s rtf=.149 wall=1.34s peakMB=318
+supertonic8 t=2 gen=12.082s audio=54.851s rtf=.220 wall=12.50s peakMB=409
+supertonic8 t=2 gen=13.365s audio=54.851s rtf=.243 wall=13.78s peakMB=408
+SENT supertonic8 t=2 gen=1.409s audio=6.300s rtf=.223 wall=1.79s peakMB=316
+pocket t=2 gen=12.369s audio=40.903s rtf=.302 wall=12.90s peakMB=908
+pocket t=2 gen=13.012s audio=39.868s rtf=.326 wall=13.59s peakMB=910
+SENT pocket t=2 gen=1.527s audio=5.024s rtf=.303 wall=2.07s peakMB=896
+pocket-int8 t=2 gen=8.445s audio=39.357s rtf=.214 wall=8.86s peakMB=629
+pocket-int8 t=2 gen=10.065s audio=42.252s rtf=.238 wall=10.47s peakMB=648
+SENT pocket-int8 t=2 gen=1.050s audio=4.560s rtf=.230 wall=1.48s peakMB=615
+piper t=2 gen=2.239s audio=41.320s rtf=.054 wall=2.70s peakMB=334
+piper t=2 gen=2.410s audio=40.948s rtf=.058 wall=2.87s peakMB=327
+SENT piper t=2 gen=0.274s audio=4.522s rtf=.060 wall=0.74s peakMB=256
+kokoro t=1 gen=44.188s audio=41.454s rtf=1.065 wall=45.08s peakMB=603
+kokoro t=4 gen=13.194s audio=41.454s rtf=.318 wall=14.01s peakMB=663
+supertonic5 t=1 gen=15.205s audio=54.851s rtf=.277 wall=15.67s peakMB=408
+supertonic5 t=4 gen=7.549s audio=54.851s rtf=.137 wall=7.96s peakMB=411
+pocket-int8 t=1 gen=11.376s audio=40.949s rtf=.277 wall=11.78s peakMB=624
+pocket-int8 t=4 gen=12.245s audio=42.403s rtf=.288 wall=12.67s peakMB=628
+kitten-nano t=1 gen=11.198s audio=51.424s rtf=.217 wall=11.65s peakMB=180
+kitten-nano t=4 gen=3.730s audio=51.406s rtf=.072 wall=4.06s peakMB=222
+piper t=1 gen=3.755s audio=41.413s rtf=.090 wall=4.20s peakMB=335
+piper t=4 gen=1.366s audio=40.821s rtf=.033 wall=1.80s peakMB=337
+kitten-nano t=2 gen=0.233s audio=1.959s rtf=.118 wall=0.55s peakMB=155
+kitten-nano t=2 gen=0.234s audio=1.956s rtf=.119 wall=0.55s peakMB=158
+kitten-nano t=2 gen=0.239s audio=1.959s rtf=.122 wall=0.56s peakMB=155
+kokoro t=2 gen=0.798s audio=1.371s rtf=.582 wall=1.55s peakMB=615
+kokoro t=2 gen=0.810s audio=1.371s rtf=.590 wall=1.60s peakMB=606
+kokoro t=2 gen=0.825s audio=1.370s rtf=.602 wall=1.62s peakMB=627
+pocket-int8 t=2 gen=0.359s audio=1.440s rtf=.249 wall=0.75s peakMB=584
+pocket-int8 t=2 gen=0.366s audio=1.520s rtf=.240 wall=0.76s peakMB=585
+pocket-int8 t=2 gen=0.384s audio=1.520s rtf=.252 wall=0.81s peakMB=582
+supertonic5 t=2 gen=0.365s audio=2.026s rtf=.180 wall=0.76s peakMB=313
+supertonic5 t=2 gen=0.370s audio=2.026s rtf=.182 wall=0.77s peakMB=311
+supertonic5 t=2 gen=0.370s audio=2.026s rtf=.182 wall=0.78s peakMB=306
