@@ -12,6 +12,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 
 import '../../foundation/hop.dart';
+import '../book_pages.dart';
 import '../document.dart';
 import 'dom.dart';
 import 'layout.dart';
@@ -85,7 +86,9 @@ class EpubPager implements DocumentNavigator {
     PageSource? source,
     this._hop = compute,
   }) : _publication = document.publication,
-       _source = source ?? PageSource(document.publication);
+       _source = source ?? PageSource(document.publication) {
+    _source.bookPages.addListener(_recount);
+  }
 
   static const _mismatch =
       'The saved place does not match this text. Reading starts at the '
@@ -135,12 +138,20 @@ class EpubPager implements DocumentNavigator {
   /// shown.
   ValueListenable<ShownPage?> get shown => _shown;
 
-  /// The number of the shown page in its section, and the section's page
-  /// count, as far as the section's main run knows them. The number is null
-  /// until the main run passes the shown page's start, and the count until
-  /// the main run ends. The reader shows "Page N", then "Page N of M".
+  /// The number of the shown page and a page count. Once every section of
+  /// the shown page's settings is laid out, they count the pages of the
+  /// whole book. Before then, they count the pages of the shown page's
+  /// section, as far as the section's main run knows them: the number is
+  /// null until the main run passes the shown page's start, and the count
+  /// until the main run ends. While a page stays shown, neither goes back.
+  /// The reader shows "Page N", then "Page N of M".
   ValueListenable<PageNumber?> get pageNumber => _number;
   final _number = ValueNotifier<PageNumber?>(null);
+
+  /// The whole-book page index of the current page settings, which the
+  /// scrub bar spaces the book's pages by. It notifies once a section is
+  /// laid out and once the settings change.
+  ValueListenable<BookPages> get bookPages => _source.bookPages;
 
   /// Where the shown page ends: its section and the text progress of its
   /// last place, or null before the first page and for a page that shows
@@ -464,6 +475,7 @@ class EpubPager implements DocumentNavigator {
     _search = null;
     if (!_presented.isCompleted) _presented.complete();
     _counting?.complete();
+    _source.bookPages.removeListener(_recount);
     _shown.dispose();
     _number.dispose();
     _source.dispose();
@@ -498,7 +510,7 @@ class EpubPager implements DocumentNavigator {
       'the held section is not the shown page\'s',
     );
     final number = _number.value;
-    final known = _source.numberOf(page);
+    final known = _numberOf(page);
     check(
       number == null ||
           (number.number == known?.number &&
@@ -644,11 +656,25 @@ class EpubPager implements DocumentNavigator {
     );
   }
 
+  /// The number of [page] in the whole book once the whole book is laid out
+  /// in its settings, else in its section.
+  PageNumber? _numberOf(LaidPage page) =>
+      _source.bookNumberOf(page) ?? _source.numberOf(page);
+
+  /// Publishes the shown page's number again once a section is laid out.
+  /// It reads the index of the page's own settings, so an index of new
+  /// settings changes nothing until a page of them is shown.
+  void _recount() {
+    final page = _shown.value?.page;
+    if (!_disposed && page != null) _number.value = _numberOf(page);
+  }
+
   /// Publishes the number of [page], and again each time the main run of
-  /// its section learns more, while [page] is shown.
+  /// its section learns more, while [page] is shown. The page index tells
+  /// [_recount] when the whole book is laid out.
   void _count(LaidPage page) {
     _counting?.complete();
-    final number = _number.value = _source.numberOf(page);
+    final number = _number.value = _numberOf(page);
     if (number?.count != null) {
       _counting = null;
       return;
@@ -656,7 +682,7 @@ class EpubPager implements DocumentNavigator {
     final stop = _counting = Completer<void>();
     void update() {
       if (!_disposed && identical(_shown.value?.page, page)) {
-        _number.value = _source.numberOf(page);
+        _number.value = _numberOf(page);
       }
     }
 

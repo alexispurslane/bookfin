@@ -253,15 +253,16 @@ void main() {
         .map((match) => match[0])
         .firstOrNull;
 
-    testWidgets('names the shown page in its chapter and the chapter\'s page '
-        'count, and follows a turn', (tester) async {
+    testWidgets('names the shown page among the book\'s pages once the book '
+        'is laid out, and follows a turn', (tester) async {
       final reader = await openNative(tester);
       await settleReader(
         tester,
-        () => reader.pager!.pageNumber.value?.count != null,
-        reason: 'the first chapter was never counted',
+        () => reader.pager!.bookPages.value.complete,
+        reason: 'the book was never laid out',
       );
-      final count = reader.pager!.pageNumber.value!.count!;
+      final count = reader.pager!.bookPages.value.count!;
+      expect(reader.pager!.pageNumber.value, (number: 1, count: count));
       expect(count, greaterThan(1));
       expect(find.bySemanticsLabel('One · Page 1 of $count'), findsOneWidget);
 
@@ -280,16 +281,20 @@ void main() {
       await waitForPage(tester, reader, (shown) => shown.page.section == 1);
       await settleReader(
         tester,
-        () => reader.pager!.pageNumber.value?.count != null,
-        reason: 'the second chapter was never counted',
+        () => reader.pager!.bookPages.value.complete,
+        reason: 'the book was never laid out',
       );
+      await tester.pump();
       expect(
         (reader.visibleAddress! as EpubAddress).location.chapter,
         isNull,
         reason: 'The pager reports the saved place as saved.',
       );
-      final count = reader.pager!.pageNumber.value!.count!;
-      expect(find.bySemanticsLabel('Two · Page 1 of $count'), findsOneWidget);
+      final number = reader.pager!.pageNumber.value!;
+      expect(
+        find.bySemanticsLabel('Two · Page ${number.number} of ${number.count}'),
+        findsOneWidget,
+      );
       await closeNative(tester, reader);
     }, variant: TargetPlatformVariant.only(TargetPlatform.android));
   });

@@ -1140,7 +1140,12 @@ class _ReaderSearchPanelState extends State<ReaderSearchPanel> {
 ///
 /// The bar shows once the reader has a map of the book and a visible place.
 /// Until then only the label and the arrows show.
-class ReaderScrubBar extends StatelessWidget {
+///
+/// A drag keeps the map that the bar showed when it started until the move
+/// that it reported ends. So the marks and the label under the finger do not
+/// change while the pager lays out sections, and the release goes to the
+/// place that the label named.
+class ReaderScrubBar extends StatefulWidget {
   const ReaderScrubBar({
     super.key,
     required this.reader,
@@ -1170,6 +1175,14 @@ class ReaderScrubBar extends StatelessWidget {
   /// place until the returned future completes.
   final Future<void> Function(BookTarget target) onScrubEnd;
 
+  @override
+  State<ReaderScrubBar> createState() => _ReaderScrubBarState();
+}
+
+class _ReaderScrubBarState extends State<ReaderScrubBar> {
+  /// The map of the running drag, until the move that it reported ends.
+  BookMap? _held;
+
   /// The visible page, such as "Page 2 of 8", or "Page 2" while the count
   /// of pages is not known.
   static String _pageLabel(int? page, int? pages) {
@@ -1180,26 +1193,27 @@ class ReaderScrubBar extends StatelessWidget {
         : 'Page $page of $pages';
   }
 
-  /// The place at [fraction] of [map], such as "37%" in an EPUB or "Page 12
-  /// of 40" in a PDF.
-  static String _placeAt(BookMap map, double fraction) {
-    final pages = map.pages;
-    return pages != null
-        ? 'Page ${map.targetAt(fraction).part + 1} of $pages'
-        : '${(fraction * 100).round()}%';
-  }
+  /// The place at [fraction] of [map]: its page among the book's pages,
+  /// such as "Page 12 of 40", once the map knows every page, else its share
+  /// of the book, such as "37%".
+  static String _placeAt(BookMap map, double fraction) =>
+      switch (map.targetAt(fraction).page) {
+        final page? => 'Page $page of ${map.pages}',
+        null => '${(fraction * 100).round()}%',
+      };
 
   @override
   Widget build(BuildContext context) => ListenableBuilder(
     listenable: Listenable.merge([
-      reader.documentChanges,
-      reader.placeChanges,
-      reader.bookmarkChanges,
-      reader.bookMapChanges,
+      widget.reader.documentChanges,
+      widget.reader.placeChanges,
+      widget.reader.bookmarkChanges,
+      widget.reader.bookMapChanges,
     ]),
     builder: (context, _) {
+      final reader = widget.reader;
       final place = reader.visibleAddress;
-      final map = reader.bookMap;
+      final map = _held ?? reader.bookMap;
       final at = place == null ? null : map?.fractionOf(place);
       final style = Theme.of(context).textTheme.bodySmall;
       // The label keeps one line, so that a drag never changes the dock's
@@ -1246,17 +1260,18 @@ class ReaderScrubBar extends StatelessWidget {
           label,
           Row(
             children: [
-              previous,
+              widget.previous,
               Expanded(child: bar),
-              next,
+              widget.next,
             ],
           ),
         ],
       );
-      // A PDF names its page. A native EPUB page names its number in its
-      // section, which the pager learns as it lays the section out, and
-      // only that label follows it. Until the number is known, the visible
-      // place is its share of the book, as the label of a dragged place is.
+      // A PDF names its page. A native EPUB page names its number, which the
+      // pager learns as it lays the book out, and only that label follows
+      // it: in its section until every section is laid out, then in the
+      // whole book. Until the number is known, the visible place is its
+      // share of the book, as the label of a dragged place is.
       // A saved place has no chapter title, so the book map names the
       // chapter of a place that the pager opened at, as it does for a
       // dragged place.
@@ -1285,8 +1300,8 @@ class ReaderScrubBar extends StatelessWidget {
           const SizedBox(height: kMinInteractiveDimension),
         );
       }
-      final onStart = onScrubStart;
-      final onTarget = onScrubTarget;
+      final onStart = widget.onScrubStart;
+      final onTarget = widget.onScrubTarget;
       // Android takes a drag that starts in the gesture zone at a screen edge
       // as Back. The thumb at the start or the end of the book sits at the
       // bar's edge, so the bar keeps clear of the zone. The arrow between the
@@ -1306,13 +1321,21 @@ class ReaderScrubBar extends StatelessWidget {
           final place = _placeAt(map, fraction);
           return target.chapter == null ? place : '${target.chapter} · $place';
         },
-        onStart: onStart == null
-            ? null
-            : (fraction) => onStart(map.targetAt(fraction)),
+        onStart: (fraction) {
+          // The map shows already, so the bar need not build again.
+          _held = map;
+          onStart?.call(map.targetAt(fraction));
+        },
         onTarget: onTarget == null
             ? null
             : (fraction) => onTarget(map.targetAt(fraction)),
-        onEnd: (fraction) => onScrubEnd(map.targetAt(fraction)),
+        onEnd: (fraction) async {
+          try {
+            await widget.onScrubEnd(map.targetAt(fraction));
+          } finally {
+            if (mounted) setState(() => _held = null);
+          }
+        },
         layout: (context, bar, fraction) => arranged(
           fraction == null
               ? visible()

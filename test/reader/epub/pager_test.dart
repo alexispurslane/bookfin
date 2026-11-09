@@ -879,17 +879,29 @@ void main() {
     expect(full.hits, hasLength(20));
   });
 
-  test('the first page has page number 1 at once, and the section\'s page '
-      'count once its main run ends', () async {
+  test('the first page has page number 1 at once, the section\'s page '
+      'count once its main run ends, and the book\'s once the whole book is '
+      'laid out', () async {
     open(book([paragraphs(60), paragraphs(4)]));
     final first = await present();
 
     expect(pager().pageNumber.value, (number: 1, count: null));
 
-    await scheduler.settle();
+    await until(source.mainRun(first.page, end: true));
     final whole = layoutSection(await section(0));
-    expect(pager().pageNumber.value, (number: 1, count: whole.pages.length));
+    final count = whole.pages.length;
     whole.dispose();
+    if (!source.laidOut(1)) {
+      expect(pager().pageNumber.value, (number: 1, count: count));
+    }
+
+    await scheduler.settle();
+    final next = layoutSection(await section(1));
+    expect(pager().pageNumber.value, (
+      number: 1,
+      count: count + next.pages.length,
+    ));
+    next.dispose();
     expect(shown().page, same(first.page));
   });
 
@@ -925,14 +937,26 @@ void main() {
     while (shown().page.section == 0) {
       await until(pager().move(true));
     }
-    expect(pager().pageNumber.value?.number, 1);
+    // The whole book is laid out, so the number counts its first section.
+    var before = layoutSection(await section(0));
+    expect(pager().pageNumber.value?.number, before.pages.length + 1);
+    before.dispose();
 
     await present(largerText);
     expect(shown().page.settings, largerText);
-    expect(pager().pageNumber.value?.number, 1);
+    expect(
+      pager().pageNumber.value?.number,
+      1,
+      reason: 'New settings count the chapter until the book is laid out.',
+    );
     await scheduler.settle();
+    before = layoutSection(await section(0));
     final whole = layoutSection(await section(1));
-    expect(pager().pageNumber.value, (number: 1, count: whole.pages.length));
+    expect(pager().pageNumber.value, (
+      number: before.pages.length + 1,
+      count: before.pages.length + whole.pages.length,
+    ));
+    before.dispose();
     whole.dispose();
   });
 

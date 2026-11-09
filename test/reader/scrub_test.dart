@@ -1,5 +1,7 @@
+import 'package:bookfin/foundation/scrub_bar.dart';
 import 'package:bookfin/reader/book_map.dart';
 import 'package:bookfin/reader/document.dart';
+import 'package:bookfin/reader/epub/publication.dart';
 import 'package:bookfin/reader/screen.dart';
 import 'package:bookfin/reader/session.dart';
 import 'package:flutter/material.dart';
@@ -7,7 +9,11 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../playback/playback_test.dart' show account, LocalFiles, MemoryResume;
 import 'book_map_test.dart' show contents, threeSections;
+import 'epub/helpers.dart' show loadReaderFont;
+import 'epub/page_source_test.dart' show paragraphs;
+import 'native_reader.dart';
 import 'screen_test.dart' show ControlNavigator;
+import 'session_native_test.dart' show navBook;
 import 'session_test.dart' show source, edition, book;
 
 void main() {
@@ -298,4 +304,134 @@ void main() {
     await tester.pump();
     expect(tester.getSize(find.byType(ReaderScrubBar)).height, height);
   }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
+
+  group('the scrub bar of a native book', () {
+    setUpAll(loadReaderFont);
+
+    /// The bar's place label as assistive technology reads it.
+    String placeLabel(WidgetTester tester) => tester
+        .widgetList<Semantics>(
+          find.descendant(
+            of: find.byType(ReaderScrubBar),
+            matching: find.byType(Semantics),
+          ),
+        )
+        .map((semantics) => semantics.properties.label)
+        .nonNulls
+        .firstWhere((label) => label.contains(' · '));
+
+    List<double> ticks(WidgetTester tester) =>
+        tester.widget<ScrubBar>(find.byType(ScrubBar)).chapters;
+
+    testWidgets('the thumb does not move under the finger while a section is '
+        'laid out', (tester) async {
+      // Long titles give the last chapter many bytes and few pages, so its
+      // estimate is far off until it is laid out, last.
+      final reader = await openNative(
+        tester,
+        publication: Publication.admit(
+          navBook(
+            [
+              '<h1 id="one">One</h1>${paragraphs(20)}',
+              '<h1 id="two">Two</h1>${paragraphs(60, sentences: 10)}',
+              '<h1 id="three">Three</h1>${paragraphs(60, sentences: 10)}',
+              '<h1 id="four">Four</h1>'
+                  '${'<p title="${'x' * 4000}">A short line.</p>' * 40}',
+            ],
+            [
+              ('One', 'text/s0.xhtml#one'),
+              ('Two', 'text/s1.xhtml#two'),
+              ('Three', 'text/s2.xhtml#three'),
+              ('Four', 'text/s3.xhtml#four'),
+            ],
+          ),
+        ),
+      );
+      expect(reader.pager!.bookPages.value.complete, isFalse);
+      final held = reader.bookMap!;
+      final finger = held.fractionAt((part: 2, progress: .05));
+      bar(tester).onChangeStart!(bar(tester).value);
+      bar(tester).onChanged!(finger);
+      await tester.pump();
+      final label = placeLabel(tester);
+      final marks = ticks(tester);
+
+      await settleReader(
+        tester,
+        () => reader.pager!.bookPages.value.complete,
+        reason: 'the book was not laid out during the drag',
+      );
+      expect(
+        reader.bookMap!.targetAt(finger).chapter,
+        isNot(held.targetAt(finger).chapter),
+        reason: 'The laid-out book has another chapter under the finger.',
+      );
+      await tester.pump();
+
+      expect(bar(tester).value, finger);
+      expect(placeLabel(tester), label);
+      expect(ticks(tester), marks);
+      final target = held.targetAt(finger);
+      bar(tester).onChangeEnd!(finger);
+      await settleReader(
+        tester,
+        () => reader.pager!.shown.value!.page.section == target.part,
+        reason: 'the reader did not land where the bar showed',
+      );
+      await settleReader(tester, () => reader.previews.deck.value == null);
+      await tester.pump();
+      expect(
+        ticks(tester),
+        isNot(marks),
+        reason: 'After the drag the bar shows what is laid out.',
+      );
+      await closeNative(tester, reader);
+    }, variant: TargetPlatformVariant.only(TargetPlatform.android));
+
+    testWidgets('when every section is laid out, a drag names the page under '
+        'the finger, and the release lands on that page', (tester) async {
+      final reader = await openNative(tester);
+      await settleReader(
+        tester,
+        () => reader.bookMap?.pages != null,
+        reason: 'the book was never laid out',
+      );
+      final map = reader.bookMap!;
+      final total = map.pages!;
+      expect(total, greaterThan(3));
+      final far = total - 1;
+      final finger = (far - .5) / total;
+      final chapter = map.targetAt(finger).chapter;
+      expect(
+        find.bySemanticsLabel('One · Page 1 of $total'),
+        findsOneWidget,
+        reason: 'The label names the shown page among the book\'s pages.',
+      );
+
+      bar(tester).onChangeStart!(bar(tester).value);
+      bar(tester).onChanged!(finger);
+      await tester.pump();
+      expect(placeLabel(tester), '$chapter · Page $far of $total');
+      expect(
+        bar(tester).semanticFormatterCallback!(finger),
+        '$chapter · Page $far of $total',
+      );
+
+      bar(tester).onChangeEnd!(finger);
+      await settleReader(
+        tester,
+        () => reader.pager!.pageNumber.value?.number == far,
+        reason: 'the reader did not land on the page that the bar named',
+      );
+      await settleReader(tester, () => reader.previews.deck.value == null);
+      await tester.pump();
+      expect(placeLabel(tester), endsWith('Page $far of $total'));
+      expect(
+        bar(tester).semanticFormatterCallback!(bar(tester).value),
+        endsWith('Page $far of $total'),
+        reason: 'The thumb names the shown page.',
+      );
+      await closeNative(tester, reader);
+    }, variant: TargetPlatformVariant.only(TargetPlatform.android));
+  });
 }

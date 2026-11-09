@@ -1,9 +1,11 @@
 import 'dart:convert';
+import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:xml/xml_events.dart';
 
 import '../foundation/hop.dart';
+import 'book_pages.dart';
 import 'document.dart';
 import 'pdf.dart';
 
@@ -16,6 +18,7 @@ class BookTarget {
     required this.part,
     required this.progress,
     this.chapter,
+    this.page,
   });
 
   /// Where the place sits in the whole book, from 0 at its start to 1 at its
@@ -34,16 +37,21 @@ class BookTarget {
   /// first chapter and in a PDF.
   final String? chapter;
 
+  /// The number of the page that holds the place among the pages of the
+  /// whole book, from 1, or null while [BookMap.pages] is not known.
+  final int? page;
+
   @override
   bool operator ==(Object other) =>
       other is BookTarget &&
       other.fraction == fraction &&
       other.part == part &&
       other.progress == progress &&
-      other.chapter == chapter;
+      other.chapter == chapter &&
+      other.page == page;
 
   @override
-  int get hashCode => Object.hash(fraction, part, progress, chapter);
+  int get hashCode => Object.hash(fraction, part, progress, chapter, page);
 }
 
 /// Where places sit along the whole length of one open book, as fractions
@@ -51,24 +59,37 @@ class BookTarget {
 /// it. The map serves the bar only: the reader still saves and restores each
 /// place by its exact address.
 ///
-/// A book is a row of parts. An EPUB's parts are the sections of its spine,
-/// and each takes a share of the book equal to its share of the spine's
-/// bytes. Sizes cost nothing to read when a book opens, while text lengths
-/// would need every section laid out. A place inside a section sits at its
-/// text progress: the share of the section's visible characters, white
-/// space left out, that come before it. A PDF's parts are its source pages,
-/// which take equal shares, and a place sits at the end of its page.
+/// A book is a row of parts, and the bar gives each page of the book an
+/// equal share. An EPUB's parts are the sections of its spine. A section
+/// whose true pages are known ([paged]) takes a share by its pages, and a
+/// place inside it sits on the share of the page that holds it, at its text
+/// progress through that page. A section whose pages are not known yet
+/// takes the pages that its bytes estimate, at the pages per byte of the
+/// sections whose pages are known, and at least one page. Before any
+/// section's pages are known, each takes its share of the spine's bytes.
+/// Sizes cost nothing to read when a book opens. A place inside such a
+/// section sits at its text progress: the share of the section's visible
+/// characters, white space left out, that come before it. A PDF's parts
+/// are its source pages, one page each, and a place sits at the end of its
+/// page.
+///
+/// Once every part's pages are known, the map names the page at each place
+/// of the bar ([BookTarget.page]), and the place that it gives for a
+/// fraction is on that page.
 class BookMap {
-  BookMap._(this._starts, this._parts, this.chapters, this.pages);
+  BookMap._(this._sizes, this._parts, this._chapters, this._pages);
 
   /// The map of a PDF with [pages] source pages. A PDF's contents list its
   /// source pages, which are not chapters, so the map has no chapters.
   BookMap.pages(int pages)
     : this._(
-        [for (var page = 0; page <= pages; page++) page / pages],
+        List.filled(pages, 1),
         const {},
         const [],
-        pages,
+        BookPages([
+          for (var page = 0; page < pages; page++)
+            (starts: const [0], length: 0),
+        ]),
       );
 
   /// Measures [document], with the chapters that its [contents] list, or
@@ -87,13 +108,6 @@ class BookMap {
     final sizes = [
       for (final path in spine) publication.resources[path]!.length,
     ];
-    final whole = sizes.fold(0, (sum, size) => sum + size);
-    final starts = <double>[0];
-    var before = 0;
-    for (final (index, size) in sizes.indexed) {
-      before += size;
-      starts.add(whole > 0 ? before / whole : (index + 1) / sizes.length);
-    }
     final parts = {for (final (index, path) in spine.indexed) path: index};
 
     // Each contents entry points at a section, and perhaps at an element in
@@ -140,39 +154,89 @@ class BookMap {
     final progress = {
       for (final (index, part) in wanted.keys.indexed) part: measured[index],
     };
-    double at(int part, double through) =>
-        starts[part] + (starts[part + 1] - starts[part]) * through;
     final chapters = [
       for (final (:title, :part, :id) in entries)
-        (title: title, start: at(part, progress[part]?[id] ?? 0)),
+        (title: title, part: part, progress: progress[part]?[id] ?? 0.0),
     ];
     // Entries that start at one place keep their order in the contents.
     final order = [for (var index = 0; index < chapters.length; index++) index]
-      ..sort(
-        (a, b) => switch (chapters[a].start.compareTo(chapters[b].start)) {
-          0 => a.compareTo(b),
-          final order => order,
-        },
-      );
+      ..sort((a, b) {
+        final (first, second) = (chapters[a], chapters[b]);
+        return switch ((
+          first.part.compareTo(second.part),
+          first.progress.compareTo(second.progress),
+        )) {
+          (0, 0) => a.compareTo(b),
+          (0, final order) => order,
+          (final order, _) => order,
+        };
+      });
     return BookMap._(
-      starts,
+      sizes,
       parts,
       List.unmodifiable([for (final index in order) chapters[index]]),
       null,
     );
   }
 
-  /// Where each part starts, with 1 after the last part.
-  final List<double> _starts;
+  /// This map with the true pages of the parts that [pages] knows, in the
+  /// current page settings. The chapters stay where the contents point.
+  BookMap paged(BookPages pages) => BookMap._(_sizes, _parts, _chapters, pages);
+
+  /// The bytes of each part, which estimate its pages until they are known.
+  final List<int> _sizes;
 
   /// The index of each EPUB section by its resource path.
   final Map<String, int> _parts;
 
   /// The chapters that the contents list, by where they start, in order.
-  final List<({String title, double start})> chapters;
+  final List<({String title, int part, double progress})> _chapters;
 
-  /// The number of source pages of a PDF, or null for an EPUB.
-  final int? pages;
+  /// The true pages of the parts whose pages are known, or null when none
+  /// are.
+  final BookPages? _pages;
+
+  /// Where each part starts, with 1 after the last part.
+  late final List<double> _starts = () {
+    final known = _pages?.parts;
+    var pages = 0;
+    var bytes = 0;
+    for (final (index, part) in (known ?? const []).indexed) {
+      if (part == null) continue;
+      pages += part.starts.length;
+      bytes += _sizes[index];
+    }
+    // Each part's pages, known or estimated, or its bytes before any part's
+    // pages are known.
+    final weights = [
+      for (final (index, size) in _sizes.indexed)
+        if (known?[index] case final part?)
+          part.starts.length.toDouble()
+        else if (pages > 0 && bytes > 0)
+          math.max(1.0, size * pages / bytes)
+        else
+          size.toDouble(),
+    ];
+    final whole = weights.fold(0.0, (sum, weight) => sum + weight);
+    final starts = <double>[0];
+    var before = 0.0;
+    for (final (index, weight) in weights.indexed) {
+      before += weight;
+      starts.add(whole > 0 ? before / whole : (index + 1) / weights.length);
+    }
+    return starts;
+  }();
+
+  /// The chapters that the contents list, by where they start, in order.
+  late final List<({String title, double start})> chapters = List.unmodifiable([
+    for (final (:title, :part, :progress) in _chapters)
+      (title: title, start: _within(part, progress)),
+  ]);
+
+  /// The number of pages of the whole book once every part's pages are
+  /// known: a PDF's source pages, or an EPUB's true pages in the current
+  /// page settings. Null before then.
+  int? get pages => _pages?.count;
 
   /// Where [place] sits in the book, or null when the place is not in this
   /// book.
@@ -236,10 +300,31 @@ class BookMap {
   }
 
   /// Where the place [through] of the way through part [part] sits, by the
-  /// rule that [of] places chapters with, so that equal places give equal
+  /// rule that [targetAt] reverses, so that equal places give equal
   /// fractions.
-  double _within(int part, double through) =>
-      _starts[part] + (_starts[part + 1] - _starts[part]) * through;
+  double _within(int part, double through) {
+    final start = _starts[part];
+    final share = _starts[part + 1] - start;
+    final pages = _pages?.parts[part];
+    if (pages == null || pages.length == 0) return start + share * through;
+    final starts = pages.starts;
+    // The place names a visible character, at most the last one, as the
+    // reader's placeAt reads it. A saved place keeps six decimals of its
+    // progress, so it rounds to that character. A page whose first drawn
+    // line follows text that the book hides saves progress 1, and still
+    // sits on the part's last page.
+    final character = math.min(
+      (through * pages.length).round(),
+      pages.length - 1,
+    );
+    final page = _pageHolding(starts, character);
+    final first = starts[page];
+    final end = page + 1 < starts.length ? starts[page + 1] : pages.length;
+    final inPage = end > first
+        ? ((character - first) / (end - first)).clamp(0.0, 1.0)
+        : 0.0;
+    return start + share * (page + inPage) / starts.length;
+  }
 
   /// The place at [fraction] of the book. A fraction outside 0 to 1 is the
   /// book's start or end.
@@ -257,16 +342,66 @@ class BookMap {
       }
     }
     final share = _starts[low + 1] - _starts[low];
+    final through = share > 0
+        ? ((at - _starts[low]) / share).clamp(0.0, 1.0)
+        : 0.0;
     final chapter = chapters.lastWhere(
       (chapter) => chapter.start <= at,
       orElse: () => (title: '', start: -1),
     );
+    final (progress, page) = _onPage(low, through);
     return BookTarget(
       fraction: at,
       part: low,
-      progress: share > 0 ? ((at - _starts[low]) / share).clamp(0.0, 1.0) : 0,
+      progress: progress,
       chapter: chapter.start < 0 ? null : chapter.title,
+      page: page == null ? null : _pages!.numberOf(low, page),
     );
+  }
+
+  /// The text progress at [through] of the way along part [part]'s share of
+  /// the bar, and the index of the page that holds it, or null when the
+  /// part's pages are not known.
+  ///
+  /// Each page takes an equal share. The progress names a visible character
+  /// of the page, a quarter of the way into it, so that the reader goes to
+  /// that character and so to that page. A page without text has none: its
+  /// share names the first character after it, on the page that holds it.
+  (double, int?) _onPage(int part, double through) {
+    final pages = _pages?.parts[part];
+    if (pages == null) return (through, null);
+    final starts = pages.starts;
+    if (pages.length == 0) return (through, 0);
+    // A tiny tolerance, so that the start of a page's share, reached from
+    // the page's first character, names that page.
+    final along = through * starts.length + 1e-9;
+    final index = math.min(along.floor(), starts.length - 1);
+    final first = starts[index];
+    final end = index + 1 < starts.length ? starts[index + 1] : pages.length;
+    final int character = end > first
+        ? first +
+              math.min(
+                ((along - index).clamp(0.0, 1.0) * (end - first)).floor(),
+                end - first - 1,
+              )
+        : math.min(first, pages.length - 1);
+    return ((character + .25) / pages.length, _pageHolding(starts, character));
+  }
+
+  /// The index of the last page of [starts] that starts at or before the
+  /// visible character [character].
+  static int _pageHolding(List<int> starts, int character) {
+    var low = 0;
+    var high = starts.length - 1;
+    while (low < high) {
+      final middle = (low + high + 1) >> 1;
+      if (starts[middle] <= character) {
+        low = middle;
+      } else {
+        high = middle - 1;
+      }
+    }
+    return low;
   }
 }
 

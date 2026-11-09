@@ -347,7 +347,22 @@ A saved EPUB place has the same JSON form as today. `ReaderDocument.save` writes
 | Search hit to place | The start of the match |
 | Chapter label | The last contents entry of the same section at or before the place, else the section's first `h1` or `title`, else "Chapter N" |
 | Page end | The progress of the last visible character on the page. It is for display only and is not saved. The chapter arrows use it (t6-0cjf). |
-| Whole-book fraction | `BookMap`, unchanged: section byte shares and text progress |
+| Whole-book fraction | `BookMap`. Each page of the book takes an equal share of the scrub bar. A section whose pages are not known yet takes the pages that its bytes estimate. See "Whole-book pages". |
+
+### Whole-book pages
+
+The page source owns one whole-book page index (`BookPages`, boo-jglf and boo-ok9i). For each section whose main run ended in the current settings, the index holds the visible character index where each true page starts, and the section's visible character count. The page source publishes the index once a section is laid out and once the settings change, never once a page.
+
+Two readers use the index:
+
+- The page label. Before every section of the shown page's settings is laid out, the label counts the pages of the shown page's section, for example "Page 3 of 18". After that, it counts the pages of the whole book, for example "Page 134 of 412". The user chose this on 2026-11-09. While the reader stays on a page, its number and its count never go back. A settings change goes back to the section's numbers until the book is laid out again in the new settings. A change back to settings whose book is laid out shows whole-book numbers at once.
+- The scrub bar. The session spaces its `BookMap` by the index. Each page of a laid-out section takes an equal share of the bar. A place in it sits on the share of the page that holds it. A point of the bar names a visible character of the page under it, so a drag lands on the page that the bar names. A section that is not laid out takes the pages that its bytes estimate, at the pages per byte of the laid-out sections, and at least one page. Before any section is laid out, the shares are the byte shares. Once every section is laid out, the drag label names the page, for example "Page 134 of 412". Before then it names the share of the book, for example "37%". A drag keeps the map that it started with until its move ends, so the label and the marks do not change under the finger.
+
+A page that shows no text, such as a full-page image inside a section, has no visible character of its own. Its share of the bar names the next page with text, where a drag lands.
+
+Saved places do not change. They still save the first visible character.
+
+A section that a kept page map seeds (t5-4l4d) counts as laid out. The seed must give the visible start of each page start and the section's visible character count too.
 
 ### The saved start of a page
 

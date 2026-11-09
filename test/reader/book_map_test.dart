@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:bookfin/reader/book_map.dart';
+import 'package:bookfin/reader/book_pages.dart';
 import 'package:bookfin/reader/document.dart';
 import 'package:bookfin/reader/epub/publication.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -236,6 +237,138 @@ void main() {
       jsonDecode(jsonEncode(document.save(reported))) as Map<String, dynamic>,
     )!;
     expect((await map()).fractionOf(restored), closeTo(inTwo(.5), 1e-9));
+  });
+
+  group('the pages of the book', () {
+    /// One laid-out section of [pages] pages of 100 visible characters.
+    PartPages laid(int pages) => (
+      starts: [for (var page = 0; page < pages; page++) page * 100],
+      length: pages * 100,
+    );
+
+    test('before any section is laid out, each section takes its share of '
+        'the bytes and the bar names no page', () async {
+      final book = (await map()).paged(BookPages([null, null, null]));
+      expect(
+        book.fractionAt((part: 1, progress: .5)),
+        closeTo(inTwo(.5), 1e-9),
+      );
+      expect(book.targetAt(inTwo(.5)).page, isNull);
+      expect(book.pages, isNull);
+    });
+
+    test('a laid-out section takes a share by its pages, and a section not '
+        'laid out takes the pages that its bytes estimate', () async {
+      final book = (await map()).paged(BookPages([laid(2), null, null]));
+      final perByte = 2 / size('OPS/one.xhtml');
+      final two = size('OPS/two.xhtml') * perByte;
+      final three = size('OPS/three.xhtml') * perByte;
+      final whole = 2 + two + three;
+      expect(book.fractionAt((part: 1, progress: 0)), closeTo(2 / whole, 1e-9));
+      expect(
+        book.fractionAt((part: 2, progress: 0)),
+        closeTo((2 + two) / whole, 1e-9),
+      );
+      expect(
+        book.fractionAt((part: 0, progress: .5)),
+        closeTo(1 / whole, 1e-9),
+        reason: 'The second page of the first section starts half way.',
+      );
+      expect(book.targetAt(.5).page, isNull);
+    });
+
+    test('a section not laid out takes at least one page', () async {
+      expect(size('OPS/one.xhtml'), lessThan(size('OPS/three.xhtml')));
+      expect(size('OPS/two.xhtml'), lessThan(size('OPS/three.xhtml')));
+      // "three" has the most bytes and only one page, so the estimate of
+      // each other section is less than a page.
+      final book = (await map()).paged(BookPages([null, null, laid(1)]));
+      expect(book.fractionAt((part: 1, progress: 0)), closeTo(1 / 3, 1e-9));
+      expect(book.fractionAt((part: 2, progress: 0)), closeTo(2 / 3, 1e-9));
+    });
+
+    test('when every section is laid out, each page takes an equal share '
+        'of the bar, and the bar names each page', () async {
+      final book = (await map()).paged(BookPages([laid(2), laid(1), laid(2)]));
+      expect(book.pages, 5);
+      for (var page = 1; page <= 5; page++) {
+        for (final within in [0.0, .01, .5, .99]) {
+          expect(book.targetAt((page - 1 + within) / 5).page, page);
+        }
+      }
+      final fourth = book.targetAt(3.5 / 5);
+      expect(fourth.part, 2);
+      expect((fourth.progress * 200).floor(), inInclusiveRange(0, 99));
+      final last = book.targetAt(1);
+      expect((last.part, last.page), (2, 5));
+      expect((last.progress * 200).floor(), inInclusiveRange(100, 199));
+    });
+
+    test('a place sits on the share of the page that holds it', () async {
+      final book = (await map()).paged(BookPages([laid(2), laid(1), laid(2)]));
+      expect(book.fractionAt((part: 0, progress: .5)), closeTo(1 / 5, 1e-9));
+      expect(book.fractionAt((part: 0, progress: .75)), closeTo(1.5 / 5, 1e-9));
+      expect(
+        book.targetAt(book.fractionAt((part: 2, progress: 1))).page,
+        5,
+        reason: 'The end of a section\'s text is on its last page.',
+      );
+      // A saved place keeps six decimals of its progress.
+      final saved = place('OPS/three.xhtml', progress: 100 / 200);
+      expect(book.targetAt(book.fractionOf(saved)!).page, 5);
+    });
+
+    test('a page whose text the book hides, saved at progress 1, sits on '
+        'its own page and names it', () async {
+      // As Standard Ebooks' title pages, whose image follows a hidden title.
+      final book = (await map()).paged(
+        BookPages([
+          (starts: const [0], length: 26),
+          laid(1),
+          laid(2),
+        ]),
+      );
+      final title = book.fractionOf(place('OPS/one.xhtml', progress: 1))!;
+      expect(book.targetAt(title).page, 1);
+      expect(book.targetAt(title).chapter, 'One');
+    });
+
+    test('a point on a page without text names the page after it, where '
+        'the reader lands', () async {
+      final book = (await map()).paged(
+        BookPages([
+          (starts: const [0, 50, 50], length: 100),
+          laid(1),
+          laid(1),
+        ]),
+      );
+      final image = book.targetAt(1.5 / 5);
+      expect(image.page, 3);
+      expect((image.part, (image.progress * 100).floor()), (0, 50));
+    });
+
+    test('a chapter tick sits on the page that holds its start', () async {
+      // "Half" starts at the 97th of the 192 visible characters of "two".
+      final book = (await map()).paged(
+        BookPages([
+          laid(2),
+          (starts: const [0, 96], length: 192),
+          laid(2),
+        ]),
+      );
+      final half = book.chapters.firstWhere(
+        (chapter) => chapter.title == 'Half',
+      );
+      expect(half.start, closeTo(3 / 6, 1e-9));
+      expect(book.targetAt(half.start).chapter, 'Half');
+    });
+
+    test('a PDF names each source page among its pages', () {
+      final book = BookMap.pages(4);
+      expect(book.pages, 4);
+      expect(book.targetAt(.6).page, 3);
+      expect(book.targetAt(1).page, 4);
+    });
   });
 
   group('the chapter arrows', () {
