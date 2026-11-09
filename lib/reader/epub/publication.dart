@@ -8,6 +8,7 @@ import 'package:xml/xml.dart';
 
 import '../document.dart';
 import 'places.dart';
+import 'prepare.dart';
 
 class Publication {
   Publication._(
@@ -23,6 +24,7 @@ class Publication {
     this.contents,
     this.language,
     this.spineSteps,
+    this.mainTextSize,
   );
 
   static const policy = 'bookfin-passive-epub-1';
@@ -77,13 +79,23 @@ class Publication {
   /// document.
   final List<String> spineSteps;
 
+  /// The book's main text size in pixels, with its own type sizes, as
+  /// [measureMainTextSize] gives it on the sections that [mainTextSamples]
+  /// picks. The reader's text size sizes this text once the reader has used
+  /// the size buttons (`PageSettings.sizesMainText`).
+  final double mainTextSize;
+
   Uri get base => Uri(scheme: 'https', host: host, path: '/$identity/');
 
   /// The revision of admission's output and of [encode]'s format. A kept
   /// admitted book of another revision admits again. Raise it when either
   /// changes. It does not move a saved place, which [policy] and the
   /// original digest key.
-  static const revision = 1;
+  ///
+  /// [mainTextSize] makes the cascade part of admission's output: raise the
+  /// revision when a change to the cascade changes the main text size of a
+  /// book. Revision 2 added [mainTextSize].
+  static const revision = 2;
 
   /// The publication of the EPUB [bytes], whose SHA-256 is [digest]: the
   /// digest that Downloads verified, so admission does not hash the bytes
@@ -121,6 +133,7 @@ class Publication {
         'spineSteps': spineSteps,
         'warnings': warnings,
         'language': language,
+        'mainTextSize': mainTextSize,
         'contents': [
           for (final entry in contents) [entry.title, entry.href, entry.depth],
         ],
@@ -176,6 +189,10 @@ class Publication {
       }
       final spine = strings(header['spine']);
       final spineSteps = strings(header['spineSteps']);
+      final mainTextSize = (header['mainTextSize'] as num).toDouble();
+      if (!(mainTextSize > 0 && mainTextSize.isFinite)) {
+        throw const FormatException('The record has no main text size.');
+      }
       return Publication._(
         Map.unmodifiable(resources),
         Map.unmodifiable({
@@ -202,6 +219,7 @@ class Publication {
         ]),
         header['language'] as String?,
         spineSteps,
+        mainTextSize,
       );
     } on FormatException {
       rethrow;
@@ -236,7 +254,8 @@ class Publication {
   /// - [imageSizes] holds exactly the admitted PNG and JPEG images;
   /// - every contents entry points into the spine at a depth of at most
   ///   [maxContentsDepth];
-  /// - [spineSteps] has one step for each spine item.
+  /// - [spineSteps] has one step for each spine item;
+  /// - [mainTextSize] is finite and above 0.
   void checkInvariants() {
     bool typed(Iterable<String> paths, Set<String> types) {
       final wanted = {
@@ -275,6 +294,9 @@ class Publication {
     }
     if (spineSteps.length != spine.length) {
       throw StateError('Publication spine steps disagree with its spine.');
+    }
+    if (!(mainTextSize > 0 && mainTextSize.isFinite)) {
+      throw StateError('Publication main text size is not a type size.');
     }
   }
 }
@@ -723,6 +745,12 @@ class _Admission {
           ),
         )
         .toString();
+    // A later write over the same path, such as the package document, can
+    // change a path's type, so only paths that keep the type stay.
+    final styleSheets = Map<String, String>.unmodifiable({
+      for (final path in paths)
+        if (types[path] == 'text/css') path: styles[path]!,
+    });
     return Publication._(
       Map.unmodifiable(output),
       Map.unmodifiable({for (final path in paths) path: types[path]!}),
@@ -731,12 +759,7 @@ class _Admission {
       package,
       List.unmodifiable(reading),
       List.unmodifiable(warnings),
-      // A later write over the same path, such as the package document, can
-      // change a path's type, so only paths that keep the type stay.
-      Map.unmodifiable({
-        for (final path in paths)
-          if (types[path] == 'text/css') path: styles[path]!,
-      }),
+      styleSheets,
       Map.unmodifiable({
         for (final path in paths)
           if (types[path] == 'image/png' || types[path] == 'image/jpeg')
@@ -757,7 +780,34 @@ class _Admission {
           .where((language) => language.isNotEmpty)
           .firstOrNull,
       List.unmodifiable(steps),
+      _mainTextSize(reading, styleSheets),
     );
+  }
+
+  /// The main text size of the admitted book whose spine is [spine] and
+  /// whose original style sheets are [styleSheets]. It is measured here, in
+  /// admission's isolate, so that no open of the book waits for it again.
+  double _mainTextSize(List<String> spine, Map<String, String> styleSheets) {
+    final samples = mainTextSamples([
+      for (final path in spine) output[path]!.length,
+    ]);
+    try {
+      return measureMainTextSize([
+        for (final index in samples)
+          SectionSource(
+            index: index,
+            path: spine[index],
+            xhtml: utf8.decode(output[spine[index]]!, allowMalformed: true),
+            // The measurement reads no font family.
+            fontPrefix: '',
+            styleSheets: styleSheets,
+          ),
+      ]);
+    } on Exception {
+      // NOTE: Preparing a section reports what it cannot read. A book is not
+      // refused for its type sizes.
+      return defaultMainTextSize;
+    }
   }
 
   /// The entries of the toc nav of [document], the raw navigation document

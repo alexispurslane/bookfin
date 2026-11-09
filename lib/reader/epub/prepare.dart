@@ -113,7 +113,7 @@ class SectionSource {
   final String? language;
 
   /// The book's main text size in pixels, as [measureMainTextSize] gives
-  /// it. Only preparing for [PageSettings.sizesMainText] reads it.
+  /// it. Only styling for [PageSettings.sizesMainText] reads it.
   final double mainTextSize;
 }
 
@@ -137,15 +137,52 @@ List<int> mainTextSamples(List<int> lengths) {
 
 /// The book's main text size: the font size in pixels that covers the most
 /// visible characters of [samples] (white space, text that the book's style
-/// hides and text of size 0 left out), with the book's own type sizes on a page of the
-/// size of [settings]. The reader's text size does not change it. On a tie
-/// the size that comes first wins. A book with no visible text in
-/// [samples] gets [defaultMainTextSize], and a sample that does not parse
-/// counts no characters.
+/// hides and text of size 0 left out), with the book's own type sizes. The
+/// reader's text size does not change it. On a tie the size that comes
+/// first wins. A book with no visible text in [samples] gets
+/// [defaultMainTextSize], and a sample that does not parse counts no
+/// characters.
 ///
 /// A whole book decides it, not each section, so that a section that is all
 /// small print, such as the notes, stays smaller than the main text.
-double measureMainTextSize(List<SectionSource> samples, PageSettings settings) {
+///
+/// The page size does not change it either: it is measured on the reader's
+/// usual phone page, 412 × 671 pixels. Only media queries could make it
+/// depend on the page size. Of the 90 corpus books, 8 have media queries on
+/// the page width, and none of them sets a type size or hides text. So a
+/// book has one main text size, which admission keeps
+/// (`Publication.mainTextSize`).
+double measureMainTextSize(List<SectionSource> samples) => _mostCharacters(
+  samples,
+  (source, dom) => _styleSection(source, dom, _mainTextPage, 1).styles,
+);
+
+/// The page that [measureMainTextSize] styles the book for.
+const _mainTextPage = PageSettings(
+  width: 412,
+  height: 671,
+  fontSize: defaultMainTextSize,
+  night: false,
+);
+
+/// The size in pixels of the book's main text as pages of [settings] show
+/// it: the font size that covers the most visible characters of [samples],
+/// as [measureMainTextSize] counts them, styled for [settings]. When
+/// [PageSettings.sizesMainText], it is the settings' text size. Otherwise
+/// the reader's text size is the body's, and a book that fixes its own
+/// sizes shows them.
+double shownMainTextSize(List<SectionSource> samples, PageSettings settings) =>
+    _mostCharacters(
+      samples,
+      (source, dom) => styleSection(source, dom, settings).styles,
+    );
+
+/// The font size that covers the most visible characters of [samples],
+/// each styled by [style].
+double _mostCharacters(
+  List<SectionSource> samples,
+  Map<DomElement, Style> Function(SectionSource source, DomSection dom) style,
+) {
   final characters = <double, int>{};
   for (final source in samples) {
     final DomSection dom;
@@ -155,7 +192,7 @@ double measureMainTextSize(List<SectionSource> samples, PageSettings settings) {
       // NOTE: Preparing the section reports it when the reader reaches it.
       continue;
     }
-    final (:styles, faces: _) = _styleSection(source, dom, settings, 1);
+    final styles = style(source, dom);
     bool hidden(DomElement element) =>
         styles[element]!.display == Display.none ||
         (element.parent != null && hidden(element.parent!));

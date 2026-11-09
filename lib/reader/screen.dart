@@ -146,10 +146,10 @@ class _ReaderScreenState extends State<ReaderScreen> {
         builder: (context, on, _) => ReaderSettingsPanel(
           fontSize: on.fontSize,
           onSmaller: on.open && on.fontSize > 14
-              ? () => unawaited(reader.setFontSize(reader.fontSize - 2))
+              ? () => unawaited(reader.stepFontSize(larger: false))
               : null,
           onLarger: on.open && on.fontSize < 40
-              ? () => unawaited(reader.setFontSize(reader.fontSize + 2))
+              ? () => unawaited(reader.stepFontSize(larger: true))
               : null,
           night: Theme.of(context).brightness == Brightness.dark,
           onNightChanged: widget.onNightChanged,
