@@ -111,7 +111,8 @@ void main() {
         loadReadingDocument(file, source, textSupply: BundledEnglishText()),
   );
 
-  Future<void> showReader(WidgetTester tester) async {
+  /// Shows the open book in a viewport, in reflow with [reflow].
+  Future<void> showReader(WidgetTester tester, {bool reflow = false}) async {
     placeReported = false;
     addTearDown(() async {
       await tester.pumpWidget(const SizedBox());
@@ -126,6 +127,7 @@ void main() {
             body: PdfViewportHost(
               book: reader.document! as PdfBook,
               fontSize: 20,
+              reflow: reflow,
               initial: reader.initialAddress as PdfAddress?,
               onReady: (value, entries) {
                 navigation = value;
@@ -157,6 +159,19 @@ void main() {
       }
     }
     expect(find.bySemanticsLabel('Original source page $page'), findsOneWidget);
+  }
+
+  /// Waits until [finder] finds what the viewport shows. Reflow asks for
+  /// the page's text for reading, which arrives after a few frames.
+  Future<void> shows(WidgetTester tester, Finder finder) async {
+    for (var attempt = 0; attempt < 100; attempt++) {
+      if (finder.evaluate().isNotEmpty) return;
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 10)),
+      );
+      await tester.pump();
+    }
+    expect(finder, findsOneWidget);
   }
 
   /// Waits until the shown viewport is done with its page text. The
@@ -274,7 +289,7 @@ void main() {
       expect(hit.character, greaterThan(1000));
       await native(tester, () => navigation.display(hit));
       await tester.tap(find.byTooltip('Reflow text'));
-      await tester.pump();
+      await shows(tester, find.byType(SingleChildScrollView));
       await tester.pump();
       expect(
         (reader.visibleAddress as PdfAddress).character,
@@ -288,7 +303,7 @@ void main() {
       await showReader(tester);
       await finishText(tester);
       await tester.tap(find.byTooltip('Reflow text'));
-      await tester.pump();
+      await shows(tester, find.byType(SingleChildScrollView));
       await tester.pump();
       final scroll = tester
           .widget<SingleChildScrollView>(find.byType(SingleChildScrollView))
@@ -304,7 +319,7 @@ void main() {
   );
 
   testWidgets(
-    'explicit recognition of an unreliable layer stays selected for actual search and revisit',
+    'recognition of an out-of-order text layer stays selected for actual search and revisit',
     (tester) async {
       await native(tester, () async {
         reader.closeView(reader.token);
@@ -313,8 +328,7 @@ void main() {
             .copy('${root.path}/complete');
         await reader.open(book, edition);
         final pdf = reader.document! as PdfBook;
-        expect((await pdf.text(1)).status, PdfTextStatus.unreliable);
-        pdf.textSupply!.retry(1);
+        expect((await pdf.textLayer(1)).status, PdfTextStatus.unreliable);
         expect((await pdf.text(1)).text, 'The quiet garden.');
       });
       await showReader(tester);
@@ -352,8 +366,7 @@ void main() {
       await finishText(tester);
       await drawOriginal(tester, 1);
       await tester.tap(find.byTooltip('Reflow text'));
-      await tester.pump();
-      expect(find.textContaining('Restart Bookfin'), findsOneWidget);
+      await shows(tester, find.textContaining('Restart Bookfin'));
       expect(find.text('Retry recognition'), findsNothing);
       await tester.pumpWidget(const SizedBox());
     },
@@ -401,14 +414,15 @@ void main() {
           };
           await restart(tester);
           expect((reader.initialAddress as PdfAddress).character, 10);
-          await showReader(tester);
+          // Only reflow recognizes a page.
+          await showReader(tester, reflow: true);
           await drawOriginal(tester, 2);
           await native(
             tester,
             () => started.future.timeout(const Duration(seconds: 5)),
           );
           if (failure == 'cancel') {
-            await tester.tap(find.text('Stop waiting'));
+            await tester.tap(find.byTooltip('Original page'));
             await tester.pump();
             held.complete(englishPage);
           }

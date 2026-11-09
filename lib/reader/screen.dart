@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart' show CustomSemanticsAction;
 import 'package:flutter/services.dart';
 
 import '../catalog/glass.dart'
@@ -47,19 +48,44 @@ class ReaderScreen extends StatefulWidget {
 }
 
 /// The reader screen is the controller of the reading view. It owns every
-/// side effect: it opens the panels, closes them, and tells [ReaderSession]
-/// what the person chose. Each part of the view follows only the session
-/// signal that it shows, so a page turn redraws the page label and the
-/// progress bar, and a text size or reflow change redraws the viewport.
+/// side effect: it opens the panels, closes them, enters and leaves full
+/// screen, and tells [ReaderSession] what the person chose. Each part of
+/// the view follows only the session signal that it shows, so a page turn
+/// redraws the page label and the progress bar, and a text size or reflow
+/// change redraws the viewport.
+///
+/// Every reader view reports the same two gestures: a swipe turns the page,
+/// and a tap on the page enters or leaves full screen. The page fills a
+/// frame that never changes size (see [_SystemBarFrame]). The controls lie
+/// over it as glass, and full screen hides them and Android's system bars.
 class _ReaderScreenState extends State<ReaderScreen> {
-  bool _controls = true;
+  /// Whether the reader shows only the page: no controls, and Android's
+  /// system bars hidden. Only the controls follow it, so the page does not
+  /// build again when it changes.
+  final _fullScreen = ValueNotifier(false);
   int? _viewToken;
   ReaderSession get reader => widget.reader;
   @override
   void dispose() {
+    if (_fullScreen.value) _showSystemBars(true);
+    _fullScreen.dispose();
     unawaited(reader.flush());
     if (_viewToken != null) reader.closeView(_viewToken!);
     super.dispose();
+  }
+
+  /// Shows Android's system bars over the app with [on], or hides them
+  /// until the person swipes from an edge of the screen.
+  static void _showSystemBars(bool on) => unawaited(
+    SystemChrome.setEnabledSystemUIMode(
+      on ? SystemUiMode.edgeToEdge : SystemUiMode.immersiveSticky,
+    ),
+  );
+
+  /// Enters full screen, or leaves it.
+  void _toggleFullScreen() {
+    _fullScreen.value = !_fullScreen.value;
+    _showSystemBars(!_fullScreen.value);
   }
 
   /// Shows the panel that [builder] builds on a glass sheet that shows the
@@ -299,159 +325,131 @@ class _ReaderScreenState extends State<ReaderScreen> {
       reader.fontSizeChanges,
     ]);
     final paper = night ? const Color(0xff251e19) : const Color(0xfff6efe2);
-    return Scaffold(
-      backgroundColor: paper,
-      appBar: _controls
-          ? AppBar(
-              title: ListenableBuilder(
-                listenable: reader.documentChanges,
-                builder: (_, _) => Text(
-                  reader.book?.title ?? 'Reading',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              actions: [
-                IconButton(
-                  tooltip: 'Hide reader controls',
-                  onPressed: () => setState(() => _controls = false),
-                  icon: const Icon(Icons.fullscreen_rounded),
-                ),
-              ],
-            )
-          : null,
-      body: SafeArea(
-        child: Column(
+    // The deck's glass shows the open book.
+    final page = ListenableBuilder(
+      listenable: reader.documentChanges,
+      builder: (_, page) => ScrubDeck(
+        deck: reader.previews.deck,
+        paper: paper,
+        book: reader.book,
+        page: page!,
+      ),
+      child: ListenableBuilder(
+        listenable: Listenable.merge([
+          documentOrSize,
+          reader.saveStatusChanges,
+          reader.reflowChanges,
+        ]),
+        builder: (context, _) => _viewport(context, night),
+      ),
+    );
+    // The system bars' icons stay readable on the paper.
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: night ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
+      child: Scaffold(
+        backgroundColor: paper,
+        // The keyboard of a sheet's field lies over the page too.
+        resizeToAvoidBottomInset: false,
+        // The page fills the screen whether or not the controls show.
+        body: Stack(
+          fit: StackFit.expand,
           children: [
-            ListenableBuilder(
-              listenable: Listenable.merge([
-                reader.documentChanges,
-                reader.saveStatusChanges,
-              ]),
-              builder: (context, _) => reader.message == null
-                  ? const SizedBox.shrink()
-                  : Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Column(
-                        children: [
-                          Text(
-                            reader.message!,
-                            style: Theme.of(context).textTheme.bodyMedium,
-                          ),
-                          if (reader.book != null && reader.edition != null)
-                            TextButton(
-                              onPressed: () => unawaited(
-                                reader.open(reader.book!, reader.edition!),
-                              ),
-                              child: const Text('Retry opening'),
-                            ),
-                        ],
-                      ),
-                    ),
-            ),
-            // The warnings stay in the column while the controls hide, so
-            // that the page after them keeps its place and does not open the
-            // book again.
-            ListenableBuilder(
-              listenable: reader.documentChanges,
-              builder: (_, _) =>
-                  _controls && reader.publication?.warnings.isNotEmpty == true
-                  ? Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Text(
-                        reader.publication!.warnings.join(' '),
-                        maxLines: 3,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    )
-                  : const SizedBox.shrink(),
-            ),
-            Expanded(
-              child: Stack(
-                children: [
-                  Positioned.fill(
-                    // The deck's glass shows the open book.
-                    child: ListenableBuilder(
-                      listenable: reader.documentChanges,
-                      builder: (_, page) => ScrubDeck(
-                        deck: reader.previews.deck,
-                        paper: paper,
-                        book: reader.book,
-                        page: page!,
-                      ),
-                      child: ListenableBuilder(
-                        listenable: Listenable.merge([
-                          documentOrSize,
-                          reader.saveStatusChanges,
-                          reader.reflowChanges,
-                        ]),
-                        builder: (context, _) => _viewport(context, night),
-                      ),
-                    ),
+            Positioned.fill(
+              child: _SystemBarFrame(
+                // A screen reader shows and hides the controls through the
+                // page, as a tap does.
+                child: ValueListenableBuilder<bool>(
+                  valueListenable: _fullScreen,
+                  builder: (_, fullScreen, page) => Semantics(
+                    container: true,
+                    explicitChildNodes: true,
+                    customSemanticsActions: {
+                      CustomSemanticsAction(
+                        label: fullScreen
+                            ? 'Show reader controls'
+                            : 'Hide reader controls',
+                      ): _toggleFullScreen,
+                    },
+                    child: page,
                   ),
-                  if (!_controls)
-                    Positioned(
-                      top: 4,
-                      right: 4,
-                      child: IconButton.filledTonal(
-                        tooltip: 'Show reader controls',
-                        onPressed: () => setState(() => _controls = true),
-                        icon: const Icon(Icons.more_horiz_rounded),
-                      ),
-                    ),
-                ],
+                  child: page,
+                ),
               ),
             ),
-            if (_controls)
-              Flexible(
-                flex: 0,
-                child: SingleChildScrollView(
-                  child: ListenableSelector(
-                    listenable: reader.documentChanges,
-                    select: () => reader.book,
-                    builder: (context, book, _) => ReaderDock(
-                      book: book,
-                      bar: ReaderScrubBar(
-                        reader: reader,
-                        previous: _arrow(forward: false),
-                        next: _arrow(forward: true),
-                        // The deck's front card is the page area at its own
-                        // scale, at the screen's pixel density.
-                        onScrubStart: (target) => reader.previews.start(
-                          target,
-                          width:
-                              MediaQuery.sizeOf(context).width *
-                              MediaQuery.devicePixelRatioOf(context) *
-                              ScrubDeck.frontScale,
-                        ),
-                        onScrubTarget: reader.previews.aim,
-                        onScrubEnd: (target) =>
-                            reader.previews.settle(target, reader.goTo(target)),
+            ValueListenableBuilder<bool>(
+              valueListenable: _fullScreen,
+              builder: (_, fullScreen, controls) =>
+                  fullScreen ? const SizedBox.shrink() : controls!,
+              child: _ReaderControls(
+                message: _message(),
+                dock: ListenableSelector(
+                  listenable: reader.documentChanges,
+                  select: () => reader.book,
+                  builder: (context, book, _) => ReaderDock(
+                    book: book,
+                    bar: ReaderScrubBar(
+                      reader: reader,
+                      previous: _arrow(forward: false),
+                      next: _arrow(forward: true),
+                      // The deck's front card is the page area at its own
+                      // scale, at the screen's pixel density.
+                      onScrubStart: (target) => reader.previews.start(
+                        target,
+                        width:
+                            MediaQuery.sizeOf(context).width *
+                            MediaQuery.devicePixelRatioOf(context) *
+                            ScrubDeck.frontScale,
                       ),
-                      // The round cover button joins the row only while an
-                      // audiobook is open, so the row spaces four tools
-                      // evenly without it.
-                      tools: switch (widget.playback) {
-                        null => _tools(null),
-                        final playback => ListenableSelector(
-                          listenable: playback.selectionNotifier,
-                          select: () => playback.book != null,
-                          builder: (_, open, _) => _tools(
-                            open
-                                ? PlaybackCoverButton(playback: playback)
-                                : null,
-                          ),
-                        ),
-                      },
+                      onScrubTarget: reader.previews.aim,
+                      onScrubEnd: (target) =>
+                          reader.previews.settle(target, reader.goTo(target)),
                     ),
+                    // The round cover button joins the row only while an
+                    // audiobook is open, so the row spaces four tools
+                    // evenly without it.
+                    tools: switch (widget.playback) {
+                      null => _tools(null),
+                      final playback => ListenableSelector(
+                        listenable: playback.selectionNotifier,
+                        select: () => playback.book != null,
+                        builder: (_, open, _) => _tools(
+                          open ? PlaybackCoverButton(playback: playback) : null,
+                        ),
+                      ),
+                    },
                   ),
                 ),
               ),
+            ),
           ],
         ),
       ),
     );
   }
+
+  /// The reader's message about the open page on glass, while a page shows.
+  /// When no page can show, the page area says it instead.
+  Widget _message() => ListenableBuilder(
+    listenable: Listenable.merge([
+      reader.documentChanges,
+      reader.saveStatusChanges,
+    ]),
+    builder: (context, _) =>
+        reader.message == null ||
+            (reader.document is! PdfBook && reader.pager == null)
+        ? const SizedBox.shrink()
+        : CoverGlass(
+            book: reader.book,
+            radius: 16,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+              child: Text(
+                reader.message!,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ),
+          ),
+  );
 
   /// The view of the open document, or what stands in its place while the
   /// book opens or cannot open: the PDF viewport, or the native viewport of
@@ -474,7 +472,8 @@ class _ReaderScreenState extends State<ReaderScreen> {
         onAddress: (address) => reader.acceptAddress(token, address),
         reflow: reader.reflow,
         onCancelRecognition: () => document.textSupply?.cancel(),
-        onRetryRecognition: (page) => document.textSupply?.retry(page),
+        onTap: _toggleFullScreen,
+        onTurn: (forward) => unawaited(reader.move(forward)),
       );
       // The glass layers over the page show the open book.
       final book = reader.book;
@@ -490,10 +489,25 @@ class _ReaderScreenState extends State<ReaderScreen> {
       );
     }
     if (pager == null) {
-      return const Center(
+      return Center(
         child: Padding(
-          padding: EdgeInsets.all(24),
-          child: Text('This EPUB is not open. Use the message above to retry.'),
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                reader.message ?? 'This book is not open.',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              if (reader.book != null && reader.edition != null)
+                TextButton(
+                  onPressed: () =>
+                      unawaited(reader.open(reader.book!, reader.edition!)),
+                  child: const Text('Retry opening'),
+                ),
+            ],
+          ),
         ),
       );
     }
@@ -505,14 +519,97 @@ class _ReaderScreenState extends State<ReaderScreen> {
       fontSize: fontSize,
       sizesMainText: reader.sizesMainText,
       night: night,
-      onTap: () {
-        if (mounted) setState(() => _controls = !_controls);
-      },
+      onTap: _toggleFullScreen,
       onTurn: (forward) => unawaited(reader.move(forward)),
       onLink: (link) => unawaited(_followLink(pager, link)),
       onCopy: (text) => unawaited(Clipboard.setData(ClipboardData(text: text))),
     );
   }
+}
+
+/// The room that Android's system bars take while they show. [child] lies
+/// inside it, and the room stays when the bars hide in full screen, so the
+/// page never moves or changes size. The strips that the bars leave show
+/// the paper.
+///
+/// Flutter reports only the room of the bars that show, so the frame keeps
+/// the largest room that each edge had at the current screen size. A new
+/// screen size, such as a turn of the phone, starts again from the room
+/// reported then.
+class _SystemBarFrame extends StatefulWidget {
+  const _SystemBarFrame({required this.child});
+  final Widget child;
+  @override
+  State<_SystemBarFrame> createState() => _SystemBarFrameState();
+}
+
+class _SystemBarFrameState extends State<_SystemBarFrame> {
+  Size? _size;
+  EdgeInsets _room = EdgeInsets.zero;
+
+  @override
+  Widget build(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
+    final bars = MediaQuery.viewPaddingOf(context);
+    // The room is a view state of the frame, derived from what Flutter
+    // reported at this size, so it changes in build without a rebuild.
+    if (size != _size) {
+      _size = size;
+      _room = bars;
+    } else {
+      _room = EdgeInsets.fromLTRB(
+        math.max(_room.left, bars.left),
+        math.max(_room.top, bars.top),
+        math.max(_room.right, bars.right),
+        math.max(_room.bottom, bars.bottom),
+      );
+    }
+    return Padding(
+      padding: _room,
+      // The page has no system bars inside its frame.
+      child: MediaQuery.removePadding(
+        context: context,
+        removeLeft: true,
+        removeTop: true,
+        removeRight: true,
+        removeBottom: true,
+        child: widget.child,
+      ),
+    );
+  }
+}
+
+/// The reader's controls over the page: the [message], if any, at the top
+/// and the [dock] at the foot, each out of the way of Android's system bars.
+/// The page between them still takes taps and swipes.
+class _ReaderControls extends StatelessWidget {
+  const _ReaderControls({required this.message, required this.dock});
+  final Widget message;
+  final Widget dock;
+
+  @override
+  Widget build(BuildContext context) => Stack(
+    children: [
+      Positioned(
+        top: 0,
+        left: 0,
+        right: 0,
+        child: SafeArea(
+          bottom: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(10, 8, 10, 0),
+            child: message,
+          ),
+        ),
+      ),
+      Positioned(
+        left: 0,
+        right: 0,
+        bottom: 0,
+        child: SafeArea(top: false, child: dock),
+      ),
+    ],
+  );
 }
 
 /// The reader's glass dock at the foot of the page: the place in the book
@@ -1015,9 +1112,6 @@ class _ReaderSearchPanelState extends State<ReaderSearchPanel> {
                         color: Theme.of(context).colorScheme.error,
                       ),
                     ),
-                  const Text(
-                    'Search uses basic lowercase matching. Some language-specific letter forms differ. Spaces, tabs, and line breaks match as one space. Accents must match. Different Unicode spellings are not combined. Text hidden only by a stylesheet can appear in results.',
-                  ),
                   if (!widget.searching &&
                       widget.hits.isEmpty &&
                       _query.text.isNotEmpty &&

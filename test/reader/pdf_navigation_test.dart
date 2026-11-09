@@ -41,7 +41,7 @@ class HeldPdf extends PdfBook {
   @override
   Future<void> dispose() async {}
   @override
-  Future<PdfText> text(int sourcePage) async => PdfText(
+  Future<PdfText> textLayer(int sourcePage) async => PdfText(
     source: source,
     text: source,
     sourceOffsets: List.generate(source.length, (i) => i),

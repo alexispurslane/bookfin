@@ -37,7 +37,6 @@ const _controls = {
   'Bookmark this place',
   'Previous page',
   'Next page',
-  'Hide reader controls',
 };
 
 Iterable<IconButton> _controlButtons(List<Widget> rebuilt) => rebuilt
@@ -111,35 +110,40 @@ void main() {
     expect(rebuilt.whereType<Slider>(), isNotEmpty);
     expect(rebuilt.whereType<PdfViewport>(), isEmpty);
     expect(_controlButtons(rebuilt), isEmpty);
-    expect(
-      _texts(rebuilt, (text) => text == book.title),
-      isEmpty,
-      reason: 'the title in the app bar',
-    );
     await close(tester, reader);
   }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
 
   testWidgets(
-    'choosing reflow redraws the viewport, not the title or the dock',
+    'entering and leaving full screen does not build the page again',
     (tester) async {
       final reader = await openPdf(tester);
       final rebuilt = await _rebuildsDuring(() async {
-        reader.setReflow(true);
+        await tester.tapAt(tester.getCenter(find.byType(PdfViewport)));
+        await tester.pump();
+        await tester.tapAt(tester.getCenter(find.byType(PdfViewport)));
         await tester.pump();
       });
-      final viewports = rebuilt.whereType<PdfViewport>();
-      expect(viewports, isNotEmpty);
-      expect(viewports.map((viewport) => viewport.reflow), everyElement(true));
-      expect(_controlButtons(rebuilt), isEmpty);
-      expect(
-        _texts(rebuilt, (text) => text == book.title),
-        isEmpty,
-        reason: 'the title in the app bar',
-      );
+      expect(rebuilt.whereType<PdfViewport>(), isEmpty);
+      expect(find.byType(ReaderDock), findsOneWidget);
       await close(tester, reader);
     },
     variant: TargetPlatformVariant.only(TargetPlatform.linux),
   );
+
+  testWidgets('choosing reflow redraws the viewport, not the dock', (
+    tester,
+  ) async {
+    final reader = await openPdf(tester);
+    final rebuilt = await _rebuildsDuring(() async {
+      reader.setReflow(true);
+      await tester.pump();
+    });
+    final viewports = rebuilt.whereType<PdfViewport>();
+    expect(viewports, isNotEmpty);
+    expect(viewports.map((viewport) => viewport.reflow), everyElement(true));
+    expect(_controlButtons(rebuilt), isEmpty);
+    await close(tester, reader);
+  }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
 
   testWidgets(
     'a text size change redraws the viewport, not the page label or the '

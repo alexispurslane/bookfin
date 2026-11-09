@@ -20,16 +20,12 @@ import 'pdf_session_test.dart' show book, edition;
 
 class HeldRecognition implements PdfTextSupply {
   @override
-  bool get canRetry => true;
-  @override
   final ValueNotifier<bool> recognizing = ValueNotifier(false);
   final result = Completer<PdfText>();
   var active = false;
   var canceled = false;
   @override
   void bind(PdfTextLease lease) {}
-  @override
-  void retry(int page) {}
   @override
   void cancel() {
     if (!active || result.isCompleted) return;
@@ -67,22 +63,26 @@ class ViewportPdf extends HeldPdf {
   @override
   final PdfTextSupply? textSupply;
   final PdfText? recognized;
+  static const _empty = PdfText(
+    source: '',
+    text: '',
+    sourceOffsets: [],
+    status: PdfTextStatus.absent,
+  );
+
+  /// A scan has no text layer.
   @override
-  Future<PdfText> text(int sourcePage) {
-    const empty = PdfText(
-      source: '',
-      text: '',
-      sourceOffsets: [],
-      status: PdfTextStatus.absent,
-    );
-    return textSupply?.text(this, sourcePage, empty) ??
-        Future.value(recognized ?? empty);
-  }
+  Future<PdfText> textLayer(int sourcePage) async => _empty;
+  @override
+  Future<PdfText> text(int sourcePage) =>
+      textSupply?.text(this, sourcePage, _empty) ??
+      Future.value(recognized ?? _empty);
 }
 
 void main() {
   testWidgets(
-    'canceling unsettled scan text keeps the full reader controls usable',
+    'choosing the original page while a scan is recognized keeps the full '
+    'reader controls usable',
     (tester) async {
       final supply = HeldRecognition();
       final pdf = ViewportPdf(textSupply: supply);
@@ -102,26 +102,27 @@ void main() {
       });
       await reader.bind(account(), [book]);
       await reader.open(book, edition);
+      reader.setReflow(true);
       await tester.pumpWidget(
         MaterialApp(
           home: ReaderScreen(reader: reader, onNightChanged: (_) {}),
         ),
       );
       await tester.pump();
-      expect(find.text('Recognizing English text…'), findsOneWidget);
-      await tester.tap(find.text('Stop waiting'));
+      expect(supply.active, isTrue);
+      reader.setReflow(false);
       await tester.pump();
       expect(supply.canceled, isTrue, reason: 'The screen cancels it.');
       expect(find.byType(ErrorWidget), findsNothing);
       expect(find.byTooltip('Next page'), findsOneWidget);
-      expect(find.text('Retry recognition'), findsOneWidget);
       expect((reader.visibleAddress as PdfAddress).sourcePage, 1);
       expect((reader.visibleAddress as PdfAddress).character, 0);
     },
   );
 
   testWidgets(
-    'English recognition can be canceled while its original page remains visible',
+    'recognition stops when the person chooses the original page, which '
+    'stays visible',
     (tester) async {
       final supply = HeldRecognition();
       final pdf = ViewportPdf(textSupply: supply);
@@ -133,6 +134,7 @@ void main() {
               fontSize: 20,
               onReady: (_, _) {},
               onAddress: (_) {},
+              reflow: true,
             ),
           ),
         ),
@@ -143,15 +145,11 @@ void main() {
       );
       await tester.pump();
       expect(find.bySemanticsLabel('Original source page 1'), findsOneWidget);
-      expect(find.text('Recognizing English text…'), findsOneWidget);
-      await tester.tap(find.text('Stop waiting'));
+      expect(supply.active, isTrue);
+      await tester.tap(find.byTooltip('Original page'));
       await tester.pump();
       expect(supply.canceled, isTrue);
       expect(find.bySemanticsLabel('Original source page 1'), findsOneWidget);
-      expect(
-        find.textContaining('Other languages are not supported.'),
-        findsOneWidget,
-      );
       await tester.pumpWidget(const SizedBox());
       supply.recognizing.dispose();
     },
@@ -177,6 +175,9 @@ void main() {
       );
       await tester.pump();
       await tester.tap(find.byTooltip('Reflow text'));
+      // Reflow asks for the text for reading after the frame.
+      await tester.pump();
+      await tester.pump();
       await tester.pump();
       expect(find.text('The quiet garden.'), findsOneWidget);
       final report = await navigation.search('garden', 1);

@@ -68,10 +68,9 @@ void main() {
         findsOneWidget,
       );
       expect(
-        find.textContaining(
-          'Pictures and page layout stay in the original page.',
-        ),
-        findsOneWidget,
+        find.textContaining('Pictures and page layout'),
+        findsNothing,
+        reason: 'No notice covers a reflowed page.',
       );
       await tester.tap(find.byTooltip('Next page'));
       await settleNative(tester);

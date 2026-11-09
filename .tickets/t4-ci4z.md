@@ -19,3 +19,7 @@ docs/screenshots/reader-recognizing.png still shows the old reader progress bar 
 **2026-11-08T17:05:46Z**
 
 2026-11-08: docs/screenshots/reader-deck.png also predates the glass dock (boo-bz3x); retake it with the dock in the same pass.
+
+**2026-11-09T18:54:32Z**
+
+2026-11-09: boo-981b removed the Recognizing English text card. Recognition now shows only a thin progress line over the original page in the reflow view, and boo-hcxq removed the top bar. Retake docs/screenshots/reader-recognizing.png with the new reader, or remove it from the README.

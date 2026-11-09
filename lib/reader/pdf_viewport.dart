@@ -4,17 +4,26 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
-import '../catalog/glass.dart' show CoverGlass;
 import 'document.dart';
+import 'page_swipes.dart';
 import 'pdf.dart';
 
 /// The pages of an open PDF, as the original page or as reflowed text.
 ///
-/// The viewport draws what its owner gives it and reports what the person
-/// chose. It causes no recognition or reflow change itself. The book stays
-/// the owner of page text and recognition. The owner keeps the reflow choice
-/// and offers its control. The viewport keeps only the shown page and its
-/// layout. Recognition shows on a glass layer over the page.
+/// The original view asks the book only for the page's text layer, so it
+/// never starts recognition. The reflow view asks the book for the page's
+/// text for reading, which recognizes a page without a usable text layer.
+/// While that runs, the original page shows under a thin progress line.
+/// When reflow cannot work on the shown page, the original page shows under
+/// one quiet line that says why. Nothing covers the page.
+///
+/// The book owns page text and recognition. The owner keeps the reflow
+/// choice and offers its control. The viewport keeps only the shown page
+/// and its layout.
+///
+/// Like every reader view, it reports a tap on the page through [onTap]
+/// and a swipe across it through [onTurn]. A swipe on a zoomed original
+/// page moves the page instead.
 class PdfViewport extends StatefulWidget {
   const PdfViewport({
     super.key,
@@ -24,7 +33,8 @@ class PdfViewport extends StatefulWidget {
     required this.onAddress,
     required this.reflow,
     required this.onCancelRecognition,
-    required this.onRetryRecognition,
+    required this.onTap,
+    required this.onTurn,
     this.initial,
   });
   final PdfBook book;
@@ -38,13 +48,16 @@ class PdfViewport extends StatefulWidget {
   final bool reflow;
 
   /// Reports that the viewport no longer waits for the text of the shown
-  /// page: the person chose Stop waiting, or left the page before its text
-  /// arrived.
+  /// page: the person left the page, or chose the original page, before
+  /// its text arrived.
   final VoidCallback onCancelRecognition;
 
-  /// Reports that the person asked to recognize the source page again. The
-  /// viewport then asks the book for the page's text again.
-  final ValueChanged<int> onRetryRecognition;
+  /// A tap on the page that hit no control on it.
+  final VoidCallback onTap;
+
+  /// A swipe, or a screen reader's scroll action, that asks for the next
+  /// page (true) or the previous one.
+  final ValueChanged<bool> onTurn;
   @override
   State<PdfViewport> createState() => _PdfViewportState();
 }
@@ -52,6 +65,10 @@ class PdfViewport extends StatefulWidget {
 class _PdfViewportState extends State<PdfViewport>
     implements DocumentNavigator {
   final _scroll = ScrollController();
+
+  /// The zoom and pan of the original page.
+  final _zoom = TransformationController();
+  bool get _zoomed => _zoom.value.getMaxScaleOnAxis() > 1.01;
   PdfText? _text;
   ui.Image? _image;
   TextPainter? _layout;
@@ -61,7 +78,18 @@ class _PdfViewportState extends State<PdfViewport>
   int _generation = 0;
   int? _drawingGeneration;
   int _search = 0;
+
+  /// Counts the requests for the shown page's text, so that an answer to an
+  /// older request is dropped.
+  int _textRequest = 0;
+
+  /// Whether the shown page waits for its text.
   bool _loading = false;
+
+  /// Whether the last request for the shown page's text failed.
+  bool _textFailed = false;
+
+  /// Why the original page could not be drawn, or null.
   String? _failure;
   double? _layoutWidth;
 
@@ -78,9 +106,23 @@ class _PdfViewportState extends State<PdfViewport>
     if (oldWidget.fontSize != widget.fontSize) _layoutWidth = null;
     if (oldWidget.reflow != widget.reflow) {
       // A new layout scrolls to the place, and the original page draws once.
+      // The owner hears of the change after this build, because its
+      // reports change what the owner shows.
+      final generation = _generation;
+      void after(VoidCallback report) =>
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted && generation == _generation) report();
+          });
       if (widget.reflow) {
         _layoutWidth = null;
+        // A page without a usable text layer needs its text for reading.
+        // It waits from this frame on, so no false reason shows.
+        if (_text?.status != PdfTextStatus.candidate || _textFailed) {
+          _loading = true;
+          after(() => unawaited(_requestText(generation, _address)));
+        }
       } else {
+        if (_loading) after(_stopWaiting);
         unawaited(_draw(_generation));
       }
     }
@@ -91,6 +133,7 @@ class _PdfViewportState extends State<PdfViewport>
     _generation++;
     _search++;
     _scroll.dispose();
+    _zoom.dispose();
     _image?.dispose();
     _layout?.dispose();
     super.dispose();
@@ -103,31 +146,51 @@ class _PdfViewportState extends State<PdfViewport>
     _search++;
     if (_loading) widget.onCancelRecognition();
     final generation = ++_generation;
+    _zoom.value = Matrix4.identity();
     setState(() {
       _page = address.sourcePage;
       _address = address;
       _positionResolved = false;
-      _loading = true;
       _failure = null;
       _text = null;
       _image?.dispose();
       _image = null;
       _layoutWidth = null;
     });
+    await _requestText(generation, address, lastViewport: lastViewport);
+    if (!mounted || generation != _generation) return;
+    if (!_usingText) await _draw(generation);
+  }
+
+  /// Asks the book for the text of the shown page, whose place is
+  /// [address]: the text for reading in reflow, and only the text layer on
+  /// the original page. Then it resolves the place in that text and
+  /// publishes it. With [lastViewport], the place is the end of the page.
+  Future<void> _requestText(
+    int generation,
+    PdfAddress address, {
+    bool lastViewport = false,
+  }) async {
+    final request = ++_textRequest;
+    bool current() =>
+        mounted && generation == _generation && request == _textRequest;
+    setState(() {
+      _loading = true;
+      _textFailed = false;
+    });
     try {
-      final pendingText = widget.book.text(_page);
+      final pendingText = widget.reflow
+          ? widget.book.text(_page)
+          : widget.book.textLayer(_page);
       await Future<void>.value();
-      if (!mounted || generation != _generation) {
+      if (!current()) {
         await pendingText;
         return;
       }
-      widget.onReady(this, [
-        for (var page = 1; page <= widget.book.pageCount; page++)
-          ContentsEntry('Source page $page', 'page:$page'),
-      ]);
+      widget.onReady(this, _contents());
       unawaited(_draw(generation));
       final text = await pendingText;
-      if (!mounted || generation != _generation) return;
+      if (!current()) return;
       setState(() {
         _text = text;
         final resolved = widget.book.resolveAddress(address, text);
@@ -142,20 +205,21 @@ class _PdfViewportState extends State<PdfViewport>
         _loading = false;
       });
     } on Exception {
-      if (!mounted || generation != _generation) return;
+      if (!current()) return;
       setState(() {
         _loading = false;
-        _failure = 'Text could not be extracted. The original page is still available.';
+        _textFailed = true;
       });
     }
-    if (!mounted || generation != _generation) return;
-    widget.onReady(this, [
-      for (var page = 1; page <= widget.book.pageCount; page++)
-        ContentsEntry('Source page $page', 'page:$page'),
-    ]);
+    if (!current()) return;
+    widget.onReady(this, _contents());
     _publish();
-    if (!_usingText) await _draw(generation);
   }
+
+  List<ContentsEntry> _contents() => [
+    for (var page = 1; page <= widget.book.pageCount; page++)
+      ContentsEntry('Source page $page', 'page:$page'),
+  ];
 
   bool get _usingText => widget.reflow && _positionResolved;
 
@@ -381,23 +445,30 @@ class _PdfViewportState extends State<PdfViewport>
     },
   );
 
-  /// Stops waiting for the shown page's text and shows its original page.
-  /// Recognition can still finish in the background.
+  /// Stops waiting for the shown page's text. Recognition can still finish
+  /// in the background, and its text is then cached.
   void _stopWaiting() {
     widget.onCancelRecognition();
     _search++;
-    _generation++;
-    setState(() {
-      _loading = false;
-      _failure = 'Stopped waiting for recognition. The original page shows, and recognition can finish in the background.';
-    });
+    _textRequest++;
+    setState(() => _loading = false);
     _publish();
-    unawaited(_draw(_generation));
   }
 
-  void _retryRecognition() {
-    widget.onRetryRecognition(_page);
-    unawaited(_load(_address));
+  /// Why reflow cannot show the shown page, in one quiet line, or null
+  /// while it can, or while its text is still on its way.
+  String? get _reflowProblem {
+    if (_loading) return null;
+    if (_textFailed) return 'The text of this page could not be read.';
+    final text = _text;
+    if (text == null) return null;
+    if (text.status != PdfTextStatus.candidate) {
+      return text.reason ?? 'This page has no text to reflow.';
+    }
+    if (!_positionResolved) {
+      return 'The saved place does not match the text of this page.';
+    }
+    return null;
   }
 
   /// The original page, the reflowed text, or what stands in their place.
@@ -405,17 +476,28 @@ class _PdfViewportState extends State<PdfViewport>
       ? _reflowText()
       : _image == null
       ? Center(
-          child: _failure == null
-              ? const CircularProgressIndicator()
-              : TextButton(
+          child: switch (_failure) {
+            null => const CircularProgressIndicator(),
+            final failure => Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Text(failure, textAlign: TextAlign.center),
+                ),
+                TextButton(
                   onPressed: () => unawaited(_load(_address)),
                   child: const Text('Retry source page'),
                 ),
+              ],
+            ),
+          },
         )
       : Semantics(
           label: 'Original source page $_page',
           image: true,
           child: InteractiveViewer(
+            transformationController: _zoom,
             minScale: 1,
             maxScale: 6,
             child: Center(
@@ -425,160 +507,56 @@ class _PdfViewportState extends State<PdfViewport>
         );
 
   @override
-  Widget build(BuildContext context) => Column(
-    children: [
-      if (widget.reflow)
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Text(
-            (!_positionResolved && _address.character > 0 && !_loading
-                    ? 'The saved text position is not available in this page text. Read the original page, or choose this source page in Contents to start its current text.'
-                    : _text?.reason) ??
-                (_usingText
-                    ? 'Extracted text is not checked against the page. Pictures and page layout stay in the original page.'
-                    : _failure ?? 'Checking source-page text.'),
-          ),
-        ),
-      if (_failure != null)
-        Padding(padding: const EdgeInsets.all(8), child: Text(_failure!)),
-      Expanded(
-        child: switch (widget.book.textSupply) {
-          null => _shownPage(),
-          final supply => ValueListenableBuilder<bool>(
-            valueListenable: supply.recognizing,
-            builder: (context, recognizing, page) => _RecognitionLayer(
-              waiting: recognizing && _loading,
-              reason: widget.reflow ? null : _text?.reason,
-              retry:
-                  !recognizing &&
-                      supply.canRetry &&
-                      !_loading &&
-                      _text?.status != PdfTextStatus.candidate
-                  ? _text?.status == PdfTextStatus.unreliable
-                        ? 'Try English recognition'
-                        : 'Retry recognition'
-                  : null,
-              onStopWaiting: _stopWaiting,
-              onRetry: _retryRecognition,
-              page: page!,
-            ),
-            child: _shownPage(),
-          ),
-        },
+  Widget build(BuildContext context) => Semantics(
+    container: true,
+    // The page, its quiet line and its text keep their own nodes.
+    explicitChildNodes: true,
+    onScrollLeft: () => widget.onTurn(true),
+    onScrollRight: () => widget.onTurn(false),
+    child: PageSwipes(
+      onTurn: widget.onTurn,
+      swipes: () => !_zoomed,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        // The page's own semantics turn pages. The screen offers the
+        // controls to a screen reader.
+        excludeFromSemantics: true,
+        onTap: widget.onTap,
+        child: _view(),
       ),
-    ],
+    ),
   );
-}
 
-/// What English recognition means for the shown [page], on glass. While
-/// the page waits for its recognized text, a layer over the page dims it and
-/// shows the progress and Stop waiting. A quiet note under the page, which
-/// covers none of it, keeps the English-only note, the [reason] that the
-/// page has no reliable text, and [retry].
-class _RecognitionLayer extends StatelessWidget {
-  const _RecognitionLayer({
-    required this.waiting,
-    required this.reason,
-    required this.retry,
-    required this.onStopWaiting,
-    required this.onRetry,
-    required this.page,
-  });
-
-  /// Whether the shown page waits for its recognized text.
-  final bool waiting;
-
-  /// Why the page has no reliable text, if it says.
-  final String? reason;
-
-  /// The label of the retry control, or null when it does not show.
-  final String? retry;
-
-  /// Reports Stop waiting.
-  final VoidCallback onStopWaiting;
-
-  /// Reports the retry control.
-  final VoidCallback onRetry;
-
-  /// The original page or the reflowed text.
-  final Widget page;
-
-  @override
-  Widget build(BuildContext context) {
-    final type = Theme.of(context).textTheme;
-    // The page keeps its place in the tree, so its zoom and scroll survive
-    // the layer's changes.
+  /// The shown page in the chosen view.
+  Widget _view() {
+    if (!widget.reflow || _usingText) return _shownPage();
+    // The reflow view shows the original page while the text is on its way,
+    // or when reflow cannot work on the page, under a quiet line in place
+    // of the text.
+    final problem = _reflowProblem;
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Expanded(
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              page,
-              if (waiting) ...[
-                // The page stays movable under the dimming.
-                IgnorePointer(
-                  child: ColoredBox(color: Colors.black.withValues(alpha: .4)),
-                ),
-                Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: CoverGlass(
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(28, 24, 28, 12),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const CircularProgressIndicator(),
-                            const SizedBox(height: 16),
-                            Text(
-                              'Recognizing English text…',
-                              style: type.titleMedium,
-                              textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(height: 8),
-                            TextButton(
-                              onPressed: onStopWaiting,
-                              child: const Text('Stop waiting'),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-          child: CoverGlass(
-            radius: 16,
-            tint: .75,
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(16, 10, 16, retry == null ? 10 : 2),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (reason != null)
-                    Text(
-                      reason!,
-                      style: type.bodyMedium,
-                      textAlign: TextAlign.center,
-                    ),
-                  Text(
-                    'English scans only. Other languages are not supported.',
-                    style: type.bodySmall,
-                    textAlign: TextAlign.center,
-                  ),
-                  if (retry != null)
-                    TextButton(onPressed: onRetry, child: Text(retry!)),
-                ],
-              ),
+        if (problem != null)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
+            child: Text(
+              problem,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodySmall,
             ),
+          )
+        else if (widget.book.textSupply case final supply?)
+          ValueListenableBuilder<bool>(
+            valueListenable: supply.recognizing,
+            builder: (_, recognizing, _) => recognizing && _loading
+                ? const LinearProgressIndicator(
+                    minHeight: 2,
+                    semanticsLabel: 'Recognizing the text of this page',
+                  )
+                : const SizedBox.shrink(),
           ),
-        ),
+        Expanded(child: _shownPage()),
       ],
     );
   }

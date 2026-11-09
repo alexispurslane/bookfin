@@ -117,13 +117,12 @@ void main() {
     },
   );
 
-  test('unreliable extracted text keeps its fallback until English recognition is requested', () async {
+  test('a page whose text layer is out of order is recognized without a request, and its text layer stays as it is', () async {
     await File('tool/research/readers/fixtures/columns.pdf')
         .copy('${root.path}/complete');
     final pdf = await open();
-    expect((await pdf.text(1)).status, PdfTextStatus.unreliable);
+    expect((await pdf.textLayer(1)).status, PdfTextStatus.unreliable);
     expect(calls, 0);
-    pdf.textSupply!.retry(1);
     expect((await pdf.text(1)).text, 'The quiet garden.');
     expect(calls, 1);
     expect((await pdf.text(1)).text, 'The quiet garden.');
@@ -220,8 +219,7 @@ void main() {
     await File('tool/research/readers/fixtures/columns.pdf')
         .copy('${root.path}/complete');
     final pdf = await open();
-    expect((await pdf.text(1)).status, PdfTextStatus.unreliable);
-    pdf.textSupply!.retry(1);
+    expect((await pdf.textLayer(1)).status, PdfTextStatus.unreliable);
     recognize = () async {
       final key = sha256.convert(
         utf8.encode('${BundledEnglishText.version}/${pdf.originalDigest}/1'),
@@ -232,7 +230,6 @@ void main() {
     };
     final selected = await pdf.text(1);
     expect(selected.text, 'The quiet garden.');
-    expect(selected.reason, contains('could not be cached'));
     recognize = () async => englishPage.replaceAll('garden', 'meadow');
     expect((await pdf.text(1)).text, selected.text);
     expect(calls, 1);
@@ -255,7 +252,8 @@ void main() {
         }
         return englishPage;
       };
-      expect((await pdf.text(1)).reason, contains('could not be cached'));
+      // The text shows although its cache could not be saved.
+      expect((await pdf.text(1)).text, 'The quiet garden.');
       for (var page = 2; page <= 17; page++) {
         expect((await pdf.text(page)).text, 'The quiet garden.');
       }

@@ -6,8 +6,8 @@ import 'package:flutter/material.dart';
 
 /// A [PdfViewport] under a stand-in for the reader screen's controller
 /// part. It keeps the reflow choice, which starts at [reflow], and offers it
-/// in the reader's settings panel, shown under the viewport. It sends recognition choices to the
-/// document's text supply, as the screen does through the session.
+/// in the reader's settings panel, shown under the viewport. It tells the
+/// document's text supply when the viewport stops waiting, as the screen does.
 class PdfViewportHost extends StatefulWidget {
   const PdfViewportHost({
     super.key,
@@ -42,7 +42,8 @@ class _PdfViewportHostState extends State<PdfViewportHost> {
           onAddress: widget.onAddress,
           reflow: _reflow,
           onCancelRecognition: () => widget.book.textSupply?.cancel(),
-          onRetryRecognition: (page) => widget.book.textSupply?.retry(page),
+          onTap: () {},
+          onTurn: (_) {},
         ),
       ),
       ReaderSettingsPanel(
