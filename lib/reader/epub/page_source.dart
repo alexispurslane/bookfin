@@ -91,13 +91,33 @@ class PageSource {
   static const _maxPages = 24;
   static const _maxImageBytes = 32 * 1024 * 1024;
 
+  /// Runs [step] as a Flutter task. A step that is not [urgent] waits while
+  /// an animation runs: transient frame callbacks are registered. It waits
+  /// outside the task queue, for the end of the next frame, and then asks
+  /// again. So it wakes the event loop at most once a frame.
+  ///
+  /// Both kinds of step use [Priority.animation], so that Flutter's default
+  /// strategy never holds them in the queue. A held task makes the queue
+  /// ask again at once with a zero timer, a busy loop between frames for
+  /// as long as the animation runs.
+  ///
+  /// Transient callbacks schedule a frame when they are registered, and an
+  /// animation that goes on registers them again during each frame. So a
+  /// frame always comes after a step starts to wait, and the step runs
+  /// after the first frame at whose end no animation is registered.
   static void _scheduleTask(void Function() step, {required bool urgent}) {
-    unawaited(
-      SchedulerBinding.instance.scheduleTask(
-        step,
-        urgent ? Priority.animation : Priority.idle,
-      ),
-    );
+    final binding = SchedulerBinding.instance;
+    void task() {
+      if (urgent || binding.transientCallbackCount == 0) {
+        step();
+      } else {
+        binding.addPostFrameCallback(
+          (_) => unawaited(binding.scheduleTask(task, Priority.animation)),
+        );
+      }
+    }
+
+    unawaited(binding.scheduleTask(task, Priority.animation));
   }
 
   final Publication _publication;
