@@ -1,6 +1,6 @@
 ---
 id: t6-doxp
-status: in_progress
+status: closed
 deps: [boo-981b]
 links: [t0-0hl7]
 created: 2026-11-09T17:35:49Z
