@@ -266,6 +266,9 @@ class LaidPage {
   /// The section's spine index.
   int get section => _section.index;
   PageSettings get settings => _section.settings;
+
+  /// The DOM of the page's section, where its places point.
+  DomSection get dom => _section.dom;
   final PageStart start;
 
   /// Where the page begins and ends on its run's strip.
@@ -2039,6 +2042,11 @@ class TextMap {
     }
     return null;
   }
+
+  /// The [DomNode.order] of the node that code unit [index] comes from:
+  /// its text node, or the node that a placeholder starts at. -1 for a
+  /// placeholder that no node owns, such as an indent.
+  int nodeAt(int index) => nodes[_segment(index)];
 
   /// The text place of code unit [index], or null when it is a
   /// placeholder.
