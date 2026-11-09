@@ -1,7 +1,7 @@
 ---
 id: boo-1u66
 status: open
-deps: []
+deps: [t7-bbv1]
 links: []
 created: 2026-11-09T19:31:05Z
 type: task

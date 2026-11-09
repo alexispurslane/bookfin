@@ -1,7 +1,7 @@
 ---
 id: t9-esjw
 status: open
-deps: []
+deps: [t7-bbv1]
 links: []
 created: 2026-11-09T18:24:43Z
 type: bug

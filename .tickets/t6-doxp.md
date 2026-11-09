@@ -1,7 +1,7 @@
 ---
 id: t6-doxp
 status: open
-deps: []
+deps: [boo-981b]
 links: []
 created: 2026-11-09T17:35:49Z
 type: task
