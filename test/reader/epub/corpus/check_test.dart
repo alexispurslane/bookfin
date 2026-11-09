@@ -158,6 +158,24 @@ void main() {
     );
   });
 
+  test('a slow paragraph lists its text without the soft hyphens of '
+      'hyphenation', () async {
+    final report = await checkBook(
+      'hyphens',
+      _made(
+        madeUpEpub([
+          '<p lang="en">Extraordinarily incomprehensible characteristics.</p>',
+        ], css: 'p{hyphens:auto}'),
+      ),
+      settings: [readerPage],
+      clock: _ticking(const Duration(milliseconds: 9)),
+    );
+    expect(
+      report.settings.single.slow.single.text,
+      'Extraordinarily incomprehensible characteristics.',
+    );
+  });
+
   test('a paragraph within the threshold is not listed', () async {
     final report = await checkBook(
       'fast',

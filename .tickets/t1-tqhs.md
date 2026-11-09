@@ -19,3 +19,9 @@ Related: tc-n6wv (place lines at fractional positions) changes how lines are pla
 
 - A run from every page start of pg-3300-wealth-of-nations-kf8 at both corpus page settings gives the same pageKey as the main run (BOOKFIN_EPUB_CORPUS=1 flutter test test/reader/epub/corpus_test.dart --plain-name pg-3300-wealth-of-nations-kf8), or the cut rule tolerates such rounding and a test shows a line at the page edge cut the same way by both runs.
 
+
+## Notes
+
+**2026-11-09T04:00:26Z**
+
+Does not reproduce on the renderer after tc-n6wv (fractional line positions) merged: the corpus run of 2026-11-08 on that renderer finds all 1,845 runs of pg-3300-wealth-of-nations-kf8 at 412 x 671 at 20 pixels equal to the main run, and every run of every other book too, except the blank pages of t1-6ta8. The orchestrator can close this ticket as fixed by tc-n6wv.

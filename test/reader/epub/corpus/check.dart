@@ -462,14 +462,14 @@ Future<void> _draw(
 bool _same(List<List<Object?>> a, List<List<Object?>> b) =>
     equals(b).matches(a, {});
 
-/// The first 80 characters of [text].
+/// The first 80 characters of [text], without soft hyphens.
 String _text(StyledText text) {
   final all = StringBuffer();
   void add(StyledText text) {
     for (final run in text.runs) {
       switch (run) {
         case TextRun(:final text):
-          all.write(text);
+          all.write(text.replaceAll(String.fromCharCode(softHyphen), ''));
         case RaisedRun(:final text):
           add(text);
         default:
