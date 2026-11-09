@@ -15,6 +15,7 @@ import '../catalog/controller_test.dart'
     show FixtureClient, MemoryCatalogStore, MemoryCredentials;
 import '../catalog/model_test.dart' show entry;
 import '../playback/playback_test.dart' show MemoryResume, TestEngine;
+import '../downloads/verified_reads.dart';
 
 /// One call to a source's bind: who, the account, and the books.
 typedef _Bind = ({String source, String? account, List<Book> books});
@@ -40,7 +41,7 @@ class _Log {
   List<String> sources() => [for (final bind in binds) bind.source];
 }
 
-class _Downloads extends Downloads {
+class _Downloads extends Downloads with VerifiedReads {
   _Downloads(this.log) : super(MediaPolicy());
   final _Log log;
   @override

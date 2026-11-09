@@ -101,7 +101,12 @@ Future<Uint8List> _download(CorpusEntry book) async {
 /// Admits [bytes], after it converts a Kindle file as Bookfin does.
 Future<CorpusBook> _open(CorpusEntry book, Uint8List bytes) async =>
     book.format == 'azw3'
-    ? CorpusBook((await importMobi(book.file)).publication)
+    ? CorpusBook(
+        (await importMobi(
+          book.file,
+          sha256.convert(bytes).toString(),
+        )).publication,
+      )
     : CorpusBook.open(bytes);
 
 /// The totals of the run over [books].

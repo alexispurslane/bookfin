@@ -9,6 +9,8 @@ import 'package:bookfin/reader/pdf.dart';
 import 'package:pdfrx_engine/pdfrx_engine.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../downloads/verified_reads.dart';
+
 const pdfSource = SourceFile(
   itemId: 'pdf',
   displayName: 'Simple.pdf',
@@ -33,7 +35,7 @@ void main() {
     'the production importer opens the verified PDF as original source pages',
     () async {
       final document = await loadReadingDocument(
-        File('tool/research/readers/fixtures/simple.pdf').absolute.uri,
+        verified(File('tool/research/readers/fixtures/simple.pdf').absolute),
         pdfSource,
       );
       expect(document.format, 'pdf');
@@ -118,7 +120,7 @@ void main() {
     'a scanned source page keeps its visible original without inventing text',
     () async {
       final document = await loadReadingDocument(
-        File('tool/research/readers/fixtures/scanned.pdf').absolute.uri,
+        verified(File('tool/research/readers/fixtures/scanned.pdf').absolute),
         pdfSource,
       ) as PdfBook;
       addTearDown(document.dispose);
@@ -133,7 +135,9 @@ void main() {
       '$fixture pages keep the original instead of offering misleading text order',
       () async {
         final document = await loadReadingDocument(
-          File('tool/research/readers/fixtures/$fixture.pdf').absolute.uri,
+          verified(
+            File('tool/research/readers/fixtures/$fixture.pdf').absolute,
+          ),
           pdfSource,
         ) as PdfBook;
         addTearDown(document.dispose);

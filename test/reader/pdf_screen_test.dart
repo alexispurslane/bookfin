@@ -13,6 +13,7 @@ import '../playback/playback_test.dart' show account, LocalFiles, MemoryResume;
 import 'pdf_document_test.dart' show pdfSource;
 import 'pdf_session_test.dart' show book, edition;
 import 'reader_settings.dart';
+import '../downloads/verified_reads.dart';
 
 Future<void> settleNative(WidgetTester tester) async {
   for (var attempt = 0; attempt < 12; attempt++) {
@@ -30,7 +31,7 @@ void main() {
   late PdfBook document;
   setUpAll(() async {
     document = await loadReadingDocument(
-      File('tool/research/readers/fixtures/simple.pdf').absolute.uri,
+      verified(File('tool/research/readers/fixtures/simple.pdf').absolute),
       pdfSource,
     ) as PdfBook;
   });
@@ -106,9 +107,9 @@ void main() {
       final document =
           (await tester.runAsync(
                 () => loadReadingDocument(
-                  File('tool/research/readers/fixtures/simple.pdf')
-                      .absolute
-                      .uri,
+                  verified(
+                    File('tool/research/readers/fixtures/simple.pdf').absolute,
+                  ),
                   pdfSource,
                 ),
               ))!

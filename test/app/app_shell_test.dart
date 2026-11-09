@@ -15,6 +15,7 @@ import 'package:flutter_test/flutter_test.dart';
 import '../appearance/preferences_test.dart' show MemoryAppearanceStore;
 import '../foundation_test.dart' show disconnectedCatalog;
 import '../playback/playback_test.dart' show MemoryResume, TestEngine;
+import '../downloads/verified_reads.dart';
 
 /// A clock that starts at [start] and moves with the test's fake time.
 DateTime Function() fakeClock(WidgetTester tester, DateTime start) {
@@ -51,7 +52,7 @@ Brightness _brightness(WidgetTester tester) =>
 
 final _newYork = SelectedLocation('New York', 40.7128, -74.0060);
 
-class _Downloads extends Downloads {
+class _Downloads extends Downloads with VerifiedReads {
   _Downloads() : super(MediaPolicy());
   @override
   bool get supported => true;

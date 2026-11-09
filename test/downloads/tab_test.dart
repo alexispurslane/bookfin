@@ -15,6 +15,7 @@ import '../catalog/controller_test.dart'
     show FixtureClient, MemoryCatalogStore, MemoryCredentials;
 import '../catalog/layout_test.dart' show MemoryLayoutStore;
 import '../catalog/model_test.dart' show entry;
+import 'verified_reads.dart';
 
 void main() {
   late FixtureClient client;
@@ -332,7 +333,7 @@ RetainedDownload _leftover(String item, {int bytes = 6}) => RetainedDownload(
 
 /// Downloads whose state a test sets. [showBytes] notifies like byte
 /// progress, and [showPhase] like a phase change.
-class _ShownDownloads extends Downloads {
+class _ShownDownloads extends Downloads with VerifiedReads {
   _ShownDownloads() : super(MediaPolicy());
   final states = <String, EditionDownload>{};
   final calls = <String>[];

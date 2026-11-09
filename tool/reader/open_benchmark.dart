@@ -8,8 +8,9 @@
 //   python3 -m http.server 8781 --bind 127.0.0.1 --directory <directory>
 //   adb -s <device> reverse tcp:8781 tcp:8781
 //
-// The app keeps a copy of the book in its own storage, as a real download
-// is, and reads it from there.
+// The app keeps a copy of the book in its own storage, in a folder of its
+// own, as a real download is, and reads it from there. As Downloads does, it
+// hashes the copy once, and the reader takes that digest.
 //
 // The plan names the book, its container (epub or azw3), and the places
 // that the runs use, as [section, progress] pairs:
@@ -24,9 +25,12 @@
 // seconds after the app's first frame (te-k1l3):
 //
 // - open: from reading the downloaded file to the first drawn page at the
-//   saved place. The parts are admission (read, unzip or MOBI import), the
-//   pager's work up to the shown page (prepare and anchored layout), and
-//   the first frame that draws it.
+//   saved place. The parts are admission (the read of the admitted book
+//   that the first open kept, t7-rcyp), the pager's work up to the shown
+//   page (prepare and anchored layout), and the first frame that draws it.
+// - admitFull: after the runs, a full admission and the write of its
+//   record, as at the first open after a download. For a MOBI, its kept
+//   conversion is admitted again.
 // - turn: a turn into the next section right after the book opens at the
 //   last page of section turnFrom, while that section is not prepared yet.
 // - jump: a scrub to jumpTo, after the book opened at jumpFrom and its
@@ -53,6 +57,8 @@ import 'dart:isolate';
 import 'dart:ui' as ui;
 
 import 'package:bookfin/catalog/model.dart';
+import 'package:bookfin/downloads/derived_files.dart';
+import 'package:bookfin/downloads/downloads.dart';
 import 'package:bookfin/reader/document.dart';
 import 'package:bookfin/reader/epub/fonts.dart';
 import 'package:bookfin/reader/epub/hyphenate.dart';
@@ -62,6 +68,7 @@ import 'package:bookfin/reader/epub/places.dart';
 import 'package:bookfin/reader/epub/prepare.dart';
 import 'package:bookfin/reader/epub/viewport.dart';
 import 'package:bookfin/reader/platform_io.dart';
+import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
@@ -98,6 +105,9 @@ class _BenchmarkState extends State<_Benchmark> {
   PageSettings? _settings;
   String _status = 'Measuring';
 
+  /// The SHA-256 of the downloaded copy, as Downloads keeps it.
+  late final String _digest;
+
   /// Every frame's timing that the engine reported, in arrival order.
   final _frames = <ui.FrameTiming>[];
 
@@ -118,11 +128,15 @@ class _BenchmarkState extends State<_Benchmark> {
       final plan = jsonDecode(utf8.decode(await _fetch('plan.json'))) as Map;
       final book = plan['book'] as String;
       // The download, in the app's own storage as a real download is.
-      final local = File('${Directory.systemTemp.path}/rw7u/$book');
+      final local = File('${Directory.systemTemp.path}/rw7u/$book/$book');
       if (!await local.exists()) {
         await local.parent.create(recursive: true);
         await local.writeAsBytes(await _fetch(book), flush: true);
       }
+      final path = local.path;
+      _digest = await Isolate.run(
+        () async => (await sha256.bind(File(path).openRead()).first).toString(),
+      );
       final addresses = File('${local.path}.addresses.json');
       final known = await addresses.exists()
           ? jsonDecode(await addresses.readAsString()) as Map
@@ -141,7 +155,7 @@ class _BenchmarkState extends State<_Benchmark> {
 
   Future<EpubDocument> _load(Map plan, File local) async =>
       await loadReadingDocument(
-        local.uri,
+        VerifiedFile(local.uri, _digest),
         SourceFile(
           itemId: 'bench',
           displayName: plan['book'] as String,
@@ -296,6 +310,18 @@ class _BenchmarkState extends State<_Benchmark> {
       });
       await _hide();
       pager.dispose();
+    }
+
+    // Full admissions, as at the first open after a download.
+    for (var run = 0; run < 3; run++) {
+      await DerivedBookFiles.admittedDirectory(local).delete(recursive: true);
+      final start = Timeline.now;
+      await _load(plan, local);
+      _log({
+        'kind': 'admitFull',
+        'book': plan['book'],
+        'admit': _ms(Timeline.now - start),
+      });
     }
 
     // The parts, on their own, after the runs.

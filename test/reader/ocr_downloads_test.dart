@@ -88,8 +88,8 @@ void main() {
       downloads: downloads,
       store: MemoryResume(),
       load: loadPublication,
-      loadDocument: (uri, source) =>
-          loadReadingDocument(uri, source, textSupply: BundledEnglishText()),
+      loadDocument: (file, source) =>
+          loadReadingDocument(file, source, textSupply: BundledEnglishText()),
     );
     var calls = 0;
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
@@ -151,8 +151,8 @@ void main() {
       downloads: downloads,
       store: MemoryResume(),
       load: loadPublication,
-      loadDocument: (uri, source) =>
-          loadReadingDocument(uri, source, textSupply: BundledEnglishText()),
+      loadDocument: (file, source) =>
+          loadReadingDocument(file, source, textSupply: BundledEnglishText()),
     );
     final held = Completer<String>();
     final started = Completer<void>();
@@ -264,8 +264,8 @@ void main() {
           downloads: downloads,
           store: MemoryResume(),
           load: loadPublication,
-          loadDocument: (uri, source) => loadReadingDocument(
-            uri,
+          loadDocument: (file, source) => loadReadingDocument(
+            file,
             source,
             textSupply: BundledEnglishText(),
           ),

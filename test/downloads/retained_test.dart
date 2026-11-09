@@ -110,10 +110,10 @@ void main() {
       downloads: downloads,
       store: MemoryResume(),
       load: loadPublication,
-      loadDocument: (uri, source) async {
+      loadDocument: (file, source) async {
         started.complete();
         await release.future;
-        return loadReadingDocument(uri, source);
+        return loadReadingDocument(file, source);
       },
     );
     addTearDown(() async {

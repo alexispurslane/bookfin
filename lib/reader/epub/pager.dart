@@ -7,8 +7,6 @@
 // and presents the page settings. The pager adds little logic of its own:
 // the page source lays out pages, and places.dart converts places.
 import 'dart:async';
-import 'dart:convert';
-import 'dart:isolate';
 import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
@@ -130,7 +128,6 @@ class EpubPager implements DocumentNavigator {
   /// The search request in progress, or null.
   int? _search;
 
-  Future<List<String>>? _steps;
   Future<List<SearchSection>>? _searchSections;
   bool _disposed = false;
 
@@ -778,13 +775,6 @@ class EpubPager implements DocumentNavigator {
     );
   }
 
-  /// The spine step of each section's CFIs, read once from the package
-  /// document in a worker.
-  Future<List<String>> _spineSteps() => _steps ??= _stepsInWorker(
-    _publication.resources[_publication.packagePath]!,
-  );
-
-  /// It is static, so that the worker's closure holds only [opf].
-  static Future<List<String>> _stepsInWorker(Uint8List opf) =>
-      Isolate.run(() => spineSteps(utf8.decode(opf)));
+  /// The spine step of each section's CFIs, which admission found.
+  Future<List<String>> _spineSteps() async => _publication.spineSteps;
 }

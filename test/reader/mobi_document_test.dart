@@ -7,6 +7,8 @@ import 'package:bookfin/reader/platform_io.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../downloads/verified_reads.dart';
+
 const mobiSource = SourceFile(
   itemId: 'mobi',
   displayName: 'Book.mobi',
@@ -28,7 +30,7 @@ void main() {
             .readAsBytes();
         final file = await File('${folder.path}/original.mobi')
             .writeAsBytes(bytes);
-        final document = await loadReadingDocument(file.uri, mobiSource);
+        final document = await loadReadingDocument(verified(file), mobiSource);
         addTearDown(document.dispose);
         expect(document.format, 'mobi');
         expect(document.originalDigest, sha256.convert(bytes).toString());
@@ -45,7 +47,7 @@ void main() {
           isTrue,
         );
         expect(await file.readAsBytes(), bytes);
-        final reopened = await loadReadingDocument(file.uri, mobiSource);
+        final reopened = await loadReadingDocument(verified(file), mobiSource);
         expect(reopened.identity, document.identity);
         expect(reopened.originalDigest, document.originalDigest);
         await reopened.dispose();
@@ -57,7 +59,7 @@ void main() {
             .single;
         await File('${cached.path}/book.epub')
             .writeAsString('damaged derived cache');
-        final repaired = await loadReadingDocument(file.uri, mobiSource);
+        final repaired = await loadReadingDocument(verified(file), mobiSource);
         expect(repaired.identity, document.identity);
         expect(repaired.originalDigest, document.originalDigest);
         expect(await file.readAsBytes(), bytes);
@@ -74,7 +76,7 @@ void main() {
     final file = await File('${folder.path}/broken.mobi')
         .writeAsString('not a MOBI book');
     await expectLater(
-      loadReadingDocument(file.uri, mobiSource),
+      loadReadingDocument(verified(file), mobiSource),
       throwsFormatException,
     );
     expect(await file.readAsString(), 'not a MOBI book');

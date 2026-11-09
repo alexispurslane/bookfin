@@ -1,6 +1,6 @@
 ---
 id: t7-rcyp
-status: open
+status: in_progress
 deps: []
 links: []
 created: 2026-11-09T16:08:24Z
@@ -23,3 +23,12 @@ The open benchmark (tool/reader/open_benchmark.dart) on the emulator and on the 
 - Remove the full image decode from admission. Layout needs only the width and height, which the image header gives.
 - Do not hash the book at open. Downloads already computes the SHA-256 of each file when its download completes (`record.digest` in lib/downloads/local_downloads.dart). The reader uses that digest as the original digest.
 - Keep the admitted book on disk: the unzipped and admitted files and every admitted fact (identity, spine, spine steps, contents, styles, image sizes, warnings). An open reads that record and does not unzip, sanitize or hash again. A changed file or a new policy admits in full.
+
+## Notes (2026-11-09)
+
+- Downloads gives the reader a `VerifiedFile`: the saved file and the SHA-256 digest that Downloads computed when the download completed. `Downloads.readLocalFile` passes it to the reader's loaders. The publication's original digest is that digest.
+- Admission reads only each image's header. It also finds the CFI spine steps (`Publication.spineSteps`), so the pager makes no worker call for them.
+- `AdmittedBooks.open` (lib/reader/admitted_books.dart) keeps the admitted book in the download's `.bookfin-admitted` folder, keyed by the file's digest, the reading policy and `Publication.revision`. A later open reads it in one worker call. An unreadable record is set aside as `publication.unreadable`, and the book admits in full. `DerivedBookFiles` counts and removes the folder with the download.
+- A MOBI keeps the admitted book of its conversion under the MOBI's digest and policy, so a later open neither converts, reads nor hashes it.
+- A saved EPUB place no longer needs the processed identity to match (`ReaderDocument.restore`). The original digest, the policy and the engine still must match, and the pager opens the place only where its CFI and quote match the text. This keeps a place that an older admission saved in a book with an image whose header is sound but whose pixels do not decode. None of the 986 images of the 85 corpus EPUBs is such an image.
+- Host numbers are in docs/research/epub-first-page-timing.md. The emulator run could not take place: first for lack of disk space, then because another thread's device session held the emulator's serial (t6-0yez).

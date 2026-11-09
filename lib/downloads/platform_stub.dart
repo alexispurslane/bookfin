@@ -22,6 +22,12 @@ class UnavailableDownloads extends Downloads {
   @override
   Future<Uri?> localFile(SourceFile source) async => null;
   @override
+  Future<T?> readLocalFile<T>(
+    SourceFile source,
+    Future<T> Function(VerifiedFile original) read, {
+    void Function(bool Function() live)? onOwnership,
+  }) async => null;
+  @override
   Future<void> get idle async {}
   @override
   void checkInvariants() {}

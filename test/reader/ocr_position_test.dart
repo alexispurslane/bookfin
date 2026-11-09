@@ -107,8 +107,8 @@ void main() {
     downloads: downloads,
     store: store.reading,
     load: loadPublication,
-    loadDocument: (uri, source) =>
-        loadReadingDocument(uri, source, textSupply: BundledEnglishText()),
+    loadDocument: (file, source) =>
+        loadReadingDocument(file, source, textSupply: BundledEnglishText()),
   );
 
   Future<void> showReader(WidgetTester tester) async {

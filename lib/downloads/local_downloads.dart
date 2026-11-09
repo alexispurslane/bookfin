@@ -867,7 +867,7 @@ class LocalDownloads extends Downloads {
   @override
   Future<T?> readLocalFile<T>(
     SourceFile source,
-    Future<T> Function(Uri original) read, {
+    Future<T> Function(VerifiedFile original) read, {
     void Function(bool Function() live)? onOwnership,
   }) async {
     final id = _id(source);
@@ -883,8 +883,8 @@ class LocalDownloads extends Downloads {
         final found = await _lookup(id, generation);
         if (found == null) return;
         replaced = false;
-        final uri = found.uri;
-        if (uri == null) return;
+        final file = found.file;
+        if (file == null) return;
         final token = Object();
         _reading[id] = token;
         onOwnership?.call(
@@ -894,7 +894,7 @@ class LocalDownloads extends Downloads {
               identical(_reading[id], token),
         );
         try {
-          result = await read(uri);
+          result = await read(file);
         } finally {
           if (identical(_reading[id], token)) _reading.remove(id);
         }
@@ -917,29 +917,34 @@ class LocalDownloads extends Downloads {
     final id = _id(source);
     while (true) {
       final found = await _lookup(id, generation);
-      if (found != null) return found.uri;
+      if (found != null) return found.file?.uri;
       if (!_stillBound(account, id)) return null;
       (:generation, account: _) = await _settled;
     }
   }
 
   /// Looks up the verified saved file of source [id] in catalog
-  /// [generation]. The result holds null when the source is not bound, or its
-  /// file is missing or corrupt. A null result means that a bind replaced the
-  /// catalog during the lookup. This never waits for a newer binding, so a
-  /// command that a new binding waits for can call it.
-  Future<({Uri? uri})?> _lookup(String id, int generation) async {
-    if (_disposed || _session == null) return (uri: null);
+  /// [generation], with the digest that it matched. The result holds null
+  /// when the source is not bound, or its file is missing or corrupt. A null
+  /// result means that a bind replaced the catalog during the lookup. This
+  /// never waits for a newer binding, so a command that a new binding waits
+  /// for can call it.
+  Future<({VerifiedFile? file})?> _lookup(String id, int generation) async {
+    if (_disposed || _session == null) return (file: null);
     if (generation != _generation) return null;
     await _binding;
-    if (_disposed) return (uri: null);
+    if (_disposed) return (file: null);
     if (generation != _generation) return null;
     final record = _records[id];
-    if (record == null || !record.complete) return (uri: null);
+    if (record == null || !record.complete) return (file: null);
     final confirmed = await _confirm(record, generation);
-    if (_disposed) return (uri: null);
+    if (_disposed) return (file: null);
     if (generation != _generation) return null;
-    return (uri: confirmed ? record.file('complete').uri : null);
+    return (
+      file: confirmed
+          ? VerifiedFile(record.file('complete').uri, record.digest!)
+          : null,
+    );
   }
 
   /// Whether the current catalog still binds source [id] for [account].

@@ -117,8 +117,8 @@ void main() {
         downloads: downloads,
         store: MemoryResume(),
         load: loadPublication,
-        loadDocument: (uri, source) => loadReadingDocument(
-          uri,
+        loadDocument: (file, source) => loadReadingDocument(
+          file,
           source,
           textSupply: BundledEnglishText(hop: hop),
         ),

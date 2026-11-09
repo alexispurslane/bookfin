@@ -112,8 +112,8 @@ void main() {
       downloads: downloads,
       store: MemoryResume(),
       load: loadPublication,
-      loadDocument: (uri, source) =>
-          loadReadingDocument(uri, source, textSupply: BundledEnglishText()),
+      loadDocument: (file, source) =>
+          loadReadingDocument(file, source, textSupply: BundledEnglishText()),
     );
     nativeStarted = Completer<void>();
     nativeResult = Completer<String>();
@@ -170,7 +170,7 @@ void main() {
         bool Function() owned = () => false;
         return downloads.readLocalFile<PdfText>(
           pdfSource,
-          (uri) => read(uri, owned),
+          (file) => read(file.uri, owned),
           onOwnership: (live) => owned = live,
         );
       });
@@ -186,12 +186,12 @@ void main() {
     var reads = 0;
     pdf.textSupply!.bind((read) async {
       bool Function() owned = () => false;
-      return downloads.readLocalFile<PdfText>(pdfSource, (uri) async {
+      return downloads.readLocalFile<PdfText>(pdfSource, (file) async {
         if (++reads == 1) {
           acquiring.complete();
           await acquired.future;
         }
-        return read(uri, owned);
+        return read(file.uri, owned);
       }, onOwnership: (live) => owned = live);
     });
     final second = pdf.text(2);
@@ -227,7 +227,7 @@ void main() {
         bool Function() owned = () => false;
         return downloads.readLocalFile<PdfText>(
           pdfSource,
-          (uri) => read(uri, () => owned()),
+          (file) => read(file.uri, () => owned()),
           onOwnership: (live) => owned = live,
         );
       }),

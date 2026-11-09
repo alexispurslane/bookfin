@@ -3,6 +3,16 @@ import 'package:flutter/foundation.dart';
 import '../catalog/jellyfin.dart';
 import '../catalog/model.dart';
 
+/// A saved file of a download that Downloads verified: where it is, and the
+/// SHA-256 digest of its bytes, as lowercase hexadecimal. Downloads computed
+/// the digest when the download completed, and its file still matched it at
+/// the time of the read.
+class VerifiedFile {
+  const VerifiedFile(this.uri, this.digest);
+  final Uri uri;
+  final String digest;
+}
+
 enum MediaNetwork { unknown, disconnected, wifi, mobile }
 
 enum MediaLocation { local, remote, blocked }
@@ -218,16 +228,13 @@ abstract class Downloads extends ChangeNotifier {
   Future<Uri?> localFile(SourceFile source);
 
   /// Keep a verified original and its derived files owned until loading ends.
-  /// A null result means the source is no longer locally available.
+  /// [read] receives the saved file and the digest that it matches. A null
+  /// result means the source is no longer locally available.
   Future<T?> readLocalFile<T>(
     SourceFile source,
-    Future<T> Function(Uri original) read, {
+    Future<T> Function(VerifiedFile original) read, {
     void Function(bool Function() live)? onOwnership,
-  }) async {
-    final uri = await localFile(source);
-    onOwnership?.call(() => true);
-    return uri == null ? null : read(uri);
-  }
+  });
 
   Future<void> get idle;
   Future<void> refresh() async {}
