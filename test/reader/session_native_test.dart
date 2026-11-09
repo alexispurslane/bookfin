@@ -20,17 +20,17 @@ import 'package:bookfin/reader/epub/page_source.dart';
 import 'package:bookfin/reader/epub/pager.dart';
 import 'package:bookfin/reader/epub/places.dart';
 import 'package:bookfin/reader/epub/prepare.dart';
+import 'package:bookfin/reader/epub/publication.dart';
 import 'package:bookfin/reader/platform_io.dart';
 import 'package:bookfin/reader/session.dart';
-import 'package:flutter_epub_viewer/publication.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../playback/playback_test.dart' show account, LocalFiles, MemoryResume;
+import 'epub/corpus/book.dart' show showcaseBooks;
 import 'epub/epubjs_fixtures.dart'
     show fixture, immediateSource, pageAt, recordedSizes;
 import 'epub/helpers.dart' show loadReaderFont, readerPage;
 import 'epub/page_source_test.dart' show paragraphs;
-import 'epub/corpus/book.dart' show showcaseBooks;
 
 SourceFile file(String container) => SourceFile(
   itemId: 'ebook',

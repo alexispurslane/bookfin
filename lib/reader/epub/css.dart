@@ -7,8 +7,8 @@
 // of each sheet. It runs in the prepare worker, so a slow sheet cannot stall
 // a frame.
 //
-// The cascade follows the order that Chromium uses for a page of the
-// WebView reader: the user agent's sheet, then the book's sheets and the
+// The cascade follows the order that Chromium used for a page of the
+// former WebView reader: the user agent's sheet, then the book's sheets and the
 // reader's own rules in document order, then style attributes, then
 // important declarations. Unknown properties and values are left out, as a
 // browser leaves them out.

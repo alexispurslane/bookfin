@@ -2,10 +2,10 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:bookfin/playback/store.dart';
+import 'package:bookfin/reader/epub/publication.dart';
 import 'package:bookfin/reader/session.dart';
 import 'package:bookfin/sync/coordinator.dart';
 import 'package:bookfin/sync/journal.dart';
-import 'package:flutter_epub_viewer/publication.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

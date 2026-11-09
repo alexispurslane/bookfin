@@ -1,8 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_epub_viewer/navigation.dart'
-    show ContentsEntry, ReadingLocation;
 
 import '../catalog/book_cover.dart';
 import '../catalog/glass.dart' show confirmAction, showGlassSheet;
@@ -17,7 +15,8 @@ import '../playback/recent.dart';
 import '../playback/records_screen.dart';
 import '../playback/screen.dart';
 import '../playback/timeline.dart';
-import '../reader/document.dart' show EpubAddress, ReaderHit;
+import '../reader/document.dart'
+    show ContentsEntry, EpubAddress, ReaderHit, ReadingLocation;
 import '../reader/screen.dart';
 
 // The development gallery shows the app's own leaf widgets with sample books

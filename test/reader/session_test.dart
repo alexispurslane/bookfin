@@ -2,8 +2,9 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:bookfin/catalog/model.dart';
+import 'package:bookfin/reader/document.dart';
+import 'package:bookfin/reader/epub/publication.dart';
 import 'package:bookfin/reader/session.dart';
-import 'package:flutter_epub_viewer/publication.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../playback/playback_test.dart' show account, LocalFiles, MemoryResume;
@@ -211,20 +212,22 @@ void main() {
     await reader.bind(account(), [book]);
     await reader.open(book, edition);
     final navigator = DeferredSearch();
-    reader.attach(reader.token, navigator, []);
+    reader.attachDocument(reader.token, navigator, []);
     final first = reader.search('old');
     final second = reader.search('current');
     navigator.calls[1].complete(
-      const SearchReport([], error: 'Current failure'),
+      const ReaderSearchReport([], error: 'Current failure'),
     );
     await second;
-    navigator.calls[0].complete(const SearchReport([], error: 'Stale failure'));
+    navigator.calls[0].complete(
+      const ReaderSearchReport([], error: 'Stale failure'),
+    );
     await first;
     expect(reader.searchError, 'Current failure');
     final third = reader.search('cancelled');
     reader.cancelSearch();
     navigator.calls[2].complete(
-      const SearchReport([], error: 'Cancelled failure'),
+      const ReaderSearchReport([], error: 'Cancelled failure'),
     );
     await third;
     expect(reader.searchError, isNull);
@@ -232,7 +235,7 @@ void main() {
     final fourth = reader.search('old account');
     await reader.bind(account(user: 'bob'), [book]);
     navigator.calls[3].complete(
-      const SearchReport([], error: 'Other account failure'),
+      const ReaderSearchReport([], error: 'Other account failure'),
     );
     await fourth;
     expect(reader.searchError, isNull);
@@ -272,11 +275,11 @@ void main() {
   );
 }
 
-class DeferredSearch implements NavigatorPort {
-  final calls = <Completer<SearchReport>>[];
+class DeferredSearch implements DocumentNavigator {
+  final calls = <Completer<ReaderSearchReport>>[];
   @override
-  Future<SearchReport> search(String query, int request) {
-    final call = Completer<SearchReport>();
+  Future<ReaderSearchReport> search(String query, int request) {
+    final call = Completer<ReaderSearchReport>();
     calls.add(call);
     return call.future;
   }
@@ -284,35 +287,19 @@ class DeferredSearch implements NavigatorPort {
   @override
   Future<void> cancelSearch(int request) async {}
   @override
-  Future<void> configure({
-    required double fontSize,
-    required bool night,
-  }) async {}
-  @override
   Future<void> contents(String href) async {}
   @override
-  Future<void> display(ReadingLocation location) async {}
+  Future<void> display(ReaderAddress address) async {}
   @override
   Future<void> move(bool forward) async {}
   @override
-  Future<void> seek(int section, double progress) async {}
+  Future<void> seek(int part, double progress) async {}
 
-  /// The section, the progress and the width of each page preview, in
-  /// order.
-  final previews = <(int, double, double)>[];
-
-  /// What each page preview returns, or null to keep it waiting.
-  PagePicture? picture;
+  /// Keeps each page preview waiting.
   @override
-  Future<PagePicture> preview(
-    int section,
-    double progress,
+  Future<PagePreview> preview(
+    BookPlace place,
     double width,
     Future<void> abandon,
-  ) {
-    previews.add((section, progress, width));
-    return picture == null
-        ? Completer<PagePicture>().future
-        : Future.value(picture);
-  }
+  ) => Completer<PagePreview>().future;
 }

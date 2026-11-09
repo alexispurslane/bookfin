@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter_epub_viewer/navigation.dart' show ContentsEntry;
 import 'package:xml/xml_events.dart';
 
 import '../foundation/hop.dart';

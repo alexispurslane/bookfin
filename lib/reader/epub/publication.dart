@@ -6,7 +6,7 @@ import 'package:crypto/crypto.dart';
 import 'package:image/image.dart' as raster;
 import 'package:xml/xml.dart';
 
-import 'navigation.dart';
+import '../document.dart';
 
 class Publication {
   Publication._(

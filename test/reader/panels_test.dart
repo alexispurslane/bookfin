@@ -3,7 +3,6 @@ import 'package:bookfin/foundation/theme.dart';
 import 'package:bookfin/playback/records.dart';
 import 'package:bookfin/reader/document.dart';
 import 'package:bookfin/reader/screen.dart';
-import 'package:bookfin/reader/session.dart' show ContentsEntry;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 

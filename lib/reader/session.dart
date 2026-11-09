@@ -2,8 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter_epub_viewer/publication.dart';
-import 'package:flutter_epub_viewer/navigation.dart';
 import 'package:xml/xml_events.dart';
 
 import '../catalog/jellyfin.dart';
@@ -13,10 +11,9 @@ import '../playback/playback.dart';
 import 'book_map.dart';
 import 'document.dart';
 import 'epub/pager.dart';
+import 'epub/publication.dart';
 import 'page_previews.dart';
 import 'pdf.dart';
-
-export 'package:flutter_epub_viewer/navigation.dart';
 
 typedef PublicationLoader = Future<Publication> Function(Uri uri);
 typedef DocumentLoader = Future<ReaderDocument> Function(
@@ -553,14 +550,6 @@ class ReaderSession extends ChangeNotifier {
     } catch (_) {
       return null;
     }
-  }
-
-  void attach(
-    int eventToken,
-    NavigatorPort navigator,
-    List<ContentsEntry> entries,
-  ) {
-    attachDocument(eventToken, EpubNavigator(navigator), entries);
   }
 
   void attachDocument(

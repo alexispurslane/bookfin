@@ -3,7 +3,6 @@ import 'package:bookfin/reader/pdf.dart';
 import 'package:bookfin/reader/pdf_viewport.dart';
 import 'package:bookfin/reader/screen.dart' show ReaderSettingsPanel;
 import 'package:flutter/material.dart';
-import 'package:flutter_epub_viewer/navigation.dart' show ContentsEntry;
 
 /// A [PdfViewport] under a stand-in for the reader screen's controller
 /// part. It keeps the reflow choice, which starts at [reflow], and offers it

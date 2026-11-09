@@ -12,7 +12,6 @@ import 'dart:isolate';
 import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter_epub_viewer/publication.dart';
 
 import '../../foundation/hop.dart';
 import '../document.dart';
@@ -21,6 +20,7 @@ import 'layout.dart';
 import 'page_source.dart';
 import 'places.dart';
 import 'prepare.dart';
+import 'publication.dart';
 import 'search.dart';
 
 /// The page on screen and its recorded picture.

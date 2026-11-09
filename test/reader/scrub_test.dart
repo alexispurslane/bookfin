@@ -1,4 +1,5 @@
 import 'package:bookfin/reader/book_map.dart';
+import 'package:bookfin/reader/document.dart';
 import 'package:bookfin/reader/screen.dart';
 import 'package:bookfin/reader/session.dart';
 import 'package:flutter/material.dart';
@@ -6,7 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../playback/playback_test.dart' show account, LocalFiles, MemoryResume;
 import 'book_map_test.dart' show contents, threeSections;
-import 'screen_test.dart' show ControlPort;
+import 'screen_test.dart' show ControlNavigator;
 import 'session_test.dart' show source, edition, book;
 
 void main() {
@@ -36,8 +37,8 @@ void main() {
       });
 
   /// Opens the three-section book with the reader's contents, shown on
-  /// [port].
-  Future<ReaderSession> openReader(ControlPort port) async {
+  /// [navigator].
+  Future<ReaderSession> openReader(ControlNavigator navigator) async {
     final downloads = LocalFiles()
       ..files[source.key] = Uri.file('/verified.epub');
     final reader = ReaderSession(
@@ -51,7 +52,7 @@ void main() {
     });
     await reader.bind(account(), [book]);
     await reader.open(book, edition);
-    reader.attach(reader.token, port, contents);
+    reader.attachDocument(reader.token, navigator, contents);
     return reader;
   }
 
@@ -67,7 +68,7 @@ void main() {
   Slider bar(WidgetTester tester) => tester.widget<Slider>(find.byType(Slider));
 
   test('the session maps the open book once its contents arrive', () async {
-    final reader = await openReader(ControlPort());
+    final reader = await openReader(ControlNavigator());
     await pumpEventQueue();
     final map = reader.bookMap!;
     expect(map.chapters.map((chapter) => chapter.title), [
@@ -82,17 +83,17 @@ void main() {
 
   test('going to a scrub target shows that part of the book at that '
       'progress', () async {
-    final port = ControlPort();
-    final reader = await openReader(port);
+    final navigator = ControlNavigator();
+    final reader = await openReader(navigator);
     await pumpEventQueue();
     await reader.goTo(reader.bookMap!.targetAt(inTwo(.75)));
-    expect(port.seeks.single.$1, 1);
-    expect(port.seeks.single.$2, closeTo(.75, 1e-9));
+    expect(navigator.seeks.single.$1, 1);
+    expect(navigator.seeks.single.$2, closeTo(.75, 1e-9));
   });
 
   test('a failed move to a scrub target keeps the place and says so', () async {
-    final port = ControlPort()..failSeeks = true;
-    final reader = await openReader(port);
+    final navigator = ControlNavigator()..failSeeks = true;
+    final reader = await openReader(navigator);
     await pumpEventQueue();
     reader.acceptVisible(reader.token, inSectionTwo(.5));
     final kept = reader.position;
@@ -103,7 +104,7 @@ void main() {
 
   testWidgets('the reader bar shows the open place in the whole book, with '
       'a tick at each chapter and a dot at each bookmark', (tester) async {
-    final reader = await openReader(ControlPort());
+    final reader = await openReader(ControlNavigator());
     reader.acceptVisible(reader.token, inSectionTwo(.5));
     await reader.addBookmark();
     reader.acceptVisible(reader.token, inSectionTwo(.25));
@@ -139,8 +140,8 @@ void main() {
 
   testWidgets('a drag on the bar previews the target chapter and place '
       'without moving the book, and the release goes there', (tester) async {
-    final port = ControlPort();
-    final reader = await openReader(port);
+    final navigator = ControlNavigator();
+    final reader = await openReader(navigator);
     reader.acceptVisible(reader.token, inSectionTwo(.25));
     await show(tester, reader);
     final target = inTwo(.75);
@@ -152,13 +153,13 @@ void main() {
       findsOneWidget,
     );
     expect(find.bySemanticsLabel('Two · ${percent(inTwo(.25))}'), findsNothing);
-    expect(port.seeks, isEmpty);
+    expect(navigator.seeks, isEmpty);
     expect(reader.visibleLocation!.progress, .25);
 
     bar(tester).onChangeEnd!(target);
     await tester.pumpAndSettle();
-    expect(port.seeks.single.$1, 1);
-    expect(port.seeks.single.$2, closeTo(.75, 1e-9));
+    expect(navigator.seeks.single.$1, 1);
+    expect(navigator.seeks.single.$2, closeTo(.75, 1e-9));
     reader.acceptVisible(reader.token, inSectionTwo(.74, page: 7));
     await tester.pumpAndSettle();
     expect(
@@ -171,8 +172,8 @@ void main() {
   testWidgets('a drag on the bar turns the page into a deck that draws the '
       'page under the thumb, and the release lands the reader there and '
       'closes the deck', (tester) async {
-    final port = ControlPort();
-    final reader = await openReader(port);
+    final navigator = ControlNavigator();
+    final reader = await openReader(navigator);
     reader.acceptVisible(reader.token, inSectionTwo(.25));
     await show(tester, reader);
     final front = find.byKey(const ValueKey('deck front card'));
@@ -180,22 +181,22 @@ void main() {
     bar(tester).onChangeStart!(inTwo(.25));
     await tester.pump();
     expect(front, findsOneWidget);
-    expect(port.previews.single.$1, 1);
-    expect(port.previews.single.$2, closeTo(.25, 1e-9));
-    expect(port.previews.single.$3, greaterThan(0));
+    expect(navigator.previews.single.$1, 1);
+    expect(navigator.previews.single.$2, closeTo(.25, 1e-9));
+    expect(navigator.previews.single.$3, greaterThan(0));
     bar(tester).onChanged!(inTwo(.75));
     await tester.pump();
-    expect(port.seeks, isEmpty, reason: 'The book stays during the drag.');
+    expect(navigator.seeks, isEmpty, reason: 'The book stays during the drag.');
     bar(tester).onChangeEnd!(inTwo(.75));
     await tester.pumpAndSettle();
-    expect(port.seeks.single.$1, 1);
-    expect(port.seeks.single.$2, closeTo(.75, 1e-9));
+    expect(navigator.seeks.single.$1, 1);
+    expect(navigator.seeks.single.$2, closeTo(.75, 1e-9));
     expect(front, findsNothing);
     expect(reader.previews.deck.value, isNull);
   }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
 
   test('closing the book ends a scrub and frees its deck', () async {
-    final reader = await openReader(ControlPort());
+    final reader = await openReader(ControlNavigator());
     await pumpEventQueue();
     reader.previews.start(reader.bookMap!.targetAt(inTwo(.5)), width: 300);
     expect(reader.previews.deck.value, isNotNull);
@@ -205,7 +206,7 @@ void main() {
 
   testWidgets('the reader bar reports where a drag starts, each target and '
       'where it ends, as places in the book', (tester) async {
-    final reader = await openReader(ControlPort());
+    final reader = await openReader(ControlNavigator());
     reader.acceptVisible(reader.token, inSectionTwo(.25));
     await tester.pump();
     final reports = <(String, BookTarget)>[];
@@ -238,7 +239,7 @@ void main() {
 
   testWidgets('a place saved before places had a progress sits at the start '
       'of its section', (tester) async {
-    final reader = await openReader(ControlPort());
+    final reader = await openReader(ControlNavigator());
     reader.acceptVisible(
       reader.token,
       const ReadingLocation('epubcfi(/6/4!/4/2/1:0)', 'OPS/two.xhtml', ''),
@@ -262,7 +263,7 @@ void main() {
       right: 30 * tester.view.devicePixelRatio,
     );
     addTearDown(tester.view.resetSystemGestureInsets);
-    final reader = await openReader(ControlPort());
+    final reader = await openReader(ControlNavigator());
     reader.acceptVisible(reader.token, inSectionTwo(0));
     await show(tester, reader);
     final track = tester.getRect(find.byType(Slider));
@@ -274,7 +275,7 @@ void main() {
 
   testWidgets('a long chapter title keeps the bar one height, so a drag does '
       'not resize the page above it', (tester) async {
-    final reader = await openReader(ControlPort());
+    final reader = await openReader(ControlNavigator());
     reader.acceptVisible(reader.token, inSectionTwo(.25));
     await show(tester, reader);
     final height = tester.getSize(find.byType(ReaderScrubBar)).height;

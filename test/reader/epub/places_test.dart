@@ -4,15 +4,15 @@ import 'package:bookfin/reader/document.dart';
 import 'package:bookfin/reader/epub/dom.dart';
 import 'package:bookfin/reader/epub/layout.dart';
 import 'package:bookfin/reader/epub/places.dart';
-import 'package:flutter_epub_viewer/navigation.dart';
-import 'package:flutter_epub_viewer/publication.dart';
+import 'package:bookfin/reader/epub/publication.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../tool/showcase_media.dart' as media;
 import 'helpers.dart';
 
-/// The chapter of the engine's layout test (engine/test/layout.test.cjs),
-/// whose fifth harbour passage epub.js saves as `epubcfi(/6/2!/4/26/1:0)`.
+/// The chapter of epub.js's layout test (engine/test/layout.test.cjs, which
+/// tc-rap6 deleted), whose fifth harbour passage epub.js saved as
+/// `epubcfi(/6/2!/4/26/1:0)`.
 String harbour() {
   final paragraphs = List.generate(
     16,

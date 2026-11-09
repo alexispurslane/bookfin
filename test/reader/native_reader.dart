@@ -6,10 +6,10 @@ import 'dart:async';
 
 import 'package:bookfin/foundation/theme.dart';
 import 'package:bookfin/reader/epub/pager.dart';
+import 'package:bookfin/reader/epub/publication.dart';
 import 'package:bookfin/reader/screen.dart';
 import 'package:bookfin/reader/session.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_epub_viewer/publication.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../playback/playback_test.dart' show account, LocalFiles, MemoryResume;

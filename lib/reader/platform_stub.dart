@@ -1,7 +1,6 @@
-import 'package:flutter_epub_viewer/publication.dart';
-
 import '../catalog/model.dart';
 import 'document.dart';
+import 'epub/publication.dart';
 
 Future<ReaderDocument> loadReadingDocument(Uri uri, SourceFile source) async =>
     throw const FormatException(

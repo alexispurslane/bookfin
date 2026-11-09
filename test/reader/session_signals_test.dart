@@ -1,6 +1,7 @@
+import 'package:bookfin/reader/document.dart';
+import 'package:bookfin/reader/epub/publication.dart';
 import 'package:bookfin/reader/session.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_epub_viewer/publication.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../playback/playback_test.dart' show account, LocalFiles, MemoryResume;
@@ -18,7 +19,7 @@ void main() {
     await reader.bind(account(), [book]);
     await reader.open(book, edition);
     navigator = DeferredSearch();
-    reader.attach(reader.token, navigator, []);
+    reader.attachDocument(reader.token, navigator, []);
     await reader.flush();
   }
 
@@ -120,7 +121,7 @@ void main() {
       final searching = reader.search('river');
       expect(reader.searching, isTrue);
       expect(signals.counts, {...Signals.none, 'search': 1, 'session': 1});
-      navigator.calls.single.complete(const SearchReport([]));
+      navigator.calls.single.complete(const ReaderSearchReport([]));
       await searching;
       expect(reader.searching, isFalse);
       expect(signals.counts, {...Signals.none, 'search': 2, 'session': 2});

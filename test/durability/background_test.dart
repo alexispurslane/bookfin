@@ -7,9 +7,9 @@ import 'package:bookfin/catalog/model.dart';
 import 'package:bookfin/main.dart';
 import 'package:bookfin/playback/playback.dart';
 import 'package:bookfin/playback/store.dart';
+import 'package:bookfin/reader/epub/publication.dart';
 import 'package:bookfin/reader/session.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_epub_viewer/publication.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

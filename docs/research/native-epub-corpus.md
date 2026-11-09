@@ -36,8 +36,8 @@ The run admits each book with `Publication.admit`, as Bookfin does. It converts 
 | Admission, conversion, support report, prepare, fonts, layout, places, runs from page starts, drawing | Any exception. The run notes the check, the section and the page settings, and goes on with the next section. |
 | The main run, one flow item per step | The stepped run and a run in one step cut different pages, or `LayoutRun.checkInvariants` fails. |
 | The CFI round trip of every page start | The CFI that Bookfin saves for a page start opens another page. The run also counts the page starts whose CFI and quote come back unchanged. |
-| Blank pages | A page shows no line of text and no image. |
-| A run from a page start | It cuts other pages than the main run, over the 5 pages that it cuts first. A section with more than 100 page starts uses 100 evenly spaced ones, which include its last page (see "Limits"). |
+| Blank pages | A page draws nothing: no line of text, no image and no rule. A page that draws only a rule is not blank, because Chromium shows such pages too (see "Border pages"). |
+| A run from a page start | It cuts other pages than the main run, over the 5 pages that it cuts first. The run starts from every page start of every section. |
 | Drawing | The first, middle and last page of each section draw with their images at 2.625 image pixels per layout pixel. |
 | Support report | It lists the features that the renderer approximates, and the features that it does not support, by section. It is not a failure. |
 | Slow items | It lists each paragraph or table whose layout step takes more than 8 ms, and the layout time per 10,000 visible characters. It is not a failure. |
@@ -76,19 +76,51 @@ The renderer is main at merge 6d5afc1, after tc-z7au (hyphenation), tc-n6wv (fra
 | --- | --- | --- | --- |
 | Exceptions | 0 | | |
 | Broken saved places | 62 page starts at 26 px | Hong Lou Meng (Chinese) | t1-7l9c |
-| Blank pages from a split table row | 8 at 20 px | Hamlet, Plato's Dialogues, Roget's Thesaurus | t1-6ta8 |
-| Pages with only the border of an empty block | 2 at each size | The Divine Comedy, Through the Looking-Glass (Gutenberg) | t1-9vc1 |
+| Blank pages from a split table row | 8 at 20 px (none after t1-6ta8) | Hamlet, Plato's Dialogues, Roget's Thesaurus | t1-6ta8 |
+| Pages with only the border of an empty block | 2 at each size, as in Chromium | The Divine Comedy, Through the Looking-Glass (Gutenberg) | t1-9vc1 |
 | Runs from a page start that differ | 3 at 20 px | The blank pages of Hamlet, Dialogues and Roget's Thesaurus | t1-6ta8 |
-| Slow paragraphs with many lines | Up to 3.6 s in one step | Leaves of Grass (Song of Myself in `pre`), Hong Lou Meng, the index of The Origin of Species, verse with `br` | t1-qtde |
-| Slow tables | Up to 51 s in one step | Roget's Thesaurus, Plato's Dialogues, Ulysses chapter 15, Standard Ebooks plays | t1-um08 |
+| Slow paragraphs with many lines | Up to 3.6 s in one step (318 ms after t1-qtde) | Leaves of Grass (Song of Myself in `pre`), Hong Lou Meng, the index of The Origin of Species, verse with `br` | t1-qtde, tb-2l69 |
+| Slow tables | Up to 51 s in one step (121 ms after t1-um08) | Roget's Thesaurus, Plato's Dialogues, Ulysses chapter 15, Standard Ebooks plays | t1-um08, tb-i6wg, tb-a6zd |
 | Unsupported features | 0 | | |
 
 - Broken saved places. `wordStart` copies epub.js, which saves the first space-delimited word at or after the page start. Chinese text has about one space per 100 characters. At 26 pixels a page holds about 200 characters, so the next space can lie on a later page. Then the saved place opens one or two pages later. The fix changes what Bookfin saves, so t1-7l9c asked for a product choice between two designs. The user chose design B: a page saves its first visible character. After that change, every page start of Hong Lou Meng opens its own page: 2,790 of 2,790 at 360 × 640 at 26 pixels, and 1,368 of 1,368 at 412 × 671 at 20 pixels.
-- Blank pages. A table row taller than a page splits into fragments since te-4cez. A fragment of 10 pixels with no line can become a page of its own. A run from such a page also gives it another visible-character index than the main run.
-- Border pages. A first page that overflows (an image page of 682 pixels, a table page of 704 pixels, on a 671-pixel page) pushes the 2-pixel border of a following empty block onto a page of its own. Nobody knows yet whether Chromium does the same, so t1-9vc1 starts with a comparison.
+- Blank pages. A table row taller than a page splits into fragments since te-4cez. A fragment of 10 pixels with no line can become a page of its own. A run from such a page also gives it another visible-character index than the main run. t1-6ta8 found the cause: when the last lines of a split row fill a page, the cells' bottom padding became a fragment of its own, and a next row taller than a page left that fragment alone on a page. Now that padding is dropped at the break when no cell has a line left, as the space above a line is, so every fragment shows a line. After t1-6ta8, Hamlet, Plato's Dialogues and Roget's Thesaurus have no blank page and no run that cuts other pages, at both page settings, with runs from every page start.
+- Border pages. A first page that overflows (an image page of 682 pixels, a table page of 704 pixels, on a 671-pixel page) pushes the 2-pixel border of a following empty block onto a page of its own. t1-9vc1 compared both sections with the WebView reader: epub.js in headless Chromium at 412 x 671 pixels with 20-pixel text. Chromium also cuts two pages for each section, and its second page shows only a thin rule at its top. So the native cut matches the WebView reader and stays. The blank-page check now counts only pages that draw nothing, and both books pass it.
 - Slow paragraphs. `LayoutRun._lineStarts` asks the engine for one line boundary per line, and the engine builds the metrics of every line on each call. So a paragraph with n lines costs on the order of n squared, and every run that resumes inside it pays again. Song of Myself takes 1,531 ms at 20 pixels and 3,553 ms at 26 pixels in one step.
 - Slow tables. A table is one flow item, so one step lays out the whole table. A run that starts inside a table lays out the whole table again. Standard Ebooks sets dialogue as tables, so Plato's Gorgias is one table of 266,000 characters (706 ms at 20 pixels). Roget's Thesaurus is one table of 1.74 million characters: 8.6 s at 20 pixels and 51 s at 26 pixels.
 - Hyphenation cost. Against the run before the merge, the median layout time per 10,000 characters doubled for the Standard Ebooks books, which ask for hyphenation, and fell to 0.88 times for the Gutenberg books, which do not. The note is on t0-z3m1.
+
+### Layout steps after t1-qtde
+
+t1-qtde finds a paragraph's line starts with one binary search per line (`Paragraph.getLineNumberAt`), not with one `getLineBoundary` call per line. It also counts the visible characters of a long text node from a count kept every 256 code units, and releases pieces once per flow item, not once per page. Each of the three costs grew with the square of a paragraph's lines. The table gives the slowest layout step of each book, in milliseconds, from the corpus run before (under heavy load) and a run of the four books after (load 5 to 15 on 10 cores).
+
+| Book | Section, item | Before, 20 px | Before, 26 px | After, 20 px | After, 26 px |
+| --- | --- | --- | --- | --- | --- |
+| Leaves of Grass (Gutenberg), Song of Myself | 27, 9 | 1,531 | 3,553 | 70 | 318 |
+| Hong Lou Meng | 2, 17 | 1,082 | 1,897 | 57 | 59 |
+| The Origin of Species (Gutenberg), index | 17, 6 | 424 | 656 | 32 | 34 |
+| Pride and Prejudice (Standard Ebooks), Darcy's letter | 36, 19 | 138 | 256 | 107 | 194 |
+
+The rest of these steps is the engine's own work on one paragraph. On a lightly loaded host, Song of Myself takes 96 ms at 20 pixels and 143 ms at 26 pixels, of which `Paragraph.layout` takes 69 ms and 120 ms (tb-2l69). Darcy's letter lays out 20 and 32 times, once more after each word joiner that hyphenation adds (tb-a6zd). The on-demand benchmark `BOOKFIN_EPUB_STEPS=1 flutter test test/reader/epub/step_budget_test.dart` holds the step of a paragraph of 4,000 lines to less than 8 times the step of 1,000 lines. Before t1-qtde the factor was 14 (815 ms and 11,246 ms). After it the factor is 5.5 to 5.7.
+
+### Layout steps after t1-um08
+
+t1-um08 lays out a table one row in each unit of work, so a step stops after the row that crosses its budget. A page start inside a table names a row and a fragment of that row, so a run from it lays out no row above it. The column widths need each row measured: the run measures one row in each unit, once per table item, and other runs of the section reuse the widths. The corpus check now runs from every page start of every section.
+
+The table gives the slowest layout step of a table, in milliseconds, from the corpus run before (under heavy load) and runs after (load 4 to 15 on 10 cores). The Ulysses numbers after come from a run of t1-um08 alone. The others come from a run with t1-6ta8 and t1-9vc1 too, which change no table step.
+
+| Book | Section, item | Before, 20 px | Before, 26 px | After, 20 px | After, 26 px |
+| --- | --- | --- | --- | --- | --- |
+| Roget's Thesaurus | 1, 39 | 8,618 | 51,143 | 10 | 121 |
+| Plato's Dialogues, Gorgias | 21, 458 | 706 | 1,431 | 23 | 41 |
+| Plato's Dialogues, slowest table | | 706 | 1,431 | 89 | 194 |
+| Ulysses (Standard Ebooks), chapter 15 | 18, 6 | 826 | 1,225 | 19 | 25 |
+| Hamlet (Standard Ebooks) | 5, 24 | 86 | 119 | under 8 | under 8 |
+
+- Two kinds of cost remain. Roget's slowest row has about 9,700 characters in 10 to 16 paragraphs, and one unit lays out a whole row (tb-i6wg). The slow rows of Plato's Dialogues are hyphenation passes: one row lays out its paragraphs 158 times (tb-a6zd).
+- At 412 x 671 at 20 pixels, Roget's Thesaurus has two table steps over 8 ms (at most 10 ms), and Gorgias has six (at most 23 ms).
+- With runs from every page start, the six books of the second run (Roget's Thesaurus, Plato's Dialogues, Hamlet, Moby-Dick, The Divine Comedy, Through the Looking-Glass) took 15 minutes together. Before, Roget's Thesaurus alone took 116 minutes with runs from 100 page starts per section.
+- The on-demand benchmark `test/reader/epub/step_budget_test.dart` lays out a dialogue table of 1,000 rows. Before t1-um08, its slowest step took 248 ms, a run from a page start in its middle took 277 ms to its first page, and a place in a late row took 537 ms to open. After it, they take 5 to 9 ms, under 1 ms and under 1 ms.
 
 ### The run before the merge
 
@@ -117,8 +149,8 @@ No book uses a feature that the renderer does not support. The table gives the n
 
 ## Limits
 
-- Runs from page starts. A run that starts inside a long table or a paragraph with many lines lays it out again (t1-um08, t1-qtde). With every page start, Plato's Dialogues took 67 minutes and Roget's Thesaurus did not finish in two hours. So the run limits the runs to 100 evenly spaced page starts per section. When those tickets are fixed, raise the limit (`runsPerSection` in `test/reader/epub/corpus/check.dart`). The CFI round trip still covers every page start.
-- Run time. The run without Roget's Thesaurus takes about 90 minutes on a loaded host, and Roget's Thesaurus alone takes about two hours. Most of the time goes to the books of t1-um08 and t1-qtde.
+- Runs from page starts. A run that starts inside a paragraph lays out the whole paragraph again, so that the orphans and widows rules see it. Since t1-qtde and t1-um08, a run that starts inside a table lays out only its own row, and the run starts from every page start.
+- Run time. Before t1-qtde and t1-um08, the run without Roget's Thesaurus took about 90 minutes on a loaded host, and Roget's Thesaurus alone took about two hours. Nobody ran the whole corpus after them yet.
 - The run measures on the host only. Phone timing is separate work.
 - The run draws three pages of each section. It does not compare the drawing with Chromium. `test/reader/epub/fidelity_test.dart` does that for the trial books.
 - The run does not check right-to-left or vertical text. No book in the corpus uses them.

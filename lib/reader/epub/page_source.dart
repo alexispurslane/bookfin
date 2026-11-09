@@ -18,13 +18,13 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/scheduler.dart';
-import 'package:flutter_epub_viewer/publication.dart';
 
 import 'dom.dart';
 import 'fonts.dart';
 import 'layout.dart';
 import 'paint.dart';
 import 'prepare.dart';
+import 'publication.dart';
 
 /// Runs [step] once, between frames. An [urgent] step runs even while an
 /// animation runs. Other steps wait for idle time.
@@ -707,7 +707,9 @@ class PageSource {
     final prepared = layout.prepared!;
     switch (need) {
       case _LineNeed():
-        need.found = lineStart(prepared, need.place);
+        final search = need.search ??= LineSearch(prepared, need.place);
+        search.step(_stepBudget);
+        need.found = search.found;
       case _PageNeed(:final start):
         final run = _runAt(layout, start);
         run.run.step(_stepBudget, want: 1);
@@ -1164,6 +1166,9 @@ sealed class _Need {
 class _LineNeed extends _Need {
   _LineNeed(super.layout, this.place);
   final EpubPlace place;
+
+  /// The search, which goes on over steps while it measures a table.
+  LineSearch? search;
   PageStart? found;
 }
 

@@ -3,8 +3,7 @@ import 'dart:convert';
 
 import 'package:bookfin/reader/book_map.dart';
 import 'package:bookfin/reader/document.dart';
-import 'package:flutter_epub_viewer/navigation.dart';
-import 'package:flutter_epub_viewer/publication.dart';
+import 'package:bookfin/reader/epub/publication.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'publication_test.dart' show epub;

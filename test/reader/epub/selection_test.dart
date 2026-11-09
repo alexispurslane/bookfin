@@ -11,13 +11,13 @@ import 'package:bookfin/reader/document.dart';
 import 'package:bookfin/reader/epub/dom.dart';
 import 'package:bookfin/reader/epub/page_source.dart';
 import 'package:bookfin/reader/epub/pager.dart';
+import 'package:bookfin/reader/epub/publication.dart';
 import 'package:bookfin/reader/epub/selection.dart';
 import 'package:bookfin/reader/epub/viewport.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_epub_viewer/publication.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'helpers.dart';
