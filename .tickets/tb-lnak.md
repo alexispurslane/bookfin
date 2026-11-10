@@ -1,6 +1,6 @@
 ---
 id: tb-lnak
-status: in_progress
+status: closed
 deps: [tb-z9h5]
 links: [ta-ukpf]
 created: 2026-11-10T12:53:21Z

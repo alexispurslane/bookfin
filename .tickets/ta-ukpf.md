@@ -1,6 +1,6 @@
 ---
 id: ta-ukpf
-status: open
+status: closed
 deps: []
 links: [tb-lnak]
 created: 2026-11-09T19:53:33Z
