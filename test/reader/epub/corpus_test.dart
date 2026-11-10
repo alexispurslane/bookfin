@@ -56,6 +56,11 @@ void main() {
         expect(each.brokenPlaces, isEmpty, reason: settingsName(each.settings));
         expect(each.blankPages, isEmpty, reason: settingsName(each.settings));
         expect(each.runFailures, isEmpty, reason: settingsName(each.settings));
+        expect(
+          each.keptPlaceFailures,
+          isEmpty,
+          reason: settingsName(each.settings),
+        );
       }
     }, timeout: Timeout.none);
   }
@@ -170,6 +175,11 @@ Map<String, Object> _settingsSummary(List<SettingsReport> found) {
     'blankPages': total((each) => each.blankPages.length),
     'runs': total((each) => each.runs),
     'runFailures': total((each) => each.runFailures.length),
+    'keptPlaces': total((each) => each.keptPlaces),
+    'keptPlaceMisses': total((each) => each.keptPlaceMisses),
+    'lineStartDisagreements': total((each) => each.lineStartDisagreements),
+    'mapBytes': total((each) => each.mapBytes),
+    'formatTwoMapBytes': total((each) => each.formatTwoMapBytes),
     'slowItems': total((each) => each.slow.length),
     'layoutMsPer10kMedian': rates.isEmpty ? 0 : rates[rates.length ~/ 2],
     'layoutMsPer10kMax': rates.isEmpty ? 0 : rates.last,

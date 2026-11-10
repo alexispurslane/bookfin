@@ -2256,6 +2256,88 @@ class LayoutRun {
 PageStart lineStart(PreparedSection section, EpubPlace place) =>
     (LineSearch(section, place)..step(const Duration(days: 1))).found!;
 
+/// The page start of the line that holds [place], by the rule of
+/// [lineStart], found among the true pages of its section with no line
+/// search: [starts] are the section's true page starts, and [firsts] the
+/// first place of each page ([LaidPage.startPlace]). [pageAt] gives the
+/// true page of an index of [starts], or null to stop the search, and then
+/// the search gives null.
+///
+/// A binary search over [firsts] finds the first page to look at. When
+/// [place] lies after everything that it shows, a later page holds it. The
+/// pages that show the fragments of one table row taller than a page are
+/// looked at together, because their lines interleave: a later cell of the
+/// row shows on the row's first page, while its first cell goes on over the
+/// next pages.
+Future<PageStart?> keptLineStart(
+  DomSection dom,
+  List<PageStart> starts,
+  List<EpubPlace?> firsts,
+  EpubPlace place,
+  Future<LaidPage?> Function(int index) pageAt,
+) async {
+  // The line that shows the last thing before [place], when [place] lies
+  // after everything that every page from the first one shows.
+  PageStart? last;
+  var at = _firstPageFor(dom, firsts, place);
+  while (at < starts.length) {
+    var first = at;
+    while (first > 0 && starts[first].part > 0) {
+      first--;
+    }
+    var end = at + 1;
+    while (end < starts.length && starts[end].part > 0) {
+      end++;
+    }
+    final lines = <(Slice, Slice)>[];
+    for (var index = first; index < end; index++) {
+      final page = await pageAt(index);
+      if (page == null) return null;
+      for (final slice in page.slices) {
+        for (final line in _lines(slice)) {
+          lines.add((line, slice));
+        }
+      }
+    }
+    final (:holder, :past) = _holder(dom, place, lines);
+    if (holder != null) {
+      if (!past) return holder.at;
+      last = holder.at;
+    }
+    at = end;
+  }
+  return last ?? starts.first;
+}
+
+/// The index of the page to look at first for the page that holds [place],
+/// a place of the section of [dom], among the pages whose first places are
+/// [firsts], in order: the last page whose first place is at or before
+/// [place] in document order, or 0. A page with no first place counts as
+/// starting at the next first place, so that a search passes it by.
+int _firstPageFor(DomSection dom, List<EpubPlace?> firsts, EpubPlace place) {
+  final key = _order(dom, place);
+  bool atOrBefore(int index) {
+    for (var at = index; at < firsts.length; at++) {
+      if (firsts[at] case final first?) {
+        return _compare(_order(dom, first), key) <= 0;
+      }
+    }
+    return false;
+  }
+
+  var low = 0;
+  var high = firsts.length - 1;
+  while (low < high) {
+    final middle = (low + high + 1) >> 1;
+    if (atOrBefore(middle)) {
+      low = middle;
+    } else {
+      high = middle - 1;
+    }
+  }
+  return low;
+}
+
 /// The search of [lineStart] in steps, so that frames go on while it
 /// measures the column widths of a long table, or counts the lines of the
 /// segments of a long paragraph before the place.

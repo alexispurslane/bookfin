@@ -3,8 +3,13 @@
 //
 // The checks that the corpus run makes on each book. Each check catches
 // its own exceptions, so that one broken section does not hide the others.
+import 'dart:io';
+import 'dart:math' as math;
+
+import 'package:bookfin/reader/epub/dom.dart';
 import 'package:bookfin/reader/epub/fonts.dart';
 import 'package:bookfin/reader/epub/layout.dart';
+import 'package:bookfin/reader/epub/page_maps.dart';
 import 'package:bookfin/reader/epub/paint.dart';
 import 'package:bookfin/reader/epub/places.dart';
 import 'package:bookfin/reader/epub/prepare.dart';
@@ -93,6 +98,23 @@ class SettingsReport {
   /// The pages that draw nothing: no line of text, no image and no rule.
   final blankPages = <String>[];
 
+  /// The places in pages that the lookup of a kept page map searched for
+  /// (t5-q0hs), and those for which it found another page than lineStart
+  /// and the true page start before it. A miss where the lookup finds the
+  /// page that [ChapterLayout.pageAt] names, the page whose lines show the
+  /// place, is lineStart's disagreement, not the lookup's failure
+  /// (t5-odvj). Only the first 20 of each are listed.
+  int keptPlaces = 0;
+  int keptPlaceMisses = 0;
+  final keptPlaceFailures = <String>[];
+  int lineStartDisagreements = 0;
+  final lineStartDisagreementPlaces = <String>[];
+
+  /// The bytes of the book's page map in its format, and in format 2,
+  /// which kept the page starts only.
+  int mapBytes = 0;
+  int formatTwoMapBytes = 0;
+
   /// The runs from a page start, the pages that they cut, and the runs
   /// that cut other pages than the main run.
   int runs = 0;
@@ -125,6 +147,13 @@ class SettingsReport {
     'sameQuote': sameQuote,
     'brokenPlaces': brokenPlaces,
     'blankPages': blankPages,
+    'keptPlaces': keptPlaces,
+    'keptPlaceMisses': keptPlaceMisses,
+    'keptPlaceFailures': keptPlaceFailures,
+    'lineStartDisagreements': lineStartDisagreements,
+    'lineStartDisagreementPlaces': lineStartDisagreementPlaces,
+    'mapBytes': mapBytes,
+    'formatTwoMapBytes': formatTwoMapBytes,
     'runs': runs,
     'pagesCompared': pagesCompared,
     'runFailures': runFailures,
@@ -156,7 +185,8 @@ class BookReport {
         (report) =>
             report.brokenPlaces.isEmpty &&
             report.blankPages.isEmpty &&
-            report.runFailures.isEmpty,
+            report.runFailures.isEmpty &&
+            report.keptPlaceMisses == 0,
       );
 
   Map<String, Object?> toJson() => {
@@ -214,6 +244,7 @@ Future<BookReport> checkBook(
   for (final page in settings) {
     final found = SettingsReport(page);
     report.settings.add(found);
+    final kept = <KeptSection>[];
     for (var index = 0; index < book.sections; index++) {
       void caught(String check, Object error, StackTrace stack) =>
           report.exceptions.add(
@@ -250,10 +281,16 @@ Future<BookReport> checkBook(
         continue;
       }
       found.pages += chapter.pages.length;
+      kept.add(_kept(chapter));
       try {
         _checkPlaces(book, chapter, found);
       } catch (error, stack) {
         caught('places', error, stack);
+      }
+      try {
+        await _checkKeptPlaces(chapter, found);
+      } catch (error, stack) {
+        caught('kept places', error, stack);
       }
       try {
         _checkRuns(chapter, found, compared);
@@ -267,8 +304,97 @@ Future<BookReport> checkBook(
       }
       chapter.dispose();
     }
+    if (kept.length == book.sections) {
+      try {
+        await _measureMap(book, page, kept, found);
+      } catch (error, stack) {
+        report.exceptions.add(
+          CaughtException('page map', error, stack, settings: page),
+        );
+      }
+    }
   }
   return report;
+}
+
+/// The kept page map section of [chapter], with the visible starts that
+/// the page index keeps: from 0, never going back.
+KeptSection _kept(ChapterLayout chapter) {
+  final visible = <int>[];
+  for (final page in chapter.pages) {
+    visible.add(
+      visible.isEmpty ? 0 : math.max(page.startVisible, visible.last),
+    );
+  }
+  return KeptSection(
+    [for (final page in chapter.pages) page.start],
+    firsts: [for (final page in chapter.pages) page.startPlace],
+    visible: (starts: visible, length: chapter.section.dom.visibleLength),
+    complete: true,
+  );
+}
+
+/// Writes the page map of [sections] as Bookfin keeps it, and records its
+/// size, and the size that format 2 gave it: the same bytes without each
+/// page's first place and visible start, and each section's length.
+Future<void> _measureMap(
+  CorpusBook book,
+  PageSettings settings,
+  List<KeptSection> sections,
+  SettingsReport found,
+) async {
+  final folder = await Directory.systemTemp.createTemp('bookfin-corpus-map-');
+  try {
+    final download = await File('${folder.path}/complete').writeAsBytes([0]);
+    final key = PageMapKey(
+      book: book.publication.identity,
+      width: settings.width,
+      height: settings.height,
+      textSize: settings.fontSize,
+      sizesMainText: settings.sizesMainText,
+      engine: 'corpus',
+    );
+    await PageMaps.write(download, key, sections);
+    final files = [
+      await for (final entry in Directory(
+        '${folder.path}/.bookfin-layout',
+      ).list())
+        if (entry is File && entry.path.endsWith('.map')) entry,
+    ];
+    found.mapBytes = await files.single.length();
+    var added = 0;
+    for (final section in sections) {
+      var node = 0;
+      var characters = 0;
+      for (final (index, first) in section.firsts.indexed) {
+        if (first == null) {
+          added += 1;
+        } else {
+          final step = first.node - node;
+          added +=
+              _leb128(step >= 0 ? step * 2 + 1 : -step * 2) +
+              _leb128(first.offset);
+          node = first.node;
+        }
+        added += _leb128(section.visible.starts[index] - characters);
+        characters = section.visible.starts[index];
+      }
+      added += _leb128(section.visible.length - characters);
+    }
+    found.formatTwoMapBytes = found.mapBytes - added;
+  } finally {
+    await folder.delete(recursive: true);
+  }
+}
+
+/// The bytes of [value] as an unsigned variable-length integer.
+int _leb128(int value) {
+  var bytes = 1;
+  while (value >= 0x80) {
+    value >>= 7;
+    bytes++;
+  }
+  return bytes;
 }
 
 final _watch = Stopwatch()..start();
@@ -373,6 +499,77 @@ void _checkPlaces(
     }
     if (cfiOf(book.spine(index), dom, back) == cfi) found.sameCfi++;
     if (quoteAt(dom, back) == quoteAt(dom, place)) found.sameQuote++;
+  }
+}
+
+/// The lookup of a kept page map finds the same page as lineStart and the
+/// true page start before it, for places in every page: the page's first
+/// and last place, the place after its last, and the start and the middle
+/// of its middle line.
+Future<void> _checkKeptPlaces(
+  ChapterLayout chapter,
+  SettingsReport found,
+) async {
+  final section = chapter.section;
+  final dom = section.dom;
+  final pages = chapter.pages;
+  final starts = [for (final page in pages) page.start];
+  final firsts = [for (final page in pages) page.startPlace];
+  int trueIndex(PageStart line) {
+    var low = 0;
+    var high = starts.length - 1;
+    while (low < high) {
+      final middle = (low + high + 1) >> 1;
+      if (starts[middle].compareTo(line) <= 0) {
+        low = middle;
+      } else {
+        high = middle - 1;
+      }
+    }
+    return low;
+  }
+
+  for (final (index, page) in pages.indexed) {
+    final lines = [
+      for (final slice in page.slices)
+        for (final line
+            in slice.cellSlices.isEmpty ? [slice] : slice.cellSlices)
+          if (line.start != null) line,
+    ];
+    final middle = lines.isEmpty ? null : lines[lines.length ~/ 2];
+    final (unitStart, unitEnd) = middle?.units ?? (0, 0);
+    final places = {
+      ?page.startPlace,
+      ?page.endPlace,
+      if (page.endPlace case final end?)
+        EpubPlace(end.section, end.node, end.offset + 1),
+      ?middle?.start,
+      ?middle?.piece?.map.textPlaceAt((unitStart + unitEnd) ~/ 2),
+    };
+    for (final place in places) {
+      found.keptPlaces++;
+      final expected = trueIndex(lineStart(section, place));
+      final line = await keptLineStart(
+        dom,
+        starts,
+        firsts,
+        place,
+        (index) async => pages[index],
+      );
+      final at = trueIndex(line!);
+      if (at == expected) continue;
+      final shown = chapter.pageAt(place);
+      final (count, listed) = at == shown
+          ? (++found.lineStartDisagreements, found.lineStartDisagreementPlaces)
+          : (++found.keptPlaceMisses, found.keptPlaceFailures);
+      if (count <= 20) {
+        listed.add(
+          'section ${section.index} page $index: $place is on page '
+          '$expected by lineStart and on page $shown by its lines, the '
+          'lookup finds page $at',
+        );
+      }
+    }
   }
 }
 

@@ -29,6 +29,34 @@ const _engine = 'install-1\nbuild-1\nen-US';
 Publication _sixSections() =>
     book([for (var i = 0; i < 6; i++) paragraphs(16, label: 'S$i')]);
 
+/// A book of three sections whose middle one mixes short paragraphs, white
+/// space between blocks, and a table, so that some places lie in white
+/// space between two pages.
+Publication _mixedSections() => book([
+  paragraphs(6, label: 'A'),
+  [
+    '<h2>Middle</h2>',
+    for (var i = 0; i < 30; i++) '<p>${prose(i % 3 + 1, 'M $i')}</p>',
+    '<table>',
+    for (var i = 0; i < 24; i++)
+      '<tr><td>Row $i</td><td>${prose(1, 'Cell $i')}</td></tr>',
+    '</table>',
+    for (var i = 30; i < 50; i++) '<p>${prose(i % 4 + 1, 'M $i')}</p>',
+  ].join('\n  '),
+  paragraphs(6, label: 'C'),
+]);
+
+/// [section] without its page [index], as a map that missed a page start.
+KeptSection _leaveOut(KeptSection section, int index) => KeptSection(
+  [...section.starts]..removeAt(index),
+  firsts: [...section.firsts]..removeAt(index),
+  visible: (
+    starts: [...section.visible.starts]..removeAt(index),
+    length: section.visible.length,
+  ),
+  complete: section.complete,
+);
+
 /// A download in a folder of its own, as Downloads keeps it.
 Future<File> _download() async {
   final folder = await Directory.systemTemp.createTemp('bookfin-map-open-');
@@ -140,9 +168,14 @@ void main() {
     await scheduler.settle();
     final sections = [
       for (var index = 0; index < 6; index++)
-        KeptSection([
-          for (final page in await pagesOf(source, index)) page.start,
-        ], complete: true),
+        if (await pagesOf(source, index) case final pages)
+          KeptSection(
+            [for (final page in pages) page.start],
+            firsts: [for (final page in pages) page.startPlace],
+            // The page index's visible starts, which the scrub bar reads.
+            visible: source.bookPages.value.parts[index]!.visible!,
+            complete: true,
+          ),
     ];
 
     await _eventually(() async => await pageMaps.read(readerPage) != null);
@@ -211,7 +244,7 @@ void main() {
     // Section 2's map leaves out its third page start, so its second page
     // seems to run on to the fourth.
     final wrong = [...truth];
-    wrong[2] = KeptSection([...truth[2].starts]..removeAt(2), complete: true);
+    wrong[2] = _leaveOut(truth[2], 2);
     await pageMaps.write(readerPage, wrong);
 
     final source = open(publication, pageMaps: pageMaps);
@@ -242,7 +275,7 @@ void main() {
     final wrong = [
       for (final (index, section) in truth.indexed)
         index.isOdd && section.starts.length > 2
-            ? KeptSection([...section.starts]..removeAt(1), complete: true)
+            ? _leaveOut(section, 1)
             : section,
     ];
 
@@ -279,7 +312,7 @@ void main() {
     final anchored = content(await pageAt(plain, place));
     final pageMaps = mapsOf(publication);
     final wrong = [...truth];
-    wrong[2] = KeptSection([...truth[2].starts]..removeAt(2), complete: true);
+    wrong[2] = _leaveOut(truth[2], 2);
     await pageMaps.write(readerPage, wrong);
 
     final source = open(publication, pageMaps: pageMaps);
@@ -290,11 +323,223 @@ void main() {
     await _eventually(() async => await pageMaps.read(readerPage) == null);
   });
 
+  /// The places of section [index] of [source]: the start, the middle and
+  /// the end of each of its text nodes, white space included.
+  Future<List<EpubPlace>> placesOf(PageSource source, int index) async {
+    final dom = (await scheduler.until(source.section(index))).dom;
+    return [
+      for (final text in dom.texts)
+        for (final offset in {0, text.text.length ~/ 2, text.text.length})
+          EpubPlace(index, text.order, offset),
+    ];
+  }
+
+  /// The places of section [section] that [pick] picks, the true page that
+  /// holds each of them in a book laid out with no kept map, the page that
+  /// the anchored request of a source with [publication]'s kept map opens,
+  /// and that source.
+  Future<(List<EpubPlace>, List<LaidPage>, List<LaidPage>, PageSource)>
+  openBoth(
+    Publication publication,
+    List<EpubPlace> Function(List<EpubPlace> all) pick,
+    int section,
+  ) async {
+    await layOutWhole(publication);
+    final plain = open(publication);
+    final places = pick(await placesOf(plain, section));
+    final expected = [
+      for (final place in places)
+        await scheduler.until(plain.pageAt(place, anchored: false)),
+    ];
+    final seeded = open(publication, pageMaps: mapsOf(publication));
+    await scheduler.until(seeded.section(section));
+    final found = [for (final place in places) await pageAt(seeded, place)];
+    return (places, expected, found, seeded);
+  }
+
+  test('a jump into a seeded section finds its page without a line '
+      'search', () async {
+    final publication = _sixSections();
+    final (_, expected, found, source) = await openBoth(
+      publication,
+      (all) => [all[all.length * 3 ~/ 5]],
+      3,
+    );
+
+    expect(content(found.single), content(expected.single));
+    expect(source.isTrue(found.single), isTrue);
+    expect(source.numberOf(found.single)?.count, isNotNull);
+    expect(source.lineSearches, 0);
+  });
+
+  test('every place of a seeded section opens the true page that holds it, '
+      'as with no kept map', () async {
+    final publication = _mixedSections();
+    final (_, expected, found, source) = await openBoth(
+      publication,
+      (all) => all,
+      1,
+    );
+
+    expect(
+      [for (final page in found) content(page)],
+      [for (final page in expected) content(page)],
+    );
+    expect(source.lineSearches, 0);
+    source.checkInvariants();
+  });
+
+  test('a place after the last shown place of a kept page opens on the next '
+      'page', () async {
+    final publication = _mixedSections();
+    final (places, expected, found, source) = await openBoth(
+      publication,
+      (all) => all,
+      1,
+    );
+    // The places that come before the first place of the page that holds
+    // them: white space after the last thing that the page before shows.
+    final next = [
+      for (final (index, page) in expected.indexed)
+        if (page.start != const PageStart(0, 0) &&
+            page.startPlace!.compareTo(places[index]) > 0)
+          index,
+    ];
+
+    expect(next, isNotEmpty);
+    expect(
+      [for (final index in next) content(found[index])],
+      [for (final index in next) content(expected[index])],
+    );
+    expect(source.lineSearches, 0);
+  });
+
+  test('a place in a later cell of a table row split across pages opens '
+      'the page that shows it', () async {
+    // The first cell of each row runs on to a second page, and the second
+    // cell shows on the first page.
+    final publication = book([
+      '<table>${[for (var i = 0; i < 3; i++) '<tr><td>${prose(40, 'Long $i')}</td><td>${prose(1, 'Short $i')}</td></tr>'].join()}</table>',
+    ]);
+    final (places, expected, found, source) = await openBoth(
+      publication,
+      (all) => all,
+      0,
+    );
+    final split = [
+      for (final (index, page) in expected.indexed)
+        if (page.startPlace case final first?
+            when first.compareTo(places[index]) < 0 &&
+                expected.any(
+                  (other) =>
+                      other.start.part > 0 &&
+                      other.startPlace!.compareTo(places[index]) < 0 &&
+                      other.start.compareTo(page.start) > 0,
+                ))
+          index,
+    ];
+
+    expect(split, isNotEmpty);
+    expect(
+      [for (final page in found) content(page)],
+      [for (final page in expected) content(page)],
+    );
+    expect(source.lineSearches, 0);
+  });
+
+  test('the scrub bar names the page under the finger in a seeded '
+      'section', () async {
+    final publication = _sixSections();
+    await layOutWhole(publication);
+    final plain = open(publication);
+    plain.show(await pageAt(plain, await startOf(plain, 0)));
+    await scheduler.settle();
+    final laidOut = plain.bookPages.value;
+
+    final seeded = open(publication, pageMaps: mapsOf(publication));
+    final page = await pageAt(seeded, await startOf(seeded, 2));
+    final index = seeded.bookPages.value;
+
+    expect(seeded.isTrue(page), isTrue);
+    expect(index.complete, isTrue);
+    // The scrub bar places each page by where it starts in the part's
+    // visible characters (BookMap).
+    for (var part = 0; part < 6; part++) {
+      expect(index.parts[part]?.visible, isNotNull);
+      expect(
+        index.parts[part]!.visible!.starts,
+        laidOut.parts[part]!.visible!.starts,
+      );
+      expect(
+        index.parts[part]!.visible!.length,
+        laidOut.parts[part]!.visible!.length,
+      );
+    }
+  });
+
+  test('a viewed page whose first place disagrees with the map forgets '
+      'it', () async {
+    final publication = _sixSections();
+    final (truth, _) = await layOutWhole(publication);
+    final pageMaps = mapsOf(publication);
+    final kept = truth[2];
+    final moved = kept.firsts[1]!;
+    final wrong = [...truth];
+    wrong[2] = KeptSection(
+      kept.starts,
+      firsts: [...kept.firsts]
+        ..[1] = EpubPlace(moved.section, moved.node, moved.offset + 1),
+      visible: kept.visible,
+      complete: true,
+    );
+    await pageMaps.write(readerPage, wrong);
+
+    final source = open(publication, pageMaps: pageMaps);
+    var dropped = 0;
+    source.keptMapDropped.addListener(() => dropped++);
+    final first = await pageAt(source, await startOf(source, 2));
+    source.show(first);
+    expect(dropped, 0);
+    final second = (await scheduler.until(source.after(first)))!;
+
+    expect(second.start, kept.starts[1]);
+    expect(dropped, 1);
+    await _eventually(() async => await pageMaps.read(readerPage) == null);
+  });
+
   test('a kept map with another number of sections is not used', () async {
     final publication = _sixSections();
     final (truth, _) = await layOutWhole(publication);
     final pageMaps = mapsOf(publication);
     await pageMaps.write(readerPage, truth.take(5).toList());
+
+    final source = open(publication, pageMaps: pageMaps);
+    final page = await pageAt(
+      source,
+      placeIn(await scheduler.until(source.section(1)), .5),
+    );
+
+    expect(source.numberOf(page), isNull);
+    expect(source.laidOut(5), isFalse);
+  });
+
+  test('a kept map whose section does not start at its first visible '
+      'character is not used', () async {
+    final publication = _sixSections();
+    final (truth, _) = await layOutWhole(publication);
+    final pageMaps = mapsOf(publication);
+    final kept = truth[1];
+    final wrong = [...truth];
+    wrong[1] = KeptSection(
+      kept.starts,
+      firsts: kept.firsts,
+      visible: (
+        starts: [for (final start in kept.visible.starts) start + 1],
+        length: kept.visible.length + 1,
+      ),
+      complete: true,
+    );
+    await pageMaps.write(readerPage, wrong);
 
     final source = open(publication, pageMaps: pageMaps);
     final page = await pageAt(
@@ -428,7 +673,7 @@ void main() {
           sections.fold(0, (sum, section) => sum + section.starts.length);
       final pageMaps = mapsOf(publication);
       final wrong = [...truth];
-      wrong[0] = KeptSection([...truth[0].starts]..removeAt(2), complete: true);
+      wrong[0] = _leaveOut(truth[0], 2);
       await pageMaps.write(readerPage, wrong);
 
       final pager = openPager(publication, pageMaps: pageMaps);
@@ -474,11 +719,20 @@ void main() {
         // with the map, and its neighbor, the second page, contradicts it.
         final wrong = [...truth];
         final extra = truth[3].starts[2];
-        wrong[3] = KeptSection([
-          ...truth[3].starts.take(2),
-          PageStart(extra.item, extra.line - 1),
-          ...truth[3].starts.skip(2),
-        ], complete: true);
+        wrong[3] = KeptSection(
+          [
+            ...truth[3].starts.take(2),
+            PageStart(extra.item, extra.line - 1),
+            ...truth[3].starts.skip(2),
+          ],
+          firsts: [...truth[3].firsts]..insert(2, truth[3].firsts[1]),
+          visible: (
+            starts: [...truth[3].visible.starts]
+              ..insert(2, truth[3].visible.starts[1]),
+            length: truth[3].visible.length,
+          ),
+          complete: true,
+        );
         expect(extra.line, greaterThan(0));
         await pageMaps.write(readerPage, wrong);
         final pager = openPager(publication, pageMaps: pageMaps);

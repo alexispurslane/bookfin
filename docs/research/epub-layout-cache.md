@@ -60,7 +60,37 @@ The line search (`LineSearch` in layout.dart) finds the page start of the line t
 - A long paragraph. The search counts the lines of its segments before the place. Standard Ebooks' Ulysses took 164 ms, Bleak House 63 ms.
 - A table. The search measures every row of the table for its column widths first. Roget's Thesaurus took 2,502 ms for the middle of its largest section, which is one table of 1,187 cells.
 
-A page map that also keeps each true page's first place (`LaidPage.startPlace`) finds the true page of a place by a binary search. The page source then lays out that one page and makes sure that it holds the place. If the place is after the page's last shown place, the page after it holds the place. The equivalence of this lookup with `lineStart` and `trueStart` was not measured. Its ticket below makes it a corpus test.
+A page map that also keeps each true page's first place (`LaidPage.startPlace`) finds the true page of a place by a binary search. The page source then lays out that one page and makes sure that it holds the place. If the place is after the page's last shown place, the page after it holds the place.
+
+t5-q0hs built this lookup (`firstPageFor` and `LaidPage.lineOf` in layout.dart). The corpus run checks it against `lineStart` and the true page start before the line (see "Results of t5-q0hs" below). But the lookup does not remove the slow part of a jump into a long paragraph or a table. A page cut from a kept start inside a long paragraph counts the lines of the paragraph's earlier segments. A page cut inside a table measures the whole table. The line search does the same work, and both keep the result in one cache on the item. So the page from the kept start costs what the line search cost, and a page after a line search costs almost nothing. t5-s1vy (table cell widths) and t5-lfsm (the line counts of long paragraphs) keep those results in the map.
+
+### Results of t5-q0hs
+
+The corpus run (`BOOKFIN_EPUB_CORPUS=1`, 2026-11-09) checks the lookup at five places on every page: the page's first and last place, the place after its last, and the start and the middle of its middle line. It compares the lookup's page with the true page that holds the line that `lineStart` gives.
+
+| Settings | Pages | Places checked | Lookup misses | `lineStart` disagreements | Map bytes, format 2 | Map bytes, format 3 |
+| --- | --- | --- | --- | --- | --- | --- |
+| 412 × 671 @ 20 | 124,643 | 620,791 | 0 | 0 | 393,168 (3.2 a page) | 955,814 (7.7 a page) |
+| 360 × 640 @ 26 | 251,302 | 1,253,453 | 0 | 2 | 773,463 (3.1 a page) | 1,895,638 (7.5 a page) |
+
+The median map of a book grows from 2.5 KB to 6.0 KB at 412 × 671 @ 20. The largest map grows from 70.5 KB to 176 KB (Plato's Dialogues at 360 × 640 @ 26). A map of 175 KB reads in 2 ms and writes in 4 ms on the host, file access included.
+
+The two disagreements are in Gutenberg's Leaves of Grass (Kindle file), section 188. Page 44 ends with a line of only white space, and the line search picks it for a place on the first line of page 45. The lookup finds page 45, which shows the place, as `ChapterLayout.pageAt` does. t5-odvj fixes the line search.
+
+Two kinds of page made the first form of the lookup miss, and the lookup now handles both:
+
+- A table row taller than a page. Its fragments interleave over pages: a later cell of the row shows on the row's first page, while its first cell goes on over the next pages, whose first places are earlier. The lookup looks at all pages of a split row together (Standard Ebooks' Wealth of Nations, section 44).
+- A place after everything that the rest of a section shows, before a last page that shows nothing. Its line is the last line that shows something (Gutenberg's Divine Comedy, section 2).
+
+A jump to the true page at the middle of the largest section, after the section's prepare, on the host with a load of 5 to 7 (`test/reader/epub/page_map_jump_test.dart`), in milliseconds:
+
+| Book | No map, true page | No map, page at the line | With a map, true page |
+| --- | --- | --- | --- |
+| Gutenberg's Roget's Thesaurus (section 1) | 1,724 / 1,748 | 978 / 948 | 919 / 1,006 |
+| Standard Ebooks' Ulysses (section 18) | 316 / 349 | 134 / 150 | 135 / 149 |
+| Standard Ebooks' Bleak House (section 57) | 32 / 33 | 5 / 4 | 4 / 4 |
+
+With a map, a jump does no line search and gives the true page at the cost of the page at the line. A format 2 map gave the true page at that cost too, through the line search, so this ticket makes no jump faster. The page from a kept start inside a table or a long paragraph does the work that the line search did: it measures the table, or it counts the lines of the paragraph's earlier segments. t5-s1vy and t5-lfsm keep those results in the map.
 
 ### Table cell widths
 

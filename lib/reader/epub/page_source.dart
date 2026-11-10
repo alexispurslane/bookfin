@@ -78,14 +78,18 @@ class PageRequestStopped implements Exception {
 ///
 /// A book with kept page maps ([BookPageMaps]) reads the map of each
 /// settings value when the settings come into use, beside the first page's
-/// prepare. The map's true page starts seed each section that no run
-/// started, so the section counts as laid out: its page numbers are known
-/// at once, and the whole-book work neither prepares nor lays it out. Each
-/// page that a run cuts from a seeded start checks that the next seeded
-/// start follows it. The first page that contradicts the map forgets it:
-/// the seeded starts drop, the file goes, and the whole book is laid out
-/// again. Once every section's main run ended and no section is seeded,
-/// the source keeps the map.
+/// prepare. The map's true pages seed each section that no run started,
+/// so the section counts as laid out: its page numbers and where its pages
+/// start in its text are known at once, and the whole-book work neither
+/// prepares nor lays it out. A place in a seeded section finds its page by
+/// the pages' kept first places, with no line search ([keptLineStart]):
+/// the source lays out that page, and the next one when the place lies
+/// after everything that the page shows. Each page that a run cuts from a seeded start checks
+/// that its first place is the kept one and that the next seeded start
+/// follows it. The first page that contradicts the map forgets it: the
+/// seeded pages drop, the file goes, and the whole book is laid out again.
+/// Once every section's main run ended and no section is seeded, the source
+/// keeps the map.
 ///
 /// It keeps the work of the current page settings and of the previous
 /// ones, so that a change back costs no worker call. The previous settings
@@ -109,9 +113,8 @@ class PageRequestStopped implements Exception {
 ///   counts as ended. Kept maps are read only for the current and the
 ///   previous settings.
 /// - Every request of the work around the shown page is in progress.
-/// - Each true page start of a section that no kept map seeded has its
-///   visible start, and a section whose main run ended lists them in the
-///   page index. A seeded section lists its page count only.
+/// - Each true page start has its first place and its visible start, and
+///   a section whose main run ended lists them in the page index.
 /// - The published page index is the current settings' one.
 class PageSource {
   /// The pages of [publication]. [schedule] runs each layout step; it
@@ -286,9 +289,6 @@ class PageSource {
     final layout = _layoutFor(place.section, _current);
     return _ask(urgent ? _Rank.asked : _Rank.waiting, abandon, (request) async {
       final line = await _lineStart(layout, place, request);
-      // The read of the kept page map ran beside the prepare and the line
-      // search, so it has nearly always ended.
-      await _reading[layout.settings];
       Future<LaidPage> resolve() async {
         if (!anchored) await _known(layout, line, request);
         return _resolve(layout, line, request);
@@ -389,6 +389,11 @@ class PageSource {
 
   /// The number of kept maps that pages contradicted.
   final _keptMapDropped = ValueNotifier(0);
+
+  /// The number of line searches that requests started, for tests.
+  @visibleForTesting
+  int get lineSearches => _lineSearches;
+  int _lineSearches = 0;
 
   /// The page that [show] showed last, while it is in the cache.
   LaidPage? get shown => _pages[_shown]?.page;
@@ -543,16 +548,15 @@ class PageSource {
         );
       }
       check(
-        layout.visibleStarts.length ==
-            (layout.seeded ? 0 : layout.starts.length),
-        'a true page start of section $index has no visible start',
+        layout.visibleStarts.length == layout.starts.length &&
+            layout.firsts.length == layout.starts.length,
+        'a true page start of section $index has no first place or no '
+        'visible start',
       );
       if (layout.pages case final pages?) {
         check(
           pages.count == layout.starts.length &&
-              (layout.seeded
-                  ? pages.visible == null
-                  : listEquals(pages.visible?.starts, layout.visibleStarts)),
+              listEquals(pages.visible?.starts, layout.visibleStarts),
           'the page index of section $index is not its true pages',
         );
       }
@@ -813,11 +817,35 @@ class PageSource {
     }
   }
 
+  /// The page start of the line that holds [place]. In a section that a
+  /// kept map seeded, the kept first places find the page that holds it
+  /// ([keptLineStart]), and only the pages that it looks at are laid out.
+  /// Elsewhere, and once a page contradicts the map, a line search finds
+  /// it.
   Future<PageStart> _lineStart(
     _SectionLayout layout,
     EpubPlace place,
     _Request request,
   ) async {
+    final prepared = await _ready(layout, request);
+    // The read of the kept page map ran beside the prepare, so it has
+    // nearly always ended.
+    await _reading[layout.settings];
+    if (layout.seeded) {
+      final line = await keptLineStart(
+        prepared.dom,
+        layout.starts,
+        layout.firsts,
+        place,
+        (index) async {
+          final page = await _page(layout, layout.starts[index], request);
+          // A page that contradicted the map forgot it, and the seeded
+          // pages with it.
+          return layout.seeded ? page : null;
+        },
+      );
+      if (line != null) return line;
+    }
     final need = _LineNeed(layout, place);
     while (need.found == null) {
       await _ready(layout, request);
@@ -927,7 +955,10 @@ class PageSource {
     final prepared = layout.prepared!;
     switch (need) {
       case _LineNeed():
-        final search = need.search ??= LineSearch(prepared, need.place);
+        final search = need.search ??= () {
+          _lineSearches++;
+          return LineSearch(prepared, need.place);
+        }();
         search.step(_stepBudget);
         need.found = search.found;
       case _PageNeed(:final start):
@@ -983,7 +1014,7 @@ class PageSource {
           ? fresh[index + 1].start
           : run.run.next;
       if (next != null) layout.following[page.start] = next;
-      if (layout.seeded && !layout.agrees(page.start, next)) {
+      if (layout.seeded && !layout.agrees(page, next)) {
         _forgetMap(layout.settings);
       }
       if (run.main) {
@@ -999,6 +1030,7 @@ class PageSource {
                 ? 0
                 : math.max(page.startVisible, layout.visibleStarts.last),
           );
+          layout.firsts.add(page.startPlace);
           layout.starts.add(page.start);
         }
         if (page.last) {
@@ -1006,7 +1038,12 @@ class PageSource {
         }
       }
     }
-    if (!ended && layout.mainDone) _keepMap(layout.settings);
+    if (!ended && layout.mainDone) {
+      if (layout.settings == _settings) {
+        _bookPages.value = _bookPagesIn(_settings);
+      }
+      _keepMap(layout.settings);
+    }
     for (final page in fresh) {
       if (!run.main || _wanted(layout, page.start)) {
         _insert(layout, page);
@@ -1043,10 +1080,10 @@ class PageSource {
   }
 
   /// Marks the main run of [layout] as ended, so that its true page starts
-  /// and their visible starts are all known, and publishes the page index.
-  /// [length] is the section's number of visible characters. A section
-  /// whose starts come from elsewhere, such as a kept page map, ends here
-  /// too, and then counts as laid out.
+  /// and their visible starts are all known. [length] is the section's
+  /// number of visible characters. A section whose pages come from a kept
+  /// page map ends here too, and then counts as laid out. The caller
+  /// publishes the page index.
   void _finish(_SectionLayout layout, {required int length}) {
     layout.pages = (
       count: layout.starts.length,
@@ -1055,9 +1092,6 @@ class PageSource {
         length: length,
       ),
     );
-    if (layout.settings == _settings) {
-      _bookPages.value = _bookPagesIn(_settings);
-    }
   }
 
   /// The page index of [settings]: the true pages of each section whose
@@ -1106,9 +1140,9 @@ class PageSource {
         );
   }
 
-  /// Gives each section of [settings] that no run started the true page
-  /// starts that the kept map [sections] holds for it, so that the section
-  /// counts as laid out. A map that does not fit the book is forgotten.
+  /// Gives each section of [settings] that no run started the true pages
+  /// that the kept map [sections] holds for it, so that the section counts
+  /// as laid out. A map that does not fit the book is forgotten.
   void _seed(PageSettings settings, List<KeptSection>? sections) {
     if (sections == null || _disposed || !_reading.containsKey(settings)) {
       return;
@@ -1125,23 +1159,30 @@ class PageSource {
           layout.following.isNotEmpty) {
         continue;
       }
-      layout.starts.addAll(kept.starts);
-      layout.pages = (count: kept.starts.length, visible: null);
-      layout.seeded = true;
+      layout
+        ..starts.addAll(kept.starts)
+        ..firsts.addAll(kept.firsts)
+        ..visibleStarts.addAll(kept.visible.starts)
+        ..seeded = true;
+      _finish(layout, length: kept.visible.length);
     }
     if (settings == _settings) _bookPages.value = _bookPagesIn(settings);
   }
 
-  /// Whether [sections] can be this book's true page starts: one complete
+  /// Whether [sections] can be this book's true pages: one complete
   /// section for each section of the spine, each from the section start,
-  /// in increasing order.
+  /// in increasing order, with visible starts from 0 as the page index
+  /// holds them ([BookPages]). The map's format gives each page one first
+  /// place and one visible start, and visible starts that never go back
+  /// and stay within the section's length.
   bool _fits(List<KeptSection> sections) {
     if (sections.length != _sectionCount) return false;
     for (final section in sections) {
       final starts = section.starts;
       if (!section.complete ||
           starts.isEmpty ||
-          starts.first != const PageStart(0, 0)) {
+          starts.first != const PageStart(0, 0) ||
+          section.visible.starts.first != 0) {
         return false;
       }
       for (var at = 1; at < starts.length; at++) {
@@ -1152,8 +1193,8 @@ class PageSource {
   }
 
   /// Forgets the kept page map of [settings], which a page contradicted.
-  /// Each section that it seeded drops its true page starts, as if no run
-  /// had reached them. Its file goes, and the whole book is laid out again
+  /// Each section that it seeded drops its true pages, as if no run had
+  /// reached them. Its file goes, and the whole book is laid out again
   /// from the shown page.
   void _forgetMap(PageSettings settings) {
     for (final layout in _layouts.values) {
@@ -1162,6 +1203,7 @@ class PageSource {
           ..seeded = false
           ..pages = null
           ..starts.clear()
+          ..firsts.clear()
           ..visibleStarts.clear();
       }
     }
@@ -1187,7 +1229,18 @@ class PageSource {
     for (var index = 0; index < _sectionCount; index++) {
       final layout = _layouts[(index, settings)];
       if (layout == null || !layout.mainDone || layout.seeded) return;
-      sections.add(KeptSection(List.of(layout.starts), complete: true));
+      sections.add(
+        KeptSection(
+          List.of(layout.starts),
+          firsts: List.of(layout.firsts),
+          // A copy, because the write encodes it after an await.
+          visible: (
+            starts: List.of(layout.visibleStarts),
+            length: layout.pages!.visible!.length,
+          ),
+          complete: true,
+        ),
+      );
     }
     unawaited(pageMaps.write(settings, sections));
   }
@@ -1610,9 +1663,11 @@ class _SectionLayout {
   /// The run from a page start that the main run did not reach.
   _Run? anchored;
 
-  /// The true page starts that the main run reached, in order, and the
-  /// number of the section's visible characters before each of them.
+  /// The true page starts that the main run reached, in order, the first
+  /// place of each of their pages ([LaidPage.startPlace]), and the number
+  /// of the section's visible characters before each of them.
   final starts = <PageStart>[];
+  final firsts = <EpubPlace?>[];
   final visibleStarts = <int>[];
 
   /// The section's true pages for the page index, once the main run ended
@@ -1622,9 +1677,8 @@ class _SectionLayout {
   /// Whether the main run ended, so that every true page start is known.
   bool get mainDone => pages != null;
 
-  /// Whether [starts] came from a kept page map that no page contradicted
-  /// yet. Then [mainDone] holds, no main run ran, and the visible starts
-  /// are not known.
+  /// Whether the true pages came from a kept page map that no page
+  /// contradicted yet. Then [mainDone] holds and no main run ran.
   bool seeded = false;
 
   /// The start of the page after each page that a run cut, by the page's
@@ -1648,14 +1702,15 @@ class _SectionLayout {
 
   bool isTrueStart(PageStart start) => _search(start).$2;
 
-  /// Whether the page cut from [start] agrees with the true page starts,
-  /// when the main run ended: the page that starts at a true page start
-  /// is followed by the next true page start, or is the last page when
-  /// [next] is null. A page from another start has no opinion.
-  bool agrees(PageStart start, PageStart? next) {
-    final (at, exact) = _search(start);
+  /// Whether [page] agrees with the true pages, when the main run ended:
+  /// the page that starts at a true page start has that page's first
+  /// place, and is followed by the next true page start, or is the last
+  /// page when [next] is null. A page from another start has no opinion.
+  bool agrees(LaidPage page, PageStart? next) {
+    final (at, exact) = _search(page.start);
     if (!exact) return true;
-    return next == (at + 1 < starts.length ? starts[at + 1] : null);
+    return firsts[at] == page.startPlace &&
+        next == (at + 1 < starts.length ? starts[at + 1] : null);
   }
 
   /// The last true page start at or before [start], or before it when
