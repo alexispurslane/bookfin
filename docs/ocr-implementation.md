@@ -120,8 +120,9 @@ Failed or canceled recognition is not cached. After reopening, recognition can r
 after corruption. Storage failure leaves readable text for that visit and reports
 that the cache could not be saved.
 
-The coordinator admits at most one active page and one waiting page. Waiting pages
-do not hold rendered images. The native worker admits one page, rejects competing
+The coordinator runs one piece of work at a time and queues the rest, as the
+section "Word geometry from the layout pass" describes. Waiting work does not
+hold rendered images. The native worker admits one page, rejects competing
 pages, and closes only after that page drains. A process-wide ownership guard
 prevents a second native engine from starting. The native worker belongs to the
 Flutter engine, not an Android activity. Activity replacement does not destroy a
