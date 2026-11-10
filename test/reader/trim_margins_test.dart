@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:bookfin/catalog/glass.dart' show CoverGlass;
@@ -23,10 +24,36 @@ import 'book_survey_test.dart' show UnreadSurvey;
 import 'column_running_lines_test.dart' show headerAndFolio;
 import 'native_reader.dart' show finishReader, settleReader;
 import 'ocr_hop_test.dart' show runInWorker;
-import 'pdf_crop_test.dart' show WatchedBook, aspectOf, imageAspect, shownImage;
+import 'pdf_crop_test.dart'
+    show WatchedBook, advance, aspectOf, imageAspect, shownImage;
 import 'pdf_document_test.dart' show pdfSource;
 import 'pdf_session_test.dart' show book, edition;
 import 'running_lines_test.dart' show lineTexts, marginsBook, wordsOf;
+
+class ControlledDraws extends WatchedBook {
+  ControlledDraws(super.margins);
+
+  bool failNext = false;
+  bool hold = false;
+  final pending = <({int page, double width, Completer<PdfRaster> result})>[];
+
+  @override
+  Future<PdfRaster> render(int sourcePage, double width) {
+    if (failNext) {
+      failNext = false;
+      return Future.error(Exception('The page could not be drawn.'));
+    }
+    if (!hold) return super.render(sourcePage, width);
+    final result = Completer<PdfRaster>();
+    pending.add((page: sourcePage, width: width, result: result));
+    return result.future;
+  }
+
+  Future<void> complete(int index) async {
+    final draw = pending[index];
+    draw.result.complete(await super.render(draw.page, draw.width));
+  }
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -87,6 +114,7 @@ void main() {
     WidgetTester tester, {
     ReadingStore? store,
     double systemScale = 1,
+    WatchedBook? source,
   }) async {
     tester.view
       ..physicalSize = const Size(1080, 2400)
@@ -94,7 +122,7 @@ void main() {
     addTearDown(tester.view.reset);
     final downloads = LocalFiles()
       ..files[pdfSource.key] = Uri.file('/margins.pdf');
-    final pdf = WatchedBook(margins);
+    final pdf = source ?? WatchedBook(margins);
     final survey = UnreadSurvey()..reading.complete(kept);
     final reader = ReaderSession(
       downloads: downloads,
@@ -249,6 +277,74 @@ void main() {
       closeTo(aspectOf(opened.pdf.survey.cropOf(5)!), 0.01),
     );
     reader.previews.close();
+  });
+
+  testWidgets('a failed trim redraw keeps the readable page and offers a retry '
+      'that applies the saved choice', (tester) async {
+    final pdf = ControlledDraws(margins);
+    final opened = await open(tester, source: pdf);
+    final cropped = shownImage(tester);
+    final place = opened.reader.visibleAddress;
+    final moves = opened.reader.history;
+    pdf.failNext = true;
+    await openSettings(tester);
+    await toggle(tester);
+    expect(opened.reader.trimMargins, isFalse);
+    Navigator.of(tester.element(find.byType(ReaderScreen))).pop();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+
+    expect(shownImage(tester), same(cropped));
+    expect(find.textContaining('could not be drawn'), findsOneWidget);
+    expect(find.text('Retry source page'), findsOneWidget);
+
+    pdf.hold = true;
+    await tester.tap(find.text('Retry source page'));
+    await tester.pump();
+    expect(pdf.pending, hasLength(1));
+    expect(shownImage(tester), same(cropped));
+    await finishReader(tester, pdf.complete(0));
+    await settleReader(
+      tester,
+      () => shownImage(tester) != cropped,
+      reason: 'retry did not replace the readable crop',
+    );
+    final full = await tester.runAsync(() => margins.render(5, 400));
+    expect(
+      imageAspect(shownImage(tester)),
+      closeTo(full!.width / full.height, 0.01),
+    );
+    expect(find.textContaining('could not be drawn'), findsNothing);
+    expect(find.text('Retry source page'), findsNothing);
+    expect(opened.reader.visibleAddress, place);
+    expect(opened.reader.history, moves);
+  });
+
+  testWidgets('a late trim redraw cannot replace the newer choice', (
+    tester,
+  ) async {
+    final pdf = ControlledDraws(margins);
+    await open(tester, source: pdf);
+    final original = shownImage(tester);
+    final crop = pdf.survey.cropOf(5)!;
+    await openSettings(tester);
+    pdf.hold = true;
+    await toggle(tester);
+    expect(pdf.pending, hasLength(1));
+    await toggle(tester);
+    expect(pdf.pending, hasLength(2));
+    await finishReader(tester, pdf.complete(1));
+    await settleReader(
+      tester,
+      () => shownImage(tester) != original,
+      reason: 'the newest trim redraw did not finish first',
+    );
+    final newest = shownImage(tester);
+    expect(imageAspect(newest), closeTo(aspectOf(crop), 0.01));
+    await finishReader(tester, pdf.complete(0));
+    await advance(tester, const Duration(milliseconds: 100));
+    expect(shownImage(tester), same(newest));
+    expect(find.text('Retry source page'), findsNothing);
   });
 
   testWidgets('word columns still drop running headers and folios with Trim '

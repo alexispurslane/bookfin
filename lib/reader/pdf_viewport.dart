@@ -280,6 +280,7 @@ class _PdfViewportState extends State<PdfViewport>
       setState(() {
         _image?.dispose();
         _image = image;
+        _failure = null;
       });
     } on Exception {
       if (current()) {
@@ -512,39 +513,51 @@ class _PdfViewportState extends State<PdfViewport>
   }
 
   /// The original page, the reflowed text, or what stands in their place.
-  Widget _shownPage() => _usingText
-      ? _reflowText()
-      : _image == null
-      ? Center(
-          child: switch (_failure) {
-            null => const CircularProgressIndicator(),
-            final failure => Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Text(failure, textAlign: TextAlign.center),
-                ),
-                TextButton(
-                  onPressed: () => unawaited(_load(_address)),
-                  child: const Text('Retry source page'),
-                ),
-              ],
-            ),
-          },
-        )
-      : Semantics(
-          label: 'Original source page $_page',
-          image: true,
-          child: InteractiveViewer(
-            transformationController: _zoom,
-            minScale: 1,
-            maxScale: 6,
-            child: Center(
-              child: RawImage(image: _image, fit: BoxFit.contain),
-            ),
+  Widget _shownPage() {
+    if (_usingText) return _reflowText();
+    final failure = switch (_failure) {
+      null => null,
+      final message => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Text(message, textAlign: TextAlign.center),
           ),
-        );
+          TextButton(
+            onPressed: () {
+              setState(() => _failure = null);
+              unawaited(_draw(_generation, replace: true));
+            },
+            child: const Text('Retry source page'),
+          ),
+        ],
+      ),
+    };
+    if (_image == null) {
+      return Center(child: failure ?? const CircularProgressIndicator());
+    }
+    final page = Semantics(
+      label: 'Original source page $_page',
+      image: true,
+      child: InteractiveViewer(
+        transformationController: _zoom,
+        minScale: 1,
+        maxScale: 6,
+        child: Center(
+          child: RawImage(image: _image, fit: BoxFit.contain),
+        ),
+      ),
+    );
+    return failure == null
+        ? page
+        : Column(
+            children: [
+              failure,
+              Expanded(child: page),
+            ],
+          );
+  }
 
   @override
   Widget build(BuildContext context) => Semantics(
