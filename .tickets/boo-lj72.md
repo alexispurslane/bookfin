@@ -1,6 +1,6 @@
 ---
 id: boo-lj72
-status: in_progress
+status: closed
 deps: [tb-9mcf]
 links: []
 created: 2026-11-10T21:56:07Z
@@ -43,3 +43,7 @@ Meaningful red: /tmp/bookfin-boo-lj72/F1-red.log has four failures: both durable
 **2026-11-10T22:57:45Z**
 
 Post-F1 final verification complete: flutter test --no-pub --concurrency=2 --reporter expanded passed 2649 tests with 21 skipped, zero failures, in 4m07s; exit 0, /tmp/bookfin-boo-lj72/F1-full-final.log. Combined with F1-focused-final.log (57 passed), F1-format-final.log (404 files, zero changed), F1-analyze-final.log (scoped lib/test/integration_test, no issues), and clean git diff --check, F1 is resolved by lead verification. The original reviewer verdicts remain fail/unverified/pass; no re-review was requested or claimed. The implementation and F1 fix are ready for parent integration, not installed or merged. No devices, coverage, mutation, native OCR, push, merge, PR, or ticket closure were performed. The unrelated preferences invariant-check follow-up tc-eri9 remains open, and boo-lj72 remains in_progress until the parent merges.
+
+**2026-11-10T23:04:16Z**
+
+Parent integration passed: 2649 tests,21 skipped,zero failed in4m03s;404 files formatted with zero changes; application/test/integration analysis clean. Logs /tmp/bookfin-preferences-integration-{format,analyze,tests}.log. Production diff and all new behavior tests inspected, including worker-save ordering and actual SQLite restart/retry. Preserved launch and implementation notes in ticket conflict; removed an extra trailing blank line in tc-eri9. No native code changed. Reviewer F1 resolution remains lead-verified, not a second review. Parent now builds and installs the normal app on Pixel without UI interaction.
