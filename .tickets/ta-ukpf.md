@@ -2,7 +2,7 @@
 id: ta-ukpf
 status: open
 deps: []
-links: []
+links: [tb-lnak]
 created: 2026-11-09T19:53:33Z
 type: chore
 priority: 3

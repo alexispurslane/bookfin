@@ -1,6 +1,6 @@
 # PDF reflow as the page's own word images
 
-Date: 2026-11-09, revised the same day for the "Tesseract layout first" decision, and on 2026-11-10 for the user's two product decisions. Epic: boo-fval. Parent: boo-fs0n. Blocked by: boo-pw1d.
+Date: 2026-11-09, revised the same day for the "Tesseract layout first" decision, and on 2026-11-10 for the user's two product decisions and for trimmed margins. Epic: boo-fval. Parent: boo-fs0n. Blocked by: boo-pw1d.
 
 ## Decision
 
@@ -30,6 +30,7 @@ This document decides these things:
 - the waiting state, page turns, the scrub deck and the scrub bar
 - tests, fixtures and the device acceptance
 - the shape of the switch and how a page turns, which the user decided on 2026-11-10
+- trimmed margins: one crop for the whole book in the Original view, and no running headers or folios in the word view
 - the order of work
 
 ## Terms
@@ -52,6 +53,13 @@ This document decides these things:
 | Body line height | The median height of the page's prose lines, from the top of the ascenders to the bottom of the descenders, in page units. |
 | Column | The reflowed lines of one source page for one column width and one text size. |
 | Screen | The whole lines of a column that show at one time. A swipe shows the next screen. |
+| Running header | A line near the top or bottom edge of a page that repeats on many pages, such as the book's or the chapter's title. A running footer is the same at the bottom. |
+| Folio | A printed page number. |
+| Content box | The rectangle around a page's text and figures, without empty margins, running headers and folios, in page units. |
+| Side | Left-hand or right-hand pages. A printed book sets their margins as mirror images. |
+| Book profile | What the survey learns from a sample of the book's pages: the header and folio templates, and one box for each side. |
+| Crop | The part of a page that the Original view shows: the union of its side's box and its content box. |
+| Survey | The background work that analyzes every page of a book once, for the book profile and the crops. |
 | Band | One rendered strip of the page, at screen resolution, that holds the source rectangles of the pieces of one screen. |
 | Word view | Reflow with word images. |
 | Text view | Reflow with the reading text in the reader's font. This is the reflow view of today. |
@@ -302,6 +310,8 @@ The word view needs facts that only the pixels know. `PdfBook.reflowPage(sourceP
 5. Regions. A block that the layout pass calls a picture or a table is a region. Components close to each other (less than half a body line height apart) join into one region. A word whose box lies more than half inside a region joins the region. Lines that fail the prose line test below join into one region with their neighbors that also fail it.
 6. Hyphens. On a scanned page, the analysis finds them from pixels, because the text can arrive later. For each word that ends a line, it looks inward from the word's right edge, within its last 0.6 line heights. A hyphen is the last ink there: a short horizontal mark in the middle of the line's lowercase height, after a white gap. Its width is the distance from that gap to the word's right edge. On a text layer page, the hyphen's character box gives the width, and no pixels are needed.
 7. Body line height. The median line height of the page's prose lines.
+8. Running headers and folios. With the book profile, the analysis marks the lines near the top and bottom edges that match its templates (see "Trimmed margins").
+9. Content box. The union of the page's words, regions and uncovered ink, without the marked lines.
 
 The prose line test has two parts. First, the line's words share a baseline within a third of the line height. Raised or lowered marks of at most two words are allowed. Second, no gap between its words is larger than 2.5 times the line's median word gap, unless that gap is alone. A neighbor line must have a wide gap that starts and ends within one body line height of it. Only then does the wide gap count. So a table's columns fail the test, and the wide gaps of a justified line do not. This avoids k2pdfopt's weak point of reading wide word spacing as sub-columns. Display equations and table rows fail the test. A line of fewer than 3 words is an exception. If its height is within 1.3 times the block's median line height, it passes. So short headings and last lines pass.
 
@@ -329,6 +339,7 @@ Every word and region of a page has the same scale. So headings, footnotes and m
 
 ### Wrapping
 
+- The column leaves out the lines that the analysis marks as running headers or folios. Their text stays in the reading text, so search still finds it. A place inside such a line resolves to the first shown piece after it.
 - Words go into lines in reading-text order, the order of places. If a word fits on the current line, it goes there. Otherwise it starts the next line.
 - The gap between two words is their source gap, scaled. It is at least a third and at most one scaled body line height. So the wide gaps of a justified source line do not reach the screen.
 - The column has the same margins as the text view: 20 logical pixels on each side.
@@ -453,8 +464,8 @@ The text view uses the reading text in the reader's font, as the reflow view of 
 - Waiting for text. While full recognition of the shown scanned page runs, the thin progress line stays over the word images. The text's attachment removes it. The screen does not change.
 - Failure. The layout pass, the analysis or a band render can fail. If its text exists, the page then shows in the text view. Otherwise the original page shows under the progress line until its text arrives. If recognition fails after the words show, the words stay, the progress line goes, and selection and search stay unavailable on that page. If the text fails on a text layer page, the quiet line of today shows over the original page.
 - Turns. A swipe or a screen reader's scroll action shows the next or the previous screen, as "Screens and turns" says. The band images of the next screen render after the shown screen's bands. So a turn inside a page shows its screen in the next frame.
-- Neighbor pages. The word view prepares no other source page. It starts no layout pass and no recognition for a page that is not shown.
-- The scrub deck shows the original pages, as today. It starts no layout pass, no recognition and no analysis. A scrub lands on the first screen of its page.
+- Neighbor pages. The word view prepares no column and no bands for another source page, and starts no recognition for a page that is not shown. The survey of "Trimmed margins" runs layout passes for other pages, at the lowest priority.
+- The scrub deck shows the original pages. If a page's crop is known, its card is cropped. It starts no layout pass, no recognition and no analysis, and never waits for a crop. A scrub lands on the first screen of its page.
 - The scrub bar counts source pages, as today. t6-1luw (the bar's spoken value at the end of a page) stays a separate bug.
 
 ### Screens and turns
@@ -471,6 +482,69 @@ Decision 2, which the user settled on 2026-11-10: a reflowed source page is cut 
 - A vertical drag does nothing in either view, as in the EPUB reader. A screen reader's scroll actions turn screens.
 - The text view draws one screen as the part of its `TextPainter` from the screen's first line top to the next screen's first line top. It needs no scroll controller.
 - The place of a text view screen is the first character of its first line. A change of text size or width cuts the screens again and shows the screen that holds the shown place.
+
+## Trimmed margins
+
+On 2026-11-10 the user asked that the Original view, too, crops away the margins, the running header and the folio, so only the content shows. The user decided two parts of it:
+
+- One crop for the whole book, not one for each page: one box for left-hand pages and one for right-hand pages. So text keeps the same size and place on every page.
+- A "Trim margins" switch in the glass Reading settings sheet, on by default. Off shows the full printed page.
+
+### One model for both views
+
+`PdfBook` owns a content box for each page. The page analysis of the word view produces it (steps 8 and 9 of "Page analysis"). So the Original view and the word view agree about what is content: both leave out the same running headers and folios. Cropping in the Original view does not need the word view's layout, bands or screens.
+
+### Running headers and folios
+
+A running header is found by repetition across pages, not by its place alone. The template finder looks at the first and last two lines of each analyzed page, within 12 percent of the page height from the edge. Only text lines count. A region, such as a figure, is never a header.
+
+- Text signature. On a page with a reading text, a line's signature is its text in lowercase. Runs of white space become one space, and each digit becomes `#`. Some signatures repeat at the same place on at least 3 pages within 20 source pages. The same place means a center within half a body line height and half the width shared. Such a signature is a running header. This finds a chapter title that repeats only through its chapter.
+- Folio. Some lines hold only a number, arabic or roman. If the number minus the source page number stays the same on at least 3 analyzed pages, the line is a folio. A book's page numbers rise by one per page, so this finds them, also where the header text changes.
+- Geometry signature. A scanned page whose text has not arrived has only its layout record. Its edge lines are compared by place and size. An edge line can repeat its center within half a body line height and its height within a quarter. If it does so on at least 30 percent of the body pages of its side, it is a running header or folio.
+
+Footnotes do not repeat at one place with one text, so they stay content. A chapter title at the top of a chapter's first page does not match a template, so it stays too. The templates become part of the book profile, so a single page's analysis can mark its own headers without its neighbors.
+
+### The book crop
+
+The survey freezes the book profile from a sample of body pages. Outlier pages are left out of the statistics, so they cannot inflate the boxes:
+
+- A blank page has no ink.
+- A cover, a title page or a section break has fewer than 5 text lines.
+- A plate is more than half picture.
+
+For each side, the box starts at the 5th percentile of the body pages' left and top content edges. It ends at the 95th percentile of their right and bottom edges. It is padded by half a body line height on each side. The padding keeps a small white edge around the text, and it absorbs small differences between pages.
+
+- Each page's crop is the union of its side's box and its own content box. So a body page shows its side's box. A page whose content reaches outside it, such as a wide table, a figure in the margin or a cover, grows its own crop. No content is ever cut.
+- Sides come from the parity of the source page number. An inserted plate in a scan can flip the parity for the rest of the book. So if only the other side's box holds a page's content, the page takes that box.
+- A blank page shows its side's box.
+
+### The survey
+
+`PdfBook` runs the survey in the background as a data source that owns its cache and its refresh (engine rule 2).
+
+- Order. First the shown page and the next page in the reading direction. Then an even sample of the book: up to 32 body pages for each side, spread over the whole book. Then every other page in order.
+- Priority. The survey has the lowest priority. On a scanned page it runs the layout pass on the recognition worker, behind the shown page's layout pass, its recognition and search. The layout record that it makes is kept, so the word view opens that page at once later.
+- Freeze. When the sample is done, the book profile freezes and does not change again. Pages that the survey analyzes later only get their own crops. So a page's crop never changes after the book profile exists.
+- Storage. The profile and the page crops are kept in a new `DerivedBookFiles` directory of the download, beside the recognition cache and the admitted book. Removing the download removes them. The survey writes them atomically in batches. After ta-ukpf lands, it uses that shared atomic write. It resumes at the next open where it stopped.
+- Pauses. The survey pauses while the book is closed and while the app is in the background.
+- Cost. On a text layer page, one analysis takes one render at 1600 pixels and one hop. On a scanned page, it also takes one layout pass: 116 to 218 ms on the host. A book of 400 scanned pages costs a few minutes of worker time, once. The device acceptance measures it.
+
+### The Original view
+
+- The page shows its crop, fitted to the screen. It renders at the screen's width divided by the crop's share of the page width, within the existing render limits. So the text gets more of the screen's pixels.
+- Pinch zoom and pan work on the cropped page as today, up to 6 times. A swipe on a zoomed page moves the page.
+- A page never changes its crop while it shows. This avoids a jump during reading:
+  - Until a page's crop is known, the page shows uncropped. A crop that becomes known later applies from the next page that the reader shows.
+  - The next page in the reading direction gets its analysis first, so its crop is normally ready before the person turns.
+  - A page that a jump or a scrub opens waits up to 300 ms for its crop before its first draw. After that it shows uncropped.
+- In the first minute of a new book, before the profile freezes, pages show uncropped. From the next turn after the freeze, every page shows cropped.
+
+### The switch
+
+- "Trim margins" is a switch row in the glass Reading settings sheet, under the Pages row, for PDFs only. It is on by default.
+- Off shows the full printed page in the Original view at once. On shows the crop at once. A change of the switch is the one time a shown page changes its crop.
+- `ReaderSession` keeps the switch and saves it with the text size, so it lasts across runs. It is a preference, not a mode such as the page view.
+- The word view always leaves out headers and folios, whatever the switch says. The text view still shows their words. Ticket tb-go0c leaves them out of the text view too.
 
 ## Tests
 
@@ -539,12 +613,21 @@ The view and the reader:
 - A text size step in the text view keeps the shown place on the shown screen.
 - At the largest system text size, the Pages row shows Original, Page words and Text as whole words, and each segment can be tapped.
 - The scrub deck shows original pages and starts no layout pass and no recognition.
+- Running headers and folios are marked on every page that has them. A chapter title at a chapter's start, footnotes and figures stay content.
+- A cover, a plate and a blank page do not change the side boxes. Every body page of a side gets the same crop. A page with a wide table gets a larger crop that holds all of it.
+- Two body pages of one side show their text at the same size and place in the Original view.
+- A page keeps its look while it shows, and a crop that arrives later applies at the next turn.
+- Pinch zoom and pan work on a cropped page.
+- Trim margins is on in a new install. Off shows the full page. The choice survives a restart.
+- The word view shows no running header and no folio, and search still finds a header word.
+- The survey resumes after a reopen, runs no page twice, and never delays the shown page.
 
 Each module with state keeps one `checkInvariants`:
 
 - `PageGeometry`, as above.
 - The page analysis cache of `PdfBook`: at most 16 pages, each with the digest of its reading text.
 - `PdfWordPages`: its images belong to the shown or the next screen, and their pixels are within the bound.
+- The book crop: every page crop holds its content box, and every body page's crop equals its side's box.
 
 ### Device acceptance
 
@@ -556,6 +639,8 @@ On the Pixel 8 or an emulator through the T3 device tools:
 - Measure the graphics memory of the reader with `dumpsys meminfo` while the person turns ten screens.
 - Make sure that a turn inside a page drops no frame, with the frame timing overlay.
 - Tune `_wordSizeRatio` once against an EPUB at size 20.
+- Take screenshots of the Original view with Trim margins on and off, on a body page, a wide-table page and a cover.
+- Measure the survey's time for each page on a text layer book and on a scanned book, and its total for one book.
 
 ## Decisions of 2026-11-10
 
@@ -573,7 +658,7 @@ The designs that the user did not choose:
 
 ## Order of work
 
-Ticket keys W0 to W10, with W0b and W6b, name the tickets. The table maps each key to its ticket id.
+Ticket keys W0 to W10, with W0b and W6b, and T1 to T6 name the tickets. The table maps each key to its ticket id.
 
 | Key | Ticket | Work | After |
 | --- | --- | --- | --- |
@@ -589,7 +674,15 @@ Ticket keys W0 to W10, with W0b and W6b, name the tickets. The table maps each k
 | W7 | tb-9mcf | The page view choice in the session, the three-segment Pages row, and `PillChoice` at large text sizes | W6 |
 | W8 | tb-mfkk | Selection, copy, search hits and screen reader nodes on word images | W6 |
 | W9 | tb-fi98 | Drop caps | W6 |
-| W10 | tb-fb6j | Device acceptance and tuning | W0b, W6b, W7, W8, W9 |
+| T1 | tb-z9h5 | Running headers, folios and content boxes in the page analysis | W3 |
+| T2 | tb-lnak | The survey, the book profile and the crops, kept on disk | T1 |
+| T3 | tb-valc | The cropped Original view | T2 |
+| T4 | tb-nkz5 | The Trim margins switch | T3 |
+| T5 | tb-m8xo | The word view leaves out headers and folios | T2, W4 |
+| T6 | tb-go0c | The text view leaves out headers and folios (follow-up, not in the acceptance) | T2, W6b |
+| W10 | tb-fb6j | Device acceptance and tuning | W0b, W6b, W7, W8, W9, T3, T4, T5 |
+
+The cropping tickets need the page analysis (W3) and the geometry under it (W0 to W2). They do not need the word view's layout, bands or screens. So T1 to T4 can be built in parallel with W4 to W9, as soon as W3 lands. Only T5 waits for the column layout (W4), and T6 for the text view's screens (W6b).
 
 
 ## Sources

@@ -35,3 +35,7 @@ User decision (2026-11-09, later): Tesseract layout first, no k2pdfopt library. 
 **2026-11-10T12:48:31Z**
 
 User decisions (2026-11-10): decision 1 design A, a three-segment Pages row (Original, Page words, Text), with PillChoice dropping icons and then stacking at large text sizes. Decision 2 design A, whole-line screens in the word view and the text view, with swipes passing between source pages. New ticket tb-zx7r cuts the text view into screens.
+
+**2026-11-10T12:54:13Z**
+
+User request (2026-11-10): trimmed margins. One book crop (left and right side boxes) for the Original view, running headers and folios found by repetition and left out of the Original view and the word view, a Trim margins switch on by default, crops kept on disk from a background survey. Tickets tb-z9h5, tb-lnak, tb-valc, tb-nkz5, tb-m8xo, and the follow-up tb-go0c.
