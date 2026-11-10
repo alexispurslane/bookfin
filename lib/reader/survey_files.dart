@@ -40,13 +40,14 @@ typedef SurveyStoreOf = SurveyFiles Function(
 ///   replaces it.
 /// - `pages`: for each surveyed page, a list: its source page number, its
 ///   height and body line height in page units, 1 for a body page or 0,
-///   its core box (left, top, right and bottom) or null, and its edge
-///   lines. An edge line is a list: its line index, its box, its gap or
-///   null for none, and its text or null.
+///   its core box (left, top, right and bottom) or null, its edge lines,
+///   and its edge regions. An edge line is a list: its line index, its box,
+///   its gap or null for none, and its text or null. An edge region is a
+///   list: its region index and its box.
 /// - `profile`: null until the book profile froze. Then an object:
 ///   `lineHeight`, `texts` (a signature and a box for each), `folios`,
-///   `shapes` (a side and a box for each), and `boxes`, the box of each side
-///   or null.
+///   `shapes` and `regions` (a side and a box for each), and `boxes`, the
+///   box of each side or null.
 ///
 /// Encoding and decoding run through the hop. A survey of a 400-page book
 /// takes about 100 KB.
@@ -58,7 +59,9 @@ class SurveyFiles {
   /// The format of the file. A change of the page analysis, the content
   /// rule or the file's shape needs a new format, so that older surveys
   /// read as absent and the survey runs again.
-  static const format = 1;
+  ///
+  /// Format 2 added the edge regions and the region templates (t1-6pf5).
+  static const format = 2;
 
   final SurveyLease _lease;
   final String book;
@@ -172,6 +175,10 @@ Uint8List _encode(({String book, KeptSurvey survey}) kept) {
                   edge.text,
                 ],
             ],
+            [
+              for (final region in page.edges.regions)
+                [region.region, ...box(region.box)],
+            ],
           ],
       ],
       'profile': profile == null
@@ -186,6 +193,10 @@ Uint8List _encode(({String book, KeptSurvey survey}) kept) {
               'shapes': [
                 for (final shape in templates.shapes)
                   [shape.side, ...box(shape.box)],
+              ],
+              'regions': [
+                for (final region in templates.regions)
+                  [region.side, ...box(region.box)],
               ],
               'boxes': [
                 for (final side in profile.boxes)
@@ -213,7 +224,7 @@ KeptSurvey? _decode(({String book, Uint8List bytes}) kept) {
   final pages = <SurveyedPage>[];
   for (final entry in _list(file['pages'])) {
     final page = _list(entry);
-    if (page.length != 6) throw const FormatException('Not a surveyed page.');
+    if (page.length != 7) throw const FormatException('Not a surveyed page.');
     pages.add(
       SurveyedPage(
         edges: (
@@ -232,6 +243,16 @@ KeptSurvey? _decode(({String book, Uint8List bytes}) kept) {
                     text: text as String?,
                   ),
                 _ => throw const FormatException('Not an edge line.'),
+              },
+          ],
+          regions: [
+            for (final value in _list(page[6]))
+              switch (_list(value)) {
+                [final region, _, _, _, _] => (
+                  region: _int(region),
+                  box: _box(_list(value).sublist(1)),
+                ),
+                _ => throw const FormatException('Not an edge region.'),
               },
           ],
         ),
@@ -267,20 +288,24 @@ BookProfile _profile(Map<String, Object?> value) {
           },
       ],
       folioOffsets: [for (final offset in _list(value['folios'])) _int(offset)],
-      shapes: [
-        for (final shape in _list(value['shapes']))
-          switch (_list(shape)) {
-            [final side, _, _, _, _] => (
-              side: _int(side),
-              box: _box(_list(shape).sublist(1)),
-            ),
-            _ => throw const FormatException('Not a shape template.'),
-          },
-      ],
+      shapes: _sides(value['shapes']),
+      regions: _sides(value['regions']),
     ),
     boxes: boxes,
   );
 }
+
+/// The side templates that [value] holds: a side and a box for each.
+List<({int side, PageBox box})> _sides(Object? value) => [
+  for (final template in _list(value))
+    switch (_list(template)) {
+      [final side, _, _, _, _] => (
+        side: _int(side),
+        box: _box(_list(template).sublist(1)),
+      ),
+      _ => throw const FormatException('Not a side template.'),
+    },
+];
 
 PageBox _box(List<Object?> value) {
   if (value.length != 4) throw const FormatException('Not a box.');

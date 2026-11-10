@@ -29,9 +29,15 @@ typedef LineBox = ({double left, double top, double right, double bottom});
 /// line does).
 typedef EdgeLine = ({int line, LineBox box, String? text, double gap});
 
+/// An edge region of a page: a region that is no scan edge, with its middle
+/// within 12 percent of the page height from the top or bottom edge, as an
+/// edge line's (see [RunningTemplates]). [region] is its index in the
+/// page's analysis, and [box] its box.
+typedef EdgeRegion = ({int region, LineBox box});
+
 /// What the template finder and [RunningTemplates.matches] read of one
 /// analyzed page: its source page number, its body line height, whether it
-/// is a body page, and its edge lines. A body page has at least 5 text
+/// is a body page, its edge lines and its edge regions. A body page has at least 5 text
 /// lines, and pictures cover at most half of it. So a cover, a title page, a
 /// section break, a plate and a blank page are not body pages.
 typedef PageEdges = ({
@@ -39,6 +45,7 @@ typedef PageEdges = ({
   double bodyLineHeight,
   bool body,
   List<EdgeLine> edges,
+  List<EdgeRegion> regions,
 });
 
 /// The templates of a book's running headers, running footers and folios,
@@ -55,6 +62,7 @@ class RunningTemplates {
     required this.texts,
     required this.folioOffsets,
     required this.shapes,
+    this.regions = const [],
   });
 
   /// The book's body line height in page units: the median of the body line
@@ -79,17 +87,39 @@ class RunningTemplates {
   /// [_sameShape]).
   final List<({int side, LineBox box})> shapes;
 
+  /// The boxes of running regions, for each side. An edge region is a
+  /// running region when it is small (see [_small]) and has the shape of
+  /// one of its side's boxes (see [_sameShape]).
+  final List<({int side, LineBox box})> regions;
+
   /// [page]'s analysis with the lines that match a template marked as
   /// running lines (see [PageAnalysis.runningLines]).
   // NOTE: This compares a page's few edge lines with a few templates. It
   // takes microseconds, far less than a hop to another isolate.
   PageAnalysis mark(AnalyzedSourcePage page) {
     final running = Uint8List(page.geometry.lineCount);
-    for (final edge in pageEdges(page).edges) {
+    final runningRegions = Uint8List(page.analysis.regionCount);
+    final edges = pageEdges(page);
+    for (final edge in edges.edges) {
       if (matches(page.sourcePage, edge)) running[edge.line] = 1;
     }
-    return page.analysis.withRunningLines(running);
+    for (final region in edges.regions) {
+      if (matchesRegion(page.sourcePage, region)) {
+        runningRegions[region.region] = 1;
+      }
+    }
+    return page.analysis.withRunningLines(running, regions: runningRegions);
   }
+
+  /// Whether [region], an edge region of source page [sourcePage], matches
+  /// a region template, so that it is a running region.
+  bool matchesRegion(int sourcePage, EdgeRegion region) =>
+      _small(region.box, lineHeight) &&
+      regions.any(
+        (template) =>
+            template.side == sourcePage % 2 &&
+            _sameShape(region.box, template.box, lineHeight),
+      );
 
   /// Whether [edge], an edge line of source page [sourcePage], matches a
   /// template, so that it is a running line.
@@ -134,6 +164,11 @@ class RunningTemplates {
 ///   A body page has at least 5 text lines, and pictures cover at most half
 ///   of it. So a cover, a title page, a section break, a plate and a blank
 ///   page do not count.
+/// - Region signature (t1-6pf5). For each side, a small edge region (see
+///   [EdgeRegion]), narrower and lower than one body line height, whose
+///   shape repeats on at least 30 percent of the side's body pages and on at
+///   least 3, is a running region, such as a pencil page number or a
+///   library stamp in a scan. Every other region stays content.
 RunningTemplates findRunningTemplates(List<AnalyzedSourcePage> pages) =>
     runningTemplatesOf([for (final page in pages) pageEdges(page)]);
 
@@ -186,30 +221,48 @@ RunningTemplates runningTemplatesOf(List<PageEdges> pages) {
     }
   }
 
-  final shapes = <({int side, LineBox box})>[];
-  for (final side in [0, 1]) {
-    final body = [
-      for (final page in pages)
-        if (page.sourcePage % 2 == side && page.body)
-          [
-            for (final edge in page.edges)
-              if (_apart(edge, lineHeight)) edge.box,
-          ],
-    ];
-    final needed = math.max(_repeats, 0.3 * body.length);
-    for (final box in body.expand((boxes) => boxes)) {
-      final repeats = body.where(
-        (boxes) => boxes.any((other) => _sameShape(box, other, lineHeight)),
-      );
-      if (repeats.length >= needed &&
-          !shapes.any(
-            (shape) =>
-                shape.side == side && _sameShape(box, shape.box, lineHeight),
-          )) {
-        shapes.add((side: side, box: box));
+  /// For each side, the boxes that repeat their shape on at least 30
+  /// percent of the side's body pages and on at least 3, among the boxes
+  /// that [boxesOf] gives each body page.
+  List<({int side, LineBox box})> repeated(
+    Iterable<LineBox> Function(PageEdges page) boxesOf,
+  ) {
+    final templates = <({int side, LineBox box})>[];
+    for (final side in [0, 1]) {
+      final body = [
+        for (final page in pages)
+          if (page.sourcePage % 2 == side && page.body) boxesOf(page).toList(),
+      ];
+      final needed = math.max(_repeats, 0.3 * body.length);
+      for (final box in body.expand((boxes) => boxes)) {
+        final repeats = body.where(
+          (boxes) => boxes.any((other) => _sameShape(box, other, lineHeight)),
+        );
+        if (repeats.length >= needed &&
+            !templates.any(
+              (template) =>
+                  template.side == side &&
+                  _sameShape(box, template.box, lineHeight),
+            )) {
+          templates.add((side: side, box: box));
+        }
       }
     }
+    return templates;
   }
+
+  final shapes = repeated(
+    (page) => [
+      for (final edge in page.edges)
+        if (_apart(edge, lineHeight)) edge.box,
+    ],
+  );
+  final regions = repeated(
+    (page) => [
+      for (final region in page.regions)
+        if (_small(region.box, lineHeight)) region.box,
+    ],
+  );
 
   return RunningTemplates(
     lineHeight: lineHeight,
@@ -219,6 +272,7 @@ RunningTemplates runningTemplatesOf(List<PageEdges> pages) {
         if (numbers.length >= _repeats) offset,
     ],
     shapes: shapes,
+    regions: regions,
   );
 }
 
@@ -296,6 +350,13 @@ PageEdges pageEdges(AnalyzedSourcePage page) {
           gap: gap(line),
         ),
     ],
+    regions: [
+      for (var region = 0; region < analysis.regionCount; region++)
+        if (!analysis.isScanEdge(region, page.geometry))
+          if (_regionBox(analysis, region) case final box
+              when _middle(box).$2 <= edge || _middle(box).$2 >= height - edge)
+            (region: region, box: box),
+    ],
   );
 }
 
@@ -328,6 +389,22 @@ List<({LineBox box, bool text})> _lines(AnalyzedSourcePage page) => [
     text: text,
   );
 }
+
+/// The box of [region] of [analysis].
+LineBox _regionBox(PageAnalysis analysis, int region) {
+  final boxes = analysis.regionBoxes;
+  return (
+    left: boxes[region * 4],
+    top: boxes[region * 4 + 1],
+    right: boxes[region * 4 + 2],
+    bottom: boxes[region * 4 + 3],
+  );
+}
+
+/// Whether [box] is small, in a book whose body line height is
+/// [lineHeight]: narrower and lower than one body line height.
+bool _small(LineBox box, double lineHeight) =>
+    box.right - box.left < lineHeight && box.bottom - box.top < lineHeight;
 
 /// The middle of [box]: x and y.
 (double, double) _middle(LineBox box) =>

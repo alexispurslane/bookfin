@@ -34,6 +34,10 @@ SurveyedPage pageOf(int number) => SurveyedPage(
         gap: double.infinity,
       ),
     ],
+    regions: [
+      (region: 0, box: (left: 0.06, top: 0.03, right: 0.07, bottom: 0.05)),
+      (region: 2, box: (left: 0.4, top: 1.36, right: 0.6, bottom: 1.39)),
+    ],
   ),
   height: 1.414,
   core: number % 11 == 0
@@ -52,6 +56,9 @@ BookProfile profileOf() => BookProfile(
     ],
     folioOffsets: [-1, 4],
     shapes: [(side: 0, box: (left: 0.1, top: 1.3, right: 0.12, bottom: 1.32))],
+    regions: [
+      (side: 1, box: (left: 0.06, top: 0.03, right: 0.07, bottom: 0.05)),
+    ],
   ),
   boxes: [(left: 0.08, top: 0.09, right: 0.86, bottom: 1.21), null],
 );
@@ -109,6 +116,11 @@ void main() {
             : [
                 for (final edge in page.edges.edges)
                   survey.profile!.templates.matches(page.sourcePage, edge),
+                for (final region in page.edges.regions)
+                  survey.profile!.templates.matchesRegion(
+                    page.sourcePage,
+                    region,
+                  ),
               ],
       ],
   ];
@@ -177,8 +189,8 @@ void main() {
     tearDown(() => FlutterError.onError = handler);
 
     for (final (name, bytes) in [
-      ('cut short', '{"format":1,"book":"b0b0","pages":[[1,0.0'.codeUnits),
-      ('of the wrong shape', '{"format":1,"book":"b0b0","pages":7}'.codeUnits),
+      ('cut short', '{"format":2,"book":"b0b0","pages":[[1,0.0'.codeUnits),
+      ('of the wrong shape', '{"format":2,"book":"b0b0","pages":7}'.codeUnits),
       ('not text', [0xff, 0xfe, 0x00, 0x13]),
     ]) {
       test('$name is kept aside and reported, and the next write does not '

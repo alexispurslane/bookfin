@@ -596,7 +596,15 @@ Known limits for ticket tb-lnak:
 
 - A chapter's running header repeats only through its chapter. If the survey's sample has fewer than 3 pages of a chapter within 20 source pages, that header gets no text template, and its pages keep it as content.
 - On a page with text, only the text and folio templates apply, not the geometry templates.
-- Regions are never running lines. So the Raven scan's pencil page number in the top margin, a picture region, stays in the content box.
+- Regions are never running lines. So the Raven scan's pencil page number in the top margin, a picture region, stays in the content box. Ticket t1-6pf5 changed this for small marks that repeat, below.
+
+On 2026-11-10 the user decided t1-6pf5 with design B. A small region near the top or bottom edge that repeats its place is a running region, and the content box leaves it out, as it leaves out a running line. This covers pencil page numbers and library stamps in scans.
+
+- An edge region is a region that is no scan edge, with its middle within 12 percent of the page height from the top or bottom edge, as an edge line's.
+- A region is small when it is narrower and lower than the book's body line height.
+- For each side, a small edge region whose place and size repeat (`_sameShape`) on at least 30 percent of the side's body pages, and on at least 3, gives a region template. These are the thresholds of the geometry templates.
+- `RunningTemplates.mark` marks the matching regions in `PageAnalysis.runningRegions`, and `PageAnalysis.contentBox` leaves them out. A small edge region that does not repeat, such as an ornament, stays content. Every other region stays content too, so nothing printed in the text area is ever left out.
+- The region templates are part of the book profile that the survey freezes. The kept survey's format is 2.
 
 ### The book crop
 

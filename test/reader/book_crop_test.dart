@@ -11,7 +11,7 @@ import 'package:pdfrx_engine/pdfrx_engine.dart' as native;
 
 import 'ocr_hop_test.dart' show runInWorker;
 import 'page_analysis_test.dart'
-    show DrawnPage, DrawnPdf, FixtureRecognition, ravenPage;
+    show DrawnPage, DrawnPdf, FixtureRecognition, proseLines, ravenPage;
 import 'running_lines_test.dart' show marginsBook;
 
 /// A book whose pages come from other books: page n of this book is the
@@ -283,6 +283,27 @@ void main() {
       final pages = bookOf(margins);
       final profile = await runInWorker(bookProfile, pages);
       expect(profile.boxes, bookProfile(pages).boxes);
+    });
+
+    test('a pencil number that repeats in the margin of a scan stays out of '
+        'the side boxes and the crops', () async {
+      final pdf = DrawnPdf([
+        for (var page = 1; page <= 8; page++)
+          DrawnPage(proseLines(30, top: 300))
+            ..ink(page.isEven ? [101, 61, 119, 94] : [1481, 61, 1499, 94]),
+      ], hop: runInWorker);
+      final pages = bookOf([
+        for (var number = 1; number <= 8; number++)
+          await analyzedPage(pdf, number),
+      ]);
+      final profile = bookProfile(pages);
+      final padding = pages.first.edges.bodyLineHeight / 2;
+      for (final side in [0, 1]) {
+        expect(profile.boxes[side]!.top, closeTo(300 / 1600 - padding, 1e-3));
+      }
+      for (final page in pages) {
+        expect(cropOf(page, profile), profile.boxes[page.sourcePage % 2]);
+      }
     });
   });
 }
