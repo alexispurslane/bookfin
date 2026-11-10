@@ -27,3 +27,7 @@ User accepted the Nihil Unbound crop repair and Trim margins toggle on the Pixel
 **2026-11-10T21:36:52Z**
 
 Pixel 8 now has combined word-view update ef280c1 (flash fix 22e8453, drop caps a89130c, whole-line Text 280dc46). In-place install passed after 2595 tests/21 skipped and clean analysis/format. User owns phone input and acceptance. Three-view selector tb-9mcf and selection tb-mfkk remain running separately. Coverage/mutation hardening remains pending combined user acceptance.
+
+**2026-11-10T21:49:43Z**
+
+Selection update installed successfully in place on Pixel 8 (adb install -r; no phone UI operated). Built clean source d5b3eb70aa7b24a4de8b0caa7aefa07101b03aa7, including selection merge b3ab841. APK SHA256 eb2531b0173f53509ac7d043448eaf2dc72157f0f2d38e8003fe13137c6c0fae. Build, native/OCR packaging, signature and 16 KiB alignment checks passed. Logs: /tmp/bookfin-selection-phone-{build,install}.log. Combined host checks: 118 focused and 2616 full tests passed, 21 skipped; format and analysis clean. User owns phone acceptance; Android accessibility is not yet verified. Three-view selector tb-9mcf remains pending. Coverage/mutation hardening remains after combined acceptance.
