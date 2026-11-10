@@ -49,7 +49,7 @@ This document decides these things:
 | Block | A group of lines that the source prints as one column piece. Tesseract gives each block a type, such as text, picture or table. |
 | Region | A part of the page that reflow keeps whole: a figure, a table, an equation or a drop cap. |
 | Piece | One thing that reflow places on the screen: a word or a region. It has a source rectangle on the page, a target rectangle on the screen, and a range of the reading text. |
-| Page analysis | The facts about a page that need its pixels: regions, ink that no word covers, line-end hyphens on scanned pages, and the body line height. |
+| Page analysis | The facts about a page that need its pixels: regions, ink that no word covers, raised marks and line-end hyphens on scanned pages, and the body line height. |
 | Body line height | The median height of the page's prose lines, from the top of the ascenders to the bottom of the descenders, in page units. |
 | Column | The reflowed lines of one source page for one column width and one text size. |
 | Screen | The whole lines of a column that show at one time. A swipe shows the next screen. |
@@ -102,7 +102,7 @@ Bookfin adds no k2pdfopt code. Its options serve as a checklist of layout rules 
 | `-jfc` | On. Joins a figure caption to its figure. | A caption stays on the screen of its figure. | Regions |
 | `-col 2`, `-cg 0.1` | Detects up to 4 columns (1, 2 or 4), with a minimum column gap of 0.1 inch. | Tesseract's layout pass finds columns on a scanned page. The text layer's order gives them on a born-digital page. A text layer in a bad order goes to recognition. | Word geometry |
 | `-as` | Off. When on, straightens a page tilted by up to 4 degrees. | Always on, per line: each word sits on its line's baseline and turns by the line's slope. No limit of 4 degrees. | Baselines |
-| `-de 1.0` | Ignores specks smaller than 1 point. | Drop ink specks smaller than a third of the body line height. | Page analysis |
+| `-de 1.0` | Ignores specks smaller than 1 point. | Drop ink specks smaller than a sixth of the page's median line height. | Page analysis |
 | `-ws -0.20` | Word spacing as a fraction of the lowercase "o" height. Negative means automatic. | The layout pass and the text layer give words. The gap between word images is the source gap, between a third and one body line height. | Wrapping |
 | `-vls -1.2` | Line spacing as a fraction of the text size. | Keep the source's baseline pitch, scaled. | Baselines |
 | Weak point: tables, equations and figures get mangled. | Its fix is to draw boxes by hand. | Tesseract's block types, the prose line test and the ink analysis make regions that stay whole. | Page analysis, Regions |
@@ -131,7 +131,7 @@ flowchart TB
   TT --> AT
   PG --> BK["PdfBook<br/>ReflowPage cache"]
   AT --> BK
-  BK -->|render at 1600 px| AN["analyzePage (hop)<br/>regions, uncovered ink,<br/>hyphens, body line height"]
+  BK -->|render at 1600 px| AN["analyzePage (hop)<br/>reflow geometry, regions,<br/>hyphens, body line height"]
   AN --> LY["layoutColumn (hop)<br/>reads geometry and analysis,<br/>never the text"]
   SS["ReaderSession<br/>page view, text size"] --> LY
   LY --> WP["PdfWordPages<br/>column, band images,<br/>shown and next screen"]
@@ -157,7 +157,7 @@ The text attachment joins the two: for each word, its range of the reading text.
 | Layout record of a scanned page | `BundledEnglishText`, which owns the native worker. It keeps the record in the recognition cache on disk, beside the hOCR, under its own key. | The layout pass runs on a page that has no record. |
 | Text attachment, and the `ReflowPage` that holds geometry, analysis and attachment | `PdfBook`, in a cache of 16 pages. | The geometry arrives, or the reading text arrives. |
 | Page analysis of a page | `PdfBook`, inside the `ReflowPage`. | The word view first needs the page. |
-| Body line height of the book in this session | `PdfBook`, beside the analyses. | A page with at least 8 prose lines is analyzed. |
+| Body line height of the book in this session | `PdfBook`, beside the analyses: the median of the body line heights of its analyzed pages with at least 8 prose lines. | A page with at least 8 prose lines is analyzed. |
 | The page view: original, word view or text view | `ReaderSession`, in one enum that replaces the `reflow` bool. It lasts for the run of the app, as the reflow choice does today (t9-3n2m). | The person chooses a view. |
 | Text size | `ReaderSession`, as today. | The person steps the size. |
 | Theme | The app's appearance, as today. | The person chooses cream or night. |
@@ -315,19 +315,66 @@ The boxes are page coordinates relative to the page's bounding box, as pdfrx giv
 
 The word view needs facts that only the pixels know. `PdfBook.reflowPage(sourcePage)` gives the page's geometry and page analysis at once. It adds the text attachment after the reading text arrives. It renders the page at 1600 pixels wide, as recognition and the layout pass do, so their boxes match the raster exactly. The analysis runs in a hop. It takes the raster and the geometry, and returns only small typed lists.
 
-1. Ink. If a pixel's luminance is below half, the pixel is ink. The analysis works on a mask that is 4 times smaller in each direction. A 1600 by 2400 raster gives a 400 by 600 mask.
-2. Word cover. It removes the ink inside each word box, grown by a fifth of the line height.
-3. Components. It joins the remaining ink into 8-connected components. It drops specks smaller than a third of the body line height in both directions, as k2pdfopt's `-de` does.
-4. Uncovered ink. Some components lie inside a text line: they overlap the line's height by half, and they are no taller than 1.5 line heights. Each one becomes an extra word of that line, with an empty range. Examples are a mark that the layout pass dropped as noise, and text that a born-digital page draws as shapes. So every printed mark of a line shows.
-5. Regions. A block that the layout pass calls a picture or a table is a region. Components close to each other (less than half a body line height apart) join into one region. A word whose box lies more than half inside a region joins the region. Lines that fail the prose line test below join into one region with their neighbors that also fail it.
-6. Hyphens. On a scanned page, the analysis finds them from pixels, because the text can arrive later. For each word that ends a line, it looks inward from the word's right edge, within its last 0.6 line heights. A hyphen is the last ink there: a short horizontal mark in the middle of the line's lowercase height, after a white gap. Its width is the distance from that gap to the word's right edge. On a text layer page, the hyphen's character box gives the width, and no pixels are needed.
-7. Body line height. The median line height of the page's prose lines.
-8. Running headers and folios. With the book profile, the analysis marks the lines near the top and bottom edges that match its templates (see "Trimmed margins").
-9. Content box. The union of the page's words, regions and uncovered ink, without the marked lines.
+1. Ink. If a pixel's luminance is below half of the paper's luminance, the pixel is ink. The paper's luminance is the value that 90 percent of the page's pixels do not exceed.
+2. Raised marks. On a scanned page, ink at a word's right end can lie after a white gap and wholly more than a third of the line height above the baseline. That ink is a footnote mark or a closing quote. It becomes an extra word of the line, with an empty range, and the word's box ends before it. A mark smaller than a sixth of the line height in both directions is a speck and stays in its word.
+3. Hyphens. On a scanned page, the analysis finds them from pixels, because the text can arrive later. For each word that ends a line, it looks inward from the word's right edge, within its last 0.6 line heights. A hyphen is the last ink there: ink columns that together stay within a band a sixth of the line height thick. They follow a white column, or a column whose ink leaves the band, such as the stem of a letter that the hyphen touches. The band is at least 1.5 times as wide as it is thick and at most half a line height wide. Its middle lies between 0.1 and 0.3 line heights above the baseline. The hyphen's width runs from its first ink column to the word's right edge. A word that is only a hyphen is a dash. On a text layer page, the hyphen's character box gives the width, and no pixels are needed.
+4. Word cover. It covers the pixels inside each word box, grown by a fifth of the line height up and down and by a twentieth to the sides.
+5. Components. The ink that no word covers makes a mask that is 4 times smaller in each direction: a cell is ink when any of its pixels is. A 1600 by 2400 raster gives a 400 by 600 mask. The mask's 8-connected components keep the exact pixel box of their ink. Specks smaller than a sixth of the page's median line height in both directions are dropped, as k2pdfopt's `-de` does.
+6. Uncovered ink. Some components lie inside a text line: they overlap the line's height by half of their own height, they are no taller than 1.5 line heights, and they lie within one line height of the line's ends. Each one becomes an extra word of that line, with an empty range. Components of one line less than a fifth of its height apart become one extra word. Examples are a mark that the layout pass dropped as noise, and text that a born-digital page draws as shapes. So every printed mark of a line shows.
+7. Regions. A block that the layout pass calls a picture or a table is a region. Each other component is a region. Lines that fail the prose line test below join into one region with their neighbor lines that also fail it. Regions less than half of the page's median line height apart join. A word whose box lies more than half inside a region joins the region, and the region grows to hold it.
+8. Body line height. The median line height of the page's prose lines. A prose line passes the prose line test and holds no word of a region. A page without prose lines takes the median of all its lines, and a page without lines takes 12/432 of the page width (a 12 point line on a page 6 inches wide).
+9. Running headers and folios. With the book profile, the analysis marks the lines near the top and bottom edges that match its templates (see "Trimmed margins").
+10. Content box. The union of the page's words, regions and uncovered ink, without the marked lines.
 
-The prose line test has two parts. First, the line's words share a baseline within a third of the line height. Raised or lowered marks of at most two words are allowed. Second, no gap between its words is larger than 2.5 times the line's median word gap, unless that gap is alone. A neighbor line must have a wide gap that starts and ends within one body line height of it. Only then does the wide gap count. So a table's columns fail the test, and the wide gaps of a justified line do not. This avoids k2pdfopt's weak point of reading wide word spacing as sub-columns. Display equations and table rows fail the test. A line of fewer than 3 words is an exception. If its height is within 1.3 times the block's median line height, it passes. So short headings and last lines pass.
+Steps 2 to 7 use the page's median line height of all lines where they need a page-wide length, because the body line height needs the prose line test, which comes later.
 
-A region is a picture in two cases. The layout pass calls its block a picture, or more than 30 percent of its pixels are mid-tones (luminance between 0.2 and 0.8). Otherwise it is ink, such as an equation, a table or a drop cap. The tint rules below treat the two kinds differently.
+The prose line test has two parts. First, the line's words share a baseline. A word is raised when its box's bottom is more than a third of the line height above the baseline. It is lowered when its own baseline is more than a third below it. A line of 10 or more words can have two such words, and a shorter line one. Second, no wide gap between its source words lines up with a wide gap of a neighbor line. A gap is wide when it is more than 2.5 times the page's median word gap. Two wide gaps line up when they overlap by at least the median word gap. A neighbor line is the line before or after it, with its baseline within two line heights. So a table's columns fail the test, and the wide gaps of a justified line or of a running header do not. This avoids k2pdfopt's weak point of reading wide word spacing as sub-columns. Display equations and table rows fail the test. A line of fewer than 3 words is not held to the first part. It fails when it is more than 1.5 times the height of its block's median line.
+
+A region is a picture in two cases. The layout pass calls its block a picture, or more than 30 percent of the pixels of its box, grown by a fifth of the median line height, are mid-tones (luminance between 0.2 and 0.8 of the paper's). Otherwise it is ink, such as an equation, a table or a drop cap. The tint rules below treat the two kinds differently.
+
+### The analysis's payload
+
+`analyzePage` (`lib/reader/page_analysis.dart`) returns the page's reflow geometry and its `PageAnalysis`. The reflow geometry is the page's word geometry with the extra words of steps 2 and 6 inserted in their lines, in order of position. On a scanned page, it also has the hyphens and the shorter word boxes of steps 2 and 3. Lines, blocks and paragraphs do not change. So `layoutColumn` reads one list of words, and an extra word is a word with an empty range.
+
+`PageAnalysis` holds, in page units:
+
+- each region's box and kind (picture or ink)
+- for each word of the reflow geometry, the region that holds it, or -1
+- for each word of the reflow geometry, its word in the page's geometry, or -1 for an extra word
+- for each line, whether it is a prose line
+- the page's body line height
+
+Its `checkInvariants` makes sure that the lists fit the geometry, that region boxes lie inside the page, hold their words and do not overlap, and that a prose line holds no word of a region. The extra words and the region membership add about 5 KB to a page of 500 words.
+
+`PdfBook.reflowPage(sourcePage)` gives a `ReflowPage`: the reflow geometry, the analysis, the line height that scales the page, and `attachedText()`. The line height is the page's body line height when it has at least 8 prose lines. Otherwise it is the book's body line height in this session: the median of the body line heights of the pages with at least 8 prose lines that the book analyzed. Until such a page exists, it is the page's own. `attachedText()` asks for the reading text on its first call, so the analysis alone starts no recognition. It maps the page's text attachment to the reflow words. An extra word gets an empty range at the end of the range before it. `PdfBook` keeps the last 16 reflow pages that it gave, and a kept page is not drawn or analyzed again. A page without geometry, or whose analysis failed, is not kept, so the next request tries again.
+
+### Tuning on the fixtures
+
+Ticket tb-t8rh tuned the first values of this section on the reflow fixtures. The values above are the tuned values. These changes have reasons:
+
+| Rule | First value | Tuned value | Reason |
+| --- | --- | --- | --- |
+| Ink | Luminance below half of white | Below half of the paper's luminance | The paper of the Raven scan has a luminance of about 0.6. With white as the reference, its paper counts as mid-tones, so every region on the page is a picture. |
+| Raised marks | Not a step | Step 2 | On Gibbon's page, the layout words of "field", "city.", "pusillanimous", "Tongres," and "lake." hold footnote marks 17 to 21 inside their boxes, 2 to 5 pixels after a white gap. The word cover alone never uncovers them. |
+| Specks | Smaller than a third of the body line height | Smaller than a sixth of the median line height | Mark 18 on Gibbon's page is 11 pixels tall in a line 50 pixels tall: 0.22 line heights. A one-digit mark is as tall and narrower. The specks of the skewed page are at most 2.2 pixels. |
+| Word cover | Grown by a fifth of the line height | A fifth up and down, a twentieth to the sides | A mark that the layout pass dropped can sit a few pixels after its word. The mask's cells are 4 pixels wide, so the cover works on pixels before the mask, and a component keeps the exact box of its ink. |
+| Wide gap | More than 2.5 times the line's median word gap | More than 2.5 times the page's median word gap | A table row has as many column gaps as gaps inside its cells, so its median gap is itself wide. On the equation page, the table's column gaps are 3.0 to 5.8 times the page's median gap, and the widest gap of the justified paragraph is 1.5 times. |
+| Lined-up gaps | Start and end within one body line height | Overlap by at least the median word gap | A column of left-aligned cells ends its gaps at one place, but starts them at the ends of cells of different widths. |
+| Raised words | At most two | Two in a line of at least 10 words, otherwise one | The display equation of the equation page has two raised marks among 7 words, so it passed the first rule. A prose line of the fixtures has at most one raised word. |
+| Short lines | Pass within 1.3 times the block's median line height | Fail beyond 1.5 times; the gap rule also applies | The heading "Falling Bodies" is 1.35 times the height of its block's lines. A two-column table without rules has rows of two words. |
+| Failing lines | Join with their neighbors that fail | The same, with the next line's top within two line heights | The rows of a table without rules are farther apart than half a line height. |
+| Hyphens | Short horizontal mark after a white gap | The band rule of step 3 | The hyphen of "Thu-" touches its "u", and the hyphen of "justi-" is 9 by 5 pixels. A middle up to 0.3 line heights leaves out the arm of an r. |
+| Mid-tones | Of the region's pixels | Of the pixels of its box grown by a fifth of the median line height | The soft edges of the rule above Gibbon's footnotes, and of the Raven folio, fill their tight boxes. |
+
+What the analysis finds on the fixtures:
+
+| Fixture | Regions | Extra words | Hyphens from pixels |
+| --- | --- | --- | --- |
+| Equation page | The table (13 words) and the display equation (7 words), both ink | None | None (the text layer gives "accel-") |
+| Gibbon's page | The rule above the footnotes, ink | Marks 17 to 21, and the closing quote of "est." | All 10: arse-, num-, es-, Tou-, pro-, en-, ascer-, justi-, tran-, Thu- |
+| Raven page | The engraving (a picture block that also holds the title), the pencil page number and the scan's dark bottom edge as pictures, the folio as ink | None | None |
+
+On Gibbon's page, all 43 lines are prose lines, and the body line height is 50 pixels at 1600 pixels wide. The analysis takes about 90 ms on the host for Gibbon's page, with the render and a hop through `Isolate.run`.
 
 ## Lines and paragraphs
 
@@ -504,7 +551,7 @@ On 2026-11-10 the user asked that the Original view, too, crops away the margins
 
 ### One model for both views
 
-`PdfBook` owns a content box for each page. The page analysis of the word view produces it (steps 8 and 9 of "Page analysis"). So the Original view and the word view agree about what is content: both leave out the same running headers and folios. Cropping in the Original view does not need the word view's layout, bands or screens.
+`PdfBook` owns a content box for each page. The page analysis of the word view produces it (steps 9 and 10 of "Page analysis"). So the Original view and the word view agree about what is content: both leave out the same running headers and folios. Cropping in the Original view does not need the word view's layout, bands or screens.
 
 ### Running headers and folios
 
@@ -638,7 +685,7 @@ The view and the reader:
 Each module with state keeps one `checkInvariants`:
 
 - `PageGeometry`, as above.
-- The page analysis cache of `PdfBook`: at most 16 pages, each with the digest of its reading text.
+- The reflow pages of `PdfBook`: at most 16 pages, each with a geometry and an analysis that hold their invariants. An attached text that arrived has the digest of its reading text and a range of it for each reflow word.
 - `PdfWordPages`: its images belong to the shown or the next screen, and their pixels are within the bound.
 - The book crop: every page crop holds its content box, and every body page's crop equals its side's box.
 

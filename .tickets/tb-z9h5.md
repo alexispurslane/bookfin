@@ -17,3 +17,9 @@ T1 of docs/plans/pdf-word-image-reflow.md (Trimmed margins: Content boxes, Runni
 
 Behavior tests, red first, on a fixture book of at least 12 pages made with Typst (running header with the chapter title, folios at the outer bottom corner, a page with footnotes, a chapter start without a header, a figure near the bottom, a wide table) and on a scanned fixture sequence: headers and folios are marked on every page that has them; a chapter title at the top of a chapter start is not marked; footnotes and figures stay in the content box; the content box holds every word, region and uncovered ink that is not marked. Marking reads no text on scanned pages without text. Runs in a hop.
 
+
+## Notes
+
+**2026-11-10T14:59:40Z**
+
+From tb-t8rh: the Raven page's analysis has a region for the scan's dark bottom edge (the full page width, 14 pixels tall at 1600 wide) and one for the pencil page number in the top margin, both picture kind, and the folio '1' as an ink region. A content box that is the union of all regions reaches the page's bottom edge. The Raven picture block of the layout pass also holds the title 'The Raven'.
