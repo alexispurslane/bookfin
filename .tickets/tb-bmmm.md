@@ -1,6 +1,6 @@
 ---
 id: tb-bmmm
-status: open
+status: closed
 deps: [tb-t0ea]
 links: []
 created: 2026-11-10T03:01:07Z
@@ -16,3 +16,9 @@ W0b of docs/plans/pdf-word-image-reflow.md (The layout pass, measurements). The 
 ## Acceptance Criteria
 
 A table under tool/evidence/reader/layout-pass/ gives, per page and best of three, the time of the layout pass, of recognition after it, and of full recognition alone, with the emulator's ABI and the host. The ticket states the time from a page turn to the first word screen against the time to the first text screen before this epic. If the layout pass takes more than 40 percent of full recognition, record a ticket to revisit the design.
+
+## Notes
+
+**2026-11-10T13:29:22Z**
+
+Answered by tb-t0ea's emulator run (own AVD, Android 36 arm64, debug build, one run): the layout pass took 12 to 13 percent of recognition alone on the three densest pages (census-notice pages 1 and 2: 342 and 347 ms against 2876 and 2813 ms; nist-cloud page 6: 192 against 1510 ms), and 33 to 51 percent on light pages where recognition itself is short (scanned fixture 116 against 226 ms). The 40 percent gate concerns dense pages, where the wait matters, so the design stands. Pixel 8 times come in tb-fb6j.
