@@ -312,10 +312,26 @@ class PdfWordPages {
   /// The screen that [shown] draws.
   _ScreenImages? _displayed;
 
-  /// The number of the last call of [show]. A call that a later call
-  /// replaced changes nothing when its bands arrive.
+  /// Identifies the current display request. A later [show], [retainShown]
+  /// or [clearShown] makes earlier render completions change nothing.
   var _generation = 0;
   var _disposed = false;
+
+  /// Abandons pending replacements and keeps only the displayed screen.
+  /// A new page or size calls this before its column is ready to show.
+  void retainShown() {
+    _generation++;
+    _keep({_displayed?.key});
+  }
+
+  /// Ends word display when the viewport falls back to text or Original.
+  /// No pending render can restore the dismissed screen.
+  void clearShown() {
+    _generation++;
+    _keep(const {});
+    _displayed = null;
+    _shown.value = null;
+  }
 
   /// The column of source page [page] for [settings], and the bands of its
   /// screens, as [ReflowPage.wordColumn] gives them. Null when the page has
@@ -390,6 +406,8 @@ class PdfWordPages {
       rethrow;
     }
     if (generation != _generation || bands == null) return;
+    _displayed = asked;
+    _keep({key});
     _shown.value = WordScreen(
       page: page,
       settings: settings,
@@ -397,8 +415,7 @@ class PdfWordPages {
       column: column,
       bands: bands,
     );
-    _displayed = asked;
-    _keep({key});
+    if (generation != _generation || _disposed) return;
     final next = screen + (forward ? 1 : -1);
     if (next < 0 || next >= column.column.screenCount) return;
     final aheadKey = (

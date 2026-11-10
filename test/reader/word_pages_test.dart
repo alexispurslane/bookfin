@@ -632,6 +632,24 @@ void main() {
       expect(pages.shown.value!.screen, 0);
     });
 
+    test('retaining a screen from its display notification keeps its live '
+        'pixels and abandons rendering ahead', () async {
+      final book = await gibbon();
+      final pages = PdfWordPages(book);
+      addTearDown(pages.dispose);
+      pages.shown.addListener(pages.retainShown);
+
+      await pages.show(1, settings(), 0);
+
+      final shown = pages.shown.value!;
+      expect(shown.bands.every((band) => !band.image.debugDisposed), isTrue);
+      expect(
+        pages.liveImages,
+        unorderedEquals(shown.bands.map((band) => band.image)),
+      );
+      pages.checkInvariants();
+    });
+
     test('a turn to the next screen shows the bands that were rendered '
         'ahead for it', () async {
       final book = await gibbon();
