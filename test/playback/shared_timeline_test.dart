@@ -261,6 +261,32 @@ void main() {
     expect(reader.initialAddress?.quote, 'The far shore at last.');
   });
 
+  testWidgets('Go to on a reading entry from the player records a history '
+      'restore move from the edition\'s saved place, and the reader offers '
+      'Undo', (tester) async {
+    final key = account().scope.key;
+    readingStore.values[key]!['resumes'] = [
+      encodeTextPosition(reading('Where I stopped.')),
+    ];
+    await tester.runAsync(reader.refreshPersonalRecords);
+    await showPlayerHistory(tester);
+
+    await choose(
+      tester,
+      'Went to a search result',
+      'Go to “The far shore at last.”',
+    );
+    await settle(tester, () => reader.document != null);
+    // The pager shows the first page, at the place that the book opened at.
+    reader.acceptAddress(reader.token, reader.initialAddress!);
+
+    final moved = reader.history.first;
+    expect(moved.kind, HistoryAction.historyRestore);
+    expect(moved.before.anchor, reading('Where I stopped.').anchor);
+    expect(moved.after.anchor, reading('The far shore at last.').anchor);
+    expect(reader.undoOffer?.action, same(moved));
+  });
+
   testWidgets('Go back on a reading entry opens the reader where the move '
       'began', (tester) async {
     await showPlayerHistory(tester);

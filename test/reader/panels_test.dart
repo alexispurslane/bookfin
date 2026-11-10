@@ -1,6 +1,4 @@
-import 'package:bookfin/catalog/model.dart';
 import 'package:bookfin/foundation/theme.dart';
-import 'package:bookfin/playback/records.dart';
 import 'package:bookfin/reader/document.dart';
 import 'package:bookfin/reader/screen.dart';
 import 'package:flutter/material.dart' hide TextPosition;
@@ -17,19 +15,6 @@ Future<void> _show(WidgetTester tester, Widget panel) => tester.pumpWidget(
   ),
 );
 
-final _mark = Bookmark(
-  id: 'river-mark',
-  position: const TextPosition(
-    editionId: 'edition',
-    sourceKey: 'source',
-    revision: 'r1',
-    anchor: '{}',
-  ),
-  createdAt: DateTime.utc(2026, 11, 7, 9),
-  title: 'River mark',
-  note: 'Where the road bends',
-);
-
 void main() {
   testWidgets('a contents row reports the place that it names', (tester) async {
     final chosen = <String>[];
@@ -41,10 +26,6 @@ void main() {
           ContentsEntry('The bridge', 'two.xhtml', depth: 1),
         ],
         onContents: chosen.add,
-        bookmarks: const [],
-        onRestore: (_) {},
-        onEdit: (_) {},
-        onDelete: (_) {},
       ),
     );
     await tester.tap(find.text('The bridge'));
@@ -96,43 +77,6 @@ void main() {
     expect(find.text('No matches.'), findsOneWidget);
   });
 
-  testWidgets('a bookmark row on the Bookmarks tab reports a tap as a return '
-      'to its place, and its menu reports Edit and Delete', (tester) async {
-    final restored = <Bookmark<TextPosition>>[];
-    final edited = <Bookmark<TextPosition>>[];
-    final deleted = <Bookmark<TextPosition>>[];
-    await _show(
-      tester,
-      ReaderContentsPanel(
-        contents: const [ContentsEntry('River heading', 'one.xhtml')],
-        onContents: (_) {},
-        bookmarks: [_mark],
-        onRestore: restored.add,
-        onEdit: edited.add,
-        onDelete: deleted.add,
-      ),
-    );
-    await tester.tap(find.widgetWithText(Tab, 'Bookmarks'));
-    await tester.pumpAndSettle();
-    expect(find.text('Where the road bends'), findsOneWidget);
-    await tester.tap(find.text('River mark'));
-    await tester.pump();
-    expect(restored, [_mark]);
-
-    await tester.tap(find.byTooltip('Edit reading bookmark'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Edit title and note'));
-    await tester.pumpAndSettle();
-    expect(edited, [_mark]);
-
-    await tester.tap(find.byTooltip('Edit reading bookmark'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Delete'));
-    await tester.pumpAndSettle();
-    expect(deleted, [_mark]);
-    expect(restored, hasLength(1), reason: 'a menu choice is not a tap');
-  });
-
   group('the reader tool row', () {
     /// Shows the tool row. Every tool is on unless it is named in [off], and
     /// each tap adds its tool to [tapped].
@@ -140,6 +84,7 @@ void main() {
       WidgetTester tester,
       List<String> tapped, {
       Set<String> off = const {},
+      bool bookmarked = false,
       Widget? audio,
     }) {
       VoidCallback? report(String tool) =>
@@ -150,7 +95,9 @@ void main() {
           onContents: report('Contents'),
           onSearch: report('Search book'),
           onSettings: report('Reading settings'),
-          onBookmark: report('Bookmark this place'),
+          onBookmark: report(bookmarked ? 'Bookmarked' : 'Bookmark this place'),
+          bookmarked: bookmarked,
+          onHistory: report('History'),
           audio: audio,
         ),
       );
@@ -161,6 +108,7 @@ void main() {
       'Search book',
       'Reading settings',
       'Bookmark this place',
+      'History',
     ];
 
     testWidgets('reports each tap through the callback of its tool', (
@@ -187,7 +135,17 @@ void main() {
       expect(tapped, ['Contents']);
     });
 
-    testWidgets('puts the audio slot last, after the four tools', (
+    testWidgets('a bookmarked page fills the Bookmark tool\'s icon, names it '
+        'Bookmarked, and reports its tap', (tester) async {
+      final tapped = <String>[];
+      await showTools(tester, tapped, bookmarked: true);
+      expect(find.byTooltip('Bookmark this place'), findsNothing);
+      expect(find.byIcon(Icons.bookmark_rounded), findsOneWidget);
+      await tester.tap(find.byTooltip('Bookmarked'));
+      expect(tapped, ['Bookmarked']);
+    });
+
+    testWidgets('puts the audio slot last, after the five tools', (
       tester,
     ) async {
       await showTools(

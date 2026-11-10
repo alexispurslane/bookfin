@@ -143,6 +143,7 @@ void main() {
           'Search book',
           'Reading settings',
           'Bookmark this place',
+          'History',
         ])
           tester.getRect(inDock(find.byTooltip(tool))),
       ];
@@ -162,7 +163,7 @@ void main() {
       expect(
         [for (final tool in tools) tool.left],
         orderedEquals([...tools.map((tool) => tool.left)]..sort()),
-        reason: 'Contents, Search, Aa, then Add bookmark, left to right.',
+        reason: 'Contents, Search, Aa, Bookmark, then History, left to right.',
       );
     }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
 
@@ -189,14 +190,12 @@ void main() {
       final cover = tester.getRect(
         inDock(find.bySemanticsLabel('Play audiobook')),
       );
-      final bookmark = tester.getRect(
-        inDock(find.byTooltip('Bookmark this place')),
-      );
-      expect(cover.left, greaterThan(bookmark.right));
-      expect(cover.center.dy, closeTo(bookmark.center.dy, 1));
+      final history = tester.getRect(inDock(find.byTooltip('History')));
+      expect(cover.left, greaterThan(history.right));
+      expect(cover.center.dy, closeTo(history.center.dy, 1));
     }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
 
-    testWidgets('has four tools and no round cover button without an '
+    testWidgets('has five tools and no round cover button without an '
         'audiobook', (tester) async {
       await openReader(tester);
       expect(find.bySemanticsLabel('Play audiobook'), findsNothing);
@@ -389,40 +388,6 @@ void main() {
       await tester.pumpAndSettle();
       expect(button('Larger text').onPressed, isNotNull);
       expect(button('Smaller text').onPressed, isNull);
-    }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
-  });
-
-  group('Contents', () {
-    testWidgets('opens a sheet with a Contents tab and a Bookmarks tab', (
-      tester,
-    ) async {
-      final navigator = ControlNavigator();
-      final reader = await openReader(tester, navigator: navigator);
-      await reader.addBookmark(title: 'River mark');
-      await tester.tap(find.byTooltip('Contents'));
-      await tester.pumpAndSettle();
-      expect(find.widgetWithText(Tab, 'Contents'), findsOneWidget);
-      expect(find.widgetWithText(Tab, 'Bookmarks'), findsOneWidget);
-      expect(find.text('Half'), findsOneWidget);
-      expect(find.text('River mark'), findsNothing);
-      await tester.tap(find.widgetWithText(Tab, 'Bookmarks'));
-      await tester.pumpAndSettle();
-      expect(find.text('River mark'), findsOneWidget);
-      await tester.tap(find.text('River mark'));
-      await tester.pumpAndSettle();
-      expect(find.byType(ReaderContentsPanel), findsNothing);
-      expect(navigator.destinations, hasLength(1));
-    }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
-
-    testWidgets('says how to add a bookmark when there is none', (
-      tester,
-    ) async {
-      await openReader(tester);
-      await tester.tap(find.byTooltip('Contents'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(Tab, 'Bookmarks'));
-      await tester.pumpAndSettle();
-      expect(find.textContaining('No reading bookmarks'), findsOneWidget);
     }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
   });
 
