@@ -238,9 +238,17 @@ void main() {
       final text = await book.text(1);
       await book.text(1);
       expect(inputs, hasLength(1));
-      final page = inputs.single! as ({String source, Float64List boxes});
+      final page =
+          inputs.single!
+              as ({
+                String source,
+                Float64List boxes,
+                double width,
+                double height,
+              });
       expect(page.boxes, hasLength(page.source.length * 4));
-      expect(outputs.single, same(text));
+      expect((page.width, page.height), (612, 792));
+      expect((outputs.single! as PreparedPdfPage).text, same(text));
       expect(text.text, contains('The river follows the old road.'));
       expect(
         text.digest,

@@ -383,13 +383,14 @@ void main() {
   });
 
   testWidgets('the reflow fixtures hold the layout records and the hOCR '
-      'that the emulator gives for the scanned and skewed pages', (
+      'that the emulator gives for the scanned, skewed and footnote pages', (
     tester,
   ) async {
     await tester.runAsync(() async {
       for (final (file, fixture) in [
         ('scanned.pdf', 'scanned-page'),
         ('skewed.pdf', 'skewed-page'),
+        ('footnote.pdf', 'footnote-page'),
       ]) {
         final raster = await _raster(file, 1);
         final record = (await _channel.invokeMethod<Int32List>(

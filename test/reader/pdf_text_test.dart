@@ -14,8 +14,12 @@ Float64List oneLine(String source) {
   return boxes;
 }
 
-PdfText prepared(String source) =>
-    preparePdfPage((source: source, boxes: oneLine(source)));
+PdfText prepared(String source) => preparePdfPage((
+  source: source,
+  boxes: oneLine(source),
+  width: 612,
+  height: 792,
+)).text;
 
 void main() {
   test('a page text joins each run of whitespace into one space and maps every '
@@ -70,7 +74,12 @@ void main() {
   test(
     'a page whose characters do not each have a box offers the original page',
     () {
-      final text = preparePdfPage((source: 'river', boxes: oneLine('rive')));
+      final text = preparePdfPage((
+        source: 'river',
+        boxes: oneLine('rive'),
+        width: 612,
+        height: 792,
+      )).text;
       expect(text.text, 'river');
       expect(text.status, PdfTextStatus.unreliable);
     },
@@ -80,7 +89,12 @@ void main() {
     'a page with a character box outside the page offers the original page',
     () {
       final boxes = oneLine('river')..[2 * 4 + 1] = double.infinity;
-      final text = preparePdfPage((source: 'river', boxes: boxes));
+      final text = preparePdfPage((
+        source: 'river',
+        boxes: boxes,
+        width: 612,
+        height: 792,
+      )).text;
       expect(text.status, PdfTextStatus.unreliable);
     },
   );
@@ -89,8 +103,13 @@ void main() {
     'a page text at the size limit is prepared whole in a worker isolate',
     () async {
       final source = List.filled(400000, 'word ').join();
-      final page = (source: source, boxes: oneLine(source));
-      final text = await Isolate.run(() => preparePdfPage(page));
+      final page = (
+        source: source,
+        boxes: oneLine(source),
+        width: 612.0,
+        height: 792.0,
+      );
+      final text = await Isolate.run(() => preparePdfPage(page).text);
       expect(text.text.length, source.length - 1);
       expect(text.sourceOffsets, hasLength(source.length - 1));
       expect(text.digest, pdfTextDigest(source));

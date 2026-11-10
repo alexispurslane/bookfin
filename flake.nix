@@ -102,6 +102,8 @@
                 pkgs.nodejs_22
                 pkgs.curl
                 pkgs.python3
+                # Makes the born-digital reflow fixture (test/reader/fixtures/reflow).
+                pkgs.typst
                 pkgs.cmake
                 pkgs.ninja
                 android.androidsdk

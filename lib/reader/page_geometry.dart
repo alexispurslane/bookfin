@@ -388,6 +388,223 @@ PageBlockKind _blockKind(int type) => switch (type) {
   _ => PageBlockKind.unknown,
 };
 
+/// The word geometry of a text layer page, from its character boxes, or
+/// null when the boxes are not usable. It runs in the hop that prepares the
+/// page's text, so the text and the words agree.
+///
+/// [words] holds the first and the end character of each word of [source]:
+/// a run without white space, cut after a line-end hyphen that pdfium marks
+/// with U+0002. [boxes] holds left, top, right and bottom in PDF points, with
+/// y up, for each UTF-16 code unit of [source]. The page is [width] by
+/// [height] PDF points.
+///
+/// The boxes are not usable when a character of a word has no finite box of
+/// positive area inside the page, or when a word is more than three line
+/// heights tall.
+PageGeometry? pageGeometryFromCharacters({
+  required String source,
+  required Float64List boxes,
+  required Int32List words,
+  required double width,
+  required double height,
+}) {
+  final wordCount = words.length ~/ 2;
+  if (wordCount == 0 ||
+      boxes.length != source.length * 4 ||
+      !(width > 0 && width.isFinite && height > 0 && height.isFinite)) {
+    return null;
+  }
+  final wordBoxes = Float32List(wordCount * 4);
+  final ownBaselines = Float32List(wordCount * 2);
+  final bottoms = <double>[];
+  for (var word = 0; word < wordCount; word++) {
+    var left = double.infinity, top = double.infinity;
+    var right = -double.infinity, bottom = -double.infinity;
+    bottoms.clear();
+    for (var unit = words[word * 2]; unit < words[word * 2 + 1]; unit++) {
+      final x1 = boxes[unit * 4], y1 = boxes[unit * 4 + 1];
+      final x2 = boxes[unit * 4 + 2], y2 = boxes[unit * 4 + 3];
+      // The negated comparisons also refuse NaN.
+      if (!(x1 >= 0 && x1 < x2 && x2 <= width) ||
+          !(y2 >= 0 && y2 < y1 && y1 <= height)) {
+        return null;
+      }
+      left = math.min(left, x1 / width);
+      top = math.min(top, (height - y1) / width);
+      right = math.max(right, x2 / width);
+      bottom = math.max(bottom, (height - y2) / width);
+      // A character outside the BMP has one box for both of its code units,
+      // so it counts once, at its first code unit.
+      final code = source.codeUnitAt(unit);
+      if (code >= 0xDC00 && code <= 0xDFFF) continue;
+      final point = code >= 0xD800 && code <= 0xDBFF && unit + 1 < source.length
+          ? 0x10000 +
+                (code - 0xD800 << 10) +
+                source.codeUnitAt(unit + 1) -
+                0xDC00
+          : code;
+      if (!_descenders.contains(point)) bottoms.add((height - y2) / width);
+    }
+    wordBoxes
+      ..[word * 4] = left
+      ..[word * 4 + 1] = top
+      ..[word * 4 + 2] = right
+      ..[word * 4 + 3] = bottom;
+    final baseline = bottoms.isEmpty ? double.nan : _median(bottoms);
+    ownBaselines
+      ..[word * 2] = baseline
+      ..[word * 2 + 1] = baseline;
+  }
+
+  // A word starts a new line when it starts to the left of the word before
+  // it, or when its height does not overlap the height of its line so far.
+  // The text is a candidate, so its order is the reading order.
+  // NOTE: pdfium puts a line break between a letter and its raised mark,
+  // such as the 2 of v², and the mark's height overlaps the letter's height
+  // only by about a fifth. So a mark that overlaps at all stays on its line.
+  final lineStarts = <int>[0];
+  var lineTop = wordBoxes[1], lineBottom = wordBoxes[3];
+  for (var word = 1; word < wordCount; word++) {
+    final top = wordBoxes[word * 4 + 1], bottom = wordBoxes[word * 4 + 3];
+    if (wordBoxes[word * 4] < wordBoxes[(word - 1) * 4] ||
+        math.min(bottom, lineBottom) <= math.max(top, lineTop)) {
+      lineStarts.add(word);
+      lineTop = top;
+      lineBottom = bottom;
+    } else {
+      lineTop = math.min(lineTop, top);
+      lineBottom = math.max(lineBottom, bottom);
+    }
+  }
+  lineStarts.add(wordCount);
+  final lineCount = lineStarts.length - 1;
+
+  final lineMetrics = Float32List(lineCount * 4);
+  final lineTops = Float64List(lineCount), lineBottoms = Float64List(lineCount);
+  final hyphens = Float32List(wordCount);
+  for (var line = 0; line < lineCount; line++) {
+    final first = lineStarts[line], end = lineStarts[line + 1];
+    final baselines = [
+      for (var word = first; word < end; word++)
+        if (!ownBaselines[word * 2].isNaN) ownBaselines[word * 2].toDouble(),
+    ];
+    final baseline = _median(
+      baselines.isNotEmpty
+          ? baselines
+          : [
+              for (var word = first; word < end; word++)
+                wordBoxes[word * 4 + 3],
+            ],
+    );
+    var top = double.infinity, bottom = -double.infinity;
+    for (var word = first; word < end; word++) {
+      top = math.min(top, wordBoxes[word * 4 + 1]);
+      bottom = math.max(bottom, wordBoxes[word * 4 + 3]);
+    }
+    lineTops[line] = top;
+    lineBottoms[line] = bottom;
+    final ascent = math.max(baseline - top, 0.0);
+    final descent = math.max(bottom - baseline, 0.0);
+    lineMetrics
+      ..[line * 4] = baseline
+      ..[line * 4 + 1] = 0
+      ..[line * 4 + 2] = math.max(ascent + descent, 1e-6)
+      ..[line * 4 + 3] = descent;
+    // A word that is only a hyphen is a dash, not the first half of a word.
+    final last = end - 1;
+    final hyphen = words[last * 2 + 1] - 1;
+    if (hyphen > words[last * 2] &&
+        _hyphens.contains(source.codeUnitAt(hyphen))) {
+      hyphens[last] = (boxes[hyphen * 4 + 2] - boxes[hyphen * 4]) / width;
+    }
+  }
+
+  final lineHeight = _median([
+    for (var line = 0; line < lineCount; line++) lineMetrics[line * 4 + 2],
+  ]);
+  for (var word = 0; word < wordCount; word++) {
+    if (wordBoxes[word * 4 + 3] - wordBoxes[word * 4 + 1] > 3 * lineHeight) {
+      return null;
+    }
+  }
+
+  // A line starts a new block when the gap above it is more than twice the
+  // median line pitch, or when its left edge moves by more than a quarter
+  // of the page width.
+  final pitches = [
+    for (var line = 1; line < lineCount; line++)
+      if (lineMetrics[line * 4] > lineMetrics[(line - 1) * 4])
+        lineMetrics[line * 4] - lineMetrics[(line - 1) * 4],
+  ];
+  final pitch = pitches.isEmpty ? double.infinity : _median(pitches);
+  double lineLeft(int line) => wordBoxes[lineStarts[line] * 4];
+  final blockStarts = <int>[0];
+  for (var line = 1; line < lineCount; line++) {
+    if (lineTops[line] - lineBottoms[line - 1] > 2 * pitch ||
+        (lineLeft(line) - lineLeft(line - 1)).abs() > 0.25) {
+      blockStarts.add(line);
+    }
+  }
+  blockStarts.add(lineCount);
+  final blockCount = blockStarts.length - 1;
+  final blockBoxes = Float32List(blockCount * 4);
+  for (var block = 0; block < blockCount; block++) {
+    var left = double.infinity, top = double.infinity;
+    var right = -double.infinity, bottom = -double.infinity;
+    final first = lineStarts[blockStarts[block]];
+    for (var word = first; word < lineStarts[blockStarts[block + 1]]; word++) {
+      left = math.min(left, wordBoxes[word * 4]);
+      top = math.min(top, wordBoxes[word * 4 + 1]);
+      right = math.max(right, wordBoxes[word * 4 + 2]);
+      bottom = math.max(bottom, wordBoxes[word * 4 + 3]);
+    }
+    blockBoxes
+      ..[block * 4] = left
+      ..[block * 4 + 1] = top
+      ..[block * 4 + 2] = right
+      ..[block * 4 + 3] = bottom;
+  }
+
+  return PageGeometry(
+    height: height / width,
+    boxes: wordBoxes,
+    ownBaselines: ownBaselines,
+    hyphens: hyphens,
+    lineStarts: Int32List.fromList(lineStarts),
+    lineMetrics: lineMetrics,
+    blockStarts: Int32List.fromList(blockStarts),
+    blockBoxes: blockBoxes,
+    blockKinds: Uint8List(blockCount)
+      ..fillRange(0, blockCount, PageBlockKind.text.index),
+    paragraphStarts: Int32List(0),
+    paragraphJustifications: Uint8List(0),
+    paragraphIndents: Float32List(0),
+  );
+}
+
+/// The characters whose letters reach below the baseline, as Unicode code
+/// points: Latin, Greek and mathematical italic letters with descenders,
+/// and punctuation that hangs below the baseline. A word's own baseline is
+/// the median bottom of its other characters.
+final _descenders = {
+  ...'gjpqyçşţęąųįǫ,;()[]{}|/_@\$§µßβγζημξρςφχψ'.runes,
+  ...'𝑔𝑗𝑝𝑞𝑦𝛽𝛾𝜁𝜂𝜇𝜉𝜌𝜑𝜒𝜓𝜙'.runes,
+};
+
+/// The UTF-16 code units of a hyphen that can end a line: the hyphen-minus,
+/// the soft hyphen, the hyphen, the non-breaking hyphen, and U+0002, which
+/// pdfium puts in place of a hyphen that it found at a line end.
+const _hyphens = {0x2D, 0xAD, 0x2010, 0x2011, 0x02};
+
+/// The median of [values], which is not empty.
+double _median(List<double> values) {
+  final sorted = values.toList()..sort();
+  final middle = sorted.length ~/ 2;
+  return sorted.length.isOdd
+      ? sorted[middle]
+      : (sorted[middle - 1] + sorted[middle]) / 2;
+}
+
 /// For each word of [page]'s geometry, its range of the reading text that
 /// [page]'s recognized words name. It runs in a hop.
 ///

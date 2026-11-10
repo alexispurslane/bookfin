@@ -9,7 +9,7 @@ Run it in the dev shell, after `python3 tool/reader/fetch_pdf_corpus.py`:
     python3 tool/reader/ocr_layout_device_test.py emulator-5554
 
 The reflow fixtures in test/reader/fixtures/reflow hold the layout records
-and the hOCR of the scanned and skewed pages. To record them again, add
+and the hOCR of the scanned, skewed and footnote pages. To record them again, add
 `--record test/reader/fixtures/reflow`. The device then sends what it gives,
 and the runner writes it there.
 
@@ -35,7 +35,11 @@ import zlib
 
 ROOT = Path(__file__).resolve().parents[2]
 FIXTURES = ROOT / 'test/reader/fixtures/reflow'
-RECORDED = ('scanned-page.layout', 'scanned-page.hocr', 'skewed-page.layout', 'skewed-page.hocr')
+RECORDED = (
+    'scanned-page.layout', 'scanned-page.hocr',
+    'skewed-page.layout', 'skewed-page.hocr',
+    'footnote-page.layout', 'footnote-page.hocr',
+)
 RAVEN = ROOT / 'tool/research/readers/evidence/text-quality/raven-raster-only.pdf'
 CORPUS = ROOT / '.cache/reader-corpus'
 
@@ -87,6 +91,7 @@ def skewed_page(scan, angle, specks, seed):
 def prepare(folder):
     shutil.copyfile(RAVEN, folder / 'scanned.pdf')
     (folder / 'skewed.pdf').write_bytes(skewed_page(RAVEN, 2.5, 300, 20261110))
+    shutil.copyfile(FIXTURES / 'footnote-page.pdf', folder / 'footnote.pdf')
     for name in ('nist-cloud.pdf', 'census-notice.pdf', 'raven-1873.pdf'):
         shutil.copyfile(CORPUS / name, folder / name)
     for name in RECORDED:
