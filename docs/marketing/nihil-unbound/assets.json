@@ -1,0 +1,57 @@
+{
+  "capturedOn": "2026-11-10",
+  "rendererRevision": "bfcbe24b7c6ef6324c6769d02c40cf236ebd5ed0",
+  "method": "Production Flutter widgets through host test runner, not Android; WebP quality 84, method 6; no crop, retouch, or compositing",
+  "logicalViewport": {
+    "width": 411,
+    "height": 840,
+    "devicePixelRatio": 2
+  },
+  "captures": [
+    {
+      "file": "original.webp",
+      "width": 822,
+      "height": 1680,
+      "bytes": 143144,
+      "sha256": "41211313791918b4a637cf2c63fbc512017d421ed0dfe99f13ab0b93aecaa654",
+      "rawPngSha256": "779caac2da9253a1c09038047ce0be6a90fc860425651c7b5b224369e9237f00"
+    },
+    {
+      "file": "page-words-cream.webp",
+      "width": 822,
+      "height": 1680,
+      "bytes": 128396,
+      "sha256": "eee5d3a624a3e5b20acc635a08685d9194f04ffbb7d49f45f3ed6534b502984f",
+      "rawPngSha256": "af673d63f44d55df77c128dfb8a3dc9eb93bdf974f3ea2e024c4bbf68337cbd3"
+    },
+    {
+      "file": "page-words-night.webp",
+      "width": 822,
+      "height": 1680,
+      "bytes": 114854,
+      "sha256": "f0a43e3c566a647ea0ada7fa3befc16a0d4f7aef2c9fa6d015d640929a9d8ee1",
+      "rawPngSha256": "d554ab63fee663fd92e48a4164f793b503644404b8bfcb1233f201e2aa695129"
+    }
+  ],
+  "source": "User-authorized limited Nihil Unbound screenshot excerpt; source PDF not redistributed",
+  "sourcePdfSha256": "aefc4c4535dcf2835ae68195b05599cc728e03ef15edcd8a4862b8a1e723c173",
+  "sourcePageOneBased": 24,
+  "printedPage": 9,
+  "original": {
+    "view": "Original",
+    "theme": "Cream",
+    "trimMargins": false
+  },
+  "cream": {
+    "view": "Page words",
+    "theme": "Cream",
+    "fontSizeSetting": 24,
+    "screen": 1
+  },
+  "night": {
+    "view": "Page words",
+    "theme": "Night",
+    "fontSizeSetting": 28,
+    "screen": 1
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "ticket": "boo-qn2i",
+  "checkedOn": "2026-11-10",
+  "rendererRevision": "bfcbe24b7c6ef6324c6769d02c40cf236ebd5ed0",
+  "skillsApplied": [
+    "impeccable: preserve the existing cream/sepia system, reuse bullet styling, clarify evidence and hierarchy",
+    "software-design: reuse production rendering and timeline owners, remove the duplicate HTML timeline",
+    "simple-english: concrete product language and short feature bullets",
+    "pdf: inspect real source renders and limit published material to the authorized excerpt",
+    "test-driven-development: read; no application behavior changed and no HTML-string mirror tests added"
+  ],
+  "checks": [
+    {
+      "command": "nix develop --command flutter test --no-pub --concurrency=1 .cache/qn2i_pdf_capture_test.dart .cache/qn2i_history_capture_test.dart --reporter expanded",
+      "result": "pass",
+      "testsPassed": 2,
+      "localLog": ".cache/qn2i-captures-final.log",
+      "scope": "Real production PdfViewport and shared History captures; no Flutter exceptions",
+      "notices": "Optional iphoneos and iphonesimulator SDKs are absent; host captures do not use them"
+    },
+    {
+      "command": "nix develop --command flutter test --no-pub --concurrency=1 test/playback/shared_timeline_test.dart test/playback/history_test.dart test/reader/reading_timeline_test.dart --reporter expanded",
+      "result": "pass",
+      "testsPassed": 64,
+      "localLog": ".cache/qn2i-history-claims.log",
+      "scope": "Shared newest-first entries, medium icons, cross-medium Go to, durable listening history, reading records, bookmarks and return jumps"
+    },
+    {
+      "command": "nix develop --command python3 .cache/check_qn2i_marketing.py",
+      "result": "pass",
+      "localLog": ".cache/qn2i-markup-assets.log",
+      "imagesChecked": 12,
+      "linksChecked": 41,
+      "uniqueIds": 14,
+      "newCaptureBytes": 415224,
+      "largestNewCaptureBytes": 143144,
+      "scope": "Balanced markup, unique IDs, local image/font/link paths, internal anchors, image dimensions and alt text, provenance source paths, capture sizes and hashes, unchanged external download/source links"
+    },
+    {
+      "tool": "T3 html_preview",
+      "result": "pass",
+      "scope": "Targeted reflow and History sections with real local WebP images, matching grid/bullet rules, fallback fonts and T3 theme tokens; not a full-page or exact-brand-font review",
+      "previews": [
+        {
+          "width": 390,
+          "appearance": "light",
+          "documentWidth": 390,
+          "allThreeImagesLoaded": true,
+          "comparisonColumns": "355px",
+          "historyColumns": "355px"
+        },
+        {
+          "width": 1280,
+          "appearance": "dark",
+          "documentWidth": 1280,
+          "allThreeImagesLoaded": true,
+          "comparisonColumns": "399px 399px",
+          "historyColumns": "616.906px 514.078px",
+          "historyImageWidth": 360
+        }
+      ],
+      "limitations": "Preview rem/font metrics are the T3 host defaults. Parent owns the final full-page check with the bundled fonts inlined. The production font files and cream/sepia tokens are unchanged."
+    },
+    {
+      "command": "git diff --check",
+      "result": "pass"
+    }
+  ],
+  "manualInspection": "Inspected the selected source-page Original, Cream and Night renders and all four final WebPs. The excerpt is body prose, all three PDF captures use source page 24, and the shared History shows listening and reading icons plus expanded Go back, Go to and Delete controls.",
+  "trialLimitations": [
+    "Unpublished source-page 18 trial did not reach word-view readiness. Native probes found unreliable text layers on pages 18–22; selected page 24 has native geometry and passes.",
+    "Early History harness attempts stalled on the test clock and were stopped by their own process IDs only. The final clock-pumping harness passes.",
+    "No full Flutter suite was run because executable app code was not changed. No coverage or mutation jobs were started."
+  ],
+  "safety": {
+    "devicesUsed": false,
+    "serverStarted": false,
+    "sourcePdfCommitted": false,
+    "sourceTextDumpCommitted": false,
+    "privateRecordsUsed": false,
+    "subagentsStarted": false,
+    "applicationCodeChanged": false,
+    "flutterWebBootFileChanged": false
+  }
+}

@@ -79,6 +79,7 @@ h1{font:600 clamp(2.6rem,6vw,4.6rem)/1.05 var(--serif);margin:0 auto 1.25rem;max
 .capture img{width:100%;border:1px solid var(--line);border-radius:16px}
 .capture-note{max-width:70ch;margin:1.5rem auto 0;font:400 .95rem/1.6 var(--display);color:var(--subtle)}
 .reader-samples{width:100%;margin-top:0}
+.reflow-features{max-width:62ch;margin:2rem auto 0;text-align:left}
 
 /* Preface */
 .why{max-width:62ch;margin:5rem auto 0}
@@ -127,20 +128,8 @@ h1{font:600 clamp(2.6rem,6vw,4.6rem)/1.05 var(--serif);margin:0 auto 1.25rem;max
 .night .copy li::before{background:var(--n-accent)}
 .night a{color:var(--n-accent)}
 
-/* History, typeset like the app's timeline */
-.timeline{background:var(--sheet);border:1px solid var(--line);border-radius:var(--radius);padding:1.75rem 1.9rem;margin:0}
-.timeline .book{font:600 1.15rem var(--serif);margin:0}
-.timeline .by{font:400 .9rem var(--display);color:var(--subtle);margin:.15rem 0 1.25rem}
-.timeline h3{font:600 .8rem var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--subtle);margin:1.25rem 0 .4rem}
-.timeline ol{list-style:none;margin:0;padding:0 0 0 1.1rem;border-left:2px solid var(--line)}
-.timeline li{position:relative;display:grid;grid-template-columns:3.4rem 1fr;gap:.75rem;padding:.55rem 0;font:400 1rem/1.45 var(--display)}
-.timeline li::before{content:"";position:absolute;left:calc(-1.1rem - 6px);top:1rem;width:10px;height:10px;border-radius:50%;background:var(--sheet);border:2px solid var(--copper)}
-.timeline li.mark::before{background:var(--copper)}
-.timeline li.back{color:var(--accent)}
-.timeline li.back::before{border-style:dashed}
-.timeline time{font-variant-numeric:tabular-nums;color:var(--subtle)}
-.timeline small{display:block;color:var(--subtle);font-size:.85rem}
-.history-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.9fr) minmax(0,250px);gap:clamp(2rem,4vw,3.5rem);align-items:center}
+.history-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:clamp(2rem,4vw,3.5rem);align-items:center}
+.history-capture{width:min(100%,360px);justify-self:center}
 
 /* Sync, two devices that disagree */
 .devices{display:grid;grid-template-columns:1fr 1fr;gap:1rem;max-width:36em;margin-top:1.75rem}
@@ -166,10 +155,6 @@ h1{font:600 clamp(2.6rem,6vw,4.6rem)/1.05 var(--serif);margin:0 auto 1.25rem;max
 footer{border-top:1px solid var(--line);padding:2.5rem 0 3.5rem;color:var(--subtle);font:400 .95rem var(--display);display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap}
 footer a{color:var(--subtle);display:inline-block;padding:.6rem .25rem}
 
-@media (max-width:980px){
-  .history-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
-  .history-grid .phones{display:none}
-}
 @media (max-width:860px){
   .top nav .wide{display:none}
   .chapter{grid-template-columns:minmax(0,1fr);padding:4.5rem 0}
@@ -226,18 +211,29 @@ footer a{color:var(--subtle);display:inline-block;padding:.6rem .25rem}
 
   <section class="reflow" id="reflow" aria-labelledby="reflow-h">
     <h2 id="reflow-h">The same page. Room to read.</h2>
-    <p>Reflow means wrapping a page into new lines. In Page words, Bookfin does it with images of the PDF's own words, not a replacement font. Headings and paragraphs keep their structure. Figures and charts stay as images among the words.</p>
+    <p>A PDF need not mean tiny print and sideways scrolling. Page words keeps the book's own printed words and wraps them to your screen at a size you choose. Here is the same page of <cite>Nihil Unbound</cite>, before and after.</p>
     <div class="capture-grid">
       <figure class="capture">
-        <figcaption>Before · Original<small>The source page, fitted to the screen.</small></figcaption>
-        <img src="docs/marketing/pdf-reflow/raven-original.webp" width="822" height="1920" fetchpriority="high" alt="Original view of The Raven: an engraving above three small lines of verse on the scanned page">
+        <figcaption>Before · Original<small>Printed page 9, fitted to the screen.</small></figcaption>
+        <img src="docs/marketing/nihil-unbound/original.webp" width="822" height="1680" fetchpriority="high" alt="Nihil Unbound printed page 9 in Original view: small dense prose, an indented quotation, italics, and a section heading">
       </figure>
       <figure class="capture">
-        <figcaption>After · Page words<small>The same page, size 24, in Cream.</small></figcaption>
-        <img src="docs/marketing/pdf-reflow/raven-page-words-cream.webp" width="822" height="1920" alt="The same Raven page in Page words: the engraving remains, while the original printed words are larger and wrap into new lines on cream paper">
+        <figcaption>After · Page words · Cream<small>The same page, size 24, first screen.</small></figcaption>
+        <img src="docs/marketing/nihil-unbound/page-words-cream.webp" width="822" height="1680" alt="The same Nihil Unbound page reflowed in Cream: larger original printed words wrap into new lines, with the paragraph break and italic words retained">
       </figure>
     </div>
-    <p class="capture-note"><cite>The Raven</cite> (1873), scan page 9. Actual Bookfin host-renderer captures made on a computer, not phone screenshots. The engraving stays an image; the words follow the reading theme. Credit: Library of Congress. <a href="docs/marketing/pdf-reflow/README.md">Source and capture notes</a>.</p>
+    <p class="capture-note">Ray Brassier, <cite>Nihil Unbound</cite>, printed page 9 (PDF page 24). Bookfin captures made on a computer, not Android screenshots. Reflow continues onto the next screen. <a href="docs/marketing/nihil-unbound/README.md">Excerpt and capture notes</a>.</p>
+    <div class="copy reflow-features">
+      <ul>
+        <li>Keep the book's printed character. Page words uses images of the original words, including their letterforms and italics, rather than replacing the font.</li>
+        <li>Choose a comfortable size. Words wrap into new lines to fit the screen, and each turn shows complete lines instead of cutting a line in half.</li>
+        <li>Read in Cream or Night. The printed words take on your chosen paper and ink colors. <a href="#reader">See the same page larger in Night</a>.</li>
+        <li>Keep more than the words. Headings, paragraph breaks, and indents shape the flow; pictures, figures, and charts stay together as images.</li>
+        <li>Use the text, too. Where the page's text is available, select and copy a passage or search for a word.</li>
+        <li>Choose how to read. Return to Original for the source page, or choose Text for the reader's font. Trim blank page margins when you want more room.</li>
+        <li>Read downloaded PDFs offline. English scans can have their text recognized on the phone, without a network connection.</li>
+      </ul>
+    </div>
   </section>
 
   <section class="why" id="why">
@@ -261,7 +257,7 @@ footer a{color:var(--subtle);display:inline-block;padding:.6rem .25rem}
       <li><a href="#reflow"><span class="n">Start.</span><span class="t">PDF reflow</span><span class="dots"></span><span class="d">the same page, before and after</span></a></li>
       <li><a href="#shelf"><span class="n">One.</span><span class="t">The shelf</span><span class="dots"></span><span class="d">library and downloads</span></a></li>
       <li><a href="#player"><span class="n">Two.</span><span class="t">The player</span><span class="dots"></span><span class="d">chapters, late nights</span></a></li>
-      <li><a href="#history"><span class="n">Three.</span><span class="t">Both histories</span><span class="dots"></span><span class="d">listening and reading</span></a></li>
+      <li><a href="#history"><span class="n">Three.</span><span class="t">Shared History</span><span class="dots"></span><span class="d">listening and reading</span></a></li>
       <li><a href="#reader"><span class="n">Four.</span><span class="t">The reader</span><span class="dots"></span><span class="d">EPUB, MOBI, scanned PDF</span></a></li>
       <li><a href="#sync"><span class="n">Five.</span><span class="t">Every device</span><span class="dots"></span><span class="d">sync on your server</span></a></li>
       <li><a href="#setup"><span class="n">Six.</span><span class="t">Getting it</span><span class="dots"></span><span class="d">build and install</span></a></li>
@@ -310,36 +306,24 @@ footer a{color:var(--subtle);display:inline-block;padding:.6rem .25rem}
   <section class="chapter full" id="history">
     <div class="history-grid">
       <div class="copy">
-        <h2><span>Three.</span> Both histories</h2>
+        <h2><span>Three.</span> One shared History</h2>
         <p class="stand">Your listening and reading, with a way back.</p>
-        <p>Fell asleep? Skipped too far? Followed a reference in your ebook? Bookfin saves audiobook and ebook positions, and keeps listening moves, reading moves, and bookmarks together in History.</p>
-        <p>Open History from the player, the reader, or the book's details. Choose Go to on an entry to open its audiobook or ebook at that place. You can take a detour in either, then find your way back.</p>
+        <p>Fell asleep? Skipped too far? Followed a reference in your ebook? Bookfin saves your place in each and brings the book's listening moves, reading moves, and bookmarks together in one History.</p>
+        <p>Open the same History from the player, the reader, or the book's details. You can explore either edition without losing the path you took.</p>
         <ul>
-          <li>Listening and reading moves share one timeline, newest first.</li>
+          <li>See listening and reading entries together, newest first, with headphone and book icons to tell them apart.</li>
+          <li>Choose Go to on a reading entry while listening, and its ebook opens at that place. Choose an audio entry from the reader, and its audiobook opens there instead.</li>
           <li>Go back to where a move began, or Undo a jump.</li>
           <li>Returning to a saved place adds a move instead of erasing the past.</li>
           <li>Add and name bookmarks in either medium.</li>
           <li>Your history stays until you choose to delete it.</li>
         </ul>
       </div>
-      <figure class="timeline" aria-label="An illustrative history with listening and reading entries">
-        <p class="book">First Frost</p>
-        <p class="by">Example history · audiobook and ebook</p>
-        <h3>Tonight</h3>
-        <ol>
-          <li class="back"><time>23:20</time><div>Returned to a reading bookmark<small>Ebook · Chapter 4 · “the orchard wall”</small></div></li>
-          <li><time>23:14</time><div>Paused<small>Audiobook · Chapter 4 · 2:39:07</small></div></li>
-          <li class="mark"><time>22:58</time><div>Bookmark: “the orchard wall”<small>Ebook · Chapter 4</small></div></li>
-          <li><time>22:41</time><div>Seeked forward 10 minutes<small>Audiobook · 2:14:02 to 2:24:02</small></div></li>
-        </ol>
-        <h3>Yesterday</h3>
-        <ol>
-          <li><time>07:52</time><div>Jumped to Chapter 4<small>Audiobook · from Chapter 3 · 1:58:10</small></div></li>
-        </ol>
+      <figure class="capture history-capture">
+        <figcaption>Reading and listening, together<small>A reading move expanded over the player.</small></figcaption>
+        <img src="docs/marketing/shared-history/shared-history.webp" width="822" height="1680" loading="lazy" alt="Bookfin's shared History over the player: an audio jump, a reading search move with Go back, Go to and Delete controls, a reading bookmark, and a chapter move">
+        <p class="capture-note">Real Bookfin screen with demonstration records, captured on a computer, not Android. <a href="docs/marketing/shared-history/README.md">Capture notes</a>.</p>
       </figure>
-      <div class="phones">
-        <img src="docs/screenshots/history.png" width="720" height="1600" loading="lazy" alt="The history timeline in the app, with seeks, pauses and bookmarks grouped by day">
-      </div>
     </div>
   </section>
 
@@ -352,7 +336,7 @@ footer a{color:var(--subtle);display:inline-block;padding:.6rem .25rem}
       <ul>
         <li>Original keeps the source page as a page, with optional margin trimming.</li>
         <li>Page words wraps the original word images to your screen at an adjustable size, with figures and charts kept as images.</li>
-        <li>Text uses recognized or extracted text in the reader's font. Scanned pages are recognized on the phone, without a network.</li>
+        <li>Text uses recognized or extracted text in the reader's font. English scans are recognized on the phone, without a network.</li>
       </ul>
       <p>Change between Cream and Night without changing the book. Select words to copy a passage, and use History to return to an earlier reading place.</p>
     </div>
@@ -362,11 +346,11 @@ footer a{color:var(--subtle);display:inline-block;padding:.6rem .25rem}
         <img src="docs/screenshots/reader-epub.png" width="720" height="1600" loading="lazy" alt="An EPUB book open in Bookfin's cream reader">
       </figure>
       <figure class="capture">
-        <figcaption>Page words · Night<small>The same Raven page, size 28, first screen.</small></figcaption>
-        <img src="docs/marketing/pdf-reflow/raven-page-words-night.webp" width="822" height="1920" loading="lazy" alt="The same Raven engraving above original word images in light ink, wrapped at a larger size on Bookfin's warm Night background">
+        <figcaption>Page words · Night<small>The same Nihil Unbound page, size 28, first screen.</small></figcaption>
+        <img src="docs/marketing/nihil-unbound/page-words-night.webp" width="822" height="1680" loading="lazy" alt="The same Nihil Unbound printed page 9 reflowed at a larger size in Night, with original word images in warm light ink on dark paper">
       </figure>
     </div>
-    <p class="capture-note">The Night image is another Bookfin host-renderer capture made on a computer, not a phone screenshot. Its larger words continue on the next screen. <a href="#reflow">Compare this source page with Original and Cream</a>.</p>
+    <p class="capture-note">The Night capture uses the same printed page as the comparison, with a larger size and different line breaks. Captured in Bookfin on a computer, not Android. <a href="#reflow">Compare with Original and Cream</a>.</p>
   </section>
 
   <section class="chapter flip" id="sync">

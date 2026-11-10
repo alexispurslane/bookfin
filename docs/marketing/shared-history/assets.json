@@ -1,0 +1,21 @@
+{
+  "capturedOn": "2026-11-10",
+  "rendererRevision": "bfcbe24b7c6ef6324c6769d02c40cf236ebd5ed0",
+  "method": "Production Flutter widgets through host test runner, not Android; WebP quality 84, method 6; no crop, retouch, or compositing",
+  "logicalViewport": {
+    "width": 411,
+    "height": 840,
+    "devicePixelRatio": 2
+  },
+  "captures": [
+    {
+      "file": "shared-history.webp",
+      "width": 822,
+      "height": 1680,
+      "bytes": 28830,
+      "sha256": "5ccb36c0bd764e789859294316acf1a1bc3c4cc742a708736eefaa81b6aba397",
+      "rawPngSha256": "3cb96c0b0a89fbe35fc7784e3911c0d79984af9a303ac11896a8c61b1a794ab8"
+    }
+  ],
+  "data": "Controlled River fixture records through real Playback and ReaderSession owners; production shared History sheet over PlayerView; no private history"
+}
