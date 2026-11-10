@@ -1,6 +1,6 @@
 ---
 id: te-h8ip
-status: in_progress
+status: closed
 deps: []
 links: [boo-pw1d]
 created: 2026-11-10T02:44:18Z
