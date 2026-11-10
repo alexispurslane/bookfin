@@ -31,3 +31,7 @@ Required format passed: 391 files, 0 changed. Required flutter analyze lib test 
 **2026-11-10T19:49:01Z**
 
 The scoped OCR-position/navigation tests plus all six new Trim margins tests pass: 23 tests, /tmp/tb-nkz5-scroll-scope.log. The seven failures from the first full run were test selector coupling, not changed reading-position behavior.
+
+**2026-11-10T19:52:54Z**
+
+Required rerun after the viewport-selector fixes: dart format --output=none --set-exit-if-changed lib test tool integration_test passed (391 files, 0 changed; /tmp/tb-nkz5-format-final.log). flutter analyze lib test integration_test passed with no issues (/tmp/tb-nkz5-analyze-final.log). Full flutter test: 2519 passed, 21 skipped, 1 failed in 2m34s (/tmp/tb-nkz5-full-final.log). The only failure is known boo-7plj: survey_session_test.dart / a reopened book goes on with the survey that it kept beside the download, line 305, expected true and received false. Its existing ticket has the recurrence evidence. All seven scroll-selector failures from the first run are resolved; no new feature test failed. No native files changed, so native OCR worker check does not apply. Awaiting the one fresh reviewer before the final ticket report.
