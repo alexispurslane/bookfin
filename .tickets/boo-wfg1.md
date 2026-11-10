@@ -1,6 +1,6 @@
 ---
 id: boo-wfg1
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-10T20:42:55Z
