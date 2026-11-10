@@ -107,6 +107,26 @@ void main() {
       final plain = await jump(null);
       final anchored = await jump(null, anchored: true);
       final kept = await jump(pageMaps);
+
+      // The same jump through PageSource.findPlace, which can lay the page
+      // out from a part of the section (t7-49gt), with the kept map.
+      final scheduler = TestScheduler();
+      final source = PageSource(
+        publication,
+        schedule: scheduler.schedule,
+        pageMaps: pageMaps,
+      )..settings = readerPage;
+      addTearDown(source.dispose);
+      var dropped = 0;
+      source.keptMapDropped.addListener(() => dropped++);
+      final place = await scheduler.until(
+        source.findPlace(index, _fixed(plain.page.startPlace!)),
+      );
+      final fromPart = await scheduler.until(
+        source.pageAt(place!, anchored: false, urgent: true),
+      );
+      expect(dropped, 0, reason: 'a part keeps the kept map');
+      expect(pageKey(fromPart), pageKey(plain.page));
       // ignore: avoid_print
       print(
         'JUMP $id ${where.name} section $index'
@@ -138,6 +158,10 @@ void main() {
     }, timeout: Timeout.none);
   }
 }
+
+/// Finds [place]. Static, so that a worker can run it.
+EpubPlace? Function(DomSection dom) _fixed(EpubPlace place) =>
+    (_) => place;
 
 /// Where a jump goes: to the middle of a book's largest section, or to the
 /// middle of its longest paragraph.

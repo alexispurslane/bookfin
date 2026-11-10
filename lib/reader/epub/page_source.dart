@@ -37,6 +37,11 @@ typedef StepScheduler = void Function(
   required bool urgent,
 });
 
+/// Runs [computation] in a worker isolate and gives its result, as
+/// [Isolate.run] does: the worker's exit hands the result over without a
+/// copy.
+typedef WorkerCall = Future<R> Function<R>(FutureOr<R> Function() computation);
+
 /// The number of a page among the true pages of its section, from 1, and
 /// the number of true pages in the section, or null while the section's
 /// main run has not ended.
@@ -71,6 +76,14 @@ class PageRequestStopped implements Exception {
 /// animation runs and while the app is in the background. A direction
 /// starts its next prepare only after its section's main run ended, so
 /// that it pauses with them.
+///
+/// A large section can show a page before it is prepared ([findPlace]): a
+/// worker prepares the part of the section around a place, and then
+/// another worker prepares the whole section. Until the whole section is
+/// prepared, the place's anchored page, and the pages after it while they
+/// are in the part, come from the part. They are the whole section's
+/// pages, with their true starts. The prepared section replaces the part
+/// when it arrives.
 ///
 /// The whole book laid out keeps every section's page starts, not its
 /// prepared text: once its main run ends, a section more than one section
@@ -115,7 +128,10 @@ class PageRequestStopped implements Exception {
 /// - No pinned page (the shown page and its neighbors) is out of the cache.
 /// - Each cache is within its limit, or holds nothing that it may evict.
 /// - A section has at most one main run and one anchored run, and only
-///   while its prepared section is cached.
+///   while its prepared section is cached, or for the anchored run, its
+///   part. A section holds a part only while it is not prepared.
+/// - Every cached page belongs to a section whose prepared section or part
+///   is cached.
 /// - A section that a kept map seeded has no main run, and its main run
 ///   counts as ended. Kept maps are read only for the current and the
 ///   previous settings.
@@ -127,14 +143,17 @@ class PageSource {
   /// The pages of [publication]. [schedule] runs each layout step; it
   /// defaults to [scheduleBetweenFrames]. Each step lays out
   /// paragraphs until [budget] is spent, and then stops after the paragraph
-  /// that crosses it. Set [settings] before the first request.
+  /// that crosses it. [work] runs each worker call; it defaults to
+  /// [Isolate.run]. Set [settings] before the first request.
   PageSource(
     Publication publication, {
     StepScheduler? schedule,
     Duration budget = const Duration(milliseconds: 4),
     this._pageMaps,
+    WorkerCall? work,
   }) : _publication = publication,
        _schedule = schedule ?? scheduleBetweenFrames,
+       _worker = work ?? Isolate.run,
        _stepBudget = budget,
        _fontPrefix = 'bookfin-${publication.identity.substring(0, 12)}';
 
@@ -145,6 +164,18 @@ class PageSource {
   static const _maxPreparedCharacters = 1500000;
   static const _maxPages = 24;
   static const _maxImageBytes = 32 * 1024 * 1024;
+
+  /// The size in bytes of the XHTML of the smallest section whose place
+  /// [findPlace] finds with a part of the section.
+  ///
+  /// A part costs CPU time beside the whole section's prepare, which still
+  /// runs after it and delays the turns after the first page. In the corpus
+  /// (corpus_prepare_test.dart on the host, t7-49gt), a whole prepare of a
+  /// section under 256 KiB took at most 35 ms, and the median part saved
+  /// 0.6 to 2.5 ms, which is less than the cost of the extra work. From 256
+  /// KiB, most whole prepares took 35 ms or more, and the median part saved
+  /// 33 ms, and up to 190 ms.
+  static const _partBytes = 256 * 1024;
 
   /// Runs [step] as a Flutter task. A step that is not [urgent] waits while
   /// a frame is scheduled, for example while an animation runs, and while
@@ -200,6 +231,7 @@ class PageSource {
   final Publication _publication;
   final BookPageMaps? _pageMaps;
   final StepScheduler _schedule;
+  final WorkerCall _worker;
   final Duration _stepBudget;
   final String _fontPrefix;
 
@@ -275,6 +307,66 @@ class PageSource {
     _reading.removeWhere((kept, _) => kept != value && kept != _previous);
     _readMap(value);
     _bookPages.value = _bookPagesIn(value);
+  }
+
+  /// The place that [find] picks in the DOM of section [index], or null
+  /// when it picks none.
+  ///
+  /// A large section that is not prepared goes to a worker that parses
+  /// it, runs [find] and prepares the part of the section around the place
+  /// ([preparePart]). Then another worker prepares the whole section. Until
+  /// it is prepared, [pageAt] with `anchored: true` cuts the place's page
+  /// from the part, so the page does not wait for the whole section. Its
+  /// start is its true start, and it is the page that the whole section
+  /// gives. When the part could not hold the place's paragraph or table,
+  /// the first worker prepares the whole section from its parse instead.
+  ///
+  /// [find] can run in a worker, so it must capture only values that can be
+  /// sent to another isolate: make it a top-level function, or a closure
+  /// that a static function returns.
+  Future<EpubPlace?> findPlace(
+    int index,
+    EpubPlace? Function(DomSection dom) find,
+  ) async {
+    final layout = _layoutFor(index, _current);
+    final path = _publication.spine[index];
+    final xhtml = _publication.resources[path]!;
+    if (layout.prepared != null || xhtml.length < _partBytes) {
+      return find((await section(index)).dom);
+    }
+    final (:place, section: prepared) = await _partInWorker(
+      _worker,
+      index,
+      path,
+      xhtml,
+      _publication.bookStyles,
+      _publication.imageSizes,
+      _publication.language,
+      _fontPrefix,
+      _publication.mainTextSize,
+      layout.settings,
+      find,
+    );
+    bool current() =>
+        !_disposed && identical(_layouts[(index, layout.settings)], layout);
+    if (prepared == null || !current()) return place;
+    if (prepared.whole) {
+      await _keep(layout, prepared);
+      return place;
+    }
+    // The page of the place goes first, then its section. The section's own
+    // requests wait for this prepare.
+    (layout.preparing ??= _prepare(layout)).ignore();
+    await _loadFonts(prepared);
+    if (current() && layout.prepared == null) {
+      _dropPart(layout);
+      layout.part = _Part(prepared);
+      if (layout.measures case final measures?
+          when !reuseMeasures(prepared, measures)) {
+        _contradicted(layout);
+      }
+    }
+    return place;
   }
 
   /// Section [index] prepared for the current settings, in a worker.
@@ -405,9 +497,13 @@ class PageSource {
   /// The page that [show] showed last, while it is in the cache.
   LaidPage? get shown => _pages[_shown]?.page;
 
-  /// The prepared section of [page], which must be in the cache. It stays
-  /// prepared while [page] is shown or pinned.
-  PreparedSection sectionOf(LaidPage page) => _cachedOf(page).layout.prepared!;
+  /// The prepared section of [page], which must be in the cache, or the
+  /// part of it that [page] came from while the section is not prepared
+  /// ([findPlace]). It stays while [page] is shown or pinned.
+  PreparedSection sectionOf(LaidPage page) {
+    final layout = _cachedOf(page).layout;
+    return layout.prepared ?? layout.part!.section;
+  }
 
   /// A picture now, with outlines for images not decoded yet.
   ui.Picture draft(LaidPage page) {
@@ -571,10 +667,18 @@ class PageSource {
           in layout.following.entries) {
         check(next.compareTo(start) > 0, 'a following start comes before');
       }
+      check(
+        layout.part == null || layout.prepared == null,
+        'a prepared section has a part',
+      );
       if (layout.prepared == null) {
+        check(layout.main == null, 'an unprepared section has a main run');
+      }
+      if (layout.anchored case final anchored?) {
         check(
-          layout.main == null && layout.anchored == null,
-          'a section without its prepared section has a run',
+          identical(anchored.section, layout.prepared) ||
+              identical(anchored.section, layout.part?.section),
+          'an anchored run lays out a section that is not cached',
         );
       }
       if (layout.seeded) {
@@ -610,7 +714,10 @@ class PageSource {
         identical(_layouts[(layout.index, layout.settings)], layout),
         'a cached page belongs to a dropped layout',
       );
-      check(layout.prepared != null, 'a cached page has no prepared section');
+      check(
+        layout.prepared != null || layout.part != null,
+        'a cached page has no prepared section and no part',
+      );
       check(
         page.section == layout.index &&
             page.settings == layout.settings &&
@@ -802,12 +909,12 @@ class PageSource {
   ) async {
     final key = (layout: layout, start: start);
     while (true) {
-      await _ready(layout, request);
+      final section = await _readyOrPart(layout, request, from: start);
       if (_pages[key] case final cached?) {
         _touchPage(key);
         return cached.page;
       }
-      await _work(request, _PageNeed(layout, start));
+      await _work(request, _PageNeed(layout, section, start));
     }
   }
 
@@ -819,8 +926,8 @@ class PageSource {
     _Request request,
   ) async {
     while (through == null ? !layout.mainDone : !layout.knows(through)) {
-      await _ready(layout, request);
-      await _work(request, _MainNeed(layout, through));
+      final prepared = await _ready(layout, request);
+      await _work(request, _MainNeed(layout, prepared, through));
     }
   }
 
@@ -834,13 +941,13 @@ class PageSource {
     EpubPlace place,
     _Request request,
   ) async {
-    final prepared = await _ready(layout, request);
+    final section = await _readyOrPart(layout, request);
     // The read of the kept page map ran beside the prepare, so it has
     // nearly always ended.
     await _reading[layout.settings];
     if (layout.seeded) {
       final line = await keptLineStart(
-        prepared.dom,
+        section.dom,
         layout.starts,
         layout.firsts,
         place,
@@ -853,12 +960,36 @@ class PageSource {
       );
       if (line != null) return line;
     }
-    final need = _LineNeed(layout, place);
+    var need = _LineNeed(layout, section, place);
     while (need.found == null) {
-      await _ready(layout, request);
+      final current = await _readyOrPart(layout, request);
+      // A part that could not tell the line gave way to the whole section.
+      if (!identical(current, need.section)) {
+        need = _LineNeed(layout, current, place);
+      }
       await _work(request, need);
     }
     return need.found!;
+  }
+
+  /// The prepared section of [layout]; or, while it is not prepared, its
+  /// part ([findPlace]) if the part can serve: for a line search, or for a
+  /// page [from] a start in the part. Else waits for the prepared section.
+  Future<PreparedSection> _readyOrPart(
+    _SectionLayout layout,
+    _Request request, {
+    PageStart? from,
+  }) {
+    if (layout.prepared == null) {
+      if (layout.part case final part? when part.serves(from)) {
+        if (!identical(_layouts[(layout.index, layout.settings)], layout)) {
+          _settingsChanged();
+        }
+        request.layout = layout;
+        return Future.value(part.section);
+      }
+    }
+    return _ready(layout, request);
   }
 
   /// The prepared section of [layout], from the cache or a worker.
@@ -899,7 +1030,7 @@ class PageSource {
     var urgent = false;
     var idle = false;
     for (final request in _requests) {
-      if (request.need case final need? when need.layout.prepared != null) {
+      if (request.need case final need? when need.live) {
         if (request.rank.urgent) {
           urgent = true;
         } else {
@@ -929,7 +1060,7 @@ class PageSource {
     _Request? first;
     for (final request in _requests) {
       final need = request.need;
-      if (need == null || need.layout.prepared == null) continue;
+      if (need == null || !need.live) continue;
       if (urgent && !request.rank.urgent) continue;
       if (first == null ||
           request.rank.index < first.rank.index ||
@@ -959,17 +1090,17 @@ class PageSource {
 
   void _step(_Need need) {
     final layout = need.layout;
-    final prepared = layout.prepared!;
     switch (need) {
       case _LineNeed():
         final search = need.search ??= () {
           _lineSearches++;
-          return LineSearch(prepared, need.place);
+          return LineSearch(need.section, need.place);
         }();
         search.step(_stepBudget);
         need.found = search.found;
+        if (search.starved) _starve(layout);
       case _PageNeed(:final start):
-        final run = _runAt(layout, start);
+        final run = _runAt(layout, need.section, start);
         run.run.step(_stepBudget, want: 1);
         // A start comes from a page or from lineStart, so a run from it
         // cuts its first page there. Otherwise the request never ends.
@@ -978,6 +1109,7 @@ class PageSource {
           'A run from ${run.from} cut its first page elsewhere.',
         );
         _take(layout, run);
+        if (run.run.starved) _starve(layout);
       case _MainNeed():
         final run = layout.main ??= layout.startMain();
         run.run.step(_stepBudget);
@@ -985,24 +1117,57 @@ class PageSource {
     }
   }
 
-  /// The run that cuts the page at [start] next: the main run or the
-  /// anchored run when one stands there, else a new run. A new run is the
+  /// Stops the use of [layout]'s part, which needs the whole section for
+  /// the next step. The requests that worked in it wait for the prepared
+  /// section once the step ends. Its pages stay.
+  void _starve(_SectionLayout layout) {
+    final part = layout.part!..starved = true;
+    if (layout.anchored case final anchored?
+        when identical(anchored.section, part.section)) {
+      anchored.run.dispose();
+      layout.anchored = null;
+    }
+  }
+
+  /// Lets go of [layout]'s part, once its prepared section arrived or it
+  /// is unprepared. The pages that came from the part stay in the cache,
+  /// because they are the whole section's pages. A request that worked in
+  /// the part asks again.
+  void _dropPart(_SectionLayout layout) {
+    final part = layout.part;
+    if (part == null) return;
+    _starve(layout);
+    layout.part = null;
+    for (final request in _requests) {
+      if (identical(request.need?.section, part.section)) request.wake();
+    }
+  }
+
+  /// The run of [section] that cuts the page at [start] next: the main run
+  /// or the anchored run when one stands there, else a new run. A new run is the
   /// main run when [start] is where the main run goes on, and otherwise it
   /// replaces the anchored run.
-  _Run _runAt(_SectionLayout layout, PageStart start) {
-    if (layout.main case final main? when main.run.next == start) return main;
-    if (layout.anchored case final anchored? when anchored.run.next == start) {
+  _Run _runAt(_SectionLayout layout, PreparedSection section, PageStart start) {
+    final whole = identical(section, layout.prepared);
+    if (layout.main case final main? when whole && main.run.next == start) {
+      return main;
+    }
+    if (layout.anchored case final anchored?
+        when identical(anchored.section, section) &&
+            anchored.run.next == start) {
       return anchored;
     }
-    if (layout.main == null &&
+    if (whole &&
+        layout.main == null &&
         !layout.mainDone &&
         start == (layout.starts.lastOrNull ?? const PageStart(0, 0))) {
       return layout.main = layout.startMain();
     }
     layout.anchored?.run.dispose();
     return layout.anchored = _Run(
-      LayoutRun(layout.prepared!, from: start),
+      LayoutRun(section, from: start),
       start,
+      section,
       main: false,
     );
   }
@@ -1256,6 +1421,10 @@ class PageSource {
       layout.disposeRuns();
       forgetMeasures(prepared);
     }
+    if (layout.part case final part?) {
+      layout.disposeRuns();
+      forgetMeasures(part.section);
+    }
   }
 
   /// Keeps the page map of [settings] once every section's main run ended
@@ -1319,7 +1488,10 @@ class PageSource {
   }
 
   void _insert(_SectionLayout layout, LaidPage page) {
-    assert(layout.prepared != null, 'A page of an unprepared section.');
+    assert(
+      layout.prepared != null || layout.part != null,
+      'A page of an unprepared section.',
+    );
     final key = (layout: layout, start: page.start);
     if (_pages.containsKey(key)) {
       // The cached page is the same page.
@@ -1341,6 +1513,7 @@ class PageSource {
     try {
       final path = _publication.spine[layout.index];
       final prepared = await _prepareInWorker(
+        _worker,
         layout.index,
         path,
         _publication.resources[path]!,
@@ -1351,28 +1524,41 @@ class PageSource {
         _publication.mainTextSize,
         layout.settings,
       );
-      if (prepared.fonts.isNotEmpty) {
-        await BookFonts.load(
-          prepared.fonts,
-          (path) => _publication.resources[path],
-          _fontPrefix,
-        );
-      }
-      if (!_disposed &&
-          identical(_layouts[(layout.index, layout.settings)], layout)) {
-        layout.prepared = prepared;
-        _prepared.add(layout);
-        if (layout.measures case final measures?
-            when !reuseMeasures(prepared, measures)) {
-          _contradicted(layout);
-        }
-        _trim();
-        _plan();
-      }
+      await _keep(layout, prepared);
       return prepared;
     } finally {
       layout.preparing = null;
     }
+  }
+
+  /// Registers the fonts of [prepared], the whole section of [layout], and
+  /// caches it, unless the section was prepared meanwhile or its settings
+  /// were dropped. It replaces the section's part.
+  Future<void> _keep(_SectionLayout layout, PreparedSection prepared) async {
+    await _loadFonts(prepared);
+    if (!_disposed &&
+        identical(_layouts[(layout.index, layout.settings)], layout) &&
+        layout.prepared == null) {
+      layout.prepared = prepared;
+      _prepared.add(layout);
+      _dropPart(layout);
+      if (layout.measures case final measures?
+          when !reuseMeasures(prepared, measures)) {
+        _contradicted(layout);
+      }
+      _trim();
+      _plan();
+    }
+  }
+
+  /// Registers the embedded fonts that [prepared] draws with.
+  Future<void> _loadFonts(PreparedSection prepared) async {
+    if (prepared.fonts.isEmpty) return;
+    await BookFonts.load(
+      prepared.fonts,
+      (path) => _publication.resources[path],
+      _fontPrefix,
+    );
   }
 
   /// The size in pixels of the book's main text as pages of [settings]
@@ -1385,6 +1571,7 @@ class PageSource {
       for (final path in spine) _publication.resources[path]!.length,
     ]);
     return _measureInWorker(
+      _worker,
       samples,
       [for (final index in samples) spine[index]],
       [for (final index in samples) _publication.resources[spine[index]]!],
@@ -1399,13 +1586,14 @@ class PageSource {
   /// section that is not UTF-8 still counts what it can, so that the
   /// measurement never fails: preparing that section reports it.
   static Future<double> _measureInWorker(
+    WorkerCall work,
     List<int> indices,
     List<String> paths,
     List<Uint8List> xhtml,
     Map<String, String> styleSheets,
     String fontPrefix,
     PageSettings settings,
-  ) => Isolate.run(
+  ) => work(
     () => shownMainTextSize([
       for (var at = 0; at < indices.length; at++)
         SectionSource(
@@ -1422,6 +1610,7 @@ class PageSource {
   /// over without a copy. It is static, so that the worker's closure holds
   /// only its arguments.
   static Future<PreparedSection> _prepareInWorker(
+    WorkerCall work,
     int index,
     String path,
     Uint8List xhtml,
@@ -1431,7 +1620,7 @@ class PageSource {
     String fontPrefix,
     double mainTextSize,
     PageSettings settings,
-  ) => Isolate.run(
+  ) => work(
     () => prepareSections([
       SectionSource(
         index: index,
@@ -1444,6 +1633,40 @@ class PageSource {
         mainTextSize: mainTextSize,
       ),
     ], settings).single,
+  );
+
+  /// Finds a place in section [index] with [find], and prepares the part
+  /// of the section around it or the whole section ([preparePart]), in a
+  /// worker call by [work], whose exit hands
+  /// the result over without a copy. It is static, so that the worker's
+  /// closure holds only its arguments.
+  static Future<({EpubPlace? place, PreparedSection? section})> _partInWorker(
+    WorkerCall work,
+    int index,
+    String path,
+    Uint8List xhtml,
+    Map<String, String> styleSheets,
+    Map<String, (int, int)> imageSizes,
+    String? language,
+    String fontPrefix,
+    double mainTextSize,
+    PageSettings settings,
+    EpubPlace? Function(DomSection dom) find,
+  ) => work(
+    () => preparePart(
+      SectionSource(
+        index: index,
+        path: path,
+        xhtml: utf8.decode(xhtml),
+        fontPrefix: fontPrefix,
+        styleSheets: styleSheets,
+        imageSizes: imageSizes,
+        language: language,
+        mainTextSize: mainTextSize,
+      ),
+      settings,
+      find,
+    ),
   );
 
   /// Drops [layout]: the settings that it belongs to are gone.
@@ -1461,6 +1684,7 @@ class PageSource {
   /// page starts stay.
   void _unprepare(_SectionLayout layout) {
     layout.disposeRuns();
+    layout.part = null;
     layout.prepared = null;
     _prepared.remove(layout);
     _pages.removeWhere((key, cached) {
@@ -1647,13 +1871,23 @@ class _Request {
 
 /// One step that a request waits for.
 sealed class _Need {
-  _Need(this.layout);
+  _Need(this.layout, this.section);
   final _SectionLayout layout;
+
+  /// The section that the step works in: the prepared section of
+  /// [layout], or its part.
+  final PreparedSection section;
+
+  /// Whether [section] is still the prepared section of [layout], or its
+  /// part that can serve.
+  bool get live =>
+      identical(section, layout.prepared) ||
+      (identical(section, layout.part?.section) && !layout.part!.starved);
 }
 
 /// The page start of the line that holds [place].
 class _LineNeed extends _Need {
-  _LineNeed(super.layout, this.place);
+  _LineNeed(super.layout, super.section, this.place);
   final EpubPlace place;
 
   /// The search, which goes on over steps while it measures a table.
@@ -1663,23 +1897,26 @@ class _LineNeed extends _Need {
 
 /// The page that starts at [start].
 class _PageNeed extends _Need {
-  _PageNeed(super.layout, this.start);
+  _PageNeed(super.layout, super.section, this.start);
   final PageStart start;
 }
 
 /// The main run past [through], or to the section end when it is null.
 class _MainNeed extends _Need {
-  _MainNeed(super.layout, this.through);
+  _MainNeed(super.layout, super.section, this.through);
   final PageStart? through;
 }
 
 /// A layout run and the pages that the source took from it.
 class _Run {
-  _Run(this.run, this.from, {required this.main});
+  _Run(this.run, this.from, this.section, {required this.main});
   final LayoutRun run;
 
   /// The start that the run started from.
   final PageStart from;
+
+  /// The section that the run lays out: the prepared section, or a part.
+  final PreparedSection section;
 
   /// Whether this is the section's main run, whose pages are true pages.
   final bool main;
@@ -1699,6 +1936,10 @@ class _SectionLayout {
   /// progress.
   PreparedSection? prepared;
   Future<PreparedSection>? preparing;
+
+  /// The part of the section around a place ([PageSource.findPlace]),
+  /// while the section is not prepared.
+  _Part? part;
 
   /// The main run in progress. A main run that the cache stopped goes on
   /// from the last true page start.
@@ -1740,6 +1981,7 @@ class _SectionLayout {
     return _Run(
       LayoutRun(prepared!, from: from),
       from ?? const PageStart(0, 0),
+      prepared!,
       main: true,
     );
   }
@@ -1793,6 +2035,25 @@ class _SectionLayout {
     main = null;
     anchored = null;
   }
+}
+
+/// A part of a section ([preparePart]) that serves a section's requests
+/// until the section is prepared.
+class _Part {
+  _Part(this.section);
+  final PreparedSection section;
+
+  /// Whether a step needed the whole section, so that the part serves no
+  /// more steps.
+  bool starved = false;
+
+  /// Whether the part can serve a line search, or the page from [start]
+  /// when it is not null: a start among the items that the part prepared.
+  bool serves(PageStart? start) =>
+      !starved &&
+      (start == null ||
+          (start.item >= section.firstPrepared &&
+              start.item < section.flow.length));
 }
 
 typedef _PageKey = ({_SectionLayout layout, PageStart start});

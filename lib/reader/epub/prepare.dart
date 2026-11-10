@@ -219,8 +219,10 @@ class PreparedSection {
     this.dom,
     this.flow,
     this.styles,
-    this.fonts,
-  );
+    this.fonts, {
+    this.firstPrepared = 0,
+    this.reachesEnd = true,
+  });
 
   /// The section's spine index.
   final int index;
@@ -236,6 +238,18 @@ class PreparedSection {
   /// The embedded faces that [styles] draw with. Each must be registered
   /// (`BookFonts.load`) before the section lays out.
   final List<FontFaceRule> fonts;
+
+  /// The first flow item that a part of the section ([preparePart])
+  /// prepared: the item after its last [SkippedItem]. 0 for a whole
+  /// section.
+  final int firstPrepared;
+
+  /// Whether [flow] goes on to the section's end. A part of the section
+  /// ends before it when the section goes on after the part.
+  final bool reachesEnd;
+
+  /// Whether this is the whole section, not a part of it.
+  bool get whole => firstPrepared == 0 && reachesEnd;
 
   /// The flow of [element] alone, as a section to lay out on a page of
   /// [settings], or null when no flow item shows a node of [element].
@@ -286,7 +300,7 @@ class PreparedSection {
       TableItem(:final rows) => rows.any(
         (row) => row.any((cell) => cell.flow.any(shows)),
       ),
-      BlockStart() || BlockEnd() => false,
+      BlockStart() || BlockEnd() || SkippedItem() => false,
     };
     final omitted = [for (final element in omit) span(element)];
     bool kept(InlineRun run) => !omitted.any(
@@ -419,21 +433,141 @@ int _nodeOf(InlineRun run) => switch (run) {
 List<PreparedSection> prepareSections(
   List<SectionSource> sources,
   PageSettings settings,
-) => [for (final source in sources) _prepare(source, settings)];
+) => [for (final source in sources) _prepare(source, settings).section];
 
-PreparedSection _prepare(SectionSource source, PageSettings settings) {
+/// How many visible characters before its place a part of a section
+/// holds ([preparePart]): enough for the page that holds the place to
+/// start in the part at the smallest text size, and for the paragraph
+/// before the place, which a place in white space needs.
+const _partBefore = 6000;
+
+/// How many visible characters after its place a part of a section holds:
+/// enough for the page of the place and the page after it at the smallest
+/// text size.
+const _partAfter = 10000;
+
+/// The place that [find] picks in the DOM of section [source], and the
+/// part of the section around it, prepared for a page of [settings]. Both
+/// are null when [find] picks no place.
+///
+/// The section is the whole section ([PreparedSection.whole]) when the
+/// part would hold no paragraph, image or table at or after the place, or
+/// would hold the whole section anyway. It is prepared from the same parse.
+///
+/// The part parses the whole section, but styles the elements and builds
+/// the boxes only up to the end of the part, and makes text runs and
+/// hyphenation only in the part: about [_partBefore] visible characters
+/// before the place and [_partAfter] after it. Its flow items keep the
+/// numbers that [prepareSections] gives them: the paragraphs, images and
+/// tables before the part are [SkippedItem]s
+/// ([PreparedSection.firstPrepared]), and the flow ends after the last
+/// whole item of the part ([PreparedSection.reachesEnd]). So a run of the
+/// part from a page start in it cuts the whole section's pages, until it
+/// needs an item after the part ([LayoutRun.starved]).
+///
+/// A paragraph or a table that the part's end cuts is not in it. So the
+/// part goes on to the end of the `p` element or the table that holds the
+/// place, and a place in another block longer than the part, such as a
+/// long `div` of text, gets the whole section.
+({EpubPlace? place, PreparedSection? section}) preparePart(
+  SectionSource source,
+  PageSettings settings,
+  EpubPlace? Function(DomSection dom) find,
+) {
   final dom = DomSection.parse(source.xhtml);
-  final (:styles, faces: declared) = styleSection(source, dom, settings);
-  final faces = _Faces(declared, source.fontPrefix);
-  final flattener = _Flattener(source, settings, styles, faces);
-  flattener.block(_BoxBuilder(styles).block(dom.body), settings.width);
-  return PreparedSection._(
-    source.index,
+  final place = find(dom);
+  if (place == null) return (place: null, section: null);
+  final at = dom.visibleBefore(place);
+  final from = at - _partBefore;
+  final to = at + _partAfter;
+  int? until = to >= dom.visibleLength ? null : dom.textHolding(to).order;
+  final block = _blockOf(dom.nodeAt(place.node));
+  if (until != null && block != null) {
+    until = math.max(until, _lastNode(block));
+  }
+  final (:section, :lastNode, :styles) = _prepare(
+    source,
     settings,
-    dom,
-    flattener.flow,
-    flattener.runStyles,
-    faces.used.toList(),
+    dom: dom,
+    from: from <= 0 ? null : dom.textHolding(from).order,
+    until: until,
+  );
+  if (section.whole || (lastNode != null && place.node <= lastNode)) {
+    return (place: place, section: section);
+  }
+  // The whole section keeps the part's styles, so that no element is
+  // styled twice.
+  final whole = _prepare(source, settings, dom: dom, styled: styles);
+  return (place: place, section: whole.section);
+}
+
+/// The element whose whole flow item a place in [node] needs: the
+/// outermost table that holds [node], else the nearest `p` element, or
+/// null.
+DomElement? _blockOf(DomNode node) {
+  DomElement? table;
+  DomElement? paragraph;
+  for (
+    var element = node is DomElement ? node : node.parent;
+    element != null;
+    element = element.parent
+  ) {
+    if (element.name == 'table') table = element;
+    if (element.name == 'p') paragraph ??= element;
+  }
+  return table ?? paragraph;
+}
+
+/// Prepares [source] for [settings], or only a part of it: with [from],
+/// the paragraphs, images and tables whose nodes all come before the node
+/// [from] are [SkippedItem]s, and with [until], the elements after the
+/// node [until] are neither styled nor boxed, and the flow ends before
+/// the first item that they cut. [dom] is the section already parsed, and
+/// [styled] the styles of its elements that an earlier prepare of it for
+/// [settings] computed. Also gives the last node of the last paragraph,
+/// image or table that it prepared, or null when it prepared none, and the
+/// styles that it computed.
+({PreparedSection section, int? lastNode, Map<DomElement, Style> styles})
+_prepare(
+  SectionSource source,
+  PageSettings settings, {
+  DomSection? dom,
+  int? from,
+  int? until,
+  Map<DomElement, Style> styled = const {},
+}) {
+  final parsed = dom ?? DomSection.parse(source.xhtml);
+  final (:styles, faces: declared) = styleSection(
+    source,
+    parsed,
+    settings,
+    until: until,
+    styled: styled,
+  );
+  final faces = _Faces(declared, source.fontPrefix);
+  final builder = _BoxBuilder(styles, until: until);
+  final body = builder.block(parsed.body);
+  final flattener = _Flattener(
+    source,
+    settings,
+    styles,
+    faces,
+    skipBefore: from,
+  );
+  flattener.block(body, settings.width);
+  return (
+    section: PreparedSection._(
+      source.index,
+      settings,
+      parsed,
+      flattener.flow,
+      flattener.runStyles,
+      faces.used.toList(),
+      firstPrepared: flattener.firstPrepared,
+      reachesEnd: !builder.cut,
+    ),
+    lastNode: flattener.lastNode,
+    styles: styles,
   );
 }
 
@@ -494,6 +628,13 @@ final class BlockStart extends FlowItem {
 /// The end of the block box of the last open [BlockStart].
 final class BlockEnd extends FlowItem {
   const BlockEnd();
+}
+
+/// A paragraph, an image or a table that a part of a section
+/// ([preparePart]) leaves out, because it comes before the part. It keeps
+/// the numbers of the items after it. No run lays it out.
+final class SkippedItem extends FlowItem {
+  const SkippedItem();
 }
 
 /// A paragraph: the inline content between two blocks.
@@ -884,16 +1025,23 @@ class ImageSizing {
 
 /// The computed style of each element of [dom], the parsed [source], under
 /// its style sheets and the reader's rules for [settings], and the
-/// `@font-face` rules of those sheets.
+/// `@font-face` rules of those sheets. With [until], only the elements up
+/// to the node [until] in document order have a style. [styled] holds the
+/// styles that an earlier call computed for the same [dom] and [settings]:
+/// they are kept, and only the other elements are styled.
 ({Map<DomElement, Style> styles, List<FontFaceRule> faces}) styleSection(
   SectionSource source,
   DomSection dom,
-  PageSettings settings,
-) => _styleSection(
+  PageSettings settings, {
+  int? until,
+  Map<DomElement, Style> styled = const {},
+}) => _styleSection(
   source,
   dom,
   settings,
   settings.sizesMainText ? settings.fontSize / source.mainTextSize : null,
+  until: until,
+  styled: styled,
 );
 
 /// [styleSection] with each of the book's own type sizes grown by
@@ -904,8 +1052,10 @@ class ImageSizing {
   SectionSource source,
   DomSection dom,
   PageSettings settings,
-  double? fontScale,
-) {
+  double? fontScale, {
+  int? until,
+  Map<DomElement, Style> styled = const {},
+}) {
   final media = MediaContext(
     width: settings.width,
     height: settings.height,
@@ -934,11 +1084,15 @@ class ImageSizing {
   );
   final styles = <DomElement, Style>{};
   final initial = Style.initial()..fontSize *= fontScale ?? 1;
-  final rootStyle = cascade.compute(dom.root, initial, initial.fontSize);
+  final rootStyle =
+      styled[dom.root] ?? cascade.compute(dom.root, initial, initial.fontSize);
   styles[dom.root] = rootStyle;
   void visit(DomElement element, Style parent) {
     for (final child in element.elements) {
-      final style = cascade.compute(child, parent, rootStyle.fontSize);
+      // The later siblings come after it too.
+      if (until != null && child.order > until) return;
+      final style =
+          styled[child] ?? cascade.compute(child, parent, rootStyle.fontSize);
       styles[child] = style;
       visit(child, style);
     }
@@ -1088,11 +1242,22 @@ caption { text-align: center }
 sealed class _Box {}
 
 class _BlockBox extends _Box {
-  _BlockBox(this.element, this.style, this.children, {this.marker});
+  _BlockBox(
+    this.element,
+    this.style,
+    this.children, {
+    this.marker,
+    this.cut = false,
+  });
   final DomElement element;
   final Style style;
   final List<_Box> children;
   final String? marker;
+
+  /// Whether the box building stopped inside the box ([_BoxBuilder.cut]):
+  /// its last child can be cut too, and the inline content after its last
+  /// block child is left out.
+  final bool cut;
 }
 
 /// A table with rows: the style of each row and its cells, each with its
@@ -1144,8 +1309,22 @@ class _RaisedItem extends _Item {
 }
 
 class _BoxBuilder {
-  _BoxBuilder(this.styles);
+  _BoxBuilder(this.styles, {this.until});
   final Map<DomElement, Style> styles;
+
+  /// The last node that the boxes hold, in document order, or null for
+  /// every node.
+  final int? until;
+
+  /// Whether the building stopped at a node after [until]. Each box open
+  /// then is cut ([_BlockBox.cut]), and a table open then is left out.
+  bool cut = false;
+
+  /// Whether [node] comes after [until]: then the building stops.
+  bool _stopsAt(DomNode node) {
+    if (until case final last? when node.order > last) cut = true;
+    return cut;
+  }
 
   /// The number of table cells that the box being built is inside. A table
   /// inside a cell lays out as blocks.
@@ -1166,6 +1345,7 @@ class _BoxBuilder {
     final ordered = element.name == 'ol';
     final start = int.tryParse(element.attributes['start'] ?? '') ?? 1;
     void walk(DomNode node, Style parent) {
+      if (_stopsAt(node)) return;
       if (node is DomText) {
         run.add(_TextItem(node, parent));
         return;
@@ -1187,7 +1367,10 @@ class _BoxBuilder {
         return;
       }
       if (child.name == 'table' && _cells == 0) {
-        if (_table(child) case (final captions, final table)) {
+        final built = _table(child);
+        // A table that the building stops in is left out.
+        if (cut) return;
+        if (built case (final captions, final table)) {
           flush();
           children
             ..addAll(captions)
@@ -1212,6 +1395,7 @@ class _BoxBuilder {
           childStyle.verticalAlign == VerticalAlign.subscript) {
         final inner = <_Item>[];
         _inlineItems(child, childStyle, inner);
+        if (cut) return;
         run.add(_RaisedItem(child, childStyle, inner));
         return;
       }
@@ -1222,9 +1406,11 @@ class _BoxBuilder {
 
     for (final child in element.children) {
       walk(child, style);
+      if (cut) break;
     }
-    flush();
-    return _BlockBox(element, style, children, marker: marker);
+    // The inline content that the building stopped in is left out.
+    if (!cut) flush();
+    return _BlockBox(element, style, children, marker: marker, cut: cut);
   }
 
   /// Whether [element] shows: it is not display none, and not a box moved
@@ -1243,7 +1429,9 @@ class _BoxBuilder {
       _cells++;
       final cells = [
         for (final cell in tr.elements)
-          if ((cell.name == 'td' || cell.name == 'th') && _visible(cell))
+          if (!_stopsAt(cell) &&
+              (cell.name == 'td' || cell.name == 'th') &&
+              _visible(cell))
             (
               block(cell),
               (int.tryParse(cell.attributes['colspan'] ?? '') ?? 1).clamp(
@@ -1257,6 +1445,7 @@ class _BoxBuilder {
     }
 
     for (final child in table.elements) {
+      if (_stopsAt(child)) break;
       if (!_visible(child)) continue;
       switch (child.name) {
         case 'caption':
@@ -1265,6 +1454,7 @@ class _BoxBuilder {
           row(child);
         case 'thead' || 'tbody' || 'tfoot':
           for (final tr in child.elements) {
+            if (_stopsAt(tr)) break;
             if (tr.name == 'tr' && _visible(tr)) row(tr);
           }
       }
@@ -1275,6 +1465,7 @@ class _BoxBuilder {
 
   void _inlineItems(DomElement element, Style style, List<_Item> out) {
     for (final child in element.children) {
+      if (_stopsAt(child)) return;
       if (child is DomText) {
         out.add(_TextItem(child, style));
       } else if (child is DomElement) {
@@ -1354,11 +1545,47 @@ String? _marker(String type, int number) {
 /// Turns a tree of boxes into flow items, with every length that the width
 /// of its containing block decides in pixels.
 class _Flattener {
-  _Flattener(this.source, this.settings, this.styles, this.faces);
+  _Flattener(
+    this.source,
+    this.settings,
+    this.styles,
+    this.faces, {
+    this.skipBefore,
+  });
   final SectionSource source;
   final PageSettings settings;
   final Map<DomElement, Style> styles;
   final _Faces faces;
+
+  /// The first node of a part of the section: a paragraph, an image or a
+  /// table whose nodes all come before it is a [SkippedItem]. Null when
+  /// none is skipped.
+  final int? skipBefore;
+
+  /// The number of boxes around the item being written whose content is
+  /// never skipped: shrink-to-fit boxes, whose width layout measures from
+  /// all their content, and table cells.
+  int _keepAll = 0;
+
+  /// The index of the flow item after the last [SkippedItem].
+  int firstPrepared = 0;
+
+  /// The last node of the last paragraph, image or table that is not
+  /// skipped, or null before the first.
+  int? lastNode;
+
+  /// Whether an item whose last node is [last] is skipped.
+  bool _skips(int last) =>
+      _keepAll == 0 && skipBefore != null && last < skipBefore!;
+
+  void _skip() {
+    flow.add(const SkippedItem());
+    firstPrepared = flow.length;
+  }
+
+  /// Notes a prepared item whose last node is [last]. An item in a cell
+  /// comes after its table's own note, so the latest node counts.
+  void _prepared(int last) => lastNode = math.max(lastNode ?? last, last);
 
   /// The flow items being written: the section's, or a table cell's.
   var flow = <FlowItem>[];
@@ -1374,20 +1601,27 @@ class _Flattener {
       return;
     }
     final inlineBlock = style.display == Display.inlineBlock;
+    // A box that can shrink to fit needs all its content for its width, so
+    // a part leaves it out when the part's end cuts it.
+    if (box.cut && (inlineBlock || style.floated)) return;
+    // A shrink-to-fit box with a block inside fills its containing block,
+    // as when it is not shrink-to-fit.
+    final shrinkToFit =
+        (inlineBlock || style.floated) &&
+        box.children.every((child) => child is _InlineBox);
     final placement = _start(
       box.element,
       style,
       width,
       marker: box.marker,
-      // A shrink-to-fit box with a block inside fills its containing
-      // block, as when it is not shrink-to-fit.
-      shrinkToFit:
-          (inlineBlock || style.floated) &&
-          box.children.every((child) => child is _InlineBox),
+      shrinkToFit: shrinkToFit,
     );
     final (_, contentWidth) = placement.place(0, width);
+    if (shrinkToFit) _keepAll++;
     _content(box, contentWidth);
-    flow.add(const BlockEnd());
+    if (shrinkToFit) _keepAll--;
+    // A cut box goes on after the part.
+    if (!box.cut) flow.add(const BlockEnd());
   }
 
   /// Adds the content of [box], whose content box is [width] pixels wide.
@@ -1398,7 +1632,10 @@ class _Flattener {
           block(child, width);
         case _TableBox():
           _table(child, width);
+        case _InlineBox() when _skips(_lastOf(child.items.last)):
+          _skip();
         case _InlineBox():
+          _prepared(_lastOf(child.items.last));
           flow.add(
             ParagraphItem(
               text: StyledText(
@@ -1519,6 +1756,13 @@ class _Flattener {
           : (padding: const [0, 0, 0, 0], border: collapsed.table),
     );
     final (_, contentWidth) = placement.place(0, width);
+    if (_skips(_lastNode(table.element))) {
+      _skip();
+      flow.add(const BlockEnd());
+      return;
+    }
+    _prepared(_lastNode(table.element));
+    _keepAll++;
     flow
       ..add(
         TableItem(
@@ -1539,6 +1783,7 @@ class _Flattener {
         ),
       )
       ..add(const BlockEnd());
+    _keepAll--;
   }
 
   /// [cell], which spans [colspan] columns of a table whose content is at
@@ -1574,6 +1819,11 @@ class _Flattener {
   }
 
   void _blockImage(_BlockBox box, double width) {
+    if (_skips(box.element.order)) {
+      _skip();
+      return;
+    }
+    _prepared(box.element.order);
     final style = box.style;
     flow.add(
       ImageItem(
@@ -1801,6 +2051,24 @@ class _Flattener {
       return runStyles.length - 1;
     });
   }();
+}
+
+/// The last node in document order that [item] shows, or that an element
+/// of it holds.
+int _lastOf(_Item item) => switch (item) {
+  _TextItem(:final node) => node.order,
+  _ImageItem(:final element) ||
+  _BreakItem(:final element) ||
+  _RaisedItem(:final element) => _lastNode(element),
+};
+
+/// The last node of [node] and everything inside it, in document order.
+int _lastNode(DomNode node) {
+  var last = node;
+  while (last is DomElement && last.children.isNotEmpty) {
+    last = last.children.last;
+  }
+  return last.order;
 }
 
 RunStyle _runStyle(Style style, String family) => RunStyle(

@@ -24,7 +24,7 @@ import 'package:flutter_test/flutter_test.dart';
 import '../../../tool/showcase_media.dart' as media;
 import 'helpers.dart';
 import 'page_source_test.dart'
-    show TestScheduler, book, content, paragraphs, smallPage;
+    show HeldPrepares, TestScheduler, book, content, paragraphs, smallPage;
 
 /// The reader's page with a larger text size.
 const largerText = PageSettings(
@@ -93,12 +93,13 @@ void main() {
     Publication publication, {
     ReaderAddress? initial,
     IsolateHop? hop,
+    WorkerCall? work,
   }) {
     opened?.dispose();
     reported.clear();
     warnings.clear();
     turns.clear();
-    source = PageSource(publication, schedule: scheduler.schedule);
+    source = PageSource(publication, schedule: scheduler.schedule, work: work);
     final made = EpubPager(
       EpubDocument(publication),
       initial: initial,
@@ -218,6 +219,38 @@ void main() {
     await present(largerText);
     expect(turns.last, isNull, reason: 'New page settings read no page.');
     expect(turns, hasLength(5));
+  });
+
+  test('a scrub deep into a large section shows the page that holds the '
+      'place before the section is prepared, and a later open at the place '
+      'that it saved shows the same page the same way', () async {
+    final large = book([paragraphs(12), paragraphs(500, sentences: 12)]);
+    var held = HeldPrepares(1);
+    open(large, work: held.run);
+    await present();
+
+    final jumped = nextShown();
+    final jump = pager().seek(1, .5);
+    final page = (await until(jumped)).page;
+    final saved = reported.last;
+
+    expect(page.section, 1);
+    expect(source.sectionOf(page).reachesEnd, isFalse);
+    held.release.complete();
+    await until(jump);
+    final whole = await section(1);
+    expect(page.start, lineStart(whole, placeAt(whole.dom, 1, .5)));
+    final jumpedKey = pageKey(page);
+
+    held = HeldPrepares(1);
+    open(large, initial: saved, work: held.run);
+    final reopened = (await present()).page;
+
+    expect(warnings, isEmpty);
+    expect(source.sectionOf(reopened).reachesEnd, isFalse);
+    expect(pageKey(reopened), jumpedKey);
+    held.release.complete();
+    await until(source.mainRun(reopened));
   });
 
   test('present notifies later, never during the call, and the same '

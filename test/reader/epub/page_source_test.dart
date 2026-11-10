@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:isolate';
 import 'dart:ui' as ui;
 
 import 'package:archive/archive.dart';
@@ -13,6 +14,7 @@ import 'package:bookfin/reader/epub/dom.dart';
 import 'package:bookfin/reader/epub/fonts.dart';
 import 'package:bookfin/reader/epub/layout.dart';
 import 'package:bookfin/reader/epub/page_source.dart';
+import 'package:bookfin/reader/epub/places.dart';
 import 'package:bookfin/reader/epub/prepare.dart';
 import 'package:bookfin/reader/epub/publication.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -168,6 +170,40 @@ EpubPlace placeIn(PreparedSection section, double fraction, [int offset = 0]) {
   return EpubPlace(section.index, text.order, offset);
 }
 
+/// Runs the page source's worker calls in worker isolates, and holds back
+/// each whole prepared section of spine index [section] that one gives
+/// until [release] completes.
+class HeldPrepares {
+  HeldPrepares([this.section = 0]);
+  final int section;
+  final release = Completer<void>();
+
+  Future<R> run<R>(FutureOr<R> Function() computation) async {
+    final result = await Isolate.run(computation);
+    if (result is PreparedSection && result.index == section) {
+      await release.future;
+    }
+    return result;
+  }
+}
+
+/// The place in the middle of the visible text of section 0, [dom]. It is
+/// a top-level function, so that a worker can run it.
+EpubPlace? middleOfFirst(DomSection dom) => placeAt(dom, 0, .5);
+
+/// The first page that a run of [section] from [start] cuts, as a reader
+/// sees it, and the page after it.
+List<List<Object?>> wholePagesFrom(PreparedSection section, PageStart start) {
+  final run = LayoutRun(section, from: start)
+    ..step(const Duration(days: 1), want: 2);
+  final shown = keys(run.pages.take(2));
+  for (final page in run.pages) {
+    page.dispose();
+  }
+  run.dispose();
+  return shown;
+}
+
 /// What identifies a page's content: its start, its end and its line
 /// starts.
 List<Object?> content(LaidPage page) => [
@@ -187,10 +223,12 @@ void main() {
     Publication publication, {
     Duration budget = const Duration(milliseconds: 4),
     PageSettings settings = readerPage,
+    WorkerCall? work,
   }) => source = PageSource(
     publication,
     schedule: scheduler.schedule,
     budget: budget,
+    work: work,
   )..settings = settings;
 
   setUp(() => scheduler = TestScheduler());
@@ -221,6 +259,138 @@ void main() {
     );
     expect(source.isTrue(truePage), isTrue);
     expect(scheduler.ran.length - before, greaterThan(opening * 10));
+  });
+
+  group('a part of a large section', () {
+    test('a jump deep into a large section shows its page before the whole '
+        'section is prepared, and it is the whole section\'s page', () async {
+      final held = HeldPrepares();
+      open(book([paragraphs(500, sentences: 12)]), work: held.run);
+
+      final place = await scheduler.until(source.findPlace(0, middleOfFirst));
+      final page = await scheduler.until(
+        source.pageAt(place!, anchored: true, urgent: true),
+      );
+      var prepared = false;
+      unawaited(source.section(0).then((_) => prepared = true));
+      await scheduler.settle(quiet: const Duration(milliseconds: 50));
+
+      expect(prepared, isFalse);
+      held.release.complete();
+      final whole = await scheduler.until(source.section(0));
+      expect(page.start, lineStart(whole, place));
+      expect(pageKey(page), wholePagesFrom(whole, page.start).first);
+    });
+
+    test('the page after a page from a part comes from the part too, and '
+        'once the section is prepared, both are the whole section\'s pages '
+        'and the shown one gets its true number', () async {
+      final held = HeldPrepares();
+      open(book([paragraphs(500, sentences: 12)]), work: held.run);
+      final place = await scheduler.until(source.findPlace(0, middleOfFirst));
+      final page = await scheduler.until(
+        source.pageAt(place!, anchored: true, urgent: true),
+      );
+      final next = await scheduler.until(source.after(page));
+      source.show(page);
+
+      held.release.complete();
+      await scheduler.until(source.mainRun(page));
+      final whole = await scheduler.until(source.section(0));
+
+      expect([
+        pageKey(page),
+        pageKey(next!),
+      ], wholePagesFrom(whole, page.start));
+      expect(source.numberOf(page), isNotNull);
+      source.checkInvariants();
+    });
+
+    test(
+      'turning forward from a page of a part goes on in the part, and '
+      'the page after the part waits quietly for the whole section',
+      () async {
+        final held = HeldPrepares();
+        open(book([paragraphs(500, sentences: 12)]), work: held.run);
+        final place = await scheduler.until(source.findPlace(0, middleOfFirst));
+        var page = await scheduler.until(
+          source.pageAt(place!, anchored: true, urgent: true),
+        );
+        final pages = [page];
+        LaidPage? waiting;
+        var asked = 0;
+        while (waiting == null) {
+          final next = source.after(page);
+          asked++;
+          LaidPage? laid;
+          unawaited(next.then((found) => laid = found));
+          // A wait that never ends means busy steps; settle returns once none
+          // runs for the quiet time.
+          await scheduler.settle(quiet: const Duration(milliseconds: 50));
+          if (laid == null) {
+            held.release.complete();
+            waiting = await scheduler.until(next);
+          } else {
+            pages.add(page = laid!);
+          }
+        }
+        final whole = await scheduler.until(source.section(0));
+        final run = LayoutRun(whole, from: pages.first.start)
+          ..step(const Duration(days: 1), want: asked + 1);
+
+        expect(pages.length, greaterThan(1));
+        expect(keys([...pages, waiting]), keys(run.pages.take(asked + 1)));
+        for (final laid in run.pages) {
+          laid.dispose();
+        }
+        run.dispose();
+      },
+    );
+
+    test('a place inside one paragraph longer than a part gets the whole '
+        'section from the same worker, without waiting for another '
+        'prepare', () async {
+      final held = HeldPrepares();
+      // Each sentence is a text node of its own, so a part's end cuts the
+      // paragraph.
+      final lines = [
+        for (var i = 0; i < 6000; i++) '<span>${prose(1, 'Line $i')}</span> ',
+      ].join();
+      open(book(['<p>$lines</p>']), work: held.run);
+
+      final place = await scheduler.until(source.findPlace(0, middleOfFirst));
+      final page = await scheduler.until(
+        source.pageAt(place!, anchored: true, urgent: true),
+      );
+
+      final whole = source.sectionOf(page);
+      expect(whole.whole, isTrue);
+      expect(page.start, lineStart(whole, place));
+      expect(identical(await source.section(0), whole), isTrue);
+    });
+
+    test('a place in a small section waits for its whole prepare, with no '
+        'part', () async {
+      final held = HeldPrepares();
+      open(book([paragraphs(12)]), work: held.run);
+      EpubPlace? place;
+      unawaited(
+        source.findPlace(0, middleOfFirst).then((found) => place = found),
+      );
+      await scheduler.settle(quiet: const Duration(milliseconds: 50));
+
+      expect(place, isNull);
+      held.release.complete();
+      await scheduler.until(source.section(0));
+      await scheduler.until(
+        Future.doWhile(() async {
+          await Future<void>.delayed(Duration.zero);
+          return place == null;
+        }),
+      );
+      final whole = await source.section(0);
+      expect(place, placeAt(whole.dom, 0, .5));
+    });
   });
 
   test('opening a place deep in a long table that no run measured measures '

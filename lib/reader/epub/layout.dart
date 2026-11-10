@@ -406,6 +406,11 @@ class LaidPage {
 /// page start of the run from the section start cuts the same pages after
 /// it.
 ///
+/// A run of a part of a section ([preparePart]) cuts the same pages as a
+/// run of the whole section from the same start, until it reaches the end
+/// of the part. There it is [starved]: it cuts no page that needs an item
+/// after the part, and never the section's last page.
+///
 /// Invariants, which [checkInvariants] checks:
 /// - The run holds every piece that a slice or a marker not yet published
 ///   shows, or a line that waits for its widows rule, and every piece that
@@ -435,6 +440,7 @@ class LayoutRun {
     Duration Function()? clock,
   }) : _section = section,
        _flow = section.flow,
+       _reachesEnd = section.reachesEnd,
        _clock = clock ?? _elapsed,
        _root = (0, section.settings.width),
        _textStyles = [
@@ -461,6 +467,7 @@ class LayoutRun {
     double width,
   ) : _section = outer._section,
       _flow = flow,
+      _reachesEnd = true,
       _clock = outer._clock,
       _root = (left, width),
       _textStyles = outer._textStyles,
@@ -491,6 +498,10 @@ class LayoutRun {
 
   /// The flow items that the run lays out: the section's, or a cell's.
   final List<FlowItem> _flow;
+
+  /// Whether the end of [_flow] is the end of its content: false for a
+  /// part of a section that ends before the section's end.
+  final bool _reachesEnd;
   final Duration Function() _clock;
 
   /// The left edge and the width of the block that holds the flow's
@@ -558,6 +569,11 @@ class LayoutRun {
   /// Whether the run published the section's last page.
   bool get done => _done;
 
+  /// Whether the run laid out every flow item of a part of a section that
+  /// ends before the section's end, so that its next page needs the whole
+  /// section. A step does nothing then.
+  bool get starved => !_done && _item == _flow.length && !_reachesEnd;
+
   /// The index of the flow item that the run lays out next. It is the
   /// flow's length once every item is laid out.
   int get reached => _item;
@@ -576,7 +592,7 @@ class LayoutRun {
     }
     final begin = _clock();
     final target = _pages.length + (want ?? 0);
-    while (!_done) {
+    while (!_done && !starved) {
       _layOutItem();
       _cut();
       if (want != null && _pages.length >= target) return;
@@ -701,7 +717,7 @@ class LayoutRun {
           }
         case BlockEnd():
           open.removeLast();
-        case ParagraphItem() || ImageItem() || TableItem():
+        case ParagraphItem() || ImageItem() || TableItem() || SkippedItem():
           sliceBefore = true;
           marker = null;
       }
@@ -815,6 +831,8 @@ class LayoutRun {
           _item = index;
           _tableRow(_rows = rows);
         }
+      case SkippedItem():
+        throw StateError('A run reached a flow item that its part skipped.');
     }
   }
 
@@ -829,7 +847,7 @@ class LayoutRun {
   }
 
   void _publishDecided() {
-    final atEnd = _item == _flow.length;
+    final atEnd = _item == _flow.length && _reachesEnd;
     while (!_done) {
       final count = _pending.length;
       final limit = _pageTop + _section.settings.height + fitTolerance;
@@ -1403,8 +1421,8 @@ class LayoutRun {
           final (imageWidth, _) = sizing.sizeIn(width);
           min = math.max(min, around + marginLeft + imageWidth);
           max = math.max(max, around + marginLeft + imageWidth);
-        case TableItem():
-          // A table inside a cell is plain blocks.
+        case TableItem() || SkippedItem():
+          // A table inside a cell is plain blocks, and a cell skips nothing.
           break;
       }
     }
@@ -2534,16 +2552,23 @@ SectionMeasures measuresOf(PreparedSection section) => SectionMeasures(
 
 /// Gives the flow items of [section] the kept [measures], which an earlier
 /// layout of the same section found ([measuresOf]), so that no run finds
-/// them again. An item that a run measured already keeps its own. Returns
-/// false, and gives nothing, when [measures] do not fit the section's
-/// items.
+/// them again. An item that a run measured already keeps its own. A part of
+/// the section ([preparePart]) takes the measures of its own items only.
+/// Returns false, and gives nothing, when [measures] do not fit the
+/// section's items.
 ///
 /// A run checks each kept table row and each kept segment that it lays
 /// out ([LayoutRun.contradicted]). [forgetMeasures] takes the kept
 /// measures back.
 bool reuseMeasures(PreparedSection section, SectionMeasures measures) {
   final flow = section.flow;
+  // A part of the section passes by the items that it skipped or left out
+  // after its end.
+  bool passedBy(int index) =>
+      (index >= flow.length && !section.reachesEnd) ||
+      (index >= 0 && index < flow.length && flow[index] is SkippedItem);
   for (final MapEntry(key: index, value: widths) in measures.tables.entries) {
+    if (passedBy(index)) continue;
     if (index < 0 || index >= flow.length) return false;
     if (flow[index] case final TableItem table
         when widths.length ==
@@ -2554,6 +2579,7 @@ bool reuseMeasures(PreparedSection section, SectionMeasures measures) {
   }
   for (final MapEntry(key: index, value: (:starts, :lines))
       in measures.paragraphs.entries) {
+    if (passedBy(index)) continue;
     if (index < 0 || index >= flow.length) return false;
     if (flow[index] case final ParagraphItem paragraph
         when LayoutRun._long(paragraph.text) &&
@@ -2578,6 +2604,7 @@ bool reuseMeasures(PreparedSection section, SectionMeasures measures) {
     return false;
   }
   for (final MapEntry(key: index, value: widths) in measures.tables.entries) {
+    if (passedBy(index)) continue;
     final table = flow[index] as TableItem;
     if (LayoutRun._measured[table] != null) continue;
     var at = 0;
@@ -2594,6 +2621,7 @@ bool reuseMeasures(PreparedSection section, SectionMeasures measures) {
   }
   for (final MapEntry(key: index, value: (:starts, :lines))
       in measures.paragraphs.entries) {
+    if (passedBy(index)) continue;
     final paragraph = flow[index] as ParagraphItem;
     if (LayoutRun._found[paragraph] != null) continue;
     LayoutRun._found[paragraph] = _Segmentation()
@@ -2735,6 +2763,13 @@ class LineSearch {
   PageStart? get found => _found;
   PageStart? _found;
 
+  /// Whether the section is a part of a section that cannot tell the line:
+  /// no item of the part shows a place at or before the place, or the
+  /// search reached the part's end. The whole section can. A step does
+  /// nothing then.
+  bool get starved => _starved;
+  bool _starved = false;
+
   /// Works toward [found] until [budget] is spent. A step ends after the
   /// unit of work that crosses the budget: the measure of one row of the
   /// place's table, the count of the lines of one segment of the place's
@@ -2744,9 +2779,15 @@ class LineSearch {
   /// space after its item's last line opens on the next item, which the
   /// search measures in its last step if it is a table not yet measured.
   void step(Duration budget) {
-    if (_found != null) return;
+    if (_found != null || _starved) return;
     final begin = LayoutRun._elapsed();
     final item = _itemOf(_section, _place);
+    // In a part, no item before the place can mean that an item that the
+    // part skipped or left out after its end holds it.
+    if (item < 0 && (_section.firstPrepared > 0 || !_section.reachesEnd)) {
+      _starved = true;
+      return;
+    }
     var line = 0;
     if (item >= 0) {
       if (_section.flow[item] case final TableItem table
@@ -2763,6 +2804,7 @@ class LineSearch {
       }
     }
     _found = _search(item, line);
+    _starved = _found == null;
   }
 
   /// The paragraph's lines before the segment of [paragraph], flow item
@@ -2813,7 +2855,10 @@ class LineSearch {
     }
   }
 
-  PageStart _search(int item, int line) {
+  /// The page start of the line that holds the place, from flow item
+  /// [item], its line [line]; null when the search reached the end of a
+  /// part of the section, which cannot tell it.
+  PageStart? _search(int item, int line) {
     final section = _section;
     final place = _place;
     if (item < 0) return const PageStart(0, 0);
@@ -2880,6 +2925,7 @@ class LineSearch {
       // A place in white space after the lines is on the first line of the
       // next item or row that shows something.
       if (past) (:holder, :past) = layOutShown();
+      if (run.starved) return null;
       // The item's first line starts where the run starts: at the section
       // start when nothing comes before it.
       if (holder == null || holder == PageStart(item, 0)) return run._from;
@@ -2999,7 +3045,7 @@ EpubPlace? _firstPlace(int section, FlowItem item) {
         if (_firstPlaceOfRow(section, row) case final place?) return place;
       }
       return null;
-    case BlockStart() || BlockEnd():
+    case BlockStart() || BlockEnd() || SkippedItem():
       return null;
   }
 }

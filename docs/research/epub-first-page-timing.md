@@ -211,3 +211,89 @@ On this emulator the open of Keats' section 2 took 26 to 35 percent less time. I
 ### What t7-49gt still needs
 
 The open of Keats' section 2 drops by about a third, not by half. On the host, Keats' prepare takes 61 percent of its time before. On the emulator of t7-bbv1 (328 ms prepare, 391 ms to the shown page), that gives about 200 ms of prepare and about 265 ms to the shown page, against a goal of less than 196 ms. So t7-49gt still needs a part of the section before the whole (Design 1 in its notes) to reach half of the time.
+
+## After t5-xw4w and t7-49gt: a part of a large section
+
+Tickets t5-xw4w and t7-49gt, 2026-11-09. Two changes on top of tf-focn shorten the time to a page deep inside a large section.
+
+### The XHTML event parser (t5-xw4w)
+
+`DomSection.parse` now reads package:xml's events straight into Bookfin's DOM, without package:xml's tree. It uses the same tokenizer and the same checks (`validateNesting`, `validateDocument`), so it accepts and rejects the same documents. For the few documents that package:xml's tree rejects with its own exception, it falls back to `XmlDocument.parse` for that exception.
+
+The prepared sections did not change: the corpus prepare hashes of all 93 books in all three page settings values equal the base's (13,719 prepared sections, 0 errors, six runs). The times are from three paired corpus prepare rounds on the host. Each time is the fastest of 3 prepares in a run, and the median of the rounds.
+
+| Measure | Before | After | After / before |
+| --- | --- | --- | --- |
+| Keats' Poetry (SE) 2 | 209.5 ms | 183.6 ms | 0.88 |
+| The whole corpus | 11,836 ms | 11,020 ms | 0.93 |
+| Median section | | | 0.94 (median ratio) |
+| Median of the sections of 10 ms or more | | | 0.95 (median ratio) |
+
+### A part of the section (t7-49gt)
+
+A jump or an open deep inside a section of at least 256 KiB of XHTML no longer waits for the whole section's prepare. A worker isolate (`preparePart` in prepare.dart) does these steps:
+
+1. It parses the whole section and finds the place.
+2. It styles the elements and builds the boxes up to the end of the part. The part ends about 10,000 visible characters after the place. If the `p` element or the table that holds the place ends later, the part ends with it.
+3. It makes text runs and hyphenation only from about 6,000 visible characters before the place to the end of the part.
+
+The part's flow items keep the numbers that the whole section gives them. The items before the part are placeholders (`SkippedItem`). So the page source lays out the place's page with its true start, and the pager does not change. When the part arrives, the page source starts the whole section's prepare. When the whole section arrives, it replaces the part. A layout run that needs an item after the part waits for the whole section (`LayoutRun.starved`).
+
+A part only helps a section of many blocks. A section that is one block, such as Roget's section 1 (one table) or Ulysses' section 18 (one paragraph), gains nothing. Another block can also be longer than the part, for example a long `div` of text. A place in it gets the whole section from the same worker and the same parse.
+
+### The same pages and saved places
+
+`test/reader/epub/corpus_prepare_test.dart` now also prepares parts. It checks each corpus section of at least 30,000 bytes in all three page settings values. For each, it prepares the parts around the places in the middle (0.5) and near the end (0.97). Each part must meet these conditions:
+
+- Each flow item of the part equals the whole section's flow item of the same number.
+- The line start of the place in the part equals the line start in the whole section.
+- The first two pages from that line start equal the whole section's pages.
+- A part that `preparePart` gives as the whole section equals the section that `prepareSections` gives.
+
+All 93 books passed: 4,782 parts gave the same pages, and 456 places got the whole section. No line search needed the whole section. The whole sections did not change: the corpus prepare hashes of the branch equal those of the base 7e3fcd8 (0 differences).
+
+### When a part pays
+
+A part costs CPU time beside the whole section's prepare, which still runs after the part. On the emulator, this extra work delays the turns just after the first page (see below). So the page source uses a part only for a section of at least 256 KiB of XHTML (`PageSource._partBytes`). The table compares two times from the corpus prepare run on the host, at the reader's page. One is the fastest of 3 part prepares, and the other is the whole prepare of the same section.
+
+| Section size | Places | Median whole prepare (ms) | Median part / whole | Median time saved (ms) |
+| --- | --- | --- | --- | --- |
+| 30 to 128 KiB | 1,320 | 3.5 to 12.6 | 0.52 to 0.77 | 0.6 to 2.5 |
+| 128 to 256 KiB | 300 | 7.6 to 11.3 | 0.57 to 0.92 | 0.6 to 1.3 |
+| 256 to 512 KiB | 40 | 57.9 | 0.47 | 31.0 |
+| 512 KiB and more | 18 | 141.9 | 0.50 | 50.8 |
+
+Below 256 KiB, no whole prepare took more than 35 ms. From 256 KiB, 54 of the 58 places were in sections that took 35 ms or more to prepare whole. The median part there saved 33 ms, and one part saved 192 ms.
+
+### Host: the time to a page deep in a large section
+
+`test/reader/epub/part_open_benchmark_test.dart` (with `BOOKFIN_EPUB_PART_BENCHMARK=1`) times a jump from a new page source to the anchored page of a place. The base (7e3fcd8, before t5-xw4w) asks for the prepared section and finds the place in it. The branch asks the page source to find the place (`PageSource.findPlace`), which prepares a part. The base and the branch ran one after the other in each of three rounds, with a load of 5 to 11 on 10 cores. Each time is the median of 3 opens in a round, and the median of the three rounds, in milliseconds.
+
+| Section | Place | Base | Branch | Branch / base |
+| --- | --- | --- | --- | --- |
+| Keats' Poetry (SE) 2, 966 KiB | Middle (0.5) | 259.6 | 120.9 | 0.47 |
+| Keats' Poetry (SE) 2 | Near the end (0.97) | 257.7 | 153.2 | 0.59 |
+| Plato's Dialogues (SE) 30, 1,758 KiB | Middle | 317.4 | 118.2 | 0.37 |
+| Plato's Dialogues (SE) 30 | Near the end | 406.3 | 240.7 | 0.59 |
+| Van Dyke's Poetry (SE) 2, 712 KiB | Middle | 205.3 | 104.7 | 0.51 |
+| Van Dyke's Poetry (SE) 2 | Near the end | 205.1 | 127.4 | 0.62 |
+
+Near its end, Plato's section 30 is a sequence of tables of 100 to 280 rows. The first build ended each part about 10,000 visible characters after the place. So a part cut the place's table and fell back to the whole section (1.10 of the base). Now the part goes on to the end of the place's table. The part's prepare takes about 71 ms of the 241 ms. This ticket did not measure where the rest goes.
+
+### Emulator
+
+A new arm64 Android 36 emulator (bookfin-t7part: Pixel 7 profile, 4 virtual CPUs, 4 GB, host graphics) ran a profile build of `tool/reader/open_benchmark.dart` with the Keats plan: open at the middle of section 2, a turn in section 3, and a jump from section 5 to 0.97 of section 2. The base and the branch alternated, each with a calibration launch and 3 measuring launches of 5 warm opens each. The times are medians in milliseconds, to the shown page.
+
+| Run | Base | Branch | Branch / base |
+| --- | --- | --- | --- |
+| Open, warm, cycle 4 (15 samples each) | 301.1 | 187.2 | 0.62 |
+| Jump, warm, cycle 4 | 286.4 | 169.5 | 0.59 |
+| Open, cold, cycles 4 and 5 (6 samples each) | 327.3 | 168.5 | 0.51 |
+| Open, warm, cycle 5 | 302.0 | 228.2 | 0.76 |
+| Turn, warm, cycles 4 and 5 (30 samples each) | 17.1 | 24.4 | 1.42 |
+
+The branch's launches of cycle 5 ran while the load of the Mac rose to 16 on 10 cores. Their warm opens took 168 to 481 ms, and the base's launches before them took 287 to 333 ms. Three earlier cycles of the first build gave the same picture: an open of 186 ms against 301 ms (0.62), and a turn of 25.5 ms against 17.6 ms.
+
+The emulator of t7-bbv1 took 391 ms to the shown page before tf-focn. The goal of this ticket was half of that, under 196 ms. On this emulator, the branch opens in 187 ms warm and 168 ms cold. A build from before tf-focn (3ac7734) took 376 ms warm on this emulator, so the branch takes 0.47 of that time (cycle 3).
+
+The turn right after a part open takes about 7 ms more. This ticket did not find the whole cause. After the part arrives, the whole section's prepare still runs in a worker isolate during the turn. But a plan that opens a small section, with no part, also gave a slower turn on the branch: 22.6 ms against 19.6 ms. The base's turn varied from 17.1 to 22.4 ms between periods of the same day. A warm open on a new pager can also run beside the whole prepare of the pager before it. The page source cannot stop a worker that it started.

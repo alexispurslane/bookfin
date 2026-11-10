@@ -224,6 +224,26 @@ class DomSection {
     _ => null,
   };
 
+  /// The body text node that holds the visible character that [visible]
+  /// visible characters come before, from 0 to [visibleLength] − 1.
+  DomText textHolding(int visible) {
+    RangeError.checkValidIndex(visible, null, 'visible', visibleLength);
+    // The last text node that starts at or before the character holds it,
+    // because a node without visible characters starts where the next one
+    // does.
+    var low = 0;
+    var high = texts.length - 1;
+    while (low < high) {
+      final middle = (low + high + 1) >> 1;
+      if (texts[middle].visibleBefore <= visible) {
+        low = middle;
+      } else {
+        high = middle - 1;
+      }
+    }
+    return texts[low];
+  }
+
   /// The number of visible characters of the body before [place]. An
   /// element's place is the first text in or after it.
   int visibleBefore(EpubPlace place) {
