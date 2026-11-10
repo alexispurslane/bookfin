@@ -1,9 +1,11 @@
 // The on-demand check of a jump with a kept page map in real books
-// (t5-q0hs). Before the map kept each page's first place, a jump into the
-// middle of the largest section took a line search of 2.5 s on the host in
-// Gutenberg's Roget's Thesaurus (one table of 1,187 cells), 164 ms in
-// Standard Ebooks' Ulysses and 63 ms in Bleak House (long paragraphs). It
-// is not part of Bookfin's normal test run. Each book prints its times.
+// (t5-q0hs, t5-s1vy). Before the map kept each page's first place, a jump
+// into the middle of the largest section took a line search of 2.5 s on
+// the host in Gutenberg's Roget's Thesaurus (one table of 1,187 cells),
+// 164 ms in Standard Ebooks' Ulysses and 63 ms in Bleak House (long
+// paragraphs). Before the map kept table cell widths, the page from the
+// kept start measured the whole table instead. It is not part of
+// Bookfin's normal test run. Each book prints its times.
 //
 // In the dev shell, from the repository root, after
 // python3 -I tool/reader/fetch_epub_corpus.py:
@@ -12,6 +14,7 @@
 import 'dart:io';
 import 'dart:math' as math;
 
+import 'package:bookfin/reader/epub/dom.dart';
 import 'package:bookfin/reader/epub/fonts.dart';
 import 'package:bookfin/reader/epub/layout.dart';
 import 'package:bookfin/reader/epub/page_maps.dart';
@@ -28,29 +31,29 @@ final _enabled = Platform.environment['BOOKFIN_EPUB_CORPUS'] == '1';
 
 void main() {
   if (!_enabled) {
-    test('the jump into Roget', () {}, skip: 'set BOOKFIN_EPUB_CORPUS=1');
+    test('the jumps into real books', () {}, skip: 'set BOOKFIN_EPUB_CORPUS=1');
     return;
   }
   setUpAll(loadReaderFont);
 
-  for (final id in [
-    'pg-10681-rogets-thesaurus',
-    'se-ulysses',
-    'se-bleak-house',
+  for (final (id, where) in [
+    ('pg-10681-rogets-thesaurus', _Where.largestSection),
+    ('se-ulysses', _Where.largestSection),
+    ('se-bleak-house', _Where.largestSection),
+    ('pg-1322-leaves-of-grass', _Where.longestParagraph),
+    ('pg-24264-hong-lou-meng', _Where.longestParagraph),
+    ('pg-1228-origin-of-species', _Where.longestParagraph),
+    ('se-ulysses', _Where.longestParagraph),
   ]) {
-    test('a jump into the middle of the largest section of $id with a kept '
+    test('a jump into the middle of the ${where.name} of $id with a kept '
         'page map does no line search', () async {
       final entry = corpusList().singleWhere((book) => book.id == id);
       final book = CorpusBook.open(await entry.file.readAsBytes());
       final publication = book.publication;
-      final largest =
-          [for (var index = 0; index < book.sections; index++) index].reduce(
-            (a, b) =>
-                publication.resources[publication.spine[a]]!.length >=
-                    publication.resources[publication.spine[b]]!.length
-                ? a
-                : b,
-          );
+      final (index, picked) = switch (where) {
+        _Where.largestSection => (_largestSection(book), null),
+        _Where.longestParagraph => _longestParagraph(book),
+      };
       final folder = await Directory.systemTemp.createTemp('bookfin-jump-');
       addTearDown(() => folder.delete(recursive: true));
       final download = await File('${folder.path}/complete').writeAsBytes([0]);
@@ -64,13 +67,19 @@ void main() {
           await _keptSection(book, index),
       ]);
 
-      /// A jump to the middle of the largest section, after its prepare: to
-      /// the page at the line that holds the place when [anchored], else to
-      /// the true page that holds it.
-      Future<({Duration took, int lineSearches, LaidPage page})> jump(
-        BookPageMaps? pageMaps, {
-        bool anchored = false,
-      }) async {
+      /// A jump to the place, after its section's prepare: to the page at
+      /// the line that holds the place when [anchored], else to the true
+      /// page that holds it.
+      Future<
+        ({
+          Duration took,
+          int lineSearches,
+          int measuredCells,
+          int laidOutUnits,
+          LaidPage page,
+        })
+      >
+      jump(BookPageMaps? pageMaps, {bool anchored = false}) async {
         final scheduler = TestScheduler();
         final source = PageSource(
           publication,
@@ -78,8 +87,10 @@ void main() {
           pageMaps: pageMaps,
         )..settings = readerPage;
         addTearDown(source.dispose);
-        final section = await scheduler.until(source.section(largest));
-        final place = placeIn(section, .5);
+        final section = await scheduler.until(source.section(index));
+        final place = picked?.place ?? placeIn(section, .5);
+        final cells = LayoutRun.measuredCells;
+        final units = LayoutRun.laidOutUnits;
         final clock = Stopwatch()..start();
         final page = await scheduler.until(
           source.pageAt(place, anchored: anchored, urgent: true),
@@ -87,6 +98,8 @@ void main() {
         return (
           took: clock.elapsed,
           lineSearches: source.lineSearches,
+          measuredCells: LayoutRun.measuredCells - cells,
+          laidOutUnits: LayoutRun.laidOutUnits - units,
           page: page,
         );
       }
@@ -96,18 +109,81 @@ void main() {
       final kept = await jump(pageMaps);
       // ignore: avoid_print
       print(
-        'JUMP $id section $largest: '
+        'JUMP $id ${where.name} section $index'
+        '${picked == null ? '' : ' (${picked.length} code units)'}: '
         'without a map ${plain.took.inMilliseconds} ms to the true page, '
         '${anchored.took.inMilliseconds} ms to the anchored page; '
-        'with a map ${kept.took.inMilliseconds} ms to the true page',
+        'with a map ${kept.took.inMilliseconds} ms to the true page; '
+        'table cells measured ${plain.measuredCells} without a map, '
+        '${kept.measuredCells} with one; code units laid out '
+        '${anchored.laidOutUnits} for the anchored page, '
+        '${kept.laidOutUnits} with a map',
       );
 
       expect(kept.lineSearches, 0);
+      // With a map, a jump checks the kept widths of the rows that it lays
+      // out, and measures no other table cell.
+      expect(
+        kept.measuredCells,
+        plain.measuredCells == 0 ? 0 : lessThan(plain.measuredCells ~/ 10),
+      );
+      // With a map, a jump into the middle of a long paragraph lays out the
+      // segments of its pages, and none before them.
+      if (picked != null) {
+        expect(kept.laidOutUnits, lessThan(picked.length ~/ 4));
+      }
       expect(plain.lineSearches, 1);
       expect(kept.page.start, plain.page.start);
       expect(kept.page.startPlace, plain.page.startPlace);
     }, timeout: Timeout.none);
   }
+}
+
+/// Where a jump goes: to the middle of a book's largest section, or to the
+/// middle of its longest paragraph.
+enum _Where { largestSection, longestParagraph }
+
+/// The index of the largest section of [book], by its XHTML's bytes.
+int _largestSection(CorpusBook book) {
+  final publication = book.publication;
+  return [for (var index = 0; index < book.sections; index++) index].reduce(
+    (a, b) =>
+        publication.resources[publication.spine[a]]!.length >=
+            publication.resources[publication.spine[b]]!.length
+        ? a
+        : b,
+  );
+}
+
+/// The section of the longest paragraph of [book], the place at its middle
+/// code unit, and its length in code units.
+(int, ({EpubPlace place, int length})) _longestParagraph(CorpusBook book) {
+  var best = (0, const EpubPlace(0, 0, 0), 0);
+  for (var index = 0; index < book.sections; index++) {
+    final section = prepareSections([book.source(index)], readerPage).single;
+    for (final item in section.flow) {
+      if (item is! ParagraphItem) continue;
+      final runs = item.text.runs;
+      final length = runs.fold(
+        0,
+        (sum, run) => sum + (run is TextRun ? run.text.length : 1),
+      );
+      if (length <= best.$3) continue;
+      var at = 0;
+      for (final run in runs) {
+        if (run is TextRun && at + run.text.length > length ~/ 2) {
+          best = (
+            index,
+            EpubPlace(index, run.node, run.offsets[length ~/ 2 - at]),
+            length,
+          );
+          break;
+        }
+        at += run is TextRun ? run.text.length : 1;
+      }
+    }
+  }
+  return (best.$1, (place: best.$2, length: best.$3));
 }
 
 /// The kept page map section of section [index] of [book], as the page
@@ -130,6 +206,7 @@ Future<KeptSection> _keptSection(CorpusBook book, int index) async {
       firsts: [for (final page in chapter.pages) page.startPlace],
       visible: (starts: visible, length: section.dom.visibleLength),
       complete: true,
+      measures: measuresOf(section),
     );
   } finally {
     chapter.dispose();

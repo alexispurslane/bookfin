@@ -428,6 +428,48 @@ void main() {
     }
   });
 
+  test('the line search picks the line that shows a place after a line of '
+      'only white space', () {
+    // Lines of verse in a pre element, then an empty line and an indented
+    // line that end the paragraph's first segment, as in Gutenberg's
+    // Leaves of Grass. The segment ends at the first cut 1,024 code units
+    // or more into it: the hard break after the indented line. The two
+    // lines start at the same place in document order, because a place in
+    // white space counts as its next visible character. The indented line
+    // waits for its widows rule when the search finds the empty line.
+    final verse = [
+      for (var i = 0; i < 56; i++) 'Line ${'$i'.padLeft(3, '0')} of verse\n',
+      'Short one\n',
+    ].join();
+    expect(verse.length, 1018);
+    final poem = prepareSections([
+      section(
+        '<pre>$verse\n  Births\n'
+        '${[for (var i = 0; i < 40; i++) 'After $i\n'].join()}</pre>',
+      ),
+    ], readerPage).single;
+    final text = poem.dom.texts.firstWhere(
+      (text) => text.text.contains('Births'),
+    );
+    final indented = text.text.indexOf('  Births');
+    final chapter = layoutSection(poem);
+    addTearDown(chapter.dispose);
+    final line = chapter.pages
+        .expand((page) => page.slices)
+        .singleWhere(
+          (slice) => slice.start == EpubPlace(0, text.order, indented),
+        );
+
+    for (final offset in [indented - 1, indented, indented + 2]) {
+      final place = EpubPlace(0, text.order, offset);
+      expect(
+        lineStart(poem, place),
+        line.at,
+        reason: 'the place ${text.text.substring(offset, offset + 1)}',
+      );
+    }
+  });
+
   test('a place in white space before an image opens on the image', () {
     final section = prepared(
       '<p>${prose(8)}</p>\n<img src="map.png"/>\n<p>${prose(2)}</p>',

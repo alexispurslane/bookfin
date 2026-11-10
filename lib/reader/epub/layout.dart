@@ -422,11 +422,13 @@ class LayoutRun {
   /// clock.
   ///
   /// A run measures each row of a table for its column widths, once per
-  /// table item, one row in each unit of work. NOTE: A run that starts
-  /// inside a shrink-to-fit box that holds a table not yet measured, as a
-  /// table's own box is, measures the whole table here. The page source
-  /// starts such runs only at page starts of the main run or of
-  /// [lineStart], which measure the table first, in steps.
+  /// table item, one row in each unit of work, unless an earlier layout's
+  /// widths were given to the section ([reuseMeasures]). NOTE: A run that
+  /// starts inside a shrink-to-fit box that holds a table not yet measured,
+  /// as a table's own box is, measures the whole table here. The page
+  /// source starts such runs only at page starts of the main run or of
+  /// [lineStart], which measure the table first, in steps, or in sections
+  /// whose widths it kept.
   LayoutRun(
     PreparedSection section, {
     PageStart? from,
@@ -472,6 +474,18 @@ class LayoutRun {
   /// paragraph.
   @visibleForTesting
   static int laidOutUnits = 0;
+
+  /// The table cells that runs and searches measured for their narrowest
+  /// and widest content, in this process.
+  @visibleForTesting
+  static int measuredCells = 0;
+
+  /// Whether a measure that the run found again disagreed with a kept one
+  /// ([reuseMeasures]). The run checks the kept widths of each table row
+  /// that it lays out, and where each segment of a long paragraph that it
+  /// lays out ends.
+  bool get contradicted => _contradicted;
+  bool _contradicted = false;
 
   final PreparedSection _section;
 
@@ -1162,6 +1176,21 @@ class LayoutRun {
   /// every run of the section.
   static final _measured = Expando<List<List<GridCell>>>('table extents');
 
+  /// The rows of each table item whose widths came from kept measures
+  /// ([reuseMeasures]) and that no run measured again yet.
+  static final _unchecked = Expando<Set<int>>('kept table rows');
+
+  /// Measures row [row] of [table] again when its widths came from kept
+  /// measures that no run checked yet, and notes when they disagree. A row
+  /// costs about what its layout costs, once per prepared section.
+  void _check(TableItem table, int row) {
+    if (_unchecked[table]?.remove(row) != true) return;
+    final kept = _measured[table]![row];
+    for (final (column, cell) in table.rows[row].indexed) {
+      if (_extent(cell, table.width) != kept[column]) _contradicted = true;
+    }
+  }
+
   /// Starts [table], flow item [index], at its row [row], from fragment
   /// [part] of that row, or returns null when the table has no such row. A
   /// run that starts inside the table lays out no row above it: row [row]
@@ -1228,6 +1257,7 @@ class LayoutRun {
     final row = table.rows[number];
     final (across, down) = table.spacing;
     final x = rows.left;
+    if (rows.cells.isEmpty && rows.cell == null) _check(table, number);
     final boxes = cellBoxes(
       [for (final cell in row) cell.colspan],
       rows.widths,
@@ -1345,6 +1375,7 @@ class LayoutRun {
   /// resolve against [width]: those of its widest paragraph or image, with
   /// the margins, padding and borders of the boxes around it.
   GridCell _extent(TableCell cell, double width) {
+    measuredCells++;
     var min = 0.0;
     var max = 0.0;
     var around =
@@ -2180,6 +2211,23 @@ class LayoutRun {
         ? built.map.length
         : _lineStart(built.paragraph, built.map.length, count);
     final before = segments.lines;
+    // A segment that another run or a kept page map found already must end
+    // where it ended then. When it does not, what this run found replaces
+    // it and the segments after it.
+    if (found.starts.length > next + 1 || found.complete) {
+      final agrees = last
+          ? found.starts.length == next + 1
+          : found.starts.length > next + 1 &&
+                found.starts[next + 1] == start + following - shift &&
+                found.lines[next + 1] == before + count;
+      if (!agrees) {
+        _contradicted = true;
+        found
+          ..starts.length = next + 1
+          ..lines.length = next + 1
+          ..complete = false;
+      }
+    }
     if (last) {
       found.complete = true;
     } else if (found.starts.length == next + 1) {
@@ -2399,6 +2447,177 @@ class LayoutRun {
   }
 }
 
+/// The measures of a section's flow items that a run from a page start
+/// inside an item needs before it cuts its first page: the narrowest and
+/// the widest content width of each cell of each table item, and the
+/// segments of each long paragraph item.
+class SectionMeasures {
+  const SectionMeasures({this.tables = const {}, this.paragraphs = const {}});
+
+  /// The cells of each table item, by its index in the flow: the narrowest
+  /// and the widest content width of each cell in turn, cell by cell and
+  /// row by row ([GridCell.min] and [GridCell.max]).
+  final Map<int, Float64List> tables;
+
+  /// The segments of each long paragraph item of more than one segment, by
+  /// its index in the flow (see [LayoutRun._long]).
+  final Map<int, Segments> paragraphs;
+
+  @override
+  bool operator ==(Object other) =>
+      other is SectionMeasures &&
+      other.tables.length == tables.length &&
+      tables.entries.every(
+        (entry) => _same(other.tables[entry.key], entry.value),
+      ) &&
+      other.paragraphs.length == paragraphs.length &&
+      paragraphs.entries.every(
+        (entry) =>
+            _same(other.paragraphs[entry.key]?.starts, entry.value.starts) &&
+            _same(other.paragraphs[entry.key]?.lines, entry.value.lines),
+      );
+
+  @override
+  int get hashCode => Object.hash(
+    Object.hashAllUnordered([
+      for (final MapEntry(:key, :value) in tables.entries)
+        Object.hash(key, Object.hashAll(value)),
+    ]),
+    Object.hashAllUnordered([
+      for (final MapEntry(:key, :value) in paragraphs.entries)
+        Object.hash(key, Object.hashAll(value.starts)),
+    ]),
+  );
+
+  @override
+  String toString() =>
+      'SectionMeasures(tables: $tables, paragraphs: $paragraphs)';
+}
+
+/// The segments of a long paragraph, in order: where each one starts, in
+/// code units of the paragraph's text without its indent, and the
+/// paragraph's lines before it. The first segment starts at 0 with 0
+/// lines before it.
+typedef Segments = ({List<int> starts, List<int> lines});
+
+bool _same<T>(List<T>? a, List<T> b) {
+  if (a == null || a.length != b.length) return false;
+  for (var index = 0; index < a.length; index++) {
+    if (a[index] != b[index]) return false;
+  }
+  return true;
+}
+
+/// The measures that runs of [section] found for its flow items so far: a
+/// main run to the section end finds them all.
+SectionMeasures measuresOf(PreparedSection section) => SectionMeasures(
+  tables: {
+    for (final (index, item) in section.flow.indexed)
+      if (item is TableItem)
+        if (LayoutRun._measured[item] case final rows?)
+          index: Float64List.fromList([
+            for (final row in rows)
+              for (final cell in row) ...[cell.min, cell.max],
+          ]),
+  },
+  paragraphs: {
+    for (final (index, item) in section.flow.indexed)
+      if (item is ParagraphItem)
+        if (LayoutRun._found[item] case final found?
+            when found.complete && found.starts.length > 1)
+          index: (
+            starts: List.unmodifiable(found.starts),
+            lines: List.unmodifiable(found.lines),
+          ),
+  },
+);
+
+/// Gives the flow items of [section] the kept [measures], which an earlier
+/// layout of the same section found ([measuresOf]), so that no run finds
+/// them again. An item that a run measured already keeps its own. Returns
+/// false, and gives nothing, when [measures] do not fit the section's
+/// items.
+///
+/// A run checks each kept table row and each kept segment that it lays
+/// out ([LayoutRun.contradicted]). [forgetMeasures] takes the kept
+/// measures back.
+bool reuseMeasures(PreparedSection section, SectionMeasures measures) {
+  final flow = section.flow;
+  for (final MapEntry(key: index, value: widths) in measures.tables.entries) {
+    if (index < 0 || index >= flow.length) return false;
+    if (flow[index] case final TableItem table
+        when widths.length ==
+            2 * table.rows.fold(0, (count, row) => count + row.length)) {
+      continue;
+    }
+    return false;
+  }
+  for (final MapEntry(key: index, value: (:starts, :lines))
+      in measures.paragraphs.entries) {
+    if (index < 0 || index >= flow.length) return false;
+    if (flow[index] case final ParagraphItem paragraph
+        when LayoutRun._long(paragraph.text) &&
+            starts.length == lines.length &&
+            starts.length > 1 &&
+            starts.first == 0 &&
+            lines.first == 0) {
+      // A segment starts after the one before it and holds at least one
+      // line. The last one starts inside the text.
+      final length = paragraph.text.runs.fold(
+        0,
+        (sum, run) => sum + (run is TextRun ? run.text.length : 1),
+      );
+      for (var at = 1; at < starts.length; at++) {
+        if (starts[at] <= starts[at - 1] || lines[at] <= lines[at - 1]) {
+          return false;
+        }
+      }
+      if (starts.last >= length) return false;
+      continue;
+    }
+    return false;
+  }
+  for (final MapEntry(key: index, value: widths) in measures.tables.entries) {
+    final table = flow[index] as TableItem;
+    if (LayoutRun._measured[table] != null) continue;
+    var at = 0;
+    LayoutRun._measured[table] = List.unmodifiable([
+      for (final row in table.rows)
+        [
+          for (final cell in row)
+            (span: cell.colspan, min: widths[at++], max: widths[at++]),
+        ],
+    ]);
+    LayoutRun._unchecked[table] = {
+      for (var row = 0; row < table.rows.length; row++) row,
+    };
+  }
+  for (final MapEntry(key: index, value: (:starts, :lines))
+      in measures.paragraphs.entries) {
+    final paragraph = flow[index] as ParagraphItem;
+    if (LayoutRun._found[paragraph] != null) continue;
+    LayoutRun._found[paragraph] = _Segmentation()
+      ..starts.addAll(starts.skip(1))
+      ..lines.addAll(lines.skip(1))
+      ..complete = true
+      ..kept = true;
+  }
+  return true;
+}
+
+/// Takes back the kept measures that [reuseMeasures] gave [section], so
+/// that runs find them again. Runs in progress must stop first.
+void forgetMeasures(PreparedSection section) {
+  for (final item in section.flow) {
+    if (item is TableItem && LayoutRun._unchecked[item] != null) {
+      LayoutRun._measured[item] = null;
+      LayoutRun._unchecked[item] = null;
+    } else if (item is ParagraphItem && LayoutRun._found[item]?.kept == true) {
+      LayoutRun._found[item] = null;
+    }
+  }
+}
+
 /// The page start of the line that holds [place], a place in [section]
 /// (see [_holder]). It lays out the paragraph or the table row of the
 /// place, and the next one when the place is in white space after it. A
@@ -2615,9 +2834,12 @@ class LineSearch {
     final run = LayoutRun(section, from: PageStart(item, math.max(row, line)));
     try {
       /// Lays out units of work until one adds a line that shows a place,
-      /// or to the section end. Returns the holder of the place among the
-      /// lines laid out.
-      ({Slice? holder, bool past}) layOutShown() {
+      /// or to the section end. Returns the page start of the line that
+      /// holds the place among the lines laid out: those added, and those
+      /// of a long paragraph that wait for its widows rule. A waiting line
+      /// can hold the place when the line before it shows only white space,
+      /// because both start at the same place in document order.
+      ({PageStart? holder, bool past}) layOutShown() {
         final before = run._pending.length;
         while (run._item < flow.length) {
           run._layOutItem();
@@ -2631,7 +2853,22 @@ class LineSearch {
         }
         return _holder(dom, place, [
           for (final slice in run._pending)
-            for (final line in _lines(slice)) (line, slice),
+            for (final line in _lines(slice)) (line, slice.at),
+          if (run._segments case final segments?)
+            for (final line in segments.waiting)
+              (
+                Slice(
+                  line.top,
+                  line.bottom,
+                  Appeal.perfect,
+                  PageStart(segments.index, line.above),
+                  piece: line.piece,
+                  line: line.line,
+                  start: line.start,
+                  units: line.units,
+                ),
+                PageStart(segments.index, line.above),
+              ),
         ]);
       }
 
@@ -2645,8 +2882,8 @@ class LineSearch {
       if (past) (:holder, :past) = layOutShown();
       // The item's first line starts where the run starts: at the section
       // start when nothing comes before it.
-      if (holder == null || holder.at == PageStart(item, 0)) return run._from;
-      return holder.at;
+      if (holder == null || holder == PageStart(item, 0)) return run._from;
+      return holder;
     } finally {
       run.dispose();
     }
@@ -3039,6 +3276,10 @@ class _Segmentation {
   /// Whether a run laid out the last segment, so that [starts] holds the
   /// start of every segment.
   bool complete = false;
+
+  /// Whether the segments came from kept measures ([reuseMeasures]). A run
+  /// that lays out a segment checks where the next one starts.
+  bool kept = false;
 }
 
 /// A table that a run lays out a row at a time.

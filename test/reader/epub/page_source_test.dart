@@ -679,6 +679,32 @@ void main() {
       expect(scheduler.ran.length - before, 0);
     });
 
+    test('a jump into a table of a section that was laid out and let go '
+        'does not measure the whole table again', () async {
+      open(
+        book([
+          [
+            '<table>',
+            for (var i = 0; i < 120; i++)
+              '<tr><td>Row $i</td><td>${prose(i % 3 + 1, 'Cell $i')}</td></tr>',
+            '</table>',
+          ].join('\n'),
+          for (var i = 0; i < 9; i++) paragraphs(30),
+        ]),
+      );
+      await showAt(9, .5);
+      await scheduler.settle();
+      expect(source.laidOut(0), isTrue);
+      final before = LayoutRun.measuredCells;
+
+      await showAt(0, .5);
+
+      // The rows of the pages around the jump are measured again, to check
+      // the widths that the section's main run found. The table has 240
+      // cells.
+      expect(LayoutRun.measuredCells - before, lessThan(120));
+    });
+
     test('a jump restarts the order from the jumped-to page', () async {
       const count = 9;
       open(book([for (var i = 0; i < count; i++) paragraphs(8)]));

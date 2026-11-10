@@ -66,7 +66,8 @@ PageMapKey _key({
 /// A map of three sections: one whose main run ended, one whose main run
 /// stopped midway, and one that no run reached. A page that shows no place
 /// has no first place, and a first place can lie before the one of the
-/// page before it.
+/// page before it. The first section has two tables, whose cell widths are
+/// kept as exact 64-bit values, and two long paragraphs.
 final _sections = [
   KeptSection(
     const [
@@ -92,6 +93,16 @@ final _sections = [
       length: 3000000,
     ),
     complete: true,
+    measures: SectionMeasures(
+      tables: {
+        3: Float64List.fromList([12, 80.25, 0.1 + 0.2, 1e300, 5e-324, 0]),
+        150: Float64List.fromList([7, 7]),
+      },
+      paragraphs: {
+        0: (starts: [0, 1100, 2300], lines: [0, 14, 30]),
+        200: (starts: [0, 50000], lines: [0, 600]),
+      },
+    ),
   ),
   KeptSection(
     const [PageStart(0, 0), PageStart(1, 0)],
@@ -115,6 +126,16 @@ const _formatTwo = (
   base64:
       'QktQTQINYm9vay1pZGVudGl0eQAAAAAAwHlAAAAAAAD4hEAAAAAAAAA0QAAXaW5zdGFsbC0x'
       'fGJ1aWxkLTF8ZW4tVVMBAQMAAAAAHwADAgD995E+',
+);
+
+/// A map of format 3, which kept no table widths, for [_key]: its file's
+/// name and its bytes. Format 3's code wrote it for the starts (0, 0),
+/// (0, 31) and (3, 2) of one complete section.
+const _formatThree = (
+  name: 'v3-23aa88cf724a2ed9-0110241a8667bcfd883919d302e14ba2.map',
+  base64:
+      'QktQTQMNYm9vay1pZGVudGl0eQAAAAAAwHlAAAAAAAD4hEAAAAAAAAA0QAAXaW5zdGFsbC0x'
+      'fGJ1aWxkLTF8ZW4tVVMBAQMAAAAJAAAAHwABiw/cCwMCADUAxBPoBzS0SYc=',
 );
 
 void main() {
@@ -167,21 +188,23 @@ void main() {
     });
   }
 
-  test('a map of an older format reads as absent, and the next write '
-      'removes it', () async {
-    final download = await _download();
-    await _layout(download).create();
-    final older = File('${_layout(download).path}/${_formatTwo.name}');
-    await older.writeAsBytes(base64.decode(_formatTwo.base64));
+  for (final (name, older) in [('2', _formatTwo), ('3', _formatThree)]) {
+    test('a map of format $name reads as absent, and the next write '
+        'removes it', () async {
+      final download = await _download();
+      await _layout(download).create();
+      final file = File('${_layout(download).path}/${older.name}');
+      await file.writeAsBytes(base64.decode(older.base64));
 
-    expect(await PageMaps.read(download, _key()), isNull);
-    expect(await older.exists(), isTrue);
+      expect(await PageMaps.read(download, _key()), isNull);
+      expect(await file.exists(), isTrue);
 
-    await PageMaps.write(download, _key(), _sections);
+      await PageMaps.write(download, _key(), _sections);
 
-    expect(await older.exists(), isFalse);
-    expect(await PageMaps.read(download, _key()), _sections);
-  });
+      expect(await file.exists(), isFalse);
+      expect(await PageMaps.read(download, _key()), _sections);
+    });
+  }
 
   test('a map with another engine fingerprint is not returned', () async {
     final download = await _download();

@@ -102,17 +102,20 @@ class SettingsReport {
   /// (t5-q0hs), and those for which it found another page than lineStart
   /// and the true page start before it. A miss where the lookup finds the
   /// page that [ChapterLayout.pageAt] names, the page whose lines show the
-  /// place, is lineStart's disagreement, not the lookup's failure
-  /// (t5-odvj). Only the first 20 of each are listed.
+  /// place, is lineStart's disagreement, not the lookup's failure. The
+  /// corpus run fails on either (t5-odvj). Only the first 20 of each are
+  /// listed.
   int keptPlaces = 0;
   int keptPlaceMisses = 0;
   final keptPlaceFailures = <String>[];
   int lineStartDisagreements = 0;
   final lineStartDisagreementPlaces = <String>[];
 
-  /// The bytes of the book's page map in its format, and in format 2,
-  /// which kept the page starts only.
+  /// The bytes of the book's page map in its format, in format 3, which
+  /// kept no measures (table cell widths and the segments of long
+  /// paragraphs), and in format 2, which kept the page starts only.
   int mapBytes = 0;
+  int formatThreeMapBytes = 0;
   int formatTwoMapBytes = 0;
 
   /// The runs from a page start, the pages that they cut, and the runs
@@ -153,6 +156,7 @@ class SettingsReport {
     'lineStartDisagreements': lineStartDisagreements,
     'lineStartDisagreementPlaces': lineStartDisagreementPlaces,
     'mapBytes': mapBytes,
+    'formatThreeMapBytes': formatThreeMapBytes,
     'formatTwoMapBytes': formatTwoMapBytes,
     'runs': runs,
     'pagesCompared': pagesCompared,
@@ -331,12 +335,14 @@ KeptSection _kept(ChapterLayout chapter) {
     firsts: [for (final page in chapter.pages) page.startPlace],
     visible: (starts: visible, length: chapter.section.dom.visibleLength),
     complete: true,
+    measures: measuresOf(chapter.section),
   );
 }
 
 /// Writes the page map of [sections] as Bookfin keeps it, and records its
-/// size, and the size that format 2 gave it: the same bytes without each
-/// page's first place and visible start, and each section's length.
+/// size, the size that format 3 gave it (the same bytes without each
+/// section's measures), and the size that format 2 gave it (also without
+/// each page's first place and visible start, and each section's length).
 Future<void> _measureMap(
   CorpusBook book,
   PageSettings settings,
@@ -362,6 +368,31 @@ Future<void> _measureMap(
         if (entry is File && entry.path.endsWith('.map')) entry,
     ];
     found.mapBytes = await files.single.length();
+    var measures = 0;
+    for (final section in sections) {
+      final tables = section.measures.tables;
+      measures += _leb128(tables.length);
+      var table = 0;
+      for (final index in tables.keys.toList()..sort()) {
+        final cells = tables[index]!.length ~/ 2;
+        measures += _leb128(index - table) + _leb128(cells) + 16 * cells;
+        table = index;
+      }
+      final paragraphs = section.measures.paragraphs;
+      measures += _leb128(paragraphs.length);
+      var paragraph = 0;
+      for (final index in paragraphs.keys.toList()..sort()) {
+        final (:starts, :lines) = paragraphs[index]!;
+        measures += _leb128(index - paragraph) + _leb128(starts.length - 1);
+        paragraph = index;
+        for (var at = 1; at < starts.length; at++) {
+          measures +=
+              _leb128(starts[at] - starts[at - 1]) +
+              _leb128(lines[at] - lines[at - 1]);
+        }
+      }
+    }
+    found.formatThreeMapBytes = found.mapBytes - measures;
     var added = 0;
     for (final section in sections) {
       var node = 0;
@@ -381,7 +412,7 @@ Future<void> _measureMap(
       }
       added += _leb128(section.visible.length - characters);
     }
-    found.formatTwoMapBytes = found.mapBytes - added;
+    found.formatTwoMapBytes = found.formatThreeMapBytes - added;
   } finally {
     await folder.delete(recursive: true);
   }

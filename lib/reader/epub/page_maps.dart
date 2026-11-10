@@ -119,6 +119,7 @@ class KeptSection {
     required this.firsts,
     required this.visible,
     required this.complete,
+    this.measures = const SectionMeasures(),
   });
 
   /// The true page starts.
@@ -134,6 +135,10 @@ class KeptSection {
   final VisibleStarts visible;
   final bool complete;
 
+  /// What the section's main run measured that a run from a page start
+  /// inside a flow item needs first.
+  final SectionMeasures measures;
+
   @override
   bool operator ==(Object other) =>
       other is KeptSection &&
@@ -141,7 +146,8 @@ class KeptSection {
       listEquals(other.starts, starts) &&
       listEquals(other.firsts, firsts) &&
       listEquals(other.visible.starts, visible.starts) &&
-      other.visible.length == visible.length;
+      other.visible.length == visible.length &&
+      other.measures == measures;
 
   @override
   int get hashCode => Object.hash(
@@ -150,12 +156,13 @@ class KeptSection {
     Object.hashAll(firsts),
     Object.hashAll(visible.starts),
     visible.length,
+    measures,
   );
 
   @override
   String toString() =>
       'KeptSection($starts, firsts: $firsts, visible: $visible, '
-      'complete: $complete)';
+      'complete: $complete, measures: $measures)';
 }
 
 /// The page maps that Bookfin keeps for each download.
@@ -170,10 +177,10 @@ class KeptSection {
 /// A file is: the magic number `BKPM`, the format [version] and the whole
 /// key (the book, the page size, the text size and whether it sizes the
 /// main text, and the engine), then the section count, then for each
-/// section its complete flag, its page count, its pages and its number of
-/// visible characters after its last page's start, then a CRC-32 of all
-/// bytes before it. Every number is an unsigned variable-length integer
-/// (LEB128). A page is five numbers or four:
+/// section its complete flag, its page count, its pages, its number of
+/// visible characters after its last page's start and its measures, then a
+/// CRC-32 of all bytes before it. Every number but a width is an unsigned
+/// variable-length integer (LEB128). A page is five numbers or four:
 ///
 /// - Its start: the step of its item from the previous start's item, then
 ///   its line (the step from the previous start's line when the item is
@@ -184,26 +191,38 @@ class KeptSection {
 ///   1. Then the place's offset, when it has a node.
 /// - Its visible start: the step from the previous page's visible start.
 ///
+/// The measures ([SectionMeasures]) are the number of tables, then for
+/// each table the step of its flow item from the previous table's (from 0
+/// for the first), its number of cells, and the narrowest and widest
+/// width of each cell as exact 64-bit floats (16 bytes a cell). Then come
+/// the number of long paragraphs, and for each one the step of its flow
+/// item from the previous one's, its number of segments after the first,
+/// and for each of those the step of its start and of its lines before it
+/// from the segment before it.
+///
 /// The calling isolate encodes and decodes the map, and the file access
-/// is asynchronous. A map takes about 7.6 bytes a page. On the host's
-/// debug build, a map of 23,200 pages (175 KB, about the largest of the
-/// corpus: Plato's Dialogues at 360 x 640 @ 26) reads in 2 ms and writes
-/// in 4 ms, file access included. A worker would not take this work
-/// off the UI isolate: the sections are a graph of one object for each
-/// page, and the copy of that graph to or from a worker runs in the
-/// sending isolate at about the cost of the codec, plus the hop's own 1 to
-/// 2 ms (boo-rw7u).
+/// is asynchronous. A map takes about 7.6 bytes a page, plus 16 bytes for
+/// each table cell. On the host's debug build, the largest map of the
+/// corpus (Plato's Dialogues at 360 x 640 @ 26: 23,400 pages and 21,820
+/// table cells, 514 KB) reads in about 5 ms and writes in about 7 ms,
+/// file access included. Without the cells (175 KB), it read in 2 ms and
+/// wrote in 4 ms. A worker would not take the page starts off the UI
+/// isolate: they are a graph of one object for each page, and the copy of
+/// that graph to or from a worker runs in the sending isolate at about the
+/// cost of the codec, plus the hop's own 1 to 2 ms (boo-rw7u). t0-r8ii looks
+/// at the cells, whose copy is cheap.
 abstract final class PageMaps {
   /// The format of the file. It is part of the key, so a file of another
   /// format reads as another key's map. Version 2 added
   /// [PageMapKey.sizesMainText]. Version 3 added the first places and the
-  /// visible starts of the pages (t5-q0hs).
-  static const version = 3;
+  /// visible starts of the pages (t5-q0hs). Version 4 added the table cell
+  /// widths (t5-s1vy) and the segments of long paragraphs (t5-lfsm).
+  static const version = 4;
 
   /// The most settings values that one book keeps maps for. A reader
   /// changes the text size or turns the phone now and then, so four values
   /// cover the usual set: two text sizes in two orientations. The largest
-  /// map of the corpus is 176 KB.
+  /// map of the corpus is 536 KB.
   static const limit = 4;
 
   static const _magic = [0x42, 0x4b, 0x50, 0x4d]; // BKPM
@@ -413,8 +432,68 @@ abstract final class PageMaps {
         characters = visible.starts[index];
       }
       out.unsigned(visible.length - characters);
+      final tables = section.measures.tables;
+      out.unsigned(tables.length);
+      var table = 0;
+      for (final index in tables.keys.toList()..sort()) {
+        final widths = tables[index]!;
+        assert(widths.length.isEven, 'Each cell has two widths.');
+        out
+          ..unsigned(index - table)
+          ..unsigned(widths.length ~/ 2);
+        table = index;
+        for (final width in widths) {
+          out.float64(width);
+        }
+      }
+      final paragraphs = section.measures.paragraphs;
+      out.unsigned(paragraphs.length);
+      var paragraph = 0;
+      for (final index in paragraphs.keys.toList()..sort()) {
+        final (:starts, :lines) = paragraphs[index]!;
+        assert(
+          starts.length == lines.length && starts.length > 1,
+          'A long paragraph has more than one segment.',
+        );
+        out
+          ..unsigned(index - paragraph)
+          ..unsigned(starts.length - 1);
+        paragraph = index;
+        for (var at = 1; at < starts.length; at++) {
+          out
+            ..unsigned(starts[at] - starts[at - 1])
+            ..unsigned(lines[at] - lines[at - 1]);
+        }
+      }
     }
     return (out..uint32(getCrc32(out.bytes))).bytes;
+  }
+
+  /// The segments of a section's long paragraphs, which [reader] reads
+  /// next.
+  static Map<int, Segments> _paragraphs(_Reader reader) {
+    final paragraphs = <int, Segments>{};
+    var paragraph = 0;
+    // Each paragraph takes at least 4 bytes, and each segment 2.
+    for (var left = reader.count(4); left > 0; left--) {
+      final step = reader.unsigned();
+      if (step == 0 && paragraphs.isNotEmpty) {
+        throw const FormatException('Two paragraphs share a flow item.');
+      }
+      paragraph += step;
+      final starts = [0];
+      final lines = [0];
+      final count = reader.count(2);
+      if (count == 0) {
+        throw const FormatException('A long paragraph has one segment.');
+      }
+      for (var left = count; left > 0; left--) {
+        starts.add(starts.last + reader.unsigned());
+        lines.add(lines.last + reader.unsigned());
+      }
+      paragraphs[paragraph] = (starts: starts, lines: lines);
+    }
+    return paragraphs;
   }
 
   /// [value] as an unsigned number, small for small values of either sign.
@@ -439,9 +518,9 @@ abstract final class PageMaps {
       return null;
     }
     final reader = _Reader(bytes, header.length, end);
-    // Each section takes at least 3 bytes, and each page 5, so no count
+    // Each section takes at least 5 bytes, and each page 5, so no count
     // can make a list larger than the file.
-    final count = reader.count(3);
+    final count = reader.count(5);
     final sections = <KeptSection>[];
     for (var index = 0; index < count; index++) {
       final complete = switch (reader.unsigned()) {
@@ -474,12 +553,32 @@ abstract final class PageMaps {
         characters += reader.unsigned();
         visible.add(characters);
       }
+      final length = characters + reader.unsigned();
+      final tables = <int, Float64List>{};
+      var table = 0;
+      // Each table takes at least 2 bytes, and each cell 16.
+      for (var left = reader.count(2); left > 0; left--) {
+        final step = reader.unsigned();
+        if (step == 0 && tables.isNotEmpty) {
+          throw const FormatException('Two tables share a flow item.');
+        }
+        table += step;
+        final widths = Float64List(reader.count(16) * 2);
+        for (var at = 0; at < widths.length; at++) {
+          widths[at] = reader.float64();
+        }
+        tables[table] = widths;
+      }
       sections.add(
         KeptSection(
           starts,
           firsts: firsts,
-          visible: (starts: visible, length: characters + reader.unsigned()),
+          visible: (starts: visible, length: length),
           complete: complete,
+          measures: SectionMeasures(
+            tables: tables,
+            paragraphs: _paragraphs(reader),
+          ),
         ),
       );
     }
@@ -492,8 +591,10 @@ abstract final class PageMaps {
 
 /// A cursor over the body of a page map, from [_at] to [_end].
 class _Reader {
-  _Reader(this._bytes, this._at, this._end);
+  _Reader(this._bytes, this._at, this._end)
+    : _data = ByteData.sublistView(_bytes);
   final Uint8List _bytes;
+  final ByteData _data;
   int _at;
   final int _end;
 
@@ -513,6 +614,16 @@ class _Reader {
     throw const FormatException('A number of the page map is too long.');
   }
 
+  /// An exact 64-bit float.
+  double float64() {
+    if (_end - _at < 8) {
+      throw const FormatException('The page map ends inside a width.');
+    }
+    final value = _data.getFloat64(_at, Endian.little);
+    _at += 8;
+    return value;
+  }
+
   /// A count of things that take at least [size] bytes each.
   int count(int size) {
     final value = unsigned();
@@ -526,6 +637,7 @@ class _Reader {
 /// A byte buffer that grows as a page map is written.
 class _Writer {
   var _bytes = Uint8List(4096);
+  late var _data = ByteData.sublistView(_bytes);
   var _length = 0;
 
   /// The bytes written so far.
@@ -538,6 +650,7 @@ class _Writer {
       size *= 2;
     }
     _bytes = Uint8List(size)..setRange(0, _length, _bytes);
+    _data = ByteData.sublistView(_bytes);
   }
 
   void addAll(List<int> bytes) {
@@ -558,13 +671,13 @@ class _Writer {
 
   void float64(double value) {
     _reserve(8);
-    ByteData.sublistView(_bytes).setFloat64(_length, value, Endian.little);
+    _data.setFloat64(_length, value, Endian.little);
     _length += 8;
   }
 
   void uint32(int value) {
     _reserve(4);
-    ByteData.sublistView(_bytes).setUint32(_length, value, Endian.little);
+    _data.setUint32(_length, value, Endian.little);
     _length += 4;
   }
 }
