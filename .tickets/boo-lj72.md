@@ -17,3 +17,9 @@ User changed the product decision on 2026-11-10: remember each book’s last Ori
 
 Reopening each of two books after restart restores its own exact PDF view and trim choice. Switching accounts cannot leak preferences. Changes persist through the real reading store without rewriting or losing reading records. Required checks and one fresh review with resolved findings.
 
+
+## Notes
+
+**2026-11-10T22:22:07Z**
+
+Build stage complete in t3/remember-pdf-view-settings from c9200c085612a0978dd56d4fa1ac943c1f92a67d. ReaderSession now owns per-account Book.id PDF choices in existing reading settings and derives the current choices without duplicate session fields. Legacy global trim remains only the untouched-book fallback. No font-size or record model changes. Both real LocalResumeStore transports were traced; arbitrary settings metadata already survives, so no storage changes were needed. Meaningful red: session-red.log shows book/account leakage, failed restart and first-frame restoration, ignored malformed preferences; an unrelated empty-record test fixture was corrected. store-red.log shows seven intended failures across preferences and actual SQLite reopen/retry. Green: 78 focused tests passed in focused-final.log, including both storage backends, all three exact views, book/edition/account isolation, legacy SQLite migration, malformed durable settings, failed SQLite save/retry and retained reader behavior. Logs: /tmp/bookfin-boo-lj72. Required format/analyze/full suite and one fresh read-only review remain. Existing preferences-only invariant-check limitation recorded separately as tc-eri9; SQLite invariant checks pass. No devices, coverage, mutations, native changes, push, merge, PR or closure.
