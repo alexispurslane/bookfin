@@ -50,3 +50,7 @@ This final note changes only the ticket; source and tests remain identical to th
 **2026-11-10T21:35:50Z**
 
 Parent integrated dfeb229 with whole-line Text 280dc46 and drop caps a89130c. Inspected full source/test diff and independent review. No production conflicts; retained both ticket histories. Adapted the two new fallback tests from SingleChildScrollView to the integrated PdfTextView without weakening behavior checks. Parent Nix checks: focused combined reader suite 101 passed; format 397 files/zero changed; analyze no issues; full flutter test --concurrency=2 --reporter expanded 2595 passed, 21 skipped, zero failures in 3m59s. Logs /tmp/bookfin-word-flash-integration-{focused,format,analyze,full}.log. Native code unchanged. Notified tb-mfkk lead to preserve displayed-screen versus target-readiness ownership when integrating selection. No device operation or acceptance yet; next action is normal Android build and in-place install.
+
+**2026-11-10T21:36:52Z**
+
+Normal ARM64 Android debug build and native/OCR package, signature and alignment verification passed. Installed in place on Pixel 8 using adb install -r: Success. APK SHA256 4354e6fbc7e8852fe747350a5cc287157249fd3b9db6145ba1a5ee6f0973b85b, integration 22e8453, build source ef280c1. Logs /tmp/bookfin-word-flash-phone-{build,install}.log. Update also includes drop caps and whole-line Text fallback. No phone UI input; user verifies. Scope: page turns/returns retain readable words; switching away or reopening still releases rendered images and may show Original while the first word screen draws.

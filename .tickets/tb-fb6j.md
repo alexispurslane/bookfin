@@ -23,3 +23,7 @@ The first screen of a page with cached text shows within 400 ms on the Pixel 8, 
 **2026-11-10T20:10:25Z**
 
 User accepted the Nihil Unbound crop repair and Trim margins toggle on the Pixel 8. Remaining product scope is word-image reflow (the printed words cut into images and wrapped to the screen), with its planned interactions. Do not repeat crop/toggle acceptance unless integration changes that behavior.
+
+**2026-11-10T21:36:52Z**
+
+Pixel 8 now has combined word-view update ef280c1 (flash fix 22e8453, drop caps a89130c, whole-line Text 280dc46). In-place install passed after 2595 tests/21 skipped and clean analysis/format. User owns phone input and acceptance. Three-view selector tb-9mcf and selection tb-mfkk remain running separately. Coverage/mutation hardening remains pending combined user acceptance.
