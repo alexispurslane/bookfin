@@ -27,11 +27,6 @@ typedef VisibleLocation = ReadingLocation;
 /// The estimated reading time left in the chapter and in the book.
 typedef TimeLeft = ({Duration chapter, Duration book});
 
-/// Where the saved place of an edition came from: [own], the last place
-/// that this installation saved there, whether another installation saved
-/// the current place ([elsewhere]), and the name of its [device].
-typedef PlaceOrigin = ({TextPosition? own, bool elsewhere, String? device});
-
 /// The owner of each account's saved reading records, as [ReaderSession]
 /// uses it.
 abstract class ReadingStore {
@@ -686,7 +681,10 @@ class ReaderSession extends ChangeNotifier {
       if (at == null) {
         final own = saved == null || initialAddress == null
             ? null
-            : _ownPlace(known, saved);
+            : switch (openedFrom(known, saved, _history)) {
+                final own? when _compatible(own) != null => own,
+                _ => null,
+              };
         _pending = _Move(
           HistoryAction.open,
           own,
@@ -793,8 +791,16 @@ class ReaderSession extends ChangeNotifier {
     _emit();
   }
 
+  /// Shows [explanation], a warning of the pager. A warning that comes
+  /// while a page shows and the book reported no place yet means that the
+  /// pager could not find the place that the book opened at, and shows the
+  /// book's start instead. The open, or the jump that opened the book,
+  /// then ends without a move.
   void warn(int eventToken, String explanation) {
     if (!_live(eventToken)) return;
+    if (_visibleAddress == null && _pager?.shown.value != null) {
+      _pending = null;
+    }
     _message = explanation;
     _emit();
   }
@@ -898,28 +904,6 @@ class ReaderSession extends ChangeNotifier {
     if (place == null || !_recordsReady) return;
     final event = _record(HistoryAction.close, place, place);
     unawaited(_save(history: {event.id: event}));
-  }
-
-  /// This phone's own last place in the open edition, when the book opens
-  /// at [opened], a place that another device saved, as [origin] says. Null
-  /// when the two places are the same, when this phone never read the
-  /// edition, and when an earlier open recorded that move already.
-  TextPosition? _ownPlace(PlaceOrigin? origin, TextPosition opened) {
-    final own = origin?.own;
-    if (own == null ||
-        !origin!.elsewhere ||
-        own.anchor == opened.anchor ||
-        _compatible(own) == null) {
-      return null;
-    }
-    final recorded = _history.any(
-      (event) =>
-          event.kind == HistoryAction.open &&
-          event.before.editionId == opened.editionId &&
-          event.before.anchor == own.anchor &&
-          event.after.anchor == opened.anchor,
-    );
-    return recorded ? null : own;
   }
 
   /// Whether [place] lies on the page that showed [shown], from its start

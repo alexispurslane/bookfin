@@ -180,6 +180,27 @@ void main() {
     expect(warnings, isEmpty);
   });
 
+  test(
+    'a jump supersedes a page turn asked before it that has not shown: '
+    'the turned page never shows, and the jump reports the only place',
+    () async {
+      open(linkedBook());
+      await present();
+      reported.clear();
+      final shownSections = <int>[];
+      void listener() => shownSections.add(shown().page.section);
+      pager().shown.addListener(listener);
+      addTearDown(() => pager().shown.removeListener(listener));
+
+      final turn = pager().move(true);
+      final jump = pager().seek(1, .5);
+      await until(Future.wait([turn, jump]));
+
+      expect(shownSections, everyElement(1));
+      expect(reported.single.location.resource, endsWith('s1.xhtml'));
+    },
+  );
+
   test('each new page reports the visible characters of the page that the '
       'person turned forward from, and any other move reports none', () async {
     open(linkedBook());

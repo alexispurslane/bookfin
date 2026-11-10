@@ -5,8 +5,7 @@ import 'dart:io';
 import 'package:bookfin/catalog/jellyfin.dart';
 import 'package:bookfin/catalog/model.dart' show Edition;
 import 'package:bookfin/playback/playback.dart';
-import 'package:bookfin/reader/session.dart'
-    show PlaceOrigin, ReadingChanges, ReadingStore;
+import 'package:bookfin/reader/session.dart' show ReadingChanges, ReadingStore;
 import 'package:bookfin/sync/journal.dart';
 import 'package:flutter_test/flutter_test.dart';
 

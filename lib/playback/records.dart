@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:math';
 
 import '../catalog/model.dart';
@@ -42,6 +43,16 @@ Map<String, dynamic> encodePosition(AudioPosition position) => {
   'revision': position.revision,
   'milliseconds': position.milliseconds,
 };
+
+/// The source files of the audio [edition] with their revisions, in the
+/// form that a listening resume names them. A resume with these sources
+/// belongs to exactly these files.
+String editionSources(Edition edition) {
+  final sources = [
+    for (final file in edition.files) [file.key, file.revision],
+  ]..sort((left, right) => left.first.compareTo(right.first));
+  return jsonEncode(sources);
+}
 
 AudioPosition decodePosition(Object? value) {
   if (value is! Map ||
@@ -147,6 +158,48 @@ class HistoryEvent<P extends Place> {
     );
   }
 }
+
+/// Where the saved place of an edition came from, as the record store's
+/// journal says: [own], the last place that this installation saved there,
+/// whether another installation saved the current place ([elsewhere]), and
+/// the name of its [device]. [own] has the medium of the edition.
+typedef PlaceOrigin = ({Place? own, bool elsewhere, String? device});
+
+/// Where the open of an edition at [opened] moves from: this installation's
+/// own last place there, when another device saved [opened], as [origin]
+/// says. Null when [origin] is null or knows no own place of medium [P],
+/// when the two places are the same, and when [history] already holds that
+/// move, so that a second open at the same place records no second move.
+P? openedFrom<P extends Place>(
+  PlaceOrigin? origin,
+  P opened,
+  Iterable<HistoryEvent<P>> history,
+) {
+  final own = origin?.own;
+  if (own is! P || !origin!.elsewhere || samePlace(own, opened)) return null;
+  final recorded = history.any(
+    (event) =>
+        event.kind == HistoryAction.open &&
+        samePlace(event.before, own) &&
+        samePlace(event.after, opened),
+  );
+  return recorded ? null : own;
+}
+
+/// Whether [a] and [b] are the same place of the same source file.
+bool samePlace(Place a, Place b) => switch ((a, b)) {
+  (final AudioPosition a, final AudioPosition b) =>
+    a.editionId == b.editionId &&
+        a.sourceKey == b.sourceKey &&
+        a.revision == b.revision &&
+        a.milliseconds == b.milliseconds,
+  (final TextPosition a, final TextPosition b) =>
+    a.editionId == b.editionId &&
+        a.sourceKey == b.sourceKey &&
+        a.revision == b.revision &&
+        a.anchor == b.anchor,
+  _ => false,
+};
 
 /// The move of medium [P] that Undo can take back, and whether the place
 /// where it began is saved on this device.

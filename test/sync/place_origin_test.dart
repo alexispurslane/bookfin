@@ -54,8 +54,8 @@ ReadingChanges _at(String quote) => ReadingChanges(
   resumes: [_place(quote)],
 );
 
-/// The quote of [place].
-String? _quote(TextPosition? place) => place == null
+/// The quote of [place], a reading place.
+String? _quote(Place? place) => place is! TextPosition
     ? null
     : (jsonDecode(place.anchor) as Map<String, dynamic>)['quote'] as String;
 
