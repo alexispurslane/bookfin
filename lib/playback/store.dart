@@ -81,6 +81,11 @@ const _hopItems = 1;
 /// record has about 200.
 const _hopText = 32;
 
+/// The largest settings-only SQLite metadata text restored inline. This
+/// bounds the existing fast path for scalar settings when no records exist;
+/// growing metadata goes to a worker even when the journal is empty.
+const _inlineMetadataText = 512;
+
 /// The owner of each account's personal records on this phone.
 ///
 /// Writers change records through [save], [write] or the `write` of
@@ -294,7 +299,8 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
           ),
           small:
               (sync?['actions'] as List? ?? []).length + actions.length <
-              _hopItems,
+                  _hopItems &&
+              _smallSettings(metadata, domains: true),
         );
         _changedOutsideWriters(account, merged.changed);
         await _persist(
@@ -593,13 +599,19 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
         final stored = (await _readAccount(account))!;
         final database = await _storage();
         final sync = stored.journal.encode();
-        final restored = await _derive(_withServerCopies, (
-          account: account,
-          metadata: stored.metadata,
-          sync: sync,
-          copies: copies,
-          database: database != null,
-        ), small: (sync['actions'] as List).length < _hopItems);
+        final restored = await _derive(
+          _withServerCopies,
+          (
+            account: account,
+            metadata: stored.metadata,
+            sync: sync,
+            copies: copies,
+            database: database != null,
+          ),
+          small:
+              (sync['actions'] as List).length < _hopItems &&
+              _smallSettings(stored.metadata, domains: true),
+        );
         _changedOutsideWriters(account, [
           for (final copy in copies) ...[
             copy['record'] as String,
@@ -730,10 +742,13 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
       var view = _views.remove(writer);
       if (view == null) {
         final versions = stored.journal.versionsByRecord;
-        final views = await _derive(_viewsOfVersions, (
-          metadata: stored.metadata,
-          versions: versions,
-        ), small: versions.length < _hopItems);
+        final views = await _derive(
+          _viewsOfVersions,
+          (metadata: stored.metadata, versions: versions),
+          small:
+              versions.length < _hopItems &&
+              _smallSettings(stored.metadata, domains: true),
+        );
         view = reading ? views.reading : views.listening;
         _views[_writer(account, reading: !reading)] = reading
             ? views.listening
@@ -812,7 +827,10 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
     final rows = await database.rows(account);
     return rows == null
         ? null
-        : _derive(_restoreRows, (account: account, rows: rows), small: small);
+        : _derive(_restoreRows, (
+            account: account,
+            rows: rows,
+          ), small: small && rows.metadata.length < _inlineMetadataText);
   }
 
   /// Saves [restored] as the durable state of [account] when it must be
@@ -883,9 +901,13 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
       try {
         await database.writeCommit(
           commit ??
-              RecordDatabase.encodeCommit(
+              RecordDatabase.encodeCommitWithMetadataText(
                 account,
-                metadata,
+                await _derive(
+                  _encodeMetadata,
+                  metadata,
+                  small: _smallSettings(metadata, domains: true),
+                ),
                 journal,
                 initialize: !_accounts.containsKey(account),
               ),
@@ -903,18 +925,15 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
       // its plugin writes with one localStorage.setItem call. The Linux and
       // Windows plugins rewrite one JSON file in place, so give a build for
       // those platforms the database.
-      //
-      // NOTE: Engine rule 1. This encodes the whole account on the calling
-      // isolate for each save. The web has no isolates, so a hop would run
-      // there inline too.
-      final values = journal.values;
-      final value = {
-        ..._snapshot(metadata, values, reading: false),
-        'reading': _snapshot(metadata, values, reading: true),
-        'sync': journal.encode(),
-      };
+      final text = await _derive(
+        _preferenceText,
+        (metadata: metadata, journal: journal),
+        small:
+            journal.versionsByRecord.isEmpty &&
+            _smallSettings(metadata, domains: true),
+      );
       final preferences = await SharedPreferences.getInstance();
-      if (!await preferences.setString(_key(account), jsonEncode(value))) {
+      if (!await preferences.setString(_key(account), text)) {
         throw Exception(
           'Personal records were not saved. Free storage, then retry.',
         );
@@ -943,7 +962,15 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
       (count, account) => count + (account.sync['actions'] as List).length,
     );
     await database.writeCommits(
-      await _derive(_wholeCommits, input, small: actions < _hopItems),
+      await _derive(
+        _wholeCommits,
+        input,
+        small:
+            actions < _hopItems &&
+            input.every(
+              (account) => _smallSettings(account.metadata, domains: true),
+            ),
+      ),
     );
     _rewriteDue = false;
     for (final stored in accounts.values) {
@@ -1159,17 +1186,19 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
   /// the writer knew none.
   Future<void> _change(
     String account,
-    Map<String, dynamic> settings, {
+    FutureOr<Map<String, dynamic>> settings, {
     required bool reading,
     required Map<String, Map<String, dynamic>?> Function(
       Map<String, Map<String, dynamic>> observed,
     )
     records,
   }) {
+    if (settings is Future<Map<String, dynamic>>) settings.ignore();
     final writer = '$account/${reading ? 'reading' : 'audio'}';
     final operation = _writes.then((_) async {
       var completed = false;
       try {
+        final prepared = await settings;
         final device = await _device();
         final savedAt = DateTime.now();
         final stored = await _readAccount(account);
@@ -1189,8 +1218,8 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
           account,
           _metadata(
             reading
-                ? {...previous, 'reading': settings}
-                : {...settings, 'reading': previous['reading']},
+                ? {...previous, 'reading': prepared}
+                : {...prepared, 'reading': previous['reading']},
           ),
           journal,
         );
@@ -1229,14 +1258,17 @@ class ReadingRecords implements ResumeStore, ReadingStore {
     // NOTE: Engine rule 1. A change set holds the few records that one
     // action changed, which copy faster than a hop.
     final copied = _copy({
-      'settings': changes.settings,
       'resumes': changes.resumes,
       'bookmarks': changes.bookmarks,
       'history': changes.history,
     });
     return owner._change(
       accountKey,
-      copied['settings'] as Map<String, dynamic>,
+      owner._derive(
+        _copy,
+        changes.settings,
+        small: _smallSettings(changes.settings),
+      ),
       reading: true,
       records: (_) => {
         for (final collection in ['bookmarks', 'history'])
@@ -1406,6 +1438,37 @@ Map<String, dynamic> _snapshot(
 
 Map<String, dynamic> _copy(Map<String, dynamic> value) =>
     jsonDecode(jsonEncode(value)) as Map<String, dynamic>;
+
+/// Bounds inline work to eight short scalar fields per domain. Nested
+/// collections and unrecognized values go to a worker without traversing them.
+bool _smallSettings(Map<String, dynamic> settings, {bool domains = false}) {
+  if (settings.length > 8) return false;
+  for (final entry in settings.entries) {
+    if (entry.key.length >= _hopText) return false;
+    final value = entry.value;
+    if (domains && entry.key == 'reading' && value is Map<String, dynamic>) {
+      if (!_smallSettings(value)) return false;
+    } else if (value is String) {
+      if (value.length >= _hopText) return false;
+    } else if (value != null && value is! num && value is! bool) {
+      return false;
+    }
+  }
+  return true;
+}
+
+String _encodeMetadata(Map<String, dynamic> metadata) => jsonEncode(metadata);
+
+String _preferenceText(
+  ({Map<String, dynamic> metadata, RecordJournal journal}) input,
+) {
+  final values = input.journal.values;
+  return jsonEncode({
+    ..._snapshot(input.metadata, values, reading: false),
+    'reading': _snapshot(input.metadata, values, reading: true),
+    'sync': input.journal.encode(),
+  });
+}
 
 /// Both views of an account with [metadata] and the record [values] of
 /// [RecordJournal.values]. It changes [values].

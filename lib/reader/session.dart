@@ -521,7 +521,7 @@ class ReaderSession extends ChangeNotifier {
     _fontSize = _defaultFontSize;
     _sizesMainText = false;
     _legacyTrimMargins = true;
-    _pdfBooks.clear();
+    _pdfBooks = const {};
     final generation = ++_accountGeneration;
     final key = _account;
     final previous = _binding;
@@ -574,7 +574,7 @@ class ReaderSession extends ChangeNotifier {
           _sizesMainText =
               saved['sizesMainText'] == true || _fontSize != _defaultFontSize;
           _legacyTrimMargins = saved['trimMargins'] != false;
-          _pdfBooks.addAll(pdfBooks);
+          _pdfBooks = pdfBooks;
         }
         if (pending == null) store.acceptSnapshot(key, saved);
         _recordsReady = true;
@@ -1308,23 +1308,28 @@ class ReaderSession extends ChangeNotifier {
   Future<void> followLink(String href) =>
       _jump(HistoryAction.link, (navigator) => navigator.contents(href));
 
-  final _pdfBooks = <String, ({PdfPageView view, bool trimMargins})>{};
+  /// Validated settings snapshots. A choice replaces the table and its entry;
+  /// a position save reuses it, and pending saves retain their original table.
+  Map<String, Map<String, dynamic>> _pdfBooks = const {};
   bool _legacyTrimMargins = true;
   late final _Signal _pdfViewChanges;
 
   /// The open book's saved PDF view in this account: original pages,
   /// page words or reading text. An untouched book starts on original pages.
-  PdfPageView get pdfView => _pdfBooks[book?.id]?.view ?? PdfPageView.original;
+  PdfPageView get pdfView => switch (_pdfBooks[book?.id]?['view']) {
+    final String view => PdfPageView.values.byName(view),
+    _ => PdfPageView.original,
+  };
 
   /// Whether original PDF pages and their deck cards show their known
   /// content crop instead of the full printed page. Saved per book in the
   /// account, with legacy account-wide trim as the fallback, otherwise on.
   /// The word view never uses it.
   bool get trimMargins =>
-      _pdfBooks[book?.id]?.trimMargins ?? _legacyTrimMargins;
+      _pdfBooks[book?.id]?['trimMargins'] as bool? ?? _legacyTrimMargins;
   late final _Signal _trimMarginsChanges;
 
-  static Map<String, ({PdfPageView view, bool trimMargins})> _readPdfBooks(
+  static Map<String, Map<String, dynamic>> _readPdfBooks(
     Map<String, dynamic> saved,
   ) {
     if (!saved.containsKey('pdfBooks')) return {};
@@ -1332,7 +1337,7 @@ class ReaderSession extends ChangeNotifier {
     if (books is! Map<String, dynamic>) {
       throw const FormatException('Invalid PDF preferences.');
     }
-    final preferences = <String, ({PdfPageView view, bool trimMargins})>{};
+    final preferences = <String, Map<String, dynamic>>{};
     for (final entry in books.entries) {
       final value = entry.value;
       if (entry.key.isEmpty || value is! Map<String, dynamic>) {
@@ -1345,7 +1350,7 @@ class ReaderSession extends ChangeNotifier {
       if (view == null || trim is! bool) {
         throw const FormatException('Invalid book PDF preferences.');
       }
-      preferences[entry.key] = (view: view, trimMargins: trim);
+      preferences[entry.key] = {'view': view.name, 'trimMargins': trim};
     }
     return preferences;
   }
@@ -1363,7 +1368,10 @@ class ReaderSession extends ChangeNotifier {
         trimMargins == on) {
       return;
     }
-    _pdfBooks[id] = (view: pdfView, trimMargins: on);
+    _pdfBooks = {
+      ..._pdfBooks,
+      id: {'view': pdfView.name, 'trimMargins': on},
+    };
     previews.close();
     _emit();
     await _save();
@@ -1381,7 +1389,10 @@ class ReaderSession extends ChangeNotifier {
         pdfView == view) {
       return;
     }
-    _pdfBooks[id] = (view: view, trimMargins: trimMargins);
+    _pdfBooks = {
+      ..._pdfBooks,
+      id: {'view': view.name, 'trimMargins': trimMargins},
+    };
     _emit();
     await _save();
   }
@@ -1488,14 +1499,7 @@ class ReaderSession extends ChangeNotifier {
         'fontSize': fontSize,
         if (sizesMainText) 'sizesMainText': true,
         if (!_legacyTrimMargins) 'trimMargins': false,
-        if (_pdfBooks.isNotEmpty)
-          'pdfBooks': {
-            for (final entry in _pdfBooks.entries)
-              entry.key: {
-                'view': entry.value.view.name,
-                'trimMargins': entry.value.trimMargins,
-              },
-          },
+        if (_pdfBooks.isNotEmpty) 'pdfBooks': _pdfBooks,
       },
       resumes: resumes.map(encodeTextPosition).toList(),
       bookmarks: {

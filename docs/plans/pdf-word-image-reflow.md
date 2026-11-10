@@ -756,6 +756,8 @@ Known limits:
 
 The account's reading settings hold `pdfBooks`, keyed by `Book.id`. Each entry holds `view` (`original`, `pageWords` or `text`) and the boolean `trimMargins`. `ReaderSession` derives the open book's choices from that entry. The settings store transports this metadata beside records, not as a resume, bookmark or history entry. The existing save queue retries failed settings saves.
 
+The session replaces its validated settings table only when a choice changes. Position saves reuse that snapshot instead of rebuilding every book entry. The existing storage worker copies growing settings and encodes their durable JSON text. A save enters the write queue before its worker finishes, so worker completion order cannot reorder saves or mix accounts. SQLite encodes only metadata and changed records, without sending retained history to a worker on each position save. Settings-only accounts also restore and copy large metadata in a worker. The preferences transport derives and encodes its whole account in a worker where isolates are available; the web still runs that work inline because it has no isolates.
+
 Before a book has an entry, it uses Original and the legacy account-wide `trimMargins` value, or on when none exists. The legacy value stays a migration fallback, not another owner of a saved book's choice. A change of either choice saves both for the book. Font size does not change its scope or behavior.
 
 The account restores its settings before the document can show a useful reader frame. A malformed `pdfBooks` value follows the reader's existing unreadable-record rule: report the failure, keep the saved snapshot, and block writes. This prevents a settings save from replacing unreadable records with empty lists.

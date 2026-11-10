@@ -232,28 +232,23 @@ void main() {
     },
   );
 
-  test(
-    'a large account in the format before the journal decodes in one hop',
-    () async {
-      SharedPreferences.setMockInitialValues({
-        'bookfin.playback.v1.bob': jsonEncode({
-          ...settings(),
-          'history': [
-            for (var index = 0; index < 40; index++) event('h$index'),
-          ],
-          'bookmarks': <dynamic>[],
-          'resumes': <String, dynamic>{},
-        }),
-      });
-      final hop = CountingHop();
-      final store = LocalResumeStore(hop: hop.call);
+  test('a large legacy preferences account decodes and encodes its migration in workers', () async {
+    SharedPreferences.setMockInitialValues({
+      'bookfin.playback.v1.bob': jsonEncode({
+        ...settings(),
+        'history': [for (var index = 0; index < 40; index++) event('h$index')],
+        'bookmarks': <dynamic>[],
+        'resumes': <String, dynamic>{},
+      }),
+    });
+    final hop = CountingHop();
+    final store = LocalResumeStore(hop: hop.call);
 
-      final listening = (await store.read('bob'))!;
+    final listening = (await store.read('bob'))!;
 
-      expect(hop.hops, 1);
-      expect(listening['history'], hasLength(40));
-    },
-  );
+    expect(hop.hops, 2);
+    expect(listening['history'], hasLength(40));
+  });
 
   // Measured in AOT (tool/research/record_hop_bench): a hop costs the UI
   // isolate about 9 to 11 µs. Restoring an account of one action costs it
@@ -285,7 +280,7 @@ void main() {
     expect(hop.hops, 0);
   });
 
-  test('a saved text of one record in the format before the journal decodes in another isolate', () async {
+  test('one legacy preferences record decodes and encodes its migration in workers', () async {
     SharedPreferences.setMockInitialValues({
       'bookfin.playback.v1.erin': jsonEncode({
         ...settings(),
@@ -296,7 +291,7 @@ void main() {
     final store = LocalResumeStore(hop: hop.call);
 
     expect((await store.read('erin'))!['history'], hasLength(1));
-    expect(hop.hops, 1);
+    expect(hop.hops, 2);
   });
 
   test('a saved text too short to hold a record decodes here, because a hop costs more', () async {
