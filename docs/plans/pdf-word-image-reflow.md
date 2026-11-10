@@ -323,8 +323,8 @@ The word view needs facts that only the pixels know. `PdfBook.reflowPage(sourceP
 6. Uncovered ink. Some components lie inside a text line: they overlap the line's height by half of their own height, they are no taller than 1.5 line heights, and they lie within one line height of the line's ends. Each one becomes an extra word of that line, with an empty range. Components of one line less than a fifth of its height apart become one extra word. Examples are a mark that the layout pass dropped as noise, and text that a born-digital page draws as shapes. So every printed mark of a line shows.
 7. Regions. A block that the layout pass calls a picture or a table is a region. Each other component is a region. Lines that fail the prose line test below join into one region with their neighbor lines that also fail it. Regions less than half of the page's median line height apart join. A word whose box lies more than half inside a region joins the region, and the region grows to hold it.
 8. Body line height. The median line height of the page's prose lines. A prose line passes the prose line test and holds no word of a region. A page without prose lines takes the median of all its lines, and a page without lines takes 12/432 of the page width (a 12 point line on a page 6 inches wide).
-9. Running headers and folios. With the book profile, the analysis marks the lines near the top and bottom edges that match its templates (see "Trimmed margins").
-10. Content box. The union of the page's words, regions and uncovered ink, without the marked lines.
+9. Running headers and folios. With the book profile, the analysis marks the lines near the top and bottom edges that match its templates (see "Trimmed margins"). `RunningTemplates.mark` does this after `analyzePage`, because the templates and a scanned page's text can arrive after the analysis.
+10. Content box. The union of the page's words, regions and uncovered ink, without the marked lines and without scan edges. A scan edge is a region that touches an edge of the page, runs along more than half of that edge and is thinner than the body line height, such as the dark bottom edge of the Raven scan.
 
 Steps 2 to 7 use the page's median line height of all lines where they need a page-wide length, because the body line height needs the prose line test, which comes later.
 
@@ -562,6 +562,23 @@ A running header is found by repetition across pages, not by its place alone. Th
 - Geometry signature. A scanned page whose text has not arrived has only its layout record. Its edge lines are compared by place and size. An edge line can repeat its center within half a body line height and its height within a quarter. If it does so on at least 30 percent of the body pages of its side, it is a running header or folio.
 
 Footnotes do not repeat at one place with one text, so they stay content. A chapter title at the top of a chapter's first page does not match a template, so it stays too. The templates become part of the book profile, so a single page's analysis can mark its own headers without its neighbors.
+
+Ticket tb-z9h5 built the template finder and the marks (`lib/reader/running_lines.dart`), and the content box (`PageAnalysis.contentBox`). It tuned these rules on `margins-book.pdf` and on a scanned copy of it without text:
+
+| Rule | Value of the design | Built value | Reason |
+| --- | --- | --- | --- |
+| Edge lines | The first and last two lines | The two highest and two lowest text lines by the middle of their box | The layout pass gives lines in its reading order. On Gibbon's page, the side note "A.D. 491." is the 26th line of 43, in the middle of the page. |
+| The same place | Middles within half a body line height, half the width shared | The same, and heights that differ by at most a quarter | The chapter title at the top of a chapter's first page has the words of its running header. On the fixture book it is 1.9 times as tall. |
+| Geometry signature | Place and size repeat on 30 percent of the side's body pages | The same, on at least 3 pages, for lines that stand apart from the text | Without the gap rule, the first line of prose of each fixture page was marked. Its middle lies 11 percent of the page height from the top, at the same place on every page. A line stands apart when a white gap of at least 0.75 body line heights lies between it and every other line that shares some of its width. The fixture's headers have gaps of 1.6 body line heights, and Gibbon's header 1.0. |
+| Scan edges | Not in the design | Left out of the content box | The Raven scan's dark bottom edge is a picture region. With it, the content box reached the page's bottom edge. |
+
+The marks are `PageAnalysis.runningLines`. `analyzePage` marks none, and `RunningTemplates.mark` gives the analysis with its marks. The content box is derived from the analysis and the reflow geometry when it is asked for, so it cannot fall out of step with the marks.
+
+Known limits for ticket tb-lnak:
+
+- A chapter's running header repeats only through its chapter. If the survey's sample has fewer than 3 pages of a chapter within 20 source pages, that header gets no text template, and its pages keep it as content.
+- On a page with text, only the text and folio templates apply, not the geometry templates.
+- Regions are never running lines. So the Raven scan's pencil page number in the top margin, a picture region, stays in the content box.
 
 ### The book crop
 
