@@ -1,6 +1,6 @@
 ---
 id: t5-lfsm
-status: in_progress
+status: closed
 deps: [t5-q0hs, tb-3xvr]
 links: []
 created: 2026-11-09T22:12:53Z

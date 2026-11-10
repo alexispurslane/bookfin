@@ -1,6 +1,6 @@
 ---
 id: t5-s1vy
-status: in_progress
+status: closed
 deps: [t5-4l4d]
 links: []
 created: 2026-11-09T18:18:38Z
