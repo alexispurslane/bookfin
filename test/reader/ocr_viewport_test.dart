@@ -21,8 +21,12 @@ import 'pdf_session_test.dart' show book, edition;
 
 class HeldRecognition implements PdfTextSupply {
   @override
-  Future<PageGeometry?> geometry(PdfBook book, int page, PdfText extracted) =>
-      throw StateError('The viewport asked the supply for words.');
+  Future<PageGeometry?> geometry(
+    PdfBook book,
+    int page,
+    PdfText extracted, {
+    bool background = false,
+  }) => throw StateError('The viewport asked the supply for words.');
   @override
   Future<({PdfText text, TextAttachment? attachment})> attachedText(
     PdfBook book,

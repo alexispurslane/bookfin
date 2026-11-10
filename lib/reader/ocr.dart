@@ -465,8 +465,9 @@ class BundledEnglishText implements PdfTextSupply {
   Future<PageGeometry?> geometry(
     PdfBook book,
     int page,
-    PdfText extracted,
-  ) async {
+    PdfText extracted, {
+    bool background = false,
+  }) async {
     if (extracted.status == PdfTextStatus.candidate || _closed || _fatal) {
       return null;
     }

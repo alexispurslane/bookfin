@@ -22,6 +22,25 @@ typedef AnalyzedSourcePage = ({
 /// The box of a line in page units: left, top, right and bottom.
 typedef LineBox = ({double left, double top, double right, double bottom});
 
+/// An edge line of a page (see [RunningTemplates]): its index in the page's
+/// reflow geometry, the box around its words, its text or null on a page
+/// without text, and the white gap in page units between it and the nearest
+/// other line of its page that shares some of its width (infinity when no
+/// line does).
+typedef EdgeLine = ({int line, LineBox box, String? text, double gap});
+
+/// What the template finder and [RunningTemplates.matches] read of one
+/// analyzed page: its source page number, its body line height, whether it
+/// is a body page, and its edge lines. A body page has at least 5 text
+/// lines, and pictures cover at most half of it. So a cover, a title page, a
+/// section break, a plate and a blank page are not body pages.
+typedef PageEdges = ({
+  int sourcePage,
+  double bodyLineHeight,
+  bool body,
+  List<EdgeLine> edges,
+});
+
 /// The templates of a book's running headers, running footers and folios,
 /// which [findRunningTemplates] finds by repetition across the book's pages.
 /// With them, one page's lines can be marked without its neighbors.
@@ -56,7 +75,7 @@ class RunningTemplates {
   /// The boxes of running lines on scanned pages without text, for each
   /// side: the parity of the source page number. An edge line of a page
   /// without text is a running line when it stands apart from the text (see
-  /// [_EdgeLine.apart]) and has the shape of one of its side's boxes (see
+  /// [_apart]) and has the shape of one of its side's boxes (see
   /// [_sameShape]).
   final List<({int side, LineBox box})> shapes;
 
@@ -66,33 +85,33 @@ class RunningTemplates {
   // takes microseconds, far less than a hop to another isolate.
   PageAnalysis mark(AnalyzedSourcePage page) {
     final running = Uint8List(page.geometry.lineCount);
-    final lineTexts = _lineTexts(page);
-    for (final edge in _edgeLines(page, lineHeight)) {
-      final bool matches;
-      if (lineTexts == null) {
-        final side = page.sourcePage % 2;
-        matches =
-            edge.apart &&
-            shapes.any(
-              (shape) =>
-                  shape.side == side &&
-                  _sameShape(edge.box, shape.box, lineHeight),
-            );
-      } else {
-        final text = lineTexts[edge.line];
-        final number = _folioNumber(text);
-        final signature = _signature(text);
-        matches =
-            number != null && folioOffsets.contains(number - page.sourcePage) ||
-            texts.any(
-              (template) =>
-                  template.signature == signature &&
-                  _samePlace(edge.box, template.box, lineHeight),
-            );
-      }
-      if (matches) running[edge.line] = 1;
+    for (final edge in pageEdges(page).edges) {
+      if (matches(page.sourcePage, edge)) running[edge.line] = 1;
     }
     return page.analysis.withRunningLines(running);
+  }
+
+  /// Whether [edge], an edge line of source page [sourcePage], matches a
+  /// template, so that it is a running line.
+  bool matches(int sourcePage, EdgeLine edge) {
+    final text = edge.text;
+    if (text == null) {
+      final side = sourcePage % 2;
+      return _apart(edge, lineHeight) &&
+          shapes.any(
+            (shape) =>
+                shape.side == side &&
+                _sameShape(edge.box, shape.box, lineHeight),
+          );
+    }
+    final number = _folioNumber(text);
+    final signature = _signature(text);
+    return number != null && folioOffsets.contains(number - sourcePage) ||
+        texts.any(
+          (template) =>
+              template.signature == signature &&
+              _samePlace(edge.box, template.box, lineHeight),
+        );
   }
 }
 
@@ -115,17 +134,21 @@ class RunningTemplates {
 ///   A body page has at least 5 text lines, and pictures cover at most half
 ///   of it. So a cover, a title page, a section break, a plate and a blank
 ///   page do not count.
-RunningTemplates findRunningTemplates(List<AnalyzedSourcePage> pages) {
+RunningTemplates findRunningTemplates(List<AnalyzedSourcePage> pages) =>
+    runningTemplatesOf([for (final page in pages) pageEdges(page)]);
+
+/// The running templates of the book whose pages have the edge lines
+/// [pages] (see [findRunningTemplates]). It runs in a hop.
+RunningTemplates runningTemplatesOf(List<PageEdges> pages) {
   final lineHeight = pages.isEmpty
       ? PageAnalysis.defaultLineHeight
-      : _median([for (final page in pages) page.analysis.bodyLineHeight]);
+      : _median([for (final page in pages) page.bodyLineHeight]);
   final folioPages = <int, Set<int>>{};
   final signatures = <String, List<(int, LineBox)>>{};
   for (final page in pages) {
-    final lineTexts = _lineTexts(page);
-    if (lineTexts == null) continue;
-    for (final edge in _edgeLines(page, lineHeight)) {
-      final text = lineTexts[edge.line];
+    for (final edge in page.edges) {
+      final text = edge.text;
+      if (text == null) continue;
       final number = _folioNumber(text);
       if (number != null) {
         folioPages
@@ -167,10 +190,10 @@ RunningTemplates findRunningTemplates(List<AnalyzedSourcePage> pages) {
   for (final side in [0, 1]) {
     final body = [
       for (final page in pages)
-        if (page.sourcePage % 2 == side && _isBodyPage(page))
+        if (page.sourcePage % 2 == side && page.body)
           [
-            for (final edge in _edgeLines(page, lineHeight))
-              if (edge.apart) edge.box,
+            for (final edge in page.edges)
+              if (_apart(edge, lineHeight)) edge.box,
           ],
     ];
     final needed = math.max(_repeats, 0.3 * body.length);
@@ -206,31 +229,25 @@ const _repeats = 3;
 const _window = 20;
 
 /// The white gap, in body line heights, that sets a running line apart from
-/// the text (see [_EdgeLine.apart]).
-const _apart = 0.75;
+/// the text (see [_apart]).
+const _apartGap = 0.75;
 
-/// An edge line of a page (see [RunningTemplates]).
-class _EdgeLine {
-  _EdgeLine(this.line, this.box, {required this.apart});
+/// Whether [edge] stands apart from the text, in a book whose body line
+/// height is [lineHeight]: a white gap of at least [_apartGap] body line
+/// heights lies between it and every other line of its page that shares
+/// some of its width. A running line stands apart from the text. Lines of
+/// prose do not, so a page's first line of prose, which lies at the same
+/// place on every page, is not a running line.
+bool _apart(EdgeLine edge, double lineHeight) =>
+    edge.gap >= _apartGap * lineHeight;
 
-  /// The line's index in the page's reflow geometry.
-  final int line;
-
-  /// The box around the line's words.
-  final LineBox box;
-
-  /// Whether a white gap of at least [_apart] body line heights lies
-  /// between this line and every other line of its page that shares some
-  /// of its width. A running line stands apart from the text. Lines of
-  /// prose do not, so a page's first line of prose, which lies at the same
-  /// place on every page, is not a running line.
-  final bool apart;
-}
-
-/// The edge lines of [page] (see [RunningTemplates]), in a book whose body
-/// line height is [lineHeight].
-List<_EdgeLine> _edgeLines(AnalyzedSourcePage page, double lineHeight) {
+/// The edge lines of [page] (see [RunningTemplates]), and the facts about
+/// the page that the template finder needs with them (see [PageEdges]).
+// NOTE: This reads a page's lines a few times. It takes microseconds, far
+// less than a hop to another isolate.
+PageEdges pageEdges(AnalyzedSourcePage page) {
   final lines = _lines(page);
+  final lineTexts = _lineTexts(page);
   double middle(int line) => _middle(lines[line].box).$2;
   final text = [
     for (var line = 0; line < lines.length; line++)
@@ -238,26 +255,48 @@ List<_EdgeLine> _edgeLines(AnalyzedSourcePage page, double lineHeight) {
   ]..sort((a, b) => middle(a).compareTo(middle(b)));
   final height = page.geometry.height;
   final edge = 0.12 * height;
-  bool apart(int line) {
+  double gap(int line) {
     final box = lines[line].box;
+    var gap = double.infinity;
     for (var other = 0; other < lines.length; other++) {
       final near = lines[other].box;
       if (other == line || near.left >= box.right || near.right <= box.left) {
         continue;
       }
-      final white = math.max(near.top - box.bottom, box.top - near.bottom);
-      if (white < _apart * lineHeight) return false;
+      gap = math.min(
+        gap,
+        math.max(near.top - box.bottom, box.top - near.bottom),
+      );
     }
-    return true;
+    return gap;
   }
 
-  return [
-    for (final line in {
-      ...text.take(2).where((line) => middle(line) <= edge),
-      ...text.reversed.take(2).where((line) => middle(line) >= height - edge),
-    })
-      _EdgeLine(line, lines[line].box, apart: apart(line)),
-  ];
+  final analysis = page.analysis;
+  var pictures = 0.0;
+  for (var region = 0; region < analysis.regionCount; region++) {
+    if (analysis.regionKind(region) != RegionKind.picture) continue;
+    final box = analysis.regionBoxes;
+    pictures +=
+        (box[region * 4 + 2] - box[region * 4]) *
+        (box[region * 4 + 3] - box[region * 4 + 1]);
+  }
+  return (
+    sourcePage: page.sourcePage,
+    bodyLineHeight: analysis.bodyLineHeight,
+    body: text.length >= 5 && pictures <= height / 2,
+    edges: [
+      for (final line in {
+        ...text.take(2).where((line) => middle(line) <= edge),
+        ...text.reversed.take(2).where((line) => middle(line) >= height - edge),
+      })
+        (
+          line: line,
+          box: lines[line].box,
+          text: lineTexts?[line],
+          gap: gap(line),
+        ),
+    ],
+  );
 }
 
 /// For each line of [page]: the box around its words, and whether it is a
@@ -314,21 +353,6 @@ bool _samePlace(LineBox a, LineBox b, double lineHeight) =>
     _sameShape(a, b, lineHeight) &&
     math.min(a.right, b.right) - math.max(a.left, b.left) >=
         math.max(a.right - a.left, b.right - b.left) / 2;
-
-/// Whether [page] is a body page (see [findRunningTemplates]).
-bool _isBodyPage(AnalyzedSourcePage page) {
-  final analysis = page.analysis;
-  var pictures = 0.0;
-  for (var region = 0; region < analysis.regionCount; region++) {
-    if (analysis.regionKind(region) != RegionKind.picture) continue;
-    final box = analysis.regionBoxes;
-    pictures +=
-        (box[region * 4 + 2] - box[region * 4]) *
-        (box[region * 4 + 3] - box[region * 4 + 1]);
-  }
-  return _lines(page).where((line) => line.text).length >= 5 &&
-      pictures <= page.geometry.height / 2;
-}
 
 /// The signature of a line whose text is [text]: in lowercase, each run of
 /// white space as one space, and each digit as `#`.

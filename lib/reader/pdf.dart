@@ -430,10 +430,21 @@ abstract class PdfBook extends ReaderDocument {
   /// character boxes, with its text. Another page gets it from
   /// [textSupply]'s layout pass, before its text. This default knows no
   /// character boxes, so it gives a text layer page no geometry.
-  Future<PageGeometry?> geometry(int sourcePage) async {
+  ///
+  /// A [background] layout pass waits behind all other recognition work (see
+  /// [PdfTextSupply.geometry]).
+  Future<PageGeometry?> geometry(
+    int sourcePage, {
+    bool background = false,
+  }) async {
     final layer = await textLayer(sourcePage);
     if (layer.status == PdfTextStatus.candidate) return null;
-    return textSupply?.geometry(this, sourcePage, layer);
+    return textSupply?.geometry(
+      this,
+      sourcePage,
+      layer,
+      background: background,
+    );
   }
 
   /// The text of [sourcePage] for reading, as [text] gives it, and for each
@@ -521,7 +532,16 @@ abstract class PdfTextSupply {
   /// page that a reader shows goes before every other waiting page. Null
   /// when the page has no geometry: [extracted] is a candidate, the layout
   /// pass failed, or this reader stopped waiting.
-  Future<PageGeometry?> geometry(PdfBook book, int page, PdfText extracted);
+  ///
+  /// A [background] layout pass, such as the book survey's, waits behind all
+  /// other work and does not count as waiting for [recognizing]. A request
+  /// for the shown page joins it and moves it to the front.
+  Future<PageGeometry?> geometry(
+    PdfBook book,
+    int page,
+    PdfText extracted, {
+    bool background = false,
+  });
 
   /// The text of [page] for reading, as [text] gives it, and for each word
   /// of [geometry], the page's geometry, its range of that text. The
@@ -679,15 +699,21 @@ class _NativePdfBook extends PdfBook {
   });
 
   @override
-  Future<PageGeometry?> geometry(int sourcePage) => _run(() async {
-    final layer = await _layer(sourcePage);
-    final extracted = layer.text;
-    if (extracted.status == PdfTextStatus.candidate) {
-      return layer.words?.geometry;
-    }
-    if (_closing != null) return null;
-    return textSupply?.geometry(this, sourcePage, extracted);
-  });
+  Future<PageGeometry?> geometry(int sourcePage, {bool background = false}) =>
+      _run(() async {
+        final layer = await _layer(sourcePage);
+        final extracted = layer.text;
+        if (extracted.status == PdfTextStatus.candidate) {
+          return layer.words?.geometry;
+        }
+        if (_closing != null) return null;
+        return textSupply?.geometry(
+          this,
+          sourcePage,
+          extracted,
+          background: background,
+        );
+      });
 
   @override
   Future<({PdfText text, TextAttachment? attachment})> attachedText(

@@ -34,8 +34,12 @@ class RefusingSupply implements PdfTextSupply {
   Future<PdfText> text(PdfBook book, int page, PdfText extracted) =>
       throw StateError('The viewport asked the supply for text.');
   @override
-  Future<PageGeometry?> geometry(PdfBook book, int page, PdfText extracted) =>
-      throw StateError('The viewport asked the supply for words.');
+  Future<PageGeometry?> geometry(
+    PdfBook book,
+    int page,
+    PdfText extracted, {
+    bool background = false,
+  }) => throw StateError('The viewport asked the supply for words.');
   @override
   Future<({PdfText text, TextAttachment? attachment})> attachedText(
     PdfBook book,

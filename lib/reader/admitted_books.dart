@@ -7,6 +7,7 @@
 // download removes it.
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 
@@ -44,7 +45,7 @@ abstract final class AdmittedBooks {
     final key = utf8.encode(jsonEncode([Publication.revision, policy, digest]));
     if (await _kept(record, key) case final kept?) return kept;
     final publication = await admit();
-    await _keep(directory, record, key, publication);
+    await _keep(record, key, publication);
     return publication;
   }
 
@@ -83,45 +84,23 @@ abstract final class AdmittedBooks {
     }
   }
 
-  /// Writes [publication] under [key] to [record] in [directory]: first to
-  /// a partial file of its own, then a rename over [record]. So a process
-  /// that dies during the write leaves the old record whole. Its partial
-  /// file stays until the download is removed.
+  /// Writes [publication] under [key] to [record] with
+  /// [DerivedBookFiles.write], so a process that dies during the write
+  /// leaves the old record whole.
   static Future<void> _keep(
-    Directory directory,
     File record,
     List<int> key,
     Publication publication,
   ) async {
     try {
-      switch (await FileSystemEntity.type(directory.path, followLinks: false)) {
-        case FileSystemEntityType.notFound:
-          await directory.create();
-        case FileSystemEntityType.directory:
-          break;
-        default:
-          // Something else holds the name. It is not this record's to
-          // replace.
-          return;
-      }
-      final partial = File(
-        '${directory.path}/publication-$pid-'
-        '${DateTime.now().microsecondsSinceEpoch}.partial',
+      await DerivedBookFiles.write(
+        record,
+        (BytesBuilder(copy: false)
+              ..add(key)
+              ..addByte(0x0a)
+              ..add(publication.encode()))
+            .takeBytes(),
       );
-      try {
-        final output = await partial.open(mode: FileMode.writeOnly);
-        try {
-          await output.writeFrom(key);
-          await output.writeFrom(const [0x0a]);
-          await output.writeFrom(publication.encode());
-          await output.flush();
-        } finally {
-          await output.close();
-        }
-        await partial.rename(record.path);
-      } finally {
-        if (await partial.exists()) await partial.delete();
-      }
     } on FileSystemException {
       // The next open admits the book again and tries again.
     }

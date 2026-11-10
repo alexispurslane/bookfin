@@ -63,7 +63,8 @@ class ScannedCopy extends PdfBook {
     PageGeometry geometry,
   ) => throw StateError('A scanned page without text was read.');
   @override
-  Future<PageGeometry?> geometry(int sourcePage) => book.geometry(sourcePage);
+  Future<PageGeometry?> geometry(int sourcePage, {bool background = false}) =>
+      book.geometry(sourcePage, background: background);
   @override
   Future<PdfRaster> render(int sourcePage, double width) =>
       book.render(sourcePage, width);
