@@ -1,6 +1,6 @@
 # PDF reflow as the page's own word images
 
-Date: 2026-11-09, revised the same day for the "Tesseract layout first" decision, and on 2026-11-10 for the user's two product decisions and for trimmed margins. Epic: boo-fval. Parent: boo-fs0n. Blocked by: boo-pw1d.
+Date: 2026-11-09, revised the same day for the "Tesseract layout first" decision, and on 2026-11-10 for the user's product decisions, trimmed margins and per-book saved choices. Epic: boo-fval. Parent: boo-fs0n. Blocked by: boo-pw1d.
 
 ## Decision
 
@@ -158,7 +158,7 @@ The text attachment joins the two: for each word, its range of the reading text.
 | Text attachment, and the `ReflowPage` that holds geometry, analysis and attachment | `PdfBook`, in a cache of 16 pages. | The geometry arrives, or the reading text arrives. |
 | Page analysis of a page | `PdfBook`, inside the `ReflowPage`. | The word view first needs the page. |
 | Body line height of the book in this session | `PdfBook`, beside the analyses: the median of the body line heights of its analyzed pages with at least 8 prose lines. | A page with at least 8 prose lines is analyzed. |
-| The page view: original, word view or text view | `ReaderSession`, in one enum that replaces the `reflow` bool. It lasts for the run of the app, as the reflow choice does today (t9-3n2m). | The person chooses a view. |
+| The page view and Trim margins | `ReaderSession`, saved per `Book.id` within the account in the existing reading settings. Both survive an app restart (boo-lj72). | The person chooses a view or changes Trim margins. |
 | Text size | `ReaderSession`, as today. | The person steps the size. |
 | Theme | The app's appearance, as today. | The person chooses cream or night. |
 | Column of the shown page, its screens, its band images | `PdfWordPages`, one per `PdfViewport`. | The shown page, the column width, the text size or the shown screen changes. |
@@ -583,7 +583,7 @@ The selectable follows the EPUB page's selection (`lib/reader/epub/selection.dar
 
 ## The switch to the text view
 
-The page view is one choice with three values: original, word view and text view. `ReaderSession` keeps it for the run of the app, as it keeps the reflow choice today (t9-3n2m). It is not saved in the reading records. The control lives in the Reading settings sheet, which is glass. Its shape is decision 1, which the user settled on 2026-11-10:
+The page view is one choice with three values: Original, Page words and Text. On 2026-11-10 the user replaced the session-only rule (t9-3n2m and tb-9mcf). `ReaderSession` now saves the exact choice per book across restarts (boo-lj72). The control lives in the Reading settings sheet, which is glass. Its shape is decision 1, which the user settled on 2026-11-10:
 
 - The Pages row has three segments: Original, Page words and Text. One tap chooses any view.
 - Page words is the reflow view that the person sees first, because every PDF reflows as word images.
@@ -749,8 +749,18 @@ Known limits:
 
 - "Trim margins" is a switch row in the glass Reading settings sheet, under the Pages row, for PDFs only. It is on by default.
 - Off shows the full printed page in the Original view at once. On shows the crop at once. A change of the switch is the one time a shown page changes its crop.
-- `ReaderSession` keeps the switch and saves it with the text size, so it lasts across runs. It is a preference, not a mode such as the page view.
+- `ReaderSession` saves the switch with the page view per book in the existing account's reading settings. Both choices survive a restart.
 - The word view always leaves out headers and folios, whatever the switch says. The text view still shows their words. Ticket tb-go0c leaves them out of the text view too.
+
+### Saved choices and migration
+
+The account's reading settings hold `pdfBooks`, keyed by `Book.id`. Each entry holds `view` (`original`, `pageWords` or `text`) and the boolean `trimMargins`. `ReaderSession` derives the open book's choices from that entry. The settings store transports this metadata beside records, not as a resume, bookmark or history entry. The existing save queue retries failed settings saves.
+
+The session replaces its validated settings table only when a choice changes. Position saves reuse that snapshot instead of rebuilding every book entry. The existing storage worker copies growing settings and encodes their durable JSON text. A save enters the write queue before its worker finishes, so worker completion order cannot reorder saves or mix accounts. SQLite encodes only metadata and changed records, without sending retained history to a worker on each position save. Settings-only accounts also restore and copy large metadata in a worker. The preferences transport derives and encodes its whole account in a worker where isolates are available; the web still runs that work inline because it has no isolates.
+
+Before a book has an entry, it uses Original and the legacy account-wide `trimMargins` value, or on when none exists. The legacy value stays a migration fallback, not another owner of a saved book's choice. A change of either choice saves both for the book. Font size does not change its scope or behavior.
+
+The account restores its settings before the document can show a useful reader frame. A malformed `pdfBooks` value follows the reader's existing unreadable-record rule: report the failure, keep the saved snapshot, and block writes. This prevents a settings save from replacing unreadable records with empty lists.
 
 ## Tests
 
@@ -809,7 +819,9 @@ Places and text:
 
 The view and the reader:
 
-- The page view choice lasts through closing and opening books in one run, and a new run starts on the original page.
+- After a restart, each book restores its own exact Original, Page words or Text choice and Trim margins before its first useful reader frame.
+- Two books that share an edition keep separate choices. Two editions of one book share its choice. Another account keeps separate choices for the same book ID.
+- Failed settings saves retry without losing the choices of other books, resumes, history or bookmarks. Both preferences and SQLite storage keep the choices across a fresh store instance.
 - On a scanned page, the first word screen shows after the layout pass, before recognition ends. The progress line stays until the text attaches.
 - Before the text attaches, a saved place inside the page opens the page's first screen and is not overwritten. When the text attaches and the person has not turned, the screen that holds the place shows.
 - A long press before the text attaches selects nothing.
@@ -825,7 +837,7 @@ The view and the reader:
 - Two body pages of one side show their text at the same size and place in the Original view.
 - A page keeps its look while it shows, and a crop that arrives later applies at the next turn.
 - Pinch zoom and pan work on a cropped page.
-- Trim margins is on in a new install. Off shows the full page. The choice survives a restart.
+- Trim margins is on in a new install. Off shows the full page. Each book's choice survives a restart, with legacy account-wide trim as the fallback for untouched books.
 - The word view shows no running header and no folio, and search still finds a header word.
 - The survey resumes after a reopen, runs no page twice, and never delays the shown page.
 

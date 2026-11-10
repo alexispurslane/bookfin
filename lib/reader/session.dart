@@ -34,7 +34,8 @@ typedef TimeLeft = ({Duration chapter, Duration book});
 abstract class ReadingStore {
   /// The saved reading snapshot of [accountKey], or null when the account
   /// has none: `version`, `fontSize`, `resumes`, `bookmarks` and `history`,
-  /// `sizesMainText` when it is true, and `trimMargins` when it is false.
+  /// `sizesMainText` when it is true, legacy `trimMargins` when false,
+  /// and `pdfBooks`, the PDF view and margin choice keyed by [Book.id].
   Future<Map<String, dynamic>?> read(String accountKey);
 
   /// Saves [changes] to the reading records of [accountKey].
@@ -160,6 +161,8 @@ class ReadingChanges {
 /// - Every account whose save failed still has its changes pending.
 /// - The Undo offer is a recorded move of the account.
 /// - A pending move belongs to the open book.
+/// - PDF preferences belong to the bound account and are keyed by book,
+///   not edition. The open book's choices are derived from those preferences.
 ///
 /// The session records each jump through the book as a reading move (see
 /// [history]). A jump verb notes the pending move: its kind and the shown
@@ -212,8 +215,8 @@ class ReaderSession extends ChangeNotifier {
       _searchChanges = _Signal(() => (_searching, _hits, _searchError)),
       _fontSizeChanges = _Signal(() => (_fontSize, _sizesMainText)),
       _saveStatusChanges = _Signal(() => saveFailed),
-      _pdfViewChanges = _Signal(() => _pdfView),
-      _trimMarginsChanges = _Signal(() => _trimMargins),
+      _pdfViewChanges = _Signal(() => pdfView),
+      _trimMarginsChanges = _Signal(() => trimMargins),
       _bookMapChanges = _Signal(() => _bookMap),
       _timeLeftChanges = _Signal(() => timeLeft),
     ];
@@ -517,7 +520,8 @@ class ReaderSession extends ChangeNotifier {
     _recordsReady = false;
     _fontSize = _defaultFontSize;
     _sizesMainText = false;
-    _trimMargins = true;
+    _legacyTrimMargins = true;
+    _pdfBooks = const {};
     final generation = ++_accountGeneration;
     final key = _account;
     final previous = _binding;
@@ -557,6 +561,7 @@ class ReaderSession extends ChangeNotifier {
               bookmarks.length) {
             throw const FormatException('Duplicate reading bookmarks.');
           }
+          final pdfBooks = _readPdfBooks(saved);
           _resumes.addAll(resumes);
           _bookmarks = bookmarks;
           _history = _moves(saved);
@@ -568,7 +573,8 @@ class ReaderSession extends ChangeNotifier {
           // was saved, came from the size buttons.
           _sizesMainText =
               saved['sizesMainText'] == true || _fontSize != _defaultFontSize;
-          _trimMargins = saved['trimMargins'] != false;
+          _legacyTrimMargins = saved['trimMargins'] != false;
+          _pdfBooks = pdfBooks;
         }
         if (pending == null) store.acceptSnapshot(key, saved);
         _recordsReady = true;
@@ -1302,22 +1308,52 @@ class ReaderSession extends ChangeNotifier {
   Future<void> followLink(String href) =>
       _jump(HistoryAction.link, (navigator) => navigator.contents(href));
 
-  PdfPageView _pdfView = PdfPageView.original;
+  /// Validated settings snapshots. A choice replaces the table and its entry;
+  /// a position save reuses it, and pending saves retain their original table.
+  Map<String, Map<String, dynamic>> _pdfBooks = const {};
+  bool _legacyTrimMargins = true;
   late final _Signal _pdfViewChanges;
 
-  /// How PDF pages show: original pages, page words or reading text.
-  /// The choice lasts for this run of the app, through closing and opening
-  /// books and accounts. It is not saved in the reading records, so a new
-  /// session starts on the original page.
-  PdfPageView get pdfView => _pdfView;
-
-  bool _trimMargins = true;
+  /// The open book's saved PDF view in this account: original pages,
+  /// page words or reading text. An untouched book starts on original pages.
+  PdfPageView get pdfView => switch (_pdfBooks[book?.id]?['view']) {
+    final String view => PdfPageView.values.byName(view),
+    _ => PdfPageView.original,
+  };
 
   /// Whether original PDF pages and their deck cards show their known
-  /// content crop instead of the full printed page. On by default, saved
-  /// with the account's text size, and never used by the word view.
-  bool get trimMargins => _trimMargins;
+  /// content crop instead of the full printed page. Saved per book in the
+  /// account, with legacy account-wide trim as the fallback, otherwise on.
+  /// The word view never uses it.
+  bool get trimMargins =>
+      _pdfBooks[book?.id]?['trimMargins'] as bool? ?? _legacyTrimMargins;
   late final _Signal _trimMarginsChanges;
+
+  static Map<String, Map<String, dynamic>> _readPdfBooks(
+    Map<String, dynamic> saved,
+  ) {
+    if (!saved.containsKey('pdfBooks')) return {};
+    final books = saved['pdfBooks'];
+    if (books is! Map<String, dynamic>) {
+      throw const FormatException('Invalid PDF preferences.');
+    }
+    final preferences = <String, Map<String, dynamic>>{};
+    for (final entry in books.entries) {
+      final value = entry.value;
+      if (entry.key.isEmpty || value is! Map<String, dynamic>) {
+        throw const FormatException('Invalid book PDF preferences.');
+      }
+      final view = PdfPageView.values
+          .where((view) => view.name == value['view'])
+          .firstOrNull;
+      final trim = value['trimMargins'];
+      if (view == null || trim is! bool) {
+        throw const FormatException('Invalid book PDF preferences.');
+      }
+      preferences[entry.key] = {'view': view.name, 'trimMargins': trim};
+    }
+    return preferences;
+  }
 
   /// Notifies when [trimMargins] changes.
   Listenable get trimMarginsChanges => _trimMarginsChanges;
@@ -1325,8 +1361,17 @@ class ReaderSession extends ChangeNotifier {
   /// Shows the chosen PDF margins at once and saves the choice. Old deck
   /// cards are freed so that the next scrub uses the chosen margins too.
   Future<void> setTrimMargins(bool on) async {
-    if (_trimMargins == on) return;
-    _trimMargins = on;
+    final id = book?.id;
+    if (id == null ||
+        document is! PdfBook ||
+        !_recordsReady ||
+        trimMargins == on) {
+      return;
+    }
+    _pdfBooks = {
+      ..._pdfBooks,
+      id: {'view': pdfView.name, 'trimMargins': on},
+    };
     previews.close();
     _emit();
     await _save();
@@ -1335,11 +1380,21 @@ class ReaderSession extends ChangeNotifier {
   /// Notifies when [pdfView] changes.
   Listenable get pdfViewChanges => _pdfViewChanges;
 
-  /// Shows [view] in every PDF opened during this run, without saving it.
-  void setPdfView(PdfPageView view) {
-    if (_pdfView == view) return;
-    _pdfView = view;
+  /// Shows [view] at once and saves it for this book in this account.
+  Future<void> setPdfView(PdfPageView view) async {
+    final id = book?.id;
+    if (id == null ||
+        document is! PdfBook ||
+        !_recordsReady ||
+        pdfView == view) {
+      return;
+    }
+    _pdfBooks = {
+      ..._pdfBooks,
+      id: {'view': view.name, 'trimMargins': trimMargins},
+    };
     _emit();
+    await _save();
   }
 
   /// Sets the text size to [size], from 14 to 40 pixels, as the size of
@@ -1443,7 +1498,8 @@ class ReaderSession extends ChangeNotifier {
         'version': 1,
         'fontSize': fontSize,
         if (sizesMainText) 'sizesMainText': true,
-        if (!trimMargins) 'trimMargins': false,
+        if (!_legacyTrimMargins) 'trimMargins': false,
+        if (_pdfBooks.isNotEmpty) 'pdfBooks': _pdfBooks,
       },
       resumes: resumes.map(encodeTextPosition).toList(),
       bookmarks: {
@@ -1542,7 +1598,8 @@ class ReaderSession extends ChangeNotifier {
             (document != null ||
                 _bookmarks.isNotEmpty ||
                 _history.isNotEmpty ||
-                _resumes.isNotEmpty)) ||
+                _resumes.isNotEmpty ||
+                _pdfBooks.isNotEmpty)) ||
         (document != null && (edition == null || !_current(edition!))) ||
         (_bookMap != null && document == null) ||
         (_navigator != null && document == null) ||

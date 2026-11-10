@@ -314,7 +314,7 @@ The user chose design A of `docs/mockups/glass-places.html`, with the tint of de
 The user settled four open points of the conformance epic (boo-bquq):
 
 - The Sync page shows a quiet line about the last background sync, such as "Last synced 4:29 PM" or "Last sync failed. Tap Sync now to retry." It shows no busy state during a background sync (t9-pols).
-- The PDF reflow choice lasts until the app restarts. The reader session keeps it, and it is not saved in the reading records (t9-3n2m).
+- The PDF reflow choice originally lasted until the app restarted (t9-3n2m). The November 10 decision below replaces this rule.
 - A failed background library refresh stays silent unless the saved library is older than 7 days. Then a quiet notice appears (boo-0km1). The next decision replaces this one.
 - Later the same day, the user replaced the decision above. At launch the library shows the saved library at once and refreshes in the background. A thin progress line appears only if the refresh runs longer than 1.5 seconds. If Jellyfin cannot be reached (a network error, a timeout, or a server error), the library shows only downloaded books and a short message, for example "Cannot reach Jellyfin. Showing downloaded books." The library filter that the user chose does not change. The next refresh that reaches Jellyfin, for example on app resume or pull to refresh, brings the full library back. An expired sign-in and revoked access keep their own messages (boo-0km1).
 - The mini player, the replacement notice and the record save status each keep one public widget that acts as the controller for its own surface. Each one wraps a pure leaf that only draws and reports events (t9-xj41).
@@ -326,10 +326,18 @@ The user settled four open points of the conformance epic (boo-bquq):
 
 The user asked for a reader without notices and with direct gestures (boo-981b, boo-hcxq).
 
-- A PDF always opens on its original pages. The original view never starts recognition.
+- Originally a PDF always opened on its original pages. The November 10 decision below replaces that default for books with saved choices. The original view never starts recognition.
 - The reflow view reflows a page from its text layer. A page without a usable text layer is recognized without a prompt. While that runs, the original page shows under a thin progress line.
 - When the shown page's own content cannot reflow, the reflow view shows the original page fitted to the screen, with no message. Examples are a cover of a few short lines, a contents page, a diagram, a table and a page with no text (te-h8ip).
 - When reflow failed on the shown page, one quiet line over the original page says why, because the person can act on it. Examples are a recognition failure and a removed download. The reader shows no other notice about recognition, text quality, language or search matching.
 - Every reader view shares one gesture model: a horizontal swipe turns the page, and a tap on the page enters or leaves full screen. Full screen shows only the page and hides Android's system bars.
 - The reader has no top bar. The person leaves a book with Android's Back. The bottom bar lies over the page as glass.
 - The page keeps the room of Android's system bars when they hide, so showing or hiding the controls or the bars never moves, resizes or lays out the page again.
+
+## Per-book PDF choices: November 10, 2026 decision
+
+The user changed the earlier session-only decision in boo-lj72. Each book remembers its exact last Pages choice: Original, Page words or Text. Each book also remembers Trim margins on or off. Both choices survive an app restart.
+
+`ReaderSession` owns both choices in the existing durable reading settings. The key is `Book.id` within the signed-in account, not an edition or a session. Another book or account cannot inherit those choices. The reader restores both choices before its first useful frame.
+
+An untouched book starts on Original. Its trim fallback is the legacy saved account-wide choice, or on when none exists. Changing one book never changes that fallback for another book. Font size keeps its existing account-wide behavior. Settings saves use the existing retry path and never replace resumes, history or bookmarks.

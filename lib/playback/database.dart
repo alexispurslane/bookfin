@@ -632,6 +632,20 @@ class RecordDatabase {
     Map<String, dynamic> metadata,
     RecordJournal journal, {
     bool initialize = false,
+  }) => encodeCommitWithMetadataText(
+    account,
+    jsonEncode(metadata),
+    journal,
+    initialize: initialize,
+  );
+
+  /// Encodes the changed journal rows without encoding [metadataText] again.
+  /// A worker can encode growing settings without copying retained history.
+  static RecordCommit encodeCommitWithMetadataText(
+    String account,
+    String metadataText,
+    RecordJournal journal, {
+    bool initialize = false,
   }) {
     if (journal.account != account || journal.cursor < 0) {
       throw ArgumentError(
@@ -645,7 +659,7 @@ class RecordDatabase {
         'account': account,
         'replica': journal.replica,
         'cursor': journal.cursor,
-        'metadata': jsonEncode(metadata),
+        'metadata': metadataText,
       },
       actions: [
         for (final entry in journal.additions.entries)
