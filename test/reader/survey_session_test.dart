@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:bookfin/reader/document.dart';
 import 'package:bookfin/reader/ocr.dart';
 import 'package:bookfin/reader/pdf.dart';
 import 'package:bookfin/reader/platform_io.dart';
@@ -215,6 +216,48 @@ void main() {
     EnglishRecognition.instance.checkInvariants();
     pdf.survey.checkInvariants();
   });
+
+  test('the survey follows the page that the reader shows: that page and '
+      'the page after it are laid out next', () async {
+    holding = true;
+    await open();
+    await received(1);
+    reader.acceptAddress(reader.token, PdfAddress(5, 0));
+    releaseAll();
+    final pdf = reader.document! as PdfBook;
+    await surveyed(pdf);
+    expect(laidOut().take(3), [1, 5, 6]);
+  });
+
+  test('a backward turn prioritizes the page before the shown page, even '
+      'after another place on the shown page is reported', () async {
+    holding = true;
+    await open();
+    await received(1);
+    reader.acceptAddress(reader.token, PdfAddress(6, 0));
+    reader.acceptAddress(reader.token, PdfAddress(5, 0));
+    reader.acceptAddress(reader.token, PdfAddress(5, 1));
+    releaseAll();
+    final pdf = reader.document! as PdfBook;
+    await surveyed(pdf);
+    expect(laidOut().take(3), [1, 5, 4]);
+  });
+
+  test(
+    'turning forward again prioritizes the page after the shown page',
+    () async {
+      holding = true;
+      await open();
+      await received(1);
+      reader.acceptAddress(reader.token, PdfAddress(6, 0));
+      reader.acceptAddress(reader.token, PdfAddress(4, 0));
+      reader.acceptAddress(reader.token, PdfAddress(5, 0));
+      releaseAll();
+      final pdf = reader.document! as PdfBook;
+      await surveyed(pdf);
+      expect(laidOut().take(3), [1, 5, 6]);
+    },
+  );
 
   test('the survey\'s waiting shows no recognition progress', () async {
     holding = true;

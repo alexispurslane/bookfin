@@ -16,6 +16,8 @@
 // Add --long-ebook=<path> to serve the EPUB file at <path>, such as a
 // public-domain book of .cache/epub-trial/books, as Salt and Lantern's
 // ebook, so that the reader has a long book of many sections to lay out.
+// Add --pdf=<path> to serve the PDF file at <path>, such as
+// test/reader/fixtures/reflow/margins-book.pdf, as Windfall's ebook.
 // Add --ebooks-library to serve the ebooks in a second book library,
 // Ebooks, beside a Movies library that is not a book library. Without it,
 // one book library, Audiobooks, holds every book.
@@ -459,6 +461,11 @@ Future<void> main(List<String> arguments) async {
       if (argument.startsWith('--long-ebook='))
         await File(argument.substring('--long-ebook='.length)).readAsBytes(),
   ].firstOrNull;
+  final pdf = [
+    for (final argument in arguments)
+      if (argument.startsWith('--pdf='))
+        await File(argument.substring('--pdf='.length)).readAsBytes(),
+  ].firstOrNull;
   final port = arguments.where((argument) => !argument.startsWith('--'));
   final server = await HttpServer.bind(
     InternetAddress.loopbackIPv4,
@@ -476,9 +483,11 @@ Future<void> main(List<String> arguments) async {
   final ebooks = {
     for (final book in _books)
       if (book.ebook != null)
-        '${book.id}-text': book.id == 'salt' && longEbook != null
-            ? longEbook
-            : _ebook(book, footnotes: footnotes),
+        '${book.id}-text': switch (book.id) {
+          'salt' when longEbook != null => longEbook,
+          'windfall' when pdf != null => pdf,
+          _ => _ebook(book, footnotes: footnotes),
+        },
   };
   final items = [
     for (final book in _books) ...[

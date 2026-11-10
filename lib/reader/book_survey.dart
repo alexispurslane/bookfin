@@ -49,7 +49,7 @@ const _sampleSize = 32;
 /// whether it is a body page, and [skipped] the pages that failed in this
 /// session. [frozen] says whether the profile froze.
 ///
-/// 1. The page [from], and the next page.
+/// 1. The page [from], and the next page in the [forward] direction.
 /// 2. Until the profile froze, the sample: for each side, all its pages when
 ///    it has at most 32, and otherwise 32 pages spread evenly over the book,
 ///    the sides in turn. A sample page that is no body page, or that failed,
@@ -66,9 +66,10 @@ SurveyStep nextSurveyStep({
   required Map<int, bool> surveyed,
   required Set<int> skipped,
   required bool frozen,
+  bool forward = true,
 }) {
   bool open(int page) => !surveyed.containsKey(page) && !skipped.contains(page);
-  for (final page in [from, from + 1]) {
+  for (final page in [from, from + (forward ? 1 : -1)]) {
     if (page >= 1 && page <= pageCount && open(page)) return SurveyPage(page);
   }
   if (!frozen) {
@@ -142,8 +143,9 @@ class BookSurvey {
 
   SurveyFiles? _store;
 
-  /// The page that the reader showed when the survey started.
+  /// The source page that the reader shows.
   var _from = 1;
+  var _forward = true;
 
   /// The surveyed pages, by their source page numbers.
   final _pages = <int, SurveyedPage>{};
@@ -212,6 +214,51 @@ class BookSurvey {
     return crops_.cropOf(surveyed, profile);
   }
 
+  /// Tells the survey that the reader shows source page [page]. The survey
+  /// goes on from it, so that page and the next page in the direction of
+  /// the last move get their analysis before any other page, after the
+  /// page that runs. Another place on the same page keeps that direction.
+  void follow(int page) {
+    final from = page.clamp(1, _book.pageCount);
+    if (from == _from) return;
+    _forward = from > _from;
+    _from = from;
+    _wake();
+  }
+
+  /// The crop of source page [page] as soon as it is known, or null when it
+  /// is not known within [limit].
+  ///
+  /// It is null at once when no crop can come soon: when the survey did not
+  /// start, or closed, or when it read its kept survey and has no profile.
+  /// A new book's profile freezes only after its whole sample, so a wait
+  /// would only delay the page.
+  Future<PageBox?> cropWithin(int page, Duration limit) async {
+    final known = cropOf(page);
+    final restored = _restored;
+    if (known != null || restored == null || _closed) return known;
+    final answer = Completer<PageBox?>();
+    void give(PageBox? crop) {
+      if (!answer.isCompleted) answer.complete(crop);
+    }
+
+    void whenKnown() {
+      if (cropOf(page) case final crop?) give(crop);
+    }
+
+    final timer = Timer(limit, () => give(null));
+    _crops.addListener(whenKnown);
+    unawaited(
+      restored.then((_) => _profile == null ? give(null) : whenKnown()),
+    );
+    try {
+      return await answer.future;
+    } finally {
+      timer.cancel();
+      _crops.removeListener(whenKnown);
+    }
+  }
+
   Future<void> _restore(SurveyFiles store) async {
     final kept = await store.read();
     if (kept == null || _closed) return;
@@ -242,6 +289,7 @@ class BookSurvey {
           },
           skipped: _failed,
           frozen: _profile != null,
+          forward: _forward,
         );
         switch (step) {
           case SurveyPage(:final page):

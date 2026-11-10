@@ -911,6 +911,14 @@ class ReaderSession extends ChangeNotifier {
       return;
     }
     _visibleAddress = address;
+    // The survey analyzes the shown page and the next one first, so the next
+    // page's crop is normally ready before a turn.
+    if ((admitted, address) case (
+      final PdfBook book,
+      PdfAddress(:final sourcePage),
+    )) {
+      book.survey.follow(sourcePage);
+    }
     _position = TextPosition(
       editionId: edition!.id,
       sourceKey: edition!.files.single.key,

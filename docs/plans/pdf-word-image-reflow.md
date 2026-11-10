@@ -707,6 +707,20 @@ Known limits:
   - A page that a jump or a scrub opens waits up to 300 ms for its crop before its first draw. After that it shows uncropped.
 - In the first minute of a new book, before the profile freezes, pages show uncropped. From the next turn after the freeze, every page shows cropped.
 
+Ticket tb-valc built the cropped Original view:
+
+| Part | Where | What it does |
+| --- | --- | --- |
+| The shown page's crop | `_PdfViewportState._draw` and `preview` in `lib/reader/pdf_viewport.dart` | A turn takes the crop known at once. A jump, a scrub and the opening of the book wait up to 300 ms. The deck takes the known crop. Both read the survey through `_crops`, the one place where the Trim margins switch (tb-nkz5) turns crops off. |
+| The wait | `BookSurvey.cropWithin` | It gives the crop as soon as it is known, or null after the wait. It gives null at once when no crop can come soon: no survey started, or the kept survey has no profile. So a new book's first page does not wait. |
+| The order | `BookSurvey.follow`, called by `ReaderSession.acceptAddress` | The survey goes on from the shown page, so the shown page and the next page in the last move's direction are analyzed next. Another place on the same page keeps that direction. |
+| The drawing | `_drawPage` in `lib/reader/pdf_viewport.dart` | It draws the page at the width divided by the crop's share of the page width, within the render limits of `PdfBook.render` (1600 pixels wide, 4000 high). The image reads only the crop's rows from the page's pixels, through the row stride of `decodeImageFromPixels`, so no pixel loop runs on the UI isolate. |
+
+Known limits:
+
+- A page that a jump opens waits up to 300 ms only when its crop can come: when the book has a kept profile, or its kept survey is still being read. A jump in a new book's first minute shows the whole page at once.
+- A deck card that was drawn before its crop was known stays whole while the deck keeps it.
+
 ### The switch
 
 - "Trim margins" is a switch row in the glass Reading settings sheet, under the Pages row, for PDFs only. It is on by default.
