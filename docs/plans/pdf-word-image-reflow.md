@@ -297,6 +297,14 @@ The recognition cache keeps the hOCR output as it is, and `BundledEnglishText.ve
 - each line's baseline: the median of its words' own baselines, with a slope of 0
 - each word's hyphen: if the word ends a line with a hyphen character, the width of that character's box
 
+Ticket tb-xwlj built this in `pageGeometryFromCharacters` (`lib/reader/page_geometry.dart`), called from `preparePdfPage`. It changed three rules after it read pdfium's output for the equation fixture:
+
+- pdfium joins the two halves of a word that a hyphen splits at a line end. It removes the line break and puts U+0002 in place of the hyphen, as in `accel\u0002erations`. So a word also ends after U+0002, and U+0002 counts as a hyphen character. The reading text keeps U+0002, so its digest does not change. A word that is only a hyphen is a dash and gets no hyphen width.
+- pdfium puts a line break between a letter and its raised mark, such as the 2 of v². The mark's height overlaps the letter's height by about a fifth. So the line rule is: a word starts a new line when it starts to the left of the previous word's left edge, or when its height does not overlap the height of its line so far.
+- The vertical gap above a line, for the block rule, is the space between the previous line's lowest descender and this line's highest ascender. The line pitch is the distance between consecutive baselines.
+
+The boxes are page coordinates relative to the page's bounding box, as pdfrx gives them. A page that its PDF rotates can have boxes outside the page's turned width and height. Such a page gets no geometry.
+
 ### When the geometry is not usable
 
 - A text layer can be a candidate while its boxes are not usable: a character without a finite box of positive area inside the page, or a word whose box spans more than three line heights. Then the page has no geometry. The word view shows that page in the text view, with no notice. Its places keep their meaning, because its reading text does not change.
@@ -559,7 +567,7 @@ All fixtures go in `test/reader/fixtures/reflow/`, with a README that records ea
 | Fixture | What it holds | Source |
 | --- | --- | --- |
 | `scanned-page.pdf`, `scanned-page.layout` and `scanned-page.hocr` | One scanned page of a public-domain book, with italics, a footnote mark, a line-end hyphen, an indented paragraph and a figure with a caption. The layout record and the hOCR come from Bookfin's Tesseract on an Android emulator. | A page of the 1873 "The Raven" scan already in `tool/research/readers/evidence/text-quality/`, or another public-domain scan with those features |
-| `equation-page.pdf` | A born-digital page. It has a centered heading, two paragraphs, and an inline formula with a superscript. It also has a display equation, a small table, and a justified paragraph with wide word gaps. | Made in the dev shell with Typst from a source file kept beside it |
+| `equation-page.pdf` | A born-digital page. It has a centered heading, two paragraphs, and an inline formula with a superscript. It also has a display equation, a small table, and a justified paragraph with wide word gaps and a line-end hyphen. Its display equation has raised marks and no stacked fraction. Both stacked fractions that ticket tb-xwlj tried made `_outOfOrder` reject the page's text layer, and the page then takes its text from recognition. | Made in the dev shell with Typst from `equation-page.typ` beside it |
 | `skewed-page.pdf`, `skewed-page.layout` and `skewed-page.hocr` | The scanned page turned by 2.5 degrees, with a light speck noise. The layout record and the hOCR come from the emulator. | Made in the dev shell from the scanned page |
 
 ### Behavior tests

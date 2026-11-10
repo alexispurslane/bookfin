@@ -76,19 +76,32 @@ String pdfTextDigest(String source) =>
 /// page offers for reflow.
 const _pageTextLimit = 2000000;
 
-/// The page text that one source page offers the reader. [page] holds the
-/// extracted text and its character boxes: left, top, right and bottom in
-/// PDF points for each UTF-16 code unit of the text. It runs in a hop, so
-/// it takes only data that crosses to another isolate as blocks.
+/// Where the words of a text layer page are, and each word's range of the
+/// page's `PdfText.source`.
+typedef TextLayerWords = ({PageGeometry geometry, TextAttachment attachment});
+
+/// What the text layer of one source page offers the reader: its text, and
+/// its [TextLayerWords] when the text is a candidate and its character boxes
+/// are usable.
+typedef PreparedPdfPage = ({PdfText text, TextLayerWords? words});
+
+/// The page text that one source page offers the reader, and its words.
+/// [page] holds the extracted text, its character boxes (left, top, right
+/// and bottom in PDF points, with y up, for each UTF-16 code unit of the
+/// text), and the page's width and height in PDF points. It runs in a hop,
+/// so it takes only data that crosses to another isolate as blocks.
 ///
 /// The reflowed text joins each run of whitespace into one space and drops
 /// whitespace at both ends. Each reflowed character records the source
 /// character that it came from, and a joining space records the first
 /// whitespace character of its run.
-PdfText preparePdfPage(({String source, Float64List boxes}) page) {
+PreparedPdfPage preparePdfPage(
+  ({String source, Float64List boxes, double width, double height}) page,
+) {
   final source = page.source;
   final output = StringBuffer();
   final offsets = <int>[];
+  final words = <int>[];
   var start = 0;
   for (var index = 0; index <= source.length; index++) {
     if (index < source.length && !_whitespace(source.codeUnitAt(index))) {
@@ -100,9 +113,18 @@ PdfText preparePdfPage(({String source, Float64List boxes}) page) {
         offsets.add(offsets.last + 1);
       }
       output.write(source.substring(start, index));
+      var word = start;
       for (var offset = start; offset < index; offset++) {
         offsets.add(offset);
+        // pdfium joins the two halves of a word that a hyphen splits at a
+        // line end, and puts U+0002 in place of the hyphen. Each half is a
+        // printed word of its own line.
+        if (source.codeUnitAt(offset) == 0x02 && offset + 1 < index) {
+          words.addAll([word, offset + 1]);
+          word = offset + 1;
+        }
       }
+      words.addAll([word, index]);
     }
     start = index + 1;
   }
@@ -111,12 +133,27 @@ PdfText preparePdfPage(({String source, Float64List boxes}) page) {
       : _outOfOrder(source, page.boxes)
       ? PdfTextStatus.unreliable
       : PdfTextStatus.candidate;
-  return PdfText(
+  final text = PdfText(
     source: source,
     text: output.toString(),
     sourceOffsets: offsets,
     status: status,
     digest: status == PdfTextStatus.candidate ? pdfTextDigest(source) : null,
+  );
+  if (status != PdfTextStatus.candidate) return (text: text, words: null);
+  final attachment = Int32List.fromList(words);
+  final geometry = pageGeometryFromCharacters(
+    source: source,
+    boxes: page.boxes,
+    words: attachment,
+    width: page.width,
+    height: page.height,
+  );
+  return (
+    text: text,
+    words: geometry == null
+        ? null
+        : (geometry: geometry, attachment: attachment),
   );
 }
 
@@ -161,9 +198,10 @@ abstract class PdfBook extends ReaderDocument {
   }
 
   /// The word geometry of [sourcePage]: where its printed words are, or null
-  /// when the page has none. A page without a usable text layer gets it from
-  /// [textSupply]'s layout pass, before its text. A page with a usable text
-  /// layer gets none yet (ticket tb-xwlj gives it its character boxes).
+  /// when the page has none. A page with a usable text layer gets it from its
+  /// character boxes, with its text. Another page gets it from
+  /// [textSupply]'s layout pass, before its text. This default knows no
+  /// character boxes, so it gives a text layer page no geometry.
   Future<PageGeometry?> geometry(int sourcePage) async {
     final layer = await textLayer(sourcePage);
     if (layer.status == PdfTextStatus.candidate) return null;
@@ -171,8 +209,9 @@ abstract class PdfBook extends ReaderDocument {
   }
 
   /// The text of [sourcePage] for reading, as [text] gives it, and for each
-  /// word of the page's [geometry], its range of that text. The attachment
-  /// is null when the text is not a candidate, or when nothing attaches it.
+  /// word of the page's [geometry], its range of that text. [geometry] is the
+  /// page's word geometry as the method `geometry` gave it. The attachment is
+  /// null when the text is not a candidate, or when nothing attaches it.
   Future<({PdfText text, TextAttachment? attachment})> attachedText(
     int sourcePage,
     PageGeometry geometry,
@@ -344,7 +383,7 @@ class _NativePdfBook extends PdfBook {
   final native.PdfDocument _document;
   final IsolateHop _hop;
   final Set<Future<void>> _work = {};
-  final Map<int, Future<PdfText>> _texts = {};
+  final Map<int, Future<PreparedPdfPage>> _layers = {};
   Future<void>? _closing;
   bool _disposed = false;
   @override
@@ -414,10 +453,12 @@ class _NativePdfBook extends PdfBook {
 
   @override
   Future<PageGeometry?> geometry(int sourcePage) => _run(() async {
-    final extracted = await textLayer(sourcePage);
-    if (_closing != null || extracted.status == PdfTextStatus.candidate) {
-      return null;
+    final layer = await _layer(sourcePage);
+    final extracted = layer.text;
+    if (extracted.status == PdfTextStatus.candidate) {
+      return layer.words?.geometry;
     }
+    if (_closing != null) return null;
     return textSupply?.geometry(this, sourcePage, extracted);
   });
 
@@ -426,34 +467,44 @@ class _NativePdfBook extends PdfBook {
     int sourcePage,
     PageGeometry geometry,
   ) => _run(() async {
-    final extracted = await textLayer(sourcePage);
-    if (_closing != null || extracted.status == PdfTextStatus.candidate) {
-      return (text: extracted, attachment: null);
+    final layer = await _layer(sourcePage);
+    final extracted = layer.text;
+    if (extracted.status == PdfTextStatus.candidate) {
+      return (text: extracted, attachment: layer.words?.attachment);
     }
+    if (_closing != null) return (text: extracted, attachment: null);
     return textSupply?.attachedText(this, sourcePage, extracted, geometry) ??
         (text: extracted, attachment: null);
   });
 
   @override
-  Future<PdfText> textLayer(int sourcePage) {
+  Future<PdfText> textLayer(int sourcePage) =>
+      _layer(sourcePage).then((layer) => layer.text);
+
+  /// The text layer of [sourcePage] with its words, from one hop. The book
+  /// keeps the last 16 pages.
+  Future<PreparedPdfPage> _layer(int sourcePage) {
     if (_closing != null) {
       return Future.error(StateError('This PDF is closed.'));
     }
     final page = _page(sourcePage);
-    if (_texts.length >= 16 && !_texts.containsKey(sourcePage)) {
-      _texts.remove(_texts.keys.first);
+    if (_layers.length >= 16 && !_layers.containsKey(sourcePage)) {
+      _layers.remove(_layers.keys.first);
     }
-    return _texts.putIfAbsent(
+    return _layers.putIfAbsent(
       sourcePage,
       () => _run(() async {
         final raw = await page.loadText();
         final source = raw?.fullText ?? '';
         if (source.length > _pageTextLimit) {
-          return PdfText(
-            source: '',
-            text: '',
-            sourceOffsets: [],
-            status: PdfTextStatus.unreliable,
+          return (
+            text: const PdfText(
+              source: '',
+              text: '',
+              sourceOffsets: [],
+              status: PdfTextStatus.unreliable,
+            ),
+            words: null,
           );
         }
         // The boxes cross to the worker as one typed list. Packing them
@@ -470,7 +521,12 @@ class _NativePdfBook extends PdfBook {
             ..[index * 4 + 2] = rect.right
             ..[index * 4 + 3] = rect.bottom;
         }
-        return _hop(preparePdfPage, (source: source, boxes: boxes));
+        return _hop(preparePdfPage, (
+          source: source,
+          boxes: boxes,
+          width: page.width,
+          height: page.height,
+        ));
       }),
     );
   }

@@ -433,6 +433,26 @@ void main() {
     expect(hopped, contains(decodeRecognizedPage));
   });
 
+  test('a page whose text layer cannot be put in reading order takes its '
+      'text and its words from recognition', () async {
+    // columns.pdf draws its two columns in alternating order.
+    await File('tool/research/readers/fixtures/columns.pdf')
+        .copy('${root.path}/complete');
+    final pdf = await open();
+    expect((await pdf.textLayer(1)).status, PdfTextStatus.unreliable);
+
+    final geometry = (await pdf.geometry(1))!;
+    final attached = await pdf.attachedText(1, geometry);
+    expect(names().first, startsWith('layout '));
+    expect(geometry.wordCount, _words.length);
+    expect(attached.text.recognition, isNotNull);
+    expect(attached.attachment, hasLength(_words.length * 2));
+    geometry.checkInvariants(
+      attachment: attached.attachment,
+      source: attached.text.source,
+    );
+  });
+
   test(
     'a page whose text layer is usable gets no words from the layout pass',
     () async {
