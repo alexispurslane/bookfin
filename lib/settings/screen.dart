@@ -94,11 +94,21 @@ class SettingsTab extends StatelessWidget {
               ListenableSelector(
                 listenable: layout,
                 select: () => layout.density,
-                builder: (context, density, _) => ListTile(
-                  title: const Text('Layout density'),
-                  trailing: DensitySwitch(
-                    density: density,
-                    onChanged: (density) => layout.density = density,
+                builder: (context, density, _) => Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        'Layout density',
+                        style: theme.textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 8),
+                      DensitySwitch(
+                        density: density,
+                        onChanged: (density) => layout.density = density,
+                      ),
+                    ],
                   ),
                 ),
               ),

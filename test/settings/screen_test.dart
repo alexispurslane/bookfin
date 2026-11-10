@@ -3,9 +3,11 @@ import 'dart:convert';
 import 'package:bookfin/catalog/controller.dart';
 import 'package:bookfin/catalog/layout.dart';
 import 'package:bookfin/catalog/jellyfin.dart';
+import 'package:bookfin/foundation/theme.dart';
 import 'package:bookfin/settings/screen.dart';
 import 'package:bookfin/sync/coordinator.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../catalog/controller_test.dart'
@@ -66,19 +68,28 @@ void main() {
       await catalog.refresh();
     });
 
-    Future<void> showTab(WidgetTester tester, {RecordSync? sync}) =>
-        tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: SettingsTab(
-                catalog: catalog,
-                layout: layout,
-                onAppearance: () {},
-                sync: sync,
-              ),
-            ),
+    Future<void> showTab(
+      WidgetTester tester, {
+      RecordSync? sync,
+      double scale = 1,
+    }) => tester.pumpWidget(
+      MaterialApp(
+        theme: bookfinTheme(Brightness.light),
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context)
+              .copyWith(textScaler: TextScaler.linear(scale)),
+          child: child!,
+        ),
+        home: Scaffold(
+          body: SettingsTab(
+            catalog: catalog,
+            layout: layout,
+            onAppearance: () {},
+            sync: sync,
           ),
-        );
+        ),
+      ),
+    );
 
     testWidgets('choosing Compact saves it in the layout', (tester) async {
       await signIn(tester);
@@ -97,6 +108,80 @@ void main() {
             .selected,
         {LibraryDensity.compact},
       );
+    });
+
+    testWidgets('large-text density choices stay readable and tappable on a '
+        'narrow phone', (tester) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(320, 900);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetPhysicalSize);
+      await signIn(tester);
+      await showTab(tester, scale: 3.2);
+      expect(tester.takeException(), isNull);
+      final segmented = find.byType(SegmentedButton<LibraryDensity>);
+      await tester.scrollUntilVisible(find.text('Layout density'), 300);
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      final heading = tester.getRect(find.text('Layout density'));
+      final choices = tester.getRect(segmented);
+      expect(heading.top, greaterThanOrEqualTo(0));
+      expect(heading.bottom, lessThanOrEqualTo(choices.top));
+      expect(heading.left, greaterThanOrEqualTo(0));
+      expect(heading.right, lessThanOrEqualTo(320));
+      expect(choices.bottom, lessThanOrEqualTo(900));
+      final context = tester.element(segmented);
+      final shape =
+          tester
+              .widget<SegmentedButton<LibraryDensity>>(segmented)
+              .style
+              ?.shape
+              ?.resolve({}) ??
+          SegmentedButtonTheme.of(context).style!.shape!.resolve({})!;
+      final painted = shape.getInnerPath(
+        choices,
+        textDirection: Directionality.of(context),
+      );
+      var previousBottom = choices.top;
+      for (final label in ['Compact', 'Spacious']) {
+        final button = find.ancestor(
+          of: find.text(label),
+          matching: find.byType(TextButton),
+        );
+        final bounds = tester.getRect(button);
+        expect(bounds.width, greaterThanOrEqualTo(48));
+        expect(bounds.height, greaterThanOrEqualTo(48));
+        expect(bounds.left, greaterThanOrEqualTo(choices.left));
+        expect(bounds.right, lessThanOrEqualTo(choices.right));
+        expect(bounds.bottom, lessThanOrEqualTo(choices.bottom));
+        expect(bounds.top, greaterThanOrEqualTo(previousBottom));
+        previousBottom = bounds.bottom;
+        final paragraph = tester.renderObject<RenderParagraph>(
+          find.text(label),
+        );
+        expect(paragraph.didExceedMaxLines, isFalse);
+        final lines = paragraph.getBoxesForSelection(
+          TextSelection(baseOffset: 0, extentOffset: label.length),
+        );
+        expect(lines, isNotEmpty);
+        for (final line in lines) {
+          final visible = line
+              .toRect()
+              .shift(paragraph.localToGlobal(Offset.zero))
+              .deflate(1);
+          expect(painted.contains(visible.topLeft), isTrue);
+          expect(painted.contains(visible.bottomRight), isTrue);
+        }
+        await tester.tap(button);
+        await tester.pump();
+        await tester.runAsync(() => layout.saved);
+        final expected = label == 'Compact'
+            ? LibraryDensity.compact
+            : LibraryDensity.spacious;
+        expect(layout.density, expected);
+        expect(jsonDecode(layoutStore.value!)['density'], expected.name);
+      }
+      expect(tester.takeException(), isNull);
     });
 
     testWidgets('the Libraries row names the libraries that show', (
