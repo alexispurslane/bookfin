@@ -39,3 +39,7 @@ Fresh read-only GPT 6.1 Sol xhigh review of b7cb46d..ec1e04a passed correctness,
 **2026-11-10T20:06:37Z**
 
 Parent inspected extraction changes, safe rejection, native rotation guard, synthetic regressions and fresh review. Integrated with Trim margins and survey-test fix; only conflict was ticket notes, both retained. Combined geometry/reader suite plus actual private PDF probe passed; source 11 now has 329 words and source 14 has 129 words, both analyze successfully. Phone verification follows.
+
+**2026-11-10T20:08:22Z**
+
+Parent integrated as b901b6c; 131 combined geometry/reader tests passed, including actual private PDF probe. Normal ARM64 debug APK built with native/OCR/signature/alignment verification and installed successfully in place on Pixel 8. On-phone visual crop check is pending: user was actively in another app, so parent stopped screen interaction and requested a convenient time. No private book text or screenshot added to repository.
