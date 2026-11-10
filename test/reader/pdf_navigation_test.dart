@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:bookfin/reader/document.dart';
+import 'package:bookfin/reader/page_geometry.dart';
 import 'package:bookfin/reader/pdf.dart';
 import 'package:bookfin/reader/pdf_viewport.dart';
 import 'package:flutter/material.dart';
@@ -13,6 +14,7 @@ import 'pdf_viewport_host.dart';
 class HeldPdf extends PdfBook {
   final rendering = Completer<PdfRaster>();
   int renders = 0;
+  final renderedWidths = <double>[];
   HeldPdf({String? source})
     : source =
           source ??
@@ -51,8 +53,14 @@ class HeldPdf extends PdfBook {
     digest: 'fixture-text',
   );
   @override
+  Future<PageGeometry?> geometry(
+    int sourcePage, {
+    bool background = false,
+  }) async => null;
+  @override
   Future<PdfRaster> render(int sourcePage, double width) {
     renders++;
+    renderedWidths.add(width);
     return rendering.future;
   }
 
@@ -93,7 +101,9 @@ void main() {
         await tester.pump();
       }
       expect(
-        book.renders,
+        book.renderedWidths
+            .where((width) => width == tester.view.physicalSize.width)
+            .length,
         1,
         reason: 'One page generation owns one native draw.',
       );

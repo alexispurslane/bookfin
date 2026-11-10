@@ -163,6 +163,62 @@ class ReflowColumn {
       }
       break;
     }
+    return _screenOfLine(line);
+  }
+
+  /// The place of [screen] in the page's reading text: the first character
+  /// of the range of its first piece that names text, as [ranges] and
+  /// [analysis] give them (see [screenAt]). A region's range starts at the
+  /// first of its words that names text. Null when no piece of the screen
+  /// names text. [screenAt] of the place is [screen].
+  int? firstCharacter(
+    int screen,
+    TextAttachment ranges,
+    PageAnalysis analysis,
+  ) {
+    final first = lineStarts[screenStarts[screen]];
+    final end = lineStarts[screenStarts[screen + 1]];
+    for (var piece = first; piece < end; piece++) {
+      final region = this.region(piece);
+      for (var word = 0; word < analysis.wordRegions.length; word++) {
+        final shown = region >= 0
+            ? analysis.wordRegions[word] == region
+            : word == this.word(piece);
+        if (shown && ranges[word * 2] < ranges[word * 2 + 1]) {
+          return ranges[word * 2];
+        }
+      }
+    }
+    return null;
+  }
+
+  /// The screen of this column that shows the first piece of [screen] of
+  /// [other], a column of the same page laid out for other settings: the
+  /// screen of that piece's word or region, or of the first later piece of
+  /// [other] that this column shows. It is the last screen when this column
+  /// shows none of them. It needs no text, so a text size step keeps the
+  /// shown words before a scanned page's text arrives.
+  int screenShowing(ReflowColumn other, int screen) {
+    final pieceOf = <int, int>{
+      for (var piece = 0; piece < pieceCount; piece++) pieceItems[piece]: piece,
+    };
+    for (
+      var piece = other.lineStarts[other.screenStarts[screen]];
+      piece < other.pieceCount;
+      piece++
+    ) {
+      final shown = pieceOf[other.pieceItems[piece]];
+      if (shown == null) continue;
+      var line = 0;
+      while (lineStarts[line + 1] <= shown) {
+        line++;
+      }
+      return _screenOfLine(line);
+    }
+    return screenCount - 1;
+  }
+
+  int _screenOfLine(int line) {
     var screen = 0;
     while (screenStarts[screen + 1] <= line) {
       screen++;

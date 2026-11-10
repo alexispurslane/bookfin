@@ -10,6 +10,7 @@ import 'book_survey.dart';
 import 'document.dart';
 import 'page_swipes.dart';
 import 'pdf.dart';
+import 'pdf_word_view.dart';
 
 /// The pages of an open PDF, as the original page or as reflowed text.
 ///
@@ -84,6 +85,7 @@ class _PdfViewportState extends State<PdfViewport>
 
   /// The zoom and pan of the original page.
   final _zoom = TransformationController();
+  late final PdfWordScreens _words;
   bool get _zoomed => _zoom.value.getMaxScaleOnAxis() > 1.01;
   PdfText? _text;
   ui.Image? _image;
@@ -117,6 +119,16 @@ class _PdfViewportState extends State<PdfViewport>
   @override
   void initState() {
     super.initState();
+    _words = PdfWordScreens(
+      widget.book,
+      onPlace: (place) {
+        _address = place;
+        _publish();
+      },
+      onGiveUp: () => unawaited(_requestText(_generation, _address)),
+    );
+    _words.showing.addListener(_wordStateChanged);
+    _words.waitingForText.addListener(_wordStateChanged);
     _scroll.addListener(_scrolled);
     unawaited(_load(widget.initial ?? PdfAddress(1, 0)));
   }
@@ -141,16 +153,20 @@ class _PdfViewportState extends State<PdfViewport>
             if (mounted && generation == _generation) report();
           });
       if (widget.reflow) {
+        _textRequest++;
+        _loading = true;
         _layoutWidth = null;
-        // A page without a usable text layer needs its text for reading.
-        // It waits from this frame on, so no false reason shows.
-        if (_text?.status != PdfTextStatus.candidate || _textFailed) {
-          _loading = true;
-          after(() => unawaited(_requestText(generation, _address)));
-        }
+        after(() => unawaited(_startWords(generation, _address)));
       } else {
-        if (_loading) after(_stopWaiting);
-        unawaited(_draw(_generation));
+        final wasLoading = _loading;
+        after(() {
+          _words.leave();
+          if (wasLoading) widget.onCancelRecognition();
+          _textRequest++;
+          setState(() => _loading = false);
+          _publish();
+          unawaited(_draw(generation));
+        });
       }
     }
   }
@@ -159,6 +175,9 @@ class _PdfViewportState extends State<PdfViewport>
   void dispose() {
     _generation++;
     _search++;
+    _words.showing.removeListener(_wordStateChanged);
+    _words.waitingForText.removeListener(_wordStateChanged);
+    _words.dispose();
     _scroll.dispose();
     _zoom.dispose();
     _image?.dispose();
@@ -189,9 +208,35 @@ class _PdfViewportState extends State<PdfViewport>
       _image = null;
       _layoutWidth = null;
     });
-    await _requestText(generation, address, lastViewport: lastViewport);
+    if (widget.reflow) {
+      await _startWords(generation, address, lastViewport: lastViewport);
+    } else {
+      _words.leave();
+      await _requestText(generation, address, lastViewport: lastViewport);
+    }
     if (!mounted || generation != _generation) return;
     if (!_usingText) await _draw(generation);
+  }
+
+  Future<void> _startWords(
+    int generation,
+    PdfAddress address, {
+    bool lastViewport = false,
+  }) async {
+    final request = ++_textRequest;
+    bool current() =>
+        mounted &&
+        generation == _generation &&
+        request == _textRequest &&
+        widget.reflow;
+    _words.open(address, last: lastViewport);
+    await Future<void>.value();
+    if (!current()) return;
+    widget.onReady(this, _contents());
+    unawaited(_draw(generation));
+    if (await _words.shows(address.sourcePage)) return;
+    if (!current()) return;
+    await _requestText(generation, address, lastViewport: lastViewport);
   }
 
   /// Asks the book for the text of the shown page, whose place is
@@ -225,6 +270,7 @@ class _PdfViewportState extends State<PdfViewport>
       if (!current()) return;
       setState(() {
         _text = text;
+        _layoutWidth = null;
         final resolved = widget.book.resolveAddress(address, text);
         _positionResolved = resolved != null;
         if (resolved != null) {
@@ -253,7 +299,17 @@ class _PdfViewportState extends State<PdfViewport>
       ContentsEntry('Source page $page', 'page:$page'),
   ];
 
-  bool get _usingText => widget.reflow && _positionResolved;
+  bool get _usingWords => widget.reflow && _words.covers;
+
+  bool get _usingText => widget.reflow && !_usingWords && _positionResolved;
+
+  void _wordStateChanged() {
+    if (!mounted) return;
+    setState(() {
+      _loading =
+          _usingWords && (!_words.showing.value || _words.waitingForText.value);
+    });
+  }
 
   Future<void> _draw(int generation, {bool replace = false}) async {
     final request = (generation, _drawRevision);
@@ -323,6 +379,7 @@ class _PdfViewportState extends State<PdfViewport>
 
   @override
   Future<void> move(bool forward) async {
+    if (_usingWords && _words.turn(forward)) return;
     if (_usingText && _scroll.hasClients) {
       final target =
           (_scroll.offset +
@@ -337,7 +394,7 @@ class _PdfViewportState extends State<PdfViewport>
     if (page >= 1 && page <= widget.book.pageCount) {
       await _load(
         PdfAddress(page, 0),
-        lastViewport: !forward && _usingText,
+        lastViewport: !forward && widget.reflow,
         turned: true,
       );
     }
@@ -483,16 +540,6 @@ class _PdfViewportState extends State<PdfViewport>
     },
   );
 
-  /// Stops waiting for the shown page's text. Recognition can still finish
-  /// in the background, and its text is then cached.
-  void _stopWaiting() {
-    widget.onCancelRecognition();
-    _search++;
-    _textRequest++;
-    setState(() => _loading = false);
-    _publish();
-  }
-
   /// Why reflow cannot show the shown page, in one quiet line, when the
   /// person can act on it. It is null while the page reflows, while its
   /// text is still on its way, and when the page's own content does not
@@ -575,13 +622,26 @@ class _PdfViewportState extends State<PdfViewport>
         // controls to a screen reader.
         excludeFromSemantics: true,
         onTap: widget.onTap,
-        child: _view(),
+        child: Listener(
+          onPointerDown: (_) {
+            if (_usingWords) _words.touch();
+          },
+          child: _view(),
+        ),
       ),
     ),
   );
 
   /// The shown page in the chosen view.
   Widget _view() {
+    if (_usingWords) {
+      return PdfWordView(
+        screens: _words,
+        fontSize: widget.fontSize,
+        waiting: _wordWaiting(),
+        onLayout: _words.lay,
+      );
+    }
     if (!widget.reflow || _usingText) return _shownPage();
     // The reflow view shows the original page while the text is on its way,
     // when the page's own content does not reflow, and when reflow failed
@@ -613,6 +673,18 @@ class _PdfViewportState extends State<PdfViewport>
       ],
     );
   }
+
+  Widget _wordWaiting() => Stack(
+    children: [
+      Positioned.fill(child: _shownPage()),
+      const Positioned(
+        top: 0,
+        left: 0,
+        right: 0,
+        child: LinearProgressIndicator(minHeight: 2),
+      ),
+    ],
+  );
 }
 
 /// Source page [page] of [book], drawn [width] pixels wide: the whole page,

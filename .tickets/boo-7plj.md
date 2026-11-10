@@ -65,3 +65,10 @@ Parent integration: inspected diff and fresh review evidence. Preserved crop dir
 **2026-11-10T19:51:00Z**
 
 Recurrence in tb-nkz5 full flutter test on branch t3/pdf-trim-margins, ce7ddc2, 2026-11-10. Exact failing test: survey_session_test.dart / a reopened book goes on with the survey that it kept beside the download. This run follows the fix of seven settings-scroll selector assumptions in unrelated viewport test harnesses; those 23 focused tests pass. Evidence /tmp/tb-nkz5-full-final.log; full run still finishing. No production changes to the survey were made by tb-nkz5.
+**2026-11-10T19:47:50Z**
+
+Recurred in tb-22fu replacement checkout full run: required-tests-final.log finished with 2518 passed, 21 skipped, one failure at survey_session_test.dart:262 (saved survey file not yet present). The same test immediately passed alone in survey-rerun.log. No survey implementation/test changes made here; full rerun underway.
+
+**2026-11-10T19:50:32Z**
+
+The immediate focused rerun passed, followed by a clean full rerun in tb-22fu: 2519 passed, 21 skipped, zero failed (2m37s), full-rerun.log. Intermittent failure retained honestly; no out-of-scope fix attempted.
