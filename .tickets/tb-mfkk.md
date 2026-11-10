@@ -16,3 +16,9 @@ W8 of docs/plans/pdf-word-image-reflow.md (The text under the images). Carets ar
 ## Acceptance Criteria
 
 Behavior tests, red first: a long press selects the word under the finger; a long press before the text attaches selects nothing; handles move by characters; copy gives the reading text of the selection; a piece with an empty range is never selected; a search hit opens the screen that holds it; a screen reader reads each paragraph's reading text. EPUB selection tests still pass.
+
+## Notes
+
+**2026-11-10T20:32:18Z**
+
+Launched from integrated base 2ef6bfa with codex/gpt-6.1-sol reasoningEffort=xhigh. taskId: node:delegated-task:command%3Amcp%3Ae6a3d378-c450-4501-a47c-77e7994db5fb%3Adelegate-task%3Asol-xhigh-word-followup-20261110-tb-mfkk-1; childThreadId: thread:delegated-task:command%3Amcp%3Ae6a3d378-c450-4501-a47c-77e7994db5fb%3Adelegate-task%3Asol-xhigh-word-followup-20261110-tb-mfkk-1; clientRequestId: sol-xhigh-word-followup-20261110-tb-mfkk-1. Separate T3 worktree; lead implements, one fresh read-only Sol xhigh reviewer, lead fixes. Parent integrates/closes and owns hardening. No physical-device UI input. Launch state: running; branch pending report.

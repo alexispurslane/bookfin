@@ -17,3 +17,9 @@ W7 of docs/plans/pdf-word-image-reflow.md (The switch to the text view, decision
 
 Behavior tests, red first: the choice lasts through closing and opening books in one run and a new run starts on the original page; the Pages row shows Original, Page words and Text, and only for PDFs; at the largest system text size on a narrow phone, the row first drops its icons and then stacks, and every label stays whole and every segment can be tapped; the Theme row gets the same behavior; turning reflow on shows the word view; the text view shows the reading text in the reader's font. The sheet stays glass. Existing reflow tests pass with the enum.
 
+
+## Notes
+
+**2026-11-10T20:32:18Z**
+
+Launched from integrated base 2ef6bfa with codex/gpt-6.1-sol reasoningEffort=xhigh. taskId: node:delegated-task:command%3Amcp%3Ae6a3d378-c450-4501-a47c-77e7994db5fb%3Adelegate-task%3Asol-xhigh-word-followup-20261110-tb-9mcf-1; childThreadId: thread:delegated-task:command%3Amcp%3Ae6a3d378-c450-4501-a47c-77e7994db5fb%3Adelegate-task%3Asol-xhigh-word-followup-20261110-tb-9mcf-1; clientRequestId: sol-xhigh-word-followup-20261110-tb-9mcf-1. Separate T3 worktree; lead implements, one fresh read-only Sol xhigh reviewer, lead fixes. Parent integrates/closes and owns hardening. No physical-device UI input. Launch state: running; branch pending report.

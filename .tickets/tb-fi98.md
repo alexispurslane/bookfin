@@ -27,3 +27,7 @@ From tb-t8rh: on the Raven page, the drop cap O of 'ONCE' lies inside the layout
 **2026-11-10T15:03:43Z**
 
 From tb-t8rh: the Raven drop cap sits inside the first word's box, not in a region of its own.
+
+**2026-11-10T20:32:18Z**
+
+Launched from integrated base 2ef6bfa with codex/gpt-6.1-sol reasoningEffort=xhigh. taskId: node:delegated-task:command%3Amcp%3Ae6a3d378-c450-4501-a47c-77e7994db5fb%3Adelegate-task%3Asol-xhigh-word-followup-20261110-tb-fi98-1; childThreadId: thread:delegated-task:command%3Amcp%3Ae6a3d378-c450-4501-a47c-77e7994db5fb%3Adelegate-task%3Asol-xhigh-word-followup-20261110-tb-fi98-1; clientRequestId: sol-xhigh-word-followup-20261110-tb-fi98-1. Separate T3 worktree; lead implements, one fresh read-only Sol xhigh reviewer, lead fixes. Parent integrates/closes and owns hardening. No physical-device UI input. Launch state: running; branch pending report.
