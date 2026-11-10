@@ -19,7 +19,7 @@ User decisions:
 
 Shared parts: word images cut from the page raster at a resolution that matches the text size; the recognized or extracted text kept under the images for search, selection, copy, read-aloud and places (PdfAddress unchanged); paragraph breaks; rejoined line-end hyphens; baseline alignment per line; figures, tables and equations kept whole and scaled to fit; theme tinting (sepia, dark). boo-pw1d lands first, unchanged.
 
-Design: docs/plans/pdf-word-image-reflow.md (to be written).
+Design: docs/plans/pdf-word-image-reflow.md.
 
 
 ## Notes
@@ -31,3 +31,19 @@ User decision (2026-11-09): Tesseract layout first, not k2pdfopt. k2pdfopt (KORe
 **2026-11-10T12:50:56Z**
 
 User decisions (2026-11-10): (1) Original view crops margins, running headers and folios too. The book owns one content box per page from the shared page analysis; headers and footers are found by repetition across pages; footnotes and figures stay. One crop for the whole book (left-hand and right-hand boxes), grown for a page whose content reaches outside it. A 'Trim margins' switch in Reading settings, on by default. (2) The three-view switch is one row: Original, Page words, Text. (3) Reflowed pages turn in screens of whole lines, and the Text view does too.
+
+**2026-11-10T02:34:08Z**
+
+Design written: docs/plans/pdf-word-image-reflow.md. Build tickets in order: tb-jidt, tb-xwlj, tb-t8rh, tb-0mex, tb-xjfi, tb-22fu, then tb-9mcf, tb-mfkk and tb-fi98, then tb-fb6j. Two open user decisions: the shape of the switch (gates tb-9mcf) and how a page turns inside a source page (gates tb-0mex).
+
+**2026-11-10T03:05:06Z**
+
+User decision (2026-11-09, later): Tesseract layout first, no k2pdfopt library. Scanned pages show word images after Tesseract's layout pass, and full recognition fills in the text under them. k2pdfopt's options are the checklist of our layout rules. New first tickets: tb-t0ea (layout pass through Tesseract's C API) and tb-bmmm (emulator measurement). Host measurement: tool/evidence/reader/layout-pass/20261109/.
+
+**2026-11-10T12:48:31Z**
+
+User decisions (2026-11-10): decision 1 design A, a three-segment Pages row (Original, Page words, Text), with PillChoice dropping icons and then stacking at large text sizes. Decision 2 design A, whole-line screens in the word view and the text view, with swipes passing between source pages. New ticket tb-zx7r cuts the text view into screens.
+
+**2026-11-10T12:54:13Z**
+
+User request (2026-11-10): trimmed margins. One book crop (left and right side boxes) for the Original view, running headers and folios found by repetition and left out of the Original view and the word view, a Trim margins switch on by default, crops kept on disk from a background survey. Tickets tb-z9h5, tb-lnak, tb-valc, tb-nkz5, tb-m8xo, and the follow-up tb-go0c.

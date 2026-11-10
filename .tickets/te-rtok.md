@@ -2,7 +2,7 @@
 id: te-rtok
 status: open
 deps: []
-links: []
+links: [tb-9mcf, tb-zx7r]
 created: 2026-11-03T18:02:59Z
 type: bug
 priority: 2

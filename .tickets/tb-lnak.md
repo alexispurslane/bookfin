@@ -1,0 +1,19 @@
+---
+id: tb-lnak
+status: open
+deps: [tb-z9h5]
+links: [ta-ukpf]
+created: 2026-11-10T12:53:21Z
+type: feature
+priority: 1
+assignee: Alexis Purslane
+parent: boo-fval
+---
+# Survey a PDF's pages in the background for one book crop, and keep it on disk
+
+T2 of docs/plans/pdf-word-image-reflow.md (Trimmed margins: The book crop, The survey). PdfBook owns a background survey: it analyzes pages at the lowest priority (behind the shown page, its next page and search), in an order that first samples the book evenly (up to 32 body pages for each side), then the rest. Scanned pages get their layout pass on the recognition worker, and the record is kept. From the sample it freezes the book profile: header and folio templates, the side phase, and one box for left-hand and one for right-hand pages, from the 5th and 95th percentiles of the body pages' content edges, padded by half a body line height. Blank pages, pages with fewer than 5 text lines and pages that are more than half picture are outliers and do not count. Each page's crop is the union of its side's box and its content box. Profile and page boxes are kept in a new DerivedBookFiles directory of the download, written atomically in batches; the survey resumes where it stopped at the next open and pauses while the book is closed or the app is in the background.
+
+## Acceptance Criteria
+
+Behavior tests, red first: a cover, a plate and a blank page in the fixture book do not change the side boxes; every body page of a side gets the same crop; a page with a wide table or a margin figure gets a larger crop that holds all its content; a page whose parity is flipped by an inserted plate takes the other side's box when only that box fits it; the profile does not change after it freezes; a kill during a write leaves the old or the new file; a reopen resumes the survey and runs no page twice; the survey never delays the shown page's layout pass or recognition. checkInvariants: every page crop holds its content box, and every body page's crop equals its side box.
+
