@@ -1360,8 +1360,9 @@ class ReaderSession extends ChangeNotifier {
     if (id == null ||
         document is! PdfBook ||
         !_recordsReady ||
-        trimMargins == on)
+        trimMargins == on) {
       return;
+    }
     _pdfBooks[id] = (view: pdfView, trimMargins: on);
     previews.close();
     _emit();
@@ -1374,8 +1375,12 @@ class ReaderSession extends ChangeNotifier {
   /// Shows [view] at once and saves it for this book in this account.
   Future<void> setPdfView(PdfPageView view) async {
     final id = book?.id;
-    if (id == null || document is! PdfBook || !_recordsReady || pdfView == view)
+    if (id == null ||
+        document is! PdfBook ||
+        !_recordsReady ||
+        pdfView == view) {
       return;
+    }
     _pdfBooks[id] = (view: view, trimMargins: trimMargins);
     _emit();
     await _save();
