@@ -17,6 +17,7 @@ import 'page_previews.dart';
 import 'pdf.dart';
 import 'place_words.dart';
 import 'reading_speed.dart';
+import 'survey_files.dart';
 
 typedef PublicationLoader = Future<Publication> Function(VerifiedFile file);
 typedef DocumentLoader = Future<ReaderDocument> Function(
@@ -187,6 +188,7 @@ class ReaderSession extends ChangeNotifier {
     required this.load,
     this.loadDocument,
     this.speed,
+    this.surveyStore,
   }) {
     _signals = [
       _placeChanges = _Signal(() => (_visibleAddress, _position)),
@@ -220,6 +222,65 @@ class ReaderSession extends ChangeNotifier {
   final ReadingStore store;
   final PublicationLoader load;
   final DocumentLoader? loadDocument;
+
+  /// Makes the kept survey of an opened PDF (see [SurveyFiles]), or null
+  /// when PDFs are not surveyed, as in tests of other things.
+  final SurveyStoreOf? surveyStore;
+
+  /// Whether the app is in the background, so that background work waits.
+  var _suspended = false;
+
+  /// Pauses the reader's background work while the app is in the
+  /// background: the survey of the open PDF.
+  void suspend() {
+    _suspended = true;
+    if (_document case final PdfBook book) book.survey.pause();
+  }
+
+  /// Goes on with the background work that [suspend] paused.
+  void resume() {
+    _suspended = false;
+    if (_document case final PdfBook book) book.survey.resume();
+  }
+
+  /// Lends the download of [selected] to [read] while Downloads owns it and
+  /// the catalog still holds the edition: the second argument of [read]
+  /// says whether both still hold. Without the download, it gives [gone]
+  /// or null. Work that started saves its result after the book closes, so
+  /// whether the book is still open does not matter.
+  Future<T?> _lend<T>(
+    Edition selected,
+    T gone,
+    Future<T> Function(VerifiedFile original, bool Function() owned) read,
+  ) async {
+    bool available() => !_disposed && _current(selected);
+    if (!available()) return null;
+    bool Function() owned = () => true;
+    return downloads.readLocalFile<T>(selected.files.single, (file) async {
+      if (!available()) return gone;
+      return read(file, () => owned() && available());
+    }, onOwnership: (live) => owned = live);
+  }
+
+  /// Starts the survey of [book], the PDF of [selected], at the page that
+  /// it opens at, when the session surveys PDFs. It keeps its results with
+  /// the download.
+  void _survey(PdfBook book, Edition selected) {
+    final storeOf = surveyStore;
+    if (storeOf == null) return;
+    book.survey.start(
+      storeOf(
+        (use) => _lend<void>(selected, null, use),
+        book: book.originalDigest,
+        hop: book.hop,
+      ),
+      from: switch (_initialAddress) {
+        PdfAddress(:final sourcePage) => sourcePage,
+        _ => 1,
+      },
+    );
+    if (_suspended) book.survey.pause();
+  }
 
   /// The person's reading speed, which the pager's page turns feed and
   /// [timeLeft] reads. Without it, the session estimates no time.
@@ -650,28 +711,19 @@ class ReaderSession extends ChangeNotifier {
       }
       _document = admitted;
       if (admitted is PdfBook) {
-        // A recognized page that started saves its text after this book
-        // closes, so only the download and the catalog decide whether its
-        // original can be read, not whether the book is still open.
-        bool available() => !_disposed && _current(selected);
-        admitted.textSupply?.bind((read) async {
-          if (!available()) return null;
-          bool Function() owned = () => true;
-          return downloads.readLocalFile<PdfText>(selected.files.single, (
-            file,
-          ) async {
-            if (!available()) {
-              return const PdfText(
-                source: '',
-                text: '',
-                sourceOffsets: [],
-                status: PdfTextStatus.failed,
-                reason: 'The download of this book is no longer available.',
-              );
-            }
-            return read(file, () => owned() && available());
-          }, onOwnership: (live) => owned = live);
-        });
+        admitted.textSupply?.bind(
+          (read) => _lend(
+            selected,
+            const PdfText(
+              source: '',
+              text: '',
+              sourceOffsets: [],
+              status: PdfTextStatus.failed,
+              reason: 'The download of this book is no longer available.',
+            ),
+            read,
+          ),
+        );
       }
       final candidates = _resumes
           .where((value) => value.editionId == selected.id)
@@ -691,6 +743,7 @@ class ReaderSession extends ChangeNotifier {
           _message = 'The saved place belongs to different source or processed content. The old place and bookmarks were kept. Reading starts at the beginning.';
         }
       }
+      if (admitted is PdfBook) _survey(admitted, selected);
       // This phone's own last place in the edition, which the open leaves:
       // for an open at [at], the saved place, and otherwise the place that
       // this phone saved before another device saved the opened place.

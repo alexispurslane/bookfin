@@ -273,12 +273,10 @@ abstract final class PageMaps {
   /// Keeps [sections] as the page map of the download [original] for
   /// [key], in place of the map before it.
   ///
-  /// The write goes to a partial file of its own, then a rename over the
-  /// map's file. So a process that dies during the write leaves the old map
-  /// whole, and two writes of one key that overlap leave one of them whole.
-  /// A partial file of a process that died stays until the download is
-  /// removed. A map that cannot be written costs layout work at the next
-  /// open, so the write does not fail.
+  /// The write is [DerivedBookFiles.write], so a process that dies during
+  /// the write leaves the old map whole, and two writes of one key that
+  /// overlap leave one of them whole. A map that cannot be written costs
+  /// layout work at the next open, so the write does not fail.
   ///
   /// Each section's starts must be in increasing order.
   static Future<void> write(
@@ -286,30 +284,11 @@ abstract final class PageMaps {
     PageMapKey key,
     List<KeptSection> sections,
   ) async {
-    final directory = DerivedBookFiles.layoutDirectory(original);
     final file = _file(original, key);
     final bytes = _encode(_header(key), sections);
     try {
-      switch (await FileSystemEntity.type(directory.path, followLinks: false)) {
-        case FileSystemEntityType.notFound:
-          await directory.create();
-        case FileSystemEntityType.directory:
-          break;
-        default:
-          // Something else holds the name. It is not the store's to
-          // replace.
-          return;
-      }
-      final partial = File(
-        '${file.path}.$pid-${DateTime.now().microsecondsSinceEpoch}.partial',
-      );
-      try {
-        await partial.writeAsBytes(bytes, flush: true);
-        await partial.rename(file.path);
-      } finally {
-        if (await partial.exists()) await partial.delete();
-      }
-      await _evict(directory, file, _family(key));
+      if (!await DerivedBookFiles.write(file, bytes)) return;
+      await _evict(file.parent, file, _family(key));
     } on FileSystemException {
       // The next open lays the book out and writes again.
     }

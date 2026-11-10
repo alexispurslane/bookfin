@@ -605,6 +605,33 @@ For each side, the box starts at the 5th percentile of the body pages' left and 
 - Pauses. The survey pauses while the book is closed and while the app is in the background.
 - Cost. On a text layer page, one analysis takes one render at 1600 pixels and one hop. On a scanned page, it also takes one layout pass: 116 to 218 ms on the host. A book of 400 scanned pages costs a few minutes of worker time, once. The device acceptance measures it.
 
+Ticket tb-lnak built the book crop and the survey:
+
+| Part | File | What it owns |
+| --- | --- | --- |
+| The book crop | `lib/reader/book_crop.dart` | `SurveyedPage` (what the crop needs of one page), `bookProfile`, `contentOf` and `cropOf` |
+| The survey | `lib/reader/book_survey.dart` | `nextSurveyStep` (the order) and `BookSurvey`, which `PdfBook.survey` owns |
+| The kept survey | `lib/reader/survey_files.dart` | `SurveyFiles`, the file `.bookfin-survey/survey` of the download |
+| The shared write | `lib/downloads/derived_files.dart` | `DerivedBookFiles.write`, which AdmittedBooks and PageMaps use too (ta-ukpf) |
+
+These rules have reasons:
+
+- A surveyed page keeps its edge lines and its core box: the content box with every edge line marked as running. The running lines are known only when the profile freezes. So a page of the sample keeps what the templates and its content box need, and no page is analyzed again. `PageAnalysis.contentBox` stays the one place of the content rule (ticket t1-6pf5).
+- The percentile index rounds toward the median: the 5th percentile of n values is the value at index ceil(0.05 (n - 1)) in increasing order, and the 95th at floor(0.95 (n - 1)). So a sample of up to 21 pages a side still leaves out its one lowest and one highest edge, such as the wide table of `margins-book.pdf`.
+- A sample page that is no body page, or that failed, gives its place to the next page of its side, up to the next sample page. A failed page whose place stays empty keeps the profile from freezing in this session, so a failure, such as a canceled layout pass, never freezes a poor profile.
+- After the freeze, the rest follows from the shown page to the end, then from the start.
+- A background request of `PdfBook.reflowPage` starts only while no request of the reader runs. It asks for the geometry before it draws the page. The book does not keep its page among its 16 reflow pages. A request of the reader for the same page joins it and moves its layout pass to the front.
+- In the recognition queue, a background layout pass waits behind all other work, and shows no recognition progress. A recognition request for its page moves it right before that recognition, which then reuses its image.
+- The survey writes after every 8 pages, at the freeze, when it pauses, when it rests and when the book closes. A store that could not read the download keeps nothing, so it never replaces a survey that it did not read. An unreadable survey is renamed `survey.unreadable` and reported to Flutter's error handler.
+- `ReaderSession.suspend` and `resume` pause and resume the survey. The app calls them when it is hidden and when it returns.
+
+Known limits:
+
+- A plate that flips the parity of many sampled pages makes both side boxes wider, because those pages count for the wrong side. Nothing is cut. The rule "take the other side's box" helps only when the flipped pages are fewer than the percentile leaves out.
+- A survey page that is analyzed can still delay the reader's first request by one page's work: one render at 1600 pixels and one analysis hop, or one layout pass. Work that started finishes.
+- A page without word geometry, such as a text layer page with unusable boxes, gets no crop, and the survey tries it again at each open.
+- On a platform without recognition, scanned pages get no geometry, so their book gets no profile.
+
 ### The Original view
 
 - The page shows its crop, fitted to the screen. It renders at the screen's width divided by the crop's share of the page width, within the existing render limits. So the text gets more of the screen's pixels.

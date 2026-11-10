@@ -10,6 +10,7 @@ import 'package:pdfrx/pdfrx.dart' show pdfrxFlutterInitialize;
 
 import '../downloads/downloads.dart';
 import '../foundation/hop.dart';
+import 'book_survey.dart';
 import 'document.dart';
 import 'page_analysis.dart';
 import 'page_geometry.dart';
@@ -215,9 +216,18 @@ class ReflowPage {
 /// One page that [PdfBook] keeps for reflow: its analysis while it runs or
 /// when it is done, and its attached text once something asks for it.
 class _ReflowEntry {
-  _ReflowEntry(this.book, this.page);
+  _ReflowEntry(this.book, this.page, {required this.background});
   final PdfBook book;
   final int page;
+
+  /// Whether the analysis is a background request, such as the survey's: it
+  /// asks for the page's geometry before it draws the page, and its layout
+  /// pass waits behind all other recognition work. A request of the reader
+  /// that joins it clears it.
+  bool background;
+
+  /// Whether the analysis waits for the page's word geometry.
+  var _awaitingGeometry = true;
 
   /// The analysis, which completes with null when the page has no word
   /// geometry.
@@ -234,22 +244,27 @@ class _ReflowEntry {
   AttachedText? arrived;
 
   Future<void> _analyze() async {
-    // The page draws while its geometry is found: on a scanned page the
-    // layout pass runs on the recognition worker, beside pdfium.
-    final drawn = book.render(page, PdfBook._analysisWidth);
+    // The reader's page draws while its geometry is found: on a scanned page
+    // the layout pass runs on the recognition worker, beside pdfium. A
+    // background page draws only once it has geometry, so a page without
+    // any costs no drawing.
+    var drawn = background ? null : book.render(page, PdfBook._analysisWidth);
     final PageGeometry? geometry;
     final PdfText layer;
     try {
-      geometry = await book.geometry(page);
+      geometry = await book.geometry(page, background: background);
       layer = await book.textLayer(page);
     } catch (_) {
-      drawn.ignore();
+      drawn?.ignore();
       rethrow;
+    } finally {
+      _awaitingGeometry = false;
     }
     if (geometry == null) {
-      drawn.ignore();
+      drawn?.ignore();
       return;
     }
+    drawn ??= book.render(page, PdfBook._analysisWidth);
     final raster = await drawn;
     // Only this call holds the raster, so it is freed when the analysis
     // ends. The book keeps only the analysis's small typed lists.
@@ -305,6 +320,9 @@ abstract class PdfBook extends ReaderDocument {
   /// Runs work in another isolate.
   final IsolateHop hop;
 
+  /// The background survey of the book's pages, for its crops.
+  late final survey = BookSurvey(this);
+
   /// The width in pixels at which the page analysis draws a page. The
   /// layout pass and recognition draw at the same width, so their boxes
   /// match the analysis's pixels.
@@ -316,6 +334,14 @@ abstract class PdfBook extends ReaderDocument {
   /// The reflow pages that the book keeps, the least recently asked first.
   final _reflowPages = <int, _ReflowEntry>{};
 
+  /// The background requests that run, outside [_reflowPages].
+  final _backgroundPages = <int, _ReflowEntry>{};
+
+  /// How many requests of the reader run, and a completer that completes
+  /// when none does.
+  var _readerRequests = 0;
+  Completer<void>? _readerIdle;
+
   /// For each page with at least 8 prose lines that the book analyzed in
   /// this session: its body line height.
   final _bodyLineHeights = <int, double>{};
@@ -326,9 +352,42 @@ abstract class PdfBook extends ReaderDocument {
   /// (see [geometry]). The analysis draws the page and runs through [hop];
   /// it reads no text. The book keeps the last 16 pages that it gave, so a
   /// kept page is not drawn or analyzed again.
-  Future<ReflowPage?> reflowPage(int sourcePage) async {
-    final entry =
-        _reflowPages.remove(sourcePage) ?? _ReflowEntry(this, sourcePage);
+  ///
+  /// A [background] request, such as the survey's, has the lowest priority.
+  /// It starts only while no request of the reader runs, its layout pass
+  /// waits behind all other recognition work (see [geometry]), and the book
+  /// does not keep its page, so it never pushes the reader's pages out. It
+  /// joins a page that the book keeps or analyzes. A request of the reader
+  /// for a page that a background request analyzes joins it, keeps it, and
+  /// moves its layout pass to the front.
+  Future<ReflowPage?> reflowPage(
+    int sourcePage, {
+    bool background = false,
+  }) async {
+    if (background) return _backgroundPage(sourcePage);
+    _readerRequests++;
+    try {
+      return await _readerPage(sourcePage);
+    } finally {
+      if (--_readerRequests == 0) {
+        _readerIdle?.complete();
+        _readerIdle = null;
+      }
+    }
+  }
+
+  Future<ReflowPage?> _readerPage(int sourcePage) async {
+    var entry = _reflowPages.remove(sourcePage);
+    if (entry == null) {
+      entry = _backgroundPages.remove(sourcePage);
+      if (entry != null && entry.background) {
+        entry.background = false;
+        // The reader's own request for the geometry joins the layout pass
+        // that waits, and moves it to the front.
+        if (entry._awaitingGeometry) geometry(sourcePage).ignore();
+      }
+    }
+    entry ??= _ReflowEntry(this, sourcePage, background: false);
     _reflowPages[sourcePage] = entry;
     if (_reflowPages.length > _keptReflowPages) {
       _reflowPages.remove(_reflowPages.keys.first);
@@ -340,6 +399,32 @@ abstract class PdfBook extends ReaderDocument {
       _forget(entry);
       rethrow;
     }
+    return _given(entry);
+  }
+
+  Future<ReflowPage?> _backgroundPage(int sourcePage) async {
+    while (_readerRequests > 0) {
+      await (_readerIdle ??= Completer<void>()).future;
+    }
+    var entry = _reflowPages[sourcePage] ?? _backgroundPages[sourcePage];
+    if (entry == null) {
+      entry = _ReflowEntry(this, sourcePage, background: true);
+      _backgroundPages[sourcePage] = entry;
+    }
+    try {
+      await entry.done;
+    } finally {
+      if (identical(_backgroundPages[sourcePage], entry)) {
+        _backgroundPages.remove(sourcePage);
+      }
+    }
+    return _given(entry);
+  }
+
+  /// The reflow page of [entry], whose analysis is done, or null when the
+  /// page has no word geometry.
+  ReflowPage? _given(_ReflowEntry entry) {
+    final sourcePage = entry.page;
     final analyzed = entry.analyzed;
     if (analyzed == null) {
       _forget(entry);
@@ -367,7 +452,8 @@ abstract class PdfBook extends ReaderDocument {
   /// Throws a [StateError] when an invariant of the reflow pages does not
   /// hold. It runs only on demand, from a test or a debug switch.
   ///
-  /// The invariants: the book keeps at most 16 reflow pages. Each analyzed
+  /// The invariants: the book keeps at most 16 reflow pages. A background
+  /// request's page is not among them, and is a background entry. Each analyzed
   /// page's geometry and analysis hold their invariants. Each attached text
   /// that arrived has the digest of its reading text, and its attachment
   /// has a range of that text for each word of the page's reflow geometry.
@@ -402,6 +488,12 @@ abstract class PdfBook extends ReaderDocument {
         );
       }
     }
+    for (final MapEntry(key: page, value: entry) in _backgroundPages.entries) {
+      require(
+        entry.page == page && !_reflowPages.containsKey(page),
+        'background page $page is kept apart under its number',
+      );
+    }
     require(
       _bodyLineHeights.values.every((height) => height > 0 && height.isFinite),
       'each body line height is positive',
@@ -430,10 +522,21 @@ abstract class PdfBook extends ReaderDocument {
   /// character boxes, with its text. Another page gets it from
   /// [textSupply]'s layout pass, before its text. This default knows no
   /// character boxes, so it gives a text layer page no geometry.
-  Future<PageGeometry?> geometry(int sourcePage) async {
+  ///
+  /// A [background] layout pass waits behind all other recognition work (see
+  /// [PdfTextSupply.geometry]).
+  Future<PageGeometry?> geometry(
+    int sourcePage, {
+    bool background = false,
+  }) async {
     final layer = await textLayer(sourcePage);
     if (layer.status == PdfTextStatus.candidate) return null;
-    return textSupply?.geometry(this, sourcePage, layer);
+    return textSupply?.geometry(
+      this,
+      sourcePage,
+      layer,
+      background: background,
+    );
   }
 
   /// The text of [sourcePage] for reading, as [text] gives it, and for each
@@ -521,7 +624,16 @@ abstract class PdfTextSupply {
   /// page that a reader shows goes before every other waiting page. Null
   /// when the page has no geometry: [extracted] is a candidate, the layout
   /// pass failed, or this reader stopped waiting.
-  Future<PageGeometry?> geometry(PdfBook book, int page, PdfText extracted);
+  ///
+  /// A [background] layout pass, such as the book survey's, waits behind all
+  /// other work and does not count as waiting for [recognizing]. A request
+  /// for the shown page joins it and moves it to the front.
+  Future<PageGeometry?> geometry(
+    PdfBook book,
+    int page,
+    PdfText extracted, {
+    bool background = false,
+  });
 
   /// The text of [page] for reading, as [text] gives it, and for each word
   /// of [geometry], the page's geometry, its range of that text. The
@@ -679,15 +791,21 @@ class _NativePdfBook extends PdfBook {
   });
 
   @override
-  Future<PageGeometry?> geometry(int sourcePage) => _run(() async {
-    final layer = await _layer(sourcePage);
-    final extracted = layer.text;
-    if (extracted.status == PdfTextStatus.candidate) {
-      return layer.words?.geometry;
-    }
-    if (_closing != null) return null;
-    return textSupply?.geometry(this, sourcePage, extracted);
-  });
+  Future<PageGeometry?> geometry(int sourcePage, {bool background = false}) =>
+      _run(() async {
+        final layer = await _layer(sourcePage);
+        final extracted = layer.text;
+        if (extracted.status == PdfTextStatus.candidate) {
+          return layer.words?.geometry;
+        }
+        if (_closing != null) return null;
+        return textSupply?.geometry(
+          this,
+          sourcePage,
+          extracted,
+          background: background,
+        );
+      });
 
   @override
   Future<({PdfText text, TextAttachment? attachment})> attachedText(
@@ -795,7 +913,8 @@ class _NativePdfBook extends PdfBook {
   }
 
   Future<void> _dispose() async {
-    await Future.wait(_work.toList());
+    // The survey surveys no more pages, and keeps what it surveyed.
+    await Future.wait([..._work, survey.close()]);
     try {
       await textSupply?.close();
     } finally {

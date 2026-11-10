@@ -27,8 +27,12 @@ import 'reader_settings.dart';
 /// records the pages that it was asked to recognize.
 class OnDemandRecognition implements PdfTextSupply {
   @override
-  Future<PageGeometry?> geometry(PdfBook book, int page, PdfText extracted) =>
-      throw StateError('The viewport asked the supply for words.');
+  Future<PageGeometry?> geometry(
+    PdfBook book,
+    int page,
+    PdfText extracted, {
+    bool background = false,
+  }) => throw StateError('The viewport asked the supply for words.');
   @override
   Future<({PdfText text, TextAttachment? attachment})> attachedText(
     PdfBook book,

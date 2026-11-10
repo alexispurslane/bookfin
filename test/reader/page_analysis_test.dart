@@ -42,8 +42,9 @@ class FixtureRecognition implements PdfTextSupply {
   Future<PageGeometry?> geometry(
     PdfBook book,
     int page,
-    PdfText extracted,
-  ) async => pageGeometryFromLayout(layoutFixture(name));
+    PdfText extracted, {
+    bool background = false,
+  }) async => pageGeometryFromLayout(layoutFixture(name));
   @override
   Future<({PdfText text, TextAttachment? attachment})> attachedText(
     PdfBook book,
@@ -166,7 +167,10 @@ class DrawnPdf extends PdfBook {
     status: PdfTextStatus.absent,
   );
   @override
-  Future<PageGeometry?> geometry(int sourcePage) async {
+  Future<PageGeometry?> geometry(
+    int sourcePage, {
+    bool background = false,
+  }) async {
     if (withoutGeometry > 0) {
       withoutGeometry--;
       return null;
