@@ -370,8 +370,10 @@ class _PdfViewportState extends State<PdfViewport>
       try {
         final text = await widget.book.text(page);
         if (!mounted || _search != request) return const ReaderSearchReport([]);
+        // Only a page that Bookfin failed to read may hide matches. A page
+        // without text, or whose text cannot be put in order, is quiet.
         if (text.status != PdfTextStatus.candidate) {
-          skipped++;
+          if (text.status == PdfTextStatus.failed) skipped++;
           continue;
         }
         for (final match in pattern.allMatches(text.text)) {
@@ -400,7 +402,9 @@ class _PdfViewportState extends State<PdfViewport>
       hits,
       error: skipped == 0
           ? null
-          : 'Search skipped $skipped source pages without reliable text. Those original pages are still available.',
+          : skipped == 1
+          ? 'Search could not read 1 source page. Its original page is still available.'
+          : 'Search could not read $skipped source pages. Their original pages are still available.',
     );
   }
 

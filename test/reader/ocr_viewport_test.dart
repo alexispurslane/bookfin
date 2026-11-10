@@ -192,4 +192,89 @@ void main() {
       await tester.pumpWidget(const SizedBox());
     },
   );
+
+  group('search notes skipped pages only when they may hold text', () {
+    Future<ReaderSearchReport> searchWithFirstPage(
+      WidgetTester tester,
+      PdfText first,
+    ) async {
+      final pdf = _PagedPdf(first, decodeRecognizedPage(englishPage));
+      late DocumentNavigator navigation;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: PdfViewportHost(
+              book: pdf,
+              fontSize: 20,
+              onReady: (value, _) => navigation = value,
+              onAddress: (_) {},
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+      final report = await navigation.search('garden', 1);
+      await tester.pumpWidget(const SizedBox());
+      return report;
+    }
+
+    testWidgets('a cover whose text is out of order is skipped quietly', (
+      tester,
+    ) async {
+      final report = await searchWithFirstPage(
+        tester,
+        const PdfText(
+          source: 'palgrave',
+          text: 'palgrave',
+          sourceOffsets: [0, 1, 2, 3, 4, 5, 6, 7],
+          status: PdfTextStatus.unreliable,
+        ),
+      );
+      expect(report.hits, hasLength(1));
+      expect(report.error, isNull);
+    });
+
+    testWidgets('a picture page without text is skipped quietly', (
+      tester,
+    ) async {
+      final report = await searchWithFirstPage(
+        tester,
+        const PdfText(
+          source: '',
+          text: '',
+          sourceOffsets: [],
+          status: PdfTextStatus.absent,
+        ),
+      );
+      expect(report.error, isNull);
+    });
+
+    testWidgets('a page whose recognition failed is counted in the note', (
+      tester,
+    ) async {
+      final report = await searchWithFirstPage(
+        tester,
+        const PdfText(
+          source: '',
+          text: '',
+          sourceOffsets: [],
+          status: PdfTextStatus.failed,
+          reason: 'Text recognition failed on this page.',
+        ),
+      );
+      expect(report.hits, hasLength(1));
+      expect(report.error, contains('1 source page'));
+    });
+  });
+}
+
+/// A two-page PDF whose first page gives [first] and whose second page
+/// gives [second] as its text for reading.
+class _PagedPdf extends ViewportPdf {
+  _PagedPdf(this.first, this.second);
+  final PdfText first;
+  final PdfText second;
+  @override
+  Future<PdfText> text(int sourcePage) async =>
+      sourcePage == 1 ? first : second;
 }
