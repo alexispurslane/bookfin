@@ -17,6 +17,7 @@ import 'package:bookfin/reader/page_geometry.dart';
 import 'package:bookfin/reader/pdf.dart';
 import 'package:bookfin/reader/pdf_viewport.dart';
 import 'package:bookfin/reader/pdf_word_view.dart';
+import 'package:bookfin/reader/word_bands.dart';
 import 'package:bookfin/reader/word_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -135,8 +136,9 @@ class CopiedPdf extends PdfBook {
   final Future<PdfText> Function(int page)? layer;
   @override
   final PdfTextSupply? textSupply;
-  var failBands = false;
+  Object? bandFailure;
   Future<void>? bandsWait;
+  int waitingBands = 0;
   @override
   String get originalDigest => 'copy-${book.originalDigest}';
   @override
@@ -176,8 +178,10 @@ class CopiedPdf extends PdfBook {
     int pixelsPerPageUnit,
     ui.Rect area,
   ) async {
-    await bandsWait;
-    if (failBands) throw StateError('A band could not be drawn.');
+    final waiting = bandsWait;
+    if (waiting != null) waitingBands++;
+    await waiting;
+    if (bandFailure != null) throw bandFailure!;
     return book.renderPart(sourcePage, pixelsPerPageUnit, area);
   }
 }
@@ -716,6 +720,82 @@ void main() {
     await close(tester, book);
   });
 
+  testWidgets('overlapping size changes preserve the word that remained '
+      'visible instead of a screen that never appeared', (tester) async {
+    final supply = HeldRecognition.gibbon()..textArrives.complete();
+    final born = await open(tester, footnotePage);
+    final book = CopiedPdf(born, textSupply: supply);
+    final reports = await show(tester, book);
+    await showsScreen(tester, 1, 0);
+    unawaited(reports.navigator!.move(true));
+    final before = await showsScreen(tester, 1, 1);
+    final bandsArrive = Completer<void>();
+    addTearDown(() {
+      if (!bandsArrive.isCompleted) bandsArrive.complete();
+    });
+    book.bandsWait = bandsArrive.future;
+    await show(tester, book, fontSize: 14, reports: reports);
+    await settle(tester, () => book.waitingBands > 0, 'smaller bands wait');
+    expect(shown(tester), same(before));
+    final count = reports.places.length;
+    book.bandsWait = null;
+    await show(tester, book, fontSize: 40, reports: reports);
+    await settle(
+      tester,
+      () => reports.places.length > count,
+      'size 40 returns',
+    );
+    expect(shown(tester)!.screen, before.screen);
+    expect(shown(tester)!.column, same(before.column));
+    bandsArrive.complete();
+    await close(tester, book);
+  });
+
+  testWidgets('a size change during a pending turn preserves the displayed '
+      'word rather than the turn that has not appeared', (tester) async {
+    final supply = HeldRecognition.gibbon()..textArrives.complete();
+    final born = await open(tester, footnotePage);
+    final book = CopiedPdf(born, textSupply: supply);
+    final reports = await show(tester, book);
+    await showsScreen(tester, 1, 0);
+    final (reflow, read) = await attached(tester, book, 1);
+    final bandsArrive = Completer<void>();
+    addTearDown(() {
+      if (!bandsArrive.isCompleted) bandsArrive.complete();
+    });
+    book.bandsWait = bandsArrive.future;
+    unawaited(reports.navigator!.move(true));
+    final before = await showsScreen(tester, 1, 1);
+    final character = firstCharacter(
+      before.column.column,
+      before.screen,
+      read.attachment!,
+      reflow.analysis,
+    )!;
+    await settle(tester, () => book.waitingBands > 0, 'the turn waits');
+    unawaited(reports.navigator!.move(true));
+    await tester.pump();
+    expect(shown(tester), same(before));
+    await show(tester, book, fontSize: 60, reports: reports);
+    await settle(tester, () => book.waitingBands > 1, 'larger bands wait');
+    bandsArrive.complete();
+    await settle(
+      tester,
+      () => shown(tester)?.settings.fontSize == 60,
+      'the larger screen shows',
+    );
+    final after = shown(tester)!;
+    expect(
+      after.screen,
+      after.column.column.screenAt(
+        character,
+        read.attachment!,
+        reflow.analysis,
+      ),
+    );
+    await close(tester, book);
+  });
+
   testWidgets('the scrub deck\'s preview of a page starts no layout pass and '
       'no recognition', (tester) async {
     final born = await open(tester, marginsBook);
@@ -740,6 +820,147 @@ void main() {
     preview!.image.dispose();
     expect(supply.asked, isEmpty);
     await close(tester, born);
+  });
+
+  for (final stage in [
+    'geometry',
+    'analysis',
+    'column',
+    'bands',
+    'attachment',
+  ]) {
+    testWidgets('an internal $stage error reaches the initial word-screen '
+        'wait instead of selecting fallback', (tester) async {
+      final failure = AssertionError('Broken $stage invariant');
+      final normal = HeldRecognition.gibbon();
+      final supply = HeldRecognition(
+        layout: stage == 'geometry'
+            ? (_) async => throw failure
+            : normal.layout,
+        read: stage == 'attachment'
+            ? (_, _) async => throw failure
+            : normal.read,
+      )..textArrives.complete();
+      Future<R> failingWork<M, R>(FutureOr<R> Function(M) work, M input) =>
+          (stage == 'analysis' && work == analyzePage) ||
+              (stage == 'column' && work == planWordColumn)
+          ? Future.error(failure)
+          : runInWorker(work, input);
+      final born = await open(tester, footnotePage, hop: failingWork);
+      final bandsArrive = Completer<void>();
+      addTearDown(() {
+        if (!bandsArrive.isCompleted) bandsArrive.complete();
+      });
+      final book = CopiedPdf(born, textSupply: supply)
+        ..bandFailure = stage == 'bands' ? failure : null
+        ..bandsWait = stage == 'attachment' ? bandsArrive.future : null;
+      var fallbacks = 0;
+      final screens = PdfWordScreens(
+        book,
+        onPlace: (_) {},
+        onGiveUp: () => fallbacks++,
+      );
+      addTearDown(screens.dispose);
+      screens.lay((
+        width: 370.0,
+        fontSize: 40.0,
+        screenHeight: 850.0,
+        devicePixelRatio: 2.625,
+      ));
+      Object? reported;
+      var settled = false;
+      screens.open(PdfAddress(1, 0));
+      unawaited(
+        screens
+            .shows(1)
+            .then(
+              (_) => settled = true,
+              onError: (Object error, StackTrace stack) {
+                reported = error;
+                settled = true;
+              },
+            ),
+      );
+      await settle(
+        tester,
+        () => settled,
+        'the initial word-screen wait settles',
+      );
+      expect(reported, same(failure));
+      expect(fallbacks, 0);
+    });
+  }
+
+  testWidgets('an internal error rendering ahead is propagated rather than '
+      'treated as a retryable band failure', (tester) async {
+    final failure = AssertionError('Broken ahead-band invariant');
+    final born = await open(tester, footnotePage);
+    final supply = HeldRecognition.gibbon()..textArrives.complete();
+    final book = CopiedPdf(born, textSupply: supply);
+    final pages = PdfWordPages(book);
+    addTearDown(pages.dispose);
+    pages.shown.addListener(() => book.bandFailure = failure);
+    await tester.runAsync(() async {
+      await expectLater(
+        pages.show(1, (
+          width: 370.0,
+          fontSize: 40.0,
+          screenHeight: 850.0,
+          devicePixelRatio: 2.625,
+        ), 0),
+        throwsA(same(failure)),
+      );
+    });
+    expect(pages.shown.value, isNotNull);
+    pages.checkInvariants();
+  });
+
+  testWidgets('an internal band error remains reported after a later '
+      'screen request replaces it', (tester) async {
+    final failure = AssertionError('Broken replaced-band invariant');
+    final born = await open(tester, footnotePage);
+    final supply = HeldRecognition.gibbon()..textArrives.complete();
+    final bandsArrive = Completer<void>();
+    addTearDown(() {
+      if (!bandsArrive.isCompleted) bandsArrive.complete();
+    });
+    final book = CopiedPdf(born, textSupply: supply)
+      ..bandsWait = bandsArrive.future;
+    final pages = PdfWordPages(book);
+    addTearDown(pages.dispose);
+    Object? reported;
+    var settled = false;
+    unawaited(
+      pages
+          .show(1, (
+            width: 370.0,
+            fontSize: 14.0,
+            screenHeight: 850.0,
+            devicePixelRatio: 2.625,
+          ), 0)
+          .then(
+            (_) => settled = true,
+            onError: (Object error, StackTrace stack) {
+              reported = error;
+              settled = true;
+            },
+          ),
+    );
+    await settle(tester, () => book.waitingBands > 0, 'old bands wait');
+    book.bandsWait = null;
+    await tester.runAsync(
+      () => pages.show(1, (
+        width: 370.0,
+        fontSize: 40.0,
+        screenHeight: 850.0,
+        devicePixelRatio: 2.625,
+      ), 0),
+    );
+    book.bandFailure = failure;
+    bandsArrive.complete();
+    await settle(tester, () => settled, 'the replaced request settles');
+    expect(reported, same(failure));
+    pages.checkInvariants();
   });
 
   testWidgets('a scanned page whose layout pass finds no words shows its '
@@ -771,7 +992,7 @@ void main() {
   ) async {
     Future<R> failingAnalysis<M, R>(FutureOr<R> Function(M) work, M input) =>
         work == analyzePage
-        ? Future.error(StateError('The analysis failed.'))
+        ? Future.error(Exception('The analysis failed.'))
         : runInWorker(work, input);
     final book = await open(tester, marginsBook, hop: failingAnalysis);
     final layer = (await tester.runAsync(() => book.textLayer(3)))!;
@@ -812,7 +1033,8 @@ void main() {
     addTearDown(() {
       if (!supply.textArrives.isCompleted) supply.textArrives.complete();
     });
-    final book = CopiedPdf(born, textSupply: supply)..failBands = true;
+    final book = CopiedPdf(born, textSupply: supply)
+      ..bandFailure = Exception('A band could not be drawn.');
     await show(tester, book, initial: PdfAddress(3, 0));
     await settle(
       tester,

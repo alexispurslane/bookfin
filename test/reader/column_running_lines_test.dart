@@ -182,6 +182,7 @@ void main() {
       devicePixelRatio: 2.625,
     );
     final before = (await pages.column(3, beforeSettings))!;
+    await pages.show(3, beforeSettings, 0);
     final page = await withText(book, 3);
     final running = headerAndFolio(3, lineTexts(page)!);
     final headerWord = page.geometry.lineStarts[running.first];
@@ -189,13 +190,41 @@ void main() {
     await surveyed(book);
     expect(await pages.column(3, beforeSettings), same(before));
     expect(shows(before.column, page, headerWord), isTrue);
-    final after = (await pages.column(3, (
+    final afterSettings = (
       width: beforeSettings.width,
       fontSize: 30.0,
       screenHeight: beforeSettings.screenHeight,
       devicePixelRatio: beforeSettings.devicePixelRatio,
-    )))!;
+    );
+    final after = (await pages.column(3, afterSettings))!;
     expectContent(after.column, page);
+    await pages.show(3, afterSettings, 0);
+    final returned = (await pages.column(3, beforeSettings))!;
+    expectContent(returned.column, page);
+    await pages.show(3, beforeSettings, 0);
+    expect(pages.shown.value!.column, same(returned));
+    pages.checkInvariants();
+  });
+
+  test('returning to a page after the profile freezes replaces its old '
+      'running-header column', () async {
+    final book = await margins();
+    final pages = PdfWordPages(book);
+    addTearDown(pages.dispose);
+    final wordSettings = (
+      width: settings.width,
+      fontSize: settings.fontSize,
+      screenHeight: settings.screenHeight,
+      devicePixelRatio: 2.625,
+    );
+    await pages.show(3, wordSettings, 0);
+    final before = pages.shown.value!.column;
+    await surveyed(book);
+    expect(pages.shown.value!.column, same(before));
+    await pages.show(4, wordSettings, 0);
+    await pages.show(3, wordSettings, 0);
+    expectContent(pages.shown.value!.column.column, await withText(book, 3));
+    pages.checkInvariants();
   });
 
   test('a search hit in a running header opens the page\'s first screen, a '

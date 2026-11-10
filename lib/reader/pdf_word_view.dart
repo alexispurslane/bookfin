@@ -216,9 +216,12 @@ class PdfWordScreens {
     final ReflowPage? reflow;
     try {
       reflow = await book.reflowPage(open.page);
-    } catch (_) {
+    } on Exception {
       // A failed layout pass or analysis leaves the page to the viewport.
       if (identical(open, _open)) _giveUp(open);
+      return;
+    } catch (error, stack) {
+      _reportError(open, error, stack);
       return;
     }
     if (!identical(open, _open)) return;
@@ -235,8 +238,11 @@ class PdfWordScreens {
     AttachedText? attached;
     try {
       attached = await reflow.attachedText();
-    } catch (_) {
+    } on Exception {
       // The words stay without text, as after a failed recognition.
+    } catch (error, stack) {
+      _reportError(open, error, stack);
+      return;
     }
     if (!identical(open, _open) || open.gaveUp) return;
     open.attached = attached;
@@ -268,11 +274,15 @@ class PdfWordScreens {
   Future<void> _layOut(_OpenPage open) async {
     final settings = _settings;
     if (settings == null) return;
+    final before = _showing.value ? _pages.shown.value : null;
     final WordColumn? column;
     try {
       column = await _pages.column(open.page, settings);
-    } catch (_) {
+    } on Exception {
       if (identical(open, _open) && settings == _settings) _giveUp(open);
+      return;
+    } catch (error, stack) {
+      _reportError(open, error, stack);
       return;
     }
     if (!identical(open, _open) || settings != _settings || open.gaveUp) {
@@ -282,10 +292,9 @@ class PdfWordScreens {
       _giveUp(open);
       return;
     }
-    final before = open.column;
     open.column = column;
-    open.screen = before != null
-        ? column.column.screenShowing(before.column, open.screen)
+    open.screen = before != null && before.page == open.page
+        ? column.column.screenShowing(before.column.column, before.screen)
         : open.last
         ? column.column.screenCount - 1
         : _openingScreen(open, column);
@@ -315,12 +324,14 @@ class PdfWordScreens {
     final screen = open.screen, column = open.column!;
     try {
       await _pages.show(open.page, _settings!, screen, forward: open.forward);
-    } catch (_) {
+    } on Exception {
       if (identical(open, _open) &&
           identical(open.column, column) &&
           open.screen == screen) {
         _giveUp(open);
       }
+    } catch (error, stack) {
+      _reportError(open, error, stack);
     }
   }
 
@@ -356,6 +367,11 @@ class PdfWordScreens {
       );
       onPlace(book.addressFor(open.page, attached!.text, character ?? 0));
     }
+  }
+
+  void _reportError(_OpenPage open, Object error, StackTrace stack) {
+    if (open.shown.isCompleted) Error.throwWithStackTrace(error, stack);
+    open.shown.completeError(error, stack);
   }
 
   void _giveUp(_OpenPage open) {

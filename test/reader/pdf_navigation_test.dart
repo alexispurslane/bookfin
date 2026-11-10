@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:bookfin/reader/document.dart';
+import 'package:bookfin/reader/page_geometry.dart';
 import 'package:bookfin/reader/pdf.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -50,6 +51,11 @@ class HeldPdf extends PdfBook {
     status: PdfTextStatus.candidate,
     digest: 'fixture-text',
   );
+  @override
+  Future<PageGeometry?> geometry(
+    int sourcePage, {
+    bool background = false,
+  }) async => null;
   @override
   Future<PdfRaster> render(int sourcePage, double width) {
     renders++;

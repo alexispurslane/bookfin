@@ -1,6 +1,8 @@
 # PDF word-view evidence
 
 Captured on November 10, 2026 for `tb-22fu` and `te-rtfa`.
+The five acceptance captures were refreshed after the three review fixes.
+The before-fix image remains unchanged as failure evidence.
 
 ## Environment
 

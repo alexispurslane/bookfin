@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import 'book_crop.dart';
 import 'pdf.dart';
 import 'word_bands.dart';
 
@@ -189,16 +190,22 @@ class WordScreen {
   final List<DrawnBand> bands;
 }
 
-typedef _ScreenKey = ({int page, WordSettings settings, int screen});
+typedef _ColumnKey = ({int page, WordSettings settings, BookProfile? profile});
+typedef _ScreenKey = ({
+  int page,
+  WordSettings settings,
+  int screen,
+  WordColumn column,
+});
 
 /// The band images of one screen while they render and after.
 class _ScreenImages {
-  _ScreenImages(this.key, this.column, PdfBook book) {
+  _ScreenImages(this.key, PdfBook book) {
     ready = _render(book);
   }
 
   final _ScreenKey key;
-  final WordColumn column;
+  WordColumn get column => key.column;
 
   /// The drawn bands, or null when the screen was dropped before they
   /// arrived.
@@ -295,7 +302,8 @@ class PdfWordPages {
   ValueListenable<WordScreen?> get shown => _shown;
 
   /// The columns that were asked for last, the least recent first.
-  final _columns = <(int, WordSettings), Future<WordColumn?>>{};
+  final _columns = <_ColumnKey, Future<WordColumn?>>{};
+  _ColumnKey? _selectedColumn;
   static const _keptColumns = 4;
 
   /// The screens with images or renders, at most two.
@@ -312,28 +320,32 @@ class PdfWordPages {
   /// The column of source page [page] for [settings], and the bands of its
   /// screens, as [ReflowPage.wordColumn] gives them. Null when the page has
   /// no word geometry. The layout and the band plans run in one hop of the
-  /// book. The last four columns are kept, so a page that shows keeps its
-  /// column, even when the book profile freezes meanwhile.
+  /// book. The selected column stays unchanged until the page or settings
+  /// change. Other cached plans are reused only for the same book profile.
   Future<WordColumn?> column(int page, WordSettings settings) {
     final ratio = settings.devicePixelRatio;
     if (!(ratio > 0 && ratio.isFinite)) {
       throw ArgumentError.value(ratio, 'devicePixelRatio', 'must be positive');
     }
-    final key = (page, settings);
-    final column = _columns.remove(key) ?? _plan(page, settings);
+    final selected = _selectedColumn;
+    final key = selected?.page == page && selected?.settings == settings
+        ? selected!
+        : (page: page, settings: settings, profile: book.survey.profile);
+    _selectedColumn = key;
+    final column = _columns.remove(key) ?? _plan(key);
     _columns[key] = column;
     if (_columns.length > _keptColumns) _columns.remove(_columns.keys.first);
     return column;
   }
 
-  Future<WordColumn?> _plan(int page, WordSettings settings) async {
+  Future<WordColumn?> _plan(_ColumnKey key) async {
     try {
-      final reflow = await book.reflowPage(page);
+      final reflow = await book.reflowPage(key.page);
       if (reflow == null) return null;
-      return await reflow.wordColumn(settings);
+      return await reflow.wordColumn(key.settings);
     } catch (_) {
       // A failed column is asked for again by the next call.
-      _columns.remove((page, settings));
+      _columns.remove(key);
       rethrow;
     }
   }
@@ -361,13 +373,18 @@ class PdfWordPages {
       column.column.screenCount - 1,
       'screen',
     );
-    final key = (page: page, settings: settings, screen: screen);
+    final key = (
+      page: page,
+      settings: settings,
+      screen: screen,
+      column: column,
+    );
     _keep({_displayed?.key, key});
-    final asked = _screens[key] ??= _ScreenImages(key, column, book);
+    final asked = _screens[key] ??= _ScreenImages(key, book);
     final List<DrawnBand>? bands;
     try {
       bands = await _ready(asked);
-    } catch (_) {
+    } on Exception {
       // A call that a later call replaced reports nothing.
       if (generation != _generation) return;
       rethrow;
@@ -384,11 +401,16 @@ class PdfWordPages {
     _keep({key});
     final next = screen + (forward ? 1 : -1);
     if (next < 0 || next >= column.column.screenCount) return;
-    final aheadKey = (page: page, settings: settings, screen: next);
-    final ahead = _screens[aheadKey] ??= _ScreenImages(aheadKey, column, book);
+    final aheadKey = (
+      page: page,
+      settings: settings,
+      screen: next,
+      column: column,
+    );
+    final ahead = _screens[aheadKey] ??= _ScreenImages(aheadKey, book);
     try {
       await _ready(ahead);
-    } catch (_) {
+    } on Exception {
       // The screen ahead renders again when it is asked for.
     }
   }
