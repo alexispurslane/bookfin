@@ -260,7 +260,7 @@ void main() {
       fontSize: 20,
       screenHeight: 700,
     );
-      final before = (await tester.runAsync(() => page.column(settings)))!;
+    final before = (await tester.runAsync(() => page.column(settings)))!;
     final reading = (await tester.runAsync(() => analyzedPage(opened.pdf, 5)))!;
     final running = headerAndFolio(5, lineTexts(reading)!);
     expect(running, hasLength(2));
@@ -271,7 +271,7 @@ void main() {
     }
     await openSettings(tester);
     await toggle(tester);
-      final after = (await tester.runAsync(() => page.column(settings)))!;
+    final after = (await tester.runAsync(() => page.column(settings)))!;
     expect(after.pieceItems, before.pieceItems);
     expect(after.pieces, before.pieces);
     expect(after.screenStarts, before.screenStarts);
