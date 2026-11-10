@@ -1,5 +1,8 @@
 # Homepage PDF comparison
 
+Historical evidence for `boo-54l1`. The live homepage now uses the authorized [Nihil Unbound excerpt](../nihil-unbound/README.md) and a [real shared History capture](../shared-history/README.md).
+The notes below describe the earlier homepage revision; the Raven illustration remains useful supplementary evidence of retained imagery.
+
 Captured on November 10, 2026 for `boo-54l1`.
 These are Bookfin host-renderer captures: the production PDF viewport rendered on a computer through Flutter's test runner.
 They are not Android screenshots, HTML recreations, or evidence of device performance.
