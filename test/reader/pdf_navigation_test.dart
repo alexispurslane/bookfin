@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 
 import 'package:bookfin/reader/document.dart';
 import 'package:bookfin/reader/pdf.dart';
+import 'package:bookfin/reader/pdf_viewport.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -64,6 +65,10 @@ class HeldPdf extends PdfBook {
 }
 
 void main() {
+  final reflowScroll = find.descendant(
+    of: find.byType(PdfViewport),
+    matching: find.byType(SingleChildScrollView),
+  );
   testWidgets(
     'repeated original-page requests share one pending draw and release its image',
     (tester) async {
@@ -132,7 +137,7 @@ void main() {
       await tester.tap(find.byTooltip('Reflow text'));
       await tester.pumpAndSettle();
       final scroll = tester
-          .widget<SingleChildScrollView>(find.byType(SingleChildScrollView))
+          .widget<SingleChildScrollView>(reflowScroll)
           .controller!;
       expect(
         scroll.position.maxScrollExtent,
@@ -177,9 +182,8 @@ void main() {
       await tester.pump();
       await tester.tap(find.byTooltip('Reflow text'));
       await tester.pumpAndSettle();
-      ScrollController scroll() => tester
-          .widget<SingleChildScrollView>(find.byType(SingleChildScrollView))
-          .controller!;
+      ScrollController scroll() =>
+          tester.widget<SingleChildScrollView>(reflowScroll).controller!;
       expect(scroll().position.maxScrollExtent, 0);
       await navigation.move(true);
       await tester.pumpAndSettle();
