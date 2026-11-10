@@ -407,11 +407,7 @@ class PdfWordScreens {
 
   void _publishText(_OpenPage open) {
     final shown = _pages.shown.value, page = open.text;
-    if (shown == null ||
-        page == null ||
-        shown.page != open.page ||
-        !identical(shown.column, open.column) ||
-        shown.screen != open.screen) {
+    if (shown == null || page == null || shown.page != open.page) {
       return;
     }
     final before = _text.value;

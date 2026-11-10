@@ -21,13 +21,15 @@ import 'package:bookfin/reader/word_bands.dart';
 import 'package:bookfin/reader/word_pages.dart';
 import 'package:bookfin/reader/word_selection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pdfrx_engine/pdfrx_engine.dart' as native;
 
 import 'ocr_hop_test.dart' show runInWorker;
 import 'page_analysis_test.dart' show footnotePage;
 import 'page_geometry_test.dart' show hocrFixture, layoutFixture;
-import 'word_pages_test.dart' show marginsBook;
+import 'word_pages_test.dart' show marginsBook, screenPieces;
 
 /// A text supply for scanned pages whose recognized text arrives only when
 /// [textArrives] completes. [layout] gives a page's words, and [read] its
@@ -539,6 +541,125 @@ void main() {
     );
     await close(tester, book);
   });
+
+  for (final change in ['turn', 'size change']) {
+    testWidgets('text arriving during a pending $change enables selection '
+        'and paragraph reading on the screen still shown', (tester) async {
+      final semantics = tester.ensureSemantics();
+      final supply = HeldRecognition.gibbon();
+      final born = await open(tester, footnotePage);
+      final bandsArrive = Completer<void>();
+      addTearDown(() {
+        if (!supply.textArrives.isCompleted) supply.textArrives.complete();
+        if (!bandsArrive.isCompleted) bandsArrive.complete();
+      });
+      final book = CopiedPdf(born, textSupply: supply);
+      final reports = await show(tester, book);
+      await showsScreen(tester, 1, 0);
+      book.bandsWait = bandsArrive.future;
+      unawaited(reports.navigator!.move(true));
+      final before = await showsScreen(tester, 1, 1);
+      await settle(tester, () => book.waitingBands > 0, 'the next bands wait');
+      if (change == 'turn') {
+        unawaited(reports.navigator!.move(true));
+        await tester.pump();
+      } else {
+        final waiting = book.waitingBands;
+        await show(tester, book, fontSize: 14, reports: reports);
+        await settle(
+          tester,
+          () => book.waitingBands > waiting,
+          'the resized bands wait',
+        );
+      }
+      expect(shown(tester), same(before));
+      supply.textArrives.complete();
+      await settle(tester, () => !progressLine(), 'the text attaches');
+      final (_, read) = await attached(tester, book, 1);
+      final screens = tester
+          .widget<PdfWordView>(find.byType(PdfWordView))
+          .screens;
+      expect(shown(tester), same(before));
+      expect(screens.text.value, isNotNull);
+      final text = screens.text.value!;
+      expect(text.column, same(before.column.column));
+      expect(text.screen, before.screen);
+      expect(text.page.attached.text, same(read.text));
+      expect(text.page.attached.attachment, same(read.attachment));
+
+      final column = before.column.column;
+      final piece = screenPieces(column, before.screen).firstWhere((piece) {
+        final word = column.word(piece);
+        if (word < 0) return false;
+        final first = read.attachment![word * 2];
+        final end = read.attachment![word * 2 + 1];
+        return RegExp(r'^[A-Za-z]+$')
+            .hasMatch(read.text.source.substring(first, end));
+      });
+      final word = column.word(piece);
+      final first = read.attachment![word * 2];
+      final end = read.attachment![word * 2 + 1];
+      final expected = read.text.source.substring(first, end);
+      final rect = column
+          .target(piece)
+          .shift(Offset(0, -column.screenTop(before.screen)));
+      expect(text.rectsFor(first, end), [rect]);
+      final labels = <String>[];
+      void readLabels(SemanticsNode node) {
+        final label = node.getSemanticsData().label;
+        if (label.isNotEmpty) labels.add(label);
+        node.visitChildren((child) {
+          readLabels(child);
+          return true;
+        });
+      }
+
+      readLabels(tester.getSemantics(find.byType(WordSelectable)));
+      expect(labels, isNotEmpty);
+      expect(labels.join(' '), contains(expected));
+      expect(labels.every(read.text.text.contains), isTrue);
+
+      String? copied;
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        (call) async {
+          if (call.method == 'Clipboard.setData') {
+            copied = (call.arguments as Map)['text'] as String;
+          }
+          return null;
+        },
+      );
+      addTearDown(
+        () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+          SystemChannels.platform,
+          null,
+        ),
+      );
+      await tester.longPressAt(
+        rect.center + tester.getTopLeft(find.byType(WordScreenView)),
+      );
+      await tester.pumpAndSettle();
+      final selection = tester
+          .renderObject<RenderWordSelectable>(find.byType(WordSelectable))
+          .selection;
+      expect(selection.text, expected);
+      expect(selection.rects, [rect]);
+      expect(find.text('Copy'), findsOneWidget);
+      await tester.tap(find.text('Copy'));
+      await tester.pump();
+      expect(copied, expected);
+      screens.checkInvariants();
+      bandsArrive.complete();
+      await settle(
+        tester,
+        () => !identical(shown(tester), before),
+        'the requested screen shows',
+      );
+      screens.checkInvariants();
+      semantics.dispose();
+      await close(tester, book);
+    });
+  }
 
   testWidgets('word images start at whole device pixels when the reader '
       'has a fractional position inside its parent', (tester) async {
