@@ -47,3 +47,7 @@ Parent integrated as b901b6c; 131 combined geometry/reader tests passed, includi
 **2026-11-10T20:09:19Z**
 
 User chose to test the installed update themselves. Parent will perform no further phone interaction for this check. Installed base.apk SHA-256 exactly matches built APK: aaff40dd2354e6fa926976d4aa45af157fe06cfefaea678f7b2921ef11ee35bd. Code integrated and host verification complete; physical reading acceptance remains user-owned and part of tb-fb6j.
+
+**2026-11-10T20:10:24Z**
+
+User acceptance: the user verified on the Pixel 8 that the Nihil Unbound cropping bug is fixed.

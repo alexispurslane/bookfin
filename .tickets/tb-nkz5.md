@@ -51,3 +51,7 @@ Fix-stage required full flutter test passes: 2522 passed, 21 skipped, zero failu
 **2026-11-10T20:04:49Z**
 
 Parent inspected implementation and both review resolutions, including failed replacement rendering and reversed completion regression. Merged with only ticket-note conflicts, retaining all notes and the integrated boo-7plj fix. Combined nine-file reader suite passed all 110 tests. Log /tmp/bookfin-trim-integration.log. No additional device install yet; physical verification will accompany the pending Nihil Unbound crop repair.
+
+**2026-11-10T20:10:25Z**
+
+User acceptance: the user verified on the Pixel 8 that the Trim margins toggle works.

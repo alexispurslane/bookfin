@@ -17,3 +17,9 @@ W10 of docs/plans/pdf-word-image-reflow.md (Device acceptance). Use the T3 devic
 
 The first screen of a page with cached text shows within 400 ms on the Pixel 8, or the ticket records the measured time and a follow-up ticket. Graphics memory stays within the band bound. Turns inside a page drop no frame. Screenshots and measurements are saved under tool/evidence and shown to the user for acceptance.
 
+
+## Notes
+
+**2026-11-10T20:10:25Z**
+
+User accepted the Nihil Unbound crop repair and Trim margins toggle on the Pixel 8. Remaining product scope is word-image reflow (the printed words cut into images and wrapped to the screen), with its planned interactions. Do not repeat crop/toggle acceptance unless integration changes that behavior.
