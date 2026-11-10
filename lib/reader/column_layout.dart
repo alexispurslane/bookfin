@@ -343,6 +343,27 @@ ReflowColumn layoutColumn(
 /// TODO(tb-fb6j): the device acceptance tunes it once against an EPUB.
 const _wordSizeRatio = 0.92;
 
+/// The word ranges of source paragraphs, including text kept in regions.
+/// Uses layout's paragraph-start rule in source reading order. Running
+/// lines are omitted. Runs in a hop.
+List<(int, int)> wordParagraphs(PageGeometry geometry, PageAnalysis analysis) {
+  final source = _Source.of(geometry, analysis);
+  final ranges = <(int, int)>[];
+  int? first, end, previous;
+  for (var line = 0; line < geometry.lineCount; line++) {
+    if (analysis.isRunning(line)) continue;
+    if (first != null && _startsParagraph(source, line, previous)) {
+      ranges.add((first, end!));
+      first = null;
+    }
+    first ??= geometry.lineStarts[line];
+    end = geometry.lineStarts[line + 1];
+    previous = line;
+  }
+  if (first != null) ranges.add((first, end!));
+  return ranges;
+}
+
 /// The slope of a source line, in radians, above which its words turn level.
 const _turnLimit = 0.3 * math.pi / 180;
 

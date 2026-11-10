@@ -19,6 +19,7 @@ import 'package:bookfin/reader/pdf_viewport.dart';
 import 'package:bookfin/reader/pdf_word_view.dart';
 import 'package:bookfin/reader/word_bands.dart';
 import 'package:bookfin/reader/word_pages.dart';
+import 'package:bookfin/reader/word_selection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pdfrx_engine/pdfrx_engine.dart' as native;
@@ -828,6 +829,7 @@ void main() {
     'column',
     'bands',
     'attachment',
+    'selection text',
   ]) {
     testWidgets('an internal $stage error reaches the initial word-screen '
         'wait instead of selecting fallback', (tester) async {
@@ -843,7 +845,8 @@ void main() {
       )..textArrives.complete();
       Future<R> failingWork<M, R>(FutureOr<R> Function(M) work, M input) =>
           (stage == 'analysis' && work == analyzePage) ||
-              (stage == 'column' && work == planWordColumn)
+              (stage == 'column' && work == planWordColumn) ||
+              (stage == 'selection text' && work == prepareWordText)
           ? Future.error(failure)
           : runInWorker(work, input);
       final born = await open(tester, footnotePage, hop: failingWork);
@@ -853,7 +856,9 @@ void main() {
       });
       final book = CopiedPdf(born, textSupply: supply)
         ..bandFailure = stage == 'bands' ? failure : null
-        ..bandsWait = stage == 'attachment' ? bandsArrive.future : null;
+        ..bandsWait = stage == 'attachment' || stage == 'selection text'
+            ? bandsArrive.future
+            : null;
       var fallbacks = 0;
       final screens = PdfWordScreens(
         book,

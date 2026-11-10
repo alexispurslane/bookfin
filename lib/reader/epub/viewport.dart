@@ -17,13 +17,12 @@
 // EpubNoteView draws a note that the pager laid out for the note sheet. It
 // shares the page's semantics nodes, selection and Copy, and has no
 // gestures of its own.
-import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 
 import '../page_swipes.dart';
+import '../selection.dart';
 import 'layout.dart';
 import 'pager.dart';
 import 'prepare.dart';
@@ -146,7 +145,7 @@ class _EpubViewportState extends State<EpubViewport> {
   }
 
   @override
-  Widget build(BuildContext context) => _CopyArea(
+  Widget build(BuildContext context) => ReaderCopyArea(
     area: _area,
     focusNode: _focus,
     onCopy: _copy,
@@ -155,22 +154,9 @@ class _EpubViewportState extends State<EpubViewport> {
     child: PageSwipes(
       onTurn: widget.onTurn,
       swipes: () => !(_selection?.selecting ?? false),
-      child: RawGestureDetector(
-        behavior: HitTestBehavior.opaque,
-        // The page's own semantics turn pages and follow links. The
-        // recognizer's default action would tap the page's corner.
-        excludeFromSemantics: true,
-        gestures: {
-          TapGestureRecognizer:
-              GestureRecognizerFactoryWithHandlers<TapGestureRecognizer>(
-                () => TapGestureRecognizer(debugOwner: this),
-                (tap) => tap
-                  ..onTapDown = ((_) =>
-                      _selectedAtDown = _selection?.selecting ?? false)
-                  ..onTapUp = (details) =>
-                      _tapAt(details.localPosition, selected: _selectedAtDown),
-              ),
-        },
+      child: ReaderTapArea(
+        onTapDown: () => _selectedAtDown = _selection?.selecting ?? false,
+        onTap: (point) => _tapAt(point, selected: _selectedAtDown),
         child: _Page(
           key: _page,
           pager: widget.pager,
@@ -181,60 +167,6 @@ class _EpubViewportState extends State<EpubViewport> {
           onTapAt: _tapAt,
         ),
       ),
-    ),
-  );
-}
-
-/// A selection region whose Copy, in its menu and by its shortcut, calls
-/// [onCopy], and which writes no clipboard of its own. Its menu offers Copy
-/// and Select all. On Android, Copy ends the selection, and elsewhere it
-/// hides the menu, as Flutter's own menu does.
-class _CopyArea extends StatelessWidget {
-  const _CopyArea({
-    this.area,
-    this.focusNode,
-    required this.onCopy,
-    required this.child,
-  });
-  final GlobalKey<SelectionAreaState>? area;
-  final FocusNode? focusNode;
-  final VoidCallback onCopy;
-  final Widget child;
-
-  Widget _menu(BuildContext context, SelectableRegionState region) {
-    void copied() {
-      onCopy();
-      if (defaultTargetPlatform == TargetPlatform.android) {
-        region.clearSelection();
-      } else {
-        region.hideToolbar();
-      }
-    }
-
-    return AdaptiveTextSelectionToolbar.buttonItems(
-      anchors: region.contextMenuAnchors,
-      buttonItems: [
-        for (final item in region.contextMenuButtonItems)
-          if (item.type == ContextMenuButtonType.copy)
-            item.copyWith(onPressed: copied)
-          else if (item.type == ContextMenuButtonType.selectAll)
-            item,
-      ],
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) => Actions(
-    actions: {
-      CopySelectionTextIntent: CallbackAction<CopySelectionTextIntent>(
-        onInvoke: (_) => onCopy(),
-      ),
-    },
-    child: SelectionArea(
-      key: area,
-      focusNode: focusNode,
-      contextMenuBuilder: _menu,
-      child: child,
     ),
   );
 }
@@ -559,7 +491,7 @@ class _EpubNoteViewState extends State<EpubNoteView> {
   }
 
   @override
-  Widget build(BuildContext context) => _CopyArea(
+  Widget build(BuildContext context) => ReaderCopyArea(
     onCopy: _copy,
     child: _Note(key: _note, note: widget.note),
   );

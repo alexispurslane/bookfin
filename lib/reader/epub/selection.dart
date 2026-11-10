@@ -14,6 +14,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 
+import '../selection.dart';
 import 'dom.dart';
 import 'layout.dart';
 import 'semantics.dart';
@@ -239,56 +240,68 @@ PageCaret _caretOf(
 /// - The text lines are the shown page's [textLines].
 /// - The start and the end carets are both null, or both on those lines,
 ///   each within its line's code units.
-class PageSelection with Selectable, ChangeNotifier, SelectionRegistrant {
+class PageSelection
+    with ChangeNotifier, ReaderSelection<PageCaret>, SelectionRegistrant {
   PageSelection(this.box);
 
-  /// The page's render object.
+  @override
   final RenderBox box;
-
   LaidPage? _page;
   List<Slice> _lines = const [];
-  PageCaret? _start;
-  PageCaret? _end;
-  LayerLink? _startHandle;
-  LayerLink? _endHandle;
-  SelectionGeometry _geometry = const SelectionGeometry(
-    status: SelectionStatus.none,
-    hasContent: false,
-  );
 
-  /// The shown page, or null before the first.
   LaidPage? get page => _page;
   set page(LaidPage? value) {
     if (identical(value, _page)) return;
     _page = value;
     _lines = value == null ? const [] : textLines(value);
-    _start = _end = null;
-    _update();
+    updateSelection(clear: true);
   }
 
-  /// Whether some text is selected: the carets are apart.
-  bool get selecting => _start != null && _start != _end;
+  @override
+  (PageCaret, PageCaret)? get extent => _lines.isEmpty
+      ? null
+      : (
+          PageCaret(0, _lines.first.units.$1),
+          PageCaret(_lines.length - 1, _lines.last.units.$2),
+        );
 
-  /// The selected text, or null when nothing is selected.
-  String? get text {
-    final (page, start, end) = (_page, _start, _end);
-    if (page == null || start == null || end == null || start == end) {
-      return null;
+  @override
+  PageCaret? caretFor(ui.Offset point) => caretAt(_page!, _lines, point);
+
+  @override
+  int compareCarets(PageCaret first, PageCaret second) =>
+      first.compareTo(second);
+
+  @override
+  (PageCaret, PageCaret)? rangeFor(
+    ui.Offset point,
+    TextGranularity granularity,
+  ) => granularity == TextGranularity.paragraph
+      ? blockAt(_page!, _lines, point)
+      : wordAt(_page!, _lines, point);
+
+  @override
+  String textFor(PageCaret start, PageCaret end) =>
+      selectedText(_page!, _lines, start, end);
+
+  @override
+  int offsetOf(PageCaret caret) {
+    var offset = 0;
+    for (var index = 0; index < caret.line; index++) {
+      final (first, end) = _lines[index].units;
+      offset += end - first;
     }
-    return selectedText(page, _lines, start, end);
+    return offset + caret.unit - _lines[caret.line].units.$1;
   }
 
-  /// Throws a [StateError] when an invariant of the class does not hold.
+  @override
   void checkInvariants() {
-    final page = _page;
-    final lines = page == null ? const <Slice>[] : textLines(page);
+    super.checkInvariants();
+    final lines = _page == null ? const <Slice>[] : textLines(_page!);
     if (!listEquals(lines, _lines)) {
       throw StateError('The text lines are not the shown page\'s.');
     }
-    if ((_start == null) != (_end == null)) {
-      throw StateError('One caret is set without the other.');
-    }
-    for (final caret in [?_start, ?_end]) {
+    for (final caret in selectionCarets) {
       if (caret.line < 0 || caret.line >= lines.length) {
         throw StateError('$caret is on no text line of the page.');
       }
@@ -299,179 +312,9 @@ class PageSelection with Selectable, ChangeNotifier, SelectionRegistrant {
     }
   }
 
-  /// The selected parts of the lines, in logical pixels from the page's top
-  /// left corner, where the page draws them.
-  List<ui.Rect> get rects => _geometry.selectionRects;
-
   @override
-  SelectionGeometry get value => _geometry;
-
-  @override
-  Size get size => box.size;
-
-  @override
-  Matrix4 getTransformTo(RenderObject? ancestor) =>
-      box.getTransformTo(ancestor);
-
-  @override
-  List<ui.Rect> get boundingBoxes => [ui.Offset.zero & box.size];
-
-  @override
-  int get contentLength => _lines.isEmpty ? 0 : _offset(_lineEnd);
-
-  @override
-  SelectedContent? getSelectedContent() {
-    final text = this.text;
-    return text == null ? null : SelectedContent(plainText: text);
-  }
-
-  @override
-  SelectedContentRange? getSelection() {
-    final (start, end) = (_start, _end);
-    if (start == null || end == null) return null;
-    return SelectedContentRange(
-      startOffset: _offset(start),
-      endOffset: _offset(end),
-    );
-  }
-
-  @override
-  void pushHandleLayers(LayerLink? startHandle, LayerLink? endHandle) {
-    // The region keeps the handles' last owner, and lets it go when it
-    // closes, after the page is gone. RenderParagraph does the same.
-    if (!box.attached) return;
-    if (startHandle == _startHandle && endHandle == _endHandle) return;
-    _startHandle = startHandle;
-    _endHandle = endHandle;
-    box.markNeedsPaint();
-  }
-
-  @override
-  SelectionResult dispatchSelectionEvent(SelectionEvent event) {
-    final page = _page;
-    final result = switch (event) {
-      _ when page == null || _lines.isEmpty => SelectionResult.none,
-      SelectWordSelectionEvent(:final globalPosition) => _select(
-        wordAt(page, _lines, box.globalToLocal(globalPosition)),
-        globalPosition,
-      ),
-      SelectParagraphSelectionEvent(:final globalPosition) => _select(
-        blockAt(page, _lines, box.globalToLocal(globalPosition)),
-        globalPosition,
-      ),
-      SelectionEdgeUpdateEvent() => _moveEdge(page, event),
-      ClearSelectionEvent() => _clear(),
-      SelectAllSelectionEvent() => _select((
-        PageCaret(0, _lines.first.units.$1),
-        _lineEnd,
-      ), null),
-      // Arrow keys turn the page, so they never extend a selection.
-      _ => SelectionResult.none,
-    };
-    _update();
-    return result;
-  }
-
-  /// Paints the selected [rects] in [color] and the handle layers, for the
-  /// page at [offset].
-  void paint(PaintingContext context, ui.Offset offset, ui.Color color) {
-    if (selecting) {
-      final paint = ui.Paint()..color = color;
-      for (final rect in rects) {
-        context.canvas.drawRect(rect.shift(offset), paint);
-      }
-    }
-    void leader(LayerLink? link, SelectionPoint? point) {
-      if (link == null || point == null) return;
-      context.pushLayer(
-        LeaderLayer(link: link, offset: offset + point.localPosition),
-        (_, _) {},
-        ui.Offset.zero,
-      );
-    }
-
-    leader(_startHandle, _geometry.startSelectionPoint);
-    leader(_endHandle, _geometry.endSelectionPoint);
-  }
-
-  PageCaret get _lineEnd => PageCaret(_lines.length - 1, _lines.last.units.$2);
-
-  /// The number of code units of the page's text lines before [caret].
-  int _offset(PageCaret caret) {
-    var offset = 0;
-    for (var index = 0; index < caret.line; index++) {
-      final (first, end) = _lines[index].units;
-      offset += end - first;
-    }
-    return offset + caret.unit - _lines[caret.line].units.$1;
-  }
-
-  SelectionResult _select((PageCaret, PageCaret)? range, ui.Offset? global) {
-    if (range == null) return SelectionResult.none;
-    _start = range.$1;
-    _end = range.$2;
-    if (global == null) return SelectionResult.none;
-    return SelectionUtils.getResultBasedOnRect(
-      ui.Offset.zero & box.size,
-      box.globalToLocal(global),
-    );
-  }
-
-  SelectionResult _clear() {
-    _start = _end = null;
-    return SelectionResult.none;
-  }
-
-  /// Moves the start or end of the selection to the event's point, by
-  /// character, by word or by paragraph.
-  SelectionResult _moveEdge(LaidPage page, SelectionEdgeUpdateEvent event) {
-    final local = box.globalToLocal(event.globalPosition);
-    final caret = caretAt(page, _lines, local)!;
-    final moving = event.type == SelectionEventType.startEdgeUpdate;
-    final other = (moving ? _end : _start) ?? caret;
-    final range = switch (event.granularity) {
-      TextGranularity.word => wordAt(page, _lines, local),
-      TextGranularity.paragraph => blockAt(page, _lines, local),
-      TextGranularity.document => (
-        PageCaret(0, _lines.first.units.$1),
-        _lineEnd,
-      ),
-      TextGranularity.character || TextGranularity.line => (caret, caret),
-    }!;
-    // The edge takes the side of the word or paragraph away from the other
-    // edge, so that the whole of it is selected.
-    final away = other.compareTo(caret) <= 0 ? range.$2 : range.$1;
-    if (moving) {
-      _start = away;
-      _end ??= other;
-    } else {
-      _end = away;
-      _start ??= other;
-    }
-    return SelectionUtils.getResultBasedOnRect(
-      ui.Offset.zero & box.size,
-      local,
-    );
-  }
-
-  /// Sets the geometry from the carets, and tells the listeners and the
-  /// page when it changed.
-  void _update() {
-    final page = _page;
-    final (start, end) = (_start, _end);
-    final next = page == null || start == null || end == null
-        ? SelectionGeometry(
-            status: SelectionStatus.none,
-            hasContent: _lines.isNotEmpty,
-          )
-        : _measure(page, start, end);
-    if (next == _geometry) return;
-    _geometry = next;
-    box.markNeedsPaint();
-    notifyListeners();
-  }
-
-  SelectionGeometry _measure(LaidPage page, PageCaret start, PageCaret end) {
+  SelectionGeometry geometryFor(PageCaret start, PageCaret end) {
+    final page = _page!;
     final forward = start.compareTo(end) <= 0;
     final (from, to) = forward ? (start, end) : (end, start);
     final rects = <ui.Rect>[

@@ -12,6 +12,7 @@ import 'document.dart';
 import 'pdf.dart';
 import 'word_bands.dart';
 import 'word_pages.dart';
+import 'word_selection.dart';
 
 /// The source page that [PdfWordScreens] opened, and what it learned of it.
 class _OpenPage {
@@ -37,6 +38,7 @@ class _OpenPage {
 
   ReflowPage? reflow;
   AttachedText? attached;
+  WordPageText? text;
 
   /// The column of the page for the settings that it was laid out for, kept
   /// until the settings change, and the screen of it that is asked for.
@@ -95,6 +97,11 @@ class PdfWordScreens {
   var _disposed = false;
   final _showing = ValueNotifier(false);
   final _waitingForText = ValueNotifier(false);
+  final _text = ValueNotifier<WordScreenText?>(null);
+
+  /// The reading text paired with the displayed column and screen, or null
+  /// before attachment. Selection, semantics and read-aloud share it.
+  ValueListenable<WordScreenText?> get text => _text;
 
   /// Whether a screen of the shown page shows.
   ValueListenable<bool> get showing => _showing;
@@ -121,6 +128,7 @@ class PdfWordScreens {
   void open(PdfAddress place, {bool last = false}) {
     _open?.end();
     final open = _open = _OpenPage(place, last: last);
+    _text.value = null;
     _showing.value = false;
     _waitingForText.value = true;
     unawaited(_prepare(open));
@@ -172,6 +180,7 @@ class PdfWordScreens {
   void leave() {
     _open?.end();
     _open = null;
+    _text.value = null;
     _showing.value = false;
     _waitingForText.value = false;
     _pages
@@ -189,6 +198,7 @@ class PdfWordScreens {
       ..dispose();
     _showing.dispose();
     _waitingForText.dispose();
+    _text.dispose();
   }
 
   /// Checks the open page, requested screen and displayed band ownership.
@@ -204,6 +214,19 @@ class PdfWordScreens {
     if (_showing.value &&
         (open == null || open.gaveUp || screen.value?.page != open.page)) {
       throw StateError('The displayed word screen belongs to the open page.');
+    }
+    final text = _text.value, shown = screen.value;
+    if (text != null &&
+        (shown == null ||
+            !identical(text.column, shown.column.column) ||
+            text.screen != shown.screen ||
+            !identical(
+              text.page.attached.attachment,
+              open?.attached?.attachment,
+            ))) {
+      throw StateError(
+        'The selectable text belongs to the displayed word screen.',
+      );
     }
     final column = open?.column;
     if (column != null &&
@@ -238,6 +261,15 @@ class PdfWordScreens {
     AttachedText? attached;
     try {
       attached = await reflow.attachedText();
+      if (attached.attachment != null) {
+        final plan = await book.hop(prepareWordText, (
+          geometry: reflow.geometry,
+          analysis: reflow.analysis,
+          attached: attached,
+        ));
+        if (!identical(open, _open) || open.gaveUp) return;
+        open.text = WordPageText(attached, plan);
+      }
     } on Exception {
       // The words stay without text, as after a failed recognition.
     } catch (error, stack) {
@@ -268,7 +300,10 @@ class PdfWordScreens {
       open.screen = screen;
       return _show(open);
     }
-    if (_showing.value) _report(open);
+    if (_showing.value) {
+      _publishText(open);
+      _report(open);
+    }
   }
 
   Future<void> _layOut(_OpenPage open) async {
@@ -347,6 +382,7 @@ class PdfWordScreens {
       return;
     }
     if (!open.shown.isCompleted) open.shown.complete(true);
+    _publishText(open);
     _showing.value = true;
     _report(open);
   }
@@ -369,6 +405,24 @@ class PdfWordScreens {
     }
   }
 
+  void _publishText(_OpenPage open) {
+    final shown = _pages.shown.value, page = open.text;
+    if (shown == null ||
+        page == null ||
+        shown.page != open.page ||
+        !identical(shown.column, open.column) ||
+        shown.screen != open.screen) {
+      return;
+    }
+    final before = _text.value;
+    if (identical(before?.page, page) &&
+        identical(before?.column, shown.column.column) &&
+        before?.screen == shown.screen) {
+      return;
+    }
+    _text.value = WordScreenText(page, shown.column.column, shown.screen);
+  }
+
   void _reportError(_OpenPage open, Object error, StackTrace stack) {
     if (open.shown.isCompleted) Error.throwWithStackTrace(error, stack);
     open.shown.completeError(error, stack);
@@ -376,6 +430,7 @@ class PdfWordScreens {
 
   void _giveUp(_OpenPage open) {
     open.gaveUp = true;
+    _text.value = null;
     _showing.value = false;
     _waitingForText.value = false;
     if (open.shown.isCompleted) {
@@ -397,11 +452,13 @@ class PdfWordView extends StatelessWidget {
     required this.fontSize,
     required this.waiting,
     required this.onLayout,
+    this.selectionKey,
   });
   final PdfWordScreens screens;
   final double fontSize;
   final Widget waiting;
   final ValueChanged<WordSettings> onLayout;
+  final GlobalKey? selectionKey;
 
   /// The margins of a screen in logical pixels, as the text view's.
   static const _side = 20.0, _top = 12.0;
@@ -438,13 +495,9 @@ class PdfWordView extends StatelessWidget {
           padding: EdgeInsets.fromLTRB(side, top, side, top),
           child: _DevicePixelOrigin(
             ratio: screens.settings!.devicePixelRatio,
-            child: ValueListenableBuilder<WordScreen?>(
-              valueListenable: screens.screen,
-              builder: (_, shown, view) => Semantics(
-                label: shown == null ? null : 'Source page ${shown.page}',
-                image: true,
-                child: view,
-              ),
+            child: WordSelectable(
+              key: selectionKey,
+              text: screens.text,
               child: WordScreenView(screen: screens.screen),
             ),
           ),

@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:math' as math;
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'book_crop.dart';
 import 'book_survey.dart';
@@ -11,6 +11,8 @@ import 'document.dart';
 import 'page_swipes.dart';
 import 'pdf.dart';
 import 'pdf_word_view.dart';
+import 'selection.dart';
+import 'word_selection.dart';
 
 /// The pages of an open PDF, as the original page or as reflowed text.
 ///
@@ -82,6 +84,27 @@ class PdfViewport extends StatefulWidget {
 class _PdfViewportState extends State<PdfViewport>
     implements DocumentNavigator {
   final _scroll = ScrollController();
+  final _wordSelection = GlobalKey();
+  final _selectionArea = GlobalKey<SelectionAreaState>();
+  bool _selectedAtDown = false;
+  WordSelection? get _selection =>
+      (_wordSelection.currentContext?.findRenderObject()
+              as RenderWordSelectable?)
+          ?.selection;
+
+  void _copy() {
+    if (_selection?.text case final text?) {
+      unawaited(Clipboard.setData(ClipboardData(text: text)));
+    }
+  }
+
+  void _tap() {
+    if (_selectedAtDown) {
+      _selectionArea.currentState?.selectableRegion.clearSelection();
+    } else {
+      widget.onTap();
+    }
+  }
 
   /// The zoom and pan of the original page.
   final _zoom = TransformationController();
@@ -615,15 +638,16 @@ class _PdfViewportState extends State<PdfViewport>
     onScrollRight: () => widget.onTurn(false),
     child: PageSwipes(
       onTurn: widget.onTurn,
-      swipes: () => !_zoomed,
+      swipes: () => !_zoomed && !(_selection?.selecting ?? false),
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         // The page's own semantics turn pages. The screen offers the
         // controls to a screen reader.
         excludeFromSemantics: true,
-        onTap: widget.onTap,
+        onTap: _usingWords ? null : _tap,
         child: Listener(
           onPointerDown: (_) {
+            _selectedAtDown = _selection?.selecting ?? false;
             if (_usingWords) _words.touch();
           },
           child: _view(),
@@ -635,11 +659,19 @@ class _PdfViewportState extends State<PdfViewport>
   /// The shown page in the chosen view.
   Widget _view() {
     if (_usingWords) {
-      return PdfWordView(
-        screens: _words,
-        fontSize: widget.fontSize,
-        waiting: _wordWaiting(),
-        onLayout: _words.lay,
+      return ReaderCopyArea(
+        area: _selectionArea,
+        onCopy: _copy,
+        child: ReaderTapArea(
+          onTap: (_) => _tap(),
+          child: PdfWordView(
+            screens: _words,
+            selectionKey: _wordSelection,
+            fontSize: widget.fontSize,
+            waiting: _wordWaiting(),
+            onLayout: _words.lay,
+          ),
+        ),
       );
     }
     if (!widget.reflow || _usingText) return _shownPage();
