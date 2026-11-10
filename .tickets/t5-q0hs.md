@@ -1,6 +1,6 @@
 ---
 id: t5-q0hs
-status: in_progress
+status: closed
 deps: [t5-4l4d]
 links: []
 created: 2026-11-09T18:18:38Z
@@ -30,3 +30,7 @@ A corpus test shows that, for every true page start's first place and for places
 - Seeded sections now have `PartPages.visible`, so the scrub bar is exact to the page in them.
 - The lookup does not make a jump into a long paragraph or a table faster. A page cut from a kept start there counts the lines of the paragraph's earlier segments or measures the whole table, which the line search did before, through the same cache. t5-s1vy (table widths) and t5-lfsm (segment line counts) keep those results in the map.
 - The corpus run found no miss of the lookup in 1,874,244 places. In two places of Leaves of Grass, `lineStart` itself picks a line of only white space on the page before (t5-odvj); the lookup finds the page that shows the place.
+
+## Decision (orchestrator, 2026-11-09)
+
+Accepted: in 2 of 1,874,244 corpus places (Leaves of Grass, Kindle file, section 188), the kept-map lookup gives the page that shows the place, while lineStart picks a line of only white space before it. The corpus check lists these as lineStartDisagreements. The lineStart side is ticket t5-odvj.
