@@ -43,3 +43,7 @@ Fresh review complete: one shared Codex gpt-6.1-sol reviewer at xhigh passed cor
 **2026-11-10T19:27:41Z**
 
 Parent integration: inspected full production diff and evidence. Merged with only a ticket-note conflict, preserving both notes. Focused six-file suite: 78 passed, 1 failed in the existing boo-7plj survey resume test at survey_session_test.dart:305 (kept survey file absent). All crop tests passed. Dedicated Sol lead is fixing boo-7plj; prior full branch suite passed 2514 with 21 skipped.
+
+**2026-11-10T19:29:28Z**
+
+Phone update: normal ARM64 debug APK built through nix develop --command bash tool/bookfin build-android from source commit 2a73abc; native package, OCR package, APK signing and alignment verification passed. adb install -r succeeded on the Pixel 8 over Wi-Fi. Launched via T3 bound agent-device; screenshot confirmed app Library screen. No private data reset. Crop reading acceptance on the physical phone remains user testing; prior emulator evidence retained.
