@@ -17,3 +17,9 @@ W9 of docs/plans/pdf-word-image-reflow.md (Regions, drop caps). A drop cap is an
 
 Behavior tests, red first, on a fixture page with a drop cap (add one to the scanned or Typst fixtures): the drop cap shows whole at the paragraph start; the lines beside it are shorter and the line after it is full width; the paragraph's reading text and places do not change.
 
+
+## Notes
+
+**2026-11-10T14:59:40Z**
+
+From tb-t8rh: on the Raven page, the drop cap O of 'ONCE' lies inside the layout word of its line (that line is 64 pixels tall at 1600 wide, the others 33). It is not a separate ink region, so a drop cap can come as an oversized first word of a line, not only as a region.

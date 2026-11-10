@@ -11,6 +11,7 @@ import 'package:pdfrx/pdfrx.dart' show pdfrxFlutterInitialize;
 import '../downloads/downloads.dart';
 import '../foundation/hop.dart';
 import 'document.dart';
+import 'page_analysis.dart';
 import 'page_geometry.dart';
 
 /// What the text of a source page offers reflow and search. The first three
@@ -172,6 +173,123 @@ bool _whitespace(int unit) =>
     unit == 0x3000 ||
     unit == 0xFEFF;
 
+/// The text of a page for reading, and for each word of a page's geometry,
+/// its range of that text, or null when the text is not a candidate or
+/// nothing attaches it.
+typedef AttachedText = ({PdfText text, TextAttachment? attachment});
+
+/// What the word view needs of one source page. [PdfBook.reflowPage] gives
+/// it.
+class ReflowPage {
+  ReflowPage._(this._entry, this.bodyLineHeight)
+    : geometry = _entry.analyzed!.geometry,
+      analysis = _entry.analyzed!.analysis;
+
+  final _ReflowEntry _entry;
+
+  /// The page's reflow geometry: its word geometry, with the ink that no
+  /// word covers as extra words of their lines, and on a scanned page with
+  /// the hyphens and raised marks that its pixels show.
+  final PageGeometry geometry;
+
+  /// The facts about the page that need its pixels, for [geometry].
+  final PageAnalysis analysis;
+
+  /// The line height that scales the page's words, in page units: the
+  /// page's body line height when it has at least 8 prose lines, and
+  /// otherwise the book's body line height in this session. Until the book
+  /// has one, it is the page's own.
+  final double bodyLineHeight;
+
+  /// The page's text for reading, as [PdfBook.text] gives it, and for each
+  /// word of [geometry], its range of that text. An extra word names no
+  /// text: its range is empty, at the end of the word before it. It
+  /// completes when the reading text arrives. On a scanned page that is
+  /// after recognition, seconds after the geometry. The first call asks
+  /// for the text, and later calls share it. A text that failed, such as a
+  /// canceled recognition, or an error, is asked for again by the next
+  /// call.
+  Future<AttachedText> attachedText() => _entry.attachedText();
+}
+
+/// One page that [PdfBook] keeps for reflow: its analysis while it runs or
+/// when it is done, and its attached text once something asks for it.
+class _ReflowEntry {
+  _ReflowEntry(this.book, this.page);
+  final PdfBook book;
+  final int page;
+
+  /// The analysis, which completes with null when the page has no word
+  /// geometry.
+  late final Future<void> done = _analyze();
+
+  /// The page's word geometry, as [PdfBook.geometry] gives it, and the
+  /// analysis, once they are done.
+  PageGeometry? source;
+  AnalyzedPage? analyzed;
+
+  Future<AttachedText>? _attached;
+
+  /// The attached text, once it arrived.
+  AttachedText? arrived;
+
+  Future<void> _analyze() async {
+    // The page draws while its geometry is found: on a scanned page the
+    // layout pass runs on the recognition worker, beside pdfium.
+    final drawn = book.render(page, PdfBook._analysisWidth);
+    final PageGeometry? geometry;
+    final PdfText layer;
+    try {
+      geometry = await book.geometry(page);
+      layer = await book.textLayer(page);
+    } catch (_) {
+      drawn.ignore();
+      rethrow;
+    }
+    if (geometry == null) {
+      drawn.ignore();
+      return;
+    }
+    final raster = await drawn;
+    // Only this call holds the raster, so it is freed when the analysis
+    // ends. The book keeps only the analysis's small typed lists.
+    analyzed = await book.hop(analyzePage, (
+      width: raster.width,
+      height: raster.height,
+      bgra: raster.bgra,
+      geometry: geometry,
+      scanned: layer.status != PdfTextStatus.candidate,
+    ));
+    source = geometry;
+  }
+
+  Future<AttachedText> attachedText() => _attached ??= _attach();
+
+  Future<AttachedText> _attach() async {
+    final AttachedText read;
+    try {
+      read = await book.attachedText(page, source!);
+    } catch (_) {
+      _attached = null;
+      rethrow;
+    }
+    // A failed text, such as a canceled recognition, can arrive when it is
+    // asked again.
+    if (read.text.status == PdfTextStatus.failed) _attached = null;
+    final attachment = read.attachment;
+    // Mapping one range for each word takes microseconds, far less than a
+    // hop to another isolate.
+    final attached = (
+      text: read.text,
+      attachment: attachment == null
+          ? null
+          : reflowAttachment(attachment, analyzed!.analysis),
+    );
+    arrived = attached;
+    return attached;
+  }
+}
+
 class PdfRaster {
   const PdfRaster(this.width, this.height, this.bgra);
   final int width;
@@ -180,6 +298,116 @@ class PdfRaster {
 }
 
 abstract class PdfBook extends ReaderDocument {
+  /// [hop] runs the page analysis, and the preparation of a native book's
+  /// page texts, in another isolate.
+  PdfBook({this.hop = compute});
+
+  /// Runs work in another isolate.
+  final IsolateHop hop;
+
+  /// The width in pixels at which the page analysis draws a page. The
+  /// layout pass and recognition draw at the same width, so their boxes
+  /// match the analysis's pixels.
+  static const _analysisWidth = 1600.0;
+
+  /// How many reflow pages the book keeps.
+  static const _keptReflowPages = 16;
+
+  /// The reflow pages that the book keeps, the least recently asked first.
+  final _reflowPages = <int, _ReflowEntry>{};
+
+  /// For each page with at least 8 prose lines that the book analyzed in
+  /// this session: its body line height.
+  final _bodyLineHeights = <int, double>{};
+
+  /// The word geometry and page analysis of [sourcePage] at once, and its
+  /// text attachment after the reading text arrives (see
+  /// [ReflowPage.attachedText]). Null when the page has no word geometry
+  /// (see [geometry]). The analysis draws the page and runs through [hop];
+  /// it reads no text. The book keeps the last 16 pages that it gave, so a
+  /// kept page is not drawn or analyzed again.
+  Future<ReflowPage?> reflowPage(int sourcePage) async {
+    final entry =
+        _reflowPages.remove(sourcePage) ?? _ReflowEntry(this, sourcePage);
+    _reflowPages[sourcePage] = entry;
+    if (_reflowPages.length > _keptReflowPages) {
+      _reflowPages.remove(_reflowPages.keys.first);
+    }
+    assert(_reflowPages.length <= _keptReflowPages);
+    try {
+      await entry.done;
+    } catch (_) {
+      _forget(entry);
+      rethrow;
+    }
+    final analyzed = entry.analyzed;
+    if (analyzed == null) {
+      _forget(entry);
+      return null;
+    }
+    final own = analyzed.analysis.bodyLineHeight;
+    if (analyzed.analysis.proseLineCount >= 8) {
+      _bodyLineHeights[sourcePage] = own;
+      return ReflowPage._(entry, own);
+    }
+    return ReflowPage._(
+      entry,
+      _bodyLineHeights.isEmpty ? own : _median(_bodyLineHeights.values),
+    );
+  }
+
+  /// Forgets [entry], which failed or found no geometry, so that the next
+  /// request for its page tries again.
+  void _forget(_ReflowEntry entry) {
+    if (identical(_reflowPages[entry.page], entry)) {
+      _reflowPages.remove(entry.page);
+    }
+  }
+
+  /// Throws a [StateError] when an invariant of the reflow pages does not
+  /// hold. It runs only on demand, from a test or a debug switch.
+  ///
+  /// The invariants: the book keeps at most 16 reflow pages. Each analyzed
+  /// page's geometry and analysis hold their invariants. Each attached text
+  /// that arrived has the digest of its reading text, and its attachment
+  /// has a range of that text for each word of the page's reflow geometry.
+  /// Each body line height of the book is positive.
+  void checkInvariants() {
+    void require(bool holds, String rule) {
+      if (!holds) throw StateError('PDF reflow pages: $rule.');
+    }
+
+    require(
+      _reflowPages.length <= _keptReflowPages,
+      'the book keeps at most $_keptReflowPages pages',
+    );
+    for (final MapEntry(key: page, value: entry) in _reflowPages.entries) {
+      require(entry.page == page, 'page $page is kept under its number');
+      final analyzed = entry.analyzed;
+      if (analyzed == null) continue;
+      analyzed.geometry.checkInvariants();
+      analyzed.analysis.checkInvariants(analyzed.geometry);
+      final arrived = entry.arrived;
+      if (arrived == null) continue;
+      final text = arrived.text;
+      require(
+        text.status != PdfTextStatus.candidate ||
+            text.digest == pdfTextDigest(text.source),
+        'the text of page $page has the digest of its source',
+      );
+      if (arrived.attachment != null) {
+        analyzed.geometry.checkInvariants(
+          attachment: arrived.attachment,
+          source: text.source,
+        );
+      }
+    }
+    require(
+      _bodyLineHeights.values.every((height) => height > 0 && height.isFinite),
+      'each body line height is positive',
+    );
+  }
+
   /// Recognizes the text of pages whose text layer cannot be read, or null
   /// when this book has no recognition.
   PdfTextSupply? get textSupply => null;
@@ -375,13 +603,12 @@ class _NativePdfBook extends PdfBook {
     this._document,
     this.originalDigest,
     this.textSupply,
-    this._hop,
-  );
+    IsolateHop hop,
+  ) : super(hop: hop);
   @override
   final PdfTextSupply? textSupply;
   final PdfRuntime owner;
   final native.PdfDocument _document;
-  final IsolateHop _hop;
   final Set<Future<void>> _work = {};
   final Map<int, Future<PreparedPdfPage>> _layers = {};
   Future<void>? _closing;
@@ -521,7 +748,7 @@ class _NativePdfBook extends PdfBook {
             ..[index * 4 + 2] = rect.right
             ..[index * 4 + 3] = rect.bottom;
         }
-        return _hop(preparePdfPage, (
+        return hop(preparePdfPage, (
           source: source,
           boxes: boxes,
           width: page.width,
@@ -644,4 +871,13 @@ bool _outOfOrder(String text, Float64List boxes) {
     }
   }
   return parallelRows >= 3 || groups >= 4 && shortGroups / groups >= .8;
+}
+
+/// The median of [values], which is not empty.
+double _median(Iterable<double> values) {
+  final sorted = values.toList()..sort();
+  final middle = sorted.length ~/ 2;
+  return sorted.length.isOdd
+      ? sorted[middle]
+      : (sorted[middle - 1] + sorted[middle]) / 2;
 }
