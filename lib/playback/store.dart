@@ -11,8 +11,8 @@ import 'playback.dart';
 import '../sync/journal.dart';
 import '../catalog/jellyfin.dart';
 import 'database.dart';
-import '../catalog/model.dart' show Edition;
-import '../reader/session.dart' show PlaceOrigin, ReadingChanges, ReadingStore;
+import '../catalog/model.dart' show Edition, EditionKind;
+import '../reader/session.dart' show ReadingChanges, ReadingStore;
 
 /// Which domains of an account hold records that changed outside their
 /// writer since the writer last took in a snapshot that the store handed
@@ -1051,6 +1051,44 @@ class LocalResumeStore implements ResumeStore, ListeningStore {
   void acceptSnapshot(String accountKey, Map<String, dynamic>? value) =>
       _accept(accountKey, value, reading: false);
 
+  /// Reads the journal: the value of this installation's last action on
+  /// the saved place of [edition], and the action of the current version.
+  /// While two versions compete, no device saved the current place. The
+  /// saved place of a reading edition is its resume, and of a listening
+  /// edition the resume of its current files.
+  @override
+  Future<PlaceOrigin> origin(String accountKey, Edition edition) {
+    final reading = edition.kind == EditionKind.text;
+    final record = jsonEncode([
+      if (reading) 'reading' else 'audio',
+      'resumes',
+      if (reading)
+        jsonEncode([
+          edition.id,
+          edition.files.single.key,
+          edition.files.single.revision,
+        ])
+      else
+        jsonEncode([edition.id, editionSources(edition)]),
+    ]);
+    return _query(accountKey, (journal) {
+      final own = journal.lastOwn(record)?['value'];
+      final versions = journal.versionsByRecord[record] ?? const [];
+      final current = versions.length == 1 ? versions.single : null;
+      final elsewhere =
+          current != null && current['replica'] != journal.replica;
+      return (
+        own: switch (own) {
+          Map<String, dynamic>() when reading => decodeTextPosition(own),
+          Map<String, dynamic>() => decodePosition(own),
+          _ => null,
+        },
+        elsewhere: elsewhere,
+        device: elsewhere ? current['device'] as String? : null,
+      );
+    });
+  }
+
   /// The whole record file counts for every account when it could not be
   /// opened, because the store cannot tell which accounts it held.
   @override
@@ -1219,30 +1257,9 @@ class ReadingRecords implements ResumeStore, ReadingStore {
   @override
   bool setAside(String accountKey) => owner.setAside(accountKey);
 
-  /// Reads the journal: the value of this installation's last action on
-  /// the edition's saved place, and the action of the current version.
-  /// While two versions compete, no device saved the current place.
   @override
-  Future<PlaceOrigin> origin(String accountKey, Edition edition) {
-    final file = edition.files.single;
-    final record = jsonEncode([
-      'reading',
-      'resumes',
-      jsonEncode([edition.id, file.key, file.revision]),
-    ]);
-    return owner._query(accountKey, (journal) {
-      final own = journal.lastOwn(record)?['value'];
-      final versions = journal.versionsByRecord[record] ?? const [];
-      final current = versions.length == 1 ? versions.single : null;
-      final elsewhere =
-          current != null && current['replica'] != journal.replica;
-      return (
-        own: own is Map<String, dynamic> ? decodeTextPosition(own) : null,
-        elsewhere: elsewhere,
-        device: elsewhere ? current['device'] as String? : null,
-      );
-    });
-  }
+  Future<PlaceOrigin> origin(String accountKey, Edition edition) =>
+      owner.origin(accountKey, edition);
 }
 
 /// The collections of each domain that this build reads.

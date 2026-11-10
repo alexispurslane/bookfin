@@ -11,20 +11,28 @@ import 'fixture.dart';
 /// A phone: one SQLite record file and the store that a fresh app start
 /// would build over it.
 class Phone {
-  Phone._(this.path, this.database);
+  Phone._(this.path, this.database, this.device);
   final String path;
   RecordDatabase database;
-  late LocalResumeStore store = LocalResumeStore(
+
+  /// The name of the device, which each saved change names, or null.
+  final String? device;
+  late LocalResumeStore store = _store();
+
+  LocalResumeStore _store() => LocalResumeStore(
     openDatabase: () async => database,
+    deviceName: () async => device,
   );
 
-  static Future<Phone> open(String name) async {
+  /// A phone named [device] with a new record file.
+  static Future<Phone> open(String name, {String? device}) async {
     final directory = await Directory.systemTemp.createTemp('bookfin-$name-');
     addTearDown(() => directory.delete(recursive: true));
     final path = '${directory.path}/records.sqlite';
     final phone = Phone._(
       path,
       await RecordDatabase.open(factory: databaseFactoryFfi, path: path),
+      device,
     );
     addTearDown(() => phone.database.close());
     return phone;
@@ -38,7 +46,7 @@ class Phone {
       factory: databaseFactoryFfi,
       path: path,
     );
-    store = LocalResumeStore(openDatabase: () async => database);
+    store = _store();
   }
 
   /// A second SQLite connection to the record file, as another process

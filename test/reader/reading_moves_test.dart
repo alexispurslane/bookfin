@@ -850,7 +850,11 @@ void main() {
         server.session.scope.key,
         epubEdition,
       );
-      expect(origin.own?.anchor, isNot(cedar), reason: 'The old place stays.');
+      expect(
+        (origin.own as TextPosition?)?.anchor,
+        isNot(cedar),
+        reason: 'The old place stays.',
+      );
       expect(origin.device, 'Phone A');
       final reader = await sessionOf(
         bookOf(epubEdition),

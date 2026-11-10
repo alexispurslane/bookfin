@@ -64,6 +64,10 @@ abstract class ListeningStore {
   /// shows, so later saves compare their records with it.
   void acceptSnapshot(String accountKey, Map<String, dynamic>? value) {}
 
+  /// Where the saved place of [edition] in [accountKey] came from.
+  Future<PlaceOrigin> origin(String accountKey, Edition edition) async =>
+      (own: null, elsewhere: false, device: null);
+
   /// Whether this store found the saved records of [accountKey] damaged
   /// while this app ran, kept the damaged data aside, and started the
   /// account again from the records that it could read. A [read] of the
@@ -347,6 +351,9 @@ class Playback extends ChangeNotifier {
     // the few listened books are sorted.
     final latest = <String, RecentListening>{};
     for (final event in _history) {
+      // An open is no listening, so a book that opened at another device's
+      // place keeps its place in the list.
+      if (event.kind == HistoryAction.open) continue;
       final found = _editions[event.after.editionId];
       if (found == null) continue;
       final (book, edition) = found;
@@ -1056,13 +1063,6 @@ class Playback extends ChangeNotifier {
     }
   }
 
-  String _editionSources(Edition edition) {
-    final sources = [
-      for (final file in edition.files) [file.key, file.revision],
-    ]..sort((left, right) => left.first.compareTo(right.first));
-    return jsonEncode(sources);
-  }
-
   /// Whether [a] and [b] describe the same audio: the same edition id, and
   /// the same source files in the same order at the same revisions. A library
   /// refresh rebuilds every book and edition as new objects, so identity
@@ -1101,7 +1101,7 @@ class Playback extends ChangeNotifier {
   bool _resumeFits(Edition edition, Map<String, dynamic>? value) =>
       value != null &&
       (value['sources'] == null ||
-          value['sources'] == _editionSources(edition)) &&
+          value['sources'] == editionSources(edition)) &&
       _positionFrom(edition.id, value)?.fits(edition) == true;
 
   Map<String, dynamic>? _resumeRecord(Edition edition) {
@@ -1190,6 +1190,16 @@ class Playback extends ChangeNotifier {
       return false;
     }
     final generation = _generation;
+    // An open at the saved place asks where that place came from while the
+    // audio loads. A failed query knows nothing.
+    final origin = target != null || replacement != null
+        ? null
+        : store
+              .origin(_session!.scope.key, edition)
+              .then<PlaceOrigin?>(
+                (value) => value,
+                onError: (Object _) => null,
+              );
     final files = await _savedFiles(edition);
     if (generation != _generation) return false;
     bound = _bound(book, edition);
@@ -1225,6 +1235,7 @@ class Playback extends ChangeNotifier {
       final confirmed = target == null
           ? AudioSample(fileIndex, resume?.milliseconds ?? 0)
           : await engine.seek(fileIndex, target.milliseconds);
+      final known = await origin;
       bound = generation == _generation ? _bound(book, edition) : null;
       if (bound == null ||
           replacement != null && !identical(replacement, _replacementStart)) {
@@ -1254,7 +1265,14 @@ class Playback extends ChangeNotifier {
       _position = _positionForSample(confirmed);
       _decoderReady = true;
       _replacementStart = null;
-      if (action != null) _record(action, previous ?? _position!, _position!);
+      if (action != null) {
+        _record(action, previous ?? _position!, _position!);
+      } else if (openedFrom(known, _position!, _history) case final own?
+          when own.fits(edition)) {
+        // The edition opened at another device's place: a move from this
+        // phone's own place, which Undo can take back.
+        _record(HistoryAction.open, own, _position!, device: known!.device);
+      }
       _message = null;
       _cancelSleep();
     } finally {
@@ -1469,7 +1487,12 @@ class Playback extends ChangeNotifier {
     }
   });
 
-  void _record(HistoryAction kind, AudioPosition before, AudioPosition after) {
+  void _record(
+    HistoryAction kind,
+    AudioPosition before,
+    AudioPosition after, {
+    String? device,
+  }) {
     assert(
       _restored && _book != null && _edition != null && after.fits(_edition!),
     );
@@ -1481,6 +1504,7 @@ class Playback extends ChangeNotifier {
       after: after,
       bookTitle: _book!.title,
       editionLabel: _edition!.label,
+      device: device,
     );
     _history = [..._history, event];
     _changedHistory[event.id] = event.toJson();
@@ -1596,7 +1620,7 @@ class Playback extends ChangeNotifier {
   // the fixed cost of a hop to another isolate.
   String? get _decoderAnchor => _position == null || _edition == null
       ? null
-      : jsonEncode([_editionSources(_edition!), encodePosition(_position!)]);
+      : jsonEncode([editionSources(_edition!), encodePosition(_position!)]);
 
   /// Hands the store the records changed since the last save, with the
   /// current settings. The changes stay pending until the store saves them.
@@ -1612,12 +1636,12 @@ class Playback extends ChangeNotifier {
       // A legacy file-relative position can be read but cannot establish
       // ownership of a whole recording. Keep it when saving a known recording.
       final index = records.lastIndexWhere(
-        (value) => value['sources'] == _editionSources(_edition!),
+        (value) => value['sources'] == editionSources(_edition!),
       );
       final value = <String, dynamic>{
         'source': position.sourceKey,
         'revision': position.revision,
-        'sources': _editionSources(_edition!),
+        'sources': editionSources(_edition!),
         'milliseconds': position.milliseconds,
         'pendingOffline':
             pendingOfflineResume ||
