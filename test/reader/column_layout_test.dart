@@ -326,6 +326,31 @@ void main() {
       }
     });
 
+    test('the faint letters that the layout pass leaves between two words of '
+        'one printed word show, and the two words never part, as "quaint" on '
+        'the Raven page', () async {
+      final page = await raven();
+      // The layout pass gives "quaint" as two words, from 440 to 476 pixels
+      // and from 486 to 533. The letters between them are gray, 0.55 to 0.72
+      // of the paper's luminance.
+      final first = page.texts.indexOf('qiaint');
+      for (final width in [120.0, 240.0, 360.0]) {
+        final column = lay(page, width: width);
+        final a = pieceOf(column, first), b = pieceOf(column, first + 1);
+        expect(column.source(a).left * 1600, lessThanOrEqualTo(476));
+        expect(column.source(b).right * 1600, greaterThanOrEqualTo(486));
+        expect(
+          column.source(a).right,
+          greaterThanOrEqualTo(column.source(b).left - 1e-6),
+        );
+        expect(lineOf(column, a), lineOf(column, b));
+        expect(
+          column.target(b).left - column.target(a).right,
+          lessThan(devicePixel),
+        );
+      }
+    });
+
     test('a raised footnote mark and a closing quote that split off their '
         'word stay at their source gap and height beside it', () async {
       final page = await gibbon();

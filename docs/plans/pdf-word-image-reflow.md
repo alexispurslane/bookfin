@@ -315,7 +315,7 @@ The boxes are page coordinates relative to the page's bounding box, as pdfrx giv
 
 The word view needs facts that only the pixels know. `PdfBook.reflowPage(sourcePage)` gives the page's geometry and page analysis at once. It adds the text attachment after the reading text arrives. It renders the page at 1600 pixels wide, as recognition and the layout pass do, so their boxes match the raster exactly. The analysis runs in a hop. It takes the raster and the geometry, and returns only small typed lists.
 
-1. Ink. If a pixel's luminance is below half of the paper's luminance, the pixel is ink. The paper's luminance is the value that 90 percent of the page's pixels do not exceed.
+1. Ink. If a pixel's luminance is below half of the paper's luminance, the pixel is ink. The paper's luminance is the value that 90 percent of the page's pixels do not exceed. Split words: the layout pass can split one printed word where a letter is faint. Two neighbor words of a line are one printed word when the gap between them is narrower than the line height, and print bridges it. Print bridges a gap when each pixel column of the gap holds print in the rows that both words share. Print is a pixel darker than three quarters of the paper's luminance, so a faint letter is print, and a word space is white. The first word's box then grows to the second word's left edge. So its image holds the gap, and the two words never part.
 2. Raised marks. On a scanned page, ink at a word's right end can lie after a white gap and wholly more than a third of the line height above the baseline. That ink is a footnote mark or a closing quote. It becomes an extra word of the line, with an empty range, and the word's box ends before it. A mark smaller than a sixth of the line height in both directions is a speck and stays in its word.
 3. Hyphens. On a scanned page, the analysis finds them from pixels, because the text can arrive later. For each word that ends a line, it looks inward from the word's right edge, within its last 0.6 line heights. A hyphen is the last ink there: ink columns that together stay within a band a sixth of the line height thick. They follow a white column, or a column whose ink leaves the band, such as the stem of a letter that the hyphen touches. The band is at least 1.5 times as wide as it is thick and at most half a line height wide. Its middle lies between 0.1 and 0.3 line heights above the baseline. The hyphen's width runs from its first ink column to the word's right edge. A word that is only a hyphen is a dash. On a text layer page, the hyphen's character box gives the width, and no pixels are needed.
 4. Word cover. It covers the pixels inside each word box, grown by a fifth of the line height up and down and by a twentieth to the sides.
@@ -365,6 +365,7 @@ Ticket tb-t8rh tuned the first values of this section on the reflow fixtures. Th
 | Failing lines | Join with their neighbors that fail | The same, with the next line's top within two line heights | The rows of a table without rules are farther apart than half a line height. |
 | Hyphens | Short horizontal mark after a white gap | The band rule of step 3 | The hyphen of "Thu-" touches its "u", and the hyphen of "justi-" is 9 by 5 pixels. A middle up to 0.3 line heights leaves out the arm of an r. |
 | Mid-tones | Of the region's pixels | Of the pixels of its box grown by a fifth of the median line height | The soft edges of the rule above Gibbon's footnotes, and of the Raven folio, fill their tight boxes. |
+| Split words | Not a rule | Part of step 1 (te-qg8l) | On the Raven page, the layout pass gives "quaint" as two words, from 440 to 476 pixels and from 486 to 533. The letters between them have a luminance of 0.55 to 0.72 of the paper's, so they are no ink, and no component or extra word held them. The word view showed "qu" and "int". On the fixtures, only this gap is bridged. |
 
 What the analysis finds on the fixtures:
 
@@ -614,7 +615,7 @@ On 2026-11-10 the user decided t1-6pf5 with design B. A small region near the to
 - A region is small when it is narrower and lower than the book's body line height.
 - For each side, a small edge region whose place and size repeat (`_sameShape`) on at least 30 percent of the side's body pages, and on at least 3, gives a region template. These are the thresholds of the geometry templates.
 - `RunningTemplates.mark` marks the matching regions in `PageAnalysis.runningRegions`, and `PageAnalysis.contentBox` leaves them out. A small edge region that does not repeat, such as an ornament, stays content. Every other region stays content too, so nothing printed in the text area is ever left out.
-- The region templates are part of the book profile that the survey freezes. The kept survey's format is 2.
+- The region templates are part of the book profile that the survey freezes. The kept survey's format was 2. Ticket te-qg8l made it 3, because split words change word boxes.
 
 ### The book crop
 

@@ -91,6 +91,20 @@ class DrawnPage {
     }
   }
 
+  /// Draws gray print of [luminance] over [box] (left, top, right and
+  /// bottom in pixels).
+  void shade(List<int> box, int luminance) {
+    for (var y = box[1]; y < box[3]; y++) {
+      for (var x = box[0]; x < box[2]; x++) {
+        raster.bgra.fillRange(
+          (y * 1600 + x) * 4,
+          (y * 1600 + x) * 4 + 3,
+          luminance,
+        );
+      }
+    }
+  }
+
   /// Clears [box] to white paper.
   void clear(List<int> box) {
     for (var y = box[1]; y < box[3]; y++) {
@@ -518,6 +532,29 @@ void main() {
         expect(page.analysis.regionCount, 0);
       },
     );
+  });
+
+  group('a printed word that the layout pass splits', () {
+    test('two words of a line join when faint print bridges every column of '
+        'the gap between them, and stay apart when the gap keeps a white '
+        'column', () async {
+      final drawn = DrawnPage(proseLines(10))
+        // Line 0: gray print at 0.6 of the paper's luminance across the
+        // whole gap of 16 pixels between its first two words, as a faint
+        // letter.
+        ..shade([200, 210, 216, 230], 150)
+        // Line 1: gray print that touches the first word but leaves the last
+        // 4 columns of the gap white, as the soft edge of a letter.
+        ..shade([200, 270, 212, 290], 150);
+      final page = (await DrawnPdf([drawn], hop: hop).reflowPage(1))!;
+      final geometry = page.geometry;
+      final joined = geometry.lineStarts[0], apart = geometry.lineStarts[1];
+      expect(geometry.boxes[joined * 4 + 2] * 1600, closeTo(216, 0.01));
+      expect(geometry.boxes[apart * 4 + 2] * 1600, closeTo(200, 0.01));
+      // Gray print is no ink, so it makes no extra word.
+      expect(page.analysis.sourceWords, isNot(contains(-1)));
+      page.analysis.checkInvariants(geometry);
+    });
   });
 
   group('line-end hyphens of a scanned page', () {
