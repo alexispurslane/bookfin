@@ -196,7 +196,7 @@ void main() {
       await tester.pump();
       await tester.pump();
       await tester.pump();
-      expect(find.text('The quiet garden.'), findsOneWidget);
+      expect(find.bySemanticsLabel('The quiet garden.'), findsOneWidget);
       final report = await navigation.search('garden', 1);
       expect(report.hits, hasLength(2));
       final hit = report.hits.last.address as PdfAddress;

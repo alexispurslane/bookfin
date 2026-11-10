@@ -6,6 +6,7 @@ import 'dart:typed_data';
 import 'package:bookfin/reader/document.dart';
 import 'package:bookfin/reader/ocr.dart';
 import 'package:bookfin/reader/pdf.dart';
+import 'package:bookfin/reader/pdf_text_view.dart';
 import 'package:bookfin/reader/pdf_viewport.dart';
 import 'package:bookfin/reader/platform_io.dart';
 import 'package:bookfin/reader/session.dart';
@@ -89,9 +90,9 @@ Future<Result?> native<Result>(
 }
 
 void main() {
-  final reflowScroll = find.descendant(
+  final reflowed = find.descendant(
     of: find.byType(PdfViewport),
-    matching: find.byType(SingleChildScrollView),
+    matching: find.byType(PdfTextView),
   );
   TestWidgetsFlutterBinding.ensureInitialized();
   sqfliteFfiInit();
@@ -294,7 +295,7 @@ void main() {
       expect(hit.character, greaterThan(1000));
       await native(tester, () => navigation.display(hit));
       await tester.tap(find.byTooltip('Reflow text'));
-      await shows(tester, reflowScroll);
+      await shows(tester, reflowed);
       await tester.pump();
       expect(
         (reader.visibleAddress as PdfAddress).character,
@@ -308,12 +309,10 @@ void main() {
       await showReader(tester);
       await finishText(tester);
       await tester.tap(find.byTooltip('Reflow text'));
-      await shows(tester, reflowScroll);
+      await shows(tester, reflowed);
       await tester.pump();
-      final scroll = tester
-          .widget<SingleChildScrollView>(reflowScroll)
-          .controller!;
-      expect(scroll.offset, greaterThan(0));
+      final screen = tester.widget<PdfTextView>(reflowed);
+      expect(screen.screen, greaterThan(0));
       expect((reader.visibleAddress as PdfAddress).sourcePage, 2);
       expect(
         (reader.visibleAddress as PdfAddress).character,
@@ -505,12 +504,12 @@ void main() {
         await tester.tap(find.byTooltip('Reflow text'));
         await tester.pump();
         await drawOriginal(tester, 2);
-        expect(reflowScroll, findsNothing);
+        expect(reflowed, findsNothing);
         expect((reader.visibleAddress as PdfAddress).character, 10);
         await native(tester, () => navigation.contents('page:2'));
         await tester.pump();
         expect((reader.visibleAddress as PdfAddress).character, 0);
-        expect(reflowScroll, findsOneWidget);
+        expect(reflowed, findsOneWidget);
         await tester.pumpWidget(const SizedBox());
       },
     );

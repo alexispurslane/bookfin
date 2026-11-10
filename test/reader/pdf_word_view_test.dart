@@ -15,6 +15,7 @@ import 'package:bookfin/reader/ocr.dart';
 import 'package:bookfin/reader/page_analysis.dart';
 import 'package:bookfin/reader/page_geometry.dart';
 import 'package:bookfin/reader/pdf.dart';
+import 'package:bookfin/reader/pdf_text_view.dart';
 import 'package:bookfin/reader/pdf_viewport.dart';
 import 'package:bookfin/reader/pdf_word_view.dart';
 import 'package:bookfin/reader/word_bands.dart';
@@ -980,7 +981,7 @@ void main() {
     supply.textArrives.complete();
     await settle(
       tester,
-      () => find.textContaining('Alemanni').evaluate().isNotEmpty,
+      () => find.bySemanticsLabel(RegExp('hostile')).evaluate().isNotEmpty,
       'the text view shows',
     );
     expect(progressLine(), isFalse);
@@ -1000,7 +1001,10 @@ void main() {
     await show(tester, book, initial: PdfAddress(3, 0));
     await settle(
       tester,
-      () => find.textContaining(word).evaluate().isNotEmpty,
+      () => find
+          .bySemanticsLabel(RegExp(RegExp.escape(word)))
+          .evaluate()
+          .isNotEmpty,
       'the text view shows',
     );
     expect(find.byType(WordScreenView), findsNothing);
@@ -1046,7 +1050,7 @@ void main() {
     supply.textArrives.complete();
     await settle(
       tester,
-      () => find.byType(SingleChildScrollView).evaluate().isNotEmpty,
+      () => find.byType(PdfTextView).evaluate().isNotEmpty,
       'fallback text appears',
     );
     expect(find.byType(WordScreenView), findsNothing);

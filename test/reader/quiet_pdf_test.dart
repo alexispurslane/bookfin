@@ -8,6 +8,7 @@ import 'package:bookfin/catalog/glass.dart' show CoverGlass;
 import 'package:bookfin/reader/document.dart';
 import 'package:bookfin/reader/page_geometry.dart';
 import 'package:bookfin/reader/pdf.dart';
+import 'package:bookfin/reader/pdf_text_view.dart';
 import 'package:bookfin/reader/pdf_viewport.dart';
 import 'package:bookfin/reader/platform_io.dart';
 import 'package:bookfin/reader/screen.dart';
@@ -119,7 +120,7 @@ List<String> notices(WidgetTester tester, {String? page}) => [
 /// The reflowed text of the shown page.
 final reflowed = find.descendant(
   of: find.byType(PdfViewport),
-  matching: find.byType(SingleChildScrollView),
+  matching: find.byType(PdfTextView),
 );
 
 /// Opens [pdf] in a new reader session and shows the reader screen, and
@@ -208,7 +209,7 @@ void main() {
       await openPdf(tester, LayeredPdf(textLayer, textSupply: recognition));
       await chooseReflow(tester);
       await drawn(tester, shown: reflowed);
-      expect(find.text(textLayer.text), findsOneWidget);
+      expect(find.bySemanticsLabel(textLayer.text), findsOneWidget);
       expect(recognition.requests, isEmpty);
     });
 
@@ -247,7 +248,7 @@ void main() {
       );
       recognition.finish(1, pageText('The quiet garden.'));
       await drawn(tester, shown: reflowed);
-      expect(find.text('The quiet garden.'), findsOneWidget);
+      expect(find.bySemanticsLabel('The quiet garden.'), findsOneWidget);
       expect(notices(tester, page: 'The quiet garden.'), isEmpty);
     });
 
@@ -266,7 +267,7 @@ void main() {
       expect(recognition.requests, [1]);
       recognition.finish(1, pageText('The river.'));
       await drawn(tester, shown: reflowed);
-      expect(find.text('The river.'), findsOneWidget);
+      expect(find.bySemanticsLabel('The river.'), findsOneWidget);
     });
 
     testWidgets('when reflow failed on the shown page, one quiet line takes '

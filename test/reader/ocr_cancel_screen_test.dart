@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:bookfin/reader/document.dart';
 import 'package:bookfin/reader/ocr.dart';
 import 'package:bookfin/reader/pdf.dart';
+import 'package:bookfin/reader/pdf_text_view.dart';
 import 'package:bookfin/reader/pdf_viewport.dart';
 import 'package:bookfin/reader/platform_io.dart';
 import 'package:bookfin/reader/screen.dart';
@@ -62,7 +63,7 @@ Future<void> waitFor(WidgetTester tester, bool Function() ready) async {
 /// The reflowed text of the shown page.
 final reflowed = find.descendant(
   of: find.byType(PdfViewport),
-  matching: find.byType(SingleChildScrollView),
+  matching: find.byType(PdfTextView),
 );
 
 /// Whether the reflowed view is done with the page text: it shows the text,
@@ -189,7 +190,7 @@ void main() {
       expect(
         find.descendant(
           of: find.byType(PdfViewport),
-          matching: find.byType(SingleChildScrollView),
+          matching: find.byType(PdfTextView),
         ),
         findsNothing,
       );
@@ -201,7 +202,7 @@ void main() {
       expect(reader.bookmarks.single.position.anchor, savedAnchor);
       await native(tester, () => reader.goToContents('page:2'));
       await tester.pump();
-      expect(find.text('The quiet garden.'), findsOneWidget);
+      expect(find.bySemanticsLabel('The quiet garden.'), findsOneWidget);
       expect((reader.visibleAddress as PdfAddress).sourcePage, 2);
       expect((reader.visibleAddress as PdfAddress).character, 0);
       expect(nativeCalls, 1, reason: 'The selected OCR text remains reusable.');
@@ -266,7 +267,7 @@ void main() {
             expect(
               find.descendant(
                 of: find.byType(PdfViewport),
-                matching: find.byType(SingleChildScrollView),
+                matching: find.byType(PdfTextView),
               ),
               findsNothing,
             );
@@ -279,7 +280,7 @@ void main() {
               findsOneWidget,
             );
           } else {
-            expect(find.text('The quiet garden.'), findsOneWidget);
+            expect(find.bySemanticsLabel('The quiet garden.'), findsOneWidget);
             expect(reader.position!.sourceKey, pdfSource.key);
             expect(tester.widget<Slider>(find.byType(Slider)).value, .5);
           }

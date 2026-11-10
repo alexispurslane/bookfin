@@ -4,6 +4,7 @@ import 'package:bookfin/catalog/glass.dart' show CoverGlass;
 import 'package:bookfin/reader/document.dart';
 import 'package:bookfin/reader/page_geometry.dart';
 import 'package:bookfin/reader/pdf.dart';
+import 'package:bookfin/reader/pdf_text_view.dart';
 import 'package:bookfin/reader/pdf_viewport.dart';
 import 'package:bookfin/reader/platform_io.dart';
 import 'package:bookfin/reader/screen.dart';
@@ -163,9 +164,8 @@ bool dimmed() => find
       (element) => element.findAncestorWidgetOfExactType<CoverGlass>() == null,
     );
 
-ScrollController reflowScroll(WidgetTester tester) => tester
-    .widget<SingleChildScrollView>(find.byType(SingleChildScrollView))
-    .controller!;
+PdfTextView textScreen(WidgetTester tester) =>
+    tester.widget<PdfTextView>(find.byType(PdfTextView));
 
 void main() {
   group('the viewport reports recognition choices to its owner', () {
@@ -261,11 +261,11 @@ void main() {
         expect(find.bySemanticsLabel('Original source page 1'), findsOneWidget);
         await tester.pumpWidget(viewport(pdf, reports, reflow: true));
         await tester.pumpAndSettle();
-        expect(find.byType(SingleChildScrollView), findsOneWidget);
+        expect(find.byType(PdfTextView), findsOneWidget);
         expect(find.text('Original page'), findsNothing);
         await tester.pumpWidget(viewport(pdf, reports));
         await drawn(tester);
-        expect(find.byType(SingleChildScrollView), findsNothing);
+        expect(find.byType(PdfTextView), findsNothing);
         await tester.pumpWidget(const SizedBox());
       },
     );
@@ -285,16 +285,22 @@ void main() {
           viewport(pdf, reports, initial: saved, reflow: true),
         );
         await tester.pumpAndSettle();
-        expect(reflowScroll(tester).offset, greaterThan(0));
+        final shown = textScreen(tester);
+        expect(shown.screen, greaterThan(0));
         final reflowed = reports.addresses.last.character;
         expect(
           reflowed,
-          inInclusiveRange(2000 - 80, 2000),
-          reason: 'Reflow starts at the line that holds the place.',
+          shown.screens.firstCharacter(shown.screen),
+          reason: 'Reflow starts at the screen that holds the place.',
+        );
+        expect(reflowed, lessThanOrEqualTo(2000));
+        expect(
+          shown.screens.firstCharacter(shown.screen + 1),
+          greaterThan(2000),
         );
         await tester.pumpWidget(viewport(pdf, reports, initial: saved));
         await tester.pumpAndSettle();
-        expect(find.byType(SingleChildScrollView), findsNothing);
+        expect(find.byType(PdfTextView), findsNothing);
         expect(reports.addresses.last.character, reflowed);
         await tester.pumpWidget(
           viewport(pdf, reports, initial: saved, reflow: true),
@@ -319,10 +325,16 @@ void main() {
           viewport(pdf, reports, initial: saved, reflow: true),
         );
         await tester.pumpAndSettle();
-        expect(reflowScroll(tester).offset, greaterThan(0));
+        final shown = textScreen(tester);
+        expect(shown.screen, greaterThan(0));
         expect(
           reports.addresses.last.character,
-          inInclusiveRange(2000 - 80, 2000),
+          shown.screens.firstCharacter(shown.screen),
+        );
+        expect(reports.addresses.last.character, lessThanOrEqualTo(2000));
+        expect(
+          shown.screens.firstCharacter(shown.screen + 1),
+          greaterThan(2000),
         );
         await tester.pumpWidget(const SizedBox());
       },
@@ -337,9 +349,8 @@ void main() {
       final reports = Reports();
       await tester.pumpWidget(viewport(pdf, reports, reflow: true));
       await tester.pumpAndSettle();
-      final scroll = reflowScroll(tester);
       for (var step = 1; step <= 6; step++) {
-        scroll.jumpTo(scroll.position.maxScrollExtent * step / 6);
+        await reports.navigator!.move(true);
         await tester.pump();
       }
       expect(
@@ -372,7 +383,7 @@ void main() {
       });
       final reflowed = find.descendant(
         of: find.byType(PdfViewport),
-        matching: find.byType(SingleChildScrollView),
+        matching: find.byType(PdfTextView),
       );
       Future<void> showReader({required Finder shown}) async {
         await reader.open(book, edition);
@@ -420,7 +431,7 @@ void main() {
       });
       final reflowed = find.descendant(
         of: find.byType(PdfViewport),
-        matching: find.byType(SingleChildScrollView),
+        matching: find.byType(PdfTextView),
       );
       await reader.bind(account(), [book]);
       await reader.open(book, edition);
