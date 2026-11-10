@@ -122,6 +122,7 @@
               BOOKFIN_OCR_MODEL = ocr.model;
               BOOKFIN_OCR_ANDROID_AAR = ocr.aar;
               BOOKFIN_OCR_ANDROID_SOURCE = ocr.source;
+              BOOKFIN_OCR_ANDROID_NATIVE = ocr.androidNative;
               BOOKFIN_OCR_MODEL_LICENSE = ocr.modelLicense;
               BOOKFIN_NIX_SHELL = "1";
               shellHook = ''

@@ -1,0 +1,86 @@
+51890
+Resolving dependencies...
+Downloading packages...
+  archive 4.0.9 (4.6.0 available)
+  code_assets 1.2.1 (2.2.0 available)
+  crypto 3.0.7 (3.0.8 available)
+  cupertino_ui 1.1.5 (1.1.6 available)
+  flutter_cache_manager 3.4.6 (3.5.0 available)
+  flutter_secure_storage 9.2.4 (11.2.0 available)
+  flutter_secure_storage_linux 1.2.3 (3.0.3 available)
+  flutter_secure_storage_macos 3.1.3 (4.0.0 available)
+  flutter_secure_storage_platform_interface 1.1.2 (2.1.1 available)
+  flutter_secure_storage_web 1.2.1 (2.1.1 available)
+  flutter_secure_storage_windows 3.1.2 (4.2.2 available)
+  hooks 2.0.2 (2.2.0 available)
+  image 4.8.0 (4.12.0 available)
+  jni 1.1.1 (1.1.2 available)
+  js 0.6.7 (0.7.2 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  material_ui 1.9.0 (1.10.0 available)
+  meta 1.18.3 (1.19.0 available)
+  native_toolchain_c 0.19.2 (0.19.6 available)
+  objective_c 9.5.0 (9.6.3 available)
+  pdfrx 2.11.0 (2.12.0 available)
+  pdfrx_engine 0.9.0 (0.9.1 available)
+  petitparser 7.0.2 (7.1.0 available)
+  record_use 0.6.0 (1.1.1 available)
+  shared_preferences_foundation 2.5.7 (2.6.1 available)
+  sqflite_common 2.5.14 (2.5.15 available)
+  sqflite_common_ffi 2.4.0+2 (2.4.5 available)
+  sqflite_darwin 2.4.4+1 (2.4.5 available)
+  sqlite3 3.5.2 (3.9.0 available)
+  synchronized 3.5.0 (3.6.1 available)
+  test_api 0.7.12 (0.7.15 available)
+  vector_math 2.4.0 (2.4.4 available)
+  win32 5.15.0 (6.4.0 available)
+  xml 6.6.1 (7.1.0 available)
+Got dependencies!
+34 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+00:00 +0: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-0ff38cb0/integration_test/corpus_sweep_scratch_test.dart
+Running Gradle task 'assembleDebug'...                             17.9s
+✓ Built build/app/outputs/flutter-apk/app-debug.apk
+Installing build/app/outputs/flutter-apk/app-debug.apk...          727ms
+00:00 +0: corpus sweep
+SWEEP nist-cloud.pdf#1 identical 04106453bc35613002e462d431bb9d03894abc0bccd07d113203f2c8a0a6981f 6253 bytes, 34 layout words, 34 hOCR words
+SWEEP nist-cloud.pdf#2 identical 9fda2cbcbf48f2386c5f1c670b5f26c52b29f97c7b3c8604c2f6c2e175aa0202 14475 bytes, 78 layout words, 79 hOCR words
+SWEEP nist-cloud.pdf#3 identical 1b018b846ddc78f3382e2469e6541f5b7f903900f4e126b14b4fb837ed6e84c5 23129 bytes, 189 layout words, 188 hOCR words
+SWEEP nist-cloud.pdf#4 identical ccd6ee431f3893171a5efb60e9f1bab67a2e5fabda43dd9a6ed48156f2419d04 16024 bytes, 102 layout words, 101 hOCR words
+SWEEP nist-cloud.pdf#5 identical 937a0d472f1cfe0e3f5be9e972d170ea01108b86a7a7049ff6b90a4709204026 36430 bytes, 303 layout words, 303 hOCR words
+SWEEP nist-cloud.pdf#6 identical 8a379460d122933ad0b455c986853f7ab6cfcab87690a0805596b48d9ed2f0df 61810 bytes, 514 layout words, 514 hOCR words
+SWEEP nist-cloud.pdf#7 identical 62a007c67c1c5209759f1ecb2fc33274f43de5927a35167fb0952e3ef279cefa 39321 bytes, 333 layout words, 333 hOCR words
+nist-cloud.pdf#8 not drawn: Invalid argument(s): Choose a source page in this PDF.
+SWEEP census-notice.pdf#1 identical 584d5961119b27ab1a1123221b57a53c8e6db3379225633265782198ce0fd626 129577 bytes, 925 layout words, 916 hOCR words
+SWEEP census-notice.pdf#2 identical 7494981b3bad9b9234c26fd5392680dd1e77192ff59c5696cad166ea9cacd636 128879 bytes, 918 layout words, 917 hOCR words
+census-notice.pdf#3 not drawn: Invalid argument(s): Choose a source page in this PDF.
+SWEEP raven-1873.pdf#1 identical 84654857e6098ce1db04c5d2d892a5f7ed0e48cbc1d20548b5dfc24acc314258 117 bytes, 0 layout words, 0 hOCR words
+SWEEP raven-1873.pdf#2 identical c3064785a05b4834dd707217a4affd0899446d7d3c50ad147675850bc09099e1 192 bytes, 0 layout words, 0 hOCR words
+SWEEP raven-1873.pdf#3 identical c3064785a05b4834dd707217a4affd0899446d7d3c50ad147675850bc09099e1 192 bytes, 0 layout words, 0 hOCR words
+SWEEP raven-1873.pdf#4 identical 9698f9bba94d2d3daae5665dc11aff7ef685c25af9401976e6875b11afc7590b 117 bytes, 0 layout words, 0 hOCR words
+SWEEP raven-1873.pdf#5 identical 9698f9bba94d2d3daae5665dc11aff7ef685c25af9401976e6875b11afc7590b 117 bytes, 0 layout words, 0 hOCR words
+SWEEP raven-1873.pdf#6 identical 9698f9bba94d2d3daae5665dc11aff7ef685c25af9401976e6875b11afc7590b 117 bytes, 0 layout words, 0 hOCR words
+SWEEP raven-1873.pdf#7 identical 41bb9551bf8e6dc824959caa06c4b986bf71e9ed5ffe53ac6ce58e726b4a80b9 36817 bytes, 283 layout words, 279 hOCR words
+SWEEP raven-1873.pdf#8 identical 9698f9bba94d2d3daae5665dc11aff7ef685c25af9401976e6875b11afc7590b 117 bytes, 0 layout words, 0 hOCR words
+SWEEP raven-1873.pdf#9 identical c402fc2eead65860057f436de75c3b7c9eff8e564af6f927d5d8c42bb6b8aea4 5794 bytes, 38 layout words, 38 hOCR words
+SWEEP raven-1873.pdf#10 identical f8c98d823b8ece656c60e8f321e35cb5d2ce71b37146dc884bd2d4267092c36f 34955 bytes, 274 layout words, 273 hOCR words
+SWEEP raven-1873.pdf#11 identical 1940c0f23ccd40f5956d53a3854329d9e75dde389df02bac41d9c204f07a0485 13183 bytes, 102 layout words, 103 hOCR words
+SWEEP raven-1873.pdf#12 identical 9d9648456b3c0c88fe4d83a6e5c898d9ae1abe479b5b5750b5d58d09ebe3da5b 34801 bytes, 272 layout words, 275 hOCR words
+SWEEP raven-1873.pdf#13 identical 84e587e1882a2356f6a620511f2cf03808eba45d15578bc63bab59cef755e72c 12384 bytes, 96 layout words, 98 hOCR words
+SWEEP raven-1873.pdf#14 identical 2093f3ae5549ffff192dcba52869c9e8316ba42a8714c15bb6631274aaaebeac 36513 bytes, 287 layout words, 292 hOCR words
+SWEEP raven-1873.pdf#15 identical 6bf0d66b9540542cd4394ba360f359cc9f78ed94bdd228392e4b0c3e28a48f80 8709 bytes, 66 layout words, 68 hOCR words
+SWEEP raven-1873.pdf#16 identical 55a769086685a3bda058c6a25f94e5cdf0abdeb70bee80741f9c506e9e149233 30682 bytes, 218 layout words, 218 hOCR words
+SWEEP raven-1873.pdf#17 identical 4d89253c6abee1c0903f0f5389c97fb4059f7797f8fde2d3555a96d1818b4e85 89934 bytes, 677 layout words, 536 hOCR words
+SWEEP raven-1873.pdf#18 identical 9698f9bba94d2d3daae5665dc11aff7ef685c25af9401976e6875b11afc7590b 117 bytes, 0 layout words, 0 hOCR words
+SWEEP raven-1873.pdf#19 identical 9698f9bba94d2d3daae5665dc11aff7ef685c25af9401976e6875b11afc7590b 117 bytes, 0 layout words, 0 hOCR words
+SWEEP raven-1873.pdf#20 identical 9698f9bba94d2d3daae5665dc11aff7ef685c25af9401976e6875b11afc7590b 117 bytes, 0 layout words, 0 hOCR words
+SWEEP raven-1873.pdf#21 identical 9698f9bba94d2d3daae5665dc11aff7ef685c25af9401976e6875b11afc7590b 117 bytes, 0 layout words, 0 hOCR words
+SWEEP raven-1873.pdf#22 identical 85877b317a660f2ca6fc3f1dabbcba621c363178d4052ef09af171514fe05a35 2895 bytes, 9 layout words, 12 hOCR words
+SWEEP raven-1873.pdf#23 identical 20e84e48a849088974936b3342851858c624081318651a8bbd4b8ba6a5d108f1 195 bytes, 0 layout words, 0 hOCR words
+SWEEP raven-1873.pdf#24 identical 85723ad9c8faf85043a26f856442cf05d461132817a1cc87a13df370141f51d8 631 bytes, 2 layout words, 1 hOCR words
+raven-1873.pdf#25 not drawn: Invalid argument(s): Choose a source page in this PDF.
+SWEEP scanned.pdf#1 identical 4d8ad2eaa2224311bedc7261eb9930ebd8b31ee816cd1305d50d4adeaf837c9d 4848 bytes, 36 layout words, 35 hOCR words
+SWEEP skewed.pdf#1 identical 9417203aa4398f3f761605c516edd5d04e448ea7a2ad81348e7be14efdc1f1a1 6268 bytes, 42 layout words, 41 hOCR words
+SWEEP 35 of 35 pages identical
+00:48 +1: (tearDownAll)
+00:48 +1: All tests passed!

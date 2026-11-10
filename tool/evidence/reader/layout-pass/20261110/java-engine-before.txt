@@ -1,0 +1,65 @@
+51276
+Resolving dependencies...
+Downloading packages...
+  archive 4.0.9 (4.6.0 available)
+  code_assets 1.2.1 (2.2.0 available)
+  crypto 3.0.7 (3.0.8 available)
+  cupertino_ui 1.1.5 (1.1.6 available)
+  flutter_cache_manager 3.4.6 (3.5.0 available)
+  flutter_secure_storage 9.2.4 (11.2.0 available)
+  flutter_secure_storage_linux 1.2.3 (3.0.3 available)
+  flutter_secure_storage_macos 3.1.3 (4.0.0 available)
+  flutter_secure_storage_platform_interface 1.1.2 (2.1.1 available)
+  flutter_secure_storage_web 1.2.1 (2.1.1 available)
+  flutter_secure_storage_windows 3.1.2 (4.2.2 available)
+  hooks 2.0.2 (2.2.0 available)
+  image 4.8.0 (4.12.0 available)
+  jni 1.1.1 (1.1.2 available)
+  js 0.6.7 (0.7.2 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  material_ui 1.9.0 (1.10.0 available)
+  meta 1.18.3 (1.19.0 available)
+  native_toolchain_c 0.19.2 (0.19.6 available)
+  objective_c 9.5.0 (9.6.3 available)
+  pdfrx 2.11.0 (2.12.0 available)
+  pdfrx_engine 0.9.0 (0.9.1 available)
+  petitparser 7.0.2 (7.1.0 available)
+  record_use 0.6.0 (1.1.1 available)
+  shared_preferences_foundation 2.5.7 (2.6.1 available)
+  sqflite_common 2.5.14 (2.5.15 available)
+  sqflite_common_ffi 2.4.0+2 (2.4.5 available)
+  sqflite_darwin 2.4.4+1 (2.4.5 available)
+  sqlite3 3.5.2 (3.9.0 available)
+  synchronized 3.5.0 (3.6.1 available)
+  test_api 0.7.12 (0.7.15 available)
+  vector_math 2.4.0 (2.4.4 available)
+  win32 5.15.0 (6.4.0 available)
+  xml 6.6.1 (7.1.0 available)
+Got dependencies!
+34 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+00:00 +0: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-0ff38cb0/integration_test/java_digests_scratch_test.dart
+Running Gradle task 'assembleDebug'...                             18.5s
+✓ Built build/app/outputs/flutter-apk/app-debug.apk
+Installing build/app/outputs/flutter-apk/app-debug.apk...          622ms
+00:00 +0: java engine digests
+scanned.pdf#1 1600x2594 java recognition 566 ms, 35 words
+skewed.pdf#1 1600x2594 java recognition 212 ms, 41 words
+nist-cloud.pdf#3 1600x2070 java recognition 621 ms, 188 words
+nist-cloud.pdf#6 1600x2070 java recognition 1465 ms, 514 words
+census-notice.pdf#1 1600x2070 java recognition 2842 ms, 916 words
+census-notice.pdf#2 1600x2070 java recognition 2764 ms, 917 words
+raven-1873.pdf#12 1600x2598 java recognition 878 ms, 275 words
+raven-1873.pdf#13 1600x2598 java recognition 362 ms, 98 words
+round 1 digests: {"scanned.pdf#1":"4d8ad2eaa2224311bedc7261eb9930ebd8b31ee816cd1305d50d4adeaf837c9d","skewed.pdf#1":"9417203aa4398f3f761605c516edd5d04e448ea7a2ad81348e7be14efdc1f1a1","nist-cloud.pdf#3":"1b018b846ddc78f3382e2469e6541f5b7f903900f4e126b14b4fb837ed6e84c5","nist-cloud.pdf#6":"8a379460d122933ad0b455c986853f7ab6cfcab87690a0805596b48d9ed2f0df","census-notice.pdf#1":"584d5961119b27ab1a1123221b57a53c8e6db3379225633265782198ce0fd626","census-notice.pdf#2":"7494981b3bad9b9234c26fd5392680dd1e77192ff59c5696cad166ea9cacd636","raven-1873.pdf#12":"9d9648456b3c0c88fe4d83a6e5c898d9ae1abe479b5b5750b5d58d09ebe3da5b","raven-1873.pdf#13":"84e587e1882a2356f6a620511f2cf03808eba45d15578bc63bab59cef755e72c"}
+scanned.pdf#1 1600x2594 java recognition 212 ms, 35 words
+skewed.pdf#1 1600x2594 java recognition 212 ms, 41 words
+nist-cloud.pdf#3 1600x2070 java recognition 608 ms, 188 words
+nist-cloud.pdf#6 1600x2070 java recognition 1479 ms, 514 words
+census-notice.pdf#1 1600x2070 java recognition 2881 ms, 916 words
+census-notice.pdf#2 1600x2070 java recognition 2814 ms, 917 words
+raven-1873.pdf#12 1600x2598 java recognition 857 ms, 275 words
+raven-1873.pdf#13 1600x2598 java recognition 355 ms, 98 words
+round 2 digests: {"scanned.pdf#1":"4d8ad2eaa2224311bedc7261eb9930ebd8b31ee816cd1305d50d4adeaf837c9d","skewed.pdf#1":"9417203aa4398f3f761605c516edd5d04e448ea7a2ad81348e7be14efdc1f1a1","nist-cloud.pdf#3":"1b018b846ddc78f3382e2469e6541f5b7f903900f4e126b14b4fb837ed6e84c5","nist-cloud.pdf#6":"8a379460d122933ad0b455c986853f7ab6cfcab87690a0805596b48d9ed2f0df","census-notice.pdf#1":"584d5961119b27ab1a1123221b57a53c8e6db3379225633265782198ce0fd626","census-notice.pdf#2":"7494981b3bad9b9234c26fd5392680dd1e77192ff59c5696cad166ea9cacd636","raven-1873.pdf#12":"9d9648456b3c0c88fe4d83a6e5c898d9ae1abe479b5b5750b5d58d09ebe3da5b","raven-1873.pdf#13":"84e587e1882a2356f6a620511f2cf03808eba45d15578bc63bab59cef755e72c"}
+00:20 +1: (tearDownAll)
+00:21 +1: All tests passed!

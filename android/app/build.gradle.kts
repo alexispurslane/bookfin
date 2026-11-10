@@ -55,14 +55,14 @@ android {
         }
         externalNativeBuild {
             cmake {
-                targets += listOf("bookfin_mobi")
+                targets += listOf("bookfin_mobi", "bookfin_ocr")
             }
         }
     }
 
     externalNativeBuild {
         cmake {
-            path = file("../../native/mobi/CMakeLists.txt")
+            path = file("../../native/CMakeLists.txt")
             version = "3.22.1"
         }
     }

@@ -7,7 +7,9 @@ import java.util.concurrent.Semaphore;
 
 public final class OcrWorker {
     public interface Engine {
+        int[] layout(byte[] bgra, int width, int height) throws Exception;
         String recognize(byte[] bgra, int width, int height) throws Exception;
+        String recognizeKept() throws Exception;
         void close() throws Exception;
     }
     public interface Factory { Engine create() throws Exception; }
@@ -24,16 +26,48 @@ public final class OcrWorker {
 
     public synchronized boolean requiresRestart() { return terminalFailure != null; }
 
+    /**
+     * Runs the layout pass on the page [bgra] of [width] by [height] pixels
+     * and gives its layout record. The engine keeps the page for
+     * [recognizeKept].
+     */
+    public synchronized CompletableFuture<int[]> layout(byte[] bgra, int width, int height) {
+        return run(validPage(bgra, width, height), engine -> engine.layout(bgra, width, height));
+    }
+
+    /** Recognizes the page [bgra] of [width] by [height] pixels and gives its hOCR. */
     public synchronized CompletableFuture<String> recognize(byte[] bgra, int width, int height) {
-        CompletableFuture<String> result = new CompletableFuture<>();
-        if (closing != null || busy || width < 1 || height < 1 ||
-                (long) width * height > 6400000 || (long) width * height * 4 != bgra.length) {
+        return run(validPage(bgra, width, height), engine -> engine.recognize(bgra, width, height));
+    }
+
+    /**
+     * Recognizes the page that the last layout pass kept and gives its hOCR.
+     * It fails as an ordinary page failure when no layout pass kept a page.
+     */
+    public synchronized CompletableFuture<String> recognizeKept() {
+        return run(true, Engine::recognizeKept);
+    }
+
+    private static boolean validPage(byte[] bgra, int width, int height) {
+        return bgra != null && width >= 1 && height >= 1 &&
+            (long) width * height <= 6400000 && (long) width * height * 4 == bgra.length;
+    }
+
+    private interface Operation<T> { T run(Engine engine) throws Exception; }
+
+    /**
+     * Admits one [operation] on the engine, which it creates first if needed.
+     * A closing or busy worker, or an invalid page, refuses it.
+     */
+    private <T> CompletableFuture<T> run(boolean valid, Operation<T> operation) {
+        CompletableFuture<T> result = new CompletableFuture<>();
+        if (closing != null || busy || !valid) {
             result.completeExceptionally(new IllegalStateException("Recognition is closed, busy, or has an invalid page."));
             return result;
         }
         busy = true;
         executor.execute(() -> {
-            String text = null;
+            T value = null;
             Throwable failure = null;
             boolean unsafe = false;
             try {
@@ -42,7 +76,7 @@ public final class OcrWorker {
                     ownsEngine = true;
                     engine = factory.create();
                 }
-                text = engine.recognize(bgra, width, height);
+                value = operation.run(engine);
             } catch (Throwable error) {
                 failure = error;
                 unsafe = error instanceof Error;
@@ -61,7 +95,7 @@ public final class OcrWorker {
                     }
                 }
             }
-            if (failure == null) result.complete(text);
+            if (failure == null) result.complete(value);
             else result.completeExceptionally(failure);
         });
         return result;

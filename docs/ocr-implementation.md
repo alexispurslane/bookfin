@@ -147,6 +147,42 @@ retry. Ordinary `IOException` failures can retry after successful engine cleanup
 The process-wide engine permit is released on initialization, operation and close
 failure paths. Native invariant failures remain errors, not successful fallbacks.
 
+## The engine and the layout pass
+
+The Android engine is one Tesseract handle from Tesseract's C API (ticket tb-t0ea).
+The Java `TessBaseAPI` of tesseract4android 4.9.0 has no call for the layout pass.
+The AAR's `libtesseract.so` exports the C API, so `native/ocr/bookfin_ocr.c` links
+that library as it is, with `capi.h` from the pinned source archive. `nix/ocr.nix`
+unpacks both into `BOOKFIN_OCR_ANDROID_NATIVE`. No native library is rebuilt.
+The bridge makes the calls that the Java wrapper made: the English model with
+`OEM_LSTM_ONLY`, page segmentation mode 3, an 8-bit gray page, `Recognize`,
+`GetHOCRText` of page 0, then `Clear` and `ClearAdaptiveClassifier`.
+
+The channel `bookfin/ocr` has three methods:
+
+- `layout` takes a page, runs the layout pass alone, and returns the layout record
+  as one `Int32List`. The engine keeps the page.
+- `recognize` with a page recognizes that page and returns hOCR, as before. Without
+  a page, it recognizes the page that the last `layout` kept. It reuses the lines
+  that the layout pass found. Without a kept page, it fails as an ordinary page
+  failure.
+- `close` closes the worker, as before.
+
+The layout record is a list of entries of nine numbers in Tesseract's reading
+order: a page, then blocks, paragraphs, lines and words. `bookfin_ocr.c` defines
+each field. A picture, a rule or noise is one block without lines or words, as in
+hOCR.
+
+Recognition after the layout pass gives the same hOCR, byte for byte, as
+recognition alone. On an Android emulator, the hOCR of the C API engine also equals
+the hOCR that the Java engine gave on the same pages. So `BundledEnglishText.version`,
+recognized text, digests and saved places do not change. The device tests are in
+`integration_test/ocr_layout_test.dart`. Run them on your own emulator with
+`tool/reader/ocr_layout_device_test.py`. The evidence is in
+`tool/evidence/reader/layout-pass/20261110/`.
+
+## Invariants
+
 The coordinator's invariants are bounded page admission, at most sixteen disk-backed selected
 readable pages plus retained unsaved selections, and no live recognition status after close.
 `BundledEnglishText.checkInvariants()` checks them on demand.

@@ -16,3 +16,9 @@ W1 of docs/plans/pdf-word-image-reflow.md (sections Word geometry, The layout pa
 ## Acceptance Criteria
 
 Behavior tests, red first: a scanned page's geometry is ready before its text; a saved layout record opens the page with no layout pass; a recognized page gives the same reading text and digest as before (a place saved before still resolves); each layout word attaches to the characters of the hOCR words that overlap it, in increasing order, and unmatched hOCR words still attach to a word on their line; the skewed page's line slopes match its 2.5 degree turn; the shown page's layout pass runs before other waiting recognition. PageGeometry.checkInvariants holds on both fixtures. Decode and attachment run in a hop.
+
+## Notes
+
+**2026-11-10T13:18:29Z**
+
+From tb-t0ea: the layout record is an Int32List of 9-number entries (kind, left, top, right, bottom, a, b, c, d) in raster pixels, defined in native/ocr/bookfin_ocr.c. A picture, rule or noise block has no lines or words, as in hOCR. 'recognize' without arguments recognizes the page that the last 'layout' kept, so the queue must not run another page's layout between a page's layout and its recognition, or that recognition reads the wrong page. Without a kept page it fails with code 'recognition', and the worker then closes the engine (the model reloads on the next page).

@@ -5,6 +5,55 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public final class OcrWorkerTest {
+    /** An engine whose layout pass and kept-image recognition no test uses. */
+    abstract static class PageEngine implements OcrWorker.Engine {
+        public int[] layout(byte[] bgra, int width, int height) throws Exception {
+            throw new UnsupportedOperationException("layout");
+        }
+        public String recognizeKept() throws Exception {
+            throw new UnsupportedOperationException("recognizeKept");
+        }
+    }
+
+    static void layoutAndKeptRecognition() throws Exception {
+        AtomicInteger created = new AtomicInteger();
+        CountDownLatch started = new CountDownLatch(1);
+        CountDownLatch release = new CountDownLatch(1);
+        OcrWorker worker = new OcrWorker(() -> {
+            created.incrementAndGet();
+            return new OcrWorker.Engine() {
+                int keptWidth;
+                public int[] layout(byte[] bgra, int width, int height) throws Exception {
+                    started.countDown();
+                    require(release.await(5, TimeUnit.SECONDS), "test must release the layout pass");
+                    keptWidth = width;
+                    return new int[] {0, 0, 0, width, height, 0, 0, 0, 0};
+                }
+                public String recognize(byte[] bgra, int width, int height) { return "recognized " + width; }
+                public String recognizeKept() { return "recognized kept " + keptWidth; }
+                public void close() {}
+            };
+        });
+        try {
+            require(worker.layout(new byte[3], 1, 1).isCompletedExceptionally(), "a layout pass refuses an invalid raster");
+            CompletableFuture<int[]> layout = worker.layout(new byte[8], 2, 1);
+            require(started.await(5, TimeUnit.SECONDS), "the worker admits a layout pass");
+            require(worker.recognizeKept().isCompletedExceptionally(), "a busy worker refuses recognition of the kept image");
+            require(worker.layout(new byte[4], 1, 1).isCompletedExceptionally(), "a busy worker refuses another layout pass");
+            release.countDown();
+            require(java.util.Arrays.equals(layout.get(5, TimeUnit.SECONDS), new int[] {0, 0, 0, 2, 1, 0, 0, 0, 0}),
+                "the layout pass returns the engine's layout record");
+            require(worker.recognizeKept().get(5, TimeUnit.SECONDS).equals("recognized kept 2"),
+                "recognition of the kept image runs on the engine that ran the layout pass");
+            require(worker.recognize(new byte[12], 3, 1).get(5, TimeUnit.SECONDS).equals("recognized 3"),
+                "recognition of a new image still works after a layout pass");
+            require(created.get() == 1, "the layout pass and recognition share one engine");
+        } finally {
+            release.countDown();
+            worker.close().get(5, TimeUnit.SECONDS);
+        }
+    }
+
     static void fatalBoundary(String boundary, Error fatal, boolean closeFails) throws Exception {
         CountDownLatch started = new CountDownLatch(1);
         CountDownLatch release = new CountDownLatch(1);
@@ -17,7 +66,7 @@ public final class OcrWorkerTest {
                 require(release.await(5, TimeUnit.SECONDS), "release fatal initialization");
                 throw fatal;
             }
-            return new OcrWorker.Engine() {
+            return new PageEngine() {
                 public String recognize(byte[] bgra, int width, int height) throws Exception {
                     started.countDown();
                     require(release.await(5, TimeUnit.SECONDS), "release fatal operation");
@@ -62,7 +111,7 @@ public final class OcrWorkerTest {
         CountDownLatch release = new CountDownLatch(1);
         OcrWorker worker = new OcrWorker(() -> {
             live.incrementAndGet();
-            return new OcrWorker.Engine() {
+            return new PageEngine() {
                 public String recognize(byte[] bgra, int width, int height) throws Exception {
                     started.countDown();
                     require(release.await(5, TimeUnit.SECONDS), "test must release the native page");
@@ -100,7 +149,7 @@ public final class OcrWorkerTest {
         AtomicInteger attempts = new AtomicInteger();
         OcrWorker retry = new OcrWorker(() -> {
             if (attempts.incrementAndGet() == 1) throw new java.io.IOException("fixture initialization failure");
-            return new OcrWorker.Engine() {
+            return new PageEngine() {
                 public String recognize(byte[] bgra, int width, int height) { return "retry succeeds"; }
                 public void close() {}
             };
@@ -126,7 +175,7 @@ public final class OcrWorkerTest {
             "fatal shutdown remains visible to the document owner");
         require(unsafeAdmissions.get() == 1, "fatal shutdown cannot initialize another engine");
         require(unusable.requiresRestart(), "the channel must distinguish a fatal worker from an ordinary retry");
-        OcrWorker afterFatal = new OcrWorker(() -> new OcrWorker.Engine() {
+        OcrWorker afterFatal = new OcrWorker(() -> new PageEngine() {
             public String recognize(byte[] bgra, int width, int height) { return "permit released"; }
             public void close() {}
         });
@@ -134,7 +183,7 @@ public final class OcrWorkerTest {
             "fatal cleanup releases the process-wide engine permit");
         afterFatal.close().get(2, TimeUnit.SECONDS);
         AtomicInteger recoveries = new AtomicInteger();
-        OcrWorker recoverable = new OcrWorker(() -> new OcrWorker.Engine() {
+        OcrWorker recoverable = new OcrWorker(() -> new PageEngine() {
             public String recognize(byte[] bgra, int width, int height) throws Exception {
                 if (recoveries.incrementAndGet() == 1) throw new java.io.IOException("page read failure");
                 return "page retry";
@@ -148,7 +197,7 @@ public final class OcrWorkerTest {
         recoverable.close().get(2, TimeUnit.SECONDS);
         java.io.IOException operationFailure = new java.io.IOException("operation failed");
         java.io.IOException cleanupFailure = new java.io.IOException("cleanup failed");
-        OcrWorker unsafeCleanup = new OcrWorker(() -> new OcrWorker.Engine() {
+        OcrWorker unsafeCleanup = new OcrWorker(() -> new PageEngine() {
             public String recognize(byte[] bgra, int width, int height) throws Exception { throw operationFailure; }
             public void close() throws Exception { throw cleanupFailure; }
         });
@@ -162,7 +211,7 @@ public final class OcrWorkerTest {
             "unsafe cleanup close settles with its failure");
         Error fatalCleanup = new UnsatisfiedLinkError("fatal cleanup");
         java.io.IOException ordinaryFailure = new java.io.IOException("ordinary failure before fatal cleanup");
-        OcrWorker fatalDuringCleanup = new OcrWorker(() -> new OcrWorker.Engine() {
+        OcrWorker fatalDuringCleanup = new OcrWorker(() -> new PageEngine() {
             public String recognize(byte[] bgra, int width, int height) throws Exception { throw ordinaryFailure; }
             public void close() { throw fatalCleanup; }
         });
@@ -173,13 +222,14 @@ public final class OcrWorkerTest {
         require(fatalDuringCleanup.close().handle((value, error) -> error).get(2, TimeUnit.SECONDS) == fatalCleanup,
             "fatal cleanup close settles without replacing the Error");
         require(fatalDuringCleanup.recognize(new byte[4], 1, 1).isCompletedExceptionally(), "fatal cleanup rejects further work");
-        OcrWorker finalPermit = new OcrWorker(() -> new OcrWorker.Engine() {
+        OcrWorker finalPermit = new OcrWorker(() -> new PageEngine() {
             public String recognize(byte[] bgra, int width, int height) { return "all permits released"; }
             public void close() {}
         });
         require(finalPermit.recognize(new byte[4], 1, 1).get(2, TimeUnit.SECONDS).equals("all permits released"),
             "ordinary and fatal cleanup failures both release the global engine permit");
         finalPermit.close().get(2, TimeUnit.SECONDS);
-        System.out.println("PASS: bounded admission, process-wide permit cleanup, draining close, fatal init/operation/close settlement, preserved invariant Errors, unsafe-worker rejection, and safe IOException retry");
+        layoutAndKeptRecognition();
+        System.out.println("PASS: layout pass and kept-image recognition on one engine, bounded admission, process-wide permit cleanup, draining close, fatal init/operation/close settlement, preserved invariant Errors, unsafe-worker rejection, and safe IOException retry");
     }
 }

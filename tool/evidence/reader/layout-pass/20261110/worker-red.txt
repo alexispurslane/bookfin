@@ -1,0 +1,4 @@
+Exception in thread "main" java.lang.AssertionError: the worker admits a layout pass
+	at OcrWorkerTest.require(OcrWorkerTest.java:102)
+	at OcrWorkerTest.layoutAndKeptRecognition(OcrWorkerTest.java:40)
+	at OcrWorkerTest.main(OcrWorkerTest.java:232)
