@@ -39,7 +39,10 @@
       "widthCssPixels": 1280,
       "scrollWidthCssPixels": 1280,
       "overflowElements": 0,
-      "comparisonColumnWidthsCssPixels": [399, 399],
+      "comparisonColumnWidthsCssPixels": [
+        399,
+        399
+      ],
       "imagesLoaded": 2,
       "notes": "Targeted comparison markup and CSS with fallback fonts, not a full-page browser acceptance run."
     },
@@ -53,11 +56,29 @@
       "name": "Whitespace and patch integrity",
       "command": "git diff --check",
       "result": "pass"
+    },
+    {
+      "name": "Parent full-page rendered review with bundled fonts",
+      "tool": "T3 html_preview",
+      "result": "pass",
+      "widthsCssPixels": [
+        390,
+        1280
+      ],
+      "appearance": [
+        "light",
+        "dark"
+      ],
+      "imagesLoaded": 12,
+      "fontsLoaded": [
+        "Outfit",
+        "Source Serif 4"
+      ],
+      "notes": "Inspected every page section through sequential capture windows. No page horizontal overflow. The build command comment extends within its intentionally scrollable code block on mobile. Images use absolute local paths in the verification copy; fonts are embedded as data URIs. This is a full HTML renderer check, not interactive browser or device acceptance."
     }
   ],
   "notRun": [
     "No full Flutter test suite: application code is unchanged.",
-    "No device actions or device performance tests: parent-owned scope.",
-    "No full-page browser acceptance: parent performs the final check with the bundled fonts."
+    "No device actions or device performance tests: parent-owned scope."
   ]
 }

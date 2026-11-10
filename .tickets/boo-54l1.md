@@ -1,6 +1,6 @@
 ---
 id: boo-54l1
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-10T21:56:07Z
@@ -35,3 +35,7 @@ Verified shared-history claims by inspecting lib/playback/timeline.dart, ReaderS
 Verification: Nix host capture harness passed (1 test, 3 captures). General markup/asset check passed (12 images with dimensions and alt text, 39 links/asset paths, 14 unique IDs, balanced tags). git diff --check passed. T3 html_preview targeted header/intro/comparison at 390 CSS pixels and Night comparison at 1280 pixels showed no horizontal overflow and loaded both images. Those targeted previews used fallback fonts because absolute local font URLs were blocked; parent still owns the final full-page browser check with bundled fonts. Full Flutter suite was not run for this HTML/content task. Optional missing iOS SDK notices did not prevent the host capture run.
 
 Applied ultracode-orchestration (leaf ownership only, no children), software-design, impeccable (preserve existing visual system), plain-English guidance, and PDF guidance. No design fork. Ignored capture/check scripts and raw PNGs remain in .cache/ for parent inspection; no temporary capture test enters the test suite. Ready for parent inspection and integration; ticket remains in_progress.
+
+**2026-11-10T22:22:31Z**
+
+Merged as 4f48968. Parent inspected the full diff, all page sections at 390px Cream and 1280px Night through T3 html_preview, with actual bundled fonts embedded. All 12 images and both fonts loaded; no page horizontal overflow. The mobile build snippet remains locally scrollable. Verification JSON records the check and its limits. Genuine same-source comparison and shared-history wording accepted; no application code changed, so no new Flutter suite required.
