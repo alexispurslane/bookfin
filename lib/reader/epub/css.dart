@@ -839,7 +839,7 @@ class _AttributeTest {
     return switch (operator) {
       null => true,
       '=' => actual == value,
-      '~=' => actual.split(RegExp(r'\s+')).contains(value),
+      '~=' => actual.split(_spaces).contains(value),
       '|=' => actual == value || actual.startsWith('$value-'),
       '^=' => value.isNotEmpty && actual.startsWith(value),
       r'$=' => value.isNotEmpty && actual.endsWith(value),
@@ -1215,17 +1215,56 @@ class Cascade {
   /// The root's inherited size must have grown by it too.
   final double fontScale;
 
+  /// The longhand declarations of each declaration that [compute] read, by
+  /// declaration. A rule's declarations apply to many elements.
+  final _expanded = Map<Declaration, List<(String, String)>>.identity();
+
+  List<(String, String)> _longhands(Declaration declaration) =>
+      _expanded[declaration] ??= _expand(declaration).toList();
+
   /// The computed style of [element], whose parent has [parent].
+  ///
+  /// Elements that match the same rules and have the same parent style,
+  /// style attribute, overrides, language attribute and root font size
+  /// share one style object, as browsers share styles. Nothing changes a
+  /// style once the cascade returns it.
   Style compute(DomElement element, Style parent, double rootFontSize) {
-    final candidates = <StyleRule>[
-      ..._universal,
-      ...?_byTag[element.name],
-      for (final name in element.classes) ...?_byClass[name],
-      if (element.id != null) ...?_byId[element.id],
-    ];
+    final matched = <StyleRule>[];
+    void match(List<StyleRule>? rules) {
+      if (rules == null) return;
+      for (final rule in rules) {
+        if (rule.selector.matches(element)) matched.add(rule);
+      }
+    }
+
+    match(_universal);
+    match(_byTag[element.name]);
+    for (final name in element.classes) {
+      match(_byClass[name]);
+    }
+    if (element.id != null) match(_byId[element.id]);
+    final attribute = element.attributes['style'];
+    final key = _ShareKey(
+      parent,
+      matched,
+      attribute,
+      overrides[element],
+      languageAttribute(element),
+      element.parent == null,
+      rootFontSize,
+    );
+    return _shared[key] ??= _computed(key);
+  }
+
+  /// The styles that [compute] made, by what they depend on.
+  final _shared = <_ShareKey, Style>{};
+
+  Style _computed(_ShareKey key) {
+    final _ShareKey(:parent, :attribute, :language) = key;
+    var rootFontSize = key.rootFontSize;
     final winners = <String, (int, int, int, String)>{};
     void offer(Declaration declaration, int level, int specificity, int order) {
-      for (final (property, value) in _expand(declaration)) {
+      for (final (property, value) in _longhands(declaration)) {
         final current = winners[property];
         final rank = (declaration.important ? 2 : 0) + level;
         if (current == null ||
@@ -1238,8 +1277,7 @@ class Cascade {
       }
     }
 
-    for (final rule in candidates) {
-      if (!rule.selector.matches(element)) continue;
+    for (final rule in key.rules) {
       for (final declaration in rule.declarations) {
         offer(
           declaration,
@@ -1249,19 +1287,16 @@ class Cascade {
         );
       }
     }
-    final attribute = element.attributes['style'];
     if (attribute != null) {
       for (final declaration in parseDeclarations(attribute)) {
         offer(declaration, 1, 0, 0);
       }
     }
-    for (final declaration in overrides[element] ?? const <Declaration>[]) {
+    for (final declaration in key.overrides ?? const <Declaration>[]) {
       offer(declaration, 1, 0, 1);
     }
     final style = parent.inherit();
-    if (languageAttribute(element) case final language?) {
-      style.language = language;
-    }
+    if (language != null) style.language = language;
     // Font size comes first: em lengths of the other properties use it.
     final size = winners.remove('font-size')?.$4;
     if (size != null) {
@@ -1272,7 +1307,7 @@ class Cascade {
         fontScale,
       );
     }
-    if (element.parent == null) rootFontSize = style.fontSize;
+    if (key.root) rootFontSize = style.fontSize;
     for (final MapEntry(key: property, value: winner) in winners.entries) {
       _apply(
         style,
@@ -1296,6 +1331,61 @@ class Cascade {
       style.display = Display.block;
     }
     return style;
+  }
+}
+
+/// What [Cascade.compute] makes an element's style from: its parent's
+/// style, the rules that match it in the order that they offer their
+/// declarations, its style attribute, its overrides, its language
+/// attribute, whether it is the root, and the root's font size. Styles and
+/// rules compare by identity.
+final class _ShareKey {
+  _ShareKey(
+    this.parent,
+    this.rules,
+    this.attribute,
+    this.overrides,
+    this.language,
+    this.root,
+    this.rootFontSize,
+  ) : hashCode = Object.hash(
+        identityHashCode(parent),
+        Object.hashAll(rules),
+        attribute,
+        identityHashCode(overrides),
+        language,
+        root,
+        rootFontSize,
+      );
+
+  final Style parent;
+  final List<StyleRule> rules;
+  final String? attribute;
+  final List<Declaration>? overrides;
+  final String? language;
+  final bool root;
+  final double rootFontSize;
+
+  @override
+  final int hashCode;
+
+  @override
+  bool operator ==(Object other) {
+    if (other is! _ShareKey ||
+        other.hashCode != hashCode ||
+        !identical(other.parent, parent) ||
+        other.rules.length != rules.length ||
+        other.attribute != attribute ||
+        !identical(other.overrides, overrides) ||
+        other.language != language ||
+        other.root != root ||
+        other.rootFontSize != rootFontSize) {
+      return false;
+    }
+    for (var index = 0; index < rules.length; index++) {
+      if (!identical(other.rules[index], rules[index])) return false;
+    }
+    return true;
   }
 }
 
@@ -1484,15 +1574,17 @@ const _borderStyles = {
   'outset',
 };
 
-List<String> _tokens(String value) => value
-    .trim()
-    .split(RegExp(r'\s+'))
-    .where((part) => part.isNotEmpty)
-    .toList();
+/// A run of white space.
+final _spaces = RegExp(r'\s+');
 
-bool _isLength(String token) =>
-    RegExp(r'^-?(\d+\.?\d*|\.\d+)(px|em|rem|pt|%|ex|ch|vw|vh|in|cm|mm|pc)?$')
-        .hasMatch(token);
+List<String> _tokens(String value) =>
+    value.trim().split(_spaces).where((part) => part.isNotEmpty).toList();
+
+bool _isLength(String token) => _length.hasMatch(token);
+
+final _length = RegExp(
+  r'^-?(\d+\.?\d*|\.\d+)(px|em|rem|pt|%|ex|ch|vw|vh|in|cm|mm|pc)?$',
+);
 
 /// [value] in pixels when it is a length: em units against [fontSize], rem
 /// against [rootFontSize]. A percentage is kept for layout. Null when it is
@@ -1508,9 +1600,7 @@ Length? parseLength(
   if (text == 'auto') return const Length.auto();
   if (text == 'none') return const Length.none();
   if (text == '0') return const Length.px(0);
-  final match = RegExp(
-    r'^(-?(?:\d+\.?\d*|\.\d+))(px|em|rem|pt|%|ex|ch|vw|vh|in|cm|mm|pc)$',
-  ).firstMatch(text);
+  final match = _lengthParts.firstMatch(text);
   if (match == null) return null;
   final number = double.parse(match.group(1)!);
   return switch (match.group(2)) {
@@ -1529,6 +1619,10 @@ Length? parseLength(
     _ => null,
   };
 }
+
+final _lengthParts = RegExp(
+  r'^(-?(?:\d+\.?\d*|\.\d+))(px|em|rem|pt|%|ex|ch|vw|vh|in|cm|mm|pc)$',
+);
 
 /// How far the `filter` value [value] inverts colors, from 0 to 1, or null
 /// when it is not a filter list. Chromium composes each `invert()` with the
@@ -1571,7 +1665,9 @@ double? _invertOf(String value) {
 /// Whether the length [value] is relative to a font size: in em, rem, ex,
 /// ch or percent.
 bool _followsFont(String value) =>
-    RegExp(r'(em|ex|ch|%)$').hasMatch(value.trim().toLowerCase());
+    _fontUnit.hasMatch(value.trim().toLowerCase());
+
+final _fontUnit = RegExp(r'(em|ex|ch|%)$');
 
 /// The font size in pixels that [value] gives an element whose parent's
 /// font size is [parent], with [scale] as [Cascade.fontScale].

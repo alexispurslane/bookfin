@@ -110,10 +110,12 @@ final class DomElement extends DomNode {
   final List<DomElement> elements = [];
 
   late final Set<String> classes = {
-    for (final name in (attributes['class'] ?? '').split(RegExp(r'\s+')))
+    for (final name in (attributes['class'] ?? '').split(_spaces))
       if (name.isNotEmpty) name,
   };
   String? get id => attributes['id'];
+
+  static final _spaces = RegExp(r'\s+');
 
   Iterable<DomText> get texts sync* {
     for (final child in children) {

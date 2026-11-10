@@ -988,11 +988,15 @@ List<StyleSheet> sectionSheets(
 }
 
 /// [root] and every element inside it, in document order.
-Iterable<DomElement> elementsOf(DomElement root) sync* {
-  yield root;
-  for (final child in root.elements) {
-    yield* elementsOf(child);
+List<DomElement> elementsOf(DomElement root) {
+  final found = <DomElement>[];
+  void visit(DomElement element) {
+    found.add(element);
+    element.elements.forEach(visit);
   }
+
+  visit(root);
+  return found;
 }
 
 /// The horizontal padding of the page's body: half the column gap that
