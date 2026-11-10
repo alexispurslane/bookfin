@@ -1,0 +1,38 @@
+{
+  "capturedOn": "2026-11-10",
+  "rendererRevision": "c9200c085612a0978dd56d4fa1ac943c1f92a67d",
+  "sourcePage": "The Raven (1873), Library of Congress scan page 9, printed folio 1",
+  "sourcePdfSha256": "cd2894179a69bd874339e419924e3a89042e7302be785444a0859e390c44e7fa",
+  "method": "Production PdfViewport captured through Flutter host test runner; recorded public OCR fixture; WebP quality 84, method 6; no cropping or compositing",
+  "logicalViewport": {
+    "width": 411,
+    "height": 960,
+    "devicePixelRatio": 2
+  },
+  "captures": [
+    {
+      "file": "raven-original.webp",
+      "width": 822,
+      "height": 1920,
+      "bytes": 56426,
+      "sha256": "34b26af819b2fe143a114a44b46615eac38cb065247b559d1420ac6c593d7ce8",
+      "rawPngSha256": "52a55dfe3a2e1681e0a66e0fe32ed2e6c95c38bc816f6e254621d5724b40ef1e"
+    },
+    {
+      "file": "raven-page-words-cream.webp",
+      "width": 822,
+      "height": 1920,
+      "bytes": 78908,
+      "sha256": "95c160db0f0c36bd38120c1cd36fcbf531a6fcede4be9bdad4ca3fc73fc836f1",
+      "rawPngSha256": "5e55637afa25fa3da4e1ad0dd701d129dff454d63687483e5b8b99852de9b539"
+    },
+    {
+      "file": "raven-page-words-night.webp",
+      "width": 822,
+      "height": 1920,
+      "bytes": 67236,
+      "sha256": "4712c7a0f916289c73f885ee689b45e08653722161f5fd99f3409584fc0cd708",
+      "rawPngSha256": "ca6fe343163feae26246ea2f2fa2fb73873f2ba1592ca62d7203552479db0ab2"
+    }
+  ]
+}

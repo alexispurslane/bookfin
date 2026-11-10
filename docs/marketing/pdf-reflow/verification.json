@@ -1,0 +1,63 @@
+{
+  "ticket": "boo-54l1",
+  "checkedOn": "2026-11-10",
+  "base": "c9200c085612a0978dd56d4fa1ac943c1f92a67d",
+  "checks": [
+    {
+      "name": "Genuine host-renderer captures",
+      "command": "nix develop --command flutter test --no-pub .cache/marketing_capture_test.dart --reporter expanded",
+      "result": "pass",
+      "testsPassed": 1,
+      "imagesCaptured": 3,
+      "log": ".cache/marketing-capture.log",
+      "notes": "The final run passed without Flutter exceptions. Optional iOS SDK notices were printed. No device or emulator was used."
+    },
+    {
+      "name": "Homepage markup and assets",
+      "command": "nix develop --command python3 .cache/check_marketing.py",
+      "result": "pass",
+      "imagesChecked": 12,
+      "linksAndAssetReferencesChecked": 39,
+      "uniqueIds": 14,
+      "newCaptureBytes": 202570,
+      "notes": "Balanced elements, unique IDs, valid local links and fragments, local font paths, alternative text, and actual image dimensions. Temporary general-purpose checker stays in ignored scratch."
+    },
+    {
+      "name": "Small-screen header, introduction, and comparison preview",
+      "tool": "T3 html_preview",
+      "result": "pass with limitation",
+      "widthCssPixels": 390,
+      "scrollWidthCssPixels": 390,
+      "overflowElements": 0,
+      "imagesLoaded": 2,
+      "notes": "Targeted markup and CSS, not the full page. Absolute image paths loaded. The preview blocked absolute local font URLs, so this check used the existing fallback fonts."
+    },
+    {
+      "name": "Desktop comparison preview in Night colors",
+      "tool": "T3 html_preview",
+      "result": "pass with limitation",
+      "widthCssPixels": 1280,
+      "scrollWidthCssPixels": 1280,
+      "overflowElements": 0,
+      "comparisonColumnWidthsCssPixels": [399, 399],
+      "imagesLoaded": 2,
+      "notes": "Targeted comparison markup and CSS with fallback fonts, not a full-page browser acceptance run."
+    },
+    {
+      "name": "Public source metadata",
+      "command": "nix develop --command curl --location --max-time 30 --fail --silent --show-error https://www.loc.gov/item/unk82092576/?fo=json",
+      "result": "pass",
+      "notes": "Item title The raven, year 1873, access not restricted, and public-domain reuse statement confirmed. No new source content was downloaded into the app library."
+    },
+    {
+      "name": "Whitespace and patch integrity",
+      "command": "git diff --check",
+      "result": "pass"
+    }
+  ],
+  "notRun": [
+    "No full Flutter test suite: application code is unchanged.",
+    "No device actions or device performance tests: parent-owned scope.",
+    "No full-page browser acceptance: parent performs the final check with the bundled fonts."
+  ]
+}
