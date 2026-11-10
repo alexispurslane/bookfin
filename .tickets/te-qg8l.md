@@ -1,6 +1,6 @@
 ---
 id: te-qg8l
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-10T15:31:38Z

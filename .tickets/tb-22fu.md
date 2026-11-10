@@ -16,3 +16,9 @@ W6 of docs/plans/pdf-word-image-reflow.md (The text under the images; Waiting, t
 ## Acceptance Criteria
 
 Behavior tests, red first: on a scanned page the first word screen shows before recognition ends and the progress line stays until the text attaches, with no change of screen; before the text, a saved place inside the page opens the first screen and stays saved, and after the text it opens its screen if the person did not move; the place of a screen is its first word and reopening shows the same word; a place from the text view opens on the screen that holds it, and the reverse; turns pass between pages' first and last screens; a vertical drag changes nothing; the deck starts no layout pass and no recognition; a failed layout pass or analysis falls back as the doc says. Engine rule 1 holds.
+
+## Notes
+
+**2026-11-10T17:00:20Z**
+
+From tb-m8xo: until the book profile freezes (about the first minute of a new book), ReflowPage.column shows running headers and folios; a column made after the freeze leaves them out. Keep the shown page's column until a turn or a text size change, as the Original view keeps its crop, so the shown screen never changes under the reader.

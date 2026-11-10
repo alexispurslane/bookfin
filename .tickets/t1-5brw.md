@@ -1,6 +1,6 @@
 ---
 id: t1-5brw
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-10T15:22:46Z
