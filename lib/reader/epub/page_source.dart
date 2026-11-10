@@ -86,8 +86,14 @@ class PageRequestStopped implements Exception {
 /// the source lays out that page, and the next one when the place lies
 /// after everything that the page shows. Each page that a run cuts from a seeded start checks
 /// that its first place is the kept one and that the next seeded start
-/// follows it. The first page that contradicts the map forgets it: the
-/// seeded pages drop, the file goes, and the whole book is laid out again.
+/// follows it. The map also keeps the widths of each table's cells, which
+/// a run from a start inside a table needs first, and each prepared
+/// section of a seeded section reuses them ([reuseMeasures]). A run
+/// measures each kept table row that it lays out again. The first page or
+/// row that contradicts the map forgets it: the seeded pages and widths
+/// drop, the file goes, and the whole book is laid out again. A section
+/// whose main run ended reuses that run's widths in the same way when it
+/// is prepared again.
 /// Once every section's main run ended and no section is seeded, the source
 /// keeps the map.
 ///
@@ -1007,6 +1013,7 @@ class PageSource {
     final fresh = pages.sublist(run.taken);
     run.taken = pages.length;
     final ended = layout.mainDone;
+    if (run.run.contradicted && layout.measures != null) _contradicted(layout);
     for (final (index, page) in fresh.indexed) {
       final next = page.last
           ? null
@@ -1034,6 +1041,7 @@ class PageSource {
           layout.starts.add(page.start);
         }
         if (page.last) {
+          layout.measures = measuresOf(layout.prepared!);
           _finish(layout, length: layout.prepared!.dom.visibleLength);
         }
       }
@@ -1151,6 +1159,7 @@ class PageSource {
       unawaited(_pageMaps!.forget(settings));
       return;
     }
+    var fits = true;
     for (final (index, kept) in sections.indexed) {
       final layout = _layoutFor(index, settings);
       if (layout.main != null ||
@@ -1163,10 +1172,16 @@ class PageSource {
         ..starts.addAll(kept.starts)
         ..firsts.addAll(kept.firsts)
         ..visibleStarts.addAll(kept.visible.starts)
-        ..seeded = true;
+        ..seeded = true
+        ..measures = kept.measures;
       _finish(layout, length: kept.visible.length);
+      if (layout.prepared case final prepared?
+          when !reuseMeasures(prepared, kept.measures)) {
+        fits = false;
+      }
     }
     if (settings == _settings) _bookPages.value = _bookPagesIn(settings);
+    if (!fits) _forgetMap(settings);
   }
 
   /// Whether [sections] can be this book's true pages: one complete
@@ -1199,6 +1214,7 @@ class PageSource {
   void _forgetMap(PageSettings settings) {
     for (final layout in _layouts.values) {
       if (layout.settings == settings && layout.seeded) {
+        _dropMeasures(layout);
         layout
           ..seeded = false
           ..pages = null
@@ -1217,6 +1233,28 @@ class PageSource {
       _layOutFrom(shown);
     }
     _keptMapDropped.value++;
+  }
+
+  /// Handles kept measures of [layout] that do not fit its prepared section,
+  /// or that a run found otherwise: they come from a kept page map, which
+  /// is then forgotten, or from a main run that the text engine does not
+  /// repeat, and then only they go.
+  void _contradicted(_SectionLayout layout) {
+    if (layout.seeded) {
+      _forgetMap(layout.settings);
+    } else {
+      _dropMeasures(layout);
+    }
+  }
+
+  /// Lets go of the measures of [layout], and takes them back from its
+  /// prepared section, whose runs stop first.
+  void _dropMeasures(_SectionLayout layout) {
+    layout.measures = null;
+    if (layout.prepared case final prepared?) {
+      layout.disposeRuns();
+      forgetMeasures(prepared);
+    }
   }
 
   /// Keeps the page map of [settings] once every section's main run ended
@@ -1239,6 +1277,7 @@ class PageSource {
             length: layout.pages!.visible!.length,
           ),
           complete: true,
+          measures: layout.measures ?? const SectionMeasures(),
         ),
       );
     }
@@ -1322,6 +1361,10 @@ class PageSource {
           identical(_layouts[(layout.index, layout.settings)], layout)) {
         layout.prepared = prepared;
         _prepared.add(layout);
+        if (layout.measures case final measures?
+            when !reuseMeasures(prepared, measures)) {
+          _contradicted(layout);
+        }
         _trim();
         _plan();
       }
@@ -1680,6 +1723,11 @@ class _SectionLayout {
   /// Whether the true pages came from a kept page map that no page
   /// contradicted yet. Then [mainDone] holds and no main run ran.
   bool seeded = false;
+
+  /// What runs of the section measured that a run from a start inside a
+  /// flow item needs first: the main run's once it ended, or the kept page
+  /// map's. Each prepared section of it reuses them ([reuseMeasures]).
+  SectionMeasures? measures;
 
   /// The start of the page after each page that a run cut, by the page's
   /// start. The section's last page has none.

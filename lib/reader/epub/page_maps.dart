@@ -119,6 +119,7 @@ class KeptSection {
     required this.firsts,
     required this.visible,
     required this.complete,
+    this.measures = const SectionMeasures(),
   });
 
   /// The true page starts.
@@ -134,6 +135,10 @@ class KeptSection {
   final VisibleStarts visible;
   final bool complete;
 
+  /// What the section's main run measured that a run from a page start
+  /// inside a flow item needs first.
+  final SectionMeasures measures;
+
   @override
   bool operator ==(Object other) =>
       other is KeptSection &&
@@ -141,7 +146,8 @@ class KeptSection {
       listEquals(other.starts, starts) &&
       listEquals(other.firsts, firsts) &&
       listEquals(other.visible.starts, visible.starts) &&
-      other.visible.length == visible.length;
+      other.visible.length == visible.length &&
+      other.measures == measures;
 
   @override
   int get hashCode => Object.hash(
@@ -150,12 +156,13 @@ class KeptSection {
     Object.hashAll(firsts),
     Object.hashAll(visible.starts),
     visible.length,
+    measures,
   );
 
   @override
   String toString() =>
       'KeptSection($starts, firsts: $firsts, visible: $visible, '
-      'complete: $complete)';
+      'complete: $complete, measures: $measures)';
 }
 
 /// The page maps that Bookfin keeps for each download.
@@ -170,10 +177,10 @@ class KeptSection {
 /// A file is: the magic number `BKPM`, the format [version] and the whole
 /// key (the book, the page size, the text size and whether it sizes the
 /// main text, and the engine), then the section count, then for each
-/// section its complete flag, its page count, its pages and its number of
-/// visible characters after its last page's start, then a CRC-32 of all
-/// bytes before it. Every number is an unsigned variable-length integer
-/// (LEB128). A page is five numbers or four:
+/// section its complete flag, its page count, its pages, its number of
+/// visible characters after its last page's start and its measures, then a
+/// CRC-32 of all bytes before it. Every number but a width is an unsigned
+/// variable-length integer (LEB128). A page is five numbers or four:
 ///
 /// - Its start: the step of its item from the previous start's item, then
 ///   its line (the step from the previous start's line when the item is
@@ -183,6 +190,11 @@ class KeptSection {
 ///   (a first place can come before the one of the page before it), plus
 ///   1. Then the place's offset, when it has a node.
 /// - Its visible start: the step from the previous page's visible start.
+///
+/// The measures ([SectionMeasures]) are the number of tables, then for
+/// each table the step of its flow item from the previous table's (from 0
+/// for the first), its number of cells, and the narrowest and widest
+/// width of each cell as exact 64-bit floats (16 bytes a cell).
 ///
 /// The calling isolate encodes and decodes the map, and the file access
 /// is asynchronous. A map takes about 7.6 bytes a page. On the host's
@@ -197,8 +209,9 @@ abstract final class PageMaps {
   /// The format of the file. It is part of the key, so a file of another
   /// format reads as another key's map. Version 2 added
   /// [PageMapKey.sizesMainText]. Version 3 added the first places and the
-  /// visible starts of the pages (t5-q0hs).
-  static const version = 3;
+  /// visible starts of the pages (t5-q0hs). Version 4 added the table cell
+  /// widths (t5-s1vy).
+  static const version = 4;
 
   /// The most settings values that one book keeps maps for. A reader
   /// changes the text size or turns the phone now and then, so four values
@@ -413,6 +426,20 @@ abstract final class PageMaps {
         characters = visible.starts[index];
       }
       out.unsigned(visible.length - characters);
+      final tables = section.measures.tables;
+      out.unsigned(tables.length);
+      var table = 0;
+      for (final index in tables.keys.toList()..sort()) {
+        final widths = tables[index]!;
+        assert(widths.length.isEven, 'Each cell has two widths.');
+        out
+          ..unsigned(index - table)
+          ..unsigned(widths.length ~/ 2);
+        table = index;
+        for (final width in widths) {
+          out.float64(width);
+        }
+      }
     }
     return (out..uint32(getCrc32(out.bytes))).bytes;
   }
@@ -439,9 +466,9 @@ abstract final class PageMaps {
       return null;
     }
     final reader = _Reader(bytes, header.length, end);
-    // Each section takes at least 3 bytes, and each page 5, so no count
+    // Each section takes at least 4 bytes, and each page 5, so no count
     // can make a list larger than the file.
-    final count = reader.count(3);
+    final count = reader.count(4);
     final sections = <KeptSection>[];
     for (var index = 0; index < count; index++) {
       final complete = switch (reader.unsigned()) {
@@ -474,12 +501,28 @@ abstract final class PageMaps {
         characters += reader.unsigned();
         visible.add(characters);
       }
+      final length = characters + reader.unsigned();
+      final tables = <int, Float64List>{};
+      var table = 0;
+      // Each table takes at least 2 bytes, and each cell 16.
+      for (var left = reader.count(2); left > 0; left--) {
+        final step = reader.unsigned();
+        if (step == 0 && tables.isNotEmpty) {
+          throw const FormatException('Two tables share a flow item.');
+        }
+        table += step;
+        tables[table] = Float64List.fromList([
+          for (var cells = reader.count(16) * 2; cells > 0; cells--)
+            reader.float64(),
+        ]);
+      }
       sections.add(
         KeptSection(
           starts,
           firsts: firsts,
-          visible: (starts: visible, length: characters + reader.unsigned()),
+          visible: (starts: visible, length: length),
           complete: complete,
+          measures: SectionMeasures(tables: tables),
         ),
       );
     }
@@ -511,6 +554,20 @@ class _Reader {
       if (byte < 0x80) return value;
     }
     throw const FormatException('A number of the page map is too long.');
+  }
+
+  /// An exact 64-bit float.
+  double float64() {
+    if (_end - _at < 8) {
+      throw const FormatException('The page map ends inside a width.');
+    }
+    final value = ByteData.sublistView(
+      _bytes,
+      _at,
+      _at + 8,
+    ).getFloat64(0, Endian.little);
+    _at += 8;
+    return value;
   }
 
   /// A count of things that take at least [size] bytes each.

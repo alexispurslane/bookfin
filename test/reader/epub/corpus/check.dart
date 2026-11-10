@@ -110,9 +110,10 @@ class SettingsReport {
   int lineStartDisagreements = 0;
   final lineStartDisagreementPlaces = <String>[];
 
-  /// The bytes of the book's page map in its format, and in format 2,
-  /// which kept the page starts only.
+  /// The bytes of the book's page map in its format, in format 3, which
+  /// kept no measures, and in format 2, which kept the page starts only.
   int mapBytes = 0;
+  int formatThreeMapBytes = 0;
   int formatTwoMapBytes = 0;
 
   /// The runs from a page start, the pages that they cut, and the runs
@@ -153,6 +154,7 @@ class SettingsReport {
     'lineStartDisagreements': lineStartDisagreements,
     'lineStartDisagreementPlaces': lineStartDisagreementPlaces,
     'mapBytes': mapBytes,
+    'formatThreeMapBytes': formatThreeMapBytes,
     'formatTwoMapBytes': formatTwoMapBytes,
     'runs': runs,
     'pagesCompared': pagesCompared,
@@ -331,12 +333,14 @@ KeptSection _kept(ChapterLayout chapter) {
     firsts: [for (final page in chapter.pages) page.startPlace],
     visible: (starts: visible, length: chapter.section.dom.visibleLength),
     complete: true,
+    measures: measuresOf(chapter.section),
   );
 }
 
 /// Writes the page map of [sections] as Bookfin keeps it, and records its
-/// size, and the size that format 2 gave it: the same bytes without each
-/// page's first place and visible start, and each section's length.
+/// size, the size that format 3 gave it (the same bytes without each
+/// section's measures), and the size that format 2 gave it (also without
+/// each page's first place and visible start, and each section's length).
 Future<void> _measureMap(
   CorpusBook book,
   PageSettings settings,
@@ -362,6 +366,18 @@ Future<void> _measureMap(
         if (entry is File && entry.path.endsWith('.map')) entry,
     ];
     found.mapBytes = await files.single.length();
+    var measures = 0;
+    for (final section in sections) {
+      final tables = section.measures.tables;
+      measures += _leb128(tables.length);
+      var table = 0;
+      for (final index in tables.keys.toList()..sort()) {
+        final cells = tables[index]!.length ~/ 2;
+        measures += _leb128(index - table) + _leb128(cells) + 16 * cells;
+        table = index;
+      }
+    }
+    found.formatThreeMapBytes = found.mapBytes - measures;
     var added = 0;
     for (final section in sections) {
       var node = 0;
@@ -381,7 +397,7 @@ Future<void> _measureMap(
       }
       added += _leb128(section.visible.length - characters);
     }
-    found.formatTwoMapBytes = found.mapBytes - added;
+    found.formatTwoMapBytes = found.formatThreeMapBytes - added;
   } finally {
     await folder.delete(recursive: true);
   }

@@ -1,9 +1,11 @@
 // The on-demand check of a jump with a kept page map in real books
-// (t5-q0hs). Before the map kept each page's first place, a jump into the
-// middle of the largest section took a line search of 2.5 s on the host in
-// Gutenberg's Roget's Thesaurus (one table of 1,187 cells), 164 ms in
-// Standard Ebooks' Ulysses and 63 ms in Bleak House (long paragraphs). It
-// is not part of Bookfin's normal test run. Each book prints its times.
+// (t5-q0hs, t5-s1vy). Before the map kept each page's first place, a jump
+// into the middle of the largest section took a line search of 2.5 s on
+// the host in Gutenberg's Roget's Thesaurus (one table of 1,187 cells),
+// 164 ms in Standard Ebooks' Ulysses and 63 ms in Bleak House (long
+// paragraphs). Before the map kept table cell widths, the page from the
+// kept start measured the whole table instead. It is not part of
+// Bookfin's normal test run. Each book prints its times.
 //
 // In the dev shell, from the repository root, after
 // python3 -I tool/reader/fetch_epub_corpus.py:
@@ -67,10 +69,10 @@ void main() {
       /// A jump to the middle of the largest section, after its prepare: to
       /// the page at the line that holds the place when [anchored], else to
       /// the true page that holds it.
-      Future<({Duration took, int lineSearches, LaidPage page})> jump(
-        BookPageMaps? pageMaps, {
-        bool anchored = false,
-      }) async {
+      Future<
+        ({Duration took, int lineSearches, int measuredCells, LaidPage page})
+      >
+      jump(BookPageMaps? pageMaps, {bool anchored = false}) async {
         final scheduler = TestScheduler();
         final source = PageSource(
           publication,
@@ -80,6 +82,7 @@ void main() {
         addTearDown(source.dispose);
         final section = await scheduler.until(source.section(largest));
         final place = placeIn(section, .5);
+        final cells = LayoutRun.measuredCells;
         final clock = Stopwatch()..start();
         final page = await scheduler.until(
           source.pageAt(place, anchored: anchored, urgent: true),
@@ -87,6 +90,7 @@ void main() {
         return (
           took: clock.elapsed,
           lineSearches: source.lineSearches,
+          measuredCells: LayoutRun.measuredCells - cells,
           page: page,
         );
       }
@@ -99,10 +103,18 @@ void main() {
         'JUMP $id section $largest: '
         'without a map ${plain.took.inMilliseconds} ms to the true page, '
         '${anchored.took.inMilliseconds} ms to the anchored page; '
-        'with a map ${kept.took.inMilliseconds} ms to the true page',
+        'with a map ${kept.took.inMilliseconds} ms to the true page; '
+        'table cells measured ${plain.measuredCells} without a map, '
+        '${kept.measuredCells} with one',
       );
 
       expect(kept.lineSearches, 0);
+      // With a map, a jump checks the kept widths of the rows that it lays
+      // out, and measures no other table cell.
+      expect(
+        kept.measuredCells,
+        plain.measuredCells == 0 ? 0 : lessThan(plain.measuredCells ~/ 10),
+      );
       expect(plain.lineSearches, 1);
       expect(kept.page.start, plain.page.start);
       expect(kept.page.startPlace, plain.page.startPlace);
@@ -130,6 +142,7 @@ Future<KeptSection> _keptSection(CorpusBook book, int index) async {
       firsts: [for (final page in chapter.pages) page.startPlace],
       visible: (starts: visible, length: section.dom.visibleLength),
       complete: true,
+      measures: measuresOf(section),
     );
   } finally {
     chapter.dispose();

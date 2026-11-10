@@ -6,6 +6,7 @@
 // forgets the map. The map is written once the whole book is laid out.
 import 'dart:async';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:bookfin/reader/document.dart';
 import 'package:bookfin/reader/epub/dom.dart';
@@ -45,6 +46,29 @@ Publication _mixedSections() => book([
   ].join('\n  '),
   paragraphs(6, label: 'C'),
 ]);
+
+/// A book of three sections whose middle one is one table of 120 rows, of
+/// 240 cells.
+Publication _tableBook() => book([
+  paragraphs(4, label: 'A'),
+  [
+    '<table>',
+    for (var i = 0; i < 120; i++)
+      '<tr><td>Row $i</td><td>${prose(i % 3 + 1, 'Cell $i')}</td></tr>',
+    '</table>',
+  ].join('\n'),
+  paragraphs(4, label: 'C'),
+]);
+
+/// [section] with its kept measures replaced by [measures].
+KeptSection _measured(KeptSection section, SectionMeasures measures) =>
+    KeptSection(
+      section.starts,
+      firsts: section.firsts,
+      visible: section.visible,
+      complete: section.complete,
+      measures: measures,
+    );
 
 /// [section] without its page [index], as a map that missed a page start.
 KeptSection _leaveOut(KeptSection section, int index) => KeptSection(
@@ -445,6 +469,60 @@ void main() {
       [for (final page in expected) content(page)],
     );
     expect(source.lineSearches, 0);
+  });
+
+  test('a jump into the middle of a kept table does not measure the whole '
+      'table', () async {
+    final publication = _tableBook();
+    await layOutWhole(publication);
+    final plain = open(publication);
+    final place = placeIn(await scheduler.until(plain.section(1)), .6);
+    final expected = await scheduler.until(
+      plain.pageAt(place, anchored: false),
+    );
+    final seeded = open(publication, pageMaps: mapsOf(publication));
+    await scheduler.until(seeded.section(1));
+    final before = LayoutRun.measuredCells;
+
+    final page = await pageAt(seeded, place);
+
+    expect(content(page), content(expected));
+    expect(seeded.isTrue(page), isTrue);
+    // It checks the kept widths of the rows of the pages that it lays out.
+    expect(LayoutRun.measuredCells - before, lessThan(240 ~/ 2));
+  });
+
+  test('a kept width that disagrees with a fresh one forgets the '
+      'map', () async {
+    final publication = _tableBook();
+    final (truth, _) = await layOutWhole(publication);
+    final kept = truth[1];
+    final MapEntry(key: table, value: widths) =
+        kept.measures.tables.entries.single;
+    // A page in the middle of the table, and its first row.
+    final at = kept.starts.length ~/ 2;
+    final row = kept.starts[at].line;
+    expect(kept.starts[at].item, table);
+    // The narrowest width of the row's first cell, one pixel narrower. It
+    // is not the narrowest width of its column, so the pages stay the same.
+    final wrong = [...truth];
+    wrong[1] = _measured(
+      kept,
+      SectionMeasures(
+        tables: {table: Float64List.fromList(widths)..[row * 4] -= 1},
+      ),
+    );
+    final pageMaps = mapsOf(publication);
+    await pageMaps.write(readerPage, wrong);
+
+    final source = open(publication, pageMaps: pageMaps);
+    var dropped = 0;
+    source.keptMapDropped.addListener(() => dropped++);
+    final page = await pageAt(source, kept.firsts[at]!);
+
+    expect(page.start, kept.starts[at]);
+    expect(dropped, 1);
+    await _eventually(() async => await pageMaps.read(readerPage) == null);
   });
 
   test('the scrub bar names the page under the finger in a seeded '

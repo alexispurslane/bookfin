@@ -179,6 +179,7 @@ Map<String, Object> _settingsSummary(List<SettingsReport> found) {
     'keptPlaceMisses': total((each) => each.keptPlaceMisses),
     'lineStartDisagreements': total((each) => each.lineStartDisagreements),
     'mapBytes': total((each) => each.mapBytes),
+    'formatThreeMapBytes': total((each) => each.formatThreeMapBytes),
     'formatTwoMapBytes': total((each) => each.formatTwoMapBytes),
     'slowItems': total((each) => each.slow.length),
     'layoutMsPer10kMedian': rates.isEmpty ? 0 : rates[rates.length ~/ 2],

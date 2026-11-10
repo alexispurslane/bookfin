@@ -422,11 +422,13 @@ class LayoutRun {
   /// clock.
   ///
   /// A run measures each row of a table for its column widths, once per
-  /// table item, one row in each unit of work. NOTE: A run that starts
-  /// inside a shrink-to-fit box that holds a table not yet measured, as a
-  /// table's own box is, measures the whole table here. The page source
-  /// starts such runs only at page starts of the main run or of
-  /// [lineStart], which measure the table first, in steps.
+  /// table item, one row in each unit of work, unless an earlier layout's
+  /// widths were given to the section ([reuseMeasures]). NOTE: A run that
+  /// starts inside a shrink-to-fit box that holds a table not yet measured,
+  /// as a table's own box is, measures the whole table here. The page
+  /// source starts such runs only at page starts of the main run or of
+  /// [lineStart], which measure the table first, in steps, or in sections
+  /// whose widths it kept.
   LayoutRun(
     PreparedSection section, {
     PageStart? from,
@@ -472,6 +474,17 @@ class LayoutRun {
   /// paragraph.
   @visibleForTesting
   static int laidOutUnits = 0;
+
+  /// The table cells that runs and searches measured for their narrowest
+  /// and widest content, in this process.
+  @visibleForTesting
+  static int measuredCells = 0;
+
+  /// Whether a measure that the run found again disagreed with a kept one
+  /// ([reuseMeasures]). The run checks the kept widths of each table row
+  /// that it lays out.
+  bool get contradicted => _contradicted;
+  bool _contradicted = false;
 
   final PreparedSection _section;
 
@@ -1162,6 +1175,21 @@ class LayoutRun {
   /// every run of the section.
   static final _measured = Expando<List<List<GridCell>>>('table extents');
 
+  /// The rows of each table item whose widths came from kept measures
+  /// ([reuseMeasures]) and that no run measured again yet.
+  static final _unchecked = Expando<Set<int>>('kept table rows');
+
+  /// Measures row [row] of [table] again when its widths came from kept
+  /// measures that no run checked yet, and notes when they disagree. A row
+  /// costs about what its layout costs, once per prepared section.
+  void _check(TableItem table, int row) {
+    if (_unchecked[table]?.remove(row) != true) return;
+    final kept = _measured[table]![row];
+    for (final (column, cell) in table.rows[row].indexed) {
+      if (_extent(cell, table.width) != kept[column]) _contradicted = true;
+    }
+  }
+
   /// Starts [table], flow item [index], at its row [row], from fragment
   /// [part] of that row, or returns null when the table has no such row. A
   /// run that starts inside the table lays out no row above it: row [row]
@@ -1228,6 +1256,7 @@ class LayoutRun {
     final row = table.rows[number];
     final (across, down) = table.spacing;
     final x = rows.left;
+    if (rows.cells.isEmpty && rows.cell == null) _check(table, number);
     final boxes = cellBoxes(
       [for (final cell in row) cell.colspan],
       rows.widths,
@@ -1345,6 +1374,7 @@ class LayoutRun {
   /// resolve against [width]: those of its widest paragraph or image, with
   /// the margins, padding and borders of the boxes around it.
   GridCell _extent(TableCell cell, double width) {
+    measuredCells++;
     var min = 0.0;
     var max = 0.0;
     var around =
@@ -2396,6 +2426,105 @@ class LayoutRun {
       }
     }
     return low;
+  }
+}
+
+/// The measures of a section's flow items that a run from a page start
+/// inside an item needs before it cuts its first page: the narrowest and
+/// the widest content width of each cell of each table item.
+class SectionMeasures {
+  const SectionMeasures({this.tables = const {}});
+
+  /// The cells of each table item, by its index in the flow: the narrowest
+  /// and the widest content width of each cell in turn, cell by cell and
+  /// row by row ([GridCell.min] and [GridCell.max]).
+  final Map<int, Float64List> tables;
+
+  @override
+  bool operator ==(Object other) =>
+      other is SectionMeasures &&
+      other.tables.length == tables.length &&
+      tables.entries.every(
+        (entry) => _sameValues(other.tables[entry.key], entry.value),
+      );
+
+  @override
+  int get hashCode => Object.hashAllUnordered([
+    for (final MapEntry(:key, :value) in tables.entries)
+      Object.hash(key, Object.hashAll(value)),
+  ]);
+
+  @override
+  String toString() => 'SectionMeasures(tables: $tables)';
+}
+
+bool _sameValues(List<double>? a, List<double> b) {
+  if (a == null || a.length != b.length) return false;
+  for (var index = 0; index < a.length; index++) {
+    if (a[index] != b[index]) return false;
+  }
+  return true;
+}
+
+/// The measures that runs of [section] found for its flow items so far: a
+/// main run to the section end finds them all.
+SectionMeasures measuresOf(PreparedSection section) => SectionMeasures(
+  tables: {
+    for (final (index, item) in section.flow.indexed)
+      if (item is TableItem)
+        if (LayoutRun._measured[item] case final rows?)
+          index: Float64List.fromList([
+            for (final row in rows)
+              for (final cell in row) ...[cell.min, cell.max],
+          ]),
+  },
+);
+
+/// Gives the flow items of [section] the kept [measures], which an earlier
+/// layout of the same section found ([measuresOf]), so that no run finds
+/// them again. An item that a run measured already keeps its own. Returns
+/// false, and gives nothing, when [measures] do not fit the section's
+/// items.
+///
+/// A run checks each kept table row that it lays out ([LayoutRun.contradicted]).
+/// [forgetMeasures] takes the kept measures back.
+bool reuseMeasures(PreparedSection section, SectionMeasures measures) {
+  final flow = section.flow;
+  for (final MapEntry(key: index, value: widths) in measures.tables.entries) {
+    if (index < 0 || index >= flow.length) return false;
+    if (flow[index] case final TableItem table
+        when widths.length ==
+            2 * table.rows.fold(0, (count, row) => count + row.length)) {
+      continue;
+    }
+    return false;
+  }
+  for (final MapEntry(key: index, value: widths) in measures.tables.entries) {
+    final table = flow[index] as TableItem;
+    if (LayoutRun._measured[table] != null) continue;
+    var at = 0;
+    LayoutRun._measured[table] = List.unmodifiable([
+      for (final row in table.rows)
+        [
+          for (final cell in row)
+            (span: cell.colspan, min: widths[at++], max: widths[at++]),
+        ],
+    ]);
+    LayoutRun._unchecked[table] = {
+      for (var row = 0; row < table.rows.length; row++) row,
+    };
+  }
+  return true;
+}
+
+/// Takes back the kept measures that [reuseMeasures] gave [section], so
+/// that runs find them again. Runs in progress must stop first.
+void forgetMeasures(PreparedSection section) {
+  for (final item in section.flow) {
+    if (item is TableItem && LayoutRun._unchecked[item] != null) {
+      LayoutRun._measured[item] = null;
+      LayoutRun._unchecked[item] = null;
+    }
   }
 }
 
