@@ -2,7 +2,7 @@
 id: t6-1luw
 status: open
 deps: []
-links: []
+links: [tb-22fu]
 created: 2026-11-08T16:46:14Z
 type: bug
 priority: 3

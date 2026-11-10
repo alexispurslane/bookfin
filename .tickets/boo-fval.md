@@ -21,3 +21,9 @@ Shared parts: word images cut from the page raster at a resolution that matches 
 
 Design: docs/plans/pdf-word-image-reflow.md (to be written).
 
+
+## Notes
+
+**2026-11-10T02:34:08Z**
+
+Design written: docs/plans/pdf-word-image-reflow.md. Build tickets in order: tb-jidt, tb-xwlj, tb-t8rh, tb-0mex, tb-xjfi, tb-22fu, then tb-9mcf, tb-mfkk and tb-fi98, then tb-fb6j. Two open user decisions: the shape of the switch (gates tb-9mcf) and how a page turns inside a source page (gates tb-0mex).
