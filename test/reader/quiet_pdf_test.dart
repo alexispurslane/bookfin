@@ -6,6 +6,7 @@ import 'dart:async';
 
 import 'package:bookfin/catalog/glass.dart' show CoverGlass;
 import 'package:bookfin/reader/document.dart';
+import 'package:bookfin/reader/page_geometry.dart';
 import 'package:bookfin/reader/pdf.dart';
 import 'package:bookfin/reader/pdf_viewport.dart';
 import 'package:bookfin/reader/platform_io.dart';
@@ -25,6 +26,16 @@ import 'reader_settings.dart';
 /// Recognition that answers each page only when the test says so. It
 /// records the pages that it was asked to recognize.
 class OnDemandRecognition implements PdfTextSupply {
+  @override
+  Future<PageGeometry?> geometry(PdfBook book, int page, PdfText extracted) =>
+      throw StateError('The viewport asked the supply for words.');
+  @override
+  Future<({PdfText text, TextAttachment? attachment})> attachedText(
+    PdfBook book,
+    int page,
+    PdfText extracted,
+    PageGeometry geometry,
+  ) => throw StateError('The viewport asked the supply for attached text.');
   final requests = <int>[];
   final _pages = <int, Completer<PdfText>>{};
   var cancels = 0;

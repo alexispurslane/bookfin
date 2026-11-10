@@ -39,7 +39,7 @@ void main() {
   // Taken from decodeRecognizedPage before it moved to a worker. Saved
   // places name recognized text by these values, so they must not change.
   test('a recognized page keeps the text and address that it had on the UI isolate', () {
-    final recognized = decodeRecognizedPage(lockedPage);
+    final recognized = decodeRecognizedPage(lockedPage).text;
     expect(
       recognized.source,
       'Chapter Two\nThe café & its garden—\nnaïve 𝔅irds arrive.',
@@ -149,7 +149,7 @@ void main() {
       final pdf = await open();
       final text = await pdf.text(1);
       expect(inputs, [englishPage]);
-      expect(outputs.single, same(text));
+      expect((outputs.single! as RecognizedPage).text, same(text));
       expect(text.text, 'The quiet garden.');
       expect(text.digest, pdfTextDigest('The quiet garden.'));
       expect(calls, 1);
@@ -162,7 +162,7 @@ void main() {
       outputs.clear();
       final text = await (await open()).text(1);
       expect(inputs, [englishPage]);
-      expect(outputs.single, same(text));
+      expect((outputs.single! as RecognizedPage).text, same(text));
       expect(text.text, 'The quiet garden.');
       expect(calls, 1);
     });

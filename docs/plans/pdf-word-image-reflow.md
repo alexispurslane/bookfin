@@ -200,6 +200,10 @@ class PageGeometry {
   /// For each block: the index of its first line, and one more entry.
   final Int32List blockStarts;
 
+  /// For each block: left, top, right and bottom. A picture block has no
+  /// lines, so only its box says where it is.
+  final Float32List blockBoxes;
+
   /// For each block: its kind as the source knows it (text, picture,
   /// table or unknown). A text layer knows only text.
   final Uint8List blockKinds;
@@ -225,7 +229,7 @@ The invariants of `PageGeometry` and its attachment:
 - Every box has a positive area inside the page.
 - Lines and blocks cover the words in order.
 - Attached ranges are in increasing order and do not overlap.
-- No attached range holds white space.
+- No attached range starts or ends with white space. A range can hold a space inside it, when a layout word joins two hOCR words (rule 2 of "Text attachment").
 
 `PageGeometry.checkInvariants` makes sure of all of them, on demand.
 

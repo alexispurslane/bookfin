@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:bookfin/catalog/glass.dart' show CoverGlass;
 import 'package:bookfin/reader/document.dart';
+import 'package:bookfin/reader/page_geometry.dart';
 import 'package:bookfin/reader/pdf.dart';
 import 'package:bookfin/reader/pdf_viewport.dart';
 import 'package:bookfin/reader/platform_io.dart';
@@ -32,6 +33,16 @@ class RefusingSupply implements PdfTextSupply {
   @override
   Future<PdfText> text(PdfBook book, int page, PdfText extracted) =>
       throw StateError('The viewport asked the supply for text.');
+  @override
+  Future<PageGeometry?> geometry(PdfBook book, int page, PdfText extracted) =>
+      throw StateError('The viewport asked the supply for words.');
+  @override
+  Future<({PdfText text, TextAttachment? attachment})> attachedText(
+    PdfBook book,
+    int page,
+    PdfText extracted,
+    PageGeometry geometry,
+  ) => throw StateError('The viewport asked the supply for attached text.');
   @override
   Future<void> close() => throw StateError('close');
 }

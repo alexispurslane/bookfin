@@ -8,6 +8,11 @@ Run it in the dev shell, after `python3 tool/reader/fetch_pdf_corpus.py`:
 
     python3 tool/reader/ocr_layout_device_test.py emulator-5554
 
+The reflow fixtures in test/reader/fixtures/reflow hold the layout records
+and the hOCR of the scanned and skewed pages. To record them again, add
+`--record test/reader/fixtures/reflow`. The device then sends what it gives,
+and the runner writes it there.
+
 `flutter test` installs a debug build and uninstalls it at the end, so use
 only an emulator that belongs to you, never a shared device.
 """
@@ -29,6 +34,8 @@ import threading
 import zlib
 
 ROOT = Path(__file__).resolve().parents[2]
+FIXTURES = ROOT / 'test/reader/fixtures/reflow'
+RECORDED = ('scanned-page.layout', 'scanned-page.hocr', 'skewed-page.layout', 'skewed-page.hocr')
 RAVEN = ROOT / 'tool/research/readers/evidence/text-quality/raven-raster-only.pdf'
 CORPUS = ROOT / '.cache/reader-corpus'
 
@@ -82,17 +89,33 @@ def prepare(folder):
     (folder / 'skewed.pdf').write_bytes(skewed_page(RAVEN, 2.5, 300, 20261110))
     for name in ('nist-cloud.pdf', 'census-notice.pdf', 'raven-1873.pdf'):
         shutil.copyfile(CORPUS / name, folder / name)
+    for name in RECORDED:
+        if (FIXTURES / name).exists():
+            shutil.copyfile(FIXTURES / name, folder / name)
+    (folder / 'recorded').mkdir()
 
 
 class Quiet(http.server.SimpleHTTPRequestHandler):
     def log_message(self, *arguments):
         pass
 
+    def do_PUT(self):
+        """Keeps a recorded fixture that the device sends, by its name."""
+        name = self.path.rsplit('/', 1)[-1]
+        if name not in RECORDED:
+            self.send_error(404)
+            return
+        body = self.rfile.read(int(self.headers['Content-Length']))
+        (Path(self.directory) / 'recorded' / name).write_bytes(body)
+        self.send_response(204)
+        self.end_headers()
+
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('serial', help='the adb serial of your own emulator')
     parser.add_argument('--name', help='run only the tests whose name holds this text')
+    parser.add_argument('--record', type=Path, help='write the recorded reflow fixtures to this folder')
     arguments = parser.parse_args()
     with tempfile.TemporaryDirectory(prefix='bookfin-layout-') as directory:
         folder = Path(directory)
@@ -106,9 +129,15 @@ def main():
         try:
             command = ['flutter', 'test', 'integration_test/ocr_layout_test.dart', '-d', arguments.serial,
                        f'--dart-define=BOOKFIN_LAYOUT_PAGES=http://127.0.0.1:{port}']
+            if arguments.record:
+                command.append('--dart-define=BOOKFIN_LAYOUT_RECORD=true')
             if arguments.name:
                 command += ['--name', arguments.name]
             result = subprocess.run(command, cwd=ROOT)
+            if arguments.record:
+                arguments.record.mkdir(parents=True, exist_ok=True)
+                for recorded in (folder / 'recorded').iterdir():
+                    shutil.copyfile(recorded, arguments.record / recorded.name)
         finally:
             subprocess.run(['adb', '-s', arguments.serial, 'reverse', '--remove', f'tcp:{port}'])
             server.shutdown()

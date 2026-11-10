@@ -1,0 +1,67 @@
+No issues found! (ran in 2.0s)
+57723
+Resolving dependencies...
+Downloading packages...
+  archive 4.0.9 (4.6.0 available)
+  code_assets 1.2.1 (2.2.0 available)
+  crypto 3.0.7 (3.0.8 available)
+  cupertino_ui 1.1.5 (1.1.6 available)
+  flutter_cache_manager 3.4.6 (3.5.0 available)
+  flutter_secure_storage 9.2.4 (11.2.0 available)
+  flutter_secure_storage_linux 1.2.3 (3.0.3 available)
+  flutter_secure_storage_macos 3.1.3 (4.0.0 available)
+  flutter_secure_storage_platform_interface 1.1.2 (2.1.1 available)
+  flutter_secure_storage_web 1.2.1 (2.1.1 available)
+  flutter_secure_storage_windows 3.1.2 (4.2.2 available)
+  hooks 2.0.2 (2.2.0 available)
+  image 4.8.0 (4.12.0 available)
+  jni 1.1.1 (1.1.2 available)
+  js 0.6.7 (0.7.2 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  material_ui 1.9.0 (1.10.0 available)
+  meta 1.18.3 (1.19.0 available)
+  native_toolchain_c 0.19.2 (0.19.6 available)
+  objective_c 9.5.0 (9.6.3 available)
+  pdfrx 2.11.0 (2.12.0 available)
+  pdfrx_engine 0.9.0 (0.9.1 available)
+  petitparser 7.0.2 (7.1.0 available)
+  record_use 0.6.0 (1.1.1 available)
+  shared_preferences_foundation 2.5.7 (2.6.1 available)
+  sqflite_common 2.5.14 (2.5.15 available)
+  sqflite_common_ffi 2.4.0+2 (2.4.5 available)
+  sqflite_darwin 2.4.4+1 (2.4.5 available)
+  sqlite3 3.5.2 (3.9.0 available)
+  synchronized 3.5.0 (3.6.1 available)
+  test_api 0.7.12 (0.7.15 available)
+  vector_math 2.4.0 (2.4.4 available)
+  win32 5.15.0 (6.4.0 available)
+  xml 6.6.1 (7.1.0 available)
+Got dependencies!
+34 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+00:00 +0: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/integration_test/ocr_layout_test.dart
+Running Gradle task 'assembleDebug'...                             18.2s
+✓ Built build/app/outputs/flutter-apk/app-debug.apk
+Installing build/app/outputs/flutter-apk/app-debug.apk...        1,029ms
+00:00 +0: the layout pass gives the scanned page its blocks, paragraphs, lines and words in reading order, in raster pixels
+00:01 +1: the engraving of the scanned page is a picture block
+00:02 +2: the lines of the skewed page slope by 2.5 degrees
+skewed line slopes in degrees: [-2.4572931855462277, -2.3760552180063184, -2.5226703934642116, -2.3289276500521625]
+00:02 +3: recognition after the layout pass gives the same hOCR, byte for byte, as recognition alone, and as the Java engine gave
+scanned.pdf#1 1600x2594: layout 121 ms, recognition after layout 88 ms, recognition alone 221 ms, 36 layout words, 35 hOCR words
+skewed.pdf#1 1600x2594: layout 113 ms, recognition after layout 97 ms, recognition alone 212 ms, 42 layout words, 41 hOCR words
+nist-cloud.pdf#3 1600x2070: layout 111 ms, recognition after layout 494 ms, recognition alone 614 ms, 189 layout words, 188 hOCR words
+nist-cloud.pdf#6 1600x2070: layout 193 ms, recognition after layout 1321 ms, recognition alone 1483 ms, 514 layout words, 514 hOCR words
+census-notice.pdf#1 1600x2070: layout 358 ms, recognition after layout 2614 ms, recognition alone 2866 ms, 925 layout words, 916 hOCR words
+census-notice.pdf#2 1600x2070: layout 337 ms, recognition after layout 2491 ms, recognition alone 2828 ms, 918 layout words, 917 hOCR words
+raven-1873.pdf#12 1600x2598: layout 141 ms, recognition after layout 724 ms, recognition alone 858 ms, 272 layout words, 275 hOCR words
+raven-1873.pdf#13 1600x2598: layout 135 ms, recognition after layout 227 ms, recognition alone 374 ms, 96 layout words, 98 hOCR words
+hOCR digests: {"scanned.pdf#1":"4d8ad2eaa2224311bedc7261eb9930ebd8b31ee816cd1305d50d4adeaf837c9d","skewed.pdf#1":"9417203aa4398f3f761605c516edd5d04e448ea7a2ad81348e7be14efdc1f1a1","nist-cloud.pdf#3":"1b018b846ddc78f3382e2469e6541f5b7f903900f4e126b14b4fb837ed6e84c5","nist-cloud.pdf#6":"8a379460d122933ad0b455c986853f7ab6cfcab87690a0805596b48d9ed2f0df","census-notice.pdf#1":"584d5961119b27ab1a1123221b57a53c8e6db3379225633265782198ce0fd626","census-notice.pdf#2":"7494981b3bad9b9234c26fd5392680dd1e77192ff59c5696cad166ea9cacd636","raven-1873.pdf#12":"9d9648456b3c0c88fe4d83a6e5c898d9ae1abe479b5b5750b5d58d09ebe3da5b","raven-1873.pdf#13":"84e587e1882a2356f6a620511f2cf03808eba45d15578bc63bab59cef755e72c"}
+00:22 +4: recognition of a kept image needs a layout pass first, and its refusal leaves recognition working
+00:22 +5: a later layout pass replaces the kept image
+00:23 +6: the reflow fixtures hold the layout records and the hOCR that the emulator gives for the scanned and skewed pages
+00:23 +7: a scanned page gets its words from the layout pass, then its text from the kept image, with the digest of recognition alone, attached to those words
+scanned.pdf: 36 words after 172 ms, text attached after 337 ms
+skewed.pdf: 42 words after 268 ms, text attached after 405 ms
+00:24 +8: (tearDownAll)
+00:25 +8: All tests passed!

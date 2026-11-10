@@ -17,7 +17,7 @@ void main() {
   test('all pinned textual line classes keep their words in source order', () {
     final result = decodeRecognizedPage(
       '<div>${line('A chapter heading', 10, 10, 300, 30).replaceAll('ocr_line', 'ocr_header')}${line('The body follows', 10, 45, 300, 65)}${line('A floating note', 10, 80, 300, 100).replaceAll('ocr_line', 'ocr_textfloat')}${line('The picture caption', 10, 115, 300, 135).replaceAll('ocr_line', 'ocr_caption')}</div>',
-    );
+    ).text;
     expect(
       result.source,
       'A chapter heading\nThe body follows\nA floating note\nThe picture caption',
@@ -28,7 +28,7 @@ void main() {
   test('a heading-only recognized page is not reported as absent', () {
     final result = decodeRecognizedPage(
       '<div>${line('A chapter heading', 10, 10, 300, 30).replaceAll('ocr_line', 'ocr_header')}</div>',
-    );
+    ).text;
     expect(result.text, 'A chapter heading');
     expect(result.status, PdfTextStatus.candidate);
   });
@@ -36,7 +36,7 @@ void main() {
   test('alternate textual line classes retain conservative column fallback', () {
     final result = decodeRecognizedPage(
       '<div>${List.generate(3, (index) => '${line('Left column words', 10, index * 40, 200, index * 40 + 20).replaceAll('ocr_line', 'ocr_textfloat')}${line('Right column words', 400, index * 40, 600, index * 40 + 20).replaceAll('ocr_line', 'ocr_caption')}').join()}</div>',
-    );
+    ).text;
     expect(result.status, PdfTextStatus.unreliable);
   });
 
@@ -52,7 +52,7 @@ void main() {
   test('recognition preserves page text offsets while flattening line breaks for reflow', () {
     final result = decodeRecognizedPage(
       '<div>${line('One quiet garden', 10, 10, 300, 30)}${line('Three birds arrive.', 10, 45, 300, 65)}</div>',
-    );
+    ).text;
     expect(result.source, 'One quiet garden\nThree birds arrive.');
     expect(result.text, 'One quiet garden Three birds arrive.');
     expect(
@@ -64,19 +64,19 @@ void main() {
   test('short fragments retain the original instead of claiming readable recognition', () {
     final result = decodeRecognizedPage(
       '<div>${List.generate(4, (index) => line('fragment', 10, index * 40, 200, index * 40 + 20)).join()}</div>',
-    );
+    ).text;
     expect(result.status, PdfTextStatus.unreliable);
   });
 
   test('parallel recognized lines retain the original instead of combining columns', () {
     final result = decodeRecognizedPage(
       '<div>${List.generate(3, (index) => '${line('Left column words', 10, index * 40, 200, index * 40 + 20)}${line('Right column words', 400, index * 40, 600, index * 40 + 20)}').join()}</div>',
-    );
+    ).text;
     expect(result.status, PdfTextStatus.unreliable);
   });
 
   test('recognition with no words offers the original page', () {
-    final result = decodeRecognizedPage('<div class="ocr_page"/>');
+    final result = decodeRecognizedPage('<div class="ocr_page"/>').text;
     expect(result.status, PdfTextStatus.absent);
   });
 

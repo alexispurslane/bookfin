@@ -1,0 +1,311 @@
+Resolving dependencies...
+Downloading packages...
+  archive 4.0.9 (4.6.0 available)
+  code_assets 1.2.1 (2.2.0 available)
+  crypto 3.0.7 (3.0.8 available)
+  cupertino_ui 1.1.5 (1.1.6 available)
+  flutter_cache_manager 3.4.6 (3.5.0 available)
+  flutter_secure_storage 9.2.4 (11.2.0 available)
+  flutter_secure_storage_linux 1.2.3 (3.0.3 available)
+  flutter_secure_storage_macos 3.1.3 (4.0.0 available)
+  flutter_secure_storage_platform_interface 1.1.2 (2.1.1 available)
+  flutter_secure_storage_web 1.2.1 (2.1.1 available)
+  flutter_secure_storage_windows 3.1.2 (4.2.2 available)
+  hooks 2.0.2 (2.2.0 available)
+  image 4.8.0 (4.12.0 available)
+  jni 1.1.1 (1.1.2 available)
+  js 0.6.7 (0.7.2 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  material_ui 1.9.0 (1.10.0 available)
+  meta 1.18.3 (1.19.0 available)
+  native_toolchain_c 0.19.2 (0.19.6 available)
+  objective_c 9.5.0 (9.6.3 available)
+  pdfrx 2.11.0 (2.12.0 available)
+  pdfrx_engine 0.9.0 (0.9.1 available)
+  petitparser 7.0.2 (7.1.0 available)
+  record_use 0.6.0 (1.1.1 available)
+  shared_preferences_foundation 2.5.7 (2.6.1 available)
+  sqflite_common 2.5.14 (2.5.15 available)
+  sqflite_common_ffi 2.4.0+2 (2.4.5 available)
+  sqflite_darwin 2.4.4+1 (2.4.5 available)
+  sqlite3 3.5.2 (3.9.0 available)
+  synchronized 3.5.0 (3.6.1 available)
+  test_api 0.7.12 (0.7.15 available)
+  vector_math 2.4.0 (2.4.4 available)
+  win32 5.15.0 (6.4.0 available)
+  xml 6.6.1 (7.1.0 available)
+Got dependencies!
+34 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+xcrun: error: SDK cannot be located: error: unable to find sdk: 'iphoneos'
+
+
+SDK iphoneos not installed.
+
+xcrun: error: SDK cannot be located: error: unable to find sdk: 'iphonesimulator'
+
+
+SDK iphonesimulator not installed.
+
+00:00 +0: loading /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/page_geometry_test.dart
+00:00 +0: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/page_geometry_test.dart: a scanned page from its layout record has the layout pass words, lines and blocks in Tesseract order, in page units
+00:00 +0 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/ocr_storage_test.dart: the first cache lookups of a scanned PDF do not hash the original
+00:00 +0 -1: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/page_geometry_test.dart: a scanned page from its layout record has the layout pass words, lines and blocks in Tesseract order, in page units [E]
+  Expected: a numeric value within <0.000001> of <1.62125>
+    Actual: <1.0>
+     Which:  differs by <0.6212500000000001>
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/reader/page_geometry_test.dart 111:7           main.<fn>.<fn>
+  
+00:00 +0 -2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/ocr_storage_test.dart: the first cache lookups of a scanned PDF do not hash the original
+00:00 +1 -2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/ocr_layout_queue_test.dart: a scanned page's words are ready before its text
+00:00 +1 -2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/page_geometry_test.dart: a scanned page from its layout record keeps the engraving as a picture block with its box and no lines [E]
+  Expected: non-empty
+    Actual: []
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/reader/page_geometry_test.dart 135:9           main.<fn>.<fn>
+  
+00:00 +2 -2: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/ocr_layout_queue_test.dart: a scanned page's words are ready before its text
+00:00 +2 -3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/ocr_layout_queue_test.dart: a scanned page's words are ready before its text
+00:00 +2 -3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/page_geometry_test.dart: a scanned page from its layout record the skewed page has line slopes of its 2.5 degree turn [E]
+  Expected: a value greater than or equal to <3>
+    Actual: <0>
+     Which: is not a value greater than or equal to <3>
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/reader/page_geometry_test.dart 167:7           main.<fn>.<fn>
+  
+00:00 +3 -3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/ocr_layout_queue_test.dart: a scanned page's words are ready before its text
+00:00 +4 -3: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/ocr_layout_queue_test.dart: a scanned page's words are ready before its text
+00:00 +4 -4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/ocr_layout_queue_test.dart: a scanned page's words are ready before its text
+00:00 +4 -4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/page_geometry_test.dart: a scanned page from its layout record keeps each line's height from ascender top to descender bottom, not the height of its turned box [E]
+  RangeError (length): Invalid value: Valid value range is empty: 0
+  dart:core                                   List.[]
+  test/reader/page_geometry_test.dart 210:23  main.<fn>.<fn>.median
+  test/reader/page_geometry_test.dart 214:14  main.<fn>.<fn>
+  
+00:00 +5 -4: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/ocr_layout_queue_test.dart: a scanned page's words are ready before its text
+00:00 +5 -5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/ocr_layout_queue_test.dart: a scanned page's words are ready before its text
+00:00 +5 -5: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/page_geometry_test.dart: a scanned page from its layout record marks the paragraph starts of the layout pass with their justification and indent [E]
+  Expected: [0]
+    Actual: []
+     Which: at location [0] is [] which shorter than expected
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/reader/page_geometry_test.dart 239:7           main.<fn>.<fn>
+  
+00:00 +5 -6: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/ocr_layout_queue_test.dart: a scanned page's words are ready before its text
+00:00 +5 -6: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/page_geometry_test.dart: a scanned page from its layout record a record that is not a layout record gives no geometry [E]
+  Expected: throws <Instance of 'FormatException'>
+    Actual: <Closure: () => PageGeometry>
+     Which: returned <Instance of 'PageGeometry'>
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/reader/page_geometry_test.dart 246:7           main.<fn>.<fn>
+  
+00:00 +6 -6: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/ocr_layout_queue_test.dart: a scanned page's words are ready before its text
+00:00 +7 -6: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/ocr_layout_queue_test.dart: a scanned page's words are ready before its text
+00:00 +8 -6: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/ocr_layout_queue_test.dart: a scanned page's words are ready before its text
+00:00 +9 -6: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/ocr_layout_queue_test.dart: a scanned page's words are ready before its text
+00:00 +9 -7: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/ocr_layout_queue_test.dart: a scanned page's words are ready before its text
+00:00 +9 -8: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/ocr_layout_queue_test.dart: a scanned page's words are ready before its text
+00:00 +9 -8: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/page_geometry_test.dart: recognized text attaches to the layout words a recognized page gives the same reading text and digest as before word geometry, so a place saved before still resolves [E]
+  FormatException: Invalid PDF source-page position.
+  package:bookfin/reader/document.dart 216:7  new PdfAddress
+  test/reader/page_geometry_test.dart 270:21  main.<fn>.<fn>
+  
+00:00 +9 -9: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/page_geometry_test.dart: recognized text attaches to the layout words each layout word of the scanned page attaches to the characters of the hOCR words that overlap it, in increasing order
+00:00 +9 -10: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/ocr_storage_test.dart: a layout record reads back whole beside the recognized page, and encodes and decodes in hops [E]
+  Expected: [0, 0, 0, 1600, 2594, 0, 0, 0, -7]
+    Actual: <null>
+     Which: is not Iterable
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/reader/ocr_storage_test.dart 289:5             main.<fn>
+  
+00:00 +9 -10: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/page_geometry_test.dart: recognized text attaches to the layout words each layout word of the scanned page attaches to the characters of the hOCR words that overlap it, in increasing order [E]
+  Expected: [
+              'BY',
+              'EDGAR',
+              'A.',
+              'POR.',
+              '(ee',
+              'npon',
+              'a',
+              'wildinight',
+              'dreary,',
+              'while',
+              '[',
+              'pondered,',
+              'weak',
+              'and',
+              'weary,',
+              'Over',
+              'many',
+              'a',
+              'qiaint',
+              'and',
+              'cuorions',
+              'velume',
+              'of',
+              'forgotten',
+              ...
+            ]
+    Actual: ['']
+     Which: at location [0] is '' instead of 'BY'
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/reader/page_geometry_test.dart 298:7           main.<fn>.<fn>
+  
+00:00 +9 -10: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/ocr_storage_test.dart: a layout record that is damaged or saved under another key is not read
+00:00 +10 -10: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/ocr_storage_test.dart: a layout record that is damaged or saved under another key is not read
+00:00 +10 -11: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/page_geometry_test.dart: recognized text attaches to the layout words a layout word joins each hOCR word that overlaps it most
+00:00 +10 -12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/page_geometry_test.dart: recognized text attaches to the layout words a layout word joins each hOCR word that overlaps it most [E]
+  Expected: ['The quiet', 'garden.']
+    Actual: []
+     Which: at location [0] is [] which shorter than expected
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/reader/page_geometry_test.dart 343:7           main.<fn>.<fn>
+  
+00:00 +10 -12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/ocr_storage_test.dart: a layout record that is damaged or saved under another key is not read [E]
+  PathNotFoundException: Cannot open file, path = '/tmp/nix-shell.uYWzrV/bookfin-ocr-store-n5E31k/.bookfin-ocr/layout.json' (OS Error: No such file or directory, errno = 2)
+  dart:io                                   _File.readAsString
+  test/reader/ocr_storage_test.dart 314:41  main.<fn>
+  ===== asynchronous gap ===========================
+  dart:async                                _CustomZone.registerUnaryCallback
+  test/reader/ocr_storage_test.dart 305:5   main.<fn>
+  
+00:00 +10 -12: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/page_geometry_test.dart: recognized text attaches to the layout words an hOCR word that no layout word overlaps attaches to the word before it on its line, or else to the word after it
+00:00 +10 -13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/ocr_storage_test.dart: a process killed in the middle of a layout record write keeps the saved record
+00:00 +10 -13: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/page_geometry_test.dart: recognized text attaches to the layout words an hOCR word that no layout word overlaps attaches to the word before it on its line, or else to the word after it [E]
+  Expected: ['A quiet little', 'garden.']
+    Actual: []
+     Which: at location [0] is [] which shorter than expected
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/reader/page_geometry_test.dart 373:7           main.<fn>.<fn>
+  
+00:00 +10 -14: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/page_geometry_test.dart: recognized text attaches to the layout words a layout word that no hOCR word overlaps names no text, at the place between its neighbors
+00:00 +10 -15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/ocr_layout_queue_test.dart: a scanned page's words are ready before its text [E]
+  Null check operator used on a null value
+  test/reader/ocr_layout_queue_test.dart 214:17  main.<fn>
+  
+00:00 +10 -15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/page_geometry_test.dart: recognized text attaches to the layout words a layout word that no hOCR word overlaps names no text, at the place between its neighbors [E]
+  Expected: [0, 5, 5, 5, 6, 13]
+    Actual: []
+     Which: at location [0] is [] which shorter than expected
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/reader/page_geometry_test.dart 402:7           main.<fn>.<fn>
+  
+00:00 +10 -15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/ocr_storage_test.dart: a process killed in the middle of a layout record write keeps the saved record [E]
+  Expected: throws <Instance of 'FileSystemException'>
+    Actual: <Instance of 'Future<void>'>
+     Which: emitted <null>
+  
+  package:matcher                                    expectLater
+  package:flutter_test/src/widget_tester.dart 507:8  expectLater
+  test/reader/ocr_storage_test.dart 351:11           main.<fn>
+  ===== asynchronous gap ===========================
+  dart:async                                         _CustomZone.registerUnaryCallback
+  test/reader/ocr_storage_test.dart 342:5            main.<fn>
+  
+00:00 +10 -15: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/page_geometry_test.dart: recognized text attaches to the layout words a layout word whose text would run backward names no text
+00:00 +10 -16: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/page_geometry_test.dart: recognized text attaches to the layout words a layout word whose text would run backward names no text [E]
+  Expected: [6, 13, 13, 13]
+    Actual: []
+     Which: at location [0] is [] which shorter than expected
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/reader/page_geometry_test.dart 430:7           main.<fn>.<fn>
+  
+00:00 +10 -16: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/page_geometry_test.dart: recognized text attaches to the layout words a page without word boxes in its hOCR attaches no text
+00:00 +10 -17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/ocr_layout_queue_test.dart: a saved layout record opens the page's words with no layout pass
+00:00 +10 -17: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/page_geometry_test.dart: recognized text attaches to the layout words a page without word boxes in its hOCR attaches no text [E]
+  Expected: [0, 0]
+    Actual: []
+     Which: at location [0] is [] which shorter than expected
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/reader/page_geometry_test.dart 446:7           main.<fn>.<fn>
+  
+00:00 +10 -18: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/ocr_layout_queue_test.dart: a saved layout record opens the page's words with no layout pass [E]
+  Expected: ['layout 1']
+    Actual: []
+     Which: at location [0] is [] which shorter than expected
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/reader/ocr_layout_queue_test.dart 229:7        main.<fn>
+  
+00:00 +10 -18: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/ocr_layout_queue_test.dart: a damaged layout record is laid out again rather than trusted
+00:10 +10 -19: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/ocr_layout_queue_test.dart: a damaged layout record is laid out again rather than trusted [E]
+  The cache was not saved.
+  package:matcher                                fail
+  test/reader/ocr_layout_queue_test.dart 131:45  main.layoutFiles
+  
+00:10 +10 -19: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/ocr_layout_queue_test.dart: a page recognized before word geometry gets one layout pass on its first visit, and its text is not recognized again
+00:10 +10 -20: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/ocr_layout_queue_test.dart: a page recognized before word geometry gets one layout pass on its first visit, and its text is not recognized again [E]
+  Null check operator used on a null value
+  test/reader/ocr_layout_queue_test.dart 260:35  main.<fn>
+  
+00:10 +10 -20: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/ocr_layout_queue_test.dart: the shown page's layout pass and then its recognition run before other waiting recognition
+00:10 +10 -21: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/ocr_layout_queue_test.dart: the shown page's layout pass and then its recognition run before other waiting recognition [E]
+  Null check operator used on a null value
+  test/reader/ocr_layout_queue_test.dart 281:30  main.<fn>
+  
+00:10 +10 -21: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/ocr_layout_queue_test.dart: the shown page's recognition follows its layout pass even when its text was asked for first
+00:10 +10 -22: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/ocr_layout_queue_test.dart: the shown page's recognition follows its layout pass even when its text was asked for first [E]
+  Expected: ['recognize 1', 'layout 3', 'recognize kept 3', 'recognize 2']
+    Actual: ['recognize 1', 'recognize 2', 'recognize 3']
+     Which: at location [1] is 'recognize 2' instead of 'layout 3'
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/reader/ocr_layout_queue_test.dart 309:5        main.<fn>
+  
+00:10 +10 -22: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/ocr_layout_queue_test.dart: a page's recognition never reads the image that another page's layout pass kept
+00:10 +10 -23: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/ocr_layout_queue_test.dart: a page's recognition never reads the image that another page's layout pass kept [E]
+  Null check operator used on a null value
+  test/reader/ocr_layout_queue_test.dart 330:30  main.<fn>
+  
+00:10 +10 -23: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/ocr_layout_queue_test.dart: a failed layout pass gives no words, and the page's text is still recognized from its own image
+00:10 +10 -24: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/ocr_layout_queue_test.dart: a failed layout pass gives no words, and the page's text is still recognized from its own image [E]
+  Expected: ['layout failed', 'recognize 1']
+    Actual: ['recognize 1']
+     Which: at location [0] is 'recognize 1' instead of 'layout failed'
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/reader/ocr_layout_queue_test.dart 363:5        main.<fn>
+  
+00:10 +10 -24: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/ocr_layout_queue_test.dart: a reader that stops waiting for the words leaves the layout pass that has not started
+00:10 +11 -24: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/ocr_layout_queue_test.dart: the recognized text attaches to the page's words, and decoding and attachment run in a hop
+00:10 +11 -25: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/ocr_layout_queue_test.dart: the recognized text attaches to the page's words, and decoding and attachment run in a hop [E]
+  Null check operator used on a null value
+  test/reader/ocr_layout_queue_test.dart 385:45  main.<fn>
+  
+00:10 +11 -25: /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/ocr_layout_queue_test.dart: a page whose text layer is usable gets no words from the layout pass
+00:10 +12 -25: Some tests failed.
+
+Failing tests:
+  /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/ocr_layout_queue_test.dart: a damaged layout record is laid out again rather than trusted
+  /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/ocr_layout_queue_test.dart: a failed layout pass gives no words, and the page's text is still recognized from its own image
+  /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/ocr_layout_queue_test.dart: a page recognized before word geometry gets one layout pass on its first visit, and its text is not recognized again
+  /Users/alexispurslane/.t3/worktrees/bookfin/t3-252716c4/test/reader/ocr_layout_queue_test.dart: a page's recognition never reads the image that another page's layout pass kept
+  ... and 21 more
