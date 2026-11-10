@@ -19,3 +19,7 @@ User reports no visible crop after installing 2a73abc. On-phone kept survey has 
 **2026-11-10T19:35:11Z**
 
 Confirmed on actual 290-page PDF with host probe .cache/crop-diagnosis/nihil_probe_test.dart and private local fixture /tmp/bookfin-nihil-unbound.pdf (do not commit it). Source pages 11 and 14 have PdfTextStatus.candidate but geometry null. Page 11 is therefore absent from the on-phone survey even after profile freeze. The early survey had 14 pages/no profile; about two minutes of foreground reading later it had 76 pages/profile present. Source page 12 visibly crops after a turn. _NativePdfBook.geometry returns layer.words?.geometry immediately for candidate text, so valid text plus rejected word geometry has no fallback. Investigate rejection cause and retain usable text/places while supplying valid geometry. Initial survey latency is a separate observation, not proof of a stalled queue.
+
+**2026-11-10T19:35:59Z**
+
+Sol xhigh lead launched. taskId: node:delegated-task:command%3Amcp%3Ae6a3d378-c450-4501-a47c-77e7994db5fb%3Adelegate-task%3Asol-xhigh-20261110-boo-5fcg-1; childThreadId: thread:delegated-task:command%3Amcp%3Ae6a3d378-c450-4501-a47c-77e7994db5fb%3Adelegate-task%3Asol-xhigh-20261110-boo-5fcg-1; clientRequestId: sol-xhigh-20261110-boo-5fcg-1. Private actual-PDF verification plus synthetic regression; parent owns phone verification.
