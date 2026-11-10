@@ -61,6 +61,11 @@ void main() {
           isEmpty,
           reason: settingsName(each.settings),
         );
+        expect(
+          each.lineStartDisagreementPlaces,
+          isEmpty,
+          reason: settingsName(each.settings),
+        );
       }
     }, timeout: Timeout.none);
   }

@@ -75,7 +75,7 @@ The corpus run (`BOOKFIN_EPUB_CORPUS=1`, 2026-11-09) checks the lookup at five p
 
 The median map of a book grows from 2.5 KB to 6.0 KB at 412 × 671 @ 20. The largest map grows from 70.5 KB to 176 KB (Plato's Dialogues at 360 × 640 @ 26). A map of 175 KB reads in 2 ms and writes in 4 ms on the host, file access included.
 
-The two disagreements are in Gutenberg's Leaves of Grass (Kindle file), section 188. Page 44 ends with a line of only white space, and the line search picks it for a place on the first line of page 45. The lookup finds page 45, which shows the place, as `ChapterLayout.pageAt` does. t5-odvj fixes the line search.
+The two disagreements are in Gutenberg's Leaves of Grass (Kindle file), section 188. Page 44 ends with a line of only white space, and the line search picks it for a place on the first line of page 45. The lookup finds page 45, which shows the place, as `ChapterLayout.pageAt` does. t5-odvj fixes the line search. (At the head of t5-odvj, the same disagreement showed in sections 30, 93 and 231 of the book, at both settings.)
 
 Two kinds of page made the first form of the lookup miss, and the lookup now handles both:
 
@@ -91,6 +91,37 @@ A jump to the true page at the middle of the largest section, after the section'
 | Standard Ebooks' Bleak House (section 57) | 32 / 33 | 5 / 4 | 4 / 4 |
 
 With a map, a jump does no line search and gives the true page at the cost of the page at the line. A format 2 map gave the true page at that cost too, through the line search, so this ticket makes no jump faster. The page from a kept start inside a table or a long paragraph does the work that the line search did: it measures the table, or it counts the lines of the paragraph's earlier segments. t5-s1vy and t5-lfsm keep those results in the map.
+
+### Results of t5-s1vy, t5-lfsm and t5-odvj
+
+Format 4 of the page map keeps each section's measures (`SectionMeasures` in layout.dart): the narrowest and widest content width of each table cell, and where each segment of a long paragraph starts with the lines before it. The page source gives them to each prepared section of a seeded section, and to a section that it prepares again after its main run ended. A run measures each kept table row that it lays out again, and checks where each kept segment that it lays out ends. A kept value that disagrees forgets the map, as a page that disagrees does.
+
+A jump to the true page, after the section's prepare, on the host with a map (`test/reader/epub/page_map_jump_test.dart`, load 8 to 27), in milliseconds:
+
+| Book, place | Before (format 3) | After (format 4) | Table cells measured after | Code units laid out, before / after |
+| --- | --- | --- | --- | --- |
+| Gutenberg's Roget's Thesaurus, middle of section 1 | 967 | 24 to 27 | 4 of 1,187 | 14,545 / 14,545 |
+| Standard Ebooks' Ulysses, middle of section 18 (Circe) | 140 | 5 to 7 | 6 of 2,760 | 2,957 / 2,957 |
+| Standard Ebooks' Bleak House, middle of section 57 | 3 | 3 to 7 | 0 | 2,132 / 2,132 |
+| Gutenberg's Leaves of Grass, middle of its longest paragraph (72,049 code units) | 8 | 3 | 0 | 36,964 / 1,030 |
+| Gutenberg's Hong Lou Meng, longest paragraph (48,868) | 13 | 3 | 0 | 25,615 / 2,049 |
+| Gutenberg's Origin of Species, longest paragraph (29,423) | 13 | 3 | 0 | 15,416 / 1,030 |
+| Standard Ebooks' Ulysses, longest paragraph (section 22, 21,938) | 6 | 3 | 0 | 26,541 / 4,486 |
+
+Ulysses' largest section is a play that Standard Ebooks sets as tables, so its cost before was the table measure, not long paragraphs.
+
+The corpus run of 2026-11-09 (`BOOKFIN_EPUB_CORPUS=1`) found no lookup miss and no `lineStart` disagreement, and gave these map sizes:
+
+| Settings | Format 3 | Format 4 | Growth | Median map of a book, format 3 / 4 | Largest map, format 3 / 4 |
+| --- | --- | --- | --- | --- | --- |
+| 412 × 671 @ 20 | 955,809 | 1,698,652 | 742,843 (78 percent) | 6.0 KB / 7.5 KB | 84 KB / 444 KB (Plato's Dialogues) |
+| 360 × 640 @ 26 | 1,895,613 | 2,638,204 | 742,591 (39 percent) | 12.5 KB / 14.4 KB | 176 KB / 536 KB (Plato's Dialogues) |
+
+Most of the growth is table cells, whose count does not depend on the settings. 73 of 93 books grew by more than 200 bytes. Plato's Dialogues grew by 360 KB, Standard Ebooks' Ulysses by 48 KB, The Wealth of Nations by 43 KB and Hamlet by 39 KB. On the host's debug build, a warm read of Plato's map at 360 × 640 @ 26 takes about 5 ms and a write about 7 ms on the UI isolate. t0-r8ii looks at this on a device.
+
+The check of a kept table row is a spot check. The column widths depend on every row of the table, so a wrong width in a row that the reader never sees can change a page's columns without a check that fails. The check on the page's start and the next start catches most such changes.
+
+t5-odvj: the line search now gives `_holder` the lines that wait for their widows rule too. A line of only white space and the line after it start at the same place in document order, and the later line holds the place. The corpus had 8 such places in Gutenberg's Leaves of Grass (Kindle file), and the corpus run now fails on any.
 
 ### Table cell widths
 

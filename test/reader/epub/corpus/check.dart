@@ -102,8 +102,9 @@ class SettingsReport {
   /// (t5-q0hs), and those for which it found another page than lineStart
   /// and the true page start before it. A miss where the lookup finds the
   /// page that [ChapterLayout.pageAt] names, the page whose lines show the
-  /// place, is lineStart's disagreement, not the lookup's failure
-  /// (t5-odvj). Only the first 20 of each are listed.
+  /// place, is lineStart's disagreement, not the lookup's failure. The
+  /// corpus run fails on either (t5-odvj). Only the first 20 of each are
+  /// listed.
   int keptPlaces = 0;
   int keptPlaceMisses = 0;
   final keptPlaceFailures = <String>[];

@@ -86,14 +86,15 @@ class PageRequestStopped implements Exception {
 /// the source lays out that page, and the next one when the place lies
 /// after everything that the page shows. Each page that a run cuts from a seeded start checks
 /// that its first place is the kept one and that the next seeded start
-/// follows it. The map also keeps the widths of each table's cells, which
-/// a run from a start inside a table needs first, and each prepared
-/// section of a seeded section reuses them ([reuseMeasures]). A run
-/// measures each kept table row that it lays out again. The first page or
-/// row that contradicts the map forgets it: the seeded pages and widths
-/// drop, the file goes, and the whole book is laid out again. A section
-/// whose main run ended reuses that run's widths in the same way when it
-/// is prepared again.
+/// follows it. The map also keeps each section's measures: the widths of
+/// each table's cells and the segments of each long paragraph, which a
+/// run from a start inside the item needs first. Each prepared section of
+/// a seeded section reuses them ([reuseMeasures]). A run measures each
+/// kept table row and lays out each kept segment that it reaches again.
+/// The first page, row or segment that contradicts the map forgets it: the
+/// seeded pages and measures drop, the file goes, and the whole book is
+/// laid out again. A section whose main run ended reuses that run's
+/// measures in the same way when it is prepared again.
 /// Once every section's main run ended and no section is seeded, the source
 /// keeps the map.
 ///

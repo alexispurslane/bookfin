@@ -2538,8 +2538,9 @@ SectionMeasures measuresOf(PreparedSection section) => SectionMeasures(
 /// false, and gives nothing, when [measures] do not fit the section's
 /// items.
 ///
-/// A run checks each kept table row that it lays out ([LayoutRun.contradicted]).
-/// [forgetMeasures] takes the kept measures back.
+/// A run checks each kept table row and each kept segment that it lays
+/// out ([LayoutRun.contradicted]). [forgetMeasures] takes the kept
+/// measures back.
 bool reuseMeasures(PreparedSection section, SectionMeasures measures) {
   final flow = section.flow;
   for (final MapEntry(key: index, value: widths) in measures.tables.entries) {
@@ -2833,9 +2834,12 @@ class LineSearch {
     final run = LayoutRun(section, from: PageStart(item, math.max(row, line)));
     try {
       /// Lays out units of work until one adds a line that shows a place,
-      /// or to the section end. Returns the holder of the place among the
-      /// lines laid out.
-      ({Slice? holder, bool past}) layOutShown() {
+      /// or to the section end. Returns the page start of the line that
+      /// holds the place among the lines laid out: those added, and those
+      /// of a long paragraph that wait for its widows rule. A waiting line
+      /// can hold the place when the line before it shows only white space,
+      /// because both start at the same place in document order.
+      ({PageStart? holder, bool past}) layOutShown() {
         final before = run._pending.length;
         while (run._item < flow.length) {
           run._layOutItem();
@@ -2849,7 +2853,22 @@ class LineSearch {
         }
         return _holder(dom, place, [
           for (final slice in run._pending)
-            for (final line in _lines(slice)) (line, slice),
+            for (final line in _lines(slice)) (line, slice.at),
+          if (run._segments case final segments?)
+            for (final line in segments.waiting)
+              (
+                Slice(
+                  line.top,
+                  line.bottom,
+                  Appeal.perfect,
+                  PageStart(segments.index, line.above),
+                  piece: line.piece,
+                  line: line.line,
+                  start: line.start,
+                  units: line.units,
+                ),
+                PageStart(segments.index, line.above),
+              ),
         ]);
       }
 
@@ -2863,8 +2882,8 @@ class LineSearch {
       if (past) (:holder, :past) = layOutShown();
       // The item's first line starts where the run starts: at the section
       // start when nothing comes before it.
-      if (holder == null || holder.at == PageStart(item, 0)) return run._from;
-      return holder.at;
+      if (holder == null || holder == PageStart(item, 0)) return run._from;
+      return holder;
     } finally {
       run.dispose();
     }

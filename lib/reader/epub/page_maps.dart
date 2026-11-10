@@ -201,14 +201,16 @@ class KeptSection {
 /// from the segment before it.
 ///
 /// The calling isolate encodes and decodes the map, and the file access
-/// is asynchronous. A map takes about 7.6 bytes a page. On the host's
-/// debug build, a map of 23,200 pages (175 KB, about the largest of the
-/// corpus: Plato's Dialogues at 360 x 640 @ 26) reads in 2 ms and writes
-/// in 4 ms, file access included. A worker would not take this work
-/// off the UI isolate: the sections are a graph of one object for each
-/// page, and the copy of that graph to or from a worker runs in the
-/// sending isolate at about the cost of the codec, plus the hop's own 1 to
-/// 2 ms (boo-rw7u).
+/// is asynchronous. A map takes about 7.6 bytes a page, plus 16 bytes for
+/// each table cell. On the host's debug build, the largest map of the
+/// corpus (Plato's Dialogues at 360 x 640 @ 26: 23,400 pages and 21,820
+/// table cells, 514 KB) reads in about 5 ms and writes in about 7 ms,
+/// file access included. Without the cells (175 KB), it read in 2 ms and
+/// wrote in 4 ms. A worker would not take the page starts off the UI
+/// isolate: they are a graph of one object for each page, and the copy of
+/// that graph to or from a worker runs in the sending isolate at about the
+/// cost of the codec, plus the hop's own 1 to 2 ms (boo-rw7u). t0-r8ii looks
+/// at the cells, whose copy is cheap.
 abstract final class PageMaps {
   /// The format of the file. It is part of the key, so a file of another
   /// format reads as another key's map. Version 2 added
@@ -220,7 +222,7 @@ abstract final class PageMaps {
   /// The most settings values that one book keeps maps for. A reader
   /// changes the text size or turns the phone now and then, so four values
   /// cover the usual set: two text sizes in two orientations. The largest
-  /// map of the corpus is 176 KB.
+  /// map of the corpus is 536 KB.
   static const limit = 4;
 
   static const _magic = [0x42, 0x4b, 0x50, 0x4d]; // BKPM
@@ -561,10 +563,11 @@ abstract final class PageMaps {
           throw const FormatException('Two tables share a flow item.');
         }
         table += step;
-        tables[table] = Float64List.fromList([
-          for (var cells = reader.count(16) * 2; cells > 0; cells--)
-            reader.float64(),
-        ]);
+        final widths = Float64List(reader.count(16) * 2);
+        for (var at = 0; at < widths.length; at++) {
+          widths[at] = reader.float64();
+        }
+        tables[table] = widths;
       }
       sections.add(
         KeptSection(
@@ -588,8 +591,10 @@ abstract final class PageMaps {
 
 /// A cursor over the body of a page map, from [_at] to [_end].
 class _Reader {
-  _Reader(this._bytes, this._at, this._end);
+  _Reader(this._bytes, this._at, this._end)
+    : _data = ByteData.sublistView(_bytes);
   final Uint8List _bytes;
+  final ByteData _data;
   int _at;
   final int _end;
 
@@ -614,11 +619,7 @@ class _Reader {
     if (_end - _at < 8) {
       throw const FormatException('The page map ends inside a width.');
     }
-    final value = ByteData.sublistView(
-      _bytes,
-      _at,
-      _at + 8,
-    ).getFloat64(0, Endian.little);
+    final value = _data.getFloat64(_at, Endian.little);
     _at += 8;
     return value;
   }
@@ -636,6 +637,7 @@ class _Reader {
 /// A byte buffer that grows as a page map is written.
 class _Writer {
   var _bytes = Uint8List(4096);
+  late var _data = ByteData.sublistView(_bytes);
   var _length = 0;
 
   /// The bytes written so far.
@@ -648,6 +650,7 @@ class _Writer {
       size *= 2;
     }
     _bytes = Uint8List(size)..setRange(0, _length, _bytes);
+    _data = ByteData.sublistView(_bytes);
   }
 
   void addAll(List<int> bytes) {
@@ -668,13 +671,13 @@ class _Writer {
 
   void float64(double value) {
     _reserve(8);
-    ByteData.sublistView(_bytes).setFloat64(_length, value, Endian.little);
+    _data.setFloat64(_length, value, Endian.little);
     _length += 8;
   }
 
   void uint32(int value) {
     _reserve(4);
-    ByteData.sublistView(_bytes).setUint32(_length, value, Endian.little);
+    _data.setUint32(_length, value, Endian.little);
     _length += 4;
   }
 }
