@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:bookfin/downloads/downloads.dart';
+import 'package:bookfin/foundation/hop.dart';
 import 'package:bookfin/reader/book_crop.dart';
 import 'package:bookfin/reader/book_survey.dart';
 import 'package:bookfin/reader/pdf.dart';
@@ -68,6 +69,20 @@ List<int> restOf(List<SurveyStep> steps) => [
 /// A lease of the download [original] that is always available.
 SurveyLease leaseOf(File original, String digest) =>
     (use) => use(VerifiedFile(original.uri, digest), () => true);
+
+/// A kept survey whose read ends when the test completes [reading]. It
+/// keeps nothing.
+class UnreadSurvey implements SurveyFiles {
+  final reading = Completer<KeptSurvey?>();
+  @override
+  String get book => 'unread';
+  @override
+  IsolateHop get hop => runInWorker;
+  @override
+  Future<KeptSurvey?> read() => reading.future;
+  @override
+  Future<void> write(KeptSurvey survey) async {}
+}
 
 /// A made-up scanned page of 30 prose lines whose text starts [left] pixels
 /// from the left edge, as a page of a printed book with mirrored margins.
@@ -398,6 +413,129 @@ void main() {
       ], crops);
       expect(again.analyzed, isEmpty);
       await again.survey.close();
+    });
+  });
+
+  group('the survey and the shown page', () {
+    late Directory root;
+    late File original;
+
+    setUp(() async {
+      root = await Directory.systemTemp.createTemp('bookfin-shown-survey-');
+      original = await File('${root.path}/complete').writeAsString('%PDF-');
+    });
+    tearDown(() => root.delete(recursive: true));
+
+    SurveyFiles storeOf(PdfBook book) => SurveyFiles(
+      leaseOf(original, book.originalDigest),
+      book: book.originalDigest,
+      hop: book.hop,
+    );
+
+    test(
+      'the page that the reader shows and the page after it are surveyed '
+      'before the rest, so the next page has its crop before a turn',
+      () async {
+        final rest = restOf(stepsOf(70));
+        final shown = rest.firstWhere((page) => page > 20);
+        final book = HeldRenders([
+          for (var page = 1; page <= 70; page++)
+            proseAt(page.isOdd ? 260 : 200),
+        ]);
+        book.survey.start(storeOf(book), from: 1);
+        while (book.survey.profile == null) {
+          await until(() => book.waiting.isNotEmpty, 'a page draws');
+          book.waiting.removeAt(0).release.complete();
+          await Future<void>.delayed(const Duration(milliseconds: 5));
+        }
+        expect(book.survey.cropOf(shown), isNull);
+        final before = book.renders.length;
+        final next = book.survey.cropWithin(
+          shown + 1,
+          const Duration(seconds: 20),
+        );
+
+        book.survey.follow(shown);
+        book.holding = false;
+        for (final held in book.waiting) {
+          held.release.complete();
+        }
+        expect(await next, isNotNull);
+        // The page whose analysis ran when the reader turned finishes first.
+        final after = book.renders.skip(before).toList();
+        expect(after.take(3), containsAllInOrder([shown, shown + 1]));
+        expect(after.indexOf(shown), lessThanOrEqualTo(1));
+        await book.survey.close();
+      },
+    );
+
+    test('a reopened book gives a page the kept crop that it reads within '
+        'the wait', () async {
+      List<DrawnPage> pages() => [
+        for (var page = 1; page <= 4; page++) proseAt(page.isOdd ? 260 : 200),
+      ];
+      final first = DrawnPdf(pages(), hop: runInWorker);
+      first.survey.start(storeOf(first), from: 1);
+      await until(
+        () => first.survey.cropOf(3) != null,
+        'the first open surveys the book',
+      );
+      final kept = first.survey.cropOf(3);
+      await first.survey.close();
+
+      final again = HeldRenders(pages());
+      again.survey.start(storeOf(again), from: 3);
+      expect(
+        await again.survey.cropWithin(3, const Duration(seconds: 20)),
+        kept,
+      );
+      expect(again.renders, isEmpty);
+      await again.survey.close();
+    });
+
+    test(
+      'a crop that is not known within the wait gives the page none',
+      () async {
+        final book = HeldRenders([
+          for (var page = 1; page <= 4; page++) proseAt(200),
+        ]);
+        final store = UnreadSurvey();
+        book.survey.start(store, from: 1);
+        final watch = Stopwatch()..start();
+        expect(
+          await book.survey.cropWithin(1, const Duration(milliseconds: 300)),
+          isNull,
+        );
+        expect(
+          watch.elapsed,
+          greaterThanOrEqualTo(const Duration(milliseconds: 300)),
+        );
+        store.reading.complete(null);
+        book.holding = false;
+        for (final held in book.waiting) {
+          held.release.complete();
+        }
+        await book.survey.close();
+      },
+    );
+
+    test('a book without a kept profile gives no crop at once, so its first '
+        'page does not wait', () async {
+      final book = HeldRenders([
+        for (var page = 1; page <= 4; page++) proseAt(200),
+      ]);
+      final unstarted = book.survey.cropWithin(1, const Duration(seconds: 20));
+      book.survey.start(storeOf(book), from: 1);
+      final started = book.survey.cropWithin(1, const Duration(seconds: 20));
+      final watch = Stopwatch()..start();
+      expect(await unstarted, isNull);
+      expect(await started, isNull);
+      expect(watch.elapsed, lessThan(const Duration(seconds: 5)));
+      book.holding = false;
+      for (final held in book.waiting) {
+        held.release.complete();
+      }
+      await book.survey.close();
     });
   });
 

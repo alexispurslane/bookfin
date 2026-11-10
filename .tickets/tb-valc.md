@@ -17,3 +17,9 @@ T3 of docs/plans/pdf-word-image-reflow.md (Trimmed margins: The Original view). 
 
 Behavior tests, red first: a body page shows only its content, without margins, header and folio; two body pages of one side show their text at the same size and place; a wide-table page shows all of its table; a page shows uncropped until its crop is known and keeps its look until the next turn; a page whose crop is ready within 300 ms shows cropped from its first frame; the next page's crop is ready before a turn in the normal case; pinch zoom and pan still work, and a swipe on a zoomed page moves it; the deck shows cropped cards when crops are known. No crop work runs on the UI isolate.
 
+
+## Notes
+
+**2026-11-10T17:20:38Z**
+
+Built: the Original view shows each page's crop (PdfViewport._draw and preview, through _crops, the one place for the Trim margins switch of tb-nkz5); BookSurvey.cropWithin waits up to 300 ms for a jump, scrub or open, and gives null at once when no crop can come; BookSurvey.follow, called by ReaderSession.acceptAddress, surveys the shown page and the next one first; _drawPage renders wider by the crop's share and decodes only the crop's rows with a row stride. Tests: test/reader/pdf_crop_test.dart, book_survey_test.dart, survey_session_test.dart. Evidence: docs/evidence/reader/trimmed-margins/. New work: ta-go9x, ta-3g8x.

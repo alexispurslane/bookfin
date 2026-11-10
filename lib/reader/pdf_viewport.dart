@@ -1,9 +1,12 @@
 import 'dart:async';
 import 'dart:math' as math;
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
+import 'book_crop.dart';
+import 'book_survey.dart';
 import 'document.dart';
 import 'page_swipes.dart';
 import 'pdf.dart';
@@ -20,6 +23,13 @@ import 'pdf.dart';
 /// The book owns page text and recognition. The owner keeps the reflow
 /// choice and offers its control. The viewport keeps only the shown page
 /// and its layout.
+///
+/// The original page shows its crop (see [BookSurvey]), so its text keeps
+/// one size and place from page to page. A page never changes its crop
+/// while it shows: a crop that becomes known later applies from the next
+/// page shown. A page that a turn shows takes the crop known at once. A
+/// page that a jump, a scrub or the opening of the book shows waits up to
+/// 300 ms for its crop. A page without a crop shows whole.
 ///
 /// Like every reader view, it reports a tap on the page through [onTap]
 /// and a swipe across it through [onTurn]. A swipe on a zoomed original
@@ -73,6 +83,10 @@ class _PdfViewportState extends State<PdfViewport>
   ui.Image? _image;
   TextPainter? _layout;
   int _page = 1;
+
+  /// Whether a turn showed the page, so that it takes only a crop known at
+  /// once.
+  bool _turned = false;
   late PdfAddress _address;
   bool _positionResolved = false;
   int _generation = 0;
@@ -139,7 +153,11 @@ class _PdfViewportState extends State<PdfViewport>
     super.dispose();
   }
 
-  Future<void> _load(PdfAddress address, {bool lastViewport = false}) async {
+  Future<void> _load(
+    PdfAddress address, {
+    bool lastViewport = false,
+    bool turned = false,
+  }) async {
     if (!widget.book.accepts(address)) {
       throw ArgumentError('Choose a source page in this PDF.');
     }
@@ -149,6 +167,7 @@ class _PdfViewportState extends State<PdfViewport>
     _zoom.value = Matrix4.identity();
     setState(() {
       _page = address.sourcePage;
+      _turned = turned;
       _address = address;
       _positionResolved = false;
       _failure = null;
@@ -231,22 +250,15 @@ class _PdfViewportState extends State<PdfViewport>
       return;
     }
     _drawingGeneration = generation;
-    try {
-      final raster = await widget.book.render(
-        _page,
+    final width =
         MediaQuery.sizeOf(context).width *
-            MediaQuery.devicePixelRatioOf(context),
-      );
+        MediaQuery.devicePixelRatioOf(context);
+    try {
+      final crop = _turned
+          ? _crops?.cropOf(_page)
+          : await _crops?.cropWithin(_page, _cropWait);
       if (!mounted || generation != _generation) return;
-      final completed = Completer<ui.Image>();
-      ui.decodeImageFromPixels(
-        raster.bgra,
-        raster.width,
-        raster.height,
-        ui.PixelFormat.bgra8888,
-        completed.complete,
-      );
-      final image = await completed.future;
+      final image = await _drawPage(widget.book, _page, width, crop);
       if (!mounted || generation != _generation) {
         image.dispose();
         return;
@@ -262,6 +274,15 @@ class _PdfViewportState extends State<PdfViewport>
       if (_drawingGeneration == generation) _drawingGeneration = null;
     }
   }
+
+  /// The longest time that a page shown by a jump waits for its crop.
+  static const _cropWait = Duration(milliseconds: 300);
+
+  /// The survey whose crops the original pages and the deck cards show, or
+  /// null to show whole pages.
+  // NOTE: Every page and deck card takes its crop from this survey, so the
+  // Trim margins switch of tb-nkz5 turns crops off here.
+  BookSurvey? get _crops => widget.book.survey;
 
   void _publish() {
     widget.onAddress(_address);
@@ -298,7 +319,11 @@ class _PdfViewportState extends State<PdfViewport>
     }
     final page = _page + (forward ? 1 : -1);
     if (page >= 1 && page <= widget.book.pageCount) {
-      await _load(PdfAddress(page, 0), lastViewport: !forward && _usingText);
+      await _load(
+        PdfAddress(page, 0),
+        lastViewport: !forward && _usingText,
+        turned: true,
+      );
     }
   }
 
@@ -324,7 +349,8 @@ class _PdfViewportState extends State<PdfViewport>
 
   /// A PDF page is a whole part of the book, so its neighbors are the source
   /// pages before and after it. A page draws in well under a tenth of a
-  /// second, so it does not stop when abandoned.
+  /// second, so it does not stop when abandoned. It shows the page's crop
+  /// when it is known, and never waits for one.
   @override
   Future<PagePreview> preview(
     BookPlace place,
@@ -332,20 +358,12 @@ class _PdfViewportState extends State<PdfViewport>
     Future<void> abandon,
   ) async {
     final part = place.part;
-    final raster = await widget.book.render(part + 1, width);
-    final drawn = Completer<ui.Image>();
-    ui.decodeImageFromPixels(
-      raster.bgra,
-      raster.width,
-      raster.height,
-      ui.PixelFormat.bgra8888,
-      drawn.complete,
-    );
+    final crop = _crops?.cropOf(part + 1);
     return PagePreview(
       part: part,
       start: 0,
       end: 1,
-      image: await drawn.future,
+      image: await _drawPage(widget.book, part + 1, width, crop),
       previous: part > 0 ? (part: part - 1, progress: 0) : null,
       next: part + 1 < widget.book.pageCount
           ? (part: part + 1, progress: 0)
@@ -567,4 +585,41 @@ class _PdfViewportState extends State<PdfViewport>
       ],
     );
   }
+}
+
+/// Source page [page] of [book], drawn [width] pixels wide: the whole page,
+/// or only its [crop]. A crop draws from the page drawn wider by the
+/// inverse of the crop's share of the page width, within the book's render
+/// limits, so the crop gets the [width] pixels.
+Future<ui.Image> _drawPage(
+  PdfBook book,
+  int page,
+  double width,
+  PageBox? crop,
+) async {
+  final raster = await book.render(
+    page,
+    crop == null ? width : width / (crop.right - crop.left),
+  );
+  final columns = raster.width, rows = raster.height;
+  // Page units are fractions of the page width.
+  var left = 0, top = 0, right = columns, bottom = rows;
+  if (crop != null) {
+    left = (crop.left * columns).floor().clamp(0, columns - 1);
+    top = (crop.top * columns).floor().clamp(0, rows - 1);
+    right = (crop.right * columns).ceil().clamp(left + 1, columns);
+    bottom = (crop.bottom * columns).ceil().clamp(top + 1, rows);
+  }
+  final drawn = Completer<ui.Image>();
+  // The image reads the crop's rows in place from the page's pixels, so
+  // cropping runs no pixel loop on this isolate.
+  ui.decodeImageFromPixels(
+    Uint8List.sublistView(raster.bgra, (top * columns + left) * 4),
+    right - left,
+    bottom - top,
+    ui.PixelFormat.bgra8888,
+    drawn.complete,
+    rowBytes: columns * 4,
+  );
+  return drawn.future;
 }

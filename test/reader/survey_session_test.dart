@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:bookfin/reader/document.dart';
 import 'package:bookfin/reader/ocr.dart';
 import 'package:bookfin/reader/pdf.dart';
 import 'package:bookfin/reader/platform_io.dart';
@@ -214,6 +215,18 @@ void main() {
     expect(laidOut().skip(2), unorderedEquals([2, 3, 5, 6, 7, 8]));
     EnglishRecognition.instance.checkInvariants();
     pdf.survey.checkInvariants();
+  });
+
+  test('the survey follows the page that the reader shows: that page and '
+      'the page after it are laid out next', () async {
+    holding = true;
+    await open();
+    await received(1);
+    reader.acceptAddress(reader.token, PdfAddress(5, 0));
+    releaseAll();
+    final pdf = reader.document! as PdfBook;
+    await surveyed(pdf);
+    expect(laidOut().take(3), [1, 5, 6]);
   });
 
   test('the survey\'s waiting shows no recognition progress', () async {
