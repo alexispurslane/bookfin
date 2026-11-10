@@ -75,7 +75,9 @@ class LaidNote {
 class EpubPager implements DocumentNavigator {
   /// The pager of [document]. It opens at [initial] once the first
   /// [present] gives it page settings. [onPlace] receives each new place of
-  /// the shown page. [onWarning] receives a message for the person.
+  /// the shown page. [onWarning] receives a message for the person. When
+  /// [initial] cannot be found, the pager shows the book's start, reports
+  /// no place for it, so the saved place stays, and then warns.
   /// [onShow] hears each new shown page: with the visible characters of the
   /// page before when the person turned forward from that page, else with
   /// null.

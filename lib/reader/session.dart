@@ -791,8 +791,16 @@ class ReaderSession extends ChangeNotifier {
     _emit();
   }
 
+  /// Shows [explanation], a warning of the pager. A warning that comes
+  /// while a page shows and the book reported no place yet means that the
+  /// pager could not find the place that the book opened at, and shows the
+  /// book's start instead. The open, or the jump that opened the book,
+  /// then ends without a move.
   void warn(int eventToken, String explanation) {
     if (!_live(eventToken)) return;
+    if (_visibleAddress == null && _pager?.shown.value != null) {
+      _pending = null;
+    }
     _message = explanation;
     _emit();
   }

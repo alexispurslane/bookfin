@@ -93,6 +93,13 @@ Publication threeChapters() => Publication.admit(
 /// The JSON of [place], so that two places compare by value.
 Map<String, dynamic> json(TextPosition place) => encodeTextPosition(place);
 
+/// [anchor] with a quote that the book does not have at its place, so the
+/// pager cannot find it.
+String unmatched(String anchor) => jsonEncode({
+  ...jsonDecode(anchor) as Map<String, dynamic>,
+  'quote': 'Words that this book does not have at that place.',
+});
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUpAll(loadReaderFont);
@@ -543,6 +550,98 @@ void main() {
     expect(restore.editionLabel, 'Other EPUB');
     expect(reader.undoOffer?.action, same(restore));
     reader.checkInvariants();
+  });
+
+  test('a jump into another edition whose place the pager cannot find '
+      'records no move, and the next page turn records none', () async {
+    final otherFile = SourceFile(
+      itemId: 'other',
+      displayName: 'Other.epub',
+      mediaSourceId: 'original',
+      revision: 'revision-one',
+      durationMs: null,
+      container: 'epub',
+      sizeBytes: 100,
+    );
+    final other = Edition(
+      id: 'other-edition',
+      kind: EditionKind.text,
+      label: 'Other EPUB',
+      files: [otherFile],
+      memberIds: const ['other'],
+    );
+    downloads.files[otherFile.key] = Uri.file('/other.epub');
+    final book = Book(
+      id: 'work',
+      title: 'River',
+      author: 'Writer',
+      editions: [epubEdition, other],
+    );
+    final reader = await sessionOf(book);
+    await reader.open(book, epubEdition);
+    await present(reader);
+    await after(reader, () => reader.goToContents('text/s2.xhtml#cedar'));
+    final move = moves(reader).single;
+    final lost = HistoryEvent(
+      id: 'lost',
+      at: DateTime.utc(2026, 11, 9),
+      kind: HistoryAction.seek,
+      before: move.before,
+      after: TextPosition(
+        editionId: other.id,
+        sourceKey: otherFile.key,
+        revision: otherFile.revision,
+        anchor: unmatched(move.after.anchor),
+      ),
+      bookTitle: 'River',
+      editionLabel: 'Other EPUB',
+    );
+    store.values[accountKey]!['history'] = [...store.history, lost.toJson()];
+    await reader.refreshPersonalRecords();
+
+    await reader.restoreHistory('lost', previous: false);
+    await present(reader);
+    await after(reader, () => reader.move(true));
+
+    expect(reader.edition?.id, other.id);
+    expect(reader.message, contains('does not match'));
+    expect(
+      reader.history.where((e) => e.kind == HistoryAction.historyRestore),
+      isEmpty,
+    );
+    expect(reader.undoOffer, isNull);
+  });
+
+  test('a book whose saved place the pager cannot find opens at its start '
+      'and records no Opened entry, even after a page turn', () async {
+    final first = await openBook();
+    await after(first, () => first.goToContents('text/s2.xhtml#cedar'));
+    first.closeView(first.token);
+    await first.flush();
+    final resumes = store.values[accountKey]!['resumes'] as List;
+    resumes.last['anchor'] = unmatched(resumes.last['anchor'] as String);
+    final entries = store.history.length;
+
+    final reader = await openBook();
+    await after(reader, () => reader.move(true));
+
+    expect(reader.message, contains('does not match'));
+    expect(store.history, hasLength(entries));
+    expect(reader.history, hasLength(entries));
+  });
+
+  test('a warning before the book shows a page keeps the start of the '
+      'visit, which the first place records', () async {
+    final reader = await sessionOf(bookOf(epubEdition));
+    await reader.open(bookOf(epubEdition), epubEdition);
+
+    reader.warn(reader.token, 'This chapter could not be displayed.');
+    await present(reader);
+    await reader.flush();
+
+    final opened = reader.history.single;
+    expect(opened.kind, HistoryAction.open);
+    expect(json(opened.after), json(reader.position!));
   });
 
   test('the open of another book drops a jump that did not end, and a jump '
