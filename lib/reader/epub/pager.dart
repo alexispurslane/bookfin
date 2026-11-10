@@ -138,6 +138,12 @@ class EpubPager implements DocumentNavigator {
   /// The end of the last job in the queue.
   Future<void> _queue = Future.value();
 
+  /// How many requests to show a destination ([display], [contents] and
+  /// [seek]) the pager received. A page turn asked before such a request
+  /// does not show its page, so the destination's place is the first place
+  /// that the pager reports after the request (see [DocumentNavigator]).
+  int _destinations = 0;
+
   /// The search request in progress, or null.
   int? _search;
 
@@ -321,30 +327,34 @@ class EpubPager implements DocumentNavigator {
   static const _noteStep = Duration(milliseconds: 4);
 
   /// Turns to the page after or before the shown page, and reports it. At
-  /// Turns to the page after or before the shown page, and reports it. At
-  /// the book's ends it does nothing.
+  /// the book's ends it does nothing, and so does a turn that a later
+  /// request to show a destination supersedes.
   @override
-  Future<void> move(bool forward) => _run(() async {
-    final shown = _shown.value;
-    if (shown == null) return;
-    final steps = await _spineSteps();
-    final page = forward
-        ? await _source.after(shown.page)
-        : await _source.before(shown.page);
-    if (page == null) return;
-    _show(
-      page,
-      page.startPlace ?? _place!,
-      steps,
-      report: true,
-      read: forward ? shown.page : null,
-    );
-  });
+  Future<void> move(bool forward) {
+    final destinations = _destinations;
+    return _run(() async {
+      final shown = _shown.value;
+      if (shown == null) return;
+      final steps = await _spineSteps();
+      final page = forward
+          ? await _source.after(shown.page)
+          : await _source.before(shown.page);
+      if (page == null || destinations != _destinations) return;
+      _show(
+        page,
+        page.startPlace ?? _place!,
+        steps,
+        report: true,
+        read: forward ? shown.page : null,
+      );
+    });
+  }
 
   /// Shows the page of [address], and reports it. Throws when the address
   /// is not in this book or its quote does not match the text.
   @override
   Future<void> display(ReaderAddress address) async {
+    _destinations++;
     await _presented.future;
     return _run(() async {
       final steps = await _spineSteps();
@@ -361,6 +371,7 @@ class EpubPager implements DocumentNavigator {
   /// names no section of the spine or no element.
   @override
   Future<void> contents(String href) async {
+    _destinations++;
     await _presented.future;
     return _run(() async {
       final steps = await _spineSteps();
@@ -382,6 +393,7 @@ class EpubPager implements DocumentNavigator {
     if (!(progress >= 0 && progress <= 1)) {
       throw ArgumentError.value(progress, 'progress', 'must be from 0 to 1');
     }
+    _destinations++;
     await _presented.future;
     return _run(() async {
       final steps = await _spineSteps();

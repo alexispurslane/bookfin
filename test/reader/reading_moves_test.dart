@@ -320,6 +320,21 @@ void main() {
     expect(store.moves, isEmpty);
   });
 
+  test('a page turn asked for just before a jump does not end the jump\'s '
+      'move, which ends at the jump\'s own page', () async {
+    final reader = await openBook();
+
+    final turn = reader.move(true);
+    final jump = reader.goToContents('text/s2.xhtml#cedar');
+    await turn;
+    await after(reader, () => jump);
+
+    expect(shownSection(reader), 2);
+    final move = moves(reader).single;
+    expect(move.kind, HistoryAction.chapter);
+    expect(json(move.after), json(reader.position!));
+  });
+
   test('a jump to the page that already shows records no move', () async {
     final reader = await openBook();
     final start = reader.position!;

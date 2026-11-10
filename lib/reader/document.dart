@@ -288,7 +288,17 @@ class PagePreview {
       place.part == part && place.progress >= start && place.progress <= end;
 }
 
+/// Shows the pages of an open book and moves through them, for the
+/// reader session.
+///
+/// A valid request to show a destination ([display], [contents] or
+/// [seek]) supersedes every request asked before it: once the call starts,
+/// no earlier request reports a place. So the first place that the navigator reports
+/// after such a request is the destination's, or a place of a later
+/// request.
 abstract interface class DocumentNavigator {
+  /// Turns one page, or in a PDF also scrolls the reflowed text, forward
+  /// or back.
   Future<void> move(bool forward);
   Future<void> display(ReaderAddress address);
 
