@@ -1,6 +1,6 @@
 ---
 id: t4-um6y
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-09T23:55:23Z
