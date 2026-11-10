@@ -26,6 +26,23 @@ const _words = [
   [460, 100, 700, 140],
 ];
 
+class GatedSurveyFiles extends SurveyFiles {
+  GatedSurveyFiles(
+    super.lease, {
+    required super.book,
+    super.hop,
+    this.writeGate,
+  });
+
+  final Future<void>? writeGate;
+
+  @override
+  Future<void> write(KeptSurvey survey) async {
+    await writeGate;
+    await super.write(survey);
+  }
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   Pdfrx.pdfiumModulePath = Platform.environment['PDFIUM_LIBRARY'];
@@ -37,6 +54,8 @@ void main() {
   late ReaderSession reader;
   late List<Operation> operations;
   late List<Function> hopped;
+  late List<SurveyFiles> surveyStores;
+  Completer<void>? surveyWriteGate;
 
   /// Whether new operations wait until the test releases them.
   var holding = false;
@@ -107,6 +126,8 @@ void main() {
     debugDefaultTargetPlatformOverride = TargetPlatform.android;
     operations = [];
     hopped = [];
+    surveyStores = [];
+    surveyWriteGate = null;
     holding = false;
     kept = null;
     root = await Directory.systemTemp.createTemp('bookfin-survey-session-');
@@ -122,7 +143,16 @@ void main() {
         source,
         textSupply: BundledEnglishText(hop: hop),
       ),
-      surveyStore: SurveyFiles.new,
+      surveyStore: (lease, {required book, hop = compute}) {
+        final store = GatedSurveyFiles(
+          lease,
+          book: book,
+          hop: hop,
+          writeGate: surveyWriteGate?.future,
+        );
+        surveyStores.add(store);
+        return store;
+      },
     );
     await reader.bind(account(), [book]);
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
@@ -163,6 +193,9 @@ void main() {
   });
 
   tearDown(() async {
+    if (surveyWriteGate case final gate? when !gate.isCompleted) {
+      gate.complete();
+    }
     releaseAll();
     reader.dispose();
     await PdfRuntime.instance.shutdown();
@@ -296,13 +329,28 @@ void main() {
   test('a reopened book goes on with the survey that it kept beside the '
       'download', () async {
     holding = true;
-    await open();
+    final first = await open();
     await received(1);
+    operations.single.release.complete();
+    await received(2);
     reader.closeView(reader.token);
     releaseAll();
+    await first.dispose();
+    final partial = await surveyStores.single.read();
+    expect(partial!.pages.map((page) => page.sourcePage), [1]);
+    expect(partial.profile, isNull);
+
+    surveyWriteGate = Completer<void>();
     final reopened = await open();
     await surveyed(reopened);
-    expect(await File('${root.path}/.bookfin-survey/survey').exists(), isTrue);
+    final closed = reopened.survey.close();
+    surveyWriteGate!.complete();
+    await closed;
+    final saved = await surveyStores.last.read();
+    expect(saved!.pages.map((page) => page.sourcePage).toList()..sort(), [
+      for (var page = 1; page <= 8; page++) page,
+    ]);
+    expect(saved.profile, isNotNull);
     expect(laidOut()..sort(), [for (var page = 1; page <= 8; page++) page]);
   });
 }
