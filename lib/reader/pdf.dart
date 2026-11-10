@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'dart:async';
 import 'dart:convert';
+import 'dart:ui' as ui;
 import 'dart:ui' show RootIsolateToken;
 
 import 'package:crypto/crypto.dart';
@@ -15,6 +16,7 @@ import 'column_layout.dart';
 import 'document.dart';
 import 'page_analysis.dart';
 import 'page_geometry.dart';
+import 'word_bands.dart';
 
 /// What the text of a source page offers reflow and search. The first three
 /// describe the page's own content. Only [failed] describes the reader.
@@ -570,6 +572,16 @@ abstract class PdfBook extends ReaderDocument {
 
   Future<PdfRaster> render(int sourcePage, double width);
 
+  /// The pixels [area] of [sourcePage] drawn [pixelsPerPageUnit] pixels
+  /// wide, as an image ready to draw. [area] is in pixels of that drawing,
+  /// with whole-pixel edges, and at most [WordBands.maxBandSide] pixels on
+  /// each side. Its pixels go to the engine from pdfium's own buffer.
+  Future<ui.Image> renderPart(
+    int sourcePage,
+    int pixelsPerPageUnit,
+    ui.Rect area,
+  );
+
   PdfAddress addressFor(int sourcePage, PdfText text, int character) {
     if (text.status != PdfTextStatus.candidate ||
         character < 0 ||
@@ -914,6 +926,58 @@ class _NativePdfBook extends PdfBook {
         image.height,
         Uint8List.fromList(image.pixels),
       );
+    } finally {
+      image.dispose();
+    }
+  });
+
+  @override
+  Future<ui.Image> renderPart(
+    int sourcePage,
+    int pixelsPerPageUnit,
+    ui.Rect area,
+  ) => _run(() async {
+    const side = WordBands.maxBandSide;
+    final left = area.left.toInt(), top = area.top.toInt();
+    final width = area.width.toInt(), height = area.height.toInt();
+    if (pixelsPerPageUnit <= 0 ||
+        left != area.left ||
+        top != area.top ||
+        width != area.width ||
+        height != area.height ||
+        width <= 0 ||
+        height <= 0 ||
+        width > side ||
+        height > side) {
+      throw ArgumentError(
+        'Choose a part of the page with whole-pixel edges, at most $side '
+        'pixels on each side.',
+      );
+    }
+    final page = _page(sourcePage);
+    final image = await page.render(
+      x: left,
+      y: top,
+      width: width,
+      height: height,
+      fullWidth: pixelsPerPageUnit.toDouble(),
+      fullHeight: page.height * pixelsPerPageUnit / page.width,
+    );
+    if (image == null) {
+      throw Exception('The original PDF page could not be drawn.');
+    }
+    try {
+      // The engine copies the pixels from pdfium's buffer, and the buffer
+      // is freed once the image exists.
+      final done = Completer<ui.Image>();
+      ui.decodeImageFromPixels(
+        image.pixels,
+        width,
+        height,
+        ui.PixelFormat.bgra8888,
+        done.complete,
+      );
+      return await done.future;
     } finally {
       image.dispose();
     }

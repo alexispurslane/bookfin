@@ -1,6 +1,6 @@
 ---
 id: tb-xjfi
-status: open
+status: in_progress
 deps: [tb-0mex]
 links: []
 created: 2026-11-10T02:33:41Z
@@ -17,3 +17,9 @@ W5 of docs/plans/pdf-word-image-reflow.md (Rendering). Add PdfBook.renderPart(so
 
 Behavior tests, red first: a word image draws at one band pixel for one device pixel; a black pixel draws in the theme's text color and a white pixel in its paper, in cream and night; picture regions keep their colors; live band images never hold more than 4 times the screen's pixels; a change of page, size or width disposes the images that the new screens do not use. PdfWordPages.checkInvariants holds.
 
+
+## Notes
+
+**2026-11-10T17:08:02Z**
+
+Built (2026-11-10). lib/reader/word_bands.dart: WordSettings, planWordColumn (layout and band plans in one hop), WordBands with checkInvariants. lib/reader/word_pages.dart: PdfWordPages (data source, eviction to two screens, checkInvariants), paintScreen (one drawRawAtlas per band, GPU tints), WordScreenView. PdfBook.renderPart in lib/reader/pdf.dart. PageAnalysis.paperLightness and inkLightness, because a scan's paper is darker than white. Deviations are in the design doc under 'The bands as built'. Found t8-bnwn (render the next page's first screen ahead) and t8-w16m (a user decision on a scanned picture's paper). Tests: test/reader/word_pages_test.dart.

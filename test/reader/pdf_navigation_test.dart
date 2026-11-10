@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:bookfin/reader/document.dart';
 import 'package:bookfin/reader/pdf.dart';
@@ -53,6 +54,13 @@ class HeldPdf extends PdfBook {
     renders++;
     return rendering.future;
   }
+
+  @override
+  Future<ui.Image> renderPart(
+    int sourcePage,
+    int pixelsPerPageUnit,
+    Rect area,
+  ) => throw UnimplementedError('The held PDF draws no word view.');
 }
 
 void main() {
