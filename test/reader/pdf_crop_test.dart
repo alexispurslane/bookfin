@@ -390,6 +390,22 @@ void main() {
   });
 
   group('a page never changes its crop while it shows', () {
+    testWidgets('an initial page starts drawing when the 300 ms crop wait '
+        'expires, even if the kept survey is still unread', (tester) async {
+      await show(tester, 3);
+      await tester.pump(const Duration(milliseconds: 299));
+      expect(book.drawsOf(3), 0);
+      await tester.pump(const Duration(milliseconds: 1));
+      expect(book.drawsOf(3), 1);
+      expect(store.reading.isCompleted, isFalse);
+      await drawn(tester, shown: original(3));
+      expect(
+        imageAspect(shownImage(tester)),
+        closeTo(1 / kept.pages[2].height, 0.01),
+      );
+      await close(tester);
+    });
+
     testWidgets('a page opened by a jump waits for a crop that arrives within '
         '300 ms, and shows cropped from its first frame', (tester) async {
       await show(tester, 3);

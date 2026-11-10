@@ -23,3 +23,7 @@ Behavior tests, red first: a body page shows only its content, without margins, 
 **2026-11-10T17:20:38Z**
 
 Built: the Original view shows each page's crop (PdfViewport._draw and preview, through _crops, the one place for the Trim margins switch of tb-nkz5); BookSurvey.cropWithin waits up to 300 ms for a jump, scrub or open, and gives null at once when no crop can come; BookSurvey.follow, called by ReaderSession.acceptAddress, surveys the shown page and the next one first; _drawPage renders wider by the crop's share and decodes only the crop's rows with a row stride. Tests: test/reader/pdf_crop_test.dart, book_survey_test.dart, survey_session_test.dart. Evidence: docs/evidence/reader/trimmed-margins/. New work: ta-go9x, ta-3g8x.
+
+**2026-11-10T19:17:07Z**
+
+Recovery: cherry-picked b4ec646 onto review base 9bf71644 as bca1de6 without conflicts; retained the newer word renderer and scanned-paper decision. Reproduced backward-priority gap with a failing session test (actual [1,5,6], expected [1,5,4]), then fixed direction ownership in BookSurvey.follow. Same-page reports retain direction; forward reversal covered. Focused crop/survey/session/viewport/book-crop/word-renderer run: 79 passed. Added exact 299/300 ms crop-wait boundary characterization; passed first run, not claimed as original red evidence. Existing emulator screenshots reused without rebuilding or touching any device. Format check and analyzer passed; full suite and fresh review follow.
