@@ -8,7 +8,8 @@
 import 'dart:math' as math;
 import 'dart:typed_data';
 
-import 'package:xml/xml.dart';
+import 'package:xml/xml.dart' show XmlDocument;
+import 'package:xml/xml_events.dart';
 
 /// A place in an EPUB: a section, a node's document order in it, and a
 /// code unit offset in a text node (0 for an element).
@@ -139,9 +140,24 @@ class DomSection {
   );
 
   /// Parses [source], an XHTML document.
+  ///
+  /// It reads the parser's events into the DOM, with the checks that
+  /// `XmlDocument.parse` makes: tags must nest and close, and the document
+  /// must have one root element. So it accepts and rejects the documents
+  /// that `XmlDocument.parse` does, with the same exceptions, and builds no
+  /// tree of package:xml's nodes first.
   factory DomSection.parse(String source) {
-    final document = XmlDocument.parse(source);
-    final root = _convert(document.rootElement, 0);
+    final DomElement root;
+    try {
+      root = _build(
+        parseEvents(source, validateNesting: true, validateDocument: true),
+      );
+    } on _NotAnElementChild {
+      // NOTE: package:xml's tree rejects these documents with its own
+      // exception, which the events do not raise.
+      XmlDocument.parse(source);
+      throw StateError('package:xml accepted a declaration in an element.');
+    }
     final nodes = <DomNode>[];
     void number(DomNode node) {
       node.order = nodes.length;
@@ -208,6 +224,26 @@ class DomSection {
     _ => null,
   };
 
+  /// The body text node that holds the visible character that [visible]
+  /// visible characters come before, from 0 to [visibleLength] − 1.
+  DomText textHolding(int visible) {
+    RangeError.checkValidIndex(visible, null, 'visible', visibleLength);
+    // The last text node that starts at or before the character holds it,
+    // because a node without visible characters starts where the next one
+    // does.
+    var low = 0;
+    var high = texts.length - 1;
+    while (low < high) {
+      final middle = (low + high + 1) >> 1;
+      if (texts[middle].visibleBefore <= visible) {
+        low = middle;
+      } else {
+        high = middle - 1;
+      }
+    }
+    return texts[low];
+  }
+
   /// The number of visible characters of the body before [place]. An
   /// element's place is the first text in or after it.
   int visibleBefore(EpubPlace place) {
@@ -243,33 +279,83 @@ bool isSpace(int unit) =>
     unit == 0x3000 ||
     unit == 0xfeff;
 
-DomElement _convert(XmlElement source, int index) {
-  final element = DomElement(source.name.local, {
-    for (final attribute in source.attributes)
-      attribute.name.qualified: attribute.value,
-  }, index);
-  var elements = 0;
-  var texts = 0;
-  for (final child in source.children) {
-    // The browser's DOM merges adjacent character data into one text node.
-    // A CDATA section stays its own node, which epub.js does not count.
-    if (child is XmlText) {
-      final previous = element.children.lastOrNull;
-      if (previous is DomText && child.previousSibling is XmlText) {
-        element.children.last = DomText(
-          previous.text + child.value,
-          previous.textIndex,
-        )..parent = element;
+/// The root element of the document whose events are [events].
+///
+/// The browser's DOM merges adjacent character data into one text node, as
+/// `XmlDocument.parse` keeps adjacent text events apart. A CDATA section
+/// stays its own node, which epub.js does not count. Comments, processing
+/// instructions and everything outside the root leave no node, but a
+/// comment or a processing instruction still keeps the texts around it
+/// apart.
+DomElement _build(Iterable<XmlEvent> events) {
+  DomElement? root;
+  final open = <DomElement>[];
+  // For each open element, how many element and text children it has.
+  final elementCounts = <int>[];
+  final textCounts = <int>[];
+  // The text of the text events since the last other event.
+  String? pending;
+  void flush() {
+    final text = pending;
+    if (text == null) return;
+    pending = null;
+    final parent = open.last;
+    final index = textCounts.last;
+    textCounts.last = index + 1;
+    parent.children.add(DomText(text, index)..parent = parent);
+  }
+
+  for (final event in events) {
+    switch (event) {
+      case XmlTextEvent(:final value):
+        if (open.isNotEmpty) {
+          pending = pending == null ? value : pending! + value;
+        }
         continue;
-      }
-      element.children.add(DomText(child.value, texts++)..parent = element);
-    } else if (child is XmlCDATA) {
-      element.children.add(DomText(child.value, -1)..parent = element);
-    } else if (child is XmlElement) {
-      final converted = _convert(child, elements++)..parent = element;
-      element.children.add(converted);
-      element.elements.add(converted);
+      case XmlStartElementEvent(:final localName, :final attributes):
+        flush();
+        final DomElement element;
+        if (open.isEmpty) {
+          element = DomElement(localName, {
+            for (final attribute in attributes) attribute.name: attribute.value,
+          }, 0);
+          root ??= element;
+        } else {
+          final parent = open.last;
+          final index = elementCounts.last;
+          elementCounts.last = index + 1;
+          element = DomElement(localName, {
+            for (final attribute in attributes) attribute.name: attribute.value,
+          }, index)..parent = parent;
+          parent.children.add(element);
+          parent.elements.add(element);
+        }
+        if (!event.isSelfClosing) {
+          open.add(element);
+          elementCounts.add(0);
+          textCounts.add(0);
+        }
+      case XmlEndElementEvent():
+        flush();
+        open.removeLast();
+        elementCounts.removeLast();
+        textCounts.removeLast();
+      case XmlCDATAEvent(:final value):
+        flush();
+        if (open.isNotEmpty) {
+          open.last.children.add(DomText(value, -1)..parent = open.last);
+        }
+      case XmlDeclarationEvent() || XmlDoctypeEvent() when open.isNotEmpty:
+        throw const _NotAnElementChild();
+      default:
+        flush();
     }
   }
-  return element;
+  return root!;
+}
+
+/// An XML declaration or a document type inside an element, which an
+/// element of package:xml's tree cannot hold.
+class _NotAnElementChild {
+  const _NotAnElementChild();
 }

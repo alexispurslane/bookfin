@@ -18,13 +18,24 @@
 // prepared the same sections when their hashes are equal.
 // tool/reader/compare_corpus_prepare.py compares two runs.
 //
+// For each section of at least 30,000 bytes, it also prepares the parts of
+// the section (preparePart) around the places in its middle and near its
+// end, in each page settings value. Each part's prepared flow items must
+// equal the whole section's, and the first two pages from the part's line
+// start must equal those from the whole section, unless the part's line
+// search needs the whole section. A section that preparePart gives whole,
+// because a part could not hold the place's item, must equal the section
+// that prepareSections gives. It writes the outcome of each part, and
+// at the reader's page the fastest of three part prepares in milliseconds.
+//
 // Add --plain-name with a book id to run some books only.
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:bookfin/reader/epub/css.dart' show Length;
 import 'package:bookfin/reader/epub/dom.dart';
+import 'package:bookfin/reader/epub/layout.dart';
+import 'package:bookfin/reader/epub/places.dart';
 import 'package:bookfin/reader/epub/prepare.dart';
 import 'package:bookfin/reader/mobi.dart';
 import 'package:crypto/crypto.dart';
@@ -33,6 +44,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'corpus/book.dart';
 import 'corpus/check.dart';
 import 'corpus/list.dart';
+import 'flow_dump.dart';
+import 'helpers.dart' show keys, loadReaderFont;
 
 final _name = Platform.environment['BOOKFIN_EPUB_CORPUS_PREPARE'];
 
@@ -54,6 +67,13 @@ const _settings = [
 /// time. The fastest counts, so that a pause of the shared machine does not.
 const _times = 3;
 
+/// The smallest section in bytes whose parts the run checks.
+const _partBytes = 30000;
+
+/// The places of the parts that the run checks, as fractions of a
+/// section's visible text.
+const _partPlaces = [.5, .97];
+
 void main() {
   final name = _name;
   if (name == null || name.isEmpty) {
@@ -64,6 +84,7 @@ void main() {
     );
     return;
   }
+  setUpAll(loadReaderFont);
   final results = <String, Object>{};
   final file = File('.cache/epub-corpus/prepare/$name.json');
   for (final book in corpusList()) {
@@ -84,15 +105,18 @@ void main() {
       final hashes = <String, Map<String, String>>{};
       final shown = <String, double>{};
       final times = <String, double>{};
+      final parts = <String, Map<String, Map<String, Object>>>{};
       for (final settings in _settings) {
         final key = _settingsKey(settings);
         shown[key] = shownMainTextSize(samples, settings);
         final sections = hashes[key] = {};
+        final checked = parts[key] = {};
         for (var index = 0; index < opened.sections; index++) {
           final source = _withMainText(opened.source(index), mainText);
           final timed = identical(settings, _settings.first);
           var fastest = double.infinity;
           String hash;
+          PreparedSection? whole;
           try {
             late PreparedSection prepared;
             for (var time = 0; time < (timed ? _times : 1); time++) {
@@ -102,8 +126,24 @@ void main() {
               if (took < fastest) fastest = took;
             }
             hash = _hash(dumpPrepared(prepared));
+            whole = prepared;
           } on Object catch (error) {
             hash = 'error: ${error.runtimeType}: $error';
+          }
+          // Outside the catch, so that a part that differs fails the test.
+          if (whole != null &&
+              source.xhtml.length >= _partBytes &&
+              whole.dom.visibleLength > 0) {
+            checked['$index'] = {
+              for (final fraction in _partPlaces)
+                '$fraction': _checkPart(
+                  source,
+                  settings,
+                  whole,
+                  fraction,
+                  times: timed ? _times : 0,
+                ),
+            };
           }
           sections['$index'] = hash;
           if (timed) times['$index'] = fastest;
@@ -114,11 +154,90 @@ void main() {
         'shownMainTextSize': shown,
         'sections': hashes,
         'prepareMs': times,
+        'parts': parts,
       };
       file.parent.createSync(recursive: true);
       file.writeAsStringSync(jsonEncode(results));
     }, timeout: Timeout.none);
   }
+}
+
+/// Prepares the part of [source] around the place [fraction] of the way
+/// through its visible text, and compares it with [whole], the section
+/// prepared whole. Returns the outcome: whether its flow items and its
+/// first two pages are the whole section's, or whether its line search
+/// needs the whole section, with the fastest of [times] part prepares in
+/// milliseconds. It fails the test when the part differs.
+Map<String, Object> _checkPart(
+  SectionSource source,
+  PageSettings settings,
+  PreparedSection whole,
+  double fraction, {
+  required int times,
+}) {
+  EpubPlace? find(DomSection dom) => placeAt(dom, source.index, fraction);
+  var fastest = double.infinity;
+  for (var time = 0; time < times; time++) {
+    final watch = Stopwatch()..start();
+    preparePart(source, settings, find);
+    final took = watch.elapsedMicroseconds / 1000;
+    if (took < fastest) fastest = took;
+  }
+  final (:place, section: part) = preparePart(source, settings, find);
+  final where = '${source.path} at $fraction in ${_settingsKey(settings)}';
+  if (part!.whole) {
+    expect(
+      _hash(dumpPrepared(part)),
+      _hash(dumpPrepared(whole)),
+      reason: 'the whole section of $where',
+    );
+    return {'outcome': 'whole', if (times > 0) 'ms': fastest};
+  }
+  for (var index = 0; index < part.flow.length; index++) {
+    final item = part.flow[index];
+    if (item is SkippedItem) continue;
+    expect(
+      dumpItem(item, part.styles),
+      dumpItem(whole.flow[index], whole.styles),
+      reason: 'flow item $index of $where',
+    );
+  }
+  final search = LineSearch(part, place!)..step(const Duration(days: 1));
+  final String outcome;
+  if (search.starved) {
+    outcome = 'needs the whole section';
+  } else {
+    final line = search.found!;
+    expect(line, lineStart(whole, place), reason: 'the line start of $where');
+    expect(
+      _pagesFrom(part, line),
+      _pagesFrom(whole, line),
+      reason: 'the pages of $where',
+    );
+    outcome = 'same';
+  }
+  return {
+    'outcome': outcome,
+    'firstPrepared': part.firstPrepared,
+    'items': part.flow.length,
+    'reachesEnd': part.reachesEnd,
+    if (times > 0) 'ms': fastest,
+  };
+}
+
+/// The first two pages that a run of [section] from [start] cuts, or
+/// fewer when it ends or needs the whole section first.
+List<List<Object?>> _pagesFrom(PreparedSection section, PageStart start) {
+  final run = LayoutRun(section, from: start);
+  while (run.pages.length < 2 && !run.done && !run.starved) {
+    run.step(const Duration(days: 1), want: 2 - run.pages.length);
+  }
+  final shown = keys(run.pages.take(2));
+  for (final page in run.pages) {
+    page.dispose();
+  }
+  run.dispose();
+  return shown;
 }
 
 String _settingsKey(PageSettings settings) =>
@@ -141,150 +260,6 @@ SectionSource _withMainText(SectionSource source, double mainText) =>
 
 String _hash(Object? dump) =>
     sha1.convert(utf8.encode(jsonEncode(dump))).toString();
-
-/// Everything that [section] holds, in plain JSON values: its DOM, its
-/// flow items, its run styles and its faces. Two prepared sections are the
-/// same when their dumps are equal.
-Object? dumpPrepared(PreparedSection section) => {
-  'index': section.index,
-  'dom': [_dumpNode(section.dom.root), section.dom.body.order],
-  'visible': section.dom.visibleLength,
-  'flow': [for (final item in section.flow) _dumpItem(item)],
-  'styles': [for (final style in section.styles) _dumpStyle(style)],
-  'fonts': [
-    for (final face in section.fonts)
-      [face.family, face.path, face.weight, face.italic],
-  ],
-};
-
-Object? _dumpNode(DomNode node) => switch (node) {
-  DomText() => [node.order, node.textIndex, node.visibleBefore, node.text],
-  DomElement() => [
-    node.order,
-    node.elementIndex,
-    node.name,
-    [
-      for (final key in node.attributes.keys.toList()..sort())
-        [key, node.attributes[key]],
-    ],
-    [for (final child in node.children) _dumpNode(child)],
-    [for (final element in node.elements) element.order],
-  ],
-};
-
-Object? _dumpItem(FlowItem item) => switch (item) {
-  BlockStart() => [
-    'start',
-    item.node,
-    _dumpPlacement(item.placement),
-    '${item.marginTop}',
-    '${item.marginBottom}',
-    [for (final side in item.padding) '$side'],
-    [for (final side in item.border) '$side'],
-    [item.marker?.text, item.marker?.style],
-    item.shrinkToFit,
-    item.avoidBreakBefore,
-    item.avoidBreakAfter,
-    item.avoidBreakInside,
-  ],
-  BlockEnd() => ['end'],
-  ParagraphItem() => [
-    'paragraph',
-    _dumpText(item.text),
-    _dumpLength(item.indent),
-    item.orphans,
-    item.widows,
-  ],
-  ImageItem() => [
-    'image',
-    item.node,
-    _dumpImage(item.image),
-    _dumpSizing(item.sizing),
-    '${item.marginLeft}',
-    item.centered,
-    '${item.marginTop}',
-    '${item.marginBottom}',
-  ],
-  TableItem() => [
-    'table',
-    [
-      for (final row in item.rows)
-        [
-          for (final cell in row)
-            [
-              [for (final each in cell.flow) _dumpItem(each)],
-              cell.colspan,
-              [for (final side in cell.padding) '$side'],
-              [for (final side in cell.border) '$side'],
-              '${cell.align}',
-            ],
-        ],
-    ],
-    '${item.width}',
-    ['${item.spacing.$1}', '${item.spacing.$2}'],
-  ],
-};
-
-Object? _dumpPlacement(BoxPlacement placement) => [
-  '${placement.marginLeft}',
-  '${placement.marginRight}',
-  '${placement.horizontal}',
-  '${placement.used}',
-  placement.autoLeft,
-  placement.autoRight,
-  placement.parentAlign?.name,
-];
-
-Object? _dumpText(StyledText text) => [
-  text.style,
-  text.align.name,
-  [for (final run in text.runs) _dumpRun(run)],
-];
-
-Object? _dumpRun(InlineRun run) => switch (run) {
-  TextRun() => ['text', run.text, run.style, run.node, run.offsets.toList()],
-  BreakRun() => ['break', run.node],
-  ImageRun() => [
-    'image',
-    run.node,
-    _dumpImage(run.image),
-    _dumpSizing(run.sizing),
-  ],
-  RaisedRun() => ['raised', run.node, _dumpText(run.text), '${run.shift}'],
-};
-
-Object? _dumpImage(DrawnImage image) => [
-  image.path,
-  '${image.invert}',
-  image.alt,
-];
-
-Object? _dumpSizing(ImageSizing sizing) => [
-  '${sizing.intrinsicWidth}',
-  '${sizing.intrinsicHeight}',
-  _dumpLength(sizing.width),
-  _dumpLength(sizing.height),
-  '${sizing.attributeWidth}',
-  '${sizing.attributeHeight}',
-  _dumpLength(sizing.maxWidth),
-  '${sizing.maxHeight}',
-];
-
-Object? _dumpLength(Length length) => ['${length.value}', length.unit.name];
-
-Object? _dumpStyle(RunStyle style) => [
-  style.family,
-  '${style.size}',
-  style.weight,
-  style.italic,
-  '${style.letterSpacing}',
-  '${style.wordSpacing}',
-  '${style.lineHeight}',
-  style.underline,
-  style.lineThrough,
-  style.smallCaps,
-  style.oldstyleFigures,
-];
 
 /// Admits [bytes], after it converts a Kindle file as Bookfin does.
 Future<CorpusBook> _open(CorpusEntry book, Uint8List bytes) async =>

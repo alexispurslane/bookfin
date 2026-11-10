@@ -378,8 +378,10 @@ class EpubPager implements DocumentNavigator {
     return _run(() async {
       final steps = await _spineSteps();
       final (index, fragment) = _destinationOf(href);
-      final dom = (await _source.section(index)).dom;
-      final place = destination(dom, index, fragment);
+      final place = await _source.findPlace(
+        index,
+        _destinationIn(index, fragment),
+      );
       if (place == null) {
         throw ArgumentError.value(href, 'href', 'names no element');
       }
@@ -399,8 +401,8 @@ class EpubPager implements DocumentNavigator {
     await _presented.future;
     return _run(() async {
       final steps = await _spineSteps();
-      final dom = (await _source.section(part)).dom;
-      await _go(placeAt(dom, part, progress), steps);
+      final place = await _source.findPlace(part, _progressIn(part, progress));
+      await _go(place!, steps);
     });
   }
 
@@ -628,12 +630,42 @@ class EpubPager implements DocumentNavigator {
     final location = address.location;
     final index = _publication.spine.indexOf(location.resource);
     if (index < 0) return null;
-    final dom = (await _source.section(index)).dom;
-    final place = placeOf(dom, index, location.cfi);
-    return place != null && quoteMatches(dom, place, location.quote)
-        ? place
-        : null;
+    return _source.findPlace(
+      index,
+      _savedPlaceIn(index, location.cfi, location.quote),
+    );
   }
+
+  // The finders of places that the page source can run in a worker
+  // (PageSource.findPlace). Each is static, so that its closure holds only
+  // its arguments.
+
+  /// Finds the place that [fragment] names in section [index], as
+  /// [destination] does.
+  static EpubPlace? Function(DomSection dom) _destinationIn(
+    int index,
+    String? fragment,
+  ) =>
+      (dom) => destination(dom, index, fragment);
+
+  /// Finds the place [progress] of the way through the text of section
+  /// [index], as [placeAt] does.
+  static EpubPlace? Function(DomSection dom) _progressIn(
+    int index,
+    double progress,
+  ) =>
+      (dom) => placeAt(dom, index, progress);
+
+  /// Finds the place of the CFI [cfi] in section [index] when the text
+  /// there starts with [quote].
+  static EpubPlace? Function(DomSection dom) _savedPlaceIn(
+    int index,
+    String cfi,
+    String quote,
+  ) => (dom) {
+    final place = placeOf(dom, index, cfi);
+    return place != null && quoteMatches(dom, place, quote) ? place : null;
+  };
 
   /// Shows [page] at [place], and reports the page's address when
   /// [report]. [steps] are the spine steps of the book's CFIs. [read] is the

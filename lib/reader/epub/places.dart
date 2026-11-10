@@ -183,21 +183,7 @@ EpubPlace placeAt(DomSection dom, int section, double progress) {
 ///
 /// [wanted] runs from 0 to [DomSection.visibleLength] − 1.
 EpubPlace _visibleAt(DomSection dom, int section, int wanted) {
-  final texts = dom.texts;
-  // The last text node that starts at or before the wanted character holds
-  // it, because a node without visible characters starts where the next
-  // one does.
-  var low = 0;
-  var high = texts.length - 1;
-  while (low < high) {
-    final middle = (low + high + 1) >> 1;
-    if (texts[middle].visibleBefore <= wanted) {
-      low = middle;
-    } else {
-      high = middle - 1;
-    }
-  }
-  final text = texts[low];
+  final text = dom.textHolding(wanted);
   var left = wanted - text.visibleBefore;
   var offset = 0;
   for (; offset < text.text.length; offset++) {
