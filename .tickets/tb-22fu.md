@@ -57,3 +57,7 @@ Release verification after all review fixes and fixture correction passed: dart 
 **2026-11-10T20:31:40Z**
 
 Parent integrated 422d22f with accepted Original crops, Trim margins and Nihil geometry repair. Resolved the viewport turn conflict by keeping turned:true and using widget.reflow for previous-page last-screen placement; retained both ticket histories. Inspected production diff and review resolutions F1-F3. Combined focused reader run: 105 passed. Required Nix checks: format passed, analyze no issues, full flutter test 2560 passed/21 skipped/0 failed in 1m46s; native OCR worker PASS. Logs /tmp/bookfin-word-integration-{focused,format,analyze,full,native}.log. No phone UI input or hardening performed. User acceptance of word view remains pending; planned follow-ups remain separate.
+
+**2026-11-10T20:32:59Z**
+
+Normal ARM64 debug app built with nix develop --command bash tool/bookfin build-android; native/OCR package, signature and alignment verification passed. Installed in place on Pixel 8 (adb install -r): Success. APK SHA256 243bf34d5defde651ab7ca0685ce1dc0c1c04fc650526e163c995012dbe694fc; production integration 1330132. No phone UI input. Current Reflow choice now shows printed word images; the three-way selector and other planned interactions are delegated separately. User tests the phone update.

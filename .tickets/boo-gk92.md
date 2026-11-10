@@ -21,3 +21,9 @@ docs/plans/bookfin.md
 
 Account for uncovered logic and surviving mutations. Verify the supported reader corpus, no automatic cellular transfer, durable history, cross-device sync, accessibility, and release installation.
 
+
+## Notes
+
+**2026-11-10T20:32:59Z**
+
+PDF word-image integration 1330132 is green (2560 passed, 21 skipped). User already accepted Nihil crop fix and Trim margins; word view acceptance remains pending. Parent-owned coverage/mutation and invariant hardening must include the combined PDF changes after word acceptance, with no competing hardening jobs.
