@@ -129,13 +129,17 @@ class PageAnalysis {
       }
     }
     for (var region = 0; region < regionCount; region++) {
-      if (!isRunningRegion(region) && !isScanEdge(region, geometry)) {
-        add(regionBoxes, region);
-      }
+      if (isContentRegion(region, geometry)) add(regionBoxes, region);
     }
     if (left > right) return Float32List(4);
     return Float32List.fromList([left, top, right, bottom]);
   }
+
+  /// Whether [region] is content of the page whose reflow geometry is
+  /// [geometry]: it is no running region and no scan edge. The content box
+  /// holds it, and the word view shows it.
+  bool isContentRegion(int region, PageGeometry geometry) =>
+      !isRunningRegion(region) && !isScanEdge(region, geometry);
 
   /// Whether [region] is a scan edge of the page whose reflow geometry is
   /// [geometry] (see [contentBox]). It touches an edge when it lies within
@@ -259,7 +263,10 @@ typedef AnalyzedPage = ({PageGeometry geometry, PageAnalysis analysis});
 /// tunes on the reflow fixtures. "Line height" is the height of the line at
 /// hand, and "median line height" the median height of the page's lines.
 /// 1. Ink. A pixel is ink when its luminance is below half of the paper's,
-///    the luminance that 90 percent of the pixels do not exceed.
+///    the luminance that 90 percent of the pixels do not exceed. Split
+///    words: two neighbor words of a line whose gap print bridges are one
+///    printed word, and the first word's box grows to hold the gap (see
+///    [_Raster.joinSplitWords]).
 /// 2. Raised marks (scanned). Ink at a word's right end, after a white
 ///    gap, that lies wholly more than a third of the line height above the
 ///    baseline, is a footnote mark or a closing quote. It becomes an extra
@@ -294,6 +301,9 @@ AnalyzedPage analyzePage(
   final lineHeight = _medianLineHeight(source, null);
 
   final words = _Words.of(source);
+  for (var line = 0; line < source.lineCount; line++) {
+    raster.joinSplitWords(words, source, line);
+  }
   final marks = <_Extra>[];
   if (page.scanned) {
     for (var line = 0; line < source.lineCount; line++) {
@@ -498,6 +508,45 @@ class _Raster {
   double get scale => width.toDouble();
 
   bool ink(int x, int y) => luma[y * width + x] * 2 < paper;
+
+  /// Whether column [x] holds print between rows [top] and [bottom]: a
+  /// pixel darker than three quarters of the paper's luminance. Print is
+  /// fainter than ink, so it holds the gray letters of a worn scan.
+  bool _printIn(int x, int top, int bottom) {
+    for (var y = top; y < bottom; y++) {
+      if (luma[y * width + x] * 4 < paper * 3) return true;
+    }
+    return false;
+  }
+
+  /// Joins the printed words of [line] that the layout pass split. Two
+  /// neighbor words are one printed word when the gap between them is
+  /// narrower than the line height, and print bridges it: each pixel column
+  /// of the gap holds print in the rows that both words share. A word space
+  /// is white. So the first word's box in [words] then ends where the
+  /// second starts, and its image holds the gap. On the Raven page, the
+  /// layout pass splits "quaint" at its gray "a", at 0.55 to 0.72 of the
+  /// paper's luminance, which is no ink.
+  void joinSplitWords(_Words words, PageGeometry geometry, int line) {
+    final lineHeight = geometry.lineHeight(line) * scale;
+    for (
+      var word = geometry.lineStarts[line];
+      word + 1 < geometry.lineStarts[line + 1];
+      word++
+    ) {
+      final (_, firstTop, gapLeft, firstBottom) = _pixels(words.boxes, word);
+      final (gapRight, nextTop, _, nextBottom) = _pixels(words.boxes, word + 1);
+      final top = math.max(firstTop, nextTop);
+      final bottom = math.min(firstBottom, nextBottom);
+      if (gapRight <= gapLeft || gapRight - gapLeft >= lineHeight) continue;
+      if (top >= bottom) continue;
+      var bridged = true;
+      for (var x = gapLeft; bridged && x < gapRight; x++) {
+        bridged = _printIn(x, top, bottom);
+      }
+      if (bridged) words.endAt(word, words.boxes[(word + 1) * 4]);
+    }
+  }
 
   /// The first and the last row of ink in column [x] between rows [top]
   /// and [bottom], or null when the column has no ink there.

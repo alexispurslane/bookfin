@@ -61,7 +61,9 @@ class SurveyFiles {
   /// read as absent and the survey runs again.
   ///
   /// Format 2 added the edge regions and the region templates (t1-6pf5).
-  static const format = 2;
+  /// Format 3 joins the printed words that the layout pass split, which
+  /// changes word boxes and the content boxes from them (te-qg8l).
+  static const format = 3;
 
   final SurveyLease _lease;
   final String book;

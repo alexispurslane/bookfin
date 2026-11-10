@@ -288,8 +288,8 @@ void main() {
   }
 
   group('wrapping', () {
-    test('words wrap in reading order, and no line is wider than the '
-        'column', () async {
+    test('words wrap in reading order, every region of the content shows, and '
+        'no line is wider than the column', () async {
       for (final page in [await gibbon(), await equation(), await raven()]) {
         for (final (width, fontSize) in [
           (240.0, 20.0),
@@ -312,7 +312,8 @@ void main() {
             ]..sort(),
             [
               for (var region = 0; region < page.analysis.regionCount; region++)
-                region,
+                if (page.analysis.isContentRegion(region, page.geometry))
+                  region,
             ],
           );
           for (var piece = 0; piece < column.pieceCount; piece++) {
@@ -322,6 +323,31 @@ void main() {
           }
           expect(column.lineCount, greaterThan(page.geometry.lineCount ~/ 2));
         }
+      }
+    });
+
+    test('the faint letters that the layout pass leaves between two words of '
+        'one printed word show, and the two words never part, as "quaint" on '
+        'the Raven page', () async {
+      final page = await raven();
+      // The layout pass gives "quaint" as two words, from 440 to 476 pixels
+      // and from 486 to 533. The letters between them are gray, 0.55 to 0.72
+      // of the paper's luminance.
+      final first = page.texts.indexOf('qiaint');
+      for (final width in [120.0, 240.0, 360.0]) {
+        final column = lay(page, width: width);
+        final a = pieceOf(column, first), b = pieceOf(column, first + 1);
+        expect(column.source(a).left * 1600, lessThanOrEqualTo(476));
+        expect(column.source(b).right * 1600, greaterThanOrEqualTo(486));
+        expect(
+          column.source(a).right,
+          greaterThanOrEqualTo(column.source(b).left - 1e-6),
+        );
+        expect(lineOf(column, a), lineOf(column, b));
+        expect(
+          column.target(b).left - column.target(a).right,
+          lessThan(devicePixel),
+        );
       }
     });
 
@@ -538,6 +564,25 @@ void main() {
         expect(target.bottom, lessThanOrEqualTo(top + 300 + 0.01));
       },
     );
+
+    test('the dark bottom edge of the Raven scan does not show, so the word '
+        'view ends with the folio, and the engraving still shows', () async {
+      final page = await raven();
+      final column = lay(page);
+      // The folio ends 2263 pixels down a page 2594 pixels tall, and the dark
+      // edge of the scan starts at 2580.
+      final bottoms = [
+        for (var piece = 0; piece < column.pieceCount; piece++)
+          column.source(piece).bottom * 1600,
+      ];
+      expect(bottoms.reduce(math.max), closeTo(2263, 2));
+      final last = column.lineStarts[column.lineCount - 1];
+      expect(column.source(last).bottom * 1600, closeTo(2263, 2));
+      expect([
+        for (var piece = 0; piece < column.pieceCount; piece++)
+          if (column.region(piece) >= 0) column.source(piece).height,
+      ], contains(greaterThan(0.5)));
+    });
 
     test('a figure\'s caption shows centered on its figure\'s screen, above '
         'or below it', () async {

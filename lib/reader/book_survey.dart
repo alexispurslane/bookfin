@@ -281,19 +281,7 @@ class BookSurvey {
       if (reflow == null) return null;
       // Only a text layer gives text at once. A scanned page's text needs
       // recognition, which the survey never asks for.
-      final layer = await _book.textLayer(page);
-      final attached = layer.status == PdfTextStatus.candidate
-          ? await reflow.attachedText()
-          : null;
-      final attachment = attached?.attachment;
-      return surveyPage((
-        sourcePage: page,
-        geometry: reflow.geometry,
-        analysis: reflow.analysis,
-        text: attachment == null
-            ? null
-            : (source: attached!.text.source, attachment: attachment),
-      ));
+      return surveyPage(await reflow.templateReading());
     } on Exception {
       return null;
     } on StateError {

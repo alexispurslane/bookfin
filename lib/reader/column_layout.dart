@@ -134,6 +134,42 @@ class ReflowColumn {
   /// The y in the column where [screen] starts: its first line's top.
   double screenTop(int screen) => lineTop(screenStarts[screen]);
 
+  /// The screen that shows the place at [character] of the page's reading
+  /// text. [ranges] gives each word of the reflow geometry its range of
+  /// that text, and [analysis] is the page analysis that the column was
+  /// laid out from.
+  ///
+  /// It is the screen of the first shown word, in reading order, whose
+  /// range holds the character or starts after it. A word of a region
+  /// shows in its region's piece. So a place inside a line that the column
+  /// leaves out, such as a running header, opens at the next shown word,
+  /// and a place after every shown word opens the last screen.
+  int screenAt(int character, TextAttachment ranges, PageAnalysis analysis) {
+    final pieceOf = <int, int>{
+      for (var piece = 0; piece < pieceCount; piece++) pieceItems[piece]: piece,
+    };
+    var line = lineCount - 1;
+    for (var word = 0; word < analysis.wordRegions.length; word++) {
+      if (ranges[word * 2] == ranges[word * 2 + 1] ||
+          ranges[word * 2 + 1] <= character) {
+        continue;
+      }
+      final region = analysis.wordRegions[word];
+      final piece = pieceOf[region < 0 ? word : -1 - region];
+      if (piece == null) continue;
+      line = 0;
+      while (lineStarts[line + 1] <= piece) {
+        line++;
+      }
+      break;
+    }
+    var screen = 0;
+    while (screenStarts[screen + 1] <= line) {
+      screen++;
+    }
+    return screen;
+  }
+
   /// Throws a [StateError] when an invariant of the class comment does not
   /// hold. It runs only on demand, from a test or a debug switch.
   void checkInvariants() {
@@ -204,6 +240,12 @@ class ReflowColumn {
 /// lines, its regions kept whole, and its lines cut into screens. It runs in
 /// a hop. It reads the reflow geometry and the page analysis, never the
 /// text, so a page's screens do not move when its text arrives.
+///
+/// It leaves out the lines that the analysis marks as running lines, such
+/// as running headers and folios, the running regions and the scan edges,
+/// as the Original view's crop does (see `PageAnalysis.contentBox`). Their
+/// text stays in the reading text, and [ReflowColumn.screenAt] opens a
+/// place inside them at the next shown word.
 ///
 /// [bodyLineHeight] is the line height in page units that scales the page:
 /// one body line is [ColumnSettings.fontSize] times [_wordSizeRatio] tall.
@@ -379,6 +421,11 @@ class _Source {
 
   double get body => analysis.bodyLineHeight;
 
+  /// Whether [region] shows in the column. A running region, such as a
+  /// pencil page number in a scan's margin, and a scan edge, such as the
+  /// dark border of a scanned page, do not.
+  bool shows(int region) => analysis.isContentRegion(region, geometry);
+
   double measureLeft(int line) => measures[lineBlocks[line] * 2];
   double measureRight(int line) => measures[lineBlocks[line] * 2 + 1];
 
@@ -547,7 +594,7 @@ List<_Item> _flow(_Source source) {
   final anchored = <int, List<int>>{};
   final boxes = analysis.regionBoxes;
   for (var region = 0; region < analysis.regionCount; region++) {
-    if (holdsWords[region]) continue;
+    if (holdsWords[region] || !source.shows(region)) continue;
     var anchor = geometry.lineCount;
     for (var line = 0; line < geometry.lineCount; line++) {
       if (!_flows(source, line) || captionLines.contains(line)) continue;
@@ -611,9 +658,11 @@ List<_Item> _flow(_Source source) {
     if (words != null && !caption!.above) items.add(words);
   }
 
+  // A running line, such as a running header or a folio, does not show.
+  // Its text stays in the reading text, so search still finds it.
   int? previous;
   for (var line = 0; line < geometry.lineCount; line++) {
-    if (captionLines.contains(line)) continue;
+    if (captionLines.contains(line) || analysis.isRunning(line)) continue;
     for (final region in anchored[line] ?? const <int>[]) {
       place(region);
     }
@@ -625,7 +674,7 @@ List<_Item> _flow(_Source source) {
     ) {
       final region = analysis.wordRegions[word];
       if (region >= 0) {
-        if (!placed[region]) place(region);
+        if (!placed[region] && source.shows(region)) place(region);
         continue;
       }
       final starts = first && _startsParagraph(source, line, previous);
@@ -648,18 +697,21 @@ List<_Item> _flow(_Source source) {
   return items;
 }
 
-/// The caption of each picture region that has one: a text block of at most
-/// three lines, with no word of a region, that lies within one body line
-/// height above or below the region. At least half of its width lies over
-/// or under the region. The nearest such block is the caption, and a block
-/// captions one region.
+/// The caption of each picture region that shows and has one: a text block
+/// of at most three lines, with no word of a region and no running line,
+/// that lies within one body line height above or below the region. At
+/// least half of its width lies over or under the region. The nearest such
+/// block is the caption, and a block captions one region.
 Map<int, ({int block, bool above})> _captions(_Source source) {
   final geometry = source.geometry, analysis = source.analysis;
   final body = source.body;
   final blocks = geometry.blockBoxes, regions = analysis.regionBoxes;
   final captions = <int, ({int block, bool above})>{};
   for (var region = 0; region < analysis.regionCount; region++) {
-    if (analysis.regionKind(region) != RegionKind.picture) continue;
+    if (analysis.regionKind(region) != RegionKind.picture ||
+        !source.shows(region)) {
+      continue;
+    }
     ({int block, bool above})? best;
     var nearest = double.infinity;
     for (var block = 0; block < geometry.blockCount; block++) {
@@ -671,19 +723,22 @@ Map<int, ({int block, bool above})> _captions(_Source source) {
           captions.values.any((caption) => caption.block == block)) {
         continue;
       }
-      var inRegion = false;
+      var text = true;
+      for (var line = first; line < end; line++) {
+        text = text && !analysis.isRunning(line);
+      }
       for (
         var word = geometry.lineStarts[first];
         word < geometry.lineStarts[end];
         word++
       ) {
-        inRegion = inRegion || analysis.wordRegions[word] >= 0;
+        text = text && analysis.wordRegions[word] < 0;
       }
       final width = blocks[block * 4 + 2] - blocks[block * 4];
       final overlap =
           math.min(blocks[block * 4 + 2], regions[region * 4 + 2]) -
           math.max(blocks[block * 4], regions[region * 4]);
-      if (inRegion || overlap < width / 2) continue;
+      if (!text || overlap < width / 2) continue;
       for (final (gap, above) in [
         (blocks[block * 4 + 1] - regions[region * 4 + 3], false),
         (regions[region * 4 + 1] - blocks[block * 4 + 3], true),
@@ -737,9 +792,11 @@ bool _startsParagraph(_Source source, int line, int? previous) {
 /// when it reaches that edge, as a justified line does.
 const _edgeTolerance = 0.25;
 
-/// Whether [line] holds a word that flows as a word, outside the regions.
+/// Whether [line] holds a word that flows as a word, outside the regions,
+/// and is no running line.
 bool _flows(_Source source, int line) {
   final geometry = source.geometry;
+  if (source.analysis.isRunning(line)) return false;
   for (
     var word = geometry.lineStarts[line];
     word < geometry.lineStarts[line + 1];

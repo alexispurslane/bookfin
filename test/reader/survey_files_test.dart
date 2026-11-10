@@ -189,8 +189,15 @@ void main() {
     tearDown(() => FlutterError.onError = handler);
 
     for (final (name, bytes) in [
-      ('cut short', '{"format":2,"book":"b0b0","pages":[[1,0.0'.codeUnits),
-      ('of the wrong shape', '{"format":2,"book":"b0b0","pages":7}'.codeUnits),
+      (
+        'cut short',
+        '{"format":${SurveyFiles.format},"book":"b0b0","pages":[[1,0.0'
+            .codeUnits,
+      ),
+      (
+        'of the wrong shape',
+        '{"format":${SurveyFiles.format},"book":"b0b0","pages":7}'.codeUnits,
+      ),
       ('not text', [0xff, 0xfe, 0x00, 0x13]),
     ]) {
       test('$name is kept aside and reported, and the next write does not '
