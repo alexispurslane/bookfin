@@ -17,3 +17,9 @@ User reports a brief flash of Original while turning to PDF word-image pages who
 
 Red-first behavior tests: a source-page turn and a return to a cached page never paint Original between readable word screens, including held renders; stale completions and rapid direction changes cannot replace newer content; displayed position does not advance to unseen content; true fallback and opening a word view without a previous screen remain correct. Inspect close/reopen and view-switch paths and report scope honestly. Required Nix checks and one fresh Sol xhigh read-only review, then fix findings. No Pixel UI input.
 
+
+## Notes
+
+**2026-11-10T20:43:47Z**
+
+Launched Sol xhigh lead from bdf340f. taskId: node:delegated-task:command%3Amcp%3Ae6a3d378-c450-4501-a47c-77e7994db5fb%3Adelegate-task%3Asol-xhigh-word-flash-20261110-boo-wfg1-1; childThreadId: thread:delegated-task:command%3Amcp%3Ae6a3d378-c450-4501-a47c-77e7994db5fb%3Adelegate-task%3Asol-xhigh-word-flash-20261110-boo-wfg1-1; clientRequestId: sol-xhigh-word-flash-20261110-boo-wfg1-1. Running, stage uncertain; worktree branch pending report. Lead owns regression-first transition fix and one fresh read-only Sol xhigh review. Parent integrates/installs; user tests phone. Other word-feature leads continue separately.
