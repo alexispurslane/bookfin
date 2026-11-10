@@ -147,19 +147,15 @@ PreparedPdfPage preparePdfPage(
     digest: status == PdfTextStatus.candidate ? pdfTextDigest(source) : null,
   );
   if (status != PdfTextStatus.candidate) return (text: text, words: null);
-  final attachment = Int32List.fromList(words);
-  final geometry = pageGeometryFromCharacters(
-    source: source,
-    boxes: page.boxes,
-    words: attachment,
-    width: page.width,
-    height: page.height,
-  );
   return (
     text: text,
-    words: geometry == null
-        ? null
-        : (geometry: geometry, attachment: attachment),
+    words: pageGeometryFromCharacters(
+      source: source,
+      boxes: page.boxes,
+      words: Int32List.fromList(words),
+      width: page.width,
+      height: page.height,
+    ),
   );
 }
 
@@ -924,12 +920,15 @@ class _NativePdfBook extends PdfBook {
             ..[index * 4 + 2] = rect.right
             ..[index * 4 + 3] = rect.bottom;
         }
-        return hop(preparePdfPage, (
+        final prepared = await hop(preparePdfPage, (
           source: source,
           boxes: boxes,
           width: page.width,
           height: page.height,
         ));
+        return page.rotation == native.PdfPageRotation.none
+            ? prepared
+            : (text: prepared.text, words: null);
       }),
     );
   }
