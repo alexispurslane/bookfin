@@ -41,6 +41,30 @@ typst compile --ignore-system-fonts equation-page.typ equation-page.pdf
 
 The output is the same, byte for byte, for the Typst that the flake pins (0.15.1). Its reading text and digest are locked in `test/reader/text_layer_geometry_test.dart`.
 
+## The opening-letter page
+
+`drop-cap-page.pdf` is a small born-digital page with an opening O drawn
+as a vector ellipse beside a paragraph. The O has no text-layer characters,
+so analysis finds it as uncovered ink. The paragraph's reading text starts
+with `NCE`; reflow must not insert, remove or correct any characters.
+The fixture checks floating ink, three shortened neighboring lines, a return
+to full width, image bands and saved places. Its SHA-256 is
+`0d28c4b836cd76b24a8f2398cb99f3f739f1aea5205fe4444fcba5204bb40209`.
+
+Ticket tb-fi98 wrote `drop-cap-page.typ` and dedicates it and the PDF to
+the public domain under CC0 1.0. The PDF embeds a subset of Libertinus
+Serif, under the SIL Open Font License 1.1. To make it again in the dev shell:
+
+```sh
+typst compile --ignore-system-fonts drop-cap-page.typ drop-cap-page.pdf
+```
+
+The existing Raven fixture covers the other source form: the printed O is
+inside the first word's box, not a separate region. Its recorded recognition
+reads that word as `(ee`. The drop-cap tests keep that reading text and its
+saved-place ranges unchanged; they float the whole word image, not one
+letter cut out of it.
+
 ## The margins book
 
 `margins-book.pdf` is a born-digital A5 book of 13 pages with a usable text layer on every page. Ticket tb-z9h5 wrote `margins-book.typ` and dedicates it and the PDF to the public domain under CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/). The PDF embeds subsets of Libertinus Serif, under the SIL Open Font License 1.1.
