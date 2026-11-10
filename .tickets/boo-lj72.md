@@ -17,3 +17,9 @@ User changed the product decision on 2026-11-10: remember each book’s last Ori
 
 Reopening each of two books after restart restores its own exact PDF view and trim choice. Switching accounts cannot leak preferences. Changes persist through the real reading store without rewriting or losing reading records. Required checks and one fresh review with resolved findings.
 
+
+## Notes
+
+**2026-11-10T21:58:23Z**
+
+Launched Sol xhigh lead from c9200c0; taskId node:delegated-task:command%3Amcp%3Ae6a3d378-c450-4501-a47c-77e7994db5fb%3Adelegate-task%3Asol-xhigh-20261110-boo-lj72-per-book-1; childThreadId thread:delegated-task:command%3Amcp%3Ae6a3d378-c450-4501-a47c-77e7994db5fb%3Adelegate-task%3Asol-xhigh-20261110-boo-lj72-per-book-1; clientRequestId sol-xhigh-20261110-boo-lj72-per-book-1. Lead builds, exactly one fresh Sol xhigh reviewer, lead fixes. No devices/hardening.
