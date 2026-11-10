@@ -283,6 +283,53 @@ void main() {
     await tester.pumpWidget(const SizedBox());
   });
 
+  testWidgets(
+    'reversing a source-page turn before a frame returns to the previous final screen',
+    (tester) async {
+      final book = HeldPdf(source: _lines.take(12).join('\n'));
+      final reports = Reports();
+      await tester.pumpWidget(_reader(book, reports));
+      await tester.pumpAndSettle();
+      await _swipe(tester, true);
+      await _swipe(tester, true);
+      expect(
+        (reports.addresses.last.sourcePage, reports.addresses.last.character),
+        (1, 90),
+      );
+      await reports.navigator!.move(true);
+      await reports.navigator!.move(false);
+      await tester.pumpAndSettle();
+      expect(
+        (reports.addresses.last.sourcePage, reports.addresses.last.character),
+        (1, 90),
+      );
+      await reports.navigator!.move(false);
+      await tester.pumpAndSettle();
+      expect(
+        (reports.addresses.last.sourcePage, reports.addresses.last.character),
+        (1, 45),
+      );
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
+
+  testWidgets(
+    'a turn before the first text layout waits for that page rather than skipping it',
+    (tester) async {
+      final book = HeldPdf(source: _source);
+      final reports = Reports();
+      await tester.pumpWidget(_reader(book, reports));
+      final turn = reports.navigator!.move(true);
+      await tester.pumpAndSettle();
+      await turn;
+      expect(
+        (reports.addresses.last.sourcePage, reports.addresses.last.character),
+        (1, 45),
+      );
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
+
   testWidgets('a size step keeps the displayed first character on screen', (
     tester,
   ) async {

@@ -80,6 +80,15 @@ class PdfViewport extends StatefulWidget {
   State<PdfViewport> createState() => _PdfViewportState();
 }
 
+class _TextScreen {
+  _TextScreen(this.page, this.text, this.layout, this.index);
+
+  final int page;
+  final PdfText text;
+  final PdfTextScreens layout;
+  int index;
+}
+
 class _PdfViewportState extends State<PdfViewport>
     implements DocumentNavigator {
   /// The zoom and pan of the original page.
@@ -88,8 +97,7 @@ class _PdfViewportState extends State<PdfViewport>
   bool get _zoomed => _zoom.value.getMaxScaleOnAxis() > 1.01;
   PdfText? _text;
   ui.Image? _image;
-  PdfTextScreens? _layout;
-  int _textScreen = 0;
+  _TextScreen? _textScreen;
   int _page = 1;
 
   /// Whether a turn showed the page, so that it takes only a crop known at
@@ -114,7 +122,10 @@ class _PdfViewportState extends State<PdfViewport>
 
   /// Why the original page could not be drawn, or null.
   String? _failure;
-  Size? _layoutSize;
+
+  /// The last measured text area, in logical pixels. A turn can lay out a
+  /// newly loaded page at this size before the next frame measures it again.
+  Size? _textSize;
 
   @override
   void initState() {
@@ -135,7 +146,6 @@ class _PdfViewportState extends State<PdfViewport>
   @override
   void didUpdateWidget(PdfViewport oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.fontSize != widget.fontSize) _layoutSize = null;
     if (oldWidget.trimMargins != widget.trimMargins) {
       _drawRevision++;
       _failure = null;
@@ -154,7 +164,7 @@ class _PdfViewportState extends State<PdfViewport>
       if (widget.reflow) {
         _textRequest++;
         _loading = true;
-        _layoutSize = null;
+        _clearTextScreen();
         after(() => unawaited(_startWords(generation, _address)));
       } else {
         final wasLoading = _loading;
@@ -179,7 +189,7 @@ class _PdfViewportState extends State<PdfViewport>
     _words.dispose();
     _zoom.dispose();
     _image?.dispose();
-    _layout?.dispose();
+    _clearTextScreen();
     super.dispose();
   }
 
@@ -204,7 +214,7 @@ class _PdfViewportState extends State<PdfViewport>
       _text = null;
       _image?.dispose();
       _image = null;
-      _layoutSize = null;
+      _clearTextScreen();
     });
     if (widget.reflow) {
       await _startWords(generation, address, lastViewport: lastViewport);
@@ -268,7 +278,7 @@ class _PdfViewportState extends State<PdfViewport>
       if (!current()) return;
       setState(() {
         _text = text;
-        _layoutSize = null;
+        _clearTextScreen();
         final resolved = widget.book.resolveAddress(address, text);
         _positionResolved = resolved != null;
         if (resolved != null) {
@@ -359,22 +369,77 @@ class _PdfViewportState extends State<PdfViewport>
   }
 
   void _textPlace() {
-    final text = _text!;
-    final offset = _layout!.firstCharacter(_textScreen);
+    final shown = _textScreen!;
+    final text = shown.text;
+    final offset = shown.layout.firstCharacter(shown.index);
     final character = offset < text.sourceOffsets.length
         ? text.sourceOffsets[offset]
         : text.source.length;
-    _address = widget.book.addressFor(_page, text, character);
+    _address = widget.book.addressFor(shown.page, text, character);
+  }
+
+  void _clearTextScreen() {
+    _textScreen?.layout.dispose();
+    _textScreen = null;
+  }
+
+  _TextScreen _layText(Size size) {
+    final text = _text!;
+    final style = TextStyle(
+      fontSize: widget.fontSize,
+      height: 1.55,
+      color: Theme.of(context).colorScheme.onSurface,
+    );
+    final shown = _textScreen;
+    if (shown != null &&
+        shown.page == _page &&
+        identical(shown.text, text) &&
+        shown.layout.size == size &&
+        shown.layout.style == style) {
+      return shown;
+    }
+    _clearTextScreen();
+    final layout = PdfTextScreens(text: text.text, style: style, size: size);
+    final index = text.sourceOffsets.indexWhere(
+      (offset) => offset >= _address.character,
+    );
+    final screen = _TextScreen(
+      _page,
+      text,
+      layout,
+      layout.screenAt(index < 0 ? text.text.length : index),
+    );
+    _textScreen = screen;
+    _textPlace();
+    final generation = _generation;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted &&
+          generation == _generation &&
+          identical(_textScreen, screen) &&
+          _usingText) {
+        _publish();
+      }
+    });
+    return screen;
   }
 
   @override
   Future<void> move(bool forward) async {
     if (_usingWords && _words.turn(forward)) return;
-    if (_usingText && _layout != null) {
-      final screen = _textScreen + (forward ? 1 : -1);
-      if (screen >= 0 && screen < _layout!.count) {
+    if (_usingText) {
+      var size = _textSize;
+      if (size == null) {
+        final generation = _generation;
+        await WidgetsBinding.instance.endOfFrame;
+        if (!mounted || generation != _generation || !_usingText) return;
+        size = _textSize;
+      }
+      if (size == null) return;
+      final shown = _layText(size);
+      final screen = shown.index + (forward ? 1 : -1);
+      if (screen >= 0 && screen < shown.layout.count) {
         setState(() {
-          _textScreen = screen;
+          shown.index = screen;
           _textPlace();
         });
         _publish();
@@ -492,43 +557,15 @@ class _PdfViewportState extends State<PdfViewport>
 
   Widget _reflowText() => LayoutBuilder(
     builder: (context, constraints) {
-      final text = _text!;
-      final style = TextStyle(
-        fontSize: widget.fontSize,
-        height: 1.55,
-        color: Theme.of(context).colorScheme.onSurface,
-      );
       final size = Size(
         math.max(1.0, constraints.maxWidth - 40),
         math.max(1.0, constraints.maxHeight - 24),
       );
-      if (_layoutSize != size || _layout?.style != style) {
-        _layout?.dispose();
-        final layout = PdfTextScreens(
-          text: text.text,
-          style: style,
-          size: size,
-        );
-        _layout = layout;
-        _layoutSize = size;
-        final index = text.sourceOffsets.indexWhere(
-          (offset) => offset >= _address.character,
-        );
-        _textScreen = layout.screenAt(index < 0 ? text.text.length : index);
-        _textPlace();
-        final generation = _generation;
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted &&
-              generation == _generation &&
-              identical(_layout, layout) &&
-              _usingText) {
-            _publish();
-          }
-        });
-      }
+      _textSize = size;
+      final shown = _layText(size);
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        child: PdfTextView(screens: _layout!, screen: _textScreen),
+        child: PdfTextView(screens: shown.layout, screen: shown.index),
       );
     },
   );
