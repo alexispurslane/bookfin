@@ -388,9 +388,11 @@ PageBlockKind _blockKind(int type) => switch (type) {
   _ => PageBlockKind.unknown,
 };
 
-/// The word geometry of a text layer page, from its character boxes, or
-/// null when the boxes are not usable. It runs in the hop that prepares the
-/// page's text, so the text and the words agree.
+/// The visible words of a text layer page, from its character boxes, with
+/// their ranges of [source], or null when the boxes are not usable. Words
+/// entirely outside the page are not printed and have no geometry. Their
+/// characters stay in [source], so the remaining ranges keep their meaning.
+/// It runs in the hop that prepares the page's text.
 ///
 /// [words] holds the first and the end character of each word of [source]:
 /// a run without white space, cut after a line-end hyphen that pdfium marks
@@ -398,35 +400,35 @@ PageBlockKind _blockKind(int type) => switch (type) {
 /// y up, for each UTF-16 code unit of [source]. The page is [width] by
 /// [height] PDF points.
 ///
-/// The boxes are not usable when a character of a word has no finite box of
-/// positive area inside the page, or when a word is more than three line
-/// heights tall.
-PageGeometry? pageGeometryFromCharacters({
+/// The boxes are not usable when a character has no finite box of positive
+/// area, when a visible word crosses a page edge, or when a visible word is
+/// more than three line heights tall.
+({PageGeometry geometry, TextAttachment attachment})?
+pageGeometryFromCharacters({
   required String source,
   required Float64List boxes,
   required Int32List words,
   required double width,
   required double height,
 }) {
-  final wordCount = words.length ~/ 2;
-  if (wordCount == 0 ||
+  if (words.isEmpty ||
       boxes.length != source.length * 4 ||
       !(width > 0 && width.isFinite && height > 0 && height.isFinite)) {
     return null;
   }
-  final wordBoxes = Float32List(wordCount * 4);
-  final ownBaselines = Float32List(wordCount * 2);
+  final visibleRanges = <int>[];
+  final visibleBoxes = <double>[];
+  final visibleBaselines = <double>[];
   final bottoms = <double>[];
-  for (var word = 0; word < wordCount; word++) {
+  for (var word = 0; word < words.length ~/ 2; word++) {
     var left = double.infinity, top = double.infinity;
     var right = -double.infinity, bottom = -double.infinity;
     bottoms.clear();
     for (var unit = words[word * 2]; unit < words[word * 2 + 1]; unit++) {
       final x1 = boxes[unit * 4], y1 = boxes[unit * 4 + 1];
       final x2 = boxes[unit * 4 + 2], y2 = boxes[unit * 4 + 3];
-      // The negated comparisons also refuse NaN.
-      if (!(x1 >= 0 && x1 < x2 && x2 <= width) ||
-          !(y2 >= 0 && y2 < y1 && y1 <= height)) {
+      if (!(x1.isFinite && x2.isFinite && x1 < x2) ||
+          !(y1.isFinite && y2.isFinite && y2 < y1)) {
         return null;
       }
       left = math.min(left, x1 / width);
@@ -445,16 +447,22 @@ PageGeometry? pageGeometryFromCharacters({
           : code;
       if (!_descenders.contains(point)) bottoms.add((height - y2) / width);
     }
-    wordBoxes
-      ..[word * 4] = left
-      ..[word * 4 + 1] = top
-      ..[word * 4 + 2] = right
-      ..[word * 4 + 3] = bottom;
+    if (right <= 0 || left >= 1 || bottom <= 0 || top >= height / width) {
+      continue;
+    }
+    if (left < 0 || right > 1 || top < 0 || bottom > height / width) {
+      return null;
+    }
+    visibleRanges.addAll([words[word * 2], words[word * 2 + 1]]);
+    visibleBoxes.addAll([left, top, right, bottom]);
     final baseline = bottoms.isEmpty ? double.nan : _median(bottoms);
-    ownBaselines
-      ..[word * 2] = baseline
-      ..[word * 2 + 1] = baseline;
+    visibleBaselines.addAll([baseline, baseline]);
   }
+  if (visibleRanges.isEmpty) return null;
+  final attachment = Int32List.fromList(visibleRanges);
+  final wordCount = attachment.length ~/ 2;
+  final wordBoxes = Float32List.fromList(visibleBoxes);
+  final ownBaselines = Float32List.fromList(visibleBaselines);
 
   // A word starts a new line when it starts to the left of the word before
   // it, or when its height does not overlap the height of its line so far.
@@ -512,8 +520,8 @@ PageGeometry? pageGeometryFromCharacters({
       ..[line * 4 + 3] = descent;
     // A word that is only a hyphen is a dash, not the first half of a word.
     final last = end - 1;
-    final hyphen = words[last * 2 + 1] - 1;
-    if (hyphen > words[last * 2] &&
+    final hyphen = attachment[last * 2 + 1] - 1;
+    if (hyphen > attachment[last * 2] &&
         _hyphens.contains(source.codeUnitAt(hyphen))) {
       hyphens[last] = (boxes[hyphen * 4 + 2] - boxes[hyphen * 4]) / width;
     }
@@ -565,20 +573,23 @@ PageGeometry? pageGeometryFromCharacters({
       ..[block * 4 + 3] = bottom;
   }
 
-  return PageGeometry(
-    height: height / width,
-    boxes: wordBoxes,
-    ownBaselines: ownBaselines,
-    hyphens: hyphens,
-    lineStarts: Int32List.fromList(lineStarts),
-    lineMetrics: lineMetrics,
-    blockStarts: Int32List.fromList(blockStarts),
-    blockBoxes: blockBoxes,
-    blockKinds: Uint8List(blockCount)
-      ..fillRange(0, blockCount, PageBlockKind.text.index),
-    paragraphStarts: Int32List(0),
-    paragraphJustifications: Uint8List(0),
-    paragraphIndents: Float32List(0),
+  return (
+    geometry: PageGeometry(
+      height: height / width,
+      boxes: wordBoxes,
+      ownBaselines: ownBaselines,
+      hyphens: hyphens,
+      lineStarts: Int32List.fromList(lineStarts),
+      lineMetrics: lineMetrics,
+      blockStarts: Int32List.fromList(blockStarts),
+      blockBoxes: blockBoxes,
+      blockKinds: Uint8List(blockCount)
+        ..fillRange(0, blockCount, PageBlockKind.text.index),
+      paragraphStarts: Int32List(0),
+      paragraphJustifications: Uint8List(0),
+      paragraphIndents: Float32List(0),
+    ),
+    attachment: attachment,
   );
 }
 

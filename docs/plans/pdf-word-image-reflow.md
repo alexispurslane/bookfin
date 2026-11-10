@@ -291,6 +291,7 @@ The recognition cache keeps the hOCR output as it is, and `BundledEnglishText.ve
 - each word: a run of `source` without white space, as the reflowed text already splits it. Its range is its attachment.
 - the descender set: `g j p q y`, the comma, the semicolon and the like
 - its box: the union of its characters' boxes, turned into page units with y flipped
+- a word whose finite, positive-area character boxes lie entirely outside the page has no printed pixels. It is left out of the geometry, but stays in the reading text. The other words keep their original character ranges. This covers printing labels outside the PDF's visible page (boo-5fcg).
 - its own baseline: the median bottom of its characters outside the descender set
 - lines: a word starts a new line in two cases. Its height overlaps the previous word's height by less than half the smaller height, or it starts to the left of the previous word. The text is a candidate, so its order is the reading order, and this rule follows it.
 - blocks: a line starts a new block in two cases. The vertical gap above it is more than twice the median line pitch. Or its left edge moves by more than a quarter of the page width.
@@ -303,11 +304,11 @@ Ticket tb-xwlj built this in `pageGeometryFromCharacters` (`lib/reader/page_geom
 - pdfium puts a line break between a letter and its raised mark, such as the 2 of v². The mark's height overlaps the letter's height by about a fifth. So the line rule is: a word starts a new line when it starts to the left of the previous word's left edge, or when its height does not overlap the height of its line so far.
 - The vertical gap above a line, for the block rule, is the space between the previous line's lowest descender and this line's highest ascender. The line pitch is the distance between consecutive baselines.
 
-The boxes are page coordinates relative to the page's bounding box, as pdfrx gives them. A page that its PDF rotates can have boxes outside the page's turned width and height. Such a page gets no geometry.
+The boxes are page coordinates relative to the page's bounding box, as pdfrx gives them. A page that its PDF rotates has unturned character boxes but turned page dimensions. Such a page gets no text-layer geometry, so visible words are never mistaken for off-page printing labels. Its extracted text stays unchanged.
 
 ### When the geometry is not usable
 
-- A text layer can be a candidate while its boxes are not usable: a character without a finite box of positive area inside the page, or a word whose box spans more than three line heights. Then the page has no geometry. The word view shows that page in the text view, with no notice. Its places keep their meaning, because its reading text does not change.
+- A text layer can be a candidate while its boxes are not usable: a character without a finite box of positive area, a visible word that crosses a page edge, or a visible word whose box spans more than three line heights. Then the page has no geometry. The word view shows that page in the text view, with no notice. Its places keep their meaning, because its reading text does not change.
 - A text layer can have usable boxes while its order is not usable (`_textWarning` returns a reason). Then the page's reading text comes from recognition, as today, and its words come from the layout pass. The text layer's boxes are not used. A second design sorts the text layer's words by position into a new reading text. We reject it. That text has a new digest, so every place that a person saved on such a page from the recognized text fails to resolve. Also, Tesseract's layout analysis finds columns better than a sort by position.
 - A page whose reading text has no content shows the original page with the quiet line, as today.
 

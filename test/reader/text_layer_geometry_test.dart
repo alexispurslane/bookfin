@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -71,6 +72,33 @@ List<String> wordTexts(PdfText text, TextLayerWords words) => [
       words.attachment[word * 2 + 1],
     ),
 ];
+
+Uint8List rotatedTextPage() {
+  const drawing =
+      'BT /F1 12 Tf 60 300 Td (The river flows) Tj '
+      '380 -40 Td (Far field) Tj ET';
+  final objects = [
+    '<< /Type /Catalog /Pages 2 0 R >>',
+    '<< /Type /Pages /Count 1 /Kids [3 0 R] >>',
+    '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 600 400] /Rotate 90 '
+        '/Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>',
+    '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>',
+    '<< /Length ${drawing.length} >>\nstream\n$drawing\nendstream',
+  ];
+  final output = StringBuffer('%PDF-1.4\n');
+  final offsets = <int>[];
+  for (final (index, object) in objects.indexed) {
+    offsets.add(output.length);
+    output.write('${index + 1} 0 obj\n$object\nendobj\n');
+  }
+  final xref = output.length;
+  output.write('xref\n0 6\n0000000000 65535 f \n');
+  for (final offset in offsets) {
+    output.write('${offset.toString().padLeft(10, '0')} 00000 n \n');
+  }
+  output.write('trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n$xref\n%%EOF\n');
+  return Uint8List.fromList(ascii.encode(output.toString()));
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -297,6 +325,74 @@ void main() {
     expect(geometry.wordCount, greaterThan(100));
   });
 
+  group('words entirely outside the page do not hide its printed words', () {
+    final original = setLines([
+      'The river flows',
+      'Printer proof',
+      'runs with accel\u0002',
+      'eration.',
+    ]);
+    final first = original.source.indexOf('Printer');
+    final end = original.source.indexOf('\n', first);
+
+    for (final (edge, horizontal, vertical) in [
+      ('left', -200.0, 0.0),
+      ('right', 400.0, 0.0),
+      ('top', 0.0, 80.0),
+      ('bottom', 0.0, -600.0),
+    ]) {
+      test(
+        'outside the $edge edge, with unchanged reading text and places',
+        () {
+          final boxes = Float64List.fromList(original.boxes);
+          for (var unit = first; unit < end; unit++) {
+            boxes[unit * 4] += horizontal;
+            boxes[unit * 4 + 1] += vertical;
+            boxes[unit * 4 + 2] += horizontal;
+            boxes[unit * 4 + 3] += vertical;
+          }
+          final page = prepare((source: original.source, boxes: boxes));
+          final before = prepare(original).text;
+          expect(page.text.status, PdfTextStatus.candidate);
+          expect(page.text.source, original.source);
+          expect(page.text.text, before.text);
+          expect(page.text.sourceOffsets, before.sourceOffsets);
+          expect(page.text.digest, before.digest);
+          expect(page.words, isNotNull);
+          final words = page.words!;
+          expect(wordTexts(page.text, words), [
+            'The',
+            'river',
+            'flows',
+            'runs',
+            'with',
+            'accel\u0002',
+            'eration.',
+          ]);
+          expect(words.attachment[6], original.source.indexOf('runs'));
+          expect(words.geometry.hyphens[5], closeTo(5 / 400, 1e-6));
+          words.geometry.checkInvariants(
+            attachment: words.attachment,
+            source: page.text.source,
+          );
+        },
+      );
+    }
+  });
+
+  test('rotated page coordinates never discard visible words as off-page '
+      'printing labels', () async {
+    final pdf = await PdfRuntime.instance.open(rotatedTextPage(), 'd' * 64);
+    addTearDown(pdf.dispose);
+    final text = await pdf.text(1);
+    expect(text.status, PdfTextStatus.candidate);
+    expect(text.text, 'The river flows Far field');
+    expect(await pdf.geometry(1), isNull);
+    final reread = await pdf.text(1);
+    expect(reread.source, text.source);
+    expect(reread.digest, text.digest);
+  });
+
   group('unusable character boxes give the page no words, and its text '
       'stays the same', () {
     final usable = setLines(['The river', 'runs to the sea.']);
@@ -326,6 +422,25 @@ void main() {
     test('a word taller than three lines', () {
       final boxes = Float64List.fromList(usable.boxes);
       boxes[0 * 4 + 1] = 560 + 8 + 70; // The "T" rises 70 points.
+      expectNoWords(boxes);
+    });
+
+    test('every word is outside the page', () {
+      final boxes = Float64List.fromList(usable.boxes);
+      for (var unit = 0; unit < usable.source.length; unit++) {
+        boxes[unit * 4 + 1] += 100;
+        boxes[unit * 4 + 3] += 100;
+      }
+      expectNoWords(boxes);
+    });
+
+    test('an outside word has a character without positive area', () {
+      final boxes = Float64List.fromList(usable.boxes);
+      for (var unit = 0; unit < 3; unit++) {
+        boxes[unit * 4 + 1] += 100;
+        boxes[unit * 4 + 3] += 100;
+      }
+      boxes[2] = boxes[0];
       expectNoWords(boxes);
     });
   });
