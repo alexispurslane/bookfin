@@ -182,7 +182,7 @@ The rules of a reading move:
 2. The first place that the navigator reports after that request ends the move. That place is its after.
 3. If after equals before, the session records nothing.
 4. The event and the new resume save in one `ReadingChanges`, so one store transaction holds both. A kill keeps both or neither.
-5. If the navigation fails, or another book opens first, the session drops the pending move.
+5. If the navigation fails, or another book opens first, the session drops the pending move. It also drops it when the book opens at its start because the pager cannot find the place to open at.
 6. The recorded move becomes the Undo offer. A page turn does not end the offer, as playing on does not end it in the player. The next move, Undo, Dismiss, or another book ends it.
 
 ### The opened place from another device
