@@ -15,6 +15,7 @@ import 'column_layout.dart';
 import 'document.dart';
 import 'page_analysis.dart';
 import 'page_geometry.dart';
+import 'running_lines.dart';
 
 /// What the text of a source page offers reflow and search. The first three
 /// describe the page's own content. Only [failed] describes the reader.
@@ -213,17 +214,49 @@ class ReflowPage {
   /// call.
   Future<AttachedText> attachedText() => _entry.attachedText();
 
+  /// The page as the book's running templates read it (see
+  /// `RunningTemplates`): its number, [geometry], [analysis], and the text
+  /// of its text layer. A scanned page has no text here, even after its
+  /// recognition, so its running lines are found from their place and
+  /// size alone. The survey reads each page through this, so the Original
+  /// view's crop and the word view leave out the same lines.
+  Future<AnalyzedSourcePage> templateReading() async {
+    final book = _entry.book, page = _entry.page;
+    final layer = await book.textLayer(page);
+    final attached = layer.status == PdfTextStatus.candidate
+        ? await attachedText()
+        : null;
+    final attachment = attached?.attachment;
+    return (
+      sourcePage: page,
+      geometry: geometry,
+      analysis: analysis,
+      text: attachment == null
+          ? null
+          : (source: attached!.text.source, attachment: attachment),
+    );
+  }
+
   /// The page's words and regions in lines and screens for [settings], as
-  /// [layoutColumn] gives them, through the book's hop. It reads only
-  /// [geometry], [analysis] and [bodyLineHeight], so the arrival of the
-  /// text does not change it.
-  Future<ReflowColumn> column(ColumnSettings settings) =>
-      _entry.book.hop(layoutColumn, (
-        geometry: geometry,
-        analysis: analysis,
-        bodyLineHeight: bodyLineHeight,
-        settings: settings,
-      ));
+  /// [layoutColumn] gives them, through the book's hop. Once the book
+  /// profile froze (see [PdfBook.survey]), the column leaves out the
+  /// page's running headers, folios and running regions, which the
+  /// profile's templates mark as they do for the Original view's crop.
+  /// Until then it shows them, and a column asked for after the freeze
+  /// differs. It reads [geometry], [analysis], [bodyLineHeight] and the
+  /// text of a text layer page, never a scanned page's recognized text, so
+  /// the arrival of that text does not change it.
+  Future<ReflowColumn> column(ColumnSettings settings) async {
+    final templates = _entry.book.survey.profile?.templates;
+    return _entry.book.hop(layoutColumn, (
+      geometry: geometry,
+      analysis: templates == null
+          ? analysis
+          : templates.mark(await templateReading()),
+      bodyLineHeight: bodyLineHeight,
+      settings: settings,
+    ));
+  }
 }
 
 /// One page that [PdfBook] keeps for reflow: its analysis while it runs or

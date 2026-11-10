@@ -455,6 +455,14 @@ Ticket tb-0mex built `layoutColumn` in `lib/reader/column_layout.dart` and `cutS
 
 No fixture has a caption within one body line height of its figure. The Raven byline is 54 pixels below the engraving, and the body line height is 33. So a made-up page tests captions. On Gibbon's page (471 words), the layout takes about 0.8 ms on the host, and 1.2 ms through `Isolate.run`. It runs in a hop, as the table of "Off the UI isolate" says, because the device is slower and the work grows with the page.
 
+Ticket tb-m8xo made the column leave out running lines and running regions:
+
+- `ReflowPage.column` marks the page analysis with the templates of the frozen book profile. It reads the page through `ReflowPage.templateReading`, and the survey reads each page through the same method. So the word view and the Original view's crop leave out the same lines and regions.
+- `templateReading` gives a scanned page no text, even after its recognition. So a scanned page's marks come from place and size alone, and its screens do not change when its text arrives.
+- Before the profile freezes, the column shows the running lines. A column that the viewport asks for after the freeze leaves them out. So the viewport (tb-22fu) keeps the column of the shown page until a turn or a new size, as the Original view keeps its crop.
+- `ReflowColumn.screenAt` gives the screen of a place: the screen of the first shown word whose range holds the place or starts after it. A place inside a running header opens at the next shown word. A place after every shown word, such as the folio at the end of a page's text, opens the page's last screen.
+- A block that holds a running line is no caption, and a running region gets no caption.
+
 ## Rendering
 
 ### Bands
