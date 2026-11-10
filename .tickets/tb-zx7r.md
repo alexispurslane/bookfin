@@ -1,6 +1,6 @@
 ---
 id: tb-zx7r
-status: in_progress
+status: closed
 deps: [tb-22fu]
 links: [te-rtok]
 created: 2026-11-10T12:48:24Z
