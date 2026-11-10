@@ -27,3 +27,7 @@ Built: the Original view shows each page's crop (PdfViewport._draw and preview, 
 **2026-11-10T19:17:07Z**
 
 Recovery: cherry-picked b4ec646 onto review base 9bf71644 as bca1de6 without conflicts; retained the newer word renderer and scanned-paper decision. Reproduced backward-priority gap with a failing session test (actual [1,5,6], expected [1,5,4]), then fixed direction ownership in BookSurvey.follow. Same-page reports retain direction; forward reversal covered. Focused crop/survey/session/viewport/book-crop/word-renderer run: 79 passed. Added exact 299/300 ms crop-wait boundary characterization; passed first run, not claimed as original red evidence. Existing emulator screenshots reused without rebuilding or touching any device. Format check and analyzer passed; full suite and fresh review follow.
+
+**2026-11-10T19:20:02Z**
+
+Required checks, 2026-11-10, through nix develop: dart format --output=none --set-exit-if-changed lib test tool integration_test passed (390 files, zero changes); flutter analyze lib test integration_test passed (no issues); full flutter test --reporter expanded passed (2514 tests, 21 skipped, 2m53s). Known intermittent boo-7plj survey reopen test passed in this run. iPhone SDK probe warnings did not fail checks. No native files changed; native OCR worker script not required. No coverage/mutations or device actions. Fresh shared Sol xhigh reviewer is running; leave ticket in_progress for parent integration.

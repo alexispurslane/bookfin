@@ -62,3 +62,20 @@ capture, `_turned`'s immediate crop choice on a turn, and `preview`'s nonwaiting
 crop choice. Both Original images and deck cards use `_drawPage` and `_crops`.
 The Trim margins switch in tb-nkz5 should turn cropping off through `_crops` and
 explicitly redraw the shown page when the switch changes.
+
+## Recovery checks
+
+All commands below ran through `nix develop` on November 10, 2026.
+
+| Command | Result |
+| --- | --- |
+| `dart format --output=none --set-exit-if-changed lib test tool integration_test` | Passed: 390 files, zero changes |
+| `flutter analyze lib test integration_test` | Passed: no issues |
+| `flutter test --reporter expanded` | Passed: 2,514 tests, 21 skipped, 2 minutes 53 seconds |
+| Focused six-file reader test run above | Passed: 79 tests |
+
+The commands reported missing `iphoneos` and `iphonesimulator` SDKs while
+probing the host. These warnings did not fail the checks. The known intermittent
+survey reopen test in boo-7plj passed in this full run. No native files changed,
+so the native OCR worker script was not required. Coverage, mutation testing,
+merged word-view checks and physical-phone acceptance remain with the parent.
