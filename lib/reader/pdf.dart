@@ -12,7 +12,26 @@ import '../downloads/downloads.dart';
 import '../foundation/hop.dart';
 import 'document.dart';
 
-enum PdfTextStatus { candidate, absent, unreliable }
+/// What the text of a source page offers reflow and search. The first three
+/// describe the page's own content. Only [failed] describes the reader.
+enum PdfTextStatus {
+  /// The page's text, in reading order. Reflow shows it, search finds words
+  /// in it, and a place inside the page names it by its digest.
+  candidate,
+
+  /// The page holds no text, such as a picture or an empty page.
+  absent,
+
+  /// The page holds text that cannot be put in reading order, such as a
+  /// cover of a few short lines, a contents page of titles beside page
+  /// numbers, a diagram or a table.
+  unreliable,
+
+  /// The reader could not get the page's text, for a reason that the person
+  /// can act on, such as a recognition failure or a removed download.
+  /// [PdfText.reason] says what happened.
+  failed,
+}
 
 class PdfText {
   const PdfText({
@@ -26,11 +45,18 @@ class PdfText {
   }) : assert(
          status != PdfTextStatus.candidate || digest != null,
          'A candidate page text names its digest.',
+       ),
+       assert(
+         (status == PdfTextStatus.failed) == (reason != null),
+         'Exactly a failed page text says why it failed.',
        );
   final String source;
   final String text;
   final List<int> sourceOffsets;
   final PdfTextStatus status;
+
+  /// Why the reader could not get the text, in one sentence for the person.
+  /// A [PdfTextStatus.failed] text has one, and no other text has one.
   final String? reason;
   final String? recognition;
 
@@ -79,10 +105,9 @@ PdfText preparePdfPage(({String source, Float64List boxes}) page) {
     }
     start = index + 1;
   }
-  final unreliable = offsets.isEmpty ? null : _textWarning(source, page.boxes);
   final status = offsets.isEmpty
       ? PdfTextStatus.absent
-      : unreliable != null
+      : _outOfOrder(source, page.boxes)
       ? PdfTextStatus.unreliable
       : PdfTextStatus.candidate;
   return PdfText(
@@ -90,7 +115,6 @@ PdfText preparePdfPage(({String source, Float64List boxes}) page) {
     text: output.toString(),
     sourceOffsets: offsets,
     status: status,
-    reason: offsets.isEmpty ? 'This page has no text to reflow.' : unreliable,
     digest: status == PdfTextStatus.candidate ? pdfTextDigest(source) : null,
   );
 }
@@ -195,8 +219,8 @@ abstract class PdfTextSupply {
   void cancel();
 
   /// The text of [page] of [book] for reading: [extracted], the page's text
-  /// layer, when it is a candidate, and otherwise the recognized text, or a
-  /// text without content whose reason says why there is none.
+  /// layer, when it is a candidate, and otherwise the recognized text, whose
+  /// status says whether the page reflows, or a [PdfTextStatus.failed] text.
   Future<PdfText> text(PdfBook book, int page, PdfText extracted);
   Future<void> close();
 }
@@ -365,7 +389,6 @@ class _NativePdfBook extends PdfBook {
             text: '',
             sourceOffsets: [],
             status: PdfTextStatus.unreliable,
-            reason: 'This page has too much text to reflow.',
           );
         }
         // The boxes cross to the worker as one typed list. Packing them
@@ -435,14 +458,13 @@ class _NativePdfBook extends PdfBook {
   }
 }
 
-/// Why the extracted page [text] with its character [boxes] (see
-/// [preparePdfPage]) cannot be trusted to read in order, or null if it can.
-String? _textWarning(String text, Float64List boxes) {
-  const warning = 'The text of this page cannot be put in reading order.';
+/// Whether the extracted page [text] with its character [boxes] (see
+/// [preparePdfPage]) cannot be trusted to read in order.
+bool _outOfOrder(String text, Float64List boxes) {
   if (boxes.length != text.length * 4 ||
       text.contains('\uFFFD') ||
       text.contains('\u0000')) {
-    return warning;
+    return true;
   }
   double left(int index) => boxes[index * 4];
   double top(int index) => boxes[index * 4 + 1];
@@ -461,7 +483,7 @@ String? _textWarning(String text, Float64List boxes) {
       top(index),
       bottom(index),
     ].every((value) => value.isFinite)) {
-      return warning;
+      return true;
     }
     final bucket = (bottom(index) / 3).floor();
     final row =
@@ -496,12 +518,9 @@ String? _textWarning(String text, Float64List boxes) {
       );
       if (phrase.trim().split(RegExp(r'\s+')).length <= 2) shortGroups++;
       for (var index = 1; index < part.length; index++) {
-        if ((part[index] - part[index - 1]).abs() > 5) return warning;
+        if ((part[index] - part[index - 1]).abs() > 5) return true;
       }
     }
   }
-  if (parallelRows >= 3 || groups >= 4 && shortGroups / groups >= .8) {
-    return warning;
-  }
-  return null;
+  return parallelRows >= 3 || groups >= 4 && shortGroups / groups >= .8;
 }

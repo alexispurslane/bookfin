@@ -665,7 +665,8 @@ class ReaderSession extends ChangeNotifier {
                 source: '',
                 text: '',
                 sourceOffsets: [],
-                status: PdfTextStatus.absent,
+                status: PdfTextStatus.failed,
+                reason: 'The download of this book is no longer available.',
               );
             }
             return read(file, () => owned() && available());

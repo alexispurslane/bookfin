@@ -161,7 +161,7 @@ void main() {
     pdf.textSupply!.cancel();
 
     final shown = await first.timeout(const Duration(seconds: 3));
-    expect(shown.status, PdfTextStatus.absent);
+    expect(shown.status, PdfTextStatus.failed);
     EnglishRecognition.instance.checkInvariants();
     (pdf.textSupply! as BundledEnglishText).checkInvariants();
     native.single.complete(englishPage);
@@ -181,7 +181,7 @@ void main() {
       final second = pdf.text(2);
       native.first.complete(englishPage);
 
-      expect((await first).status, PdfTextStatus.absent);
+      expect((await first).status, PdfTextStatus.failed);
       expect((await second).text, 'The quiet garden.');
       await saved(2);
       expect((await pdf.text(1)).text, 'The quiet garden.');
@@ -198,7 +198,7 @@ void main() {
     final returned = pdf.text(1);
     native.single.complete(englishPage);
 
-    expect((await first).status, PdfTextStatus.absent);
+    expect((await first).status, PdfTextStatus.failed);
     expect((await returned).text, 'The quiet garden.');
     expect(native, hasLength(1));
   });
@@ -213,7 +213,7 @@ void main() {
       reader.closeView(reader.token);
       native.single.complete(englishPage);
 
-      expect((await first).status, PdfTextStatus.absent);
+      expect((await first).status, PdfTextStatus.failed);
       await saved(1);
       expect((await (await open()).text(1)).text, 'The quiet garden.');
       expect(native, hasLength(1));
@@ -301,7 +301,7 @@ void main() {
 
       EnglishRecognition.instance.checkInvariants();
       native.first.complete(englishPage);
-      expect((await skipped).status, PdfTextStatus.absent);
+      expect((await skipped).status, PdfTextStatus.failed);
       expect((await last).text, 'The quiet garden.');
       expect(
         native,

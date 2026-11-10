@@ -455,20 +455,23 @@ class _PdfViewportState extends State<PdfViewport>
     _publish();
   }
 
-  /// Why reflow cannot show the shown page, in one quiet line, or null
-  /// while it can, or while its text is still on its way.
+  /// Why reflow cannot show the shown page, in one quiet line, when the
+  /// person can act on it. It is null while the page reflows, while its
+  /// text is still on its way, and when the page's own content does not
+  /// reflow, because the original page is then the page to read.
   String? get _reflowProblem {
     if (_loading) return null;
     if (_textFailed) return 'The text of this page could not be read.';
     final text = _text;
     if (text == null) return null;
-    if (text.status != PdfTextStatus.candidate) {
-      return text.reason ?? 'This page has no text to reflow.';
-    }
-    if (!_positionResolved) {
-      return 'The saved place does not match the text of this page.';
-    }
-    return null;
+    return switch (text.status) {
+      PdfTextStatus.failed => text.reason,
+      PdfTextStatus.absent || PdfTextStatus.unreliable => null,
+      PdfTextStatus.candidate =>
+        _positionResolved
+            ? null
+            : 'The saved place does not match the text of this page.',
+    };
   }
 
   /// The original page, the reflowed text, or what stands in their place.
@@ -531,8 +534,8 @@ class _PdfViewportState extends State<PdfViewport>
   Widget _view() {
     if (!widget.reflow || _usingText) return _shownPage();
     // The reflow view shows the original page while the text is on its way,
-    // or when reflow cannot work on the page, under a quiet line in place
-    // of the text.
+    // when the page's own content does not reflow, and when reflow failed
+    // on the page. Only a failure puts a quiet line above it.
     final problem = _reflowProblem;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,

@@ -1,7 +1,7 @@
 // A PDF opens quietly on its original pages. Reflow is a view that the
 // person chooses. It recognizes a page by itself only when the page has no
-// usable text layer, and says nothing about it unless reflow cannot work
-// on the shown page.
+// usable text layer, and says nothing about it unless reflow failed on the
+// shown page.
 import 'dart:async';
 
 import 'package:bookfin/catalog/glass.dart' show CoverGlass;
@@ -245,7 +245,6 @@ void main() {
         text: 'eht revir',
         sourceOffsets: [0, 1, 2, 3, 4, 5, 6, 7, 8],
         status: PdfTextStatus.unreliable,
-        reason: 'The text of this page is out of order.',
       );
       await openPdf(tester, LayeredPdf(scrambled, textSupply: recognition));
       await chooseReflow(tester);
@@ -255,8 +254,8 @@ void main() {
       expect(find.text('The river.'), findsOneWidget);
     });
 
-    testWidgets('when reflow cannot work on the shown page, one quiet line '
-        'takes the place of the text over the original page', (tester) async {
+    testWidgets('when reflow failed on the shown page, one quiet line takes '
+        'the place of the text over the original page', (tester) async {
       final recognition = OnDemandRecognition();
       addTearDown(recognition.recognizing.dispose);
       await openPdf(tester, LayeredPdf(noLayer, textSupply: recognition));
@@ -267,13 +266,13 @@ void main() {
           source: '',
           text: '',
           sourceOffsets: [],
-          status: PdfTextStatus.absent,
-          reason: 'No text was found on this page.',
+          status: PdfTextStatus.failed,
+          reason: 'Text recognition failed on this page.',
         ),
       );
       await tester.pump();
       await tester.pump();
-      expect(notices(tester), ['No text was found on this page.']);
+      expect(notices(tester), ['Text recognition failed on this page.']);
       expect(find.bySemanticsLabel('Original source page 1'), findsOneWidget);
       expect(find.byType(TextButton), findsNothing);
       expect(

@@ -140,7 +140,7 @@ void main() {
       final second = pdf.textSupply!.text(pdf, 1, absent);
       failure.complete();
       for (final result in await Future.wait([first, second])) {
-        expect(result.status, PdfTextStatus.absent);
+        expect(result.status, PdfTextStatus.failed);
       }
       pdf.textSupply!.bind((read) async {
         bool Function() owned = () => false;
@@ -223,7 +223,7 @@ void main() {
     try {
       await reading.future.timeout(const Duration(seconds: 5));
       nativeResult.completeError(PlatformException(code: 'recognition'));
-      expect((await second).status, PdfTextStatus.absent);
+      expect((await second).status, PdfTextStatus.failed);
       release.complete();
       expect((await first).text, 'The quiet garden.');
       expect(calls, 2);

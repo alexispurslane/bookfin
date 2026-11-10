@@ -66,7 +66,6 @@ void main() {
       '<div>${List.generate(4, (index) => line('fragment', 10, index * 40, 200, index * 40 + 20)).join()}</div>',
     );
     expect(result.status, PdfTextStatus.unreliable);
-    expect(result.reason, contains('reading order'));
   });
 
   test('parallel recognized lines retain the original instead of combining columns', () {
@@ -76,14 +75,10 @@ void main() {
     expect(result.status, PdfTextStatus.unreliable);
   });
 
-  test(
-    'recognition with no words keeps an explicit original-page fallback',
-    () {
-      final result = decodeRecognizedPage('<div class="ocr_page"/>');
-      expect(result.status, PdfTextStatus.absent);
-      expect(result.reason, 'No text was found on this page.');
-    },
-  );
+  test('recognition with no words offers the original page', () {
+    final result = decodeRecognizedPage('<div class="ocr_page"/>');
+    expect(result.status, PdfTextStatus.absent);
+  });
 
   test(
     'malformed line geometry cannot become a successful reflow candidate',

@@ -172,7 +172,7 @@ void main() {
       () async {
         final pdf = await open();
         final canceled = await textWhileCanceled(pdf);
-        expect(canceled.status, PdfTextStatus.absent);
+        expect(canceled.status, PdfTextStatus.failed);
         expect(canceled.reason, 'Recognition stopped.');
         expect((await pdf.text(1)).text, 'The quiet garden.');
         expect(
@@ -190,7 +190,7 @@ void main() {
         reader.closeView(reader.token);
         final pdf = await open();
         final canceled = await textWhileCanceled(pdf);
-        expect(canceled.status, PdfTextStatus.absent);
+        expect(canceled.status, PdfTextStatus.failed);
         expect(canceled.reason, 'Recognition stopped.');
         expect((await pdf.text(1)).text, 'The quiet garden.');
         expect(calls, 1);
@@ -200,7 +200,7 @@ void main() {
     test('malformed recognition output from the worker reports a recognition failure', () async {
       recognize = () async => '<div><span class="ocr_line"><span class="ocrx_word">Text</span></span></div>';
       final text = await (await open()).text(1);
-      expect(text.status, PdfTextStatus.absent);
+      expect(text.status, PdfTextStatus.failed);
       expect(text.reason, 'Text recognition failed on this page.');
     });
   });

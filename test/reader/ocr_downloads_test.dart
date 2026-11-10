@@ -182,7 +182,7 @@ void main() {
         final removal = downloads.remove(_edition);
         expect(
           (await pdf.text(1).timeout(const Duration(seconds: 3))).status,
-          PdfTextStatus.absent,
+          PdfTextStatus.failed,
         );
         held.complete(englishPage);
         await removal;
@@ -309,7 +309,7 @@ void main() {
         final published =
             await cached.exists() && await cached.list().isEmpty == false;
         await root.delete(recursive: true);
-        expect(result.status, PdfTextStatus.absent);
+        expect(result.status, PdfTextStatus.failed);
         expect(published, isFalse);
       },
     );
