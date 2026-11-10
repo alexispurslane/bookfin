@@ -1,6 +1,6 @@
 # PDF reflow as the page's own word images
 
-Date: 2026-11-09, revised the same day for the "Tesseract layout first" decision. Epic: boo-fval. Parent: boo-fs0n. Blocked by: boo-pw1d.
+Date: 2026-11-09, revised the same day for the "Tesseract layout first" decision, and on 2026-11-10 for the user's two product decisions. Epic: boo-fval. Parent: boo-fs0n. Blocked by: boo-pw1d.
 
 ## Decision
 
@@ -29,7 +29,7 @@ This document decides these things:
 - the switch to the text view
 - the waiting state, page turns, the scrub deck and the scrub bar
 - tests, fixtures and the device acceptance
-- two open decisions for the user
+- the shape of the switch and how a page turns, which the user decided on 2026-11-10
 - the order of work
 
 ## Terms
@@ -51,7 +51,7 @@ This document decides these things:
 | Page analysis | The facts about a page that need its pixels: regions, ink that no word covers, line-end hyphens on scanned pages, and the body line height. |
 | Body line height | The median height of the page's prose lines, from the top of the ascenders to the bottom of the descenders, in page units. |
 | Column | The reflowed lines of one source page for one column width and one text size. |
-| Screen | The lines of a column that show at one time. |
+| Screen | The whole lines of a column that show at one time. A swipe shows the next screen. |
 | Band | One rendered strip of the page, at screen resolution, that holds the source rectangles of the pieces of one screen. |
 | Word view | Reflow with word images. |
 | Text view | Reflow with the reading text in the reader's font. This is the reflow view of today. |
@@ -432,19 +432,45 @@ The selectable follows the EPUB page's selection (`lib/reader/epub/selection.dar
 
 ## The switch to the text view
 
-The page view is one choice with three values: original, word view and text view. `ReaderSession` keeps it for the run of the app, as it keeps the reflow choice today (t9-3n2m). It is not saved in the reading records. When the person turns reflow on, the word view shows. The control lives in the Reading settings sheet, which is glass. Open decision 1 decides its shape.
+The page view is one choice with three values: original, word view and text view. `ReaderSession` keeps it for the run of the app, as it keeps the reflow choice today (t9-3n2m). It is not saved in the reading records. The control lives in the Reading settings sheet, which is glass. Its shape is decision 1, which the user settled on 2026-11-10:
 
-The text view stays the reflow view of today. It uses the reading text in the reader's font. te-rtok (Source Serif 4 for PDF reflow) applies to it.
+- The Pages row has three segments: Original, Page words and Text. One tap chooses any view.
+- Page words is the reflow view that the person sees first, because every PDF reflows as word images.
+- The row is the shared `PillChoice`. So the fix for large text sizes below serves every pill choice of the app, such as the Theme row (UI rule 2).
+
+At a large system text size, the three segments can be wider than the sheet. `PillChoice` then changes its form in two steps, and never cuts a label:
+
+1. It hides the segments' icons, and keeps the full labels.
+2. If the labels still do not fit, the segments stack in a column, one under another, in the same pill shape. Each segment keeps a touch target of at least 48 by 48 logical pixels.
+
+The labels stay whole words, so a screen reader and a person at a large text size read the same names.
+
+The text view uses the reading text in the reader's font, as the reflow view of today does. It changes from one scroll column to screens of whole lines, as the word view does (see "Screens and turns"). te-rtok (Source Serif 4 for PDF reflow) applies to it.
 
 ## Waiting, turns, the scrub deck and the scrub bar
 
 - Waiting for words. On a text layer page, the word view waits for the reading text, as boo-pw1d leaves it. On a scanned page, it waits for the layout record, from the disk cache or from the layout pass, and not for recognition. Then it waits for the page analysis, the column and the first screen's bands. During all of these, the original page shows under the thin progress line of today. One waiting flag in `PdfViewport` covers them. When the first screen is ready, it replaces the original page with no notice.
 - Waiting for text. While full recognition of the shown scanned page runs, the thin progress line stays over the word images. The text's attachment removes it. The screen does not change.
 - Failure. The layout pass, the analysis or a band render can fail. If its text exists, the page then shows in the text view. Otherwise the original page shows under the progress line until its text arrives. If recognition fails after the words show, the words stay, the progress line goes, and selection and search stay unavailable on that page. If the text fails on a text layer page, the quiet line of today shows over the original page.
-- Turns. A swipe or a screen reader's scroll action turns as open decision 2 decides. The band images of the next screen render after the shown screen's bands. So a turn inside a page shows its screen in the next frame.
+- Turns. A swipe or a screen reader's scroll action shows the next or the previous screen, as "Screens and turns" says. The band images of the next screen render after the shown screen's bands. So a turn inside a page shows its screen in the next frame.
 - Neighbor pages. The word view prepares no other source page. It starts no layout pass and no recognition for a page that is not shown.
 - The scrub deck shows the original pages, as today. It starts no layout pass, no recognition and no analysis. A scrub lands on the first screen of its page.
 - The scrub bar counts source pages, as today. t6-1luw (the bar's spoken value at the end of a page) stays a separate bug.
+
+### Screens and turns
+
+Decision 2, which the user settled on 2026-11-10: a reflowed source page is cut into screens of whole lines, and a swipe shows the next screen, as in the EPUB reader. The word view and the text view both work this way.
+
+- One rule cuts both views. `cutScreens(lineTops, lineBottoms, keepWithNext, screenHeight)` is a pure function. The word view gives it the lines of its column. The text view gives it the line metrics of its `TextPainter`. It returns the index of each screen's first line. This is the second real use, so the rule is one shared function (Muratori's rule of two).
+- A screen holds every line that fits whole below the screen's first line. No line is ever cut at the screen's edge.
+- A paragraph gap at the top of a screen is dropped, so a screen never starts with empty space.
+- A line can be marked keep-with-next. If it and the next line fit on one screen, they stay on the same screen. A region and its caption use this mark.
+- A region taller than the screen already scaled down to the screen's height, so it always fits on one screen.
+- The last screen of a source page is often part empty. The next source page starts on a new screen, because each source page has its own place and its own text.
+- A swipe forward on a page's last screen shows the next source page's first screen. A swipe back on a page's first screen shows the previous source page's last screen.
+- A vertical drag does nothing in either view, as in the EPUB reader. A screen reader's scroll actions turn screens.
+- The text view draws one screen as the part of its `TextPainter` from the screen's first line top to the next screen's first line top. It needs no scroll controller.
+- The place of a text view screen is the first character of its first line. A change of text size or width cuts the screens again and shows the screen that holds the shown place.
 
 ## Tests
 
@@ -507,7 +533,11 @@ The view and the reader:
 - Before the text attaches, a saved place inside the page opens the page's first screen and is not overwritten. When the text attaches and the person has not turned, the screen that holds the place shows.
 - A long press before the text attaches selects nothing.
 - The shown page's layout pass runs before the waiting recognition of other pages.
-- A turn past a page's last screen shows the next page's first screen. A turn back from a page's first screen shows the previous page's last screen.
+- A turn past a page's last screen shows the next page's first screen. A turn back from a page's first screen shows the previous page's last screen. This holds in the word view and in the text view.
+- No screen cuts a line, in either view, and no screen starts with a paragraph gap.
+- A vertical drag on a reflowed page changes nothing.
+- A text size step in the text view keeps the shown place on the shown screen.
+- At the largest system text size, the Pages row shows Original, Page words and Text as whole words, and each segment can be tapped.
 - The scrub deck shows original pages and starts no layout pass and no recognition.
 
 Each module with state keeps one `checkInvariants`:
@@ -527,38 +557,23 @@ On the Pixel 8 or an emulator through the T3 device tools:
 - Make sure that a turn inside a page drops no frame, with the frame timing overlay.
 - Tune `_wordSizeRatio` once against an EPUB at size 20.
 
-## Open decisions
+## Decisions of 2026-11-10
 
-### Decision 1: the shape of the switch
+The user settled both product decisions of this design on 2026-11-10. The doc above follows them.
 
-| Design | Control | Cost |
+| Decision | Choice | Where the doc applies it |
 | --- | --- | --- |
-| A: three views in one choice | The Pages row in Reading settings has three segments: Original, Page words, Text. | One control, one tap to any view. Three segments are narrower on a small phone at a large system text size. |
-| B: a second row under Reflow | The Pages row keeps Original and Reflow. A second row, "Reflow shows", with Page words and Text, shows only while Reflow is on. | The first row stays as today. The text view is two steps away, and the sheet grows by one row in reflow. |
+| 1: the shape of the switch | Design A. The Pages row in Reading settings has three segments: Original, Page words and Text. At a large system text size, `PillChoice` hides its icons, and then stacks its segments in a column. | The switch to the text view |
+| 2: how a page turns inside a source page | Design A. A reflowed source page is cut into screens of whole lines, and a swipe shows the next screen, as in the EPUB reader. The text view also changes to whole-line screens. A swipe past a source page's last screen goes to the next source page. | Screens and turns |
 
-Usage of A: the person opens Reading settings and taps Text. Usage of B: the person opens Reading settings, taps Reflow, then taps Text in the second row.
+The designs that the user did not choose:
 
-Both designs keep these things:
-
-- one enum of three values in `ReaderSession`
-- the same lifetime, until the app restarts
-- the same glass sheet
-- the word view as the view that reflow shows first
-
-### Decision 2: how a page turns inside a source page
-
-| Design | Turn | Cost |
-| --- | --- | --- |
-| A: screens of whole lines | The column of a source page cuts into screens at line boundaries. A swipe shows the next screen. A vertical drag does nothing. | Matches the EPUB reader's pages and the shared gesture model. No line is ever cut at the screen's edge. The last screen of each source page is often part empty. The text view also needs whole-line screens, which is one more ticket. |
-| B: one scroll column for each source page | As the text view does today: a vertical drag scrolls, and a swipe moves 85 percent of the screen, snapped to a line boundary. | The text view does not change. Bands must render ahead of a fast drag, so a fast drag can show empty lines for a moment. Free scrolling cuts lines at the screen's edges. |
-
-Usage of A: the person swipes left three times through a long source page, and the fourth swipe opens the next source page. Usage of B: the person drags up through the page, or swipes, and at the bottom a swipe opens the next source page.
-
-Both designs keep places, the waiting state, the scrub bar and the deck as described above, and both keep a screen's next bands ready.
+- Decision 1, design B: the Pages row keeps Original and Reflow, and a second row, "Reflow shows", appears while Reflow is on.
+- Decision 2, design B: one scroll column for each source page, as the text view of today.
 
 ## Order of work
 
-Ticket keys W0 to W10 name the tickets. The table maps each key to its ticket id.
+Ticket keys W0 to W10, with W0b and W6b, name the tickets. The table maps each key to its ticket id.
 
 | Key | Ticket | Work | After |
 | --- | --- | --- | --- |
@@ -567,15 +582,15 @@ Ticket keys W0 to W10 name the tickets. The table maps each key to its ticket id
 | W1 | tb-jidt | Scanned page geometry from the layout record, its disk cache, text attachment from hOCR, and the scanned and skewed fixtures | W0 |
 | W2 | tb-xwlj | Word geometry from the text layer, and the equation fixture | W1 |
 | W3 | tb-t8rh | Page analysis and `PdfBook.reflowPage` | W2 |
-| W4 | tb-0mex | Column layout: wrap, baselines, paragraphs, hyphens, regions, captions, screens | W3, decision 2 |
+| W4 | tb-0mex | Column layout: wrap, baselines, paragraphs, hyphens, regions, captions, and `cutScreens` | W3 |
 | W5 | tb-xjfi | Bands, `drawAtlas`, tints and the memory bound in `PdfWordPages` | W4 |
 | W6 | tb-22fu | The word view in `PdfViewport`: waiting for words and for text, places, turns, failure | W5 |
-| W7 | tb-9mcf | The page view choice in the session and the settings switch | W6, decision 1 |
+| W6b | tb-zx7r | Cut the text view into whole-line screens with `cutScreens` | W6 |
+| W7 | tb-9mcf | The page view choice in the session, the three-segment Pages row, and `PillChoice` at large text sizes | W6 |
 | W8 | tb-mfkk | Selection, copy, search hits and screen reader nodes on word images | W6 |
 | W9 | tb-fi98 | Drop caps | W6 |
-| W10 | tb-fb6j | Device acceptance and tuning | W0b, W7, W8, W9 |
+| W10 | tb-fb6j | Device acceptance and tuning | W0b, W6b, W7, W8, W9 |
 
-If the user picks design A of decision 2, W6 also cuts the text view into whole-line screens.
 
 ## Sources
 

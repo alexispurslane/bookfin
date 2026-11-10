@@ -31,3 +31,7 @@ Design written: docs/plans/pdf-word-image-reflow.md. Build tickets in order: tb-
 **2026-11-10T03:05:06Z**
 
 User decision (2026-11-09, later): Tesseract layout first, no k2pdfopt library. Scanned pages show word images after Tesseract's layout pass, and full recognition fills in the text under them. k2pdfopt's options are the checklist of our layout rules. New first tickets: tb-t0ea (layout pass through Tesseract's C API) and tb-bmmm (emulator measurement). Host measurement: tool/evidence/reader/layout-pass/20261109/.
+
+**2026-11-10T12:48:31Z**
+
+User decisions (2026-11-10): decision 1 design A, a three-segment Pages row (Original, Page words, Text), with PillChoice dropping icons and then stacking at large text sizes. Decision 2 design A, whole-line screens in the word view and the text view, with swipes passing between source pages. New ticket tb-zx7r cuts the text view into screens.
