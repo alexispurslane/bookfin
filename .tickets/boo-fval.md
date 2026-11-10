@@ -27,3 +27,7 @@ Design: docs/plans/pdf-word-image-reflow.md (to be written).
 **2026-11-10T02:34:08Z**
 
 Design written: docs/plans/pdf-word-image-reflow.md. Build tickets in order: tb-jidt, tb-xwlj, tb-t8rh, tb-0mex, tb-xjfi, tb-22fu, then tb-9mcf, tb-mfkk and tb-fi98, then tb-fb6j. Two open user decisions: the shape of the switch (gates tb-9mcf) and how a page turns inside a source page (gates tb-0mex).
+
+**2026-11-10T03:05:06Z**
+
+User decision (2026-11-09, later): Tesseract layout first, no k2pdfopt library. Scanned pages show word images after Tesseract's layout pass, and full recognition fills in the text under them. k2pdfopt's options are the checklist of our layout rules. New first tickets: tb-t0ea (layout pass through Tesseract's C API) and tb-bmmm (emulator measurement). Host measurement: tool/evidence/reader/layout-pass/20261109/.
