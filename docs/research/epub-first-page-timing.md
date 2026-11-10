@@ -161,3 +161,53 @@ No late frame waited for an idle step. Every late frame in Hamlet, Keats and Uly
 Ulysses gives the clean comparison of memory, because both builds ran its stay alone in a new process. Its peak resident memory was 279 to 280 MB in the baseline's first 5 s, which laid out 3 sections, and 295 MB with the whole book laid out (25 sections). In the other books, the stay followed the open, turn and jump runs in the same process, so their peaks also hold what those runs left. They stayed from 273 to 308 MB. The page starts of every section stay, but a section more than one section away from the shown one lets go of its prepared text once its main run ends.
 
 A worker call per section costs the calling isolate 0.1 to 3 ms to start (`startCall`, the copy of its arguments). Its result comes back through the worker's exit without a copy. A long-lived worker per direction would copy each result back on the UI isolate: 89 ms for Keats' section 2 (see above). So each direction is a chain of `Isolate.run` calls, one section each.
+
+## After tf-focn: a faster prepare
+
+Ticket tf-focn, 2026-11-09. Before it built parts of a section (t7-49gt), the order of work asked for a faster prepare of every section. Two changes to the cascade stay:
+
+- The cascade reads each rule bucket in place, expands each declaration into its longhands once for the whole section, and builds its regular expressions once.
+- Elements that the cascade styles the same share one style object, as browsers share styles. An element's computed style depends only on its parent's style, the rules that match it, its style attribute, its overrides, its language attribute, whether it is the root, and the root's font size (`_ShareKey` in css.dart). So each set of declarations applies once per parent style.
+
+Three other changes did not pay, and the branch leaves them out:
+
+- A hyphenation of a paragraph without a list entry for each code unit, and a cache of the hyphenation breaks of each word for one section. In four paired corpus rounds, neither moved the corpus total or the four slow sections beyond the noise (1 to 5 percent, and both signs).
+- An XHTML parser that reads package:xml's events into Bookfin's DOM, without package:xml's tree. It uses the same tokenizer and the same checks, so it accepts and rejects the same documents. On Keats' section 2 it saved about 5 percent of the prepare (the parse went from about 29 to about 25 percent of it).
+
+`test/reader/epub/corpus_prepare_test.dart` (with `BOOKFIN_EPUB_CORPUS_PREPARE=<name>`) dumps every prepared section of the corpus in three page settings values, as a hash of its DOM, flow items, run styles and faces, and times each prepare at the reader's page. `tool/reader/compare_corpus_prepare.py` compares runs. Every run of every change had the same hashes as the base: the prepared sections are the same.
+
+### Host
+
+`flutter test` on the Mac, with a load of 7 to 30 on 10 cores. The base and the branch ran one after the other in each of three rounds, so the load affects both in the same way. Each time is the fastest of 3 prepares of a section in a run, and the median of the three rounds, in milliseconds.
+
+| Section | Base | Branch | Branch / base |
+| --- | --- | --- | --- |
+| Roget's Thesaurus (pg) 1 | 505 | 345 | 0.68 |
+| Plato's Dialogues (SE) 30 | 296 | 249 | 0.84 |
+| Keats' Poetry (SE) 2 | 321 | 195 | 0.61 |
+| Van Dyke's Poetry (SE) 2 | 217 | 151 | 0.70 |
+| Median section (4,573 sections) | 1.08 | 0.87 | 0.89 (median ratio) |
+| Median of the sections of 10 ms or more (271) | | | 0.73 (median ratio) |
+| Median book, all sections | 78 | 62 | 0.79 (median ratio) |
+| The whole corpus | 15,333 | 11,995 | 0.78 |
+
+The cheaper matching took 11 percent off the corpus total, and the shared styles 12 percent more.
+
+### Emulator
+
+A new arm64 Android 36 emulator (bookfin-49gt: Pixel 7 profile, 4 virtual CPUs, host graphics) with a profile build of `tool/reader/open_benchmark.dart` and the Keats plan of t7-bbv1 (open at the middle of section 2, jump from section 5 to the middle of section 2). The base build and the branch's build alternated, each with a calibration launch and 2 or 3 measuring launches. The tables give warm medians in milliseconds.
+
+This emulator was 3 to 5 times slower than the emulators of the sections above: other agents loaded the Mac, and a fresh boot without a snapshot runs Google services for many minutes. With 2.5 GB of memory, the guest swapped and its Bluetooth service crashed again and again. So only the ratios are useful, not the times.
+
+| Run | Open, to the shown page | Jump, to the shown page | Prepare of section 2 in a worker |
+| --- | --- | --- | --- |
+| 2.5 GB, base | 1,979 (25 samples) | 1,825 | 1,476 (5 samples) |
+| 2.5 GB, branch | 1,457 (25 samples) | 1,356 | 1,177 (5 samples) |
+| 4 GB, base | 2,251 (15 samples) | 95 | 1,420 (3 samples) |
+| 4 GB, branch | 1,467 (15 samples) | 59 | 1,304 (3 samples) |
+
+On this emulator the open of Keats' section 2 took 26 to 35 percent less time. In the 4 GB run, the jump found its section already prepared and laid out, so its time shows no prepare. The prepare samples are few and vary by up to 2 times.
+
+### What t7-49gt still needs
+
+The open of Keats' section 2 drops by about a third, not by half. On the host, Keats' prepare takes 61 percent of its time before. On the emulator of t7-bbv1 (328 ms prepare, 391 ms to the shown page), that gives about 200 ms of prepare and about 265 ms to the shown page, against a goal of less than 196 ms. So t7-49gt still needs a part of the section before the whole (Design 1 in its notes) to reach half of the time.
