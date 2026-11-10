@@ -23,3 +23,7 @@ Behavior tests, red first, on a fixture book of at least 12 pages made with Typs
 **2026-11-10T14:59:40Z**
 
 From tb-t8rh: the Raven page's analysis has a region for the scan's dark bottom edge (the full page width, 14 pixels tall at 1600 wide) and one for the pencil page number in the top margin, both picture kind, and the folio '1' as an ink region. A content box that is the union of all regions reaches the page's bottom edge. The Raven picture block of the layout pass also holds the title 'The Raven'.
+
+**2026-11-10T15:03:43Z**
+
+From tb-t8rh: the Raven scan's dark bottom edge and its pencil page number become picture regions, so a content box of all regions reaches the page's bottom. Exclude scan-edge regions (touching the page edge, very wide and thin) from the content box.

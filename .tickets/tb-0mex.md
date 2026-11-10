@@ -22,3 +22,7 @@ Behavior tests, red first: words wrap in reading order and no line is wider than
 **2026-11-10T14:59:40Z**
 
 From tb-t8rh: ReflowPage.geometry is the reflow geometry. It holds extra words (PageAnalysis.sourceWords is -1) inside their lines, with empty ranges and NaN own baselines. On a scanned page, a raised mark at a word's right end (footnote marks 17 to 21 of Gibbon's page, and closing quotes such as the one after 'est.') splits off as an extra word right after its word, 2 to 5 pixels away at 1600 pixels wide. If the wrap rule puts at least a third of a body line height between words, such a mark and quote move away from their word. An extra word probably keeps its source gap to the word before it. Lines that are not prose (PageAnalysis.isProse) hold region words; PageAnalysis.wordRegions names the region of each word.
+
+**2026-11-10T15:03:43Z**
+
+From tb-t8rh: an extra word (uncovered ink or a raised mark split off a scanned word) should keep its source gap to its neighbor, or its mark or closing quote moves away from its word.

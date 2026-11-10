@@ -23,3 +23,7 @@ Behavior tests, red first, on a fixture page with a drop cap (add one to the sca
 **2026-11-10T14:59:40Z**
 
 From tb-t8rh: on the Raven page, the drop cap O of 'ONCE' lies inside the layout word of its line (that line is 64 pixels tall at 1600 wide, the others 33). It is not a separate ink region, so a drop cap can come as an oversized first word of a line, not only as a region.
+
+**2026-11-10T15:03:43Z**
+
+From tb-t8rh: the Raven drop cap sits inside the first word's box, not in a region of its own.
