@@ -1,6 +1,6 @@
 ---
 id: tb-0mex
-status: open
+status: in_progress
 deps: [tb-t8rh]
 links: []
 created: 2026-11-10T02:33:41Z
@@ -26,3 +26,7 @@ From tb-t8rh: ReflowPage.geometry is the reflow geometry. It holds extra words (
 **2026-11-10T15:03:43Z**
 
 From tb-t8rh: an extra word (uncovered ink or a raised mark split off a scanned word) should keep its source gap to its neighbor, or its mark or closing quote moves away from its word.
+
+**2026-11-10T15:31:38Z**
+
+Built (2026-11-10). lib/reader/column_layout.dart: ColumnSettings (width, fontSize, screenHeight), ReflowColumn (pieces with source rect, target rect and rotation; lines with top, baseline, bottom; screens; checkInvariants), layoutColumn (pure, reads geometry and analysis only). lib/reader/screen_cut.dart: cutScreens, shared with the text view (tb-zx7r). ReflowPage.column(settings) runs the layout through the book's hop. Deviations are in the design doc under 'The column on the fixtures'. For tb-xjfi: a piece's image turns about its target's center; its source rectangle is in page units of the reflow geometry; a joined hyphen half already has the hyphen cut from its source rectangle; turned pieces overlap their neighbors by a fraction of a pixel, so draw with a blend that does not paint paper over ink. For tb-22fu: screens start at a line's top, and screenTop(screen) is the y to show. Found te-qg8l (missing ink in 'quaint' on the Raven page). Tests: test/reader/column_layout_test.dart, test/reader/screen_cut_test.dart.
