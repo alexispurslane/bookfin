@@ -11,20 +11,20 @@ import '../catalog/glass.dart'
         CoverGlass,
         GlassSheetAction,
         PageBook,
-        confirmAction,
         glassSheetTextBottom,
         glassSheetTextInset,
         glassSheetTextWidth,
         showGlassSheet;
-import '../catalog/model.dart' show Book, TextPosition;
+import '../catalog/model.dart' show Book, EditionKind;
 import '../foundation/derived_value.dart';
 import '../foundation/listenable_selector.dart';
 import '../foundation/scrub_bar.dart';
 import '../foundation/theme.dart' show PillChoice;
 import '../foundation/time.dart';
 import '../playback/playback.dart';
-import '../playback/records_screen.dart' show showBookmarkEditor;
+import '../playback/records_screen.dart' show editReadingBookmark;
 import '../playback/screen.dart';
+import '../playback/timeline.dart' show openHistory;
 import 'book_map.dart';
 import 'session.dart';
 import 'document.dart';
@@ -106,33 +106,32 @@ class _ReaderScreenState extends State<ReaderScreen> {
     builder: builder,
   );
 
-  /// Shows the contents and, on its second tab, the reading bookmarks. The
-  /// bookmarks follow their changes while the sheet is open.
+  /// Shows the contents. The bookmarks are in History.
   void _openContents() => unawaited(
     _sheet(
-      (sheet) => ListenableBuilder(
-        listenable: reader.bookmarkChanges,
-        builder: (_, _) => ReaderContentsPanel(
-          timeLeft: DerivedValue(
-            reader.timeLeftChanges,
-            () => reader.timeLeft?.book,
-            source: reader,
-          ),
-          contents: reader.contents,
-          onContents: (href) {
-            Navigator.pop(sheet);
-            unawaited(reader.goToContents(href));
-          },
-          bookmarks: reader.bookmarks,
-          onRestore: (bookmark) {
-            unawaited(reader.restoreBookmark(bookmark.id));
-            Navigator.pop(sheet);
-          },
-          onEdit: (bookmark) => unawaited(_editBookmark(bookmark)),
-          onDelete: (bookmark) => unawaited(_deleteBookmark(bookmark)),
+      (sheet) => ReaderContentsPanel(
+        timeLeft: DerivedValue(
+          reader.timeLeftChanges,
+          () => reader.timeLeft?.book,
+          source: reader,
         ),
+        contents: reader.contents,
+        onContents: (href) {
+          Navigator.pop(sheet);
+          unawaited(reader.goToContents(href));
+        },
       ),
     ),
+  );
+
+  /// Shows the shared History timeline of the open book: its reading and
+  /// listening moves and bookmarks. The reader comes from the [ReaderScope]
+  /// above this screen, which holds this screen's session.
+  void _openHistory() => openHistory(
+    context,
+    widget.playback,
+    book: reader.book,
+    showing: EditionKind.text,
   );
 
   /// Shows the reading settings. Each control follows its own value while
@@ -249,35 +248,13 @@ class _ReaderScreenState extends State<ReaderScreen> {
     }
   }
 
-  /// Asks for a new title and note for [bookmark] in the shared bookmark
-  /// editor, and saves them unless the person cancels.
-  Future<void> _editBookmark(Bookmark<TextPosition> bookmark) async {
-    final edited = await showBookmarkEditor(
-      context,
-      heading: 'Edit reading bookmark',
-      title: bookmark.title,
-      note: bookmark.note,
-      place: 'Saved ${dayAndTime(context, bookmark.createdAt)}',
-    );
-    if (edited == null) return;
-    await reader.editBookmark(
-      bookmark.id,
-      title: edited.title,
-      note: edited.note,
-    );
-  }
-
-  /// Deletes [bookmark] after the person confirms it.
-  Future<void> _deleteBookmark(Bookmark<TextPosition> bookmark) async {
-    if (await confirmAction(
-      context,
-      title: 'Delete reading bookmark?',
-      message: 'Remove this bookmark on synced devices. Your reading place and other bookmarks stay.',
-      action: 'Delete',
-    )) {
-      await reader.deleteBookmark(bookmark.id);
-    }
-  }
+  /// Saves an untitled bookmark at the shown page at once, as the player
+  /// does. While the shown page holds a bookmark, asks for that bookmark's
+  /// title and note in the shared bookmark editor instead.
+  Future<void> _bookmark() => switch (reader.bookmarkHere) {
+    null => reader.addBookmark(),
+    final here => editReadingBookmark(context, reader, here),
+  };
 
   /// The chapter arrow before the bar, or after it with [forward]. In a book
   /// without chapters it turns a page, and says so. It rebuilds only when it
@@ -303,25 +280,48 @@ class _ReaderScreenState extends State<ReaderScreen> {
   );
 
   /// The dock's tool row, with [audio] at its end. It rebuilds only when a
-  /// tool turns on or off.
+  /// tool turns on or off, or the Bookmark tool's state changes.
   Widget _tools(Widget? audio) => ListenableSelector(
     listenable: Listenable.merge([
       reader.documentChanges,
       reader.bookmarkChanges,
       reader.placeChanges,
+      reader.bookMapChanges,
     ]),
     select: () => (
       ready: reader.ready,
       open: reader.document != null,
+      book: reader.book != null,
       bookmark: reader.canBookmark,
+      bookmarked: reader.bookmarkHere != null,
     ),
     builder: (_, on, _) => ReaderTools(
       onContents: on.ready ? _openContents : null,
       onSearch: on.ready ? () => unawaited(_openSearch()) : null,
       onSettings: on.open ? _openSettings : null,
-      onBookmark: on.bookmark ? () => unawaited(reader.addBookmark()) : null,
+      onBookmark: on.bookmark ? () => unawaited(_bookmark()) : null,
+      bookmarked: on.bookmarked,
+      onHistory: on.book ? _openHistory : null,
       audio: audio,
     ),
+  );
+
+  /// The player's Undo row while the session offers Undo after a move. A
+  /// move made in full screen keeps its offer, so the row shows with the
+  /// controls.
+  Widget _undo() => ListenableBuilder(
+    listenable: reader.undoChanges,
+    builder: (_, _) => switch (reader.undoOffer) {
+      null => const SizedBox.shrink(),
+      final offer => Padding(
+        padding: const EdgeInsets.fromLTRB(8, 0, 8, 6),
+        child: UndoNotice(
+          unsaved: !offer.saved,
+          onUndo: () => unawaited(reader.undoMove()),
+          onDismiss: reader.dismissUndo,
+        ),
+      ),
+    },
   );
 
   @override
@@ -394,6 +394,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
                   select: () => reader.book,
                   builder: (context, book, _) => ReaderDock(
                     book: book,
+                    undo: _undo(),
                     bar: ReaderScrubBar(
                       reader: reader,
                       previous: _arrow(forward: false),
@@ -412,7 +413,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
                           reader.previews.settle(target, reader.goTo(target)),
                     ),
                     // The round cover button joins the row only while an
-                    // audiobook is open, so the row spaces four tools
+                    // audiobook is open, so the row spaces five tools
                     // evenly without it.
                     tools: switch (widget.playback) {
                       null => _tools(null),
@@ -619,16 +620,22 @@ class _ReaderControls extends StatelessWidget {
   );
 }
 
-/// The reader's glass dock at the foot of the page: the place in the book
-/// with its [bar] over the [tools]. The glass shows [book], the open book.
+/// The reader's glass dock at the foot of the page: the [undo] row over the
+/// place in the book with its [bar], over the [tools]. The glass shows
+/// [book], the open book. The dock lies over the page, so a change of its
+/// height never moves the page or lays it out again.
 class ReaderDock extends StatelessWidget {
   const ReaderDock({
     super.key,
     required this.bar,
     required this.tools,
+    this.undo,
     this.book,
   });
   final Book? book;
+
+  /// The Undo row, which takes no room while it offers nothing.
+  final Widget? undo;
 
   /// The place label over the scrub bar and its chapter arrows.
   final Widget bar;
@@ -646,17 +653,20 @@ class ReaderDock extends StatelessWidget {
         type: MaterialType.transparency,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(2, 6, 2, 2),
-          child: Column(mainAxisSize: MainAxisSize.min, children: [bar, tools]),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [?undo, bar, tools],
+          ),
         ),
       ),
     ),
   );
 }
 
-/// The reader's row of tools: Contents, Search book, Reading settings and
-/// Bookmark this place, then [audio], if any. A tool whose callback is null
-/// shows but is off. Each tap goes to its own callback, so the owner decides
-/// what it does.
+/// The reader's row of tools: Contents, Search book, Reading settings,
+/// Bookmark this place and History, then [audio], if any. A tool whose
+/// callback is null shows but is off. Each tap goes to its own callback, so
+/// the owner decides what it does.
 class ReaderTools extends StatelessWidget {
   const ReaderTools({
     super.key,
@@ -664,10 +674,12 @@ class ReaderTools extends StatelessWidget {
     required this.onSearch,
     required this.onSettings,
     required this.onBookmark,
+    required this.bookmarked,
+    required this.onHistory,
     this.audio,
   });
 
-  /// Reports Contents, which asks for the contents and the bookmarks.
+  /// Reports Contents, which asks for the contents.
   final VoidCallback? onContents;
 
   /// Reports Search book, which asks for the search panel.
@@ -677,8 +689,16 @@ class ReaderTools extends StatelessWidget {
   /// in a PDF, the reflow choice.
   final VoidCallback? onSettings;
 
-  /// Reports Bookmark this place, which asks to bookmark the shown place.
+  /// Reports a tap on the Bookmark tool, which asks to bookmark the shown
+  /// place, or, while it is [bookmarked], to name that bookmark.
   final VoidCallback? onBookmark;
+
+  /// Whether the shown page holds a bookmark. The Bookmark tool then fills
+  /// its icon and reads Bookmarked.
+  final bool bookmarked;
+
+  /// Reports History, which asks for the book's History timeline.
+  final VoidCallback? onHistory;
 
   /// The last tool, such as the open audiobook's button.
   final Widget? audio;
@@ -713,11 +733,18 @@ class ReaderTools extends StatelessWidget {
           ),
           onSettings,
         ),
-        button(
-          'Bookmark this place',
-          const Icon(Icons.bookmark_add_outlined),
-          onBookmark,
-        ),
+        bookmarked
+            ? button(
+                'Bookmarked',
+                const Icon(Icons.bookmark_rounded),
+                onBookmark,
+              )
+            : button(
+                'Bookmark this place',
+                const Icon(Icons.bookmark_add_outlined),
+                onBookmark,
+              ),
+        button('History', const Icon(Icons.history_rounded), onHistory),
         ?audio,
       ],
     );
@@ -861,24 +888,18 @@ class ReaderSettingsPanel extends StatelessWidget {
   }
 }
 
-/// The book's table of contents and, on a second tab, its reading
-/// [bookmarks]. A tap on an entry reports its place through [onContents]. A
-/// tap on a bookmark reports [onRestore], and the bookmark's menu reports
-/// [onEdit] or [onDelete].
+/// The book's table of contents. A tap on an entry reports its place
+/// through [onContents].
 class ReaderContentsPanel extends StatelessWidget {
   const ReaderContentsPanel({
     super.key,
     this.timeLeft,
     required this.contents,
     required this.onContents,
-    required this.bookmarks,
-    required this.onRestore,
-    required this.onEdit,
-    required this.onDelete,
   });
 
-  /// The estimated reading time left in the book, which the Contents tab
-  /// shows above the contents while it is known.
+  /// The estimated reading time left in the book, which shows above the
+  /// contents while it is known.
   final ValueListenable<Duration?>? timeLeft;
 
   final List<ContentsEntry> contents;
@@ -886,107 +907,33 @@ class ReaderContentsPanel extends StatelessWidget {
   /// Reports the href of the entry that the person chose.
   final ValueChanged<String> onContents;
 
-  /// The reading bookmarks of the open edition.
-  final List<Bookmark<TextPosition>> bookmarks;
-
-  /// Reports a tap on a bookmark, to return to its place.
-  final ValueChanged<Bookmark<TextPosition>> onRestore;
-
-  /// Reports that the person chose Edit title and note for a bookmark.
-  final ValueChanged<Bookmark<TextPosition>> onEdit;
-
-  /// Reports that the person chose Delete for a bookmark.
-  final ValueChanged<Bookmark<TextPosition>> onDelete;
-
   @override
   Widget build(BuildContext context) => SafeArea(
     child: SizedBox(
       height: MediaQuery.sizeOf(context).height * .7,
-      child: DefaultTabController(
-        length: 2,
-        child: Column(
-          children: [
-            const TabBar(
-              tabs: [
-                Tab(text: 'Contents'),
-                Tab(text: 'Bookmarks'),
-              ],
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          if (timeLeft case final timeLeft?)
+            ValueListenableBuilder<Duration?>(
+              valueListenable: timeLeft,
+              builder: (context, left, _) => left == null
+                  ? const SizedBox.shrink()
+                  : Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Text(
+                        '${estimatedTime(left)} left in book',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ),
             ),
-            Expanded(
-              child: TabBarView(
-                children: [
-                  ListView(
-                    padding: const EdgeInsets.all(16),
-                    children: [
-                      if (timeLeft case final timeLeft?)
-                        ValueListenableBuilder<Duration?>(
-                          valueListenable: timeLeft,
-                          builder: (context, left, _) => left == null
-                              ? const SizedBox.shrink()
-                              : Padding(
-                                  padding: const EdgeInsets.only(bottom: 8),
-                                  child: Text(
-                                    '${estimatedTime(left)} left in book',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodySmall,
-                                  ),
-                                ),
-                        ),
-                      for (final entry in contents)
-                        ListTile(
-                          contentPadding: EdgeInsets.only(
-                            left: entry.depth * 16.0,
-                          ),
-                          title: Text(entry.title),
-                          onTap: () => onContents(entry.href),
-                        ),
-                    ],
-                  ),
-                  ListView(
-                    padding: const EdgeInsets.all(16),
-                    children: [
-                      if (bookmarks.isEmpty)
-                        const Text(
-                          'No reading bookmarks in this edition. Use Bookmark this place while reading.',
-                        ),
-                      for (final bookmark in bookmarks)
-                        ListTile(
-                          title: Text(
-                            bookmark.title?.isNotEmpty == true
-                                ? bookmark.title!
-                                : 'Saved reading place',
-                          ),
-                          subtitle: Text(
-                            bookmark.note?.isNotEmpty == true
-                                ? bookmark.note!
-                                : dayAndTime(context, bookmark.createdAt),
-                          ),
-                          onTap: () => onRestore(bookmark),
-                          trailing: PopupMenuButton<String>(
-                            tooltip: 'Edit reading bookmark',
-                            onSelected: (action) => (action == 'delete'
-                                ? onDelete
-                                : onEdit)(bookmark),
-                            itemBuilder: (_) => [
-                              const PopupMenuItem(
-                                value: 'edit',
-                                child: Text('Edit title and note'),
-                              ),
-                              const PopupMenuItem(
-                                value: 'delete',
-                                child: Text('Delete'),
-                              ),
-                            ],
-                          ),
-                        ),
-                    ],
-                  ),
-                ],
-              ),
+          for (final entry in contents)
+            ListTile(
+              contentPadding: EdgeInsets.only(left: entry.depth * 16.0),
+              title: Text(entry.title),
+              onTap: () => onContents(entry.href),
             ),
-          ],
-        ),
+        ],
       ),
     ),
   );

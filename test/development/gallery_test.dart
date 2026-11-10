@@ -442,35 +442,33 @@ void main() {
   });
 
   testWidgets(
-    'a bookmark renamed in the shared editor shows in the bookmarks panel',
+    'a tap on Bookmark reads Bookmarked, and a second tap names the bookmark '
+    'in the shared editor',
     (tester) async {
       await showGallery(tester);
       await openScreen(tester, 'Reader');
       await reveal(tester, 'reader', find.byTooltip('Bookmark this place'));
       await tester.tap(find.byTooltip('Bookmark this place'));
       await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('Contents'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(Tab, 'Bookmarks'));
-      await tester.pumpAndSettle();
-      final panel = find.byType(ReaderContentsPanel);
-      expect(
-        find.descendant(of: panel, matching: find.text('Saved reading place')),
-        findsOneWidget,
-      );
-      await tester.tap(find.byTooltip('Edit reading bookmark'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Edit title and note'));
-      await tester.pumpAndSettle();
+      Future<void> name() async {
+        await tester.tap(find.byTooltip('Bookmarked'));
+        await tester.pumpAndSettle();
+        expect(find.text('Edit bookmark'), findsOneWidget);
+        expect(find.text('On The Time Traveller'), findsOneWidget);
+      }
+
+      await name();
       await tester.enterText(
         find.widgetWithText(TextField, 'Title (optional)'),
         'By the fire',
       );
       await tester.tap(find.text('Save bookmark'));
       await tester.pumpAndSettle();
+      await name();
       expect(
-        find.descendant(of: panel, matching: find.text('By the fire')),
+        find.widgetWithText(TextField, 'By the fire'),
         findsOneWidget,
+        reason: 'The editor shows the saved name.',
       );
     },
   );

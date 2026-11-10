@@ -815,22 +815,12 @@ class _ReaderFixtureState extends State<_ReaderFixture> {
 
   void _openContents() => unawaited(
     _sheet(
-      (sheet) => ValueListenableBuilder(
-        valueListenable: _bookmarks,
-        builder: (_, bookmarks, _) => ReaderContentsPanel(
-          contents: [for (final chapter in _readerChapters) chapter.$3],
-          onContents: (href) {
-            Navigator.pop(sheet);
-            _showChapter(href);
-          },
-          bookmarks: bookmarks,
-          onRestore: (bookmark) {
-            Navigator.pop(sheet);
-            _showChapter(bookmark.position.anchor);
-          },
-          onEdit: (bookmark) => unawaited(_editBookmark(bookmark)),
-          onDelete: (bookmark) => unawaited(_deleteBookmark(bookmark)),
-        ),
+      (sheet) => ReaderContentsPanel(
+        contents: [for (final chapter in _readerChapters) chapter.$3],
+        onContents: (href) {
+          Navigator.pop(sheet);
+          _showChapter(href);
+        },
       ),
     ),
   );
@@ -895,32 +885,45 @@ class _ReaderFixtureState extends State<_ReaderFixture> {
     _hits.value = [];
   }
 
-  void _addBookmark() => _bookmarks.value = [
-    ..._bookmarks.value,
-    Bookmark(
-      id: 'sample-${_nextBookmark++}',
-      position: TextPosition(
-        editionId: 'sample-epub',
-        sourceKey: 'sample.epub',
-        revision: '1',
-        anchor: _readerChapters[_chapter].$3.href,
-      ),
-      createdAt: DateTime.now(),
-    ),
-  ];
+  /// The sample bookmark of the shown chapter, or null.
+  Bookmark<TextPosition>? get _bookmarkHere => _bookmarks.value
+      .where(
+        (bookmark) =>
+            bookmark.position.anchor == _readerChapters[_chapter].$3.href,
+      )
+      .lastOrNull;
 
-  Future<void> _editBookmark(Bookmark<TextPosition> bookmark) async {
+  /// Bookmarks the shown chapter at once, or, while it holds a bookmark,
+  /// names that bookmark in the shared editor, as the reader does.
+  Future<void> _bookmark() async {
+    final here = _bookmarkHere;
+    if (here == null) {
+      _bookmarks.value = [
+        ..._bookmarks.value,
+        Bookmark(
+          id: 'sample-${_nextBookmark++}',
+          position: TextPosition(
+            editionId: 'sample-epub',
+            sourceKey: 'sample.epub',
+            revision: '1',
+            anchor: _readerChapters[_chapter].$3.href,
+          ),
+          createdAt: DateTime.now(),
+        ),
+      ];
+      return;
+    }
     final edited = await showBookmarkEditor(
       context,
-      heading: 'Edit reading bookmark',
-      title: bookmark.title,
-      note: bookmark.note,
-      place: 'Saved ${dayAndTime(context, bookmark.createdAt)}',
+      heading: 'Edit bookmark',
+      title: here.title,
+      note: here.note,
+      place: 'On ${_readerChapters[_chapter].$2}',
     );
     if (edited == null) return;
     _bookmarks.value = [
       for (final kept in _bookmarks.value)
-        kept.id == bookmark.id
+        kept.id == here.id
             ? Bookmark(
                 id: kept.id,
                 position: kept.position,
@@ -930,20 +933,6 @@ class _ReaderFixtureState extends State<_ReaderFixture> {
               )
             : kept,
     ];
-  }
-
-  Future<void> _deleteBookmark(Bookmark<TextPosition> bookmark) async {
-    if (await confirmAction(
-      context,
-      title: 'Delete reading bookmark?',
-      message: 'Remove this sample bookmark from the gallery.',
-      action: 'Delete',
-    )) {
-      _bookmarks.value = [
-        for (final kept in _bookmarks.value)
-          if (kept.id != bookmark.id) kept,
-      ];
-    }
   }
 
   @override
@@ -1001,11 +990,17 @@ class _ReaderFixtureState extends State<_ReaderFixture> {
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
             child: ProgressLine(value: (_chapter + 1) / 12),
           ),
-          tools: ReaderTools(
-            onContents: _openContents,
-            onSearch: () => unawaited(_openSearch()),
-            onSettings: _openSettings,
-            onBookmark: _addBookmark,
+          tools: ValueListenableBuilder(
+            valueListenable: _bookmarks,
+            builder: (_, _, _) => ReaderTools(
+              onContents: _openContents,
+              onSearch: () => unawaited(_openSearch()),
+              onSettings: _openSettings,
+              onBookmark: () => unawaited(_bookmark()),
+              bookmarked: _bookmarkHere != null,
+              // The gallery has no reading records, so its History is off.
+              onHistory: null,
+            ),
           ),
         ),
         const SizedBox(height: 12),
