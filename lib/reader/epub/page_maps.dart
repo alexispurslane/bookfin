@@ -12,6 +12,8 @@ import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 
 import '../../downloads/derived_files.dart';
+import '../book_pages.dart';
+import 'dom.dart';
 import 'layout.dart';
 import 'prepare.dart';
 
@@ -106,26 +108,54 @@ class BookPageMaps {
   }
 }
 
-/// The true page starts of one section, in order, and whether its main run
-/// reached the section's end.
+/// The true pages of one section, in order: where each one starts, its
+/// first place and where it starts in the section's visible characters,
+/// and whether its main run reached the section's end.
 ///
-/// A section that no run reached has no starts and is not complete.
+/// A section that no run reached has no pages and is not complete.
 class KeptSection {
-  const KeptSection(this.starts, {required this.complete});
+  const KeptSection(
+    this.starts, {
+    required this.firsts,
+    required this.visible,
+    required this.complete,
+  });
+
+  /// The true page starts.
   final List<PageStart> starts;
+
+  /// The first place of each page ([LaidPage.startPlace]), or null for a
+  /// page that shows no place.
+  final List<EpubPlace?> firsts;
+
+  /// Where each page starts among the section's visible characters, as the
+  /// page index counts them ([BookPages]), and the section's number of
+  /// visible characters.
+  final VisibleStarts visible;
   final bool complete;
 
   @override
   bool operator ==(Object other) =>
       other is KeptSection &&
       other.complete == complete &&
-      listEquals(other.starts, starts);
+      listEquals(other.starts, starts) &&
+      listEquals(other.firsts, firsts) &&
+      listEquals(other.visible.starts, visible.starts) &&
+      other.visible.length == visible.length;
 
   @override
-  int get hashCode => Object.hash(complete, Object.hashAll(starts));
+  int get hashCode => Object.hash(
+    complete,
+    Object.hashAll(starts),
+    Object.hashAll(firsts),
+    Object.hashAll(visible.starts),
+    visible.length,
+  );
 
   @override
-  String toString() => 'KeptSection($starts, complete: $complete)';
+  String toString() =>
+      'KeptSection($starts, firsts: $firsts, visible: $visible, '
+      'complete: $complete)';
 }
 
 /// The page maps that Bookfin keeps for each download.
@@ -134,22 +164,31 @@ class KeptSection {
 /// ([DerivedBookFiles.layoutDirectory]), so removing the download removes
 /// them. Each [PageMapKey] has one file. A book keeps the maps of at most
 /// [limit] keys, the most recently read or written. A write removes the
-/// maps of another engine fingerprint, which no later read can use.
+/// maps of another engine fingerprint or another format [version], which
+/// no later read can use.
 ///
 /// A file is: the magic number `BKPM`, the format [version] and the whole
 /// key (the book, the page size, the text size and whether it sizes the
-/// main text, and the engine), then the section count, then for each section its complete flag,
-/// its start count and its starts, then a CRC-32 of all bytes before it.
-/// Counts and starts are unsigned variable-length integers (LEB128). A
-/// start is the step of its item from the previous start's item, then its
-/// line (the step from the previous start's line when the item is the
-/// same), then its part.
+/// main text, and the engine), then the section count, then for each
+/// section its complete flag, its page count, its pages and its number of
+/// visible characters after its last page's start, then a CRC-32 of all
+/// bytes before it. Every number is an unsigned variable-length integer
+/// (LEB128). A page is five numbers or four:
+///
+/// - Its start: the step of its item from the previous start's item, then
+///   its line (the step from the previous start's line when the item is
+///   the same), then its part.
+/// - Its first place: 0 when it has none, or else the step of its node
+///   from the node of the section's previous first place, zigzag-encoded
+///   (a first place can come before the one of the page before it), plus
+///   1. Then the place's offset, when it has a node.
+/// - Its visible start: the step from the previous page's visible start.
 ///
 /// The calling isolate encodes and decodes the map, and the file access
-/// is asynchronous. On the host's debug build, a map of 11,393 pages
-/// (34 KB, the Complete Shakespeare) decodes in 0.3 ms and encodes in
-/// 0.6 ms. One of 23,000 pages (70 KB, the largest of the corpus at 360 x
-/// 640 @ 26) takes 1.0 ms and 1.6 ms. A worker would not take this work
+/// is asynchronous. A map takes about 7.6 bytes a page. On the host's
+/// debug build, a map of 23,200 pages (175 KB, about the largest of the
+/// corpus: Plato's Dialogues at 360 x 640 @ 26) reads in 2 ms and writes
+/// in 4 ms, file access included. A worker would not take this work
 /// off the UI isolate: the sections are a graph of one object for each
 /// page, and the copy of that graph to or from a worker runs in the
 /// sending isolate at about the cost of the codec, plus the hop's own 1 to
@@ -157,13 +196,14 @@ class KeptSection {
 abstract final class PageMaps {
   /// The format of the file. It is part of the key, so a file of another
   /// format reads as another key's map. Version 2 added
-  /// [PageMapKey.sizesMainText].
-  static const version = 2;
+  /// [PageMapKey.sizesMainText]. Version 3 added the first places and the
+  /// visible starts of the pages (t5-q0hs).
+  static const version = 3;
 
   /// The most settings values that one book keeps maps for. A reader
   /// changes the text size or turns the phone now and then, so four values
   /// cover the usual set: two text sizes in two orientations. The largest
-  /// map of the corpus is 70 KB.
+  /// map of the corpus is 176 KB.
   static const limit = 4;
 
   static const _magic = [0x42, 0x4b, 0x50, 0x4d]; // BKPM
@@ -250,7 +290,7 @@ abstract final class PageMaps {
       } finally {
         if (await partial.exists()) await partial.delete();
       }
-      await _evict(directory, file, _engineName(key));
+      await _evict(directory, file, _family(key));
     } on FileSystemException {
       // The next open lays the book out and writes again.
     }
@@ -266,13 +306,13 @@ abstract final class PageMaps {
     }
   }
 
-  /// Removes the maps in [directory] of an engine other than [engine], and
-  /// the least recently used maps beyond [limit]. [kept] is the map that
-  /// was just written, which stays.
+  /// Removes the maps in [directory] outside [family], and the least
+  /// recently used maps beyond [limit]. [kept] is the map that was just
+  /// written, which stays.
   static Future<void> _evict(
     Directory directory,
     File kept,
-    String engine,
+    String family,
   ) async {
     final others = <(File, DateTime)>[];
     await for (final entry in directory.list(followLinks: false)) {
@@ -280,7 +320,7 @@ abstract final class PageMaps {
       if (entry is! File || !name.endsWith('.map') || entry.path == kept.path) {
         continue;
       }
-      if (!name.startsWith('$engine-')) {
+      if (!name.startsWith('$family-')) {
         await entry.delete();
       } else {
         others.add((entry, (await entry.stat()).modified));
@@ -292,21 +332,23 @@ abstract final class PageMaps {
     }
   }
 
-  /// The file of [key]'s map. Its name begins with the engine's name, so
-  /// that a write finds the maps of another engine without reading them.
-  /// Then comes a hash of the whole header.
+  /// The file of [key]'s map. Its name begins with its [_family], so that
+  /// a write finds the maps of another engine or format without reading
+  /// them. Then comes a hash of the whole header.
   static File _file(File original, PageMapKey key) {
     final directory = DerivedBookFiles.layoutDirectory(original);
     // Hashing a key of a few hundred bytes costs far less than a hop to a
     // worker, so it stays in the calling isolate.
     final name = sha256.convert(_header(key)).toString().substring(0, 32);
-    return File('${directory.path}/${_engineName(key)}-$name.map');
+    return File('${directory.path}/${_family(key)}-$name.map');
   }
 
-  /// The first 16 hexadecimal digits of the SHA-256 of [key]'s engine
-  /// fingerprint.
-  static String _engineName(PageMapKey key) =>
-      sha256.convert(utf8.encode(key.engine)).toString().substring(0, 16);
+  /// The maps that a read with [key] can use: the format [version], and
+  /// the first 16 hexadecimal digits of the SHA-256 of [key]'s engine
+  /// fingerprint. A map of format 2 had no version in its name.
+  static String _family(PageMapKey key) =>
+      'v$version-'
+      '${sha256.convert(utf8.encode(key.engine)).toString().substring(0, 16)}';
 
   /// The bytes that begin the file of [key]'s map.
   static Uint8List _header(PageMapKey key) {
@@ -332,11 +374,19 @@ abstract final class PageMaps {
       ..addAll(header)
       ..unsigned(sections.length);
     for (final section in sections) {
+      final KeptSection(:starts, :firsts, :visible) = section;
+      assert(
+        firsts.length == starts.length &&
+            visible.starts.length == starts.length,
+        'Each page needs its first place and its visible start.',
+      );
       out
         ..unsigned(section.complete ? 1 : 0)
-        ..unsigned(section.starts.length);
+        ..unsigned(starts.length);
       var previous = const PageStart(0, 0);
-      for (final (index, start) in section.starts.indexed) {
+      var node = 0;
+      var characters = 0;
+      for (final (index, start) in starts.indexed) {
         assert(
           start.compareTo(previous) > 0 ||
               (index == 0 && start == const PageStart(0, 0)),
@@ -351,10 +401,27 @@ abstract final class PageMaps {
           )
           ..unsigned(start.part);
         previous = start;
+        if (firsts[index] case final first?) {
+          out
+            ..unsigned(_zigzag(first.node - node) + 1)
+            ..unsigned(first.offset);
+          node = first.node;
+        } else {
+          out.unsigned(0);
+        }
+        out.unsigned(visible.starts[index] - characters);
+        characters = visible.starts[index];
       }
+      out.unsigned(visible.length - characters);
     }
     return (out..uint32(getCrc32(out.bytes))).bytes;
   }
+
+  /// [value] as an unsigned number, small for small values of either sign.
+  static int _zigzag(int value) => value >= 0 ? value * 2 : -value * 2 - 1;
+
+  static int _unzigzag(int value) =>
+      value.isEven ? value ~/ 2 : -(value + 1) ~/ 2;
 
   /// The sections of [bytes] when its header is [header], or null when it
   /// names another key. It throws a [FormatException] when [bytes] is not
@@ -372,9 +439,9 @@ abstract final class PageMaps {
       return null;
     }
     final reader = _Reader(bytes, header.length, end);
-    // Each section takes at least 2 bytes, and each start 3, so no count
+    // Each section takes at least 3 bytes, and each page 5, so no count
     // can make a list larger than the file.
-    final count = reader.count(2);
+    final count = reader.count(3);
     final sections = <KeptSection>[];
     for (var index = 0; index < count; index++) {
       final complete = switch (reader.unsigned()) {
@@ -383,15 +450,38 @@ abstract final class PageMaps {
         _ => throw const FormatException('A complete flag is not 0 or 1.'),
       };
       final starts = <PageStart>[];
+      final firsts = <EpubPlace?>[];
+      final visible = <int>[];
       var item = 0;
       var line = 0;
-      for (var left = reader.count(3); left > 0; left--) {
+      var node = 0;
+      var characters = 0;
+      for (var left = reader.count(5); left > 0; left--) {
         final step = reader.unsigned();
         item += step;
         line = step == 0 ? line + reader.unsigned() : reader.unsigned();
         starts.add(PageStart(item, line, reader.unsigned()));
+        final first = reader.unsigned();
+        if (first == 0) {
+          firsts.add(null);
+        } else {
+          node += _unzigzag(first - 1);
+          if (node < 0) {
+            throw const FormatException('A first place has no node.');
+          }
+          firsts.add(EpubPlace(index, node, reader.unsigned()));
+        }
+        characters += reader.unsigned();
+        visible.add(characters);
       }
-      sections.add(KeptSection(starts, complete: complete));
+      sections.add(
+        KeptSection(
+          starts,
+          firsts: firsts,
+          visible: (starts: visible, length: characters + reader.unsigned()),
+          complete: complete,
+        ),
+      );
     }
     if (!reader.done) {
       throw const FormatException('The page map has bytes after its end.');

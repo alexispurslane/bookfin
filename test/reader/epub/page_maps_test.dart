@@ -2,10 +2,12 @@
 // map is the true page starts of each section for one value of the layout
 // settings. It holds no reading place, so a map that cannot be read only
 // costs layout work: the store sets it aside and reports no map.
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:bookfin/downloads/derived_files.dart';
+import 'package:bookfin/reader/epub/dom.dart';
 import 'package:bookfin/reader/epub/layout.dart';
 import 'package:bookfin/reader/epub/page_maps.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -62,20 +64,58 @@ PageMapKey _key({
 );
 
 /// A map of three sections: one whose main run ended, one whose main run
-/// stopped midway, and one that no run reached.
+/// stopped midway, and one that no run reached. A page that shows no place
+/// has no first place, and a first place can lie before the one of the
+/// page before it.
 final _sections = [
-  KeptSection(const [
-    PageStart(0, 0),
-    PageStart(0, 31),
-    PageStart(3, 2),
-    PageStart(3, 2, 1),
-    PageStart(3, 2, 2),
-    PageStart(200, 0),
-    PageStart(200, 40000),
-  ], complete: true),
-  KeptSection(const [PageStart(0, 0), PageStart(1, 0)], complete: false),
-  const KeptSection([], complete: false),
+  KeptSection(
+    const [
+      PageStart(0, 0),
+      PageStart(0, 31),
+      PageStart(3, 2),
+      PageStart(3, 2, 1),
+      PageStart(3, 2, 2),
+      PageStart(200, 0),
+      PageStart(200, 40000),
+    ],
+    firsts: const [
+      EpubPlace(0, 4, 0),
+      EpubPlace(0, 4, 1931),
+      EpubPlace(0, 30, 0),
+      null,
+      EpubPlace(0, 29, 7),
+      EpubPlace(0, 9000, 0),
+      EpubPlace(0, 9000, 2000000),
+    ],
+    visible: (
+      starts: const [0, 1500, 4000, 4000, 4010, 900000, 2900000],
+      length: 3000000,
+    ),
+    complete: true,
+  ),
+  KeptSection(
+    const [PageStart(0, 0), PageStart(1, 0)],
+    firsts: const [EpubPlace(1, 2, 0), EpubPlace(1, 7, 0)],
+    visible: (starts: const [0, 800], length: 800),
+    complete: false,
+  ),
+  const KeptSection(
+    [],
+    firsts: [],
+    visible: (starts: [], length: 0),
+    complete: false,
+  ),
 ];
+
+/// A map of format 2, which kept no first places and no visible starts,
+/// for [_key]: its file's name and its bytes. Format 2's code wrote it for
+/// the starts (0, 0), (0, 31) and (3, 2) of one complete section.
+const _formatTwo = (
+  name: '23aa88cf724a2ed9-5dea2bf7bde850bdaf81b28652958c3d.map',
+  base64:
+      'QktQTQINYm9vay1pZGVudGl0eQAAAAAAwHlAAAAAAAD4hEAAAAAAAAA0QAAXaW5zdGFsbC0x'
+      'fGJ1aWxkLTF8ZW4tVVMBAQMAAAAAHwADAgD995E+',
+);
 
 void main() {
   test('a written page map reads back the same', () async {
@@ -97,7 +137,12 @@ void main() {
     await PageMaps.write(download, _key(), _sections);
     final longer = [
       ..._sections.take(2),
-      KeptSection(const [PageStart(0, 0), PageStart(5, 1)], complete: true),
+      KeptSection(
+        const [PageStart(0, 0), PageStart(5, 1)],
+        firsts: const [EpubPlace(2, 3, 0), EpubPlace(2, 11, 40)],
+        visible: (starts: const [0, 700], length: 1200),
+        complete: true,
+      ),
     ];
 
     await PageMaps.write(download, _key(), longer);
@@ -121,6 +166,22 @@ void main() {
       expect(await PageMaps.read(download, _key()), _sections);
     });
   }
+
+  test('a map of an older format reads as absent, and the next write '
+      'removes it', () async {
+    final download = await _download();
+    await _layout(download).create();
+    final older = File('${_layout(download).path}/${_formatTwo.name}');
+    await older.writeAsBytes(base64.decode(_formatTwo.base64));
+
+    expect(await PageMaps.read(download, _key()), isNull);
+    expect(await older.exists(), isTrue);
+
+    await PageMaps.write(download, _key(), _sections);
+
+    expect(await older.exists(), isFalse);
+    expect(await PageMaps.read(download, _key()), _sections);
+  });
 
   test('a map with another engine fingerprint is not returned', () async {
     final download = await _download();
