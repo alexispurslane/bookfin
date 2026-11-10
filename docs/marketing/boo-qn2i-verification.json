@@ -64,11 +64,31 @@
     {
       "command": "git diff --check",
       "result": "pass"
+    },
+    {
+      "name": "Parent integrated full-page review",
+      "result": "pass",
+      "tool": "T3 html_preview",
+      "widthsCssPixels": [
+        390,
+        1280
+      ],
+      "themes": [
+        "light",
+        "dark"
+      ],
+      "imagesLoaded": 12,
+      "fontsLoaded": [
+        "Outfit",
+        "Source Serif 4"
+      ],
+      "horizontalPageOverflow": false,
+      "notes": "All sections inspected through capture windows, with bundled fonts embedded and local assets inlined by T3. Real shared History controls and same-source NU comparisons inspected. After merge, Nix validation passed all image dimensions and alt text, unique IDs, and four capture hashes and sizes."
     }
   ],
   "manualInspection": "Inspected the selected source-page Original, Cream and Night renders and all four final WebPs. The excerpt is body prose, all three PDF captures use source page 24, and the shared History shows listening and reading icons plus expanded Go back, Go to and Delete controls.",
   "trialLimitations": [
-    "Unpublished source-page 18 trial did not reach word-view readiness. Native probes found unreliable text layers on pages 18–22; selected page 24 has native geometry and passes.",
+    "Unpublished source-page 18 trial did not reach word-view readiness. Native probes found unreliable text layers on pages 18\u201322; selected page 24 has native geometry and passes.",
     "Early History harness attempts stalled on the test clock and were stopped by their own process IDs only. The final clock-pumping harness passes.",
     "No full Flutter suite was run because executable app code was not changed. No coverage or mutation jobs were started."
   ],

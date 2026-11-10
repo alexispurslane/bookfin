@@ -1,6 +1,6 @@
 ---
 id: boo-qn2i
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-10T22:27:15Z
@@ -35,3 +35,7 @@ Continued existing Sol xhigh homepage writer. taskId node:delegated-task:command
 - Verification: two final production-widget capture tests passed; 64 existing history tests passed; markup/local assets/anchors/dimensions/claim-source paths and unchanged external links passed. All capture, encoding, and local validation commands used Nix. Targeted T3 previews at 390 light and 1280 dark loaded every image without horizontal overflow; they used fallback fonts and host theme tokens, not the final full-page font-faithful view.
 - Limitations: selected page has reliable native text geometry, but trial pages 18–22 did not; no production workaround was added. Early scratch History harness attempts required clock-pumping fixes, after which the final captures passed. No full Flutter suite, coverage, mutation, device-performance, or Android UI claim is made. Parent owns the final full-page preview, integration, and ticket closure.
 - Applied impeccable, software-design, PDF, and plain-English guidance. Read test-driven-development; no executable behavior changed and no HTML-string mirror tests were added. No design fork remains.
+
+**2026-11-10T22:57:43Z**
+
+Integrated as c69fa7f. Parent reviewed complete diff and provenance, inspected all page sections at390px light and1280px dark using bundled fonts, and confirmed all12 images load without page overflow. Nix post-merge validation passed image dimensions/alt text, unique IDs, and all four capture hashes/sizes. Captures are actual production widgets on the host with controlled History records; no Android acceptance implied. 2 capture tests and64 history tests passed in lead logs; app code unchanged.
