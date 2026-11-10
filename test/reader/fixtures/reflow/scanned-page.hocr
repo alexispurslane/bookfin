@@ -1,0 +1,58 @@
+  <div class='ocr_page' id='page_1' title='image "unknown"; bbox 0 0 1600 2594; ppageno 0; scan_res 70 70'>
+   <div class='ocr_photo' id='block_1_1' title="bbox 110 236 1310 1917"></div>
+   <div class='ocr_carea' id='block_1_2' title="bbox 551 1989 872 2018">
+    <p class='ocr_par' id='par_1_1' lang='eng' title="bbox 551 1989 872 2018">
+     <span class='ocr_caption' id='line_1_1' title="bbox 551 1989 872 2018; baseline 0 -11; x_size 24.666666; x_descenders 6.1666665; x_ascenders 6.1666665">
+      <span class='ocrx_word' id='word_1_1' title='bbox 551 1989 591 2007; x_wconf 92'>BY</span>
+      <span class='ocrx_word' id='word_1_2' title='bbox 620 1989 721 2007; x_wconf 81'>EDGAR</span>
+      <span class='ocrx_word' id='word_1_3' title='bbox 750 1989 778 2007; x_wconf 93'>A.</span>
+      <span class='ocrx_word' id='word_1_4' title='bbox 800 1989 872 2018; x_wconf 84'>POR.</span>
+     </span>
+    </p>
+   </div>
+   <div class='ocr_carea' id='block_1_3' title="bbox 133 2072 1261 2162">
+    <p class='ocr_par' id='par_1_2' lang='eng' title="bbox 133 2072 1261 2162">
+     <span class='ocr_line' id='line_1_2' title="bbox 133 2072 1261 2136; baseline 0 -39; x_size 32; x_descenders 7; x_ascenders 7">
+      <span class='ocrx_word' id='word_1_5' title='bbox 133 2072 255 2136; x_wconf 30'>(ee</span>
+      <span class='ocrx_word' id='word_1_6' title='bbox 277 2079 350 2104; x_wconf 31'>npon</span>
+      <span class='ocrx_word' id='word_1_7' title='bbox 368 2079 382 2097; x_wconf 26'>a</span>
+      <span class='ocrx_word' id='word_1_8' title='bbox 404 2072 537 2100; x_wconf 0'>wildinight</span>
+      <span class='ocrx_word' id='word_1_9' title='bbox 559 2072 656 2104; x_wconf 92'>dreary,</span>
+      <span class='ocrx_word' id='word_1_10' title='bbox 685 2072 768 2097; x_wconf 92'>while</span>
+      <span class='ocrx_word' id='word_1_11' title='bbox 789 2072 796 2097; x_wconf 55'>[</span>
+      <span class='ocrx_word' id='word_1_12' title='bbox 822 2072 966 2104; x_wconf 55'>pondered,</span>
+      <span class='ocrx_word' id='word_1_13' title='bbox 991 2072 1067 2097; x_wconf 59'>weak</span>
+      <span class='ocrx_word' id='word_1_14' title='bbox 1088 2072 1139 2097; x_wconf 93'>and</span>
+      <span class='ocrx_word' id='word_1_15' title='bbox 1160 2079 1261 2104; x_wconf 93'>weary,</span>
+     </span>
+     <span class='ocr_line' id='line_1_3' title="bbox 213 2129 1146 2162; baseline 0 -8; x_size 29; x_descenders 8; x_ascenders 7">
+      <span class='ocrx_word' id='word_1_16' title='bbox 213 2133 285 2154; x_wconf 88'>Over</span>
+      <span class='ocrx_word' id='word_1_17' title='bbox 303 2140 386 2162; x_wconf 83'>many</span>
+      <span class='ocrx_word' id='word_1_18' title='bbox 407 2140 422 2154; x_wconf 78'>a</span>
+      <span class='ocrx_word' id='word_1_19' title='bbox 440 2136 533 2162; x_wconf 44'>qiaint</span>
+      <span class='ocrx_word' id='word_1_20' title='bbox 555 2129 609 2154; x_wconf 86'>and</span>
+      <span class='ocrx_word' id='word_1_21' title='bbox 627 2129 735 2154; x_wconf 41'>cuorions</span>
+      <span class='ocrx_word' id='word_1_22' title='bbox 757 2129 854 2154; x_wconf 36'>velume</span>
+      <span class='ocrx_word' id='word_1_23' title='bbox 883 2133 912 2154; x_wconf 94'>of</span>
+      <span class='ocrx_word' id='word_1_24' title='bbox 933 2133 1067 2154; x_wconf 75'>forgotten</span>
+      <span class='ocrx_word' id='word_1_25' title='bbox 1092 2133 1146 2154; x_wconf 54'>lore</span>
+     </span>
+    </p>
+   </div>
+   <div class='ocr_carea' id='block_1_4' title="bbox 133 2190 1175 2223">
+    <p class='ocr_par' id='par_1_3' lang='eng' title="bbox 133 2190 1175 2223">
+     <span class='ocr_line' id='line_1_4' title="bbox 133 2190 1175 2223; baseline 0 -7; x_size 33; x_descenders 7; x_ascenders 8">
+      <span class='ocrx_word' id='word_1_26' title='bbox 133 2190 223 2216; x_wconf 92'>While</span>
+      <span class='ocrx_word' id='word_1_27' title='bbox 245 2190 256 2216; x_wconf 0'>T</span>
+      <span class='ocrx_word' id='word_1_28' title='bbox 277 2190 393 2216; x_wconf 34'>aodded,</span>
+      <span class='ocrx_word' id='word_1_29' title='bbox 414 2190 508 2223; x_wconf 80'>nearly</span>
+      <span class='ocrx_word' id='word_1_30' title='bbox 530 2198 659 2219; x_wconf 87'>napping,</span>
+      <span class='ocrx_word' id='word_1_31' title='bbox 677 2190 814 2223; x_wconf 86'>suddenly</span>
+      <span class='ocrx_word' id='word_1_32' title='bbox 832 2190 908 2216; x_wconf 88'>there</span>
+      <span class='ocrx_word' id='word_1_33' title='bbox 926 2198 1002 2216; x_wconf 73'>come</span>
+      <span class='ocrx_word' id='word_1_34' title='bbox 1023 2198 1038 2216; x_wconf 49'>a</span>
+      <span class='ocrx_word' id='word_1_35' title='bbox 1056 2194 1175 2223; x_wconf 87'>Lapping,</span>
+     </span>
+    </p>
+   </div>
+  </div>

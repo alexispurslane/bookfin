@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:bookfin/downloads/downloads.dart';
 import 'package:bookfin/reader/ocr_storage_io.dart';
@@ -257,6 +258,122 @@ void main() {
       );
     },
   );
+
+  test('a layout record reads back whole beside the recognized page, '
+      'and encodes and decodes in hops', () async {
+    final hop = CountingHop();
+    final record = Int32List.fromList([0, 0, 0, 1600, 2594, 0, 0, 0, -7]);
+    await writeOcrCache(
+      VerifiedFile(original.uri, digest),
+      digest,
+      'text',
+      '<div class="ocr_page">River</div>',
+      () => true,
+      hop: hop.call,
+    );
+    await writeLayoutCache(
+      VerifiedFile(original.uri, digest),
+      digest,
+      'layout',
+      record,
+      () => true,
+      hop: hop.call,
+    );
+
+    final saved = await readLayoutCache(
+      VerifiedFile(original.uri, digest),
+      digest,
+      'layout',
+      hop: hop.call,
+    );
+    expect(saved, record);
+    expect(hop.hops, 3);
+    expect(
+      await readOcrCache(
+        VerifiedFile(original.uri, digest),
+        digest,
+        'text',
+        hop: hop.call,
+      ),
+      '<div class="ocr_page">River</div>',
+    );
+  });
+
+  test('a layout record that is damaged or saved under another key is not '
+      'read', () async {
+    final record = Int32List.fromList([0, 0, 0, 100, 100, 0, 0, 0, 0]);
+    await writeLayoutCache(
+      VerifiedFile(original.uri, digest),
+      digest,
+      'layout',
+      record,
+      () => true,
+      hop: CountingHop().call,
+    );
+    final file = File('${root.path}/.bookfin-ocr/layout.json');
+    final saved = jsonDecode(await file.readAsString()) as Map;
+    await File('${root.path}/.bookfin-ocr/other.json')
+        .writeAsString(jsonEncode(saved));
+    expect(
+      await readLayoutCache(
+        VerifiedFile(original.uri, digest),
+        digest,
+        'other',
+        hop: CountingHop().call,
+      ),
+      isNull,
+    );
+    saved['layout'] = base64Encode([1, 2, 3, 4]);
+    await file.writeAsString(jsonEncode(saved));
+    expect(
+      await readLayoutCache(
+        VerifiedFile(original.uri, digest),
+        digest,
+        'layout',
+        hop: CountingHop().call,
+      ),
+      isNull,
+    );
+  });
+
+  test('a process killed in the middle of a layout record write keeps the '
+      'saved record', () async {
+    final earlier = Int32List.fromList([0, 0, 0, 100, 100, 0, 0, 0, 0]);
+    await writeLayoutCache(
+      VerifiedFile(original.uri, digest),
+      digest,
+      'layout',
+      earlier,
+      () => true,
+      hop: CountingHop().call,
+    );
+    final parent = Zone.current;
+    await expectLater(
+      IOOverrides.runZoned(
+        () => writeLayoutCache(
+          VerifiedFile(original.uri, digest),
+          digest,
+          'layout',
+          Int32List.fromList([0, 0, 0, 200, 200, 0, 0, 0, 0]),
+          () => true,
+          hop: CountingHop().call,
+        ),
+        createFile: (path) => path.contains('/.bookfin-ocr/')
+            ? _KilledWrite(parent.run(() => File(path)), parent)
+            : parent.run(() => File(path)),
+      ),
+      throwsA(isA<FileSystemException>()),
+    );
+    expect(
+      await readLayoutCache(
+        VerifiedFile(original.uri, digest),
+        digest,
+        'layout',
+        hop: CountingHop().call,
+      ),
+      earlier,
+    );
+  });
 }
 
 /// A cache file whose write stops halfway, as when Android kills the

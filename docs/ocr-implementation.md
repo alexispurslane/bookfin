@@ -181,11 +181,49 @@ recognized text, digests and saved places do not change. The device tests are in
 `tool/reader/ocr_layout_device_test.py`. The evidence is in
 `tool/evidence/reader/layout-pass/20261110/`.
 
+## Word geometry from the layout pass
+
+A scanned page gets its word geometry from the layout pass (ticket tb-jidt).
+Word geometry is where the printed words of a page are, in page units: one page
+unit is the page width. `PdfBook.geometry` gives it, and `PdfBook.attachedText`
+gives the reading text with a range of it for each word. A page with a usable
+text layer gets no geometry from Tesseract.
+
+- `pageGeometryFromLayout` in `lib/reader/page_geometry.dart` turns a layout record
+  into `PageGeometry`: word boxes, own baselines, lines with baselines and slopes,
+  blocks with their kinds and boxes, and paragraph starts. It runs in a hop.
+- `BundledEnglishText` keeps the layout record in the recognition cache, beside the
+  hOCR. Its key is the SHA-256 of `bookfin-layout-1`, the recognition version, the
+  book's digest and the page. The write is atomic, as the hOCR write is. A record
+  that does not read or decode is laid out again.
+- A page that Bookfin recognized before this ticket gets one layout pass on its
+  first visit. Its text comes from the cache and is not recognized again.
+- `decodeRecognizedPage` gives the same text and digest as before, and also each
+  hOCR word's range and box. `attachText` joins the hOCR words to the layout words
+  by box overlap, in a hop. The two passes can find slightly different words, so
+  the join does not count words.
+
+The queue has two kinds of work for a page: its layout pass and its recognition.
+Only the page that a reader shows asks for a layout pass, so a layout pass goes to
+the front. The recognition of a page whose layout pass waits or runs goes right
+behind it. Other recognition waits in the order of its requests.
+
+`recognize` without a page reads the image that the last `layout` kept. The queue
+is the only caller of the channel, and it runs one piece of work at a time. So it
+knows the page that the engine keeps. It reuses the kept image only when the last
+native call was the layout pass of the same page. Otherwise it draws the page and
+sends it again. A close forgets the kept page. So recognition never reads the
+image of another page, and a person who turns pages fast gets each shown page's
+words first.
+
 ## Invariants
 
 The coordinator's invariants are bounded page admission, at most sixteen disk-backed selected
 readable pages plus retained unsaved selections, and no live recognition status after close.
-`BundledEnglishText.checkInvariants()` checks them on demand.
+`BundledEnglishText.checkInvariants()` checks them on demand. `EnglishRecognition.checkInvariants()`
+also makes sure that no recognition waits before the layout pass of its page, and that the
+engine keeps no page while the worker closes. `PageGeometry.checkInvariants()` checks a page's
+geometry and, when given, its text attachment.
 The PDF and download owners retain their existing invariant checkers.
 
 ## Pinned inputs

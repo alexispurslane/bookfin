@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:bookfin/reader/document.dart';
 import 'package:bookfin/reader/ocr.dart';
+import 'package:bookfin/reader/page_geometry.dart';
 import 'package:bookfin/reader/pdf.dart';
 import 'package:bookfin/reader/platform_io.dart';
 import 'package:bookfin/reader/screen.dart';
@@ -19,6 +20,16 @@ import 'pdf_navigation_test.dart' show HeldPdf;
 import 'pdf_session_test.dart' show book, edition;
 
 class HeldRecognition implements PdfTextSupply {
+  @override
+  Future<PageGeometry?> geometry(PdfBook book, int page, PdfText extracted) =>
+      throw StateError('The viewport asked the supply for words.');
+  @override
+  Future<({PdfText text, TextAttachment? attachment})> attachedText(
+    PdfBook book,
+    int page,
+    PdfText extracted,
+    PageGeometry geometry,
+  ) => throw StateError('The viewport asked the supply for attached text.');
   @override
   final ValueNotifier<bool> recognizing = ValueNotifier(false);
   final result = Completer<PdfText>();
@@ -158,7 +169,9 @@ void main() {
   testWidgets(
     'recognized text feeds the existing reflow, search and source-page navigation',
     (tester) async {
-      final pdf = ViewportPdf(recognized: decodeRecognizedPage(englishPage));
+      final pdf = ViewportPdf(
+        recognized: decodeRecognizedPage(englishPage).text,
+      );
       late DocumentNavigator navigation;
       PdfAddress? address;
       await tester.pumpWidget(
@@ -198,7 +211,7 @@ void main() {
       WidgetTester tester,
       PdfText first,
     ) async {
-      final pdf = _PagedPdf(first, decodeRecognizedPage(englishPage));
+      final pdf = _PagedPdf(first, decodeRecognizedPage(englishPage).text);
       late DocumentNavigator navigation;
       await tester.pumpWidget(
         MaterialApp(

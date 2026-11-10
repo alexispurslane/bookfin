@@ -11,6 +11,7 @@ import 'package:pdfrx/pdfrx.dart' show pdfrxFlutterInitialize;
 import '../downloads/downloads.dart';
 import '../foundation/hop.dart';
 import 'document.dart';
+import 'page_geometry.dart';
 
 /// What the text of a source page offers reflow and search. The first three
 /// describe the page's own content. Only [failed] describes the reader.
@@ -159,6 +160,31 @@ abstract class PdfBook extends ReaderDocument {
     return textSupply?.text(this, sourcePage, layer) ?? layer;
   }
 
+  /// The word geometry of [sourcePage]: where its printed words are, or null
+  /// when the page has none. A page without a usable text layer gets it from
+  /// [textSupply]'s layout pass, before its text. A page with a usable text
+  /// layer gets none yet (ticket tb-xwlj gives it its character boxes).
+  Future<PageGeometry?> geometry(int sourcePage) async {
+    final layer = await textLayer(sourcePage);
+    if (layer.status == PdfTextStatus.candidate) return null;
+    return textSupply?.geometry(this, sourcePage, layer);
+  }
+
+  /// The text of [sourcePage] for reading, as [text] gives it, and for each
+  /// word of the page's [geometry], its range of that text. The attachment
+  /// is null when the text is not a candidate, or when nothing attaches it.
+  Future<({PdfText text, TextAttachment? attachment})> attachedText(
+    int sourcePage,
+    PageGeometry geometry,
+  ) async {
+    final layer = await textLayer(sourcePage);
+    if (layer.status == PdfTextStatus.candidate) {
+      return (text: layer, attachment: null);
+    }
+    return textSupply?.attachedText(this, sourcePage, layer, geometry) ??
+        (text: layer, attachment: null);
+  }
+
   Future<PdfRaster> render(int sourcePage, double width);
 
   PdfAddress addressFor(int sourcePage, PdfText text, int character) {
@@ -222,6 +248,23 @@ abstract class PdfTextSupply {
   /// layer, when it is a candidate, and otherwise the recognized text, whose
   /// status says whether the page reflows, or a [PdfTextStatus.failed] text.
   Future<PdfText> text(PdfBook book, int page, PdfText extracted);
+
+  /// The word geometry of [page] of [book], whose text layer [extracted] is
+  /// not a candidate, from Tesseract's layout pass. The layout pass of the
+  /// page that a reader shows goes before every other waiting page. Null
+  /// when the page has no geometry: [extracted] is a candidate, the layout
+  /// pass failed, or this reader stopped waiting.
+  Future<PageGeometry?> geometry(PdfBook book, int page, PdfText extracted);
+
+  /// The text of [page] for reading, as [text] gives it, and for each word
+  /// of [geometry], the page's geometry, its range of that text. The
+  /// attachment is null when the text is not a recognized candidate.
+  Future<({PdfText text, TextAttachment? attachment})> attachedText(
+    PdfBook book,
+    int page,
+    PdfText extracted,
+    PageGeometry geometry,
+  );
   Future<void> close();
 }
 
@@ -367,6 +410,28 @@ class _NativePdfBook extends PdfBook {
     final extracted = await textLayer(sourcePage);
     if (_closing != null) return extracted;
     return textSupply?.text(this, sourcePage, extracted) ?? extracted;
+  });
+
+  @override
+  Future<PageGeometry?> geometry(int sourcePage) => _run(() async {
+    final extracted = await textLayer(sourcePage);
+    if (_closing != null || extracted.status == PdfTextStatus.candidate) {
+      return null;
+    }
+    return textSupply?.geometry(this, sourcePage, extracted);
+  });
+
+  @override
+  Future<({PdfText text, TextAttachment? attachment})> attachedText(
+    int sourcePage,
+    PageGeometry geometry,
+  ) => _run(() async {
+    final extracted = await textLayer(sourcePage);
+    if (_closing != null || extracted.status == PdfTextStatus.candidate) {
+      return (text: extracted, attachment: null);
+    }
+    return textSupply?.attachedText(this, sourcePage, extracted, geometry) ??
+        (text: extracted, attachment: null);
   });
 
   @override

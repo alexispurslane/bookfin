@@ -6,6 +6,8 @@ import 'dart:io';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
+import 'package:bookfin/downloads/downloads.dart';
+import 'package:bookfin/reader/ocr.dart';
 import 'package:bookfin/reader/pdf.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart' show debugPrint;
@@ -14,6 +16,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
 const _pages = String.fromEnvironment('BOOKFIN_LAYOUT_PAGES');
+const _record = bool.fromEnvironment('BOOKFIN_LAYOUT_RECORD');
 const _channel = MethodChannel('bookfin/ocr');
 
 /// One entry of a layout record: nine numbers, in Tesseract's order.
@@ -84,6 +87,45 @@ Future<PdfRaster> _raster(String file, int page) async {
     await book.dispose();
   }
 }
+
+/// The served file [name], or null when the runner serves none.
+Future<String?> _served(String name) async {
+  final client = HttpClient();
+  try {
+    final response = await (await client.getUrl(Uri.parse('$_pages/$name')))
+        .close();
+    if (response.statusCode != 200) {
+      await response.drain<void>();
+      return null;
+    }
+    return await response.transform(utf8.decoder).join();
+  } finally {
+    client.close();
+  }
+}
+
+/// Sends [text] to the runner, which keeps it as the fixture [name].
+Future<void> _send(String name, String text) async {
+  final client = HttpClient();
+  try {
+    final request = await client.putUrl(Uri.parse('$_pages/$name'));
+    final bytes = utf8.encode(text);
+    request.contentLength = bytes.length;
+    request.add(bytes);
+    final response = await request.close();
+    await response.drain<void>();
+    expect(response.statusCode, 204);
+  } finally {
+    client.close();
+  }
+}
+
+/// A layout record as the fixtures keep it: one entry a line, its nine
+/// numbers separated by spaces.
+String _layoutText(Int32List record) => [
+  for (var index = 0; index < record.length; index += 9)
+    '${record.sublist(index, index + 9).join(' ')}\n',
+].join();
 
 Map<String, Object> _image(PdfRaster raster) => {
   'width': raster.width,
@@ -337,6 +379,110 @@ void main() {
       await _layout(scanned);
       await _layout(skewed);
       expect(await _recognizeKept(), alone);
+    });
+  });
+
+  testWidgets('the reflow fixtures hold the layout records and the hOCR '
+      'that the emulator gives for the scanned and skewed pages', (
+    tester,
+  ) async {
+    await tester.runAsync(() async {
+      for (final (file, fixture) in [
+        ('scanned.pdf', 'scanned-page'),
+        ('skewed.pdf', 'skewed-page'),
+      ]) {
+        final raster = await _raster(file, 1);
+        final record = (await _channel.invokeMethod<Int32List>(
+          'layout',
+          _image(raster),
+        ))!;
+        final hocr = await _recognizeKept();
+        final layout = _layoutText(record);
+        if (_record) {
+          await _send('$fixture.layout', layout);
+          await _send('$fixture.hocr', hocr);
+        } else {
+          expect(layout, await _served('$fixture.layout'), reason: fixture);
+          expect(hocr, await _served('$fixture.hocr'), reason: fixture);
+        }
+      }
+    });
+  });
+
+  testWidgets('a scanned page gets its words from the layout pass, then '
+      'its text from the kept image, with the digest of recognition alone, '
+      'attached to those words', (tester) async {
+    await tester.runAsync(() async {
+      final folder = await Directory.systemTemp.createTemp('bookfin-words-');
+      try {
+        for (final (name, digest) in [
+          (
+            'scanned.pdf',
+            'b445f1857d95e243154bfeb056e7df3b477586153e917f78f3477f0a319d25b4',
+          ),
+          (
+            'skewed.pdf',
+            '123831d0d61cde195f9a31b52fe745beb49311c930a79857dc7f0aa8e4b4e736',
+          ),
+        ]) {
+          final client = HttpClient();
+          final Uint8List bytes;
+          try {
+            final response = await (await client.getUrl(
+              Uri.parse('$_pages/$name'),
+            )).close();
+            final builder = BytesBuilder(copy: false);
+            await response.forEach(builder.add);
+            bytes = builder.takeBytes();
+          } finally {
+            client.close();
+          }
+          final file = await File('${folder.path}/$name').writeAsBytes(bytes);
+          final original = VerifiedFile(
+            file.uri,
+            sha256.convert(bytes).toString(),
+          );
+          final supply = BundledEnglishText();
+          final book = await PdfRuntime.instance.open(
+            bytes,
+            original.digest,
+            textSupply: supply,
+          );
+          supply.bind((read) => read(original, () => true));
+          try {
+            final watch = Stopwatch()..start();
+            final words = book.geometry(1);
+            final attached = words.then(
+              (geometry) => book.attachedText(1, geometry!),
+            );
+            final geometry = (await words)!;
+            final wordsAt = watch.elapsedMilliseconds;
+            final text = await attached;
+            final textAt = watch.elapsedMilliseconds;
+            debugPrint(
+              '$name: ${geometry.wordCount} words after $wordsAt ms, '
+              'text attached after $textAt ms',
+            );
+            expect(geometry.wordCount, greaterThan(30));
+            expect(text.text.digest, digest, reason: name);
+            geometry.checkInvariants(
+              attachment: text.attachment,
+              source: text.text.source,
+            );
+            final named = [
+              for (var word = 0; word < geometry.wordCount; word++)
+                if (text.attachment![word * 2] < text.attachment![word * 2 + 1])
+                  word,
+            ];
+            expect(named.length, greaterThan(geometry.wordCount * 9 ~/ 10));
+            EnglishRecognition.instance.checkInvariants();
+          } finally {
+            await book.dispose();
+          }
+        }
+      } finally {
+        await folder.delete(recursive: true);
+      }
     });
   });
 }

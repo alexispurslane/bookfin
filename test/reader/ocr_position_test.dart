@@ -243,7 +243,7 @@ void main() {
 
   test('the document separates extracted, recognized and changed-model character meanings even for identical words', () async {
     final pdf = reader.document! as PdfBook;
-    final recognized = decodeRecognizedPage(englishPage);
+    final recognized = decodeRecognizedPage(englishPage).text;
     final extracted = PdfText(
       source: recognized.source,
       text: recognized.text,
