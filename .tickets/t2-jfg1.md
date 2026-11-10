@@ -1,6 +1,6 @@
 ---
 id: t2-jfg1
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-10T14:01:51Z
