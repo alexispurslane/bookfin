@@ -287,7 +287,7 @@ void main() {
               book: book,
               fontSize: fontSize,
               initial: initial,
-              reflow: true,
+              view: PdfPageView.pageWords,
               onReady: (navigator, _) => reported.navigator = navigator,
               onAddress: reported.places.add,
               onCancelRecognition: () => book.textSupply?.cancel(),

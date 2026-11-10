@@ -188,7 +188,7 @@ void main() {
             book: book,
             fontSize: 20,
             initial: PdfAddress(page, 0),
-            reflow: false,
+            view: PdfPageView.original,
             onReady: (shown, _) => navigator = shown,
             onAddress: (_) {},
             onCancelRecognition: () {},

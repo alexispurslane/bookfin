@@ -135,12 +135,15 @@ void main() {
   ) async {
     final reader = await openPdf(tester);
     final rebuilt = await _rebuildsDuring(() async {
-      reader.setReflow(true);
+      reader.setPdfView(PdfPageView.pageWords);
       await tester.pump();
     });
     final viewports = rebuilt.whereType<PdfViewport>();
     expect(viewports, isNotEmpty);
-    expect(viewports.map((viewport) => viewport.reflow), everyElement(true));
+    expect(
+      viewports.map((viewport) => viewport.view),
+      everyElement(PdfPageView.pageWords),
+    );
     expect(_controlButtons(rebuilt), isEmpty);
     await close(tester, reader);
   }, variant: TargetPlatformVariant.only(TargetPlatform.linux));

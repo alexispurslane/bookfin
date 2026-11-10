@@ -12,7 +12,7 @@ import 'page_swipes.dart';
 import 'pdf.dart';
 import 'pdf_word_view.dart';
 
-/// The pages of an open PDF, as the original page or as reflowed text.
+/// The pages of an open PDF, as originals, page words or reading text.
 ///
 /// The original view asks the book only for the page's text layer, so it
 /// never starts recognition. The reflow view asks the book for the page's
@@ -42,7 +42,7 @@ class PdfViewport extends StatefulWidget {
     required this.fontSize,
     required this.onReady,
     required this.onAddress,
-    required this.reflow,
+    required this.view,
     required this.onCancelRecognition,
     required this.onTap,
     required this.onTurn,
@@ -55,9 +55,9 @@ class PdfViewport extends StatefulWidget {
   final void Function(DocumentNavigator, List<ContentsEntry>) onReady;
   final ValueChanged<PdfAddress> onAddress;
 
-  /// Whether the page shows as reflowed text. The original page shows
-  /// while the page has no text that matches the place.
-  final bool reflow;
+  /// The session's chosen PDF view. The original page shows while the
+  /// chosen view waits for words or text that match the place.
+  final PdfPageView view;
 
   /// Whether original pages and deck cards show their known content crop.
   /// A change redraws the shown original page, without changing its place
@@ -143,20 +143,30 @@ class _PdfViewportState extends State<PdfViewport>
       _zoom.value = Matrix4.identity();
       unawaited(_draw(_generation, replace: true));
     }
-    if (oldWidget.reflow != widget.reflow) {
+    if (oldWidget.view != widget.view) {
       // A new layout scrolls to the place, and the original page draws once.
       // The owner hears of the change after this build, because its
       // reports change what the owner shows.
       final generation = _generation;
+      final view = widget.view;
+      _textRequest++;
       void after(VoidCallback report) =>
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted && generation == _generation) report();
+            if (mounted && generation == _generation && view == widget.view) {
+              report();
+            }
           });
-      if (widget.reflow) {
-        _textRequest++;
+      if (view != PdfPageView.original) {
         _loading = true;
         _layoutWidth = null;
-        after(() => unawaited(_startWords(generation, _address)));
+        after(() {
+          _words.leave();
+          unawaited(
+            view == PdfPageView.pageWords
+                ? _startWords(generation, _address)
+                : _requestText(generation, _address),
+          );
+        });
       } else {
         final wasLoading = _loading;
         after(() {
@@ -208,7 +218,7 @@ class _PdfViewportState extends State<PdfViewport>
       _image = null;
       _layoutWidth = null;
     });
-    if (widget.reflow) {
+    if (widget.view == PdfPageView.pageWords) {
       await _startWords(generation, address, lastViewport: lastViewport);
     } else {
       _words.leave();
@@ -228,7 +238,7 @@ class _PdfViewportState extends State<PdfViewport>
         mounted &&
         generation == _generation &&
         request == _textRequest &&
-        widget.reflow;
+        widget.view == PdfPageView.pageWords;
     _words.open(address, last: lastViewport);
     await Future<void>.value();
     if (!current()) return;
@@ -256,7 +266,7 @@ class _PdfViewportState extends State<PdfViewport>
       _textFailed = false;
     });
     try {
-      final pendingText = widget.reflow
+      final pendingText = widget.view != PdfPageView.original
           ? widget.book.text(_page)
           : widget.book.textLayer(_page);
       await Future<void>.value();
@@ -299,9 +309,10 @@ class _PdfViewportState extends State<PdfViewport>
       ContentsEntry('Source page $page', 'page:$page'),
   ];
 
-  bool get _usingWords => widget.reflow && _words.covers;
+  bool get _usingWords => widget.view == PdfPageView.pageWords && _words.covers;
 
-  bool get _usingText => widget.reflow && !_usingWords && _positionResolved;
+  bool get _usingText =>
+      widget.view != PdfPageView.original && !_usingWords && _positionResolved;
 
   void _wordStateChanged() {
     if (!mounted) return;
@@ -394,7 +405,7 @@ class _PdfViewportState extends State<PdfViewport>
     if (page >= 1 && page <= widget.book.pageCount) {
       await _load(
         PdfAddress(page, 0),
-        lastViewport: !forward && widget.reflow,
+        lastViewport: !forward && widget.view != PdfPageView.original,
         turned: true,
       );
     }
@@ -503,6 +514,8 @@ class _PdfViewportState extends State<PdfViewport>
     builder: (context, constraints) {
       final text = _text!;
       final style = TextStyle(
+        fontFamily: 'Source Serif 4',
+        fontFamilyFallback: const ['Noto Serif'],
         fontSize: widget.fontSize,
         height: 1.55,
         color: Theme.of(context).colorScheme.onSurface,
@@ -642,7 +655,7 @@ class _PdfViewportState extends State<PdfViewport>
         onLayout: _words.lay,
       );
     }
-    if (!widget.reflow || _usingText) return _shownPage();
+    if (widget.view == PdfPageView.original || _usingText) return _shownPage();
     // The reflow view shows the original page while the text is on its way,
     // when the page's own content does not reflow, and when reflow failed
     // on the page. Only a failure puts a quiet line above it.

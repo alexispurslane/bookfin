@@ -5,7 +5,7 @@ import 'package:bookfin/reader/screen.dart' show ReaderSettingsPanel;
 import 'package:flutter/material.dart';
 
 /// A [PdfViewport] under a stand-in for the reader screen's controller
-/// part. It keeps the reflow choice, which starts at [reflow], and offers it
+/// part. It keeps the reflow choice, which starts at [view], and offers it
 /// in the reader's settings panel, shown under the viewport. It tells the
 /// document's text supply when the viewport stops waiting, as the screen does.
 class PdfViewportHost extends StatefulWidget {
@@ -16,20 +16,20 @@ class PdfViewportHost extends StatefulWidget {
     required this.onReady,
     required this.onAddress,
     this.initial,
-    this.reflow = false,
+    this.view = PdfPageView.original,
   });
   final PdfBook book;
   final double fontSize;
   final PdfAddress? initial;
   final void Function(DocumentNavigator, List<ContentsEntry>) onReady;
   final ValueChanged<PdfAddress> onAddress;
-  final bool reflow;
+  final PdfPageView view;
   @override
   State<PdfViewportHost> createState() => _PdfViewportHostState();
 }
 
 class _PdfViewportHostState extends State<PdfViewportHost> {
-  late bool _reflow = widget.reflow;
+  late PdfPageView _view = widget.view;
   @override
   Widget build(BuildContext context) => Column(
     children: [
@@ -40,7 +40,7 @@ class _PdfViewportHostState extends State<PdfViewportHost> {
           initial: widget.initial,
           onReady: widget.onReady,
           onAddress: widget.onAddress,
-          reflow: _reflow,
+          view: _view,
           onCancelRecognition: () => widget.book.textSupply?.cancel(),
           onTap: () {},
           onTurn: (_) {},
@@ -52,8 +52,8 @@ class _PdfViewportHostState extends State<PdfViewportHost> {
         onLarger: null,
         night: false,
         onNightChanged: (_) {},
-        reflow: _reflow,
-        onReflowChanged: (on) => setState(() => _reflow = on),
+        pdfView: _view,
+        onPdfViewChanged: (view) => setState(() => _view = view),
       ),
     ],
   );

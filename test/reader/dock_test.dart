@@ -355,7 +355,7 @@ void main() {
       expect(sheet, findsOneWidget);
       Finder inSheet(String tooltip) =>
           find.descendant(of: sheet, matching: find.byTooltip(tooltip));
-      expect(inSheet('Reflow text'), findsNothing);
+      expect(inSheet('Page words'), findsNothing);
       expect(inSheet('Original page'), findsNothing);
       expect(find.text('Trim margins'), findsNothing);
       final size = reader.fontSize;
@@ -448,7 +448,7 @@ void main() {
       await tester.tap(inDock(find.byTooltip('Next page')));
       await settleNative(tester);
       expect((reader.visibleAddress as PdfAddress).sourcePage, 2);
-      expect(inDock(find.byTooltip('Reflow text')), findsNothing);
+      expect(inDock(find.byTooltip('Page words')), findsNothing);
       await close(tester);
     }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
 
@@ -458,15 +458,15 @@ void main() {
       await tester.pumpAndSettle();
       final sheet = find.byType(ReaderSettingsPanel);
       await tester.tap(
-        find.descendant(of: sheet, matching: find.byTooltip('Reflow text')),
+        find.descendant(of: sheet, matching: find.byTooltip('Page words')),
       );
       await settleNative(tester);
-      expect(reader.reflow, isTrue);
+      expect(reader.pdfView, PdfPageView.pageWords);
       await tester.tap(
         find.descendant(of: sheet, matching: find.byTooltip('Original page')),
       );
       await settleNative(tester);
-      expect(reader.reflow, isFalse);
+      expect(reader.pdfView, PdfPageView.original);
       await close(tester);
     }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
   });

@@ -221,8 +221,8 @@ class DensitySwitch extends StatelessWidget {
   @override
   Widget build(BuildContext context) => PillChoice<LibraryDensity>(
     segments: const [
-      ButtonSegment(value: LibraryDensity.compact, label: Text('Compact')),
-      ButtonSegment(value: LibraryDensity.spacious, label: Text('Spacious')),
+      PillSegment(value: LibraryDensity.compact, label: 'Compact'),
+      PillSegment(value: LibraryDensity.spacious, label: 'Spacious'),
     ],
     selected: density,
     onChanged: onChanged,

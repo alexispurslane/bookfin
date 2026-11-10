@@ -117,7 +117,10 @@ void main() {
   );
 
   /// Shows the open book in a viewport, in reflow with [reflow].
-  Future<void> showReader(WidgetTester tester, {bool reflow = false}) async {
+  Future<void> showReader(
+    WidgetTester tester, {
+    PdfPageView view = PdfPageView.original,
+  }) async {
     placeReported = false;
     addTearDown(() async {
       await tester.pumpWidget(const SizedBox());
@@ -132,7 +135,7 @@ void main() {
             body: PdfViewportHost(
               book: reader.document! as PdfBook,
               fontSize: 20,
-              reflow: reflow,
+              view: view,
               initial: reader.initialAddress as PdfAddress?,
               onReady: (value, entries) {
                 navigation = value;
@@ -293,7 +296,7 @@ void main() {
       expect(hit.sourcePage, 2);
       expect(hit.character, greaterThan(1000));
       await native(tester, () => navigation.display(hit));
-      await tester.tap(find.byTooltip('Reflow text'));
+      await tester.tap(find.byTooltip('Page words'));
       await shows(tester, reflowScroll);
       await tester.pump();
       expect(
@@ -307,7 +310,7 @@ void main() {
       );
       await showReader(tester);
       await finishText(tester);
-      await tester.tap(find.byTooltip('Reflow text'));
+      await tester.tap(find.byTooltip('Page words'));
       await shows(tester, reflowScroll);
       await tester.pump();
       final scroll = tester
@@ -370,7 +373,7 @@ void main() {
       await showReader(tester);
       await finishText(tester);
       await drawOriginal(tester, 1);
-      await tester.tap(find.byTooltip('Reflow text'));
+      await tester.tap(find.byTooltip('Page words'));
       await shows(tester, find.textContaining('Restart Bookfin'));
       expect(find.text('Retry recognition'), findsNothing);
       await tester.pumpWidget(const SizedBox());
@@ -420,7 +423,7 @@ void main() {
           await restart(tester);
           expect((reader.initialAddress as PdfAddress).character, 10);
           // Only reflow recognizes a page.
-          await showReader(tester, reflow: true);
+          await showReader(tester, view: PdfPageView.pageWords);
           await drawOriginal(tester, 2);
           await native(
             tester,
@@ -502,7 +505,7 @@ void main() {
         expect((reader.initialAddress as PdfAddress).character, 10);
         await showReader(tester);
         await finishText(tester);
-        await tester.tap(find.byTooltip('Reflow text'));
+        await tester.tap(find.byTooltip('Page words'));
         await tester.pump();
         await drawOriginal(tester, 2);
         expect(reflowScroll, findsNothing);

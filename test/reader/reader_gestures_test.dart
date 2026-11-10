@@ -111,7 +111,7 @@ void main() {
       tester,
     ) async {
       final reader = await openPdf(tester, DrawnPdf());
-      await chooseSetting(tester, 'Reflow text', settle: tester.pump);
+      await chooseSetting(tester, 'Page words', settle: tester.pump);
       await drawn(tester, shown: reflowed);
       await tester.pump();
       final before = (reader.visibleAddress! as PdfAddress).character;

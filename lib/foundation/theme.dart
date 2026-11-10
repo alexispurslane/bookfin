@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 class BookfinThemeTransition extends StatelessWidget {
@@ -651,9 +653,27 @@ ThemeData theaterTheme(ThemeData night) {
 double floatingBarInset(BuildContext context) =>
     MediaQuery.paddingOf(context).bottom;
 
+/// One full label and its optional icon in a [PillChoice].
+class PillSegment<T> {
+  const PillSegment({
+    required this.value,
+    required this.label,
+    this.icon,
+    this.tooltip,
+  });
+
+  final T value;
+  final String label;
+  final IconData? icon;
+  final String? tooltip;
+}
+
 /// One choice of a few [segments], as a light track with a raised pill on
 /// the [selected] one. A tap on another segment reports its value through
 /// [onChanged]. Without [onChanged], the choice shows but is off.
+/// Icons disappear before labels stack vertically to fit the available
+/// width and system text size. Labels stay whole, and each target is at
+/// least 48 by 48 logical pixels.
 class PillChoice<T> extends StatelessWidget {
   const PillChoice({
     super.key,
@@ -661,25 +681,122 @@ class PillChoice<T> extends StatelessWidget {
     required this.selected,
     this.onChanged,
   });
-  final List<ButtonSegment<T>> segments;
+  final List<PillSegment<T>> segments;
   final T selected;
   final ValueChanged<T>? onChanged;
 
   @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(3),
-    decoration: BoxDecoration(
-      color: Theme.of(context).colorScheme.surfaceContainer,
-      borderRadius: BorderRadius.circular(99),
-    ),
-    child: SegmentedButton<T>(
-      showSelectedIcon: false,
-      segments: segments,
-      selected: {selected},
-      onSelectionChanged: switch (onChanged) {
-        null => null,
-        final onChanged => (chosen) => onChanged(chosen.single),
-      },
-    ),
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      const padding = EdgeInsets.all(3);
+      const segmentPadding = EdgeInsets.symmetric(horizontal: 12, vertical: 10);
+      const minimumTarget = 48.0;
+      const iconSize = 18.0;
+      const iconGap = 8.0;
+      final availableWidth = constraints.deflate(padding).maxWidth;
+      final style =
+          SegmentedButtonTheme.of(context).style?.textStyle?.resolve({}) ??
+          Theme.of(context).textTheme.labelLarge!;
+      final scaler = MediaQuery.textScalerOf(context);
+      final direction = Directionality.of(context);
+      var labelWidth = minimumTarget;
+      var iconWidth = minimumTarget;
+      for (final segment in segments) {
+        final width = TextPainter.computeWidth(
+          text: TextSpan(text: segment.label, style: style),
+          textDirection: direction,
+          textScaler: scaler,
+          locale: Localizations.maybeLocaleOf(context),
+        ).ceilToDouble();
+        labelWidth = math.max(labelWidth, width + segmentPadding.horizontal);
+        iconWidth = math.max(
+          iconWidth,
+          width +
+              segmentPadding.horizontal +
+              (segment.icon == null ? 0 : iconSize + iconGap),
+        );
+      }
+      final showIcons = iconWidth * segments.length <= availableWidth;
+      final vertical = labelWidth * segments.length > availableWidth;
+      var height = minimumTarget;
+      for (final segment in segments) {
+        final painter =
+            TextPainter(
+              text: TextSpan(text: segment.label, style: style),
+              textDirection: direction,
+              textScaler: scaler,
+              locale: Localizations.maybeLocaleOf(context),
+            )..layout(
+              maxWidth: vertical
+                  ? math.max(1, availableWidth - segmentPadding.horizontal)
+                  : double.infinity,
+            );
+        height = math.max(
+          height,
+          painter.height.ceilToDouble() + segmentPadding.vertical,
+        );
+        painter.dispose();
+      }
+      return Container(
+        padding: padding,
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surfaceContainer,
+          borderRadius: BorderRadius.circular(
+            vertical ? minimumTarget / 2 + padding.left : 99,
+          ),
+        ),
+        child: SegmentedButton<T>(
+          showSelectedIcon: false,
+          direction: vertical ? Axis.vertical : Axis.horizontal,
+          style: ButtonStyle(
+            textStyle: WidgetStatePropertyAll(style),
+            minimumSize: WidgetStatePropertyAll(Size(minimumTarget, height)),
+            padding: const WidgetStatePropertyAll(segmentPadding),
+            visualDensity: VisualDensity.standard,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            shape: vertical
+                ? const WidgetStatePropertyAll(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(minimumTarget / 2),
+                      ),
+                    ),
+                  )
+                : null,
+          ),
+          segments: [
+            for (final segment in segments)
+              ButtonSegment<T>(
+                value: segment.value,
+                tooltip: segment.tooltip,
+                label: SizedBox(
+                  width: vertical
+                      ? math.max(1, availableWidth - segmentPadding.horizontal)
+                      : null,
+                  height: height - segmentPadding.vertical,
+                  child: Center(
+                    widthFactor: 1,
+                    child: showIcons && segment.icon != null
+                        ? Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(segment.icon, size: iconSize),
+                              const SizedBox(width: iconGap),
+                              Flexible(child: Text(segment.label)),
+                            ],
+                          )
+                        : Text(segment.label, textAlign: TextAlign.center),
+                  ),
+                ),
+              ),
+          ],
+          selected: {selected},
+          onSelectionChanged: switch (onChanged) {
+            null => null,
+            final onChanged => (chosen) => onChanged(chosen.single),
+          },
+        ),
+      );
+    },
   );
 }

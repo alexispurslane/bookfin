@@ -212,7 +212,7 @@ class ReaderSession extends ChangeNotifier {
       _searchChanges = _Signal(() => (_searching, _hits, _searchError)),
       _fontSizeChanges = _Signal(() => (_fontSize, _sizesMainText)),
       _saveStatusChanges = _Signal(() => saveFailed),
-      _reflowChanges = _Signal(() => _reflow),
+      _pdfViewChanges = _Signal(() => _pdfView),
       _trimMarginsChanges = _Signal(() => _trimMargins),
       _bookMapChanges = _Signal(() => _bookMap),
       _timeLeftChanges = _Signal(() => timeLeft),
@@ -1302,14 +1302,14 @@ class ReaderSession extends ChangeNotifier {
   Future<void> followLink(String href) =>
       _jump(HistoryAction.link, (navigator) => navigator.contents(href));
 
-  bool _reflow = false;
-  late final _Signal _reflowChanges;
+  PdfPageView _pdfView = PdfPageView.original;
+  late final _Signal _pdfViewChanges;
 
-  /// Whether PDF pages show as reflowed text instead of the original page.
+  /// How PDF pages show: original pages, page words or reading text.
   /// The choice lasts for this run of the app, through closing and opening
   /// books and accounts. It is not saved in the reading records, so a new
   /// session starts on the original page.
-  bool get reflow => _reflow;
+  PdfPageView get pdfView => _pdfView;
 
   bool _trimMargins = true;
 
@@ -1332,11 +1332,13 @@ class ReaderSession extends ChangeNotifier {
     await _save();
   }
 
-  /// Notifies when [reflow] changes.
-  Listenable get reflowChanges => _reflowChanges;
+  /// Notifies when [pdfView] changes.
+  Listenable get pdfViewChanges => _pdfViewChanges;
 
-  void setReflow(bool on) {
-    _reflow = on;
+  /// Shows [view] in every PDF opened during this run, without saving it.
+  void setPdfView(PdfPageView view) {
+    if (_pdfView == view) return;
+    _pdfView = view;
     _emit();
   }
 

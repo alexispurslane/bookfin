@@ -61,7 +61,7 @@ void main() {
       expect(find.bySemanticsLabel('Original source page 1'), findsOneWidget);
       await chooseSetting(
         tester,
-        'Reflow text',
+        'Page words',
         settle: () => settleNative(tester),
       );
       WordScreen shown() => tester
@@ -90,6 +90,19 @@ void main() {
         contains('River chapter 2'),
       );
       expect((reader.visibleAddress as PdfAddress).sourcePage, 2);
+      final wordPlace = reader.visibleAddress as PdfAddress;
+      await chooseSetting(tester, 'Text', settle: () => settleNative(tester));
+      expect(find.byType(WordScreenView), findsNothing);
+      final readingText = find.textContaining('River chapter 2');
+      expect(readingText, findsOneWidget);
+      expect(
+        tester.widget<Text>(readingText).style?.fontFamily,
+        'Source Serif 4',
+      );
+      expect(
+        (reader.visibleAddress as PdfAddress).sourcePage,
+        wordPlace.sourcePage,
+      );
       await tester.tap(find.byTooltip('Bookmark this place'));
       await tester.pumpAndSettle();
       expect(reader.bookmarks.single.position.sourcePage, 2);

@@ -1,3 +1,5 @@
+import 'package:bookfin/catalog/model.dart';
+import 'package:bookfin/reader/pdf.dart';
 import 'package:bookfin/reader/platform_io.dart';
 import 'package:bookfin/reader/session.dart';
 import 'package:flutter/foundation.dart';
@@ -30,27 +32,37 @@ void main() {
 
   tearDown(() => downloads.dispose());
 
-  test('the reflow choice lasts while the reader closes and reopens, and a new '
-      'session starts on the original page', () async {
-    final reader = session();
-    await reader.bind(account(), [book]);
-    await reader.open(book, edition);
-    expect(reader.reflow, isFalse);
-    reader.setReflow(true);
-    expect(reader.reflow, isTrue);
-    reader.closeView(reader.token);
-    await reader.open(book, edition);
-    expect(reader.reflow, isTrue);
-    await reader.bind(account(user: 'bob'), [book]);
-    expect(reader.reflow, isTrue, reason: 'The choice is for this run.');
-    final restarted = session();
-    await restarted.bind(account(), [book]);
-    await restarted.open(book, edition);
-    expect(restarted.reflow, isFalse);
-  });
+  for (final view in [PdfPageView.pageWords, PdfPageView.text]) {
+    test('${view.name} lasts across books and accounts, but a new run opens '
+        'the original page', () async {
+      const otherBook = Book(
+        id: 'other-work',
+        title: 'Another PDF book',
+        author: 'Writer',
+        editions: [edition],
+      );
+      final reader = session();
+      await reader.bind(account(), [book, otherBook]);
+      await reader.open(book, edition);
+      expect(reader.pdfView, PdfPageView.original);
+      reader.setPdfView(view);
+      reader.closeView(reader.token);
+      await reader.open(otherBook, edition);
+      expect(reader.pdfView, view);
+      reader.closeView(reader.token);
+      await reader.open(book, edition);
+      expect(reader.pdfView, view);
+      await reader.bind(account(user: 'bob'), [book]);
+      expect(reader.pdfView, view, reason: 'The choice is for this run.');
+      final restarted = session();
+      await restarted.bind(account(), [book]);
+      await restarted.open(book, edition);
+      expect(restarted.pdfView, PdfPageView.original);
+    });
+  }
 
   test(
-    'choosing reflow notifies its own signal once and saves no reading record',
+    'choosing a PDF view notifies only its signal and saves no reading record',
     () async {
       final reader = session();
       await reader.bind(account(), [book]);
@@ -60,18 +72,23 @@ void main() {
       final counts = <String, int>{};
       void count(String name, Listenable signal) =>
           signal.addListener(() => counts[name] = (counts[name] ?? 0) + 1);
-      count('reflow', reader.reflowChanges);
+      count('pdfView', reader.pdfViewChanges);
       count('place', reader.placeChanges);
       count('document', reader.documentChanges);
       count('fontSize', reader.fontSizeChanges);
       count('session', reader);
-      reader.setReflow(true);
-      reader.setReflow(true);
+      reader.setPdfView(PdfPageView.pageWords);
+      reader.setPdfView(PdfPageView.pageWords);
       await reader.flush();
-      expect(counts, {'reflow': 1, 'session': 1});
+      expect(counts, {'pdfView': 1, 'session': 1});
       expect(store.values, saved);
-      reader.setReflow(false);
-      expect(counts, {'reflow': 2, 'session': 2});
+      reader.setPdfView(PdfPageView.text);
+      reader.setPdfView(PdfPageView.text);
+      await reader.flush();
+      expect(counts, {'pdfView': 2, 'session': 2});
+      expect(store.values, saved);
+      reader.setPdfView(PdfPageView.original);
+      expect(counts, {'pdfView': 3, 'session': 3});
     },
   );
 }

@@ -19,7 +19,7 @@ import '../catalog/model.dart' show Book, EditionKind;
 import '../foundation/derived_value.dart';
 import '../foundation/listenable_selector.dart';
 import '../foundation/scrub_bar.dart';
-import '../foundation/theme.dart' show PillChoice;
+import '../foundation/theme.dart' show PillChoice, PillSegment;
 import '../foundation/time.dart';
 import '../playback/playback.dart';
 import '../playback/records_screen.dart' show editReadingBookmark;
@@ -143,13 +143,13 @@ class _ReaderScreenState extends State<ReaderScreen> {
         listenable: Listenable.merge([
           reader.documentChanges,
           reader.fontSizeChanges,
-          reader.reflowChanges,
+          reader.pdfViewChanges,
           reader.trimMarginsChanges,
         ]),
         select: () => (
           fontSize: reader.fontSize,
           open: reader.document != null,
-          reflow: reader.document is PdfBook ? reader.reflow : null,
+          pdfView: reader.document is PdfBook ? reader.pdfView : null,
           trimMargins: reader.document is PdfBook ? reader.trimMargins : null,
         ),
         builder: (context, on, _) => ReaderSettingsPanel(
@@ -162,8 +162,8 @@ class _ReaderScreenState extends State<ReaderScreen> {
               : null,
           night: Theme.of(context).brightness == Brightness.dark,
           onNightChanged: widget.onNightChanged,
-          reflow: on.reflow,
-          onReflowChanged: reader.setReflow,
+          pdfView: on.pdfView,
+          onPdfViewChanged: reader.setPdfView,
           trimMargins: on.trimMargins,
           onTrimMarginsChanged: (on) => unawaited(reader.setTrimMargins(on)),
         ),
@@ -350,7 +350,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
         listenable: Listenable.merge([
           documentOrSize,
           reader.saveStatusChanges,
-          reader.reflowChanges,
+          reader.pdfViewChanges,
           reader.trimMarginsChanges,
         ]),
         builder: (context, _) => _viewport(context, night),
@@ -484,7 +484,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
         onReady: (navigator, entries) =>
             reader.attachDocument(token, navigator, entries),
         onAddress: (address) => reader.acceptAddress(token, address),
-        reflow: reader.reflow,
+        view: reader.pdfView,
         trimMargins: reader.trimMargins,
         onCancelRecognition: () => document.textSupply?.cancel(),
         onTap: _toggleFullScreen,
@@ -759,7 +759,7 @@ class ReaderTools extends StatelessWidget {
 }
 
 /// The reading settings: the text size, the reading theme and, for a PDF,
-/// whether its pages show as reflowed text, for a sheet headed Reading
+/// how its pages show, for a sheet headed Reading
 /// settings. A size button whose callback is null shows but is off.
 class ReaderSettingsPanel extends StatelessWidget {
   const ReaderSettingsPanel({
@@ -769,8 +769,8 @@ class ReaderSettingsPanel extends StatelessWidget {
     required this.onLarger,
     required this.night,
     required this.onNightChanged,
-    this.reflow,
-    this.onReflowChanged,
+    this.pdfView,
+    this.onPdfViewChanged,
     this.trimMargins,
     this.onTrimMarginsChanged,
   });
@@ -790,12 +790,11 @@ class ReaderSettingsPanel extends StatelessWidget {
   /// Reports the theme that the person chose: true for night.
   final ValueChanged<bool> onNightChanged;
 
-  /// Whether the open PDF shows as reflowed text. Null when the book is not
-  /// a PDF, and then the panel has no reflow choice.
-  final bool? reflow;
+  /// How the open PDF shows. Null for other formats, which have no Pages row.
+  final PdfPageView? pdfView;
 
-  /// Reports the view that the person chose: true for reflowed text.
-  final ValueChanged<bool>? onReflowChanged;
+  /// Reports the PDF view that the person chose.
+  final ValueChanged<PdfPageView>? onPdfViewChanged;
 
   /// Whether original PDF pages show their content crop. Null for books
   /// that are not PDFs, which have no Trim margins control.
@@ -820,7 +819,7 @@ class ReaderSettingsPanel extends StatelessWidget {
         ],
       ),
     );
-    final reflow = this.reflow;
+    final pdfView = this.pdfView;
     return SafeArea(
       child: SingleChildScrollView(
         child: Padding(
@@ -859,16 +858,16 @@ class ReaderSettingsPanel extends StatelessWidget {
                 'Theme',
                 PillChoice<bool>(
                   segments: const [
-                    ButtonSegment(
+                    PillSegment(
                       value: false,
-                      label: Text('Cream'),
-                      icon: Icon(Icons.light_mode_outlined),
+                      label: 'Cream',
+                      icon: Icons.light_mode_outlined,
                       tooltip: 'Cream reading theme',
                     ),
-                    ButtonSegment(
+                    PillSegment(
                       value: true,
-                      label: Text('Night'),
-                      icon: Icon(Icons.dark_mode_outlined),
+                      label: 'Night',
+                      icon: Icons.dark_mode_outlined,
                       tooltip: 'Night reading theme',
                     ),
                   ],
@@ -876,26 +875,32 @@ class ReaderSettingsPanel extends StatelessWidget {
                   onChanged: onNightChanged,
                 ),
               ),
-              if (reflow != null)
+              if (pdfView != null)
                 row(
                   'Pages',
-                  PillChoice<bool>(
+                  PillChoice<PdfPageView>(
                     segments: const [
-                      ButtonSegment(
-                        value: false,
-                        label: Text('Original'),
-                        icon: Icon(Icons.picture_as_pdf_outlined),
+                      PillSegment(
+                        value: PdfPageView.original,
+                        label: 'Original',
+                        icon: Icons.picture_as_pdf_outlined,
                         tooltip: 'Original page',
                       ),
-                      ButtonSegment(
-                        value: true,
-                        label: Text('Reflow'),
-                        icon: Icon(Icons.article_outlined),
-                        tooltip: 'Reflow text',
+                      PillSegment(
+                        value: PdfPageView.pageWords,
+                        label: 'Page words',
+                        icon: Icons.view_headline_rounded,
+                        tooltip: 'Page words',
+                      ),
+                      PillSegment(
+                        value: PdfPageView.text,
+                        label: 'Text',
+                        icon: Icons.article_outlined,
+                        tooltip: 'Text',
                       ),
                     ],
-                    selected: reflow,
-                    onChanged: onReflowChanged,
+                    selected: pdfView,
+                    onChanged: onPdfViewChanged,
                   ),
                 ),
               if (trimMargins case final on?)
