@@ -27,6 +27,7 @@ import 'playback/store.dart';
 import 'playback/database.dart';
 import 'reader/reading_speed.dart';
 import 'reader/session.dart';
+import 'reader/survey_files.dart';
 import 'reader/platform.dart';
 import 'reader/licenses.dart';
 import 'sync/alert.dart' show RecordSyncScope;
@@ -85,6 +86,7 @@ Future<void> runBookfin({bool gallery = false}) async {
           load: loadPublication,
           loadDocument: loadReadingDocument,
           speed: speed,
+          surveyStore: SurveyFiles.new,
         );
   runApp(
     BookfinApp(
@@ -246,6 +248,7 @@ class _BookfinAppState extends State<BookfinApp> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       widget.sync?.resume();
+      widget.reader?.resume();
       unawaited(widget.downloads?.refresh());
       _appearance.resume();
       // A return after the app was hidden refreshes the catalog in the
@@ -259,6 +262,7 @@ class _BookfinAppState extends State<BookfinApp> with WidgetsBindingObserver {
       if (state != AppLifecycleState.inactive) {
         _hidden = true;
         widget.sync?.suspend();
+        widget.reader?.suspend();
       }
       unawaited(widget.playback?.flush());
       unawaited(widget.reader?.flush());

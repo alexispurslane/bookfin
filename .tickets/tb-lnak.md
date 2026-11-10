@@ -23,3 +23,7 @@ Behavior tests, red first: a cover, a plate and a blank page in the fixture book
 **2026-11-10T15:22:46Z**
 
 From tb-z9h5: findRunningTemplates(pages) runs in a hop and gives RunningTemplates; templates.mark(page) gives the PageAnalysis with runningLines, and analysis.contentBox(geometry) the content box. The templates are public fields (texts, folioOffsets, shapes, lineHeight) for the profile on disk. Limits: (1) a chapter's running header gets a text template only if the sample holds 3 of its pages within 20 source pages, so a sparse sample misses per-chapter headers, and those pages keep the header as content and grow their crop; (2) on pages with text only the text and folio templates apply, not the geometry ones; (3) a page whose text arrives after the profile freezes is marked by text, not geometry, so its marks can differ from its earlier marks. See docs/plans/pdf-word-image-reflow.md, Running headers and folios.
+
+**2026-11-10T16:01:39Z**
+
+Built: lib/reader/book_crop.dart, book_survey.dart, survey_files.dart; PdfBook.survey; background requests in PdfBook.reflowPage and in the recognition queue; ReaderSession.suspend/resume and surveyStore. For tb-valc: PdfBook.survey.cropOf(page) gives a page's crop or null, and survey.crops notifies when crops become known. For tb-m8xo: survey.profile.templates marks running lines. Limits are in docs/plans/pdf-word-image-reflow.md, after 'The survey'.

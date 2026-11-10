@@ -21,6 +21,14 @@ typedef SurveyLease = Future<void> Function(
   Future<void> Function(VerifiedFile original, bool Function() owned) use,
 );
 
+/// Makes the kept survey of the book whose PDF has the SHA-256 [book], in
+/// the download that [lease] lends. [SurveyFiles.new] is one.
+typedef SurveyStoreOf = SurveyFiles Function(
+  SurveyLease lease, {
+  required String book,
+  IsolateHop hop,
+});
+
 /// The survey of one book that Bookfin keeps with its download.
 ///
 /// The survey is the file `survey` in the download's survey directory

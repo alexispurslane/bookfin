@@ -470,4 +470,69 @@ void main() {
       expect(Uint8List(0), isEmpty);
     },
   );
+
+  test('a background layout pass waits behind a search\'s recognition, and '
+      'the reader\'s request for its page moves it to the front', () async {
+    final pdf = await open();
+    holding = true;
+    final first = pdf.text(1);
+    await received(1);
+    final background = pdf.geometry(3, background: true);
+    await queued(1);
+    final search = pdf.text(2);
+    await queued(2);
+    expect(pdf.textSupply!.recognizing.value, isTrue);
+    final shown = pdf.geometry(3);
+    await queued(2);
+    releaseAll();
+
+    await Future.wait([first, background, search, shown]);
+    expect(names(), ['recognize 1', 'layout 3', 'recognize 2']);
+    EnglishRecognition.instance.checkInvariants();
+  });
+
+  test('a background layout pass runs after the recognition that waits, and '
+      'shows no recognition progress', () async {
+    final pdf = await open();
+    holding = true;
+    final first = pdf.text(1);
+    await received(1);
+    final background = pdf.geometry(3, background: true);
+    final search = pdf.text(2);
+    await queued(2);
+    releaseAll();
+    await Future.wait([first, search]);
+    await background;
+    expect(names(), ['recognize 1', 'recognize 2', 'layout 3']);
+
+    holding = true;
+    final alone = pdf.geometry(4, background: true);
+    await received(4);
+    expect(pdf.textSupply!.recognizing.value, isFalse);
+    releaseAll();
+    await alone;
+    (pdf.textSupply! as BundledEnglishText).checkInvariants();
+  });
+
+  test('recognition of a page whose background layout pass waits runs right '
+      'after that layout pass, which keeps the image for it', () async {
+    final pdf = await open();
+    holding = true;
+    final first = pdf.text(1);
+    await received(1);
+    final background = pdf.geometry(3, background: true);
+    final other = pdf.text(2);
+    await queued(2);
+    final text = pdf.text(3);
+    await queued(3);
+    EnglishRecognition.instance.checkInvariants();
+    releaseAll();
+    await Future.wait([first, background, other, text]);
+    expect(names(), [
+      'recognize 1',
+      'recognize 2',
+      'layout 3',
+      'recognize kept 3',
+    ]);
+  });
 }

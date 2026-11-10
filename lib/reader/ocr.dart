@@ -27,11 +27,14 @@ _Read _only(PdfText text) => (text: text, words: RecognizedWords.none);
 /// in this one queue. No reader and no widget owns work that runs.
 ///
 /// A page has two kinds of work: its layout pass, which gives its words,
-/// and its recognition, which gives its text. Only the page that a reader
-/// shows asks for a layout pass, so a layout pass goes to the front of the
-/// queue. The recognition of a page whose layout pass waits or runs goes
-/// right behind that layout pass. Other recognition waits in the order of
-/// its requests.
+/// and its recognition, which gives its text. The page that a reader shows
+/// asks for a layout pass, so a layout pass goes to the front of the queue.
+/// The recognition of a page whose layout pass waits or runs goes right
+/// behind that layout pass. Other recognition waits in the order of its
+/// requests. A background layout pass, which the book survey asks for,
+/// waits behind all other work. A reader's request for the same page moves
+/// it to the front, and a request for the page's recognition moves it right
+/// before that recognition.
 ///
 /// The native engine keeps the image of its last layout pass, and
 /// recognition can reuse that image. This queue alone calls the native
@@ -51,8 +54,9 @@ _Read _only(PdfText text) => (text: text, words: RecognizedWords.none);
 /// Invariants: at most one piece of work runs, and it is not among the
 /// waiting work; every waiting piece has a reader that waits for it;
 /// [_jobs] holds exactly the waiting and the running work; no recognition
-/// waits before the waiting layout pass of its page; no work runs and the
-/// engine keeps no page while the native worker closes.
+/// waits before the waiting layout pass of its page; background work waits
+/// behind all other work; no work runs and the engine keeps no page while
+/// the native worker closes.
 class EnglishRecognition {
   EnglishRecognition._();
   static final instance = EnglishRecognition._();
@@ -77,22 +81,26 @@ class EnglishRecognition {
   /// Waits for the work saved under [key]: the layout pass of [page] when
   /// [layout] holds, and otherwise its recognition. If that work does not
   /// wait or run, [run] runs it in its place in the queue. A layout pass
-  /// that waits moves to the front again. [run] must claim what it needs
-  /// before its first await, because the reader can stop waiting at any
-  /// later moment.
+  /// that waits moves to the front again, unless this wait is [background].
+  /// Only a layout pass can be background work. [run] must claim what it
+  /// needs before its first await, because the reader can stop waiting at
+  /// any later moment.
   _Wait<T> _wait<T>(
     String key,
     String page,
     Future<T> Function() run, {
     bool layout = false,
+    bool background = false,
   }) {
     assert(_holders > 0, 'A reader that waits holds the native worker.');
+    assert(layout || !background, 'Only a layout pass waits in background.');
     var job = _jobs[key] as _Job<T>?;
     if (job == null) {
-      job = _Job<T>(key, page, layout, run);
+      job = _Job<T>(key, page, layout, run)..background = background;
       _jobs[key] = job;
       _place(job);
-    } else if (layout && _waiting.remove(job)) {
+    } else if (layout && !background && _waiting.remove(job)) {
+      job.background = false;
       _place(job);
     }
     final wait = _Wait<T>(this, job);
@@ -104,6 +112,10 @@ class EnglishRecognition {
   /// Puts the waiting [job] in its place in the queue.
   void _place(_Job<Object?> job) {
     bool samePage(_Job<Object?> other) => other.page == job.page;
+    if (job.background) {
+      _waiting.add(job);
+      return;
+    }
     if (job.layout) {
       _waiting.insert(0, job);
       final text = _waiting.indexWhere(
@@ -113,16 +125,29 @@ class EnglishRecognition {
       return;
     }
     final running = _running;
-    final layout = _waiting.indexWhere(
+    var layout = _waiting.indexWhere(
       (other) => other.layout && samePage(other),
     );
+    if (layout >= 0 && _waiting[layout].background) {
+      // The page's background layout pass moves to the place of this
+      // recognition, so that the recognition still reuses its image.
+      final pass = _waiting.removeAt(layout)..background = false;
+      layout = _foregroundEnd();
+      _waiting.insert(layout, pass);
+    }
     if (layout >= 0) {
       _waiting.insert(layout + 1, job);
     } else if (running != null && running.layout && samePage(running)) {
       _waiting.insert(0, job);
     } else {
-      _waiting.add(job);
+      _waiting.insert(_foregroundEnd(), job);
     }
+  }
+
+  /// The index of the first waiting background work, or the queue's length.
+  int _foregroundEnd() {
+    final index = _waiting.indexWhere((job) => job.background);
+    return index < 0 ? _waiting.length : index;
   }
 
   void _leave(_Wait<Object?> wait) {
@@ -249,6 +274,10 @@ class EnglishRecognition {
           for (final (index, job) in _waiting.indexed)
             if (!job.layout && layoutAfter(index)) job,
         ].isNotEmpty ||
+        _waiting
+            .skipWhile((job) => !job.background)
+            .any((job) => !job.background) ||
+        _waiting.any((job) => job.background && !job.layout) ||
         _closing != null && (running != null || _kept != null)) {
       throw StateError(
         'Recognition must run at most one piece of work, keep only waited-for work waiting, put a page\'s layout pass before its recognition, and never run work or keep a page while the native worker closes.',
@@ -270,6 +299,10 @@ class _Job<T> {
 
   /// Whether the work is a layout pass, and not recognition.
   final bool layout;
+
+  /// Whether the work waits behind all other work. Only a layout pass that
+  /// only the book survey waits for is background work.
+  bool background = false;
   final Future<T> Function() run;
   final Set<_Wait<T>> waits = {};
 
@@ -320,7 +353,12 @@ class BundledEnglishText implements PdfTextSupply {
   bool _closed = false;
   bool _fatal = false;
   bool _holding = false;
+
+  /// The waits that show as recognition progress ([recognizing]).
   final Set<_Wait<Object?>> _waits = {};
+
+  /// The waits of background layout passes, which show no progress.
+  final Set<_Wait<Object?>> _backgroundWaits = {};
   final Map<int, _Recognized> _selected = {};
   _OwnedTextRead? _read;
   final _recognizing = ValueNotifier(false);
@@ -348,8 +386,9 @@ class BundledEnglishText implements PdfTextSupply {
   @override
   void cancel() {
     _generation++;
-    final waits = _waits.toList();
+    final waits = [..._waits, ..._backgroundWaits];
     _waits.clear();
+    _backgroundWaits.clear();
     for (final wait in waits) {
       wait.leave();
     }
@@ -507,9 +546,14 @@ class BundledEnglishText implements PdfTextSupply {
       keys.text,
       () => _layoutPage(book, page, keys, lease, _hop),
       layout: true,
+      background: background,
     );
-    _waits.add(wait);
-    _recognizing.value = true;
+    if (background) {
+      _backgroundWaits.add(wait);
+    } else {
+      _waits.add(wait);
+      _recognizing.value = true;
+    }
     try {
       final geometry = await wait.result.future;
       return live() ? geometry : null;
@@ -519,6 +563,7 @@ class BundledEnglishText implements PdfTextSupply {
     } on Exception {
       return null;
     } finally {
+      _backgroundWaits.remove(wait);
       if (_waits.remove(wait) && !_closed) {
         _recognizing.value = _waits.isNotEmpty;
       }
@@ -580,7 +625,11 @@ class BundledEnglishText implements PdfTextSupply {
         _selected.values.any(
           (value) => value.text.status != PdfTextStatus.candidate,
         ) ||
-        _closed && (_recognizing.value || _waits.isNotEmpty || _holding) ||
+        _closed &&
+            (_recognizing.value ||
+                _waits.isNotEmpty ||
+                _backgroundWaits.isNotEmpty ||
+                _holding) ||
         !_closed && _recognizing.value != _waits.isNotEmpty) {
       throw StateError(
         'Recognition must show waiting exactly while this reader waits, keep sixteen disk-backed selected pages, and keep unsaved selections until close.',
