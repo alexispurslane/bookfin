@@ -383,6 +383,16 @@ void main() {
     expect(find.text('Bookmarks'), findsNothing);
     expect(find.text('River mark'), findsNothing);
   }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
+
+  testWidgets('the contents sheet opens under a Contents heading, as the '
+      'other reader sheets do', (tester) async {
+    await openReader(tester);
+
+    await tester.tap(inDock(find.byTooltip('Contents')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Contents'), findsOneWidget);
+  }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
 }
 
 /// A navigator that shows each place that the session asks for at once, and

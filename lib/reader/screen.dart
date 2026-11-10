@@ -121,6 +121,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
           unawaited(reader.goToContents(href));
         },
       ),
+      title: 'Contents',
     ),
   );
 

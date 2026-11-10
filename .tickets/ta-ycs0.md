@@ -1,6 +1,6 @@
 ---
 id: ta-ycs0
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-11-10T01:44:22Z
