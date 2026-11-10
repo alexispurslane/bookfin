@@ -1,6 +1,7 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
+import 'dart:ui' show FrameTiming;
 
 import 'package:bookfin/downloads/downloads.dart';
 import 'package:bookfin/foundation/theme.dart';
@@ -34,14 +35,36 @@ class _ProbeState extends State<_Probe> {
   String _name = 'footnote-page.pdf';
   String? _failure;
   bool _night = false;
-  bool _reflow = true;
+  PdfPageView _view = PdfPageView.pageWords;
+  PdfAddress? _address;
   double _fontSize = 20;
   int _request = 0;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addTimingsCallback(_frames);
     unawaited(_open(_name));
+  }
+
+  // Probe-only measurements. Profile-mode frame work is reported separately
+  // from navigation latency; emulator results are not phone benchmarks.
+  void _frames(List<FrameTiming> frames) {
+    for (final frame in frames) {
+      debugPrint(
+        'WORD_FRAME ${jsonEncode({'buildUs': frame.buildDuration.inMicroseconds, 'rasterUs': frame.rasterDuration.inMicroseconds, 'totalUs': frame.totalSpan.inMicroseconds})}',
+      );
+    }
+  }
+
+  Future<void> _turn(bool forward) async {
+    final before = _address?.toJson();
+    final watch = Stopwatch()..start();
+    await _navigator?.move(forward);
+    await WidgetsBinding.instance.endOfFrame;
+    debugPrint(
+      'WORD_TURN ${jsonEncode({'fixture': _name, 'view': _view.name, 'size': _fontSize, 'forward': forward, 'before': before, 'after': _address?.toJson(), 'elapsedUs': watch.elapsedMicroseconds})}',
+    );
   }
 
   Future<void> _open(String name) async {
@@ -94,6 +117,7 @@ class _ProbeState extends State<_Probe> {
   @override
   void dispose() {
     _request++;
+    WidgetsBinding.instance.removeTimingsCallback(_frames);
     unawaited(_book?.dispose());
     super.dispose();
   }
@@ -130,8 +154,14 @@ class _ProbeState extends State<_Probe> {
             child: Text('${_fontSize.toInt()}'),
           ),
           IconButton(
-            tooltip: _reflow ? 'Original' : 'Page words',
-            onPressed: () => setState(() => _reflow = !_reflow),
+            tooltip: 'View: ${_view.name}',
+            onPressed: () => setState(() {
+              _view = switch (_view) {
+                PdfPageView.original => PdfPageView.pageWords,
+                PdfPageView.pageWords => PdfPageView.text,
+                PdfPageView.text => PdfPageView.original,
+              };
+            }),
             icon: const Icon(Icons.chrome_reader_mode_outlined),
           ),
         ],
@@ -144,14 +174,17 @@ class _ProbeState extends State<_Probe> {
               key: ObjectKey(_book),
               book: _book!,
               fontSize: _fontSize,
-              reflow: _reflow,
+              view: _view,
               onReady: (navigator, _) => _navigator = navigator,
-              onAddress: (address) => debugPrint(
-                'WORD_VIEW ${address.sourcePage}:${address.character}',
-              ),
+              onAddress: (address) {
+                _address = address;
+                debugPrint(
+                  'WORD_VIEW ${address.sourcePage}:${address.character}',
+                );
+              },
               onCancelRecognition: () => _book?.textSupply?.cancel(),
               onTap: () {},
-              onTurn: (forward) => unawaited(_navigator?.move(forward)),
+              onTurn: (forward) => unawaited(_turn(forward)),
             ),
     ),
   );
