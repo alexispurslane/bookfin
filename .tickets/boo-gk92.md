@@ -27,3 +27,7 @@ Account for uncovered logic and surviving mutations. Verify the supported reader
 **2026-11-10T20:32:59Z**
 
 PDF word-image integration 1330132 is green (2560 passed, 21 skipped). User already accepted Nihil crop fix and Trim margins; word view acceptance remains pending. Parent-owned coverage/mutation and invariant hardening must include the combined PDF changes after word acceptance, with no competing hardening jobs.
+
+**2026-11-10T23:05:15Z**
+
+After final word-view and per-book preference integration ff336de, host suite passes2649 tests/21 skipped. Normal app from ab5b9a3 is installed on Pixel. Include persistence and worker-save ordering in later accepted-behavior coverage/mutation work. No competing hardening jobs started; emulator performance remains blocked by boo-kdc6.
