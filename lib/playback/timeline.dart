@@ -63,10 +63,9 @@ void openHistory(
                 }());
               case TextPosition():
                 // The reader shows a place of its open edition, and opens
-                // the edition of any other place there.
-                final open = reader!.edition?.id == place.editionId;
+                // the edition of any other place there, as a move with Undo.
                 if (showing != EditionKind.text) reading!.show(context);
-                unawaited(open ? restore() : reader.openAt(place));
+                unawaited(restore());
             }
           }
 
