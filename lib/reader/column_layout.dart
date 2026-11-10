@@ -45,8 +45,10 @@ class ColumnSettings {
 /// target rectangle, turns by the piece's rotation about the target's
 /// center. A positive rotation turns clockwise on the screen.
 ///
-/// A line is the pieces that share one baseline. Its top and bottom hold
-/// the turned images of its pieces. The column's first line starts at
+/// A line is the pieces that share one baseline, with an optional opening
+/// drop cap. A drop cap can extend into the next two lines; those lines
+/// stay on its screen, and the last one's bottom holds the whole cap.
+/// Other pieces stay within their line. The column's first line starts at
 /// y = 0. A screen is the lines from its first line's top that fit in
 /// [screenHeight]; [cutScreens] cuts them.
 ///
@@ -494,6 +496,23 @@ class _Source {
   double pitch(int line) => pitches[lineBlocks[line]];
   bool isExtra(int word) => analysis.sourceWords[word] < 0;
 
+  List<double> boxOf(int item) => item >= 0
+      ? geometry.boxes.sublist(item * 4, item * 4 + 4)
+      : analysis.regionBoxes.sublist((-1 - item) * 4, (-1 - item) * 4 + 4);
+
+  bool dropCapBefore(int item, int word) {
+    if (item < 0 && analysis.regionKind(-1 - item) != RegionKind.ink) {
+      return false;
+    }
+    final cap = boxOf(item), next = boxOf(word);
+    final gap = next[0] - cap[2];
+    return cap[3] - cap[1] > 1.8 * body &&
+        next[3] - next[1] <= 1.5 * body &&
+        gap >= -body / 10 &&
+        gap <= body &&
+        (next[1] - cap[1]).abs() <= body;
+  }
+
   /// The top and the bottom of [line], at its middle.
   double lineTop(int line) {
     final x = (geometry.lineLeft(line) + geometry.lineRight(line)) / 2;
@@ -542,10 +561,15 @@ class _Paragraph extends _Item {
   /// keeps with the item after the paragraph.
   bool keepLines = false, keepLast = false;
 
+  int? dropCap;
+
   @override
   double get top => source.lineTop(lines.first);
   @override
-  double get bottom => source.lineBottom(lines.last);
+  double get bottom => math.max(
+    source.lineBottom(lines.last),
+    dropCap == null ? 0 : source.boxOf(dropCap!)[3],
+  );
   @override
   double get pitch => source.pitch(lines.first);
 
@@ -563,6 +587,12 @@ class _Paragraph extends _Item {
   /// heights.
   void settle() {
     final geometry = source.geometry, body = source.body;
+    if (starts &&
+        words.length > 1 &&
+        source.wordLines[words[0]] == source.wordLines[words[1]] &&
+        source.dropCapBefore(words[0], words[1])) {
+      dropCap = words.removeAt(0);
+    }
     final layout = _layoutJustification();
     double leftMargin(int line) =>
         geometry.lineLeft(line) - source.measureLeft(line);
@@ -586,7 +616,9 @@ class _Paragraph extends _Item {
         alignment = _Alignment.justified;
       }
       final first = source.indentOf(lines.first);
-      if (starts && first > body / 2) indent = math.min(first, 3 * body);
+      if (starts && dropCap == null && first > body / 2) {
+        indent = math.min(first, 3 * body);
+      }
     }
   }
 
@@ -652,12 +684,17 @@ List<_Item> _flow(_Source source) {
   for (var region = 0; region < analysis.regionCount; region++) {
     if (holdsWords[region] || !source.shows(region)) continue;
     var anchor = geometry.lineCount;
+    int? previous;
     for (var line = 0; line < geometry.lineCount; line++) {
       if (!_flows(source, line) || captionLines.contains(line)) continue;
+      final starts = _startsParagraph(source, line, previous);
+      previous = line;
       final top = geometry.boxes[geometry.lineStarts[line] * 4 + 1];
-      if (top > boxes[region * 4 + 1] &&
-          geometry.lineLeft(line) < boxes[region * 4 + 2] &&
-          boxes[region * 4] < geometry.lineRight(line)) {
+      if (starts &&
+              source.dropCapBefore(-1 - region, geometry.lineStarts[line]) ||
+          top > boxes[region * 4 + 1] &&
+              geometry.lineLeft(line) < boxes[region * 4 + 2] &&
+              boxes[region * 4] < geometry.lineRight(line)) {
         anchor = line;
         break;
       }
@@ -750,6 +787,19 @@ List<_Item> _flow(_Source source) {
     place(region);
   }
   close();
+  for (var index = 0; index + 1 < items.length; index++) {
+    final item = items[index], next = items[index + 1];
+    if (item is _Region &&
+        next is _Paragraph &&
+        next.starts &&
+        next.dropCap == null &&
+        source.dropCapBefore(-1 - item.region, next.words.first)) {
+      next.dropCap = -1 - item.region;
+      next.indent = 0;
+      items.removeAt(index);
+      index--;
+    }
+  }
   return items;
 }
 
@@ -932,19 +982,100 @@ class _ColumnWriter {
   double get _width => settings.width;
 
   void addParagraph(_Paragraph paragraph) {
-    final lines = _wrap(paragraph);
+    final cap = paragraph.dropCap;
+    final box = cap == null ? null : source.boxOf(cap);
+    final capScale = box == null
+        ? scale
+        : math.min(
+            scale,
+            math.min(
+              _width / (box[2] - box[0]),
+              settings.screenHeight / (box[3] - box[1]),
+            ),
+          );
+    final capWidth = box == null ? 0.0 : (box[2] - box[0]) * capScale;
+    final capHeight = box == null ? 0.0 : (box[3] - box[1]) * capScale;
+    final inset =
+        capWidth + source.wordGap.clamp(source.body / 3, source.body) * scale;
+    final floats = box != null && inset < _width;
+    var lines = _wrap(
+      paragraph,
+      inset: floats ? inset : 0,
+      insetLines: floats ? 3 : 0,
+    );
+    final beside = floats ? _floatLines(lines, capHeight, paragraph.pitch) : 0;
+    if (floats && beside < math.min(3, lines.length)) {
+      lines = _wrap(paragraph, inset: inset, insetLines: beside);
+    }
     final gap = _gapBefore(paragraph, paragraph.starts || _afterRegion);
+    if (box != null && !floats) {
+      _addLine(
+        [
+          _Piece(
+            cap!,
+            box,
+            capWidth / 2,
+            -capHeight / 2,
+            capWidth,
+            capHeight,
+            0,
+          ),
+        ],
+        paragraph.pitch,
+        gap,
+        false,
+      );
+    }
+    var capBottom = 0.0;
     for (final (index, line) in lines.indexed) {
       final last = index == lines.length - 1;
       _addLine(
         [for (final placed in line) _wordPiece(placed)],
         paragraph.pitch,
-        index == 0 ? gap : 0,
-        last ? paragraph.keepLast : paragraph.keepLines,
+        index == 0 && (box == null || floats) ? gap : 0,
+        !last && index + 1 < beside ||
+            (last ? paragraph.keepLast : paragraph.keepLines),
+        floating: index == 0 && floats
+            ? _Piece(
+                cap!,
+                box,
+                capWidth / 2,
+                capHeight / 2,
+                capWidth,
+                capHeight,
+                0,
+              )
+            : null,
       );
+      if (index == 0 && floats) {
+        capBottom = _extents[_extents.length - 3] + capHeight;
+      }
+      if (floats && (index + 1 == beside || last)) {
+        _extents[_extents.length - 1] = math.max(_extents.last, capBottom);
+      }
     }
     _sourceBottom = paragraph.bottom;
     _afterRegion = false;
+  }
+
+  int _floatLines(List<List<_Placed>> lines, double height, double pitch) {
+    var baseline = 0.0, bottom = 0.0, count = 0;
+    for (final line in lines.take(3)) {
+      final bounds = _lineBounds([
+        for (final placed in line) _wordPiece(placed),
+      ]);
+      baseline = count == 0
+          ? bounds.ascent
+          : _nextBaseline(baseline, bottom, bounds.ascent, pitch);
+      final top = baseline - bounds.ascent;
+      bottom = baseline + bounds.descent;
+      if (count > 0 &&
+          (top >= height - 1e-4 || bottom > settings.screenHeight + 1e-6)) {
+        break;
+      }
+      count++;
+    }
+    return count;
   }
 
   void addRegion(_Region item) {
@@ -989,7 +1120,11 @@ class _ColumnWriter {
   /// Words that no line may part are one chunk. A chunk goes on the current
   /// line when it fits, and otherwise starts the next line. A chunk wider
   /// than the column scales down to its width, alone.
-  List<List<_Placed>> _wrap(_Paragraph paragraph) {
+  List<List<_Placed>> _wrap(
+    _Paragraph paragraph, {
+    double inset = 0,
+    int insetLines = 0,
+  }) {
     final tokens = _tokens(paragraph);
     final lines = <List<_Placed>>[];
     // For each line: the chunks after which a gap can stretch, and the
@@ -1029,20 +1164,22 @@ class _ColumnWriter {
         }
         line = [];
         stretch = [];
-        var left =
-            lines.isEmpty &&
-                (paragraph.alignment == _Alignment.left ||
-                    paragraph.alignment == _Alignment.justified)
+        final floating = lines.length < insetLines;
+        var left = floating
+            ? inset
+            : lines.isEmpty &&
+                  (paragraph.alignment == _Alignment.left ||
+                      paragraph.alignment == _Alignment.justified)
             ? paragraph.indent * scale
             : 0.0;
-        if (left + width * scale > _width) left = 0;
+        if (!floating && left + width * scale > _width) left = 0;
         right = _place(
           line,
           tokens,
           start,
           end,
           left,
-          math.min(scale, _width / width),
+          math.min(scale, (_width - left) / width),
         );
       }
       start = end;
@@ -1191,12 +1328,14 @@ class _ColumnWriter {
 
   /// Adds a line of [pieces], placed on a baseline at y = 0, [gap] below
   /// the line before it plus the pitch.
-  void _addLine(List<_Piece> pieces, double pitch, double gap, bool keep) {
-    var ascent = -double.infinity, descent = -double.infinity;
-    for (final piece in pieces) {
-      ascent = math.max(ascent, piece.halfHeight - piece.y);
-      descent = math.max(descent, piece.y + piece.halfHeight);
-    }
+  void _addLine(
+    List<_Piece> pieces,
+    double pitch,
+    double gap,
+    bool keep, {
+    _Piece? floating,
+  }) {
+    final (:ascent, :descent) = _lineBounds(pieces);
     final double baseline;
     if (_extents.isEmpty) {
       baseline = ascent;
@@ -1204,13 +1343,23 @@ class _ColumnWriter {
       // The line before keeps the pitch below it. A taller line grows, and
       // keeps the source's leading below the line before it.
       final before = _extents[_extents.length - 2];
-      final leading = math.max(0.0, (pitch - source.body) * scale);
-      baseline =
-          before +
-          math.max(pitch * scale, _extents.last - before + leading + ascent) +
-          gap;
+      baseline = _nextBaseline(before, _extents.last, ascent, pitch) + gap;
     }
     _lineStarts.add(_items.length);
+    if (floating != null) {
+      pieces.insert(
+        0,
+        _Piece(
+          floating.item,
+          floating.source,
+          floating.x,
+          floating.y - ascent,
+          floating.width,
+          floating.height,
+          floating.turn,
+        ),
+      );
+    }
     for (final piece in pieces) {
       final y = baseline + piece.y;
       _pieces.addAll([
@@ -1225,6 +1374,25 @@ class _ColumnWriter {
     }
     _extents.addAll([baseline - ascent, baseline, baseline + descent]);
     _keeps.add(keep);
+  }
+
+  double _nextBaseline(
+    double before,
+    double bottom,
+    double ascent,
+    double pitch,
+  ) {
+    final leading = math.max(0.0, (pitch - source.body) * scale);
+    return before + math.max(pitch * scale, bottom - before + leading + ascent);
+  }
+
+  static ({double ascent, double descent}) _lineBounds(List<_Piece> pieces) {
+    var ascent = -double.infinity, descent = -double.infinity;
+    for (final piece in pieces) {
+      ascent = math.max(ascent, piece.halfHeight - piece.y);
+      descent = math.max(descent, piece.y + piece.halfHeight);
+    }
+    return (ascent: ascent, descent: descent);
   }
 
   ReflowColumn finish() {

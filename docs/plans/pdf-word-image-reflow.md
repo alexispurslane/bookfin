@@ -467,6 +467,29 @@ Ticket tb-m8xo made the column leave out running lines and running regions:
 
 Ticket t1-5brw made the column leave out scan edges too. `PageAnalysis.isContentRegion` is the one rule for both views: a region that is no running region and no scan edge. The content box holds such a region, and the column shows it. So the Raven page's word view ends with its folio, not with the dark bottom edge of the scan.
 
+Ticket tb-fi98 adds drop caps to the same paragraph and column layout:
+
+- An opening word taller than 1.8 body line heights can be a drop cap too.
+  The Raven fixture's printed O lies inside the box of ONCE. The whole word
+  image floats, without splitting its letters or changing its text range.
+- An ink region that touches a paragraph's opening word joins that paragraph
+  as its drop cap. Pictures and regions outside paragraph starts stay whole
+  on their own lines.
+- Up to three neighboring lines use the width left beside the cap. Their
+  actual word heights and baseline pitch decide how many fit beside it on
+  one screen. The following line starts below the whole cap at full width.
+- The first neighboring line owns the cap's piece. The last neighboring
+  line's bottom holds the cap's bottom. The existing keep-with-next marks
+  keep those lines on one screen. There is no second screen or band model.
+- A cap keeps the page's scale unless it must shrink to fit the column or
+  screen, as other whole regions do. If its width leaves no remaining
+  width beside it, it takes a line of its own.
+
+`drop-cap-page.typ` and its PDF add a public-domain opening-letter fixture.
+Its letter is vector ink with no text characters. The existing Raven fixture
+covers an oversized first word. Neither case changes the reading text,
+its digest or the attachment that names saved places.
+
 ## Rendering
 
 ### Bands
