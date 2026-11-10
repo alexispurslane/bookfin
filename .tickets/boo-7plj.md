@@ -1,6 +1,6 @@
 ---
 id: boo-7plj
-status: open
+status: in_progress
 deps: []
 links: []
 created: 2026-11-10T16:34:17Z

@@ -519,7 +519,7 @@ Ticket tb-xjfi built the rendering in `lib/reader/word_bands.dart` and `lib/read
 | Device pixels | A word draws at one band pixel for one device pixel | Also, a level word's sprite lands on whole device pixels of the column, so drawing copies pdfium's pixels. The viewport (tb-22fu) must place `WordScreenView` at a whole device pixel. | Bilinear sampling at half-pixel offsets softens every glyph. |
 | Tint of ink | A duotone matrix from luminance 0 to 1 | The text color, with an opacity from 1 at the page's ink lightness to 0 at its paper lightness, over the paper | A scan's paper is darker than white: Gibbon's paper in word boxes is about 0.82. With luminance 1 as paper, every scanned word drew as a gray box. The opacity also keeps a turned word's paper off its neighbor's ink. |
 | Levels | None | `PageAnalysis.paperLightness` and `inkLightness`, from the pixels inside the boxes of words that no region holds. The paper level is the paper's most common lightness less its grain, the distance to the lightness that 97.5 percent of the pixels do not exceed. The ink level is the median of the ink's pixels. | Paper near text is darker than in the margins, and the Raven's blurred ink widens any spread measured from below. Equation 1.0 and 0.02, Gibbon 0.82 and 0.18, Raven 0.56 and 0.22. |
-| Tint of pictures | Cream multiplies by the paper, night shows 80 percent | As designed. A scanned picture keeps its scan's paper tone. | See the open question below. |
+| Tint of pictures | Cream multiplies by the paper, night shows 80 percent | As designed. A scanned picture keeps its scan's paper tone. | User chose to keep the scan's paper on 2026-11-10. |
 | Eviction | Shown screen and the next screen | When `show` asks for a screen, every screen but the shown one and the asked one drops its images. When the asked screen is ready, it shows and the screen before it drops. Then the next screen in the turn's direction renders. The next screen does not cross into the next source page. | Live images then never exceed two screens, even while a change waits for its new screen. |
 
 Measured on the host, column 371.4 by 780 logical pixels at 2.625 device pixels for one logical pixel. The bound for the live images is 4 screens, or 32 MB.
@@ -532,7 +532,7 @@ Each cell gives the band pixels of the screen with the most, in screens, and the
 | Equation | 0.24 screens, 1.9 MB | 0.48 screens, 3.8 MB | 0.78 screens, 10.4 MB |
 | Raven | 0.77 screens, 6.2 MB | 0.87 screens, 7.1 MB | 0.79 screens, 10.6 MB |
 
-The open question: a scanned picture, such as the Raven's engraving, keeps its scan's darker paper inside the theme's paper. Making its paper the theme's paper would scale its colors by the page's paper lightness. It is a choice of look for the user (ticket tb-xjfi's report).
+User decision, 2026-11-10 (t8-w16m): keep the scan's paper. A scanned picture, such as the Raven's engraving, keeps its original paper tone inside the theme's paper, including the visible darker box. Do not normalize picture colors by the page's paper lightness. The existing cream and night picture tints remain as designed.
 
 ## The text under the images
 

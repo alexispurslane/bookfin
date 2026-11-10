@@ -1,6 +1,6 @@
 ---
 id: tb-valc
-status: open
+status: in_progress
 deps: [tb-lnak]
 links: []
 created: 2026-11-10T12:53:21Z

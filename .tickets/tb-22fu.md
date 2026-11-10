@@ -1,6 +1,6 @@
 ---
 id: tb-22fu
-status: open
+status: in_progress
 deps: [tb-xjfi]
 links: [t6-1luw]
 created: 2026-11-10T02:33:42Z
