@@ -19,6 +19,10 @@ import 'page_geometry.dart';
 import 'running_lines.dart';
 import 'word_bands.dart';
 
+/// How the reader shows a PDF page. The reader session owns the choice for
+/// this run of the app, independently of the book and its saved records.
+enum PdfPageView { original, pageWords, text }
+
 /// What the text of a source page offers reflow and search. The first three
 /// describe the page's own content. Only [failed] describes the reader.
 enum PdfTextStatus {

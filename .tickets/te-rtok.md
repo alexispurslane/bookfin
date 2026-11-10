@@ -16,3 +16,9 @@ Normal Android source 71af2886e722b7366d4d335622e55e18a151a3e0 displays recogniz
 ## Acceptance Criteria
 
 Show recognized PDF reflow using the approved reading typeface on Android without changing source addresses, text measurement, bookmarks, or original-page access. Preserve ordinary long-text scrolling and controls.
+
+## Notes
+
+**2026-11-10T21:53:08Z**
+
+The combined tb-9mcf integration now selects Source Serif 4 with Noto Serif fallback in the whole-line Text renderer. The native-PDF screen test checks the font used by the rendered Text view and its source-page bookmark after switching from Page words. Android visual acceptance remains pending. The old scrolling requirement is superseded by the accepted whole-line screens in tb-zx7r; this ticket stays open until its Android font acceptance is observed.

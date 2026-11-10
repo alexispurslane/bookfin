@@ -1,5 +1,6 @@
 import 'package:bookfin/foundation/theme.dart';
 import 'package:bookfin/reader/document.dart';
+import 'package:bookfin/reader/pdf.dart';
 import 'package:bookfin/reader/screen.dart';
 import 'package:flutter/material.dart' hide TextPosition;
 import 'package:flutter_test/flutter_test.dart';
@@ -172,20 +173,28 @@ void main() {
       List<String> tapped, {
       Set<String> off = const {},
       bool night = false,
-      bool? reflow,
+      PdfPageView? pdfView,
+      double scale = 1,
+      double? width,
     }) {
       VoidCallback? report(String control) =>
           off.contains(control) ? null : () => tapped.add(control);
       return _show(
         tester,
-        ReaderSettingsPanel(
-          fontSize: 20,
-          onSmaller: report('Smaller text'),
-          onLarger: report('Larger text'),
-          night: night,
-          onNightChanged: (night) => tapped.add('night $night'),
-          reflow: reflow,
-          onReflowChanged: (reflow) => tapped.add('reflow $reflow'),
+        MediaQuery(
+          data: MediaQueryData(textScaler: TextScaler.linear(scale)),
+          child: SizedBox(
+            width: width,
+            child: ReaderSettingsPanel(
+              fontSize: 20,
+              onSmaller: report('Smaller text'),
+              onLarger: report('Larger text'),
+              night: night,
+              onNightChanged: (night) => tapped.add('night $night'),
+              pdfView: pdfView,
+              onPdfViewChanged: (view) => tapped.add('view ${view.name}'),
+            ),
+          ),
         ),
       );
     }
@@ -215,19 +224,83 @@ void main() {
       tester,
     ) async {
       await showSettings(tester, []);
-      expect(find.byTooltip('Reflow text'), findsNothing);
+      expect(find.byTooltip('Page words'), findsNothing);
       expect(find.byTooltip('Original page'), findsNothing);
+      expect(find.text('Pages'), findsNothing);
+      expect(find.text('Page words'), findsNothing);
+      expect(find.text('Text'), findsNothing);
     });
 
-    testWidgets('a PDF offers its original page and reflowed text, and '
+    testWidgets('the Theme row stacks full labels at the largest text size', (
+      tester,
+    ) async {
+      final tapped = <String>[];
+      await showSettings(tester, tapped, width: 320, scale: 3.2);
+      final cream = find.byTooltip('Cream reading theme');
+      final night = find.byTooltip('Night reading theme');
+      expect(
+        tester.getRect(night).top,
+        greaterThanOrEqualTo(tester.getRect(cream).bottom),
+      );
+      expect(find.byIcon(Icons.light_mode_outlined), findsNothing);
+      expect(find.byIcon(Icons.dark_mode_outlined), findsNothing);
+      for (final button in [cream, night]) {
+        expect(tester.getSize(button).width, greaterThanOrEqualTo(48));
+        expect(tester.getSize(button).height, greaterThanOrEqualTo(48));
+      }
+      await tester.tap(night);
+      expect(tapped, ['night true']);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('a PDF offers its original page, page words and text, and '
         'reports the other view', (tester) async {
       final tapped = <String>[];
-      await showSettings(tester, tapped, reflow: false);
+      await showSettings(tester, tapped, pdfView: PdfPageView.original);
+      expect(find.text('Original'), findsOneWidget);
+      expect(find.text('Page words'), findsOneWidget);
+      expect(find.text('Text'), findsOneWidget);
       await tester.tap(find.byTooltip('Original page'));
       await tester.pump();
       expect(tapped, isEmpty, reason: 'The original page already shows.');
-      await tester.tap(find.byTooltip('Reflow text'));
-      expect(tapped, ['reflow true']);
+      await tester.tap(find.byTooltip('Page words'));
+      await tester.tap(find.byTooltip('Text'));
+      expect(tapped, ['view pageWords', 'view text']);
+    });
+
+    testWidgets('all three PDF views stay readable and tappable on a narrow '
+        'phone at the largest text size', (tester) async {
+      final tapped = <String>[];
+      await showSettings(
+        tester,
+        tapped,
+        pdfView: PdfPageView.original,
+        width: 320,
+        scale: 3.2,
+      );
+      final choices = [
+        find.byTooltip('Original page'),
+        find.byTooltip('Page words'),
+        find.byTooltip('Text'),
+      ];
+      for (var index = 1; index < choices.length; index++) {
+        expect(
+          tester.getRect(choices[index]).top,
+          greaterThanOrEqualTo(tester.getRect(choices[index - 1]).bottom),
+        );
+      }
+      for (final choice in choices) {
+        await tester.ensureVisible(choice);
+        final bounds = tester.getRect(choice);
+        expect(bounds.width, greaterThanOrEqualTo(48));
+        expect(bounds.height, greaterThanOrEqualTo(48));
+        await tester.tap(choice);
+      }
+      expect(find.text('Original'), findsOneWidget);
+      expect(find.text('Page words'), findsOneWidget);
+      expect(find.text('Text'), findsOneWidget);
+      expect(tapped, ['view pageWords', 'view text']);
+      expect(tester.takeException(), isNull);
     });
   });
 }

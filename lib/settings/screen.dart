@@ -94,11 +94,21 @@ class SettingsTab extends StatelessWidget {
               ListenableSelector(
                 listenable: layout,
                 select: () => layout.density,
-                builder: (context, density, _) => ListTile(
-                  title: const Text('Layout density'),
-                  trailing: DensitySwitch(
-                    density: density,
-                    onChanged: (density) => layout.density = density,
+                builder: (context, density, _) => Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        'Layout density',
+                        style: theme.textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 8),
+                      DensitySwitch(
+                        density: density,
+                        onChanged: (density) => layout.density = density,
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -221,8 +231,8 @@ class DensitySwitch extends StatelessWidget {
   @override
   Widget build(BuildContext context) => PillChoice<LibraryDensity>(
     segments: const [
-      ButtonSegment(value: LibraryDensity.compact, label: Text('Compact')),
-      ButtonSegment(value: LibraryDensity.spacious, label: Text('Spacious')),
+      PillSegment(value: LibraryDensity.compact, label: 'Compact'),
+      PillSegment(value: LibraryDensity.spacious, label: 'Spacious'),
     ],
     selected: density,
     onChanged: onChanged,

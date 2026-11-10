@@ -48,7 +48,7 @@ Widget _reader(
         child: PdfViewport(
           book: book,
           fontSize: fontSize,
-          reflow: true,
+          view: PdfPageView.text,
           initial: initial,
           onReady: (navigator, _) => reports.navigator = navigator,
           onAddress: reports.addresses.add,

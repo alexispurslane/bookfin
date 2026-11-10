@@ -150,7 +150,7 @@ Future<ReaderSession> openPdf(WidgetTester tester, PdfBook pdf) async {
 }
 
 Future<void> chooseReflow(WidgetTester tester) =>
-    chooseSetting(tester, 'Reflow text', settle: tester.pump);
+    chooseSetting(tester, 'Page words', settle: tester.pump);
 
 void main() {
   group('a PDF opens on its original page', () {

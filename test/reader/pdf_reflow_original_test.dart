@@ -5,6 +5,7 @@
 import 'dart:io';
 
 import 'package:bookfin/reader/pdf_text_view.dart';
+import 'package:bookfin/reader/pdf.dart';
 import 'package:bookfin/reader/pdf_viewport.dart';
 import 'package:bookfin/reader/platform_io.dart';
 import 'package:bookfin/reader/screen.dart';
@@ -89,7 +90,7 @@ void main() {
   /// Shows the reader in reflow on source page 1, and waits until the
   /// recognition of that page finished and its original page is drawn.
   Future<void> reflowFirstPage(WidgetTester tester) async {
-    reader.setReflow(true);
+    reader.setPdfView(PdfPageView.pageWords);
     addTearDown(() async {
       await tester.pumpWidget(const SizedBox());
       await native(tester, () async {

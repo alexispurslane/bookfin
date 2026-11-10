@@ -117,7 +117,7 @@ void main() {
       });
       await reader.bind(account(), [book]);
       await reader.open(book, edition);
-      reader.setReflow(true);
+      reader.setPdfView(PdfPageView.pageWords);
       await tester.pumpWidget(
         MaterialApp(
           home: ReaderScreen(reader: reader, onNightChanged: (_) {}),
@@ -125,7 +125,7 @@ void main() {
       );
       await tester.pump();
       expect(supply.active, isTrue);
-      reader.setReflow(false);
+      reader.setPdfView(PdfPageView.original);
       await tester.pump();
       expect(supply.canceled, isTrue, reason: 'The screen cancels it.');
       expect(find.byType(ErrorWidget), findsNothing);
@@ -149,7 +149,7 @@ void main() {
               fontSize: 20,
               onReady: (_, _) {},
               onAddress: (_) {},
-              reflow: true,
+              view: PdfPageView.pageWords,
             ),
           ),
         ),
@@ -191,7 +191,7 @@ void main() {
         ),
       );
       await tester.pump();
-      await tester.tap(find.byTooltip('Reflow text'));
+      await tester.tap(find.byTooltip('Page words'));
       // Reflow asks for the text for reading after the frame.
       await tester.pump();
       await tester.pump();

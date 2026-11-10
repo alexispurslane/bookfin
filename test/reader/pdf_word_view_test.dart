@@ -302,7 +302,7 @@ void main() {
     double fontSize = 40,
     Reports? reports,
     EdgeInsets padding = EdgeInsets.zero,
-    bool reflow = true,
+    PdfPageView view = PdfPageView.pageWords,
     double devicePixelRatio = 2.625,
   }) async {
     tester.view.physicalSize = const Size(1080, 2400);
@@ -319,7 +319,7 @@ void main() {
               book: book,
               fontSize: fontSize,
               initial: initial,
-              reflow: reflow,
+              view: view,
               onReady: (navigator, _) => reported.navigator = navigator,
               onAddress: reported.places.add,
               onCancelRecognition: () => book.textSupply?.cancel(),
@@ -708,7 +708,7 @@ void main() {
     final book = HeldWordPdf(born);
     final reports = await show(tester, book, initial: PdfAddress(3, 0));
     final before = await showsScreen(tester, 3, 0);
-    await show(tester, book, reports: reports, reflow: false);
+    await show(tester, book, reports: reports, view: PdfPageView.original);
     await settle(
       tester,
       () =>

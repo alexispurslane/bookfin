@@ -114,7 +114,7 @@ class Reports {
 Widget viewport(
   PdfBook book,
   Reports reports, {
-  bool reflow = false,
+  PdfPageView view = PdfPageView.original,
   PdfAddress? initial,
 }) => MaterialApp(
   home: Scaffold(
@@ -122,7 +122,7 @@ Widget viewport(
       book: book,
       fontSize: 20,
       initial: initial,
-      reflow: reflow,
+      view: view,
       onReady: (navigator, _) => reports.navigator = navigator,
       onAddress: reports.addresses.add,
       onCancelRecognition: () => reports.cancels++,
@@ -177,7 +177,9 @@ void main() {
         addTearDown(supply.recognizing.dispose);
         final pdf = ScannedPdf(supply)..pending = Completer<PdfText>().future;
         final reports = Reports();
-        await tester.pumpWidget(viewport(pdf, reports, reflow: true));
+        await tester.pumpWidget(
+          viewport(pdf, reports, view: PdfPageView.pageWords),
+        );
         await drawn(tester);
         expect(
           find.bySemanticsLabel('Recognizing the text of this page'),
@@ -197,7 +199,9 @@ void main() {
       addTearDown(supply.recognizing.dispose);
       final pdf = ScannedPdf(supply)..pending = Completer<PdfText>().future;
       final reports = Reports();
-      await tester.pumpWidget(viewport(pdf, reports, reflow: true));
+      await tester.pumpWidget(
+        viewport(pdf, reports, view: PdfPageView.pageWords),
+      );
       await drawn(tester);
       await tester.pumpWidget(viewport(pdf, reports));
       await tester.pump();
@@ -217,7 +221,9 @@ void main() {
       addTearDown(supply.recognizing.dispose);
       final pdf = ScannedPdf(supply)..pending = Completer<PdfText>().future;
       final reports = Reports();
-      await tester.pumpWidget(viewport(pdf, reports, reflow: true));
+      await tester.pumpWidget(
+        viewport(pdf, reports, view: PdfPageView.pageWords),
+      );
       await drawn(tester);
       // The next page's text never arrives either, so the turn stays open.
       unawaited(reports.navigator!.move(true));
@@ -256,10 +262,12 @@ void main() {
         final reports = Reports();
         await tester.pumpWidget(viewport(pdf, reports));
         await drawn(tester);
-        expect(find.text('Reflow text'), findsNothing);
+        expect(find.text('Page words'), findsNothing);
         expect(find.text('Original page'), findsNothing);
         expect(find.bySemanticsLabel('Original source page 1'), findsOneWidget);
-        await tester.pumpWidget(viewport(pdf, reports, reflow: true));
+        await tester.pumpWidget(
+          viewport(pdf, reports, view: PdfPageView.pageWords),
+        );
         await tester.pumpAndSettle();
         expect(find.byType(PdfTextView), findsOneWidget);
         expect(find.text('Original page'), findsNothing);
@@ -282,7 +290,7 @@ void main() {
         await drawn(tester);
         expect(reports.addresses.last.character, 2000);
         await tester.pumpWidget(
-          viewport(pdf, reports, initial: saved, reflow: true),
+          viewport(pdf, reports, initial: saved, view: PdfPageView.pageWords),
         );
         await tester.pumpAndSettle();
         final shown = textScreen(tester);
@@ -303,7 +311,7 @@ void main() {
         expect(find.byType(PdfTextView), findsNothing);
         expect(reports.addresses.last.character, reflowed);
         await tester.pumpWidget(
-          viewport(pdf, reports, initial: saved, reflow: true),
+          viewport(pdf, reports, initial: saved, view: PdfPageView.pageWords),
         );
         await tester.pumpAndSettle();
         expect(reports.addresses.last.character, reflowed);
@@ -322,7 +330,7 @@ void main() {
         final saved = pdf.addressFor(1, await pdf.text(1), 2000);
         final reports = Reports();
         await tester.pumpWidget(
-          viewport(pdf, reports, initial: saved, reflow: true),
+          viewport(pdf, reports, initial: saved, view: PdfPageView.pageWords),
         );
         await tester.pumpAndSettle();
         final shown = textScreen(tester);
@@ -347,7 +355,9 @@ void main() {
     (tester) async {
       final pdf = DrawnPdf();
       final reports = Reports();
-      await tester.pumpWidget(viewport(pdf, reports, reflow: true));
+      await tester.pumpWidget(
+        viewport(pdf, reports, view: PdfPageView.pageWords),
+      );
       await tester.pumpAndSettle();
       for (var step = 1; step <= 6; step++) {
         await reports.navigator!.move(true);
@@ -365,52 +375,49 @@ void main() {
     },
   );
 
-  testWidgets(
-    'Reflow text in the reader stays chosen after the reader closes and '
-    'reopens',
-    (tester) async {
-      final downloads = LocalFiles()
-        ..files[pdfSource.key] = Uri.file('/text.pdf');
-      final reader = ReaderSession(
-        downloads: downloads,
-        store: MemoryResume(),
-        load: loadPublication,
-        loadDocument: (_, _) async => DrawnPdf(),
+  testWidgets('Text in the reader stays chosen after the reader closes and '
+      'reopens', (tester) async {
+    final downloads = LocalFiles()
+      ..files[pdfSource.key] = Uri.file('/text.pdf');
+    final reader = ReaderSession(
+      downloads: downloads,
+      store: MemoryResume(),
+      load: loadPublication,
+      loadDocument: (_, _) async => DrawnPdf(),
+    );
+    addTearDown(() {
+      reader.dispose();
+      downloads.dispose();
+    });
+    final reflowed = find.descendant(
+      of: find.byType(PdfViewport),
+      matching: find.byType(PdfTextView),
+    );
+    Future<void> showReader({required Finder shown}) async {
+      await reader.open(book, edition);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: ReaderScreen(reader: reader, onNightChanged: (_) {}),
+        ),
       );
-      addTearDown(() {
-        reader.dispose();
-        downloads.dispose();
-      });
-      final reflowed = find.descendant(
-        of: find.byType(PdfViewport),
-        matching: find.byType(PdfTextView),
-      );
-      Future<void> showReader({required Finder shown}) async {
-        await reader.open(book, edition);
-        await tester.pumpWidget(
-          MaterialApp(
-            home: ReaderScreen(reader: reader, onNightChanged: (_) {}),
-          ),
-        );
-        await drawn(tester, shown: shown);
-      }
+      await drawn(tester, shown: shown);
+    }
 
-      await reader.bind(account(), [book]);
-      await showReader(shown: find.byType(RawImage));
-      await chooseSetting(tester, 'Reflow text', settle: tester.pump);
-      await drawn(tester, shown: reflowed);
-      expect(reader.reflow, isTrue);
-      await tester.pumpWidget(const SizedBox());
-      expect(reader.document, isNull, reason: 'Closing closes the book.');
-      await showReader(shown: reflowed);
-      expect(reflowed, findsOneWidget);
-      await chooseSetting(tester, 'Original page', settle: tester.pump);
-      await drawn(tester);
-      expect(reflowed, findsNothing);
-      expect(find.bySemanticsLabel('Original source page 1'), findsOneWidget);
-      await tester.pumpWidget(const SizedBox());
-    },
-  );
+    await reader.bind(account(), [book]);
+    await showReader(shown: find.byType(RawImage));
+    await chooseSetting(tester, 'Text', settle: tester.pump);
+    await drawn(tester, shown: reflowed);
+    expect(reader.pdfView, PdfPageView.text);
+    await tester.pumpWidget(const SizedBox());
+    expect(reader.document, isNull, reason: 'Closing closes the book.');
+    await showReader(shown: reflowed);
+    expect(reflowed, findsOneWidget);
+    await chooseSetting(tester, 'Original page', settle: tester.pump);
+    await drawn(tester);
+    expect(reflowed, findsNothing);
+    expect(find.bySemanticsLabel('Original source page 1'), findsOneWidget);
+    await tester.pumpWidget(const SizedBox());
+  });
 
   testWidgets(
     'Reflow text chosen while the page text loads shows the original page '
@@ -441,8 +448,8 @@ void main() {
         ),
       );
       await drawn(tester);
-      await chooseSetting(tester, 'Reflow text', settle: tester.pump);
-      expect(reader.reflow, isTrue);
+      await chooseSetting(tester, 'Page words', settle: tester.pump);
+      expect(reader.pdfView, PdfPageView.pageWords);
       expect(reflowed, findsNothing);
       expect(find.bySemanticsLabel('Original source page 1'), findsOneWidget);
       pdf.textArrives.complete();

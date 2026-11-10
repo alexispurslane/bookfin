@@ -91,7 +91,7 @@ void main() {
       );
       await tester.pump();
       for (var turn = 0; turn < 2; turn++) {
-        await tester.tap(find.byTooltip('Reflow text'));
+        await tester.tap(find.byTooltip('Page words'));
         await tester.pump();
         await tester.tap(find.byTooltip('Original page'));
         await tester.pump();
@@ -140,7 +140,7 @@ void main() {
         ),
       );
       await tester.pump();
-      await tester.tap(find.byTooltip('Reflow text'));
+      await tester.tap(find.byTooltip('Page words'));
       await tester.pumpAndSettle();
       PdfTextView screen() =>
           tester.widget<PdfTextView>(find.byType(PdfTextView));
@@ -187,7 +187,7 @@ void main() {
       );
       await tester.pumpWidget(reader(20));
       await tester.pump();
-      await tester.tap(find.byTooltip('Reflow text'));
+      await tester.tap(find.byTooltip('Page words'));
       await tester.pumpAndSettle();
       PdfTextView screen() =>
           tester.widget<PdfTextView>(find.byType(PdfTextView));
@@ -206,7 +206,7 @@ void main() {
       addTearDown(() => tester.binding.setSurfaceSize(null));
       await tester.pumpWidget(reader(40, initial: saved));
       await tester.pump();
-      await tester.tap(find.byTooltip('Reflow text'));
+      await tester.tap(find.byTooltip('Page words'));
       await tester.pumpAndSettle();
       expect(screen().screens.count, greaterThan(1));
       expect(screen().screen, 0);

@@ -125,7 +125,7 @@ void main() {
   /// Shows the reader in reflow, and waits until the shown page is
   /// recognized.
   Future<void> showReader(WidgetTester tester) async {
-    reader.setReflow(true);
+    reader.setPdfView(PdfPageView.pageWords);
     addTearDown(() async {
       await tester.pumpWidget(const SizedBox());
       await native(tester, () async {
@@ -185,7 +185,7 @@ void main() {
                 .isNotEmpty &&
             nativeCalls == 1,
       );
-      await chooseSetting(tester, 'Reflow text', settle: tester.pump);
+      await chooseSetting(tester, 'Page words', settle: tester.pump);
       await waitFor(tester, textSettled);
       expect(
         find.descendant(
@@ -244,7 +244,7 @@ void main() {
           // The scrub bar counts the shown page of the two as read.
           expect(tester.widget<Slider>(find.byType(Slider)).value, .5);
 
-          await chooseSetting(tester, 'Reflow text', settle: tester.pump);
+          await chooseSetting(tester, 'Page words', settle: tester.pump);
           expect(
             nativeCalls,
             pending == 'render' ? 0 : 1,
