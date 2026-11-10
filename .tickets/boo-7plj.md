@@ -39,3 +39,17 @@ Checks, all through nix develop and one heavy command at a time:
 Logs: /tmp/bookfin-boo-7plj/{baseline,red-missing-file-observed,red-stale-survey,focused-green,format,analyze,final-static-checks,full-test}.log. Flutter reported missing iphoneos/iphonesimulator SDKs and newer incompatible package versions without failing the final checks. No native changes, so the native OCR worker script is not required. No device, coverage, or mutation work ran.
 
 Inspected crop commit b4ec646ad8c1d560f8341f46e98e6eb2c4ed9b50. It adds a separate test before the existing survey tests and changes book_survey.dart/session.dart for crop behavior. Those production files are untouched here. Its added test is separate from this fix. No new work or product fork found. Ticket stays in progress for parent integration and closure. Fresh review follows.
+
+**2026-11-10T19:35:15Z**
+
+Fresh review complete for code commit dcb9f927edcde5ebdf1659233ad38800fe8c6623 against base 9bf71644c0639f5fc201b756fb938eb1137b75be. Reviewer: codex / gpt-6.1-sol / reasoningEffort=xhigh, shared checkout, read-only. The reviewer edited nothing, ran no builds or tests, and started no agents or devices.
+
+Review thread: <t3-thread://v2/38d3e8fa-8572-4c2a-8a3b-2eb7c344dfce/thread:delegated-task:command%3Amcp%3A21475963-ffcf-45a8-84be-20b1a420b463%3Adelegate-task%3Aboo-7plj-fresh-review-dcb9f92-20261110>
+
+Correctness: PASS. Static inspection confirms that crop readiness precedes queued storage writes. The existing close contract drains them. Real file reads, the controlled writer delay, idempotent PDF disposal, and failure cleanup support the correction. No findings or material gaps.
+
+Fulfillment: PASS. The reviewer inspected the deterministic stale-[1] red log and the passing focused/full/static-check logs. No timeout increased, the saved partial and completed survey expectations are stronger, and the exactly-once layout expectation remains. No findings or material gaps. The reviewer did not independently execute the logged commands.
+
+Design: PASS. The test uses the existing survey-close operation and real SurveyFiles reads/writes. It adds no production abstraction, second persistence path, copied serialization, or private scheduling dependency. No findings or material gaps.
+
+Crop commit b4ec646 remains separate. The parent must verify the combined tree after recovery/integration. No coverage or mutation work ran here. No fixes were required after review. This note is the only change after the reviewed code commit. Ready for parent integration. Ticket remains in progress until the parent integrates and closes it.
