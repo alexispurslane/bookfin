@@ -437,6 +437,24 @@ A hyphen pair is two words of one paragraph. The first ends a source line, and t
 - A caption stays with its figure, as k2pdfopt's `-jfc` does. A caption is a text block of at most 3 lines. It lies within one body line height above or below a picture region, and it overlaps half the region's width. It reflows as words, centered, right after or before its region. If a region and its caption fit on one screen, no screen splits them.
 - A drop cap is an ink region at the start of a paragraph. It is more than 1.8 times the body line height tall, and its right edge touches the paragraph's first word. It keeps the page's scale and floats at the start of the paragraph. The paragraph's first lines get shorter until they pass the drop cap's bottom. A drop cap never holds more than 3 lines.
 
+### The column on the fixtures
+
+Ticket tb-0mex built `layoutColumn` in `lib/reader/column_layout.dart` and `cutScreens` in `lib/reader/screen_cut.dart`. `ReflowPage.column(settings)` runs the layout through the book's hop. These rules differ from the text above, for the reasons given:
+
+| Rule | Text above | Built | Reason |
+| --- | --- | --- | --- |
+| Settings | Width, text size, device pixel ratio | Width, text size, screen height | The layout uses no device pixels. Regions fit the screen height, and the screens need it. |
+| Turned words | Each word turns by its line's slope | A word on its own baseline turns by that baseline's slope | On the skewed page, Tesseract slopes "EDGAR" by 2.4 degrees and its line by 2.0 degrees. The line's slope left its ends 0.42 logical pixels off the baseline at size 40. |
+| Source rectangle of a turned word | Grows by the turn's extra width | Stays the word's box | The box already holds the word's ink, and the image turns as a whole. |
+| Gaps | Between a third and one body line height | The same, but words closer than a tenth of a body line height, and an extra word beside its neighbor, keep their source gap and never part | The superscript of "𝑔𝑡²" on the equation page is 3 pixels from its letter, and Gibbon's marks are 2 to 5 pixels from their words (tb-t8rh). |
+| Edges of a block | The block's edges | The block's own box for indents, short lines and justified lines. For centered lines, its measure: the block widened by the prose blocks that overlap more than half of it | The heading of the equation page is the width of its text column, not of its block, so only the measure shows that it is centered. A ragged block ends 77 to 91 pixels short of the justified block below it, so the measure made every ragged line a paragraph end. |
+| Indented line | Indented, after a line that reached the right edge | Also, the lines before and after it in its block are not indented as much | Two lines of Gibbon's page are narrowed by a side note, and must not start paragraphs. |
+| Tesseract's justification | Kept when it says left, center or right | Center and right are kept. Left lets the geometry choose between justified and left | Tesseract calls a justified paragraph left. |
+| Caption | Overlaps half of the region's width | Half of the caption's width lies over or under the region | A short caption under a wide figure is narrower than half of the figure. |
+| Line pitch | The source's pitch, and a line grows for a raised word | The pitch of the line's block. A taller line keeps the source's leading below the line before it | Footnotes in smaller type keep their tighter pitch. |
+
+No fixture has a caption within one body line height of its figure. The Raven byline is 54 pixels below the engraving, and the body line height is 33. So a made-up page tests captions. On Gibbon's page (471 words), the layout takes about 0.8 ms on the host, and 1.2 ms through `Isolate.run`. It runs in a hop, as the table of "Off the UI isolate" says, because the device is slower and the work grows with the page.
+
 ## Rendering
 
 ### Bands

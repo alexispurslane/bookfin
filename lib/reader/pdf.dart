@@ -10,6 +10,7 @@ import 'package:pdfrx/pdfrx.dart' show pdfrxFlutterInitialize;
 
 import '../downloads/downloads.dart';
 import '../foundation/hop.dart';
+import 'column_layout.dart';
 import 'document.dart';
 import 'page_analysis.dart';
 import 'page_geometry.dart';
@@ -210,6 +211,18 @@ class ReflowPage {
   /// canceled recognition, or an error, is asked for again by the next
   /// call.
   Future<AttachedText> attachedText() => _entry.attachedText();
+
+  /// The page's words and regions in lines and screens for [settings], as
+  /// [layoutColumn] gives them, through the book's hop. It reads only
+  /// [geometry], [analysis] and [bodyLineHeight], so the arrival of the
+  /// text does not change it.
+  Future<ReflowColumn> column(ColumnSettings settings) =>
+      _entry.book.hop(layoutColumn, (
+        geometry: geometry,
+        analysis: analysis,
+        bodyLineHeight: bodyLineHeight,
+        settings: settings,
+      ));
 }
 
 /// One page that [PdfBook] keeps for reflow: its analysis while it runs or
