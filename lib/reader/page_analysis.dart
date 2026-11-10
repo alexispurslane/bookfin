@@ -129,13 +129,17 @@ class PageAnalysis {
       }
     }
     for (var region = 0; region < regionCount; region++) {
-      if (!isRunningRegion(region) && !isScanEdge(region, geometry)) {
-        add(regionBoxes, region);
-      }
+      if (isContentRegion(region, geometry)) add(regionBoxes, region);
     }
     if (left > right) return Float32List(4);
     return Float32List.fromList([left, top, right, bottom]);
   }
+
+  /// Whether [region] is content of the page whose reflow geometry is
+  /// [geometry]: it is no running region and no scan edge. The content box
+  /// holds it, and the word view shows it.
+  bool isContentRegion(int region, PageGeometry geometry) =>
+      !isRunningRegion(region) && !isScanEdge(region, geometry);
 
   /// Whether [region] is a scan edge of the page whose reflow geometry is
   /// [geometry] (see [contentBox]). It touches an edge when it lies within

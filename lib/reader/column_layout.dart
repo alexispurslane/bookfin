@@ -242,10 +242,10 @@ class ReflowColumn {
 /// text, so a page's screens do not move when its text arrives.
 ///
 /// It leaves out the lines that the analysis marks as running lines, such
-/// as running headers and folios, and the running regions, as the Original
-/// view's crop does (see `PageAnalysis.contentBox`). Their text stays in
-/// the reading text, and [ReflowColumn.screenAt] opens a place inside them
-/// at the next shown word.
+/// as running headers and folios, the running regions and the scan edges,
+/// as the Original view's crop does (see `PageAnalysis.contentBox`). Their
+/// text stays in the reading text, and [ReflowColumn.screenAt] opens a
+/// place inside them at the next shown word.
 ///
 /// [bodyLineHeight] is the line height in page units that scales the page:
 /// one body line is [ColumnSettings.fontSize] times [_wordSizeRatio] tall.
@@ -422,8 +422,9 @@ class _Source {
   double get body => analysis.bodyLineHeight;
 
   /// Whether [region] shows in the column. A running region, such as a
-  /// pencil page number in a scan's margin, does not.
-  bool shows(int region) => !analysis.isRunningRegion(region);
+  /// pencil page number in a scan's margin, and a scan edge, such as the
+  /// dark border of a scanned page, do not.
+  bool shows(int region) => analysis.isContentRegion(region, geometry);
 
   double measureLeft(int line) => measures[lineBlocks[line] * 2];
   double measureRight(int line) => measures[lineBlocks[line] * 2 + 1];

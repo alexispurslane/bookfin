@@ -463,6 +463,8 @@ Ticket tb-m8xo made the column leave out running lines and running regions:
 - `ReflowColumn.screenAt` gives the screen of a place: the screen of the first shown word whose range holds the place or starts after it. A place inside a running header opens at the next shown word. A place after every shown word, such as the folio at the end of a page's text, opens the page's last screen.
 - A block that holds a running line is no caption, and a running region gets no caption.
 
+Ticket t1-5brw made the column leave out scan edges too. `PageAnalysis.isContentRegion` is the one rule for both views: a region that is no running region and no scan edge. The content box holds such a region, and the column shows it. So the Raven page's word view ends with its folio, not with the dark bottom edge of the scan.
+
 ## Rendering
 
 ### Bands

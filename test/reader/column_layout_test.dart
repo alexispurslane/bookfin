@@ -288,8 +288,8 @@ void main() {
   }
 
   group('wrapping', () {
-    test('words wrap in reading order, and no line is wider than the '
-        'column', () async {
+    test('words wrap in reading order, every region of the content shows, and '
+        'no line is wider than the column', () async {
       for (final page in [await gibbon(), await equation(), await raven()]) {
         for (final (width, fontSize) in [
           (240.0, 20.0),
@@ -312,7 +312,8 @@ void main() {
             ]..sort(),
             [
               for (var region = 0; region < page.analysis.regionCount; region++)
-                region,
+                if (page.analysis.isContentRegion(region, page.geometry))
+                  region,
             ],
           );
           for (var piece = 0; piece < column.pieceCount; piece++) {
@@ -538,6 +539,25 @@ void main() {
         expect(target.bottom, lessThanOrEqualTo(top + 300 + 0.01));
       },
     );
+
+    test('the dark bottom edge of the Raven scan does not show, so the word '
+        'view ends with the folio, and the engraving still shows', () async {
+      final page = await raven();
+      final column = lay(page);
+      // The folio ends 2263 pixels down a page 2594 pixels tall, and the dark
+      // edge of the scan starts at 2580.
+      final bottoms = [
+        for (var piece = 0; piece < column.pieceCount; piece++)
+          column.source(piece).bottom * 1600,
+      ];
+      expect(bottoms.reduce(math.max), closeTo(2263, 2));
+      final last = column.lineStarts[column.lineCount - 1];
+      expect(column.source(last).bottom * 1600, closeTo(2263, 2));
+      expect([
+        for (var piece = 0; piece < column.pieceCount; piece++)
+          if (column.region(piece) >= 0) column.source(piece).height,
+      ], contains(greaterThan(0.5)));
+    });
 
     test('a figure\'s caption shows centered on its figure\'s screen, above '
         'or below it', () async {
