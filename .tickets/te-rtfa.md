@@ -1,6 +1,6 @@
 ---
 id: te-rtfa
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-10T19:31:29Z
