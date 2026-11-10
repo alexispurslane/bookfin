@@ -60,6 +60,26 @@ Publication _tableBook() => book([
   paragraphs(4, label: 'C'),
 ]);
 
+/// A book of three sections whose middle one has a paragraph of 300
+/// sentences, of about 29,000 code units.
+Publication _paragraphBook() => book([
+  paragraphs(4, label: 'A'),
+  '<p>${prose(2, 'Before')}</p><p>${prose(300, 'Long')}</p>',
+  paragraphs(4, label: 'C'),
+]);
+
+/// The place [fraction] of the way through the longest text of [section].
+EpubPlace _inLongest(PreparedSection section, double fraction) {
+  final text = section.dom.texts.reduce(
+    (a, b) => a.text.length >= b.text.length ? a : b,
+  );
+  return EpubPlace(
+    section.index,
+    text.order,
+    (text.text.length * fraction).floor(),
+  );
+}
+
 /// [section] with its kept measures replaced by [measures].
 KeptSection _measured(KeptSection section, SectionMeasures measures) =>
     KeptSection(
@@ -521,6 +541,70 @@ void main() {
     final page = await pageAt(source, kept.firsts[at]!);
 
     expect(page.start, kept.starts[at]);
+    expect(dropped, 1);
+    await _eventually(() async => await pageMaps.read(readerPage) == null);
+  });
+
+  test("a jump into the middle of a kept long paragraph does not count its "
+      "earlier segments' lines", () async {
+    final publication = _paragraphBook();
+    await layOutWhole(publication);
+    final plain = open(publication);
+    final section = await scheduler.until(plain.section(1));
+    final place = _inLongest(section, .75);
+    final expected = await scheduler.until(
+      plain.pageAt(place, anchored: false),
+    );
+    final seeded = open(publication, pageMaps: mapsOf(publication));
+    await scheduler.until(seeded.section(1));
+    final before = LayoutRun.laidOutUnits;
+
+    final page = await pageAt(seeded, place);
+
+    expect(content(page), content(expected));
+    expect(seeded.isTrue(page), isTrue);
+    // The paragraph has about 29,000 code units.
+    expect(LayoutRun.laidOutUnits - before, lessThan(29000 ~/ 4));
+  });
+
+  test('a kept line count that disagrees with a fresh one forgets the '
+      'map', () async {
+    final publication = _paragraphBook();
+    final (truth, _) = await layOutWhole(publication);
+    final kept = truth[1];
+    final MapEntry(key: paragraph, value: segments) =
+        kept.measures.paragraphs.entries.single;
+    // A page in the last quarter of the paragraph, and the segment of its
+    // first line.
+    final at = kept.starts.length * 3 ~/ 4;
+    final start = kept.starts[at];
+    expect(start.item, paragraph);
+    final segment = segments.lines.lastIndexWhere(
+      (lines) => lines <= start.line,
+    );
+    expect(segment + 1, lessThan(segments.lines.length));
+    // The lines before the segment after it, one more than they are.
+    final wrong = [...truth];
+    wrong[1] = _measured(
+      kept,
+      SectionMeasures(
+        paragraphs: {
+          paragraph: (
+            starts: segments.starts,
+            lines: [...segments.lines]..[segment + 1] += 1,
+          ),
+        },
+      ),
+    );
+    final pageMaps = mapsOf(publication);
+    await pageMaps.write(readerPage, wrong);
+
+    final source = open(publication, pageMaps: pageMaps);
+    var dropped = 0;
+    source.keptMapDropped.addListener(() => dropped++);
+    final page = await pageAt(source, kept.firsts[at]!);
+
+    expect(page.start, start);
     expect(dropped, 1);
     await _eventually(() async => await pageMaps.read(readerPage) == null);
   });

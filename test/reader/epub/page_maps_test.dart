@@ -67,7 +67,7 @@ PageMapKey _key({
 /// stopped midway, and one that no run reached. A page that shows no place
 /// has no first place, and a first place can lie before the one of the
 /// page before it. The first section has two tables, whose cell widths are
-/// kept as exact 64-bit values.
+/// kept as exact 64-bit values, and two long paragraphs.
 final _sections = [
   KeptSection(
     const [
@@ -97,6 +97,10 @@ final _sections = [
       tables: {
         3: Float64List.fromList([12, 80.25, 0.1 + 0.2, 1e300, 5e-324, 0]),
         150: Float64List.fromList([7, 7]),
+      },
+      paragraphs: {
+        0: (starts: [0, 1100, 2300], lines: [0, 14, 30]),
+        200: (starts: [0, 50000], lines: [0, 600]),
       },
     ),
   ),

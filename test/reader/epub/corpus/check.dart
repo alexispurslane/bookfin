@@ -111,7 +111,8 @@ class SettingsReport {
   final lineStartDisagreementPlaces = <String>[];
 
   /// The bytes of the book's page map in its format, in format 3, which
-  /// kept no measures, and in format 2, which kept the page starts only.
+  /// kept no measures (table cell widths and the segments of long
+  /// paragraphs), and in format 2, which kept the page starts only.
   int mapBytes = 0;
   int formatThreeMapBytes = 0;
   int formatTwoMapBytes = 0;
@@ -375,6 +376,19 @@ Future<void> _measureMap(
         final cells = tables[index]!.length ~/ 2;
         measures += _leb128(index - table) + _leb128(cells) + 16 * cells;
         table = index;
+      }
+      final paragraphs = section.measures.paragraphs;
+      measures += _leb128(paragraphs.length);
+      var paragraph = 0;
+      for (final index in paragraphs.keys.toList()..sort()) {
+        final (:starts, :lines) = paragraphs[index]!;
+        measures += _leb128(index - paragraph) + _leb128(starts.length - 1);
+        paragraph = index;
+        for (var at = 1; at < starts.length; at++) {
+          measures +=
+              _leb128(starts[at] - starts[at - 1]) +
+              _leb128(lines[at] - lines[at - 1]);
+        }
       }
     }
     found.formatThreeMapBytes = found.mapBytes - measures;

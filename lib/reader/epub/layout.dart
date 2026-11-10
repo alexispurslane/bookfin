@@ -482,7 +482,8 @@ class LayoutRun {
 
   /// Whether a measure that the run found again disagreed with a kept one
   /// ([reuseMeasures]). The run checks the kept widths of each table row
-  /// that it lays out.
+  /// that it lays out, and where each segment of a long paragraph that it
+  /// lays out ends.
   bool get contradicted => _contradicted;
   bool _contradicted = false;
 
@@ -2210,6 +2211,23 @@ class LayoutRun {
         ? built.map.length
         : _lineStart(built.paragraph, built.map.length, count);
     final before = segments.lines;
+    // A segment that another run or a kept page map found already must end
+    // where it ended then. When it does not, what this run found replaces
+    // it and the segments after it.
+    if (found.starts.length > next + 1 || found.complete) {
+      final agrees = last
+          ? found.starts.length == next + 1
+          : found.starts.length > next + 1 &&
+                found.starts[next + 1] == start + following - shift &&
+                found.lines[next + 1] == before + count;
+      if (!agrees) {
+        _contradicted = true;
+        found
+          ..starts.length = next + 1
+          ..lines.length = next + 1
+          ..complete = false;
+      }
+    }
     if (last) {
       found.complete = true;
     } else if (found.starts.length == next + 1) {
@@ -2431,34 +2449,58 @@ class LayoutRun {
 
 /// The measures of a section's flow items that a run from a page start
 /// inside an item needs before it cuts its first page: the narrowest and
-/// the widest content width of each cell of each table item.
+/// the widest content width of each cell of each table item, and the
+/// segments of each long paragraph item.
 class SectionMeasures {
-  const SectionMeasures({this.tables = const {}});
+  const SectionMeasures({this.tables = const {}, this.paragraphs = const {}});
 
   /// The cells of each table item, by its index in the flow: the narrowest
   /// and the widest content width of each cell in turn, cell by cell and
   /// row by row ([GridCell.min] and [GridCell.max]).
   final Map<int, Float64List> tables;
 
+  /// The segments of each long paragraph item of more than one segment, by
+  /// its index in the flow (see [LayoutRun._long]).
+  final Map<int, Segments> paragraphs;
+
   @override
   bool operator ==(Object other) =>
       other is SectionMeasures &&
       other.tables.length == tables.length &&
       tables.entries.every(
-        (entry) => _sameValues(other.tables[entry.key], entry.value),
+        (entry) => _same(other.tables[entry.key], entry.value),
+      ) &&
+      other.paragraphs.length == paragraphs.length &&
+      paragraphs.entries.every(
+        (entry) =>
+            _same(other.paragraphs[entry.key]?.starts, entry.value.starts) &&
+            _same(other.paragraphs[entry.key]?.lines, entry.value.lines),
       );
 
   @override
-  int get hashCode => Object.hashAllUnordered([
-    for (final MapEntry(:key, :value) in tables.entries)
-      Object.hash(key, Object.hashAll(value)),
-  ]);
+  int get hashCode => Object.hash(
+    Object.hashAllUnordered([
+      for (final MapEntry(:key, :value) in tables.entries)
+        Object.hash(key, Object.hashAll(value)),
+    ]),
+    Object.hashAllUnordered([
+      for (final MapEntry(:key, :value) in paragraphs.entries)
+        Object.hash(key, Object.hashAll(value.starts)),
+    ]),
+  );
 
   @override
-  String toString() => 'SectionMeasures(tables: $tables)';
+  String toString() =>
+      'SectionMeasures(tables: $tables, paragraphs: $paragraphs)';
 }
 
-bool _sameValues(List<double>? a, List<double> b) {
+/// The segments of a long paragraph, in order: where each one starts, in
+/// code units of the paragraph's text without its indent, and the
+/// paragraph's lines before it. The first segment starts at 0 with 0
+/// lines before it.
+typedef Segments = ({List<int> starts, List<int> lines});
+
+bool _same<T>(List<T>? a, List<T> b) {
   if (a == null || a.length != b.length) return false;
   for (var index = 0; index < a.length; index++) {
     if (a[index] != b[index]) return false;
@@ -2477,6 +2519,16 @@ SectionMeasures measuresOf(PreparedSection section) => SectionMeasures(
             for (final row in rows)
               for (final cell in row) ...[cell.min, cell.max],
           ]),
+  },
+  paragraphs: {
+    for (final (index, item) in section.flow.indexed)
+      if (item is ParagraphItem)
+        if (LayoutRun._found[item] case final found?
+            when found.complete && found.starts.length > 1)
+          index: (
+            starts: List.unmodifiable(found.starts),
+            lines: List.unmodifiable(found.lines),
+          ),
   },
 );
 
@@ -2499,6 +2551,31 @@ bool reuseMeasures(PreparedSection section, SectionMeasures measures) {
     }
     return false;
   }
+  for (final MapEntry(key: index, value: (:starts, :lines))
+      in measures.paragraphs.entries) {
+    if (index < 0 || index >= flow.length) return false;
+    if (flow[index] case final ParagraphItem paragraph
+        when LayoutRun._long(paragraph.text) &&
+            starts.length == lines.length &&
+            starts.length > 1 &&
+            starts.first == 0 &&
+            lines.first == 0) {
+      // A segment starts after the one before it and holds at least one
+      // line. The last one starts inside the text.
+      final length = paragraph.text.runs.fold(
+        0,
+        (sum, run) => sum + (run is TextRun ? run.text.length : 1),
+      );
+      for (var at = 1; at < starts.length; at++) {
+        if (starts[at] <= starts[at - 1] || lines[at] <= lines[at - 1]) {
+          return false;
+        }
+      }
+      if (starts.last >= length) return false;
+      continue;
+    }
+    return false;
+  }
   for (final MapEntry(key: index, value: widths) in measures.tables.entries) {
     final table = flow[index] as TableItem;
     if (LayoutRun._measured[table] != null) continue;
@@ -2514,6 +2591,16 @@ bool reuseMeasures(PreparedSection section, SectionMeasures measures) {
       for (var row = 0; row < table.rows.length; row++) row,
     };
   }
+  for (final MapEntry(key: index, value: (:starts, :lines))
+      in measures.paragraphs.entries) {
+    final paragraph = flow[index] as ParagraphItem;
+    if (LayoutRun._found[paragraph] != null) continue;
+    LayoutRun._found[paragraph] = _Segmentation()
+      ..starts.addAll(starts.skip(1))
+      ..lines.addAll(lines.skip(1))
+      ..complete = true
+      ..kept = true;
+  }
   return true;
 }
 
@@ -2524,6 +2611,8 @@ void forgetMeasures(PreparedSection section) {
     if (item is TableItem && LayoutRun._unchecked[item] != null) {
       LayoutRun._measured[item] = null;
       LayoutRun._unchecked[item] = null;
+    } else if (item is ParagraphItem && LayoutRun._found[item]?.kept == true) {
+      LayoutRun._found[item] = null;
     }
   }
 }
@@ -3168,6 +3257,10 @@ class _Segmentation {
   /// Whether a run laid out the last segment, so that [starts] holds the
   /// start of every segment.
   bool complete = false;
+
+  /// Whether the segments came from kept measures ([reuseMeasures]). A run
+  /// that lays out a segment checks where the next one starts.
+  bool kept = false;
 }
 
 /// A table that a run lays out a row at a time.

@@ -194,7 +194,11 @@ class KeptSection {
 /// The measures ([SectionMeasures]) are the number of tables, then for
 /// each table the step of its flow item from the previous table's (from 0
 /// for the first), its number of cells, and the narrowest and widest
-/// width of each cell as exact 64-bit floats (16 bytes a cell).
+/// width of each cell as exact 64-bit floats (16 bytes a cell). Then come
+/// the number of long paragraphs, and for each one the step of its flow
+/// item from the previous one's, its number of segments after the first,
+/// and for each of those the step of its start and of its lines before it
+/// from the segment before it.
 ///
 /// The calling isolate encodes and decodes the map, and the file access
 /// is asynchronous. A map takes about 7.6 bytes a page. On the host's
@@ -210,7 +214,7 @@ abstract final class PageMaps {
   /// format reads as another key's map. Version 2 added
   /// [PageMapKey.sizesMainText]. Version 3 added the first places and the
   /// visible starts of the pages (t5-q0hs). Version 4 added the table cell
-  /// widths (t5-s1vy).
+  /// widths (t5-s1vy) and the segments of long paragraphs (t5-lfsm).
   static const version = 4;
 
   /// The most settings values that one book keeps maps for. A reader
@@ -440,8 +444,54 @@ abstract final class PageMaps {
           out.float64(width);
         }
       }
+      final paragraphs = section.measures.paragraphs;
+      out.unsigned(paragraphs.length);
+      var paragraph = 0;
+      for (final index in paragraphs.keys.toList()..sort()) {
+        final (:starts, :lines) = paragraphs[index]!;
+        assert(
+          starts.length == lines.length && starts.length > 1,
+          'A long paragraph has more than one segment.',
+        );
+        out
+          ..unsigned(index - paragraph)
+          ..unsigned(starts.length - 1);
+        paragraph = index;
+        for (var at = 1; at < starts.length; at++) {
+          out
+            ..unsigned(starts[at] - starts[at - 1])
+            ..unsigned(lines[at] - lines[at - 1]);
+        }
+      }
     }
     return (out..uint32(getCrc32(out.bytes))).bytes;
+  }
+
+  /// The segments of a section's long paragraphs, which [reader] reads
+  /// next.
+  static Map<int, Segments> _paragraphs(_Reader reader) {
+    final paragraphs = <int, Segments>{};
+    var paragraph = 0;
+    // Each paragraph takes at least 4 bytes, and each segment 2.
+    for (var left = reader.count(4); left > 0; left--) {
+      final step = reader.unsigned();
+      if (step == 0 && paragraphs.isNotEmpty) {
+        throw const FormatException('Two paragraphs share a flow item.');
+      }
+      paragraph += step;
+      final starts = [0];
+      final lines = [0];
+      final count = reader.count(2);
+      if (count == 0) {
+        throw const FormatException('A long paragraph has one segment.');
+      }
+      for (var left = count; left > 0; left--) {
+        starts.add(starts.last + reader.unsigned());
+        lines.add(lines.last + reader.unsigned());
+      }
+      paragraphs[paragraph] = (starts: starts, lines: lines);
+    }
+    return paragraphs;
   }
 
   /// [value] as an unsigned number, small for small values of either sign.
@@ -466,9 +516,9 @@ abstract final class PageMaps {
       return null;
     }
     final reader = _Reader(bytes, header.length, end);
-    // Each section takes at least 4 bytes, and each page 5, so no count
+    // Each section takes at least 5 bytes, and each page 5, so no count
     // can make a list larger than the file.
-    final count = reader.count(4);
+    final count = reader.count(5);
     final sections = <KeptSection>[];
     for (var index = 0; index < count; index++) {
       final complete = switch (reader.unsigned()) {
@@ -522,7 +572,10 @@ abstract final class PageMaps {
           firsts: firsts,
           visible: (starts: visible, length: length),
           complete: complete,
-          measures: SectionMeasures(tables: tables),
+          measures: SectionMeasures(
+            tables: tables,
+            paragraphs: _paragraphs(reader),
+          ),
         ),
       );
     }
