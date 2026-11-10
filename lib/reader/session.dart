@@ -34,7 +34,7 @@ typedef TimeLeft = ({Duration chapter, Duration book});
 abstract class ReadingStore {
   /// The saved reading snapshot of [accountKey], or null when the account
   /// has none: `version`, `fontSize`, `resumes`, `bookmarks` and `history`,
-  /// and `sizesMainText` when it is true.
+  /// `sizesMainText` when it is true, and `trimMargins` when it is false.
   Future<Map<String, dynamic>?> read(String accountKey);
 
   /// Saves [changes] to the reading records of [accountKey].
@@ -72,7 +72,7 @@ class ReadingChanges {
     this.history = const {},
   });
 
-  /// The version and the font size.
+  /// The version and the saved reading preferences.
   final Map<String, dynamic> settings;
 
   /// The changed resumes as JSON. A resume replaces the saved resume of the
@@ -213,6 +213,7 @@ class ReaderSession extends ChangeNotifier {
       _fontSizeChanges = _Signal(() => (_fontSize, _sizesMainText)),
       _saveStatusChanges = _Signal(() => saveFailed),
       _reflowChanges = _Signal(() => _reflow),
+      _trimMarginsChanges = _Signal(() => _trimMargins),
       _bookMapChanges = _Signal(() => _bookMap),
       _timeLeftChanges = _Signal(() => timeLeft),
     ];
@@ -516,6 +517,7 @@ class ReaderSession extends ChangeNotifier {
     _recordsReady = false;
     _fontSize = _defaultFontSize;
     _sizesMainText = false;
+    _trimMargins = true;
     final generation = ++_accountGeneration;
     final key = _account;
     final previous = _binding;
@@ -566,6 +568,7 @@ class ReaderSession extends ChangeNotifier {
           // was saved, came from the size buttons.
           _sizesMainText =
               saved['sizesMainText'] == true || _fontSize != _defaultFontSize;
+          _trimMargins = saved['trimMargins'] != false;
         }
         if (pending == null) store.acceptSnapshot(key, saved);
         _recordsReady = true;
@@ -1308,6 +1311,27 @@ class ReaderSession extends ChangeNotifier {
   /// session starts on the original page.
   bool get reflow => _reflow;
 
+  bool _trimMargins = true;
+
+  /// Whether original PDF pages and their deck cards show their known
+  /// content crop instead of the full printed page. On by default, saved
+  /// with the account's text size, and never used by the word view.
+  bool get trimMargins => _trimMargins;
+  late final _Signal _trimMarginsChanges;
+
+  /// Notifies when [trimMargins] changes.
+  Listenable get trimMarginsChanges => _trimMarginsChanges;
+
+  /// Shows the chosen PDF margins at once and saves the choice. Old deck
+  /// cards are freed so that the next scrub uses the chosen margins too.
+  Future<void> setTrimMargins(bool on) async {
+    if (_trimMargins == on) return;
+    _trimMargins = on;
+    previews.close();
+    _emit();
+    await _save();
+  }
+
   /// Notifies when [reflow] changes.
   Listenable get reflowChanges => _reflowChanges;
 
@@ -1417,6 +1441,7 @@ class ReaderSession extends ChangeNotifier {
         'version': 1,
         'fontSize': fontSize,
         if (sizesMainText) 'sizesMainText': true,
+        if (!trimMargins) 'trimMargins': false,
       },
       resumes: resumes.map(encodeTextPosition).toList(),
       bookmarks: {

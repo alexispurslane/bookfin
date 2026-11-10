@@ -61,3 +61,7 @@ Crop commit b4ec646 remains separate. The parent must verify the combined tree a
 **2026-11-10T19:37:14Z**
 
 Parent integration: inspected diff and fresh review evidence. Preserved crop direction tests; only conflict was ticket notes, both retained. Combined six-file crop/survey/viewport/word-renderer suite now passes all 79 tests, including the previously failing reopen case. Log /tmp/bookfin-survey-fix-integration.log. Production code unchanged.
+
+**2026-11-10T19:51:00Z**
+
+Recurrence in tb-nkz5 full flutter test on branch t3/pdf-trim-margins, ce7ddc2, 2026-11-10. Exact failing test: survey_session_test.dart / a reopened book goes on with the survey that it kept beside the download. This run follows the fix of seven settings-scroll selector assumptions in unrelated viewport test harnesses; those 23 focused tests pass. Evidence /tmp/tb-nkz5-full-final.log; full run still finishing. No production changes to the survey were made by tb-nkz5.
