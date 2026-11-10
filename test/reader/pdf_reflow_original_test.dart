@@ -4,6 +4,7 @@
 // text. Only a failure that the person can act on keeps its quiet line.
 import 'dart:io';
 
+import 'package:bookfin/reader/pdf_text_view.dart';
 import 'package:bookfin/reader/pdf_viewport.dart';
 import 'package:bookfin/reader/platform_io.dart';
 import 'package:bookfin/reader/screen.dart';
@@ -126,7 +127,7 @@ void main() {
   /// The reflowed text of the shown page.
   final reflowed = find.descendant(
     of: find.byType(PdfViewport),
-    matching: find.byType(SingleChildScrollView),
+    matching: find.byType(PdfTextView),
   );
 
   testWidgets('a cover of a few short lines shows its original page in reflow, '

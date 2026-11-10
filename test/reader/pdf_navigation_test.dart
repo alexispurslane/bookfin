@@ -5,7 +5,7 @@ import 'dart:ui' as ui;
 import 'package:bookfin/reader/document.dart';
 import 'package:bookfin/reader/page_geometry.dart';
 import 'package:bookfin/reader/pdf.dart';
-import 'package:bookfin/reader/pdf_viewport.dart';
+import 'package:bookfin/reader/pdf_text_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -73,10 +73,6 @@ class HeldPdf extends PdfBook {
 }
 
 void main() {
-  final reflowScroll = find.descendant(
-    of: find.byType(PdfViewport),
-    matching: find.byType(SingleChildScrollView),
-  );
   testWidgets(
     'repeated original-page requests share one pending draw and release its image',
     (tester) async {
@@ -126,7 +122,7 @@ void main() {
   );
 
   testWidgets(
-    'Previous from a reflow page boundary returns to the preceding final viewport',
+    'Previous from a reflow page boundary returns to the preceding final screen',
     (tester) async {
       final book = HeldPdf();
       late DocumentNavigator navigation;
@@ -146,23 +142,24 @@ void main() {
       await tester.pump();
       await tester.tap(find.byTooltip('Reflow text'));
       await tester.pumpAndSettle();
-      final scroll = tester
-          .widget<SingleChildScrollView>(reflowScroll)
-          .controller!;
-      expect(
-        scroll.position.maxScrollExtent,
-        greaterThan(scroll.position.viewportDimension * 2),
-      );
-      scroll.jumpTo(scroll.position.maxScrollExtent);
-      await tester.pump();
+      PdfTextView screen() =>
+          tester.widget<PdfTextView>(find.byType(PdfTextView));
+      final count = screen().screens.count;
+      expect(count, greaterThan(2));
+      for (var turn = 1; turn < count; turn++) {
+        await navigation.move(true);
+        await tester.pump();
+      }
+      final last = location!;
       await navigation.move(true);
       await tester.pumpAndSettle();
       expect(location!.sourcePage, 2);
-      expect(scroll.offset, 0);
+      expect(screen().screen, 0);
       await navigation.move(false);
       await tester.pumpAndSettle();
       expect(location!.sourcePage, 1);
-      expect(scroll.offset, closeTo(scroll.position.maxScrollExtent, 1));
+      expect(screen().screen, count - 1);
+      expect(location!.character, last.character);
       expect(location!.character, greaterThan(0));
       await tester.pumpWidget(const SizedBox());
       book.rendering.complete(PdfRaster(1, 1, Uint8List(4)));
@@ -192,9 +189,9 @@ void main() {
       await tester.pump();
       await tester.tap(find.byTooltip('Reflow text'));
       await tester.pumpAndSettle();
-      ScrollController scroll() =>
-          tester.widget<SingleChildScrollView>(reflowScroll).controller!;
-      expect(scroll().position.maxScrollExtent, 0);
+      PdfTextView screen() =>
+          tester.widget<PdfTextView>(find.byType(PdfTextView));
+      expect(screen().screens.count, 1);
       await navigation.move(true);
       await tester.pumpAndSettle();
       expect(location!.sourcePage, 2);
@@ -211,8 +208,8 @@ void main() {
       await tester.pump();
       await tester.tap(find.byTooltip('Reflow text'));
       await tester.pumpAndSettle();
-      expect(scroll().position.maxScrollExtent, greaterThan(0));
-      expect(scroll().offset, 0);
+      expect(screen().screens.count, greaterThan(1));
+      expect(screen().screen, 0);
       expect(location!.character, 0);
       expect(location!.quote, startsWith('River sentence 0.'));
       await tester.pumpWidget(const SizedBox());

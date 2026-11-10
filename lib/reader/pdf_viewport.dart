@@ -10,6 +10,7 @@ import 'book_survey.dart';
 import 'document.dart';
 import 'page_swipes.dart';
 import 'pdf.dart';
+import 'pdf_text_view.dart';
 import 'pdf_word_view.dart';
 
 /// The pages of an open PDF, as the original page or as reflowed text.
@@ -81,15 +82,14 @@ class PdfViewport extends StatefulWidget {
 
 class _PdfViewportState extends State<PdfViewport>
     implements DocumentNavigator {
-  final _scroll = ScrollController();
-
   /// The zoom and pan of the original page.
   final _zoom = TransformationController();
   late final PdfWordScreens _words;
   bool get _zoomed => _zoom.value.getMaxScaleOnAxis() > 1.01;
   PdfText? _text;
   ui.Image? _image;
-  TextPainter? _layout;
+  PdfTextScreens? _layout;
+  int _textScreen = 0;
   int _page = 1;
 
   /// Whether a turn showed the page, so that it takes only a crop known at
@@ -114,7 +114,7 @@ class _PdfViewportState extends State<PdfViewport>
 
   /// Why the original page could not be drawn, or null.
   String? _failure;
-  double? _layoutWidth;
+  Size? _layoutSize;
 
   @override
   void initState() {
@@ -129,14 +129,13 @@ class _PdfViewportState extends State<PdfViewport>
     );
     _words.showing.addListener(_wordStateChanged);
     _words.waitingForText.addListener(_wordStateChanged);
-    _scroll.addListener(_scrolled);
     unawaited(_load(widget.initial ?? PdfAddress(1, 0)));
   }
 
   @override
   void didUpdateWidget(PdfViewport oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.fontSize != widget.fontSize) _layoutWidth = null;
+    if (oldWidget.fontSize != widget.fontSize) _layoutSize = null;
     if (oldWidget.trimMargins != widget.trimMargins) {
       _drawRevision++;
       _failure = null;
@@ -144,7 +143,7 @@ class _PdfViewportState extends State<PdfViewport>
       unawaited(_draw(_generation, replace: true));
     }
     if (oldWidget.reflow != widget.reflow) {
-      // A new layout scrolls to the place, and the original page draws once.
+      // A new layout shows the place, and the original page draws once.
       // The owner hears of the change after this build, because its
       // reports change what the owner shows.
       final generation = _generation;
@@ -155,7 +154,7 @@ class _PdfViewportState extends State<PdfViewport>
       if (widget.reflow) {
         _textRequest++;
         _loading = true;
-        _layoutWidth = null;
+        _layoutSize = null;
         after(() => unawaited(_startWords(generation, _address)));
       } else {
         final wasLoading = _loading;
@@ -178,7 +177,6 @@ class _PdfViewportState extends State<PdfViewport>
     _words.showing.removeListener(_wordStateChanged);
     _words.waitingForText.removeListener(_wordStateChanged);
     _words.dispose();
-    _scroll.dispose();
     _zoom.dispose();
     _image?.dispose();
     _layout?.dispose();
@@ -206,7 +204,7 @@ class _PdfViewportState extends State<PdfViewport>
       _text = null;
       _image?.dispose();
       _image = null;
-      _layoutWidth = null;
+      _layoutSize = null;
     });
     if (widget.reflow) {
       await _startWords(generation, address, lastViewport: lastViewport);
@@ -270,7 +268,7 @@ class _PdfViewportState extends State<PdfViewport>
       if (!current()) return;
       setState(() {
         _text = text;
-        _layoutWidth = null;
+        _layoutSize = null;
         final resolved = widget.book.resolveAddress(address, text);
         _positionResolved = resolved != null;
         if (resolved != null) {
@@ -360,33 +358,26 @@ class _PdfViewportState extends State<PdfViewport>
     widget.onAddress(_address);
   }
 
-  void _scrolled() {
-    final layout = _layout;
-    final text = _text;
-    if (!_usingText || layout == null || text == null || !_scroll.hasClients) {
-      return;
-    }
-    final offset = layout
-        .getPositionForOffset(Offset(0, _scroll.offset))
-        .offset;
+  void _textPlace() {
+    final text = _text!;
+    final offset = _layout!.firstCharacter(_textScreen);
     final character = offset < text.sourceOffsets.length
         ? text.sourceOffsets[offset]
         : text.source.length;
-    if (character == _address.character) return;
     _address = widget.book.addressFor(_page, text, character);
-    _publish();
   }
 
   @override
   Future<void> move(bool forward) async {
     if (_usingWords && _words.turn(forward)) return;
-    if (_usingText && _scroll.hasClients) {
-      final target =
-          (_scroll.offset +
-                  (forward ? 1 : -1) * _scroll.position.viewportDimension * .85)
-              .clamp(0.0, _scroll.position.maxScrollExtent);
-      if ((target - _scroll.offset).abs() > 1) {
-        _scroll.jumpTo(target);
+    if (_usingText && _layout != null) {
+      final screen = _textScreen + (forward ? 1 : -1);
+      if (screen >= 0 && screen < _layout!.count) {
+        setState(() {
+          _textScreen = screen;
+          _textPlace();
+        });
+        _publish();
         return;
       }
     }
@@ -507,35 +498,37 @@ class _PdfViewportState extends State<PdfViewport>
         height: 1.55,
         color: Theme.of(context).colorScheme.onSurface,
       );
-      final width = math.max(1.0, constraints.maxWidth - 40);
-      if (_layoutWidth != width) {
+      final size = Size(
+        math.max(1.0, constraints.maxWidth - 40),
+        math.max(1.0, constraints.maxHeight - 24),
+      );
+      if (_layoutSize != size || _layout?.style != style) {
         _layout?.dispose();
-        _layout = TextPainter(
-          text: TextSpan(text: text.text, style: style),
-          textDirection: TextDirection.ltr,
-        )..layout(maxWidth: width);
-        _layoutWidth = width;
+        final layout = PdfTextScreens(
+          text: text.text,
+          style: style,
+          size: size,
+        );
+        _layout = layout;
+        _layoutSize = size;
         final index = text.sourceOffsets.indexWhere(
           (offset) => offset >= _address.character,
         );
-        final target = _layout!
-            .getOffsetForCaret(
-              TextPosition(offset: index < 0 ? text.text.length : index),
-              Rect.zero,
-            )
-            .dy;
+        _textScreen = layout.screenAt(index < 0 ? text.text.length : index);
+        _textPlace();
+        final generation = _generation;
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted && _usingText && _scroll.hasClients) {
-            _scroll.jumpTo(target.clamp(0.0, _scroll.position.maxScrollExtent));
-            // Placement can leave the scroll offset unchanged on a short page.
-            _scrolled();
+          if (mounted &&
+              generation == _generation &&
+              identical(_layout, layout) &&
+              _usingText) {
+            _publish();
           }
         });
       }
-      return SingleChildScrollView(
-        controller: _scroll,
+      return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        child: Text(text.text, style: style, textScaler: TextScaler.noScaling),
+        child: PdfTextView(screens: _layout!, screen: _textScreen),
       );
     },
   );
