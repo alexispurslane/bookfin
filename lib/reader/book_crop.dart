@@ -10,20 +10,21 @@ import 'running_lines.dart';
 typedef PageBox = ({double left, double top, double right, double bottom});
 
 /// What the book profile and a page's crop need of one analyzed page: its
-/// edge lines, which can be running lines, and the box around the rest of
-/// its content. It is small, so the survey keeps it on disk for every page.
+/// edge lines and edge regions, which can be running lines and running
+/// regions, and the box around the rest of its content. It is small, so the survey keeps it on disk for every page.
 class SurveyedPage {
   SurveyedPage({required this.edges, required this.height, this.core});
 
-  /// The page's number, body line height, body flag and edge lines.
+  /// The page's number, body line height, body flag, edge lines and edge
+  /// regions.
   final PageEdges edges;
 
   /// The page's height in page units.
   final double height;
 
-  /// The box around the page's content without its edge lines, as
-  /// `PageAnalysis.contentBox` counts content, or null when nothing else is
-  /// there.
+  /// The box around the page's content without its edge lines and edge
+  /// regions, as `PageAnalysis.contentBox` counts content, or null when
+  /// nothing else is there.
   final PageBox? core;
 
   int get sourcePage => edges.sourcePage;
@@ -39,12 +40,18 @@ class SurveyedPage {
 SurveyedPage surveyPage(AnalyzedSourcePage page) {
   final edges = pageEdges(page);
   // The content rule lives in PageAnalysis.contentBox alone: the core is the
-  // content box with every edge line marked as a running line.
-  final marks = Uint8List(page.geometry.lineCount);
+  // content box with every edge line and edge region marked as running.
+  final lines = Uint8List(page.geometry.lineCount);
   for (final edge in edges.edges) {
-    marks[edge.line] = 1;
+    lines[edge.line] = 1;
   }
-  final core = page.analysis.withRunningLines(marks).contentBox(page.geometry);
+  final regions = Uint8List(page.analysis.regionCount);
+  for (final region in edges.regions) {
+    regions[region.region] = 1;
+  }
+  final core = page.analysis
+      .withRunningLines(lines, regions: regions)
+      .contentBox(page.geometry);
   return SurveyedPage(
     edges: edges,
     height: page.geometry.height,
@@ -104,14 +111,19 @@ BookProfile bookProfile(List<SurveyedPage> pages) {
   return BookProfile(templates: templates, boxes: [box(0), box(1)]);
 }
 
-/// The content box of [page] in a book with the running line [templates]:
-/// its core and its edge lines that are not running lines. Null for a page
-/// without content.
+/// The content box of [page] in a book with the running [templates]: its
+/// core, and its edge lines and edge regions that are not running. Null for
+/// a page without content.
 PageBox? contentOf(SurveyedPage page, RunningTemplates templates) {
   var content = page.core;
   for (final edge in page.edges.edges) {
     if (!templates.matches(page.sourcePage, edge)) {
       content = _union(content, edge.box);
+    }
+  }
+  for (final region in page.edges.regions) {
+    if (!templates.matchesRegion(page.sourcePage, region)) {
+      content = _union(content, region.box);
     }
   }
   return content;

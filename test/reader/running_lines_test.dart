@@ -549,4 +549,77 @@ void main() {
       expect(box[3] * 1600, closeTo(2400, 1));
     });
   });
+
+  group('small marks in the margin of a scan', () {
+    /// The analyzed pages of [drawn], a scanned book without text, with the
+    /// book's templates.
+    Future<(List<AnalyzedSourcePage>, RunningTemplates)> scan(
+      List<DrawnPage> drawn,
+    ) async {
+      final pdf = DrawnPdf(drawn, hop: runInWorker);
+      final pages = [
+        for (var number = 1; number <= drawn.length; number++)
+          await pdf
+              .reflowPage(number)
+              .then(
+                (page) => (
+                  sourcePage: number,
+                  geometry: page!.geometry,
+                  analysis: page.analysis,
+                  text: null,
+                ),
+              ),
+      ];
+      return (pages, findRunningTemplates(pages));
+    }
+
+    /// The regions of [analysis] that are running regions.
+    List<int> runningRegionsOf(PageAnalysis analysis) => [
+      for (var region = 0; region < analysis.regionCount; region++)
+        if (analysis.isRunningRegion(region)) region,
+    ];
+
+    test('a small mark that repeats its place in the top margin of each side, '
+        'as a pencil page number, is left out of the content box', () async {
+      // The mark sits at the outer corner: left on even pages, right on odd
+      // pages, as the Raven scan's pencil number does.
+      final (pages, templates) = await scan([
+        for (var page = 1; page <= 6; page++)
+          DrawnPage(proseLines(30, top: 300))
+            ..ink(page.isEven ? [101, 61, 119, 94] : [1481, 61, 1499, 94]),
+      ]);
+      for (final page in pages) {
+        final marked = templates.mark(page);
+        marked.checkInvariants(page.geometry);
+        expect(runningRegionsOf(marked), hasLength(1));
+        expect(marked.contentBox(page.geometry)[1] * 1600, closeTo(300, 1));
+      }
+    });
+
+    test('a small mark in the margin of one page only, as an ornament, stays '
+        'in the content box', () async {
+      final (pages, templates) = await scan([
+        for (var page = 1; page <= 6; page++)
+          DrawnPage(proseLines(30, top: 300))
+            ..ink(page == 3 ? [790, 61, 810, 94] : [0, 0, 0, 0]),
+      ]);
+      final marked = templates.mark(pages[2]);
+      expect(runningRegionsOf(marked), isEmpty);
+      expect(marked.contentBox(pages[2].geometry)[1] * 1600, closeTo(61, 1));
+    });
+
+    test('a small figure in the text area stays content, though it repeats on '
+        'every page', () async {
+      final (pages, templates) = await scan([
+        for (var page = 1; page <= 6; page++)
+          DrawnPage([...proseLines(10, top: 300), ...proseLines(10, top: 1400)])
+            ..ink([780, 1100, 810, 1130]),
+      ]);
+      for (final page in pages) {
+        final marked = templates.mark(page);
+        expect(marked.regionCount, 1);
+        expect(runningRegionsOf(marked), isEmpty);
+      }
+    });
+  });
 }
