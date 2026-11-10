@@ -25,10 +25,10 @@ import 'pdf.dart';
 /// and its layout.
 ///
 /// The original page shows its crop (see [BookSurvey]), so its text keeps
-/// one size and place from page to page. A page never changes its crop
-/// while it shows: a crop that becomes known later applies from the next
-/// page shown. A page that a turn shows takes the crop known at once. A
-/// page that a jump, a scrub or the opening of the book shows waits up to
+/// one size and place from page to page. Except when [trimMargins] changes,
+/// a page keeps its crop while it shows: a crop that becomes known later
+/// applies from the next page shown. A page that a turn shows takes the
+/// crop known at once. A page that a jump, a scrub or the opening of the book shows waits up to
 /// 300 ms for its crop. A page without a crop shows whole.
 ///
 /// Like every reader view, it reports a tap on the page through [onTap]
@@ -46,6 +46,7 @@ class PdfViewport extends StatefulWidget {
     required this.onTap,
     required this.onTurn,
     this.initial,
+    this.trimMargins = true,
   });
   final PdfBook book;
   final double fontSize;
@@ -56,6 +57,11 @@ class PdfViewport extends StatefulWidget {
   /// Whether the page shows as reflowed text. The original page shows
   /// while the page has no text that matches the place.
   final bool reflow;
+
+  /// Whether original pages and deck cards show their known content crop.
+  /// A change redraws the shown original page, without changing its place
+  /// or the reflowed content. Crops that arrive later still wait for a turn.
+  final bool trimMargins;
 
   /// Reports that the viewport no longer waits for the text of the shown
   /// page: the person left the page, or chose the original page, before
@@ -90,7 +96,8 @@ class _PdfViewportState extends State<PdfViewport>
   late PdfAddress _address;
   bool _positionResolved = false;
   int _generation = 0;
-  int? _drawingGeneration;
+  int _drawRevision = 0;
+  (int, int)? _drawingRequest;
   int _search = 0;
 
   /// Counts the requests for the shown page's text, so that an answer to an
@@ -118,6 +125,12 @@ class _PdfViewportState extends State<PdfViewport>
   void didUpdateWidget(PdfViewport oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.fontSize != widget.fontSize) _layoutWidth = null;
+    if (oldWidget.trimMargins != widget.trimMargins) {
+      _drawRevision++;
+      _failure = null;
+      _zoom.value = Matrix4.identity();
+      unawaited(_draw(_generation, replace: true));
+    }
     if (oldWidget.reflow != widget.reflow) {
       // A new layout scrolls to the place, and the original page draws once.
       // The owner hears of the change after this build, because its
@@ -242,14 +255,15 @@ class _PdfViewportState extends State<PdfViewport>
 
   bool get _usingText => widget.reflow && _positionResolved;
 
-  Future<void> _draw(int generation) async {
-    if (_image != null ||
-        !mounted ||
-        generation != _generation ||
-        _drawingGeneration == generation) {
+  Future<void> _draw(int generation, {bool replace = false}) async {
+    final request = (generation, _drawRevision);
+    bool current() => mounted && request == (_generation, _drawRevision);
+    if ((_image != null && !replace) ||
+        !current() ||
+        _drawingRequest == request) {
       return;
     }
-    _drawingGeneration = generation;
+    _drawingRequest = request;
     final width =
         MediaQuery.sizeOf(context).width *
         MediaQuery.devicePixelRatioOf(context);
@@ -257,21 +271,24 @@ class _PdfViewportState extends State<PdfViewport>
       final crop = _turned
           ? _crops?.cropOf(_page)
           : await _crops?.cropWithin(_page, _cropWait);
-      if (!mounted || generation != _generation) return;
+      if (!current()) return;
       final image = await _drawPage(widget.book, _page, width, crop);
-      if (!mounted || generation != _generation) {
+      if (!current()) {
         image.dispose();
         return;
       }
-      setState(() => _image = image);
+      setState(() {
+        _image?.dispose();
+        _image = image;
+      });
     } on Exception {
-      if (mounted && generation == _generation) {
+      if (current()) {
         setState(
           () => _failure = 'The original page could not be drawn. Retry this source page or reopen the download.',
         );
       }
     } finally {
-      if (_drawingGeneration == generation) _drawingGeneration = null;
+      if (_drawingRequest == request) _drawingRequest = null;
     }
   }
 
@@ -280,9 +297,7 @@ class _PdfViewportState extends State<PdfViewport>
 
   /// The survey whose crops the original pages and the deck cards show, or
   /// null to show whole pages.
-  // NOTE: Every page and deck card takes its crop from this survey, so the
-  // Trim margins switch of tb-nkz5 turns crops off here.
-  BookSurvey? get _crops => widget.book.survey;
+  BookSurvey? get _crops => widget.trimMargins ? widget.book.survey : null;
 
   void _publish() {
     widget.onAddress(_address);

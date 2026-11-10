@@ -144,11 +144,13 @@ class _ReaderScreenState extends State<ReaderScreen> {
           reader.documentChanges,
           reader.fontSizeChanges,
           reader.reflowChanges,
+          reader.trimMarginsChanges,
         ]),
         select: () => (
           fontSize: reader.fontSize,
           open: reader.document != null,
           reflow: reader.document is PdfBook ? reader.reflow : null,
+          trimMargins: reader.document is PdfBook ? reader.trimMargins : null,
         ),
         builder: (context, on, _) => ReaderSettingsPanel(
           fontSize: on.fontSize,
@@ -162,6 +164,8 @@ class _ReaderScreenState extends State<ReaderScreen> {
           onNightChanged: widget.onNightChanged,
           reflow: on.reflow,
           onReflowChanged: reader.setReflow,
+          trimMargins: on.trimMargins,
+          onTrimMarginsChanged: (on) => unawaited(reader.setTrimMargins(on)),
         ),
       ),
       title: 'Reading settings',
@@ -347,6 +351,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
           documentOrSize,
           reader.saveStatusChanges,
           reader.reflowChanges,
+          reader.trimMarginsChanges,
         ]),
         builder: (context, _) => _viewport(context, night),
       ),
@@ -480,6 +485,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
             reader.attachDocument(token, navigator, entries),
         onAddress: (address) => reader.acceptAddress(token, address),
         reflow: reader.reflow,
+        trimMargins: reader.trimMargins,
         onCancelRecognition: () => document.textSupply?.cancel(),
         onTap: _toggleFullScreen,
         onTurn: (forward) => unawaited(reader.move(forward)),
@@ -765,6 +771,8 @@ class ReaderSettingsPanel extends StatelessWidget {
     required this.onNightChanged,
     this.reflow,
     this.onReflowChanged,
+    this.trimMargins,
+    this.onTrimMarginsChanged,
   });
 
   /// The text size, in points.
@@ -789,6 +797,13 @@ class ReaderSettingsPanel extends StatelessWidget {
   /// Reports the view that the person chose: true for reflowed text.
   final ValueChanged<bool>? onReflowChanged;
 
+  /// Whether original PDF pages show their content crop. Null for books
+  /// that are not PDFs, which have no Trim margins control.
+  final bool? trimMargins;
+
+  /// Reports whether original PDF pages should show their content crop.
+  final ValueChanged<bool>? onTrimMarginsChanged;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -807,82 +822,94 @@ class ReaderSettingsPanel extends StatelessWidget {
     );
     final reflow = this.reflow;
     return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            row(
-              'Text size',
-              Row(
-                children: [
-                  IconButton.outlined(
-                    tooltip: 'Smaller text',
-                    onPressed: onSmaller,
-                    icon: const Icon(Icons.text_decrease_rounded),
-                  ),
-                  Expanded(
-                    child: Text(
-                      '${fontSize.round()}',
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontFeatures: const [FontFeature.tabularFigures()],
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              row(
+                'Text size',
+                Row(
+                  children: [
+                    IconButton.outlined(
+                      tooltip: 'Smaller text',
+                      onPressed: onSmaller,
+                      icon: const Icon(Icons.text_decrease_rounded),
+                    ),
+                    Expanded(
+                      child: Text(
+                        '${fontSize.round()}',
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontFeatures: const [FontFeature.tabularFigures()],
+                        ),
                       ),
                     ),
-                  ),
-                  IconButton.outlined(
-                    tooltip: 'Larger text',
-                    onPressed: onLarger,
-                    icon: const Icon(Icons.text_increase_rounded),
-                  ),
-                ],
+                    IconButton.outlined(
+                      tooltip: 'Larger text',
+                      onPressed: onLarger,
+                      icon: const Icon(Icons.text_increase_rounded),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            row(
-              'Theme',
-              PillChoice<bool>(
-                segments: const [
-                  ButtonSegment(
-                    value: false,
-                    label: Text('Cream'),
-                    icon: Icon(Icons.light_mode_outlined),
-                    tooltip: 'Cream reading theme',
-                  ),
-                  ButtonSegment(
-                    value: true,
-                    label: Text('Night'),
-                    icon: Icon(Icons.dark_mode_outlined),
-                    tooltip: 'Night reading theme',
-                  ),
-                ],
-                selected: night,
-                onChanged: onNightChanged,
-              ),
-            ),
-            if (reflow != null)
               row(
-                'Pages',
+                'Theme',
                 PillChoice<bool>(
                   segments: const [
                     ButtonSegment(
                       value: false,
-                      label: Text('Original'),
-                      icon: Icon(Icons.picture_as_pdf_outlined),
-                      tooltip: 'Original page',
+                      label: Text('Cream'),
+                      icon: Icon(Icons.light_mode_outlined),
+                      tooltip: 'Cream reading theme',
                     ),
                     ButtonSegment(
                       value: true,
-                      label: Text('Reflow'),
-                      icon: Icon(Icons.article_outlined),
-                      tooltip: 'Reflow text',
+                      label: Text('Night'),
+                      icon: Icon(Icons.dark_mode_outlined),
+                      tooltip: 'Night reading theme',
                     ),
                   ],
-                  selected: reflow,
-                  onChanged: onReflowChanged,
+                  selected: night,
+                  onChanged: onNightChanged,
                 ),
               ),
-          ],
+              if (reflow != null)
+                row(
+                  'Pages',
+                  PillChoice<bool>(
+                    segments: const [
+                      ButtonSegment(
+                        value: false,
+                        label: Text('Original'),
+                        icon: Icon(Icons.picture_as_pdf_outlined),
+                        tooltip: 'Original page',
+                      ),
+                      ButtonSegment(
+                        value: true,
+                        label: Text('Reflow'),
+                        icon: Icon(Icons.article_outlined),
+                        tooltip: 'Reflow text',
+                      ),
+                    ],
+                    selected: reflow,
+                    onChanged: onReflowChanged,
+                  ),
+                ),
+              if (trimMargins case final on?)
+                Padding(
+                  padding: const EdgeInsets.only(top: 16),
+                  child: SwitchListTile.adaptive(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Trim margins'),
+                    value: on,
+                    onChanged: onTrimMarginsChanged,
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );

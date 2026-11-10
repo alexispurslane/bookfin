@@ -357,6 +357,7 @@ void main() {
           find.descendant(of: sheet, matching: find.byTooltip(tooltip));
       expect(inSheet('Reflow text'), findsNothing);
       expect(inSheet('Original page'), findsNothing);
+      expect(find.text('Trim margins'), findsNothing);
       final size = reader.fontSize;
       await tester.tap(inSheet('Larger text'));
       await tester.pumpAndSettle();
