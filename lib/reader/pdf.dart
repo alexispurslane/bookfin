@@ -248,16 +248,31 @@ class ReflowPage {
   /// differs. It reads [geometry], [analysis], [bodyLineHeight] and the
   /// text of a text layer page, never a scanned page's recognized text, so
   /// the arrival of that text does not change it.
-  Future<ReflowColumn> column(ColumnSettings settings) async {
+  Future<ReflowColumn> column(ColumnSettings settings) async =>
+      _entry.book.hop(layoutColumn, (
+        geometry: geometry,
+        analysis: await _shownAnalysis(),
+        bodyLineHeight: bodyLineHeight,
+        settings: settings,
+      ));
+
+  /// The column for [settings], as [column] lays it out, and the bands of
+  /// its screens, as [planWordColumn] plans them, in one hop.
+  Future<WordColumn> wordColumn(WordSettings settings) async =>
+      _entry.book.hop(planWordColumn, (
+        geometry: geometry,
+        analysis: await _shownAnalysis(),
+        bodyLineHeight: bodyLineHeight,
+        settings: settings,
+      ));
+
+  /// The analysis that a column reads: [analysis], with the running lines
+  /// and regions marked once the book profile froze.
+  Future<PageAnalysis> _shownAnalysis() async {
     final templates = _entry.book.survey.profile?.templates;
-    return _entry.book.hop(layoutColumn, (
-      geometry: geometry,
-      analysis: templates == null
-          ? analysis
-          : templates.mark(await templateReading()),
-      bodyLineHeight: bodyLineHeight,
-      settings: settings,
-    ));
+    return templates == null
+        ? analysis
+        : templates.mark(await templateReading());
   }
 }
 

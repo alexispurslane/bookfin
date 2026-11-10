@@ -114,8 +114,13 @@ ColorFilter _inkFilter(WordTint tint, DrawnBand band) {
     ...[0, 0, 0, 0, tint.ink.r * 255],
     ...[0, 0, 0, 0, tint.ink.g * 255],
     ...[0, 0, 0, 0, tint.ink.b * 255],
-    ...[-_red / range, -_green / range, -_blue / range, 0],
-    255 * band.paperLightness / range,
+    ...[
+      -_red / range,
+      -_green / range,
+      -_blue / range,
+      band.paperLightness / range,
+    ],
+    0,
   ]);
 }
 
@@ -305,8 +310,10 @@ class PdfWordPages {
   var _disposed = false;
 
   /// The column of source page [page] for [settings], and the bands of its
-  /// screens. Null when the page has no word geometry. The layout and the
-  /// band plans run in one hop of the book. The last four columns are kept.
+  /// screens, as [ReflowPage.wordColumn] gives them. Null when the page has
+  /// no word geometry. The layout and the band plans run in one hop of the
+  /// book. The last four columns are kept, so a page that shows keeps its
+  /// column, even when the book profile freezes meanwhile.
   Future<WordColumn?> column(int page, WordSettings settings) {
     final ratio = settings.devicePixelRatio;
     if (!(ratio > 0 && ratio.isFinite)) {
@@ -323,12 +330,7 @@ class PdfWordPages {
     try {
       final reflow = await book.reflowPage(page);
       if (reflow == null) return null;
-      return await book.hop(planWordColumn, (
-        geometry: reflow.geometry,
-        analysis: reflow.analysis,
-        bodyLineHeight: reflow.bodyLineHeight,
-        settings: settings,
-      ));
+      return await reflow.wordColumn(settings);
     } catch (_) {
       // A failed column is asked for again by the next call.
       _columns.remove((page, settings));

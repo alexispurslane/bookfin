@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:bookfin/reader/document.dart';
 import 'package:bookfin/reader/ocr.dart';
+import 'package:bookfin/reader/page_geometry.dart';
 import 'package:bookfin/reader/pdf.dart';
 import 'package:bookfin/reader/pdf_viewport.dart';
 import 'package:bookfin/reader/platform_io.dart';
@@ -37,6 +38,12 @@ class PendingScan extends HeldPdf {
     sourceOffsets: [],
     status: PdfTextStatus.absent,
   );
+
+  @override
+  Future<PageGeometry?> geometry(
+    int sourcePage, {
+    bool background = false,
+  }) async => null;
 
   @override
   Future<void> dispose() => _closing ??= textSupply.close();

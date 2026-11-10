@@ -12,6 +12,7 @@ import 'pdf_viewport_host.dart';
 class HeldPdf extends PdfBook {
   final rendering = Completer<PdfRaster>();
   int renders = 0;
+  final renderedWidths = <double>[];
   HeldPdf({String? source})
     : source =
           source ??
@@ -52,6 +53,7 @@ class HeldPdf extends PdfBook {
   @override
   Future<PdfRaster> render(int sourcePage, double width) {
     renders++;
+    renderedWidths.add(width);
     return rendering.future;
   }
 
@@ -88,7 +90,9 @@ void main() {
         await tester.pump();
       }
       expect(
-        book.renders,
+        book.renderedWidths
+            .where((width) => width == tester.view.physicalSize.width)
+            .length,
         1,
         reason: 'One page generation owns one native draw.',
       );

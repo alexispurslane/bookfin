@@ -5,6 +5,7 @@ import 'package:bookfin/reader/platform_io.dart';
 import 'package:bookfin/reader/pdf.dart';
 import 'package:bookfin/reader/screen.dart';
 import 'package:bookfin/reader/session.dart';
+import 'package:bookfin/reader/word_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pdfrx_engine/pdfrx_engine.dart';
@@ -37,7 +38,7 @@ void main() {
   });
 
   testWidgets(
-    'PDF controls reflow real extracted text and keep source-page bookmarks',
+    'PDF controls reflow real word images and keep source-page bookmarks',
     (tester) async {
       final downloads = LocalFiles()
         ..files[pdfSource.key] = File(
@@ -63,18 +64,31 @@ void main() {
         'Reflow text',
         settle: () => settleNative(tester),
       );
+      WordScreen shown() => tester
+          .widget<WordScreenView>(find.byType(WordScreenView))
+          .screen
+          .value!;
+      expect(shown().page, 1);
+      expect(shown().bands, isNotEmpty);
       expect(
-        find.textContaining('The river follows the old road.'),
-        findsOneWidget,
+        (await tester.runAsync(() => document.text(1)))!.text,
+        contains('The river follows the old road.'),
       );
       expect(
         find.textContaining('Pictures and page layout'),
         findsNothing,
         reason: 'No notice covers a reflowed page.',
       );
-      await tester.tap(find.byTooltip('Next page'));
-      await settleNative(tester);
-      expect(find.textContaining('River chapter 2'), findsOneWidget);
+      for (var turn = 0; turn < 20 && shown().page == 1; turn++) {
+        await tester.tap(find.byTooltip('Next page'));
+        await settleNative(tester);
+      }
+      expect(shown().page, 2);
+      expect(shown().bands, isNotEmpty);
+      expect(
+        (await tester.runAsync(() => document.text(2)))!.text,
+        contains('River chapter 2'),
+      );
       expect((reader.visibleAddress as PdfAddress).sourcePage, 2);
       await tester.tap(find.byTooltip('Bookmark this place'));
       await tester.pumpAndSettle();

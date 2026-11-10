@@ -19,3 +19,11 @@ test/reader/survey_session_test.dart 'a reopened book goes on with the survey th
 **2026-11-10T17:12:25Z**
 
 Failed again in a full run on 2026-11-10 at load 23, after merging tb-xjfi; passed alone. Second failure in about four full runs.
+
+**2026-11-10T19:47:50Z**
+
+Recurred in tb-22fu replacement checkout full run: required-tests-final.log finished with 2518 passed, 21 skipped, one failure at survey_session_test.dart:262 (saved survey file not yet present). The same test immediately passed alone in survey-rerun.log. No survey implementation/test changes made here; full rerun underway.
+
+**2026-11-10T19:50:32Z**
+
+The immediate focused rerun passed, followed by a clean full rerun in tb-22fu: 2519 passed, 21 skipped, zero failed (2m37s), full-rerun.log. Intermittent failure retained honestly; no out-of-scope fix attempted.

@@ -453,6 +453,22 @@ void main() {
       final theme = bookfinTheme(brightness).colorScheme;
       final name = brightness == Brightness.light ? 'cream' : 'night';
 
+      test(
+        'in $name, transparent band pixels leave the reader paper visible',
+        () async {
+          final image = await imageOf(2, 1, [0, 0, 0, 0, 0, 0, 0, 255]);
+          addTearDown(image.dispose);
+          final drawn = await drawScreen(
+            [oneSprite(image, BandTint.ink)],
+            WordTint.of(theme),
+            4,
+            2,
+          );
+          expect(near(pixelAt(drawn, 4, 0, 0), theme.surface), isTrue);
+          expect(near(pixelAt(drawn, 4, 1, 0), theme.onSurface), isTrue);
+        },
+      );
+
       test('in $name, a black pixel draws in the text color and a white '
           'pixel in the paper', () async {
         final tint = WordTint.of(theme);
