@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -12,6 +14,8 @@ import '../foundation/theme.dart';
 import '../foundation/time.dart';
 import '../playback/playback.dart';
 import '../playback/screen.dart' show PlaybackMiniPlayer;
+import '../reader/scope.dart';
+import '../reader/screen.dart';
 import '../reader/session.dart';
 import 'controller.dart';
 import 'layout.dart';
@@ -73,12 +77,14 @@ class LibraryServices {
     ]);
   }
 
-  /// Gives covers below [child] the cover store and the current account, and
-  /// glass panes the book open in the player. A page pushed on the navigator
-  /// needs this, because the library's own scope sits below the navigator.
-  Widget coverScope(Widget child) {
+  /// Gives covers below [child] the cover store and the current account,
+  /// glass panes the book open in the player, and the History sheet the
+  /// reader ([ReaderScope]). A page pushed on the navigator needs this,
+  /// because the library's own scope sits below the navigator.
+  Widget pageScope(Widget child) {
     final account = catalog.accountNotifier;
     final selection = playback?.selectionNotifier;
+    final reader = this.reader;
     return ListenableSelector(
       listenable: Listenable.merge([account, ?selection]),
       select: () => (
@@ -91,9 +97,46 @@ class LibraryServices {
         playing: scope.playing,
         child: child!,
       ),
-      child: child,
+      child: reader == null
+          ? child
+          : ReaderScope(reader: reader, show: showReader, child: child),
     );
   }
+
+  /// Brings the reader screen to the front over [context]. While the reader
+  /// shows a book, its screen is under [context], so the routes above it
+  /// close. Otherwise a new reader screen opens. The caller then opens or
+  /// moves the book in [reader], and the screen shows it.
+  void showReader(BuildContext context) {
+    final navigator = Navigator.of(context);
+    // Leaving the reader screen closes its book, so an open book means that
+    // the screen is on the navigator.
+    if (reader!.book != null) {
+      navigator.popUntil(
+        (route) => route.settings.name == _readerRoute || route.isFirst,
+      );
+      return;
+    }
+    unawaited(
+      navigator.push<void>(
+        MaterialPageRoute(
+          settings: const RouteSettings(name: _readerRoute),
+          // The pushed page sits above the library's cover scope, so it
+          // brings its own, and the audiobook in its dock shows its cover.
+          builder: (_) => pageScope(
+            ReaderScreen(
+              reader: reader!,
+              onNightChanged: onReaderNightChanged,
+              playback: playback,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// The name of the reader screen's route.
+  static const _readerRoute = 'reader';
 
   /// A page pushed over the library: [body] on the page surface, with the
   /// mini player floating over its bottom. The player opened from the mini

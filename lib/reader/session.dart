@@ -15,6 +15,7 @@ import 'epub/pager.dart';
 import 'epub/publication.dart';
 import 'page_previews.dart';
 import 'pdf.dart';
+import 'place_words.dart';
 import 'reading_speed.dart';
 
 typedef PublicationLoader = Future<Publication> Function(VerifiedFile file);
@@ -514,7 +515,9 @@ class ReaderSession extends ChangeNotifier {
     _message = null;
   }
 
-  Future<void> open(Book book, Edition selected) async {
+  /// Opens [selected], an edition of [book], at its saved place, or at
+  /// [at] when that place fits the edition.
+  Future<void> open(Book book, Edition selected, {TextPosition? at}) async {
     if (_disposed || _account == null || !_current(selected)) return;
     _clear();
     _book = book;
@@ -584,7 +587,10 @@ class ReaderSession extends ChangeNotifier {
           .where((value) => value.editionId == selected.id)
           .toList();
       final saved =
-          candidates.where((value) => _compatible(value) != null).lastOrNull ??
+          [
+            ?at,
+            ...candidates.reversed,
+          ].where((value) => _compatible(value) != null).firstOrNull ??
           candidates.lastOrNull;
       if (saved != null) {
         _initialAddress = _compatible(saved);
@@ -752,14 +758,16 @@ class ReaderSession extends ChangeNotifier {
     final index = _bookmarks.indexWhere((value) => value.id == id);
     if (index < 0) return;
     final old = _bookmarks[index];
-    // An edit names the book and the edition as they are now, so a
-    // bookmark saved before book names gets them.
+    // An edit in the open edition names the book and the edition as they
+    // are now, so a bookmark saved before book names gets them. A bookmark
+    // of another edition, renamed from the History timeline, keeps its own.
+    final here = old.position.editionId == _edition?.id;
     final edited = Bookmark(
       id: old.id,
       position: old.position,
       createdAt: old.createdAt,
-      bookTitle: _book?.title ?? old.bookTitle,
-      editionLabel: _edition?.label ?? old.editionLabel,
+      bookTitle: (here ? _book?.title : null) ?? old.bookTitle,
+      editionLabel: (here ? _edition?.label : null) ?? old.editionLabel,
       title: title,
       note: note,
     );
@@ -785,6 +793,81 @@ class ReaderSession extends ChangeNotifier {
     }
     await _navigate(() => _navigator!.display(location));
   }
+
+  /// Shows where the reading move [id] began, or where it ended when
+  /// [previous] is false, in the open edition. A place in another edition
+  /// opens with [openAt].
+  // NOTE: t9-nnon records this as a "historyRestore" move with Undo, and
+  // opens another ebook edition of the open book first.
+  Future<void> restoreHistory(String id, {bool previous = true}) async {
+    final event = _history.where((value) => value.id == id).firstOrNull;
+    if (event == null || _navigator == null) return;
+    final location = _compatible(previous ? event.before : event.after);
+    if (location == null) {
+      _message = 'This place belongs to different source or processed content and cannot be applied.';
+      _emit();
+      return;
+    }
+    await _navigate(() => _navigator!.display(location));
+  }
+
+  /// Opens the edition that holds [place] at [place], among the books that
+  /// [bind] gave. Nothing opens when no such edition is current.
+  Future<void> openAt(TextPosition place) async {
+    for (final book in _books) {
+      for (final edition in book.editions) {
+        if (edition.id == place.editionId) {
+          return open(book, edition, at: place);
+        }
+      }
+    }
+  }
+
+  /// Deletes the reading move [id] from the account's history, here and,
+  /// after sync, on the account's other devices.
+  Future<void> deleteHistory(String id) async {
+    _history = _history.where((value) => value.id != id).toList();
+    await _save(history: {id: null});
+    _emit();
+  }
+
+  /// [place] in words, for the History timeline and the bookmark editor
+  /// (see [describeTextPlace]). A place in the open book reads by the
+  /// current [bookMap], so its page number follows [bookMapChanges].
+  PlaceWords describe(TextPosition place) =>
+      describeTextPlace(place, address: _compatible(place), map: _bookMap);
+
+  /// The reading moves and bookmarks of [book]'s editions, or of every
+  /// book, newest first. It follows [historyChanges] and [bookmarkChanges].
+  /// The list stays the same object until they change or another book is
+  /// asked for.
+  List<TimelineEntry> timeline(Book? book) {
+    final key = (_history, _bookmarks, book);
+    if (_timeline case (final kept, final entries) when kept == key) {
+      return entries;
+    }
+    bool belongs(TextPosition place) =>
+        book == null ||
+        book.editions.any((edition) => edition.id == place.editionId);
+    final entries = List<TimelineEntry>.unmodifiable(
+      <TimelineEntry>[
+        for (final event in _history)
+          if (belongs(event.after)) ActionEntry(event),
+        for (final bookmark in _bookmarks)
+          if (belongs(bookmark.position)) BookmarkEntry(bookmark),
+      ]..sort((first, second) => second.at.compareTo(first.at)),
+    );
+    _timeline = (key, entries);
+    return entries;
+  }
+
+  /// The last [timeline], and the records and book that it lists. Records
+  /// compare by identity, because each change replaces its list.
+  (
+    (List<HistoryEvent<TextPosition>>, List<Bookmark<TextPosition>>, Book?),
+    List<TimelineEntry>,
+  )?
+  _timeline;
 
   Future<void> _navigate(Future<void> Function() action) async {
     final generation = token;
@@ -938,13 +1021,15 @@ class ReaderSession extends ChangeNotifier {
     }
   }
 
-  /// Hands the store the [resumes] and [bookmarks] that one action changed,
-  /// with the current settings. A null bookmark is a deletion. The changes
+  /// Hands the store the [resumes], [bookmarks] and [history] that one
+  /// action changed, with the current settings. A null bookmark or move is a
+  /// deletion. The changes
   /// stay pending, merged with earlier pending changes, until the store
   /// saves them.
   Future<void> _save({
     List<TextPosition> resumes = const [],
     Map<String, Bookmark<TextPosition>?> bookmarks = const {},
+    Map<String, HistoryEvent<TextPosition>?> history = const {},
   }) async {
     final key = _account;
     if (key == null || !_recordsReady || _disposed) return;
@@ -959,6 +1044,10 @@ class ReaderSession extends ChangeNotifier {
       bookmarks: {
         for (final MapEntry(key: id, value: mark) in bookmarks.entries)
           id: mark?.toJson(),
+      },
+      history: {
+        for (final MapEntry(key: id, value: event) in history.entries)
+          id: event?.toJson(),
       },
     );
     _pendingWrites[key] = _pendingWrites[key]?.followedBy(changes) ?? changes;

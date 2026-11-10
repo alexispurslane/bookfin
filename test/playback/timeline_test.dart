@@ -1,6 +1,7 @@
 import 'package:bookfin/catalog/glass.dart';
 import 'package:bookfin/catalog/model.dart';
 import 'package:bookfin/foundation/theme.dart';
+import 'package:bookfin/foundation/time.dart';
 import 'package:bookfin/playback/playback.dart';
 import 'package:bookfin/playback/screen.dart';
 import 'package:bookfin/playback/timeline.dart';
@@ -366,7 +367,15 @@ void main() {
           home: Scaffold(
             body: HistoryTimeline(
               entries: entries,
-              editionTime: (place) => place.milliseconds,
+              describe: (place) => switch (place) {
+                AudioPosition(:final milliseconds) => (
+                  short: audioTime(milliseconds),
+                  chapter: null,
+                  quote: null,
+                  along: AlongAudio(milliseconds),
+                ),
+                TextPosition() => throw StateError('No reading place here.'),
+              },
               onGoBack: (event) => reports.add(('back', event)),
               onGoTo: (entry) => reports.add(('go', entry)),
               onRename: (bookmark) => reports.add(('rename', bookmark)),
@@ -481,7 +490,8 @@ void main() {
                   ),
                 ),
             ]),
-            editionTime: (_) => null,
+            describe: (place) =>
+                (short: '', chapter: null, quote: null, along: null),
             onGoBack: (_) {},
             onGoTo: (_) {},
             onRename: (_) {},

@@ -144,7 +144,7 @@ class _CatalogHomeState extends State<CatalogHome> {
       final tab = signedIn ? _tab : _Tab.library;
       final services = _services;
       final playback = widget.playback;
-      return services.coverScope(
+      return services.pageScope(
         Scaffold(
           // Pages scroll beneath the floating mini player.
           extendBody: true,

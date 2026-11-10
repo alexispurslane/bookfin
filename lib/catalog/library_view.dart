@@ -624,7 +624,7 @@ void openSearch(BuildContext context, LibraryServices services) => unawaited(
   Navigator.push<void>(
     context,
     MaterialPageRoute(
-      builder: (_) => services.coverScope(SearchPage(services: services)),
+      builder: (_) => services.pageScope(SearchPage(services: services)),
     ),
   ),
 );
@@ -730,9 +730,8 @@ void openSeries(
   Navigator.push<void>(
     context,
     MaterialPageRoute(
-      builder: (_) => services.coverScope(
-        SeriesPage(services: services, name: series.name),
-      ),
+      builder: (_) =>
+          services.pageScope(SeriesPage(services: services, name: series.name)),
     ),
   ),
 );

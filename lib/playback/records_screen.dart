@@ -2,24 +2,40 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../catalog/model.dart' show AudioPosition;
+import '../catalog/model.dart' show AudioPosition, TextPosition;
 import '../foundation/theme.dart';
 import '../foundation/time.dart';
-import 'playback.dart';
 import '../catalog/glass.dart';
+import '../reader/session.dart';
+import 'playback.dart';
 
 /// The listening message, and an offer to retry when the personal records
-/// failed to save. A tap on Retry saving asks [playback] to save again.
+/// of [playback] or of [reader] failed to save. A tap on Retry saving asks
+/// both to save again.
 class RecordSaveStatus extends StatelessWidget {
-  const RecordSaveStatus({super.key, required this.playback});
-  final Playback playback;
+  const RecordSaveStatus({super.key, this.playback, this.reader});
+  final Playback? playback;
+  final ReaderSession? reader;
   @override
-  Widget build(BuildContext context) => ValueListenableBuilder(
-    valueListenable: playback.statusNotifier,
-    builder: (context, status, _) => RecordSaveNotice(
-      status: status,
-      onRetrySave: () => unawaited(playback.flush()),
-    ),
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: Listenable.merge([
+      ?playback?.statusNotifier,
+      ?reader?.saveStatusChanges,
+    ]),
+    builder: (context, _) {
+      final listening = playback?.statusNotifier.value;
+      return RecordSaveNotice(
+        status: (
+          message: listening?.message,
+          saveFailed:
+              (listening?.saveFailed ?? false) || (reader?.saveFailed ?? false),
+        ),
+        onRetrySave: () {
+          if (playback case final playback?) unawaited(playback.flush());
+          if (reader case final reader?) unawaited(reader.flush());
+        },
+      );
+    },
   );
 }
 
@@ -82,6 +98,36 @@ Future<void> editAudioBookmark(
     );
   }
 }
+
+/// Asks for a title and a note for the reading bookmark [bookmark] in the
+/// shared bookmark editor, then saves them in [reader].
+Future<void> editReadingBookmark(
+  BuildContext context,
+  ReaderSession reader,
+  Bookmark<TextPosition> bookmark,
+) async {
+  final edited = await showBookmarkEditor(
+    context,
+    heading: 'Edit bookmark',
+    title: bookmark.title,
+    note: bookmark.note,
+    place: readingPlaceLine(reader.describe(bookmark.position)),
+  );
+  if (edited == null) return;
+  await reader.editBookmark(
+    bookmark.id,
+    title: edited.title,
+    note: edited.note,
+  );
+}
+
+/// The place line of the bookmark editor for a reading place: its page and
+/// chapter in the open book, such as "On p. 134 · Chapter 4", and else the
+/// first words of its quote.
+String readingPlaceLine(PlaceWords words) => switch (words.along) {
+  null => words.short,
+  _ => ['On ${words.short}', ?words.chapter].join(' · '),
+};
 
 /// Shows a dialog that edits the [title] and [note] of a bookmark under
 /// [heading]. [place] says where the bookmark is, such as "At 01:15".
