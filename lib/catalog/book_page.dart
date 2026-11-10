@@ -10,7 +10,6 @@ import '../foundation/theme.dart';
 import '../foundation/time.dart';
 import '../playback/screen.dart';
 import '../playback/timeline.dart';
-import '../reader/screen.dart';
 import '../sync/alert.dart';
 import 'book_cover.dart';
 import 'controller.dart';
@@ -25,9 +24,8 @@ void openBook(BuildContext context, LibraryServices services, Book book) =>
       Navigator.push<void>(
         context,
         MaterialPageRoute(
-          builder: (_) => services.coverScope(
-            BookPage(services: services, bookId: book.id),
-          ),
+          builder: (_) =>
+              services.pageScope(BookPage(services: services, bookId: book.id)),
         ),
       ),
     );
@@ -396,26 +394,10 @@ class BookPage extends StatelessWidget {
     }
   }
 
-  /// Opens [edition] in the reader and shows the reader screen.
+  /// Shows the reader screen, and opens [edition] in it.
   void _read(BuildContext context, Book book, Edition edition) {
-    final reader = services.reader!;
-    unawaited(reader.open(book, edition));
-    unawaited(
-      Navigator.push<void>(
-        context,
-        MaterialPageRoute(
-          // The pushed page sits above the library's cover scope, so it
-          // brings its own, and the audiobook in its dock shows its cover.
-          builder: (_) => services.coverScope(
-            ReaderScreen(
-              reader: reader,
-              onNightChanged: services.onReaderNightChanged,
-              playback: services.playback,
-            ),
-          ),
-        ),
-      ),
-    );
+    services.showReader(context);
+    unawaited(services.reader!.open(book, edition));
   }
 
   void _download(BuildContext context, Edition edition, DownloadAction action) {

@@ -1,6 +1,6 @@
 ---
 id: t9-9ffz
-status: open
+status: in_progress
 deps: [t9-mdsj, t9-mqtx]
 links: []
 created: 2026-11-09T21:59:37Z
@@ -33,3 +33,9 @@ Build:
 - Delete asks for confirmation. Cancel keeps the entry.
 - The listening timeline looks and behaves as before (existing widget tests and screenshots).
 - On the emulator through the T3 Device panel: open History over a book with reading moves and bookmarks, and record a screenshot for the user.
+
+## Notes
+
+**2026-11-10T00:34:38Z**
+
+Implemented design 1A (2026-11-09). HistoryTimeline takes describe (a place in words: short place, chapter, quote, and how far along the edition, AlongAudio or AlongText) instead of editionTime. Playback.describe and ReaderSession.describe (lib/reader/place_words.dart) give the words. openHistory reads the reader from a ReaderScope, which LibraryServices.pageScope provides and sheets copy. It merges both timelines newest first, routes each choice to the owner of its place, and with showing: names the medium of the screen under it, so Go to on another medium opens the player (openPlayer) or the reader (LibraryServices.showReader, which pops to an open reader screen or pushes one). Session additions: describe, timeline(book), open(at:), openAt, restoreHistory (no move recorded yet; t9-nnon), deleteHistory, _save(history:). editBookmark keeps the names of a bookmark of another edition. Medium glyphs show only when the listed entries hold both media, so a listening-only timeline looks as before. Go to on a listening entry from the book page now opens the player. Follow-up: t5-wyvf (record a move and offer Undo when History opens the reader at a place).

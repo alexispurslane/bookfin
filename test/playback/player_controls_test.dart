@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:bookfin/catalog/glass.dart';
 import 'package:bookfin/catalog/model.dart';
 import 'package:bookfin/foundation/theme.dart';
 import 'package:bookfin/playback/playback.dart';
@@ -278,6 +279,14 @@ void main() {
         note: 'Read it again.',
       ));
       expect(find.text('Edit bookmark'), findsNothing);
+    });
+
+    testWidgets('opens as a glass pane, never as a plain dialog', (
+      tester,
+    ) async {
+      await openEditor(tester);
+      expect(find.byType(GlassDialog), findsOneWidget);
+      expect(find.byType(AlertDialog), findsNothing);
     });
 
     testWidgets('returns nothing when cancelled', (tester) async {

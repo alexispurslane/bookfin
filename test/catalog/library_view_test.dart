@@ -234,7 +234,7 @@ void main() {
         theme: bookfinTheme(Brightness.light),
         navigatorObservers: [pushes],
         home: Scaffold(
-          body: services.coverScope(LibraryTab(services: services)),
+          body: services.pageScope(LibraryTab(services: services)),
         ),
       ),
     );

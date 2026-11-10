@@ -698,7 +698,20 @@ class _PlayerFixture extends StatelessWidget {
           height: 320,
           child: HistoryTimeline(
             entries: sample.timeline,
-            editionTime: (place) => place.milliseconds,
+            describe: (place) => switch (place) {
+              AudioPosition(:final milliseconds) => (
+                short: audioTime(milliseconds),
+                chapter: null,
+                quote: null,
+                along: AlongAudio(milliseconds),
+              ),
+              TextPosition() => (
+                short: '',
+                chapter: null,
+                quote: null,
+                along: null,
+              ),
+            },
             showBooks: true,
             onGoBack: (event) => sample.goTo(event.before),
             onGoTo: (entry) => sample.goTo(switch (entry) {

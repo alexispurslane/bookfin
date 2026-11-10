@@ -313,6 +313,9 @@ sealed class TimelineEntry {
   /// The name of the book at the time of the entry, or null for a reading
   /// bookmark saved before reading history.
   String? get bookTitle;
+
+  /// The place of the entry: where a move ended, or the bookmark's place.
+  Place get place;
 }
 
 final class ActionEntry extends TimelineEntry {
@@ -324,6 +327,8 @@ final class ActionEntry extends TimelineEntry {
   DateTime get at => event.at;
   @override
   String get bookTitle => event.bookTitle;
+  @override
+  Place get place => event.after;
 }
 
 final class BookmarkEntry extends TimelineEntry {
@@ -335,4 +340,40 @@ final class BookmarkEntry extends TimelineEntry {
   DateTime get at => bookmark.createdAt;
   @override
   String? get bookTitle => bookmark.bookTitle;
+  @override
+  Place get place => bookmark.position;
+}
+
+/// A place in words. [short] names it in a timeline row, such as "p. 134",
+/// "37%" or "01:02:15". [chapter] and [quote] describe it in the detail
+/// line of an open timeline entry, when they are known. [along] says how
+/// far into its edition the place is, so that a move can say how far it
+/// went, or null when that is unknown.
+typedef PlaceWords = ({
+  String short,
+  String? chapter,
+  String? quote,
+  Along? along,
+});
+
+/// How far into its edition a place is. Only two places of the same
+/// medium compare.
+sealed class Along {
+  const Along();
+}
+
+/// A time in an audio edition, in milliseconds from the edition's start.
+final class AlongAudio extends Along {
+  const AlongAudio(this.milliseconds);
+  final int milliseconds;
+}
+
+/// A place in a text edition: the number of its page among the book's
+/// pages, from 1, and its share of the book, from 0 at the start to 1 at
+/// the end. Either can be unknown, but not both.
+final class AlongText extends Along {
+  const AlongText({this.page, this.fraction})
+    : assert(page != null || fraction != null);
+  final int? page;
+  final double? fraction;
 }

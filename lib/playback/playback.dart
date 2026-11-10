@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import '../catalog/jellyfin.dart';
 import '../catalog/model.dart';
 import '../downloads/downloads.dart';
+import '../foundation/time.dart' show audioTime;
 import 'reporting.dart';
 import 'records.dart';
 
@@ -725,6 +726,25 @@ class Playback extends ChangeNotifier {
         ? _edition
         : _editions[position.editionId]?.$2;
     return edition == null ? null : _editionTime(edition, position);
+  }
+
+  /// [place] in words, for the History timeline: its time in its edition,
+  /// such as "01:15", or in its file while the edition time is unknown, and
+  /// the chapter that holds it while its edition is in the library.
+  PlaceWords describe(AudioPosition place) {
+    final at = editionTime(place);
+    final edition = _edition?.id == place.editionId
+        ? _edition
+        : _editions[place.editionId]?.$2;
+    final file = edition?.files
+        .where((file) => file.key == place.sourceKey)
+        .firstOrNull;
+    return (
+      short: audioTime(at ?? place.milliseconds),
+      chapter: file?.chapterAt(place.milliseconds),
+      quote: null,
+      along: at == null ? null : AlongAudio(at),
+    );
   }
 
   static int? _editionTime(Edition edition, AudioPosition position) {

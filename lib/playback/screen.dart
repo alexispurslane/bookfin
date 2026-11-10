@@ -209,7 +209,8 @@ class PlayerView extends StatelessWidget {
       const SizedBox(height: 12),
       Center(
         child: TextButton(
-          onPressed: () => openHistory(context, playback),
+          onPressed: () =>
+              openHistory(context, playback, showing: EditionKind.audio),
           child: const Text('History'),
         ),
       ),
@@ -555,8 +556,12 @@ class PlayerView extends StatelessWidget {
                 child: _Tool(
                   label: 'History',
                   top: Icon(Icons.history_rounded, color: accent),
-                  onTap: () =>
-                      openHistory(context, playback, book: playback.book),
+                  onTap: () => openHistory(
+                    context,
+                    playback,
+                    book: playback.book,
+                    showing: EditionKind.audio,
+                  ),
                 ),
               ),
             ],

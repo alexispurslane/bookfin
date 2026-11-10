@@ -15,6 +15,7 @@ import 'epub/pager.dart';
 import 'epub/publication.dart';
 import 'page_previews.dart';
 import 'pdf.dart';
+import 'place_words.dart';
 import 'reading_speed.dart';
 
 typedef PublicationLoader = Future<Publication> Function(VerifiedFile file);
@@ -567,8 +568,10 @@ class ReaderSession extends ChangeNotifier {
     _jumps = Future.value();
   }
 
-  /// Opens [selected], an ebook edition of [book], at its saved place.
-  Future<void> open(Book book, Edition selected) => _open(book, selected);
+  /// Opens [selected], an ebook edition of [book], at its saved place, or
+  /// at [at] when that place fits the edition.
+  Future<void> open(Book book, Edition selected, {TextPosition? at}) =>
+      _open(book, selected, at: at);
 
   /// Opens [selected] at its saved place, or at [at], a place in it. With
   /// [move], the first place that the book shows ends that move, whose
@@ -581,7 +584,7 @@ class ReaderSession extends ChangeNotifier {
     (HistoryAction, TextPosition)? move,
   }) async {
     if (_disposed || _account == null || !_current(selected)) return;
-    if (at == null) _closeVisit();
+    if (move == null) _closeVisit();
     _clear();
     _book = book;
     _edition = selected;
@@ -663,7 +666,10 @@ class ReaderSession extends ChangeNotifier {
           .where((value) => value.editionId == selected.id)
           .toList();
       final saved =
-          candidates.where((value) => _compatible(value) != null).lastOrNull ??
+          [
+            ?at,
+            ...candidates.reversed,
+          ].where((value) => _compatible(value) != null).firstOrNull ??
           candidates.lastOrNull;
       _initialAddress = at == null ? null : _compatible(at);
       if (at != null && _initialAddress == null) {
@@ -944,14 +950,16 @@ class ReaderSession extends ChangeNotifier {
     final index = _bookmarks.indexWhere((value) => value.id == id);
     if (index < 0) return;
     final old = _bookmarks[index];
-    // An edit names the book and the edition as they are now, so a
-    // bookmark saved before book names gets them.
+    // An edit in the open edition names the book and the edition as they
+    // are now, so a bookmark saved before book names gets them. A bookmark
+    // of another edition, renamed from the History timeline, keeps its own.
+    final here = old.position.editionId == _edition?.id;
     final edited = Bookmark(
       id: old.id,
       position: old.position,
       createdAt: old.createdAt,
-      bookTitle: _book?.title ?? old.bookTitle,
-      editionLabel: _edition?.label ?? old.editionLabel,
+      bookTitle: (here ? _book?.title : null) ?? old.bookTitle,
+      editionLabel: (here ? _edition?.label : null) ?? old.editionLabel,
       title: title,
       note: note,
     );
@@ -1094,6 +1102,64 @@ class ReaderSession extends ChangeNotifier {
     _jumps = jump.then((_) {}, onError: (Object _) {});
     return jump;
   }
+
+  /// Opens the edition that holds [place] at [place], among the books that
+  /// [bind] gave. Nothing opens when no such edition is current.
+  Future<void> openAt(TextPosition place) async {
+    for (final book in _books) {
+      for (final edition in book.editions) {
+        if (edition.id == place.editionId) {
+          return open(book, edition, at: place);
+        }
+      }
+    }
+  }
+
+  /// Deletes the reading move [id] from the account's history, here and,
+  /// after sync, on the account's other devices.
+  Future<void> deleteHistory(String id) async {
+    _history = _history.where((value) => value.id != id).toList();
+    await _save(history: {id: null});
+    _emit();
+  }
+
+  /// [place] in words, for the History timeline and the bookmark editor
+  /// (see [describeTextPlace]). A place in the open book reads by the
+  /// current [bookMap], so its page number follows [bookMapChanges].
+  PlaceWords describe(TextPosition place) =>
+      describeTextPlace(place, address: _compatible(place), map: _bookMap);
+
+  /// The reading moves and bookmarks of [book]'s editions, or of every
+  /// book, newest first. It follows [historyChanges] and [bookmarkChanges].
+  /// The list stays the same object until they change or another book is
+  /// asked for.
+  List<TimelineEntry> timeline(Book? book) {
+    final key = (_history, _bookmarks, book);
+    if (_timeline case (final kept, final entries) when kept == key) {
+      return entries;
+    }
+    bool belongs(TextPosition place) =>
+        book == null ||
+        book.editions.any((edition) => edition.id == place.editionId);
+    final entries = List<TimelineEntry>.unmodifiable(
+      <TimelineEntry>[
+        for (final event in _history)
+          if (belongs(event.after)) ActionEntry(event),
+        for (final bookmark in _bookmarks)
+          if (belongs(bookmark.position)) BookmarkEntry(bookmark),
+      ]..sort((first, second) => second.at.compareTo(first.at)),
+    );
+    _timeline = (key, entries);
+    return entries;
+  }
+
+  /// The last [timeline], and the records and book that it lists. Records
+  /// compare by identity, because each change replaces its list.
+  (
+    (List<HistoryEvent<TextPosition>>, List<Bookmark<TextPosition>>, Book?),
+    List<TimelineEntry>,
+  )?
+  _timeline;
 
   /// Runs [action] on the navigator. If it fails, [message] says so.
   /// Completes with whether it did not fail.
