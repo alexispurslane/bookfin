@@ -70,7 +70,8 @@ class _OpenPage {
 /// - When the text attaches and the person did not move, the screen that
 ///   holds the opening place shows, in one move.
 ///
-/// A page shows its original page while its words are on their way. It
+/// The last readable word screen stays while another screen's words are
+/// on their way. With no previous word screen, the original page shows. It
 /// has no words to show when it has no word geometry, or when its
 /// geometry, analysis, column or bands fail, or when its text says that
 /// its content does not reflow. The viewport then shows it as before the
@@ -96,7 +97,8 @@ class PdfWordScreens {
   final _showing = ValueNotifier(false);
   final _waitingForText = ValueNotifier(false);
 
-  /// Whether a screen of the shown page shows.
+  /// Whether the requested source page has shown its first word screen.
+  /// False while that page waits, even if an earlier word screen remains.
   ValueListenable<bool> get showing => _showing;
 
   /// Whether the shown page waits for its text.
@@ -119,6 +121,7 @@ class PdfWordScreens {
   /// otherwise on its first screen until its text names the screen that
   /// holds [place].
   void open(PdfAddress place, {bool last = false}) {
+    _pages.retainShown();
     _open?.end();
     final open = _open = _OpenPage(place, last: last);
     _showing.value = false;
@@ -138,6 +141,7 @@ class PdfWordScreens {
   /// page keeps its first shown word on the shown screen.
   void lay(WordSettings settings) {
     if (_disposed || settings == _settings) return;
+    _pages.retainShown();
     _settings = settings;
     final open = _open;
     if (open != null && open.reflow != null && !open.gaveUp) {
@@ -165,6 +169,7 @@ class PdfWordScreens {
   /// Records that the person touched the shown screen, so that the arrival
   /// of the text leaves the screen as it is.
   void touch() {
+    if (!_showing.value && screen.value != null) return;
     _open?.moved = true;
   }
 
@@ -192,9 +197,9 @@ class PdfWordScreens {
   }
 
   /// Checks the open page, requested screen and displayed band ownership.
-  /// A displayed screen belongs to the open page; its requested screen is
-  /// inside its column. A closed controller has no open page. In-flight
-  /// turns and size changes may keep the previous screen until bands arrive.
+  /// A ready page owns the displayed screen; its requested screen is inside
+  /// its column. A closed controller has no open page. Pending page opens,
+  /// turns and size changes keep the previous screen until bands arrive.
   void checkInvariants() {
     _pages.checkInvariants();
     final open = _open;
@@ -376,6 +381,7 @@ class PdfWordScreens {
 
   void _giveUp(_OpenPage open) {
     open.gaveUp = true;
+    _pages.clearShown();
     _showing.value = false;
     _waitingForText.value = false;
     if (open.shown.isCompleted) {
@@ -388,7 +394,7 @@ class PdfWordScreens {
 
 /// The word view of the shown page: its screen, at whole device pixels
 /// inside the reader's margins, with the thin progress line while the page
-/// waits for its text, and [waiting] while the page's words do not show.
+/// waits for its text, and [waiting] only without a readable word screen.
 /// It measures the screens for [fontSize] and reports a touch on a screen.
 class PdfWordView extends StatelessWidget {
   const PdfWordView({
@@ -424,9 +430,10 @@ class PdfWordView extends StatelessWidget {
         // this frame.
         WidgetsBinding.instance.addPostFrameCallback((_) => onLayout(settings));
       }
-      return ValueListenableBuilder<bool>(
-        valueListenable: screens.showing,
-        builder: (_, showing, _) => showing ? _screen(side, top) : waiting,
+      return ValueListenableBuilder<WordScreen?>(
+        valueListenable: screens.screen,
+        builder: (_, shown, view) => shown == null ? waiting : view!,
+        child: _screen(side, top),
       );
     },
   );
@@ -436,17 +443,19 @@ class PdfWordView extends StatelessWidget {
       Positioned.fill(
         child: Padding(
           padding: EdgeInsets.fromLTRB(side, top, side, top),
-          child: _DevicePixelOrigin(
-            ratio: screens.settings!.devicePixelRatio,
-            child: ValueListenableBuilder<WordScreen?>(
-              valueListenable: screens.screen,
-              builder: (_, shown, view) => Semantics(
-                label: shown == null ? null : 'Source page ${shown.page}',
-                image: true,
-                child: view,
-              ),
-              child: WordScreenView(screen: screens.screen),
-            ),
+          child: ValueListenableBuilder<WordScreen?>(
+            valueListenable: screens.screen,
+            builder: (_, shown, view) => shown == null
+                ? const SizedBox.shrink()
+                : _DevicePixelOrigin(
+                    ratio: shown.settings.devicePixelRatio,
+                    child: Semantics(
+                      label: 'Source page ${shown.page}',
+                      image: true,
+                      child: view,
+                    ),
+                  ),
+            child: WordScreenView(screen: screens.screen),
           ),
         ),
       ),

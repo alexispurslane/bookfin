@@ -140,6 +140,7 @@ class CopiedPdf extends PdfBook {
   Object? bandFailure;
   Future<void>? bandsWait;
   int waitingBands = 0;
+  int finishedBands = 0;
   @override
   String get originalDigest => 'copy-${book.originalDigest}';
   @override
@@ -183,8 +184,33 @@ class CopiedPdf extends PdfBook {
     if (waiting != null) waitingBands++;
     await waiting;
     if (bandFailure != null) throw bandFailure!;
-    return book.renderPart(sourcePage, pixelsPerPageUnit, area);
+    final image = await book.renderPart(sourcePage, pixelsPerPageUnit, area);
+    finishedBands++;
+    return image;
   }
+}
+
+class HeldWordPdf extends CopiedPdf {
+  HeldWordPdf(super.book, {this.geometryWait}) : super(layer: book.textLayer);
+
+  final Future<void> Function(int page)? geometryWait;
+  final noGeometry = <int>{};
+
+  @override
+  Future<PageGeometry?> geometry(
+    int sourcePage, {
+    bool background = false,
+  }) async {
+    await geometryWait?.call(sourcePage);
+    if (noGeometry.contains(sourcePage)) return null;
+    return book.geometry(sourcePage, background: background);
+  }
+
+  @override
+  Future<({PdfText text, TextAttachment? attachment})> attachedText(
+    int sourcePage,
+    PageGeometry geometry,
+  ) => book.attachedText(sourcePage, geometry);
 }
 
 /// What a viewport reported to its owner.
@@ -273,9 +299,11 @@ void main() {
     double fontSize = 40,
     Reports? reports,
     EdgeInsets padding = EdgeInsets.zero,
+    bool reflow = true,
+    double devicePixelRatio = 2.625,
   }) async {
     tester.view.physicalSize = const Size(1080, 2400);
-    tester.view.devicePixelRatio = 2.625;
+    tester.view.devicePixelRatio = devicePixelRatio;
     addTearDown(tester.view.reset);
     final reported = reports ?? Reports();
     await tester.pumpWidget(
@@ -288,7 +316,7 @@ void main() {
               book: book,
               fontSize: fontSize,
               initial: initial,
-              reflow: true,
+              reflow: reflow,
               onReady: (navigator, _) => reported.navigator = navigator,
               onAddress: reported.places.add,
               onCancelRecognition: () => book.textSupply?.cancel(),
@@ -342,6 +370,396 @@ void main() {
   /// Unmounts the viewport, which frees its band images.
   Future<void> close(WidgetTester tester, PdfBook book) =>
       tester.pumpWidget(const SizedBox());
+
+  Completer<void> hold() {
+    final arrives = Completer<void>();
+    addTearDown(() {
+      if (!arrives.isCompleted) arrives.complete();
+    });
+    return arrives;
+  }
+
+  testWidgets('a source-page turn keeps the readable word screen until '
+      'the replacement bands arrive without showing Original', (tester) async {
+    final born = await open(tester, marginsBook);
+    final book = HeldWordPdf(born);
+    final reports = await show(tester, book, initial: PdfAddress(3, 0));
+    final before = await showsScreen(tester, 3, 0);
+    final place = reports.places.last;
+    final bandsArrive = hold();
+    book.bandsWait = bandsArrive.future;
+
+    unawaited(reports.navigator!.move(false));
+    await settle(
+      tester,
+      () => book.waitingBands > 0,
+      'the previous page waits',
+    );
+
+    expect(shown(tester), same(before));
+    expect(find.bySemanticsLabel('Original source page 2'), findsNothing);
+    expect(reports.places.last, same(place));
+    final screens = tester
+        .widget<PdfWordView>(find.byType(PdfWordView))
+        .screens;
+    expect(screens.showing.value, isFalse);
+    screens.checkInvariants();
+
+    bandsArrive.complete();
+    await settle(tester, () => shown(tester)?.page == 2, 'page two shows');
+    expect(reports.places.last.sourcePage, 2);
+    await close(tester, book);
+  });
+
+  testWidgets('returning to a cached column keeps the current word screen '
+      'while the evicted pixels render again', (tester) async {
+    final born = await open(tester, marginsBook);
+    final book = HeldWordPdf(born);
+    final reports = await show(tester, book, initial: PdfAddress(3, 0));
+    final third = await showsScreen(tester, 3, 0);
+    unawaited(reports.navigator!.move(false));
+    await settle(tester, () => shown(tester)?.page == 2, 'page two shows');
+    final before = shown(tester)!;
+    final place = reports.places.last;
+    final bandsArrive = hold();
+    book.bandsWait = bandsArrive.future;
+
+    unawaited(reports.navigator!.move(true));
+    await settle(tester, () => book.waitingBands > 0, 'cached page bands wait');
+
+    expect(shown(tester), same(before));
+    expect(find.bySemanticsLabel('Original source page 3'), findsNothing);
+    expect(reports.places.last, same(place));
+    bandsArrive.complete();
+    final returned = await showsScreen(tester, 3, 0);
+    expect(returned.column, same(third.column));
+    expect(reports.places.last.sourcePage, 3);
+    await close(tester, book);
+  });
+
+  testWidgets('an abandoned screen cannot replace the readable screen while '
+      'another source page still waits for geometry', (tester) async {
+    final born = await open(tester, marginsBook);
+    final geometryArrives = hold();
+    final book = HeldWordPdf(
+      born,
+      geometryWait: (page) async {
+        if (page == 2) await geometryArrives.future;
+      },
+    );
+    final reports = await show(tester, book, initial: PdfAddress(3, 0));
+    await showsScreen(tester, 3, 0);
+    final bandsArrive = hold();
+    book.bandsWait = bandsArrive.future;
+    unawaited(reports.navigator!.move(true));
+    final before = await showsScreen(tester, 3, 1);
+    await settle(tester, () => book.waitingBands > 0, 'the screen ahead waits');
+    unawaited(reports.navigator!.move(true));
+    await tester.pump();
+    final screens = tester
+        .widget<PdfWordView>(find.byType(PdfWordView))
+        .screens;
+    final place = reports.places.last;
+
+    unawaited(reports.navigator!.display(PdfAddress(2, 0)));
+    await tester.pump();
+    final finished = book.finishedBands;
+    final pending = book.waitingBands;
+    bandsArrive.complete();
+    await settle(
+      tester,
+      () => book.finishedBands >= finished + pending,
+      'the abandoned bands finish',
+    );
+    await tester.pump();
+
+    final afterAbandoned = screens.screen.value;
+    final visibleAfterAbandoned = shown(tester);
+    final placeAfterAbandoned = reports.places.last;
+    screens.checkInvariants();
+    geometryArrives.complete();
+    await showsScreen(tester, 2, 0);
+    expect(afterAbandoned, same(before));
+    expect(visibleAfterAbandoned, same(before));
+    expect(placeAfterAbandoned, same(place));
+    await close(tester, book);
+  });
+
+  testWidgets('a size change while another source page is pending keeps '
+      'the readable page until that target is ready at the new size', (
+    tester,
+  ) async {
+    final born = await open(tester, marginsBook);
+    final book = HeldWordPdf(born);
+    final reports = await show(tester, book, initial: PdfAddress(3, 0));
+    final before = await showsScreen(tester, 3, 0);
+    final place = reports.places.last;
+    final bandsArrive = hold();
+    book.bandsWait = bandsArrive.future;
+    unawaited(reports.navigator!.move(false));
+    await settle(tester, () => book.waitingBands > 0, 'page two bands wait');
+    final waiting = book.waitingBands;
+
+    await show(tester, book, reports: reports, fontSize: 30);
+    await settle(
+      tester,
+      () => book.waitingBands > waiting,
+      'new size bands wait',
+    );
+
+    expect(shown(tester), same(before));
+    expect(reports.places.last, same(place));
+    expect(find.bySemanticsLabel('Original source page 2'), findsNothing);
+    bandsArrive.complete();
+    await settle(
+      tester,
+      () => shown(tester)?.page == 2 && shown(tester)?.settings.fontSize == 30,
+      'page two shows at size thirty',
+    );
+    final after = shown(tester)!;
+    expect(after.screen, after.column.column.screenCount - 1);
+    expect(reports.places.last.sourcePage, 2);
+    await close(tester, book);
+  });
+
+  testWidgets('rapid source-page direction changes never show the abandoned '
+      'page or Original when its held bands finish', (tester) async {
+    final born = await open(tester, marginsBook);
+    final book = HeldWordPdf(born);
+    final reports = await show(tester, book, initial: PdfAddress(3, 0));
+    await showsScreen(tester, 3, 0);
+    final screens = tester
+        .widget<PdfWordView>(find.byType(PdfWordView))
+        .screens;
+    final bandsArrive = hold();
+    book.bandsWait = bandsArrive.future;
+    final reported = reports.places.length;
+    final pages = <int>[];
+    void record() => pages.add(screens.screen.value!.page);
+    screens.screen.addListener(record);
+    addTearDown(() => screens.screen.removeListener(record));
+
+    for (var turn = 0; turn < 2; turn++) {
+      final before = shown(tester)!;
+      final waiting = book.waitingBands;
+      unawaited(reports.navigator!.move(false));
+      await settle(tester, () => book.waitingBands > waiting, 'page two waits');
+      expect(shown(tester), same(before));
+      expect(find.bySemanticsLabel('Original source page 2'), findsNothing);
+      var returned = false;
+      unawaited(reports.navigator!.move(true).then((_) => returned = true));
+      await settle(tester, () => returned, 'the forward turn returns');
+      expect(shown(tester)!.page, 3);
+      expect(screens.showing.value, isTrue);
+    }
+
+    final finished = book.finishedBands;
+    final pending = book.waitingBands;
+    bandsArrive.complete();
+    await settle(
+      tester,
+      () => book.finishedBands >= finished + pending,
+      'all abandoned renders finish',
+    );
+    expect(pages, isNotEmpty);
+    expect(pages, everyElement(3));
+    expect(
+      reports.places.skip(reported).map((place) => place.sourcePage),
+      everyElement(3),
+    );
+    expect(shown(tester)!.page, 3);
+    screens.checkInvariants();
+    screens.screen.removeListener(record);
+    await close(tester, book);
+  });
+
+  testWidgets('a true geometry fallback discards the old word screen so '
+      'opening another page cannot resurrect it', (tester) async {
+    final born = await open(tester, marginsBook);
+    final book = HeldWordPdf(born)..noGeometry.add(2);
+    final reports = await show(tester, book, initial: PdfAddress(3, 0));
+    final before = await showsScreen(tester, 3, 0);
+    unawaited(reports.navigator!.move(false));
+    await settle(
+      tester,
+      () => find.byType(PdfTextView).evaluate().isNotEmpty,
+      'page two falls back to text',
+    );
+    expect(find.byType(WordScreenView), findsNothing);
+    expect(reports.places.last.sourcePage, 2);
+
+    final bandsArrive = hold();
+    book.bandsWait = bandsArrive.future;
+    unawaited(reports.navigator!.display(PdfAddress(4, 0)));
+    await settle(tester, () => book.waitingBands > 0, 'page four bands wait');
+    final resurrected = shown(tester);
+    bandsArrive.complete();
+    await showsScreen(tester, 4, 0);
+
+    expect(resurrected, isNull);
+    expect(before.bands.every((band) => band.image.debugDisposed), isTrue);
+    await close(tester, book);
+  });
+
+  testWidgets('touching retained words does not mark an unseen target page '
+      'as touched or discard its requested place', (tester) async {
+    final born = await open(tester, marginsBook);
+    final (_, read) = await attached(tester, born, 2);
+    final geometryArrives = hold();
+    final supply = HeldRecognition(
+      layout: (page) async {
+        if (page == 2) await geometryArrives.future;
+        return born.geometry(page);
+      },
+      read: (page, geometry) async => geometry == null
+          ? (text: await born.text(page), attachment: null)
+          : born.attachedText(page, geometry),
+    )..textArrives.complete();
+    final book = CopiedPdf(born, textSupply: supply);
+    final target = book.addressFor(
+      2,
+      read.text,
+      read.text.source.length * 2 ~/ 3,
+    );
+    final reports = await show(tester, book, initial: PdfAddress(3, 0));
+    final before = await showsScreen(tester, 3, 0);
+    unawaited(reports.navigator!.display(target));
+    await tester.pump();
+    expect(shown(tester), same(before));
+    await tester.tap(find.byType(WordScreenView));
+    geometryArrives.complete();
+    final screens = tester
+        .widget<PdfWordView>(find.byType(PdfWordView))
+        .screens;
+    await settle(tester, () => screens.showing.value, 'the target words show');
+    final after = shown(tester)!;
+    final (reflow, attachedText) = await attached(tester, book, 2);
+    final holding = after.column.column.screenAt(
+      target.character,
+      attachedText.attachment!,
+      reflow.analysis,
+    );
+    expect(holding, greaterThan(0));
+    expect(after.page, 2);
+    expect(after.screen, holding);
+    await close(tester, book);
+  });
+
+  testWidgets('an operational render failure replaces retained words with '
+      'the target page text', (tester) async {
+    final born = await open(tester, marginsBook);
+    final book = HeldWordPdf(born);
+    final reports = await show(tester, book, initial: PdfAddress(3, 0));
+    await showsScreen(tester, 3, 0);
+    book.bandFailure = Exception('The target band could not be drawn.');
+    unawaited(reports.navigator!.move(false));
+    await settle(
+      tester,
+      () => find.byType(PdfTextView).evaluate().isNotEmpty,
+      'page two falls back to text',
+    );
+    expect(find.byType(WordScreenView), findsNothing);
+    expect(reports.places.last.sourcePage, 2);
+    await close(tester, book);
+  });
+
+  testWidgets('a target page whose own content does not reflow replaces '
+      'retained words with Original', (tester) async {
+    final born = await open(tester, marginsBook);
+    final supply = HeldRecognition(
+      layout: born.geometry,
+      read: (page, geometry) async => page == 2
+          ? (
+              text: const PdfText(
+                source: '',
+                text: '',
+                sourceOffsets: [],
+                status: PdfTextStatus.absent,
+              ),
+              attachment: null,
+            )
+          : geometry == null
+          ? (text: await born.text(page), attachment: null)
+          : born.attachedText(page, geometry),
+    )..textArrives.complete();
+    final book = CopiedPdf(born, textSupply: supply);
+    final reports = await show(tester, book, initial: PdfAddress(3, 0));
+    final before = await showsScreen(tester, 3, 0);
+    unawaited(reports.navigator!.move(false));
+    await settle(
+      tester,
+      () =>
+          find.bySemanticsLabel('Original source page 2').evaluate().isNotEmpty,
+      'the target content shows as printed',
+    );
+    expect(find.byType(WordScreenView), findsNothing);
+    expect(progressLine(), isFalse);
+    expect(before.bands.every((band) => band.image.debugDisposed), isTrue);
+    expect(reports.places.last.sourcePage, 2);
+    await close(tester, book);
+  });
+
+  testWidgets('switching out of word view releases its pixels and switching '
+      'back waits on Original until new words are ready', (tester) async {
+    final born = await open(tester, marginsBook);
+    final book = HeldWordPdf(born);
+    final reports = await show(tester, book, initial: PdfAddress(3, 0));
+    final before = await showsScreen(tester, 3, 0);
+    await show(tester, book, reports: reports, reflow: false);
+    await settle(
+      tester,
+      () =>
+          find.bySemanticsLabel('Original source page 3').evaluate().isNotEmpty,
+      'the selected Original view shows',
+    );
+    expect(before.bands.every((band) => band.image.debugDisposed), isTrue);
+    final bandsArrive = hold();
+    book.bandsWait = bandsArrive.future;
+    await show(tester, book, reports: reports);
+    await settle(tester, () => book.waitingBands > 0, 'reopened words wait');
+    expect(shown(tester), isNull);
+    expect(find.bySemanticsLabel('Original source page 3'), findsOneWidget);
+    bandsArrive.complete();
+    final after = await showsScreen(tester, 3, 0);
+    expect(after.column, isNot(same(before.column)));
+    await close(tester, book);
+  });
+
+  testWidgets('reopening a viewport reuses page analysis but not word pixels '
+      'and keeps its saved place while the first screen renders', (
+    tester,
+  ) async {
+    final born = await open(tester, marginsBook);
+    final book = HeldWordPdf(born);
+    final reports = await show(tester, book, initial: PdfAddress(3, 0));
+    await showsScreen(tester, 3, 0);
+    unawaited(reports.navigator!.move(true));
+    final before = await showsScreen(tester, 3, 1);
+    final place = reports.places.last;
+    final reflow = (await tester.runAsync(() => book.reflowPage(3)))!;
+    await close(tester, book);
+    expect(before.bands.every((band) => band.image.debugDisposed), isTrue);
+    final bandsArrive = hold();
+    book.bandsWait = bandsArrive.future;
+    final reopened = await show(tester, book, initial: place);
+    await settle(tester, () => book.waitingBands > 0, 'the first screen waits');
+    await settle(
+      tester,
+      () =>
+          find.bySemanticsLabel('Original source page 3').evaluate().isNotEmpty,
+      'the cold-open Original render arrives',
+    );
+    expect(shown(tester), isNull);
+    expect(reopened.places, isEmpty);
+    expect(find.bySemanticsLabel('Original source page 3'), findsOneWidget);
+    bandsArrive.complete();
+    final after = await showsScreen(tester, 3, 1);
+    final reused = (await tester.runAsync(() => book.reflowPage(3)))!;
+    expect(reused.analysis, same(reflow.analysis));
+    expect(after.column, isNot(same(before.column)));
+    expect(reopened.places.last.character, place.character);
+    await close(tester, book);
+  });
 
   testWidgets('on a scanned page the first word screen shows before '
       'recognition ends, and the progress line stays over it until the text '
@@ -553,6 +971,45 @@ void main() {
     final origin = tester.getTopLeft(find.byType(WordScreenView)) * 2.625;
     expect(origin.dx, closeTo(origin.dx.roundToDouble(), 1e-7));
     expect(origin.dy, closeTo(origin.dy.roundToDouble(), 1e-7));
+    await close(tester, book);
+  });
+
+  testWidgets('retained and replacement pixels each stay aligned to the '
+      'device pixel ratio that rendered them', (tester) async {
+    final born = await open(tester, marginsBook);
+    final book = HeldWordPdf(born);
+    const padding = EdgeInsets.only(left: .13, top: .27);
+    final reports = await show(
+      tester,
+      book,
+      initial: PdfAddress(3, 0),
+      padding: padding,
+    );
+    final before = await showsScreen(tester, 3, 0);
+    final bandsArrive = hold();
+    book.bandsWait = bandsArrive.future;
+    await show(
+      tester,
+      book,
+      reports: reports,
+      padding: padding,
+      devicePixelRatio: 3,
+    );
+    await settle(tester, () => book.waitingBands > 0, 'new-ratio bands wait');
+    final retainedOrigin =
+        tester.getTopLeft(find.byType(WordScreenView)) * 2.625;
+    expect(shown(tester), same(before));
+    expect(retainedOrigin.dx, closeTo(retainedOrigin.dx.roundToDouble(), 1e-7));
+    expect(retainedOrigin.dy, closeTo(retainedOrigin.dy.roundToDouble(), 1e-7));
+    bandsArrive.complete();
+    await settle(
+      tester,
+      () => shown(tester)?.settings.devicePixelRatio == 3,
+      'new-ratio words show',
+    );
+    final replacedOrigin = tester.getTopLeft(find.byType(WordScreenView)) * 3;
+    expect(replacedOrigin.dx, closeTo(replacedOrigin.dx.roundToDouble(), 1e-7));
+    expect(replacedOrigin.dy, closeTo(replacedOrigin.dy.roundToDouble(), 1e-7));
     await close(tester, book);
   });
 
