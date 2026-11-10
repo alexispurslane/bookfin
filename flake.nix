@@ -125,8 +125,10 @@
               BOOKFIN_OCR_MODEL_LICENSE = ocr.modelLicense;
               BOOKFIN_NIX_SHELL = "1";
               shellHook = ''
-                export PUB_CACHE="$PWD/.cache/pub"
-                export GRADLE_USER_HOME="$PWD/.cache/gradle"
+                # Every checkout, agent worktrees included, shares one
+                # dependency cache. A cache per checkout took 3.6 GB each.
+                export PUB_CACHE="''${XDG_CACHE_HOME:-$HOME/.cache}/bookfin/pub"
+                export GRADLE_USER_HOME="''${XDG_CACHE_HOME:-$HOME/.cache}/bookfin/gradle"
                 export PATH="${sdk}/cmdline-tools/latest/bin:${sdk}/platform-tools:${sdk}/emulator:$PATH"
               '';
             }
