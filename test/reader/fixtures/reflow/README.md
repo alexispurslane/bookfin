@@ -13,6 +13,8 @@ These files hold what Bookfin's Tesseract gives for three scanned pages on an An
 | `footnote-page.hocr` | The hOCR of the footnote page. |
 | `equation-page.typ` | The Typst source of the equation page. |
 | `equation-page.pdf` | The equation page, made from `equation-page.typ`. |
+| `margins-book.typ` | The Typst source of the margins book. |
+| `margins-book.pdf` | The margins book, made from `margins-book.typ`. |
 
 ## The pages
 
@@ -38,6 +40,26 @@ typst compile --ignore-system-fonts equation-page.typ equation-page.pdf
 ```
 
 The output is the same, byte for byte, for the Typst that the flake pins (0.15.1). Its reading text and digest are locked in `test/reader/text_layer_geometry_test.dart`.
+
+## The margins book
+
+`margins-book.pdf` is a born-digital A5 book of 13 pages with a usable text layer on every page. Ticket tb-z9h5 wrote `margins-book.typ` and dedicates it and the PDF to the public domain under CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/). The PDF embeds subsets of Libertinus Serif, under the SIL Open Font License 1.1.
+
+- Page 1 is a title page without a running header or a folio.
+- Pages 2 and 8 start the chapters "Falling Bodies" and "The Pendulum". They have no running header, and their chapter title is at the top of the page.
+- The other even pages carry the book's title "A Short Book of Motion" as their running header, and the other odd pages carry their chapter's title.
+- Each page after the title page has a folio at the outer bottom corner: the right corner on odd pages, the left on even pages. The folio is the source page number minus one.
+- Page 4 has two footnotes. Page 6 has a figure near the bottom of the page with its caption. Page 10 has a table 10 mm wider than the text on each side.
+- The mirrored margins are 20 mm inside and 14 mm outside.
+- Its SHA-256 is `a3b88a8b4e6b7490ae27b10048e9ac8c2a40257dae7cd6d197d50a5386c9465f`. The Typst that the flake pins (0.15.1) makes the same bytes again.
+
+The table has two columns whose cells meet at the middle rule. A table whose cells leave wide gaps on 3 rows makes Bookfin's reading order check reject the page's text layer.
+
+To make it again, run this in the dev shell, in this folder:
+
+```sh
+typst compile --ignore-system-fonts margins-book.typ margins-book.pdf
+```
 
 ## How the scanned pages were made
 

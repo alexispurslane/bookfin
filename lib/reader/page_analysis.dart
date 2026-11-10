@@ -20,6 +20,7 @@ enum RegionKind { picture, ink }
 ///   of its words, and does not overlap another region.
 /// - The source words of the reflow words are in increasing order.
 /// - A prose line holds no word of a region.
+/// - A running line holds no word of a region.
 /// - The body line height is positive.
 class PageAnalysis {
   PageAnalysis({
@@ -29,7 +30,8 @@ class PageAnalysis {
     required this.proseLines,
     required this.sourceWords,
     required this.bodyLineHeight,
-  });
+    Uint8List? runningLines,
+  }) : runningLines = runningLines ?? Uint8List(proseLines.length);
 
   /// For each region: left, top, right and bottom.
   final Float32List regionBoxes;
@@ -53,6 +55,13 @@ class PageAnalysis {
   /// lines, and a page without lines takes [defaultLineHeight].
   final double bodyLineHeight;
 
+  /// For each line: 1 when it is a running line, and otherwise 0. A running
+  /// line is a running header, a running footer or a folio. The book's
+  /// templates find them by repetition across pages (see
+  /// `RunningTemplates.mark` in running_lines.dart). The analysis that
+  /// [analyzePage] gives marks none.
+  final Uint8List runningLines;
+
   /// The body line height of a page without lines: a 12 point line on a
   /// page 6 inches wide.
   static const defaultLineHeight = 12 / 432;
@@ -60,6 +69,73 @@ class PageAnalysis {
   int get regionCount => regionKinds.length;
   RegionKind regionKind(int region) => RegionKind.values[regionKinds[region]];
   bool isProse(int line) => proseLines[line] != 0;
+  bool isRunning(int line) => runningLines[line] != 0;
+
+  /// This analysis with the running lines [runningLines], one entry for
+  /// each line.
+  PageAnalysis withRunningLines(Uint8List runningLines) => PageAnalysis(
+    regionBoxes: regionBoxes,
+    regionKinds: regionKinds,
+    wordRegions: wordRegions,
+    proseLines: proseLines,
+    sourceWords: sourceWords,
+    bodyLineHeight: bodyLineHeight,
+    runningLines: runningLines,
+  );
+
+  /// The content box of the page whose reflow geometry is [geometry]: left,
+  /// top, right and bottom in page units. It is the union of the boxes of
+  /// the page's words and regions, without the words of running lines and
+  /// without scan edges. All four are 0 on a page without content.
+  ///
+  /// A scan edge is a region that touches an edge of the page, runs along
+  /// more than half of that edge and is thinner than the body line height,
+  /// such as the dark border of a scanned page.
+  Float32List contentBox(PageGeometry geometry) {
+    var left = double.infinity, top = double.infinity;
+    var right = -double.infinity, bottom = -double.infinity;
+    void add(List<double> boxes, int index) {
+      left = math.min(left, boxes[index * 4]);
+      top = math.min(top, boxes[index * 4 + 1]);
+      right = math.max(right, boxes[index * 4 + 2]);
+      bottom = math.max(bottom, boxes[index * 4 + 3]);
+    }
+
+    for (var line = 0; line < geometry.lineCount; line++) {
+      if (isRunning(line)) continue;
+      for (
+        var word = geometry.lineStarts[line];
+        word < geometry.lineStarts[line + 1];
+        word++
+      ) {
+        add(geometry.boxes, word);
+      }
+    }
+    for (var region = 0; region < regionCount; region++) {
+      if (!isScanEdge(region, geometry)) add(regionBoxes, region);
+    }
+    if (left > right) return Float32List(4);
+    return Float32List.fromList([left, top, right, bottom]);
+  }
+
+  /// Whether [region] is a scan edge of the page whose reflow geometry is
+  /// [geometry] (see [contentBox]). It touches an edge when it lies within
+  /// [_edgeTouch] of it.
+  bool isScanEdge(int region, PageGeometry geometry) {
+    final left = regionBoxes[region * 4], top = regionBoxes[region * 4 + 1];
+    final right = regionBoxes[region * 4 + 2];
+    final bottom = regionBoxes[region * 4 + 3];
+    final along = right - left > 0.5 && bottom - top < bodyLineHeight;
+    final down =
+        bottom - top > 0.5 * geometry.height && right - left < bodyLineHeight;
+    return along &&
+            (top <= _edgeTouch || bottom >= geometry.height - _edgeTouch) ||
+        down && (left <= _edgeTouch || right >= 1 - _edgeTouch);
+  }
+
+  /// How near a region lies to an edge of the page when it touches it: 3
+  /// pixels of a page drawn 1600 pixels wide.
+  static const _edgeTouch = 3 / 1600;
   int get proseLineCount => proseLines.fold(0, (count, line) => count + line);
 
   /// Throws a [StateError] when an invariant of the class comment does not
@@ -74,6 +150,7 @@ class PageAnalysis {
       wordRegions.length == geometry.wordCount &&
           sourceWords.length == geometry.wordCount &&
           proseLines.length == geometry.lineCount &&
+          runningLines.length == geometry.lineCount &&
           regionBoxes.length == regionCount * 4,
       'each word, line and region has its entries',
     );
@@ -123,13 +200,19 @@ class PageAnalysis {
       }
     }
     for (var line = 0; line < geometry.lineCount; line++) {
-      if (!isProse(line)) continue;
       for (
         var word = geometry.lineStarts[line];
         word < geometry.lineStarts[line + 1];
         word++
       ) {
-        require(wordRegions[word] == -1, 'prose line $line holds no region');
+        require(
+          !isProse(line) || wordRegions[word] == -1,
+          'prose line $line holds no region',
+        );
+        require(
+          !isRunning(line) || wordRegions[word] == -1,
+          'running line $line holds no region',
+        );
       }
     }
   }

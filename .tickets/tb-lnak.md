@@ -17,3 +17,9 @@ T2 of docs/plans/pdf-word-image-reflow.md (Trimmed margins: The book crop, The s
 
 Behavior tests, red first: a cover, a plate and a blank page in the fixture book do not change the side boxes; every body page of a side gets the same crop; a page with a wide table or a margin figure gets a larger crop that holds all its content; a page whose parity is flipped by an inserted plate takes the other side's box when only that box fits it; the profile does not change after it freezes; a kill during a write leaves the old or the new file; a reopen resumes the survey and runs no page twice; the survey never delays the shown page's layout pass or recognition. checkInvariants: every page crop holds its content box, and every body page's crop equals its side box.
 
+
+## Notes
+
+**2026-11-10T15:22:46Z**
+
+From tb-z9h5: findRunningTemplates(pages) runs in a hop and gives RunningTemplates; templates.mark(page) gives the PageAnalysis with runningLines, and analysis.contentBox(geometry) the content box. The templates are public fields (texts, folioOffsets, shapes, lineHeight) for the profile on disk. Limits: (1) a chapter's running header gets a text template only if the sample holds 3 of its pages within 20 source pages, so a sparse sample misses per-chapter headers, and those pages keep the header as content and grow their crop; (2) on pages with text only the text and folio templates apply, not the geometry ones; (3) a page whose text arrives after the profile freezes is marked by text, not geometry, so its marks can differ from its earlier marks. See docs/plans/pdf-word-image-reflow.md, Running headers and folios.
