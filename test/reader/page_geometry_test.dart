@@ -320,6 +320,55 @@ void main() {
       );
     });
 
+    test('the footnote page gives the page analysis an indented paragraph '
+        'and line-end hyphens, with its text attached', () {
+      final geometry = pageGeometryFromLayout(layoutFixture('footnote-page'));
+      final recognized = decodeRecognizedPage(hocrFixture('footnote-page'));
+      final attachment = attachText((
+        geometry: geometry,
+        words: recognized.words,
+      ));
+      final source = recognized.text.source;
+      geometry.checkInvariants(attachment: attachment, source: source);
+      final words = attachedWords(attachment, source);
+      List<String> lineWords(int line) => words.sublist(
+        geometry.lineStarts[line],
+        geometry.lineStarts[line + 1],
+      );
+      final lines = [
+        for (var line = 0; line < geometry.lineCount; line++) line,
+      ];
+
+      // "The name of the Alemanni" starts an indented paragraph of the
+      // body, the block of the first line that starts with "hostile".
+      final named = lines.singleWhere(
+        (line) => lineWords(line).take(3).join(' ') == 'The name of',
+      );
+      final paragraph = geometry.paragraphStarts.indexOf(named);
+      expect(paragraph, isNot(-1));
+      expect(geometry.paragraphIndents[paragraph], greaterThan(0.02));
+      final body = lines.singleWhere(
+        (line) => lineWords(line).first == 'hostile',
+      );
+      expect(
+        geometry.lineLeft(named),
+        greaterThan(geometry.lineLeft(body) + 0.02),
+      );
+
+      // Six lines of the body and four lines of the footnotes end with a
+      // hyphen that splits a word.
+      expect(
+        [
+          for (final line in lines)
+            if (lineWords(line).last.endsWith('-')) lineWords(line).last,
+        ],
+        [
+          'arse-', 'num-', 'es-', 'Tou-', 'pro-', 'en-', //
+          'ascer-', 'justi-', 'tran-', 'Thu-',
+        ],
+      );
+    });
+
     test('a layout word joins each hOCR word that overlaps it most', () {
       final geometry = pageGeometryFromLayout(
         layoutOf(1000, 1400, [
