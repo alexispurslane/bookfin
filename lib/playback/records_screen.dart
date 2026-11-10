@@ -178,6 +178,9 @@ class _BookmarkEditorState extends State<_BookmarkEditor> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(widget.place),
+          // The outlined field's floating label rises above the field by
+          // about half a line, so the gap grows with the text size.
+          SizedBox(height: MediaQuery.textScalerOf(context).scale(16)),
           TextField(
             controller: _title,
             decoration: const InputDecoration(labelText: 'Title (optional)'),

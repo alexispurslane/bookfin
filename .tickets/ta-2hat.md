@@ -1,6 +1,6 @@
 ---
 id: ta-2hat
-status: open
+status: closed
 deps: []
 links: []
 created: 2026-11-10T01:44:22Z

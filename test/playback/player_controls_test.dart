@@ -259,6 +259,19 @@ void main() {
       return edited.future;
     }
 
+    for (final scale in [1.0, 2.0]) {
+      testWidgets('keeps the place line clear of the title field\'s label at '
+          'text scale $scale', (tester) async {
+        tester.platformDispatcher.textScaleFactorTestValue = scale;
+        addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+        unawaited(await openEditor(tester));
+
+        final place = tester.getRect(find.text('At 01:15'));
+        final label = tester.getRect(find.text('Title (optional)'));
+        expect(label.top, greaterThanOrEqualTo(place.bottom));
+      });
+    }
+
     testWidgets('returns the edited title and note', (tester) async {
       final edited = await openEditor(tester);
       expect(find.text('Edit bookmark'), findsOneWidget);
