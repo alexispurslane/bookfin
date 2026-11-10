@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:bookfin/reader/document.dart';
 import 'package:bookfin/reader/page_analysis.dart';
@@ -68,6 +69,13 @@ class ScannedCopy extends PdfBook {
   @override
   Future<PdfRaster> render(int sourcePage, double width) =>
       book.render(sourcePage, width);
+
+  @override
+  Future<ui.Image> renderPart(
+    int sourcePage,
+    int pixelsPerPageUnit,
+    ui.Rect area,
+  ) => book.renderPart(sourcePage, pixelsPerPageUnit, area);
 }
 
 /// The text of each line of [page], or null when it has no text.

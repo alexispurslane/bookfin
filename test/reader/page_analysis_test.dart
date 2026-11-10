@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:ui' as ui;
 
 import 'package:bookfin/reader/document.dart';
 import 'package:bookfin/reader/ocr.dart';
@@ -231,6 +232,13 @@ class DrawnPdf extends PdfBook {
     renders.add(sourcePage);
     return pages[sourcePage - 1].raster;
   }
+
+  @override
+  Future<ui.Image> renderPart(
+    int sourcePage,
+    int pixelsPerPageUnit,
+    ui.Rect area,
+  ) => throw UnimplementedError('A drawn page draws no word view.');
 }
 
 /// The words of [page] that lie in [line], as indexes of its geometry.

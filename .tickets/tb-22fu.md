@@ -22,3 +22,7 @@ Behavior tests, red first: on a scanned page the first word screen shows before 
 **2026-11-10T17:00:20Z**
 
 From tb-m8xo: until the book profile freezes (about the first minute of a new book), ReflowPage.column shows running headers and folios; a column made after the freeze leaves them out. Keep the shown page's column until a turn or a text size change, as the Original view keeps its crop, so the shown screen never changes under the reader.
+
+**2026-11-10T17:04:29Z**
+
+From tb-xjfi: PdfWordPages(book) is the data source, one per viewport. column(page, settings) gives the WordColumn (column and band plans) or null without word geometry. show(page, settings, screen, forward:) shows a screen in the shown listenable once its bands are ready, keeps the old screen until then, and completes after the next screen is rendered ahead. WordScreenView(screen: pages.shown) draws it with the theme's tints and fills its constraints. Place it at a whole device pixel (for example a left margin of round(20 * ratio) / ratio), or level words lose their one-to-one pixels. WordSettings carries the column width, text size, screen height and device pixel ratio. The sprites of a screen are placed from the screen's top (column.screenTop(screen)) and the column's left edge, so the view draws a screen at its own origin.

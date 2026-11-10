@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:bookfin/reader/book_crop.dart';
 import 'package:bookfin/reader/document.dart';
@@ -77,6 +78,16 @@ class SplicedBook extends PdfBook {
     if (width == 1600) analyzed.add(sourcePage);
     final (book, page) = pages[sourcePage - 1];
     return book.render(page, width);
+  }
+
+  @override
+  Future<ui.Image> renderPart(
+    int sourcePage,
+    int pixelsPerPageUnit,
+    ui.Rect area,
+  ) {
+    final (book, page) = pages[sourcePage - 1];
+    return book.renderPart(page, pixelsPerPageUnit, area);
   }
 }
 

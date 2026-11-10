@@ -506,6 +506,34 @@ A size step of the reader (2 logical pixels, from 14 to 40) changes `fontSize`, 
 - Word pieces and ink regions use a duotone tint. It maps luminance 0 to the theme's text color (`onSurface`) and luminance 1 to the theme's paper (`surface`). One `ColorFilter.matrix` does this for cream and for night. So night shows light ink on dark paper, and cream shows dark ink on cream paper. Colored ink loses its hue but keeps its lightness.
 - Picture regions keep their colors. On cream, they multiply by the paper color, so their white becomes cream. On night, they show at 80 percent brightness and are not inverted, so photographs do not become negatives.
 
+### The bands as built
+
+Ticket tb-xjfi built the rendering in `lib/reader/word_bands.dart` and `lib/reader/word_pages.dart`, and `PdfBook.renderPart` in `lib/reader/pdf.dart`. These rules differ from the text above, or add to it:
+
+| Rule | Text above | Built | Reason |
+| --- | --- | --- | --- |
+| `renderPart` | `(sourcePage, pixelsPerPageUnit, area)` | `pixelsPerPageUnit` is a whole number, and `area` is in pixels of that drawing with whole-pixel edges. It returns a `ui.Image`. | pdfrx draws only whole page widths. The plan and the render then agree on every pixel. |
+| Hops | Column layout and sprite lists in a hop | `planWordColumn` lays out the column and plans the bands of all its screens in one hop | Each hop has a fixed cost. |
+| Bands | One band for consecutive source lines | A part is the pieces of one source line with one scale and one tint. A region is a part alone. Consecutive word parts join while the band stays within 1.5 times their own areas and the screen within its bound. | A word that is scaled to fit and a region have their own scale. A band that joins distant lines holds pixels that the screen does not draw. Each band costs a render of the page. |
+| Memory | A screen's bands hold at most twice its pixels | The bound is a rule of the plan. Only when a screen's own parts exceed it does the screen render at a lower resolution. The screen's pixels are the column width times the screen height, in device pixels. | No fixture comes near the bound (see below). |
+| Device pixels | A word draws at one band pixel for one device pixel | Also, a level word's sprite lands on whole device pixels of the column, so drawing copies pdfium's pixels. The viewport (tb-22fu) must place `WordScreenView` at a whole device pixel. | Bilinear sampling at half-pixel offsets softens every glyph. |
+| Tint of ink | A duotone matrix from luminance 0 to 1 | The text color, with an opacity from 1 at the page's ink lightness to 0 at its paper lightness, over the paper | A scan's paper is darker than white: Gibbon's paper in word boxes is about 0.82. With luminance 1 as paper, every scanned word drew as a gray box. The opacity also keeps a turned word's paper off its neighbor's ink. |
+| Levels | None | `PageAnalysis.paperLightness` and `inkLightness`, from the pixels inside the boxes of words that no region holds. The paper level is the paper's most common lightness less its grain, the distance to the lightness that 97.5 percent of the pixels do not exceed. The ink level is the median of the ink's pixels. | Paper near text is darker than in the margins, and the Raven's blurred ink widens any spread measured from below. Equation 1.0 and 0.02, Gibbon 0.82 and 0.18, Raven 0.56 and 0.22. |
+| Tint of pictures | Cream multiplies by the paper, night shows 80 percent | As designed. A scanned picture keeps its scan's paper tone. | See the open question below. |
+| Eviction | Shown screen and the next screen | When `show` asks for a screen, every screen but the shown one and the asked one drops its images. When the asked screen is ready, it shows and the screen before it drops. Then the next screen in the turn's direction renders. The next screen does not cross into the next source page. | Live images then never exceed two screens, even while a change waits for its new screen. |
+
+Measured on the host, column 371.4 by 780 logical pixels at 2.625 device pixels for one logical pixel. The bound for the live images is 4 screens, or 32 MB.
+
+Each cell gives the band pixels of the screen with the most, in screens, and the peak of the live images while the person turns through the page.
+
+| Fixture | Size 14 | Size 20 | Size 40 |
+| --- | --- | --- | --- |
+| Gibbon | 0.67 screens, 5.3 MB | 0.88 screens, 11.0 MB | 1.00 screens, 13.6 MB |
+| Equation | 0.24 screens, 1.9 MB | 0.48 screens, 3.8 MB | 0.78 screens, 10.4 MB |
+| Raven | 0.77 screens, 6.2 MB | 0.87 screens, 7.1 MB | 0.79 screens, 10.6 MB |
+
+The open question: a scanned picture, such as the Raven's engraving, keeps its scan's darker paper inside the theme's paper. Making its paper the theme's paper would scale its colors by the page's paper lightness. It is a choice of look for the user (ticket tb-xjfi's report).
+
 ## The text under the images
 
 The word images are only a picture of the reading text. Every text feature uses the reading text through the text attachment.

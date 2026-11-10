@@ -23,6 +23,7 @@ enum RegionKind { picture, ink }
 /// - A running line holds no word of a region.
 /// - No running region is a scan edge.
 /// - The body line height is positive.
+/// - The ink is darker than the paper, and both lie from 0 to 1.
 class PageAnalysis {
   PageAnalysis({
     required this.regionBoxes,
@@ -31,6 +32,8 @@ class PageAnalysis {
     required this.proseLines,
     required this.sourceWords,
     required this.bodyLineHeight,
+    this.paperLightness = 1,
+    this.inkLightness = 0,
     Uint8List? runningLines,
     Uint8List? runningRegions,
   }) : runningLines = runningLines ?? Uint8List(proseLines.length),
@@ -57,6 +60,22 @@ class PageAnalysis {
   /// bottom. A page without prose lines takes the median height of all its
   /// lines, and a page without lines takes [defaultLineHeight].
   final double bodyLineHeight;
+
+  /// The lightness of the page's paper and of its ink, from 0 for black to
+  /// 1 for white. A scan's paper is darker than white and grainy, so the
+  /// word view's tint maps [paperLightness] and lighter to the theme's
+  /// paper, and [inkLightness] and darker to its text color.
+  ///
+  /// Both come from the pixels inside the boxes of the page's words that no
+  /// region holds, where a scan's paper is darker than in its margins.
+  /// [paperLightness] is the most common lightness of the paper, less its
+  /// grain: the distance from it to the lightness that 97.5 percent of the
+  /// pixels do not exceed. So the paper's grain draws as paper. The ink's
+  /// pixels are those darker than half of the lightness that 90 percent of
+  /// the page's pixels do not exceed, and [inkLightness] is their median.
+  /// A lightness is 0.299 red, 0.587 green and 0.114 blue.
+  final double paperLightness;
+  final double inkLightness;
 
   /// For each line: 1 when it is a running line, and otherwise 0. A running
   /// line is a running header, a running footer or a folio. The book's
@@ -94,6 +113,8 @@ class PageAnalysis {
         proseLines: proseLines,
         sourceWords: sourceWords,
         bodyLineHeight: bodyLineHeight,
+        paperLightness: paperLightness,
+        inkLightness: inkLightness,
         runningLines: runningLines,
         runningRegions: regions,
       );
@@ -181,6 +202,10 @@ class PageAnalysis {
     require(
       bodyLineHeight > 0 && bodyLineHeight.isFinite,
       'the body line height is positive',
+    );
+    require(
+      0 <= inkLightness && inkLightness < paperLightness && paperLightness <= 1,
+      'the ink is darker than the paper',
     );
     for (var region = 0; region < regionCount; region++) {
       final left = regionBoxes[region * 4], top = regionBoxes[region * 4 + 1];
@@ -348,6 +373,7 @@ AnalyzedPage analyzePage(
   final geometry = reflow.geometry;
   final passes = _proseLines(geometry, reflow.sourceWords);
   final regions = _regions(geometry, passes, loose, lineHeight, raster);
+  final levels = raster.levels(geometry.boxes, regions.wordRegions);
   final proseLines = Uint8List(geometry.lineCount);
   for (var line = 0; line < geometry.lineCount; line++) {
     var prose = passes[line];
@@ -369,6 +395,8 @@ AnalyzedPage analyzePage(
       proseLines: proseLines,
       sourceWords: reflow.sourceWords,
       bodyLineHeight: _medianLineHeight(geometry, proseLines),
+      paperLightness: levels.white / 255,
+      inkLightness: levels.ink / 255,
     ),
   );
 }
@@ -503,6 +531,66 @@ class _Raster {
 
   /// The luminance of the paper: 90 percent of the pixels are not lighter.
   final int paper;
+
+  /// The luminance from which the paper of the words in [boxes] starts,
+  /// and the median luminance of their ink, from the pixels inside the
+  /// boxes of the words that no region holds (see [wordRegions]), or inside
+  /// the page without such words (see [PageAnalysis.paperLightness]).
+  ({int white, int ink}) levels(Float32List boxes, Int32List wordRegions) {
+    final histogram = Int32List(256);
+    if (!wordRegions.any((region) => region < 0)) {
+      for (final value in luma) {
+        histogram[value]++;
+      }
+    }
+    for (var word = 0; word < boxes.length ~/ 4; word++) {
+      if (wordRegions[word] >= 0) continue;
+      final (left, top, right, bottom) = _pixels(boxes, word);
+      for (var y = top; y < bottom; y++) {
+        for (var x = left; x < right; x++) {
+          histogram[luma[y * width + x]]++;
+        }
+      }
+    }
+    // The value below which [fraction] of the pixels from [from] to [to]
+    // lie.
+    int quantile(int from, int to, double fraction) {
+      var total = 0;
+      for (var value = from; value < to; value++) {
+        total += histogram[value];
+      }
+      var value = from;
+      for (var count = 0; value < to - 1; value++) {
+        count += histogram[value];
+        if (count >= total * fraction) break;
+      }
+      return value;
+    }
+
+    // The paper's most common luminance, over a window of 5 values. Its
+    // grain is the distance to the lightest pixels, which no ink widens.
+    final inkEnd = (paper + 1) ~/ 2;
+    var mode = 255, most = -1;
+    for (var value = inkEnd; value < 256; value++) {
+      var count = 0;
+      for (var near = value - 2; near <= value + 2; near++) {
+        if (near >= 0 && near < 256) count += histogram[near];
+      }
+      if (count > most) (mode, most) = (value, count);
+    }
+    // The most common value inside the window, so that white paper, whose
+    // window is cut at 255, is white.
+    for (
+      var near = math.max(0, mode - 2);
+      near <= math.min(255, mode + 2);
+      near++
+    ) {
+      if (histogram[near] > histogram[mode]) mode = near;
+    }
+    final grain = math.max(0, quantile(0, 256, .975) - mode);
+    final ink = math.min(quantile(0, inkEnd, .5), paper - 1);
+    return (white: (mode - grain).clamp(ink + 1, 255), ink: ink);
+  }
 
   /// Pixels for one page unit.
   double get scale => width.toDouble();
