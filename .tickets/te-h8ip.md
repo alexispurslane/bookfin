@@ -1,6 +1,6 @@
 ---
 id: te-h8ip
-status: open
+status: in_progress
 deps: []
 links: [boo-pw1d]
 created: 2026-11-10T02:44:18Z
@@ -19,3 +19,7 @@ decodeRecognizedPage marks a recognized page unreliable when it has at least 4 l
 **2026-11-10T12:50:56Z**
 
 User decision (2026-11-10): a page whose own content cannot reflow (cover, contents, diagram, table, no text) shows the original page fitted to the screen, with no message. Machinery failures keep their quiet line.
+
+**2026-11-10T12:58:50Z**
+
+Built on 2026-11-10 as the user decided: in reflow, a page whose own content cannot reflow (absent or unreliable) shows its original page fitted to the screen with no message. PdfTextStatus gained 'failed' for reader failures (recognition failure, fatal recognition, removed download, no downloaded book, canceled wait). Only a failed text carries a reason, and only failures, a text read error and an unmatched saved place keep their quiet line. Saved places, cache keys and digests are unchanged. The search note that counts skipped pages is unchanged.

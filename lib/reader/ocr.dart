@@ -245,7 +245,7 @@ class BundledEnglishText implements PdfTextSupply {
     }
     final lease = _lease;
     if (lease == null) {
-      return _fallback('Text recognition needs the downloaded book.');
+      return _failure('Text recognition needs the downloaded book.');
     }
     if (!_holding) {
       _holding = true;
@@ -430,27 +430,25 @@ class _OwnedTextRead {
   }
 }
 
-const _canceled = PdfText(
-  source: '',
-  text: '',
-  sourceOffsets: [],
-  status: PdfTextStatus.absent,
-  reason: 'Recognition stopped.',
-);
-
-final _gone = _fallback('The download of this book is no longer available.');
-final _recognitionFailure = _fallback('Text recognition failed on this page.');
-final _fatalFallback = _fallback(
+final _canceled = _failure('Recognition stopped.');
+final _gone = _failure('The download of this book is no longer available.');
+final _recognitionFailure = _failure('Text recognition failed on this page.');
+final _fatalFallback = _failure(
   'Text recognition stopped working. Restart Bookfin to recognize pages.',
 );
 
-PdfText _fallback(String reason) => PdfText(
+PdfText _failure(String reason) => PdfText(
   source: '',
   text: '',
   sourceOffsets: const [],
-  status: PdfTextStatus.absent,
+  status: PdfTextStatus.failed,
   reason: reason,
 );
+
+/// The recognized text of a page whose content does not reflow: [status]
+/// is [PdfTextStatus.absent] or [PdfTextStatus.unreliable].
+PdfText _noReflow(PdfTextStatus status) =>
+    PdfText(source: '', text: '', sourceOffsets: const [], status: status);
 
 /// The page text that the recognition output [hocr] holds. It runs in a hop,
 /// so it takes and returns only data that crosses to another isolate.
@@ -507,13 +505,11 @@ PdfText decodeRecognizedPage(String hocr) {
     source.write(words.join(' '));
   }
   final raw = source.toString();
-  if (raw.trim().isEmpty) {
-    return _fallback('No text was found on this page.');
-  }
+  if (raw.trim().isEmpty) return _noReflow(PdfTextStatus.absent);
   if (raw.length > 2000000 ||
       raw.contains('\uFFFD') ||
       raw.contains('\u0000')) {
-    return _fallback('The recognized text of this page cannot be read.');
+    return _noReflow(PdfTextStatus.unreliable);
   }
   var parallelRows = 0;
   final rows = <int, ({int minimumRight, int maximumLeft})>{};
@@ -551,9 +547,6 @@ PdfText decodeRecognizedPage(String hocr) {
     recognition: BundledEnglishText.version,
     status: unreliable ? PdfTextStatus.unreliable : PdfTextStatus.candidate,
     digest: unreliable ? null : pdfTextDigest(raw),
-    reason: unreliable
-        ? 'The text of this page cannot be put in reading order.'
-        : null,
   );
 }
 

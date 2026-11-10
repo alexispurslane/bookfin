@@ -198,13 +198,10 @@ void main() {
     () async {
       recognize = () async => blankPage;
       final pdf = await open();
-      expect((await pdf.text(1)).reason, 'No text was found on this page.');
-      expect((await pdf.text(1)).reason, 'No text was found on this page.');
+      expect((await pdf.text(1)).status, PdfTextStatus.absent);
+      expect((await pdf.text(1)).status, PdfTextStatus.absent);
       reader.closeView(reader.token);
-      expect(
-        (await (await open()).text(1)).reason,
-        'No text was found on this page.',
-      );
+      expect((await (await open()).text(1)).status, PdfTextStatus.absent);
       expect(calls, 1);
     },
   );
@@ -256,7 +253,7 @@ void main() {
     () async {
       recognize = () async => throw PlatformException(code: 'recognition');
       final pdf = await open();
-      expect((await pdf.text(1)).status, PdfTextStatus.absent);
+      expect((await pdf.text(1)).status, PdfTextStatus.failed);
       expect((await pdf.render(1, 360)).width, 360);
       recognize = () async => englishPage;
       expect((await pdf.text(1)).text, 'The quiet garden.');
@@ -268,10 +265,10 @@ void main() {
     recognize = () async => throw PlatformException(code: 'recognition-fatal');
     final pdf = await open();
     final text = await pdf.text(1);
-    expect(text.status, PdfTextStatus.absent);
+    expect(text.status, PdfTextStatus.failed);
     expect(text.reason, contains('Restart Bookfin'));
     recognize = () async => englishPage;
-    expect((await pdf.text(1)).status, PdfTextStatus.absent);
+    expect((await pdf.text(1)).status, PdfTextStatus.failed);
     expect(calls, 1);
     expect((await pdf.render(1, 360)).width, 360);
   });

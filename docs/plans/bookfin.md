@@ -328,7 +328,8 @@ The user asked for a reader without notices and with direct gestures (boo-981b, 
 
 - A PDF always opens on its original pages. The original view never starts recognition.
 - The reflow view reflows a page from its text layer. A page without a usable text layer is recognized without a prompt. While that runs, the original page shows under a thin progress line.
-- When reflow cannot work on the shown page, one quiet line over the original page says why. The reader shows no other notice about recognition, text quality, language or search matching.
+- When the shown page's own content cannot reflow, the reflow view shows the original page fitted to the screen, with no message. Examples are a cover of a few short lines, a contents page, a diagram, a table and a page with no text (te-h8ip).
+- When reflow failed on the shown page, one quiet line over the original page says why, because the person can act on it. Examples are a recognition failure and a removed download. The reader shows no other notice about recognition, text quality, language or search matching.
 - Every reader view shares one gesture model: a horizontal swipe turns the page, and a tap on the page enters or leaves full screen. Full screen shows only the page and hides Android's system bars.
 - The reader has no top bar. The person leaves a book with Android's Back. The bottom bar lies over the page as glass.
 - The page keeps the room of Android's system bars when they hide, so showing or hiding the controls or the bars never moves, resizes or lays out the page again.
