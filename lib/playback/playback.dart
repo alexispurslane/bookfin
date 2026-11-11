@@ -8,9 +8,11 @@ import '../catalog/jellyfin.dart';
 import '../catalog/model.dart';
 import '../downloads/downloads.dart';
 import '../foundation/time.dart' show audioTime;
+import 'audio_outline.dart';
 import 'reporting.dart';
 import 'records.dart';
 
+export 'audio_outline.dart' show PlaybackChapter;
 export 'records.dart';
 
 class AudioSample {
@@ -245,7 +247,6 @@ class Playback extends ChangeNotifier {
         (List<HistoryEvent<AudioPosition>>, List<Book>),
         List<RecentListening>
       >();
-  final _chapters = _Memo<Edition?, List<PlaybackChapter>>();
   final _timeline =
       _Memo<
         (
@@ -716,7 +717,7 @@ class Playback extends ChangeNotifier {
   /// The length of the open edition in milliseconds, or null when none is
   /// open or a file has no known length.
   int? get durationMilliseconds =>
-      _edition == null ? null : _layout(_edition!).totalMs;
+      _edition == null ? null : audioOutline(_edition!).length;
 
   /// Where [position] is in its audio edition, in milliseconds from the
   /// edition's start. Null when the edition is not in the library, or when a
@@ -747,27 +748,8 @@ class Playback extends ChangeNotifier {
     );
   }
 
-  static int? _editionTime(Edition edition, AudioPosition position) {
-    final start = _layout(edition).starts[position.sourceKey];
-    return start == null ? null : start + position.milliseconds;
-  }
-
-  static final _layouts = Expando<_EditionLayout>();
-
-  /// Where each file of [edition] starts in the edition, and how long the
-  /// edition is, in milliseconds. An edition never changes, so its layout is
-  /// found once.
-  static _EditionLayout _layout(Edition edition) => _layouts[edition] ??= () {
-    final starts = <String, int?>{};
-    int? offset = 0;
-    for (final file in edition.files) {
-      starts.putIfAbsent(file.key, () => offset);
-      offset = offset == null || file.durationMs == null
-          ? null
-          : offset + file.durationMs!;
-    }
-    return (starts: starts, totalMs: offset);
-  }();
+  static int? _editionTime(Edition edition, AudioPosition position) =>
+      audioOutline(edition).editionTime(position);
 
   /// The bookmarks of the open edition, newest first, each with where it is
   /// in the edition. A bookmark whose place cannot be measured is left out.
@@ -817,36 +799,18 @@ class Playback extends ChangeNotifier {
         ? _position
         : _readPosition(edition);
     if (position == null || !position.fits(edition)) return null;
-    final total = _layout(edition).totalMs;
+    final total = audioOutline(edition).length;
     final elapsed = _editionTime(edition, position);
     return total == null || elapsed == null
         ? null
         : (elapsedMs: elapsed, totalMs: total);
   }
 
-  /// The chapters of the open edition in order. A file without a chapter at
-  /// its start counts as a chapter named after the file. The list stays the
-  /// same object until the open edition changes.
-  List<PlaybackChapter> get chapters => _chapters.of(_edition, () {
-    final edition = _edition;
-    if (edition == null) return const [];
-    final chapters = <PlaybackChapter>[];
-    final starts = _layout(edition).starts;
-    for (final file in edition.files) {
-      final offset = starts[file.key];
-      for (final chapter in file.playableChapters) {
-        chapters.add(
-          PlaybackChapter(
-            chapter.name,
-            file.key,
-            chapter.startMs,
-            offset == null ? null : offset + chapter.startMs,
-          ),
-        );
-      }
-    }
-    return List.unmodifiable(chapters);
-  });
+  /// The chapters of the open edition in order, from its audio outline. A
+  /// file without a chapter at its start counts as a chapter named after the
+  /// file. The list stays the same object until the open edition changes.
+  List<PlaybackChapter> get chapters =>
+      _edition == null ? const [] : audioOutline(_edition!).chapters;
 
   /// The index in [chapters] of the chapter that holds the position.
   int? get chapterIndex {
@@ -1883,11 +1847,6 @@ class Playback extends ChangeNotifier {
   }
 }
 
-/// Where each file of an edition starts in it, by file key, and the edition's
-/// length, in milliseconds. A start is null when an earlier file has no
-/// known length, and the length is null when any file has none.
-typedef _EditionLayout = ({Map<String, int?> starts, int? totalMs});
-
 /// A bookmark of the open edition, and where it is in the edition, in
 /// milliseconds from the edition's start.
 typedef EditionBookmark = ({Bookmark<AudioPosition> bookmark, int at});
@@ -1907,22 +1866,4 @@ class _Memo<K, V> {
     _last = (key: key, value: value);
     return value;
   }
-}
-
-class PlaybackChapter {
-  const PlaybackChapter(
-    this.name,
-    this.sourceKey,
-    this.milliseconds, [
-    this.editionMilliseconds,
-  ]);
-  final String name;
-  final String sourceKey;
-
-  /// Where the chapter starts within its source file.
-  final int milliseconds;
-
-  /// Where the chapter starts within the whole edition, or null when an
-  /// earlier file has no known duration.
-  final int? editionMilliseconds;
 }

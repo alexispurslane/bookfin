@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import '../catalog/model.dart';
 import '../foundation/time.dart' show audioTime, duration, listenedWhen;
+import '../playback/audio_outline.dart';
 import 'journal.dart';
 
 /// What a choice between the saved versions of one record says.
@@ -204,51 +205,30 @@ ConflictTrack? _track(List<Book> books, List<Map<String, dynamic>?> values) {
   final first = values.firstOrNull;
   final edition = first == null ? null : _edition(books, first);
   if (edition == null) return null;
+  final outline = audioOutline(edition);
+  final total = outline.length;
+  if (total == null || total <= 0) return null;
   final places = <int>[];
   for (final value in values) {
     if (value == null || value['edition'] != edition.id) return null;
-    final (offset, milliseconds) = (
-      _fileStart(edition, value),
-      value['milliseconds'],
+    final milliseconds = value['milliseconds'];
+    final known = edition.files.any(
+      (file) =>
+          file.key == value['source'] && file.revision == value['revision'],
     );
+    final offset = known ? outline.fileStarts[value['source']] : null;
     if (offset == null || milliseconds is! int) return null;
     places.add(offset + milliseconds);
   }
-  final files = edition.files;
-  if (files.any((file) => file.durationMs == null)) return null;
-  final total = files.fold(0, (sum, file) => sum + file.durationMs!);
-  if (total <= 0) return null;
-  var start = 0;
-  final chapters = <double>[];
-  for (final file in files) {
-    for (final chapter in file.playableChapters) {
-      if (start + chapter.startMs > 0) {
-        chapters.add((start + chapter.startMs) / total);
-      }
-    }
-    start += file.durationMs!;
-  }
   return ConflictTrack(
     places: [for (final place in places) (place / total).clamp(0.0, 1.0)],
-    chapters: chapters,
+    chapters: [
+      for (final chapter in outline.chapters)
+        if (chapter.editionMilliseconds! > 0)
+          chapter.editionMilliseconds! / total,
+    ],
     length: duration(total),
   );
-}
-
-/// Where the file of the place [value] begins in [edition], in
-/// milliseconds, or null when the edition lacks the file or a file before
-/// it has no known length.
-int? _fileStart(Edition edition, Map<String, dynamic> value) {
-  var start = 0;
-  for (final file in edition.files) {
-    if (file.key == value['source'] && file.revision == value['revision']) {
-      return start;
-    }
-    final length = file.durationMs;
-    if (length == null) return null;
-    start += length;
-  }
-  return null;
 }
 
 /// The name of the device that saved [version], or null when the version
