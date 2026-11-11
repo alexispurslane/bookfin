@@ -6,6 +6,8 @@
 // - inflate: package:archive's Inflate against inflateEntry (zip.dart).
 // - CRC-32: package:archive's getCrc32 against crc32 (zip.dart), on every
 //   expanded entry.
+// - image headers: package:image's startDecode against rasterSize
+//   (image_size.dart), on every PNG and JPEG.
 //
 // In the dev shell, from the repository root, compile it ahead of time, as
 // the app runs, and run it on the books of docs/plans/faster-book-open.md:
@@ -20,7 +22,9 @@ import 'dart:typed_data';
 
 import 'package:archive/archive.dart'
     show Inflate, OutputMemoryStream, getCrc32;
+import 'package:bookfin/reader/epub/image_size.dart';
 import 'package:bookfin/reader/epub/zip.dart';
+import 'package:image/image.dart' as raster;
 
 /// One entry of a book's ZIP directory.
 typedef _Entry = ({bool deflated, Uint8List content, int size});
@@ -99,10 +103,29 @@ void main(List<String> paths) {
         crc32(bytes);
       }
     });
+    final images = [
+      for (final bytes in expanded)
+        if (bytes.length > 8 && bytes[0] == 0x89 && bytes[1] == 0x50)
+          (bytes, 'image/png')
+        else if (bytes.length > 3 && bytes[0] == 0xff && bytes[1] == 0xd8)
+          (bytes, 'image/jpeg'),
+    ];
+    final oldHeaders = _median(() {
+      for (final (bytes, mime) in images) {
+        (mime == 'image/png' ? raster.PngDecoder() : raster.JpegDecoder())
+            .startDecode(bytes);
+      }
+    });
+    final newHeaders = _median(() {
+      for (final (bytes, mime) in images) {
+        rasterSize(bytes, mime);
+      }
+    });
     stdout.writeln(
       '${path.split('/').last}: inflate of ${deflated.length} entries '
       '$oldInflate -> $newInflate ms; CRC-32 of ${expanded.length} entries '
-      '$oldCrc -> $newCrc ms',
+      '$oldCrc -> $newCrc ms; headers of ${images.length} images '
+      '$oldHeaders -> $newHeaders ms',
     );
   }
 }

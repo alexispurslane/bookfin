@@ -2,10 +2,10 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
-import 'package:image/image.dart' as raster;
 import 'package:xml/xml.dart';
 
 import '../document.dart';
+import 'image_size.dart';
 import 'places.dart';
 import 'prepare.dart';
 import 'zip.dart';
@@ -897,30 +897,11 @@ class _Admission {
     );
   }
 
-  /// The width and height of the PNG or JPEG at [path], from its header,
-  /// or null when the header is unreadable, the image has more than one
-  /// frame, or it has more than 16 million pixels. Admission does not
-  /// decode the pixels: layout needs only the size, and the page draws the
-  /// image's alt text when its pixels do not decode.
-  (int, int)? _raster(String path, String mime) {
-    try {
-      final bytes = raw[path]!;
-      final raster.Decoder decoder = mime == 'image/png'
-          ? raster.PngDecoder()
-          : raster.JpegDecoder();
-      final info = decoder.startDecode(bytes);
-      if (info == null ||
-          info.width < 1 ||
-          info.height < 1 ||
-          info.width * info.height > 16000000 ||
-          info.numFrames != 1) {
-        return null;
-      }
-      return (info.width, info.height);
-    } catch (_) {
-      return null;
-    }
-  }
+  /// The width and height of the PNG or JPEG at [path], as [rasterSize]
+  /// reads them from its header. Admission does not decode the pixels:
+  /// layout needs only the size, and the page draws the image's alt text
+  /// when its pixels do not decode.
+  (int, int)? _raster(String path, String mime) => rasterSize(raw[path]!, mime);
 
   bool _font(Uint8List bytes) =>
       bytes.length >= 12 &&

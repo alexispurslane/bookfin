@@ -23,3 +23,7 @@ Quick win 1 (native inflate with a byte limit): host AOT bench, median of 7, inf
 **2026-11-11T20:26:06Z**
 
 Quick win 2 (slicing-by-8 CRC-32): host AOT bench, median of 7, CRC-32 of every expanded entry: prose 5.5 -> 1.3 ms, long 7.9 -> 1.9 ms, illustrated 73.6 -> 17.9 ms, divine 124.9 -> 30.1 ms. Equal to package:archive's getCrc32 on all 8,204 entries (269 MB) of the 90 corpus books.
+
+**2026-11-11T20:34:05Z**
+
+Quick win 3 (own PNG and JPEG header reader, image_size.dart): host AOT bench, median of 7, headers of every image: prose 4.4 -> 0.0 ms (5 images), long 5.7 -> 0.0 ms (7), illustrated 4.9 -> 0.1 ms (89), divine 110.2 -> 0.006 ms (138). Same accept or refuse and same size as package:image on all 986 corpus images; 22 malformed and edge-case tests check both readers.
