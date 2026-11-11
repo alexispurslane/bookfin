@@ -31,3 +31,7 @@ Endpoint audit found no equivalent pre-raster page-image endpoint in pinned KORe
 **2026-11-11T14:38:31Z**
 
 Sol lead stopped: Codex usage limit. Its partial work is commit 403629c6 on t3/rerun-epub-preparation-benchmark. User restated the goal: exclude emulator-skewed work (for example software rasterization) symmetrically from all engines, keep work that costs the same on emulator and phone. Plan section 'Revised goal' replaces the Option A scope. New lead: Claude Opus 5.5 xhigh.
+
+**2026-11-11T15:22:04Z**
+
+User decision (2026-11-11): every engine's headline interval runs through its real drawing. KOReader through its CPU drawCurrentPage; Bookfin and WebView through their GPU rasterization, measured on an emulator with host GPU acceleration, not SwiftShader. Capture and PixelCopy stay out of the interval. The SwiftShader numbers before drawing stay as a labeled diagnostic only. If host GPU mode fails, the lead reports back first.
