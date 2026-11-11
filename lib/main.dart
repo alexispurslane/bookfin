@@ -27,6 +27,7 @@ import 'playback/native.dart';
 import 'playback/playback.dart';
 import 'playback/store.dart';
 import 'playback/database.dart';
+import 'reader/last_page_settings.dart';
 import 'reader/reading_speed.dart';
 import 'reader/session.dart';
 import 'reader/survey_files.dart';
@@ -80,6 +81,10 @@ Future<void> runBookfin({bool gallery = false}) async {
   // for it. Pages that count before it is read join the saved ones.
   final speed = ReadingSpeed(LocalReadingSpeedStore());
   unawaited(speed.restore());
+  // The last page settings only give the first open of a book a head
+  // start, so the first frame does not wait for them either.
+  final pageSettings = LastPageSettings(LocalPageSettingsStore());
+  unawaited(pageSettings.restore());
   final reader = downloads == null
       ? null
       : ReaderSession(
@@ -88,6 +93,7 @@ Future<void> runBookfin({bool gallery = false}) async {
           load: loadPublication,
           loadDocument: loadReadingDocument,
           speed: speed,
+          pageSettings: pageSettings,
           surveyStore: SurveyFiles.new,
         );
   // Crossings measures an ebook's outline only when the History first asks

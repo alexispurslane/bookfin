@@ -17,6 +17,7 @@ import 'epub/publication.dart';
 import 'page_previews.dart';
 import 'pdf.dart';
 import 'place_words.dart';
+import 'last_page_settings.dart';
 import 'reading_speed.dart';
 import 'survey_files.dart';
 
@@ -192,6 +193,7 @@ class ReaderSession extends ChangeNotifier {
     required this.load,
     this.loadDocument,
     this.speed,
+    this.pageSettings,
     this.surveyStore,
   }) {
     _signals = [
@@ -290,6 +292,11 @@ class ReaderSession extends ChangeNotifier {
   /// The person's reading speed, which the pager's page turns feed and
   /// [timeLeft] reads. Without it, the session estimates no time.
   final ReadingSpeed? speed;
+
+  /// The page settings of the last page that this phone showed, which each
+  /// shown page of an EPUB updates. A pager starts to open its book with
+  /// them before the reader's first layout presents the settings.
+  final LastPageSettings? pageSettings;
   ReaderDocument? _document;
   ReaderDocument? get document => _document;
   Book? _book;
@@ -794,10 +801,15 @@ class ReaderSession extends ChangeNotifier {
         final pager = _pager = EpubPager(
           admitted,
           initial: _initialAddress,
+          expected: pageSettings?.value,
           onPlace: (address) => acceptAddress(generation, address),
           onWarning: (message) => warn(generation, message),
           onShow: (read) {
-            if (_live(generation)) speed?.pageShown(read: read);
+            if (!_live(generation)) return;
+            speed?.pageShown(read: read);
+            if (_pager?.shown.value?.page.settings case final settings?) {
+              pageSettings?.keep(settings);
+            }
           },
         );
         pager.bookPages.addListener(_repage);

@@ -35,3 +35,7 @@ Quick win 4 (identity from the policy, Publication.revision and the file digest;
 **2026-11-11T20:54:15Z**
 
 Quick win 5 (const hyphenation tables): host AOT bench (tool/reader/hyphenation_bench.dart), median of 7, first hyphenation of an American and a British word in a new worker: 3.4 -> 0.012 ms. 400,000 words: 714 -> 668 ms and 868 -> 855 ms in two runs at host load 29, so no slower lookups. tool/reader/hyphenation_tables.dart generates lib/reader/epub/hyphenation_en_tables.dart (502 KB of source); hyphenate_test checks it against hyphenation_en.dart.
+
+**2026-11-11T21:06:00Z**
+
+Quick win 6 (start the open with this phone's last page settings): LastPageSettings keeps the settings of each shown EPUB page (SharedPreferencesAsync); EpubPager(expected:) prepares the saved place's section, or section 0, at once and uses that work only when the first present is equal. Host bench (admission_benchmark_test), pager construction to shown page with the first present 12 ms later, median of 5: prose 30.0 -> 21.6 ms, long 35.5 -> 23.6, illustrated 28.1 -> 20.0, divine 27.8 -> 19.7, MOBI 26.8 -> 19.4. Recorded t4-4d21 for the three same preference stores.

@@ -6,6 +6,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:isolate';
 import 'dart:ui' as ui;
 
 import 'package:bookfin/foundation/hop.dart';
@@ -92,6 +93,7 @@ void main() {
   EpubPager open(
     Publication publication, {
     ReaderAddress? initial,
+    PageSettings? expected,
     IsolateHop? hop,
     WorkerCall? work,
   }) {
@@ -103,6 +105,7 @@ void main() {
     final made = EpubPager(
       EpubDocument(publication),
       initial: initial,
+      expected: expected,
       onPlace: reported.add,
       onWarning: warnings.add,
       onShow: turns.add,
@@ -251,6 +254,117 @@ void main() {
     expect(pageKey(reopened), jumpedKey);
     held.release.complete();
     await until(source.mainRun(reopened));
+  });
+
+  group("this phone's last page settings", () {
+    /// The section and the settings of each prepared section that came
+    /// back from a worker, and a wait for the next one.
+    final prepared = <(int, PageSettings)>[];
+    var next = Completer<void>();
+    setUp(() {
+      prepared.clear();
+      next = Completer<void>();
+    });
+
+    /// Runs a worker call as [Isolate.run] does, and notes what it
+    /// prepared.
+    Future<R> noted<R>(FutureOr<R> Function() computation) async {
+      final result = await Isolate.run(computation);
+      if (result is PreparedSection) {
+        prepared.add((result.index, result.settings));
+        next.complete();
+        next = Completer<void>();
+      }
+      return result;
+    }
+
+    /// Waits until section [index] came back prepared for [settings].
+    Future<void> preparedFor(int index, PageSettings settings) async {
+      while (!prepared.contains((index, settings))) {
+        await scheduler.until(next.future.timeout(const Duration(seconds: 30)));
+      }
+    }
+
+    /// The address that a pager reports at the middle of section 1 of
+    /// [publication].
+    Future<EpubAddress> savedInSecond(Publication publication) async {
+      open(publication);
+      await present();
+      await until(pager().seek(1, .5));
+      return reported.last;
+    }
+
+    test('a pager that knows them prepares the section of its saved place '
+        'before the reader presents its settings', () async {
+      final publication = linkedBook();
+      final saved = await savedInSecond(publication);
+      prepared.clear();
+
+      open(publication, initial: saved, expected: readerPage, work: noted);
+      await preparedFor(1, readerPage);
+
+      expect(pager().shown.value, isNull);
+    });
+
+    test('a pager that knows them prepares the first section of a book '
+        'without a saved place before the reader presents its '
+        'settings', () async {
+      open(linkedBook(), expected: readerPage, work: noted);
+      await preparedFor(0, readerPage);
+
+      expect(pager().shown.value, isNull);
+      final first = await present();
+      expect(first.page.section, 0);
+      expect(prepared.where((each) => each == (0, readerPage)), hasLength(1));
+    });
+
+    test('when the reader presents the same settings, the saved place shows '
+        'without a second prepare of its section', () async {
+      final publication = linkedBook();
+      final saved = await savedInSecond(publication);
+      open(publication, initial: saved);
+      final truth = content((await present()).page);
+      prepared.clear();
+
+      open(publication, initial: saved, expected: readerPage, work: noted);
+      await preparedFor(1, readerPage);
+      final page = (await present()).page;
+
+      expect(content(page), truth);
+      expect(prepared.where((each) => each == (1, readerPage)), hasLength(1));
+      expect(reported.single.location.cfi, saved.location.cfi);
+      expect(warnings, isEmpty);
+    });
+
+    test('when the reader presents other settings, the saved place shows on '
+        'the page of the presented settings', () async {
+      final publication = linkedBook();
+      final saved = await savedInSecond(publication);
+      open(publication, initial: saved);
+      final truth = content((await present()).page);
+      prepared.clear();
+
+      open(publication, initial: saved, expected: largerText, work: noted);
+      final page = (await present()).page;
+
+      expect(page.settings, readerPage);
+      expect(content(page), truth);
+      expect(reported.single.location.cfi, saved.location.cfi);
+      expect(warnings, isEmpty);
+    });
+
+    test('a pager closed before the reader presents its settings stops '
+        'without an error', () async {
+      final publication = linkedBook();
+      final saved = await savedInSecond(publication);
+
+      open(publication, initial: saved, expected: readerPage).dispose();
+      opened = null;
+      await pumpEventQueue();
+      await Future<void>.delayed(const Duration(milliseconds: 200));
+
+      expect(warnings, isEmpty);
+    });
   });
 
   test('present notifies later, never during the call, and the same '
