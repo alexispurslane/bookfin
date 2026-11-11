@@ -20,12 +20,14 @@ CLOCKS = {"bookfin": {"source": "dart_timeline_us", "offset_ns": 0, "uncertainty
           "koreader": {"source": "android_boottime_ns", "offset_ns": 0, "uncertainty_ns": 0}}
 
 
-def prepared(number=0, engine="bookfin", frame_ns=2_000_000, **changes):
+def prepared(number=0, engine="bookfin", vsync_ns=2_000_000, frame_ns=2_200_000, running=None, **changes):
     """A certified page turn: dispatch at 1.0 ms, engine entry at 1.1 ms,
     operation return at 1.2 ms, preparation at 1.5 ms, copy at 10 ms. The
-    frame that draws the page starts at `frame_ns`, 2.0 ms, and the page is
-    drawn at 3.0 ms, except by KOReader, whose preparation is its CPU
-    drawing and which has no frame."""
+    frame that draws the page has its vsync at `vsync_ns`, 2.0 ms, starts at
+    `frame_ns`, 2.2 ms, and the page is drawn at 3.0 ms. KOReader's
+    preparation is its CPU drawing, and it has no frame. For WebView,
+    `running` gives the (vsync, start) of an animation frame that was running
+    when preparation ended."""
     row = sample(number, engine=engine, id=f"measured-run/{number}", sequence=number,
                  preparation_event_id=f"measured-run/{number}",
                  preparation_operation="page_turn", engine_start_ns=1_100_000,
@@ -43,12 +45,16 @@ def prepared(number=0, engine="bookfin", frame_ns=2_000_000, **changes):
                     and type(row.get(f"{field}_ns")) is int:
                 row[source] = row[f"{field}_ns"] / scale
     if engine == "bookfin" and "drawn_frame" not in changes and type(row.get("drawn_ns")) is int:
-        row["drawn_frame"] = {"number": 9, "buildStart_us": frame_ns // 1000,
+        row["drawn_frame"] = {"number": 9, "vsyncStart_us": vsync_ns // 1000, "buildStart_us": frame_ns // 1000,
                               "rasterFinish_us": row["drawn_ns"] // 1000}
     if engine == "webview":
-        row.setdefault("frame_start_ns", frame_ns)
-        if "frame_start_source_ms" not in changes and type(row["frame_start_ns"]) is int:
-            row["frame_start_source_ms"] = row["frame_start_ns"] / 1_000_000
+        times = {"frame_vsync": vsync_ns, "frame_start": frame_ns,
+                 "running_frame_vsync": running and running[0], "running_frame_start": running and running[1]}
+        for field, value in times.items():
+            row.setdefault(f"{field}_ns", value)
+            if f"{field}_source_ms" not in changes:
+                value = row[f"{field}_ns"]
+                row[f"{field}_source_ms"] = value / 1_000_000 if type(value) is int else None
     return row
 
 
@@ -213,21 +219,39 @@ class DrawnPageIntervalTest(unittest.TestCase):
                 self.assertEqual(found[0]["scope"], DRAWN_SCOPES[engine])
 
     def test_a_flutter_frame_rasterized_before_the_shell_saw_preparation_still_counts(self):
-        row = prepared(drawn_ns=1_400_000, frame_ns=1_300_000)
+        row = prepared(drawn_ns=1_400_000, vsync_ns=1_250_000, frame_ns=1_300_000)
         self.assertAlmostEqual(cells([row], "drawn_page")[0]["mean_ms"], .3)
 
     def test_a_later_vsync_does_not_change_the_drawn_page(self):
         for engine in ("bookfin", "webview"):
             with self.subTest(engine=engine):
                 prompt = prepared(engine=engine)
-                late = prepared(engine=engine, frame_ns=12_000_000, drawn_ns=13_000_000, end_ns=20_000_000)
+                late = prepared(engine=engine, vsync_ns=12_000_000, frame_ns=12_200_000, drawn_ns=13_000_000,
+                                end_ns=20_000_000)
                 self.assertAlmostEqual(cells([late], "drawn_page")[0]["mean_ms"],
                                        cells([prompt], "drawn_page")[0]["mean_ms"])
 
     def test_a_frame_that_began_before_preparation_ended_is_not_counted_twice(self):
         # Flutter can finish preparation between the start of a frame and its paint.
-        row = prepared(frame_ns=1_300_000)
+        row = prepared(vsync_ns=1_250_000, frame_ns=1_300_000)
         self.assertAlmostEqual(cells([row], "drawn_page")[0]["mean_ms"], 1.9)
+
+    def test_a_frame_that_starts_late_after_its_vsync_keeps_that_delay(self):
+        # Only the wait until the vsync at 2.0 ms is idle; 2.0 to 5.0 ms is thread time.
+        for engine in ("bookfin", "webview"):
+            with self.subTest(engine=engine):
+                row = prepared(engine=engine, vsync_ns=2_000_000, frame_ns=5_000_000, drawn_ns=6_000_000)
+                self.assertAlmostEqual(cells([row], "drawn_page")[0]["mean_ms"], 4.4)
+
+    def test_a_webview_preparation_that_ends_inside_a_running_frame_subtracts_nothing(self):
+        # The frame running at 1.3 ms draws the page; Android answers at 18.0 ms.
+        row = prepared(engine="webview", running=(1_300_000, 1_350_000), vsync_ns=17_000_000,
+                       frame_ns=17_200_000, drawn_ns=18_000_000, end_ns=20_000_000)
+        self.assertAlmostEqual(cells([row], "drawn_page")[0]["mean_ms"], 16.9)
+
+    def test_the_drawn_page_cells_name_the_wait_that_they_leave_out(self):
+        self.assertEqual(cells([prepared()], "drawn_page")[0]["boundary"],
+                         "engine_start_ns_to_drawn_ns_less_wait_until_drawing_frame_vsync")
 
     def test_samples_without_a_drawn_endpoint_stay_out_of_the_drawn_interval_only(self):
         row = prepared(engine="webview")
@@ -243,9 +267,20 @@ class DrawnPageIntervalTest(unittest.TestCase):
                                 ("bookfin", {"drawn_source_us": 3001}),
                                 ("bookfin", {"drawn_source_us": None}),
                                 ("bookfin", {"drawn_frame": None}),
-                                ("bookfin", {"drawn_frame": {"number": 9, "buildStart_us": 3500, "rasterFinish_us": 3000}}),
-                                ("bookfin", {"drawn_frame": {"number": 9, "buildStart_us": 1000, "rasterFinish_us": 3000}}),
-                                ("bookfin", {"drawn_frame": {"number": 9, "buildStart_us": 2000, "rasterFinish_us": 2900}}),
+                                ("bookfin", {"drawn_frame": {"number": 9, "buildStart_us": 2200, "rasterFinish_us": 3000}}),
+                                ("bookfin", {"drawn_frame": {"number": 9, "vsyncStart_us": 2300, "buildStart_us": 2200, "rasterFinish_us": 3000}}),
+                                ("webview", {"frame_vsync_ns": None}),
+                                ("webview", {"frame_vsync_source_ms": 2.1}),
+                                ("webview", {"frame_vsync_ns": 2_300_000, "frame_vsync_source_ms": 2.3}),
+                                ("webview", {"running_frame_vsync_ns": 1_600_000, "running_frame_vsync_source_ms": 1.6,
+                                             "running_frame_start_ns": 1_400_000, "running_frame_start_source_ms": 1.4}),
+                                ("webview", {"running_frame_vsync_ns": 1_300_000, "running_frame_vsync_source_ms": 1.3,
+                                             "running_frame_start_ns": 1_600_000, "running_frame_start_source_ms": 1.6}),
+                                ("webview", {"running_frame_vsync_ns": 1_300_000, "running_frame_vsync_source_ms": 1.4,
+                                             "running_frame_start_ns": 1_350_000, "running_frame_start_source_ms": 1.35}),
+                                ("bookfin", {"drawn_frame": {"number": 9, "vsyncStart_us": 2000, "buildStart_us": 3500, "rasterFinish_us": 3000}}),
+                                ("bookfin", {"drawn_frame": {"number": 9, "vsyncStart_us": 900, "buildStart_us": 1000, "rasterFinish_us": 3000}}),
+                                ("bookfin", {"drawn_frame": {"number": 9, "vsyncStart_us": 2000, "buildStart_us": 2200, "rasterFinish_us": 2900}}),
                                 ("webview", {"frame_start_ns": None}),
                                 ("webview", {"frame_start_ns": 1_400_000, "frame_start_source_ms": 1.4}),
                                 ("webview", {"frame_start_ns": 3_500_000, "frame_start_source_ms": 3.5}),

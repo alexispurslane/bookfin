@@ -51,3 +51,7 @@ Host load: another agent's flutter test run raised the one-minute load to about 
 **2026-11-11T17:50:33Z**
 
 Headline run sym-drawn3 (host GPU, emulator-5558, shells of 584205e2, runner of 0db9426f): 108 of 108 jobs passed on their first attempt; highest one-minute host load during any job 7.3, so no job was measured again; 1,404 measured samples accepted; only preparation rows excluded. Drawn-page equal-book means (ms), Bookfin / WebView / KOReader: fresh open 371.7 / 360.3 / 119.3; cached reopen 45.2 / 284.3 / 17.6; page turn 6.6 / 39.1 / 2.4; chapter turn 3.2 / 41.1 / 3.1; size change 34.5 / 50.2 / 68.8. WebView answers after a later vsync: 127 of 468 (frame work median 13.9 ms against 0.8 ms on time). Independent checks: exact-rounding-check.py, 1,050 rounded values, 0 mismatches (after 1b722c2d fixed three diagnostic medians that floats rounded 0.1 ms low). README section and docs/research/epub-engine-drawn-page-method.md written; index.html untouched.
+
+**2026-11-11T18:25:17Z**
+
+Drawn page now leaves out only the wait until the drawing frame's vsync; a WebView preparation that ends inside a running animation frame subtracts nothing; collect drops rows of jobs without an accepted quiet-host record and writes frames.json.

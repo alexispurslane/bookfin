@@ -119,7 +119,8 @@ class PartialEvidenceTest(unittest.TestCase):
             digest = hashlib.sha256(references.read_bytes()).hexdigest()
             jobs = []
             # Drawn 10 and 30 ms after preparation; raster 2 and 6 ms; the
-            # drawing frame starts to build 8 and 24 ms after preparation.
+            # drawing frame's vsync comes 8 and 24 ms after preparation, and the
+            # frame starts to build 1 ms after its vsync.
             for number, (wait, raster, idle) in enumerate(((10, 2, 8), (30, 6, 24))):
                 run = f"run-{number}"
                 directory = runs / run
@@ -131,7 +132,8 @@ class PartialEvidenceTest(unittest.TestCase):
                           measured=True, warmup=False, cache="fresh_document", boundary="request_to_reference_window_copy",
                           clock="android_elapsed_realtime_ns", start_ns=start, engine_start_ns=start,
                           operation_returned_ns=prepared, preparation_ns=prepared, drawn_ns=drawn,
-                          drawn_frame={"buildStart_us": (prepared + idle * 1_000_000) // 1000,
+                          drawn_frame={"vsyncStart_us": (prepared + idle * 1_000_000) // 1000,
+                                       "buildStart_us": (prepared + (idle + 1) * 1_000_000) // 1000,
                                        "rasterStart_us": 1000, "rasterFinish_us": 1000 + raster * 1000},
                           phase_clock={"source": "dart_timeline_us", "offset_ns": 0, "uncertainty_ns": 1000},
                           engine_ready_ns=prepared + 1, end_ns=drawn + 1, process_start_ns=start - 1, shell_ready_ns=start,
@@ -184,6 +186,9 @@ class PartialEvidenceTest(unittest.TestCase):
             self.assertEqual(completed.returncode, 0, completed.stderr)
             summary = json.loads((output / "summary.json").read_text())
             self.assertEqual(summary["incomplete_jobs"], ["run-1"])
+            self.assertEqual([cell["count"] for cell in summary["cells"]], [1])
+            self.assertEqual([json.loads(line)["run_id"] for line in (output / "samples.jsonl").read_text().splitlines()],
+                             ["run-0"])
 
     def test_webview_answers_that_arrive_after_the_next_vsync_are_counted(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -197,8 +202,10 @@ class PartialEvidenceTest(unittest.TestCase):
             # The vsync period is 16 ms. Android answers 4 ms and 18 ms after a
             # frame that starts 0.5 ms after its vsync. A third frame starts 17 ms
             # after its vsync, after the next vsync passed, and is answered 2 ms
-            # later, before the vsync that follows its start.
-            for number, (lag, answer) in enumerate(((.5, 4), (.5, 18), (17, 2))):
+            # later, before the vsync that follows its start. In a fourth job,
+            # preparation ends inside a frame that started 2 ms earlier; that
+            # frame draws the page, and Android answers at the next frame.
+            for number, (lag, answer) in enumerate(((.5, 4), (.5, 18), (17, 2), (.5, 4))):
                 run = f"run-{number}"
                 directory = runs / run
                 directory.mkdir()
@@ -211,6 +218,8 @@ class PartialEvidenceTest(unittest.TestCase):
                           operation_returned_ns=prepared, preparation_ns=prepared, frame_start_ns=frame,
                           frame_vsync_ns=frame - int(lag * 1_000_000),
                           next_frame_vsync_ns=frame - int(lag * 1_000_000) + 16_000_000,
+                          running_frame_vsync_ns=prepared - 2_500_000 if number == 3 else None,
+                          running_frame_start_ns=prepared - 2_000_000 if number == 3 else None,
                           drawn_ns=frame + answer * 1_000_000,
                           engine_ready_ns=prepared + 1, end_ns=frame + 40_000_000, process_start_ns=start - 1, shell_ready_ns=start,
                           whole_book_paginated=False, copy_duration_ns=1, capture_attempts=1,
@@ -225,5 +234,44 @@ class PartialEvidenceTest(unittest.TestCase):
                                         str(runs), str(references), "--output", str(output)], capture_output=True, text=True)
             self.assertEqual(completed.returncode, 0, completed.stderr)
             fact = next(fact for fact in json.loads((output / "facts.json").read_text()) if fact["engine"] == "webview")
-            self.assertEqual(fact.get("webview_answer_after_next_vsync_count"), 1)
-            self.assertEqual(fact.get("webview_answer_checked_count"), 3)
+            self.assertEqual(fact.get("webview_answer_after_next_vsync_count"), 2)
+            self.assertEqual(fact.get("webview_answer_checked_count"), 4)
+            self.assertEqual(fact.get("webview_preparation_in_running_frame_count"), 1)
+            frames = json.loads((output / "frames.json").read_text())
+            self.assertEqual([(entry["engine"], entry["operation"], entry["samples"], entry["preparation_in_running_frame"],
+                               entry["answered_after_later_vsync"]) for entry in frames],
+                             [("webview", "fresh_open", 4, 1, 2)])
+
+    def test_frames_that_ran_inside_preparation_are_counted_for_each_engine_and_action(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            runs = root / "runs"
+            runs.mkdir()
+            references = root / "references.json"
+            references.write_text(json.dumps(reference()))
+            digest = hashlib.sha256(references.read_bytes()).hexdigest()
+            jobs = []
+            for number, frames in enumerate((0, 2, 1)):
+                run = f"run-{number}"
+                directory = runs / run
+                directory.mkdir()
+                start = 10_000_000_000 * (number + 1)
+                row = raw(id=run + "/0", run_id=run, sequence=0, operation="fresh_open", round=number,
+                          measured=True, warmup=False, cache="fresh_document", boundary="request_to_reference_window_copy",
+                          clock="android_elapsed_realtime_ns", start_ns=start, end_ns=start + 9_000_000,
+                          process_start_ns=start - 1, shell_ready_ns=start, whole_book_paginated=False,
+                          copy_duration_ns=1, capture_attempts=1, reference_manifest_sha256=digest,
+                          frames_in_preparation=frames)
+                (directory / "0.json").write_text(json.dumps(row))
+                (directory / "DONE").touch()
+                (runs / (run + "-instrumentation.txt")).write_text("OK (1 test)")
+                jobs.append({"run_id": run, "steps": [{}]})
+            (runs / "schedule.json").write_text(json.dumps(jobs))
+            output = root / "output"
+            completed = subprocess.run([sys.executable, str(Path(__file__).with_name("collect.py")),
+                                        str(runs), str(references), "--output", str(output)], capture_output=True, text=True)
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            frames = json.loads((output / "frames.json").read_text())
+            self.assertEqual([(entry["engine"], entry["operation"], entry["frames_in_preparation_median"],
+                               entry["frames_in_preparation_max"]) for entry in frames],
+                             [("bookfin", "fresh_open", 1, 2)])
