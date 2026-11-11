@@ -1,0 +1,242 @@
+test_a_flutter_frame_rasterized_before_the_shell_saw_preparation_still_counts (test_preparation.DrawnPageIntervalTest.test_a_flutter_frame_rasterized_before_the_shell_saw_preparation_still_counts) ... ERROR
+test_every_engine_is_timed_from_its_own_entry_through_its_real_drawing (test_preparation.DrawnPageIntervalTest.test_every_engine_is_timed_from_its_own_entry_through_its_real_drawing) ... 
+  test_every_engine_is_timed_from_its_own_entry_through_its_real_drawing (test_preparation.DrawnPageIntervalTest.test_every_engine_is_timed_from_its_own_entry_through_its_real_drawing) (engine='bookfin') ... FAIL
+  test_every_engine_is_timed_from_its_own_entry_through_its_real_drawing (test_preparation.DrawnPageIntervalTest.test_every_engine_is_timed_from_its_own_entry_through_its_real_drawing) (engine='webview') ... FAIL
+  test_every_engine_is_timed_from_its_own_entry_through_its_real_drawing (test_preparation.DrawnPageIntervalTest.test_every_engine_is_timed_from_its_own_entry_through_its_real_drawing) (engine='koreader') ... FAIL
+test_impossible_or_mislabeled_drawing_endpoints_are_excluded (test_preparation.DrawnPageIntervalTest.test_impossible_or_mislabeled_drawing_endpoints_are_excluded) ... 
+  test_impossible_or_mislabeled_drawing_endpoints_are_excluded (test_preparation.DrawnPageIntervalTest.test_impossible_or_mislabeled_drawing_endpoints_are_excluded) (engine='bookfin', changes={'drawn_ns': 1100000}) ... FAIL
+  test_impossible_or_mislabeled_drawing_endpoints_are_excluded (test_preparation.DrawnPageIntervalTest.test_impossible_or_mislabeled_drawing_endpoints_are_excluded) (engine='bookfin', changes={'drawn_ns': 11000000}) ... FAIL
+  test_impossible_or_mislabeled_drawing_endpoints_are_excluded (test_preparation.DrawnPageIntervalTest.test_impossible_or_mislabeled_drawing_endpoints_are_excluded) (engine='bookfin', changes={'drawn_source_us': 3001}) ... FAIL
+  test_impossible_or_mislabeled_drawing_endpoints_are_excluded (test_preparation.DrawnPageIntervalTest.test_impossible_or_mislabeled_drawing_endpoints_are_excluded) (engine='bookfin', changes={'drawn_source_us': None}) ... FAIL
+  test_impossible_or_mislabeled_drawing_endpoints_are_excluded (test_preparation.DrawnPageIntervalTest.test_impossible_or_mislabeled_drawing_endpoints_are_excluded) (engine='webview', changes={'drawn_ns': 1550000}) ... FAIL
+  test_impossible_or_mislabeled_drawing_endpoints_are_excluded (test_preparation.DrawnPageIntervalTest.test_impossible_or_mislabeled_drawing_endpoints_are_excluded) (engine='webview', changes={'drawn_scope': 'flutter_raster_finish_of_first_frame_with_page'}) ... FAIL
+  test_impossible_or_mislabeled_drawing_endpoints_are_excluded (test_preparation.DrawnPageIntervalTest.test_impossible_or_mislabeled_drawing_endpoints_are_excluded) (engine='koreader', changes={'drawn_ns': 1600000}) ... FAIL
+  test_impossible_or_mislabeled_drawing_endpoints_are_excluded (test_preparation.DrawnPageIntervalTest.test_impossible_or_mislabeled_drawing_endpoints_are_excluded) (engine='koreader', changes={'drawn_ns': None}) ... FAIL
+test_samples_without_a_drawn_endpoint_stay_out_of_the_drawn_interval_only (test_preparation.DrawnPageIntervalTest.test_samples_without_a_drawn_endpoint_stay_out_of_the_drawn_interval_only) ... ERROR
+test_delaying_the_window_copy_does_not_move_any_engine_interval (test_preparation.PreparedPageIntervalTest.test_delaying_the_window_copy_does_not_move_any_engine_interval) ... ok
+test_engine_clocks_convert_raw_events_without_using_bridge_receipt_time (test_preparation.PreparedPageIntervalTest.test_engine_clocks_convert_raw_events_without_using_bridge_receipt_time) ... ok
+test_every_engine_is_timed_from_its_own_entry_to_its_prepared_page (test_preparation.PreparedPageIntervalTest.test_every_engine_is_timed_from_its_own_entry_to_its_prepared_page) ... ok
+test_koreader_also_reports_its_layout_before_cpu_drawing (test_preparation.PreparedPageIntervalTest.test_koreader_also_reports_its_layout_before_cpu_drawing) ... ok
+test_mean_weights_each_book_once_even_when_sample_counts_differ (test_preparation.PreparedPageIntervalTest.test_mean_weights_each_book_once_even_when_sample_counts_differ) ... ok
+test_missing_reversed_or_out_of_order_endpoints_are_excluded (test_preparation.PreparedPageIntervalTest.test_missing_reversed_or_out_of_order_endpoints_are_excluded) ... ok
+test_only_koreader_has_a_before_draw_interval (test_preparation.PreparedPageIntervalTest.test_only_koreader_has_a_before_draw_interval) ... ok
+test_shell_dispatch_delay_before_engine_entry_is_not_engine_time (test_preparation.PreparedPageIntervalTest.test_shell_dispatch_delay_before_engine_entry_is_not_engine_time) ... ok
+test_stale_readiness_never_becomes_an_accepted_sample (test_preparation.PreparedPageIntervalTest.test_stale_readiness_never_becomes_an_accepted_sample) ... ok
+test_summary_does_not_rewrite_retained_raw_phase_timestamps (test_preparation.PreparedPageIntervalTest.test_summary_does_not_rewrite_retained_raw_phase_timestamps) ... ok
+test_unavailable_preparation_is_not_filled_from_legacy_engine_ready (test_preparation.PreparedPageIntervalTest.test_unavailable_preparation_is_not_filled_from_legacy_engine_ready) ... ok
+test_webview_clock_must_state_its_observed_timer_resolution (test_preparation.PreparedPageIntervalTest.test_webview_clock_must_state_its_observed_timer_resolution) ... ok
+test_webview_samples_that_decoded_a_whole_section_are_not_page_samples (test_preparation.PreparedPageIntervalTest.test_webview_samples_that_decoded_a_whole_section_are_not_page_samples) ... ok
+test_wrong_conversion_and_missing_source_timestamps_are_excluded (test_preparation.PreparedPageIntervalTest.test_wrong_conversion_and_missing_source_timestamps_are_excluded) ... ok
+test_wrong_pixels_text_and_destination_exclude_every_interval_after_certification (test_preparation.PreparedPageIntervalTest.test_wrong_pixels_text_and_destination_exclude_every_interval_after_certification) ... 
+  test_wrong_pixels_text_and_destination_exclude_every_interval_after_certification (test_preparation.PreparedPageIntervalTest.test_wrong_pixels_text_and_destination_exclude_every_interval_after_certification) (engine='bookfin', changes={'capture_sha256': 'dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd'}) ... FAIL
+  test_wrong_pixels_text_and_destination_exclude_every_interval_after_certification (test_preparation.PreparedPageIntervalTest.test_wrong_pixels_text_and_destination_exclude_every_interval_after_certification) (engine='bookfin', changes={'visible_text': 'wrong chapter'}) ... FAIL
+  test_wrong_pixels_text_and_destination_exclude_every_interval_after_certification (test_preparation.PreparedPageIntervalTest.test_wrong_pixels_text_and_destination_exclude_every_interval_after_certification) (engine='bookfin', changes={'location': 'epubcfi(/6/2!/4)'}) ... FAIL
+  test_wrong_pixels_text_and_destination_exclude_every_interval_after_certification (test_preparation.PreparedPageIntervalTest.test_wrong_pixels_text_and_destination_exclude_every_interval_after_certification) (engine='webview', changes={'capture_sha256': 'dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd'}) ... FAIL
+  test_wrong_pixels_text_and_destination_exclude_every_interval_after_certification (test_preparation.PreparedPageIntervalTest.test_wrong_pixels_text_and_destination_exclude_every_interval_after_certification) (engine='webview', changes={'visible_text': 'wrong chapter'}) ... FAIL
+  test_wrong_pixels_text_and_destination_exclude_every_interval_after_certification (test_preparation.PreparedPageIntervalTest.test_wrong_pixels_text_and_destination_exclude_every_interval_after_certification) (engine='webview', changes={'location': 'epubcfi(/6/2!/4)'}) ... FAIL
+  test_wrong_pixels_text_and_destination_exclude_every_interval_after_certification (test_preparation.PreparedPageIntervalTest.test_wrong_pixels_text_and_destination_exclude_every_interval_after_certification) (engine='koreader', changes={'capture_sha256': 'dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd'}) ... FAIL
+  test_wrong_pixels_text_and_destination_exclude_every_interval_after_certification (test_preparation.PreparedPageIntervalTest.test_wrong_pixels_text_and_destination_exclude_every_interval_after_certification) (engine='koreader', changes={'visible_text': 'wrong chapter'}) ... FAIL
+  test_wrong_pixels_text_and_destination_exclude_every_interval_after_certification (test_preparation.PreparedPageIntervalTest.test_wrong_pixels_text_and_destination_exclude_every_interval_after_certification) (engine='koreader', changes={'location': 'epubcfi(/6/2!/4)'}) ... FAIL
+
+======================================================================
+ERROR: test_a_flutter_frame_rasterized_before_the_shell_saw_preparation_still_counts (test_preparation.DrawnPageIntervalTest.test_a_flutter_frame_rasterized_before_the_shell_saw_preparation_still_counts)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_preparation.py", line 196, in test_a_flutter_frame_rasterized_before_the_shell_saw_preparation_still_counts
+    self.assertAlmostEqual(cells([row], "drawn_page")[0]["mean_ms"], .3)
+                           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^
+IndexError: list index out of range
+
+======================================================================
+ERROR: test_samples_without_a_drawn_endpoint_stay_out_of_the_drawn_interval_only (test_preparation.DrawnPageIntervalTest.test_samples_without_a_drawn_endpoint_stay_out_of_the_drawn_interval_only)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_preparation.py", line 203, in test_samples_without_a_drawn_endpoint_stay_out_of_the_drawn_interval_only
+    self.assertEqual(len(interval([row], "drawn_page")["excluded"]), 1)
+                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+KeyError: 'excluded'
+
+======================================================================
+FAIL: test_every_engine_is_timed_from_its_own_entry_through_its_real_drawing (test_preparation.DrawnPageIntervalTest.test_every_engine_is_timed_from_its_own_entry_through_its_real_drawing) (engine='bookfin')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_preparation.py", line 190, in test_every_engine_is_timed_from_its_own_entry_through_its_real_drawing
+    self.assertEqual(len(found), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_every_engine_is_timed_from_its_own_entry_through_its_real_drawing (test_preparation.DrawnPageIntervalTest.test_every_engine_is_timed_from_its_own_entry_through_its_real_drawing) (engine='webview')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_preparation.py", line 190, in test_every_engine_is_timed_from_its_own_entry_through_its_real_drawing
+    self.assertEqual(len(found), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_every_engine_is_timed_from_its_own_entry_through_its_real_drawing (test_preparation.DrawnPageIntervalTest.test_every_engine_is_timed_from_its_own_entry_through_its_real_drawing) (engine='koreader')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_preparation.py", line 190, in test_every_engine_is_timed_from_its_own_entry_through_its_real_drawing
+    self.assertEqual(len(found), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_impossible_or_mislabeled_drawing_endpoints_are_excluded (test_preparation.DrawnPageIntervalTest.test_impossible_or_mislabeled_drawing_endpoints_are_excluded) (engine='bookfin', changes={'drawn_ns': 1100000})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_preparation.py", line 218, in test_impossible_or_mislabeled_drawing_endpoints_are_excluded
+    self.assertEqual(len(result.get("excluded", [])), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_impossible_or_mislabeled_drawing_endpoints_are_excluded (test_preparation.DrawnPageIntervalTest.test_impossible_or_mislabeled_drawing_endpoints_are_excluded) (engine='bookfin', changes={'drawn_ns': 11000000})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_preparation.py", line 218, in test_impossible_or_mislabeled_drawing_endpoints_are_excluded
+    self.assertEqual(len(result.get("excluded", [])), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_impossible_or_mislabeled_drawing_endpoints_are_excluded (test_preparation.DrawnPageIntervalTest.test_impossible_or_mislabeled_drawing_endpoints_are_excluded) (engine='bookfin', changes={'drawn_source_us': 3001})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_preparation.py", line 218, in test_impossible_or_mislabeled_drawing_endpoints_are_excluded
+    self.assertEqual(len(result.get("excluded", [])), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_impossible_or_mislabeled_drawing_endpoints_are_excluded (test_preparation.DrawnPageIntervalTest.test_impossible_or_mislabeled_drawing_endpoints_are_excluded) (engine='bookfin', changes={'drawn_source_us': None})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_preparation.py", line 218, in test_impossible_or_mislabeled_drawing_endpoints_are_excluded
+    self.assertEqual(len(result.get("excluded", [])), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_impossible_or_mislabeled_drawing_endpoints_are_excluded (test_preparation.DrawnPageIntervalTest.test_impossible_or_mislabeled_drawing_endpoints_are_excluded) (engine='webview', changes={'drawn_ns': 1550000})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_preparation.py", line 218, in test_impossible_or_mislabeled_drawing_endpoints_are_excluded
+    self.assertEqual(len(result.get("excluded", [])), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_impossible_or_mislabeled_drawing_endpoints_are_excluded (test_preparation.DrawnPageIntervalTest.test_impossible_or_mislabeled_drawing_endpoints_are_excluded) (engine='webview', changes={'drawn_scope': 'flutter_raster_finish_of_first_frame_with_page'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_preparation.py", line 218, in test_impossible_or_mislabeled_drawing_endpoints_are_excluded
+    self.assertEqual(len(result.get("excluded", [])), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_impossible_or_mislabeled_drawing_endpoints_are_excluded (test_preparation.DrawnPageIntervalTest.test_impossible_or_mislabeled_drawing_endpoints_are_excluded) (engine='koreader', changes={'drawn_ns': 1600000})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_preparation.py", line 218, in test_impossible_or_mislabeled_drawing_endpoints_are_excluded
+    self.assertEqual(len(result.get("excluded", [])), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_impossible_or_mislabeled_drawing_endpoints_are_excluded (test_preparation.DrawnPageIntervalTest.test_impossible_or_mislabeled_drawing_endpoints_are_excluded) (engine='koreader', changes={'drawn_ns': None})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_preparation.py", line 218, in test_impossible_or_mislabeled_drawing_endpoints_are_excluded
+    self.assertEqual(len(result.get("excluded", [])), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_wrong_pixels_text_and_destination_exclude_every_interval_after_certification (test_preparation.PreparedPageIntervalTest.test_wrong_pixels_text_and_destination_exclude_every_interval_after_certification) (engine='bookfin', changes={'capture_sha256': 'dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_preparation.py", line 130, in test_wrong_pixels_text_and_destination_exclude_every_interval_after_certification
+    self.assertEqual(sum(cell["count"] for cell in result.get("cells", [])), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_wrong_pixels_text_and_destination_exclude_every_interval_after_certification (test_preparation.PreparedPageIntervalTest.test_wrong_pixels_text_and_destination_exclude_every_interval_after_certification) (engine='bookfin', changes={'visible_text': 'wrong chapter'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_preparation.py", line 130, in test_wrong_pixels_text_and_destination_exclude_every_interval_after_certification
+    self.assertEqual(sum(cell["count"] for cell in result.get("cells", [])), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_wrong_pixels_text_and_destination_exclude_every_interval_after_certification (test_preparation.PreparedPageIntervalTest.test_wrong_pixels_text_and_destination_exclude_every_interval_after_certification) (engine='bookfin', changes={'location': 'epubcfi(/6/2!/4)'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_preparation.py", line 130, in test_wrong_pixels_text_and_destination_exclude_every_interval_after_certification
+    self.assertEqual(sum(cell["count"] for cell in result.get("cells", [])), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_wrong_pixels_text_and_destination_exclude_every_interval_after_certification (test_preparation.PreparedPageIntervalTest.test_wrong_pixels_text_and_destination_exclude_every_interval_after_certification) (engine='webview', changes={'capture_sha256': 'dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_preparation.py", line 130, in test_wrong_pixels_text_and_destination_exclude_every_interval_after_certification
+    self.assertEqual(sum(cell["count"] for cell in result.get("cells", [])), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_wrong_pixels_text_and_destination_exclude_every_interval_after_certification (test_preparation.PreparedPageIntervalTest.test_wrong_pixels_text_and_destination_exclude_every_interval_after_certification) (engine='webview', changes={'visible_text': 'wrong chapter'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_preparation.py", line 130, in test_wrong_pixels_text_and_destination_exclude_every_interval_after_certification
+    self.assertEqual(sum(cell["count"] for cell in result.get("cells", [])), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_wrong_pixels_text_and_destination_exclude_every_interval_after_certification (test_preparation.PreparedPageIntervalTest.test_wrong_pixels_text_and_destination_exclude_every_interval_after_certification) (engine='webview', changes={'location': 'epubcfi(/6/2!/4)'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_preparation.py", line 130, in test_wrong_pixels_text_and_destination_exclude_every_interval_after_certification
+    self.assertEqual(sum(cell["count"] for cell in result.get("cells", [])), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_wrong_pixels_text_and_destination_exclude_every_interval_after_certification (test_preparation.PreparedPageIntervalTest.test_wrong_pixels_text_and_destination_exclude_every_interval_after_certification) (engine='koreader', changes={'capture_sha256': 'dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_preparation.py", line 130, in test_wrong_pixels_text_and_destination_exclude_every_interval_after_certification
+    self.assertEqual(sum(cell["count"] for cell in result.get("cells", [])), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_wrong_pixels_text_and_destination_exclude_every_interval_after_certification (test_preparation.PreparedPageIntervalTest.test_wrong_pixels_text_and_destination_exclude_every_interval_after_certification) (engine='koreader', changes={'visible_text': 'wrong chapter'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_preparation.py", line 130, in test_wrong_pixels_text_and_destination_exclude_every_interval_after_certification
+    self.assertEqual(sum(cell["count"] for cell in result.get("cells", [])), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_wrong_pixels_text_and_destination_exclude_every_interval_after_certification (test_preparation.PreparedPageIntervalTest.test_wrong_pixels_text_and_destination_exclude_every_interval_after_certification) (engine='koreader', changes={'location': 'epubcfi(/6/2!/4)'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_preparation.py", line 130, in test_wrong_pixels_text_and_destination_exclude_every_interval_after_certification
+    self.assertEqual(sum(cell["count"] for cell in result.get("cells", [])), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+----------------------------------------------------------------------
+Ran 19 tests in 0.009s
+
+FAILED (failures=20, errors=2)

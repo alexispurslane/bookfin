@@ -1,0 +1,9 @@
+1/9 calibration-sym-sw-calibration-prose-bookfin
+2/9 calibration-sym-sw-calibration-prose-webview
+3/9 calibration-sym-sw-calibration-prose-koreader
+4/9 calibration-sym-sw-calibration-long-webview
+5/9 calibration-sym-sw-calibration-long-koreader
+6/9 calibration-sym-sw-calibration-long-bookfin
+7/9 calibration-sym-sw-calibration-illustrated-koreader
+8/9 calibration-sym-sw-calibration-illustrated-bookfin
+9/9 calibration-sym-sw-calibration-illustrated-webview

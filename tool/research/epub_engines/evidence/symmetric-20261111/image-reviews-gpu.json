@@ -1,0 +1,170 @@
+{
+  "koreader/illustrated/target18": {
+    "capture_sha256": "29dc1b92ee0c09131bc167fcc2f30f1f799d0a0e26c0ca95bfa4225f1f28d6dd",
+    "png_path": "tool/research/epub_engines/evidence/calibration-reviewed/calibration-dpi-calibration-illustrated-koreader/0.png",
+    "observed": "Chapter I, Down the Rabbit-Hole, and the opening Alice paragraph are visible. No illustration is on this page.",
+    "reviewed_utc": "2026-11-11T02:27:22.459694+00:00",
+    "method": "Implementation lead inspected the actual PixelCopy PNG and/or its seven-case contact sheet through functions.view_image.",
+    "layout_limit": "KOReader uses a smaller, white-backed illustration. WebView uses a larger white-backed illustration. Bookfin uses a larger illustration on cream. These are not pixel-identical layouts."
+  },
+  "koreader/illustrated/turn3": {
+    "capture_sha256": "aa5e265a1ebcf1f87a5c4a5b1acff2ff4349de87f24ddb5c9cfd0d84e766f392",
+    "png_path": "tool/research/epub_engines/evidence/calibration-reviewed/calibration-dpi-calibration-illustrated-koreader/10.png",
+    "observed": "The following page continues Alice falling down the well. No illustration is on this page.",
+    "reviewed_utc": "2026-11-11T02:27:22.459890+00:00",
+    "method": "Implementation lead inspected the actual PixelCopy PNG and/or its seven-case contact sheet through functions.view_image.",
+    "layout_limit": "KOReader uses a smaller, white-backed illustration. WebView uses a larger white-backed illustration. Bookfin uses a larger illustration on cream. These are not pixel-identical layouts."
+  },
+  "koreader/illustrated/before_crossing18": {
+    "capture_sha256": "c0c49cd40d8feae5bfdec99f6af0bc8b9efac45d71f40cfc9251c11448d0e1c9",
+    "png_path": "tool/research/epub_engines/evidence/calibration-reviewed/calibration-dpi-calibration-illustrated-koreader/11.png",
+    "observed": "The final chapter-I page contains the cake passage ending finished off the cake. No illustration is on this page.",
+    "reviewed_utc": "2026-11-11T02:27:22.459894+00:00",
+    "method": "Implementation lead inspected the actual PixelCopy PNG and/or its seven-case contact sheet through functions.view_image.",
+    "layout_limit": "KOReader uses a smaller, white-backed illustration. WebView uses a larger white-backed illustration. Bookfin uses a larger illustration on cream. These are not pixel-identical layouts."
+  },
+  "koreader/illustrated/after_crossing18": {
+    "capture_sha256": "d1d70fde999bad6153a1f4a6a27341afe9ce2bf5e7bd38e8f5bda983d55c5ac0",
+    "png_path": "tool/research/epub_engines/evidence/calibration-reviewed/calibration-dpi-calibration-illustrated-koreader/12.png",
+    "observed": "Chapter II, The Pool of Tears, is visible. Bookfin and WebView show its title-only first page. KOReader also fits the source illustration of tall Alice on this first page.",
+    "reviewed_utc": "2026-11-11T02:27:22.459895+00:00",
+    "method": "Implementation lead inspected the actual PixelCopy PNG and/or its seven-case contact sheet through functions.view_image.",
+    "layout_limit": "KOReader uses a smaller, white-backed illustration. WebView uses a larger white-backed illustration. Bookfin uses a larger illustration on cream. These are not pixel-identical layouts."
+  },
+  "koreader/illustrated/target20": {
+    "capture_sha256": "77da460752da6d4c7eae8e1faf964bf23cd9f9a10a72305bcb48f01753466fe4",
+    "png_path": "tool/research/epub_engines/evidence/calibration-reviewed/calibration-dpi-calibration-illustrated-koreader/18.png",
+    "observed": "Chapter I and its opening Alice paragraph remain visible at the larger body size. No illustration is on this page.",
+    "reviewed_utc": "2026-11-11T02:27:22.459897+00:00",
+    "method": "Implementation lead inspected the actual PixelCopy PNG and/or its seven-case contact sheet through functions.view_image.",
+    "layout_limit": "KOReader uses a smaller, white-backed illustration. WebView uses a larger white-backed illustration. Bookfin uses a larger illustration on cream. These are not pixel-identical layouts."
+  },
+  "koreader/illustrated/turn1": {
+    "capture_sha256": "6c1b549b2456962436d50c412b7b00723e6a164bdb6aa30b691f75a6433c13f1",
+    "png_path": "tool/research/epub_engines/evidence/calibration-reviewed/calibration-dpi-calibration-illustrated-koreader/8.png",
+    "observed": "The next page continues the White Rabbit and pocket-watch passage. No illustration is on this page.",
+    "reviewed_utc": "2026-11-11T02:27:22.459899+00:00",
+    "method": "Implementation lead inspected the actual PixelCopy PNG and/or its seven-case contact sheet through functions.view_image.",
+    "layout_limit": "KOReader uses a smaller, white-backed illustration. WebView uses a larger white-backed illustration. Bookfin uses a larger illustration on cream. These are not pixel-identical layouts."
+  },
+  "koreader/illustrated/turn2": {
+    "capture_sha256": "c7d82aabc49fc67c9e5c86957296ee3f412f7f5996088015836127a45c09d375",
+    "png_path": "tool/research/epub_engines/evidence/calibration-reviewed/calibration-dpi-calibration-illustrated-koreader/9.png",
+    "observed": "The expected White Rabbit in a waistcoat consults a pocket-watch. The surrounding rabbit-hole passage is visible.",
+    "reviewed_utc": "2026-11-11T02:27:22.459900+00:00",
+    "method": "Implementation lead inspected the actual PixelCopy PNG and/or its seven-case contact sheet through functions.view_image.",
+    "layout_limit": "KOReader uses a smaller, white-backed illustration. WebView uses a larger white-backed illustration. Bookfin uses a larger illustration on cream. These are not pixel-identical layouts."
+  },
+  "bookfin/illustrated/target18": {
+    "capture_sha256": "0bf3cf48a2525343a2946411b4494c48b51c3b863f1631a80b1dc6b846c26daf",
+    "png_path": "tool/research/epub_engines/evidence/calibration-reviewed/calibration-final-calibration-illustrated-bookfin/0.png",
+    "observed": "Chapter I, Down the Rabbit-Hole, and the opening Alice paragraph are visible. No illustration is on this page.",
+    "reviewed_utc": "2026-11-11T02:27:22.459903+00:00",
+    "method": "Implementation lead inspected the actual PixelCopy PNG and/or its seven-case contact sheet through functions.view_image.",
+    "layout_limit": "KOReader uses a smaller, white-backed illustration. WebView uses a larger white-backed illustration. Bookfin uses a larger illustration on cream. These are not pixel-identical layouts."
+  },
+  "bookfin/illustrated/turn3": {
+    "capture_sha256": "32e75b88cdb79d923522c872bce35591f740902cccb49d9def21d16df76e4350",
+    "png_path": "tool/research/epub_engines/evidence/calibration-reviewed/calibration-final-calibration-illustrated-bookfin/10.png",
+    "observed": "The following page continues Alice falling down the well. No illustration is on this page.",
+    "reviewed_utc": "2026-11-11T02:27:22.459904+00:00",
+    "method": "Implementation lead inspected the actual PixelCopy PNG and/or its seven-case contact sheet through functions.view_image.",
+    "layout_limit": "KOReader uses a smaller, white-backed illustration. WebView uses a larger white-backed illustration. Bookfin uses a larger illustration on cream. These are not pixel-identical layouts."
+  },
+  "bookfin/illustrated/before_crossing18": {
+    "capture_sha256": "5e2a30b83e5b2601291955d280fa9b5154095b9ee2013d5441b3cce9776328bb",
+    "png_path": "tool/research/epub_engines/evidence/calibration-reviewed/calibration-final-calibration-illustrated-bookfin/11.png",
+    "observed": "The final chapter-I page contains the cake passage ending finished off the cake. No illustration is on this page.",
+    "reviewed_utc": "2026-11-11T02:27:22.459906+00:00",
+    "method": "Implementation lead inspected the actual PixelCopy PNG and/or its seven-case contact sheet through functions.view_image.",
+    "layout_limit": "KOReader uses a smaller, white-backed illustration. WebView uses a larger white-backed illustration. Bookfin uses a larger illustration on cream. These are not pixel-identical layouts."
+  },
+  "bookfin/illustrated/after_crossing18": {
+    "capture_sha256": "a798a245febf70f2aec4855ed81981ee064d895df6891845d97365543619f900",
+    "png_path": "tool/research/epub_engines/evidence/calibration-reviewed/calibration-final-calibration-illustrated-bookfin/12.png",
+    "observed": "Chapter II, The Pool of Tears, is visible. Bookfin and WebView show its title-only first page. KOReader also fits the source illustration of tall Alice on this first page.",
+    "reviewed_utc": "2026-11-11T02:27:22.459908+00:00",
+    "method": "Implementation lead inspected the actual PixelCopy PNG and/or its seven-case contact sheet through functions.view_image.",
+    "layout_limit": "KOReader uses a smaller, white-backed illustration. WebView uses a larger white-backed illustration. Bookfin uses a larger illustration on cream. These are not pixel-identical layouts."
+  },
+  "bookfin/illustrated/target20": {
+    "capture_sha256": "c5efd6c3fe502a2c617c81646af80a4401dc44ad6e22ddab2bcc26e0a6554a6b",
+    "png_path": "tool/research/epub_engines/evidence/calibration-reviewed/calibration-final-calibration-illustrated-bookfin/18.png",
+    "observed": "Chapter I and its opening Alice paragraph remain visible at the larger body size. No illustration is on this page.",
+    "reviewed_utc": "2026-11-11T02:27:22.459909+00:00",
+    "method": "Implementation lead inspected the actual PixelCopy PNG and/or its seven-case contact sheet through functions.view_image.",
+    "layout_limit": "KOReader uses a smaller, white-backed illustration. WebView uses a larger white-backed illustration. Bookfin uses a larger illustration on cream. These are not pixel-identical layouts."
+  },
+  "bookfin/illustrated/turn1": {
+    "capture_sha256": "36321f10d788761ff4c7fe96c7c9b91fb4eb55330f2b8c9ffaa01a1fb7268820",
+    "png_path": "tool/research/epub_engines/evidence/calibration-reviewed/calibration-final-calibration-illustrated-bookfin/8.png",
+    "observed": "The next page continues the White Rabbit and pocket-watch passage. No illustration is on this page.",
+    "reviewed_utc": "2026-11-11T02:27:22.459911+00:00",
+    "method": "Implementation lead inspected the actual PixelCopy PNG and/or its seven-case contact sheet through functions.view_image.",
+    "layout_limit": "KOReader uses a smaller, white-backed illustration. WebView uses a larger white-backed illustration. Bookfin uses a larger illustration on cream. These are not pixel-identical layouts."
+  },
+  "bookfin/illustrated/turn2": {
+    "capture_sha256": "b8eee9bcb965de2b4d9e3303c612b1dc16def1a96c66fc5394376a56bcec7c05",
+    "png_path": "tool/research/epub_engines/evidence/symmetric-20261111/calibration-gpu/calibration-sym-gpu-calibration-illustrated-bookfin/9.png",
+    "observed": "The expected White Rabbit in a waistcoat consults a pocket-watch, on cream. The surrounding rabbit-hole passage is visible. Compared side by side with the frozen SwiftShader reference, the text and layout are the same; only the illustration's sampled pixels differ.",
+    "reviewed_utc": "2026-11-11T15:18:43.702268+00:00",
+    "method": "Implementation lead viewed the host-GPU PixelCopy PNG beside the frozen reference PNG and an ImageMagick difference image.",
+    "layout_limit": "KOReader uses a smaller, white-backed illustration. WebView uses a larger white-backed illustration. Bookfin uses a larger illustration on cream. These are not pixel-identical layouts."
+  },
+  "webview/illustrated/target18": {
+    "capture_sha256": "1eb672e0b8e47d33ecfca20a2a56644002fa10d18b791c00223bfa019154d42d",
+    "png_path": "tool/research/epub_engines/evidence/calibration-reviewed/calibration-final-calibration-illustrated-webview/0.png",
+    "observed": "Chapter I, Down the Rabbit-Hole, and the opening Alice paragraph are visible. No illustration is on this page.",
+    "reviewed_utc": "2026-11-11T02:27:22.459914+00:00",
+    "method": "Implementation lead inspected the actual PixelCopy PNG and/or its seven-case contact sheet through functions.view_image.",
+    "layout_limit": "KOReader uses a smaller, white-backed illustration. WebView uses a larger white-backed illustration. Bookfin uses a larger illustration on cream. These are not pixel-identical layouts."
+  },
+  "webview/illustrated/turn3": {
+    "capture_sha256": "26ad4ddf7f576d1673c25574c949c7badfa4a2c6ff7970d2e118802e8288b76b",
+    "png_path": "tool/research/epub_engines/evidence/calibration-reviewed/calibration-final-calibration-illustrated-webview/10.png",
+    "observed": "The following page continues Alice falling down the well. No illustration is on this page.",
+    "reviewed_utc": "2026-11-11T02:27:22.459915+00:00",
+    "method": "Implementation lead inspected the actual PixelCopy PNG and/or its seven-case contact sheet through functions.view_image.",
+    "layout_limit": "KOReader uses a smaller, white-backed illustration. WebView uses a larger white-backed illustration. Bookfin uses a larger illustration on cream. These are not pixel-identical layouts."
+  },
+  "webview/illustrated/before_crossing18": {
+    "capture_sha256": "d424cd11a3fa53891bf78720fa3d8cdff5d70544957da9dba4648e98c7ab63a4",
+    "png_path": "tool/research/epub_engines/evidence/calibration-reviewed/calibration-final-calibration-illustrated-webview/11.png",
+    "observed": "The final chapter-I page contains the cake passage ending finished off the cake. No illustration is on this page.",
+    "reviewed_utc": "2026-11-11T02:27:22.459917+00:00",
+    "method": "Implementation lead inspected the actual PixelCopy PNG and/or its seven-case contact sheet through functions.view_image.",
+    "layout_limit": "KOReader uses a smaller, white-backed illustration. WebView uses a larger white-backed illustration. Bookfin uses a larger illustration on cream. These are not pixel-identical layouts."
+  },
+  "webview/illustrated/after_crossing18": {
+    "capture_sha256": "592321e43c2f3c58f16369f94d08432883eb5e8fe3780de30cf36c1bcc877985",
+    "png_path": "tool/research/epub_engines/evidence/calibration-reviewed/calibration-final-calibration-illustrated-webview/12.png",
+    "observed": "Chapter II, The Pool of Tears, is visible. Bookfin and WebView show its title-only first page. KOReader also fits the source illustration of tall Alice on this first page.",
+    "reviewed_utc": "2026-11-11T02:27:22.459918+00:00",
+    "method": "Implementation lead inspected the actual PixelCopy PNG and/or its seven-case contact sheet through functions.view_image.",
+    "layout_limit": "KOReader uses a smaller, white-backed illustration. WebView uses a larger white-backed illustration. Bookfin uses a larger illustration on cream. These are not pixel-identical layouts."
+  },
+  "webview/illustrated/target20": {
+    "capture_sha256": "c32a14cde29f702922a9047a7607c6a96e915efb142478042f0eae1bcf46d062",
+    "png_path": "tool/research/epub_engines/evidence/calibration-reviewed/calibration-final-calibration-illustrated-webview/18.png",
+    "observed": "Chapter I and its opening Alice paragraph remain visible at the larger body size. No illustration is on this page.",
+    "reviewed_utc": "2026-11-11T02:27:22.459920+00:00",
+    "method": "Implementation lead inspected the actual PixelCopy PNG and/or its seven-case contact sheet through functions.view_image.",
+    "layout_limit": "KOReader uses a smaller, white-backed illustration. WebView uses a larger white-backed illustration. Bookfin uses a larger illustration on cream. These are not pixel-identical layouts."
+  },
+  "webview/illustrated/turn1": {
+    "capture_sha256": "ddc0015c42591ac429b746a36f34fc57a27c2e61855bf635daf765920c725c87",
+    "png_path": "tool/research/epub_engines/evidence/calibration-reviewed/calibration-final-calibration-illustrated-webview/8.png",
+    "observed": "The next page continues the White Rabbit and pocket-watch passage. No illustration is on this page.",
+    "reviewed_utc": "2026-11-11T02:27:22.459921+00:00",
+    "method": "Implementation lead inspected the actual PixelCopy PNG and/or its seven-case contact sheet through functions.view_image.",
+    "layout_limit": "KOReader uses a smaller, white-backed illustration. WebView uses a larger white-backed illustration. Bookfin uses a larger illustration on cream. These are not pixel-identical layouts."
+  },
+  "webview/illustrated/turn2": {
+    "capture_sha256": "486b0c90a5eae5243c300d413f1d7383094955d3462905483534d7d29df74c15",
+    "png_path": "tool/research/epub_engines/evidence/symmetric-20261111/calibration-gpu/calibration-sym-gpu-calibration-illustrated-webview/9.png",
+    "observed": "The expected White Rabbit in a waistcoat consults a pocket-watch, on a white background. The surrounding rabbit-hole passage is visible. Compared side by side with the frozen SwiftShader reference, the text and layout are the same; only the illustration's sampled pixels differ.",
+    "reviewed_utc": "2026-11-11T15:18:43.702268+00:00",
+    "method": "Implementation lead viewed the host-GPU PixelCopy PNG beside the frozen reference PNG and an ImageMagick difference image.",
+    "layout_limit": "KOReader uses a smaller, white-backed illustration. WebView uses a larger white-backed illustration. Bookfin uses a larger illustration on cream. These are not pixel-identical layouts."
+  }
+}

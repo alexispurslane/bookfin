@@ -1,0 +1,21 @@
+test_drawing_facts_describe_the_wait_after_preparation_and_flutter_raster (test_collect.PartialEvidenceTest.test_drawing_facts_describe_the_wait_after_preparation_and_flutter_raster) ... ERROR
+test_engine_phase_facts_come_only_from_certified_samples (test_collect.PartialEvidenceTest.test_engine_phase_facts_come_only_from_certified_samples) ... ok
+test_failed_partial_workloads_remain_collectable_without_inventing_preparation_facts (test_collect.PartialEvidenceTest.test_failed_partial_workloads_remain_collectable_without_inventing_preparation_facts) ... ok
+test_first_process_latency_uses_each_verified_completion_not_summed_medians (test_collect.PartialEvidenceTest.test_first_process_latency_uses_each_verified_completion_not_summed_medians) ... ok
+
+======================================================================
+ERROR: test_drawing_facts_describe_the_wait_after_preparation_and_flutter_raster (test_collect.PartialEvidenceTest.test_drawing_facts_describe_the_wait_after_preparation_and_flutter_raster)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_collect.py", line 147, in test_drawing_facts_describe_the_wait_after_preparation_and_flutter_raster
+    self.assertAlmostEqual(fact.get("drawn_after_preparation_median_ms"), 20)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/nix/store/0kcws5blwbdyxqxjd1w8hjipz61xny3k-python3-3.14.7/lib/python3.14/unittest/case.py", line 956, in assertAlmostEqual
+    diff = abs(first - second)
+               ~~~~~~^~~~~~~~
+TypeError: unsupported operand type(s) for -: 'NoneType' and 'int'
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.251s
+
+FAILED (errors=1)

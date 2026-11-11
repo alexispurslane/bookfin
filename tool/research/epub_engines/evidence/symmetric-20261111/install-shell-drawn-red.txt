@@ -1,0 +1,11 @@
+path "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines" does not contain a 'flake.nix', searching up
+device
+bookfin-bench-gpu
+native/app/build/outputs/apk/webview/release/app-webview-release.apk
+c7c6a63f6bc4356fff16b5ab21a244ff293ec2266c9beaa65d2f6f18d0567fff  native/app/build/outputs/apk/webview/release/app-webview-release.apk
+Performing Streamed Install
+Success
+native/app/build/outputs/apk/androidTest/webview/release/app-webview-release-androidTest.apk
+44300d42acf83e8f4437c3b09d8ba555bf47c69638d67b67c7b3a257fa1dd6c5  native/app/build/outputs/apk/androidTest/webview/release/app-webview-release-androidTest.apk
+Performing Streamed Install
+Success

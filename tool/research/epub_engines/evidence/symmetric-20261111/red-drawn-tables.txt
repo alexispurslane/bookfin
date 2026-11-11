@@ -1,0 +1,20 @@
+test_book_table_reports_median_p90_and_count_and_marks_missing_cells (test_tables.TablesTest.test_book_table_reports_median_p90_and_count_and_marks_missing_cells) ... ok
+test_headline_tables_use_each_engine_drawn_page (test_tables.TablesTest.test_headline_tables_use_each_engine_drawn_page) ... FAIL
+test_mean_table_rounds_only_the_final_equal_book_mean (test_tables.TablesTest.test_mean_table_rounds_only_the_final_equal_book_mean) ... ok
+
+======================================================================
+FAIL: test_headline_tables_use_each_engine_drawn_page (test_tables.TablesTest.test_headline_tables_use_each_engine_drawn_page)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_tables.py", line 39, in test_headline_tables_use_each_engine_drawn_page
+    self.assertEqual(means[0], "| Action | Bookfin | WebView | KOReader |")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: '| Action |  |' != '| Action | Bookfin | WebView | KOReader |'
+- | Action |  |
++ | Action | Bookfin | WebView | KOReader |
+
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.001s
+
+FAILED (failures=1)

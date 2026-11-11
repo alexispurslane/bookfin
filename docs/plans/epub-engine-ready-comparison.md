@@ -80,3 +80,20 @@ remaining asymmetry in the report. Note that KOReader rasterizes on the CPU
 on a phone too, so its drawing is not emulator-skewed in the same way as
 Flutter or WebView GPU rasterization. Decide this classification with
 evidence and report it to the parent before publishing claims.
+
+## Decision: time every engine through its drawing (user, 2026-11-11)
+
+The lead reported the classification. KOReader draws on the CPU on a
+phone too, and pinned crengine decodes images inside that drawing. The
+user then chose this headline: every engine's interval runs through its
+real drawing. Bookfin and WebView draw on a real GPU, so the headline run
+uses an emulator with host GPU acceleration, not SwiftShader. KOReader's
+interval runs through `drawCurrentPage`.
+
+The Flutter endpoint is the raster finish of the first frame that shows
+the requested page. The WebView endpoint is the visual-state callback that
+Android delivers after preparation. Capture, PixelCopy and display
+scheduling after rasterization stay outside every interval. Content checks
+still run after timing. The SwiftShader pre-raster numbers stay as a
+secondary, labeled diagnostic. Reports state that a host-GPU emulator is
+not a phone GPU.

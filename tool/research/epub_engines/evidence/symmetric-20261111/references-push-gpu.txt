@@ -1,0 +1,6 @@
+tool/research/epub_engines/evidence/symmetric-20261111/references-gpu.json: 1 file pushed, 0 skipped. 482.9 MB/s (298179 bytes in 0.001s)
+40f0acc7eb0752496ec659fdee458fe999063950aafa5794e5c1892a80946168  /sdcard/Android/data/dev.bookfin.bench.bookfin_epub_shell/files/references.json
+tool/research/epub_engines/evidence/symmetric-20261111/references-gpu.json: 1 file pushed, 0 skipped. 460.4 MB/s (298179 bytes in 0.001s)
+40f0acc7eb0752496ec659fdee458fe999063950aafa5794e5c1892a80946168  /sdcard/Android/data/dev.bookfin.bench.epub.webview/files/references.json
+tool/research/epub_engines/evidence/symmetric-20261111/references-gpu.json: 1 file pushed, 0 skipped. 468.4 MB/s (298179 bytes in 0.001s)
+40f0acc7eb0752496ec659fdee458fe999063950aafa5794e5c1892a80946168  /sdcard/Android/data/dev.bookfin.bench.epub.koreader/files/references.json

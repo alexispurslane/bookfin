@@ -1,0 +1,204 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.3.1/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preWebviewReleaseBuild UP-TO-DATE
+> Task :app:mergeWebviewReleaseJniLibFolders
+> Task :app:mergeWebviewReleaseNativeLibs NO-SOURCE
+> Task :app:stripWebviewReleaseDebugSymbols NO-SOURCE
+> Task :app:extractWebviewReleaseNativeSymbolTables NO-SOURCE
+> Task :app:mergeWebviewReleaseNativeDebugMetadata NO-SOURCE
+> Task :app:checkWebviewReleaseDuplicateClasses
+> Task :app:generateWebviewReleaseBuildConfig
+> Task :app:generateWebviewReleaseResources
+> Task :app:packageWebviewReleaseResources
+> Task :app:processWebviewReleaseNavigationResources
+> Task :app:javaPreCompileWebviewRelease
+> Task :app:checkWebviewReleaseAarMetadata
+> Task :app:mapWebviewReleaseSourceSetPaths
+> Task :app:compileWebviewReleaseNavigationResources
+> Task :app:parseWebviewReleaseLocalResources
+> Task :app:mergeWebviewReleaseResources
+> Task :app:createWebviewReleaseCompatibleScreenManifests
+> Task :app:extractDeepLinksWebviewRelease
+> Task :app:generateWebviewReleaseRFile
+
+> Task :app:processWebviewReleaseMainManifest
+/Users/alexispurslane/.t3/worktrees/bookfin/t3-d6d84f15/tool/research/epub_engines/native/app/src/main/AndroidManifest.xml:3:148-180 Warning:
+	android:extractNativeLibs should not be specified in this source AndroidManifest.xml file. See https://d.android.com/guide/topics/manifest/application-element#extractNativeLibs for more information.
+The AGP Upgrade Assistant can remove the attribute from the AndroidManifest.xml file and update the build file accordingly. See https://d.android.com/studio/build/agp-upgrade-assistant for more information.
+
+> Task :app:compileWebviewReleaseKotlin NO-SOURCE
+> Task :app:compileWebviewReleaseJavaWithJavac
+> Task :app:processWebviewReleaseManifest
+> Task :app:desugarWebviewReleaseFileDependencies
+> Task :app:mergeWebviewReleaseStartupProfile
+> Task :app:processWebviewReleaseManifestForPackage
+> Task :app:mergeExtDexWebviewRelease
+> Task :app:mergeWebviewReleaseArtProfile
+> Task :app:generateWebviewReleaseAssets UP-TO-DATE
+> Task :app:processWebviewReleaseResources
+> Task :app:mergeWebviewReleaseAssets
+> Task :app:dexBuilderWebviewRelease
+> Task :app:mergeWebviewReleaseGlobalSynthetics
+> Task :app:mergeDexWebviewRelease
+> Task :app:compileWebviewReleaseArtProfile
+> Task :app:extractWebviewReleaseVersionControlInfo
+> Task :app:extractProguardFiles
+> Task :app:generateWebviewReleaseLintVitalReportModel
+> Task :app:compressWebviewReleaseAssets
+> Task :app:processWebviewReleaseJavaRes NO-SOURCE
+> Task :app:mergeWebviewReleaseJavaResource
+> Task :app:optimizeWebviewReleaseResources
+> Task :app:collectWebviewReleaseDependencies
+> Task :app:sdkWebviewReleaseDependencyData
+> Task :app:validateSigningWebviewRelease
+> Task :app:writeWebviewReleaseAppMetadata
+> Task :app:writeWebviewReleaseSigningConfigVersions
+> Task :app:preKoreaderReleaseBuild UP-TO-DATE
+> Task :app:mergeKoreaderReleaseJniLibFolders
+> Task :app:mergeKoreaderReleaseNativeLibs
+> Task :app:stripKoreaderReleaseDebugSymbols
+> Task :app:extractKoreaderReleaseNativeSymbolTables
+> Task :app:mergeKoreaderReleaseNativeDebugMetadata
+> Task :app:checkKoreaderReleaseDuplicateClasses
+> Task :app:generateKoreaderReleaseBuildConfig
+> Task :app:generateKoreaderReleaseResources
+> Task :app:packageKoreaderReleaseResources
+> Task :app:processKoreaderReleaseNavigationResources
+> Task :app:parseKoreaderReleaseLocalResources
+> Task :app:generateKoreaderReleaseRFile
+> Task :app:compileKoreaderReleaseKotlin NO-SOURCE
+> Task :app:javaPreCompileKoreaderRelease
+> Task :app:compileKoreaderReleaseJavaWithJavac
+> Task :app:checkKoreaderReleaseAarMetadata
+> Task :app:mapKoreaderReleaseSourceSetPaths
+> Task :app:compileKoreaderReleaseNavigationResources
+> Task :app:mergeKoreaderReleaseResources
+> Task :app:createKoreaderReleaseCompatibleScreenManifests
+> Task :app:extractDeepLinksKoreaderRelease
+
+> Task :app:processKoreaderReleaseMainManifest
+/Users/alexispurslane/.t3/worktrees/bookfin/t3-d6d84f15/tool/research/epub_engines/native/app/src/main/AndroidManifest.xml:3:148-180 Warning:
+	android:extractNativeLibs should not be specified in this source AndroidManifest.xml file. See https://d.android.com/guide/topics/manifest/application-element#extractNativeLibs for more information.
+The AGP Upgrade Assistant can remove the attribute from the AndroidManifest.xml file and update the build file accordingly. See https://d.android.com/studio/build/agp-upgrade-assistant for more information.
+
+> Task :app:processKoreaderReleaseManifest
+> Task :app:processKoreaderReleaseManifestForPackage
+> Task :app:processKoreaderReleaseResources
+> Task :app:dexBuilderKoreaderRelease
+> Task :app:desugarKoreaderReleaseFileDependencies
+> Task :app:mergeKoreaderReleaseStartupProfile
+> Task :app:mergeExtDexKoreaderRelease
+> Task :app:mergeDexKoreaderRelease
+> Task :app:mergeKoreaderReleaseArtProfile
+> Task :app:mergeKoreaderReleaseGlobalSynthetics
+> Task :app:compileKoreaderReleaseArtProfile
+> Task :app:generateKoreaderReleaseAssets UP-TO-DATE
+> Task :app:mergeKoreaderReleaseAssets
+> Task :app:lintVitalAnalyzeWebviewRelease
+> Task :app:lintVitalReportWebviewRelease
+> Task :app:lintVitalWebviewRelease
+> Task :app:compressKoreaderReleaseAssets
+> Task :app:extractKoreaderReleaseVersionControlInfo
+> Task :app:generateKoreaderReleaseLintVitalReportModel
+> Task :app:packageWebviewRelease
+> Task :app:createWebviewReleaseApkListingFileRedirect
+> Task :app:assembleWebviewRelease
+> Task :app:processKoreaderReleaseJavaRes NO-SOURCE
+> Task :app:mergeKoreaderReleaseJavaResource
+> Task :app:optimizeKoreaderReleaseResources
+> Task :app:collectKoreaderReleaseDependencies
+> Task :app:sdkKoreaderReleaseDependencyData
+> Task :app:validateSigningKoreaderRelease
+> Task :app:writeKoreaderReleaseAppMetadata
+> Task :app:writeKoreaderReleaseSigningConfigVersions
+> Task :app:bundleWebviewReleaseClassesToCompileJar
+> Task :app:preWebviewReleaseAndroidTestBuild SKIPPED
+> Task :app:processWebviewReleaseAndroidTestManifest
+> Task :app:generateWebviewReleaseAndroidTestBuildConfig
+> Task :app:generateWebviewReleaseAndroidTestResources
+> Task :app:packageWebviewReleaseAndroidTestResources
+> Task :app:processWebviewReleaseAndroidTestNavigationResources
+> Task :app:parseWebviewReleaseAndroidTestLocalResources
+> Task :app:generateWebviewReleaseAndroidTestRFile
+> Task :app:compileWebviewReleaseAndroidTestKotlin NO-SOURCE
+> Task :app:javaPreCompileWebviewReleaseAndroidTest
+> Task :app:compileWebviewReleaseAndroidTestJavaWithJavac
+> Task :app:generateWebviewReleaseAndroidTestAssets UP-TO-DATE
+> Task :app:mergeWebviewReleaseAndroidTestAssets
+> Task :app:compressWebviewReleaseAndroidTestAssets
+> Task :app:checkWebviewReleaseAndroidTestDuplicateClasses
+> Task :app:checkWebviewReleaseAndroidTestAarMetadata
+> Task :app:mapWebviewReleaseAndroidTestSourceSetPaths
+> Task :app:compileWebviewReleaseAndroidTestNavigationResources
+> Task :app:lintVitalAnalyzeKoreaderRelease
+> Task :app:mergeWebviewReleaseAndroidTestResources
+> Task :app:lintVitalReportKoreaderRelease
+> Task :app:lintVitalKoreaderRelease
+> Task :app:processWebviewReleaseAndroidTestResources
+> Task :app:dexBuilderWebviewReleaseAndroidTest
+> Task :app:desugarWebviewReleaseAndroidTestFileDependencies
+> Task :app:mergeExtDexWebviewReleaseAndroidTest
+> Task :app:mergeDexWebviewReleaseAndroidTest
+> Task :app:mergeWebviewReleaseAndroidTestGlobalSynthetics
+> Task :app:processWebviewReleaseAndroidTestJavaRes NO-SOURCE
+> Task :app:mergeWebviewReleaseAndroidTestJavaResource
+> Task :app:mergeWebviewReleaseAndroidTestJniLibFolders
+> Task :app:mergeWebviewReleaseAndroidTestNativeLibs NO-SOURCE
+> Task :app:stripWebviewReleaseAndroidTestDebugSymbols NO-SOURCE
+> Task :app:validateSigningWebviewReleaseAndroidTest
+> Task :app:writeWebviewReleaseAndroidTestSigningConfigVersions
+> Task :app:packageKoreaderRelease
+> Task :app:createKoreaderReleaseApkListingFileRedirect
+> Task :app:assembleKoreaderRelease
+> Task :app:bundleKoreaderReleaseClassesToCompileJar
+> Task :app:packageWebviewReleaseAndroidTest
+> Task :app:createWebviewReleaseAndroidTestApkListingFileRedirect
+> Task :app:assembleWebviewReleaseAndroidTest
+> Task :app:preKoreaderReleaseAndroidTestBuild SKIPPED
+> Task :app:processKoreaderReleaseAndroidTestManifest
+> Task :app:generateKoreaderReleaseAndroidTestBuildConfig
+> Task :app:generateKoreaderReleaseAndroidTestResources
+> Task :app:packageKoreaderReleaseAndroidTestResources
+> Task :app:processKoreaderReleaseAndroidTestNavigationResources
+> Task :app:javaPreCompileKoreaderReleaseAndroidTest
+> Task :app:generateKoreaderReleaseAndroidTestAssets UP-TO-DATE
+> Task :app:parseKoreaderReleaseAndroidTestLocalResources
+> Task :app:mergeKoreaderReleaseAndroidTestAssets
+> Task :app:compressKoreaderReleaseAndroidTestAssets
+> Task :app:generateKoreaderReleaseAndroidTestRFile
+> Task :app:checkKoreaderReleaseAndroidTestDuplicateClasses
+> Task :app:compileKoreaderReleaseAndroidTestKotlin NO-SOURCE
+> Task :app:compileKoreaderReleaseAndroidTestJavaWithJavac
+> Task :app:checkKoreaderReleaseAndroidTestAarMetadata
+> Task :app:mapKoreaderReleaseAndroidTestSourceSetPaths
+> Task :app:compileKoreaderReleaseAndroidTestNavigationResources
+> Task :app:desugarKoreaderReleaseAndroidTestFileDependencies
+> Task :app:mergeKoreaderReleaseAndroidTestResources
+> Task :app:mergeExtDexKoreaderReleaseAndroidTest
+> Task :app:processKoreaderReleaseAndroidTestJavaRes NO-SOURCE
+> Task :app:mergeKoreaderReleaseAndroidTestJavaResource
+> Task :app:mergeKoreaderReleaseAndroidTestJniLibFolders
+> Task :app:mergeKoreaderReleaseAndroidTestNativeLibs NO-SOURCE
+> Task :app:stripKoreaderReleaseAndroidTestDebugSymbols NO-SOURCE
+> Task :app:validateSigningKoreaderReleaseAndroidTest
+> Task :app:writeKoreaderReleaseAndroidTestSigningConfigVersions
+> Task :app:processKoreaderReleaseAndroidTestResources
+> Task :app:dexBuilderKoreaderReleaseAndroidTest
+> Task :app:mergeKoreaderReleaseAndroidTestGlobalSynthetics
+> Task :app:mergeDexKoreaderReleaseAndroidTest
+> Task :app:packageKoreaderReleaseAndroidTest
+> Task :app:createKoreaderReleaseAndroidTestApkListingFileRedirect
+> Task :app:assembleKoreaderReleaseAndroidTest
+
+[Incubating] Problems report is available at: file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-d6d84f15/tool/research/epub_engines/native/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.3.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 14s
+151 actionable tasks: 151 executed
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.3.1/userguide/configuration_cache_enabling.html

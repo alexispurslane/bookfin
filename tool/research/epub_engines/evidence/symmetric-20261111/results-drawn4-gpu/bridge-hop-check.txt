@@ -1,0 +1,2 @@
+webview: 468 samples; hop median 0.859, smallest 0.236; uncertainty median 0.251, largest 0.351; 1 samples with a hop smaller than their own uncertainty
+koreader: 468 samples; hop median 0.233, smallest 0.040; uncertainty median 0.000, largest 0.000; 0 samples with a hop smaller than their own uncertainty

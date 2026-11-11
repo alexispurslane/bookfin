@@ -23,9 +23,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public final class BenchmarkActivity extends Activity {
     private final ExecutorService worker = Executors.newSingleThreadExecutor();
@@ -43,6 +46,7 @@ public final class BenchmarkActivity extends Activity {
     private int stepIndex;
     private long requested;
     private long shellReady;
+    private long shellDrawn;
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
@@ -158,7 +162,7 @@ public final class BenchmarkActivity extends Activity {
             String operation = steps.getJSONObject(stepIndex).getString("operation");
             status.setText(BuildConfig.ENGINE + ": " + operation);
             requested = SystemClock.elapsedRealtimeNanos();
-            if (web != null) web.evaluateJavascript("window.command(" + JSONObject.quote(operation) + ")", null);
+            if (web != null) web.evaluateJavascript("window.command(" + JSONObject.quote(operation) + "," + JSONObject.quote(runId + "/" + stepIndex) + ")", null);
             else worker.execute(() -> {
                 try { performKo(operation); } catch (Exception error) { failed(error); }
             });
@@ -166,7 +170,7 @@ public final class BenchmarkActivity extends Activity {
     }
 
     private void performKo(String operation) throws Exception {
-        JSONObject metadata = new JSONObject(KoBridge.evaluate("return perform(" + JSONObject.quote(operation) + ")"));
+        JSONObject metadata = new JSONObject(KoBridge.evaluate("return perform(" + luaString(operation) + "," + luaString(runId + "/" + stepIndex) + ")"));
         metadata.put("engine_ready_ns", SystemClock.elapsedRealtimeNanos());
         Bitmap bitmap = Bitmap.createBitmap(page.getWidth(), page.getHeight(), Bitmap.Config.ARGB_8888);
         KoBridge.copyPixels(bitmap);
@@ -185,6 +189,9 @@ public final class BenchmarkActivity extends Activity {
     private void capture(JSONObject metadata) {
         try {
             JSONObject step = steps.getJSONObject(stepIndex);
+            if (!metadata.getString("preparation_event_id").equals(runId + "/" + stepIndex)
+                    || !metadata.getString("preparation_operation").equals(step.getString("operation")))
+                throw new IllegalStateException("Stale preparation event does not belong to the requested operation");
             metadata.put("engine", BuildConfig.ENGINE);
             metadata.put("book", selectedBook);
             metadata.put("run_id", runId);
@@ -196,6 +203,7 @@ public final class BenchmarkActivity extends Activity {
             metadata.put("warmup", runId.startsWith("calibration-"));
             metadata.put("start_ns", requested);
             metadata.put("shell_ready_ns", shellReady);
+            if (BuildConfig.ENGINE.equals("webview")) metadata.put("shell_drawn_ns", shellDrawn);
             metadata.put("process_start_ns", android.os.Process.getStartElapsedRealtime()*1_000_000L);
             metadata.put("book_sha256", book.getString("sha256"));
             metadata.put("cache", stepIndex == 0 ? "fresh_document" : "warm_document");
@@ -205,22 +213,72 @@ public final class BenchmarkActivity extends Activity {
     }
 
     private final class WebProbe {
-        @JavascriptInterface public void shellReady() { runOnUiThread(BenchmarkActivity.this::ready); }
-        @JavascriptInterface public void ready(String raw) {
+        // The visual-state answer and the page's frame report reach the UI thread in either
+        // order. The step goes on when both arrived.
+        private JSONObject drawn;
+        private JSONObject frame;
+        @JavascriptInterface public String clockNs() { return Long.toString(SystemClock.elapsedRealtimeNanos()); }
+        // The Flutter shell reports ready after its first frame. The WebView shell waits until its
+        // own page was drawn, so first-frame setup stays outside the timed fresh open here too.
+        @JavascriptInterface public void shellReady() {
+            runOnUiThread(() -> web.postVisualStateCallback(0, new WebView.VisualStateCallback() {
+                @Override public void onComplete(long requestId) {
+                    shellDrawn = SystemClock.elapsedRealtimeNanos();
+                    BenchmarkActivity.this.ready();
+                }
+            }));
+        }
+        // Returns only after the UI thread requested the drawn-page callback, so the request is
+        // sent before the page's JavaScript yields. A frame whose vsync came first can still lead.
+        @JavascriptInterface public void ready(String raw) throws InterruptedException {
             long ready = SystemClock.elapsedRealtimeNanos();
+            CountDownLatch requested = new CountDownLatch(1);
             runOnUiThread(() -> {
                 try {
                     JSONObject metadata = new JSONObject(raw);
                     metadata.put("engine_ready_ns", ready);
-                    if (!runId.startsWith("calibration-")) { capture(metadata); return; }
+                    metadata.put("visual_state_requested_ns", SystemClock.elapsedRealtimeNanos());
+                    // Android documents the answer as the moment when the DOM state at this
+                    // request is ready to be drawn in the WebView's next draw. Chromium answers
+                    // when the compositor activates the frame that holds that state, after its
+                    // tiles are rasterized (QueueReportTimeSwapPromise::DidActivate).
                     web.postVisualStateCallback(ready, new WebView.VisualStateCallback() {
                         @Override public void onComplete(long requestId) {
-                            page.getViewTreeObserver().registerFrameCommitCallback(() -> capture(metadata));
-                            web.invalidate();
+                            try {
+                                metadata.put("drawn_ns", SystemClock.elapsedRealtimeNanos());
+                                metadata.put("drawn_scope", "webview_visual_state_callback_after_preparation");
+                            } catch (Exception error) { BenchmarkActivity.this.failed(error); return; }
+                            drawn = metadata;
+                            proceed();
                         }
                     });
                 } catch (Exception error) { BenchmarkActivity.this.failed(error); }
+                requested.countDown();
             });
+            if (!requested.await(5, TimeUnit.SECONDS)) BenchmarkActivity.this.failed(new IllegalStateException("The drawn-page callback was not requested"));
+        }
+        @JavascriptInterface public void frame(String raw) {
+            runOnUiThread(() -> {
+                try { frame = new JSONObject(raw); } catch (Exception error) { BenchmarkActivity.this.failed(error); return; }
+                proceed();
+            });
+        }
+        private void proceed() {
+            if (drawn == null || frame == null) return;
+            JSONObject metadata = drawn;
+            try {
+                if (!frame.getString("preparation_event_id").equals(metadata.getString("preparation_event_id")))
+                    throw new IllegalStateException("Frame report does not belong to the prepared page");
+                for (Iterator<String> keys = frame.keys(); keys.hasNext(); ) {
+                    String key = keys.next();
+                    if (!key.equals("preparation_event_id")) metadata.put(key, frame.get(key));
+                }
+            } catch (Exception error) { BenchmarkActivity.this.failed(error); return; }
+            drawn = null;
+            frame = null;
+            if (!runId.startsWith("calibration-")) { capture(metadata); return; }
+            page.getViewTreeObserver().registerFrameCommitCallback(() -> capture(metadata));
+            web.invalidate();
         }
         @JavascriptInterface public void failed(String message) { BenchmarkActivity.this.failed(new IllegalStateException(message)); }
     }

@@ -1,0 +1,40 @@
+WebView: preparation inside a running frame, and answers after a later vsync
+fresh_open: 36 samples, 6 inside a running frame, 26 answered after a later vsync
+  late answers, preparation to later vsync: median 9.5, p90 16.9, n=26
+  late answers, later vsync to answer: median 4.7, p90 19.3, n=26
+  on-time answers, preparation to answer: median 9.3, p90 13.5, n=10
+cached_reopen: 108 samples, 20 inside a running frame, 62 answered after a later vsync
+  late answers, preparation to later vsync: median 13.6, p90 19.2, n=62
+  late answers, later vsync to answer: median 4.3, p90 24.1, n=62
+  on-time answers, preparation to answer: median 7.7, p90 11.2, n=46
+page_turn: 108 samples, 96 inside a running frame, 107 answered after a later vsync
+  late answers, preparation to later vsync: median 12.0, p90 13.2, n=107
+  late answers, later vsync to answer: median 4.3, p90 19.9, n=107
+  on-time answers, preparation to answer: median 22.8, p90 22.8, n=1
+chapter_crossing: 108 samples, 54 inside a running frame, 70 answered after a later vsync
+  late answers, preparation to later vsync: median 10.2, p90 14.8, n=70
+  late answers, later vsync to answer: median 4.7, p90 7.3, n=70
+  on-time answers, preparation to answer: median 7.0, p90 10.8, n=38
+font_change: 108 samples, 108 inside a running frame, 108 answered after a later vsync
+  late answers, preparation to later vsync: median 12.1, p90 13.4, n=108
+  late answers, later vsync to answer: median 2.4, p90 3.8, n=108
+  on-time answers, preparation to answer: n=0
+all: 468 samples, 284 inside a running frame, 373 answered after a later vsync
+all late answers, preparation to later vsync: median 11.9, p90 14.8, n=373
+
+Wait until the drawing frame's vsync that the drawn page leaves out
+bookfin fresh_open: 21 of 36 samples wait; all samples median 1.3, p90 13.4, n=36
+bookfin cached_reopen: 106 of 108 samples wait; all samples median 9.7, p90 15.6, n=108
+bookfin page_turn: 103 of 108 samples wait; all samples median 9.5, p90 12.7, n=108
+bookfin chapter_crossing: 108 of 108 samples wait; all samples median 11.2, p90 14.1, n=108
+bookfin font_change: 107 of 108 samples wait; all samples median 11.2, p90 15.0, n=108
+webview fresh_open: 7 of 36 samples wait; all samples median 0.0, p90 1.8, n=36
+webview cached_reopen: 36 of 108 samples wait; all samples median 0.0, p90 4.5, n=108
+webview page_turn: 0 of 108 samples wait; all samples median 0.0, p90 0.0, n=108
+webview chapter_crossing: 39 of 108 samples wait; all samples median 0.0, p90 4.0, n=108
+webview font_change: 0 of 108 samples wait; all samples median 0.0, p90 0.0, n=108
+
+WebView samples that leave out a wait: where preparation ended after the vsync before the next frame
+82 samples; 0 to 4 ms: 0, 4 to 8 ms: 0, 8 to 12 ms: 15, 12 to 17 ms: 67; smallest 9.6, median 13.9
+wait left out: median 2.7, p90 5.0, n=82, largest 7.1
+running frames: preparation ended after their vsync: median 5.2, p90 11.2, n=284; 284 of 284 answered after a later vsync

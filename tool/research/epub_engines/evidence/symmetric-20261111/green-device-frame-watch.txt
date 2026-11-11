@@ -1,0 +1,11 @@
+path "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines" does not contain a 'flake.nix', searching up
+exp-frame-watch-prose-bookfin: load 11.69, 8.50, 6.62
+exp-frame-watch-prose-bookfin: OK (1 test) 
+exp-frame-watch-prose-webview: load 8.71, 8.10, 6.54
+exp-frame-watch-prose-webview: OK (1 test) 
+exp-frame-watch-long-webview: load 8.73, 8.11, 6.56
+exp-frame-watch-long-webview: OK (1 test) 
+exp-frame-watch-illustrated-webview: load 10.16, 8.45, 6.69
+exp-frame-watch-illustrated-webview: OK (1 test) 
+exp-frame-watch-prose-koreader: load 11.66, 8.81, 6.84
+exp-frame-watch-prose-koreader: OK (1 test) 

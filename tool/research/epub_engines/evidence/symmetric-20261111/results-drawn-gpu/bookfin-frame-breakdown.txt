@@ -1,0 +1,25 @@
+fresh_open
+  preparation to vsyncStart: median 4.11, p90 14.17, max 25.16 (n=36)
+  vsyncStart to rasterStart: median 7.90, p90 16.35, max 29.89 (n=36)
+  rasterStart to rasterFinish: median 18.90, p90 31.23, max 54.31 (n=36)
+  preparation to drawn: median 28.26, p90 50.67, max 65.88 (n=36)
+cached_reopen
+  preparation to vsyncStart: median 9.60, p90 15.92, max 25.88 (n=108)
+  vsyncStart to rasterStart: median 3.69, p90 9.14, max 22.14 (n=108)
+  rasterStart to rasterFinish: median 2.33, p90 4.52, max 7.92 (n=108)
+  preparation to drawn: median 16.35, p90 23.27, max 41.15 (n=108)
+page_turn
+  preparation to vsyncStart: median 8.69, p90 14.27, max 40.74 (n=108)
+  vsyncStart to rasterStart: median 1.85, p90 4.25, max 30.04 (n=108)
+  rasterStart to rasterFinish: median 4.08, p90 6.16, max 16.42 (n=108)
+  preparation to drawn: median 14.31, p90 22.02, max 76.93 (n=108)
+chapter_crossing
+  preparation to vsyncStart: median 11.39, p90 15.51, max 17.82 (n=108)
+  vsyncStart to rasterStart: median 1.86, p90 3.64, max 9.42 (n=108)
+  rasterStart to rasterFinish: median 2.02, p90 4.09, max 6.77 (n=108)
+  preparation to drawn: median 15.51, p90 22.11, max 26.52 (n=108)
+font_change
+  preparation to vsyncStart: median 11.93, p90 15.00, max 21.97 (n=108)
+  vsyncStart to rasterStart: median 4.02, p90 8.48, max 24.22 (n=108)
+  rasterStart to rasterFinish: median 2.73, p90 13.92, max 23.62 (n=108)
+  preparation to drawn: median 20.05, p90 33.33, max 39.76 (n=108)

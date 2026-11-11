@@ -1,0 +1,36 @@
+test_conversion_uncertainty_includes_observed_browser_timer_precision (test_phase_adapters.WebClockTest.test_conversion_uncertainty_includes_observed_browser_timer_precision) ... FAIL
+test_only_images_on_the_shown_page_are_awaited (test_phase_adapters.WebPageImagesTest.test_only_images_on_the_shown_page_are_awaited) ... FAIL
+
+======================================================================
+FAIL: test_conversion_uncertainty_includes_observed_browser_timer_precision (test_phase_adapters.WebClockTest.test_conversion_uncertainty_includes_observed_browser_timer_precision)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_phase_adapters.py", line 26, in test_conversion_uncertainty_includes_observed_browser_timer_precision
+    self.assertGreaterEqual(clock["uncertainty_ns"], 100_000)
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 1000 not greater than or equal to 100000
+
+======================================================================
+FAIL: test_only_images_on_the_shown_page_are_awaited (test_phase_adapters.WebPageImagesTest.test_only_images_on_the_shown_page_are_awaited)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_phase_adapters.py", line 42, in test_only_images_on_the_shown_page_are_awaited
+    self.assertEqual(names, ["shown page"])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: ['previous page', 'shown page', 'next page', 'edge'] != ['shown page']
+
+First differing element 0:
+'previous page'
+'shown page'
+
+First list contains 3 additional elements.
+First extra element 1:
+'shown page'
+
+- ['previous page', 'shown page', 'next page', 'edge']
++ ['shown page']
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.089s
+
+FAILED (failures=2)

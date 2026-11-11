@@ -1,0 +1,9 @@
+test_drawing_facts_describe_the_wait_after_preparation_and_flutter_raster (test_collect.PartialEvidenceTest.test_drawing_facts_describe_the_wait_after_preparation_and_flutter_raster) ... ok
+test_engine_phase_facts_come_only_from_certified_samples (test_collect.PartialEvidenceTest.test_engine_phase_facts_come_only_from_certified_samples) ... ok
+test_failed_partial_workloads_remain_collectable_without_inventing_preparation_facts (test_collect.PartialEvidenceTest.test_failed_partial_workloads_remain_collectable_without_inventing_preparation_facts) ... ok
+test_first_process_latency_uses_each_verified_completion_not_summed_medians (test_collect.PartialEvidenceTest.test_first_process_latency_uses_each_verified_completion_not_summed_medians) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.249s
+
+OK

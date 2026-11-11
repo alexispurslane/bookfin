@@ -1,0 +1,77 @@
+...FFFF.
+======================================================================
+FAIL: test_a_preparation_that_ends_between_frames_names_no_running_frame (test_phase_adapters.WebFrameWatchTest.test_a_preparation_that_ends_between_frames_names_no_running_frame)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_phase_adapters.py", line 168, in test_a_preparation_that_ends_between_frames_names_no_running_frame
+    self.assertEqual(reports, [[0, None]])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [[None, None]] != [[0, None]]
+
+First differing element 0:
+[None, None]
+[0, None]
+
+- [[None, None]]
+?   ^^^^
+
++ [[0, None]]
+?   ^
+
+
+======================================================================
+FAIL: test_a_preparation_that_ends_inside_an_animation_frame_names_that_frame (test_phase_adapters.WebFrameWatchTest.test_a_preparation_that_ends_inside_an_animation_frame_names_that_frame)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_phase_adapters.py", line 125, in test_a_preparation_that_ends_inside_an_animation_frame_names_that_frame
+    self.assertEqual(frames, [{"running_frame_vsync_source_ms": 9.5, "running_frame_vsync_ns": 14_500_000,
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                               "running_frame_start_source_ms": 9.9, "running_frame_start_ns": 14_900_000},
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                              self.NO_FRAME])
+                              ^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [{}, {}] != [{'running_frame_vsync_source_ms': 9.5, 'ru[246 chars]one}]
+
+First differing element 0:
+{}
+{'running_frame_vsync_source_ms': 9.5, 'ru[101 chars]0000}
+
+- [{}, {}]
++ [{'running_frame_start_ns': 14900000,
++   'running_frame_start_source_ms': 9.9,
++   'running_frame_vsync_ns': 14500000,
++   'running_frame_vsync_source_ms': 9.5},
++  {'running_frame_start_ns': None,
++   'running_frame_start_source_ms': None,
++   'running_frame_vsync_ns': None,
++   'running_frame_vsync_source_ms': None}]
+
+======================================================================
+FAIL: test_each_frame_counts_once_however_many_callbacks_it_runs (test_phase_adapters.WebFrameWatchTest.test_each_frame_counts_once_however_many_callbacks_it_runs)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_phase_adapters.py", line 138, in test_each_frame_counts_once_however_many_callbacks_it_runs
+    self.assertEqual(count, 2)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^
+AssertionError: 0 != 2
+
+======================================================================
+FAIL: test_the_ready_report_names_the_running_frame_and_counts_the_frames_in_preparation (test_phase_adapters.WebFrameWatchTest.test_the_ready_report_names_the_running_frame_and_counts_the_frames_in_preparation)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_phase_adapters.py", line 154, in test_the_ready_report_names_the_running_frame_and_counts_the_frames_in_preparation
+    self.assertEqual(reports, [[2, 20.6]])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [[None, None]] != [[2, 20.6]]
+
+First differing element 0:
+[None, None]
+[2, 20.6]
+
+- [[None, None]]
++ [[2, 20.6]]
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.554s
+
+FAILED (failures=4)

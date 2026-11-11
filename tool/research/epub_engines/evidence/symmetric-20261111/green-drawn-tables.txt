@@ -1,0 +1,8 @@
+test_book_table_reports_median_p90_and_count_and_marks_missing_cells (test_tables.TablesTest.test_book_table_reports_median_p90_and_count_and_marks_missing_cells) ... ok
+test_headline_tables_use_each_engine_drawn_page (test_tables.TablesTest.test_headline_tables_use_each_engine_drawn_page) ... ok
+test_mean_table_rounds_only_the_final_equal_book_mean (test_tables.TablesTest.test_mean_table_rounds_only_the_final_equal_book_mean) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.000s
+
+OK

@@ -1,0 +1,8 @@
+fresh_open: 26 of 36 answered after a later vsync
+cached_reopen: 50 of 108 answered after a later vsync
+page_turn: 29 of 108 answered after a later vsync
+chapter_crossing: 22 of 108 answered after a later vsync
+font_change: 0 of 108 answered after a later vsync
+all: 127 of 468
+frame work, on time: median 0.8, p90 2.7, n=341
+frame work, after a later vsync: median 13.9, p90 18.5, n=127

@@ -3,6 +3,27 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
 <link rel="icon" href="data:,">
 <style>html,body{margin:0;padding:0;background:#f6efe2}#reader{width:360px;height:640px}</style>
+<script>
+// Watches animation frames: the frame that runs now, and how many frames ran
+// a callback. epub.js keeps its own reference to requestAnimationFrame when
+// it loads, so this script runs before epub.js. A frame runs from its first
+// callback until the next task, which comes after the frame's rendering, so
+// a preparation that ends just after a frame can still name that frame. Its
+// callbacks share one vsync time, which tells two frames apart.
+const frameWatch = {running: null, count: 0};
+(() => {
+    const request = window.requestAnimationFrame.bind(window);
+    window.requestAnimationFrame = callback => request(vsync => {
+        if (!frameWatch.running || frameWatch.running.vsync !== vsync) {
+            const frame = {vsync, start: performance.now()};
+            frameWatch.running = frame;
+            frameWatch.count++;
+            setTimeout(() => { if (frameWatch.running === frame) frameWatch.running = null; });
+        }
+        callback(vsync);
+    });
+})();
+</script>
 <script src="jszip.min.js"></script><script src="epub.min.js"></script></head>
 <body><div id="reader"></div><script>
 let book;
@@ -10,40 +31,129 @@ let rendition;
 let spec;
 let textSize = 18;
 let ready = Promise.resolve();
+let phaseClock;
+
+function timerResolution() {
+    let finest = Infinity;
+    for (let attempt = 0; attempt < 5; attempt++) {
+        const first = performance.now();
+        let next = performance.now();
+        while (next === first) next = performance.now();
+        finest = Math.min(finest, next - first);
+    }
+    return Math.round(finest * 1e6);
+}
+
+function calibrateClock() {
+    const resolution = timerResolution();
+    let best;
+    for (let attempt = 0; attempt < 9; attempt++) {
+        const before = performance.now() * 1e6;
+        const native = Number(Probe.clockNs());
+        const after = performance.now() * 1e6;
+        const roundTrip = after - before;
+        if (!best || roundTrip < best.calibration_round_trip_ns) {
+            best = {source:"web_performance_ms", offset_ns:Math.round(native - (before + after) / 2),
+                uncertainty_ns:Math.ceil(roundTrip / 2) + 1000 + resolution,
+                observed_resolution_ns:resolution, calibration_round_trip_ns:Math.ceil(roundTrip)};
+        }
+    }
+    return best;
+}
+
+function androidTime(milliseconds) { return Math.round(milliseconds * 1e6 + phaseClock.offset_ns); }
+
+// The images that overlap the reader's visible area, in reader coordinates.
+function pageImages(contents, area) {
+    return contents.flatMap(content => {
+        const frame = content.document.defaultView.frameElement.getBoundingClientRect();
+        return Array.from(content.document.images).filter(image => {
+            const box = image.getBoundingClientRect();
+            return frame.left + box.left < area.right && frame.left + box.right > area.left
+                && frame.top + box.top < area.bottom && frame.top + box.bottom > area.top;
+        });
+    });
+}
+
+// Reports when the renderer starts the first frame after preparation, which
+// draws the prepared page, and the vsync times of that frame and the next.
+// The time before the first frame starts is the wait for the next frame. An
+// answer from Android after the next vsync came from a later Android frame.
+// The page description and the bridge call come after both frames, so they
+// are not part of their work.
+function reportFrame(eventId, describe) {
+    requestAnimationFrame(vsync => {
+        const start = performance.now();
+        requestAnimationFrame(nextVsync => {
+            setTimeout(() => Probe.frame(JSON.stringify({preparation_event_id:eventId,
+                frame_start_source_ms:start, frame_start_ns:androidTime(start),
+                frame_vsync_source_ms:vsync, frame_vsync_ns:androidTime(vsync),
+                next_frame_vsync_source_ms:nextVsync, next_frame_vsync_ns:androidTime(nextVsync), ...describe()})));
+        });
+    });
+}
+
+// The animation frame that runs now, in browser and Android time, or nulls
+// between frames. If preparation ends inside a frame, that frame draws the
+// page.
+function runningFrame() {
+    const frame = frameWatch.running;
+    return {running_frame_vsync_source_ms:frame && frame.vsync, running_frame_vsync_ns:frame && androidTime(frame.vsync),
+        running_frame_start_source_ms:frame && frame.start, running_frame_start_ns:frame && androidTime(frame.start)};
+}
 
 async function resourcesReady() {
-    await Promise.all(rendition.getContents().map(async content => {
-        await content.document.fonts.ready;
-        await Promise.all(Array.from(content.document.images).map(image => image.decode().catch(() => {})));
-    }));
+    const contents = rendition.getContents();
+    await Promise.all(contents.map(content => content.document.fonts.ready));
+    const area = document.getElementById("reader").getBoundingClientRect();
+    const images = pageImages(contents, area);
+    await Promise.all(images.map(image => image.decode().catch(() => {})));
     rendition.views().forEach(view => view.expand());
+    return images;
 }
 
-async function report(operation) {
-    await resourcesReady();
+async function report(operation, eventId, engineStart, framesAtStart) {
+    const operationReturned = performance.now();
+    const decoded = await resourcesReady();
     const location = rendition.currentLocation();
     const contents = rendition.getContents();
-    const section = contents.find(content => content.sectionIndex === location.start.index);
-    const range = section && section.range(location.start.cfi);
-    const bodyText = section ? section.document.body.innerText : "";
-    let visible = "";
-    if (section && location.end.index === location.start.index) {
-        const finish = section.range(location.end.cfi);
-        const shown = range.cloneRange();
-        shown.setEnd(finish.endContainer, finish.endOffset);
-        visible = shown.toString();
-    }
+    contents.forEach(content => content.document.documentElement.getBoundingClientRect());
+    const preparation = performance.now();
+    const running = runningFrame();
+    // Android requests the drawn-page callback before this call returns. A frame
+    // whose vsync came first can still lead; collection counts later answers.
     Probe.ready(JSON.stringify({operation, location: location.start.cfi, location_format:"epub_cfi",
+        preparation_event_id:eventId, preparation_operation:operation,
+        preparation_scope:"webview_layout_fonts_and_decoded_page_images",
+        engine_start_source_ms:engineStart, operation_returned_source_ms:operationReturned, preparation_source_ms:preparation,
+        engine_start_ns:androidTime(engineStart), operation_returned_ns:androidTime(operationReturned),
+        preparation_ns:androidTime(preparation), phase_clock:phaseClock,
+        ...running, frames_in_preparation:frameWatch.count - framesAtStart,
+        page_images:decoded.map(image => image.getAttribute("src")),
         spine_index: location.start.index, href: location.start.href,
         end_cfi:location.end.cfi, displayed:location.start.displayed,
-        visible_text:visible,
-        section_text: bodyText.slice(0, 1200),
-        anchor_text: range ? range.startContainer.textContent.slice(range.startOffset, range.startOffset + 180) : "",
-        images: section ? Array.from(section.document.images).map(image => ({src:image.getAttribute("src"),loaded:image.complete && image.naturalWidth>0})) : [],
         text_size_css_px:textSize, whole_book_paginated:false}));
+    reportFrame(eventId, () => {
+        const section = contents.find(content => content.sectionIndex === location.start.index);
+        const range = section && section.range(location.start.cfi);
+        const bodyText = section ? section.document.body.innerText : "";
+        let visible = "";
+        if (section && location.end.index === location.start.index) {
+            const finish = section.range(location.end.cfi);
+            const shown = range.cloneRange();
+            shown.setEnd(finish.endContainer, finish.endOffset);
+            visible = shown.toString();
+        }
+        return {visible_text:visible,
+            section_text: bodyText.slice(0, 1200),
+            anchor_text: range ? range.startContainer.textContent.slice(range.startOffset, range.startOffset + 180) : "",
+            images: section ? Array.from(section.document.images).map(image => ({src:image.getAttribute("src"),loaded:image.complete && image.naturalWidth>0})) : []};
+    });
 }
 
-async function execute(operation) {
+async function execute(operation, eventId) {
+    const engineStart = performance.now();
+    const framesAtStart = frameWatch.count;
     if (operation === "fresh_open" || operation === "cached_reopen") {
         textSize = 18;
         if (rendition) rendition.destroy();
@@ -83,7 +193,7 @@ async function execute(operation) {
     } else if (operation !== "paginate") {
         throw Error("Unknown operation: " + operation);
     }
-    await report(operation);
+    await report(operation, eventId, engineStart, framesAtStart);
 }
 
 async function setSize(size) {
@@ -97,11 +207,12 @@ async function setSize(size) {
     await relocated;
 }
 
-window.command = operation => {
-    ready = ready.then(() => execute(operation)).catch(error => Probe.failed(String(error.stack || error)));
+window.command = (operation, eventId) => {
+    ready = ready.then(() => execute(operation, eventId)).catch(error => Probe.failed(String(error.stack || error)));
 };
 fetch("https://epubbench.invalid/manifest.json").then(response => response.json()).then(manifest => {
     spec = manifest.books[new URL(location.href).searchParams.get("book") || "prose"];
+    phaseClock = calibrateClock();
     Probe.shellReady();
 }).catch(error => Probe.failed(String(error)));
 </script></body></html>

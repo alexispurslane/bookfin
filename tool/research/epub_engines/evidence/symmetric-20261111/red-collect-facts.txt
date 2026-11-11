@@ -1,0 +1,20 @@
+test_engine_phase_facts_come_only_from_certified_samples (test_collect.PartialEvidenceTest.test_engine_phase_facts_come_only_from_certified_samples) ... ERROR
+test_failed_partial_workloads_remain_collectable_without_inventing_preparation_facts (test_collect.PartialEvidenceTest.test_failed_partial_workloads_remain_collectable_without_inventing_preparation_facts) ... ok
+test_first_process_latency_uses_each_verified_completion_not_summed_medians (test_collect.PartialEvidenceTest.test_first_process_latency_uses_each_verified_completion_not_summed_medians) ... ok
+
+======================================================================
+ERROR: test_engine_phase_facts_come_only_from_certified_samples (test_collect.PartialEvidenceTest.test_engine_phase_facts_come_only_from_certified_samples)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_collect.py", line 108, in test_engine_phase_facts_come_only_from_certified_samples
+    self.assertAlmostEqual(fact.get("dispatch_to_engine_entry_median_ms"), .3)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/nix/store/0kcws5blwbdyxqxjd1w8hjipz61xny3k-python3-3.14.7/lib/python3.14/unittest/case.py", line 956, in assertAlmostEqual
+    diff = abs(first - second)
+               ~~~~~~^~~~~~~~
+TypeError: unsupported operand type(s) for -: 'NoneType' and 'float'
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.187s
+
+FAILED (errors=1)

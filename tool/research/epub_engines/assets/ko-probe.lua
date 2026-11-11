@@ -8,7 +8,15 @@ typedef struct {
     uint8_t *data;
     uint8_t config;
 } ProbeBuffer;
+struct timespec { long tv_sec; long tv_nsec; };
+int clock_gettime(int clock_id, struct timespec *time);
 ]]
+
+local function clock_ns()
+    local time = ffi.new("struct timespec")
+    assert(ffi.C.clock_gettime(7, time) == 0, "CLOCK_BOOTTIME failed")
+    return tonumber(time.tv_sec) * 1000000000 + tonumber(time.tv_nsec)
+end
 
 local function quote(value)
     return '"' .. tostring(value):gsub('[%z\1-\31\\"]', function(character)
@@ -61,7 +69,18 @@ function open_book()
     font_size = 18
 end
 
-function perform(operation)
+-- Page buffers are allocated once, outside every timed interval, as
+-- KOReader's own frontend reuses its screen buffer. Each table keeps its
+-- pixel memory alive for as long as the buffer that points to it.
+local function new_buffer()
+    local data = ffi.new("uint8_t[?]", width_px * height_px * 4)
+    return {data = data, buffer = ffi.new("ProbeBuffer", {width_px, width_px, height_px, width_px*4, data, 5*16})}
+end
+local shown = new_buffer()
+local scratch = new_buffer()
+
+function perform(operation, event_id)
+    local engine_start = clock_ns()
     if operation == "fresh_open" or operation == "cached_reopen" then
         open_book()
     elseif operation == "page_turn" or operation == "chapter_crossing" then
@@ -90,15 +109,30 @@ function perform(operation)
     else
         error("Unknown operation: " .. operation)
     end
-    local data = ffi.new("uint8_t[?]", width_px * height_px * 4)
-    local buffer = ffi.new("ProbeBuffer", {width_px, width_px, height_px, width_px*4, data, 5*16})
-    document:drawCurrentPage(buffer, true, false, true, false)
-    pixels = ffi.string(data, width_px*height_px*4)
+    document:renderDocument()
+    document:getCurrentPage()
+    local operation_returned = clock_ns()
+    document:drawCurrentPage(shown.buffer, true, false, true, false)
+    local preparation = clock_ns()
+    pixels = ffi.string(shown.data, width_px*height_px*4)
+    -- After timing: the same page drawn again, with its text already formatted.
+    local redraw_start = clock_ns()
+    document:drawCurrentPage(scratch.buffer, true, false, true, false)
+    local redraw_duration = clock_ns() - redraw_start
     local page = document:getCurrentPage()
     local start = document:getPageXPointer(page)
     local finish = document:getPageXPointer(math.min(page+1, document:getPages()))
     local text = document:getTextFromXPointers(start, finish) or ""
     return '{"operation":' .. quote(operation) .. ',"page":' .. page .. ',"pages":' .. document:getPages()
+        .. ',"preparation_event_id":' .. quote(event_id) .. ',"preparation_operation":' .. quote(operation)
+        .. ',"preparation_scope":"koreader_drawn_page_bitmap"'
+        .. ',"engine_start_ns":' .. string.format("%.0f", engine_start)
+        .. ',"operation_returned_ns":' .. string.format("%.0f", operation_returned)
+        .. ',"preparation_ns":' .. string.format("%.0f", preparation)
+        .. ',"redraw_duration_ns":' .. string.format("%.0f", redraw_duration)
+        .. ',"drawn_ns":' .. string.format("%.0f", preparation)
+        .. ',"drawn_scope":"koreader_cpu_drawn_page_bitmap"'
+        .. ',"phase_clock":{"source":"android_boottime_ns","offset_ns":0,"uncertainty_ns":0}'
         .. ',"selected_heading_page":' .. find_heading(heading).page .. ',"following_heading_page":' .. find_heading(next_heading).page
         .. ',"cache_file":' .. quote(document:getCacheFilePath() or "")
         .. ',"location":' .. quote(start) .. ',"location_format":"koreader_xpointer","visible_text":' .. quote(text)

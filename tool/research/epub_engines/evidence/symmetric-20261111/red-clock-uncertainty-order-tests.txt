@@ -1,0 +1,59 @@
+...........FFF...............
+======================================================================
+FAIL: test_an_engine_time_within_the_clock_uncertainty_of_an_android_time_keeps_its_sample (test_preparation.PreparedPageIntervalTest.test_an_engine_time_within_the_clock_uncertainty_of_an_android_time_keeps_its_sample) (engine='webview', changes={'engine_start_ns': 950000})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_preparation.py", line 150, in test_an_engine_time_within_the_clock_uncertainty_of_an_android_time_keeps_its_sample
+    self.assertEqual([cell["count"] for cell in cells([prepared(engine=engine, **changes)], name)], [1])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [] != [1]
+
+Second list contains 1 additional elements.
+First extra element 0:
+1
+
+- []
++ [1]
+?  +
+
+
+======================================================================
+FAIL: test_an_engine_time_within_the_clock_uncertainty_of_an_android_time_keeps_its_sample (test_preparation.PreparedPageIntervalTest.test_an_engine_time_within_the_clock_uncertainty_of_an_android_time_keeps_its_sample) (engine='webview', changes={'preparation_ns': 1650000})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_preparation.py", line 150, in test_an_engine_time_within_the_clock_uncertainty_of_an_android_time_keeps_its_sample
+    self.assertEqual([cell["count"] for cell in cells([prepared(engine=engine, **changes)], name)], [1])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [] != [1]
+
+Second list contains 1 additional elements.
+First extra element 0:
+1
+
+- []
++ [1]
+?  +
+
+
+======================================================================
+FAIL: test_an_engine_time_within_the_clock_uncertainty_of_an_android_time_keeps_its_sample (test_preparation.PreparedPageIntervalTest.test_an_engine_time_within_the_clock_uncertainty_of_an_android_time_keeps_its_sample) (engine='bookfin', changes={'drawn_ns': 10001000})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_preparation.py", line 150, in test_an_engine_time_within_the_clock_uncertainty_of_an_android_time_keeps_its_sample
+    self.assertEqual([cell["count"] for cell in cells([prepared(engine=engine, **changes)], name)], [1])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [] != [1]
+
+Second list contains 1 additional elements.
+First extra element 0:
+1
+
+- []
++ [1]
+?  +
+
+
+----------------------------------------------------------------------
+Ran 27 tests in 0.009s
+
+FAILED (failures=3)

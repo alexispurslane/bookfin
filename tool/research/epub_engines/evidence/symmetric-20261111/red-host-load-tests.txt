@@ -1,0 +1,63 @@
+EFFFF.....
+======================================================================
+ERROR: test_a_job_measured_while_the_host_was_busy_is_set_aside_and_measured_again (test_run.MeasureQuietlyTest.test_a_job_measured_while_the_host_was_busy_is_set_aside_and_measured_again)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_run.py", line 39, in test_a_job_measured_while_the_host_was_busy_is_set_aside_and_measured_again
+    records = [json.loads(line) for line in (output / "host-load.jsonl").read_text().splitlines()]
+                                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/nix/store/0kcws5blwbdyxqxjd1w8hjipz61xny3k-python3-3.14.7/lib/python3.14/pathlib/__init__.py", line 787, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/nix/store/0kcws5blwbdyxqxjd1w8hjipz61xny3k-python3-3.14.7/lib/python3.14/pathlib/__init__.py", line 771, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/nix-shell.UtJ6It/tmpit4z8hq2/host-load.jsonl'
+
+======================================================================
+FAIL: test_a_job_that_never_runs_on_a_quiet_host_stops_the_run (test_run.MeasureQuietlyTest.test_a_job_that_never_runs_on_a_quiet_host_stops_the_run)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_run.py", line 54, in test_a_job_that_never_runs_on_a_quiet_host_stops_the_run
+    with self.assertRaises(RuntimeError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+AssertionError: RuntimeError not raised
+
+======================================================================
+FAIL: test_a_host_that_stays_busy_stops_the_run_instead_of_measuring (test_run.QuietHostTest.test_a_host_that_stays_busy_stops_the_run_instead_of_measuring)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_run.py", line 22, in test_a_host_that_stays_busy_stops_the_run_instead_of_measuring
+    with self.assertRaises(RuntimeError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+AssertionError: RuntimeError not raised
+
+======================================================================
+FAIL: test_a_job_starts_only_after_the_host_load_falls_under_the_limit (test_run.QuietHostTest.test_a_job_starts_only_after_the_host_load_falls_under_the_limit)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_run.py", line 18, in test_a_job_starts_only_after_the_host_load_falls_under_the_limit
+    self.assertEqual(quiet_host(loads(12.0, 9.5, 5.0), slept.append, limit=8, checks=10), 5.0)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 12.0 != 5.0
+
+======================================================================
+FAIL: test_a_job_without_an_accepted_quiet_host_record_is_incomplete (test_collect.PartialEvidenceTest.test_a_job_without_an_accepted_quiet_host_record_is_incomplete)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_collect.py", line 186, in test_a_job_without_an_accepted_quiet_host_record_is_incomplete
+    self.assertEqual(summary["incomplete_jobs"], ["run-1"])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [] != ['run-1']
+
+Second list contains 1 additional elements.
+First extra element 0:
+'run-1'
+
+- []
++ ['run-1']
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.451s
+
+FAILED (failures=4, errors=1)

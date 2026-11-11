@@ -1,0 +1,66 @@
+..F.....F
+======================================================================
+FAIL: test_the_first_frame_after_preparation_the_next_vsync_and_the_page_text_are_reported_after_two_frames (test_phase_adapters.WebDrawingFrameTest.test_the_first_frame_after_preparation_the_next_vsync_and_the_page_text_are_reported_after_two_frames)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_phase_adapters.py", line 63, in test_the_first_frame_after_preparation_the_next_vsync_and_the_page_text_are_reported_after_two_frames
+    self.assertEqual(report["calls"], [{"preparation_event_id": "run/3", "frame_start_source_ms": 9.9,
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                        "frame_start_ns": 14_900_000, "frame_vsync_source_ms": 9.5,
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                        "frame_vsync_ns": 14_500_000, "next_frame_vsync_source_ms": 26.2,
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                        "next_frame_vsync_ns": 31_200_000, "visible_text": "page"}])
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [{'pr[84 chars]00, 'next_frame_start_source_ms': 11.6, 'next_[46 chars]ge'}] != [{'pr[84 chars]00, 'frame_vsync_source_ms': 9.5, 'frame_vsync[104 chars]ge'}]
+
+First differing element 0:
+{'pre[83 chars]00, 'next_frame_start_source_ms': 11.6, 'next_[45 chars]age'}
+{'pre[83 chars]00, 'frame_vsync_source_ms': 9.5, 'frame_vsync[103 chars]age'}
+
+  [{'frame_start_ns': 14900000,
+    'frame_start_source_ms': 9.9,
++   'frame_vsync_ns': 14500000,
++   'frame_vsync_source_ms': 9.5,
+-   'next_frame_start_ns': 16600000,
+?                ^^^^       ^^
+
++   'next_frame_vsync_ns': 31200000,
+?               + ^^^      + ^
+
+-   'next_frame_start_source_ms': 11.6,
+?                ^^^^             ^^ ^
+
++   'next_frame_vsync_source_ms': 26.2,
+?               + ^^^             ^^ ^
+
+    'preparation_event_id': 'run/3',
+    'visible_text': 'page'}]
+
+======================================================================
+FAIL: test_webview_answers_that_arrive_after_the_next_vsync_are_counted (test_collect.PartialEvidenceTest.test_webview_answers_that_arrive_after_the_next_vsync_are_counted)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_collect.py", line 191, in test_webview_answers_that_arrive_after_the_next_vsync_are_counted
+    self.assertEqual(fact.get("webview_answer_after_next_vsync_count"), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: None != 1
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.551s
+
+FAILED (failures=2)
+....F
+======================================================================
+FAIL: test_webview_answers_that_arrive_after_the_next_vsync_are_counted (test_collect.PartialEvidenceTest.test_webview_answers_that_arrive_after_the_next_vsync_are_counted)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_collect.py", line 194, in test_webview_answers_that_arrive_after_the_next_vsync_are_counted
+    self.assertEqual(fact.get("webview_answer_after_next_vsync_count"), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.309s
+
+FAILED (failures=1)

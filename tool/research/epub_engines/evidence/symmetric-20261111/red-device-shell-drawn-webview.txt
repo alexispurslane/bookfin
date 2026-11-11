@@ -1,0 +1,42 @@
+path "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines" does not contain a 'flake.nix', searching up
+INSTRUMENTATION_STATUS: class=dev.bookfin.bench.epub.EngineWorkloadTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=1
+INSTRUMENTATION_STATUS: stream=
+dev.bookfin.bench.epub.EngineWorkloadTest:
+INSTRUMENTATION_STATUS: test=selectedBookWorkloadReachesEveryRequestedDestination
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=dev.bookfin.bench.epub.EngineWorkloadTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=1
+INSTRUMENTATION_STATUS: stack=java.lang.AssertionError: The WebView shell draws its own page before it reports ready, as the Flutter shell does
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at dev.bookfin.bench.epub.EngineWorkloadTest.selectedBookWorkloadReachesEveryRequestedDestination(EngineWorkloadTest.java:76)
+
+INSTRUMENTATION_STATUS: stream=
+Error in selectedBookWorkloadReachesEveryRequestedDestination(dev.bookfin.bench.epub.EngineWorkloadTest):
+java.lang.AssertionError: The WebView shell draws its own page before it reports ready, as the Flutter shell does
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at dev.bookfin.bench.epub.EngineWorkloadTest.selectedBookWorkloadReachesEveryRequestedDestination(EngineWorkloadTest.java:76)
+
+INSTRUMENTATION_STATUS: test=selectedBookWorkloadReachesEveryRequestedDestination
+INSTRUMENTATION_STATUS_CODE: -2
+INSTRUMENTATION_RESULT: stream=
+
+Time: 3.992
+There was 1 failure:
+1) selectedBookWorkloadReachesEveryRequestedDestination(dev.bookfin.bench.epub.EngineWorkloadTest)
+java.lang.AssertionError: The WebView shell draws its own page before it reports ready, as the Flutter shell does
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at dev.bookfin.bench.epub.EngineWorkloadTest.selectedBookWorkloadReachesEveryRequestedDestination(EngineWorkloadTest.java:76)
+
+FAILURES!!!
+Tests run: 1,  Failures: 1
+
+
+INSTRUMENTATION_CODE: -1

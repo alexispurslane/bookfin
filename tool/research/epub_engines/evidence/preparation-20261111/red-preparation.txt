@@ -1,0 +1,161 @@
+test_delaying_capture_does_not_move_either_engine_milestone (test_preparation.PreparationTimingTest.test_delaying_capture_does_not_move_either_engine_milestone) ... ok
+test_mean_weights_each_book_once_even_when_sample_counts_differ (test_preparation.PreparationTimingTest.test_mean_weights_each_book_once_even_when_sample_counts_differ) ... FAIL
+test_missing_reversed_or_out_of_order_endpoints_are_excluded (test_preparation.PreparationTimingTest.test_missing_reversed_or_out_of_order_endpoints_are_excluded) ... 
+  test_missing_reversed_or_out_of_order_endpoints_are_excluded (test_preparation.PreparationTimingTest.test_missing_reversed_or_out_of_order_endpoints_are_excluded) (changes={'preparation_ns': None}) ... FAIL
+  test_missing_reversed_or_out_of_order_endpoints_are_excluded (test_preparation.PreparationTimingTest.test_missing_reversed_or_out_of_order_endpoints_are_excluded) (changes={'preparation_ns': 999999}) ... FAIL
+  test_missing_reversed_or_out_of_order_endpoints_are_excluded (test_preparation.PreparationTimingTest.test_missing_reversed_or_out_of_order_endpoints_are_excluded) (changes={'preparation_ns': 11000000}) ... FAIL
+  test_missing_reversed_or_out_of_order_endpoints_are_excluded (test_preparation.PreparationTimingTest.test_missing_reversed_or_out_of_order_endpoints_are_excluded) (changes={'operation_returned_ns': 1700000}) ... FAIL
+  test_missing_reversed_or_out_of_order_endpoints_are_excluded (test_preparation.PreparationTimingTest.test_missing_reversed_or_out_of_order_endpoints_are_excluded) (changes={'preparation_ns': True}) ... FAIL
+  test_missing_reversed_or_out_of_order_endpoints_are_excluded (test_preparation.PreparationTimingTest.test_missing_reversed_or_out_of_order_endpoints_are_excluded) (changes={'preparation_ns': nan}) ... FAIL
+  test_missing_reversed_or_out_of_order_endpoints_are_excluded (test_preparation.PreparationTimingTest.test_missing_reversed_or_out_of_order_endpoints_are_excluded) (changes={'preparation_scope': 'webview_layout_fonts_and_decoded_section_images'}) ... FAIL
+  test_missing_reversed_or_out_of_order_endpoints_are_excluded (test_preparation.PreparationTimingTest.test_missing_reversed_or_out_of_order_endpoints_are_excluded) (changes={'phase_clock': {'source': 'host_wall_time', 'offset_ns': 0, 'uncertainty_ns': 0}}) ... FAIL
+test_preparation_stops_at_the_engine_event_before_the_window_copy (test_preparation.PreparationTimingTest.test_preparation_stops_at_the_engine_event_before_the_window_copy) ... FAIL
+test_stale_readiness_never_becomes_an_accepted_preparation_sample (test_preparation.PreparationTimingTest.test_stale_readiness_never_becomes_an_accepted_preparation_sample) ... 
+  test_stale_readiness_never_becomes_an_accepted_preparation_sample (test_preparation.PreparationTimingTest.test_stale_readiness_never_becomes_an_accepted_preparation_sample) (changes={'preparation_event_id': 'previous-run/0'}) ... FAIL
+  test_stale_readiness_never_becomes_an_accepted_preparation_sample (test_preparation.PreparationTimingTest.test_stale_readiness_never_becomes_an_accepted_preparation_sample) (changes={'preparation_operation': 'cached_reopen'}) ... FAIL
+test_summary_does_not_rewrite_retained_raw_phase_timestamps (test_preparation.PreparationTimingTest.test_summary_does_not_rewrite_retained_raw_phase_timestamps) ... ok
+test_unavailable_preparation_is_not_filled_from_legacy_engine_ready (test_preparation.PreparationTimingTest.test_unavailable_preparation_is_not_filled_from_legacy_engine_ready) ... ok
+test_wrong_pixels_text_and_destination_exclude_preparation_after_certification (test_preparation.PreparationTimingTest.test_wrong_pixels_text_and_destination_exclude_preparation_after_certification) ... 
+  test_wrong_pixels_text_and_destination_exclude_preparation_after_certification (test_preparation.PreparationTimingTest.test_wrong_pixels_text_and_destination_exclude_preparation_after_certification) (changes={'capture_sha256': 'dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd'}) ... FAIL
+  test_wrong_pixels_text_and_destination_exclude_preparation_after_certification (test_preparation.PreparationTimingTest.test_wrong_pixels_text_and_destination_exclude_preparation_after_certification) (changes={'visible_text': 'wrong chapter'}) ... FAIL
+  test_wrong_pixels_text_and_destination_exclude_preparation_after_certification (test_preparation.PreparationTimingTest.test_wrong_pixels_text_and_destination_exclude_preparation_after_certification) (changes={'location': 'epubcfi(/6/2!/4)'}) ... FAIL
+
+======================================================================
+FAIL: test_mean_weights_each_book_once_even_when_sample_counts_differ (test_preparation.PreparationTimingTest.test_mean_weights_each_book_once_even_when_sample_counts_differ)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-d6d84f15/tool/research/epub_engines/test_preparation.py", line 79, in test_mean_weights_each_book_once_even_when_sample_counts_differ
+    self.assertEqual(len(means), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_missing_reversed_or_out_of_order_endpoints_are_excluded (test_preparation.PreparationTimingTest.test_missing_reversed_or_out_of_order_endpoints_are_excluded) (changes={'preparation_ns': None})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-d6d84f15/tool/research/epub_engines/test_preparation.py", line 60, in test_missing_reversed_or_out_of_order_endpoints_are_excluded
+    self.assertEqual(len(result.get("excluded", [])), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_missing_reversed_or_out_of_order_endpoints_are_excluded (test_preparation.PreparationTimingTest.test_missing_reversed_or_out_of_order_endpoints_are_excluded) (changes={'preparation_ns': 999999})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-d6d84f15/tool/research/epub_engines/test_preparation.py", line 60, in test_missing_reversed_or_out_of_order_endpoints_are_excluded
+    self.assertEqual(len(result.get("excluded", [])), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_missing_reversed_or_out_of_order_endpoints_are_excluded (test_preparation.PreparationTimingTest.test_missing_reversed_or_out_of_order_endpoints_are_excluded) (changes={'preparation_ns': 11000000})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-d6d84f15/tool/research/epub_engines/test_preparation.py", line 60, in test_missing_reversed_or_out_of_order_endpoints_are_excluded
+    self.assertEqual(len(result.get("excluded", [])), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_missing_reversed_or_out_of_order_endpoints_are_excluded (test_preparation.PreparationTimingTest.test_missing_reversed_or_out_of_order_endpoints_are_excluded) (changes={'operation_returned_ns': 1700000})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-d6d84f15/tool/research/epub_engines/test_preparation.py", line 60, in test_missing_reversed_or_out_of_order_endpoints_are_excluded
+    self.assertEqual(len(result.get("excluded", [])), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_missing_reversed_or_out_of_order_endpoints_are_excluded (test_preparation.PreparationTimingTest.test_missing_reversed_or_out_of_order_endpoints_are_excluded) (changes={'preparation_ns': True})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-d6d84f15/tool/research/epub_engines/test_preparation.py", line 60, in test_missing_reversed_or_out_of_order_endpoints_are_excluded
+    self.assertEqual(len(result.get("excluded", [])), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_missing_reversed_or_out_of_order_endpoints_are_excluded (test_preparation.PreparationTimingTest.test_missing_reversed_or_out_of_order_endpoints_are_excluded) (changes={'preparation_ns': nan})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-d6d84f15/tool/research/epub_engines/test_preparation.py", line 60, in test_missing_reversed_or_out_of_order_endpoints_are_excluded
+    self.assertEqual(len(result.get("excluded", [])), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_missing_reversed_or_out_of_order_endpoints_are_excluded (test_preparation.PreparationTimingTest.test_missing_reversed_or_out_of_order_endpoints_are_excluded) (changes={'preparation_scope': 'webview_layout_fonts_and_decoded_section_images'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-d6d84f15/tool/research/epub_engines/test_preparation.py", line 60, in test_missing_reversed_or_out_of_order_endpoints_are_excluded
+    self.assertEqual(len(result.get("excluded", [])), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_missing_reversed_or_out_of_order_endpoints_are_excluded (test_preparation.PreparationTimingTest.test_missing_reversed_or_out_of_order_endpoints_are_excluded) (changes={'phase_clock': {'source': 'host_wall_time', 'offset_ns': 0, 'uncertainty_ns': 0}})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-d6d84f15/tool/research/epub_engines/test_preparation.py", line 60, in test_missing_reversed_or_out_of_order_endpoints_are_excluded
+    self.assertEqual(len(result.get("excluded", [])), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_preparation_stops_at_the_engine_event_before_the_window_copy (test_preparation.PreparationTimingTest.test_preparation_stops_at_the_engine_event_before_the_window_copy)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-d6d84f15/tool/research/epub_engines/test_preparation.py", line 30, in test_preparation_stops_at_the_engine_event_before_the_window_copy
+    self.assertEqual(len(cells), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_stale_readiness_never_becomes_an_accepted_preparation_sample (test_preparation.PreparationTimingTest.test_stale_readiness_never_becomes_an_accepted_preparation_sample) (changes={'preparation_event_id': 'previous-run/0'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-d6d84f15/tool/research/epub_engines/test_preparation.py", line 48, in test_stale_readiness_never_becomes_an_accepted_preparation_sample
+    self.assertEqual(len(result.get("excluded", [])), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_stale_readiness_never_becomes_an_accepted_preparation_sample (test_preparation.PreparationTimingTest.test_stale_readiness_never_becomes_an_accepted_preparation_sample) (changes={'preparation_operation': 'cached_reopen'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-d6d84f15/tool/research/epub_engines/test_preparation.py", line 48, in test_stale_readiness_never_becomes_an_accepted_preparation_sample
+    self.assertEqual(len(result.get("excluded", [])), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_wrong_pixels_text_and_destination_exclude_preparation_after_certification (test_preparation.PreparationTimingTest.test_wrong_pixels_text_and_destination_exclude_preparation_after_certification) (changes={'capture_sha256': 'dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-d6d84f15/tool/research/epub_engines/test_preparation.py", line 70, in test_wrong_pixels_text_and_destination_exclude_preparation_after_certification
+    self.assertEqual(len(result.get("excluded", [])), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_wrong_pixels_text_and_destination_exclude_preparation_after_certification (test_preparation.PreparationTimingTest.test_wrong_pixels_text_and_destination_exclude_preparation_after_certification) (changes={'visible_text': 'wrong chapter'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-d6d84f15/tool/research/epub_engines/test_preparation.py", line 70, in test_wrong_pixels_text_and_destination_exclude_preparation_after_certification
+    self.assertEqual(len(result.get("excluded", [])), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_wrong_pixels_text_and_destination_exclude_preparation_after_certification (test_preparation.PreparationTimingTest.test_wrong_pixels_text_and_destination_exclude_preparation_after_certification) (changes={'location': 'epubcfi(/6/2!/4)'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-d6d84f15/tool/research/epub_engines/test_preparation.py", line 70, in test_wrong_pixels_text_and_destination_exclude_preparation_after_certification
+    self.assertEqual(len(result.get("excluded", [])), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.003s
+
+FAILED (failures=15)

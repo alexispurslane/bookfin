@@ -1,0 +1,10 @@
+path "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines" does not contain a 'flake.nix', searching up
+1/9 calibration-sym-gpu-calibration-prose-bookfin
+2/9 calibration-sym-gpu-calibration-prose-webview
+3/9 calibration-sym-gpu-calibration-prose-koreader
+4/9 calibration-sym-gpu-calibration-long-webview
+5/9 calibration-sym-gpu-calibration-long-koreader
+6/9 calibration-sym-gpu-calibration-long-bookfin
+7/9 calibration-sym-gpu-calibration-illustrated-koreader
+8/9 calibration-sym-gpu-calibration-illustrated-bookfin
+9/9 calibration-sym-gpu-calibration-illustrated-webview

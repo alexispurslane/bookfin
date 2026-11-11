@@ -1,0 +1,7 @@
+test_conversion_uncertainty_includes_observed_browser_timer_precision (test_phase_adapters.WebClockTest.test_conversion_uncertainty_includes_observed_browser_timer_precision) ... ok
+test_only_images_on_the_shown_page_are_awaited (test_phase_adapters.WebPageImagesTest.test_only_images_on_the_shown_page_are_awaited) ... ok
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.083s
+
+OK

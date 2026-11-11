@@ -1,0 +1,5 @@
+path "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines" does not contain a 'flake.nix', searching up
+exp-frame-watch-red-prose-bookfin: load 11.63, 8.19, 6.31
+exp-frame-watch-red-prose-bookfin: FAILURES!!! AssertionError: Bookfin and WebView count the frames that ran inside preparation
+exp-frame-watch-red-prose-webview: load 9.47, 7.95, 6.28
+exp-frame-watch-red-prose-webview: FAILURES!!! AssertionError: Bookfin and WebView count the frames that ran inside preparation

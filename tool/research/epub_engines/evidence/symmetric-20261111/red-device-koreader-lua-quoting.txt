@@ -1,0 +1,42 @@
+Performing Streamed Install
+Success
+Performing Streamed Install
+Success
+INSTRUMENTATION_STATUS: class=dev.bookfin.bench.epub.EngineWorkloadTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=1
+INSTRUMENTATION_STATUS: stream=
+dev.bookfin.bench.epub.EngineWorkloadTest:
+INSTRUMENTATION_STATUS: test=selectedBookWorkloadReachesEveryRequestedDestination
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=dev.bookfin.bench.epub.EngineWorkloadTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=1
+INSTRUMENTATION_STATUS: stack=java.lang.AssertionError: Real shell workload failed: java.lang.IllegalStateException: [string "return perform("fresh_open","calibration-rede..."]:1: invalid escape sequence near '"calibration-redentry-koreader'
+	at org.junit.Assert.fail(Assert.java:89)
+	at dev.bookfin.bench.epub.EngineWorkloadTest.selectedBookWorkloadReachesEveryRequestedDestination(EngineWorkloadTest.java:45)
+
+INSTRUMENTATION_STATUS: stream=
+Error in selectedBookWorkloadReachesEveryRequestedDestination(dev.bookfin.bench.epub.EngineWorkloadTest):
+java.lang.AssertionError: Real shell workload failed: java.lang.IllegalStateException: [string "return perform("fresh_open","calibration-rede..."]:1: invalid escape sequence near '"calibration-redentry-koreader'
+	at org.junit.Assert.fail(Assert.java:89)
+	at dev.bookfin.bench.epub.EngineWorkloadTest.selectedBookWorkloadReachesEveryRequestedDestination(EngineWorkloadTest.java:45)
+
+INSTRUMENTATION_STATUS: test=selectedBookWorkloadReachesEveryRequestedDestination
+INSTRUMENTATION_STATUS_CODE: -2
+INSTRUMENTATION_RESULT: stream=
+
+Time: 1.584
+There was 1 failure:
+1) selectedBookWorkloadReachesEveryRequestedDestination(dev.bookfin.bench.epub.EngineWorkloadTest)
+java.lang.AssertionError: Real shell workload failed: java.lang.IllegalStateException: [string "return perform("fresh_open","calibration-rede..."]:1: invalid escape sequence near '"calibration-redentry-koreader'
+	at org.junit.Assert.fail(Assert.java:89)
+	at dev.bookfin.bench.epub.EngineWorkloadTest.selectedBookWorkloadReachesEveryRequestedDestination(EngineWorkloadTest.java:45)
+
+FAILURES!!!
+Tests run: 1,  Failures: 1
+
+
+INSTRUMENTATION_CODE: -1

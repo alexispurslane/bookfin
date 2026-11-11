@@ -1,0 +1,25 @@
+path "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines" does not contain a 'flake.nix', searching up
+bookfin/build/app/outputs/flutter-apk/app-release.apk
+2a1590de81b5f6c4fe3c38a847f8845892be6a601217d6ba67d1e71bd21f2624  bookfin/build/app/outputs/flutter-apk/app-release.apk
+Performing Streamed Install
+Success
+bookfin/build/app/outputs/apk/androidTest/release/app-release-androidTest.apk
+cbbeb6af61f2d738fbfd71f672649765c668fe2eaf92f2e250665d68324ed1f2  bookfin/build/app/outputs/apk/androidTest/release/app-release-androidTest.apk
+Performing Streamed Install
+Success
+native/app/build/outputs/apk/webview/release/app-webview-release.apk
+711fee7acbb0d6cf3a05a342a5a4c23be5314a40c5ae79a93ee04b9b931c2027  native/app/build/outputs/apk/webview/release/app-webview-release.apk
+Performing Streamed Install
+Success
+native/app/build/outputs/apk/androidTest/webview/release/app-webview-release-androidTest.apk
+774b0a2b520cb931f3068a574e68daaa8faa846649d8f987ab293cc3334d1431  native/app/build/outputs/apk/androidTest/webview/release/app-webview-release-androidTest.apk
+Performing Streamed Install
+Success
+native/app/build/outputs/apk/koreader/release/app-koreader-release.apk
+d4da3509f6999ef16c385855d4d93d22840996ba7bbd3c4706c6f7466234ef89  native/app/build/outputs/apk/koreader/release/app-koreader-release.apk
+Performing Streamed Install
+Success
+native/app/build/outputs/apk/androidTest/koreader/release/app-koreader-release-androidTest.apk
+bce8217fee635c6d5628aa9d223d27e4a29334fbf422db5d50a7cebd29a78ecc  native/app/build/outputs/apk/androidTest/koreader/release/app-koreader-release-androidTest.apk
+Performing Streamed Install
+Success
