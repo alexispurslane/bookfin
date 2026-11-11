@@ -31,3 +31,7 @@ Quick win 3 (own PNG and JPEG header reader, image_size.dart): host AOT bench, m
 **2026-11-11T20:44:09Z**
 
 Quick win 4 (identity from the policy, Publication.revision and the file digest; revision 3): host AOT bench, median of 7, the SHA-256 that the identity cost: prose 13.7 -> 0.002 ms, long 18.0 -> 0.002 ms, illustrated 170.3 -> 0.002 ms, divine 286.1 -> 0.002 ms. Tests prove that a place saved under the old identity opens at its place, and that the first open after the change lays out the page map once again and the next open reads it. Fixture tests that matched places on the old identity now match on admittedFilesDigest (test helper, the old formula).
+
+**2026-11-11T20:54:15Z**
+
+Quick win 5 (const hyphenation tables): host AOT bench (tool/reader/hyphenation_bench.dart), median of 7, first hyphenation of an American and a British word in a new worker: 3.4 -> 0.012 ms. 400,000 words: 714 -> 668 ms and 868 -> 855 ms in two runs at host load 29, so no slower lookups. tool/reader/hyphenation_tables.dart generates lib/reader/epub/hyphenation_en_tables.dart (502 KB of source); hyphenate_test checks it against hyphenation_en.dart.
