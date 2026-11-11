@@ -34,8 +34,9 @@ const scannedPageCharacters = 1600;
 /// have none, each such page counts as [scannedPageCharacters], so places
 /// fall by pages. Bookfin does not recognize a whole book's text for this.
 /// A bookmark is a contents entry at its depth, in the order of the book.
-/// It starts at its page, after the characters above its place there. A bookmark to a page
-/// outside the book is left out.
+/// It starts at its page, after the characters above its place there. A
+/// bookmark to a page outside the book is left out, and so is a bookmark
+/// without a title, which names no chapter.
 TextOutline pdfOutlineOf(List<int> visible, List<PdfBookmark> bookmarks) {
   final scan = visible.where((count) => count > 0).length * 2 < visible.length;
   final parts = [
@@ -53,7 +54,7 @@ TextOutline pdfOutlineOf(List<int> visible, List<PdfBookmark> bookmarks) {
     parts: parts,
     entries: [
       for (final (:title, :depth, :page, :above) in bookmarks)
-        if (page >= 1 && page <= parts.length)
+        if (page >= 1 && page <= parts.length && title.trim().isNotEmpty)
           (
             title: title.trim(),
             depth: depth,
@@ -137,11 +138,16 @@ const _mostBookmarks = 10000;
   try {
     final document = _pdfium.FPDF_LoadDocument(name.cast(), nullptr);
     if (document == nullptr) return null;
-    return (
-      document: document.address,
-      pages: _pdfium.FPDF_GetPageCount(document),
-      marks: _marks(document),
-    );
+    try {
+      return (
+        document: document.address,
+        pages: _pdfium.FPDF_GetPageCount(document),
+        marks: _marks(document),
+      );
+    } catch (_) {
+      _pdfium.FPDF_CloseDocument(document);
+      rethrow;
+    }
   } finally {
     malloc.free(name);
   }
@@ -256,7 +262,9 @@ const _slice = Duration(milliseconds: 8);
         if (text != nullptr) {
           final characters = _pdfium.FPDFText_CountChars(text);
           for (var character = 0; character < characters; character++) {
-            if (_space(_pdfium.FPDFText_GetUnicode(text, character))) continue;
+            if (isWhiteSpace(_pdfium.FPDFText_GetUnicode(text, character))) {
+              continue;
+            }
             count++;
             if (tops.isEmpty) continue;
             if (_pdfium.FPDFText_GetCharBox(
@@ -291,18 +299,3 @@ const _slice = Duration(milliseconds: 8);
 void _close(int document) => _pdfium.FPDF_CloseDocument(
   pdfium_bindings.FPDF_DOCUMENT.fromAddress(document),
 );
-
-/// Whether the character [code] is white space, as the book map counts it:
-/// what `\s` matches in a Dart regular expression.
-bool _space(int code) =>
-    code >= 0x09 && code <= 0x0D ||
-    code == 0x20 ||
-    code == 0xA0 ||
-    code == 0x1680 ||
-    code >= 0x2000 && code <= 0x200A ||
-    code == 0x2028 ||
-    code == 0x2029 ||
-    code == 0x202F ||
-    code == 0x205F ||
-    code == 0x3000 ||
-    code == 0xFEFF;

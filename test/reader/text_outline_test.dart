@@ -103,6 +103,18 @@ void main() {
     expect(outline.placeAt(500), (part: 2, progress: 1.0));
   });
 
+  test('the characters that an outline counts as white space are exactly '
+      'those that the book map leaves out of its text', () {
+    final space = RegExp(r'\s');
+    final disagree = [
+      for (var code = 0; code <= 0xFFFF; code++)
+        if (isWhiteSpace(code) != space.hasMatch(String.fromCharCode(code)))
+          code,
+    ];
+
+    expect(disagree, isEmpty);
+  });
+
   test('an outline reads back from its JSON form unchanged', () {
     final outline = measureTextOutline(Publication.admit(_book));
 

@@ -1104,7 +1104,7 @@ class ReaderSession extends ChangeNotifier {
   /// Completes with whether the landing showed: a landing in another edition,
   /// or in another revision of the open file, moves nothing.
   Future<bool> goToLanding(TextLanding landing, HistoryAction kind) async {
-    if (document == null || !_shows(landing)) return false;
+    if (!_canShow(landing)) return false;
     final (:part, :progress) = landing.place;
     return _jump(
       kind,
@@ -1238,31 +1238,36 @@ class ReaderSession extends ChangeNotifier {
       describeTextPlace(place, address: _compatible(place), map: _bookMap);
 
   /// [landing] in words, as [describe] names a place in the open book: its
-  /// page or its share of the book, and its chapter. Before the reader
-  /// measures the open book, and where the book's map names no chapter, as
-  /// in a PDF, the share and the chapter come from the text outline that
-  /// placed the landing. So it follows [bookMapChanges]. Null, as
-  /// [goToLanding] moves nothing, while no book is open, and when [landing]
-  /// is not in the open edition at the file revision that the reader shows.
+  /// page once the book's map knows its pages, else its share of the book,
+  /// and its chapter. The share and, where the map names no chapter, as in
+  /// a PDF, the chapter come from the text outline that placed the landing.
+  /// So it follows [bookMapChanges]. Null exactly when [goToLanding] moves
+  /// nothing: while the reader shows no book, and when [landing] is not in
+  /// the open edition at the file revision that the reader shows.
   PlaceWords? describeLanding(TextLanding landing) {
-    if (document == null || !_shows(landing)) return null;
+    if (!_canShow(landing)) return null;
     final map = _bookMap;
-    if (map == null) {
-      return describeAlong(landing.share, chapter: landing.chapter);
-    }
-    final target = map.targetAt(map.fractionAt(landing.place));
-    return describeAlong(
-      target.fraction,
-      page: target.page,
-      chapter: target.chapter ?? landing.chapter,
-    );
+    final target = map?.targetAt(map.fractionAt(landing.place));
+    return switch (target?.page) {
+      final page? => describeAlong(
+        target!.fraction,
+        page: page,
+        chapter: target.chapter ?? landing.chapter,
+      ),
+      null => describeAlong(
+        landing.share,
+        chapter: target?.chapter ?? landing.chapter,
+      ),
+    };
   }
 
-  /// Whether [landing] is in the open edition, at the file revision that
-  /// the reader shows.
-  bool _shows(TextLanding landing) {
+  /// Whether the reader can show [landing] now: it shows a book, and
+  /// [landing] is in the open edition, at the file revision that the reader
+  /// shows.
+  bool _canShow(TextLanding landing) {
     final (edition, into) = (_edition, landing.into);
-    return edition != null &&
+    return ready &&
+        edition != null &&
         edition.id == into.editionId &&
         edition.files.single.key == into.sourceKey &&
         edition.files.single.revision == into.revision;

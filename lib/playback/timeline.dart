@@ -302,7 +302,7 @@ String _why(Refusal reason) => switch (reason) {
   Refusal.unmeasured => 'Bookfin cannot measure this place',
   Refusal.outsideMatches => 'Only one of these editions has this part',
   Refusal.noOutline => 'The ebook is not downloaded on this phone',
-  Refusal.unsupportedFormat => 'Bookfin cannot yet match this kind of ebook',
+  Refusal.unsupportedFormat => 'Bookfin cannot match this kind of ebook',
   Refusal.unreadable => 'Bookfin cannot read the ebook\'s file',
 };
 

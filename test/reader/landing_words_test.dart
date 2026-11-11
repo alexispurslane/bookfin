@@ -1,9 +1,9 @@
 // In the reader's History, a tile of a listening place names where Go to
 // lands in the open ebook (docs/plans/cross-edition-places.md, "What the
-// person sees"). The reader names a place by the open book's map, which it
-// measures once the book shows. Until then, the tile names the landing by
-// its share of the book and its chapter, from the text outline, and then
-// by its page.
+// person sees"). The reader names a place by its page once it laid out the
+// open book's pages. Until then, the tile names the landing by its share of
+// the book and its chapter. Before the reader shows the book at all, Go to
+// cannot show the landing there, and the tile keeps the place's own words.
 import 'dart:io';
 
 import 'package:bookfin/catalog/model.dart';
@@ -28,80 +28,29 @@ import '../downloads/verified_reads.dart';
 import '../playback/mapped_moves_test.dart' show MediumSpy;
 import '../playback/playback_test.dart'
     show account, LocalFiles, MemoryResume, TestEngine;
-import 'pdf_document_test.dart' show pdfSource;
+import 'history_pages_test.dart' show both, narration;
+import 'native_reader.dart';
 import 'pdf_screen_test.dart' show settleNative;
-
-/// The two source pages of simple.pdf.
-const pages = Edition(
-  id: 'pages',
-  kind: EditionKind.text,
-  label: 'PDF',
-  files: [pdfSource],
-  memberIds: ['pdf'],
-);
-
-/// A recording of [pages] with a chapter mark for each of its chapters, a
-/// minute each.
-const narration = Edition(
-  id: 'narration',
-  kind: EditionKind.audio,
-  label: 'Narrator',
-  files: [
-    SourceFile(
-      itemId: 'audio',
-      displayName: 'River',
-      mediaSourceId: 'm',
-      revision: 'a1',
-      durationMs: 120000,
-      container: 'mp3',
-      sizeBytes: 1,
-      chapters: [AudioChapter('One', 0), AudioChapter('Two', 60000)],
-    ),
-  ],
-  memberIds: ['audio:m'],
-);
-
-const both = Book(
-  id: 'river',
-  title: 'River',
-  author: 'Writer',
-  editions: [pages, narration],
-);
-
-/// The outline of [pages]: chapter One on the first page and chapter Two on
-/// the second, 1000 visible characters each.
-final outline = TextOutline(
-  parts: const [
-    (path: 'page:1', characters: 1000),
-    (path: 'page:2', characters: 1000),
-  ],
-  entries: const [
-    (title: 'One', depth: 0, start: 0),
-    (title: 'Two', depth: 0, start: 1000),
-  ],
-);
+import 'session_test.dart' show edition, source;
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   Pdfrx.pdfiumModulePath = Platform.environment['PDFIUM_LIBRARY'];
   Pdfrx.cacheDirectoryPath = Directory.systemTemp.path;
-  final simple = File('tool/research/readers/fixtures/simple.pdf').absolute;
 
   testWidgets('in the reader, a listening move names its landing by its '
-      'share of the ebook and its chapter until the reader measures the '
-      'open book, and then by its page', (tester) async {
+      'share of the ebook and its chapter until the reader lays out the '
+      'book\'s pages, and then by its page', (tester) async {
     final downloads = LocalFiles()
-      ..files[pdfSource.key] = simple.uri
+      ..files[source.key] = Uri.file('/verified.epub')
       ..files[narration.files.single.key] = Uri.file('/narration.mp3');
     addTearDown(downloads.dispose);
-    final document = await tester.runAsync(
-      () => loadReadingDocument(verified(simple), pdfSource),
-    );
+    final opened = twoChapterBook();
+    final outline = measureTextOutline(opened);
     final reader = ReaderSession(
       downloads: downloads,
       store: MemoryResume(),
-      load: loadPublication,
-      loadDocument: (_, _) async => document!,
+      load: (_) async => opened,
     );
     final crossings = Crossings(
       store: MemoryOutlines(),
@@ -109,7 +58,7 @@ void main() {
       hop: <M, R>(work, input) async => work(input),
     );
     addTearDown(crossings.dispose);
-    // A listening move from the start to 90 s, half of chapter Two. The
+    // A listening move from the start to 30 s, half of chapter One. The
     // player runs on real time, as the app's does.
     late final Playback playback;
     await tester.runAsync(() async {
@@ -120,22 +69,25 @@ void main() {
       );
       await playback.bind(account(), [both]);
       await playback.open(both, narration, autoplay: false);
-      await playback.seekEdition(90000);
+      await playback.seekEdition(30000);
       await playback.flush();
       playback.dismissUndo();
     });
+    final heard = playback.history.first;
+    // The reader opens the book on its own pager, which lays out pages
+    // only once the reader screen shows them.
     await reader.bind(account(), [both]);
-    await tester.runAsync(() => reader.open(both, pages));
-    await tester.runAsync(
-      () => crossings.landing(
-        playback.history.first.after,
-        from: narration,
-        into: pages,
-      ),
-    );
+    await reader.open(both, edition);
+    final landing =
+        (await tester.runAsync(
+              () => crossings.landing(
+                heard.after,
+                from: narration,
+                into: edition,
+              ),
+            ))!
+            as TextLanding;
 
-    // The History opens over the open book before the reader shows it, so
-    // the reader has not measured it.
     final shown = ValueNotifier(false);
     addTearDown(shown.dispose);
     late BuildContext page;
@@ -162,12 +114,13 @@ void main() {
         ),
       ),
     );
-    expect(reader.bookMap, isNull);
+    expect(reader.bookMap, isNotNull);
+    expect(reader.bookMap!.pages, isNull);
     openHistory(page, playback, book: both, showing: EditionKind.text);
     await tester.pumpAndSettle();
     Finder inTimeline(Finder finder) =>
         find.descendant(of: find.byType(HistoryTimeline), matching: finder);
-    await tester.tap(inTimeline(find.text('→ 1:30')));
+    await tester.tap(inTimeline(find.text('Ahead 30 s', findRichText: true)));
     await tester.pumpAndSettle();
     Finder inTile(String role, Finder finder) => find.descendant(
       of: find
@@ -179,29 +132,32 @@ void main() {
       matching: finder,
     );
 
-    // Half of chapter Two: 1500 of the book's 2000 characters.
-    expect(inTile('AFTER', find.text('about 75%')), findsOneWidget);
-    expect(inTile('AFTER', find.text('Two')), findsOneWidget);
+    // Half of chapter One, in the book's visible characters.
+    final (one, two) = (outline.entries[0].start, outline.entries[1].start);
+    final half = ((one + two) / 2 / outline.length * 100).round();
+    expect(half, greaterThan(0));
+    expect(inTile('AFTER', find.text('about $half%')), findsOneWidget);
+    expect(inTile('AFTER', find.text('One')), findsOneWidget);
     expect(inTile('BEFORE', find.text('about 0%')), findsOneWidget);
-    expect(inTile('BEFORE', find.text('One')), findsOneWidget);
-    expect(inTimeline(find.text('1:30')), findsNothing);
+    expect(inTimeline(find.text('0:30')), findsNothing);
 
-    // The reader shows the book under the sheet, and measures it.
+    // The reader shows the book under the sheet, and lays out its pages.
     shown.value = true;
-    for (var wait = 0; wait < 40 && reader.bookMap == null; wait++) {
-      await settleNative(tester);
-    }
-    expect(reader.bookMap, isNotNull);
+    await settleReader(
+      tester,
+      () => reader.bookMap?.pages != null,
+      reason: 'the book was not laid out',
+    );
     await tester.pumpAndSettle();
-    expect(inTile('AFTER', find.text('about p. 2')), findsOneWidget);
-    expect(inTile('AFTER', find.text('Two')), findsOneWidget);
+    final map = reader.bookMap!;
+    final landed = map.targetAt(map.fractionAt(landing.place)).page!;
+    expect(landed, greaterThan(1));
+    expect(inTile('AFTER', find.text('about p. $landed')), findsOneWidget);
+    expect(inTile('AFTER', find.text('One')), findsOneWidget);
     expect(inTile('BEFORE', find.text('about p. 1')), findsOneWidget);
 
-    await tester.pumpWidget(const SizedBox());
-    reader.dispose();
-    await tester.runAsync(reader.flush);
+    await closeNative(tester, reader);
     await tester.runAsync(playback.close);
-    await tester.pump();
   });
 
   testWidgets('in a PDF, a listening move names the page where it lands and '
@@ -284,6 +240,10 @@ void main() {
             ))!
             as TextLanding;
 
+    // The History opens over the open book before the reader shows it, so
+    // Go to cannot show the landing yet.
+    final shown = ValueNotifier(false);
+    addTearDown(shown.dispose);
     late BuildContext page;
     await tester.pumpWidget(
       MaterialApp(
@@ -296,17 +256,18 @@ void main() {
             child: Builder(
               builder: (context) {
                 page = context;
-                return ReaderScreen(reader: reader, onNightChanged: (_) {});
+                return ValueListenableBuilder(
+                  valueListenable: shown,
+                  builder: (_, shown, _) => shown
+                      ? ReaderScreen(reader: reader, onNightChanged: (_) {})
+                      : const SizedBox.expand(),
+                );
               },
             ),
           ),
         ),
       ),
     );
-    for (var wait = 0; wait < 40 && reader.position == null; wait++) {
-      await settleNative(tester);
-    }
-    final start = reader.position!;
     openHistory(page, playback, book: book, showing: EditionKind.text);
     await tester.pumpAndSettle();
     Finder inTimeline(Finder finder) =>
@@ -319,6 +280,22 @@ void main() {
           matching: find.byType(InkWell),
         )
         .first;
+    expect(
+      find.descendant(of: after, matching: find.text(audioTime(heardAt))),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: after, matching: find.textContaining('about')),
+      findsNothing,
+    );
+
+    // The reader shows the book under the sheet.
+    shown.value = true;
+    for (var wait = 0; wait < 40 && reader.position == null; wait++) {
+      await settleNative(tester);
+    }
+    await tester.pumpAndSettle();
+    final start = reader.position!;
 
     // The landing's page holds 60% of The Pendulum's characters.
     final landed = landing.place.part + 1;

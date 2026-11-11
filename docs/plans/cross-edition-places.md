@@ -226,6 +226,8 @@ The thresholds alone do not stop the wrong matches. The measurement suggests one
 As built in boo-bxap:
 
 - `alignEditions` runs the self-check after the coverage limit, which is now 0.3. A pairing that fails both gets the coverage reason.
+- The limit is two pages for every chapter length. The error of a hidden anchor grows with the length of its chapters, so a right pairing of a few very long chapters can fail. "A Christmas Carol" (five staves) is at 1.25 pages.
+- A chance pairing by numbers with exactly three anchors can pass, when its two spans read at about the same rate. Ticket t3-b7wc measures a check of this case.
 - The new refusal is `Refusal.misaligned`. Its note reads "The chapters of these editions do not line up, so this opens the audiobook."
 - A pairing of exactly two anchors has no inner anchor to hide. It is kept only when both anchors pair by the words of their titles, such as "Marley's Ghost" with "MARLEY'S GHOST.". A pairing by numbers alone or by the ordinal fill is refused as `fewMatches`. The reason is the evidence above: all 5 wrong matches paired titles by their numbers, as track numbers or as the chapter numbers of several works. So a titled number match is no evidence that a pairing is right. The measurement found no wrong match that shared title words caused. No two-anchor pairing occurred, so this rule costs no measured match.
 - `test/crossings/alignment_test.dart` reproduces two of the wrong shapes: tracks one chapter late, with the credits and the preface in track 01 (book J), and a work of three chapters against an anthology of three works (book E). The self-check refuses both. The seven public recordings that matched still match.
@@ -401,7 +403,8 @@ As built in t9-4v0r, on the Before, After and Go to tiles of boo-hyl4:
 - A tile of a place of the other medium names its landing, such as "about p. 134", and its detail line names the landing's chapter in the open edition.
 - If no landing exists, the tile keeps the place's own words, such as "1:02:15". A note says why and which screen opens. An example: "The chapters of these editions do not match, so this opens the audiobook." The note wraps, so the whole reason shows. When both ends of a move share one note, it shows once, under both tiles, and each tile still reads it to a screen reader.
 - The sheet starts the alignment of the open edition with the book's editions of the other medium as it opens. Until the alignment arrives, a tile shows the place's own words. When `Crossings` notifies, the landing words replace them. Only the open tiles follow that signal.
-- In the reader, a landing reads as its page by the open book's map, as every reading place does. The map exists only after the reader measures the book. Before that, the tile names the landing by its share of the book's visible characters and by its chapter. The text outline gives both, for example "about 23%" and "Chapter 4". Then the tile changes to "about p. 134" (t9-m4fw). The landing carries its share and its chapter, so the reader does not need the outline. Where the map names no chapter, as in a PDF, the chapter still comes from the outline.
+- In the reader, a landing reads as its page by the open book's map, as every reading place does. The map knows the pages only after the reader lays out the book. Before that, the tile names the landing by its share of the book's visible characters and by its chapter. The text outline gives both, for example "about 23%" and "Chapter 4". Then the tile changes to "about p. 134" (t9-m4fw). The landing carries its share and its chapter, so the reader does not need the outline. Where the map names no chapter, as in a PDF, the chapter still comes from the outline.
+- Before the reader shows the book at all, Go to cannot show the landing in it. Then the tile keeps the place's own words, such as "1:02:15". The tile names a landing exactly when Go to can show it.
 - When the history holds one medium, the rail keeps its one lane.
 
 ### Bookmarks of the other edition
@@ -416,7 +419,7 @@ As built in t9-4v0r, on the Before, After and Go to tiles of boo-hyl4:
 `Crossings` gives no landing in these cases. Design B removes some of them, as its section says.
 
 1. The audio edition has no chapter marks, or the ebook has no contents.
-2. Fewer than two anchors survive the rate check. Two anchors also count as too few when either one pairs by its number alone (boo-bxap).
+2. Fewer than two anchors survive the rate check. Two anchors also count as too few unless both pair by the words of their titles (boo-bxap).
 3. The place lies more than one page (45 s) outside every span. Such places are in text that only one edition has, for example an introduction that the narrator does not read.
 4. The anchors cover less than three tenths of the audio time. This catches abridged recordings and other editions. Until boo-bxap, the limit was half.
 5. The anchors fail the self-check: hidden one at a time, the inner anchors land more than two pages from their own starts, at the median. The note says "The chapters of these editions do not line up" (boo-bxap).
@@ -439,7 +442,8 @@ As built in t9-nl30, `pdfOutlineOf` makes the text outline of a PDF edition:
 ### Engine rules
 
 - `measureTextOutline` parses every section of the book once, in one `Isolate.run` for each ebook edition. The matching runs in a second hop, once for each pair of editions. Its table has at most about 200 × 200 cells.
-- A PDF outline needs PDFium, which runs on pdfrx's one worker isolate. `measurePdfOutline` opens its own handle of the file there and reads the bookmarks. Then it counts each page's text layer in slices of about 8 ms, as low-priority work. So a page that the reader asks for waits at most about one slice. Only the counts come back to the UI isolate.
+- A PDF outline needs PDFium, which runs on pdfrx's one worker isolate. `measurePdfOutline` opens its own handle of the file there and reads all the bookmarks in one step. Then it counts each page's text layer in slices of about 8 ms, as low-priority work. A page that the reader asks for waits at most about one slice, or the time to open the file and read its bookmarks. Only the bookmarks and the counts come back to the UI isolate.
+- The first outline of a long PDF reads the text layer of every page. Its time on a phone is not measured yet (ticket t3-l03x). Go to on a listening place waits for the outline.
 - `Crossings` keeps each text outline in a small JSON cache, keyed by edition id and file revision, with an atomic write. A removed download keeps its outline, so its reading places still map. A later launch does not parse the book again.
 - The History sheet draws at once with each entry's own words. After the alignment arrives, the landing words fill in. No spinner shows.
 - A mapped move saves through the existing move path. These new tests prove the data safety of engine rule 3:
@@ -455,7 +459,7 @@ As built in t9-nl30, `pdfOutlineOf` makes the text outline of a PDF edition:
 - An outline belongs to the current revision of its edition's file.
 - Anchors increase strictly in time and in characters.
 - Every span reads at 0.5 to 2 times the median rate of the pair.
-- Each inner anchor, hidden and placed from its two neighbors, lands at most two pages from its own start, at the median.
+- Hidden one at a time and placed from their two neighbors, the inner anchors land at most two pages from their own starts, at the median.
 - A landing by chapters lies inside its span, or within one page of it.
 
 ## Design A: matched chapters and proportional placement

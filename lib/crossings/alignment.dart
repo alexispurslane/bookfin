@@ -204,8 +204,8 @@ enum Refusal {
 
   /// Fewer than two audio chapters pair with contents entries, after the
   /// rate check: the chapters of the two editions do not match. Two that
-  /// pair count as too few when either pairs by numbers alone, because no
-  /// third pair can check them.
+  /// pair count as too few unless each shares half of its title's words or
+  /// more with its entry's title, because no third pair can check them.
   fewMatches,
 
   /// The paired chapters cover less than three tenths of the recording, as
@@ -253,8 +253,8 @@ sealed class EditionAlignment {
 ///   anchor to the end of its chapter.
 /// - Every span reads at 0.5 to 2 times the median rate of the spans
 ///   between anchors.
-/// - Each inner anchor, hidden and placed from its two neighbors, lands at
-///   most two pages from its own start, at the median.
+/// - Hidden one at a time and placed from their two neighbors, the inner
+///   anchors land at most two pages from their own starts, at the median.
 final class MatchedChapters extends EditionAlignment {
   MatchedChapters._(this.anchors, this.spans, this._rate);
 

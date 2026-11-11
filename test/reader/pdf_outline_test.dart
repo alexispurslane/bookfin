@@ -192,11 +192,28 @@ void main() {
     );
   });
 
-  test('a scanned page, without a text layer, counts as a printed page of '
-      'text in a scanned book', () async {
+  test('a scanned page, without a text layer, counts as more text than a '
+      'phone page holds, so that a place on it lands pages away from the '
+      'next scanned page', () async {
     final outline = await measure(scanned);
 
-    expect(outline.parts.single.characters, scannedPageCharacters);
+    expect(
+      outline.parts.single.characters,
+      greaterThan(MatchedChapters.pageCharacters),
+    );
+  });
+
+  test('a PDF outline measures again after the reader closed every PDF and '
+      'stopped PDFium', () async {
+    await measure(marginsBook);
+    await PdfRuntime.instance.shutdown();
+
+    final outline = await measure(marginsBook);
+
+    expect(outline.entries.map((entry) => entry.title), [
+      'Falling Bodies',
+      'The Pendulum',
+    ]);
   });
 
   test('a PDF that PDFium cannot open has no outline, so Bookfin says that '
@@ -217,21 +234,19 @@ void main() {
       expect(outline.parts.map((part) => part.characters), [1200, 0, 1100]);
     });
 
-    test('in a scanned book, where most pages lack a text layer, each such '
-        'page counts as a printed page of text, so that places fall by '
-        'pages', () {
+    test('in a scanned book, where most pages lack a text layer, places '
+        'fall by pages: halfway through the book is the start of the third '
+        'of four pages', () {
+      final outline = pdfOutlineOf(const [0, 0, 0, 0], const []);
+
+      expect(outline.placeAt(outline.length / 2), (part: 2, progress: 0.0));
+    });
+
+    test('in a scanned book, a page with a text layer keeps its own '
+        'characters', () {
       final outline = pdfOutlineOf(const [0, 0, 0, 900], const []);
 
-      expect(outline.parts.map((part) => part.characters), [
-        scannedPageCharacters,
-        scannedPageCharacters,
-        scannedPageCharacters,
-        900,
-      ]);
-      expect(
-        scannedPageCharacters,
-        greaterThan(MatchedChapters.pageCharacters),
-      );
+      expect(outline.parts.last.characters, 900);
     });
 
     test('a bookmark starts at its page, after the characters above its '
@@ -266,6 +281,18 @@ void main() {
         'Two',
         'Index',
       ]);
+    });
+
+    test('a bookmark without a title names no chapter and is left out', () {
+      final outline = pdfOutlineOf(
+        const [1000, 1000],
+        const [
+          (title: 'One', depth: 0, page: 1, above: 0),
+          (title: ' ', depth: 0, page: 2, above: 0),
+        ],
+      );
+
+      expect(outline.entries.map((entry) => entry.title), ['One']);
     });
 
     test('a bookmark to a page outside the book is left out', () {

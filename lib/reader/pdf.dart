@@ -768,7 +768,12 @@ class PdfRuntime {
   /// worker as background work, beside the open books, and [shutdown]
   /// waits for it.
   Future<TextOutline> measureOutline(String path) async {
-    await _admit(() => _initialization ??= pdfrxFlutterInitialize());
+    await _admit(() async {
+      await (_initialization ??= pdfrxFlutterInitialize());
+      // An open book initializes PDFium again after [shutdown] destroyed
+      // it, and this work opens no book, so it initializes it here.
+      await native.PdfrxEntryFunctions.instance.init();
+    });
     final work = measurePdfOutline(path);
     _measuring.add(work);
     try {
