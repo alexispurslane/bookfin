@@ -876,3 +876,65 @@ In S2, a new data source owns the heard windows of each audio edition: their tim
    matched chapters, or switch screens and say why.
 4. When speech is still working at the tap, Go to waits for the sentence,
    with a short progress state and Cancel.
+5. The speech model ships inside the app: tiny.en at 5 bits (q5_1, 32 MB)
+   as an uncompressed APK asset, with no download. The package check
+   (`tool/reader/ocr_package.py verify`) confirms that the release APK holds
+   the model with its pinned SHA-256. Decided before the build of boo-vh77.
+
+## Build design of S2 (boo-vh77)
+
+Written 2026-11-11 at the start of the build. It applies the decision above to the code of design A.
+
+### Owners
+
+| Fact or decision | Owner | Readers |
+| --- | --- | --- |
+| The whisper model, the decoder and the worker that runs them | `Speech`, the speech runtime: one long-lived worker isolate over the native library `bookfin_speech` | `HeardWindows` |
+| The heard windows of each audio edition, and the queue of windows to hear | `HeardWindows`, a new app-wide data source | `Crossings` |
+| When a window is heard: every 5 minutes of listening, at moves and bookmarks, the fill | `HeardWindows`, from the position and the records that `Playback` publishes | None |
+| The words of an ebook edition, and the searches in them | `BookWords`, a worker isolate that `Crossings` owns | `Crossings` |
+| The landing of a place, by chapters or by speech | `Crossings`, as in design A | Timeline controller |
+| Whether Go to waits, and Cancel | `openHistory`, the timeline controller | `HistoryTimeline` |
+
+```mermaid
+flowchart LR
+  P[Playback: position, moves, bookmarks] -- reports --> H[HeardWindows: windows per audio edition, queue]
+  D[(Downloads: audio files)] --> H
+  H -- hear a window --> S[Speech: worker isolate, whisper.cpp, decoder]
+  H --> F[(bookfin-heard: one file per edition, derived)]
+  H -- windows --> X[Crossings: landings]
+  E[(Downloads: ebook files)] --> W[BookWords: words of an ebook, searches]
+  W --> X
+  X -- landing or Refining --> C[openHistory: tiles, Go to, wait and Cancel]
+```
+
+A heard window is one transcribed stretch of a downloaded audio file: its edition, file, file revision, start and length in milliseconds, and its heard words, each with its time from the window's start. It names no ebook place, so a new ebook revision or another ebook edition reuses it.
+
+### When a window is heard
+
+- Listening: after each 5 minutes of listening on this phone, the 8 s heard last.
+- Moves and bookmarks: a new listening move, pause or bookmark of this phone gets one 8 s window centered on each place that it names. A window centered on a place puts the place's word in the middle of the window, where whisper's word times are surest.
+- The fill: a place that the listening timeline names and no window covers, such as an old entry or one that another device synced. It waits until the phone charges with battery saver off and the queue is otherwise empty, newest first.
+- The tap: a place that History needs now. It goes first in the queue.
+
+Only downloaded audio editions get windows. The worker runs whisper on a native thread at a low priority (nice 10), with 2 threads, or 4 for a tap. No window starts before the first useful frame.
+
+### How Crossings lands a place by speech
+
+A listening place into the ebook:
+
+1. A kept window covers the place: search its words near the estimate, and land on the book word of the heard word nearest the place's time.
+2. Two found windows lie on both sides of the place, at most 10 minutes apart, and read at a narration rate: interpolate between them. The 99th percentile error at 10 minutes is under a page ("The anchor map"), so the landing names its page without "about".
+3. Otherwise, hear a window at the place, as at a tap, then step 1.
+
+A reading place into the audiobook:
+
+1. Estimate the time: between the two nearest found windows, else by matched chapters, else by the whole-book share.
+2. Run the reading-place loop of the prototype (version 4) from the estimate. A kept window that already holds the target word ends it at once.
+
+The estimate of matched chapters, or of found windows, shows with "about" while speech works. Crossings then reports `Refining`. Go to waits for the end of the work, with a progress state and Cancel on the History tile. If speech refuses, the landing of matched chapters stays, or Go to switches screens and says why, as in design A. Speech starts when an entry of the other medium opens, so most taps do not wait.
+
+### Not in the build
+
+- PDF editions: t2-9csd.
+- The macOS desktop app: t2-0kl0. The host library serves tests only.
