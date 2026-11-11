@@ -2,6 +2,7 @@ import copy
 import unittest
 
 from results import summarize
+from tables import PREPARED, book_table, _ms
 from test_results import sample
 from test_validation import raw, reference
 from validation import certify
@@ -60,6 +61,16 @@ def cells(rows, name="prepared_page"):
 
 
 class PreparedPageIntervalTest(unittest.TestCase):
+    def test_a_median_halfway_between_two_tenths_rounds_up_in_the_published_table(self):
+        # 35.8 and 35.9 ms have the exact median 35.85 ms, which rounds to 35.9.
+        rows = [prepared(number, engine="webview", preparation_ns=1_100_000 + duration,
+                         engine_ready_ns=1_200_000 + duration, frame_ns=40_000_000, drawn_ns=41_000_000,
+                         end_ns=50_000_000)
+                for number, duration in enumerate((35_800_000, 35_900_000))]
+        summary = summarize(rows)
+        self.assertIn("| WebView | Page turn | 35.9 / 35.9 (2) |", book_table(summary, PREPARED))
+        self.assertEqual(_ms(summary["intervals"]["prepared_page"]["cells"][0]["mean_ms"]), "35.9")
+
     def test_every_engine_is_timed_from_its_own_entry_to_its_prepared_page(self):
         for engine in SCOPES:
             with self.subTest(engine=engine):

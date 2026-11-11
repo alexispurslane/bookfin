@@ -1,8 +1,8 @@
 import json
 import math
 import re
-import statistics
 from collections import defaultdict
+from fractions import Fraction
 
 
 ENGINES = ("bookfin", "webview", "koreader")
@@ -68,18 +68,25 @@ def _summarize(rows, start, end, engines, scopes):
         else:
             grouped[(row["engine"], row["book"], row["operation"])].append(row)
     cells = []
+    exact_means = {}
     for (engine, book, operation), samples in sorted(grouped.items()):
         idle = frame_wait if end == "drawn_ns" else (lambda row: 0)
-        durations = sorted((row[end] - row[start] - idle(row)) / 1000000 for row in samples)
+        # Integer nanoseconds and exact fractions until the last step, so that
+        # a value halfway between two tenths of a millisecond stays exact.
+        durations = sorted(row[end] - row[start] - idle(row) for row in samples)
+        count = len(durations)
+        exact_means[(engine, book, operation)] = Fraction(sum(durations), count)
+        middle = (Fraction(durations[count // 2]) if count % 2
+                  else Fraction(durations[count // 2 - 1] + durations[count // 2], 2))
         cells.append({
             "engine": engine, "book": book, "operation": operation,
             "boundary": BOUNDARY if scopes is None else f"{start}_to_{end}",
             "scope": BOUNDARY if scopes is None else scopes[engine],
-            "count": len(samples),
+            "count": count,
             "rounds": len({row["round"] for row in samples}),
-            "mean_ms": statistics.mean(durations),
-            "median_ms": statistics.median(durations),
-            "p90_ms": durations[math.ceil(len(durations) * .9) - 1],
+            "mean_ms": _milliseconds(exact_means[(engine, book, operation)]),
+            "median_ms": _milliseconds(middle),
+            "p90_ms": _milliseconds(durations[math.ceil(count * Fraction(9, 10)) - 1]),
         })
     complete = len(cells) == len(engines) * 3 * len(OPERATIONS) and all(
         cell["count"] >= (10 if cell["operation"] == "fresh_open" else 30)
@@ -92,7 +99,8 @@ def _summarize(rows, start, end, engines, scopes):
             if len(books) == 3:
                 means.append({"engine": engine, "operation": operation, "book_count": 3,
                               "scope": books[0]["scope"],
-                              "mean_ms": statistics.mean(cell["mean_ms"] for cell in books)})
+                              "mean_ms": _milliseconds(sum(exact_means[(engine, cell["book"], operation)]
+                                                           for cell in books) / 3)})
     return {"cells": cells, "equal_book_means": means, "excluded": excluded, "complete": complete}
 
 
@@ -124,6 +132,11 @@ def _invalid_phases(row):
     elif clock["offset_ns"] != 0 or clock["uncertainty_ns"] != 0:
         return "CLOCK_BOOTTIME needs no conversion"
     return None
+
+
+def _milliseconds(nanoseconds):
+    """The float nearest to an exact number of nanoseconds, in milliseconds."""
+    return float(Fraction(nanoseconds) / 1_000_000)
 
 
 def frame_wait(row):
