@@ -6,10 +6,12 @@ import 'package:flutter/foundation.dart';
 import '../catalog/model.dart';
 import '../foundation/hop.dart';
 import '../playback/audio_outline.dart';
-import '../playback/records.dart' show editionSources;
+import '../playback/records.dart' show MatchedBy, editionSources;
 import '../reader/document.dart';
 import '../reader/text_outline.dart';
 import 'alignment.dart';
+
+export '../playback/records.dart' show MatchedBy;
 
 /// Where [Crossings] keeps the text outlines that it measured, between
 /// launches. The outlines are derived data: a lost or unreadable one costs
@@ -22,10 +24,6 @@ abstract class OutlineStore {
   /// write leaves the old value or the new one, never a broken one.
   Future<void> write(String key, String value);
 }
-
-/// How Bookfin found a landing. Design A finds every landing by chapters:
-/// an estimate, which the words of the landing call "about".
-enum MatchedBy { chapters }
 
 /// Where a place of one edition lands in the edition of the other medium
 /// of the same book: a [Landing], or [NoLanding] with the reason why none

@@ -13,6 +13,8 @@ import 'package:bookfin/playback/store.dart' show LocalResumeStore;
 import 'package:bookfin/sync/journal.dart' show RecordJournal;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart' show sqfliteFfiInit;
+import 'package:bookfin/crossings/crossings.dart';
+import 'package:bookfin/playback/playback.dart' show ListeningChanges;
 import 'package:bookfin/playback/records.dart';
 import 'package:bookfin/reader/book_map.dart';
 import 'package:bookfin/reader/document.dart';
@@ -1045,6 +1047,134 @@ void main() {
       expect(move.after.sourcePage, 2);
     });
   });
+
+  group('a mapped move', () {
+    /// A listening place of the book's audio edition.
+    const heard = AudioPosition(
+      editionId: 'recording',
+      sourceKey: 'audio:m1',
+      revision: 'a1',
+      milliseconds: 3735000,
+    );
+
+    /// The landing of [heard] halfway through the third section of the
+    /// open book.
+    TextLanding landing({String revision = 'revision-one'}) => TextLanding(
+      heard,
+      (part: 2, progress: .5),
+      into: (
+        editionId: epubEdition.id,
+        sourceKey: epubFile.key,
+        revision: revision,
+      ),
+    );
+
+    test('Go to a listening place shows its landing, as a reading move '
+        'from the shown place, with Undo', () async {
+      final reader = await openBook();
+      final start = reader.position!;
+
+      late bool went;
+      await after(reader, () async {
+        went = await reader.goToLanding(
+          landing(),
+          HistoryAction.historyRestore,
+        );
+      });
+
+      expect(went, isTrue);
+      expect(shownSection(reader), 2);
+      final move = moves(reader).single;
+      expect(move.kind, HistoryAction.historyRestore);
+      expect(json(move.before), json(start));
+      expect(json(move.after), json(reader.position!));
+      expect(move.counterpartOf, same(heard));
+      expect(move.matchedBy, MatchedBy.chapters);
+      expect(reader.undoOffer?.action, same(move));
+    });
+
+    test(
+      'Undo after a mapped jump returns to the exact place before it',
+      () async {
+        final reader = await openBook();
+        final start = reader.position!;
+        await after(
+          reader,
+          () => reader.goToLanding(landing(), HistoryAction.historyRestore),
+        );
+
+        await after(reader, reader.undoMove);
+
+        expect(json(reader.position!), json(start));
+      },
+    );
+
+    test('a mapped jump saves its move with the new place in one change '
+        'set, and writes no listening record', () async {
+      final listening = <Object>[];
+      final spy = _ListeningSpy(listening);
+      final reader = await sessionOf(bookOf(epubEdition), records: spy);
+      await openIn(reader);
+      spy.saves.clear();
+
+      await after(
+        reader,
+        () => reader.goToLanding(landing(), HistoryAction.historyRestore),
+      );
+
+      final move = moves(reader).single;
+      final changes = spy.saves.singleWhere(
+        (changes) => changes.history.containsKey(move.id),
+      );
+      expect(changes.resumes, [json(reader.position!)]);
+      expect(listening, isEmpty);
+    });
+
+    test('Go to a listening bookmark records a bookmark restore and copies '
+        'no bookmark', () async {
+      final reader = await openBook();
+
+      await after(
+        reader,
+        () => reader.goToLanding(landing(), HistoryAction.bookmarkRestore),
+      );
+
+      expect(moves(reader).single.kind, HistoryAction.bookmarkRestore);
+      expect(reader.bookmarks, isEmpty);
+    });
+
+    test('a landing in another revision of the ebook moves nothing', () async {
+      final reader = await openBook();
+      final start = reader.position!;
+      store.saves.clear();
+
+      late bool went;
+      await after(reader, () async {
+        went = await reader.goToLanding(
+          landing(revision: 'revision-two'),
+          HistoryAction.historyRestore,
+        );
+      });
+
+      expect(went, isFalse);
+      expect(json(reader.position!), json(start));
+      expect(moves(reader), isEmpty);
+      expect(store.saves, isEmpty);
+    });
+  });
+}
+
+/// A reading store that keeps each change set, and notes each save of
+/// listening records in [listening].
+class _ListeningSpy extends MoveStore {
+  _ListeningSpy(this.listening);
+  final List<Object> listening;
+
+  @override
+  Future<void> save(String accountKey, ListeningChanges changes) {
+    listening.add(changes);
+    return super.save(accountKey, changes);
+  }
 }
 
 /// A navigator whose jumps never end.

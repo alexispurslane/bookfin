@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 
 import '../catalog/jellyfin.dart';
 import '../catalog/model.dart';
+import '../crossings/crossings.dart' show AudioLanding;
 import '../downloads/downloads.dart';
 import '../foundation/time.dart' show audioTime;
 import 'audio_outline.dart';
@@ -142,6 +143,10 @@ class ListeningChanges {
     };
   }
 }
+
+/// The place of another edition that a mapped move went to the landing of,
+/// and how Bookfin found the landing.
+typedef _Counterpart = ({Place place, MatchedBy matchedBy});
 
 // The revision is a gesture-cancellation counter, not a media-source revision.
 typedef _SliderGesture = ({AudioPosition origin, int revision});
@@ -499,6 +504,33 @@ class Playback extends ChangeNotifier {
           HistoryAction.historyRestore,
         );
       });
+
+  /// Plays from [landing], where a place of an ebook edition lands in the
+  /// open edition, as a move of [kind] in the listening track from the place
+  /// that plays now, with Undo: a mapped move. The move names the ebook place
+  /// that it went to and how Bookfin found the landing. No reading record
+  /// changes. Completes with whether the move happened: a landing outside the
+  /// open edition moves nothing.
+  Future<bool> goToLanding(AudioLanding landing, HistoryAction kind) {
+    var went = false;
+    return _enqueue(() async {
+      final edition = _edition;
+      if (!_restored || edition == null || !landing.place.fits(edition)) {
+        return;
+      }
+      final wasPlaying = _playing;
+      went = await _seekPosition(
+        edition.files.indexWhere((file) => file.key == landing.place.sourceKey),
+        landing.place.milliseconds,
+        kind,
+        counterpart: (place: landing.from, matchedBy: landing.matchedBy),
+      );
+      if (went && wasPlaying && !_active) {
+        _active = true;
+        await engine.play();
+      }
+    }).then((_) => went);
+  }
 
   Future<void> addBookmark({
     AudioPosition? position,
@@ -1476,6 +1508,7 @@ class Playback extends ChangeNotifier {
     AudioPosition before,
     AudioPosition after, {
     String? device,
+    _Counterpart? counterpart,
   }) {
     assert(
       _restored && _book != null && _edition != null && after.fits(_edition!),
@@ -1489,6 +1522,8 @@ class Playback extends ChangeNotifier {
       bookTitle: _book!.title,
       editionLabel: _edition!.label,
       device: device,
+      counterpartOf: counterpart?.place,
+      matchedBy: counterpart?.matchedBy,
     );
     _history = [..._history, event];
     _changedHistory[event.id] = event.toJson();
@@ -1502,6 +1537,7 @@ class Playback extends ChangeNotifier {
     HistoryAction kind, {
     AudioPosition? before,
     _SliderGesture? gesture,
+    _Counterpart? counterpart,
   }) async {
     final generation = _generation;
     final previous = gesture?.origin ?? before ?? _position!;
@@ -1532,7 +1568,7 @@ class Playback extends ChangeNotifier {
       );
     }
     _position = _positionForSample(confirmed);
-    _record(kind, previous, _position!);
+    _record(kind, previous, _position!, counterpart: counterpart);
     _accept(confirmed);
     _save();
     await _writes;

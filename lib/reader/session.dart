@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 
 import '../catalog/jellyfin.dart';
 import '../catalog/model.dart';
+import '../crossings/crossings.dart' show TextLanding;
 import '../downloads/downloads.dart';
 import '../foundation/time.dart' show roundEstimate;
 import '../playback/playback.dart';
@@ -966,6 +967,7 @@ class ReaderSession extends ChangeNotifier {
       move.before ?? position!,
       position!,
       device: move.device,
+      counterpart: move.counterpart,
     );
     if (move.before != null) {
       _undo = move.kind == HistoryAction.undo ? null : event;
@@ -980,6 +982,7 @@ class ReaderSession extends ChangeNotifier {
     TextPosition before,
     TextPosition after, {
     String? device,
+    _Counterpart? counterpart,
   }) {
     final event = HistoryEvent(
       id: recordId(),
@@ -990,6 +993,8 @@ class ReaderSession extends ChangeNotifier {
       bookTitle: _book!.title,
       editionLabel: edition!.label,
       device: device,
+      counterpartOf: counterpart?.place,
+      matchedBy: counterpart?.matchedBy,
     );
     _history = [event, ..._history];
     return event;
@@ -1092,6 +1097,29 @@ class ReaderSession extends ChangeNotifier {
     );
   }
 
+  /// Shows [landing], where a place of an audio edition lands in the open
+  /// ebook edition, as a move of [kind] in the reading track from the shown
+  /// place, with Undo: a mapped move. The move names the audio place that it
+  /// went to and how Bookfin found the landing. No listening record changes.
+  /// Completes with whether the landing showed: a landing in another edition,
+  /// or in another revision of the open file, moves nothing.
+  Future<bool> goToLanding(TextLanding landing, HistoryAction kind) async {
+    final (edition, into) = (_edition, landing.into);
+    if (edition == null ||
+        document == null ||
+        edition.id != into.editionId ||
+        edition.files.single.key != into.sourceKey ||
+        edition.files.single.revision != into.revision) {
+      return false;
+    }
+    final (:part, :progress) = landing.place;
+    return _jump(
+      kind,
+      (navigator) => navigator.seek(part, progress),
+      counterpart: (place: landing.from, matchedBy: landing.matchedBy),
+    );
+  }
+
   /// Takes back the move of [undoOffer]: shows the place where it began, as
   /// an undo move, and ends the offer. If that place cannot be shown, the
   /// offer stays.
@@ -1172,8 +1200,9 @@ class ReaderSession extends ChangeNotifier {
   /// does not run.
   Future<bool> _jump(
     HistoryAction kind,
-    Future<void> Function(DocumentNavigator navigator) go,
-  ) {
+    Future<void> Function(DocumentNavigator navigator) go, {
+    _Counterpart? counterpart,
+  }) {
     final generation = token;
     final jump = _jumps.then((_) async {
       final navigator = _navigator;
@@ -1189,6 +1218,7 @@ class ReaderSession extends ChangeNotifier {
               shown: _visibleAddress,
               end: _pager?.shownEnd,
               token: token,
+              counterpart: counterpart,
             );
       try {
         return await _navigate(() => go(navigator));
@@ -1674,6 +1704,7 @@ class _Move {
     this.shown,
     this.end,
     this.device,
+    this.counterpart,
   });
   final HistoryAction kind;
 
@@ -1685,6 +1716,10 @@ class _Move {
   /// The name of the device that saved the place where an open ends.
   final String? device;
 
+  /// For a mapped move, the place of the other edition that it goes to the
+  /// landing of, and how Bookfin found the landing.
+  final _Counterpart? counterpart;
+
   /// The address and the last place of the page that showed when the jump
   /// began, or null when that page belongs to another book.
   final ReaderAddress? shown;
@@ -1693,6 +1728,10 @@ class _Move {
   /// The [ReaderSession.token] of the book where the jump ends.
   final int token;
 }
+
+/// The place of another edition that a mapped move went to the landing of,
+/// and how Bookfin found the landing.
+typedef _Counterpart = ({Place place, MatchedBy matchedBy});
 
 /// The text size of an account that has not used the size buttons.
 const _defaultFontSize = 20.0;

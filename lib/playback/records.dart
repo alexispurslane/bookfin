@@ -85,6 +85,8 @@ class HistoryEvent<P extends Place> {
     required this.bookTitle,
     required this.editionLabel,
     this.device,
+    this.counterpartOf,
+    this.matchedBy,
   });
   final String id;
   final DateTime at;
@@ -103,6 +105,15 @@ class HistoryEvent<P extends Place> {
   /// The name of the device that saved [after], for a book that opened at
   /// a place that another device saved, or null.
   final String? device;
+
+  /// For a mapped move, the place of the other medium's edition whose
+  /// landing the move went to, or null for any other move. A mapped move
+  /// has both this and [matchedBy].
+  final Place? counterpartOf;
+
+  /// For a mapped move, how Bookfin found its landing, or null for any
+  /// other move. A name that this build does not know reads as null.
+  final MatchedBy? matchedBy;
 
   bool get changesPosition => switch (kind) {
     HistoryAction.seek ||
@@ -126,6 +137,11 @@ class HistoryEvent<P extends Place> {
     'bookTitle': bookTitle,
     'editionLabel': editionLabel,
     'device': ?device,
+    'counterpartOf': ?switch (counterpartOf) {
+      null => null,
+      final place => encodePlace(place),
+    },
+    'matchedBy': ?matchedBy?.name,
   };
 
   /// The move that [value] holds, whose places [decodePlace] decodes, for
@@ -146,6 +162,7 @@ class HistoryEvent<P extends Place> {
         (value['device'] != null && value['device'] is! String)) {
       throw const FormatException('Invalid history action');
     }
+    final counterpart = value['counterpartOf'];
     return HistoryEvent(
       id: value['id'] as String,
       at: DateTime.parse(value['at'] as String),
@@ -155,9 +172,18 @@ class HistoryEvent<P extends Place> {
       bookTitle: value['bookTitle'] as String,
       editionLabel: value['editionLabel'] as String,
       device: value['device'] as String?,
+      counterpartOf: counterpart == null ? null : decodeAnyPlace(counterpart),
+      matchedBy: MatchedBy.values
+          .where((matched) => matched.name == value['matchedBy'])
+          .firstOrNull,
     );
   }
 }
+
+/// How Bookfin found the landing of a mapped move: by matched chapters, an
+/// estimate, which the words of a landing call "about" (docs/plans/
+/// cross-edition-places.md, design A). Each name is stored in JSON.
+enum MatchedBy { chapters }
 
 /// Where the saved place of an edition came from, as the record store's
 /// journal says: [own], the last place that this installation saved there,
@@ -273,6 +299,15 @@ class Bookmark<P extends Place> {
     );
   }
 }
+
+/// The place that [value] holds, of the medium that its keys tell:
+/// `milliseconds` for a listening place, `anchor` for a reading place.
+/// Throws a [FormatException] when it holds neither.
+Place decodeAnyPlace(Object? value) => switch (value) {
+  {'milliseconds': _} => decodePosition(value),
+  {'anchor': _} => decodeTextPosition(value),
+  _ => throw const FormatException('Invalid saved place.'),
+};
 
 /// The JSON of [place], as its medium writes it.
 Map<String, dynamic> encodePlace(Place place) => switch (place) {
