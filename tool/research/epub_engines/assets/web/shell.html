@@ -89,8 +89,8 @@ async function report(operation, eventId, engineStart) {
     const contents = rendition.getContents();
     contents.forEach(content => content.document.documentElement.getBoundingClientRect());
     const preparation = performance.now();
-    // Android requests the drawn-page callback before this call returns, so the
-    // request reaches the renderer before the page's frame can start.
+    // Android requests the drawn-page callback before this call returns. A frame
+    // whose vsync came first can still lead; collection counts later answers.
     Probe.ready(JSON.stringify({operation, location: location.start.cfi, location_format:"epub_cfi",
         preparation_event_id:eventId, preparation_operation:operation,
         preparation_scope:"webview_layout_fonts_and_decoded_page_images",

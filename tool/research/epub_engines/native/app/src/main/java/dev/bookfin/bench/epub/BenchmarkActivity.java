@@ -228,8 +228,8 @@ public final class BenchmarkActivity extends Activity {
                 }
             }));
         }
-        // Returns only after the UI thread requested the drawn-page callback. The request then
-        // reaches the renderer before the page's JavaScript yields and its frame can start.
+        // Returns only after the UI thread requested the drawn-page callback, so the request is
+        // sent before the page's JavaScript yields. A frame whose vsync came first can still lead.
         @JavascriptInterface public void ready(String raw) throws InterruptedException {
             long ready = SystemClock.elapsedRealtimeNanos();
             CountDownLatch requested = new CountDownLatch(1);
