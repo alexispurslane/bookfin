@@ -1,6 +1,6 @@
 ---
 id: boo-sy2d
-status: open
+status: in_progress
 deps: [boo-yjq6]
 links: []
 created: 2026-11-11T20:09:32Z
