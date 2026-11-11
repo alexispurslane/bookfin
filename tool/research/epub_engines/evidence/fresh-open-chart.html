@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>
+:root{color-scheme:light dark;font-family:var(--font-sans,system-ui);color:var(--foreground)}body{margin:0}p{font-size:13px;line-height:1.55;color:var(--muted-foreground)}.legend{display:flex;gap:18px;flex-wrap:wrap;font-size:12px}.legend span::before{content:"";display:inline-block;width:10px;height:10px;margin-right:6px;background:var(--color);border-radius:2px}svg{display:block;width:100%;height:390px}svg text{fill:var(--foreground);font-family:var(--font-sans,system-ui);font-size:12px}.grid{stroke:var(--border)}.tick{fill:var(--muted-foreground)}.book{font-size:14px;font-weight:600}
+</style></head><body>
+<div class="legend"><span style="--color:var(--chart-1)">Bookfin</span><span style="--color:var(--chart-2)">WebView + epub.js</span><span style="--color:var(--chart-3)">KOReader engine in shell</span></div>
+<svg id="chart" viewBox="0 0 700 390" role="img" aria-label="Fresh selected-chapter opens on one Android emulator. Bars show medians, whiskers show p90, in milliseconds. Twelve independent process runs per engine and book."></svg>
+<p>Fresh selected-chapter opens: bars show medians; whiskers show p90. Labels give median / p90 in milliseconds. Each engine and book has 12 independent process runs.</p>
+<p>Boundary: request to independently verified window-copy completion, including PixelCopy overhead, not physical display latency. KOReader completes whole-book pagination; Bookfin backfills; WebView lays out chapters lazily. Layouts and image sizes differ. Release shells use AndroidJUnitRunner on the same software-rendered Android emulator. This is not an overall engine ranking.</p>
+<script>
+const data=[{book:"Pride and Prejudice · prose",values:[[503.9315625,554.132125],[550.4428965,562.03025],[251.994688,321.541792]]},{book:"Moby-Dick · long chapter",values:[[621.428209,650.980959],[549.729396,564.342584],[326.279021,370.2505]]},{book:"Alice · illustrated",values:[[700.31975,825.547667],[682.922834,749.878042],[183.225125,215.993167]]}];
+const chart=document.getElementById("chart");
+const element=(tag,attributes,text)=>{const node=document.createElementNS("http://www.w3.org/2000/svg",tag);Object.entries(attributes).forEach(([key,value])=>node.setAttribute(key,value));if(text!==undefined)node.textContent=text;chart.appendChild(node);return node};
+const scale=value=>34+value*.57;
+[0,200,400,600,800].forEach(value=>{element("line",{x1:scale(value),x2:scale(value),y1:12,y2:350,class:"grid"});element("text",{x:scale(value),y:375,"text-anchor":"middle",class:"tick"},value+" ms")});
+data.forEach((group,groupIndex)=>{const top=groupIndex*115;element("text",{x:34,y:top+23,class:"book"},group.book);group.values.forEach(([median,p90],engineIndex)=>{const middle=top+43+engineIndex*27;const color="var(--chart-"+(engineIndex+1)+")";element("rect",{x:34,y:middle-8,width:median*.57,height:16,rx:3,fill:color});element("line",{x1:scale(median),x2:scale(p90),y1:middle,y2:middle,stroke:color,"stroke-width":2});element("line",{x1:scale(p90),x2:scale(p90),y1:middle-5,y2:middle+5,stroke:color,"stroke-width":2});element("text",{x:scale(p90)+9,y:middle+4},median.toFixed(1)+" / "+p90.toFixed(1))})});
+</script></body></html>

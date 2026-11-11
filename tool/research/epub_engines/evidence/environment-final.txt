@@ -1,0 +1,69 @@
+2026-11-11T02:32:41Z
+e679fe3796e7b873565727e6b49cd5de6e2550bc
+arm64
+ProductName:		macOS
+ProductVersion:		27.0
+BuildVersion:		26A428
+Mac13,1
+10
+68719476736
+ 21:32:41  up 46 days  9:06,  4 users,  load average: 3.04, 2.76, 2.81
+System-wide memory free percentage: 49%
+Flutter 3.47.4 • channel stable • https://github.com/flutter/flutter.git
+Framework • revision nixpkgs000 () • 1970-01-01 00:00:00
+Engine • revision 06a2e2a110 ()
+Tools • Dart 3.13.3 • DevTools 2.60.0
+READ-ONLY ANDROID FACTS
+ro.product.cpu.abi=arm64-v8a
+ro.build.version.sdk=36
+ro.build.version.release=16
+ro.build.fingerprint=google/sdk_gphone64_arm64/emu64a:16/BE2A.250530.026.F3/13894323:userdebug/dev-keys
+ro.boot.qemu.avd_name=bookfin-api36
+Physical size: 1080x2400
+Physical density: 420
+MemTotal:        2021944 kB
+MemFree:          170220 kB
+MemAvailable:     580300 kB
+0-3
+Current WebView Update Service state
+  Current WebView package (name, version): (com.google.android.webview, 133.0.6943.137)
+  Minimum targetSdkVersion: 33
+  Minimum WebView version code: 694313732
+  Number of relros started: 1
+  Number of relros finished: 1
+GLES: Google (Google Inc. (Google)), Android Emulator OpenGL ES Translator (ANGLE (Google, Vulkan 1.2.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver-5.0.0)), OpenGL ES 3.1 (OpenGL ES 3.1.0 (ANGLE 2.1.1 git hash: fbf66f49c7cc))
+  peak-refresh-rate         : 60.00 Hz
+IsStatusOverride: false
+ThermalEventListeners:
+	callbacks: 5
+	killed: false
+	broadcasts count: -1
+ThermalStatusListeners:
+	callbacks: 3
+	killed: false
+	broadcasts count: -1
+Thermal Status: 0
+Cached temperatures:
+	Temperature{mValue=30.2, mType=2, mName=battery, mStatus=0}
+AVD CONFIGURATION
+disk.dataPartition.path = <temp>
+disk.dataPartition.size = 6442450944
+hw.cpu.arch = arm64
+hw.cpu.ncore = 4
+hw.gpu.enabled = no
+hw.gpu.mode = auto
+hw.lcd.backlight = yes
+hw.lcd.circular = false
+hw.lcd.density = 420
+hw.lcd.depth = 32
+hw.lcd.height = 2400
+hw.lcd.transparent = false
+hw.lcd.vsync = 60
+hw.lcd.width = 1080
+hw.ramSize = 2G
+image.sysdir.1 = /nix/store/ahp82jjy0znf9l2ps98pj3bkl3zgrkgd-bookfin-android-sdk/system-images/android-36/google_apis/arm64-v8a/
+FROZEN REFERENCE
+6d6afee5742aff09b2c08b7dd510b1f922343162adb59776bdda3c426d4710b2  tool/research/epub_engines/evidence/references.json
+tool/research/epub_engines/evidence/references.json: 1 file pushed, 0 skipped. 455.6 MB/s (260236 bytes in 0.001s)
+tool/research/epub_engines/evidence/references.json: 1 file pushed, 0 skipped. 481.7 MB/s (260236 bytes in 0.001s)
+tool/research/epub_engines/evidence/references.json: 1 file pushed, 0 skipped. 524.3 MB/s (260236 bytes in 0.000s)

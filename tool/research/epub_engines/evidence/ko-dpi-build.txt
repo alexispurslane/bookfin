@@ -1,0 +1,69 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.3.1/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preKoreaderReleaseBuild UP-TO-DATE
+> Task :app:mergeKoreaderReleaseJniLibFolders UP-TO-DATE
+> Task :app:mergeKoreaderReleaseNativeLibs UP-TO-DATE
+> Task :app:stripKoreaderReleaseDebugSymbols UP-TO-DATE
+> Task :app:extractKoreaderReleaseNativeSymbolTables UP-TO-DATE
+> Task :app:mergeKoreaderReleaseNativeDebugMetadata UP-TO-DATE
+> Task :app:checkKoreaderReleaseDuplicateClasses UP-TO-DATE
+> Task :app:generateKoreaderReleaseBuildConfig UP-TO-DATE
+> Task :app:generateKoreaderReleaseResources UP-TO-DATE
+> Task :app:packageKoreaderReleaseResources UP-TO-DATE
+> Task :app:processKoreaderReleaseNavigationResources UP-TO-DATE
+> Task :app:parseKoreaderReleaseLocalResources UP-TO-DATE
+> Task :app:generateKoreaderReleaseRFile UP-TO-DATE
+> Task :app:compileKoreaderReleaseKotlin NO-SOURCE
+> Task :app:javaPreCompileKoreaderRelease UP-TO-DATE
+> Task :app:compileKoreaderReleaseJavaWithJavac UP-TO-DATE
+> Task :app:checkKoreaderReleaseAarMetadata UP-TO-DATE
+> Task :app:mapKoreaderReleaseSourceSetPaths UP-TO-DATE
+> Task :app:compileKoreaderReleaseNavigationResources UP-TO-DATE
+> Task :app:mergeKoreaderReleaseResources UP-TO-DATE
+> Task :app:createKoreaderReleaseCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksKoreaderRelease UP-TO-DATE
+> Task :app:processKoreaderReleaseMainManifest UP-TO-DATE
+> Task :app:processKoreaderReleaseManifest UP-TO-DATE
+> Task :app:processKoreaderReleaseManifestForPackage UP-TO-DATE
+> Task :app:processKoreaderReleaseResources UP-TO-DATE
+> Task :app:dexBuilderKoreaderRelease UP-TO-DATE
+> Task :app:desugarKoreaderReleaseFileDependencies UP-TO-DATE
+> Task :app:mergeKoreaderReleaseStartupProfile UP-TO-DATE
+> Task :app:mergeExtDexKoreaderRelease UP-TO-DATE
+> Task :app:mergeDexKoreaderRelease UP-TO-DATE
+> Task :app:mergeKoreaderReleaseArtProfile UP-TO-DATE
+> Task :app:mergeKoreaderReleaseGlobalSynthetics UP-TO-DATE
+> Task :app:compileKoreaderReleaseArtProfile UP-TO-DATE
+> Task :app:generateKoreaderReleaseAssets UP-TO-DATE
+> Task :app:mergeKoreaderReleaseAssets
+> Task :app:extractKoreaderReleaseVersionControlInfo UP-TO-DATE
+> Task :app:extractProguardFiles UP-TO-DATE
+> Task :app:compressKoreaderReleaseAssets
+> Task :app:generateKoreaderReleaseLintVitalReportModel
+> Task :app:processKoreaderReleaseJavaRes NO-SOURCE
+> Task :app:mergeKoreaderReleaseJavaResource UP-TO-DATE
+> Task :app:optimizeKoreaderReleaseResources UP-TO-DATE
+> Task :app:collectKoreaderReleaseDependencies UP-TO-DATE
+> Task :app:sdkKoreaderReleaseDependencyData UP-TO-DATE
+> Task :app:validateSigningKoreaderRelease UP-TO-DATE
+> Task :app:writeKoreaderReleaseAppMetadata UP-TO-DATE
+> Task :app:writeKoreaderReleaseSigningConfigVersions UP-TO-DATE
+> Task :app:lintVitalAnalyzeKoreaderRelease
+> Task :app:lintVitalReportKoreaderRelease UP-TO-DATE
+> Task :app:lintVitalKoreaderRelease
+> Task :app:packageKoreaderRelease
+> Task :app:createKoreaderReleaseApkListingFileRedirect UP-TO-DATE
+> Task :app:assembleKoreaderRelease
+
+[Incubating] Problems report is available at: file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/native/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.3.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 8s
+49 actionable tasks: 6 executed, 43 up-to-date
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.3.1/userguide/configuration_cache_enabling.html

@@ -1,0 +1,5 @@
+host_tests=0
+dart_format=0
+app_analysis=0
+shell_analysis=0
+project_tests=0

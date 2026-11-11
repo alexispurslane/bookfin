@@ -1,0 +1,17 @@
+--------- beginning of crash
+11-10 20:36:13.193 19122 19122 E AndroidRuntime: FATAL EXCEPTION: main
+11-10 20:36:13.193 19122 19122 E AndroidRuntime: Process: dev.bookfin.bench.bookfin_epub_shell, PID: 19122
+11-10 20:36:13.193 19122 19122 E AndroidRuntime: java.lang.NoClassDefFoundError: Failed resolution of: Landroidx/tracing/Trace;
+11-10 20:36:13.193 19122 19122 E AndroidRuntime: 	at androidx.test.runner.AndroidJUnitRunner.onCreate(r8-map-id-ec8016367f5dd4d9c99e21af1f7e66598ee58abc2f48104d06f317213d0f0628:26)
+11-10 20:36:13.193 19122 19122 E AndroidRuntime: 	at android.app.ActivityThread.handleBindApplication(ActivityThread.java:7821)
+11-10 20:36:13.193 19122 19122 E AndroidRuntime: 	at android.app.ActivityThread.-$$Nest$mhandleBindApplication(Unknown Source:0)
+11-10 20:36:13.193 19122 19122 E AndroidRuntime: 	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2546)
+11-10 20:36:13.193 19122 19122 E AndroidRuntime: 	at android.os.Handler.dispatchMessage(Handler.java:110)
+11-10 20:36:13.193 19122 19122 E AndroidRuntime: 	at android.os.Looper.loopOnce(Looper.java:248)
+11-10 20:36:13.193 19122 19122 E AndroidRuntime: 	at android.os.Looper.loop(Looper.java:338)
+11-10 20:36:13.193 19122 19122 E AndroidRuntime: 	at android.app.ActivityThread.main(ActivityThread.java:9067)
+11-10 20:36:13.193 19122 19122 E AndroidRuntime: 	at java.lang.reflect.Method.invoke(Native Method)
+11-10 20:36:13.193 19122 19122 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:593)
+11-10 20:36:13.193 19122 19122 E AndroidRuntime: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:932)
+11-10 20:36:13.193 19122 19122 E AndroidRuntime: Caused by: java.lang.ClassNotFoundException: androidx.tracing.Trace
+11-10 20:36:13.193 19122 19122 E AndroidRuntime: 	... 11 more

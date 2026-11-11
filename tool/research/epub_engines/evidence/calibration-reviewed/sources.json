@@ -1,0 +1,47 @@
+[
+  {
+    "engine": "bookfin",
+    "run_id": "calibration-final-calibration-illustrated-bookfin",
+    "source": "tool/research/epub_engines/evidence/calibration-final/calibration-final-calibration-illustrated-bookfin"
+  },
+  {
+    "engine": "bookfin",
+    "run_id": "calibration-final-calibration-long-bookfin",
+    "source": "tool/research/epub_engines/evidence/calibration-final/calibration-final-calibration-long-bookfin"
+  },
+  {
+    "engine": "bookfin",
+    "run_id": "calibration-final-calibration-prose-bookfin",
+    "source": "tool/research/epub_engines/evidence/calibration-final/calibration-final-calibration-prose-bookfin"
+  },
+  {
+    "engine": "webview",
+    "run_id": "calibration-final-calibration-illustrated-webview",
+    "source": "tool/research/epub_engines/evidence/calibration-final/calibration-final-calibration-illustrated-webview"
+  },
+  {
+    "engine": "webview",
+    "run_id": "calibration-final-calibration-long-webview",
+    "source": "tool/research/epub_engines/evidence/calibration-final/calibration-final-calibration-long-webview"
+  },
+  {
+    "engine": "webview",
+    "run_id": "calibration-final-calibration-prose-webview",
+    "source": "tool/research/epub_engines/evidence/calibration-final/calibration-final-calibration-prose-webview"
+  },
+  {
+    "engine": "koreader",
+    "run_id": "calibration-dpi-calibration-illustrated-koreader",
+    "source": "tool/research/epub_engines/evidence/calibration-dpi/calibration-dpi-calibration-illustrated-koreader"
+  },
+  {
+    "engine": "koreader",
+    "run_id": "calibration-dpi-calibration-long-koreader",
+    "source": "tool/research/epub_engines/evidence/calibration-dpi/calibration-dpi-calibration-long-koreader"
+  },
+  {
+    "engine": "koreader",
+    "run_id": "calibration-dpi-calibration-prose-koreader",
+    "source": "tool/research/epub_engines/evidence/calibration-dpi/calibration-dpi-calibration-prose-koreader"
+  }
+]

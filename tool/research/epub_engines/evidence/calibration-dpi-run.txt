@@ -1,0 +1,3 @@
+3/9 calibration-dpi-calibration-prose-koreader
+5/9 calibration-dpi-calibration-long-koreader
+7/9 calibration-dpi-calibration-illustrated-koreader

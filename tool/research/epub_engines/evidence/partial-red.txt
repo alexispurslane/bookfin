@@ -1,0 +1,25 @@
+test_failed_partial_workloads_remain_collectable_without_inventing_preparation_facts (test_collect.PartialEvidenceTest.test_failed_partial_workloads_remain_collectable_without_inventing_preparation_facts) ... FAIL
+
+======================================================================
+FAIL: test_failed_partial_workloads_remain_collectable_without_inventing_preparation_facts (test_collect.PartialEvidenceTest.test_failed_partial_workloads_remain_collectable_without_inventing_preparation_facts)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/test_collect.py", line 29, in test_failed_partial_workloads_remain_collectable_without_inventing_preparation_facts
+    self.assertEqual(completed.returncode, 0, completed.stderr)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 1 != 0 : Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/collect.py", line 61, in <module>
+    main()
+    ~~~~^^
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/collect.py", line 52, in main
+    "preparation_engine_ready_median_ms": statistics.median((row["engine_ready_ns"] - row["start_ns"]) / 1e6 for row in preparation),
+                                          ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/nix/store/0kcws5blwbdyxqxjd1w8hjipz61xny3k-python3-3.14.7/lib/python3.14/statistics.py", line 343, in median
+    raise StatisticsError("no median for empty data")
+statistics.StatisticsError: no median for empty data
+
+
+----------------------------------------------------------------------
+Ran 1 test in 0.061s
+
+FAILED (failures=1)

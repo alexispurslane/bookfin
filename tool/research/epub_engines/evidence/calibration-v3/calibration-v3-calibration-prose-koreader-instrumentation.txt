@@ -1,0 +1,40 @@
+INSTRUMENTATION_STATUS: class=dev.bookfin.bench.epub.EngineWorkloadTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=1
+INSTRUMENTATION_STATUS: stream=
+dev.bookfin.bench.epub.EngineWorkloadTest:
+INSTRUMENTATION_STATUS: test=selectedBookWorkloadReachesEveryRequestedDestination
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=dev.bookfin.bench.epub.EngineWorkloadTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=1
+INSTRUMENTATION_STATUS: stack=java.lang.UnsatisfiedLinkError: dlopen failed: library "libc++_shared.so" not found: needed by /data/app/~~cmIbDTZwE9bhaAjzQw9UGA==/dev.bookfin.bench.epub.koreader-eAyWBUktXpo6cwPofZ6WCA==/lib/arm64/libepub-bench.so in namespace clns-9
+	at java.lang.Runtime.loadLibrary0(Runtime.java:1090)
+	at java.lang.Runtime.loadLibrary0(Runtime.java:1012)
+	at java.lang.System.loadLibrary(System.java:1765)
+	at dev.bookfin.bench.epub.KoBridge.<clinit>(KoBridge.java:9)
+	at dev.bookfin.bench.epub.BenchmarkActivity.lambda$startEngine$2$dev-bookfin-bench-epub-BenchmarkActivity(BenchmarkActivity.java:131)
+	at dev.bookfin.bench.epub.BenchmarkActivity$$ExternalSyntheticLambda9.run(D8$$SyntheticClass:0)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1156)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:651)
+	at java.lang.Thread.run(Thread.java:1119)
+
+INSTRUMENTATION_STATUS: stream=
+Process crashed while executing selectedBookWorkloadReachesEveryRequestedDestination(dev.bookfin.bench.epub.EngineWorkloadTest):
+java.lang.UnsatisfiedLinkError: dlopen failed: library "libc++_shared.so" not found: needed by /data/app/~~cmIbDTZwE9bhaAjzQw9UGA==/dev.bookfin.bench.epub.koreader-eAyWBUktXpo6cwPofZ6WCA==/lib/arm64/libepub-bench.so in namespace clns-9
+	at java.lang.Runtime.loadLibrary0(Runtime.java:1090)
+	at java.lang.Runtime.loadLibrary0(Runtime.java:1012)
+	at java.lang.System.loadLibrary(System.java:1765)
+	at dev.bookfin.bench.epub.KoBridge.<clinit>(KoBridge.java:9)
+	at dev.bookfin.bench.epub.BenchmarkActivity.lambda$startEngine$2$dev-bookfin-bench-epub-BenchmarkActivity(BenchmarkActivity.java:131)
+	at dev.bookfin.bench.epub.BenchmarkActivity$$ExternalSyntheticLambda9.run(D8$$SyntheticClass:0)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1156)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:651)
+	at java.lang.Thread.run(Thread.java:1119)
+
+INSTRUMENTATION_STATUS: test=selectedBookWorkloadReachesEveryRequestedDestination
+INSTRUMENTATION_STATUS_CODE: -2
+INSTRUMENTATION_RESULT: shortMsg=Process crashed.
+INSTRUMENTATION_CODE: 0

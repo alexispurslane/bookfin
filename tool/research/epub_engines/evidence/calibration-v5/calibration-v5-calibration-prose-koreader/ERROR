@@ -1,0 +1,1 @@
+java.lang.IllegalStateException: [string "width_px=945;height_px=1680;density=2.625;boo..."]:94: attempt to call method 'getPageEPubCFI' (a nil value)

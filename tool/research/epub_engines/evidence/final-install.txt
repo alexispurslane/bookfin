@@ -1,0 +1,18 @@
+tool/research/epub_engines/native/app/build/outputs/apk/webview/release/app-webview-release.apk
+Performing Streamed Install
+Success
+tool/research/epub_engines/native/app/build/outputs/apk/koreader/release/app-koreader-release.apk
+Performing Streamed Install
+Success
+tool/research/epub_engines/native/app/build/outputs/apk/androidTest/webview/release/app-webview-release-androidTest.apk
+Performing Streamed Install
+Success
+tool/research/epub_engines/native/app/build/outputs/apk/androidTest/koreader/release/app-koreader-release-androidTest.apk
+Performing Streamed Install
+Success
+tool/research/epub_engines/bookfin/build/app/outputs/flutter-apk/app-release.apk
+Performing Streamed Install
+Success
+tool/research/epub_engines/bookfin/build/app/outputs/apk/androidTest/release/app-release-androidTest.apk
+Performing Streamed Install
+Success

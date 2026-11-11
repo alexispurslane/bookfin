@@ -1,6 +1,6 @@
 # Android EPUB shell measurement method
 
-This document describes the resumed harness. Results remain pending until the complete dataset passes its checks.
+This document describes the resumed harness. The completed dataset and its limits are in `epub-engine-results.md`.
 
 ## Execution and scope
 
@@ -44,13 +44,15 @@ Font changes have the same difference in work scope. KOReader reflows the whole 
 
 Warm operations run three times per process. The first size-20 change can create layout data that later size-20 changes reuse. This mixture is the same for all engines and remains identifiable by operation sequence. Different engines cut different page boundaries. Sequential turns therefore cover each engine's next page, not identical character ranges. Bookfin and WebView report EPUB CFI source locations. KOReader reports its native XPointer source location, not an invented CFI. These identifiers are checked within each engine, not compared across engines.
 
+Chapter crossings are warm crossings. Preparation visits the following chapter and moves back to the actual last page of the selected chapter. The measured operation then turns forward once. The following chapter was also visited during reopen preparation. These numbers do not measure first-time access to an unseen chapter. Each engine keeps its real prefetch and layout caches.
+
 ## Display configuration and limits
 
 The viewport is 360 by 640 logical pixels. The shared font file is Source Serif 4, with body sizes 18 and 20, line spacing 1.65, cream paper, and brown text. Bookfin retains its real reader CSS. WebView applies the corresponding epub.js theme. KOReader uses its EPUB stylesheet with the same body line height. Its render DPI is 96 times the emulator density so that a CSS pixel has the same physical scale. Its body font size and page margins use physical pixels directly. Legacy image zoom modes are disabled, as in KOReader's own document adapter, in favor of render DPI.
 
 Author styles, embedded fonts, shaping, hyphenation, image sizing, and pagination remain engine behavior. KOReader rounds font sizes and margins to physical pixels. Bookfin and WebView use logical-pixel layout. These are limits of a real-engine comparison, not evidence that one engine has the same typography or image layout as another. The report must name visible differences and failed content cases before any timing conclusion.
 
-The inspected references show different heading alignment and small-cap styling. KOReader justifies text differently. Its White Rabbit illustration is smaller than Bookfin's and WebView's, even with the matched CSS pixel scale. KOReader and WebView retain a white illustration background, while Bookfin shows it on cream. KOReader fits the tall-Alice illustration beside the second chapter title, while the other engines put that image after the title page. All show the expected source text and illustration identities. Their next pages do not cover identical character counts or equal image areas. No result here establishes equivalent rendering quality.
+The inspected references show different heading alignment and small-cap styling. KOReader justifies text differently. Its White Rabbit illustration is smaller than Bookfin's and WebView's, even with the matched CSS pixel scale. KOReader and WebView retain a white illustration background, while Bookfin shows it on cream. KOReader fits the tall-Alice illustration below the second chapter title, while the other engines put that image after the title page. All show the expected source text and illustration identities. Their next pages do not cover identical character counts or equal image areas. No result here establishes equivalent rendering quality.
 
 ## Aggregation
 

@@ -1,0 +1,13 @@
+{
+  "koreader_release": "v2026.07.1",
+  "base": "6e4bc81af4e04f78d81677a323a780a71b29702a",
+  "crengine": [
+    {
+      "path": "thirdparty/kpvcrlib/crengine",
+      "mode": "160000",
+      "type": "commit",
+      "sha": "b32a88ffbbf505cf2ea5208c1a49002d70d3609f"
+    }
+  ],
+  "official_release_apk_sha256": "89cecbe06eacd2ff7d91e37152d6beeb52809f2ca38060b6515ed8b00d152412"
+}

@@ -39,6 +39,7 @@ def main():
         for book in ("prose", "long", "illustrated"):
             selected = [row for row in certified if row["engine"] == engine and row["book"] == book]
             fresh = [row for row in selected if row["operation"] == "fresh_open"]
+            verified_fresh = [row for row in fresh if row.get("content_verified") and row.get("window_copy_verified")]
             preparation = [row for row in selected if row["operation"] == "paginate"]
             measurements = [row for row in selected if row["measured"]]
             if not fresh:
@@ -46,6 +47,7 @@ def main():
             facts.append({"engine": engine, "book": book,
                           "independent_process_start_count": len({row["process_start_ns"] for row in fresh}),
                           "instrumented_process_to_shell_ready_median_ms": statistics.median((row["shell_ready_ns"] - row["process_start_ns"]) / 1e6 for row in fresh),
+                          "instrumented_process_to_first_verified_copy_median_ms": statistics.median((row["end_ns"] - row["process_start_ns"]) / 1e6 for row in verified_fresh) if verified_fresh else None,
                           "fresh_open_whole_book_complete_count": sum(row["whole_book_paginated"] for row in fresh),
                           "preparation_whole_book_complete_count": sum(row["whole_book_paginated"] for row in preparation),
                           "preparation_engine_ready_median_ms": statistics.median((row["engine_ready_ns"] - row["start_ns"]) / 1e6 for row in preparation) if preparation else None,

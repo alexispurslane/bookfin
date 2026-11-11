@@ -1,0 +1,39 @@
+--------- beginning of crash
+11-10 17:16:25.669 21841 21884 F libc    : Fatal signal 6 (SIGABRT), code -1 (SI_QUEUE) in tid 21884 (bt_stack_manage), pid 21841 (droid.bluetooth)
+--------- beginning of main
+11-10 20:23:55.774 16774 16856 E EPUB_PROBE: Workload failed; no accepted timing
+11-10 20:23:55.774 16774 16856 E EPUB_PROBE: java.io.FileNotFoundException: favicon.ico
+11-10 20:23:55.774 16774 16856 E EPUB_PROBE: 	at android.content.res.AssetManager.nativeOpenAsset(Native Method)
+11-10 20:23:55.774 16774 16856 E EPUB_PROBE: 	at android.content.res.AssetManager.open(AssetManager.java:1010)
+11-10 20:23:55.774 16774 16856 E EPUB_PROBE: 	at android.content.res.AssetManager.open(AssetManager.java:987)
+11-10 20:23:55.774 16774 16856 E EPUB_PROBE: 	at dev.bookfin.bench.epub.BenchmarkActivity$1.shouldInterceptRequest(BenchmarkActivity.java:99)
+11-10 20:23:55.774 16774 16856 E EPUB_PROBE: 	at WV.M6.a(chromium-TrichromeWebViewGoogle6432.aab-stable-694313732:86)
+11-10 20:23:55.774 16774 16856 E EPUB_PROBE: 	at org.chromium.android_webview.AwContentsBackgroundThreadClient.shouldInterceptRequestFromNative(chromium-TrichromeWebViewGoogle6432.aab-stable-694313732:14)
+11-10 20:36:13.193 19122 19122 E AndroidRuntime: FATAL EXCEPTION: main
+11-10 20:36:13.193 19122 19122 E AndroidRuntime: Process: dev.bookfin.bench.bookfin_epub_shell, PID: 19122
+11-10 20:36:13.193 19122 19122 E AndroidRuntime: java.lang.NoClassDefFoundError: Failed resolution of: Landroidx/tracing/Trace;
+11-10 20:36:13.193 19122 19122 E AndroidRuntime: 	at androidx.test.runner.AndroidJUnitRunner.onCreate(r8-map-id-ec8016367f5dd4d9c99e21af1f7e66598ee58abc2f48104d06f317213d0f0628:26)
+11-10 20:36:13.193 19122 19122 E AndroidRuntime: 	at android.app.ActivityThread.handleBindApplication(ActivityThread.java:7821)
+11-10 20:36:13.193 19122 19122 E AndroidRuntime: 	at android.app.ActivityThread.-$$Nest$mhandleBindApplication(Unknown Source:0)
+11-10 20:36:13.193 19122 19122 E AndroidRuntime: 	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2546)
+11-10 20:36:13.193 19122 19122 E AndroidRuntime: 	at android.os.Handler.dispatchMessage(Handler.java:110)
+11-10 20:36:13.193 19122 19122 E AndroidRuntime: 	at android.os.Looper.loopOnce(Looper.java:248)
+11-10 20:36:13.193 19122 19122 E AndroidRuntime: 	at android.os.Looper.loop(Looper.java:338)
+11-10 20:36:13.193 19122 19122 E AndroidRuntime: 	at android.app.ActivityThread.main(ActivityThread.java:9067)
+11-10 20:36:13.193 19122 19122 E AndroidRuntime: 	at java.lang.reflect.Method.invoke(Native Method)
+11-10 20:36:13.193 19122 19122 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:593)
+11-10 20:36:13.193 19122 19122 E AndroidRuntime: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:932)
+11-10 20:36:13.193 19122 19122 E AndroidRuntime: Caused by: java.lang.ClassNotFoundException: androidx.tracing.Trace
+11-10 20:36:13.193 19122 19122 E AndroidRuntime: 	... 11 more
+11-10 20:41:51.404 20478 20496 E AndroidRuntime: FATAL EXCEPTION: pool-4-thread-1
+11-10 20:41:51.404 20478 20496 E AndroidRuntime: Process: dev.bookfin.bench.epub.koreader, PID: 20478
+11-10 20:41:51.404 20478 20496 E AndroidRuntime: java.lang.UnsatisfiedLinkError: dlopen failed: library "libc++_shared.so" not found: needed by /data/app/~~cmIbDTZwE9bhaAjzQw9UGA==/dev.bookfin.bench.epub.koreader-eAyWBUktXpo6cwPofZ6WCA==/lib/arm64/libepub-bench.so in namespace clns-9
+11-10 20:41:51.404 20478 20496 E AndroidRuntime: 	at java.lang.Runtime.loadLibrary0(Runtime.java:1090)
+11-10 20:41:51.404 20478 20496 E AndroidRuntime: 	at java.lang.Runtime.loadLibrary0(Runtime.java:1012)
+11-10 20:41:51.404 20478 20496 E AndroidRuntime: 	at java.lang.System.loadLibrary(System.java:1765)
+11-10 20:41:51.404 20478 20496 E AndroidRuntime: 	at dev.bookfin.bench.epub.KoBridge.<clinit>(KoBridge.java:9)
+11-10 20:41:51.404 20478 20496 E AndroidRuntime: 	at dev.bookfin.bench.epub.BenchmarkActivity.lambda$startEngine$2$dev-bookfin-bench-epub-BenchmarkActivity(BenchmarkActivity.java:131)
+11-10 20:41:51.404 20478 20496 E AndroidRuntime: 	at dev.bookfin.bench.epub.BenchmarkActivity$$ExternalSyntheticLambda9.run(D8$$SyntheticClass:0)
+11-10 20:41:51.404 20478 20496 E AndroidRuntime: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1156)
+11-10 20:41:51.404 20478 20496 E AndroidRuntime: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:651)
+11-10 20:41:51.404 20478 20496 E AndroidRuntime: 	at java.lang.Thread.run(Thread.java:1119)

@@ -1,8 +1,8 @@
 # EPUB engine shells: blocked build checkpoint
 
-This section preserves the first checkpoint. The resumed implementation and test-runner method are in `epub-engine-method.md`. The original device reservation was released by its owner. A later repeated launch failure stopped manual device driving. Genuine AndroidJUnitRunner workload tests now execute all three engines. Do not treat the historical zero-sample files as the resumed dataset.
+This section preserves the first checkpoint. The resumed implementation and test-runner method are in `epub-engine-method.md`. Completed measurements are in `epub-engine-results.md`. The original device reservation was released by its owner. A later repeated launch failure stopped manual device driving. Genuine AndroidJUnitRunner workload tests now execute all three engines. Do not treat the historical zero-sample files as the resumed dataset.
 
-This is not a completed engine comparison. There are no new Android timing samples to publish. Do not use this checkpoint for a homepage speed claim. The settled measurement protocol remains `docs/plans/epub-engine-comparison.md`.
+This historical checkpoint was not a completed engine comparison. It had no new Android timing samples to publish. Do not use this checkpoint for a homepage speed claim. The settled measurement protocol remains `docs/plans/epub-engine-comparison.md`.
 
 The work happened on November 10, 2026, in New York. The device launch failed at November 11, 2026, 00:23:26 UTC. These are the same local evening, not two runs on different days.
 

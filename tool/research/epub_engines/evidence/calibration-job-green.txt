@@ -1,0 +1,8 @@
+test_reference_promotion_requires_successful_workload_assertions (test_calibrate.SourceEvidenceTest.test_reference_promotion_requires_successful_workload_assertions) ... ok
+test_rendered_words_must_include_an_independent_source_excerpt (test_calibrate.SourceEvidenceTest.test_rendered_words_must_include_an_independent_source_excerpt) ... ok
+test_typographic_punctuation_and_whitespace_do_not_hide_matching_words (test_calibrate.SourceEvidenceTest.test_typographic_punctuation_and_whitespace_do_not_hide_matching_words) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.042s
+
+OK
