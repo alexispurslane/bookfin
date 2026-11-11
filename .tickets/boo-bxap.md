@@ -1,6 +1,6 @@
 ---
 id: boo-bxap
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-11T19:40:28Z
