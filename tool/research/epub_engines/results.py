@@ -22,8 +22,10 @@ PHASE_CLOCKS = {"bookfin": "dart_timeline_us", "webview": "web_performance_ms",
                 "koreader": "android_boottime_ns"}
 # Each interval starts when the engine's own code receives the request. The
 # drawn page ends when the engine has drawn the requested page: on the GPU
-# for Bookfin and WebView, on the CPU for KOReader. The prepared page ends
-# before any GPU rasterization or composition.
+# for Bookfin and WebView, on the CPU for KOReader. It leaves out the idle
+# wait from the end of preparation to the start of the frame that draws the
+# page, which only frame-based engines have. The prepared page ends before
+# any GPU rasterization or composition.
 INTERVALS = {
     "drawn_page": {"start": "engine_start_ns", "end": "drawn_ns",
                    "engines": ENGINES, "scopes": DRAWN_SCOPES},
@@ -67,7 +69,8 @@ def _summarize(rows, start, end, engines, scopes):
             grouped[(row["engine"], row["book"], row["operation"])].append(row)
     cells = []
     for (engine, book, operation), samples in sorted(grouped.items()):
-        durations = sorted((row[end] - row[start]) / 1000000 for row in samples)
+        idle = frame_wait if end == "drawn_ns" else (lambda row: 0)
+        durations = sorted((row[end] - row[start] - idle(row)) / 1000000 for row in samples)
         cells.append({
             "engine": engine, "book": book, "operation": operation,
             "boundary": BOUNDARY if scopes is None else f"{start}_to_{end}",
@@ -123,6 +126,19 @@ def _invalid_phases(row):
     return None
 
 
+def frame_wait(row):
+    """Nanoseconds from the end of preparation until the frame that draws the
+    page starts. Zero when that frame began before preparation ended, as a
+    Flutter frame can: preparation then ends inside the frame's work."""
+    if row["engine"] == "bookfin":
+        frame = row["drawn_frame"]["buildStart_us"] * 1000 + row["phase_clock"]["offset_ns"]
+    elif row["engine"] == "webview":
+        frame = row["frame_start_ns"]
+    else:
+        return 0
+    return max(0, frame - row["preparation_ns"])
+
+
 def _invalid_drawing(row):
     engine = row["engine"]
     if row.get("drawn_scope") != DRAWN_SCOPES[engine]:
@@ -135,8 +151,22 @@ def _invalid_drawing(row):
         if type(source) not in (int, float) or not math.isfinite(source) \
                 or abs(source * 1000 + row["phase_clock"]["offset_ns"] - drawn) > 1:
             return "raster finish conversion mismatch"
+        frame = row.get("drawn_frame")
+        if not isinstance(frame, dict) or any(type(frame.get(phase)) is not int
+                                              for phase in ("buildStart_us", "rasterFinish_us")):
+            return "missing drawing frame timing"
+        if frame["rasterFinish_us"] != source \
+                or not row["engine_start_source_us"] < frame["buildStart_us"] <= frame["rasterFinish_us"]:
+            return "drawing frame does not hold the requested page"
     elif engine == "webview" and drawn < row["engine_ready_ns"]:
         return "visual state callback before it was requested"
+    elif engine == "webview":
+        frame, source = row.get("frame_start_ns"), row.get("frame_start_source_ms")
+        if type(frame) is not int or type(source) not in (int, float) or not math.isfinite(source) \
+                or abs(source * 1_000_000 + row["phase_clock"]["offset_ns"] - frame) > 1:
+            return "missing frame start or frame start conversion mismatch"
+        if not row["preparation_ns"] <= frame < drawn:
+            return "frame start outside preparation and drawing"
     elif engine == "koreader" and drawn != row["preparation_ns"]:
         return "KOReader draws its page in its preparation"
     return None

@@ -118,8 +118,9 @@ class PartialEvidenceTest(unittest.TestCase):
             references.write_text(json.dumps(reference()))
             digest = hashlib.sha256(references.read_bytes()).hexdigest()
             jobs = []
-            # Drawn 10 and 30 ms after preparation; raster 2 and 6 ms.
-            for number, (wait, raster) in enumerate(((10, 2), (30, 6))):
+            # Drawn 10 and 30 ms after preparation; raster 2 and 6 ms; the
+            # drawing frame starts to build 8 and 24 ms after preparation.
+            for number, (wait, raster, idle) in enumerate(((10, 2, 8), (30, 6, 24))):
                 run = f"run-{number}"
                 directory = runs / run
                 directory.mkdir()
@@ -130,7 +131,9 @@ class PartialEvidenceTest(unittest.TestCase):
                           measured=True, warmup=False, cache="fresh_document", boundary="request_to_reference_window_copy",
                           clock="android_elapsed_realtime_ns", start_ns=start, engine_start_ns=start,
                           operation_returned_ns=prepared, preparation_ns=prepared, drawn_ns=drawn,
-                          drawn_frame={"rasterStart_us": 1000, "rasterFinish_us": 1000 + raster * 1000},
+                          drawn_frame={"buildStart_us": (prepared + idle * 1_000_000) // 1000,
+                                       "rasterStart_us": 1000, "rasterFinish_us": 1000 + raster * 1000},
+                          phase_clock={"source": "dart_timeline_us", "offset_ns": 0, "uncertainty_ns": 1000},
                           engine_ready_ns=prepared + 1, end_ns=drawn + 1, process_start_ns=start - 1, shell_ready_ns=start,
                           whole_book_paginated=False, copy_duration_ns=1, capture_attempts=1,
                           reference_manifest_sha256=digest)
@@ -146,3 +149,47 @@ class PartialEvidenceTest(unittest.TestCase):
             fact = json.loads((output / "facts.json").read_text())[0]
             self.assertAlmostEqual(fact.get("drawn_after_preparation_median_ms"), 20)
             self.assertAlmostEqual(fact.get("flutter_raster_median_ms"), 4)
+            self.assertEqual(fact.get("removed_frame_wait_median_ms"), 16)
+
+    def test_webview_answers_that_arrive_after_the_next_vsync_are_counted(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            runs = root / "runs"
+            runs.mkdir()
+            references = root / "references.json"
+            references.write_text(json.dumps({"webview/prose/target18": reference(engine="webview")["bookfin/prose/target18"]}))
+            digest = hashlib.sha256(references.read_bytes()).hexdigest()
+            jobs = []
+            # The vsync period is 16 ms. Android answers 4 ms and 18 ms after a
+            # frame that starts 0.5 ms after its vsync. A third frame starts 17 ms
+            # after its vsync, after the next vsync passed, and is answered 2 ms
+            # later, before the vsync that follows its start.
+            for number, (lag, answer) in enumerate(((.5, 4), (.5, 18), (17, 2))):
+                run = f"run-{number}"
+                directory = runs / run
+                directory.mkdir()
+                start = 10_000_000_000 * (number + 1)
+                prepared = start + 5_000_000
+                frame = prepared + 3_000_000
+                row = raw(id=run + "/0", run_id=run, sequence=0, operation="fresh_open", round=number, engine="webview",
+                          measured=True, warmup=False, cache="fresh_document", boundary="request_to_reference_window_copy",
+                          clock="android_elapsed_realtime_ns", start_ns=start, engine_start_ns=start,
+                          operation_returned_ns=prepared, preparation_ns=prepared, frame_start_ns=frame,
+                          frame_vsync_ns=frame - int(lag * 1_000_000),
+                          next_frame_vsync_ns=frame - int(lag * 1_000_000) + 16_000_000,
+                          drawn_ns=frame + answer * 1_000_000,
+                          engine_ready_ns=prepared + 1, end_ns=frame + 40_000_000, process_start_ns=start - 1, shell_ready_ns=start,
+                          whole_book_paginated=False, copy_duration_ns=1, capture_attempts=1,
+                          reference_manifest_sha256=digest)
+                (directory / "0.json").write_text(json.dumps(row))
+                (directory / "DONE").touch()
+                (runs / (run + "-instrumentation.txt")).write_text("OK (1 test)")
+                jobs.append({"run_id": run, "steps": [{}]})
+            (runs / "schedule.json").write_text(json.dumps(jobs))
+            output = root / "output"
+            completed = subprocess.run([sys.executable, str(Path(__file__).with_name("collect.py")),
+                                        str(runs), str(references), "--output", str(output)], capture_output=True, text=True)
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            fact = next(fact for fact in json.loads((output / "facts.json").read_text()) if fact["engine"] == "webview")
+            self.assertEqual(fact.get("webview_answer_after_next_vsync_count"), 1)
+            self.assertEqual(fact.get("webview_answer_checked_count"), 3)

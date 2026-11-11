@@ -75,6 +75,11 @@ public final class EngineWorkloadTest {
                     long shellDrawn = row.optLong("shell_drawn_ns", 0);
                     assertTrue("The WebView shell draws its own page before it reports ready, as the Flutter shell does",
                         shellDrawn > 0 && shellDrawn <= row.getLong("shell_ready_ns"));
+                    long frameStart = row.optLong("frame_start_ns", 0);
+                    assertTrue("WebView reports the start of the first frame after preparation, before the page is drawn",
+                        row.getLong("preparation_ns") <= frameStart && frameStart < row.getLong("drawn_ns"));
+                    assertTrue("WebView reports the vsync of the page's frame and of the next frame",
+                        row.optLong("frame_vsync_ns", 0) > 0 && row.optLong("next_frame_vsync_ns", 0) > row.getLong("frame_vsync_ns"));
                 }
                 assertTrue(row.getLong("operation_returned_ns") <= row.getLong("preparation_ns"));
                 assertTrue(row.getLong("preparation_ns") <= row.getLong("engine_ready_ns"));

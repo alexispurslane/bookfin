@@ -4,8 +4,18 @@ import json
 from pathlib import Path
 import statistics
 
-from results import summarize
+from results import frame_wait, summarize
 from validation import certify
+
+
+def answered_after_a_later_vsync(row):
+    """Whether Android answered a WebView page after a vsync that followed the
+    start of the page's frame: the page reached Android's drawing only at a
+    later vsync. A frame can start after the next vsync passed, so the vsync
+    that counts is the first one after the frame's start."""
+    period = row["next_frame_vsync_ns"] - row["frame_vsync_ns"]
+    later = row["frame_vsync_ns"] + period * (1 + max(0, row["frame_start_ns"] - row["frame_vsync_ns"]) // period)
+    return row["drawn_ns"] > later
 
 
 def main():
@@ -48,6 +58,11 @@ def main():
             drawn = [row for row in accepted if engine == "koreader" and type(row.get("redraw_duration_ns")) is int]
             painted = [row for row in accepted if type(row.get("drawn_ns")) is int]
             frames = [row["drawn_frame"] for row in painted if engine == "bookfin" and isinstance(row.get("drawn_frame"), dict)]
+            waited = [row for row in painted
+                      if engine == "bookfin" and type((row.get("drawn_frame") or {}).get("buildStart_us")) is int
+                      or engine == "webview" and type(row.get("frame_start_ns")) is int]
+            answered = [row for row in painted if engine == "webview" and type(row.get("next_frame_vsync_ns")) is int
+                        and type(row.get("frame_vsync_ns")) is int and row["next_frame_vsync_ns"] > row["frame_vsync_ns"]]
             if not fresh:
                 continue
             facts.append({"engine": engine, "book": book,
@@ -63,7 +78,10 @@ def main():
                           "koreader_draw_median_ms": statistics.median((row["preparation_ns"] - row["operation_returned_ns"]) / 1e6 for row in drawn) if drawn else None,
                           "koreader_redraw_median_ms": statistics.median(row["redraw_duration_ns"] / 1e6 for row in drawn) if drawn else None,
                           "drawn_after_preparation_median_ms": statistics.median((row["drawn_ns"] - row["preparation_ns"]) / 1e6 for row in painted) if painted else None,
-                          "flutter_raster_median_ms": statistics.median((frame["rasterFinish_us"] - frame["rasterStart_us"]) / 1e3 for frame in frames) if frames else None})
+                          "flutter_raster_median_ms": statistics.median((frame["rasterFinish_us"] - frame["rasterStart_us"]) / 1e3 for frame in frames) if frames else None,
+                          "removed_frame_wait_median_ms": statistics.median(frame_wait(row) / 1e6 for row in waited) if waited else None,
+                          "webview_answer_checked_count": len(answered) if answered else None,
+                          "webview_answer_after_next_vsync_count": sum(map(answered_after_a_later_vsync, answered)) if answered else None})
     summary["independent_processes_complete"] = len(facts) == 9 and all(fact["independent_process_start_count"] >= 10 for fact in facts)
     summary["complete"] = summary["complete"] and summary["independent_processes_complete"]
     for interval in summary["intervals"].values():

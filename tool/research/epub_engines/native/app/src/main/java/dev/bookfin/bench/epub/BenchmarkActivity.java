@@ -23,9 +23,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public final class BenchmarkActivity extends Activity {
     private final ExecutorService worker = Executors.newSingleThreadExecutor();
@@ -210,6 +213,10 @@ public final class BenchmarkActivity extends Activity {
     }
 
     private final class WebProbe {
+        // The visual-state answer and the page's frame report reach the UI thread in either
+        // order. The step goes on when both arrived.
+        private JSONObject drawn;
+        private JSONObject frame;
         @JavascriptInterface public String clockNs() { return Long.toString(SystemClock.elapsedRealtimeNanos()); }
         // The Flutter shell reports ready after its first frame. The WebView shell waits until its
         // own page was drawn, so first-frame setup stays outside the timed fresh open here too.
@@ -221,8 +228,11 @@ public final class BenchmarkActivity extends Activity {
                 }
             }));
         }
-        @JavascriptInterface public void ready(String raw) {
+        // Returns only after the UI thread requested the drawn-page callback. The request then
+        // reaches the renderer before the page's JavaScript yields and its frame can start.
+        @JavascriptInterface public void ready(String raw) throws InterruptedException {
             long ready = SystemClock.elapsedRealtimeNanos();
+            CountDownLatch requested = new CountDownLatch(1);
             runOnUiThread(() -> {
                 try {
                     JSONObject metadata = new JSONObject(raw);
@@ -236,13 +246,37 @@ public final class BenchmarkActivity extends Activity {
                                 metadata.put("drawn_ns", SystemClock.elapsedRealtimeNanos());
                                 metadata.put("drawn_scope", "webview_visual_state_callback_after_preparation");
                             } catch (Exception error) { BenchmarkActivity.this.failed(error); return; }
-                            if (!runId.startsWith("calibration-")) { capture(metadata); return; }
-                            page.getViewTreeObserver().registerFrameCommitCallback(() -> capture(metadata));
-                            web.invalidate();
+                            drawn = metadata;
+                            proceed();
                         }
                     });
                 } catch (Exception error) { BenchmarkActivity.this.failed(error); }
+                requested.countDown();
             });
+            if (!requested.await(5, TimeUnit.SECONDS)) BenchmarkActivity.this.failed(new IllegalStateException("The drawn-page callback was not requested"));
+        }
+        @JavascriptInterface public void frame(String raw) {
+            runOnUiThread(() -> {
+                try { frame = new JSONObject(raw); } catch (Exception error) { BenchmarkActivity.this.failed(error); return; }
+                proceed();
+            });
+        }
+        private void proceed() {
+            if (drawn == null || frame == null) return;
+            JSONObject metadata = drawn;
+            try {
+                if (!frame.getString("preparation_event_id").equals(metadata.getString("preparation_event_id")))
+                    throw new IllegalStateException("Frame report does not belong to the prepared page");
+                for (Iterator<String> keys = frame.keys(); keys.hasNext(); ) {
+                    String key = keys.next();
+                    if (!key.equals("preparation_event_id")) metadata.put(key, frame.get(key));
+                }
+            } catch (Exception error) { BenchmarkActivity.this.failed(error); return; }
+            drawn = null;
+            frame = null;
+            if (!runId.startsWith("calibration-")) { capture(metadata); return; }
+            page.getViewTreeObserver().registerFrameCommitCallback(() -> capture(metadata));
+            web.invalidate();
         }
         @JavascriptInterface public void failed(String message) { BenchmarkActivity.this.failed(new IllegalStateException(message)); }
     }

@@ -19,11 +19,12 @@ CLOCKS = {"bookfin": {"source": "dart_timeline_us", "offset_ns": 0, "uncertainty
           "koreader": {"source": "android_boottime_ns", "offset_ns": 0, "uncertainty_ns": 0}}
 
 
-def prepared(number=0, engine="bookfin", **changes):
+def prepared(number=0, engine="bookfin", frame_ns=2_000_000, **changes):
     """A certified page turn: dispatch at 1.0 ms, engine entry at 1.1 ms,
     operation return at 1.2 ms, preparation at 1.5 ms, copy at 10 ms. The
-    page is drawn at 3.0 ms, except by KOReader, whose preparation is its
-    CPU drawing."""
+    frame that draws the page starts at `frame_ns`, 2.0 ms, and the page is
+    drawn at 3.0 ms, except by KOReader, whose preparation is its CPU
+    drawing and which has no frame."""
     row = sample(number, engine=engine, id=f"measured-run/{number}", sequence=number,
                  preparation_event_id=f"measured-run/{number}",
                  preparation_operation="page_turn", engine_start_ns=1_100_000,
@@ -40,6 +41,13 @@ def prepared(number=0, engine="bookfin", **changes):
             if (field not in ("start", "drawn") or engine == "bookfin") and source not in changes \
                     and type(row.get(f"{field}_ns")) is int:
                 row[source] = row[f"{field}_ns"] / scale
+    if engine == "bookfin" and "drawn_frame" not in changes and type(row.get("drawn_ns")) is int:
+        row["drawn_frame"] = {"number": 9, "buildStart_us": frame_ns // 1000,
+                              "rasterFinish_us": row["drawn_ns"] // 1000}
+    if engine == "webview":
+        row.setdefault("frame_start_ns", frame_ns)
+        if "frame_start_source_ms" not in changes and type(row["frame_start_ns"]) is int:
+            row["frame_start_source_ms"] = row["frame_start_ns"] / 1_000_000
     return row
 
 
@@ -183,8 +191,10 @@ class PreparedPageIntervalTest(unittest.TestCase):
 
 
 class DrawnPageIntervalTest(unittest.TestCase):
-    def test_every_engine_is_timed_from_its_own_entry_through_its_real_drawing(self):
-        for engine, expected in (("bookfin", 1.9), ("webview", 1.9), ("koreader", .4)):
+    def test_every_engine_is_timed_from_its_own_entry_through_its_drawing_without_the_wait_for_a_frame(self):
+        # Entry 1.1 ms, preparation 1.5 ms, frame start 2.0 ms, drawn 3.0 ms:
+        # 0.4 ms of preparation plus 1.0 ms of frame work.
+        for engine, expected in (("bookfin", 1.4), ("webview", 1.4), ("koreader", .4)):
             with self.subTest(engine=engine):
                 found = cells([prepared(engine=engine)], "drawn_page")
                 self.assertEqual(len(found), 1)
@@ -192,8 +202,21 @@ class DrawnPageIntervalTest(unittest.TestCase):
                 self.assertEqual(found[0]["scope"], DRAWN_SCOPES[engine])
 
     def test_a_flutter_frame_rasterized_before_the_shell_saw_preparation_still_counts(self):
-        row = prepared(drawn_ns=1_400_000)
+        row = prepared(drawn_ns=1_400_000, frame_ns=1_300_000)
         self.assertAlmostEqual(cells([row], "drawn_page")[0]["mean_ms"], .3)
+
+    def test_a_later_vsync_does_not_change_the_drawn_page(self):
+        for engine in ("bookfin", "webview"):
+            with self.subTest(engine=engine):
+                prompt = prepared(engine=engine)
+                late = prepared(engine=engine, frame_ns=12_000_000, drawn_ns=13_000_000, end_ns=20_000_000)
+                self.assertAlmostEqual(cells([late], "drawn_page")[0]["mean_ms"],
+                                       cells([prompt], "drawn_page")[0]["mean_ms"])
+
+    def test_a_frame_that_began_before_preparation_ended_is_not_counted_twice(self):
+        # Flutter can finish preparation between the start of a frame and its paint.
+        row = prepared(frame_ns=1_300_000)
+        self.assertAlmostEqual(cells([row], "drawn_page")[0]["mean_ms"], 1.9)
 
     def test_samples_without_a_drawn_endpoint_stay_out_of_the_drawn_interval_only(self):
         row = prepared(engine="webview")
@@ -208,6 +231,14 @@ class DrawnPageIntervalTest(unittest.TestCase):
                                 ("bookfin", {"drawn_ns": 11_000_000}),
                                 ("bookfin", {"drawn_source_us": 3001}),
                                 ("bookfin", {"drawn_source_us": None}),
+                                ("bookfin", {"drawn_frame": None}),
+                                ("bookfin", {"drawn_frame": {"number": 9, "buildStart_us": 3500, "rasterFinish_us": 3000}}),
+                                ("bookfin", {"drawn_frame": {"number": 9, "buildStart_us": 1000, "rasterFinish_us": 3000}}),
+                                ("bookfin", {"drawn_frame": {"number": 9, "buildStart_us": 2000, "rasterFinish_us": 2900}}),
+                                ("webview", {"frame_start_ns": None}),
+                                ("webview", {"frame_start_ns": 1_400_000, "frame_start_source_ms": 1.4}),
+                                ("webview", {"frame_start_ns": 3_500_000, "frame_start_source_ms": 3.5}),
+                                ("webview", {"frame_start_source_ms": 2.1}),
                                 ("webview", {"drawn_ns": 1_550_000}),
                                 ("webview", {"drawn_scope": DRAWN_SCOPES["bookfin"]}),
                                 ("koreader", {"drawn_ns": 1_600_000}),

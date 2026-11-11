@@ -54,6 +54,24 @@ function pageImages(contents, area) {
     });
 }
 
+// Reports when the renderer starts the first frame after preparation, which
+// draws the prepared page, and the vsync times of that frame and the next.
+// The time before the first frame starts is the wait for the next frame. An
+// answer from Android after the next vsync came from a later Android frame.
+// The page description and the bridge call come after both frames, so they
+// are not part of their work.
+function reportFrame(eventId, describe) {
+    requestAnimationFrame(vsync => {
+        const start = performance.now();
+        requestAnimationFrame(nextVsync => {
+            setTimeout(() => Probe.frame(JSON.stringify({preparation_event_id:eventId,
+                frame_start_source_ms:start, frame_start_ns:androidTime(start),
+                frame_vsync_source_ms:vsync, frame_vsync_ns:androidTime(vsync),
+                next_frame_vsync_source_ms:nextVsync, next_frame_vsync_ns:androidTime(nextVsync), ...describe()})));
+        });
+    });
+}
+
 async function resourcesReady() {
     const contents = rendition.getContents();
     await Promise.all(contents.map(content => content.document.fonts.ready));
@@ -71,16 +89,8 @@ async function report(operation, eventId, engineStart) {
     const contents = rendition.getContents();
     contents.forEach(content => content.document.documentElement.getBoundingClientRect());
     const preparation = performance.now();
-    const section = contents.find(content => content.sectionIndex === location.start.index);
-    const range = section && section.range(location.start.cfi);
-    const bodyText = section ? section.document.body.innerText : "";
-    let visible = "";
-    if (section && location.end.index === location.start.index) {
-        const finish = section.range(location.end.cfi);
-        const shown = range.cloneRange();
-        shown.setEnd(finish.endContainer, finish.endOffset);
-        visible = shown.toString();
-    }
+    // Android requests the drawn-page callback before this call returns, so the
+    // request reaches the renderer before the page's frame can start.
     Probe.ready(JSON.stringify({operation, location: location.start.cfi, location_format:"epub_cfi",
         preparation_event_id:eventId, preparation_operation:operation,
         preparation_scope:"webview_layout_fonts_and_decoded_page_images",
@@ -90,11 +100,23 @@ async function report(operation, eventId, engineStart) {
         page_images:decoded.map(image => image.getAttribute("src")),
         spine_index: location.start.index, href: location.start.href,
         end_cfi:location.end.cfi, displayed:location.start.displayed,
-        visible_text:visible,
-        section_text: bodyText.slice(0, 1200),
-        anchor_text: range ? range.startContainer.textContent.slice(range.startOffset, range.startOffset + 180) : "",
-        images: section ? Array.from(section.document.images).map(image => ({src:image.getAttribute("src"),loaded:image.complete && image.naturalWidth>0})) : [],
         text_size_css_px:textSize, whole_book_paginated:false}));
+    reportFrame(eventId, () => {
+        const section = contents.find(content => content.sectionIndex === location.start.index);
+        const range = section && section.range(location.start.cfi);
+        const bodyText = section ? section.document.body.innerText : "";
+        let visible = "";
+        if (section && location.end.index === location.start.index) {
+            const finish = section.range(location.end.cfi);
+            const shown = range.cloneRange();
+            shown.setEnd(finish.endContainer, finish.endOffset);
+            visible = shown.toString();
+        }
+        return {visible_text:visible,
+            section_text: bodyText.slice(0, 1200),
+            anchor_text: range ? range.startContainer.textContent.slice(range.startOffset, range.startOffset + 180) : "",
+            images: section ? Array.from(section.document.images).map(image => ({src:image.getAttribute("src"),loaded:image.complete && image.naturalWidth>0})) : []};
+    });
 }
 
 async function execute(operation, eventId) {

@@ -42,5 +42,51 @@ class WebPageImagesTest(unittest.TestCase):
         self.assertEqual(names, ["shown page"])
 
 
+class WebDrawingFrameTest(unittest.TestCase):
+    def test_the_first_frame_after_preparation_the_next_vsync_and_the_page_text_are_reported_after_two_frames(self):
+        report = run_shell("""
+            const frames = [];
+            const calls = [];
+            global.requestAnimationFrame = callback => { frames.push(callback); };
+            Probe.frame = raw => calls.push(JSON.parse(raw));
+            phaseClock = {offset_ns: 5000000};
+            reportFrame("run/3", () => ({visible_text: "page"}));
+            const requested = frames.length;
+            ticks = 989;
+            if (frames[0]) frames[0](9.5);
+            ticks = 1159;
+            if (frames[1]) frames[1](26.2);
+            const duringFrames = calls.length;
+            setTimeout(() => console.log(JSON.stringify({requested, duringFrames, calls})));
+        """)
+        self.assertEqual((report["requested"], report["duringFrames"]), (1, 0))
+        self.assertEqual(report["calls"], [{"preparation_event_id": "run/3", "frame_start_source_ms": 9.9,
+                                            "frame_start_ns": 14_900_000, "frame_vsync_source_ms": 9.5,
+                                            "frame_vsync_ns": 14_500_000, "next_frame_vsync_source_ms": 26.2,
+                                            "next_frame_vsync_ns": 31_200_000, "visible_text": "page"}])
+
+    def test_the_drawn_page_callback_is_requested_before_the_page_text_is_read(self):
+        order = run_shell("""
+            const order = [];
+            const box = {left: 0, top: 0, right: 360, bottom: 640};
+            const section = {sectionIndex: 0, range: () => ({startContainer: {textContent: "text"}, startOffset: 0,
+                                                             endContainer: {}, endOffset: 0,
+                                                             cloneRange() { return {setEnd() {}, toString: () => "page"}; }}),
+                             document: {fonts: {ready: Promise.resolve()}, images: [],
+                                        body: {get innerText() { order.push("text"); return "text"; }},
+                                        documentElement: {getBoundingClientRect: () => box},
+                                        defaultView: {frameElement: {getBoundingClientRect: () => box}}}};
+            const place = {cfi: "epubcfi(/6/2)", index: 0, href: "a.xhtml", displayed: {page: 1, total: 2}};
+            rendition = {getContents: () => [section], views: () => [],
+                         currentLocation: () => ({start: place, end: place})};
+            global.document = {getElementById: () => ({getBoundingClientRect: () => box})};
+            global.requestAnimationFrame = callback => setTimeout(() => callback(0));
+            Probe.ready = () => order.push("ready");
+            Probe.frame = () => { order.push("frame"); console.log(JSON.stringify(order)); };
+            phaseClock = {offset_ns: 0};
+            report("page_turn", "run/3", 0);
+        """)
+        self.assertEqual(order, ["ready", "text", "frame"])
+
 if __name__ == "__main__":
     unittest.main()
