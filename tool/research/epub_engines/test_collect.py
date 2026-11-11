@@ -151,6 +151,40 @@ class PartialEvidenceTest(unittest.TestCase):
             self.assertAlmostEqual(fact.get("flutter_raster_median_ms"), 4)
             self.assertEqual(fact.get("removed_frame_wait_median_ms"), 16)
 
+    def test_a_job_without_an_accepted_quiet_host_record_is_incomplete(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            runs = root / "runs"
+            runs.mkdir()
+            references = root / "references.json"
+            references.write_text(json.dumps(reference()))
+            digest = hashlib.sha256(references.read_bytes()).hexdigest()
+            jobs = []
+            for number in range(2):
+                run = f"run-{number}"
+                directory = runs / run
+                directory.mkdir()
+                start = 10_000_000_000 * (number + 1)
+                row = raw(id=run + "/0", run_id=run, sequence=0, operation="fresh_open", round=number,
+                          measured=True, warmup=False, cache="fresh_document", boundary="request_to_reference_window_copy",
+                          clock="android_elapsed_realtime_ns", start_ns=start, end_ns=start + 9_000_000,
+                          process_start_ns=start - 1, shell_ready_ns=start, whole_book_paginated=False,
+                          copy_duration_ns=1, capture_attempts=1, reference_manifest_sha256=digest)
+                (directory / "0.json").write_text(json.dumps(row))
+                (directory / "DONE").touch()
+                (runs / (run + "-instrumentation.txt")).write_text("OK (1 test)")
+                jobs.append({"run_id": run, "steps": [{}]})
+            (runs / "schedule.json").write_text(json.dumps(jobs))
+            (runs / "host-load.jsonl").write_text(
+                json.dumps({"run_id": "run-0", "attempt": 1, "peak_load": 5.0, "accepted": True}) + "\n"
+                + json.dumps({"run_id": "run-1", "attempt": 1, "peak_load": 14.0, "accepted": False}) + "\n")
+            output = root / "output"
+            completed = subprocess.run([sys.executable, str(Path(__file__).with_name("collect.py")),
+                                        str(runs), str(references), "--output", str(output)], capture_output=True, text=True)
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            summary = json.loads((output / "summary.json").read_text())
+            self.assertEqual(summary["incomplete_jobs"], ["run-1"])
+
     def test_webview_answers_that_arrive_after_the_next_vsync_are_counted(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

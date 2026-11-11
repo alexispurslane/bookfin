@@ -37,6 +37,10 @@ def main():
         if len(records) != len(job["steps"]) or not (directory / "DONE").exists() or not assertion_log.exists() or "OK (1 test)" not in assertion_log.read_text():
             incomplete.append(job["run_id"])
         rows.extend(records)
+    load_log = args.runs / "host-load.jsonl"
+    if load_log.exists():
+        quiet = {record["run_id"] for record in map(json.loads, load_log.read_text().splitlines()) if record["accepted"]}
+        incomplete.extend(job["run_id"] for job in jobs if job["run_id"] not in quiet and job["run_id"] not in incomplete)
     certified = certify(rows, references, hashlib.sha256(reference_bytes).hexdigest())
     args.output.mkdir(parents=True, exist_ok=True)
     (args.output / "samples.jsonl").write_text("".join(json.dumps(row, separators=(",", ":")) + "\n" for row in certified))
