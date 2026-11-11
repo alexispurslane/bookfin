@@ -16,8 +16,17 @@
 //    The rate check runs again over the filled anchors.
 // 5. Placement. Inside a span, a place lands at the same share of the
 //    other edition's side of the span.
-// 6. Refusal: no chapters, fewer than two anchors, or anchors that cover
-//    less than half of the recording.
+// 6. Self-check. Each inner anchor is hidden in turn and placed from its
+//    two neighbors by the rule of step 5. Chapters that pair by chance,
+//    such as track numbers against chapter numbers, or chapter numbers of
+//    several works in an anthology, place their hidden anchors pages away.
+//    Two anchors have no inner anchor, so they are kept only when both
+//    pair by the words of their titles: every chance pairing that the
+//    user's library showed paired by numbers ("Measured on the user's
+//    library").
+// 7. Refusal: no chapters, fewer than two anchors, two anchors that pair
+//    by numbers alone, anchors that cover less than three tenths of the
+//    recording, or anchors that fail the self-check.
 //
 // tool/research/cross_edition/measure.py is the prototype that the design
 // measured. This port differs in two ways. The rate check also runs after
@@ -194,12 +203,20 @@ enum Refusal {
   noChapters,
 
   /// Fewer than two audio chapters pair with contents entries, after the
-  /// rate check: the chapters of the two editions do not match.
+  /// rate check: the chapters of the two editions do not match. Two that
+  /// pair count as too few when either pairs by numbers alone, because no
+  /// third pair can check them.
   fewMatches,
 
-  /// The paired chapters cover less than half of the recording, as for an
-  /// abridged recording or another edition.
+  /// The paired chapters cover less than three tenths of the recording, as
+  /// for an abridged recording or another edition.
   partCovered,
+
+  /// The paired chapters fail the self-check: a pair hidden from the others
+  /// lands more than two pages from its own start, at the median. So they
+  /// paired by chance, as track numbers with chapter numbers, or chapter
+  /// numbers of several works in an anthology.
+  misaligned,
 
   /// The recording's length is unknown, so no place has a share of it.
   unmeasured,
@@ -236,6 +253,8 @@ sealed class EditionAlignment {
 ///   anchor to the end of its chapter.
 /// - Every span reads at 0.5 to 2 times the median rate of the spans
 ///   between anchors.
+/// - Each inner anchor, hidden and placed from its two neighbors, lands at
+///   most two pages from its own start, at the median.
 final class MatchedChapters extends EditionAlignment {
   MatchedChapters._(this.anchors, this.spans, this._rate);
 
@@ -286,11 +305,11 @@ final class MatchedChapters extends EditionAlignment {
   ) {
     for (final span in spans) {
       if (at >= from(span.from) && at <= from(span.to)) {
-        final placed =
-            to(span.from) +
-            (at - from(span.from)) /
-                (from(span.to) - from(span.from)) *
-                (to(span.to) - to(span.from));
+        final placed = _atShare(
+          at,
+          (from(span.from), from(span.to)),
+          (to(span.from), to(span.to)),
+        );
         // Every span moves forward on both sides, so a place has a share.
         assert(placed.isFinite, 'A place lands at a finite place.');
         return placed;
@@ -317,8 +336,45 @@ final class MatchedChapters extends EditionAlignment {
     if (_brokenInvariant(anchors, spans, _rate) case final broken?) {
       throw StateError(broken);
     }
+    if (_hiddenError(anchors) > _hiddenErrorLimit) {
+      throw StateError('Each hidden anchor lands near its own start.');
+    }
   }
 }
+
+/// [at], a place between the two ends of [from], at the same share between
+/// the two ends of [to]: the placement of design A inside a span.
+double _atShare(double at, (double, double) from, (double, double) to) =>
+    to.$1 + (at - from.$1) / (from.$2 - from.$1) * (to.$2 - to.$1);
+
+/// The median distance, in visible characters, from each inner anchor of
+/// [anchors] to where its two neighbors place its time by the placement
+/// of design A, or 0 when no anchor is inner.
+double _hiddenError(List<Anchor> anchors) {
+  if (anchors.length < 3) return 0;
+  return _median([
+    for (var index = 1; index + 1 < anchors.length; index++)
+      (_atShare(
+                anchors[index].milliseconds.toDouble(),
+                (
+                  anchors[index - 1].milliseconds.toDouble(),
+                  anchors[index + 1].milliseconds.toDouble(),
+                ),
+                (
+                  anchors[index - 1].characters.toDouble(),
+                  anchors[index + 1].characters.toDouble(),
+                ),
+              ) -
+              anchors[index].characters)
+          .abs(),
+  ]);
+}
+
+/// The largest median distance of the self-check: two pages. On the user's
+/// library and the public LibriVox fixtures, right pairings placed hidden
+/// anchors 0.14 to 1.25 pages away, and chance pairings 3.2 to 221 pages
+/// ("Measured on the user's library").
+const _hiddenErrorLimit = 2.0 * MatchedChapters.pageCharacters;
 
 /// The invariant of [MatchedChapters] that [anchors], [spans] and the
 /// median [rate] break, in words, or null when they keep every one.
@@ -414,11 +470,31 @@ EditionAlignment alignEditions(AudioOutline audio, TextOutline text) {
     0,
     (sum, span) => sum + span.to.milliseconds - span.from.milliseconds,
   );
-  if (covered * 2 < length) return const UnmatchedChapters(Refusal.partCovered);
+  // NOTE: Three tenths keeps a recording that numbers its chapters inside
+  // volumes, whose first volume's anchors covered 35% of it on the user's
+  // library, and still refuses every chance pairing measured there, at 5%
+  // to 16%.
+  if (covered * 10 < length * 3) {
+    return const UnmatchedChapters(Refusal.partCovered);
+  }
   // The rate check keeps no span that stands still, so this refuses only
   // pairs that could place nothing.
   if (_brokenInvariant(anchors, spans, rate) != null) {
     return const UnmatchedChapters(Refusal.fewMatches);
+  }
+  if (pairs.length == 2 &&
+      !pairs.every(
+        (pair) =>
+            _wordScore(
+              readTitle(chapters[pair.$1].name),
+              readTitle(entries[pair.$2].title),
+            ) >=
+            2,
+      )) {
+    return const UnmatchedChapters(Refusal.fewMatches);
+  }
+  if (_hiddenError(anchors) > _hiddenErrorLimit) {
+    return const UnmatchedChapters(Refusal.misaligned);
   }
   return MatchedChapters._(
     List.unmodifiable(anchors),
@@ -489,7 +565,7 @@ List<(int, int)> _pair(
 /// title's range, -1 for another number, and 2 or 1 more for many or some
 /// shared content words.
 double _score(ChapterTitle audio, ChapterTitle text) {
-  var score = 0.0;
+  var score = _wordScore(audio, text);
   if ((audio.number, text.number) case (
     (final low, final high),
     (final number, _),
@@ -500,16 +576,21 @@ double _score(ChapterTitle audio, ChapterTitle text) {
         ? 1
         : -1;
   }
-  if (audio.words.isNotEmpty && text.words.isNotEmpty) {
-    final shared = audio.words.intersection(text.words).length;
-    final share = shared / audio.words.union(text.words).length;
-    score += share >= .5
-        ? 2
-        : share >= .34
-        ? 1
-        : 0;
-  }
   return score;
+}
+
+/// The part of [_score] that shared content words give: 2 when the two
+/// titles share half of their words or more, 1 for a third or more, and 0
+/// otherwise.
+double _wordScore(ChapterTitle audio, ChapterTitle text) {
+  if (audio.words.isEmpty || text.words.isEmpty) return 0;
+  final shared = audio.words.intersection(text.words).length;
+  final share = shared / audio.words.union(text.words).length;
+  return share >= .5
+      ? 2
+      : share >= .34
+      ? 1
+      : 0;
 }
 
 /// [pairs] without the anchors whose spans read at an implausible rate.

@@ -223,6 +223,13 @@ The thresholds alone do not stop the wrong matches. The measurement suggests one
 - The check needs at least three anchors. A pairing of exactly two anchors stays unchecked. None occurred in this sample.
 - The spread of span rates separates less well. Its 90th percentile is 1.19 times the median rate or less in right pairings and 1.43 to 1.84 in most wrong ones. But it misses book E (1.0) and book I (1.2).
 
+As built in boo-bxap:
+
+- `alignEditions` runs the self-check after the coverage limit, which is now 0.3. A pairing that fails both gets the coverage reason.
+- The new refusal is `Refusal.misaligned`. Its note reads "The chapters of these editions do not line up, so this opens the audiobook."
+- A pairing of exactly two anchors has no inner anchor to hide. It is kept only when both anchors pair by the words of their titles, such as "Marley's Ghost" with "MARLEY'S GHOST.". A pairing by numbers alone or by the ordinal fill is refused as `fewMatches`. The reason is the evidence above: all 5 wrong matches paired titles by their numbers, as track numbers or as the chapter numbers of several works. So a titled number match is no evidence that a pairing is right. The measurement found no wrong match that shared title words caused. No two-anchor pairing occurred, so this rule costs no measured match.
+- `test/crossings/alignment_test.dart` reproduces two of the wrong shapes: tracks one chapter late, with the credits and the preface in track 01 (book J), and a work of three chapters against an anthology of three works (book E). The self-check refuses both. The seven public recordings that matched still match.
+
 With the rule, design A refuses 72% of these pairings, where it now refuses 56%. A refusal sends Go to to the other screen, as today. A wrong match plays or shows the wrong chapter with the word "about". The user chose the refusal for chapters that do not match ("Decision", item 3).
 
 ### Limits of this measurement
@@ -409,13 +416,14 @@ As built in t9-4v0r, on the Before, After and Go to tiles of boo-hyl4:
 `Crossings` gives no landing in these cases. Design B removes some of them, as its section says.
 
 1. The audio edition has no chapter marks, or the ebook has no contents.
-2. Fewer than two anchors survive the rate check.
+2. Fewer than two anchors survive the rate check. Two anchors also count as too few when either one pairs by its number alone (boo-bxap).
 3. The place lies more than one page (45 s) outside every span. Such places are in text that only one edition has, for example an introduction that the narrator does not read.
-4. The anchors cover less than half of the audio time. This catches abridged recordings and other editions.
-5. In the player: no text outline exists for the ebook edition, because this phone never downloaded it.
-6. The ebook is a PDF. Bookfin cannot measure a PDF's outline until t9-nl30, so the note says that Bookfin cannot yet match this kind of ebook.
+4. The anchors cover less than three tenths of the audio time. This catches abridged recordings and other editions. Until boo-bxap, the limit was half.
+5. The anchors fail the self-check: hidden one at a time, the inner anchors land more than two pages from their own starts, at the median. The note says "The chapters of these editions do not line up" (boo-bxap).
+6. In the player: no text outline exists for the ebook edition, because this phone never downloaded it.
+7. The ebook is a PDF. Bookfin cannot measure a PDF's outline until t9-nl30, so the note says that Bookfin cannot yet match this kind of ebook.
 
-Then the choice names the place in its own words ("1:02:15"), a note says why and which screen opens, and Go to behaves as today. Two more cases give no landing: the ebook is a PDF (item 6), and Bookfin cannot read the downloaded ebook.
+Then the choice names the place in its own words ("1:02:15"), a note says why and which screen opens, and Go to behaves as today. Two more cases give no landing: the ebook is a PDF (item 7), and Bookfin cannot read the downloaded ebook.
 
 ### Engine rules
 
@@ -435,6 +443,7 @@ Then the choice names the place in its own words ("1:02:15"), a note says why an
 - An outline belongs to the current revision of its edition's file.
 - Anchors increase strictly in time and in characters.
 - Every span reads at 0.5 to 2 times the median rate of the pair.
+- Each inner anchor, hidden and placed from its two neighbors, lands at most two pages from its own start, at the median.
 - A landing by chapters lies inside its span, or within one page of it.
 
 ## Design A: matched chapters and proportional placement
@@ -446,7 +455,8 @@ Then the choice names the place in its own words ("1:02:15"), a note says why an
 3. Rate check. While a span reads at less than half or more than twice the median rate, the check drops the anchor whose removal helps most.
 4. Ordinal fill. In a gap between anchors with as many audio chapters as contents entries at the anchors' depth, the fill pairs them in order. This repairs numbering by volume.
 5. Placement. Inside a span, the landing lies at the same share of the span's characters as the place's share of the span's time, and the reverse.
-6. Refusal: the fallback cases above.
+6. Self-check. Each inner anchor is hidden in turn and placed from its two neighbors by the rule of step 5. If the median distance from its own start is more than two pages, the pairing is refused (boo-bxap).
+7. Refusal: the fallback cases above.
 
 ### Usage example
 

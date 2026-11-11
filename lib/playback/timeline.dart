@@ -298,6 +298,7 @@ String _why(Refusal reason) => switch (reason) {
   Refusal.noChapters => 'One of these editions has no chapters',
   Refusal.fewMatches => 'The chapters of these editions do not match',
   Refusal.partCovered => 'Too few chapters of these editions match',
+  Refusal.misaligned => 'The chapters of these editions do not line up',
   Refusal.unmeasured => 'Bookfin cannot measure this place',
   Refusal.outsideMatches => 'Only one of these editions has this part',
   Refusal.noOutline => 'The ebook is not downloaded on this phone',

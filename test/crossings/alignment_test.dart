@@ -106,6 +106,92 @@ final steadyText = ebook([
   ('III', 0, 4000),
 ], 5000);
 
+/// The visible characters of the twenty chapters of a novel, as uneven as
+/// real chapters: from 7000 to 13000, so that no two neighbors differ by
+/// a factor of two.
+const _novel = [
+  9000, 12500, 7200, 11000, 8300, 13000, 7600, 10400, 12100, 7000, //
+  9800, 11800, 8000, 12800, 7400, 10900, 9100, 12300, 7800, 10000,
+];
+
+/// The milliseconds that a narrator takes to read [characters] at 12
+/// visible characters a second.
+int _read(int characters) => characters * 1000 ~/ 12;
+
+/// Where each chapter of [_novel] starts in its ebook, after a title page
+/// of 1500 characters and a preface of 1500.
+final _chapterStarts = [
+  for (var chapter = 0, start = 3000; chapter < _novel.length; chapter++)
+    start += chapter == 0 ? 0 : _novel[chapter - 1],
+];
+
+/// Where each track or chapter of [_novel]'s recording starts: 30 s of
+/// credits, then the preface, then each chapter.
+final _trackStarts = [
+  0,
+  30000,
+  for (final start in _chapterStarts) 30000 + _read(start - 1500),
+];
+
+/// The length of [_novel]'s recording.
+final _recorded = 30000 + _read(3000 + _novel.reduce((a, b) => a + b) - 1500);
+
+/// A recording of [_novel] whose 21 marks name tracks: track 01 holds the
+/// credits and the preface, and track N holds chapter N - 1. The ebook
+/// numbers its chapters, so track N pairs with chapter N by chance, as
+/// book J of the user's library did ("Measured on the user's library").
+(AudioOutline, TextOutline) offByOneTracks() => (
+  recording([
+    ('01 Book J', 0),
+    for (final (index, start) in _trackStarts.skip(2).indexed)
+      ('${(index + 2).toString().padLeft(2, '0')} Book J', start),
+  ], _recorded),
+  ebook([
+    ('Title page', 0, 0),
+    ('Preface', 0, 1500),
+    for (final (index, start) in _chapterStarts.indexed)
+      ('Chapter ${index + 1}', 0, start),
+  ], 3000 + _novel.reduce((a, b) => a + b)),
+);
+
+/// The recording of [offByOneTracks] with marks that name its chapters.
+AudioOutline namedTracks() => recording([
+  ('Opening Credits', 0),
+  ('Preface', 30000),
+  for (final (index, start) in _trackStarts.skip(2).indexed)
+    ('Chapter ${index + 1}', start),
+], _recorded);
+
+/// A recording of one short work in three chapters, and an anthology of
+/// three works that each number their chapters from 1. Chapters 1, 2 and 3
+/// of the recording pair with chapter 1 of the first work, chapter 2 of the
+/// second and chapter 3 of the third, where their shares of the two
+/// editions agree best, as book E of the user's library did.
+(AudioOutline, TextOutline) storyInAnthology() {
+  const works = [
+    ('The First Work', [8000, 8000, 8000, 16000]),
+    ('The Second Work', [8000, 8000, 8000, 8000]),
+    ('The Third Work', [8000, 8000, 8000, 8000]),
+  ];
+  final entries = <(String, int, int)>[];
+  var start = 0;
+  for (final (title, chapters) in works) {
+    entries.add((title, 0, start));
+    for (final (index, characters) in chapters.indexed) {
+      entries.add(('Chapter ${index + 1}', 1, start));
+      start += characters;
+    }
+  }
+  return (
+    recording([
+      ('Chapter 1', 0),
+      ('Chapter 2', 1200000),
+      ('Chapter 3', 2520000),
+    ], 3600000),
+    ebook(entries, start),
+  );
+}
+
 void main() {
   group('a chapter title', () {
     test('gives the number after "chapter", "stave" or "letter"', () {
@@ -276,13 +362,14 @@ void main() {
       expect(alignEditions(audio, text), isA<UnmatchedChapters>());
     });
 
-    test('when the matched chapters cover less than half of the '
+    test('when the matched chapters cover less than three tenths of the '
         'recording', () {
-      // Only chapters 1 to 3 pair. Chapters 4 to 9 have no counterpart.
+      // Only chapters 1 to 3 pair, a quarter of the recording. Chapters 4
+      // to 12 have no counterpart.
       final audio = recording([
-        for (var chapter = 1; chapter <= 9; chapter++)
+        for (var chapter = 1; chapter <= 12; chapter++)
           ('Chapter $chapter', (chapter - 1) * 100000),
-      ], 900000);
+      ], 1200000);
       final text = ebook([
         ('I', 0, 0),
         ('II', 0, 1000),
@@ -294,6 +381,101 @@ void main() {
         Refusal.partCovered,
       );
     });
+  });
+
+  group('the self-check', () {
+    test('every public recording whose chapters match passes it: each '
+        'hidden chapter start lands near its known start', () {
+      for (final (work, id) in [
+        ('christmas-carol', '6014'),
+        ('christmas-carol', '685'),
+        ('emma', '1936'),
+        ('moby-dick', '21919'),
+        ('pride-and-prejudice', '253'),
+        ('pride-and-prejudice', '1480'),
+        ('walden', '8974'),
+      ]) {
+        final (audio, text) = fixture(work, id);
+
+        expect(
+          alignEditions(audio, text),
+          isA<MatchedChapters>(),
+          reason: '$work $id',
+        );
+      }
+    });
+
+    test('refuses track numbers that pair with chapter numbers by chance, '
+        'one chapter late because track 01 holds the credits and the '
+        'preface', () {
+      final (audio, text) = offByOneTracks();
+
+      expect(
+        (alignEditions(audio, text) as UnmatchedChapters).reason,
+        Refusal.misaligned,
+      );
+    });
+
+    test('keeps the same recording when its marks name its chapters', () {
+      final (_, text) = offByOneTracks();
+      final audio = namedTracks();
+
+      final alignment = matched(audio, text);
+
+      expect(pairs(alignment, audio, text)['Chapter 7'], 'Chapter 7');
+    });
+
+    test('refuses a recording of one work against an anthology, whose '
+        'numbered chapters match in three different works', () {
+      final (audio, text) = storyInAnthology();
+
+      expect(
+        (alignEditions(audio, text) as UnmatchedChapters).reason,
+        Refusal.misaligned,
+      );
+    });
+
+    test('keeps two chapters whose titles share their words, though no '
+        'third chapter can check them', () {
+      final audio = recording([
+        ("Marley's Ghost", 0),
+        ('The First of the Three Spirits', 100000),
+      ], 200000);
+      final text = ebook([
+        ('MARLEY’S GHOST.', 0, 0),
+        ('THE FIRST OF THE THREE SPIRITS.', 0, 1000),
+      ], 2000);
+
+      expect(matched(audio, text).anchors, hasLength(2));
+    });
+
+    test('refuses two chapters that pair by their numbers alone, because no '
+        'third chapter can check them', () {
+      final audio = recording([('01', 0), ('02', 100000)], 200000);
+      final text = ebook([('Chapter 1', 0, 0), ('Chapter 2', 0, 1000)], 2000);
+
+      expect(
+        (alignEditions(audio, text) as UnmatchedChapters).reason,
+        Refusal.fewMatches,
+      );
+    });
+  });
+
+  test('matched chapters that cover a third of the recording match, as '
+      'chapters numbered inside volumes can', () {
+    // Chapters 1 to 4 pair. Chapters 5 to 12 have no counterpart.
+    final audio = recording([
+      for (var chapter = 1; chapter <= 12; chapter++)
+        ('Chapter $chapter', (chapter - 1) * 100000),
+    ], 1200000);
+    final text = ebook([
+      ('I', 0, 0),
+      ('II', 0, 1000),
+      ('III', 0, 2000),
+      ('IV', 0, 3000),
+    ], 4000);
+
+    expect(matched(audio, text).anchors, hasLength(4));
   });
 
   group('placement', () {
