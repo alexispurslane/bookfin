@@ -33,7 +33,7 @@ void main() {
       final publication = Publication.admit(made[name]!);
 
       test('$name is still the book whose places epub.js saved', () {
-        expect(publication.identity, record['identity']);
+        expect(admittedFilesDigest(publication), record['identity']);
       });
 
       _placeTests(name, () => publication, record);

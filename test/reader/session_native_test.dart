@@ -29,7 +29,7 @@ import '../playback/playback_test.dart' show account, LocalFiles, MemoryResume;
 import 'epub/corpus/book.dart' show showcaseBooks;
 import 'epub/epubjs_fixtures.dart'
     show fixture, immediateSource, pageAt, recordedSizes;
-import 'epub/helpers.dart' show loadReaderFont, readerPage;
+import 'epub/helpers.dart' show admittedFilesDigest, loadReaderFont, readerPage;
 import 'epub/page_source_test.dart' as pages show book;
 import 'epub/page_source_test.dart' show paragraphs;
 
@@ -383,7 +383,7 @@ void main() {
           'session on a page whose first line holds it, and the store gets '
           'no changed record', () async {
         final publication = showcase(name);
-        expect(publication.identity, record['identity']);
+        expect(admittedFilesDigest(publication), record['identity']);
         final document = EpubDocument(publication);
         var opened = 0;
         for (final size in recordedSizes) {

@@ -8,6 +8,9 @@
 //   expanded entry.
 // - image headers: package:image's startDecode against rasterSize
 //   (image_size.dart), on every PNG and JPEG.
+// - identity: the SHA-256 of every expanded entry, about the admitted files
+//   that the identity hashed before boo-yjq6, against the one SHA-256 of
+//   the policy, the revision and the digest.
 //
 // In the dev shell, from the repository root, compile it ahead of time, as
 // the app runs, and run it on the books of docs/plans/faster-book-open.md:
@@ -24,6 +27,7 @@ import 'package:archive/archive.dart'
     show Inflate, OutputMemoryStream, getCrc32;
 import 'package:bookfin/reader/epub/image_size.dart';
 import 'package:bookfin/reader/epub/zip.dart';
+import 'package:crypto/crypto.dart';
 import 'package:image/image.dart' as raster;
 
 /// One entry of a book's ZIP directory.
@@ -121,6 +125,17 @@ void main(List<String> paths) {
         rasterSize(bytes, mime);
       }
     });
+    final oldIdentity = _median(() {
+      for (final bytes in expanded) {
+        sha256.convert(bytes);
+      }
+    });
+    final newIdentity = _median(() {
+      sha256.convert('bookfin-passive-epub-1/3/${'0' * 64}'.codeUnits);
+    });
+    stdout.writeln(
+      '${path.split('/').last}: identity $oldIdentity -> $newIdentity ms',
+    );
     stdout.writeln(
       '${path.split('/').last}: inflate of ${deflated.length} entries '
       '$oldInflate -> $newInflate ms; CRC-32 of ${expanded.length} entries '

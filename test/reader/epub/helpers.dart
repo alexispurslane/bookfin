@@ -1,9 +1,12 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:bookfin/reader/epub/layout.dart';
 import 'package:bookfin/reader/epub/prepare.dart';
+import 'package:bookfin/reader/epub/publication.dart';
+import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:image/image.dart' as img;
 
@@ -27,6 +30,33 @@ Future<void> loadReaderFont() async {
   final bytes = File('assets/fonts/SourceSerif4.ttf').readAsBytesSync();
   await ui.loadFontFromList(bytes, fontFamily: readerFontFamily);
   _fontLoaded = true;
+}
+
+/// The SHA-256 of the reading policy, the original file's digest, and the
+/// path, media type and SHA-256 of every admitted file of [publication]:
+/// the publication identity before boo-yjq6 named it by the policy, the
+/// admission revision and the digest. It changes when admission's output
+/// changes, so tests compare it with the identity that fixtures recorded,
+/// to show that admission still gives the files that their places point
+/// into.
+String admittedFilesDigest(Publication publication) {
+  final paths = publication.resources.keys.toList()..sort();
+  return sha256
+      .convert(
+        utf8.encode(
+          jsonEncode([
+            Publication.policy,
+            publication.originalDigest,
+            for (final path in paths)
+              [
+                path,
+                publication.mediaTypes[path],
+                sha256.convert(publication.resources[path]!).toString(),
+              ],
+          ]),
+        ),
+      )
+      .toString();
 }
 
 /// The WebView reader's default page: 412 × 671 pixels with 20 pixel text,

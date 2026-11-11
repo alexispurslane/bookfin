@@ -12,6 +12,8 @@ import 'package:bookfin/downloads/downloads.dart';
 import 'package:bookfin/downloads/local_downloads.dart';
 import 'package:bookfin/reader/admitted_books.dart';
 import 'package:bookfin/reader/document.dart';
+import 'package:bookfin/reader/epub/dom.dart' show EpubPlace;
+import 'package:bookfin/reader/epub/page_maps.dart';
 import 'package:bookfin/reader/epub/page_source.dart';
 import 'package:bookfin/reader/epub/pager.dart';
 import 'package:bookfin/reader/epub/places.dart';
@@ -446,9 +448,16 @@ void main() {
         for (final open in ['first', 'later']) {
           final document = await _open(file, _digest(bytes), container);
           expect(document.originalDigest, saved['original'], reason: open);
-          if (name != 'broken-image.epub') {
-            expect(document.identity, saved['processed'], reason: open);
-          }
+          // Since boo-yjq6, an EPUB's identity names the policy, the
+          // admission revision and the file's digest, so its places carry
+          // an older identity. A MOBI's identity did not change.
+          expect(
+            document.identity,
+            container == 'epub'
+                ? isNot(saved['processed'])
+                : saved['processed'],
+            reason: open,
+          );
           final address = document.restore(saved);
           expect(address, isNotNull, reason: open);
 
@@ -478,6 +487,83 @@ void main() {
         }
       });
     }
+  });
+
+  group('the identity of policy, revision and digest (boo-yjq6)', () {
+    const engine = 'install-1\nbuild-1\nen-US';
+
+    /// Lays out every section of [publication] at [readerPage] with the page
+    /// maps of the download [file] under the book identity [book], and gives
+    /// the map that the source keeps.
+    Future<List<KeptSection>> layOutWhole(
+      File file,
+      Publication publication,
+      String book,
+    ) async {
+      final pageMaps = BookPageMaps(
+        file,
+        book: book,
+        engine: Future.value(engine),
+      );
+      final scheduler = TestScheduler();
+      final source = PageSource(
+        publication,
+        schedule: scheduler.schedule,
+        pageMaps: pageMaps,
+      )..settings = readerPage;
+      addTearDown(source.dispose);
+      final dom = (await scheduler.until(source.section(0))).dom;
+      source.show(
+        await scheduler.until(
+          source.pageAt(
+            EpubPlace(0, dom.body.order, 0),
+            anchored: true,
+            urgent: true,
+          ),
+        ),
+      );
+      await scheduler.settle();
+      for (var tries = 0; tries < 400; tries++) {
+        if (await pageMaps.read(readerPage) case final kept?) return kept;
+        await Future<void>.delayed(const Duration(milliseconds: 5));
+      }
+      fail('The page map was never kept.');
+    }
+
+    test('the first open after the change lays out the page map once again, '
+        'and the next open reads it', () async {
+      final (bytes, _) = _books['showcase-frost.epub']!;
+      final file = await _download(bytes);
+      final document = await _open(file, _digest(bytes), 'epub');
+      // The map that an open before boo-yjq6 kept, under the identity that
+      // hashed every admitted file.
+      final before =
+          (_placesBefore['showcase-frost.epub'] as Map)['processed'] as String;
+      await layOutWhole(file, document.publication, before);
+
+      final maps = BookPageMaps(
+        file,
+        book: document.identity,
+        engine: Future.value(engine),
+      );
+      expect(await maps.read(readerPage), isNull);
+      final laid = await layOutWhole(
+        file,
+        document.publication,
+        document.identity,
+      );
+
+      final next = await _open(file, _digest(bytes), 'epub');
+      expect(next.identity, document.identity);
+      expect(
+        await BookPageMaps(
+          file,
+          book: next.identity,
+          engine: Future.value(engine),
+        ).read(readerPage),
+        laid,
+      );
+    });
   });
 
   group('admission', () {

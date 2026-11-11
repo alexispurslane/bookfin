@@ -27,3 +27,7 @@ Quick win 2 (slicing-by-8 CRC-32): host AOT bench, median of 7, CRC-32 of every 
 **2026-11-11T20:34:05Z**
 
 Quick win 3 (own PNG and JPEG header reader, image_size.dart): host AOT bench, median of 7, headers of every image: prose 4.4 -> 0.0 ms (5 images), long 5.7 -> 0.0 ms (7), illustrated 4.9 -> 0.1 ms (89), divine 110.2 -> 0.006 ms (138). Same accept or refuse and same size as package:image on all 986 corpus images; 22 malformed and edge-case tests check both readers.
+
+**2026-11-11T20:44:09Z**
+
+Quick win 4 (identity from the policy, Publication.revision and the file digest; revision 3): host AOT bench, median of 7, the SHA-256 that the identity cost: prose 13.7 -> 0.002 ms, long 18.0 -> 0.002 ms, illustrated 170.3 -> 0.002 ms, divine 286.1 -> 0.002 ms. Tests prove that a place saved under the old identity opens at its place, and that the first open after the change lays out the page map once again and the next open reads it. Fixture tests that matched places on the old identity now match on admittedFilesDigest (test helper, the old formula).

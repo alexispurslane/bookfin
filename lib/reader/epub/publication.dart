@@ -44,6 +44,9 @@ class Publication {
   final Map<String, Uint8List> resources;
   final Map<String, String> mediaTypes;
   final String originalDigest;
+
+  /// The SHA-256 of [policy], [revision] and [originalDigest]: the name of
+  /// this admission of the file. The page maps of the book are keyed by it.
   final String identity;
   final String packagePath;
   final List<String> spine;
@@ -90,12 +93,14 @@ class Publication {
   /// The revision of admission's output and of [encode]'s format. A kept
   /// admitted book of another revision admits again. Raise it when either
   /// changes. It does not move a saved place, which [policy] and the
-  /// original digest key.
+  /// original digest key. It is part of [identity], so a book lays out its
+  /// page maps again after a new revision.
   ///
   /// [mainTextSize] makes the cascade part of admission's output: raise the
   /// revision when a change to the cascade changes the main text size of a
-  /// book. Revision 2 added [mainTextSize].
-  static const revision = 2;
+  /// book. Revision 2 added [mainTextSize]. Revision 3 named [identity] by
+  /// the policy, the revision and the digest (boo-yjq6).
+  static const revision = 3;
 
   /// The publication of the EPUB [bytes], whose SHA-256 is [digest]: the
   /// digest that Downloads verified, so admission does not hash the bytes
@@ -255,7 +260,8 @@ class Publication {
   /// - every contents entry points into the spine at a depth of at most
   ///   [maxContentsDepth];
   /// - [spineSteps] has one step for each spine item;
-  /// - [mainTextSize] is finite and above 0.
+  /// - [mainTextSize] is finite and above 0;
+  /// - [identity] names [policy], [revision] and [originalDigest].
   void checkInvariants() {
     bool typed(Iterable<String> paths, Set<String> types) {
       final wanted = {
@@ -298,8 +304,24 @@ class Publication {
     if (!(mainTextSize > 0 && mainTextSize.isFinite)) {
       throw StateError('Publication main text size is not a type size.');
     }
+    if (identity != _identityOf(originalDigest)) {
+      throw StateError('Publication identity does not name its file.');
+    }
   }
 }
+
+/// The identity of an admission of the file whose SHA-256 is [digest].
+///
+/// NOTE: It names the file, the policy and admission's revision, not the
+/// admitted files, so admission hashes no admitted file (boo-yjq6). A saved
+/// place does not match on it (see ReaderDocument.restore). The page maps
+/// of a book are keyed by it, so a book lays them out again once after a
+/// new revision.
+String _identityOf(String digest) => sha256
+    .convert(
+      utf8.encode('${Publication.policy}/${Publication.revision}/$digest'),
+    )
+    .toString();
 
 const _documents = {'application/xhtml+xml', 'text/html'};
 const _types = {
@@ -699,18 +721,6 @@ class _Admission {
       contents = _ncxContents(navMap, ncx.first.key, package, reading);
     }
     final paths = output.keys.toList()..sort();
-    final identity = sha256
-        .convert(
-          utf8.encode(
-            jsonEncode([
-              Publication.policy,
-              digest,
-              for (final path in paths)
-                [path, types[path], sha256.convert(output[path]!).toString()],
-            ]),
-          ),
-        )
-        .toString();
     // A later write over the same path, such as the package document, can
     // change a path's type, so only paths that keep the type stay.
     final styleSheets = Map<String, String>.unmodifiable({
@@ -721,7 +731,7 @@ class _Admission {
       Map.unmodifiable(output),
       Map.unmodifiable({for (final path in paths) path: types[path]!}),
       digest,
-      identity,
+      _identityOf(digest),
       package,
       List.unmodifiable(reading),
       List.unmodifiable(warnings),
