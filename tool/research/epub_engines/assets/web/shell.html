@@ -12,7 +12,19 @@ let textSize = 18;
 let ready = Promise.resolve();
 let phaseClock;
 
+function timerResolution() {
+    let finest = Infinity;
+    for (let attempt = 0; attempt < 5; attempt++) {
+        const first = performance.now();
+        let next = performance.now();
+        while (next === first) next = performance.now();
+        finest = Math.min(finest, next - first);
+    }
+    return Math.round(finest * 1e6);
+}
+
 function calibrateClock() {
+    const resolution = timerResolution();
     let best;
     for (let attempt = 0; attempt < 9; attempt++) {
         const before = performance.now() * 1e6;
@@ -21,8 +33,8 @@ function calibrateClock() {
         const roundTrip = after - before;
         if (!best || roundTrip < best.calibration_round_trip_ns) {
             best = {source:"web_performance_ms", offset_ns:Math.round(native - (before + after) / 2),
-                uncertainty_ns:Math.ceil(roundTrip / 2) + 1000,
-                calibration_round_trip_ns:Math.ceil(roundTrip)};
+                uncertainty_ns:Math.ceil(roundTrip / 2) + 1000 + resolution,
+                observed_resolution_ns:resolution, calibration_round_trip_ns:Math.ceil(roundTrip)};
         }
     }
     return best;
@@ -30,17 +42,31 @@ function calibrateClock() {
 
 function androidTime(milliseconds) { return Math.round(milliseconds * 1e6 + phaseClock.offset_ns); }
 
-async function resourcesReady() {
-    await Promise.all(rendition.getContents().map(async content => {
-        await content.document.fonts.ready;
-        await Promise.all(Array.from(content.document.images).map(image => image.decode().catch(() => {})));
-    }));
-    rendition.views().forEach(view => view.expand());
+// The images that overlap the reader's visible area, in reader coordinates.
+function pageImages(contents, area) {
+    return contents.flatMap(content => {
+        const frame = content.document.defaultView.frameElement.getBoundingClientRect();
+        return Array.from(content.document.images).filter(image => {
+            const box = image.getBoundingClientRect();
+            return frame.left + box.left < area.right && frame.left + box.right > area.left
+                && frame.top + box.top < area.bottom && frame.top + box.bottom > area.top;
+        });
+    });
 }
 
-async function report(operation, eventId) {
+async function resourcesReady() {
+    const contents = rendition.getContents();
+    await Promise.all(contents.map(content => content.document.fonts.ready));
+    const area = document.getElementById("reader").getBoundingClientRect();
+    const images = pageImages(contents, area);
+    await Promise.all(images.map(image => image.decode().catch(() => {})));
+    rendition.views().forEach(view => view.expand());
+    return images;
+}
+
+async function report(operation, eventId, engineStart) {
     const operationReturned = performance.now();
-    await resourcesReady();
+    const decoded = await resourcesReady();
     const location = rendition.currentLocation();
     const contents = rendition.getContents();
     contents.forEach(content => content.document.documentElement.getBoundingClientRect());
@@ -57,9 +83,11 @@ async function report(operation, eventId) {
     }
     Probe.ready(JSON.stringify({operation, location: location.start.cfi, location_format:"epub_cfi",
         preparation_event_id:eventId, preparation_operation:operation,
-        preparation_scope:"webview_layout_fonts_and_decoded_section_images",
-        operation_returned_source_ms:operationReturned, preparation_source_ms:preparation,
-        operation_returned_ns:androidTime(operationReturned), preparation_ns:androidTime(preparation), phase_clock:phaseClock,
+        preparation_scope:"webview_layout_fonts_and_decoded_page_images",
+        engine_start_source_ms:engineStart, operation_returned_source_ms:operationReturned, preparation_source_ms:preparation,
+        engine_start_ns:androidTime(engineStart), operation_returned_ns:androidTime(operationReturned),
+        preparation_ns:androidTime(preparation), phase_clock:phaseClock,
+        page_images:decoded.map(image => image.getAttribute("src")),
         spine_index: location.start.index, href: location.start.href,
         end_cfi:location.end.cfi, displayed:location.start.displayed,
         visible_text:visible,
@@ -70,6 +98,7 @@ async function report(operation, eventId) {
 }
 
 async function execute(operation, eventId) {
+    const engineStart = performance.now();
     if (operation === "fresh_open" || operation === "cached_reopen") {
         textSize = 18;
         if (rendition) rendition.destroy();
@@ -109,7 +138,7 @@ async function execute(operation, eventId) {
     } else if (operation !== "paginate") {
         throw Error("Unknown operation: " + operation);
     }
-    await report(operation, eventId);
+    await report(operation, eventId, engineStart);
 }
 
 async function setSize(size) {

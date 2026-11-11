@@ -43,14 +43,30 @@ class _BenchmarkShellState extends State<BenchmarkShell> {
   int _clockUncertainty = 0;
   int _clockRoundTrip = 0;
 
+  /// The frames since the current request: when each one had painted and
+  /// composited, in Timeline microseconds, and the page picture it painted.
+  final _painted = <({int us, ui.Picture? picture})>[];
+
+  /// The engine's timings of frames since the current request.
+  final _timings = <ui.FrameTiming>[];
+
   @override
   void initState() {
     super.initState();
     SchedulerBinding.instance.addTimingsCallback(_receiveFrames);
+    // Registered after the renderer's own callback, so it runs once the
+    // frame's layer tree went to the engine. The page's render object paints
+    // the pager's shown picture during that frame's paint.
+    SchedulerBinding.instance.addPersistentFrameCallback((_) {
+      if (mounted) {
+        _painted.add((us: Timeline.now, picture: _pager?.shown.value?.picture));
+      }
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) => unawaited(_run()));
   }
 
   void _receiveFrames(List<ui.FrameTiming> frames) {
+    _timings.addAll(frames);
     if (_raster case final pending? when !pending.isCompleted) {
       if (frames.any(
         (frame) =>
@@ -77,6 +93,9 @@ class _BenchmarkShellState extends State<BenchmarkShell> {
         final step = raw as Map;
         final operation = step['operation'] as String;
         setState(() => _status = 'Bookfin: $operation');
+        final before = _pager?.shown.value?.picture;
+        _painted.clear();
+        _timings.clear();
         final startSource = Timeline.now;
         final start = _androidTime(startSource);
         switch (operation) {
@@ -125,6 +144,15 @@ class _BenchmarkShellState extends State<BenchmarkShell> {
           await _until(() => identical(_pager!.shown.value!.picture, picture));
         }
         final ready = (await platform.invokeMethod<int>('clock'))!;
+        // Only a step that shows another page has a frame that draws it.
+        // Every measured step shows another page.
+        final changed = !identical(before, picture);
+        if (!changed && step['measured'] == true) {
+          throw StateError('The requested page was shown before the request');
+        }
+        final frame = changed
+            ? await _firstFrameWith(picture, startSource)
+            : null;
         if ((_configuration['run_id'] as String).startsWith('calibration-')) {
           _rasterAfter = Timeline.now;
           _raster = Completer<void>();
@@ -157,6 +185,8 @@ class _BenchmarkShellState extends State<BenchmarkShell> {
           'cache': sequence == 0 ? 'fresh_document' : 'warm_document',
           'start_ns': start,
           'start_source_us': startSource,
+          'engine_start_source_us': startSource,
+          'engine_start_ns': start,
           'operation_returned_source_us': operationReturnedSource,
           'preparation_source_us': preparationSource,
           'operation_returned_ns': _androidTime(operationReturnedSource),
@@ -171,6 +201,21 @@ class _BenchmarkShellState extends State<BenchmarkShell> {
             'calibration_round_trip_ns': _clockRoundTrip,
           },
           'engine_ready_ns': ready,
+          if (frame != null) ...{
+            'drawn_source_us': frame.timing.timestampInMicroseconds(
+              ui.FramePhase.rasterFinish,
+            ),
+            'drawn_ns': _androidTime(
+              frame.timing.timestampInMicroseconds(ui.FramePhase.rasterFinish),
+            ),
+            'drawn_scope': 'flutter_raster_finish_of_first_frame_with_page',
+            'drawn_frame': {
+              'number': frame.timing.frameNumber,
+              'painted_us': frame.painted,
+              for (final phase in ui.FramePhase.values)
+                '${phase.name}_us': frame.timing.timestampInMicroseconds(phase),
+            },
+          },
           'shell_ready_ns': _shellReady,
           'process_start_ns': _configuration['process_start_ns'],
           'book_sha256': _specification['sha256'],
@@ -210,6 +255,38 @@ class _BenchmarkShellState extends State<BenchmarkShell> {
   }
 
   int _androidTime(int micros) => micros * 1000 + _clockOffset;
+
+  /// The first frame since [startSource] that painted [picture], and the
+  /// engine's timing of it: the one frame that began building after the
+  /// frame before it had painted, and finished building before it painted.
+  Future<({int painted, ui.FrameTiming timing})> _firstFrameWith(
+    ui.Picture picture,
+    int startSource,
+  ) async {
+    await _until(
+      () => _painted.any((frame) => identical(frame.picture, picture)),
+    );
+    final index = _painted.indexWhere(
+      (frame) => identical(frame.picture, picture),
+    );
+    final painted = _painted[index].us;
+    final after = index == 0 ? startSource : _painted[index - 1].us;
+    List<ui.FrameTiming> matching() => [
+      for (final timing in _timings)
+        if (timing.timestampInMicroseconds(ui.FramePhase.buildStart) > after &&
+            timing.timestampInMicroseconds(ui.FramePhase.buildStart) <=
+                painted &&
+            timing.timestampInMicroseconds(ui.FramePhase.buildFinish) <=
+                painted)
+          timing,
+    ];
+    await _until(() => matching().isNotEmpty);
+    final found = matching();
+    if (found.length != 1) {
+      throw StateError('${found.length} frame timings match the painted frame');
+    }
+    return (painted: painted, timing: found.single);
+  }
 
   Future<void> _calibrateClock() async {
     var shortest = 1 << 62;

@@ -42,6 +42,12 @@ def main():
             verified_fresh = [row for row in fresh if row.get("content_verified") and row.get("window_copy_verified")]
             preparation = [row for row in selected if row["operation"] == "paginate"]
             measurements = [row for row in selected if row["measured"]]
+            accepted = [row for row in measurements if row.get("content_verified")
+                        and row.get("window_copy_verified") and not row.get("error")]
+            entered = [row for row in accepted if type(row.get("engine_start_ns")) is int]
+            drawn = [row for row in accepted if engine == "koreader" and type(row.get("redraw_duration_ns")) is int]
+            painted = [row for row in accepted if type(row.get("drawn_ns")) is int]
+            frames = [row["drawn_frame"] for row in painted if engine == "bookfin" and isinstance(row.get("drawn_frame"), dict)]
             if not fresh:
                 continue
             facts.append({"engine": engine, "book": book,
@@ -52,11 +58,16 @@ def main():
                           "preparation_whole_book_complete_count": sum(row["whole_book_paginated"] for row in preparation),
                           "preparation_engine_ready_median_ms": statistics.median((row["engine_ready_ns"] - row["start_ns"]) / 1e6 for row in preparation) if preparation else None,
                           "last_pixel_copy_median_ms": statistics.median(row["copy_duration_ns"] / 1e6 for row in measurements) if measurements else None,
-                          "capture_attempts_max": max((row["capture_attempts"] for row in measurements), default=None)})
+                          "capture_attempts_max": max((row["capture_attempts"] for row in measurements), default=None),
+                          "dispatch_to_engine_entry_median_ms": statistics.median((row["engine_start_ns"] - row["start_ns"]) / 1e6 for row in entered) if entered else None,
+                          "koreader_draw_median_ms": statistics.median((row["preparation_ns"] - row["operation_returned_ns"]) / 1e6 for row in drawn) if drawn else None,
+                          "koreader_redraw_median_ms": statistics.median(row["redraw_duration_ns"] / 1e6 for row in drawn) if drawn else None,
+                          "drawn_after_preparation_median_ms": statistics.median((row["drawn_ns"] - row["preparation_ns"]) / 1e6 for row in painted) if painted else None,
+                          "flutter_raster_median_ms": statistics.median((frame["rasterFinish_us"] - frame["rasterStart_us"]) / 1e3 for frame in frames) if frames else None})
     summary["independent_processes_complete"] = len(facts) == 9 and all(fact["independent_process_start_count"] >= 10 for fact in facts)
     summary["complete"] = summary["complete"] and summary["independent_processes_complete"]
-    for milestone in summary["milestones"].values():
-        milestone["complete"] = milestone["complete"] and not incomplete and summary["independent_processes_complete"]
+    for interval in summary["intervals"].values():
+        interval["complete"] = interval["complete"] and not incomplete and summary["independent_processes_complete"]
     (args.output / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")
     (args.output / "facts.json").write_text(json.dumps(facts, indent=2) + "\n")
     print(json.dumps({"cells": len(summary["cells"]), "excluded": len(summary["excluded"]),

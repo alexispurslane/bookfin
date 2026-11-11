@@ -62,7 +62,15 @@ public final class EngineWorkloadTest {
                 assertTrue(row.getLong("engine_ready_ns") < row.getLong("end_ns"));
                 assertEquals(row.getString("id"), row.getString("preparation_event_id"));
                 assertEquals(step.getString("operation"), row.getString("preparation_operation"));
-                assertTrue(row.getLong("start_ns") <= row.getLong("operation_returned_ns"));
+                assertTrue("The engine receives a request after the shell dispatches it", row.getLong("start_ns") <= row.getLong("engine_start_ns"));
+                assertTrue("The engine starts before its operation returns", row.getLong("engine_start_ns") <= row.getLong("operation_returned_ns"));
+                if (step.getBoolean("measured")) {
+                    assertTrue("The engine draws the page after it receives the request", row.getLong("engine_start_ns") < row.getLong("drawn_ns"));
+                    assertTrue("The page is drawn before the window copy", row.getLong("drawn_ns") <= row.getLong("end_ns"));
+                    assertFalse(row.getString("drawn_scope").isEmpty());
+                }
+                if (row.getString("engine").equals("koreader")) assertTrue("KOReader repeats its page draw after timing", row.getLong("redraw_duration_ns") > 0);
+                if (row.getString("engine").equals("webview")) assertTrue("WebView records the images it awaited for the shown page", row.has("page_images"));
                 assertTrue(row.getLong("operation_returned_ns") <= row.getLong("preparation_ns"));
                 assertTrue(row.getLong("preparation_ns") <= row.getLong("engine_ready_ns"));
                 assertFalse(row.getJSONObject("phase_clock").getString("source").isEmpty());

@@ -31,6 +31,7 @@ def main():
     parser.add_argument("--start", type=int, default=0)
     parser.add_argument("--limit", type=int)
     parser.add_argument("--prefix", default="")
+    parser.add_argument("--serial", required=True, help="adb serial of the emulator that this run owns")
     args = parser.parse_args()
     if os.environ.get("BOOKFIN_NIX_SHELL") != "1":
         raise RuntimeError("Run through the project Nix dev shell")
@@ -52,13 +53,13 @@ def main():
                 raise RuntimeError(f"Refusing to overwrite previous evidence: {destination}")
             print(f'{index+1}/{len(jobs)} {job["run_id"]}', flush=True)
             remote = f'/sdcard/Android/data/{package}/files/runs/{job["run_id"]}'
-            output = run(["adb", "-s", "emulator-5556", "shell", "am", "instrument", "-w", "-r",
+            output = run(["adb", "-s", args.serial, "shell", "am", "instrument", "-w", "-r",
                           "-e", "class", "dev.bookfin.bench.epub.EngineWorkloadTest",
                           "-e", "book", job["book"], "-e", "run", job["run_id"],
                           "-e", "round", str(job["round"]),
                           package + ".test/androidx.test.runner.AndroidJUnitRunner"], log)
             (args.output / (job["run_id"] + "-instrumentation.txt")).write_text(output)
-            run(["adb", "-s", "emulator-5556", "pull", remote, str(destination)], log, allow_failure="OK (1 test)" not in output)
+            run(["adb", "-s", args.serial, "pull", remote, str(destination)], log, allow_failure="OK (1 test)" not in output)
             if "OK (1 test)" not in output:
                 raise RuntimeError(f'Instrumented behavior test failed: {job["run_id"]}; output and raw evidence retained')
             records = [json.loads(path.read_text()) for path in destination.glob("[0-9]*.json")]

@@ -166,7 +166,7 @@ public final class BenchmarkActivity extends Activity {
     }
 
     private void performKo(String operation) throws Exception {
-        JSONObject metadata = new JSONObject(KoBridge.evaluate("return perform(" + JSONObject.quote(operation) + "," + JSONObject.quote(runId + "/" + stepIndex) + ")"));
+        JSONObject metadata = new JSONObject(KoBridge.evaluate("return perform(" + luaString(operation) + "," + luaString(runId + "/" + stepIndex) + ")"));
         metadata.put("engine_ready_ns", SystemClock.elapsedRealtimeNanos());
         Bitmap bitmap = Bitmap.createBitmap(page.getWidth(), page.getHeight(), Bitmap.Config.ARGB_8888);
         KoBridge.copyPixels(bitmap);
@@ -216,9 +216,16 @@ public final class BenchmarkActivity extends Activity {
                 try {
                     JSONObject metadata = new JSONObject(raw);
                     metadata.put("engine_ready_ns", ready);
-                    if (!runId.startsWith("calibration-")) { capture(metadata); return; }
+                    metadata.put("visual_state_requested_ns", SystemClock.elapsedRealtimeNanos());
+                    // Chromium answers once the compositor frame that holds the page's
+                    // current DOM state was rasterized and submitted.
                     web.postVisualStateCallback(ready, new WebView.VisualStateCallback() {
                         @Override public void onComplete(long requestId) {
+                            try {
+                                metadata.put("drawn_ns", SystemClock.elapsedRealtimeNanos());
+                                metadata.put("drawn_scope", "webview_visual_state_callback_after_preparation");
+                            } catch (Exception error) { BenchmarkActivity.this.failed(error); return; }
+                            if (!runId.startsWith("calibration-")) { capture(metadata); return; }
                             page.getViewTreeObserver().registerFrameCommitCallback(() -> capture(metadata));
                             web.invalidate();
                         }

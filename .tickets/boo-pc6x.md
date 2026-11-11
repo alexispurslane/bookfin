@@ -31,3 +31,7 @@ Endpoint audit found no equivalent pre-raster page-image endpoint in pinned KORe
 **2026-11-11T14:38:31Z**
 
 Sol lead stopped: Codex usage limit. Its partial work is commit 403629c6 on t3/rerun-epub-preparation-benchmark. User restated the goal: exclude emulator-skewed work (for example software rasterization) symmetrically from all engines, keep work that costs the same on emulator and phone. Plan section 'Revised goal' replaces the Option A scope. New lead: Claude Opus 5.5 xhigh.
+
+**2026-11-11T15:41:47Z**
+
+Claude lead: classification reported to parent. User decision (2026-11-11): headline interval runs from engine entry through each engine's real drawing; Bookfin/WebView on a host-GPU emulator (Apple M1 Max via emulator GL translator), KOReader through drawCurrentPage; SwiftShader pre-raster numbers kept as a labeled diagnostic. Own AVDs bookfin-bench-sym (SwiftShader, reproduces all 63 frozen references) and bookfin-bench-gpu (host GPU, separate 63-page reference set) on emulator-5558. Fixed WIP bugs: Lua received JSON '\/' escapes (every KOReader job failed); persistent scratch buffer freed by GC.

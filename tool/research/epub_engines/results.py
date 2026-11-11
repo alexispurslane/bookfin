@@ -10,24 +10,43 @@ OPERATIONS = ("fresh_open", "cached_reopen", "page_turn", "chapter_crossing", "f
 BOUNDARY = "request_to_reference_window_copy"
 PREPARATION_SCOPES = {
     "bookfin": "flutter_picture_and_decoded_page_images",
-    "webview": "webview_layout_fonts_and_decoded_section_images",
+    "webview": "webview_layout_fonts_and_decoded_page_images",
     "koreader": "koreader_drawn_page_bitmap",
+}
+DRAWN_SCOPES = {
+    "bookfin": "flutter_raster_finish_of_first_frame_with_page",
+    "webview": "webview_visual_state_callback_after_preparation",
+    "koreader": "koreader_cpu_drawn_page_bitmap",
 }
 PHASE_CLOCKS = {"bookfin": "dart_timeline_us", "webview": "web_performance_ms",
                 "koreader": "android_boottime_ns"}
+# Each interval starts when the engine's own code receives the request. The
+# drawn page ends when the engine has drawn the requested page: on the GPU
+# for Bookfin and WebView, on the CPU for KOReader. The prepared page ends
+# before any GPU rasterization or composition.
+INTERVALS = {
+    "drawn_page": {"start": "engine_start_ns", "end": "drawn_ns",
+                   "engines": ENGINES, "scopes": DRAWN_SCOPES},
+    "prepared_page": {"start": "engine_start_ns", "end": "preparation_ns",
+                      "engines": ENGINES, "scopes": PREPARATION_SCOPES},
+    "koreader_before_draw": {"start": "engine_start_ns", "end": "operation_returned_ns",
+                             "engines": ("koreader",),
+                             "scopes": {"koreader": "koreader_layout_before_drawing"}},
+}
+PHASE_FIELDS = ("start_ns", "engine_start_ns", "operation_returned_ns", "preparation_ns",
+                "engine_ready_ns", "end_ns")
 
 
 def summarize(rows):
-    result = _summarize(rows, "end_ns")
-    result["milestones"] = {
-        name: _summarize(rows, endpoint)
-        for name, endpoint in (("operation_returned", "operation_returned_ns"),
-                               ("preparation", "preparation_ns"))
+    result = _summarize(rows, "start_ns", "end_ns", ENGINES, None)
+    result["intervals"] = {
+        name: _summarize(rows, spec["start"], spec["end"], spec["engines"], spec["scopes"])
+        for name, spec in INTERVALS.items()
     }
     return result
 
 
-def _summarize(rows, endpoint):
+def _summarize(rows, start, end, engines, scopes):
     grouped = defaultdict(list)
     excluded = []
     seen = set()
@@ -38,32 +57,33 @@ def _summarize(rows, endpoint):
         if identity in seen:
             raise ValueError(f"duplicate sample id: {identity}")
         seen.add(identity)
-        reason = _invalid(row) or (_invalid_preparation(row) if endpoint != "end_ns" else None)
+        if scopes is not None and row.get("engine") not in engines:
+            continue
+        reason = (_invalid(row) or (_invalid_phases(row) if scopes is not None else None)
+                  or (_invalid_drawing(row) if end == "drawn_ns" else None))
         if reason:
             excluded.append({"id": identity, "reason": reason})
         else:
             grouped[(row["engine"], row["book"], row["operation"])].append(row)
     cells = []
     for (engine, book, operation), samples in sorted(grouped.items()):
-        durations = sorted((row[endpoint] - row["start_ns"]) / 1000000 for row in samples)
+        durations = sorted((row[end] - row[start]) / 1000000 for row in samples)
         cells.append({
             "engine": engine, "book": book, "operation": operation,
-            "boundary": BOUNDARY if endpoint == "end_ns" else endpoint,
-            "scope": (BOUNDARY if endpoint == "end_ns" else
-                      PREPARATION_SCOPES[engine] if endpoint == "preparation_ns" else
-                      f"{engine}_operation_returned_before_resource_or_bitmap_preparation"),
+            "boundary": BOUNDARY if scopes is None else f"{start}_to_{end}",
+            "scope": BOUNDARY if scopes is None else scopes[engine],
             "count": len(samples),
             "rounds": len({row["round"] for row in samples}),
             "mean_ms": statistics.mean(durations),
             "median_ms": statistics.median(durations),
             "p90_ms": durations[math.ceil(len(durations) * .9) - 1],
         })
-    complete = len(cells) == len(ENGINES) * 3 * len(OPERATIONS) and all(
+    complete = len(cells) == len(engines) * 3 * len(OPERATIONS) and all(
         cell["count"] >= (10 if cell["operation"] == "fresh_open" else 30)
         and cell["rounds"] >= 10 for cell in cells
     )
     means = []
-    for engine in ENGINES:
+    for engine in engines:
         for operation in OPERATIONS:
             books = [cell for cell in cells if cell["engine"] == engine and cell["operation"] == operation]
             if len(books) == 3:
@@ -73,7 +93,7 @@ def _summarize(rows, endpoint):
     return {"cells": cells, "equal_book_means": means, "excluded": excluded, "complete": complete}
 
 
-def _invalid_preparation(row):
+def _invalid_phases(row):
     if row.get("preparation_event_id") != row["id"] or row.get("preparation_operation") != row["operation"]:
         return "stale or missing preparation event"
     if row.get("preparation_scope") != PREPARATION_SCOPES[row["engine"]]:
@@ -81,15 +101,15 @@ def _invalid_preparation(row):
     clock = row.get("phase_clock")
     if not isinstance(clock, dict) or clock.get("source") != PHASE_CLOCKS[row["engine"]]:
         return "missing or invalid phase clock"
-    if any(type(clock.get(field)) is not int for field in ("offset_ns", "uncertainty_ns")) or clock["uncertainty_ns"] < 0:
+    required = ["offset_ns", "uncertainty_ns"] + (["observed_resolution_ns"] if row["engine"] == "webview" else [])
+    if any(type(clock.get(field)) is not int for field in required) or any(clock[field] < 0 for field in required[1:]):
         return "missing or invalid clock conversion"
-    fields = ("start_ns", "operation_returned_ns", "preparation_ns", "engine_ready_ns", "end_ns")
-    times = [row.get(field) for field in fields]
-    if any(type(value) is not int for value in times) or times != sorted(times) or times[2] <= times[0]:
-        return "missing, reversed, or out-of-order preparation endpoints"
+    times = [row.get(field) for field in PHASE_FIELDS]
+    if any(type(value) is not int for value in times) or times != sorted(times) or times[3] <= times[1]:
+        return "missing, reversed, or out-of-order phase endpoints"
     if row["engine"] != "koreader":
         unit, multiplier = ("us", 1000) if row["engine"] == "bookfin" else ("ms", 1_000_000)
-        fields = ["operation_returned", "preparation"]
+        fields = ["engine_start", "operation_returned", "preparation"]
         if row["engine"] == "bookfin":
             fields.append("start")
         for field in fields:
@@ -100,6 +120,25 @@ def _invalid_preparation(row):
                 return "source timestamp conversion mismatch"
     elif clock["offset_ns"] != 0 or clock["uncertainty_ns"] != 0:
         return "CLOCK_BOOTTIME needs no conversion"
+    return None
+
+
+def _invalid_drawing(row):
+    engine = row["engine"]
+    if row.get("drawn_scope") != DRAWN_SCOPES[engine]:
+        return "missing or wrong drawing endpoint"
+    drawn = row.get("drawn_ns")
+    if type(drawn) is not int or not row["engine_start_ns"] < drawn <= row["end_ns"]:
+        return "drawing endpoint outside the engine interval"
+    if engine == "bookfin":
+        source = row.get("drawn_source_us")
+        if type(source) not in (int, float) or not math.isfinite(source) \
+                or abs(source * 1000 + row["phase_clock"]["offset_ns"] - drawn) > 1:
+            return "raster finish conversion mismatch"
+    elif engine == "webview" and drawn < row["engine_ready_ns"]:
+        return "visual state callback before it was requested"
+    elif engine == "koreader" and drawn != row["preparation_ns"]:
+        return "KOReader draws its page in its preparation"
     return None
 
 
