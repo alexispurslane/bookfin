@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:isolate';
 
 import '../catalog/model.dart';
 import '../downloads/downloads.dart';
@@ -98,15 +97,12 @@ Future<T> _readAdmitted<T>(
   T Function(Publication publication) use,
 ) {
   final path = file.path;
-  return Isolate.run(
-    () async => use(
-      await AdmittedBooks.open(
-        File(path),
-        digest,
-        Publication.policy,
-        () async => Publication.admit(await File(path).readAsBytes(), digest),
-      ),
-    ),
+  return AdmittedBooks.load(
+    file,
+    digest,
+    Publication.policy,
+    () async => Publication.admit(await File(path).readAsBytes(), digest),
+    use,
   );
 }
 

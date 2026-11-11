@@ -39,3 +39,7 @@ Quick win 5 (const hyphenation tables): host AOT bench (tool/reader/hyphenation_
 **2026-11-11T21:06:00Z**
 
 Quick win 6 (start the open with this phone's last page settings): LastPageSettings keeps the settings of each shown EPUB page (SharedPreferencesAsync); EpubPager(expected:) prepares the saved place's section, or section 0, at once and uses that work only when the first present is equal. Host bench (admission_benchmark_test), pager construction to shown page with the first present 12 ms later, median of 5: prose 30.0 -> 21.6 ms, long 35.5 -> 23.6, illustrated 28.1 -> 20.0, divine 27.8 -> 19.7, MOBI 26.8 -> 19.4. Recorded t4-4d21 for the three same preference stores.
+
+**2026-11-11T21:17:30Z**
+
+Quick win 7 (the load returns before the record write ends): AdmittedBooks.load runs read/admit and the caller's use in one worker, gives the record as TransferableTypedData, and a worker of its own writes it atomically after; a later load of the same download waits for that write (AdmittedBooks.written). EPUB, MOBI and the outline measure all load this way. Host bench, median of 5: the write that left the path took prose 2.6, long 3.8, illustrated 8.7, divine 26.7, MOBI 2.9 ms; fresh load 82.8 -> 78.8, 119.6 -> 117.5, 100.9 -> 86.7, 261.6 -> 239.2, 330.8 -> 320.2 ms.

@@ -5,9 +5,10 @@
 // reading policy and the admission code, so Bookfin admits a downloaded file
 // once and keeps the result with the download's derived files. Removing the
 // download removes it.
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
+import 'dart:isolate';
 
 import 'package:flutter/foundation.dart';
 
@@ -21,33 +22,131 @@ import 'epub/publication.dart';
 /// names the downloaded file's digest, the reading policy and
 /// [Publication.revision]. A download keeps one record, so a new key
 /// replaces the old record.
+///
+/// A load of a book does not wait for its record's write (boo-yjq6): [load]
+/// gives its result as soon as the book is read or admitted, and a worker
+/// of its own writes the record after. An open of the same download waits
+/// for that write ([written]), so it reads the record instead of admitting
+/// the book again.
 abstract final class AdmittedBooks {
+  /// What [use] gives for the publication of the downloaded file
+  /// [original], whose bytes have the SHA-256 [digest], read under the
+  /// reading policy [policy].
+  ///
+  /// One worker isolate reads the publication from the kept record, or
+  /// admits the book with [admit], as [read] does, and runs [use] on it.
+  /// Only the result of [use] comes back. When the book was admitted, a
+  /// worker of its own writes its record after, as [keep] does. The load
+  /// first waits for the record writes of [original] that an earlier load
+  /// started ([written]).
+  ///
+  /// [admit] and [use] run in the worker, so they must capture only values
+  /// that can be sent to another isolate.
+  static Future<T> load<T>(
+    File original,
+    String digest,
+    String policy,
+    Future<Publication> Function() admit,
+    T Function(Publication publication) use,
+  ) async {
+    await written(original);
+    final path = original.path;
+    final (result, record) = await Isolate.run(() async {
+      final (publication, record) = await read(
+        File(path),
+        digest,
+        policy,
+        admit,
+      );
+      return (use(publication), record);
+    });
+    if (record != null) _keepLater(record);
+    return result;
+  }
+
   /// The publication of the downloaded file [original], whose bytes have the
-  /// SHA-256 [digest], read under the reading policy [policy].
+  /// SHA-256 [digest], read under the reading policy [policy], and the
+  /// record to keep for it, or null when the record is kept.
   ///
   /// When the kept record has this key, the publication comes from it, and
-  /// [admit] does not run. Otherwise [admit] admits the book, and its
-  /// publication replaces the kept record. A kept record that cannot be read
-  /// is set aside as `publication.unreadable`, and the book admits in full.
-  /// A record that cannot be written costs one more full admission at the
-  /// next open, so it does not fail the open.
+  /// [admit] does not run. Otherwise [admit] admits the book, and the record
+  /// that [keep] writes replaces the kept one. A kept record
+  /// that cannot be read is set aside as `publication.unreadable`, and the
+  /// book admits in full. A record that is never written costs one more full
+  /// admission at the next open.
   ///
   /// It reads, decodes and encodes the record in the calling isolate, so
-  /// call it in a worker.
-  static Future<Publication> open(
+  /// call it in a worker. The record moves to another isolate without a
+  /// copy.
+  static Future<(Publication, AdmittedRecord?)> read(
     File original,
     String digest,
     String policy,
     Future<Publication> Function() admit,
   ) async {
-    final directory = DerivedBookFiles.admittedDirectory(original);
-    final record = File('${directory.path}/publication');
+    final record = _recordOf(original);
     final key = utf8.encode(jsonEncode([Publication.revision, policy, digest]));
-    if (await _kept(record, key) case final kept?) return kept;
+    if (await _kept(record, key) case final kept?) return (kept, null);
     final publication = await admit();
-    await _keep(record, key, publication);
-    return publication;
+    return (
+      publication,
+      AdmittedRecord._(
+        record.path,
+        TransferableTypedData.fromList([
+          Uint8List.fromList(key),
+          Uint8List.fromList(const [0x0a]),
+          ...publication.encode(),
+        ]),
+      ),
+    );
   }
+
+  /// Writes [record] with [DerivedBookFiles.write], so a process that dies
+  /// during the write leaves the old record whole. A record that cannot be
+  /// written costs one more full admission at the next open, so the write
+  /// does not fail. A record can be written once.
+  static Future<void> keep(AdmittedRecord record) async {
+    try {
+      await DerivedBookFiles.write(
+        File(record._path),
+        record._bytes.materialize().asUint8List(),
+      );
+    } on FileSystemException {
+      // The next open admits the book again and tries again.
+    }
+  }
+
+  /// Writes [record] in a worker isolate of its own, as [keep] does, after
+  /// the load that admitted the book returned. [written] completes once the
+  /// write ends.
+  static void _keepLater(AdmittedRecord record) {
+    final path = record._path;
+    final writes = _writes[path] = (_writes[path] ?? Future.value()).then(
+      (_) => _keepInWorker(record),
+    );
+    unawaited(
+      writes.whenComplete(() {
+        if (identical(_writes[path], writes)) _writes.remove(path);
+      }),
+    );
+  }
+
+  /// Writes [record] in a worker isolate of its own. It is static, so that
+  /// the worker's closure holds only [record].
+  static Future<void> _keepInWorker(AdmittedRecord record) =>
+      Isolate.run(() => keep(record));
+
+  /// Completes once the record writes of [original] that [load] started in
+  /// this isolate ended.
+  static Future<void> written(File original) =>
+      _writes[_recordOf(original).path] ?? Future.value();
+
+  /// The record writes that [load] started, by record path.
+  static final _writes = <String, Future<void>>{};
+
+  /// The record of the download [original].
+  static File _recordOf(File original) =>
+      File('${DerivedBookFiles.admittedDirectory(original).path}/publication');
 
   /// The publication of [record] when its key is [key], or null. A record
   /// with another key is a book that changed or an older policy, which the
@@ -83,26 +182,13 @@ abstract final class AdmittedBooks {
       return null;
     }
   }
+}
 
-  /// Writes [publication] under [key] to [record] with
-  /// [DerivedBookFiles.write], so a process that dies during the write
-  /// leaves the old record whole.
-  static Future<void> _keep(
-    File record,
-    List<int> key,
-    Publication publication,
-  ) async {
-    try {
-      await DerivedBookFiles.write(
-        record,
-        (BytesBuilder(copy: false)
-              ..add(key)
-              ..addByte(0x0a)
-              ..add(publication.encode()))
-            .takeBytes(),
-      );
-    } on FileSystemException {
-      // The next open admits the book again and tries again.
-    }
-  }
+/// The record of an admitted book that is not kept yet: what
+/// [AdmittedBooks.keep] writes.
+final class AdmittedRecord {
+  AdmittedRecord._(this._path, this._bytes);
+
+  final String _path;
+  final TransferableTypedData _bytes;
 }

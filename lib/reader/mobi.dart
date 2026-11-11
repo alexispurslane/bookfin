@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:ffi';
 import 'dart:io';
-import 'dart:isolate';
 
 import 'package:crypto/crypto.dart';
 import 'package:ffi/ffi.dart';
@@ -52,15 +51,12 @@ Future<T> readMobi<T>(
 ) {
   final path = original.path;
   final read = _imports.then(
-    (_) => Isolate.run(
-      () async => use(
-        await AdmittedBooks.open(
-          File(path),
-          digest,
-          EpubDocument.mobiPolicy,
-          () => _convert(path, digest),
-        ),
-      ),
+    (_) => AdmittedBooks.load(
+      original,
+      digest,
+      EpubDocument.mobiPolicy,
+      () => _convert(path, digest),
+      use,
     ),
   );
   _imports = read.then<void>((_) {}, onError: (Object error) {});

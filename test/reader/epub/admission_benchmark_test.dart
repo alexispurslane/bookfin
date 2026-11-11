@@ -12,7 +12,9 @@
 //     test/reader/epub/admission_benchmark_test.dart
 //
 // It prints one line per book: the median of each measure over the rounds,
-// in milliseconds. BOOKFIN_ADMISSION_ROUNDS sets the number of rounds (5).
+// in milliseconds. The record of a fresh load is written after the load
+// returns, and the line gives the time from the load's return to the end
+// of that write. BOOKFIN_ADMISSION_ROUNDS sets the number of rounds (5).
 //
 // It also times each EPUB's pager, from its construction to the shown page
 // at the plan's section, when the reader's first layout presents the page
@@ -25,6 +27,7 @@ import 'dart:io';
 import 'package:bookfin/catalog/model.dart';
 import 'package:bookfin/downloads/derived_files.dart';
 import 'package:bookfin/downloads/downloads.dart';
+import 'package:bookfin/reader/admitted_books.dart';
 import 'package:bookfin/reader/document.dart';
 import 'package:bookfin/reader/epub/page_source.dart';
 import 'package:bookfin/reader/epub/pager.dart';
@@ -128,6 +131,7 @@ void main() {
       final admit = <int>[];
       final fresh = <int>[];
       final cached = <int>[];
+      final writes = <int>[];
       final unknown = <int>[];
       final known = <int>[];
       // One round before the measured ones warms the JIT.
@@ -149,6 +153,12 @@ void main() {
         final first = await loadReadingDocument(verified, source);
         if (round >= 0) fresh.add(watch.elapsedMicroseconds);
         await first.dispose();
+        // The record's write ends after the load (boo-yjq6), and the
+        // cached load reads that record.
+        watch.reset();
+        watch.start();
+        await AdmittedBooks.written(file);
+        if (round >= 0) writes.add(watch.elapsedMicroseconds);
         watch.reset();
         watch.start();
         final second = await loadReadingDocument(verified, source);
@@ -167,7 +177,8 @@ void main() {
       print(
         'ADMISSION_BENCHMARK $name '
         'admit=${admit.isEmpty ? '-' : _median(admit)} '
-        'fresh=${_median(fresh)} cached=${_median(cached)} ms; pager to '
+        'fresh=${_median(fresh)} (record written ${_median(writes)} '
+        'after it) cached=${_median(cached)} ms; pager to '
         'the shown page ${_median(unknown)} -> ${_median(known)} ms with '
         'the last page settings (median of $rounds)',
       );

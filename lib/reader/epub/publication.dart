@@ -123,12 +123,14 @@ class Publication {
   }
 
   /// The publication as bytes that [decode] reads back into an equal
-  /// publication: every admitted file and every admitted fact.
+  /// publication: every admitted file and every admitted fact. The bytes
+  /// come as parts to put one after the other, so that a caller copies
+  /// them once, into the buffer that it writes.
   ///
   /// The bytes are the length of a JSON header as a 32-bit little-endian
   /// number, that header in UTF-8, and then each resource's bytes in the
   /// order that the header lists them.
-  Uint8List encode() {
+  List<Uint8List> encode() {
     final header = utf8.encode(
       jsonEncode({
         'originalDigest': originalDigest,
@@ -154,16 +156,12 @@ class Publication {
         ],
       }),
     );
-    final output = BytesBuilder(copy: false)
-      ..add(
-        Uint8List(4)
-          ..buffer.asByteData().setUint32(0, header.length, Endian.little),
-      )
-      ..add(header);
-    for (final bytes in resources.values) {
-      output.add(bytes);
-    }
-    return output.takeBytes();
+    return [
+      Uint8List(4)
+        ..buffer.asByteData().setUint32(0, header.length, Endian.little),
+      header,
+      ...resources.values,
+    ];
   }
 
   /// The publication that [encode] wrote into [bytes]. Each resource gets

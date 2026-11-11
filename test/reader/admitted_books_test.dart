@@ -53,6 +53,24 @@ Future<File> _download(List<int> bytes) async {
 File _record(File file) =>
     File('${file.parent.path}/.bookfin-admitted/publication');
 
+/// The publication of the download [file] as [AdmittedBooks.read] gives it
+/// in this isolate, once its record is kept.
+Future<Publication> _openHere(
+  File file,
+  String digest,
+  String policy,
+  Future<Publication> Function() admit,
+) async {
+  final (publication, record) = await AdmittedBooks.read(
+    file,
+    digest,
+    policy,
+    admit,
+  );
+  if (record != null) await AdmittedBooks.keep(record);
+  return publication;
+}
+
 /// Every admitted fact of [publication], in a form that compares by value.
 Map<String, Object?> _facts(Publication publication) => {
   'originalDigest': publication.originalDigest,
@@ -163,6 +181,7 @@ void main() {
         final bytes = showcaseBooks()['showcase-frost']!;
         final file = await _download(bytes);
         final first = await _open(file, _digest(bytes), 'epub');
+        await AdmittedBooks.written(file);
         final record = _record(file);
         final unreadable = damage(await record.readAsBytes());
         await record.writeAsBytes(unreadable);
@@ -225,6 +244,7 @@ void main() {
         return file.digest;
       });
       expect(digest, _digest(bytes));
+      await AdmittedBooks.written(File('${directory.path}/complete'));
       expect(
         await Directory('${directory.path}/.bookfin-admitted').exists(),
         isTrue,
@@ -292,6 +312,7 @@ void main() {
       final bytes = sized('9pt');
       final file = await _download(bytes);
       await _open(file, _digest(bytes), 'epub');
+      await AdmittedBooks.written(file);
       final record = _record(file);
       // The same number of bytes, so the record's header keeps its length.
       final damaged = latin1.encode(
@@ -319,7 +340,7 @@ void main() {
         return Publication.admit(bytes, digest);
       }
 
-      await AdmittedBooks.open(file, digest, 'policy-1', admit);
+      await _openHere(file, digest, 'policy-1', admit);
       // The record as revision 1 kept it, before it held the size.
       final record = _record(file);
       final kept = await record.readAsBytes();
@@ -329,12 +350,7 @@ void main() {
         ...kept.sublist(end),
       ]);
 
-      final reopened = await AdmittedBooks.open(
-        file,
-        digest,
-        'policy-1',
-        admit,
-      );
+      final reopened = await _openHere(file, digest, 'policy-1', admit);
 
       expect(admissions, 2);
       expect(reopened.mainTextSize, 12);
@@ -352,8 +368,8 @@ void main() {
         return Publication.admit(bytes, _digest(bytes));
       }
 
-      await AdmittedBooks.open(file, _digest(bytes), 'policy-1', admit);
-      await AdmittedBooks.open(file, _digest(bytes), 'policy-1', admit);
+      await _openHere(file, _digest(bytes), 'policy-1', admit);
+      await _openHere(file, _digest(bytes), 'policy-1', admit);
 
       expect(admissions, 1);
     });
@@ -367,11 +383,73 @@ void main() {
         return Publication.admit(bytes, _digest(bytes));
       }
 
-      await AdmittedBooks.open(file, _digest(bytes), 'policy-1', admit);
-      await AdmittedBooks.open(file, _digest(bytes), 'policy-2', admit);
-      await AdmittedBooks.open(file, _digest(bytes), 'policy-2', admit);
+      await _openHere(file, _digest(bytes), 'policy-1', admit);
+      await _openHere(file, _digest(bytes), 'policy-2', admit);
+      await _openHere(file, _digest(bytes), 'policy-2', admit);
 
       expect(admissions, 2);
+    });
+
+    test('an admission gives its record to keep and writes nothing, and the '
+        'record that it keeps opens the book without an admission', () async {
+      final bytes = epub();
+      final file = await _download(bytes);
+      var admissions = 0;
+      Future<Publication> admit() async {
+        admissions++;
+        return Publication.admit(bytes, _digest(bytes));
+      }
+
+      final (admitted, record) = await AdmittedBooks.read(
+        file,
+        _digest(bytes),
+        'policy-1',
+        admit,
+      );
+      expect(record, isNotNull);
+      expect(await _record(file).exists(), isFalse);
+
+      await AdmittedBooks.keep(record!);
+      final (kept, none) = await AdmittedBooks.read(
+        file,
+        _digest(bytes),
+        'policy-1',
+        admit,
+      );
+
+      expect(admissions, 1);
+      expect(none, isNull);
+      expect(_facts(kept), _facts(admitted));
+    });
+
+    test('a book whose record was never written, as when the app stopped '
+        'before the write, admits again at the next open', () async {
+      final bytes = epub();
+      final file = await _download(bytes);
+      var admissions = 0;
+      Future<Publication> admit() async {
+        admissions++;
+        return Publication.admit(bytes, _digest(bytes));
+      }
+
+      await AdmittedBooks.read(file, _digest(bytes), 'policy-1', admit);
+      final again = await _openHere(file, _digest(bytes), 'policy-1', admit);
+
+      expect(admissions, 2);
+      again.checkInvariants();
+    });
+
+    test('a load gives the book before its record is written, and the next '
+        'load waits for that record instead of admitting again', () async {
+      final bytes = showcaseBooks()['showcase-frost']!;
+      final file = await _download(bytes);
+      final first = await _open(file, _digest(bytes), 'epub');
+      // The kept record is the only source left: the file is no EPUB now.
+      await file.writeAsBytes(List.filled(bytes.length, 0));
+
+      final second = await _open(file, _digest(bytes), 'epub');
+
+      expect(_facts(second.publication), _facts(first.publication));
     });
 
     test('a write that stopped midway leaves the kept book readable', () async {
@@ -383,18 +461,13 @@ void main() {
         return Publication.admit(bytes, _digest(bytes));
       }
 
-      await AdmittedBooks.open(file, _digest(bytes), 'policy-1', admit);
+      await _openHere(file, _digest(bytes), 'policy-1', admit);
       // A process that was killed while it wrote left its partial file.
       final kept = await _record(file).readAsBytes();
       await File('${_record(file).parent.path}/publication-killed.partial')
           .writeAsBytes(kept.sublist(0, kept.length ~/ 3));
 
-      final again = await AdmittedBooks.open(
-        file,
-        _digest(bytes),
-        'policy-1',
-        admit,
-      );
+      final again = await _openHere(file, _digest(bytes), 'policy-1', admit);
 
       expect(admissions, 1);
       again.checkInvariants();
@@ -407,7 +480,7 @@ void main() {
       // A file where the record's folder belongs.
       await File('${file.parent.path}/.bookfin-admitted').writeAsString('');
 
-      final publication = await AdmittedBooks.open(
+      final publication = await _openHere(
         file,
         _digest(bytes),
         'policy-1',
