@@ -84,6 +84,26 @@ class MainActivity : AudioServiceActivity() {
                     else -> result.notImplemented()
                 }
             }
+        // Where the speech model lies: the APK stores it uncompressed
+        // (tool/reader/speech_package.py), so the speech library reads its
+        // bytes in place, at their offset in the APK.
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "bookfin/speech")
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "model" -> try {
+                        assets.openFd("bookfin-speech/tiny.en-q5_1.ggml").use { model ->
+                            result.success(mapOf(
+                                "path" to applicationInfo.sourceDir,
+                                "offset" to model.startOffset,
+                                "length" to model.length,
+                            ))
+                        }
+                    } catch (_: java.io.IOException) {
+                        result.success(null)
+                    }
+                    else -> result.notImplemented()
+                }
+            }
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "bookfin/device")
             .setMethodCallHandler { call, result ->
                 when (call.method) {

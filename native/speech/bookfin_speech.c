@@ -2,13 +2,19 @@
 //
 // It loads whisper.cpp's model from a byte range of a file: the APK holds
 // the model uncompressed (tool/reader/speech_package.py), so the runtime
-// reads it in place, and a test reads a plain file from its start.
+// reads it in place, and a test reads a plain file from its start. It
+// decodes a window of an audio file and transcribes it on a thread of its
+// own at a low priority, so that playback and the UI never wait for it.
 
+#include <math.h>
+#include <pthread.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/resource.h>
 #include <sys/types.h>
+#include <unistd.h>
 
 #include "whisper.h"
 
@@ -289,4 +295,112 @@ static int decode(const char *path, int start_ms, int length_ms, float *out, int
 int bs_decode(const char *path, int start_ms, int length_ms, float *out, int capacity) {
   if (start_ms < 0 || length_ms <= 0 || capacity <= 0) return -1;
   return decode(path, start_ms, length_ms, out, capacity);
+}
+
+// One window to hear, and its result.
+typedef struct {
+  struct whisper_context *context;
+  const char *path;
+  int start_ms;
+  int length_ms;
+  int threads;
+  char *out;
+  int capacity;
+  int result;
+} Hearing;
+
+// Lowers the calling thread below the app's own threads. whisper.cpp starts
+// its worker threads from this thread, and on Linux and Android a new
+// thread takes the nice value of the thread that starts it.
+static void lower_priority(void) {
+#if defined(__APPLE__)
+  pthread_set_qos_class_self_np(QOS_CLASS_UTILITY, 0);
+#elif defined(__linux__)
+  setpriority(PRIO_PROCESS, (id_t)gettid(), 10);
+#endif
+}
+
+// Whisper's encoder reads 50 frames a second and pads a window to 30 s
+// unless the context is cut. A cut context costs a quarter to a half of a
+// full one ("The shortest window").
+static int audio_context(int samples) {
+  int frames = (int)ceil((double)samples / 16000.0 * 50.0 * 1.1) + 32;
+  return frames < 1500 ? frames : 1500;
+}
+
+static int transcribe(Hearing *hearing, const float *samples, int count) {
+  struct whisper_full_params params = whisper_full_default_params(WHISPER_SAMPLING_GREEDY);
+  params.n_threads = hearing->threads;
+  params.audio_ctx = audio_context(count);
+  params.language = "en";
+  params.no_context = true;
+  params.single_segment = true;
+  params.token_timestamps = true;
+  // A cut context can make whisper repeat one phrase. Narration holds about
+  // three words a second, so a window never needs more tokens than this.
+  params.max_tokens = count / 16000 * 6 + 8;
+  params.print_progress = false;
+  params.print_realtime = false;
+  params.print_timestamps = false;
+  params.print_special = false;
+  struct whisper_context *context = hearing->context;
+  if (whisper_full(context, params, samples, count) != 0) return -2;
+  int used = 0;
+  const whisper_token end = whisper_token_eot(context);
+  for (int segment = 0; segment < whisper_full_n_segments(context); segment++) {
+    for (int token = 0; token < whisper_full_n_tokens(context, segment); token++) {
+      whisper_token_data data = whisper_full_get_token_data(context, segment, token);
+      if (data.id >= end) continue;
+      int wrote = snprintf(hearing->out + used, (size_t)(hearing->capacity - used), "%lld\t%s\n",
+                           (long long)data.t0 * 10,
+                           whisper_full_get_token_text(context, segment, token));
+      if (wrote < 0 || wrote >= hearing->capacity - used) return -3;
+      used += wrote;
+    }
+  }
+  return used;
+}
+
+static void *hear_window(void *argument) {
+  Hearing *hearing = argument;
+  lower_priority();
+  int capacity = hearing->length_ms * 16 + 16000;
+  float *samples = malloc((size_t)capacity * sizeof(float));
+  if (samples == NULL) {
+    hearing->result = -1;
+    return NULL;
+  }
+  int count = decode(hearing->path, hearing->start_ms, hearing->length_ms, samples, capacity);
+  if (count < 0) {
+    hearing->result = -1;
+  } else if (count < 8000) {
+    // Less than half a second holds no word to search.
+    hearing->result = 0;
+  } else {
+    hearing->result = transcribe(hearing, samples, count);
+  }
+  free(samples);
+  return NULL;
+}
+
+// Decodes [length_ms] of the audio file at [path] from [start_ms] and
+// transcribes it with the model [context] and [threads] threads, on a new
+// thread at a low priority. Writes one line for each text token into
+// [out]: "<start ms>\t<text>\n", the start counted from the window's start.
+// Gives the bytes written, 0 when the window holds less than half a second
+// of audio, -1 when the file cannot be decoded, -2 when whisper fails, and
+// -3 when [out] is too small.
+int bs_hear(void *context, const char *path, int start_ms, int length_ms, int threads, char *out,
+            int capacity) {
+  if (context == NULL || start_ms < 0 || length_ms <= 0 || threads <= 0) return -1;
+  Hearing hearing = {context, path, start_ms, length_ms, threads, out, capacity, -1};
+  pthread_attr_t attributes;
+  pthread_attr_init(&attributes);
+  pthread_attr_setstacksize(&attributes, 4 << 20);
+  pthread_t thread;
+  int started = pthread_create(&thread, &attributes, hear_window, &hearing);
+  pthread_attr_destroy(&attributes);
+  if (started != 0) return -1;
+  pthread_join(thread, NULL);
+  return hearing.result;
 }

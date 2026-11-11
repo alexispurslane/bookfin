@@ -11,11 +11,19 @@ import 'dart:isolate';
 /// must capture only data that isolates can send: no data source, no
 /// widget, no native handle. Its result travels back the same way.
 class KeptWorker<S> {
-  /// [start] makes the state in the worker, at each start. It runs there,
-  /// so it obeys the rule of a job.
-  KeptWorker(this._start, {required this.name, required this.idle});
+  /// [start] makes the state in the worker, at each start. [end] lets the
+  /// state go before the worker stops, such as native memory, which the end
+  /// of an isolate does not free. Both run in the worker, so they obey the
+  /// rule of a job.
+  KeptWorker(
+    this._start, {
+    required this.name,
+    required this.idle,
+    FutureOr<void> Function(S state)? end,
+  }) : _endState = end;
 
   final FutureOr<S> Function() _start;
+  final FutureOr<void> Function(S state)? _endState;
 
   /// The name of the worker isolate, for debuggers and profiles.
   final String name;
@@ -64,16 +72,34 @@ class KeptWorker<S> {
     final running = _running;
     _running = null;
     _stop = null;
-    unawaited(running?.then((running) => running.stop()));
+    if (running != null) unawaited(_stopAfterEnd(running));
   }
 
-  /// Stops the worker. Jobs in flight fail.
+  /// Runs [_endState] after the jobs in flight, then stops the isolate.
+  Future<void> _stopAfterEnd(Future<_Running> started) async {
+    final _Running running;
+    try {
+      running = await started;
+    } catch (_) {
+      return;
+    }
+    if (_endState case final end?) {
+      try {
+        await running.run<void>(end);
+      } catch (_) {
+        // The worker stopped already.
+      }
+    }
+    running.stop();
+  }
+
+  /// Stops the worker once the jobs in flight end. Later jobs fail.
   Future<void> close() async {
     _closed = true;
     _stop?.cancel();
     final running = _running;
     _running = null;
-    (await running)?.stop();
+    if (running != null) await _stopAfterEnd(running);
   }
 }
 
@@ -92,7 +118,12 @@ class _Running {
   Future<R> run<R>(Function job) async {
     final id = _next++;
     final done = _waiting[id] = Completer<Object?>();
-    (await _jobs.future).send((id, job));
+    try {
+      (await _jobs.future).send((id, job));
+    } catch (_) {
+      _waiting.remove(id);
+      rethrow;
+    }
     return await done.future as R;
   }
 

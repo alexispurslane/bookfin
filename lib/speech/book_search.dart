@@ -34,7 +34,14 @@ class BookSearch {
     String key,
     ReadBook read,
     T Function(BookWords words) work,
-  ) => _worker.run((books) async {
+  ) => _worker.run(_job(key, read, work));
+
+  // NOTE: A static function, so that the job captures only its arguments.
+  static Future<T?> Function(Map<String, BookWords>) _job<T>(
+    String key,
+    ReadBook read,
+    T Function(BookWords words) work,
+  ) => (books) async {
     // Each use moves the book to the end, so the first is the oldest.
     final words = books.remove(key) ?? await read();
     if (words == null) return null;
@@ -43,7 +50,7 @@ class BookSearch {
       books.remove(books.keys.first);
     }
     return work(words);
-  });
+  };
 
   Future<void> close() => _worker.close();
 }
