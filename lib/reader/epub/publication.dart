@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:archive/archive.dart' show getCrc32;
 import 'package:crypto/crypto.dart';
 import 'package:image/image.dart' as raster;
 import 'package:xml/xml.dart';
@@ -459,7 +458,7 @@ Map<String, Uint8List> _unpack(Uint8List bytes) {
     final unpacked = method == 0
         ? Uint8List.fromList(content)
         : inflateEntry(content, size);
-    if (unpacked.length != size || getCrc32(unpacked) != integer(cursor + 16)) {
+    if (unpacked.length != size || crc32(unpacked) != integer(cursor + 16)) {
       throw const FormatException(
         'EPUB resource checksum or length does not match.',
       );

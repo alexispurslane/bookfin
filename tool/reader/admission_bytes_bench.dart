@@ -4,6 +4,8 @@
 // It compares, on the entries of each book:
 //
 // - inflate: package:archive's Inflate against inflateEntry (zip.dart).
+// - CRC-32: package:archive's getCrc32 against crc32 (zip.dart), on every
+//   expanded entry.
 //
 // In the dev shell, from the repository root, compile it ahead of time, as
 // the app runs, and run it on the books of docs/plans/faster-book-open.md:
@@ -16,7 +18,8 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:archive/archive.dart' show Inflate, OutputMemoryStream;
+import 'package:archive/archive.dart'
+    show Inflate, OutputMemoryStream, getCrc32;
 import 'package:bookfin/reader/epub/zip.dart';
 
 /// One entry of a book's ZIP directory.
@@ -80,9 +83,26 @@ void main(List<String> paths) {
         inflateEntry(entry.content, entry.size);
       }
     });
+    final expanded = [
+      for (final entry in entries)
+        entry.deflated
+            ? inflateEntry(entry.content, entry.size)
+            : entry.content,
+    ];
+    final oldCrc = _median(() {
+      for (final bytes in expanded) {
+        getCrc32(bytes);
+      }
+    });
+    final newCrc = _median(() {
+      for (final bytes in expanded) {
+        crc32(bytes);
+      }
+    });
     stdout.writeln(
       '${path.split('/').last}: inflate of ${deflated.length} entries '
-      '$oldInflate -> $newInflate ms',
+      '$oldInflate -> $newInflate ms; CRC-32 of ${expanded.length} entries '
+      '$oldCrc -> $newCrc ms',
     );
   }
 }

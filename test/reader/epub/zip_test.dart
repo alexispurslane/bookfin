@@ -7,7 +7,7 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:archive/archive.dart' show getCrc32;
+import 'package:archive/archive.dart' show ZipDecoder, getCrc32;
 import 'package:bookfin/reader/epub/publication.dart';
 import 'package:bookfin/reader/epub/zip.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -97,6 +97,59 @@ void main() {
         throwsFormatException,
       );
     });
+  });
+
+  group('the CRC-32 of an entry', () {
+    test('of the standard check bytes is the standard check value', () {
+      expect(crc32(Uint8List.fromList(utf8.encode('123456789'))), 0xcbf43926);
+    });
+
+    test('of no bytes is 0', () {
+      expect(crc32(Uint8List(0)), 0);
+    });
+
+    test('is the CRC-32 that package:archive gives, at every length and '
+        'start in a word', () {
+      final bytes = _noise(1 << 20);
+      for (var start = 0; start < 8; start++) {
+        for (final length in [
+          for (var length = 0; length <= 40; length++) length,
+          4093,
+          (1 << 20) - 8,
+        ]) {
+          final part = Uint8List.sublistView(bytes, start, start + length);
+          expect(crc32(part), getCrc32(part), reason: '$start, $length');
+        }
+      }
+    });
+
+    test(
+      'of every entry of every corpus book is the CRC-32 that '
+      'package:archive gives',
+      () {
+        var entries = 0;
+        for (final book in Directory('.cache/epub-corpus/books').listSync()) {
+          if (!book.path.endsWith('.epub')) continue;
+          final archive = ZipDecoder().decodeBytes(
+            File(book.path).readAsBytesSync(),
+          );
+          for (final file in archive.files) {
+            final bytes = file.content;
+            expect(
+              crc32(bytes),
+              getCrc32(bytes),
+              reason: '${book.path} ${file.name}',
+            );
+            entries++;
+          }
+        }
+        expect(entries, greaterThan(1000));
+      },
+      skip: Platform.environment['BOOKFIN_EPUB_CORPUS'] == '1'
+          ? null
+          : 'set BOOKFIN_EPUB_CORPUS=1 with the corpus in '
+                '.cache/epub-corpus/books to run',
+    );
   });
 
   group('admission refuses a book', () {
