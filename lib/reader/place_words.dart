@@ -62,16 +62,32 @@ PlaceWords describeTextPlace(
 /// the map. [quote] describes the place when it is known.
 PlaceWords describeBookFraction(BookMap map, double fraction, {String? quote}) {
   final target = map.targetAt(fraction);
-  return (
-    short: switch (target.page) {
-      final page? => 'p. $page',
-      null => '${(fraction * 100).round()}%',
-    },
+  return describeAlong(
+    fraction,
+    page: target.page,
     chapter: target.chapter,
     quote: quote,
-    along: AlongText(page: target.page, fraction: fraction),
   );
 }
+
+/// The place at [fraction] of the open book, from 0 at its start to 1 at
+/// its end, in words: its [page] among the book's pages when it is known,
+/// such as "p. 134", else its share of the book, such as "37%", with its
+/// [chapter] and its [quote] when they are known.
+PlaceWords describeAlong(
+  double fraction, {
+  int? page,
+  String? chapter,
+  String? quote,
+}) => (
+  short: switch (page) {
+    final page? => 'p. $page',
+    null => '${(fraction * 100).round()}%',
+  },
+  chapter: chapter,
+  quote: quote,
+  along: AlongText(page: page, fraction: fraction),
+);
 
 /// The saved anchor of [place], or an empty map when it is not a JSON
 /// object, as in a place saved by an early build.

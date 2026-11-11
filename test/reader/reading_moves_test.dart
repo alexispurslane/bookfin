@@ -1067,6 +1067,8 @@ void main() {
         sourceKey: epubFile.key,
         revision: revision,
       ),
+      share: .8,
+      chapter: 'Cedar',
     );
 
     test('Go to a listening place shows its landing, as a reading move '

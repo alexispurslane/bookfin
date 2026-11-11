@@ -56,6 +56,19 @@ final unmatching = TextOutline(
   ],
 );
 
+/// An outline whose chapters pair with [recording]'s by their titles, but
+/// read Arrival nearly twice as fast as Return, so that the starts of the
+/// pairs do not place each other: Arrival, placed from Opening and Return,
+/// lands 1543 characters, more than two pages, from its start.
+final misaligned = TextOutline(
+  parts: const [(path: 'OPS/one.xhtml', characters: 18600)],
+  entries: const [
+    (title: 'Opening', depth: 0, start: 0),
+    (title: 'Arrival', depth: 0, start: 7600),
+    (title: 'Return', depth: 0, start: 10600),
+  ],
+);
+
 /// A reading place [progress] of the way through the ebook's one section,
 /// whose quote is [quote].
 TextPosition reading(double progress, String quote) => TextPosition(
@@ -342,6 +355,23 @@ void main() {
     expect(reader.initialAddress?.quote, 'The far shore at last.');
     expect(playback.editionMilliseconds, 5000);
     expect(playback.history.first.counterpartOf, isNull);
+  });
+
+  testWidgets('in the player, a reading place whose chapters do not line up '
+      'says so before the tap', (tester) async {
+    outline = misaligned;
+    await showPlayerHistory(tester);
+    await open(tester, 'From search');
+
+    expect(
+      inTimeline(
+        find.text(
+          'The chapters of these editions do not line up, so this opens the '
+          'ebook.',
+        ),
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets('on the book page, which shows no edition, Go to on a reading '

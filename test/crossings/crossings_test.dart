@@ -143,7 +143,7 @@ void main() {
       store: store,
       measure: (text) async {
         measured++;
-        if (unsupported) throw UnsupportedError('A PDF has no outline yet.');
+        if (unsupported) throw UnsupportedError('No ebook files here.');
         if (unreadable) throw const FormatException('A broken EPUB.');
         return download;
       },
@@ -176,6 +176,22 @@ void main() {
     expect(landing.place, (part: 1, progress: 0.0));
     expect(landing.matchedBy, MatchedBy.chapters);
     expect(landing.from.milliseconds, 50000);
+  });
+
+  test('a landing in the ebook says how far through the book it lies and '
+      'which contents entry holds it, so the reader can name it before it '
+      'measures the book', () async {
+    final found = await crossings().landing(
+      listening(_discTwo, 150000),
+      from: audio,
+      into: ebookEdition(),
+    );
+
+    // 150 s into chapter 2's 200 s: three quarters of its 2000 characters,
+    // at 3500 of the book's 5000.
+    final landing = found as TextLanding;
+    expect(landing.share, closeTo(.7, 1e-9));
+    expect(landing.chapter, 'II');
   });
 
   test('a reading place lands at the same share of its matched chapter in '
