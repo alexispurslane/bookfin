@@ -10,27 +10,35 @@ import '../playback/audio_outline.dart';
 import '../playback/records.dart' show MatchedBy;
 import '../reader/document.dart';
 import '../reader/text_outline.dart';
+import '../speech/book_search.dart';
+import '../speech/heard_windows.dart';
 import 'alignment.dart';
+import 'speech_places.dart';
 
 export '../playback/records.dart' show MatchedBy;
 
 /// Where a place of one edition lands in the edition of the other medium
-/// of the same book: a [Landing], or [NoLanding] with the reason why none
-/// exists.
+/// of the same book: a [Landing], [NoLanding] with the reason why none
+/// exists, or [Refining] while speech finds the landing.
 sealed class Crossing {
   const Crossing();
 }
 
+/// A final answer: a [Landing] or [NoLanding].
+sealed class Settled extends Crossing {
+  const Settled();
+}
+
 /// The counterpart of a place of the other edition in the open edition,
 /// and how Bookfin found it.
-sealed class Landing extends Crossing {
+sealed class Landing extends Settled {
   const Landing();
 
   /// The place of the other edition that the choice named.
   Place get from;
 
   /// How Bookfin found the landing.
-  MatchedBy get matchedBy => MatchedBy.chapters;
+  MatchedBy get matchedBy;
 }
 
 /// Where a listening place lands in an ebook edition.
@@ -41,10 +49,14 @@ final class TextLanding extends Landing {
     required this.into,
     required this.share,
     required this.chapter,
+    this.matchedBy = MatchedBy.chapters,
   });
 
   @override
   final AudioPosition from;
+
+  @override
+  final MatchedBy matchedBy;
 
   /// The landing: a section of the ebook's spine and the share of its
   /// visible characters before the landing, as the book map and the
@@ -67,20 +79,42 @@ final class TextLanding extends Landing {
 
 /// Where a reading place lands in an audio edition.
 final class AudioLanding extends Landing {
-  const AudioLanding(this.from, this.place);
+  const AudioLanding(
+    this.from,
+    this.place, {
+    this.matchedBy = MatchedBy.chapters,
+  });
 
   @override
   final TextPosition from;
+
+  @override
+  final MatchedBy matchedBy;
 
   /// The landing, a time in a file of the audio edition.
   final AudioPosition place;
 }
 
 /// No defensible counterpart exists, for [reason].
-final class NoLanding extends Crossing {
+final class NoLanding extends Settled {
   const NoLanding(this.reason);
   final Refusal reason;
 }
+
+/// Speech is still finding the landing. [estimate] is the landing of
+/// matched chapters, or null when they give none.
+final class Refining extends Crossing {
+  const Refining(this.estimate);
+  final Landing? estimate;
+}
+
+/// What the speech stage of [Crossings] reads: the heard windows of each
+/// audio edition, and a reader of the words of a downloaded ebook edition,
+/// which gives null when speech cannot read them, as for a PDF.
+typedef CrossingSpeech = ({
+  HeardWindows heard,
+  Future<ReadBook?> Function(Edition text) words,
+});
 
 /// The app's one owner of cross-edition landings (docs/plans/
 /// cross-edition-places.md, "Owners"). It derives the text outline of each
@@ -117,7 +151,10 @@ class Crossings {
     required this._measure,
     this._downloads,
     this._hop = compute,
-  }) {
+    CrossingSpeech? speech,
+  }) : _speech = speech == null
+           ? null
+           : SpeechPlaces(heard: speech.heard, words: speech.words) {
     _downloads?.addListener(_retryMissing);
   }
 
@@ -125,6 +162,9 @@ class Crossings {
   final Future<TextOutline?> Function(Edition text) _measure;
   final Listenable? _downloads;
   final IsolateHop _hop;
+
+  /// The speech stage, when the app hears audiobooks.
+  final SpeechPlaces? _speech;
 
   /// The measurement version of the kept outlines. Raise it when the
   /// outline measures characters in another way, so that kept outlines are
@@ -143,6 +183,13 @@ class Crossings {
   /// The finished work of each pair, by pair key.
   final _done = <String, _Pair>{};
 
+  /// The speech work in flight or done for each place, by place key.
+  final _heard = <String, Future<Landing?>>{};
+
+  /// The finished speech work of each place, by place key: its landing, or
+  /// null when speech refused.
+  final _heardDone = <String, Landing?>{};
+
   final _changes = _Changes();
   var _disposed = false;
 
@@ -152,19 +199,24 @@ class Crossings {
 
   /// Where [place], a place of [from], lands in [into], the edition of the
   /// other medium of the same book, once the two editions are aligned.
-  Future<Crossing> landing(
+  /// With speech, the landing on the word that the narrator speaks there,
+  /// unless speech refuses.
+  Future<Settled> landing(
     Place place, {
     required Edition from,
     required Edition into,
   }) async {
     _guard(from, into);
     _guardPlace(place, from);
-    return _land(place, from, into, await _pair(from, into));
+    final chapters = _land(place, from, into, await _pair(from, into));
+    return await _bySpeech(place, from, into) ?? chapters;
   }
 
-  /// What [landing] gives when the two editions are already aligned, else
-  /// null. A null answer starts the alignment in the background, and
-  /// [changes] notifies when it arrives.
+  /// What [landing] gives when it is known, else null. A null answer
+  /// starts the alignment in the background, and [changes] notifies when
+  /// it arrives. With speech, the first answer for a place starts its
+  /// speech work, and until that ends, the answer is [Refining] with the
+  /// landing of matched chapters.
   Crossing? landingNow(
     Place place, {
     required Edition from,
@@ -172,18 +224,116 @@ class Crossings {
   }) {
     _guard(from, into);
     _guardPlace(place, from);
-    if (_done[_pairKey(from, into)] case final pair?) {
-      return _land(place, from, into, pair);
-    }
-    unawaited(_pair(from, into));
-    return null;
+    final pair = _done[_pairKey(from, into)];
+    if (pair == null) unawaited(_pair(from, into));
+    final chapters = pair == null ? null : _land(place, from, into, pair);
+    if (_speech == null) return chapters;
+    final key = _placeKey(place, from, into);
+    if (_heardDone.containsKey(key)) return _heardDone[key] ?? chapters;
+    unawaited(_bySpeech(place, from, into));
+    return switch (chapters) {
+      null => null,
+      final Landing landing => Refining(landing),
+      NoLanding() => const Refining(null),
+    };
   }
 
   /// Starts the alignment of [from] and [into], two editions of the two
-  /// media, in the background, so that [landingNow] can soon answer.
+  /// media, in the background, so that [landingNow] can soon answer. With
+  /// speech, it starts their anchor map too.
   void prepare({required Edition from, required Edition into}) {
     _guard(from, into);
     unawaited(_pair(from, into));
+    if (_speech case final speech?) {
+      unawaited(() async {
+        if (await _speechPair(from, into) case final pair?) {
+          await speech.prepare(pair);
+        }
+      }());
+    }
+  }
+
+  /// The landing of [place] of [from] in [into] by speech, or null when
+  /// speech refuses or this Crossings has no speech. The work of a place
+  /// runs once, and its result is kept. Work that fails is not kept, so a
+  /// later request tries again.
+  Future<Landing?> _bySpeech(Place place, Edition from, Edition into) {
+    final speech = _speech;
+    if (speech == null) return Future.value();
+    final key = _placeKey(place, from, into);
+    if (_heard[key] case final work?) return work;
+    late final Future<Landing?> work;
+    work = () async {
+      Landing? landing;
+      try {
+        landing = await _hear(speech, place, from, into);
+      } on Exception {
+        // Speech could not read a file or a store. It refuses this time.
+        if (identical(_heard[key], work)) _heard.remove(key);
+        return null;
+      }
+      if (!_disposed && identical(_heard[key], work)) {
+        _heardDone[key] = landing;
+        _changes.notify();
+      }
+      return landing;
+    }();
+    return _heard[key] = work;
+  }
+
+  /// The landing of [place] of [from] in [into] by [speech], or null.
+  Future<Landing?> _hear(
+    SpeechPlaces speech,
+    Place place,
+    Edition from,
+    Edition into,
+  ) async {
+    final pair = await _speechPair(from, into);
+    if (pair == null) return null;
+    switch (place) {
+      case AudioPosition():
+        if (!place.fits(from)) return null;
+        final characters = await speech.charactersAt(place, pair);
+        if (characters == null) return null;
+        return _textLanding(
+          place,
+          into,
+          pair.outline,
+          characters,
+          MatchedBy.speech,
+        );
+      case TextPosition():
+        final characters = place.fits(from)
+            ? pair.outline.charactersOf(place)
+            : null;
+        if (characters == null) return null;
+        final at = await speech.millisecondsAt(characters, pair);
+        final landed = at == null ? null : audioPlaceAt(into, at);
+        if (landed == null) return null;
+        return AudioLanding(place, landed, matchedBy: MatchedBy.speech);
+    }
+  }
+
+  /// The pair of [from] and [into] as the speech stage reads it, once the
+  /// pair's work ends, or null when this phone has no outline of the ebook.
+  Future<SpeechPair?> _speechPair(Edition from, Edition into) async {
+    final (audio, text) = from.kind == EditionKind.audio
+        ? (from, into)
+        : (into, from);
+    final work = await _pair(from, into);
+    final outline = _outlines[_outlineKey(text)];
+    if (outline == null) return null;
+    return (
+      audio: audio,
+      text: text,
+      key: _pairKey(from, into),
+      textKey: _outlineKey(text),
+      outline: outline,
+      matched: switch (work) {
+        _Aligned(:final alignment) => alignment,
+        _Refused() => null,
+      },
+    );
   }
 
   static void _guard(Edition from, Edition into) {
@@ -302,10 +452,18 @@ class Crossings {
     }
   }
 
-  /// Forgets the pairs whose ebook this phone could not measure, and the
-  /// pairs in flight, so that the next request tries them again, now that
-  /// downloads changed.
+  /// Forgets the pairs whose ebook this phone could not measure, the pairs
+  /// in flight, and the places where speech refused, so that the next
+  /// request tries them again, now that downloads changed.
   void _retryMissing() {
+    final refused = [
+      for (final MapEntry(:key, :value) in _heardDone.entries)
+        if (value == null) key,
+    ];
+    for (final key in refused) {
+      _heardDone.remove(key);
+      _heard.remove(key);
+    }
     final stale = [
       for (final key in _pairs.keys)
         if (switch (_done[key]) {
@@ -316,7 +474,7 @@ class Crossings {
         })
           key,
     ];
-    if (stale.isEmpty) return;
+    if (stale.isEmpty && refused.isEmpty) return;
     for (final key in stale) {
       _done.remove(key);
       _pairs.remove(key);
@@ -325,7 +483,7 @@ class Crossings {
   }
 
   /// Where [place] of [from] lands in [into], by [pair].
-  Crossing _land(Place place, Edition from, Edition into, _Pair pair) {
+  Settled _land(Place place, Edition from, Edition into, _Pair pair) {
     final TextOutline outline;
     final MatchedChapters matched;
     switch (pair) {
@@ -343,18 +501,12 @@ class Crossings {
         if (at == null) return const NoLanding(Refusal.unmeasured);
         final characters = matched.charactersAt(at);
         if (characters == null) return const NoLanding(Refusal.outsideMatches);
-        final file = into.files.single;
-        return TextLanding(
+        return _textLanding(
           place,
-          outline.placeAt(characters),
-          into: (
-            editionId: into.id,
-            sourceKey: file.key,
-            revision: file.revision,
-          ),
-          // An aligned outline holds characters, or the alignment refuses.
-          share: (characters / outline.length).clamp(0.0, 1.0),
-          chapter: outline.chapterAt(characters),
+          into,
+          outline,
+          characters,
+          MatchedBy.chapters,
         );
       case TextPosition():
         final characters = place.fits(from)
@@ -363,34 +515,51 @@ class Crossings {
         if (characters == null) return const NoLanding(Refusal.unmeasured);
         final at = matched.millisecondsAt(characters);
         if (at == null) return const NoLanding(Refusal.outsideMatches);
-        final landed = _audioPlace(into, at);
+        final landed = audioPlaceAt(into, at);
         if (landed == null) return const NoLanding(Refusal.unmeasured);
         return AudioLanding(place, landed);
     }
   }
 
-  /// The place of [edition] at [milliseconds] from its start, in the file
-  /// that holds it, or null when a file length is unknown. A time past the
-  /// end is the end of the last file.
-  static AudioPosition? _audioPlace(Edition edition, int milliseconds) {
-    final outline = audioOutline(edition);
-    final length = outline.length;
-    if (length == null) return null;
-    final at = milliseconds.clamp(0, length);
-    for (final (index, file) in edition.files.indexed) {
-      final start = outline.fileStarts[file.key]!;
-      final last = index == edition.files.length - 1;
-      if (at < start + file.durationMs! || last) {
-        return AudioPosition(
-          editionId: edition.id,
-          sourceKey: file.key,
-          revision: file.revision,
-          milliseconds: (at - start).clamp(0, file.durationMs!),
-        );
-      }
-    }
-    return null;
+  /// The landing of [place] in [into] after [characters] of its [outline],
+  /// found as [matchedBy] says.
+  static TextLanding _textLanding(
+    AudioPosition place,
+    Edition into,
+    TextOutline outline,
+    double characters,
+    MatchedBy matchedBy,
+  ) {
+    final file = into.files.single;
+    return TextLanding(
+      place,
+      outline.placeAt(characters),
+      into: (editionId: into.id, sourceKey: file.key, revision: file.revision),
+      // An aligned outline holds characters, or the alignment refuses.
+      share: (characters / outline.length).clamp(0.0, 1.0),
+      chapter: outline.chapterAt(characters),
+      matchedBy: matchedBy,
+    );
   }
+
+  /// The key of [place] of [from] in [into]: the pair and the place.
+  static String _placeKey(Place place, Edition from, Edition into) =>
+      jsonEncode([
+        _pairKey(from, into),
+        ...switch (place) {
+          AudioPosition() => [
+            place.sourceKey,
+            place.revision,
+            place.milliseconds,
+          ],
+          TextPosition() => [
+            place.sourceKey,
+            place.revision,
+            place.anchor,
+            place.sourcePage,
+          ],
+        },
+      ]);
 
   /// The key of the kept outline of [text]: its edition, its file and the
   /// file's revision, and the measurement version.
@@ -417,6 +586,11 @@ class Crossings {
   /// Throws a [StateError] when an invariant of the class comment does not
   /// hold. It runs on demand, in every build.
   void checkInvariants() {
+    for (final key in _heardDone.keys) {
+      if (!_heard.containsKey(key)) {
+        throw StateError('Each finished place is its current work\'s result.');
+      }
+    }
     for (final MapEntry(:key, value: pair) in _done.entries) {
       if (!_pairs.containsKey(key)) {
         throw StateError('Each finished pair is its current work\'s result.');
@@ -440,6 +614,7 @@ class Crossings {
     _disposed = true;
     _downloads?.removeListener(_retryMissing);
     _changes.dispose();
+    unawaited(_speech?.close());
   }
 }
 

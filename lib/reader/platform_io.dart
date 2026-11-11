@@ -3,6 +3,8 @@ import 'dart:isolate';
 
 import '../catalog/model.dart';
 import '../downloads/downloads.dart';
+import '../speech/book_search.dart';
+import '../speech/book_words.dart';
 import '../sync/device.dart';
 import 'admitted_books.dart';
 import 'document.dart';
@@ -97,17 +99,46 @@ Future<T> _readAdmitted<T>(
   T Function(Publication publication) use,
 ) {
   final path = file.path;
-  return Isolate.run(
-    () async => use(
-      await AdmittedBooks.open(
-        File(path),
-        digest,
-        Publication.policy,
-        () async => Publication.admit(await File(path).readAsBytes(), digest),
-      ),
-    ),
-  );
+  return Isolate.run(() async => use(await _admittedEpub(path, digest)));
 }
+
+/// The admitted publication of the EPUB at [path], whose SHA-256 is
+/// [digest], read in the calling isolate, which must not be the UI
+/// isolate: the admitted book that Bookfin kept, else a new admission.
+Future<Publication> _admittedEpub(String path, String digest) =>
+    AdmittedBooks.open(
+      File(path),
+      digest,
+      Publication.policy,
+      () async => Publication.admit(await File(path).readAsBytes(), digest),
+    );
+
+/// A reader of the words of the downloaded ebook [original] of [source],
+/// for the worker of the book's words (see [BookSearch]). It reads the
+/// admitted book that Bookfin kept, or admits or converts the file and
+/// keeps it, as the reader does. Null for a PDF, whose words speech does
+/// not read yet (t2-9csd).
+Future<ReadBook?> bookWordsReader(
+  VerifiedFile original,
+  SourceFile source,
+) async {
+  final file = await _verifiedFile(original.uri);
+  return switch (await _containerOf(file, source)) {
+    'pdf' => null,
+    'mobi' || 'azw3' => _wordsOf(file.path, original.digest, admittedMobi),
+    _ => _wordsOf(file.path, original.digest, _admittedEpub),
+  };
+}
+
+/// Reads the words of the publication that [admitted] gives for [path].
+/// A top-level function, so that the reader captures only plain data and
+/// can travel to the worker.
+ReadBook _wordsOf(
+  String path,
+  String digest,
+  Future<Publication> Function(String path, String digest) admitted,
+) =>
+    () async => bookWordsOf(await admitted(path, digest));
 
 Future<File> _verifiedFile(Uri uri) async {
   if (uri.scheme != 'file' ||

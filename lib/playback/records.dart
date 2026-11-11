@@ -190,8 +190,9 @@ class HistoryEvent<P extends Place> {
 
 /// How Bookfin found the landing of a mapped move: by matched chapters, an
 /// estimate, which the words of a landing call "about" (docs/plans/
-/// cross-edition-places.md, design A). Each name is stored in JSON.
-enum MatchedBy { chapters }
+/// cross-edition-places.md, design A), or by speech, on the word that the
+/// narrator speaks there (S2). Each name is stored in JSON.
+enum MatchedBy { chapters, speech }
 
 /// Where the saved place of an edition came from, as the record store's
 /// journal says: [own], the last place that this installation saved there,

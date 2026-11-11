@@ -52,20 +52,22 @@ Future<T> readMobi<T>(
 ) {
   final path = original.path;
   final read = _imports.then(
-    (_) => Isolate.run(
-      () async => use(
-        await AdmittedBooks.open(
-          File(path),
-          digest,
-          EpubDocument.mobiPolicy,
-          () => _convert(path, digest),
-        ),
-      ),
-    ),
+    (_) => Isolate.run(() async => use(await admittedMobi(path, digest))),
   );
   _imports = read.then<void>((_) {}, onError: (Object error) {});
   return read;
 }
+
+/// The admitted publication of the MOBI at [path], whose SHA-256 is
+/// [digest], read in the calling isolate, which must not be the UI
+/// isolate: the conversion that Bookfin kept, else a new one.
+Future<Publication> admittedMobi(String path, String digest) =>
+    AdmittedBooks.open(
+      File(path),
+      digest,
+      EpubDocument.mobiPolicy,
+      () => _convert(path, digest),
+    );
 
 /// The admitted EPUB of the MOBI at [path], whose SHA-256 is [digest]: from
 /// the conversion that Bookfin kept, else from a new conversion.

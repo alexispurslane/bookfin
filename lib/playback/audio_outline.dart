@@ -29,6 +29,29 @@ class AudioOutline {
       };
 }
 
+/// The place of [edition] at [milliseconds] from its start, in the file
+/// that holds it, or null when a file length is unknown. A time past the
+/// end is the end of the last file.
+AudioPosition? audioPlaceAt(Edition edition, int milliseconds) {
+  final outline = audioOutline(edition);
+  final length = outline.length;
+  if (length == null) return null;
+  final at = milliseconds.clamp(0, length);
+  for (final (index, file) in edition.files.indexed) {
+    final start = outline.fileStarts[file.key]!;
+    final last = index == edition.files.length - 1;
+    if (at < start + file.durationMs! || last) {
+      return AudioPosition(
+        editionId: edition.id,
+        sourceKey: file.key,
+        revision: file.revision,
+        milliseconds: (at - start).clamp(0, file.durationMs!),
+      );
+    }
+  }
+  return null;
+}
+
 /// The audio outline of [edition]. An edition never changes, so its outline
 /// is found once for each edition object.
 AudioOutline audioOutline(Edition edition) => _outlines[edition] ??= () {

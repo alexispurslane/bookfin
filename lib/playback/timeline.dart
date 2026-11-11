@@ -93,16 +93,22 @@ void openHistory(
   /// Where Go to on [place] goes, in words: its landing in the open
   /// edition, or the place itself with the reason why it has none. Until
   /// the landing is known, the place itself, and the words fill in when
-  /// Crossings notifies.
+  /// Crossings notifies. While speech finds the landing, the estimate of
+  /// matched chapters, or the place itself.
   LandingWords landingOf(Place place) {
     final own = (words: describe(place), note: null);
     final pair = crossingOf(place);
     if (pair == null) return own;
-    return switch (crossings!.landingNow(
+    final Settled? shown = switch (crossings!.landingNow(
       place,
       from: pair.from,
       into: pair.into,
     )) {
+      Refining(:final estimate) => estimate,
+      final Settled settled => settled,
+      null => null,
+    };
+    return switch (shown) {
       null => own,
       final AudioLanding landing => (
         words: _about(playback!.describe(landing.place), landing),
@@ -291,6 +297,7 @@ PlaceWords _about(PlaceWords words, Landing landing) =>
         quote: words.quote,
         along: words.along,
       ),
+      MatchedBy.speech => words,
     };
 
 /// Why a place has no landing in the open edition, for [reason].

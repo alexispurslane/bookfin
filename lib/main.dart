@@ -32,6 +32,7 @@ import 'reader/session.dart';
 import 'reader/survey_files.dart';
 import 'reader/platform.dart';
 import 'reader/licenses.dart';
+import 'speech/book_search.dart' show ReadBook;
 import 'speech/heard_windows.dart';
 import 'speech/hearing_policy.dart';
 import 'speech/platform.dart';
@@ -127,6 +128,18 @@ Future<void> runBookfin({bool gallery = false}) async {
             _ => null,
           },
           downloads: downloads.phases,
+          speech: heard == null
+              ? null
+              : (
+                  heard: heard,
+                  words: (text) async => switch (text.files) {
+                    [final file] => await downloads.readLocalFile<ReadBook?>(
+                      file,
+                      (original) => bookWordsReader(original, file),
+                    ),
+                    _ => null,
+                  },
+                ),
         );
   runApp(
     BookfinApp(
