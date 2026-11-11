@@ -1,0 +1,383 @@
+{
+  "source": "tool/research/epub_engines/evidence/results/samples.jsonl",
+  "source_sha256": "fa85add6050516f0a904d0997180bd2cdffb6beea1d07c369831ec8d831ffd10",
+  "aggregation": "Arithmetic mean of each book mean, with equal weight for all three books; round only the final value to one decimal millisecond.",
+  "measured_samples": 1404,
+  "cells": [
+    {
+      "engine": "bookfin",
+      "operation": "fresh_open",
+      "mean_ms": 611.799837,
+      "books": [
+        {
+          "book": "prose",
+          "count": 12,
+          "total_elapsed_ns": 5999156000,
+          "mean_ms": 499.92966666666666
+        },
+        {
+          "book": "long",
+          "count": 12,
+          "total_elapsed_ns": 7379829504,
+          "mean_ms": 614.985792
+        },
+        {
+          "book": "illustrated",
+          "count": 12,
+          "total_elapsed_ns": 8645808628,
+          "mean_ms": 720.4840523333334
+        }
+      ]
+    },
+    {
+      "engine": "webview",
+      "operation": "fresh_open",
+      "mean_ms": 600.76657675,
+      "books": [
+        {
+          "book": "prose",
+          "count": 12,
+          "total_elapsed_ns": 6633639380,
+          "mean_ms": 552.8032816666666
+        },
+        {
+          "book": "long",
+          "count": 12,
+          "total_elapsed_ns": 6597302212,
+          "mean_ms": 549.7751843333334
+        },
+        {
+          "book": "illustrated",
+          "count": 12,
+          "total_elapsed_ns": 8396655171,
+          "mean_ms": 699.72126425
+        }
+      ]
+    },
+    {
+      "engine": "koreader",
+      "operation": "fresh_open",
+      "mean_ms": 263.6819435,
+      "books": [
+        {
+          "book": "prose",
+          "count": 12,
+          "total_elapsed_ns": 3281005337,
+          "mean_ms": 273.41711141666667
+        },
+        {
+          "book": "long",
+          "count": 12,
+          "total_elapsed_ns": 3961811128,
+          "mean_ms": 330.1509273333333
+        },
+        {
+          "book": "illustrated",
+          "count": 12,
+          "total_elapsed_ns": 2249733501,
+          "mean_ms": 187.47779175
+        }
+      ]
+    },
+    {
+      "engine": "bookfin",
+      "operation": "cached_reopen",
+      "mean_ms": 116.55576854629629,
+      "books": [
+        {
+          "book": "prose",
+          "count": 36,
+          "total_elapsed_ns": 4026897083,
+          "mean_ms": 111.85825230555555
+        },
+        {
+          "book": "long",
+          "count": 36,
+          "total_elapsed_ns": 3791734835,
+          "mean_ms": 105.3259676388889
+        },
+        {
+          "book": "illustrated",
+          "count": 36,
+          "total_elapsed_ns": 4769391085,
+          "mean_ms": 132.48308569444444
+        }
+      ]
+    },
+    {
+      "engine": "webview",
+      "operation": "cached_reopen",
+      "mean_ms": 331.2693212314815,
+      "books": [
+        {
+          "book": "prose",
+          "count": 36,
+          "total_elapsed_ns": 6778129463,
+          "mean_ms": 188.2813739722222
+        },
+        {
+          "book": "long",
+          "count": 36,
+          "total_elapsed_ns": 8970705261,
+          "mean_ms": 249.18625725
+        },
+        {
+          "book": "illustrated",
+          "count": 36,
+          "total_elapsed_ns": 20028251969,
+          "mean_ms": 556.3403324722223
+        }
+      ]
+    },
+    {
+      "engine": "koreader",
+      "operation": "cached_reopen",
+      "mean_ms": 67.19600859259259,
+      "books": [
+        {
+          "book": "prose",
+          "count": 36,
+          "total_elapsed_ns": 2438953505,
+          "mean_ms": 67.74870847222222
+        },
+        {
+          "book": "long",
+          "count": 36,
+          "total_elapsed_ns": 2318767376,
+          "mean_ms": 64.41020488888888
+        },
+        {
+          "book": "illustrated",
+          "count": 36,
+          "total_elapsed_ns": 2499448047,
+          "mean_ms": 69.42911241666667
+        }
+      ]
+    },
+    {
+      "engine": "bookfin",
+      "operation": "page_turn",
+      "mean_ms": 60.938419379629636,
+      "books": [
+        {
+          "book": "prose",
+          "count": 36,
+          "total_elapsed_ns": 2144177629,
+          "mean_ms": 59.56048969444445
+        },
+        {
+          "book": "long",
+          "count": 36,
+          "total_elapsed_ns": 2140841707,
+          "mean_ms": 59.46782519444445
+        },
+        {
+          "book": "illustrated",
+          "count": 36,
+          "total_elapsed_ns": 2296329957,
+          "mean_ms": 63.78694325
+        }
+      ]
+    },
+    {
+      "engine": "webview",
+      "operation": "page_turn",
+      "mean_ms": 68.80012000925926,
+      "books": [
+        {
+          "book": "prose",
+          "count": 36,
+          "total_elapsed_ns": 2650007543,
+          "mean_ms": 73.6113206388889
+        },
+        {
+          "book": "long",
+          "count": 36,
+          "total_elapsed_ns": 2266173085,
+          "mean_ms": 62.949252361111114
+        },
+        {
+          "book": "illustrated",
+          "count": 36,
+          "total_elapsed_ns": 2514232333,
+          "mean_ms": 69.83978702777777
+        }
+      ]
+    },
+    {
+      "engine": "koreader",
+      "operation": "page_turn",
+      "mean_ms": 62.81967869444444,
+      "books": [
+        {
+          "book": "prose",
+          "count": 36,
+          "total_elapsed_ns": 2170367917,
+          "mean_ms": 60.28799769444445
+        },
+        {
+          "book": "long",
+          "count": 36,
+          "total_elapsed_ns": 2328269211,
+          "mean_ms": 64.67414475
+        },
+        {
+          "book": "illustrated",
+          "count": 36,
+          "total_elapsed_ns": 2285888171,
+          "mean_ms": 63.496893638888885
+        }
+      ]
+    },
+    {
+      "engine": "bookfin",
+      "operation": "chapter_crossing",
+      "mean_ms": 59.38715123148148,
+      "books": [
+        {
+          "book": "prose",
+          "count": 36,
+          "total_elapsed_ns": 2191645541,
+          "mean_ms": 60.87904280555555
+        },
+        {
+          "book": "long",
+          "count": 36,
+          "total_elapsed_ns": 2140611208,
+          "mean_ms": 59.461422444444445
+        },
+        {
+          "book": "illustrated",
+          "count": 36,
+          "total_elapsed_ns": 2081555584,
+          "mean_ms": 57.820988444444446
+        }
+      ]
+    },
+    {
+      "engine": "webview",
+      "operation": "chapter_crossing",
+      "mean_ms": 87.77865825,
+      "books": [
+        {
+          "book": "prose",
+          "count": 36,
+          "total_elapsed_ns": 3194217458,
+          "mean_ms": 88.72826272222223
+        },
+        {
+          "book": "long",
+          "count": 36,
+          "total_elapsed_ns": 3354866669,
+          "mean_ms": 93.19074080555555
+        },
+        {
+          "book": "illustrated",
+          "count": 36,
+          "total_elapsed_ns": 2931010964,
+          "mean_ms": 81.41697122222223
+        }
+      ]
+    },
+    {
+      "engine": "koreader",
+      "operation": "chapter_crossing",
+      "mean_ms": 63.031513509259256,
+      "books": [
+        {
+          "book": "prose",
+          "count": 36,
+          "total_elapsed_ns": 2285476832,
+          "mean_ms": 63.48546755555555
+        },
+        {
+          "book": "long",
+          "count": 36,
+          "total_elapsed_ns": 2291658503,
+          "mean_ms": 63.65718063888889
+        },
+        {
+          "book": "illustrated",
+          "count": 36,
+          "total_elapsed_ns": 2230268124,
+          "mean_ms": 61.95189233333333
+        }
+      ]
+    },
+    {
+      "engine": "bookfin",
+      "operation": "font_change",
+      "mean_ms": 114.95396802777778,
+      "books": [
+        {
+          "book": "prose",
+          "count": 36,
+          "total_elapsed_ns": 3959493713,
+          "mean_ms": 109.98593647222222
+        },
+        {
+          "book": "long",
+          "count": 36,
+          "total_elapsed_ns": 4475482502,
+          "mean_ms": 124.3189583888889
+        },
+        {
+          "book": "illustrated",
+          "count": 36,
+          "total_elapsed_ns": 3980052332,
+          "mean_ms": 110.55700922222222
+        }
+      ]
+    },
+    {
+      "engine": "webview",
+      "operation": "font_change",
+      "mean_ms": 70.49911452777778,
+      "books": [
+        {
+          "book": "prose",
+          "count": 36,
+          "total_elapsed_ns": 2147474955,
+          "mean_ms": 59.65208208333333
+        },
+        {
+          "book": "long",
+          "count": 36,
+          "total_elapsed_ns": 2606386080,
+          "mean_ms": 72.39961333333333
+        },
+        {
+          "book": "illustrated",
+          "count": 36,
+          "total_elapsed_ns": 2860043334,
+          "mean_ms": 79.44564816666667
+        }
+      ]
+    },
+    {
+      "engine": "koreader",
+      "operation": "font_change",
+      "mean_ms": 114.20845761111111,
+      "books": [
+        {
+          "book": "prose",
+          "count": 36,
+          "total_elapsed_ns": 3953505254,
+          "mean_ms": 109.8195903888889
+        },
+        {
+          "book": "long",
+          "count": 36,
+          "total_elapsed_ns": 5686339749,
+          "mean_ms": 157.95388191666666
+        },
+        {
+          "book": "illustrated",
+          "count": 36,
+          "total_elapsed_ns": 2694668419,
+          "mean_ms": 74.85190052777777
+        }
+      ]
+    }
+  ]
+}

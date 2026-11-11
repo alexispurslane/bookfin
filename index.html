@@ -76,9 +76,7 @@ h1{font:600 clamp(2.6rem,6vw,4.6rem)/1.05 var(--serif);margin:0 auto 1.25rem;max
 .capture small{display:block;font:400 .95rem/1.5 var(--display);color:var(--subtle);margin-top:.3rem}
 .capture img{width:100%;border:1px solid var(--line);border-radius:16px}
 .capture-note{max-width:70ch;margin:1.5rem auto 0;font:400 .95rem/1.6 var(--display);color:var(--subtle)}
-.reader-samples{width:100%;margin-top:0}
 .reflow .capture-grid{width:100%;margin-top:0}
-.reflow-features ul{margin-top:0}
 
 /* Preface */
 .why{max-width:62ch;margin:5rem auto 0}
@@ -127,11 +125,13 @@ h1{font:600 clamp(2.6rem,6vw,4.6rem)/1.05 var(--serif);margin:0 auto 1.25rem;max
 .night .copy li::before{background:var(--n-accent)}
 .night a{color:var(--n-accent)}
 
-.history-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:clamp(2rem,4vw,3.5rem);align-items:center}
 .history-capture{width:min(100%,360px);justify-self:center}
 
-.epub-intro{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:clamp(2rem,4vw,3.5rem);align-items:start}
-.epub-intro ul{margin-top:0}
+.reader-intro,.reflow-intro{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:clamp(2rem,4vw,3.5rem);align-items:center}
+.reflow-intro ul{margin-top:0}
+.reader-phone{width:min(100%,280px);justify-self:center}
+.copy .platform-note{font:400 .95rem/1.6 var(--display);margin:1.5rem 0 0}
+.capture .capture-note{font:400 .95rem/1.6 var(--display);margin:1rem 0 0;color:var(--subtle)}
 .epub-comparison{min-width:0}
 .epub-comparison h3{font:600 clamp(1.5rem,3vw,1.9rem)/1.25 var(--serif);margin:0 0 .75rem}
 .epub-comparison p{max-width:70ch;margin:0 0 1rem;color:var(--subtle)}
@@ -146,7 +146,6 @@ h1{font:600 clamp(2.6rem,6vw,4.6rem)/1.05 var(--serif);margin:0 auto 1.25rem;max
 .engine-table tbody th{width:31%;font-weight:600;position:sticky;left:0;background:var(--paper)}
 .engine-table thead th:first-child{position:sticky;left:0}
 .engine-table tbody td{font-variant-numeric:tabular-nums;white-space:nowrap}
-.epub-comparison .table-scroll+.table-scroll{margin-top:1.5rem}
 .engine-table tbody tr:last-child>*{border-bottom:0}
 .epub-comparison .epub-evidence{margin:1rem 0 0;font:400 .95rem/1.6 var(--display)}
 
@@ -179,7 +178,7 @@ footer a{color:var(--subtle);display:inline-block;padding:.6rem .25rem}
   .chapter{grid-template-columns:minmax(0,1fr);padding:4.5rem 0}
   .chapter.flip .copy{order:0}
   .phones{grid-auto-columns:minmax(0,1fr);justify-content:stretch}
-  .history-grid,.setup-grid,.epub-intro{grid-template-columns:minmax(0,1fr)}
+  .setup-grid,.reader-intro,.reflow-intro{grid-template-columns:minmax(0,1fr)}
   .hero-art{margin-inline:calc(-1 * var(--gutter) + .5rem)}
 }
 @media (max-width:600px){
@@ -247,12 +246,11 @@ footer a{color:var(--subtle);display:inline-block;padding:.6rem .25rem}
     <ol>
       <li><a href="#shelf"><span class="n">One.</span><span class="t">The shelf</span><span class="dots"></span><span class="d">library and downloads</span></a></li>
       <li><a href="#player"><span class="n">Two.</span><span class="t">The player</span><span class="dots"></span><span class="d">chapters, late nights</span></a></li>
-      <li><a href="#history"><span class="n">Three.</span><span class="t">Shared History</span><span class="dots"></span><span class="d">listening and reading</span></a></li>
+      <li><a href="#history"><span class="n">Three.</span><span class="t">Shared history</span><span class="dots"></span><span class="d">listening and reading</span></a></li>
       <li><a href="#reader"><span class="n">Four.</span><span class="t">The reader</span><span class="dots"></span><span class="d">EPUB, MOBI, scanned PDF</span></a></li>
       <li><a href="#reflow"><span class="n">Five.</span><span class="t">PDF reflow</span><span class="dots"></span><span class="d">the same page, before and after</span></a></li>
-      <li><a href="#epub"><span class="n">Six.</span><span class="t">EPUB in Flutter</span><span class="dots"></span><span class="d">one reader, shared across platforms</span></a></li>
-      <li><a href="#sync"><span class="n">Seven.</span><span class="t">Every device</span><span class="dots"></span><span class="d">sync on your server</span></a></li>
-      <li><a href="#setup"><span class="n">Eight.</span><span class="t">Getting it</span><span class="dots"></span><span class="d">build and install</span></a></li>
+      <li><a href="#sync"><span class="n">Six.</span><span class="t">Every device</span><span class="dots"></span><span class="d">sync on your server</span></a></li>
+      <li><a href="#setup"><span class="n">Seven.</span><span class="t">Getting it</span><span class="dots"></span><span class="d">build and install</span></a></li>
     </ol>
   </nav>
 
@@ -295,162 +293,100 @@ footer a{color:var(--subtle);display:inline-block;padding:.6rem .25rem}
 </div>
 
 <div class="wrap">
-  <section class="chapter full" id="history">
-    <div class="history-grid">
-      <div class="copy">
-        <h2><span>Three.</span> One shared History</h2>
-        <p class="stand">Your listening and reading, with a way back.</p>
-        <p>Fell asleep? Skipped too far? Followed a reference in your ebook? Bookfin saves your place in each and brings the book's listening moves, reading moves, and bookmarks together in one History.</p>
-        <p>Open the same History from the player, the reader, or the book's details. You can explore either edition without losing the path you took.</p>
-        <ul>
-          <li>See listening and reading entries together, newest first, with headphone and book icons to tell them apart.</li>
-          <li>Choose Go to on a reading entry while listening, and its ebook opens at that place. Choose an audio entry from the reader, and its audiobook opens there instead.</li>
-          <li>Go back to where a move began, or Undo a jump.</li>
-          <li>Returning to a saved place adds a move instead of erasing the past.</li>
-          <li>Add and name bookmarks in either medium.</li>
-          <li>Your history stays until you choose to delete it.</li>
-        </ul>
-      </div>
-      <figure class="capture history-capture">
-        <figcaption>Reading and listening, together<small>A reading move expanded over the player.</small></figcaption>
-        <img src="docs/marketing/shared-history/shared-history.webp" width="822" height="1680" loading="lazy" alt="Bookfin's shared History over the player: an audio jump, a reading search move with Go back, Go to and Delete controls, a reading bookmark, and a chapter move">
-        <p class="capture-note">Real Bookfin screen with demonstration records, captured on a computer, not Android. <a href="docs/marketing/shared-history/README.md">Capture notes</a>.</p>
-      </figure>
+  <section class="chapter" id="history">
+    <div class="copy">
+      <h2><span>Three.</span> Shared history</h2>
+      <p class="stand">Every place you have been, in audio and text.</p>
+      <p>Skipped too far or followed a reference? A book’s listening moves, reading moves, and bookmarks share one History, available from the player, reader, or book page.</p>
+      <ul>
+        <li>Choose Go to on any entry to open the audiobook or ebook at that place.</li>
+        <li>Undo a jump or return to where it began without erasing later history.</li>
+        <li>Name bookmarks in either edition. Your history stays until you delete it.</li>
+      </ul>
     </div>
+    <figure class="capture history-capture">
+      <img src="docs/marketing/shared-history/shared-history.webp" width="822" height="1680" loading="lazy" alt="Shared History over the player, with audio and reading entries and Go back, Go to and Delete controls">
+      <figcaption class="capture-note">Bookfin with demonstration records. <a href="docs/marketing/shared-history/README.md">Capture notes</a>.</figcaption>
+    </figure>
   </section>
 
   <section class="chapter full" id="reader">
-    <div class="copy">
-      <h2><span>Four.</span> The reader</h2>
-      <p class="stand">The book's character. Your reading comfort.</p>
-      <p class="formats">EPUB · MOBI · PDF</p>
-      <p>Read EPUB and MOBI beside their audiobooks, with your place saved in each. For PDFs, choose how to read the page:</p>
-      <ul>
-        <li>Original keeps the source page as a page, with optional margin trimming.</li>
-        <li>Page words wraps the original word images to your screen at an adjustable size, with figures and charts kept as images.</li>
-        <li>Text uses recognized or extracted text in the reader's font. English scans are recognized on the phone, without a network.</li>
-      </ul>
-      <p>Change between Cream and Night without changing the book. Select words to copy a passage, and use History to return to an earlier reading place.</p>
+    <div class="reader-intro">
+      <div class="copy">
+        <h2><span>Four.</span> The reader</h2>
+        <p class="stand">Your ebooks, at home in Bookfin.</p>
+        <p class="formats">EPUB · MOBI · PDF</p>
+        <p>The built-in EPUB reader lays out and draws pages entirely in Flutter, without a WebView. It shares the app’s controls and one implementation across platforms.</p>
+        <ul>
+          <li>Choose your text size and Cream or Night colors.</li>
+          <li>Select and copy text, follow links, and open footnotes.</li>
+          <li>Turn pages with touch, a keyboard, or a trackpad.</li>
+        </ul>
+        <p class="platform-note">Android is the main app today, with a working macOS reader. iOS, Linux, and Windows apps are still to come.</p>
+      </div>
+      <div class="phones reader-phone">
+        <img src="docs/screenshots/reader-epub.png" width="720" height="1600" loading="lazy" alt="An EPUB book in Bookfin’s cream reader, with reading controls below the page">
+      </div>
     </div>
-    <div class="capture-grid reader-samples">
-      <figure class="capture">
-        <figcaption>EPUB, too<small>Your ebooks beside their audiobooks.</small></figcaption>
-        <img src="docs/screenshots/reader-epub.png" width="720" height="1600" loading="lazy" alt="An EPUB book open in Bookfin's cream reader">
-      </figure>
-      <figure class="capture">
-        <figcaption>Page words · Night<small>The same Nihil Unbound page, size 28, first screen.</small></figcaption>
-        <img src="docs/marketing/nihil-unbound/page-words-night.webp" width="822" height="1680" loading="lazy" alt="The same Nihil Unbound printed page 9 reflowed at a larger size in Night, with original word images in warm light ink on dark paper">
-      </figure>
+    <div class="epub-comparison" id="epub">
+      <h3>EPUB performance</h3>
+      <p>Bookfin, epub.js in Android WebView, and KOReader’s engine ran in small release test apps on the same Android 16 emulator.</p>
+      <p id="epub-timing-key">Average time in milliseconds, with each of three books weighted equally. Lower is faster.</p>
+      <p class="table-help" id="epub-table-help">On a small screen, scroll the table sideways. With a keyboard, focus it and use the arrow keys.</p>
+      <div class="table-scroll" role="region" tabindex="0" aria-labelledby="epub-average-caption" aria-describedby="epub-table-help epub-timing-key">
+        <table class="engine-table" data-aggregation="mean-of-book-means">
+          <caption id="epub-average-caption"><span>Average across three books · ms</span></caption>
+          <thead>
+            <tr><th scope="col">Reading action</th><th scope="col">Bookfin</th><th scope="col">WebView + epub.js</th><th scope="col">KOReader engine</th></tr>
+          </thead>
+          <tbody>
+            <tr data-operation="fresh_open"><th scope="row">Fresh open</th><td data-engine="bookfin">611.8</td><td data-engine="webview">600.8</td><td data-engine="koreader">263.7</td></tr>
+            <tr data-operation="cached_reopen"><th scope="row">Cached reopen</th><td data-engine="bookfin">116.6</td><td data-engine="webview">331.3</td><td data-engine="koreader">67.2</td></tr>
+            <tr data-operation="page_turn"><th scope="row">Page turn</th><td data-engine="bookfin">60.9</td><td data-engine="webview">68.8</td><td data-engine="koreader">62.8</td></tr>
+            <tr data-operation="chapter_crossing"><th scope="row">Chapter turn (visited)</th><td data-engine="bookfin">59.4</td><td data-engine="webview">87.8</td><td data-engine="koreader">63.0</td></tr>
+            <tr data-operation="font_change"><th scope="row">Text size 18 → 20</th><td data-engine="bookfin">115.0</td><td data-engine="webview">70.5</td><td data-engine="koreader">114.2</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="epub-evidence">Includes rendering and screenshot verification. Layout work differs between engines; these are emulator results, not phone timings. <a href="docs/marketing/epub-renderer/README.md#completed-same-emulator-measurements">Books, averaging, and test details</a>.</p>
     </div>
-    <p class="capture-note">The Night capture uses the same printed page as the comparison, with a larger size and different line breaks. Captured in Bookfin on a computer, not Android. <a href="#reflow">Compare with Original and Cream</a>.</p>
   </section>
 
   <section class="chapter full reflow" id="reflow" aria-labelledby="reflow-h">
-    <div class="copy">
-      <h2 id="reflow-h"><span>Five.</span> PDF reflow</h2>
-      <p class="stand">The same page. Room to read.</p>
-      <p>A PDF need not mean tiny print and sideways scrolling. Page words keeps the book's own printed words and wraps them to your screen at a size you choose. Here is the same page of <cite>Nihil Unbound</cite>, before and after.</p>
-    </div>
-    <div class="capture-grid">
-      <figure class="capture">
-        <figcaption>Before · Original<small>Printed page 9, fitted to the screen.</small></figcaption>
-        <img src="docs/marketing/nihil-unbound/original.webp" width="822" height="1680" loading="lazy" alt="Nihil Unbound printed page 9 in Original view: small dense prose, an indented quotation, italics, and a section heading">
-      </figure>
-      <figure class="capture">
-        <figcaption>After · Page words · Cream<small>The same page, size 24, first screen.</small></figcaption>
-        <img src="docs/marketing/nihil-unbound/page-words-cream.webp" width="822" height="1680" loading="lazy" alt="The same Nihil Unbound page reflowed in Cream: larger original printed words wrap into new lines, with the paragraph break and italic words retained">
-      </figure>
-    </div>
-    <p class="capture-note">Ray Brassier, <cite>Nihil Unbound</cite>, printed page 9 (PDF page 24). Bookfin captures made on a computer, not Android screenshots. Reflow continues onto the next screen. <a href="docs/marketing/nihil-unbound/README.md">Excerpt and capture notes</a>.</p>
-    <div class="copy reflow-features">
-      <ul>
-        <li>Keep the book's printed character. Page words uses images of the original words, including their letterforms and italics, rather than replacing the font.</li>
-        <li>Choose a comfortable size. Words wrap into new lines to fit the screen, and each turn shows complete lines instead of cutting a line in half.</li>
-        <li>Read in Cream or Night. The printed words take on your chosen paper and ink colors. <a href="#reader">See the same page larger in Night</a>.</li>
-        <li>Keep more than the words. Headings, paragraph breaks, and indents shape the flow; pictures, figures, and charts stay together as images.</li>
-        <li>Use the text, too. Where the page's text is available, select and copy a passage or search for a word.</li>
-        <li>Choose how to read. Return to Original for the source page, or choose Text for the reader's font. Trim blank page margins when you want more room.</li>
-        <li>Read downloaded PDFs offline. English scans can have their text recognized on the phone, without a network connection.</li>
-      </ul>
-    </div>
-  </section>
-
-  <section class="chapter full" id="epub">
-    <div class="epub-intro">
+    <div class="reflow-intro">
       <div class="copy">
-        <h2><span>Six.</span> EPUB, drawn in Flutter</h2>
-        <p class="stand">From the words to the controls, one reader.</p>
-        <p>Bookfin has its own built-in EPUB engine. Flutter lays out and draws the pages directly, without an embedded browser or a WebView fallback. Your book belongs to the same interface as your shelf and player.</p>
-        <p>The EPUB engine and reader controls share one Flutter implementation across platforms. Android is the main app today, and macOS has a working implementation. The iOS, Linux, and Windows apps are not ready yet.</p>
+        <h2 id="reflow-h"><span>Five.</span> PDF reflow</h2>
+        <p class="stand">The original words, with room to read.</p>
+        <p>Page words rearranges images of the printed words to fit your screen. The book keeps its letterforms and italics at the size and colors you choose.</p>
       </div>
       <div class="copy">
         <ul>
-          <li>Adjust the text size and choose Cream or Night with Bookfin's familiar reading controls.</li>
-          <li>Select and copy a passage, follow a link, or open a footnote without leaving the reader.</li>
-          <li>Turn pages with a swipe, a keyboard, or a trackpad. The same reader adapts to how you read.</li>
+          <li>Keep paragraphs, headings, and indents. Figures and charts stay together as images.</li>
+          <li>Turn through complete lines, with no sideways scrolling.</li>
+          <li>Switch to Original or plain Text. Bookfin remembers each book’s view and Trim margins choice.</li>
+          <li>Recognize English scans on the phone, offline, for search and text selection.</li>
         </ul>
       </div>
     </div>
-    <div class="epub-comparison">
-      <h3 id="epub-comparison-h">Three engines, one Android emulator</h3>
-      <p>We tested Bookfin’s Flutter EPUB engine, epub.js in Android WebView, and KOReader’s crengine in small release test apps. All three read the same public-domain books, with the same font and page dimensions. No library, sign-in, or audio work was included.</p>
-      <p id="epub-timing-key">Each cell shows <strong>median / p90, in milliseconds</strong>; lower means less time. The median is the middle result. The p90 is the time that 90% of the samples reached or beat. Each book has 12 fresh opens and 36 samples of every other action per engine.</p>
-      <p>Timing starts at the reading request and ends when Android copies a rendered page that matches a separately checked reference. This includes rendering, scheduling, content checks, and capture overhead. It measures test-app operations, not pure engine speed or physical display latency.</p>
-      <p class="table-help" id="epub-table-help">On a narrow screen, scroll each table sideways. With a keyboard, focus the table and use the arrow keys.</p>
-      <div class="table-scroll" role="region" tabindex="0" aria-labelledby="epub-prose-caption" aria-describedby="epub-table-help epub-timing-key">
-        <table class="engine-table" data-book="prose">
-          <caption id="epub-prose-caption"><span>Pride and Prejudice</span></caption>
-          <thead>
-            <tr><th scope="col">Reading action</th><th scope="col">Bookfin</th><th scope="col">WebView + epub.js</th><th scope="col">KOReader engine</th></tr>
-          </thead>
-          <tbody>
-            <tr data-operation="fresh_open"><th scope="row">Fresh open</th><td data-engine="bookfin">503.9 / 554.1</td><td data-engine="webview">550.4 / 562.0</td><td data-engine="koreader">252.0 / 321.5</td></tr>
-            <tr data-operation="cached_reopen"><th scope="row">Cached reopen</th><td data-engine="bookfin">109.0 / 136.8</td><td data-engine="webview">180.6 / 251.2</td><td data-engine="koreader">67.4 / 90.7</td></tr>
-            <tr data-operation="page_turn"><th scope="row">Page turn</th><td data-engine="bookfin">58.9 / 68.6</td><td data-engine="webview">66.0 / 114.8</td><td data-engine="koreader">61.4 / 74.4</td></tr>
-            <tr data-operation="chapter_crossing"><th scope="row">Warm chapter crossing</th><td data-engine="bookfin">58.4 / 75.5</td><td data-engine="webview">89.8 / 98.7</td><td data-engine="koreader">67.2 / 78.7</td></tr>
-            <tr data-operation="font_change"><th scope="row">Text size 18 → 20</th><td data-engine="bookfin">109.7 / 129.1</td><td data-engine="webview">57.9 / 71.6</td><td data-engine="koreader">109.0 / 114.8</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="table-scroll" role="region" tabindex="0" aria-labelledby="epub-long-caption" aria-describedby="epub-table-help epub-timing-key">
-        <table class="engine-table" data-book="long">
-          <caption id="epub-long-caption"><span>Moby-Dick</span></caption>
-          <thead>
-            <tr><th scope="col">Reading action</th><th scope="col">Bookfin</th><th scope="col">WebView + epub.js</th><th scope="col">KOReader engine</th></tr>
-          </thead>
-          <tbody>
-            <tr data-operation="fresh_open"><th scope="row">Fresh open</th><td data-engine="bookfin">621.4 / 651.0</td><td data-engine="webview">549.7 / 564.3</td><td data-engine="koreader">326.3 / 370.3</td></tr>
-            <tr data-operation="cached_reopen"><th scope="row">Cached reopen</th><td data-engine="bookfin">107.4 / 127.6</td><td data-engine="webview">239.5 / 307.6</td><td data-engine="koreader">67.0 / 80.7</td></tr>
-            <tr data-operation="page_turn"><th scope="row">Page turn</th><td data-engine="bookfin">58.8 / 66.6</td><td data-engine="webview">62.2 / 73.6</td><td data-engine="koreader">67.4 / 78.3</td></tr>
-            <tr data-operation="chapter_crossing"><th scope="row">Warm chapter crossing</th><td data-engine="bookfin">59.0 / 66.3</td><td data-engine="webview">91.3 / 110.6</td><td data-engine="koreader">66.6 / 74.9</td></tr>
-            <tr data-operation="font_change"><th scope="row">Text size 18 → 20</th><td data-engine="bookfin">118.0 / 176.2</td><td data-engine="webview">70.3 / 82.1</td><td data-engine="koreader">158.6 / 162.5</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="table-scroll" role="region" tabindex="0" aria-labelledby="epub-illustrated-caption" aria-describedby="epub-table-help epub-timing-key">
-        <table class="engine-table" data-book="illustrated">
-          <caption id="epub-illustrated-caption"><span>Alice’s Adventures in Wonderland</span></caption>
-          <thead>
-            <tr><th scope="col">Reading action</th><th scope="col">Bookfin</th><th scope="col">WebView + epub.js</th><th scope="col">KOReader engine</th></tr>
-          </thead>
-          <tbody>
-            <tr data-operation="fresh_open"><th scope="row">Fresh open</th><td data-engine="bookfin">700.3 / 825.5</td><td data-engine="webview">682.9 / 749.9</td><td data-engine="koreader">183.2 / 216.0</td></tr>
-            <tr data-operation="cached_reopen"><th scope="row">Cached reopen</th><td data-engine="bookfin">131.7 / 142.1</td><td data-engine="webview">540.3 / 635.3</td><td data-engine="koreader">72.2 / 80.3</td></tr>
-            <tr data-operation="page_turn"><th scope="row">Page turn</th><td data-engine="bookfin">58.0 / 76.8</td><td data-engine="webview">70.4 / 83.1</td><td data-engine="koreader">66.1 / 77.1</td></tr>
-            <tr data-operation="chapter_crossing"><th scope="row">Warm chapter crossing</th><td data-engine="bookfin">58.1 / 61.1</td><td data-engine="webview">79.7 / 97.4</td><td data-engine="koreader">60.0 / 76.3</td></tr>
-            <tr data-operation="font_change"><th scope="row">Text size 18 → 20</th><td data-engine="bookfin">111.5 / 125.0</td><td data-engine="webview">77.3 / 90.7</td><td data-engine="koreader">75.7 / 79.1</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <p class="epub-evidence">Measured November 10, 2026: Android 16 emulator, four virtual ARM64 CPUs, 2 GiB RAM, software graphics, and a 360 × 640 logical-pixel reading area. The 108 test runs produced 1,404 measured samples. These are emulator results, not Pixel timings.</p>
-      <p class="epub-evidence">Fresh opens start without the test app’s book caches; Android’s file cache remains. Cached reopens follow cache preparation. Chapter crossings enter an already visited chapter. KOReader lays out the whole book during open and size changes; Bookfin can finish pagination in the background, while WebView lays out chapters as needed. Page breaks and illustration sizes differ.</p>
-      <p class="epub-evidence">The test runner, Flutter’s texture rendering mode, capture overhead, and changing host load limit the comparison. These results do not establish one overall winner or equal rendering quality. <a href="docs/research/epub-engine-results.md">Full results and raw evidence</a> · <a href="docs/research/epub-engine-method.md">How we measured</a> · <a href="docs/marketing/epub-renderer/README.md">Implementation sources</a>.</p>
+    <div class="capture-grid">
+      <figure class="capture">
+        <figcaption>Original<small>The printed page, fitted to the screen.</small></figcaption>
+        <img src="docs/marketing/nihil-unbound/original.webp" width="822" height="1680" loading="lazy" alt="Nihil Unbound printed page 9 in Original view, with dense prose, an indented quotation, and italics">
+      </figure>
+      <figure class="capture">
+        <figcaption>Page words<small>The same page, enlarged and reflowed.</small></figcaption>
+        <picture>
+          <source media="(prefers-color-scheme:dark)" srcset="docs/marketing/nihil-unbound/page-words-night.webp" width="822" height="1680">
+          <img src="docs/marketing/nihil-unbound/page-words-cream.webp" width="822" height="1680" loading="lazy" alt="The same Nihil Unbound page with larger original words wrapped to the screen, preserving italics and paragraph breaks">
+        </picture>
+      </figure>
     </div>
+    <p class="capture-note"><cite>Nihil Unbound</cite>, printed page 9. Reflow continues on the next screen. <a href="docs/marketing/nihil-unbound/README.md">Bookfin captures and excerpt notes</a>.</p>
   </section>
 
   <section class="chapter flip" id="sync">
     <div class="copy">
-      <h2><span>Seven.</span> Every device</h2>
+      <h2><span>Six.</span> Every device</h2>
       <p class="stand">Your place, on every device.</p>
       <p>Jellyfin stores how far you got, and Bookfin reports that like any other app. But Jellyfin has no bookmark or history feature. A small server plugin, Bookfin Storage, fills that gap and carries them between your devices.</p>
       <ul>
@@ -473,7 +409,7 @@ footer a{color:var(--subtle);display:inline-block;padding:.6rem .25rem}
 
   <section class="chapter full setup" id="setup">
     <div class="copy">
-      <h2><span>Eight.</span> Getting it</h2>
+      <h2><span>Seven.</span> Getting it</h2>
       <p class="stand">Build it once, and your shelf comes with you.</p>
     </div>
     <div class="setup-grid">

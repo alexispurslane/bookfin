@@ -37,69 +37,60 @@ ranking, identical features, or identical support for every EPUB stylesheet.
 
 ## Completed same-emulator measurements
 
-The homepage now reports all 45 reviewed engine/book/operation cells from
-[`epub-engine-results.md`](../../research/epub-engine-results.md). The exact
+The homepage shows one table of arithmetic mean times across three books:
+*Pride and Prejudice*, *Moby-Dick*, and *Alice’s Adventures in Wonderland*.
+For each engine and action, first average the measured elapsed times within
+each book, then average those three book means. Each book has equal weight.
+Round only the final result to one decimal millisecond. This is not an average
+of medians or p90 values.
+
+The [aggregate data](averages.json) records each book’s sample count, total
+elapsed nanoseconds, mean, and the final equal-weight mean. Its source hash
+identifies the unchanged [raw samples](../../../tool/research/epub_engines/evidence/results/samples.jsonl).
+Only samples accepted by the existing benchmark validator enter the average.
+There are 12 fresh opens and 36 samples of each other action per book and engine,
+for 1,404 measured samples across 108 process runs. Equal sample counts mean
+that pooling all three books gives the same arithmetic mean. The three warm
+samples within a process are not independent process starts.
+
+The original per-book median and p90 results remain in the
+[full results](../../research/epub-engine-results.md), with the
 [method](../../research/epub-engine-method.md),
-[review and resolved finding](../../research/epub-engine-review.md), and
-[machine-readable results](../../../tool/research/epub_engines/evidence/results/summary.json)
-are retained. The benchmark implementation and review fix were integrated at
-`e1b8607`; the fix preserved accepted references and measurements unchanged.
+[review](../../research/epub-engine-review.md), and
+[summary JSON](../../../tool/research/epub_engines/evidence/results/summary.json).
+No benchmark was rerun for this editorial change.
 
-All three real engines ran in optimized release shells on the same Android 16
-emulator. The 108 instrumented runs yielded 1,404 measured samples across three
-books and five actions. Each table cell shows median / nearest-rank p90 in
-milliseconds, rounded to one decimal place directly from the result JSON.
-There are 12 fresh-open and 36 other-action samples per engine and book. The
-three warm samples within each process are not independent process starts.
+### Measurement scope
 
-The homepage defines the interval as request to a matching Android window
-copy. It includes rendering, scheduling, content checks, and capture overhead.
-It discloses software graphics, Flutter texture composition, test-runner work,
-varying host load, cache conditions, warm crossings, and unequal whole-book
-pagination work. The engines also produce different page boundaries and image
-sizes. It makes no whole-app speed ranking, equal-quality claim, or Pixel
-prediction. All three books are shown; no aggregate speed multiplier is used.
+All three engines ran in small optimized release apps on the same Android 16
+emulator on November 10, 2026. The emulator had four virtual ARM64 CPUs, 2 GiB
+RAM, software graphics, and a 360 × 640 logical-pixel reading area. The measured
+interval starts at the reading request and ends at a matching Android window
+copy. It includes rendering, scheduling, content checks, and screenshot capture.
+It is not pure engine CPU time, whole-app startup, or a physical Pixel measurement.
 
-Historical studies are deliberately excluded from the table:
+Fresh opens clear the test app’s book caches, but not Android’s file cache.
+Cached reopens follow cache preparation. “Chapter turn (visited)” means turning
+from the last page of one chapter into a chapter already visited in that run.
+KOReader paginates the whole book during open and size changes. Bookfin can
+finish pagination in the background; WebView lays out chapters as needed.
+Page boundaries and illustration sizes differ.
 
-- [`native-epub.md`](../../research/native-epub.md#speed) compares a Flutter-test
-  host trial with epub.js in headless Chromium. Chapter layout, CPU preview
-  drawing, browser first-show, and warm-preview times have different boundaries.
-- [`epub-first-page-timing.md`](../../research/epub-first-page-timing.md) records
-  Bookfin-specific investigations, not a matched three-engine comparison.
-- [`epub-layout-cache.md`](../../research/epub-layout-cache.md) measures Bookfin
-  cache behavior, not current end-to-end performance against other engines.
+Software graphics, Flutter texture composition, instrumentation, and changing
+host load limit the comparison. The table does not establish an overall winner
+or equal rendering quality. Historical desktop and headless-browser studies
+are not included.
 
-No historical host figure is represented as current Android performance. The new numbers come only from the reviewed emulator run; there is no inferred
-overall ranking.
+## Homepage organization and checks
 
-## Homepage checks
+The Reader chapter now contains the EPUB implementation, shared controls, and
+one benchmark table. PDF reflow has its own chapter and before/after comparison.
+The reflow picture follows the site theme: Cream at size 24 or Night at size 28,
+both from the same page. Capture provenance remains linked next to the images.
+History explains its shared audiobook and ebook actions beside the real capture.
 
-The documentation-only check ran through `nix develop`. It found no unbalanced
-tags, duplicate IDs, missing local paths, broken local evidence links, or
-incorrect image dimensions. It checked all 12 homepage images and the table's
-caption and header scopes. The PDF reflow, shared History, and reader sections
-remain byte-for-byte unchanged. Existing external links and installation
-commands also remain unchanged.
-
-Actual T3 `html_preview` runs used the homepage's current CSS and its header,
-contents, and new EPUB section. Both bundled fonts were embedded as data URIs
-and reported loaded before layout measurements. No external font, library, or
-server was used. The preview HTML is stored in ignored scratch at
-`.cache/boo-cldw/epub-preview.html`; an SVG metadata carrier lets T3 inline that
-complete HTML without changing the page under test. This is a homepage layout
-check, not an app screenshot or a performance measurement.
-
-| Preview | Page width | Table region | Table content | Outcome |
-| --- | --- | --- | --- | --- |
-| Cream, phone | 390 px | 350 px | 672 px | No page overflow; the table scrolls within its region. |
-| Cream, desktop | 1280 px | 1180 px | 1180 px | No page overflow; all columns fit. |
-| Night, phone | 390 px | 350 px | 672 px | No page overflow; the region accepted keyboard focus and scrolled 322 px. |
-
-The original writer ran no Flutter suite, app build, benchmark, or device action.
-The parent subsequently integrated the completed benchmark, passed all 37 host
-harness tests, and regenerated every timing cell and diagnostic summary from
-raw records with identical results. Application code did not change during
-integration; the lead's 2,649 passing Flutter tests and 21 skips remain recorded.
-The homepage adds no application behavior. Final table verification checks all
-45 displayed median/p90 pairs and their sample counts against the result JSON.
+The original hero, Why copy, Shelf, Player, installation instructions, and visual
+style remain intact. Detailed benchmark qualifications belong in this note,
+with the averaging rule and main limitations beside the homepage table.
+[Verification](verification.json) records the numeric, markup, asset, and layout
+checks for this revision. No application source or measurement evidence changed.

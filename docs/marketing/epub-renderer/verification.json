@@ -1,36 +1,57 @@
 {
-  "source": "tool/research/epub_engines/evidence/results/summary.json",
-  "source_sha256": "49207cd963cbe00511badfab129e0fd43ce326c79157f0f87eb7e6d3a720c3ce",
-  "verified_cells": 45,
+  "ticket": "boo-klgn",
+  "base": "44df79a54a1cbadf5dcd6053f26b85fad4baa894",
+  "source": "tool/research/epub_engines/evidence/results/samples.jsonl",
+  "source_sha256": "fa85add6050516f0a904d0997180bd2cdffb6beea1d07c369831ec8d831ffd10",
+  "aggregation": "Arithmetic mean within each book, then equal-weight arithmetic mean across all three books. Round final milliseconds to one decimal.",
   "measured_samples": 1404,
-  "instrumentation_jobs": 108,
-  "parent_harness_tests": 37,
-  "raw_recollection": "All cells and diagnostic facts exactly match retained results",
-  "homepage_checks": {
-    "images": 12,
-    "references": 55,
-    "tables": 3,
-    "numeric_pairs": "45 exact matches after one-decimal rounding",
-    "pending_cells": 0,
-    "existing_pdf_history_reader_sections": "unchanged"
+  "verified_cells": 15,
+  "tables": 1,
+  "numeric_checks": [
+    "Existing validator reproduced every stored cell and exclusion; all 108 instrumentation jobs complete.",
+    "Independent Decimal calculation pooled equal sample counts and matched all 15 displayed means.",
+    "Aggregate source hash, per-book counts, sums and means retained in averages.json."
+  ],
+  "markup_checks": {
+    "errors": [],
+    "image_and_picture_source_dimensions": 14,
+    "references": 42,
+    "tables": 1,
+    "external_links_and_build_commands": "preserved"
+  },
+  "organization": {
+    "chapters": [
+      "Shelf",
+      "Player",
+      "Shared history",
+      "Reader (including EPUB performance)",
+      "PDF reflow",
+      "Every device",
+      "Getting it"
+    ],
+    "new_section_words_before": 1235,
+    "new_section_words_after": 408,
+    "original_hero_why_shelf_player_sync_setup": "preserved, apart from chapter numbers"
   },
   "previews": {
-    "mobile_width": 390,
+    "tool": "T3 html_preview",
     "desktop_width": 1280,
+    "phone_width": 390,
     "themes": [
       "Cream",
       "Night"
     ],
-    "fonts": "bundled font files embedded in verification copy",
-    "mobile_page_width": 390,
-    "horizontal_scrolling": "contained within tables; action labels and book captions stay visible"
+    "fonts": "both bundled fonts embedded and loaded",
+    "images": "all loaded; theme-specific PDF captures inspected",
+    "page_overflow": false,
+    "phone_table_region_width": 339,
+    "phone_table_content_width": 588,
+    "phone_table_scroll_left_checked": 249,
+    "table_focus": true,
+    "caption_remains_visible_when_scrolled": true,
+    "coverage": "opening through footer, using overlapping screenshot windows"
   },
-  "application_source": "unchanged; no repeat application or device measurement run needed",
-  "limitations": [
-    "Instrumented release shells, not full applications",
-    "Software emulator graphics, not Pixel results",
-    "Request-to-verified-window-copy includes capture and validation costs",
-    "Pagination scope and page layout differ; host load varied"
-  ],
-  "live_site": "publication troubleshooting deferred by user"
+  "application_changes": false,
+  "new_benchmark_runs": false,
+  "live_site": "publication troubleshooting remains deferred by user"
 }
