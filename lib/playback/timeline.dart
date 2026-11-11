@@ -99,7 +99,7 @@ void openHistory(
             showBooks: book == null,
             header: RecordSaveStatus(playback: playback, reader: reader),
             scroll: scroll,
-            onGoBack: (event) => go(
+            onGoBefore: (event) => go(
               event.before,
               () => switch (event.before) {
                 AudioPosition() => playback!.restoreHistory(event.id),
@@ -207,11 +207,16 @@ Future<void> _confirmDelete(
   }
 }
 
-/// A dense, vertical timeline of listening and reading, grouped by day. A
-/// tap on an entry shows where its place is, the places it can return to,
-/// and Delete. When the entries hold both media, a glyph on the rail marks
-/// the medium of each entry. The timeline changes no records itself: it
-/// reports each choice through its callbacks.
+/// A dense, vertical timeline of listening and reading, grouped by day.
+/// Each move is a route with two ends: its row names the place where it
+/// went, after an arrow, and a tap opens the route as two tiles of one
+/// size, Before on the left and After on the right. An entry that did not
+/// move, and a bookmark, open as one tile with their one place. A tap on a
+/// tile goes to its place. An open row offers Delete at its end, where its
+/// place was, and a bookmark also offers Name or Rename there. When the
+/// entries hold both media, a glyph on the rail marks the medium of each
+/// entry. The timeline changes no records itself: it reports each choice
+/// through its callbacks.
 class HistoryTimeline extends StatefulWidget {
   const HistoryTimeline({
     super.key,
@@ -220,7 +225,7 @@ class HistoryTimeline extends StatefulWidget {
     this.showBooks = false,
     this.header,
     this.scroll,
-    required this.onGoBack,
+    required this.onGoBefore,
     required this.onGoTo,
     required this.onRename,
     required this.onDelete,
@@ -242,11 +247,13 @@ class HistoryTimeline extends StatefulWidget {
   final Widget? header;
   final ScrollController? scroll;
 
-  /// Reports Go back on an action: return to where [HistoryEvent.before]
-  /// says the action began.
-  final ValueChanged<HistoryEvent<Place>> onGoBack;
+  /// Reports a tap on the Before end of a move: return to
+  /// [HistoryEvent.before], where the move began.
+  final ValueChanged<HistoryEvent<Place>> onGoBefore;
 
-  /// Reports Go to: return to where an action ended, or to a bookmark.
+  /// Reports a tap on the After end of a move, or on the one place of an
+  /// entry that did not move: return to [TimelineEntry.place], where an
+  /// action ended or where a bookmark is.
   final ValueChanged<TimelineEntry> onGoTo;
 
   /// Reports Name or Rename on a bookmark.
@@ -262,6 +269,8 @@ class HistoryTimeline extends StatefulWidget {
 /// The width of the time of day column, wide enough for "12:59 PM" on one
 /// line.
 const _timeWidth = 68.0;
+
+const _rowRadius = BorderRadius.all(Radius.circular(8));
 
 class _HistoryTimelineState extends State<HistoryTimeline> {
   /// The entry whose choices are shown, if any.
@@ -303,7 +312,10 @@ class _HistoryTimelineState extends State<HistoryTimeline> {
   );
 
   /// One entry: its time of day, its mark on the rail, what happened and
-  /// where. With [mixed], the mark is a glyph of the entry's medium.
+  /// where. A move names the place where it went after an arrow. With
+  /// [mixed], the mark is a glyph of the entry's medium. An open entry
+  /// shows its route under the row, and its other choices at the row's
+  /// end, where its place was.
   Widget _row(
     BuildContext context,
     TimelineEntry entry, {
@@ -311,9 +323,8 @@ class _HistoryTimelineState extends State<HistoryTimeline> {
   }) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final accent = theme.brightness == Brightness.dark
-        ? theaterGlow
-        : scheme.primary;
+    final night = theme.brightness == Brightness.dark;
+    final accent = glowAccent(theme);
     final small = TextStyle(
       fontSize: 12,
       color: scheme.onSurfaceVariant,
@@ -349,151 +360,164 @@ class _HistoryTimelineState extends State<HistoryTimeline> {
         decoration: BoxDecoration(shape: BoxShape.circle, color: markColor),
       ),
     };
-    final detail = [
-      ?words.chapter,
-      if (words.quote case final quote?) '“$quote”',
-    ].join(' · ');
-    return Stack(
-      children: [
-        // The rail that joins the entries of a day.
-        Positioned(
-          left: _timeWidth + 11.25,
-          top: 0,
-          bottom: 0,
-          child: Container(width: 1.5, color: scheme.outlineVariant),
-        ),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            InkWell(
-              borderRadius: BorderRadius.circular(8),
-              onTap: () => setState(() => _open = open ? null : entry.id),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: _timeWidth,
-                      child: Text(
-                        time,
-                        style: small,
-                        maxLines: 1,
-                        softWrap: false,
-                        overflow: TextOverflow.fade,
-                        textAlign: TextAlign.right,
-                      ),
-                    ),
-                    SizedBox(width: 24, child: Center(child: mark)),
-                    // A glyph of the medium takes the place of the
-                    // bookmark mark on the rail, so the label shows it.
-                    if (mixed && bookmark)
-                      Padding(
-                        padding: const EdgeInsets.only(right: 4),
-                        child: Icon(
-                          Icons.bookmark_rounded,
-                          size: 14,
-                          color: accent,
-                        ),
-                      ),
-                    Expanded(
-                      child: Text.rich(
-                        TextSpan(
-                          text: label,
-                          children: [
-                            if (widget.showBooks)
-                              TextSpan(
-                                text: ' · ${entry.bookTitle}',
-                                style: small,
-                              ),
-                          ],
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontSize: 14),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    // A quote can be long, so the place takes at most a
-                    // third of the screen's width.
-                    ConstrainedBox(
-                      constraints: BoxConstraints(
-                        maxWidth: MediaQuery.sizeOf(context).width / 3,
-                      ),
-                      child: Text(
-                        words.short,
-                        style: small,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            if (open && detail.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(left: _timeWidth + 30, right: 4),
+    final row = Ink(
+      decoration: BoxDecoration(
+        color: open
+            ? (night
+                  ? scheme.onSurface.withValues(alpha: 0.06)
+                  : scheme.surface.withValues(alpha: 0.55))
+            : null,
+        borderRadius: _rowRadius,
+      ),
+      child: InkWell(
+        borderRadius: _rowRadius,
+        onTap: () => setState(() => _open = open ? null : entry.id),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: Row(
+            children: [
+              SizedBox(
+                width: _timeWidth,
                 child: Text(
-                  detail,
+                  time,
                   style: small,
-                  maxLines: 2,
+                  maxLines: 1,
+                  softWrap: false,
+                  overflow: TextOverflow.fade,
+                  textAlign: TextAlign.right,
+                ),
+              ),
+              SizedBox(width: 24, child: Center(child: mark)),
+              // A glyph of the medium takes the place of the bookmark mark
+              // on the rail, so the label shows it.
+              if (mixed && bookmark)
+                Padding(
+                  padding: const EdgeInsets.only(right: 4),
+                  child: Icon(Icons.bookmark_rounded, size: 14, color: accent),
+                ),
+              Expanded(
+                child: Text.rich(
+                  TextSpan(
+                    text: label,
+                    children: [
+                      if (widget.showBooks)
+                        TextSpan(text: ' · ${entry.bookTitle}', style: small),
+                    ],
+                  ),
+                  maxLines: 1,
                   overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 14),
                 ),
               ),
-            if (open)
-              Padding(
-                padding: const EdgeInsets.only(
-                  left: _timeWidth + 20,
-                  bottom: 4,
+              const SizedBox(width: 8),
+              // The route shows the places of an open entry, so its choices
+              // take the place text's spot, and Delete is always last.
+              if (open) ...[
+                if (entry case BookmarkEntry(:final bookmark))
+                  IconButton(
+                    tooltip: bookmark.title == null ? 'Name' : 'Rename',
+                    icon: const Icon(Icons.edit_outlined, size: 20),
+                    onPressed: () => widget.onRename(bookmark),
+                  ),
+                IconButton(
+                  tooltip: 'Delete',
+                  icon: const Icon(Icons.delete_outline, size: 20),
+                  onPressed: () => widget.onDelete(entry),
                 ),
-                child: Wrap(
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  spacing: 4,
-                  children: [..._choices(entry)],
+              ] else
+                // A quote can be long, so the place takes at most a third
+                // of the screen's width.
+                ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: MediaQuery.sizeOf(context).width / 3,
+                  ),
+                  child: Text(
+                    _moveOf(entry) == null ? words.short : '→ ${words.short}',
+                    style: small,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Stack(
+          children: [
+            // The rail that joins the entries of a day. It runs beside the
+            // rows, not through the tiles of an open route.
+            Positioned(
+              left: _timeWidth + 11.25,
+              top: 0,
+              bottom: 0,
+              child: Container(width: 1.5, color: scheme.outlineVariant),
+            ),
+            row,
           ],
         ),
+        if (open)
+          Padding(
+            padding: const EdgeInsets.only(top: 2, bottom: 8),
+            child: _route(entry),
+          ),
       ],
     );
   }
 
-  List<Widget> _choices(TimelineEntry entry) {
-    Widget choice(String text, VoidCallback report) => TextButton(
-      style: TextButton.styleFrom(
-        visualDensity: VisualDensity.compact,
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-      ),
-      onPressed: report,
-      child: Text(text),
-    );
-    final delete = IconButton(
-      tooltip: 'Delete',
-      visualDensity: VisualDensity.compact,
-      icon: const Icon(Icons.delete_outline, size: 20),
-      onPressed: () => widget.onDelete(entry),
-    );
-    String place(Place place) => widget.describe(place).short;
-    return switch (entry) {
-      ActionEntry(:final event) => [
-        if (event.changesPosition)
-          choice(
-            'Go back to ${place(event.before)}',
-            () => widget.onGoBack(event),
+  /// The places of an open [entry], as tiles across its row: Before and
+  /// After for a move, in the order that they happened, and the one place
+  /// of an entry that did not move.
+  Widget _route(TimelineEntry entry) {
+    final move = _moveOf(entry);
+    if (move == null) {
+      return _end('Go to', entry.place, () => widget.onGoTo(entry));
+    }
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: _end('Before', move.before, () => widget.onGoBefore(move)),
           ),
-        choice('Go to ${place(event.after)}', () => widget.onGoTo(entry)),
-        delete,
-      ],
-      BookmarkEntry(:final bookmark) => [
-        choice('Go to ${place(bookmark.position)}', () => widget.onGoTo(entry)),
-        choice(
-          bookmark.title == null ? 'Name' : 'Rename',
-          () => widget.onRename(bookmark),
-        ),
-        delete,
-      ],
-    };
+          SizedBox(
+            width: 22,
+            child: Center(
+              child: ExcludeSemantics(
+                child: Text(
+                  '→',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: _end('After', move.after, () => widget.onGoTo(entry)),
+          ),
+        ],
+      ),
+    );
   }
+
+  /// One end of a route: a tile with [role] and [place] in words, whose tap
+  /// calls [go]. Every tile describes its place here, so that a later
+  /// change can show a place of another edition in one spot.
+  Widget _end(String role, Place place, VoidCallback go) =>
+      _PlaceTile(role: role, words: widget.describe(place), onTap: go);
+
+  /// The move of [entry] when it has two ends ([HistoryEvent.moved]). Null
+  /// for a bookmark, and for an action that stayed at one place, such as a
+  /// pause or the open of a reading visit.
+  static HistoryEvent<Place>? _moveOf(TimelineEntry entry) => switch (entry) {
+    ActionEntry(:final event) when event.moved => event,
+    _ => null,
+  };
 
   /// What [event] did. A move that changed the place says how far it went:
   /// a time in listening, and pages in reading. Before the reader knows
@@ -503,11 +527,13 @@ class _HistoryTimelineState extends State<HistoryTimeline> {
     final from = widget.describe(event.before).along;
     final to = widget.describe(event.after).along;
     String moved(String verb) => switch ((from, to)) {
+      // The distance between the two shown times, so that it agrees with
+      // them.
       (
         AlongAudio(milliseconds: final from),
         AlongAudio(milliseconds: final to),
       ) =>
-        '$verb ${to >= from ? 'ahead' : 'back'} ${_span((to - from).abs())}',
+        _listeningMove(verb, audioSeconds(from), audioSeconds(to)),
       (AlongText(page: final from?), AlongText(page: final to?))
           when from != to =>
         '$verb ${to > from ? 'ahead' : 'back'} ${_pages((to - from).abs())}',
@@ -531,18 +557,126 @@ class _HistoryTimelineState extends State<HistoryTimeline> {
       HistoryAction.completion => 'Finished',
       HistoryAction.link => 'Followed a link',
       HistoryAction.search => 'Went to a search result',
-      HistoryAction.open => 'Opened',
+      HistoryAction.open => switch (event.device) {
+        final device? => 'Opened at the place from $device',
+        null => 'Opened',
+      },
       HistoryAction.close => 'Closed',
     };
   }
 
-  /// A span of [milliseconds] of listening, such as "40 s" or "2 min".
-  static String _span(int milliseconds) => milliseconds < 60000
-      ? '${(milliseconds / 1000).round()} s'
-      : duration(milliseconds);
+  /// A listening move from the shown second [from] to the shown second
+  /// [to], such as "Moved back 40 s" or "Jumped ahead 1 m 31 s". A move
+  /// within one shown second reads as [verb] alone, because its two place
+  /// texts are the same.
+  static String _listeningMove(String verb, int from, int to) => from == to
+      ? verb
+      : '$verb ${to > from ? 'ahead' : 'back'} ${_span((to - from).abs())}';
+
+  /// A span of [seconds] above zero, such as "40 s", "1 m 31 s", "2 m" or
+  /// "1 h 0 m 5 s": every unit from the largest one that is not zero down
+  /// to the smallest one that is not zero.
+  static String _span(int seconds) {
+    assert(seconds > 0);
+    final units = [
+      (seconds ~/ 3600, 'h'),
+      (seconds ~/ 60 % 60, 'm'),
+      (seconds % 60, 's'),
+    ];
+    final first = units.indexWhere((unit) => unit.$1 > 0);
+    final last = units.lastIndexWhere((unit) => unit.$1 > 0);
+    return [
+      for (final (count, unit) in units.sublist(first, last + 1))
+        '$count $unit',
+    ].join(' ');
+  }
 
   /// A number of pages, such as "1 page" or "12 pages".
   static String _pages(int count) => count == 1 ? '1 page' : '$count pages';
+}
+
+/// One place of an open timeline entry, as a tile that goes there on a
+/// tap: its [role], such as Before, its place text, and its chapter and
+/// quote when [words] knows them. Each line stays on one line, and a line
+/// that is too long ends in "…".
+class _PlaceTile extends StatelessWidget {
+  const _PlaceTile({
+    required this.role,
+    required this.words,
+    required this.onTap,
+  });
+  final String role;
+  final PlaceWords words;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final night = theme.brightness == Brightness.dark;
+    final detail = [
+      ?words.chapter,
+      if (words.quote case final quote?) '“$quote”',
+    ].join(' · ');
+    Widget line(String text, TextStyle style, {String? semanticsLabel}) => Text(
+      text,
+      style: style,
+      maxLines: 1,
+      softWrap: false,
+      overflow: TextOverflow.ellipsis,
+      semanticsLabel: semanticsLabel,
+    );
+    return MergeSemantics(
+      child: Semantics(
+        button: true,
+        child: Material(
+          color: night
+              ? scheme.onSurface.withValues(alpha: 0.07)
+              : scheme.surface.withValues(alpha: 0.75),
+          shape: RoundedRectangleBorder(
+            borderRadius: const BorderRadius.all(Radius.circular(14)),
+            side: BorderSide(color: scheme.outlineVariant),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: onTap,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  line(
+                    role.toUpperCase(),
+                    TextStyle(
+                      fontSize: 10,
+                      letterSpacing: 0.6,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                    semanticsLabel: role,
+                  ),
+                  line(
+                    words.short,
+                    TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: glowAccent(theme),
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
+                  ),
+                  if (detail.isNotEmpty)
+                    line(
+                      detail,
+                      TextStyle(fontSize: 11, color: scheme.onSurfaceVariant),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _DayLabel extends StatelessWidget {

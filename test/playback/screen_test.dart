@@ -76,7 +76,7 @@ void main() {
       await tester.tap(find.text('Beginning'));
       await tester.pumpAndSettle();
       await tester.runAsync(() async {
-        await tester.tap(find.text('Go to 00:00'));
+        await tester.tap(find.text('GO TO'));
         await playback.flush();
       });
       await tester.pumpAndSettle();
@@ -287,14 +287,14 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Remember'));
       await tester.pumpAndSettle();
-      await tester.runAsync(() => tester.tap(find.text('Rename')));
+      await tester.runAsync(() => tester.tap(find.byTooltip('Rename')));
       await tester.pumpAndSettle();
       await save('Revised');
       expect(find.text('Revised'), findsOneWidget);
 
       await tester.runAsync(() async {
         await playback.seekEdition(70000);
-        await tester.tap(find.text('Go to 00:00'));
+        await tester.tap(find.text('GO TO'));
         await playback.flush();
       });
       await tester.pumpAndSettle();

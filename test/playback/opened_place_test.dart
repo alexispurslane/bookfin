@@ -141,7 +141,7 @@ void main() {
 
   test('Phone A listens on and syncs. Phone B, which last played an earlier '
       'place, syncs and opens the book at A\'s place. Its timeline shows the '
-      'open from Phone A, whose Go back returns to B\'s place, and B offers '
+      'open from Phone A, whose Before returns to B\'s place, and B offers '
       'Undo', () async {
     await phoneAListensPastPhoneB();
     await sync(phoneB);

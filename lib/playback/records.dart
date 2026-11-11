@@ -117,6 +117,14 @@ class HistoryEvent<P extends Place> {
     _ => false,
   };
 
+  /// Whether this action took the person from one place to another: its
+  /// kind can change the place ([changesPosition]), and its two places
+  /// differ. The History timeline shows such an action as a route with two
+  /// ends. Played, Interrupted and Finished go from the position sample
+  /// before the change to the sample that changed it, which can differ by
+  /// a fraction of a second, so they never move.
+  bool get moved => changesPosition && !samePlace(before, after);
+
   Map<String, dynamic> toJson() => {
     'id': id,
     'at': at.toUtc().toIso8601String(),
@@ -345,8 +353,9 @@ final class BookmarkEntry extends TimelineEntry {
 }
 
 /// A place in words. [short] names it in a timeline row, such as "p. 134",
-/// "37%" or "01:02:15". [chapter] and [quote] describe it in the detail
-/// line of an open timeline entry, when they are known. [along] says how
+/// "37%" or "01:02:15". [chapter] and [quote] describe it on the tile of an
+/// open timeline entry, when they are known. [quote] is null when [short]
+/// already shows the whole quote. [along] says how
 /// far into its edition the place is, so that a move can say how far it
 /// went, or null when that is unknown.
 typedef PlaceWords = ({
@@ -363,6 +372,9 @@ sealed class Along {
 }
 
 /// A time in an audio edition, in milliseconds from the edition's start.
+/// It is the time that [PlaceWords.short] shows through `audioTime`, so a
+/// distance between the `audioSeconds` of two places agrees with their
+/// place texts.
 final class AlongAudio extends Along {
   const AlongAudio(this.milliseconds);
   final int milliseconds;
