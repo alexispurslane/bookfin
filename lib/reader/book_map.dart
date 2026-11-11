@@ -7,6 +7,7 @@ import 'package:xml/xml_events.dart';
 import '../foundation/hop.dart';
 import 'book_pages.dart';
 import 'document.dart';
+import 'epub/publication.dart';
 import 'pdf.dart';
 
 /// A place that the scrub bar points at, given as a fraction of the whole
@@ -108,32 +109,10 @@ class BookMap {
       for (final path in spine) publication.resources[path]!.length,
     ];
     final parts = {for (final (index, path) in spine.indexed) path: index};
-
-    // Each contents entry points at a section, and perhaps at an element in
-    // it by its id.
-    final package = Uri(
-      scheme: 'https',
-      host: 'book',
-      path: '/${publication.packagePath}',
-    );
-    final entries = <({String title, int part, String? id})>[];
-    for (final entry in contents) {
-      final Uri href;
-      try {
-        href = package.resolve(entry.href);
-      } on FormatException {
-        continue;
-      }
-      final part = parts[href.pathSegments.join('/')];
-      if (part == null) continue;
-      entries.add((
-        title: entry.title,
-        part: part,
-        id: href.hasFragment && href.fragment.isNotEmpty
-            ? Uri.decodeComponent(href.fragment)
-            : null,
-      ));
-    }
+    final entries = [
+      for (final (:entry, :part, :id) in contentsTargets(publication, contents))
+        (title: contents[entry].title, part: part, id: id),
+    ];
     final wanted = <int, Set<String>>{};
     for (final (title: _, :part, :id) in entries) {
       if (id != null) (wanted[part] ??= {}).add(id);
@@ -471,18 +450,69 @@ class BookMap {
   }
 }
 
+/// Each entry of [contents] that points into the spine of [publication]:
+/// its index in [contents], the index of its section in the spine, and the
+/// id of the element that it points at in that section, if any. An entry
+/// whose href does not parse or points outside the spine is left out.
+List<({int entry, int part, String? id})> contentsTargets(
+  Publication publication,
+  List<ContentsEntry> contents,
+) {
+  final parts = {
+    for (final (index, path) in publication.spine.indexed) path: index,
+  };
+  // Each href is relative to the package document's directory.
+  final package = Uri(
+    scheme: 'https',
+    host: 'book',
+    path: '/${publication.packagePath}',
+  );
+  final targets = <({int entry, int part, String? id})>[];
+  for (final (index, entry) in contents.indexed) {
+    final Uri href;
+    try {
+      href = package.resolve(entry.href);
+    } on FormatException {
+      continue;
+    }
+    final part = parts[href.pathSegments.join('/')];
+    if (part == null) continue;
+    targets.add((
+      entry: index,
+      part: part,
+      id: href.hasFragment && href.fragment.isNotEmpty
+          ? Uri.decodeComponent(href.fragment)
+          : null,
+    ));
+  }
+  return targets;
+}
+
 /// For each section, the text progress at which each wanted element starts.
 /// An id that the section lacks has no progress.
 List<Map<String, double>> _measureIds(
   List<({Uint8List bytes, Set<String> ids})> sections,
-) => [for (final (:bytes, :ids) in sections) _measureSection(bytes, ids)];
+) => [
+  for (final (:bytes, :ids) in sections)
+    switch (countSection(bytes, ids)) {
+      (:final visible, :final before) => {
+        for (final MapEntry(key: id, value: count) in before.entries)
+          id: visible > 0 ? count / visible : 0,
+      },
+    },
+];
 
 final _space = RegExp(r'\s');
 
-/// Counts the visible characters of the section's body, white space left
-/// out, the same way the reader does, and notes how many come before each
-/// element in [ids].
-Map<String, double> _measureSection(Uint8List bytes, Set<String> ids) {
+/// The visible characters of the section [bytes]: the characters of its
+/// body, white space left out, as the reader counts them, and how many come
+/// before each element in [ids]. An id that the section lacks is left out.
+/// A section that does not parse counts nothing: an admitted section always
+/// parses, and if one does not, its chapters start at its start.
+({int visible, Map<String, int> before}) countSection(
+  Uint8List bytes,
+  Set<String> ids,
+) {
   final before = <String, int>{};
   var visible = 0;
   var body = false;
@@ -504,12 +534,7 @@ Map<String, double> _measureSection(Uint8List bytes, Set<String> ids) {
       }
     }
   } on Exception {
-    // An admitted section always parses. If one does not, its chapters start
-    // at the section's start.
-    return const {};
+    return (visible: 0, before: const {});
   }
-  return {
-    for (final MapEntry(key: id, value: count) in before.entries)
-      id: visible > 0 ? count / visible : 0,
-  };
+  return (visible: visible, before: before);
 }

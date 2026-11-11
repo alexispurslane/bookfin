@@ -21,22 +21,14 @@ Future<void> _imports = Future.value();
 /// EPUB. Later opens read the admitted book that Bookfin kept, and neither
 /// convert, read nor hash the MOBI.
 Future<EpubDocument> importMobi(File original, String digest) async {
-  final path = original.path;
   // The fingerprint names the page maps' key. Its first call asks the
   // platform, beside the import.
   final engine = textEngineFingerprint();
-  final imported = _imports.then(
-    (_) => Isolate.run(
-      () => AdmittedBooks.open(
-        File(path),
-        digest,
-        EpubDocument.mobiPolicy,
-        () => _convert(path, digest),
-      ),
-    ),
+  final publication = await readMobi(
+    original,
+    digest,
+    (publication) => publication,
   );
-  _imports = imported.then<void>((_) {}, onError: (Object error) {});
-  final publication = await imported;
   return EpubDocument.mobi(
     publication,
     digest,
@@ -46,6 +38,33 @@ Future<EpubDocument> importMobi(File original, String digest) async {
       engine: engine,
     ),
   );
+}
+
+/// What [use] gives for the publication of the MOBI [original], whose
+/// SHA-256 is [digest], run in the worker isolate that reads the admitted
+/// book that Bookfin kept, or converts and admits the file and keeps it, as
+/// [importMobi] does. Only the result of [use] comes back. Conversions run
+/// one at a time.
+Future<T> readMobi<T>(
+  File original,
+  String digest,
+  T Function(Publication publication) use,
+) {
+  final path = original.path;
+  final read = _imports.then(
+    (_) => Isolate.run(
+      () async => use(
+        await AdmittedBooks.open(
+          File(path),
+          digest,
+          EpubDocument.mobiPolicy,
+          () => _convert(path, digest),
+        ),
+      ),
+    ),
+  );
+  _imports = read.then<void>((_) {}, onError: (Object error) {});
+  return read;
 }
 
 /// The admitted EPUB of the MOBI at [path], whose SHA-256 is [digest]: from

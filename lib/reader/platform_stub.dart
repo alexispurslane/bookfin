@@ -2,6 +2,7 @@ import '../catalog/model.dart';
 import '../downloads/downloads.dart';
 import 'document.dart';
 import 'epub/publication.dart';
+import 'text_outline.dart';
 
 Future<ReaderDocument> loadReadingDocument(
   VerifiedFile original,
@@ -14,3 +15,9 @@ Future<Publication> loadPublication(VerifiedFile original) async =>
     throw const FormatException(
       'EPUB reading is available in the Android app.',
     );
+
+/// No ebook downloads on this platform, so no text outlines.
+Future<TextOutline?> measureDownloadedOutline(
+  VerifiedFile original,
+  SourceFile source,
+) async => null;

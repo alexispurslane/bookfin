@@ -11,6 +11,7 @@ import 'epub/publication.dart';
 import 'mobi.dart';
 import 'ocr.dart';
 import 'pdf.dart';
+import 'text_outline.dart';
 
 Future<ReaderDocument> loadReadingDocument(
   VerifiedFile original,
@@ -18,23 +19,7 @@ Future<ReaderDocument> loadReadingDocument(
   PdfTextSupply? textSupply,
 }) async {
   final file = await _verifiedFile(original.uri);
-  var container = source.container.trim().toLowerCase();
-  if (container.isEmpty) {
-    // Jellyfin Book originals can omit both Container and MediaSources.
-    // Signatures select a parser; that parser still validates the full book.
-    final input = await file.open();
-    try {
-      final header = String.fromCharCodes(await input.read(1024));
-      if (header.startsWith('%PDF-')) {
-        container = 'pdf';
-      } else if (header.length >= 68 &&
-          header.substring(60, 68) == 'BOOKMOBI') {
-        container = 'mobi';
-      }
-    } finally {
-      await input.close();
-    }
-  }
+  final container = await _containerOf(file, source);
   if (container == 'mobi' || container == 'azw3') {
     return importMobi(file, original.digest);
   }
@@ -59,17 +44,66 @@ Future<ReaderDocument> loadReadingDocument(
 Future<Publication> loadPublication(VerifiedFile original) async =>
     _admitted(await _verifiedFile(original.uri), original.digest);
 
+/// The text outline of the downloaded ebook [original] of [source], or null
+/// for a PDF, which has none yet (t9-nl30). One worker isolate reads the
+/// admitted book that Bookfin kept, or admits or converts the file and
+/// keeps it, as the reader does, and measures the outline there. Only the
+/// small outline comes back.
+Future<TextOutline?> measureDownloadedOutline(
+  VerifiedFile original,
+  SourceFile source,
+) async {
+  final file = await _verifiedFile(original.uri);
+  return switch (await _containerOf(file, source)) {
+    'pdf' => null,
+    'mobi' || 'azw3' => readMobi(file, original.digest, measureTextOutline),
+    _ => _readAdmitted(file, original.digest, measureTextOutline),
+  };
+}
+
+/// The container of the downloaded [file] of [source], in lowercase:
+/// Jellyfin's, or, when Jellyfin names none, `pdf` or `mobi` by the file's
+/// signature, else empty.
+Future<String> _containerOf(File file, SourceFile source) async {
+  final container = source.container.trim().toLowerCase();
+  if (container.isNotEmpty) return container;
+  // Jellyfin Book originals can omit both Container and MediaSources.
+  // Signatures select a parser; that parser still validates the full book.
+  final input = await file.open();
+  try {
+    final header = String.fromCharCodes(await input.read(1024));
+    if (header.startsWith('%PDF-')) return 'pdf';
+    if (header.length >= 68 && header.substring(60, 68) == 'BOOKMOBI') {
+      return 'mobi';
+    }
+    return '';
+  } finally {
+    await input.close();
+  }
+}
+
 /// The admitted publication of the downloaded EPUB [file], whose SHA-256 is
 /// [digest]. A worker reads the admitted book that Bookfin kept, or admits
 /// the file and keeps it.
-Future<Publication> _admitted(File file, String digest) {
+Future<Publication> _admitted(File file, String digest) =>
+    _readAdmitted(file, digest, (publication) => publication);
+
+/// What [use] gives for the admitted publication of [_admitted], run in the
+/// same worker, so that only its result comes back.
+Future<T> _readAdmitted<T>(
+  File file,
+  String digest,
+  T Function(Publication publication) use,
+) {
   final path = file.path;
   return Isolate.run(
-    () => AdmittedBooks.open(
-      File(path),
-      digest,
-      Publication.policy,
-      () async => Publication.admit(await File(path).readAsBytes(), digest),
+    () async => use(
+      await AdmittedBooks.open(
+        File(path),
+        digest,
+        Publication.policy,
+        () async => Publication.admit(await File(path).readAsBytes(), digest),
+      ),
     ),
   );
 }

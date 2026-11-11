@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
-import 'package:xml/xml_events.dart';
 
 import '../catalog/jellyfin.dart';
 import '../catalog/model.dart';
@@ -10,6 +9,7 @@ import '../downloads/downloads.dart';
 import '../foundation/time.dart' show roundEstimate;
 import '../playback/playback.dart';
 import 'book_map.dart';
+import 'contents.dart';
 import 'document.dart';
 import 'epub/pager.dart';
 import 'epub/publication.dart';
@@ -1645,60 +1645,19 @@ class ReaderSession extends ChangeNotifier {
   }
 }
 
-/// The contents that the session lists for [publication]: its own, or, when
-/// it has none, one "Chapter N" entry for each linear section of its spine,
-/// as the WebView reader listed them (reader.js). Each href is relative to
-/// the package document's directory, as contents hrefs are.
+/// The contents that the session lists for [publication], as
+/// [listedContents] gives them. A large package document is read in
+/// another isolate.
 Future<List<ContentsEntry>> _contentsOf(Publication publication) async {
   if (publication.contents.isNotEmpty) return publication.contents;
   final package = publication.resources[publication.packagePath]!;
   // NOTE: A hop costs a few milliseconds, more than reading a small package
   // document.
   final linear = package.length < 64 << 10
-      ? _linearSpine(package)
-      : await compute(_linearSpine, package);
-  final directory = publication.packagePath.split('/')..removeLast();
-  String relative(String path) {
-    final parts = path.split('/');
-    var shared = 0;
-    while (shared < directory.length &&
-        shared < parts.length - 1 &&
-        directory[shared] == parts[shared]) {
-      shared++;
-    }
-    return [
-      for (var up = shared; up < directory.length; up++) '..',
-      ...parts.skip(shared).map(Uri.encodeComponent),
-    ].join('/');
-  }
-
-  final sections = [
-    for (final (index, path) in publication.spine.indexed)
-      if (index < linear.length && linear[index]) path,
-  ];
-  return List.unmodifiable([
-    for (final (index, path) in sections.indexed)
-      ContentsEntry('Chapter ${index + 1}', relative(path)),
-  ]);
+      ? linearSpine(package)
+      : await compute(linearSpine, package);
+  return spineContents(publication, linear);
 }
-
-/// Whether each spine item of the package document [package] is linear, in
-/// spine order. As in epub.js, an item is linear unless its `linear`
-/// attribute has a value other than `yes`.
-List<bool> _linearSpine(Uint8List package) => [
-  for (final event in parseEvents(utf8.decode(package)))
-    if (event case XmlStartElementEvent(
-      localName: 'itemref',
-      :final attributes,
-    ))
-      switch (attributes
-          .where((attribute) => attribute.localName == 'linear')
-          .firstOrNull
-          ?.value) {
-        null || '' || 'yes' => true,
-        _ => false,
-      },
-];
 
 /// What [ReaderSession.message] says when a place to go to cannot be
 /// found in the open book or in another ebook edition of it.
