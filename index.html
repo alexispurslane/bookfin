@@ -131,6 +131,24 @@ h1{font:600 clamp(2.6rem,6vw,4.6rem)/1.05 var(--serif);margin:0 auto 1.25rem;max
 .history-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:clamp(2rem,4vw,3.5rem);align-items:center}
 .history-capture{width:min(100%,360px);justify-self:center}
 
+.epub-intro{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:clamp(2rem,4vw,3.5rem);align-items:start}
+.epub-intro ul{margin-top:0}
+.epub-comparison{min-width:0}
+.epub-comparison h3{font:600 clamp(1.5rem,3vw,1.9rem)/1.25 var(--serif);margin:0 0 .75rem}
+.epub-comparison p{max-width:70ch;margin:0 0 1rem;color:var(--subtle)}
+.epub-comparison .table-help{font:400 .9rem/1.5 var(--display);margin-bottom:.75rem}
+.table-scroll{overflow-x:auto;scrollbar-color:var(--copper) var(--wash);border-block:1px solid var(--line)}
+.table-scroll:focus-visible{outline:2px solid var(--copper);outline-offset:4px}
+.engine-table{width:100%;min-width:42rem;border-collapse:collapse;text-align:left;font:400 1rem/1.55 var(--display)}
+.engine-table caption{text-align:left;font:600 1.1rem var(--serif);padding:1.25rem 1rem;background:var(--wash)}
+.engine-table th,.engine-table td{padding:1.25rem 1rem;vertical-align:top;border-bottom:1px solid var(--line)}
+.engine-table thead th{font-weight:600;color:var(--subtle);background:var(--sheet)}
+.engine-table tbody th{width:20%;font-weight:600}
+.engine-table tbody td:nth-child(2){width:50%}
+.engine-table tbody td:last-child{color:var(--subtle)}
+.engine-table tbody tr:last-child>*{border-bottom:0}
+.epub-comparison .epub-evidence{margin:1rem 0 0;font:400 .95rem/1.6 var(--display)}
+
 /* Sync, two devices that disagree */
 .devices{display:grid;grid-template-columns:1fr 1fr;gap:1rem;max-width:36em;margin-top:1.75rem}
 .device{background:var(--sheet);border:1px solid var(--line);border-radius:22px;padding:1.25rem 1.35rem}
@@ -160,7 +178,7 @@ footer a{color:var(--subtle);display:inline-block;padding:.6rem .25rem}
   .chapter{grid-template-columns:minmax(0,1fr);padding:4.5rem 0}
   .chapter.flip .copy{order:0}
   .phones{grid-auto-columns:minmax(0,1fr);justify-content:stretch}
-  .history-grid,.setup-grid{grid-template-columns:minmax(0,1fr)}
+  .history-grid,.setup-grid,.epub-intro{grid-template-columns:minmax(0,1fr)}
   .hero-art{margin-inline:calc(-1 * var(--gutter) + .5rem)}
 }
 @media (max-width:600px){
@@ -189,6 +207,7 @@ footer a{color:var(--subtle);display:inline-block;padding:.6rem .25rem}
       <a href="#reflow">PDF reflow</a>
       <a class="wide" href="#history">History</a>
       <a class="wide" href="#reader">Reader</a>
+      <a class="wide" href="#epub">EPUB</a>
       <a class="wide" href="#contents">Contents</a>
       <a href="#setup">Get it</a>
     </nav>
@@ -259,8 +278,9 @@ footer a{color:var(--subtle);display:inline-block;padding:.6rem .25rem}
       <li><a href="#player"><span class="n">Two.</span><span class="t">The player</span><span class="dots"></span><span class="d">chapters, late nights</span></a></li>
       <li><a href="#history"><span class="n">Three.</span><span class="t">Shared History</span><span class="dots"></span><span class="d">listening and reading</span></a></li>
       <li><a href="#reader"><span class="n">Four.</span><span class="t">The reader</span><span class="dots"></span><span class="d">EPUB, MOBI, scanned PDF</span></a></li>
-      <li><a href="#sync"><span class="n">Five.</span><span class="t">Every device</span><span class="dots"></span><span class="d">sync on your server</span></a></li>
-      <li><a href="#setup"><span class="n">Six.</span><span class="t">Getting it</span><span class="dots"></span><span class="d">build and install</span></a></li>
+      <li><a href="#epub"><span class="n">Five.</span><span class="t">EPUB in Flutter</span><span class="dots"></span><span class="d">one reader, shared across platforms</span></a></li>
+      <li><a href="#sync"><span class="n">Six.</span><span class="t">Every device</span><span class="dots"></span><span class="d">sync on your server</span></a></li>
+      <li><a href="#setup"><span class="n">Seven.</span><span class="t">Getting it</span><span class="dots"></span><span class="d">build and install</span></a></li>
     </ol>
   </nav>
 
@@ -353,9 +373,46 @@ footer a{color:var(--subtle);display:inline-block;padding:.6rem .25rem}
     <p class="capture-note">The Night capture uses the same printed page as the comparison, with a larger size and different line breaks. Captured in Bookfin on a computer, not Android. <a href="#reflow">Compare with Original and Cream</a>.</p>
   </section>
 
+  <section class="chapter full" id="epub">
+    <div class="epub-intro">
+      <div class="copy">
+        <h2><span>Five.</span> EPUB, drawn in Flutter</h2>
+        <p class="stand">From the words to the controls, one reader.</p>
+        <p>Bookfin has its own built-in EPUB engine. Flutter lays out and draws the pages directly, without an embedded browser or a WebView fallback. Your book belongs to the same interface as your shelf and player.</p>
+        <p>The EPUB engine and reader controls share one Flutter implementation across platforms. Android is the main app today, and macOS has a working implementation. The iOS, Linux, and Windows apps are not ready yet.</p>
+      </div>
+      <div class="copy">
+        <ul>
+          <li>Adjust the text size and choose Cream or Night with Bookfin's familiar reading controls.</li>
+          <li>Select and copy a passage, follow a link, or open a footnote without leaving the reader.</li>
+          <li>Turn pages with a swipe, a keyboard, or a trackpad. The same reader adapts to how you read.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="epub-comparison">
+      <h3 id="epub-comparison-h">Three ways to put an EPUB on screen</h3>
+      <p>We are preparing fresh tests of Bookfin, Android WebView, and KOReader on the same Android emulator. Comparable results are pending, so there is no speed ranking yet.</p>
+      <p class="table-help" id="epub-table-help">On a narrow screen, scroll the table sideways. With a keyboard, focus the table and use the arrow keys.</p>
+      <div class="table-scroll" role="region" tabindex="0" aria-labelledby="epub-comparison-h" aria-describedby="epub-table-help">
+        <table class="engine-table">
+          <caption>EPUB rendering approaches and performance</caption>
+          <thead>
+            <tr><th scope="col">Reader</th><th scope="col">How pages are drawn</th><th scope="col">Same-emulator timing</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">Bookfin</th><td>Bookfin's shared Flutter engine lays out and draws EPUB pages. No WebView.</td><td>Results pending</td></tr>
+            <tr><th scope="row">Android WebView</th><td>An embedded browser lays out and draws HTML and CSS supplied by an EPUB reader.</td><td>Results pending</td></tr>
+            <tr><th scope="row">KOReader</th><td>The Cool Reader engine (crengine) lays out and draws EPUB pages.</td><td>Results pending</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="epub-evidence">These are rendering approaches, not a claim that every app or platform has the same features. <a href="docs/marketing/epub-renderer/README.md">Implementation sources and measurement notes</a>.</p>
+    </div>
+  </section>
+
   <section class="chapter flip" id="sync">
     <div class="copy">
-      <h2><span>Five.</span> Every device</h2>
+      <h2><span>Six.</span> Every device</h2>
       <p class="stand">Your place, on every device.</p>
       <p>Jellyfin stores how far you got, and Bookfin reports that like any other app. But Jellyfin has no bookmark or history feature. A small server plugin, Bookfin Storage, fills that gap and carries them between your devices.</p>
       <ul>
@@ -378,7 +435,7 @@ footer a{color:var(--subtle);display:inline-block;padding:.6rem .25rem}
 
   <section class="chapter full setup" id="setup">
     <div class="copy">
-      <h2><span>Six.</span> Getting it</h2>
+      <h2><span>Seven.</span> Getting it</h2>
       <p class="stand">Build it once, and your shelf comes with you.</p>
     </div>
     <div class="setup-grid">
