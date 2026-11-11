@@ -78,13 +78,7 @@ h1{font:600 clamp(2.6rem,6vw,4.6rem)/1.05 var(--serif);margin:0 auto 1.25rem;max
 .capture-note{max-width:70ch;margin:1.5rem auto 0;font:400 .95rem/1.6 var(--display);color:var(--subtle)}
 .reflow .capture-grid{width:100%;margin-top:0}
 
-/* Part two: the features other Jellyfin apps lack */
-.part{max-width:58ch;margin:7rem auto 0;text-align:center}
-.part::before{content:"❧";display:block;font:400 2.2rem/1 var(--serif);color:var(--copper);margin-bottom:1.25rem}
-.part .label{font:600 .85rem var(--display);letter-spacing:.2em;text-transform:uppercase;color:var(--copper);margin:0}
-.part h2{font:italic 400 clamp(2.4rem,5.5vw,3.8rem)/1.08 var(--serif);margin:.6rem 0 1.1rem;letter-spacing:-.01em}
-.part p:last-child{color:var(--subtle);margin:0}
-.contents .part-row a{display:block;padding:1.1rem 0 .45rem;font:600 .8rem var(--display);letter-spacing:.16em;text-transform:uppercase;color:var(--copper)}
+/* Pull quotes in the feature chapters */
 .copy .pull{font:italic 500 clamp(1.45rem,2.5vw,1.85rem)/1.3 var(--serif);color:var(--ink);border-left:3px solid var(--copper);padding:.15rem 0 .15rem 1.25rem;margin:1.75rem 0 .5rem;max-width:22em}
 
 /* How Page words works */
@@ -273,7 +267,6 @@ footer a{color:var(--subtle);display:inline-block;padding:.6rem .25rem}
     <ol>
       <li><a href="#shelf"><span class="n">One.</span><span class="t">The shelf</span><span class="dots"></span><span class="d">library and downloads</span></a></li>
       <li><a href="#player"><span class="n">Two.</span><span class="t">The player</span><span class="dots"></span><span class="d">chapters, late nights</span></a></li>
-      <li class="part-row"><a href="#different">Part two · What Bookfin does differently</a></li>
       <li><a href="#history"><span class="n">Three.</span><span class="t">Shared history</span><span class="dots"></span><span class="d">listening and reading, one record</span></a></li>
       <li><a href="#reflow"><span class="n">Four.</span><span class="t">PDF reflow</span><span class="dots"></span><span class="d">any PDF, your size and colors</span></a></li>
       <li><a href="#reader"><span class="n">Five.</span><span class="t">The EPUB reader</span><span class="dots"></span><span class="d">its own engine</span></a></li>
@@ -321,12 +314,6 @@ footer a{color:var(--subtle);display:inline-block;padding:.6rem .25rem}
 </div>
 
 <div class="wrap">
-
-  <header class="part" id="different">
-    <p class="label">Part two</p>
-    <h2>What Bookfin does differently</h2>
-    <p>The shelf and the player are what you expect from a book app, done with care. The next four chapters are what you will not find in other Jellyfin apps.</p>
-  </header>
 
   <section class="chapter" id="history">
     <div class="copy">
