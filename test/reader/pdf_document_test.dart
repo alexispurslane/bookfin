@@ -27,6 +27,9 @@ const pdfSource = SourceFile(
   sizeBytes: 1000,
 );
 
+/// A two-page PDF of text.
+const simple = 'tool/research/readers/fixtures/simple.pdf';
+
 /// The SHA-256 of simple.pdf, as Downloads records it.
 const simpleDigest =
     '51d05de2a89dd83fb8f04301ac254419b2d616d48f6e8bb9fbe0938745bc04ce';
@@ -37,7 +40,7 @@ void main() {
   Pdfrx.cacheDirectoryPath = Directory.systemTemp.path;
   test('an extraction isolate cannot initialize a second native font-callback owner', () async {
     await expectLater(
-      Isolate.run(() async => PdfRuntime.instance.open(Uint8List(0), '')),
+      Isolate.run(() async => PdfRuntime.instance.open('', '')),
       throwsStateError,
     );
   });
@@ -202,9 +205,7 @@ void main() {
 
   test('an address inside an extracted page keeps the representation that '
       'saved places use', () async {
-    final bytes = await File('tool/research/readers/fixtures/simple.pdf')
-        .readAsBytes();
-    final book = await PdfRuntime.instance.open(bytes, simpleDigest);
+    final book = await PdfRuntime.instance.open(simple, simpleDigest);
     addTearDown(book.dispose);
     // Saved places inside a page compare this value, so a change here
     // would move every such place back to the start of its page.
@@ -218,8 +219,6 @@ void main() {
   test(
     'each page text is prepared in one worker hop that also names its digest',
     () async {
-      final bytes = await File('tool/research/readers/fixtures/simple.pdf')
-          .readAsBytes();
       final inputs = <Object?>[];
       final outputs = <Object?>[];
       Future<R> hop<M, R>(FutureOr<R> Function(M) work, M input) async {
@@ -230,7 +229,7 @@ void main() {
       }
 
       final book = await PdfRuntime.instance.open(
-        bytes,
+        simple,
         simpleDigest,
         hop: hop,
       );
@@ -295,11 +294,9 @@ void main() {
   test(
     'closing drains admitted page work and the shared engine can restart',
     () async {
-      final bytes = await File('tool/research/readers/fixtures/simple.pdf')
-          .readAsBytes();
       final books = await Future.wait([
-        PdfRuntime.instance.open(bytes, simpleDigest),
-        PdfRuntime.instance.open(bytes, simpleDigest),
+        PdfRuntime.instance.open(simple, simpleDigest),
+        PdfRuntime.instance.open(simple, simpleDigest),
       ]);
       final rendering = books.first.render(1, 360);
       final text = books.last.text(2);
@@ -309,7 +306,7 @@ void main() {
       await closing;
       await expectLater(books.first.render(1, 360), throwsStateError);
       PdfRuntime.instance.checkInvariants();
-      final reopened = await PdfRuntime.instance.open(bytes, simpleDigest);
+      final reopened = await PdfRuntime.instance.open(simple, simpleDigest);
       expect((await reopened.text(1)).text, contains('River chapter 1'));
       await reopened.dispose();
     },

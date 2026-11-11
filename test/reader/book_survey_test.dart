@@ -259,7 +259,7 @@ void main() {
 
     Future<PdfBook> margins() async {
       final book = await PdfRuntime.instance.open(
-        await File(marginsBook).readAsBytes(),
+        marginsBook,
         'e' * 64,
         hop: runInWorker,
       );
@@ -307,7 +307,7 @@ void main() {
     test('a reopen goes on where the survey stopped and analyzes no page '
         'twice', () async {
       final margins = await PdfRuntime.instance.open(
-        await File(marginsBook).readAsBytes(),
+        marginsBook,
         'e' * 64,
         hop: runInWorker,
       );

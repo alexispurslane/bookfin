@@ -29,7 +29,7 @@ void main() {
     final path = supply == null ? marginsBook : footnotePage;
     final book = (await tester.runAsync(
       () async => PdfRuntime.instance.open(
-        await File(path).readAsBytes(),
+        path,
         'e' * 64,
         textSupply: supply,
         hop: runInWorker,

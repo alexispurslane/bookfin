@@ -112,11 +112,7 @@ void main() {
   }
 
   Future<PdfBook> open(String path) async {
-    final book = await PdfRuntime.instance.open(
-      await File(path).readAsBytes(),
-      'd' * 64,
-      hop: hop,
-    );
+    final book = await PdfRuntime.instance.open(path, 'd' * 64, hop: hop);
     addTearDown(book.dispose);
     return book;
   }
@@ -382,7 +378,11 @@ void main() {
 
   test('rotated page coordinates never discard visible words as off-page '
       'printing labels', () async {
-    final pdf = await PdfRuntime.instance.open(rotatedTextPage(), 'd' * 64);
+    final folder = await Directory.systemTemp.createTemp('bookfin-rotated-');
+    addTearDown(() => folder.delete(recursive: true));
+    final file = await File('${folder.path}/rotated.pdf')
+        .writeAsBytes(rotatedTextPage());
+    final pdf = await PdfRuntime.instance.open(file.path, 'd' * 64);
     addTearDown(pdf.dispose);
     final text = await pdf.text(1);
     expect(text.status, PdfTextStatus.candidate);

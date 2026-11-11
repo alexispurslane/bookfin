@@ -155,12 +155,12 @@ void main() {
 
   setUpAll(() async {
     final book = await PdfRuntime.instance.open(
-      await File(marginsBook).readAsBytes(),
+      marginsBook,
       'e' * 64,
       hop: runInWorker,
     );
     final scan = await PdfRuntime.instance.open(
-      await File(ravenPage).readAsBytes(),
+      ravenPage,
       'f' * 64,
       textSupply: FixtureRecognition('scanned-page')..textArrives.complete(),
       hop: runInWorker,

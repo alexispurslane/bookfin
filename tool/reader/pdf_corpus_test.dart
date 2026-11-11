@@ -25,8 +25,8 @@ void main() {
     test(
       '${entry.$1} source page ${entry.$2} retains the reviewed text-quality boundary',
       () async {
-        final bytes = await File('.cache/reader-corpus/${entry.$1}')
-            .readAsBytes();
+        final path = '.cache/reader-corpus/${entry.$1}';
+        final bytes = await File(path).readAsBytes();
         final digest = sha256.convert(bytes).toString();
         expect(
           digest,
@@ -34,7 +34,7 @@ void main() {
             (sample) => sample['filename'] == entry.$1,
           )['sha256'],
         );
-        final document = await PdfRuntime.instance.open(bytes, digest);
+        final document = await PdfRuntime.instance.open(path, digest);
         addTearDown(document.dispose);
         final text = await document.text(entry.$2);
         expect(text.status, entry.$3);

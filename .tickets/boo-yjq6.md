@@ -47,3 +47,7 @@ Quick win 7 (the load returns before the record write ends): AdmittedBooks.load 
 **2026-11-11T21:34:09Z**
 
 Quick win 8 (images and fonts read from the record when a page draws them; Publication.revision 4): the record lists the text files first, so a reopen reads the header and the text block, and Publication.bytesOf reads an image or a font from its byte range while the record still begins with its key line. Host bench (admission_benchmark_test), cached open, median of 7, before -> after: prose 1.9 -> 1.9 ms, long 3.1 -> 2.3, illustrated 11.3 -> 2.9, divine 29.1 -> 7.0, MOBI 2.5 -> 1.6. Found and fixed a race from quick win 7: the record write ran outside the download's read, so a removal during it could fail or leave the record behind. The session now gets the book at once but keeps the download lent until the record is written (ReaderSession.derivedWrites), and the outline measure waits for it. Page map writes still run outside a read, as before.
+
+**2026-11-11T21:54:11Z**
+
+Quick win 10 (no PDF bytes in the UI isolate): PdfRuntime.open takes the file's path and opens it with PdfDocument.openFile, so PDFium reads the file itself. Host bench (test/reader/pdf_open_benchmark_test.dart, new), median of 7, open / open with the render of page 100 at 1080 pixels: Raven (24 pages) 33.9 / 43.8 -> 14.3 / 24.3 ms, Origin of Species (568 pages) 495.4 / 614.3 -> 206.0 / 322.8 ms. Host load fell from 16 to 9 between the runs. Done before quick win 9, whose tests open files by path.

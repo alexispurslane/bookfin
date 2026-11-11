@@ -85,7 +85,7 @@ class _ProbeState extends State<_Probe> {
       final file = await File('${directory.path}/$name').writeAsBytes(bytes);
       final supply = BundledEnglishText();
       final book = await PdfRuntime.instance.open(
-        bytes,
+        file.path,
         digest,
         textSupply: supply,
       );

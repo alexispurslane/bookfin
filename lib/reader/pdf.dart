@@ -736,20 +736,19 @@ class PdfRuntime {
     return operation;
   }
 
-  /// Opens the PDF [bytes], whose SHA-256 is [digest]. Downloads computed
-  /// the digest when the download completed, so the open does not hash the
-  /// file again. Each page text is prepared through [hop].
+  /// Opens the PDF file at [path], whose SHA-256 is [digest]. Downloads
+  /// computed the digest when the download completed, so the open does not
+  /// hash the file again. PDFium reads the file itself, so its bytes never
+  /// come into this isolate (boo-yjq6). Each page text is prepared through
+  /// [hop].
   Future<PdfBook> open(
-    Uint8List bytes,
+    String path,
     String digest, {
     PdfTextSupply? textSupply,
     IsolateHop hop = compute,
   }) => _admit(() async {
     await (_initialization ??= pdfrxFlutterInitialize());
-    final document = await native.PdfDocument.openData(
-      bytes,
-      sourceName: digest,
-    );
+    final document = await native.PdfDocument.openFile(path);
     if (document.isEncrypted || document.pages.isEmpty) {
       await document.dispose();
       throw const FormatException(

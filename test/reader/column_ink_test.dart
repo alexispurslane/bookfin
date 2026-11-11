@@ -152,7 +152,7 @@ void main() {
     ]) {
       supply?.textArrives.complete();
       final book = await PdfRuntime.instance.open(
-        await File(path).readAsBytes(),
+        path,
         'i' * 64,
         textSupply: supply,
         hop: runInWorker,
