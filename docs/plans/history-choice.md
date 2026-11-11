@@ -260,3 +260,10 @@ The questions below let the user take a different side on each point. Two hybrid
 | 3 | A new ticket after the decision | Build the chosen design in `HistoryTimeline` and `openHistory` | The user's answers above |
 
 Tickets 1 and 2 survive both designs, so they ship first. The alignment of the choice line waits for the decision, because design B replaces that line.
+
+## Decision (user, 2026-11-11)
+
+The user chose design B: each entry is a move with two ends. A closed row
+shows the after place behind "→". An open move shows two tiles of equal
+size, Before on the left and After on the right, in the order that they
+happened. Tickets tc-p3j8 and tc-butt ship with it.
