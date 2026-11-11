@@ -123,9 +123,7 @@ void main() {
     final before = pageOf(chapterTwo);
     expect(before, greaterThan(1));
     expect(inTimeline(find.text('→ p. $before')), findsOneWidget);
-    await tester.tap(
-      inTimeline(find.text('From search', findRichText: true)),
-    );
+    await tester.tap(inTimeline(find.text('From search', findRichText: true)));
     await tester.pumpAndSettle();
     expect(
       inTimeline(find.textContaining('Two', findRichText: true)),
@@ -244,9 +242,7 @@ void main() {
     await tester.pumpAndSettle();
     Finder inTimeline(Finder finder) =>
         find.descendant(of: find.byType(HistoryTimeline), matching: finder);
-    await tester.tap(
-      inTimeline(find.text('Ahead 30 s', findRichText: true)),
-    );
+    await tester.tap(inTimeline(find.text('Ahead 30 s', findRichText: true)));
     await tester.pumpAndSettle();
     final after = find
         .ancestor(

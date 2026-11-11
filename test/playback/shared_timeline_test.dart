@@ -501,14 +501,8 @@ void main() {
         ActionEntry(seek(134, 133)),
       ]);
 
-      expect(
-        find.text('Ahead 12 pages', findRichText: true),
-        findsOneWidget,
-      );
-      expect(
-        find.text('Back 1 page', findRichText: true),
-        findsOneWidget,
-      );
+      expect(find.text('Ahead 12 pages', findRichText: true), findsOneWidget);
+      expect(find.text('Back 1 page', findRichText: true), findsOneWidget);
     });
 
     testWidgets('before its page numbers are known, a reading move says only '

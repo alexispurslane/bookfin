@@ -940,14 +940,16 @@ class _HistoryTimelineState extends State<HistoryTimeline> {
           spoken: 'Went to ${about}where you read in the ebook',
         ),
       },
+      // Every bookmark jump shows the same short label, so that it fits a
+      // narrow phone. The tiles and the spoken words name the edition.
       HistoryAction.bookmarkRestore => switch (other) {
         null => (shown: 'From bookmark', spoken: 'Went to a bookmark'),
         AudioPosition() => (
-          shown: 'From audiobook bookmark',
+          shown: 'From bookmark',
           spoken: 'Went to ${about}a bookmark in the audiobook',
         ),
         TextPosition() => (
-          shown: 'From ebook bookmark',
+          shown: 'From bookmark',
           spoken: 'Went to ${about}a bookmark in the ebook',
         ),
       },

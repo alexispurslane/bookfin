@@ -437,11 +437,7 @@ void main() {
       tester,
     ) async {
       await showTimeline(tester);
-      await tester.fling(
-        find.text('Ahead 30 s'),
-        const Offset(-400, 0),
-        1000,
-      );
+      await tester.fling(find.text('Ahead 30 s'), const Offset(-400, 0), 1000);
       await tester.pumpAndSettle();
       expect(reports, hasLength(1));
       final (kind, entry) = reports.single as (String, ActionEntry);
@@ -512,12 +508,7 @@ void main() {
       ),
     );
 
-    for (final label in [
-      'From link',
-      'From search',
-      'Opened',
-      'Closed',
-    ]) {
+    for (final label in ['From link', 'From search', 'Opened', 'Closed']) {
       expect(find.text(label, findRichText: true), findsOneWidget);
     }
   });

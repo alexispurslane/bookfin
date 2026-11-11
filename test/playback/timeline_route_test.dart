@@ -499,10 +499,7 @@ void main() {
           ),
         ),
       ]);
-      expect(
-        find.text('Ahead 1 m 31 s', findRichText: true),
-        findsOneWidget,
-      );
+      expect(find.text('Ahead 1 m 31 s', findRichText: true), findsOneWidget);
     });
 
     testWidgets('a move of an hour or more names hours, minutes and seconds', (
@@ -535,10 +532,7 @@ void main() {
           ),
         ),
       ]);
-      expect(
-        find.text('From Pixel 8', findRichText: true),
-        findsOneWidget,
-      );
+      expect(find.text('From Pixel 8', findRichText: true), findsOneWidget);
     });
 
     testWidgets('a reading open names the device whose place it took', (
@@ -555,10 +549,7 @@ void main() {
           ),
         ),
       ]);
-      expect(
-        find.text('From Tablet', findRichText: true),
-        findsOneWidget,
-      );
+      expect(find.text('From Tablet', findRichText: true), findsOneWidget);
     });
 
     testWidgets('an open without a device reads Opened', (tester) async {

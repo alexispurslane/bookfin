@@ -268,33 +268,42 @@ void main() {
         listening(1000),
         reading(1),
         'From audiobook',
+        'Went to about where you listened in the audiobook',
       ),
       (
         HistoryAction.bookmarkRestore,
         listening(1000),
         reading(1),
-        'From audiobook bookmark',
+        'From bookmark',
+        'Went to about a bookmark in the audiobook',
       ),
       (
         HistoryAction.historyRestore,
         reading(1),
         listening(1000),
         'From ebook',
+        'Went to about where you read in the ebook',
       ),
       (
         HistoryAction.bookmarkRestore,
         reading(1),
         listening(1000),
-        'From ebook bookmark',
+        'From bookmark',
+        'Went to about a bookmark in the ebook',
       ),
     ];
-    for (final (kind, other, own, label) in cases) {
-      testWidgets(label, (tester) async {
+    // A bookmark jump shows only "From bookmark", so that it fits a narrow
+    // phone. Its spoken words still name the other edition.
+    for (final (kind, other, own, label, spoken) in cases) {
+      testWidgets('$label, spoken as "$spoken"', (tester) async {
+        final semantics = tester.ensureSemantics();
         await show(tester, [
           ActionEntry(move('mapped', kind, own, own, counterpartOf: other)),
         ]);
 
         expect(find.text(label, findRichText: true), findsOneWidget);
+        expect(find.bySemanticsLabel(RegExp(spoken)), findsOneWidget);
+        semantics.dispose();
       });
     }
   });
