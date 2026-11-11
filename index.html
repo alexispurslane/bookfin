@@ -443,7 +443,7 @@ footer a{color:var(--subtle);display:inline-block;padding:.6rem .25rem}
     </div>
     <div class="epub-comparison" id="epub">
       <h3>How fast is it?</h3>
-      <p>We timed Bookfin against two established engines: epub.js inside Android’s WebView, and the engine of KOReader. Each ran in a small release test app on the same Android 16 emulator, with the same three books.</p>
+      <p>We timed Bookfin against two established engines: epub.js inside Android’s WebView, and the engine of KOReader. Each ran in a small release test app on the same Android 16 emulator, with the same three books, and the emulator drew with the Mac’s GPU.</p>
       <p id="epub-timing-key">Times are in milliseconds, averaged so that each book counts equally. Lower is faster.</p>
       <p class="table-help" id="epub-table-help">On a small screen, scroll the table sideways. With a keyboard, focus it and use the arrow keys.</p>
       <div class="table-scroll" role="region" tabindex="0" aria-labelledby="epub-average-caption" aria-describedby="epub-table-help epub-timing-key">
@@ -453,15 +453,15 @@ footer a{color:var(--subtle);display:inline-block;padding:.6rem .25rem}
             <tr><th scope="col">Reading action</th><th scope="col">Bookfin</th><th scope="col">WebView + epub.js</th><th scope="col">KOReader engine</th></tr>
           </thead>
           <tbody>
-            <tr data-operation="fresh_open"><th scope="row">Fresh open</th><td data-engine="bookfin">611.8</td><td data-engine="webview">600.8</td><td data-engine="koreader">263.7</td></tr>
-            <tr data-operation="cached_reopen"><th scope="row">Cached reopen</th><td data-engine="bookfin">116.6</td><td data-engine="webview">331.3</td><td data-engine="koreader">67.2</td></tr>
-            <tr data-operation="page_turn"><th scope="row">Page turn</th><td data-engine="bookfin">60.9</td><td data-engine="webview">68.8</td><td data-engine="koreader">62.8</td></tr>
-            <tr data-operation="chapter_crossing"><th scope="row">Chapter turn (visited)</th><td data-engine="bookfin">59.4</td><td data-engine="webview">87.8</td><td data-engine="koreader">63.0</td></tr>
-            <tr data-operation="font_change"><th scope="row">Text size 18 → 20</th><td data-engine="bookfin">115.0</td><td data-engine="webview">70.5</td><td data-engine="koreader">114.2</td></tr>
+            <tr data-operation="fresh_open"><th scope="row">Fresh open</th><td data-engine="bookfin">370.3</td><td data-engine="webview">359.7</td><td data-engine="koreader">117.9</td></tr>
+            <tr data-operation="cached_reopen"><th scope="row">Cached reopen</th><td data-engine="bookfin">46.9</td><td data-engine="webview">284.9</td><td data-engine="koreader">17.1</td></tr>
+            <tr data-operation="page_turn"><th scope="row">Page turn</th><td data-engine="bookfin">7.8</td><td data-engine="webview">51.9</td><td data-engine="koreader">2.3</td></tr>
+            <tr data-operation="chapter_crossing"><th scope="row">Chapter turn (visited)</th><td data-engine="bookfin">4.5</td><td data-engine="webview">47.1</td><td data-engine="koreader">3.0</td></tr>
+            <tr data-operation="font_change"><th scope="row">Text size 18 → 20</th><td data-engine="bookfin">40.6</td><td data-engine="webview">64.7</td><td data-engine="koreader">68.9</td></tr>
           </tbody>
         </table>
       </div>
-      <p class="epub-evidence">Each time ends when a screenshot shows the right page, so it includes drawing and capture. The engines split their layout work differently between opening a book and turning its pages. These are emulator results, not phone timings. <a href="docs/marketing/epub-renderer/README.md#completed-same-emulator-measurements">Books, averaging, and test details</a>.</p>
+      <p class="epub-evidence">Each time runs from the request until the engine has drawn the page: on the GPU for Bookfin and WebView, and on the CPU for KOReader, which always draws that way. The idle wait for the screen’s next refresh is left out, because KOReader has no such wait. These are emulator results, not phone timings. <a href="docs/marketing/epub-renderer/README.md#rerun-timed-through-each-engines-drawing">Books, method, and remaining differences</a>.</p>
     </div>
   </section>
 

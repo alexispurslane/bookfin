@@ -1,6 +1,6 @@
 ---
 id: boo-pc6x
-status: in_progress
+status: closed
 deps: []
 links: [t2-er9m]
 created: 2026-11-11T13:47:11Z
@@ -71,3 +71,7 @@ sym-drawn4 job 16 (round-01-prose-webview) failed the device check preparation_n
 **2026-11-11T19:09:57Z**
 
 Headline run sym-drawn4: 108 jobs, 1,404 accepted samples per interval, every accepted job under load 8 (highest 7.86). Four jobs measured again for load, one after the clock-order device check. Drawn means Bookfin/WebView/KOReader: fresh open 370.3/359.7/117.9, cached reopen 46.9/284.9/17.1, page turn 7.8/51.9/2.3, chapter turn 4.5/47.1/3.0, size change 40.6/64.7/68.9 ms. 284 of 468 WebView samples ended preparation inside a running frame; 373 of 468 answered after a later vsync (upper bound of the kept idle gap: median 11.9, p90 14.8 ms). exact-rounding-check: 1,400 values, 0 mismatches. README and method doc rewritten; sym-drawn3 superseded.
+
+**2026-11-11T19:13:59Z**
+
+Merged sym-drawn4 (507c191f). Homepage table now shows the drawn-page means on the host GPU, with the frame wait left out. Last four commits after the review were not re-reviewed.

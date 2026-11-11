@@ -1,6 +1,6 @@
 ---
 id: boo-5ayp
-status: open
+status: closed
 deps: [boo-z3is]
 links: []
 created: 2026-11-11T15:11:08Z

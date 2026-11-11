@@ -1,6 +1,6 @@
 ---
 id: t9-k6kd
-status: in_progress
+status: closed
 deps: [t9-4ey6]
 links: []
 created: 2026-11-11T15:44:45Z
