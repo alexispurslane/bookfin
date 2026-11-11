@@ -51,3 +51,7 @@ Quick win 8 (images and fonts read from the record when a page draws them; Publi
 **2026-11-11T21:54:11Z**
 
 Quick win 10 (no PDF bytes in the UI isolate): PdfRuntime.open takes the file's path and opens it with PdfDocument.openFile, so PDFium reads the file itself. Host bench (test/reader/pdf_open_benchmark_test.dart, new), median of 7, open / open with the render of page 100 at 1080 pixels: Raven (24 pages) 33.9 / 43.8 -> 14.3 / 24.3 ms, Origin of Species (568 pages) 495.4 / 614.3 -> 206.0 / 322.8 ms. Host load fell from 16 to 9 between the runs. Done before quick win 9, whose tests open files by path.
+
+**2026-11-11T22:25:09Z**
+
+Quick win 9 (progressive PDF open): openFile(useProgressiveLoading: true) measures only page 1, and the book measures each other page at its first use (_NativePdfBook._page, pdfrx reloadPages), before its text or render. Nothing measures all pages in the background: the book map and the scrub bar count pages and read no sizes. Host bench, median of 7, both at load 5, open / open with the render of page 100 at 1080 pixels: Raven 13.7 / 23.5 -> 1.6 / 14.8 ms, Origin of Species (568 pages) 202.1 / 318.6 -> 1.7 / 117.3 ms. Three tests prove that a page that the open did not measure draws at its own size and gives its own text.

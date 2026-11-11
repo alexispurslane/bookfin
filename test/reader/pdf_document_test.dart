@@ -311,4 +311,92 @@ void main() {
       await reopened.dispose();
     },
   );
+
+  group('a page that the open did not measure (boo-yjq6)', () {
+    /// A PDF file of pages with the [sizes] in points and the [texts], one
+    /// each, written by hand.
+    Future<String> pdfOf(List<(int, int)> sizes, List<String> texts) async {
+      final folder = await Directory.systemTemp.createTemp('bookfin-pdf-');
+      addTearDown(() => folder.delete(recursive: true));
+      final count = sizes.length;
+      final objects = <String>[
+        '<< /Type /Catalog /Pages 2 0 R >>',
+        '<< /Type /Pages /Count $count /Kids '
+            '[${[for (var page = 0; page < count; page++) '${4 + page * 2} 0 R'].join(' ')}] >>',
+        '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>',
+        for (final (page, (width, height)) in sizes.indexed) ...[
+          '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 $width $height] '
+              '/Resources << /Font << /F1 3 0 R >> >> '
+              '/Contents ${5 + page * 2} 0 R >>',
+          () {
+            final drawing =
+                'BT /F1 12 Tf 20 ${height - 40} Td '
+                '(${texts[page]}) Tj ET';
+            return '<< /Length ${drawing.length} >>\nstream\n$drawing\nendstream';
+          }(),
+        ],
+      ];
+      final output = StringBuffer('%PDF-1.4\n');
+      final offsets = <int>[];
+      for (final (index, object) in objects.indexed) {
+        offsets.add(output.length);
+        output.write('${index + 1} 0 obj\n$object\nendobj\n');
+      }
+      final xref = output.length;
+      output.write('xref\n0 ${objects.length + 1}\n0000000000 65535 f \n');
+      for (final offset in offsets) {
+        output.write('${offset.toString().padLeft(10, '0')} 00000 n \n');
+      }
+      output.write(
+        'trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\n'
+        'startxref\n$xref\n%%EOF\n',
+      );
+      final file = File('${folder.path}/book.pdf');
+      await file.writeAsString(output.toString());
+      return file.path;
+    }
+
+    test('draws at its own size, not at the size of the first page', () async {
+      final path = await pdfOf(
+        [(400, 600), (600, 300), (400, 600)],
+        ['First page', 'A wide plate', 'Last page'],
+      );
+      final book = await PdfRuntime.instance.open(path, 'a' * 64);
+      addTearDown(book.dispose);
+
+      final wide = await book.render(2, 600);
+
+      expect((wide.width, wide.height), (600, 300));
+    });
+
+    test('keeps its own size when other pages are measured at the same '
+        'time', () async {
+      final path = await pdfOf(
+        [(400, 600), (600, 300), (300, 600)],
+        ['First page', 'A wide plate', 'A tall plate'],
+      );
+      final book = await PdfRuntime.instance.open(path, 'a' * 64);
+      addTearDown(book.dispose);
+
+      final [wide, tall] = await Future.wait([
+        book.render(2, 600),
+        book.render(3, 300),
+      ]);
+
+      expect((wide.width, wide.height), (600, 300));
+      expect((tall.width, tall.height), (300, 600));
+    });
+
+    test('gives its own text, and the book counts every page', () async {
+      final path = await pdfOf(
+        [(400, 600), (600, 300), (400, 600)],
+        ['First page', 'A wide plate', 'Last page'],
+      );
+      final book = await PdfRuntime.instance.open(path, 'a' * 64);
+      addTearDown(book.dispose);
+
+      expect(book.pageCount, 3);
+      expect((await book.text(3)).text, 'Last page');
+    });
+  });
 }
