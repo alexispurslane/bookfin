@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'package:bookfin/catalog/model.dart';
 import 'package:bookfin/crossings/alignment.dart';
 import 'package:bookfin/crossings/crossings.dart';
+import 'package:bookfin/foundation/derived_store.dart';
 import 'package:bookfin/reader/text_outline.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -102,7 +103,7 @@ AudioPosition listening(SourceFile file, int milliseconds) => AudioPosition(
 );
 
 /// Kept outlines in memory, by key.
-class MemoryOutlines implements OutlineStore {
+class MemoryOutlines implements DerivedStore {
   final values = <String, String>{};
   @override
   Future<String?> read(String key) async => values[key];

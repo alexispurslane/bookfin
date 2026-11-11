@@ -19,7 +19,7 @@ import 'catalog/screen.dart';
 import 'catalog/model.dart' show Book;
 import 'catalog/store.dart';
 import 'crossings/crossings.dart';
-import 'crossings/outlines.dart';
+import 'foundation/derived_store.dart';
 import 'foundation/listenable_selector.dart';
 import 'downloads/downloads.dart';
 import 'downloads/platform.dart';
@@ -95,7 +95,7 @@ Future<void> runBookfin({bool gallery = false}) async {
   final crossings = downloads == null
       ? null
       : Crossings(
-          store: createOutlineStore(),
+          store: createDerivedStore('bookfin-outlines'),
           measure: (text) async => switch (text.files) {
             [final file] => await downloads.readLocalFile(
               file,

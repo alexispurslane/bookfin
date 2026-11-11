@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 
 import '../catalog/model.dart';
+import '../foundation/derived_store.dart';
 import '../foundation/hop.dart';
 import '../playback/audio_outline.dart';
 import '../playback/records.dart' show MatchedBy;
@@ -12,18 +13,6 @@ import '../reader/text_outline.dart';
 import 'alignment.dart';
 
 export '../playback/records.dart' show MatchedBy;
-
-/// Where [Crossings] keeps the text outlines that it measured, between
-/// launches. The outlines are derived data: a lost or unreadable one costs
-/// only a new measurement, while the ebook is downloaded.
-abstract class OutlineStore {
-  /// The kept value of [key], or null when none is kept.
-  Future<String?> read(String key);
-
-  /// Keeps [value] for [key], replacing any older value. A crash during the
-  /// write leaves the old value or the new one, never a broken one.
-  Future<void> write(String key, String value);
-}
 
 /// Where a place of one edition lands in the edition of the other medium
 /// of the same book: a [Landing], or [NoLanding] with the reason why none
@@ -100,7 +89,7 @@ final class NoLanding extends Crossing {
 /// reads files and catalog editions, and writes no personal record: only
 /// the owner of the open edition moves its own place to a landing.
 ///
-/// A text outline comes from memory, else from [OutlineStore], else from a
+/// A text outline comes from memory, else from its [DerivedStore], else from a
 /// measurement of the downloaded ebook in a worker isolate, which is then
 /// kept. Each outline is keyed by its edition and the revision of its file,
 /// so a changed ebook is measured again, and a removed download keeps its
@@ -132,7 +121,7 @@ class Crossings {
     _downloads?.addListener(_retryMissing);
   }
 
-  final OutlineStore _store;
+  final DerivedStore _store;
   final Future<TextOutline?> Function(Edition text) _measure;
   final Listenable? _downloads;
   final IsolateHop _hop;
