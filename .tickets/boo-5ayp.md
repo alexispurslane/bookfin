@@ -19,3 +19,7 @@ After the cross-edition Go to ships, add 'read and listen together, like a Kindl
 **2026-11-11T18:18:12Z**
 
 User asked (2026-11-11) to put the cross-edition reader screenshots in the homepage's history section. Waiting for the retaken captures after the lane narrowing, then the feature's full check on main.
+
+**2026-11-11T18:59:51Z**
+
+Homepage history chapter rewritten around cross-edition Go to with six captures in docs/marketing/read-together (The Time Machine, host widget captures from fb1ec8f0).

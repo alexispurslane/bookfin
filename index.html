@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Bookfin · Audiobooks and ebooks from your Jellyfin server</title>
-<meta name="description" content="Bookfin is an Android app for the audiobooks and ebooks on your Jellyfin server. One history for listening and reading, PDFs and scans rewrapped at your size and in your colors, and offline books that never lose your place.">
+<meta name="description" content="Bookfin is an Android app for the audiobooks and ebooks on your Jellyfin server. Listen and read the same book together, PDFs and scans rewrapped at your size and in your colors, and offline books that never lose your place.">
 <meta name="color-scheme" content="light dark">
 <style>
 @font-face{font-family:"Outfit";font-weight:400 800;font-display:swap;src:url(docs/mockups/fonts/outfit-latin.woff2) format("woff2")}
@@ -267,7 +267,7 @@ footer a{color:var(--subtle);display:inline-block;padding:.6rem .25rem}
     <ol>
       <li><a href="#shelf"><span class="n">One.</span><span class="t">The shelf</span><span class="dots"></span><span class="d">library and downloads</span></a></li>
       <li><a href="#player"><span class="n">Two.</span><span class="t">The player</span><span class="dots"></span><span class="d">chapters, late nights</span></a></li>
-      <li><a href="#history"><span class="n">Three.</span><span class="t">Shared history</span><span class="dots"></span><span class="d">listening and reading, one record</span></a></li>
+      <li><a href="#history"><span class="n">Three.</span><span class="t">Shared history</span><span class="dots"></span><span class="d">listen and read together</span></a></li>
       <li><a href="#reflow"><span class="n">Four.</span><span class="t">PDF reflow</span><span class="dots"></span><span class="d">any PDF, your size and colors</span></a></li>
       <li><a href="#reader"><span class="n">Five.</span><span class="t">The EPUB reader</span><span class="dots"></span><span class="d">its own engine</span></a></li>
       <li><a href="#sync"><span class="n">Six.</span><span class="t">Every device</span><span class="dots"></span><span class="d">sync on your server</span></a></li>
@@ -315,23 +315,48 @@ footer a{color:var(--subtle);display:inline-block;padding:.6rem .25rem}
 
 <div class="wrap">
 
-  <section class="chapter" id="history">
-    <div class="copy">
-      <h2><span>Three.</span> Shared history</h2>
-      <p class="stand">One record for listening and reading.</p>
-      <p>Bookfin keeps a book’s audiobook and its ebook under one cover, so they share one History. Your jumps and bookmarks go into it, from listening and from reading alike.</p>
-      <p>Skipped too far, or followed a footnote? Open History from the player, the reader, or the book page, and go back.</p>
-      <p class="pull">Every place you have been, and every way back.</p>
-      <ul>
-        <li>Choose Go to on any entry to open the audiobook or the ebook at that place.</li>
-        <li>Undo a jump, or return to where it began, without erasing later history.</li>
-        <li>Name bookmarks in either edition. Your history stays until you delete it.</li>
-      </ul>
+  <section class="chapter full reflow" id="history" aria-labelledby="history-h">
+    <div class="reflow-intro">
+      <div class="copy">
+        <h2 id="history-h"><span>Three.</span> Shared history</h2>
+        <p class="stand">Listen and read the same book, and never lose your place in either.</p>
+        <p>Bookfin keeps a book’s audiobook and its ebook under one cover. Each edition keeps its own track of history, with its own icon, and History shows both side by side.</p>
+        <p>The two editions also work together, as on a Kindle. Listened to a chapter on the bus? In the reader, open History and choose Go to on that listening entry. Bookfin matches the two editions’ chapters and opens the ebook at the same point in the chapter. A reading entry does the same in the player.</p>
+        <p class="pull">Every place you have been, and every way back.</p>
+      </div>
+      <div class="copy">
+        <ul>
+          <li>Each move shows where it began and where it went. Tap either end to go there.</li>
+          <li>A jump from the other edition says “about”, because a narrator’s pace is never perfectly even.</li>
+          <li>A jump moves only the edition that you have open, with Undo. Your place in the other edition stays where it was.</li>
+          <li>Name bookmarks in either edition. Swipe an entry away to delete it. Nothing else removes your history.</li>
+        </ul>
+      </div>
     </div>
-    <figure class="capture history-capture">
-      <img src="docs/marketing/shared-history/shared-history.webp" width="822" height="1680" loading="lazy" alt="Shared History over the player, with audio and reading entries and Go back, Go to and Delete controls">
-      <figcaption class="capture-note">Bookfin with demonstration records. <a href="docs/marketing/shared-history/README.md">Capture notes</a>.</figcaption>
-    </figure>
+    <div class="capture-grid three">
+      <figure class="capture">
+        <figcaption>A listening move, in the reader<small>Each end names its page in this ebook.</small></figcaption>
+        <picture>
+          <source media="(prefers-color-scheme:dark)" srcset="docs/marketing/read-together/landing-night.webp" width="822" height="1827">
+          <img src="docs/marketing/read-together/landing-cream.webp" width="822" height="1827" loading="lazy" alt="History over the reader. The open entry, Ahead 30 s, is a listening move. Its Before and After tiles read about page 48 and about page 49, in chapter IV of the ebook.">
+        </picture>
+      </figure>
+      <figure class="capture">
+        <figcaption>After Go to<small>The ebook opens there, with Undo.</small></figcaption>
+        <picture>
+          <source media="(prefers-color-scheme:dark)" srcset="docs/marketing/read-together/after-go-to-night.webp" width="822" height="1827">
+          <img src="docs/marketing/read-together/after-go-to-cream.webp" width="822" height="1827" loading="lazy" alt="The Time Machine at chapter IV, page 49 of 187, with the note Your previous place is saved and an Undo button.">
+        </picture>
+      </figure>
+      <figure class="capture">
+        <figcaption>On the reading track<small>The jump is a reading move of its own.</small></figcaption>
+        <picture>
+          <source media="(prefers-color-scheme:dark)" srcset="docs/marketing/read-together/mapped-move-night.webp" width="822" height="1827">
+          <img src="docs/marketing/read-together/mapped-move-cream.webp" width="822" height="1827" loading="lazy" alt="History in the reader with a new reading entry, From audiobook, whose Before tile is page 4 and After tile is page 49, above the listening entries.">
+        </picture>
+      </figure>
+    </div>
+    <p class="capture-note"><cite>The Time Machine</cite>, from Standard Ebooks, with demonstration history. <a href="docs/marketing/read-together/README.md">Capture notes</a>.</p>
   </section>
 
   <section class="chapter full reflow" id="reflow" aria-labelledby="reflow-h">
