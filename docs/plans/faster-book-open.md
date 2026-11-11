@@ -381,3 +381,15 @@ To measure again on a device that no one else uses:
 5. Serve the books and `plan.json` on port 8794 from one directory, and run `adb -s <device> reverse tcp:8794 tcp:8794`.
 6. Run `tool/research/open_trace/matrix.sh`. It launches the driver once per launch through T3's `agent-device` and keeps each launch's logcat.
 7. Make the tables with `python3 tool/research/open_trace/table.py prose long illustrated divine wealth`.
+
+## Decision (user and orchestrator, 2026-11-11)
+
+1. The quick wins come first, because both designs keep them.
+2. Identity changes once to a hash of the policy, the revision and the file
+   digest. The orchestrator settled this: every saved place still opens,
+   and each book lays out its page map once more.
+3. The user chose design A: admission runs at the end of each download, and
+   a reopen first shows the kept picture of the last page.
+4. The user chose to open a book whose later chapter file is damaged or
+   missing. That chapter shows a short note instead of its text. Ticket
+   t5-gk30 covers the three such EPUBs in the user's library.
