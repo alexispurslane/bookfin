@@ -258,6 +258,24 @@ void main() {
       );
     });
 
+    test('when the contents entries of matching chapters start at one '
+        'place, so their spans do not move forward', () {
+      final audio = recording([
+        ('Chapter 1', 0),
+        ('Chapter 2', 60000),
+        ('Chapter 3', 120000),
+        ('Chapter 4', 180000),
+      ], 240000);
+      final text = ebook([
+        ('Chapter 1', 0, 0),
+        ('Chapter 2', 0, 0),
+        ('Chapter 3', 0, 0),
+        ('Chapter 4', 0, 1800),
+      ], 2400);
+
+      expect(alignEditions(audio, text), isA<UnmatchedChapters>());
+    });
+
     test('when the matched chapters cover less than half of the '
         'recording', () {
       // Only chapters 1 to 3 pair. Chapters 4 to 9 have no counterpart.

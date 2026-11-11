@@ -6,7 +6,7 @@ import 'package:flutter/foundation.dart';
 import '../catalog/model.dart';
 import '../foundation/hop.dart';
 import '../playback/audio_outline.dart';
-import '../playback/records.dart' show MatchedBy, editionSources;
+import '../playback/records.dart' show MatchedBy;
 import '../reader/document.dart';
 import '../reader/text_outline.dart';
 import 'alignment.dart';
@@ -90,21 +90,24 @@ final class NoLanding extends Crossing {
 /// kept. Each outline is keyed by its edition and the revision of its file,
 /// so a changed ebook is measured again, and a removed download keeps its
 /// outline. The alignment of a pair runs once, in one hop to another
-/// isolate.
+/// isolate. Work in flight is shared: two requests of one outline measure
+/// it once, and two requests of one pair align it once. A pair whose ebook
+/// this phone could not measure is tried again when downloads change. Work
+/// that fails is not kept, so a later request tries again.
 ///
 /// Invariants, which [checkInvariants] checks:
-/// - Each kept outline is kept under the key of the edition revision that
-///   it was measured from.
-/// - Each kept alignment was derived from the kept outline of its pair.
-/// - Each alignment of matched chapters keeps its own invariants: anchors
-///   increase strictly, and every span reads in the rate band.
+/// - Each finished pair is the result of the pair's current work.
+/// - Each alignment of matched chapters comes from the outline that is
+///   kept for its ebook, and keeps its own invariants: anchors increase
+///   strictly, and every span reads in the rate band.
 class Crossings {
   /// [measure] measures the text outline of a downloaded ebook edition, or
   /// gives null when this phone has no download of it. It throws an
   /// [UnsupportedError] when Bookfin cannot measure the outline of the
-  /// ebook's format yet. [downloads] notifies
-  /// when downloads change, so that an ebook that was not downloaded is
-  /// tried again. [hop] runs the alignment in another isolate.
+  /// ebook's format yet, and an [Exception] when it cannot read the file.
+  /// [downloads] notifies when downloads change, so that an ebook that was
+  /// not measured is tried again. [hop] runs the alignment in another
+  /// isolate.
   Crossings({
     required this._store,
     required this._measure,
@@ -124,8 +127,11 @@ class Crossings {
   /// measured again.
   static const outlineVersion = 1;
 
-  /// The text outlines measured or read so far, by outline key.
+  /// The text outlines read or measured so far, by outline key.
   final _outlines = <String, TextOutline>{};
+
+  /// The outline work in flight, by outline key.
+  final _outlineWork = <String, Future<TextOutline?>>{};
 
   /// The work in flight or done for each pair, by pair key.
   final _pairs = <String, Future<_Pair>>{};
@@ -147,7 +153,8 @@ class Crossings {
     required Edition from,
     required Edition into,
   }) async {
-    _guard(place, from, into);
+    _guard(from, into);
+    _guardPlace(place, from);
     return _land(place, from, into, await _pair(from, into));
   }
 
@@ -159,18 +166,31 @@ class Crossings {
     required Edition from,
     required Edition into,
   }) {
-    _guard(place, from, into);
-    final key = _pairKey(from, into);
-    if (_done[key] case final pair?) return _land(place, from, into, pair);
+    _guard(from, into);
+    _guardPlace(place, from);
+    if (_done[_pairKey(from, into)] case final pair?) {
+      return _land(place, from, into, pair);
+    }
     unawaited(_pair(from, into));
     return null;
   }
 
-  void _guard(Place place, Edition from, Edition into) {
-    if (place.editionId != from.id || from.kind == into.kind) {
-      throw ArgumentError(
-        'Give a place of [from] and an edition of the other medium.',
-      );
+  /// Starts the alignment of [from] and [into], two editions of the two
+  /// media, in the background, so that [landingNow] can soon answer.
+  void prepare({required Edition from, required Edition into}) {
+    _guard(from, into);
+    unawaited(_pair(from, into));
+  }
+
+  static void _guard(Edition from, Edition into) {
+    if (from.kind == into.kind) {
+      throw ArgumentError('Give two editions of the two media.');
+    }
+  }
+
+  static void _guardPlace(Place place, Edition from) {
+    if (place.editionId != from.id) {
+      throw ArgumentError('Give a place of [from].');
     }
   }
 
@@ -183,48 +203,66 @@ class Crossings {
     if (_pairs[key] case final work?) return work;
     late final Future<_Pair> work;
     work = () async {
-      TextOutline? outline;
-      EditionAlignment alignment;
       try {
-        outline = await _outline(text);
-        alignment = const UnmatchedChapters(Refusal.noOutline);
-      } on UnsupportedError {
-        alignment = const UnmatchedChapters(Refusal.unsupportedFormat);
+        final pair = await _align(audio, text);
+        // A change of downloads during the work forgets it, and a later
+        // request's work counts.
+        if (!_disposed && identical(_pairs[key], work)) {
+          _done[key] = pair;
+          _changes.notify();
+        }
+        return pair;
+      } catch (_) {
+        // A failure is a bug. It is not kept, so a later request tries
+        // again.
+        if (identical(_pairs[key], work)) _pairs.remove(key);
+        rethrow;
       }
-      if (outline != null) {
-        alignment = await _hop(_alignPair, (audioOutline(audio), outline));
-      }
-      final pair = (
-        outline: outline,
-        alignment: alignment,
-        key: _outlineKey(text),
-      );
-      // A change of downloads during the work asks for it again, and that
-      // later work's result counts.
-      if (!_disposed && identical(_pairs[key], work)) {
-        _done[key] = pair;
-        _changes.notify();
-      }
-      return pair;
     }();
     return _pairs[key] = work;
   }
 
+  /// The alignment of [audio] with [text], or why none exists.
+  Future<_Pair> _align(Edition audio, Edition text) async {
+    final TextOutline? outline;
+    try {
+      outline = await _outline(text);
+    } on UnsupportedError {
+      return const _Refused(Refusal.unsupportedFormat);
+    } on Exception {
+      return const _Refused(Refusal.unreadable);
+    }
+    if (outline == null) return const _Refused(Refusal.noOutline);
+    return switch (await _hop(_alignPair, (audioOutline(audio), outline))) {
+      final MatchedChapters matched => _Aligned(
+        outline,
+        _outlineKey(text),
+        matched,
+      ),
+      UnmatchedChapters(:final reason) => _Refused(reason),
+    };
+  }
+
   /// The text outline of [text]: kept in memory, kept in the store, or
   /// measured from its download and then kept. Null when none is kept and
-  /// this phone has no download of it. It throws an [UnsupportedError] when
-  /// Bookfin cannot measure the outline of the ebook's format yet.
-  Future<TextOutline?> _outline(Edition text) async {
+  /// this phone has no download of it. It throws what [_measure] throws.
+  Future<TextOutline?> _outline(Edition text) {
     final key = _outlineKey(text);
-    if (_outlines[key] case final outline?) return outline;
+    if (_outlines[key] case final outline?) return Future.value(outline);
+    if (_outlineWork[key] case final work?) return work;
+    late final Future<TextOutline?> work;
+    work = _findOutline(text, key).whenComplete(() {
+      if (identical(_outlineWork[key], work)) _outlineWork.remove(key);
+    });
+    return _outlineWork[key] = work;
+  }
+
+  /// The outline of [text] under [key] from the store, else from a
+  /// measurement, which is then kept.
+  Future<TextOutline?> _findOutline(Edition text, String key) async {
     final kept = await _readKept(key);
     if (kept != null) return _outlines[key] = kept;
-    final TextOutline? measured;
-    try {
-      measured = await _measure(text);
-    } on Exception {
-      return null;
-    }
+    final measured = await _measure(text);
     if (measured == null) return null;
     _outlines[key] = measured;
     // NOTE: Engine rule 1. The JSON of an outline holds one short entry for
@@ -241,31 +279,41 @@ class Crossings {
 
   /// The outline that the store keeps for [key], or null when it keeps
   /// none, or keeps one that cannot be read, which is then measured again.
+  /// A kept value names its key, so an outline is used only under the key
+  /// of the edition revision that it was measured from.
   Future<TextOutline?> _readKept(String key) async {
     try {
       final value = await _store.read(key);
       if (value == null) return null;
       // NOTE: Engine rule 1. A kept outline is 10 to 20 KB of JSON, see
-      // [_outline].
-      final json = jsonDecode(value) as Map<String, dynamic>;
-      if (json['key'] != key) return null;
-      return TextOutline.fromJson(json['outline'] as Map<String, dynamic>);
-    } on Exception {
+      // [_findOutline].
+      final json = jsonDecode(value);
+      if (json case {'key': final String kept, 'outline': final Map outline}
+          when kept == key) {
+        return TextOutline.fromJson(outline.cast());
+      }
       return null;
-    } on TypeError {
+    } on Exception {
       return null;
     }
   }
 
-  /// Forgets the pairs that had no outline, so that the next request tries
-  /// their ebooks again, now that downloads changed.
+  /// Forgets the pairs whose ebook this phone could not measure, and the
+  /// pairs in flight, so that the next request tries them again, now that
+  /// downloads changed.
   void _retryMissing() {
-    final missing = [
-      for (final MapEntry(:key, :value) in _done.entries)
-        if (value.outline == null) key,
+    final stale = [
+      for (final key in _pairs.keys)
+        if (switch (_done[key]) {
+          null => true,
+          _Refused(:final reason) =>
+            reason == Refusal.noOutline || reason == Refusal.unreadable,
+          _Aligned() => false,
+        })
+          key,
     ];
-    if (missing.isEmpty) return;
-    for (final key in missing) {
+    if (stale.isEmpty) return;
+    for (final key in stale) {
       _done.remove(key);
       _pairs.remove(key);
     }
@@ -274,14 +322,15 @@ class Crossings {
 
   /// Where [place] of [from] lands in [into], by [pair].
   Crossing _land(Place place, Edition from, Edition into, _Pair pair) {
-    if (pair.alignment case UnmatchedChapters(:final reason)) {
-      return NoLanding(reason);
+    final TextOutline outline;
+    final MatchedChapters matched;
+    switch (pair) {
+      case _Refused(:final reason):
+        return NoLanding(reason);
+      case _Aligned(outline: final kept, :final alignment):
+        outline = kept;
+        matched = alignment;
     }
-    // Only an outline aligns, so matched chapters come with one.
-    final (outline, matched) = (
-      pair.outline!,
-      pair.alignment as MatchedChapters,
-    );
     switch (place) {
       case AudioPosition():
         final at = place.fits(from)
@@ -345,26 +394,37 @@ class Crossings {
   ]);
 
   /// The key of the pair of [from] and [into], the audio edition first. It
-  /// names every file and revision, so a changed edition aligns again.
+  /// names every file and revision of both, in the order that they play or
+  /// read, so a changed or reordered edition aligns again.
   static String _pairKey(Edition from, Edition into) {
     final (audio, text) = from.kind == EditionKind.audio
         ? (from, into)
         : (into, from);
-    return jsonEncode([audio.id, editionSources(audio), _outlineKey(text)]);
+    return jsonEncode([
+      audio.id,
+      for (final file in audio.files) [file.key, file.revision],
+      _outlineKey(text),
+    ]);
   }
 
   /// Throws a [StateError] when an invariant of the class comment does not
   /// hold. It runs on demand, in every build.
   void checkInvariants() {
-    for (final pair in _done.values) {
-      final outline = pair.outline;
-      if (outline != null && !identical(_outlines[pair.key], outline)) {
-        throw StateError(
-          'Each alignment comes from the kept outline of its pair.',
-        );
+    for (final MapEntry(:key, value: pair) in _done.entries) {
+      if (!_pairs.containsKey(key)) {
+        throw StateError('Each finished pair is its current work\'s result.');
       }
-      if (pair.alignment case final MatchedChapters matched) {
-        matched.checkInvariants();
+      if (pair case _Aligned(
+        :final outline,
+        key: final kept,
+        :final alignment,
+      )) {
+        if (!identical(_outlines[kept], outline)) {
+          throw StateError(
+            'Each alignment comes from the kept outline of its pair.',
+          );
+        }
+        alignment.checkInvariants();
       }
     }
   }
@@ -376,14 +436,25 @@ class Crossings {
   }
 }
 
-/// The finished work of one pair: the ebook's outline, or null when this
-/// phone has none, its key, and the alignment, which says why none exists
-/// when the outline is null.
-typedef _Pair = ({
-  TextOutline? outline,
-  EditionAlignment alignment,
-  String key,
-});
+/// The finished work of one pair of editions.
+sealed class _Pair {
+  const _Pair();
+}
+
+/// The chapters of the pair match: [alignment] was derived from [outline],
+/// the ebook's outline, which is kept under [key].
+final class _Aligned extends _Pair {
+  const _Aligned(this.outline, this.key, this.alignment);
+  final TextOutline outline;
+  final String key;
+  final MatchedChapters alignment;
+}
+
+/// No landing exists in the pair, for [reason].
+final class _Refused extends _Pair {
+  const _Refused(this.reason);
+  final Refusal reason;
+}
 
 /// The alignment of the outlines of [pair], for a worker isolate.
 EditionAlignment _alignPair((AudioOutline, TextOutline) pair) =>

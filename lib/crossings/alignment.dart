@@ -215,6 +215,9 @@ enum Refusal {
   /// Bookfin cannot measure the outline of the ebook's format yet, as for a
   /// PDF (t9-nl30).
   unsupportedFormat,
+
+  /// Bookfin could not read the downloaded ebook to measure its outline.
+  unreadable,
 }
 
 /// The alignment of an audio edition with an ebook edition: matched
@@ -283,10 +286,14 @@ final class MatchedChapters extends EditionAlignment {
   ) {
     for (final span in spans) {
       if (at >= from(span.from) && at <= from(span.to)) {
-        return to(span.from) +
+        final placed =
+            to(span.from) +
             (at - from(span.from)) /
                 (from(span.to) - from(span.from)) *
                 (to(span.to) - to(span.from));
+        // Every span moves forward on both sides, so a place has a share.
+        assert(placed.isFinite, 'A place lands at a finite place.');
+        return placed;
       }
     }
     final (first, last) = (spans.first, spans.last);
@@ -307,24 +314,31 @@ final class MatchedChapters extends EditionAlignment {
   /// Throws a [StateError] when an invariant of the class comment does not
   /// hold. It runs on demand, in every build.
   void checkInvariants() {
-    if (anchors.length < 2) throw StateError('An alignment has two anchors.');
-    for (final (before, after) in _neighbors(anchors)) {
-      if (after.milliseconds <= before.milliseconds ||
-          after.characters <= before.characters) {
-        throw StateError('Anchors increase strictly in time and characters.');
-      }
-    }
-    for (final (index, span) in spans.indexed) {
-      final joined = index + 1 < anchors.length
-          ? span.from == anchors[index] && span.to == anchors[index + 1]
-          : index == anchors.length - 1 && span.from == anchors.last;
-      if (!joined || !_inBand(_rateOf(span), _rate)) {
-        throw StateError(
-          'The spans join the anchors in order and read in the rate band.',
-        );
-      }
+    if (_brokenInvariant(anchors, spans, _rate) case final broken?) {
+      throw StateError(broken);
     }
   }
+}
+
+/// The invariant of [MatchedChapters] that [anchors], [spans] and the
+/// median [rate] break, in words, or null when they keep every one.
+String? _brokenInvariant(List<Anchor> anchors, List<Span> spans, double rate) {
+  if (anchors.length < 2) return 'An alignment has two anchors.';
+  for (final (before, after) in _neighbors(anchors)) {
+    if (after.milliseconds <= before.milliseconds ||
+        after.characters <= before.characters) {
+      return 'Anchors increase strictly in time and characters.';
+    }
+  }
+  for (final (index, span) in spans.indexed) {
+    final joined = index + 1 < anchors.length
+        ? span.from == anchors[index] && span.to == anchors[index + 1]
+        : index == anchors.length - 1 && span.from == anchors.last;
+    if (!joined || !_inBand(_rateOf(span), rate)) {
+      return 'The spans join the anchors in order and read in the rate band.';
+    }
+  }
+  return null;
 }
 
 /// No chapters of the two editions match, for [reason].
@@ -401,6 +415,11 @@ EditionAlignment alignEditions(AudioOutline audio, TextOutline text) {
     (sum, span) => sum + span.to.milliseconds - span.from.milliseconds,
   );
   if (covered * 2 < length) return const UnmatchedChapters(Refusal.partCovered);
+  // The rate check keeps no span that stands still, so this refuses only
+  // pairs that could place nothing.
+  if (_brokenInvariant(anchors, spans, rate) != null) {
+    return const UnmatchedChapters(Refusal.fewMatches);
+  }
   return MatchedChapters._(
     List.unmodifiable(anchors),
     List.unmodifiable(spans),
@@ -512,12 +531,15 @@ List<(int, int)> _checkRates(
       for (final rate in rates)
         if (rate > 0) rate,
     ];
-    if (positive.isEmpty) return (0, 0);
+    // With no span that moves forward, every span misreads.
+    if (positive.isEmpty) {
+      return (_stalled * rates.length, _stalled * rates.length);
+    }
     final median = _median(positive);
     var outside = 0.0;
     var spread = 0.0;
     for (final rate in rates) {
-      final away = rate > 0 ? math.log(rate / median).abs() : 9.0;
+      final away = rate > 0 ? math.log(rate / median).abs() : _stalled;
       spread += away;
       if (!_inBand(rate, median)) outside += away;
     }
@@ -603,6 +625,11 @@ double _rateOf(Span span) {
   final time = span.to.milliseconds - span.from.milliseconds;
   return time > 0 ? (span.to.characters - span.from.characters) / time : 0;
 }
+
+/// How far from the median rate a span that does not move forward on both
+/// sides counts, in the natural log of the ratio: farther than any span
+/// that reads at a real rate.
+const _stalled = 9.0;
 
 /// Whether [rate] lies from half to twice [median].
 bool _inBand(double rate, double median) =>

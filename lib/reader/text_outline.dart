@@ -27,22 +27,33 @@ class TextOutline {
        entries = List.unmodifiable(entries),
        _starts = _startsOf(parts);
 
-  /// The outline that [toJson] wrote. Throws a [FormatException] or a
-  /// [TypeError] when [value] is not one.
-  factory TextOutline.fromJson(Map<String, dynamic> value) => TextOutline(
-    parts: [
-      for (final part in value['parts'] as List)
-        (path: part[0] as String, characters: part[1] as int),
-    ],
-    entries: [
-      for (final entry in value['entries'] as List)
-        (
-          title: entry[0] as String,
-          depth: entry[1] as int,
-          start: entry[2] as int,
-        ),
-    ],
-  );
+  /// The outline that [toJson] wrote. Throws a [FormatException] when
+  /// [value] is not one.
+  factory TextOutline.fromJson(Map<String, dynamic> value) {
+    Never invalid() => throw const FormatException('Not a text outline.');
+    if (value case {'parts': final List parts, 'entries': final List entries}) {
+      return TextOutline(
+        parts: [
+          for (final part in parts)
+            switch (part) {
+              [final String path, final int characters] when characters >= 0 =>
+                (path: path, characters: characters),
+              _ => invalid(),
+            },
+        ],
+        entries: [
+          for (final entry in entries)
+            switch (entry) {
+              [final String title, final int depth, final int start]
+                  when depth >= 0 && start >= 0 =>
+                (title: title, depth: depth, start: start),
+              _ => invalid(),
+            },
+        ],
+      );
+    }
+    invalid();
+  }
 
   /// Each part in spine order: its resource path and its visible characters.
   final List<({String path, int characters})> parts;

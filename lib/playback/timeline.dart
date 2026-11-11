@@ -55,22 +55,38 @@ void openHistory(
     TextPosition() => reader!.describe(place),
   };
 
+  // The book and the edition under the sheet, if any. A choice that goes
+  // to a place closes the sheet, so they stay while it is open.
+  final (shownBook, shownEdition) = switch (showing) {
+    EditionKind.audio => (playback?.book, playback?.edition),
+    EditionKind.text => (reader?.book, reader?.edition),
+    null => (null, null),
+  };
+
   /// The edition of [place] and the open edition, when Go to on [place]
   /// goes to its landing in the open edition: [place] is in an edition of
   /// the other medium of the open book. Null when Go to on [place] shows it
   /// in its own edition.
   ({Edition from, Edition into})? crossingOf(Place place) {
-    final (open, into) = switch (showing) {
-      EditionKind.audio => (playback?.book, playback?.edition),
-      EditionKind.text => (reader?.book, reader?.edition),
-      null => (null, null),
-    };
-    if (crossings == null || open == null || into == null) return null;
-    final from = open.editions
+    if (crossings == null || shownBook == null || shownEdition == null) {
+      return null;
+    }
+    final from = shownBook.editions
         .where((edition) => edition.id == place.editionId)
         .firstOrNull;
-    if (from == null || from.kind == into.kind) return null;
-    return (from: from, into: into);
+    if (from == null || from.kind == shownEdition.kind) return null;
+    return (from: from, into: shownEdition);
+  }
+
+  // The open edition's alignments with the book's editions of the other
+  // medium start now, so that the tiles name their landings when they open
+  // and Go to rarely waits.
+  if (crossings != null && shownBook != null && shownEdition != null) {
+    for (final edition in shownBook.editions) {
+      if (edition.kind != shownEdition.kind) {
+        crossings.prepare(from: edition, into: shownEdition);
+      }
+    }
   }
 
   /// Where Go to on [place] goes, in words: its landing in the open
@@ -171,13 +187,11 @@ void openHistory(
 
           return HistoryTimeline(
             // The rows show labels and places measured from the library and
-            // from the open book's map, and the tiles show landings, so the
-            // entries follow the records, the library, the open book, its
-            // pages and the arrival of landings. A playing tick does not
-            // reach the timeline.
+            // from the open book's map, so the entries follow the records,
+            // the library, the open book and its pages. A playing tick does
+            // not reach the timeline.
             entries: DerivedValue(
               Listenable.merge([
-                ?crossings?.changes,
                 if (playback != null) ...[
                   playback.recordsNotifier,
                   playback.libraryNotifier,
@@ -196,6 +210,7 @@ void openHistory(
             ),
             describe: describe,
             landingOf: landingOf,
+            landingChanges: crossings?.changes,
             showBooks: book == null,
             header: RecordSaveStatus(playback: playback, reader: reader),
             scroll: scroll,
@@ -286,6 +301,7 @@ String _why(Refusal reason) => switch (reason) {
   Refusal.outsideMatches => 'Only one of these editions has this part',
   Refusal.noOutline => 'The ebook is not downloaded on this phone',
   Refusal.unsupportedFormat => 'Bookfin cannot yet match this kind of ebook',
+  Refusal.unreadable => 'Bookfin cannot read the ebook\'s file',
 };
 
 /// The entries of [first] and [second], each newest first, in one list,
@@ -358,6 +374,7 @@ class HistoryTimeline extends StatefulWidget {
     required this.entries,
     required this.describe,
     this.landingOf,
+    this.landingChanges,
     this.showBooks = false,
     this.header,
     this.scroll,
@@ -381,6 +398,10 @@ class HistoryTimeline extends StatefulWidget {
   /// place with a note that says why Go to opens another screen. Without
   /// it, each tile names its place through [describe].
   final LandingWords Function(Place place)? landingOf;
+
+  /// Notifies when [landingOf] can name a place in new words, such as when
+  /// a landing arrives. Only the tiles of an open entry follow it.
+  final Listenable? landingChanges;
 
   /// Whether each entry names its book, for a timeline of every book.
   final bool showBooks;
@@ -651,7 +672,13 @@ class _HistoryTimelineState extends State<HistoryTimeline> {
         if (open)
           Padding(
             padding: const EdgeInsets.only(top: 2, bottom: 8),
-            child: _route(entry),
+            child: switch (widget.landingChanges) {
+              null => _route(entry),
+              final changes => ListenableBuilder(
+                listenable: changes,
+                builder: (context, _) => _route(entry),
+              ),
+            },
           ),
       ],
     );
@@ -660,11 +687,17 @@ class _HistoryTimelineState extends State<HistoryTimeline> {
   /// The places of an open [entry], as tiles across its row: Before and
   /// After for a move, in the order that they happened, and the one place
   /// of an entry that did not move. A bookmark's Name or Rename sits at the
-  /// end of its tile's line, as tall as the tile.
+  /// end of its tile's line, as tall as the tile. The two ends of a move
+  /// are in one edition, so they often share one note: it then shows once,
+  /// under both tiles.
   Widget _route(TimelineEntry entry) {
     final move = _moveOf(entry);
     if (move == null) {
-      final place = _end('Go to', entry.place, () => widget.onGoTo(entry));
+      final place = _end(
+        'Go to',
+        _goesTo(entry.place),
+        () => widget.onGoTo(entry),
+      );
       if (entry case BookmarkEntry(:final bookmark)) {
         return IntrinsicHeight(
           child: Row(
@@ -688,12 +721,21 @@ class _HistoryTimelineState extends State<HistoryTimeline> {
       }
       return place;
     }
-    return IntrinsicHeight(
+    final (before, after) = (_goesTo(move.before), _goesTo(move.after));
+    final shared = before.note != null && before.note == after.note
+        ? before.note
+        : null;
+    final tiles = IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Expanded(
-            child: _end('Before', move.before, () => widget.onGoBefore(move)),
+            child: _end(
+              'Before',
+              before,
+              () => widget.onGoBefore(move),
+              noteShown: shared == null,
+            ),
           ),
           SizedBox(
             width: 22,
@@ -710,22 +752,53 @@ class _HistoryTimelineState extends State<HistoryTimeline> {
             ),
           ),
           Expanded(
-            child: _end('After', move.after, () => widget.onGoTo(entry)),
+            child: _end(
+              'After',
+              after,
+              () => widget.onGoTo(entry),
+              noteShown: shared == null,
+            ),
           ),
         ],
       ),
     );
+    if (shared == null) return tiles;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        tiles,
+        // Each tile reads the note to a screen reader.
+        ExcludeSemantics(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(10, 6, 10, 0),
+            child: _Note(shared),
+          ),
+        ),
+      ],
+    );
   }
 
-  /// One end of a route: a tile with [role] and where Go to on [place]
-  /// goes, in words, whose tap calls [go]. Every tile describes its place
+  /// Where Go to on [place] goes, in words. Every tile describes its place
   /// here.
-  Widget _end(String role, Place place, VoidCallback go) {
-    final (:words, :note) =
-        widget.landingOf?.call(place) ??
-        (words: widget.describe(place), note: null);
-    return _PlaceTile(role: role, words: words, note: note, onTap: go);
-  }
+  LandingWords _goesTo(Place place) =>
+      widget.landingOf?.call(place) ??
+      (words: widget.describe(place), note: null);
+
+  /// One end of a route: a tile with [role] and where Go to goes, [goes],
+  /// whose tap calls [go]. Its note shows on the tile when [noteShown], and
+  /// a screen reader reads it either way.
+  Widget _end(
+    String role,
+    LandingWords goes,
+    VoidCallback go, {
+    bool noteShown = true,
+  }) => _PlaceTile(
+    role: role,
+    words: goes.words,
+    note: goes.note,
+    noteShown: noteShown,
+    onTap: go,
+  );
 
   /// The move of [entry] when it has two ends ([HistoryEvent.moved]). Null
   /// for a bookmark, and for an action that stayed at one place, such as a
@@ -830,17 +903,21 @@ class _HistoryTimelineState extends State<HistoryTimeline> {
 /// when [words] knows them, and the [note] that says why Go to opens
 /// another screen, when it does. Each line but the note stays on one line,
 /// and a line that is too long ends in "…". The note wraps, so that it
-/// reads in full before the tap.
+/// reads in full before the tap. When the note shows elsewhere, as under
+/// both tiles of a move, [noteShown] is false and the tile only reads it
+/// to a screen reader.
 class _PlaceTile extends StatelessWidget {
   const _PlaceTile({
     required this.role,
     required this.words,
     required this.note,
+    required this.noteShown,
     required this.onTap,
   });
   final String role;
   final PlaceWords words;
   final String? note;
+  final bool noteShown;
   final VoidCallback onTap;
 
   @override
@@ -890,23 +967,35 @@ class _PlaceTile extends StatelessWidget {
                 detail,
                 TextStyle(fontSize: 11, color: scheme.onSurfaceVariant),
               ),
-            if (note case final note?)
+            if (note case final note? when noteShown)
               Padding(
                 padding: const EdgeInsets.only(top: 2),
-                child: Text(
-                  note,
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontStyle: FontStyle.italic,
-                    color: scheme.onSurfaceVariant,
-                  ),
-                ),
+                child: _Note(note),
               ),
+            if (note case final note? when !noteShown)
+              Semantics(hint: note, child: const SizedBox.shrink()),
           ],
         ),
       ),
     );
   }
+}
+
+/// Why Go to on a place opens another screen, in full, on as many lines as
+/// it needs.
+class _Note extends StatelessWidget {
+  const _Note(this.text);
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => Text(
+    text,
+    style: TextStyle(
+      fontSize: 11,
+      fontStyle: FontStyle.italic,
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
+    ),
+  );
 }
 
 /// A button of an open timeline entry, as a tile with a thin outline that

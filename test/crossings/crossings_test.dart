@@ -117,6 +117,8 @@ void main() {
   late int hops;
   TextOutline? download;
   late bool unsupported;
+  late bool unreadable;
+  late int failingHops;
   final made = <Crossings>[];
 
   setUp(() {
@@ -126,6 +128,8 @@ void main() {
     hops = 0;
     download = book;
     unsupported = false;
+    unreadable = false;
+    failingHops = 0;
   });
   tearDown(() {
     for (final crossings in made) {
@@ -140,11 +144,16 @@ void main() {
       measure: (text) async {
         measured++;
         if (unsupported) throw UnsupportedError('A PDF has no outline yet.');
+        if (unreadable) throw const FormatException('A broken EPUB.');
         return download;
       },
       downloads: downloads,
       hop: <M, R>(work, input) async {
         hops++;
+        if (failingHops > 0) {
+          failingHops--;
+          throw StateError('A bug in the alignment.');
+        }
         return work(input);
       },
     );
@@ -237,6 +246,119 @@ void main() {
     );
 
     expect((found as NoLanding).reason, Refusal.unsupportedFormat);
+  });
+
+  test(
+    'an ebook that Bookfin cannot read has no landing, and says so',
+    () async {
+      unreadable = true;
+
+      final found = await crossings().landing(
+        listening(_discOne, 40000),
+        from: audio,
+        into: ebookEdition(),
+      );
+
+      expect((found as NoLanding).reason, Refusal.unreadable);
+    },
+  );
+
+  test('a recording whose files change order aligns again', () async {
+    final source = crossings();
+    await source.landing(
+      listening(_discOne, 40000),
+      from: audio,
+      into: ebookEdition(),
+    );
+    const reordered = Edition(
+      id: 'audio',
+      kind: EditionKind.audio,
+      label: 'Narrator',
+      files: [_discTwo, _discOne],
+      memberIds: ['two:m2', 'one:m1'],
+    );
+
+    await source.landing(
+      listening(_discOne, 40000),
+      from: reordered,
+      into: ebookEdition(),
+    );
+
+    expect(hops, 2);
+    source.checkInvariants();
+  });
+
+  test('an alignment that fails is not kept, so a later request tries '
+      'again', () async {
+    final source = crossings();
+    failingHops = 1;
+
+    await expectLater(
+      source.landing(
+        listening(_discOne, 40000),
+        from: audio,
+        into: ebookEdition(),
+      ),
+      throwsStateError,
+    );
+    final found = await source.landing(
+      listening(_discOne, 40000),
+      from: audio,
+      into: ebookEdition(),
+    );
+
+    expect(found, isA<TextLanding>());
+    source.checkInvariants();
+  });
+
+  test('two recordings of one ebook measure the ebook once', () async {
+    final source = crossings();
+    const other = Edition(
+      id: 'other audio',
+      kind: EditionKind.audio,
+      label: 'Another narrator',
+      files: [_discOne, _discTwo],
+      memberIds: ['one:m1', 'two:m2'],
+    );
+
+    await Future.wait([
+      source.landing(
+        listening(_discOne, 40000),
+        from: audio,
+        into: ebookEdition(),
+      ),
+      source.landing(
+        AudioPosition(
+          editionId: other.id,
+          sourceKey: _discOne.key,
+          revision: _discOne.revision,
+          milliseconds: 40000,
+        ),
+        from: other,
+        into: ebookEdition(),
+      ),
+    ]);
+
+    expect(measured, 1);
+    source.checkInvariants();
+  });
+
+  test('prepare aligns a pair in the background, so its landings are '
+      'known at once', () async {
+    final source = crossings();
+
+    source.prepare(from: ebookEdition(), into: audio);
+    await pumpEventQueue();
+
+    expect(hops, 1);
+    expect(
+      source.landingNow(
+        listening(_discOne, 40000),
+        from: audio,
+        into: ebookEdition(),
+      ),
+      isA<TextLanding>(),
+    );
   });
 
   test(

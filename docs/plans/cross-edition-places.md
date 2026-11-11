@@ -1,6 +1,6 @@
 # Go to a place of the other edition inside the open edition
 
-Epic: boo-z3is, under boo-fs0n. Status: design, written 2026-11-11. Two designs are open, A and B. Three questions decide between them. The order of work says what waits for the answers.
+Epic: boo-z3is, under boo-fs0n. Written 2026-11-11 with two designs, A and B. Status: the user chose design A (see "Decision" at the end). Steps 2 to 7 of design A are built. Step 8, the PDF outline, waits. Design B is not scheduled.
 
 Read this with three other documents:
 
@@ -255,8 +255,8 @@ The timeline keeps one list per book, newest first and grouped by day. It shows 
 
 1. The rail has two lanes: listening on the left and reading on the right. Each lane has its own line. An entry sits in its medium's lane with its medium's glyph.
 2. A row keeps its own place in its own words. A listening entry in the reader still reads "1:02:15".
-3. An open entry of the other medium shows where its place lands in the detail line: "Chapter 4 · About p. 134 in this ebook". If no landing exists, the line says why: "The chapters of these editions do not match. Go to opens the audiobook."
-4. Each choice that goes to a place names the landing. By chapters, it reads "about p. 134" or "about 1:02:15". By speech, it reads "p. 134". If Go to switches screens as today, it reads "1:02:15 in the audiobook".
+3. An open entry of the other medium shows where its places land. If no landing exists, the entry says why and which screen Go to opens: "The chapters of these editions do not match, so this opens the audiobook."
+4. Each choice that goes to a place names the landing. By chapters, it reads "about p. 134" or "about 1:02:15". By speech, it reads "p. 134". If Go to switches screens as today, the choice names the place in its own words, such as "1:02:15", beside the reason of item 3.
 5. A mapped move appears in the open edition's lane: "Went to about where you listened", "Went to where you listened" by speech, or "Went to about a listening bookmark".
 
 | Time | Listening lane | Reading lane | What happened | Place |
@@ -270,8 +270,8 @@ The timeline gets one new input: `landingOf(place)`, the words of where a choice
 As built in t9-4v0r, on the Before, After and Go to tiles of boo-hyl4:
 
 - A tile of a place of the other medium names its landing, such as "about p. 134", and its detail line names the landing's chapter in the open edition.
-- If no landing exists, the tile keeps the place's own words, such as "1:02:15". A note under them says why and which screen opens, for example "The chapters of these editions do not match, so this opens the audiobook." The note wraps, so the whole reason shows on a narrow tile.
-- Until the alignment of the pair arrives, the tile shows the place's own words. The landing words replace them when `Crossings` notifies.
+- If no landing exists, the tile keeps the place's own words, such as "1:02:15". A note says why and which screen opens, for example "The chapters of these editions do not match, so this opens the audiobook." The note wraps, so the whole reason shows. When both ends of a move share one note, it shows once, under both tiles, and each tile still reads it to a screen reader.
+- The sheet starts the alignment of the open edition with the book's editions of the other medium as it opens. Until the alignment arrives, a tile shows the place's own words. The landing words replace them when `Crossings` notifies, and only the open tiles follow that signal.
 - When the history holds one medium, the rail keeps its one lane.
 
 ### Bookmarks of the other edition
@@ -292,11 +292,11 @@ As built in t9-4v0r, on the Before, After and Go to tiles of boo-hyl4:
 5. In the player: no text outline exists for the ebook edition, because this phone never downloaded it.
 6. The ebook is a PDF. Bookfin cannot measure a PDF's outline until t9-nl30, so the note says that Bookfin cannot yet match this kind of ebook.
 
-Then the choice names the other medium ("1:02:15 in the audiobook"), the detail line says why, and Go to behaves as today.
+Then the choice names the place in its own words ("1:02:15"), a note says why and which screen opens, and Go to behaves as today. Two more cases give no landing: the ebook is a PDF (item 6), and Bookfin cannot read the downloaded ebook.
 
 ### Engine rules
 
-- `measureTextOutline` parses every section of the book once, in one `Isolate.run` for each ebook edition. The matching runs in the same hop. Its table has at most about 200 × 200 cells.
+- `measureTextOutline` parses every section of the book once, in one `Isolate.run` for each ebook edition. The matching runs in a second hop, once for each pair of editions. Its table has at most about 200 × 200 cells.
 - `Crossings` keeps each text outline in a small JSON cache, keyed by edition id and file revision, with an atomic write. A removed download keeps its outline, so its reading places still map. A later launch does not parse the book again.
 - The History sheet draws at once with each entry's own words. After the alignment arrives, the landing words fill in. No spinner shows.
 - A mapped move saves through the existing move path. These new tests prove the data safety of engine rule 3:

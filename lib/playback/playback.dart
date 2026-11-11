@@ -518,17 +518,14 @@ class Playback extends ChangeNotifier {
       if (!_restored || edition == null || !landing.place.fits(edition)) {
         return;
       }
-      final wasPlaying = _playing;
-      went = await _seekPosition(
-        edition.files.indexWhere((file) => file.key == landing.place.sourceKey),
-        landing.place.milliseconds,
+      went = await _moveOpen(
+        edition,
+        landing.place,
         kind,
+        wasPlaying: _playing,
+        generation: _generation,
         counterpart: (place: landing.from, matchedBy: landing.matchedBy),
       );
-      if (went && wasPlaying && !_active) {
-        _active = true;
-        await engine.play();
-      }
     }).then((_) => went);
   }
 
@@ -707,11 +704,35 @@ class Playback extends ChangeNotifier {
         action: kind,
       );
     }
+    return _moveOpen(
+      edition,
+      target,
+      kind,
+      wasPlaying: wasPlaying,
+      generation: generation,
+      before: before,
+    );
+  }
+
+  /// Moves the open [edition] to [target] as a move of [kind] from
+  /// [before], and plays on when it [wasPlaying]. [counterpart] names the
+  /// place of the other edition that a mapped move went to. Whether the
+  /// move happened while the binding of [generation] lasts.
+  Future<bool> _moveOpen(
+    Edition edition,
+    AudioPosition target,
+    HistoryAction kind, {
+    required bool wasPlaying,
+    required int generation,
+    AudioPosition? before,
+    _Counterpart? counterpart,
+  }) async {
     final applied = await _seekPosition(
       edition.files.indexWhere((file) => file.key == target.sourceKey),
       target.milliseconds,
       kind,
       before: before,
+      counterpart: counterpart,
     );
     if (!applied || generation != _generation) return false;
     if (wasPlaying && !_active) {

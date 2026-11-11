@@ -87,6 +87,7 @@ void main() {
   late ReaderSession reader;
   late Crossings crossings;
   late TextOutline outline;
+  late int measured;
 
   // 900 characters: a quarter of the way through Return, which plays from
   // 70 s to 150 s, so 90 s into the edition.
@@ -109,6 +110,7 @@ void main() {
 
   setUp(() async {
     outline = matching;
+    measured = 0;
     downloads = LocalFiles()..files[source.key] = Uri.file('/verified.epub');
     listeningStore = MediumSpy();
     playback = Playback(
@@ -136,7 +138,10 @@ void main() {
     await reader.bind(account(), [both]);
     crossings = Crossings(
       store: MemoryOutlines(),
-      measure: (_) async => outline,
+      measure: (_) async {
+        measured++;
+        return outline;
+      },
       hop: <M, R>(work, input) async => work(input),
     );
   });
@@ -243,6 +248,18 @@ void main() {
     expect(inTile('AFTER', find.text('Return')), findsOneWidget);
   });
 
+  testWidgets('the History in the player starts to align the audiobook '
+      'with the ebook as it opens', (tester) async {
+    await showPlayerHistory(tester);
+    await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+
+    expect(measured, 1);
+    expect(
+      crossings.landingNow(searched.after, from: edition, into: recording),
+      isA<AudioLanding>(),
+    );
+  });
+
   testWidgets('in the player, Go to on a reading place plays from its '
       'landing as a listening move with Undo, and writes no reading '
       'record', (tester) async {
@@ -306,8 +323,7 @@ void main() {
     await open(tester, 'Went to a search result');
 
     expect(
-      inTile(
-        'AFTER',
+      inTimeline(
         find.text(
           'The chapters of these editions do not match, so this opens the '
           'ebook.',

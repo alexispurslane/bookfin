@@ -124,6 +124,30 @@ void main() {
     expect(copy.length, outline.length);
   });
 
+  test('a kept outline of the wrong shape does not read', () {
+    for (final value in [
+      <String, dynamic>{'parts': 3, 'entries': <Object>[]},
+      {
+        'parts': [1],
+        'entries': <Object>[],
+      },
+      {
+        'parts': [
+          ['OPS/a.xhtml', -1],
+        ],
+        'entries': <Object>[],
+      },
+      {
+        'parts': <Object>[],
+        'entries': [
+          ['I', 0],
+        ],
+      },
+    ]) {
+      expect(() => TextOutline.fromJson(value), throwsFormatException);
+    }
+  });
+
   group('a downloaded ebook measures its outline', () {
     late Directory folder;
     setUp(() async => folder = await Directory.systemTemp.createTemp());

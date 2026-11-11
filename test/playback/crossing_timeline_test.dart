@@ -127,6 +127,14 @@ void main() {
   Finder inTile(String role, Finder finder) =>
       find.descendant(of: tile(role), matching: finder);
 
+  /// The lines of the rail, one in each lane beside each row.
+  Finder railLines() => find.byWidgetPredicate(
+    (widget) =>
+        widget is Container &&
+        widget.constraints?.maxWidth == 1.5 &&
+        widget.color != null,
+  );
+
   /// The glyph of a medium, which assistive technology reads as [medium].
   Finder glyph(String medium) => find.byWidgetPredicate(
     (widget) => widget is Icon && widget.semanticLabel == medium,
@@ -161,8 +169,10 @@ void main() {
     expect(find.text('1:02:15'), findsNothing);
   });
 
-  testWidgets('a tile of a place that has no landing says why, and which '
-      'screen Go to opens, in full', (tester) async {
+  testWidgets('a move whose places have no landing says why, and which '
+      'screen Go to opens, once and in full, and each tile reads it to a '
+      'screen reader', (tester) async {
+    final semantics = tester.ensureSemantics();
     await show(tester, [
       ActionEntry(heard),
     ], landingOf: (place) => (words: describe(place), note: unmatched));
@@ -170,15 +180,42 @@ void main() {
     await tester.tap(find.text('Moved ahead 40 s', findRichText: true));
     await tester.pumpAndSettle();
 
-    for (final role in ['BEFORE', 'AFTER']) {
-      final note = inTile(role, find.text(unmatched));
-      expect(note, findsOneWidget);
-      expect(
-        tester.renderObject<RenderParagraph>(note).didExceedMaxLines,
-        isFalse,
-      );
-    }
+    final note = find.text(unmatched);
+    expect(note, findsOneWidget);
+    expect(
+      tester.renderObject<RenderParagraph>(note).didExceedMaxLines,
+      isFalse,
+    );
+    expect(
+      tester.getTopLeft(note).dy,
+      greaterThan(tester.getBottomLeft(tile('AFTER')).dy),
+    );
     expect(inTile('AFTER', find.text('1:02:15')), findsOneWidget);
+    for (final role in ['BEFORE', 'AFTER']) {
+      expect(tester.getSemantics(tile(role)), isSemantics(hint: unmatched));
+    }
+    semantics.dispose();
+  });
+
+  testWidgets('the places of a move that differ in why they have no landing '
+      'each say why on their own tile', (tester) async {
+    await show(
+      tester,
+      [ActionEntry(heard)],
+      landingOf: (place) => (
+        words: describe(place),
+        note: switch (place) {
+          AudioPosition(milliseconds: 3695000) => unmatched,
+          _ => null,
+        },
+      ),
+    );
+
+    await tester.tap(find.text('Moved ahead 40 s', findRichText: true));
+    await tester.pumpAndSettle();
+
+    expect(inTile('BEFORE', find.text(unmatched)), findsOneWidget);
+    expect(inTile('AFTER', find.text(unmatched)), findsNothing);
   });
 
   testWidgets('without landing words, a tile names its own place', (
@@ -200,6 +237,12 @@ void main() {
     final reread = tester.getCenter(glyph('Reading'));
 
     expect(listened.dx, lessThan(reread.dx));
+    // Each lane has its own line, beside both rows.
+    expect(railLines(), findsNWidgets(4));
+    expect({
+      for (final line in railLines().evaluate())
+        tester.getCenter(find.byWidget(line.widget)).dx,
+    }, hasLength(2));
     // Each label starts after both lanes.
     for (final label in ['Moved ahead 40 s', 'Moved ahead 12 pages']) {
       expect(
@@ -207,6 +250,15 @@ void main() {
         greaterThan(reread.dx),
       );
     }
+  });
+
+  testWidgets('a timeline of one medium keeps one lane, with one line', (
+    tester,
+  ) async {
+    await show(tester, [ActionEntry(heard)]);
+
+    expect(railLines(), findsOneWidget);
+    expect(glyph('Listening'), findsNothing);
   });
 
   group('a mapped move reads as where it went in the other edition', () {
