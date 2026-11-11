@@ -37,6 +37,14 @@ function open_book()
     if document then document:close() end
     document = cre.newDocView(width_px, height_px, 1)
     document:setHeaderInfo(0)
+    document:setIntProperty("crengine.render.dpi", math.floor(96*density+0.5))
+    document:setIntProperty("crengine.render.scale.font.with.dpi", 0)
+    for _, direction in ipairs({"zoomin", "zoomout"}) do
+        for _, kind in ipairs({"block", "inline"}) do
+            document:setIntProperty("crengine.image.scaling." .. direction .. "." .. kind .. ".mode", 0)
+            document:setIntProperty("crengine.image.scaling." .. direction .. "." .. kind .. ".scale", 1)
+        end
+    end
     document:setFontFace("Source Serif 4")
     document:setFontSize(math.floor(18 * density + 0.5))
     document:setDefaultInterlineSpace(100)
