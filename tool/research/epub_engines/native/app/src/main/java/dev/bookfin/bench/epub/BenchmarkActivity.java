@@ -43,6 +43,7 @@ public final class BenchmarkActivity extends Activity {
     private int stepIndex;
     private long requested;
     private long shellReady;
+    private long shellDrawn;
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
@@ -199,6 +200,7 @@ public final class BenchmarkActivity extends Activity {
             metadata.put("warmup", runId.startsWith("calibration-"));
             metadata.put("start_ns", requested);
             metadata.put("shell_ready_ns", shellReady);
+            if (BuildConfig.ENGINE.equals("webview")) metadata.put("shell_drawn_ns", shellDrawn);
             metadata.put("process_start_ns", android.os.Process.getStartElapsedRealtime()*1_000_000L);
             metadata.put("book_sha256", book.getString("sha256"));
             metadata.put("cache", stepIndex == 0 ? "fresh_document" : "warm_document");
@@ -209,7 +211,16 @@ public final class BenchmarkActivity extends Activity {
 
     private final class WebProbe {
         @JavascriptInterface public String clockNs() { return Long.toString(SystemClock.elapsedRealtimeNanos()); }
-        @JavascriptInterface public void shellReady() { runOnUiThread(BenchmarkActivity.this::ready); }
+        // The Flutter shell reports ready after its first frame. The WebView shell waits until its
+        // own page was drawn, so first-frame setup stays outside the timed fresh open here too.
+        @JavascriptInterface public void shellReady() {
+            runOnUiThread(() -> web.postVisualStateCallback(0, new WebView.VisualStateCallback() {
+                @Override public void onComplete(long requestId) {
+                    shellDrawn = SystemClock.elapsedRealtimeNanos();
+                    BenchmarkActivity.this.ready();
+                }
+            }));
+        }
         @JavascriptInterface public void ready(String raw) {
             long ready = SystemClock.elapsedRealtimeNanos();
             runOnUiThread(() -> {

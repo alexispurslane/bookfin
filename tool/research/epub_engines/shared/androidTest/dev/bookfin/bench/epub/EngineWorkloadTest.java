@@ -71,6 +71,11 @@ public final class EngineWorkloadTest {
                 }
                 if (row.getString("engine").equals("koreader")) assertTrue("KOReader repeats its page draw after timing", row.getLong("redraw_duration_ns") > 0);
                 if (row.getString("engine").equals("webview")) assertTrue("WebView records the images it awaited for the shown page", row.has("page_images"));
+                if (row.getString("engine").equals("webview")) {
+                    long shellDrawn = row.optLong("shell_drawn_ns", 0);
+                    assertTrue("The WebView shell draws its own page before it reports ready, as the Flutter shell does",
+                        shellDrawn > 0 && shellDrawn <= row.getLong("shell_ready_ns"));
+                }
                 assertTrue(row.getLong("operation_returned_ns") <= row.getLong("preparation_ns"));
                 assertTrue(row.getLong("preparation_ns") <= row.getLong("engine_ready_ns"));
                 assertFalse(row.getJSONObject("phase_clock").getString("source").isEmpty());

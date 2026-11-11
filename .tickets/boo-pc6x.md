@@ -35,3 +35,7 @@ Sol lead stopped: Codex usage limit. Its partial work is commit 403629c6 on t3/r
 **2026-11-11T15:41:47Z**
 
 Claude lead: classification reported to parent. User decision (2026-11-11): headline interval runs from engine entry through each engine's real drawing; Bookfin/WebView on a host-GPU emulator (Apple M1 Max via emulator GL translator), KOReader through drawCurrentPage; SwiftShader pre-raster numbers kept as a labeled diagnostic. Own AVDs bookfin-bench-sym (SwiftShader, reproduces all 63 frozen references) and bookfin-bench-gpu (host GPU, separate 63-page reference set) on emulator-5558. Fixed WIP bugs: Lua received JSON '\/' escapes (every KOReader job failed); persistent scratch buffer freed by GC.
+
+**2026-11-11T16:15:01Z**
+
+The first drawn-page run (sym-drawn) counted the WebView's first-frame setup in its fresh open: preparation-to-drawn median 233 ms against 12-17 ms for other WebView actions, while the Flutter shell does that setup before it reports ready. The WebView shell now reports ready only after a visual-state callback for its own page; the device test asserts shell_drawn_ns <= shell_ready_ns (red: red-device-shell-drawn-webview.txt). One measured WebView job per book then gave 17.9-23.0 ms on fresh open (experiment-shell-drawn). The full schedule runs again as sym-drawn2.
