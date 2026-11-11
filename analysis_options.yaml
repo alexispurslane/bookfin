@@ -7,4 +7,5 @@ analyzer:
     - web/**
     # Standalone research packages use their own locks and verification commands.
     - tool/research/readers/**
+    - tool/research/cross_edition/speech_probe/**
     - macos/**
