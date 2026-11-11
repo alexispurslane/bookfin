@@ -1,0 +1,15 @@
+test_keeps_the_spine_order_images_and_navigation_title_of_the_requested_section (test_prepare.CorpusDescriptionTest.test_keeps_the_spine_order_images_and_navigation_title_of_the_requested_section) ... FAIL
+
+======================================================================
+FAIL: test_keeps_the_spine_order_images_and_navigation_title_of_the_requested_section (test_prepare.CorpusDescriptionTest.test_keeps_the_spine_order_images_and_navigation_title_of_the_requested_section)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/test_prepare.py", line 23, in test_keeps_the_spine_order_images_and_navigation_title_of_the_requested_section
+    self.assertEqual(sections[1].get("toc_title"), "One: The beginning")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: None != 'One: The beginning'
+
+----------------------------------------------------------------------
+Ran 1 test in 0.002s
+
+FAILED (failures=1)

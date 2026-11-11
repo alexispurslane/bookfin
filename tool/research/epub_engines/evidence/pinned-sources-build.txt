@@ -1,0 +1,6 @@
+this derivation will be built:
+  /nix/store/9m2cnl8w0q0cc2wfpfr2v70pl2813vnb-bookfin-epub-benchmark-sources.drv
+this path will be fetched (130.6 MiB download, 130.7 MiB unpacked):
+  /nix/store/ikf2qfnswzm23yljwcz8ipxdjw6261vf-gradle-9.3.1-bin.zip
+copying path '/nix/store/ikf2qfnswzm23yljwcz8ipxdjw6261vf-gradle-9.3.1-bin.zip' from 'https://cache.nixos.org'...
+building '/nix/store/9m2cnl8w0q0cc2wfpfr2v70pl2813vnb-bookfin-epub-benchmark-sources.drv'...

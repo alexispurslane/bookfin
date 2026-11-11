@@ -1,0 +1,21 @@
+name: bookfin_epub_shell
+description: Isolated release probe of the production Bookfin EPUB reader.
+publish_to: none
+version: 1.0.0+1
+environment:
+  sdk: ^3.12.0
+dependencies:
+  flutter:
+    sdk: flutter
+  bookfin:
+    path: ../../../..
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+flutter:
+  uses-material-design: true
+  fonts:
+    - family: Source Serif 4
+      fonts:
+        - asset: .cache/SourceSerif4.ttf

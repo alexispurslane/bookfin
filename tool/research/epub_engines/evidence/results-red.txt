@@ -1,0 +1,178 @@
+test_complete_requires_all_engines_books_operations_and_counts (test_results.ResultsTest.test_complete_requires_all_engines_books_operations_and_counts) ... FAIL
+test_does_not_report_an_incomplete_matrix_as_complete (test_results.ResultsTest.test_does_not_report_an_incomplete_matrix_as_complete) ... ok
+test_excludes_blank_stale_wrong_destination_and_error_samples (test_results.ResultsTest.test_excludes_blank_stale_wrong_destination_and_error_samples) ... 
+  test_excludes_blank_stale_wrong_destination_and_error_samples (test_results.ResultsTest.test_excludes_blank_stale_wrong_destination_and_error_samples) (changes={'text': ' '}) ... FAIL
+  test_excludes_blank_stale_wrong_destination_and_error_samples (test_results.ResultsTest.test_excludes_blank_stale_wrong_destination_and_error_samples) (changes={'capture_sha256': 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'}) ... FAIL
+  test_excludes_blank_stale_wrong_destination_and_error_samples (test_results.ResultsTest.test_excludes_blank_stale_wrong_destination_and_error_samples) (changes={'actual': 'chapter-0:page-1'}) ... FAIL
+  test_excludes_blank_stale_wrong_destination_and_error_samples (test_results.ResultsTest.test_excludes_blank_stale_wrong_destination_and_error_samples) (changes={'error': 'load failed'}) ... FAIL
+  test_excludes_blank_stale_wrong_destination_and_error_samples (test_results.ResultsTest.test_excludes_blank_stale_wrong_destination_and_error_samples) (changes={'end_ns': None}) ... FAIL
+  test_excludes_blank_stale_wrong_destination_and_error_samples (test_results.ResultsTest.test_excludes_blank_stale_wrong_destination_and_error_samples) (changes={'end_ns': 0}) ... FAIL
+  test_excludes_blank_stale_wrong_destination_and_error_samples (test_results.ResultsTest.test_excludes_blank_stale_wrong_destination_and_error_samples) (changes={'end_ns': nan}) ... FAIL
+  test_excludes_blank_stale_wrong_destination_and_error_samples (test_results.ResultsTest.test_excludes_blank_stale_wrong_destination_and_error_samples) (changes={'boundary': 'relocated'}) ... FAIL
+  test_excludes_blank_stale_wrong_destination_and_error_samples (test_results.ResultsTest.test_excludes_blank_stale_wrong_destination_and_error_samples) (changes={'clock': 'host_wall_time'}) ... FAIL
+  test_excludes_blank_stale_wrong_destination_and_error_samples (test_results.ResultsTest.test_excludes_blank_stale_wrong_destination_and_error_samples) (changes={'capture_sha256': 'not-a-digest'}) ... FAIL
+  test_excludes_blank_stale_wrong_destination_and_error_samples (test_results.ResultsTest.test_excludes_blank_stale_wrong_destination_and_error_samples) (changes={'expected': ''}) ... FAIL
+test_excludes_warmups_and_preserves_their_reason (test_results.ResultsTest.test_excludes_warmups_and_preserves_their_reason) ... ERROR
+test_keeps_books_operations_and_engines_separate (test_results.ResultsTest.test_keeps_books_operations_and_engines_separate) ... FAIL
+test_preserves_input_rows_without_mutation (test_results.ResultsTest.test_preserves_input_rows_without_mutation) ... ok
+test_rejects_duplicate_ids_instead_of_counting_them_twice (test_results.ResultsTest.test_rejects_duplicate_ids_instead_of_counting_them_twice) ... FAIL
+test_rejects_mixed_cache_states_in_one_cell (test_results.ResultsTest.test_rejects_mixed_cache_states_in_one_cell) ... ERROR
+test_reports_nearest_rank_median_and_p90_in_milliseconds (test_results.ResultsTest.test_reports_nearest_rank_median_and_p90_in_milliseconds) ... FAIL
+
+======================================================================
+ERROR: test_excludes_warmups_and_preserves_their_reason (test_results.ResultsTest.test_excludes_warmups_and_preserves_their_reason)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/test_results.py", line 48, in test_excludes_warmups_and_preserves_their_reason
+    self.assertEqual(result["excluded"][0]["reason"], "warmup")
+                     ~~~~~~~~~~~~~~~~~~^^^
+IndexError: list index out of range
+
+======================================================================
+ERROR: test_rejects_mixed_cache_states_in_one_cell (test_results.ResultsTest.test_rejects_mixed_cache_states_in_one_cell)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/test_results.py", line 57, in test_rejects_mixed_cache_states_in_one_cell
+    self.assertEqual(result["cells"][0]["count"], 1)
+                     ~~~~~~~~~~~~~~~^^^
+IndexError: list index out of range
+
+======================================================================
+FAIL: test_complete_requires_all_engines_books_operations_and_counts (test_results.ResultsTest.test_complete_requires_all_engines_books_operations_and_counts)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/test_results.py", line 75, in test_complete_requires_all_engines_books_operations_and_counts
+    self.assertTrue(summarize(rows)["complete"])
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: False is not true
+
+======================================================================
+FAIL: test_excludes_blank_stale_wrong_destination_and_error_samples (test_results.ResultsTest.test_excludes_blank_stale_wrong_destination_and_error_samples) (changes={'text': ' '})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/test_results.py", line 44, in test_excludes_blank_stale_wrong_destination_and_error_samples
+    self.assertEqual(len(result["excluded"]), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_excludes_blank_stale_wrong_destination_and_error_samples (test_results.ResultsTest.test_excludes_blank_stale_wrong_destination_and_error_samples) (changes={'capture_sha256': 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/test_results.py", line 44, in test_excludes_blank_stale_wrong_destination_and_error_samples
+    self.assertEqual(len(result["excluded"]), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_excludes_blank_stale_wrong_destination_and_error_samples (test_results.ResultsTest.test_excludes_blank_stale_wrong_destination_and_error_samples) (changes={'actual': 'chapter-0:page-1'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/test_results.py", line 44, in test_excludes_blank_stale_wrong_destination_and_error_samples
+    self.assertEqual(len(result["excluded"]), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_excludes_blank_stale_wrong_destination_and_error_samples (test_results.ResultsTest.test_excludes_blank_stale_wrong_destination_and_error_samples) (changes={'error': 'load failed'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/test_results.py", line 44, in test_excludes_blank_stale_wrong_destination_and_error_samples
+    self.assertEqual(len(result["excluded"]), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_excludes_blank_stale_wrong_destination_and_error_samples (test_results.ResultsTest.test_excludes_blank_stale_wrong_destination_and_error_samples) (changes={'end_ns': None})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/test_results.py", line 44, in test_excludes_blank_stale_wrong_destination_and_error_samples
+    self.assertEqual(len(result["excluded"]), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_excludes_blank_stale_wrong_destination_and_error_samples (test_results.ResultsTest.test_excludes_blank_stale_wrong_destination_and_error_samples) (changes={'end_ns': 0})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/test_results.py", line 44, in test_excludes_blank_stale_wrong_destination_and_error_samples
+    self.assertEqual(len(result["excluded"]), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_excludes_blank_stale_wrong_destination_and_error_samples (test_results.ResultsTest.test_excludes_blank_stale_wrong_destination_and_error_samples) (changes={'end_ns': nan})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/test_results.py", line 44, in test_excludes_blank_stale_wrong_destination_and_error_samples
+    self.assertEqual(len(result["excluded"]), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_excludes_blank_stale_wrong_destination_and_error_samples (test_results.ResultsTest.test_excludes_blank_stale_wrong_destination_and_error_samples) (changes={'boundary': 'relocated'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/test_results.py", line 44, in test_excludes_blank_stale_wrong_destination_and_error_samples
+    self.assertEqual(len(result["excluded"]), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_excludes_blank_stale_wrong_destination_and_error_samples (test_results.ResultsTest.test_excludes_blank_stale_wrong_destination_and_error_samples) (changes={'clock': 'host_wall_time'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/test_results.py", line 44, in test_excludes_blank_stale_wrong_destination_and_error_samples
+    self.assertEqual(len(result["excluded"]), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_excludes_blank_stale_wrong_destination_and_error_samples (test_results.ResultsTest.test_excludes_blank_stale_wrong_destination_and_error_samples) (changes={'capture_sha256': 'not-a-digest'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/test_results.py", line 44, in test_excludes_blank_stale_wrong_destination_and_error_samples
+    self.assertEqual(len(result["excluded"]), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_excludes_blank_stale_wrong_destination_and_error_samples (test_results.ResultsTest.test_excludes_blank_stale_wrong_destination_and_error_samples) (changes={'expected': ''})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/test_results.py", line 44, in test_excludes_blank_stale_wrong_destination_and_error_samples
+    self.assertEqual(len(result["excluded"]), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_keeps_books_operations_and_engines_separate (test_results.ResultsTest.test_keeps_books_operations_and_engines_separate)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/test_results.py", line 33, in test_keeps_books_operations_and_engines_separate
+    self.assertEqual(len(summarize(rows)["cells"]), 4)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 4
+
+======================================================================
+FAIL: test_rejects_duplicate_ids_instead_of_counting_them_twice (test_results.ResultsTest.test_rejects_duplicate_ids_instead_of_counting_them_twice)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/test_results.py", line 52, in test_rejects_duplicate_ids_instead_of_counting_them_twice
+    with self.assertRaisesRegex(ValueError, "duplicate"):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_reports_nearest_rank_median_and_p90_in_milliseconds (test_results.ResultsTest.test_reports_nearest_rank_median_and_p90_in_milliseconds)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/test_results.py", line 25, in test_reports_nearest_rank_median_and_p90_in_milliseconds
+    self.assertEqual(len(result["cells"]), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.004s
+
+FAILED (failures=15, errors=2)

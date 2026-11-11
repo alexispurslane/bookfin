@@ -1,0 +1,74 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.3.1/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preWebviewReleaseBuild UP-TO-DATE
+> Task :app:mergeWebviewReleaseJniLibFolders
+> Task :app:mergeWebviewReleaseNativeLibs NO-SOURCE
+> Task :app:stripWebviewReleaseDebugSymbols NO-SOURCE
+> Task :app:extractWebviewReleaseNativeSymbolTables NO-SOURCE
+> Task :app:mergeWebviewReleaseNativeDebugMetadata NO-SOURCE
+> Task :app:checkWebviewReleaseDuplicateClasses
+> Task :app:generateWebviewReleaseBuildConfig
+> Task :app:generateWebviewReleaseResources
+> Task :app:packageWebviewReleaseResources
+> Task :app:processWebviewReleaseNavigationResources
+> Task :app:javaPreCompileWebviewRelease
+> Task :app:checkWebviewReleaseAarMetadata
+> Task :app:mapWebviewReleaseSourceSetPaths
+> Task :app:parseWebviewReleaseLocalResources
+> Task :app:compileWebviewReleaseNavigationResources
+> Task :app:mergeWebviewReleaseResources
+> Task :app:createWebviewReleaseCompatibleScreenManifests
+> Task :app:generateWebviewReleaseRFile
+> Task :app:extractDeepLinksWebviewRelease
+> Task :app:compileWebviewReleaseKotlin NO-SOURCE
+> Task :app:compileWebviewReleaseJavaWithJavac
+
+> Task :app:processWebviewReleaseMainManifest
+/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/native/app/src/main/AndroidManifest.xml:3:148-180 Warning:
+	android:extractNativeLibs should not be specified in this source AndroidManifest.xml file. See https://d.android.com/guide/topics/manifest/application-element#extractNativeLibs for more information.
+The AGP Upgrade Assistant can remove the attribute from the AndroidManifest.xml file and update the build file accordingly. See https://d.android.com/studio/build/agp-upgrade-assistant for more information.
+
+> Task :app:processWebviewReleaseManifest
+> Task :app:desugarWebviewReleaseFileDependencies
+> Task :app:mergeWebviewReleaseStartupProfile
+> Task :app:processWebviewReleaseManifestForPackage
+> Task :app:mergeExtDexWebviewRelease
+> Task :app:mergeWebviewReleaseArtProfile
+> Task :app:generateWebviewReleaseAssets UP-TO-DATE
+> Task :app:mergeWebviewReleaseAssets
+> Task :app:compressWebviewReleaseAssets
+> Task :app:extractWebviewReleaseVersionControlInfo
+> Task :app:extractProguardFiles
+> Task :app:processWebviewReleaseResources
+> Task :app:generateWebviewReleaseLintVitalReportModel
+> Task :app:dexBuilderWebviewRelease
+> Task :app:mergeWebviewReleaseGlobalSynthetics
+> Task :app:mergeDexWebviewRelease
+> Task :app:compileWebviewReleaseArtProfile
+> Task :app:processWebviewReleaseJavaRes NO-SOURCE
+> Task :app:mergeWebviewReleaseJavaResource
+> Task :app:optimizeWebviewReleaseResources
+> Task :app:collectWebviewReleaseDependencies
+> Task :app:sdkWebviewReleaseDependencyData
+> Task :app:validateSigningWebviewRelease
+> Task :app:writeWebviewReleaseAppMetadata
+> Task :app:writeWebviewReleaseSigningConfigVersions
+> Task :app:lintVitalAnalyzeWebviewRelease
+> Task :app:lintVitalReportWebviewRelease
+> Task :app:lintVitalWebviewRelease
+> Task :app:packageWebviewRelease
+> Task :app:createWebviewReleaseApkListingFileRedirect
+> Task :app:assembleWebviewRelease
+
+[Incubating] Problems report is available at: file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/native/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.3.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 16s
+45 actionable tasks: 45 executed
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.3.1/userguide/configuration_cache_enabling.html

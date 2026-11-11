@@ -1,0 +1,2393 @@
+{
+  "books": {
+    "prose": {
+      "id": "se-pride-and-prejudice",
+      "title": "Pride and Prejudice",
+      "source": "standard-ebooks",
+      "url": "https://standardebooks.org/ebooks/jane-austen/pride-and-prejudice/downloads/jane-austen_pride-and-prejudice.epub?source=download",
+      "sha256": "85814417c1a74d2ca7f3b077b47454d0cfc728392d40d846d1c97d44f24c5279",
+      "bytes": 831959,
+      "format": "epub",
+      "why": "Trial book: dialogue-heavy novel",
+      "file": "prose.epub",
+      "sections": [
+        {
+          "index": 0,
+          "href": "text/titlepage.xhtml",
+          "path": "epub/text/titlepage.xhtml",
+          "characters": 36,
+          "heading": "Pride and Prejudice",
+          "toc_title": "Titlepage",
+          "text_prefix": "Pride and Prejudice By Jane Austen .",
+          "images": 1
+        },
+        {
+          "index": 1,
+          "href": "text/imprint.xhtml",
+          "path": "epub/text/imprint.xhtml",
+          "characters": 1205,
+          "heading": "Imprint",
+          "toc_title": "Imprint",
+          "text_prefix": "Imprint This ebook is the product of many hours of hard work by volunteers for Standard Ebooks , and builds on the hard work of other literature lovers made possible by the public domain. This particular ebook is based on a transcription fr",
+          "images": 1
+        },
+        {
+          "index": 2,
+          "href": "text/chapter-1.xhtml",
+          "path": "epub/text/chapter-1.xhtml",
+          "characters": 4440,
+          "heading": "I",
+          "toc_title": "I",
+          "text_prefix": "I It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife. However little known the feelings or views of such a man may be on his first entering a neighbourhood, this truth is so ",
+          "images": 0
+        },
+        {
+          "index": 3,
+          "href": "text/chapter-2.xhtml",
+          "path": "epub/text/chapter-2.xhtml",
+          "characters": 4265,
+          "heading": "II",
+          "toc_title": "II",
+          "text_prefix": "II Mr. Bennet was among the earliest of those who waited on Mr. Bingley. He had always intended to visit him, though to the last always assuring his wife that he should not go; and till the evening after the visit was paid, she had no knowl",
+          "images": 0
+        },
+        {
+          "index": 4,
+          "href": "text/chapter-3.xhtml",
+          "path": "epub/text/chapter-3.xhtml",
+          "characters": 9532,
+          "heading": "III",
+          "toc_title": "III",
+          "text_prefix": "III Not all that Mrs. Bennet, however, with the assistance of her five daughters, could ask on the subject was sufficient to draw from her husband any satisfactory description of Mr. Bingley. They attacked him in various ways; with bareface",
+          "images": 0
+        },
+        {
+          "index": 5,
+          "href": "text/chapter-4.xhtml",
+          "path": "epub/text/chapter-4.xhtml",
+          "characters": 5890,
+          "heading": "IV",
+          "toc_title": "IV",
+          "text_prefix": "IV When Jane and Elizabeth were alone, the former, who had been cautious in her praise of Mr. Bingley before, expressed to her sister how very much she admired him. \u201cHe is just what a young man ought to be,\u201d said she, \u201csensible, good humour",
+          "images": 0
+        },
+        {
+          "index": 6,
+          "href": "text/chapter-5.xhtml",
+          "path": "epub/text/chapter-5.xhtml",
+          "characters": 5218,
+          "heading": "V",
+          "toc_title": "V",
+          "text_prefix": "V Within a short walk of Longbourn lived a family with whom the Bennets were particularly intimate. Sir William Lucas had been formerly in trade in Meryton, where he had made a tolerable fortune and risen to the honour of knighthood by an a",
+          "images": 0
+        },
+        {
+          "index": 7,
+          "href": "text/chapter-6.xhtml",
+          "path": "epub/text/chapter-6.xhtml",
+          "characters": 12937,
+          "heading": "VI",
+          "toc_title": "VI",
+          "text_prefix": "VI The ladies of Longbourn soon waited on those of Netherfield. The visit was returned in due form. Miss Bennet\u2019s pleasing manners grew on the good will of Mrs. Hurst and Miss Bingley; and though the mother was found to be intolerable, and ",
+          "images": 0
+        },
+        {
+          "index": 8,
+          "href": "text/chapter-7.xhtml",
+          "path": "epub/text/chapter-7.xhtml",
+          "characters": 11111,
+          "heading": "VII",
+          "toc_title": "VII",
+          "text_prefix": "VII Mr. Bennet\u2019s property consisted almost entirely in an estate of two thousand a year, which, unfortunately for his daughters, was entailed in default of heirs male, on a distant relation; and their mother\u2019s fortune, though ample for her ",
+          "images": 0
+        },
+        {
+          "index": 9,
+          "href": "text/chapter-8.xhtml",
+          "path": "epub/text/chapter-8.xhtml",
+          "characters": 10936,
+          "heading": "VIII",
+          "toc_title": "VIII",
+          "text_prefix": "VIII At five o\u2019clock the two ladies retired to dress, and at half past six Elizabeth was summoned to dinner. To the civil enquiries which then poured in, and amongst which she had the pleasure of distinguishing the much superior solicitude ",
+          "images": 0
+        },
+        {
+          "index": 10,
+          "href": "text/chapter-9.xhtml",
+          "path": "epub/text/chapter-9.xhtml",
+          "characters": 9698,
+          "heading": "IX",
+          "toc_title": "IX",
+          "text_prefix": "IX Elizabeth passed the chief of the night in her sister\u2019s room, and in the morning had the pleasure of being able to send a tolerable answer to the enquiries which she very early received from Mr. Bingley by a housemaid, and some time afte",
+          "images": 0
+        },
+        {
+          "index": 11,
+          "href": "text/chapter-10.xhtml",
+          "path": "epub/text/chapter-10.xhtml",
+          "characters": 12427,
+          "heading": "X",
+          "toc_title": "X",
+          "text_prefix": "X The day passed much as the day before had done. Mrs. Hurst and Miss Bingley had spent some hours of the morning with the invalid, who continued, though slowly, to mend; and in the evening Elizabeth joined their party in the drawing-room. ",
+          "images": 0
+        },
+        {
+          "index": 12,
+          "href": "text/chapter-11.xhtml",
+          "path": "epub/text/chapter-11.xhtml",
+          "characters": 8899,
+          "heading": "XI",
+          "toc_title": "XI",
+          "text_prefix": "XI When the ladies removed after dinner, Elizabeth ran up to her sister, and seeing her well guarded from cold, attended her into the drawing-room; where she was welcomed by her two friends with many professions of pleasure; and Elizabeth h",
+          "images": 0
+        },
+        {
+          "index": 13,
+          "href": "text/chapter-12.xhtml",
+          "path": "epub/text/chapter-12.xhtml",
+          "characters": 3927,
+          "heading": "XII",
+          "toc_title": "XII",
+          "text_prefix": "XII In consequence of an agreement between the sisters, Elizabeth wrote the next morning to her mother, to beg that the carriage might be sent for them in the course of the day. But Mrs. Bennet, who had calculated on her daughters remaining",
+          "images": 0
+        },
+        {
+          "index": 14,
+          "href": "text/chapter-13.xhtml",
+          "path": "epub/text/chapter-13.xhtml",
+          "characters": 9227,
+          "heading": "XIII",
+          "toc_title": "XIII",
+          "text_prefix": "XIII \u201cI hope, my dear,\u201d said Mr. Bennet to his wife, as they were at breakfast the next morning, \u201cthat you have ordered a good dinner today, because I have reason to expect an addition to our family party.\u201d \u201cWho do you mean, my dear? I know",
+          "images": 0
+        },
+        {
+          "index": 15,
+          "href": "text/chapter-14.xhtml",
+          "path": "epub/text/chapter-14.xhtml",
+          "characters": 6425,
+          "heading": "XIV",
+          "toc_title": "XIV",
+          "text_prefix": "XIV During dinner, Mr. Bennet scarcely spoke at all; but when the servants were withdrawn, he thought it time to have some conversation with his guest, and therefore started a subject in which he expected him to shine, by observing that he ",
+          "images": 0
+        },
+        {
+          "index": 16,
+          "href": "text/chapter-15.xhtml",
+          "path": "epub/text/chapter-15.xhtml",
+          "characters": 9762,
+          "heading": "XV",
+          "toc_title": "XV",
+          "text_prefix": "XV Mr. Collins was not a sensible man, and the deficiency of nature had been but little assisted by education or society; the greatest part of his life having been spent under the guidance of an illiterate and miserly father; and though he ",
+          "images": 0
+        },
+        {
+          "index": 17,
+          "href": "text/chapter-16.xhtml",
+          "path": "epub/text/chapter-16.xhtml",
+          "characters": 18971,
+          "heading": "XVI",
+          "toc_title": "XVI",
+          "text_prefix": "XVI As no objection was made to the young people\u2019s engagement with their aunt, and all Mr. Collins\u2019s scruples of leaving Mr. and Mrs. Bennet for a single evening during his visit were most steadily resisted, the coach conveyed him and his f",
+          "images": 0
+        },
+        {
+          "index": 18,
+          "href": "text/chapter-17.xhtml",
+          "path": "epub/text/chapter-17.xhtml",
+          "characters": 7263,
+          "heading": "XVII",
+          "toc_title": "XVII",
+          "text_prefix": "XVII Elizabeth related to Jane the next day, what had passed between Mr. Wickham and herself. Jane listened with astonishment and concern;\ufeff\u2014she knew not how to believe that Mr. Darcy could be so unworthy of Mr. Bingley\u2019s regard; and yet, it",
+          "images": 0
+        },
+        {
+          "index": 19,
+          "href": "text/chapter-18.xhtml",
+          "path": "epub/text/chapter-18.xhtml",
+          "characters": 29039,
+          "heading": "XVIII",
+          "toc_title": "XVIII",
+          "text_prefix": "XVIII Till Elizabeth entered the drawing-room at Netherfield and looked in vain for Mr. Wickham among the cluster of red coats there assembled, a doubt of his being present had never occurred to her. The certainty of meeting him had not bee",
+          "images": 0
+        },
+        {
+          "index": 20,
+          "href": "text/chapter-19.xhtml",
+          "path": "epub/text/chapter-19.xhtml",
+          "characters": 10607,
+          "heading": "XIX",
+          "toc_title": "XIX",
+          "text_prefix": "XIX The next day opened a new scene at Longbourn. Mr. Collins made his declaration in form. Having resolved to do it without loss of time, as his leave of absence extended only to the following Saturday, and having no feelings of diffidence",
+          "images": 0
+        },
+        {
+          "index": 21,
+          "href": "text/chapter-20.xhtml",
+          "path": "epub/text/chapter-20.xhtml",
+          "characters": 9132,
+          "heading": "XX",
+          "toc_title": "XX",
+          "text_prefix": "XX Mr. Collins was not left long to the silent contemplation of his successful love; for Mrs. Bennet, having dawdled about in the vestibule to watch for the end of the conference, no sooner saw Elizabeth open the door and with quick step pa",
+          "images": 0
+        },
+        {
+          "index": 22,
+          "href": "text/chapter-21.xhtml",
+          "path": "epub/text/chapter-21.xhtml",
+          "characters": 11248,
+          "heading": "XXI",
+          "toc_title": "XXI",
+          "text_prefix": "XXI The discussion of Mr. Collins\u2019s offer was now nearly at an end, and Elizabeth had only to suffer from the uncomfortable feelings necessarily attending it, and occasionally from some peevish allusion of her mother. As for the gentleman h",
+          "images": 0
+        },
+        {
+          "index": 23,
+          "href": "text/chapter-22.xhtml",
+          "path": "epub/text/chapter-22.xhtml",
+          "characters": 9974,
+          "heading": "XXII",
+          "toc_title": "XXII",
+          "text_prefix": "XXII The Bennets were engaged to dine with the Lucases, and again during the chief of the day, was Miss Lucas so kind as to listen to Mr. Collins. Elizabeth took an opportunity of thanking her. \u201cIt keeps him in good humour,\u201d said she, \u201cand ",
+          "images": 0
+        },
+        {
+          "index": 24,
+          "href": "text/chapter-23.xhtml",
+          "path": "epub/text/chapter-23.xhtml",
+          "characters": 9289,
+          "heading": "XXIII",
+          "toc_title": "XXIII",
+          "text_prefix": "XXIII Elizabeth was sitting with her mother and sisters, reflecting on what she had heard, and doubting whether she were authorised to mention it, when Sir William Lucas himself appeared, sent by his daughter to announce her engagement to t",
+          "images": 0
+        },
+        {
+          "index": 25,
+          "href": "text/chapter-24.xhtml",
+          "path": "epub/text/chapter-24.xhtml",
+          "characters": 10804,
+          "heading": "XXIV",
+          "toc_title": "XXIV",
+          "text_prefix": "XXIV Miss Bingley\u2019s letter arrived, and put an end to doubt. The very first sentence conveyed the assurance of their being all settled in London for the winter, and concluded with her brother\u2019s regret at not having had time to pay his respe",
+          "images": 0
+        },
+        {
+          "index": 26,
+          "href": "text/chapter-25.xhtml",
+          "path": "epub/text/chapter-25.xhtml",
+          "characters": 8576,
+          "heading": "XXV",
+          "toc_title": "XXV",
+          "text_prefix": "XXV After a week spent in professions of love and schemes of felicity, Mr. Collins was called from his amiable Charlotte by the arrival of Saturday. The pain of separation, however, might be alleviated on his side, by preparations for the r",
+          "images": 0
+        },
+        {
+          "index": 27,
+          "href": "text/chapter-26.xhtml",
+          "path": "epub/text/chapter-26.xhtml",
+          "characters": 12734,
+          "heading": "XXVI",
+          "toc_title": "XXVI",
+          "text_prefix": "XXVI Mrs. Gardiner\u2019s caution to Elizabeth was punctually and kindly given on the first favourable opportunity of speaking to her alone; after honestly telling her what she thought, she thus went on: \u201cYou are too sensible a girl, Lizzy, to f",
+          "images": 0
+        },
+        {
+          "index": 28,
+          "href": "text/chapter-27.xhtml",
+          "path": "epub/text/chapter-27.xhtml",
+          "characters": 7179,
+          "heading": "XXVII",
+          "toc_title": "XXVII",
+          "text_prefix": "XXVII With no greater events than these in the Longbourn family, and otherwise diversified by little beyond the walks to Meryton, sometimes dirty and sometimes cold, did January and February pass away. March was to take Elizabeth to Hunsfor",
+          "images": 0
+        },
+        {
+          "index": 29,
+          "href": "text/chapter-28.xhtml",
+          "path": "epub/text/chapter-28.xhtml",
+          "characters": 8211,
+          "heading": "XXVIII",
+          "toc_title": "XXVIII",
+          "text_prefix": "XXVIII Every object in the next day\u2019s journey was new and interesting to Elizabeth; and her spirits were in a state for enjoyment; for she had seen her sister looking so well as to banish all fear for her health, and the prospect of her nor",
+          "images": 0
+        },
+        {
+          "index": 30,
+          "href": "text/chapter-29.xhtml",
+          "path": "epub/text/chapter-29.xhtml",
+          "characters": 13664,
+          "heading": "XXIX",
+          "toc_title": "XXIX",
+          "text_prefix": "XXIX Mr. Collins\u2019s triumph in consequence of this invitation was complete. The power of displaying the grandeur of his patroness to his wondering visitors, and of letting them see her civility towards himself and his wife, was exactly what ",
+          "images": 0
+        },
+        {
+          "index": 31,
+          "href": "text/chapter-30.xhtml",
+          "path": "epub/text/chapter-30.xhtml",
+          "characters": 7050,
+          "heading": "XXX",
+          "toc_title": "XXX",
+          "text_prefix": "XXX Sir William stayed only a week at Hunsford; but his visit was long enough to convince him of his daughter\u2019s being most comfortably settled, and of her possessing such a husband and such a neighbour as were not often met with. While Sir ",
+          "images": 0
+        },
+        {
+          "index": 32,
+          "href": "text/chapter-31.xhtml",
+          "path": "epub/text/chapter-31.xhtml",
+          "characters": 8724,
+          "heading": "XXXI",
+          "toc_title": "XXXI",
+          "text_prefix": "XXXI Colonel Fitzwilliam\u2019s manners were very much admired at the parsonage, and the ladies all felt that he must add considerably to the pleasure of their engagements at Rosings. It was some days, however, before they received any invitatio",
+          "images": 0
+        },
+        {
+          "index": 33,
+          "href": "text/chapter-32.xhtml",
+          "path": "epub/text/chapter-32.xhtml",
+          "characters": 8431,
+          "heading": "XXXII",
+          "toc_title": "XXXII",
+          "text_prefix": "XXXII Elizabeth was sitting by herself the next morning, and writing to Jane, while Mrs. Collins and Maria were gone on business into the village, when she was startled by a ring at the door, the certain signal of a visitor. As she had hear",
+          "images": 0
+        },
+        {
+          "index": 34,
+          "href": "text/chapter-33.xhtml",
+          "path": "epub/text/chapter-33.xhtml",
+          "characters": 10332,
+          "heading": "XXXIII",
+          "toc_title": "XXXIII",
+          "text_prefix": "XXXIII More than once did Elizabeth in her ramble within the Park, unexpectedly meet Mr. Darcy. She felt all the perverseness of the mischance that should bring him where no one else was brought; and to prevent its ever happening again, too",
+          "images": 0
+        },
+        {
+          "index": 35,
+          "href": "text/chapter-34.xhtml",
+          "path": "epub/text/chapter-34.xhtml",
+          "characters": 11978,
+          "heading": "XXXIV",
+          "toc_title": "XXXIV",
+          "text_prefix": "XXXIV When they were gone, Elizabeth, as if intending to exasperate herself as much as possible against Mr. Darcy, chose for her employment the examination of all the letters which Jane had written to her since her being in Kent. They conta",
+          "images": 0
+        },
+        {
+          "index": 36,
+          "href": "text/chapter-35.xhtml",
+          "path": "epub/text/chapter-35.xhtml",
+          "characters": 16990,
+          "heading": "XXXV",
+          "toc_title": "XXXV",
+          "text_prefix": "XXXV Elizabeth awoke the next morning to the same thoughts and meditations which had at length closed her eyes. She could not yet recover from the surprise of what had happened; it was impossible to think of anything else, and totally indis",
+          "images": 0
+        },
+        {
+          "index": 37,
+          "href": "text/chapter-36.xhtml",
+          "path": "epub/text/chapter-36.xhtml",
+          "characters": 11791,
+          "heading": "XXXVI",
+          "toc_title": "XXXVI",
+          "text_prefix": "XXXVI If Elizabeth, when Mr. Darcy gave her the letter, did not expect it to contain a renewal of his offers, she had formed no expectation at all of its contents. But such as they were, it may be well supposed how eagerly she went through ",
+          "images": 0
+        },
+        {
+          "index": 38,
+          "href": "text/chapter-37.xhtml",
+          "path": "epub/text/chapter-37.xhtml",
+          "characters": 7772,
+          "heading": "XXXVII",
+          "toc_title": "XXXVII",
+          "text_prefix": "XXXVII The two gentlemen left Rosings the next morning; and Mr. Collins having been in waiting near the lodges, to make them his parting obeisance, was able to bring home the pleasing intelligence, of their appearing in very good health, an",
+          "images": 0
+        },
+        {
+          "index": 39,
+          "href": "text/chapter-38.xhtml",
+          "path": "epub/text/chapter-38.xhtml",
+          "characters": 5940,
+          "heading": "XXXVIII",
+          "toc_title": "XXXVIII",
+          "text_prefix": "XXXVIII On Saturday morning Elizabeth and Mr. Collins met for breakfast a few minutes before the others appeared; and he took the opportunity of paying the parting civilities which he deemed indispensably necessary. \u201cI know not, Miss Elizab",
+          "images": 0
+        },
+        {
+          "index": 40,
+          "href": "text/chapter-39.xhtml",
+          "path": "epub/text/chapter-39.xhtml",
+          "characters": 8743,
+          "heading": "XXXIX",
+          "toc_title": "XXXIX",
+          "text_prefix": "XXXIX It was the second week in May, in which the three young ladies set out together from Gracechurch-street, for the town of \u2014\ufeff\u2014\ufeff\u2014 in Hertfordshire; and, as they drew near the appointed inn where Mr. Bennet\u2019s carriage was to meet them, th",
+          "images": 0
+        },
+        {
+          "index": 41,
+          "href": "text/chapter-40.xhtml",
+          "path": "epub/text/chapter-40.xhtml",
+          "characters": 9144,
+          "heading": "XL",
+          "toc_title": "XL",
+          "text_prefix": "XL Elizabeth\u2019s impatience to acquaint Jane with what had happened could no longer be overcome; and at length resolving to suppress every particular in which her sister was concerned, and preparing her to be surprised, she related to her the",
+          "images": 0
+        },
+        {
+          "index": 42,
+          "href": "text/chapter-41.xhtml",
+          "path": "epub/text/chapter-41.xhtml",
+          "characters": 12949,
+          "heading": "XLI",
+          "toc_title": "XLI",
+          "text_prefix": "XLI The first week of their return was soon gone. The second began. It was the last of the regiment\u2019s stay in Meryton, and all the young ladies in the neighbourhood were drooping apace. The dejection was almost universal. The elder Miss Ben",
+          "images": 0
+        },
+        {
+          "index": 43,
+          "href": "text/chapter-42.xhtml",
+          "path": "epub/text/chapter-42.xhtml",
+          "characters": 10630,
+          "heading": "XLII",
+          "toc_title": "XLII",
+          "text_prefix": "XLII Had Elizabeth\u2019s opinion been all drawn from her own family, she could not have formed a very pleasing picture of conjugal felicity or domestic comfort. Her father, captivated by youth and beauty, and that appearance of good humour whic",
+          "images": 0
+        },
+        {
+          "index": 44,
+          "href": "text/chapter-43.xhtml",
+          "path": "epub/text/chapter-43.xhtml",
+          "characters": 27432,
+          "heading": "XLIII",
+          "toc_title": "XLIII",
+          "text_prefix": "XLIII Elizabeth, as they drove along, watched for the first appearance of Pemberley Woods with some perturbation; and when at length they turned in at the lodge, her spirits were in a high flutter. The park was very large, and contained gre",
+          "images": 0
+        },
+        {
+          "index": 45,
+          "href": "text/chapter-44.xhtml",
+          "path": "epub/text/chapter-44.xhtml",
+          "characters": 13369,
+          "heading": "XLIV",
+          "toc_title": "XLIV",
+          "text_prefix": "XLIV Elizabeth had settled it that Mr. Darcy would bring his sister to visit her, the very day after her reaching Pemberley; and was consequently resolved not to be out of sight of the inn the whole of that morning. But her conclusion was f",
+          "images": 0
+        },
+        {
+          "index": 46,
+          "href": "text/chapter-45.xhtml",
+          "path": "epub/text/chapter-45.xhtml",
+          "characters": 10081,
+          "heading": "XLV",
+          "toc_title": "XLV",
+          "text_prefix": "XLV Convinced as Elizabeth now was that Miss Bingley\u2019s dislike of her had originated in jealousy, she could not help feeling how very unwelcome her appearance at Pemberley must be to her, and was curious to know with how much civility on th",
+          "images": 0
+        },
+        {
+          "index": 47,
+          "href": "text/chapter-46.xhtml",
+          "path": "epub/text/chapter-46.xhtml",
+          "characters": 16892,
+          "heading": "XLVI",
+          "toc_title": "XLVI",
+          "text_prefix": "XLVI Elizabeth had been a good deal disappointed in not finding a letter from Jane, on their first arrival at Lambton; and this disappointment had been renewed on each of the mornings that had now been spent there; but on the third, her rep",
+          "images": 0
+        },
+        {
+          "index": 48,
+          "href": "text/chapter-47.xhtml",
+          "path": "epub/text/chapter-47.xhtml",
+          "characters": 22274,
+          "heading": "XLVII",
+          "toc_title": "XLVII",
+          "text_prefix": "XLVII \u201cI have been thinking it over again, Elizabeth,\u201d said her uncle, as they drove from the town; \u201cand really, upon serious consideration, I am much more inclined than I was to judge as your eldest sister does of the matter. It appears to",
+          "images": 0
+        },
+        {
+          "index": 49,
+          "href": "text/chapter-48.xhtml",
+          "path": "epub/text/chapter-48.xhtml",
+          "characters": 12541,
+          "heading": "XLVIII",
+          "toc_title": "XLVIII",
+          "text_prefix": "XLVIII The whole party were in hopes of a letter from Mr. Bennet the next morning, but the post came in without bringing a single line from him. His family knew him to be on all common occasions, a most negligent and dilatory correspondent,",
+          "images": 0
+        },
+        {
+          "index": 50,
+          "href": "text/chapter-49.xhtml",
+          "path": "epub/text/chapter-49.xhtml",
+          "characters": 12202,
+          "heading": "XLIX",
+          "toc_title": "XLIX",
+          "text_prefix": "XLIX Two days after Mr. Bennet\u2019s return, as Jane and Elizabeth were walking together in the shrubbery behind the house, they saw the housekeeper coming towards them, and, concluding that she came to call them to their mother, went forward t",
+          "images": 0
+        },
+        {
+          "index": 51,
+          "href": "text/chapter-50.xhtml",
+          "path": "epub/text/chapter-50.xhtml",
+          "characters": 12494,
+          "heading": "L",
+          "toc_title": "L",
+          "text_prefix": "L Mr. Bennet had very often wished, before this period of his life, that, instead of spending his whole income, he had laid by an annual sum, for the better provision of his children, and of his wife, if she survived him. He now wished it m",
+          "images": 0
+        },
+        {
+          "index": 52,
+          "href": "text/chapter-51.xhtml",
+          "path": "epub/text/chapter-51.xhtml",
+          "characters": 11188,
+          "heading": "LI",
+          "toc_title": "LI",
+          "text_prefix": "LI Their sister\u2019s wedding day arrived; and Jane and Elizabeth felt for her probably more than she felt for herself. The carriage was sent to meet them at \u2014\ufeff\u2014\ufeff\u2014, and they were to return in it, by dinnertime. Their arrival was dreaded by the ",
+          "images": 0
+        },
+        {
+          "index": 53,
+          "href": "text/chapter-52.xhtml",
+          "path": "epub/text/chapter-52.xhtml",
+          "characters": 16521,
+          "heading": "LII",
+          "toc_title": "LII",
+          "text_prefix": "LII Elizabeth had the satisfaction of receiving an answer to her letter, as soon as she possibly could. She was no sooner in possession of it, than hurrying into the little copse, where she was least likely to be interrupted, she sat down o",
+          "images": 0
+        },
+        {
+          "index": 54,
+          "href": "text/chapter-53.xhtml",
+          "path": "epub/text/chapter-53.xhtml",
+          "characters": 16041,
+          "heading": "LIII",
+          "toc_title": "LIII",
+          "text_prefix": "LIII Mr. Wickham was so perfectly satisfied with this conversation, that he never again distressed himself, or provoked his dear sister Elizabeth, by introducing the subject of it; and she was pleased to find that she had said enough to kee",
+          "images": 0
+        },
+        {
+          "index": 55,
+          "href": "text/chapter-54.xhtml",
+          "path": "epub/text/chapter-54.xhtml",
+          "characters": 8815,
+          "heading": "LIV",
+          "toc_title": "LIV",
+          "text_prefix": "LIV As soon as they were gone, Elizabeth walked out to recover her spirits; or in other words, to dwell without interruption on those subjects that must deaden them more. Mr. Darcy\u2019s behaviour astonished and vexed her. \u201cWhy, if he came only",
+          "images": 0
+        },
+        {
+          "index": 56,
+          "href": "text/chapter-55.xhtml",
+          "path": "epub/text/chapter-55.xhtml",
+          "characters": 12928,
+          "heading": "LV",
+          "toc_title": "LV",
+          "text_prefix": "LV A few days after this visit, Mr. Bingley called again, and alone. His friend had left him that morning for London, but was to return home in ten days\u2019 time. He sat with them above an hour, and was in remarkably good spirits. Mrs. Bennet ",
+          "images": 0
+        },
+        {
+          "index": 57,
+          "href": "text/chapter-56.xhtml",
+          "path": "epub/text/chapter-56.xhtml",
+          "characters": 15245,
+          "heading": "LVI",
+          "toc_title": "LVI",
+          "text_prefix": "LVI One morning, about a week after Bingley\u2019s engagement with Jane had been formed, as he and the females of the family were sitting together in the dining-room, their attention was suddenly drawn to the window by the sound of a carriage; a",
+          "images": 0
+        },
+        {
+          "index": 58,
+          "href": "text/chapter-57.xhtml",
+          "path": "epub/text/chapter-57.xhtml",
+          "characters": 9373,
+          "heading": "LVII",
+          "toc_title": "LVII",
+          "text_prefix": "LVII The discomposure of spirits which this extraordinary visit threw Elizabeth into could not be easily overcome; nor could she for many hours learn to think of it less than incessantly. Lady Catherine it appeared, had actually taken the t",
+          "images": 0
+        },
+        {
+          "index": 59,
+          "href": "text/chapter-58.xhtml",
+          "path": "epub/text/chapter-58.xhtml",
+          "characters": 13613,
+          "heading": "LVIII",
+          "toc_title": "LVIII",
+          "text_prefix": "LVIII Instead of receiving any such letter of excuse from his friend, as Elizabeth half expected Mr. Bingley to do, he was able to bring Darcy with him to Longbourn before many days had passed after Lady Catherine\u2019s visit. The gentlemen arr",
+          "images": 0
+        },
+        {
+          "index": 60,
+          "href": "text/chapter-59.xhtml",
+          "path": "epub/text/chapter-59.xhtml",
+          "characters": 13497,
+          "heading": "LIX",
+          "toc_title": "LIX",
+          "text_prefix": "LIX \u201cMy dear Lizzy, where can you have been walking to?\u201d was a question which Elizabeth received from Jane as soon as she entered the room, and from all the others when they sat down to table. She had only to say in reply that they had wand",
+          "images": 0
+        },
+        {
+          "index": 61,
+          "href": "text/chapter-60.xhtml",
+          "path": "epub/text/chapter-60.xhtml",
+          "characters": 8668,
+          "heading": "LX",
+          "toc_title": "LX",
+          "text_prefix": "LX Elizabeth\u2019s spirits soon rising to playfulness again, she wanted Mr. Darcy to account for his having ever fallen in love with her. \u201cHow could you begin?\u201d said she. \u201cI can comprehend your going on charmingly, when you had once made a begi",
+          "images": 0
+        },
+        {
+          "index": 62,
+          "href": "text/chapter-61.xhtml",
+          "path": "epub/text/chapter-61.xhtml",
+          "characters": 7060,
+          "heading": "LXI",
+          "toc_title": "LXI",
+          "text_prefix": "LXI Happy for all her maternal feelings was the day on which Mrs. Bennet got rid of her two most deserving daughters. With what delighted pride she afterwards visited Mrs. Bingley and talked of Mrs. Darcy may be guessed. I wish I could say,",
+          "images": 0
+        },
+        {
+          "index": 63,
+          "href": "text/colophon.xhtml",
+          "path": "epub/text/colophon.xhtml",
+          "characters": 1114,
+          "heading": "Colophon",
+          "toc_title": "Colophon",
+          "text_prefix": "Colophon Pride and Prejudice was published in 1813 by Jane Austen . This ebook was produced for Standard Ebooks by Alex Cabal and Alina Pyzowski , and is based on a transcription produced in 2013 by Greg Weeks , Jon Hurst , Mary Meehan , an",
+          "images": 1
+        },
+        {
+          "index": 64,
+          "href": "text/uncopyright.xhtml",
+          "path": "epub/text/uncopyright.xhtml",
+          "characters": 2060,
+          "heading": "Uncopyright",
+          "toc_title": "Uncopyright",
+          "text_prefix": "Uncopyright May you do good and not evil. May you find forgiveness for yourself and forgive others. May you share freely, never taking more than you give. Copyright pages exist to tell you that you can\u2019t do something. Unlike them, this Unco",
+          "images": 0
+        }
+      ],
+      "target": {
+        "index": 4,
+        "href": "text/chapter-3.xhtml",
+        "path": "epub/text/chapter-3.xhtml",
+        "characters": 9532,
+        "heading": "III",
+        "toc_title": "III",
+        "text_prefix": "III Not all that Mrs. Bennet, however, with the assistance of her five daughters, could ask on the subject was sufficient to draw from her husband any satisfactory description of Mr. Bingley. They attacked him in various ways; with bareface",
+        "images": 0
+      },
+      "section_count": 65,
+      "actual_bytes": 831959
+    },
+    "long": {
+      "id": "se-moby-dick",
+      "title": "Moby-Dick",
+      "source": "standard-ebooks",
+      "url": "https://standardebooks.org/ebooks/herman-melville/moby-dick/downloads/herman-melville_moby-dick.epub?source=download",
+      "sha256": "4f0a70cac781ab8f30b5efb8d20ee78db9e7e1fc23e0c261e35c8690f48db34c",
+      "bytes": 1165503,
+      "format": "epub",
+      "why": "Trial book: long novel, 145 sections, 1,000,000 visible characters",
+      "file": "long.epub",
+      "sections": [
+        {
+          "index": 0,
+          "href": "text/titlepage.xhtml",
+          "path": "epub/text/titlepage.xhtml",
+          "characters": 0,
+          "heading": "",
+          "toc_title": "Titlepage",
+          "text_prefix": "",
+          "images": 1
+        },
+        {
+          "index": 1,
+          "href": "text/imprint.xhtml",
+          "path": "epub/text/imprint.xhtml",
+          "characters": 1195,
+          "heading": "Imprint",
+          "toc_title": "Imprint",
+          "text_prefix": "Imprint This ebook is the product of many hours of hard work by volunteers for Standard Ebooks , and builds on the hard work of other literature lovers made possible by the public domain. This particular ebook is based on a transcription fr",
+          "images": 1
+        },
+        {
+          "index": 2,
+          "href": "text/dedication.xhtml",
+          "path": "epub/text/dedication.xhtml",
+          "characters": 88,
+          "heading": "",
+          "toc_title": "Dedication",
+          "text_prefix": "In token Of my admiration for his genius This book is inscribed To Nathaniel Hawthorne .",
+          "images": 0
+        },
+        {
+          "index": 3,
+          "href": "text/etymology.xhtml",
+          "path": "epub/text/etymology.xhtml",
+          "characters": 1145,
+          "heading": "Etymology",
+          "toc_title": "Etymology",
+          "text_prefix": "Etymology (Supplied by a Late Consumptive Usher to a Grammar School) The pale Usher\ufeff\u2014threadbare in coat, heart, body, and brain; I see him now. He was ever dusting his old lexicons and grammars, with a queer handkerchief, mockingly embellis",
+          "images": 0
+        },
+        {
+          "index": 4,
+          "href": "text/extracts.xhtml",
+          "path": "epub/text/extracts.xhtml",
+          "characters": 19840,
+          "heading": "Extracts",
+          "toc_title": "Extracts",
+          "text_prefix": "Extracts (Supplied by a Sub-Sub-Librarian) It will be seen that this mere painstaking burrower and grub-worm of a poor devil of a Sub-Sub appears to have gone through the long Vaticans and street-stalls of the earth, picking up whatever ran",
+          "images": 0
+        },
+        {
+          "index": 5,
+          "href": "text/halftitlepage.xhtml",
+          "path": "epub/text/halftitlepage.xhtml",
+          "characters": 23,
+          "heading": "Moby Dick",
+          "toc_title": "Moby Dick",
+          "text_prefix": "Moby Dick Or, The Whale",
+          "images": 0
+        },
+        {
+          "index": 6,
+          "href": "text/chapter-1.xhtml",
+          "path": "epub/text/chapter-1.xhtml",
+          "characters": 12196,
+          "heading": "I",
+          "toc_title": "I: Loomings",
+          "text_prefix": "I Loomings Call me Ishmael. Some years ago\ufeff\u2014never mind how long precisely\ufeff\u2014having little or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little and see the watery part of the world. It",
+          "images": 0
+        },
+        {
+          "index": 7,
+          "href": "text/chapter-2.xhtml",
+          "path": "epub/text/chapter-2.xhtml",
+          "characters": 7930,
+          "heading": "II",
+          "toc_title": "II: The Carpetbag",
+          "text_prefix": "II The Carpetbag I stuffed a shirt or two into my old carpetbag, tucked it under my arm, and started for Cape Horn and the Pacific. Quitting the good city of old Manhatto, I duly arrived in New Bedford. It was a Saturday night in December. ",
+          "images": 0
+        },
+        {
+          "index": 8,
+          "href": "text/chapter-3.xhtml",
+          "path": "epub/text/chapter-3.xhtml",
+          "characters": 31959,
+          "heading": "III",
+          "toc_title": "III: The Spouter-Inn",
+          "text_prefix": "III The Spouter-Inn Entering that gable-ended Spouter-Inn, you found yourself in a wide, low, straggling entry with old-fashioned wainscots, reminding one of the bulwarks of some condemned old craft. On one side hung a very large oil-painti",
+          "images": 0
+        },
+        {
+          "index": 9,
+          "href": "text/chapter-4.xhtml",
+          "path": "epub/text/chapter-4.xhtml",
+          "characters": 9123,
+          "heading": "IV",
+          "toc_title": "IV: The Counterpane",
+          "text_prefix": "IV The Counterpane Upon waking next morning about daylight, I found Queequeg\u2019s arm thrown over me in the most loving and affectionate manner. You had almost thought I had been his wife. The counterpane was of patchwork, full of odd little p",
+          "images": 0
+        },
+        {
+          "index": 10,
+          "href": "text/chapter-5.xhtml",
+          "path": "epub/text/chapter-5.xhtml",
+          "characters": 4178,
+          "heading": "V",
+          "toc_title": "V: Breakfast",
+          "text_prefix": "V Breakfast I quickly followed suit, and descending into the barroom accosted the grinning landlord very pleasantly. I cherished no malice towards him, though he had been skylarking with me not a little in the matter of my bedfellow. Howeve",
+          "images": 0
+        },
+        {
+          "index": 11,
+          "href": "text/chapter-6.xhtml",
+          "path": "epub/text/chapter-6.xhtml",
+          "characters": 4796,
+          "heading": "VI",
+          "toc_title": "VI: The Street",
+          "text_prefix": "VI The Street If I had been astonished at first catching a glimpse of so outlandish an individual as Queequeg circulating among the polite society of a civilized town, that astonishment soon departed upon taking my first daylight stroll thr",
+          "images": 0
+        },
+        {
+          "index": 12,
+          "href": "text/chapter-7.xhtml",
+          "path": "epub/text/chapter-7.xhtml",
+          "characters": 5361,
+          "heading": "VII",
+          "toc_title": "VII: The Chapel",
+          "text_prefix": "VII The Chapel In this same New Bedford there stands a Whaleman\u2019s Chapel, and few are the moody fishermen, shortly bound for the Indian Ocean or Pacific, who fail to make a Sunday visit to the spot. I am sure that I did not. Returning from ",
+          "images": 0
+        },
+        {
+          "index": 13,
+          "href": "text/chapter-8.xhtml",
+          "path": "epub/text/chapter-8.xhtml",
+          "characters": 5402,
+          "heading": "VIII",
+          "toc_title": "VIII: The Pulpit",
+          "text_prefix": "VIII The Pulpit I had not been seated very long ere a man of a certain venerable robustness entered; immediately as the storm-pelted door flew back upon admitting him, a quick regardful eyeing of him by all the congregation, sufficiently at",
+          "images": 0
+        },
+        {
+          "index": 14,
+          "href": "text/chapter-9.xhtml",
+          "path": "epub/text/chapter-9.xhtml",
+          "characters": 19682,
+          "heading": "IX",
+          "toc_title": "IX: The Sermon",
+          "text_prefix": "IX The Sermon Father Mapple rose, and in a mild voice of unassuming authority ordered the scattered people to condense. \u201cStarboard gangway, there! side away to larboard\ufeff\u2014larboard gangway to starboard! Midships! midships!\u201d There was a low ru",
+          "images": 0
+        },
+        {
+          "index": 15,
+          "href": "text/chapter-10.xhtml",
+          "path": "epub/text/chapter-10.xhtml",
+          "characters": 8698,
+          "heading": "X",
+          "toc_title": "X: A Bosom Friend",
+          "text_prefix": "X A Bosom Friend Returning to the Spouter-Inn from the Chapel, I found Queequeg there quite alone; he having left the Chapel before the benediction some time. He was sitting on a bench before the fire, with his feet on the stove hearth, and",
+          "images": 0
+        },
+        {
+          "index": 16,
+          "href": "text/chapter-11.xhtml",
+          "path": "epub/text/chapter-11.xhtml",
+          "characters": 3932,
+          "heading": "XI",
+          "toc_title": "XI: Nightgown",
+          "text_prefix": "XI Nightgown We had lain thus in bed, chatting and napping at short intervals, and Queequeg now and then affectionately throwing his brown tattooed legs over mine, and then drawing them back; so entirely sociable and free and easy were we; ",
+          "images": 0
+        },
+        {
+          "index": 17,
+          "href": "text/chapter-12.xhtml",
+          "path": "epub/text/chapter-12.xhtml",
+          "characters": 4874,
+          "heading": "XII",
+          "toc_title": "XII: Biographical",
+          "text_prefix": "XII Biographical Queequeg was a native of Rokovoko, an island far away to the West and South. It is not down in any map; true places never are. When a new-hatched savage running wild about his native woodlands in a grass clout, followed by ",
+          "images": 0
+        },
+        {
+          "index": 18,
+          "href": "text/chapter-13.xhtml",
+          "path": "epub/text/chapter-13.xhtml",
+          "characters": 9688,
+          "heading": "XIII",
+          "toc_title": "XIII: Wheelbarrow",
+          "text_prefix": "XIII Wheelbarrow Next morning, Monday, after disposing of the embalmed head to a barber, for a block, I settled my own and comrade\u2019s bill; using, however, my comrade\u2019s money. The grinning landlord, as well as the boarders, seemed amazingly ",
+          "images": 0
+        },
+        {
+          "index": 19,
+          "href": "text/chapter-14.xhtml",
+          "path": "epub/text/chapter-14.xhtml",
+          "characters": 4323,
+          "heading": "XIV",
+          "toc_title": "XIV: Nantucket",
+          "text_prefix": "XIV Nantucket Nothing more happened on the passage worthy the mentioning; so, after a fine run, we safely arrived in Nantucket. Nantucket! Take out your map and look at it. See what a real corner of the world it occupies; how it stands ther",
+          "images": 0
+        },
+        {
+          "index": 20,
+          "href": "text/chapter-15.xhtml",
+          "path": "epub/text/chapter-15.xhtml",
+          "characters": 6569,
+          "heading": "XV",
+          "toc_title": "XV: Chowder",
+          "text_prefix": "XV Chowder It was quite late in the evening when the little Moss came snugly to anchor, and Queequeg and I went ashore; so we could attend to no business that day, at least none but a supper and a bed. The landlord of the Spouter-Inn had re",
+          "images": 0
+        },
+        {
+          "index": 21,
+          "href": "text/chapter-16.xhtml",
+          "path": "epub/text/chapter-16.xhtml",
+          "characters": 30477,
+          "heading": "XVI",
+          "toc_title": "XVI: The Ship",
+          "text_prefix": "XVI The Ship In bed we concocted our plans for the morrow. But to my surprise and no small concern, Queequeg now gave me to understand, that he had been diligently consulting Yojo\ufeff\u2014the name of his black little god\ufeff\u2014and Yojo had told him two",
+          "images": 0
+        },
+        {
+          "index": 22,
+          "href": "text/chapter-17.xhtml",
+          "path": "epub/text/chapter-17.xhtml",
+          "characters": 12621,
+          "heading": "XVII",
+          "toc_title": "XVII: The Ramadan",
+          "text_prefix": "XVII The Ramadan As Queequeg\u2019s Ramadan, or Fasting and Humiliation, was to continue all day, I did not choose to disturb him till towards nightfall; for I cherish the greatest respect towards everybody\u2019s religious obligations, never mind ho",
+          "images": 0
+        },
+        {
+          "index": 23,
+          "href": "text/chapter-18.xhtml",
+          "path": "epub/text/chapter-18.xhtml",
+          "characters": 7670,
+          "heading": "XVIII",
+          "toc_title": "XVIII: His Mark",
+          "text_prefix": "XVIII His Mark As we were walking down the end of the wharf towards the ship, Queequeg carrying his harpoon, Captain Peleg in his gruff voice loudly hailed us from his wigwam, saying he had not suspected my friend was a cannibal, and furthe",
+          "images": 1
+        },
+        {
+          "index": 24,
+          "href": "text/chapter-19.xhtml",
+          "path": "epub/text/chapter-19.xhtml",
+          "characters": 6542,
+          "heading": "XIX",
+          "toc_title": "XIX: The Prophet",
+          "text_prefix": "XIX The Prophet \u201cShipmates, have ye shipped in that ship?\u201d Queequeg and I had just left the Pequod , and were sauntering away from the water, for the moment each occupied with his own thoughts, when the above words were put to us by a stran",
+          "images": 0
+        },
+        {
+          "index": 25,
+          "href": "text/chapter-20.xhtml",
+          "path": "epub/text/chapter-20.xhtml",
+          "characters": 5139,
+          "heading": "XX",
+          "toc_title": "XX: All Astir",
+          "text_prefix": "XX All Astir A day or two passed, and there was great activity aboard the Pequod . Not only were the old sails being mended, but new sails were coming on board, and bolts of canvas, and coils of rigging; in short, everything betokened that ",
+          "images": 0
+        },
+        {
+          "index": 26,
+          "href": "text/chapter-21.xhtml",
+          "path": "epub/text/chapter-21.xhtml",
+          "characters": 6116,
+          "heading": "XXI",
+          "toc_title": "XXI: Going Aboard",
+          "text_prefix": "XXI Going Aboard It was nearly six o\u2019clock, but only grey imperfect misty dawn, when we drew nigh the wharf. \u201cThere are some sailors running ahead there, if I see right,\u201d said I to Queequeg, \u201cit can\u2019t be shadows; she\u2019s off by sunrise, I gue",
+          "images": 0
+        },
+        {
+          "index": 27,
+          "href": "text/chapter-22.xhtml",
+          "path": "epub/text/chapter-22.xhtml",
+          "characters": 9139,
+          "heading": "XXII",
+          "toc_title": "XXII: Merry Christmas",
+          "text_prefix": "XXII Merry Christmas At length, towards noon, upon the final dismissal of the ship\u2019s riggers, and after the Pequod had been hauled out from the wharf, and after the ever-thoughtful Charity had come off in a whaleboat, with her last gift\ufeff\u2014a ",
+          "images": 0
+        },
+        {
+          "index": 28,
+          "href": "text/chapter-23.xhtml",
+          "path": "epub/text/chapter-23.xhtml",
+          "characters": 2166,
+          "heading": "XXIII",
+          "toc_title": "XXIII: The Lee Shore",
+          "text_prefix": "XXIII The Lee Shore Some chapters back, one Bulkington was spoken of, a tall, newlanded mariner, encountered in New Bedford at the inn. When on that shivering winter\u2019s night, the Pequod thrust her vindictive bows into the cold malicious wav",
+          "images": 0
+        },
+        {
+          "index": 29,
+          "href": "text/chapter-24.xhtml",
+          "path": "epub/text/chapter-24.xhtml",
+          "characters": 9613,
+          "heading": "XXIV",
+          "toc_title": "XXIV: The Advocate",
+          "text_prefix": "XXIV The Advocate As Queequeg and I are now fairly embarked in this business of whaling; and as this business of whaling has somehow come to be regarded among landsmen as a rather unpoetical and disreputable pursuit; therefore, I am all anx",
+          "images": 0
+        },
+        {
+          "index": 30,
+          "href": "text/chapter-25.xhtml",
+          "path": "epub/text/chapter-25.xhtml",
+          "characters": 1607,
+          "heading": "XXV",
+          "toc_title": "XXV: Postscript",
+          "text_prefix": "XXV Postscript In behalf of the dignity of whaling, I would fain advance naught but substantiated facts. But after embattling his facts, an advocate who should wholly suppress a not unreasonable surmise, which might tell eloquently upon his",
+          "images": 0
+        },
+        {
+          "index": 31,
+          "href": "text/chapter-26.xhtml",
+          "path": "epub/text/chapter-26.xhtml",
+          "characters": 7012,
+          "heading": "XXVI",
+          "toc_title": "XXVI: Knights and Squires",
+          "text_prefix": "XXVI Knights and Squires The chief mate of the Pequod was Starbuck, a native of Nantucket, and a Quaker by descent. He was a long, earnest man, and though born on an icy coast, seemed well adapted to endure hot latitudes, his flesh being ha",
+          "images": 0
+        },
+        {
+          "index": 32,
+          "href": "text/chapter-27.xhtml",
+          "path": "epub/text/chapter-27.xhtml",
+          "characters": 9507,
+          "heading": "XXVII",
+          "toc_title": "XXVII: Knights and Squires",
+          "text_prefix": "XXVII Knights and Squires Stubb was the second mate. He was a native of Cape Cod; and hence, according to local usage, was called a Cape-Cod-man. A happy-go-lucky; neither craven nor valiant; taking perils as they came with an indifferent a",
+          "images": 0
+        },
+        {
+          "index": 33,
+          "href": "text/chapter-28.xhtml",
+          "path": "epub/text/chapter-28.xhtml",
+          "characters": 8072,
+          "heading": "XXVIII",
+          "toc_title": "XXVIII: Ahab",
+          "text_prefix": "XXVIII Ahab For several days after leaving Nantucket, nothing above hatches was seen of Captain Ahab. The mates regularly relieved each other at the watches, and for aught that could be seen to the contrary, they seemed to be the only comma",
+          "images": 0
+        },
+        {
+          "index": 34,
+          "href": "text/chapter-29.xhtml",
+          "path": "epub/text/chapter-29.xhtml",
+          "characters": 6557,
+          "heading": "XXIX",
+          "toc_title": "XXIX: Enter Ahab; To Him, Stubb",
+          "text_prefix": "XXIX Enter Ahab; To Him, Stubb Some days elapsed, and ice and icebergs all astern, the Pequod now went rolling through the bright Quito spring, which, at sea, almost perpetually reigns on the threshold of the eternal August of the Tropic. T",
+          "images": 0
+        },
+        {
+          "index": 35,
+          "href": "text/chapter-30.xhtml",
+          "path": "epub/text/chapter-30.xhtml",
+          "characters": 1589,
+          "heading": "XXX",
+          "toc_title": "XXX: The Pipe",
+          "text_prefix": "XXX The Pipe When Stubb had departed, Ahab stood for a while leaning over the bulwarks; and then, as had been usual with him of late, calling a sailor of the watch, he sent him below for his ivory stool, and also his pipe. Lighting the pipe",
+          "images": 0
+        },
+        {
+          "index": 36,
+          "href": "text/chapter-31.xhtml",
+          "path": "epub/text/chapter-31.xhtml",
+          "characters": 4450,
+          "heading": "XXXI",
+          "toc_title": "XXXI: Queen Mab",
+          "text_prefix": "XXXI Queen Mab Next morning Stubb accosted Flask. \u201cSuch a queer dream, King-Post, I never had. You know the old man\u2019s ivory leg, well I dreamed he kicked me with it; and when I tried to kick back, upon my soul, my little man, I kicked my le",
+          "images": 0
+        },
+        {
+          "index": 37,
+          "href": "text/chapter-32.xhtml",
+          "path": "epub/text/chapter-32.xhtml",
+          "characters": 29118,
+          "heading": "XXXII",
+          "toc_title": "XXXII: Cetology",
+          "text_prefix": "XXXII Cetology Already we are boldly launched upon the deep; but soon we shall be lost in its unshored, harbourless immensities. Ere that come to pass; ere the Pequod \u2019s weedy hull rolls side by side with the barnacled hulls of the leviatha",
+          "images": 0
+        },
+        {
+          "index": 38,
+          "href": "text/chapter-33.xhtml",
+          "path": "epub/text/chapter-33.xhtml",
+          "characters": 5804,
+          "heading": "XXXIII",
+          "toc_title": "XXXIII: The Specksnyder",
+          "text_prefix": "XXXIII The Specksnyder Concerning the officers of the whale-craft, this seems as good a place as any to set down a little domestic peculiarity on shipboard, arising from the existence of the harpooneer class of officers, a class unknown of ",
+          "images": 0
+        },
+        {
+          "index": 39,
+          "href": "text/chapter-34.xhtml",
+          "path": "epub/text/chapter-34.xhtml",
+          "characters": 12677,
+          "heading": "XXXIV",
+          "toc_title": "XXXIV: The Cabin-Table",
+          "text_prefix": "XXXIV The Cabin-Table It is noon; and Dough-Boy, the steward, thrusting his pale loaf-of-bread face from the cabin-scuttle, announces dinner to his lord and master; who, sitting in the lee quarter-boat, has just been taking an observation o",
+          "images": 0
+        },
+        {
+          "index": 40,
+          "href": "text/chapter-35.xhtml",
+          "path": "epub/text/chapter-35.xhtml",
+          "characters": 14693,
+          "heading": "XXXV",
+          "toc_title": "XXXV: The Masthead",
+          "text_prefix": "XXXV The Masthead It was during the more pleasant weather, that in due rotation with the other seamen my first masthead came round. In most American whalemen the mastheads are manned almost simultaneously with the vessel\u2019s leaving her port;",
+          "images": 0
+        },
+        {
+          "index": 41,
+          "href": "text/chapter-36.xhtml",
+          "path": "epub/text/chapter-36.xhtml",
+          "characters": 15824,
+          "heading": "XXXVI",
+          "toc_title": "XXXVI: The Quarterdeck",
+          "text_prefix": "XXXVI The Quarterdeck Enter Ahab: Then, all. It was not a great while after the affair of the pipe, that one morning shortly after breakfast, Ahab, as was his wont, ascended the cabin-gangway to the deck. There most sea-captains usually wal",
+          "images": 0
+        },
+        {
+          "index": 42,
+          "href": "text/chapter-37.xhtml",
+          "path": "epub/text/chapter-37.xhtml",
+          "characters": 2765,
+          "heading": "XXXVII",
+          "toc_title": "XXXVII: Sunset",
+          "text_prefix": "XXXVII Sunset The cabin; by the stern windows; Ahab sitting alone, and gazing out. I leave a white and turbid wake; pale waters, paler cheeks, where\u2019er I sail. The envious billows sidelong swell to whelm my track; let them; but first I pass",
+          "images": 0
+        },
+        {
+          "index": 43,
+          "href": "text/chapter-38.xhtml",
+          "path": "epub/text/chapter-38.xhtml",
+          "characters": 2080,
+          "heading": "XXXVIII",
+          "toc_title": "XXXVIII: Dusk",
+          "text_prefix": "XXXVIII Dusk By the Mainmast; Starbuck leaning against it. My soul is more than matched; she\u2019s overmanned; and by a madman! Insufferable sting, that sanity should ground arms on such a field! But he drilled deep down, and blasted all my rea",
+          "images": 0
+        },
+        {
+          "index": 44,
+          "href": "text/chapter-39.xhtml",
+          "path": "epub/text/chapter-39.xhtml",
+          "characters": 1435,
+          "heading": "XXXIX",
+          "toc_title": "XXXIX: First Night-Watch",
+          "text_prefix": "XXXIX First Night-Watch Foretop. Stubb solus, and mending a brace. Ha! ha! ha! ha! hem! clear my throat!\ufeff\u2014I\u2019ve been thinking over it ever since, and that ha, ha\u2019s the final consequence. Why so? Because a laugh\u2019s the wisest, easiest answer t",
+          "images": 0
+        },
+        {
+          "index": 45,
+          "href": "text/chapter-40.xhtml",
+          "path": "epub/text/chapter-40.xhtml",
+          "characters": 8819,
+          "heading": "XL",
+          "toc_title": "XL: Midnight, Forecastle",
+          "text_prefix": "XL Midnight, Forecastle Harpooneers and sailors . Foresail rises and discovers the watch standing, lounging, leaning, and lying in various attitudes, all singing in chorus. Farewell and adieu to you, Spanish ladies! Farewell and adieu to yo",
+          "images": 0
+        },
+        {
+          "index": 46,
+          "href": "text/chapter-41.xhtml",
+          "path": "epub/text/chapter-41.xhtml",
+          "characters": 21948,
+          "heading": "XLI",
+          "toc_title": "XLI: Moby Dick",
+          "text_prefix": "XLI Moby Dick I, Ishmael, was one of that crew; my shouts had gone up with the rest; my oath had been welded with theirs; and stronger I shouted, and more did I hammer and clinch my oath, because of the dread in my soul. A wild, mystical, s",
+          "images": 0
+        },
+        {
+          "index": 47,
+          "href": "text/chapter-42.xhtml",
+          "path": "epub/text/chapter-42.xhtml",
+          "characters": 17518,
+          "heading": "XLII",
+          "toc_title": "XLII: The Whiteness of the Whale",
+          "text_prefix": "XLII The Whiteness of the Whale What the white whale was to Ahab, has been hinted; what, at times, he was to me, as yet remains unsaid. Aside from those more obvious considerations touching Moby Dick, which could not but occasionally awaken",
+          "images": 0
+        },
+        {
+          "index": 48,
+          "href": "text/chapter-43.xhtml",
+          "path": "epub/text/chapter-43.xhtml",
+          "characters": 1713,
+          "heading": "XLIII",
+          "toc_title": "XLIII: Hark!",
+          "text_prefix": "XLIII Hark! \u201cHist! Did you hear that noise, Cabaco?\u201d It was the middle-watch: a fair moonlight; the seamen were standing in a cordon, extending from one of the freshwater butts in the waist, to the scuttlebutt near the taffrail. In this man",
+          "images": 0
+        },
+        {
+          "index": 49,
+          "href": "text/chapter-44.xhtml",
+          "path": "epub/text/chapter-44.xhtml",
+          "characters": 11198,
+          "heading": "XLIV",
+          "toc_title": "XLIV: The Chart",
+          "text_prefix": "XLIV The Chart Had you followed Captain Ahab down into his cabin after the squall that took place on the night succeeding that wild ratification of his purpose with his crew, you would have seen him go to a locker in the transom, and bringi",
+          "images": 0
+        },
+        {
+          "index": 50,
+          "href": "text/chapter-45.xhtml",
+          "path": "epub/text/chapter-45.xhtml",
+          "characters": 18432,
+          "heading": "XLV",
+          "toc_title": "XLV: The Affidavit",
+          "text_prefix": "XLV The Affidavit So far as what there may be of a narrative in this book; and, indeed, as indirectly touching one or two very interesting and curious particulars in the habits of sperm whales, the foregoing chapter, in its earlier part, is",
+          "images": 0
+        },
+        {
+          "index": 51,
+          "href": "text/chapter-46.xhtml",
+          "path": "epub/text/chapter-46.xhtml",
+          "characters": 5980,
+          "heading": "XLVI",
+          "toc_title": "XLVI: Surmises",
+          "text_prefix": "XLVI Surmises Though, consumed with the hot fire of his purpose, Ahab in all his thoughts and actions ever had in view the ultimate capture of Moby Dick; though he seemed ready to sacrifice all mortal interests to that one passion; neverthe",
+          "images": 0
+        },
+        {
+          "index": 52,
+          "href": "text/chapter-47.xhtml",
+          "path": "epub/text/chapter-47.xhtml",
+          "characters": 5347,
+          "heading": "XLVII",
+          "toc_title": "XLVII: The Mat-Maker",
+          "text_prefix": "XLVII The Mat-Maker It was a cloudy, sultry afternoon; the seamen were lazily lounging about the decks, or vacantly gazing over into the lead-coloured waters. Queequeg and I were mildly employed weaving what is called a sword-mat, for an ad",
+          "images": 0
+        },
+        {
+          "index": 53,
+          "href": "text/chapter-48.xhtml",
+          "path": "epub/text/chapter-48.xhtml",
+          "characters": 22436,
+          "heading": "XLVIII",
+          "toc_title": "XLVIII: The First Lowering",
+          "text_prefix": "XLVIII The First Lowering The phantoms, for so they then seemed, were flitting on the other side of the deck, and, with a noiseless celerity, were casting loose the tackles and bands of the boat which swung there. This boat had always been ",
+          "images": 0
+        },
+        {
+          "index": 54,
+          "href": "text/chapter-49.xhtml",
+          "path": "epub/text/chapter-49.xhtml",
+          "characters": 4673,
+          "heading": "XLIX",
+          "toc_title": "XLIX: The Hyena",
+          "text_prefix": "XLIX The Hyena There are certain queer times and occasions in this strange mixed affair we call life when a man takes this whole universe for a vast practical joke, though the wit thereof he but dimly discerns, and more than suspects that t",
+          "images": 0
+        },
+        {
+          "index": 55,
+          "href": "text/chapter-50.xhtml",
+          "path": "epub/text/chapter-50.xhtml",
+          "characters": 5722,
+          "heading": "L",
+          "toc_title": "L: Ahab\u2019s Boat and Crew. Fedallah",
+          "text_prefix": "L Ahab\u2019s Boat and Crew. Fedallah \u201cWho would have thought it, Flask!\u201d cried Stubb; \u201cif I had but one leg you would not catch me in a boat, unless maybe to stop the plughole with my timber toe. Oh! he\u2019s a wonderful old man!\u201d \u201cI don\u2019t think it",
+          "images": 0
+        },
+        {
+          "index": 56,
+          "href": "text/chapter-51.xhtml",
+          "path": "epub/text/chapter-51.xhtml",
+          "characters": 8496,
+          "heading": "LI",
+          "toc_title": "LI: The Spirit-Spout",
+          "text_prefix": "LI The Spirit-Spout Days, weeks passed, and under easy sail, the ivory Pequod had slowly swept across four several cruising-grounds; that off the Azores; off the Cape de Verdes; on the Plate (so called), being off the mouth of the Rio de la",
+          "images": 0
+        },
+        {
+          "index": 57,
+          "href": "text/chapter-52.xhtml",
+          "path": "epub/text/chapter-52.xhtml",
+          "characters": 4032,
+          "heading": "LII",
+          "toc_title": "LII: The Albatross",
+          "text_prefix": "LII The Albatross Southeastward from the Cape, off the distant Crozetts, a good cruising ground for Right Whalemen, a sail loomed ahead, the Goney (Albatross) by name. As she slowly drew nigh, from my lofty perch at the foremast-head, I had",
+          "images": 0
+        },
+        {
+          "index": 58,
+          "href": "text/chapter-53.xhtml",
+          "path": "epub/text/chapter-53.xhtml",
+          "characters": 9357,
+          "heading": "LIII",
+          "toc_title": "LIII: The Gam",
+          "text_prefix": "LIII The Gam The ostensible reason why Ahab did not go on board of the whaler we had spoken was this: the wind and sea betokened storms. But even had this not been the case, he would not after all, perhaps, have boarded her\ufeff\u2014judging by his ",
+          "images": 0
+        },
+        {
+          "index": 59,
+          "href": "text/chapter-54.xhtml",
+          "path": "epub/text/chapter-54.xhtml",
+          "characters": 44804,
+          "heading": "LIV",
+          "toc_title": "LIV: The Town-Ho \u2019s Story",
+          "text_prefix": "LIV The Town-Ho \u2019s Story As told at the Golden Inn. The Cape of Good Hope, and all the watery region round about there, is much like some noted four corners of a great highway, where you meet more travellers than in any other part. It was n",
+          "images": 0
+        },
+        {
+          "index": 60,
+          "href": "text/chapter-55.xhtml",
+          "path": "epub/text/chapter-55.xhtml",
+          "characters": 10900,
+          "heading": "LV",
+          "toc_title": "LV: Of the Monstrous Pictures of Whales",
+          "text_prefix": "LV Of the Monstrous Pictures of Whales I shall ere long paint to you as well as one can without canvas, something like the true form of the whale as he actually appears to the eye of the whaleman when in his own absolute body the whale is m",
+          "images": 0
+        },
+        {
+          "index": 61,
+          "href": "text/chapter-56.xhtml",
+          "path": "epub/text/chapter-56.xhtml",
+          "characters": 7561,
+          "heading": "LVI",
+          "toc_title": "LVI: Of the Less Erroneous Pictures of Whales, and the True Pictures of Whaling Scenes",
+          "text_prefix": "LVI Of the Less Erroneous Pictures of Whales, and the True Pictures of Whaling Scenes In connection with the monstrous pictures of whales, I am strongly tempted here to enter upon those still more monstrous stories of them which are to be f",
+          "images": 0
+        },
+        {
+          "index": 62,
+          "href": "text/chapter-57.xhtml",
+          "path": "epub/text/chapter-57.xhtml",
+          "characters": 5545,
+          "heading": "LVII",
+          "toc_title": "LVII: Of Whales in Paint; in Teeth; in Wood; in Sheet-Iron; in Stone; in Mountains; in Stars",
+          "text_prefix": "LVII Of Whales in Paint; in Teeth; in Wood; in Sheet-Iron; in Stone; in Mountains; in Stars On Tower-hill, as you go down to the London docks, you may have seen a crippled beggar (or kedger , as the sailors say) holding a painted board befo",
+          "images": 0
+        },
+        {
+          "index": 63,
+          "href": "text/chapter-58.xhtml",
+          "path": "epub/text/chapter-58.xhtml",
+          "characters": 5400,
+          "heading": "LVIII",
+          "toc_title": "LVIII: Brit",
+          "text_prefix": "LVIII Brit Steering northeastward from the Crozetts, we fell in with vast meadows of brit, the minute, yellow substance, upon which the Right Whale largely feeds. For leagues and leagues it undulated round us, so that we seemed to be sailin",
+          "images": 0
+        },
+        {
+          "index": 64,
+          "href": "text/chapter-59.xhtml",
+          "path": "epub/text/chapter-59.xhtml",
+          "characters": 5323,
+          "heading": "LIX",
+          "toc_title": "LIX: Squid",
+          "text_prefix": "LIX Squid Slowly wading through the meadows of brit, the Pequod still held on her way northeastward towards the island of Java; a gentle air impelling her keel, so that in the surrounding serenity her three tall tapering masts mildly waved ",
+          "images": 0
+        },
+        {
+          "index": 65,
+          "href": "text/chapter-60.xhtml",
+          "path": "epub/text/chapter-60.xhtml",
+          "characters": 8201,
+          "heading": "LX",
+          "toc_title": "LX: The Line",
+          "text_prefix": "LX The Line With reference to the whaling scene shortly to be described, as well as for the better understanding of all similar scenes elsewhere presented, I have here to speak of the magical, sometimes horrible whale-line. The line origina",
+          "images": 0
+        },
+        {
+          "index": 66,
+          "href": "text/chapter-61.xhtml",
+          "path": "epub/text/chapter-61.xhtml",
+          "characters": 10203,
+          "heading": "LXI",
+          "toc_title": "LXI: Stubb Kills a Whale",
+          "text_prefix": "LXI Stubb Kills a Whale If to Starbuck the apparition of the Squid was a thing of portents, to Queequeg it was quite a different object. \u201cWhen you see him \u2019quid,\u201d said the savage, honing his harpoon in the bow of his hoisted boat, \u201cthen you",
+          "images": 0
+        },
+        {
+          "index": 67,
+          "href": "text/chapter-62.xhtml",
+          "path": "epub/text/chapter-62.xhtml",
+          "characters": 3134,
+          "heading": "LXII",
+          "toc_title": "LXII: The Dart",
+          "text_prefix": "LXII The Dart A word concerning an incident in the last chapter. According to the invariable usage of the fishery, the whaleboat pushes off from the ship, with the headsman or whale-killer as temporary steersman, and the harpooneer or whale",
+          "images": 0
+        },
+        {
+          "index": 68,
+          "href": "text/chapter-63.xhtml",
+          "path": "epub/text/chapter-63.xhtml",
+          "characters": 2820,
+          "heading": "LXIII",
+          "toc_title": "LXIII: The Crotch",
+          "text_prefix": "LXIII The Crotch Out of the trunk, the branches grow; out of them, the twigs. So, in productive subjects, grow the chapters. The crotch alluded to on a previous page deserves independent mention. It is a notched stick of a peculiar form, so",
+          "images": 0
+        },
+        {
+          "index": 69,
+          "href": "text/chapter-64.xhtml",
+          "path": "epub/text/chapter-64.xhtml",
+          "characters": 15539,
+          "heading": "LXIV",
+          "toc_title": "LXIV: Stubb\u2019s Supper",
+          "text_prefix": "LXIV Stubb\u2019s Supper Stubb\u2019s whale had been killed some distance from the ship. It was a calm; so, forming a tandem of three boats, we commenced the slow business of towing the trophy to the Pequod . And now, as we eighteen men with our thir",
+          "images": 0
+        },
+        {
+          "index": 70,
+          "href": "text/chapter-65.xhtml",
+          "path": "epub/text/chapter-65.xhtml",
+          "characters": 5468,
+          "heading": "LXV",
+          "toc_title": "LXV: The Whale as a Dish",
+          "text_prefix": "LXV The Whale as a Dish That mortal man should feed upon the creature that feeds his lamp, and, like Stubb, eat him by his own light, as you may say; this seems so outlandish a thing that one must needs go a little into the history and phil",
+          "images": 0
+        },
+        {
+          "index": 71,
+          "href": "text/chapter-66.xhtml",
+          "path": "epub/text/chapter-66.xhtml",
+          "characters": 3122,
+          "heading": "LXVI",
+          "toc_title": "LXVI: The Shark Massacre",
+          "text_prefix": "LXVI The Shark Massacre When in the Southern Fishery, a captured Sperm Whale, after long and weary toil, is brought alongside late at night, it is not, as a general thing at least, customary to proceed at once to the business of cutting him",
+          "images": 0
+        },
+        {
+          "index": 72,
+          "href": "text/chapter-67.xhtml",
+          "path": "epub/text/chapter-67.xhtml",
+          "characters": 4187,
+          "heading": "LXVII",
+          "toc_title": "LXVII: Cutting In",
+          "text_prefix": "LXVII Cutting In It was a Saturday night, and such a Sabbath as followed! Ex officio professors of Sabbath breaking are all whalemen. The ivory Pequod was turned into what seemed a shamble; every sailor a butcher. You would have thought we ",
+          "images": 0
+        },
+        {
+          "index": 73,
+          "href": "text/chapter-68.xhtml",
+          "path": "epub/text/chapter-68.xhtml",
+          "characters": 6766,
+          "heading": "LXVIII",
+          "toc_title": "LXVIII: The Blanket",
+          "text_prefix": "LXVIII The Blanket I have given no small attention to that not unvexed subject, the skin of the whale. I have had controversies about it with experienced whalemen afloat, and learned naturalists ashore. My original opinion remains unchanged",
+          "images": 0
+        },
+        {
+          "index": 74,
+          "href": "text/chapter-69.xhtml",
+          "path": "epub/text/chapter-69.xhtml",
+          "characters": 2502,
+          "heading": "LXIX",
+          "toc_title": "LXIX: The Funeral",
+          "text_prefix": "LXIX The Funeral \u201cHaul in the chains! Let the carcase go astern!\u201d The vast tackles have now done their duty. The peeled white body of the beheaded whale flashes like a marble sepulchre; though changed in hue, it has not perceptibly lost any",
+          "images": 0
+        },
+        {
+          "index": 75,
+          "href": "text/chapter-70.xhtml",
+          "path": "epub/text/chapter-70.xhtml",
+          "characters": 5028,
+          "heading": "LXX",
+          "toc_title": "LXX: The Sphynx",
+          "text_prefix": "LXX The Sphynx It should not have been omitted that previous to completely stripping the body of the leviathan, he was beheaded. Now, the beheading of the Sperm Whale is a scientific anatomical feat, upon which experienced whale surgeons ve",
+          "images": 0
+        },
+        {
+          "index": 76,
+          "href": "text/chapter-71.xhtml",
+          "path": "epub/text/chapter-71.xhtml",
+          "characters": 13174,
+          "heading": "LXXI",
+          "toc_title": "LXXI: The Jeroboam \u2019s Story",
+          "text_prefix": "LXXI The Jeroboam \u2019s Story Hand in hand, ship and breeze blew on; but the breeze came faster than the ship, and soon the Pequod began to rock. By and by, through the glass the stranger\u2019s boats and manned mastheads proved her a whale-ship. B",
+          "images": 0
+        },
+        {
+          "index": 77,
+          "href": "text/chapter-72.xhtml",
+          "path": "epub/text/chapter-72.xhtml",
+          "characters": 8945,
+          "heading": "LXXII",
+          "toc_title": "LXXII: The Monkey-Rope",
+          "text_prefix": "LXXII The Monkey-Rope In the tumultuous business of cutting-in and attending to a whale, there is much running backwards and forwards among the crew. Now hands are wanted here, and then again hands are wanted there. There is no staying in a",
+          "images": 0
+        },
+        {
+          "index": 78,
+          "href": "text/chapter-73.xhtml",
+          "path": "epub/text/chapter-73.xhtml",
+          "characters": 11591,
+          "heading": "LXXIII",
+          "toc_title": "LXXIII: Stubb and Flask Kill a Right Whale; and Then Have a Talk Over Him",
+          "text_prefix": "LXXIII Stubb and Flask Kill a Right Whale; and Then Have a Talk Over Him It must be borne in mind that all this time we have a Sperm Whale\u2019s prodigious head hanging to the Pequod \u2019s side. But we must let it continue hanging there a while ti",
+          "images": 0
+        },
+        {
+          "index": 79,
+          "href": "text/chapter-74.xhtml",
+          "path": "epub/text/chapter-74.xhtml",
+          "characters": 9082,
+          "heading": "LXXIV",
+          "toc_title": "LXXIV: The Sperm Whale\u2019s Head\u2014Contrasted View",
+          "text_prefix": "LXXIV The Sperm Whale\u2019s Head\ufeff\u2014Contrasted View Here, now, are two great whales, laying their heads together; let us join them, and lay together our own. Of the grand order of folio leviathans, the Sperm Whale and the Right Whale are by far t",
+          "images": 0
+        },
+        {
+          "index": 80,
+          "href": "text/chapter-75.xhtml",
+          "path": "epub/text/chapter-75.xhtml",
+          "characters": 6522,
+          "heading": "LXXV",
+          "toc_title": "LXXV: The Right Whale\u2019s Head\u2014Contrasted View",
+          "text_prefix": "LXXV The Right Whale\u2019s Head\ufeff\u2014Contrasted View Crossing the deck, let us now have a good long look at the Right Whale\u2019s head. As in general shape the noble Sperm Whale\u2019s head may be compared to a Roman war-chariot (especially in front, where ",
+          "images": 0
+        },
+        {
+          "index": 81,
+          "href": "text/chapter-76.xhtml",
+          "path": "epub/text/chapter-76.xhtml",
+          "characters": 5051,
+          "heading": "LXXVI",
+          "toc_title": "LXXVI: The Battering-Ram",
+          "text_prefix": "LXXVI The Battering-Ram Ere quitting, for the nonce, the Sperm Whale\u2019s head, I would have you, as a sensible physiologist, simply\ufeff\u2014particularly remark its front aspect, in all its compacted collectedness. I would have you investigate it now",
+          "images": 0
+        },
+        {
+          "index": 82,
+          "href": "text/chapter-77.xhtml",
+          "path": "epub/text/chapter-77.xhtml",
+          "characters": 3514,
+          "heading": "LXXVII",
+          "toc_title": "LXXVII: The Great Heidelburgh Tun",
+          "text_prefix": "LXXVII The Great Heidelburgh Tun Now comes the Baling of the Case. But to comprehend it aright, you must know something of the curious internal structure of the thing operated upon. Regarding the Sperm Whale\u2019s head as a solid oblong, you ma",
+          "images": 0
+        },
+        {
+          "index": 83,
+          "href": "text/chapter-78.xhtml",
+          "path": "epub/text/chapter-78.xhtml",
+          "characters": 9287,
+          "heading": "LXXVIII",
+          "toc_title": "LXXVIII: Cistern and Buckets",
+          "text_prefix": "LXXVIII Cistern and Buckets Nimble as a cat, Tashtego mounts aloft; and without altering his erect posture, runs straight out upon the overhanging mainyard-arm, to the part where it exactly projects over the hoisted Tun. He has carried with",
+          "images": 0
+        },
+        {
+          "index": 84,
+          "href": "text/chapter-79.xhtml",
+          "path": "epub/text/chapter-79.xhtml",
+          "characters": 5368,
+          "heading": "LXXIX",
+          "toc_title": "LXXIX: The Prairie",
+          "text_prefix": "LXXIX The Prairie To scan the lines of his face, or feel the bumps on the head of this Leviathan; this is a thing which no Physiognomist or Phrenologist has as yet undertaken. Such an enterprise would seem almost as hopeful as for Lavater t",
+          "images": 0
+        },
+        {
+          "index": 85,
+          "href": "text/chapter-80.xhtml",
+          "path": "epub/text/chapter-80.xhtml",
+          "characters": 5148,
+          "heading": "LXXX",
+          "toc_title": "LXXX: The Nut",
+          "text_prefix": "LXXX The Nut If the Sperm Whale be physiognomically a Sphinx, to the phrenologist his brain seems that geometrical circle which it is impossible to square. In the full-grown creature the skull will measure at least twenty feet in length. Un",
+          "images": 0
+        },
+        {
+          "index": 86,
+          "href": "text/chapter-81.xhtml",
+          "path": "epub/text/chapter-81.xhtml",
+          "characters": 24421,
+          "heading": "LXXXI",
+          "toc_title": "LXXXI: The Pequod Meets the Virgin",
+          "text_prefix": "LXXXI The Pequod Meets the Virgin The predestinated day arrived, and we duly met the ship Jungfrau , Derick De Deer, master, of Bremen. At one time the greatest whaling people in the world, the Dutch and Germans are now among the least; but",
+          "images": 0
+        },
+        {
+          "index": 87,
+          "href": "text/chapter-82.xhtml",
+          "path": "epub/text/chapter-82.xhtml",
+          "characters": 6481,
+          "heading": "LXXXII",
+          "toc_title": "LXXXII: The Honor and Glory of Whaling",
+          "text_prefix": "LXXXII The Honor and Glory of Whaling There are some enterprises in which a careful disorderliness is the true method. The more I dive into this matter of whaling, and push my researches up to the very spring-head of it so much the more am ",
+          "images": 0
+        },
+        {
+          "index": 88,
+          "href": "text/chapter-83.xhtml",
+          "path": "epub/text/chapter-83.xhtml",
+          "characters": 4526,
+          "heading": "LXXXIII",
+          "toc_title": "LXXXIII: Jonah Historically Regarded",
+          "text_prefix": "LXXXIII Jonah Historically Regarded Reference was made to the historical story of Jonah and the whale in the preceding chapter. Now some Nantucketers rather distrust this historical story of Jonah and the whale. But then there were some sce",
+          "images": 0
+        },
+        {
+          "index": 89,
+          "href": "text/chapter-84.xhtml",
+          "path": "epub/text/chapter-84.xhtml",
+          "characters": 4677,
+          "heading": "LXXXIV",
+          "toc_title": "LXXXIV: Pitchpoling",
+          "text_prefix": "LXXXIV Pitchpoling To make them run easily and swiftly, the axles of carriages are anointed; and for much the same purpose, some whalers perform an analogous operation upon their boat; they grease the bottom. Nor is it to be doubted that as",
+          "images": 0
+        },
+        {
+          "index": 90,
+          "href": "text/chapter-85.xhtml",
+          "path": "epub/text/chapter-85.xhtml",
+          "characters": 11459,
+          "heading": "LXXXV",
+          "toc_title": "LXXXV: The Fountain",
+          "text_prefix": "LXXXV The Fountain That for six thousand years\ufeff\u2014and no one knows how many millions of ages before\ufeff\u2014the great whales should have been spouting all over the sea, and sprinkling and mistifying the gardens of the deep, as with so many sprinklin",
+          "images": 0
+        },
+        {
+          "index": 91,
+          "href": "text/chapter-86.xhtml",
+          "path": "epub/text/chapter-86.xhtml",
+          "characters": 9965,
+          "heading": "LXXXVI",
+          "toc_title": "LXXXVI: The Tail",
+          "text_prefix": "LXXXVI The Tail Other poets have warbled the praises of the soft eye of the antelope, and the lovely plumage of the bird that never alights; less celestial, I celebrate a tail. Reckoning the largest sized Sperm Whale\u2019s tail to begin at that",
+          "images": 0
+        },
+        {
+          "index": 92,
+          "href": "text/chapter-87.xhtml",
+          "path": "epub/text/chapter-87.xhtml",
+          "characters": 26900,
+          "heading": "LXXXVII",
+          "toc_title": "LXXXVII: The Grand Armada",
+          "text_prefix": "LXXXVII The Grand Armada The long and narrow peninsula of Malacca, extending southeastward from the territories of Birmah, forms the most southerly point of all Asia. In a continuous line from that peninsula stretch the long islands of Suma",
+          "images": 0
+        },
+        {
+          "index": 93,
+          "href": "text/chapter-88.xhtml",
+          "path": "epub/text/chapter-88.xhtml",
+          "characters": 7103,
+          "heading": "LXXXVIII",
+          "toc_title": "LXXXVIII: Schools and Schoolmasters",
+          "text_prefix": "LXXXVIII Schools and Schoolmasters The previous chapter gave account of an immense body or herd of Sperm Whales, and there was also then given the probable cause inducing those vast aggregations. Now, though such great bodies are at times e",
+          "images": 0
+        },
+        {
+          "index": 94,
+          "href": "text/chapter-89.xhtml",
+          "path": "epub/text/chapter-89.xhtml",
+          "characters": 8150,
+          "heading": "LXXXIX",
+          "toc_title": "LXXXIX: Fast-Fish and Loose-Fish",
+          "text_prefix": "LXXXIX Fast-Fish and Loose-Fish The allusion to the waif and waif-poles in the last chapter but one, necessitates some account of the laws and regulations of the whale fishery, of which the waif may be deemed the grand symbol and badge. It ",
+          "images": 0
+        },
+        {
+          "index": 95,
+          "href": "text/chapter-90.xhtml",
+          "path": "epub/text/chapter-90.xhtml",
+          "characters": 5872,
+          "heading": "XC",
+          "toc_title": "XC: Heads or Tails",
+          "text_prefix": "XC Heads or Tails \u201cDe balena vero sufficit, si rex habeat caput, et regina caudam.\u201d Bracton, l. 3, c. 3 Latin from the books of the Laws of England, which taken along with the context, means, that of all whales captured by anybody on the co",
+          "images": 0
+        },
+        {
+          "index": 96,
+          "href": "text/chapter-91.xhtml",
+          "path": "epub/text/chapter-91.xhtml",
+          "characters": 14050,
+          "heading": "XCI",
+          "toc_title": "XCI: The Pequod Meets the Rose-Bud",
+          "text_prefix": "XCI The Pequod Meets the Rose-Bud \u201cIn vain it was to rake for Ambergriese in the paunch of this Leviathan, insufferable fetor denying not inquiry.\u201d Sir T. Browne, V.E. It was a week or two after the last whaling scene recounted, and when we",
+          "images": 0
+        },
+        {
+          "index": 97,
+          "href": "text/chapter-92.xhtml",
+          "path": "epub/text/chapter-92.xhtml",
+          "characters": 5504,
+          "heading": "XCII",
+          "toc_title": "XCII: Ambergris",
+          "text_prefix": "XCII Ambergris Now this ambergris is a very curious substance, and so important as an article of commerce, that in 1791 a certain Nantucket-born Captain Coffin was examined at the bar of the English House of Commons on that subject. For at ",
+          "images": 0
+        },
+        {
+          "index": 98,
+          "href": "text/chapter-93.xhtml",
+          "path": "epub/text/chapter-93.xhtml",
+          "characters": 9238,
+          "heading": "XCIII",
+          "toc_title": "XCIII: The Castaway",
+          "text_prefix": "XCIII The Castaway It was but some few days after encountering the Frenchman, that a most significant event befell the most insignificant of the Pequod \u2019s crew; an event most lamentable; and which ended in providing the sometimes madly merr",
+          "images": 0
+        },
+        {
+          "index": 99,
+          "href": "text/chapter-94.xhtml",
+          "path": "epub/text/chapter-94.xhtml",
+          "characters": 7292,
+          "heading": "XCIV",
+          "toc_title": "XCIV: A Squeeze of the Hand",
+          "text_prefix": "XCIV A Squeeze of the Hand That whale of Stubb\u2019s, so dearly purchased, was duly brought to the Pequod \u2019s side, where all those cutting and hoisting operations previously detailed, were regularly gone through, even to the baling of the Heide",
+          "images": 0
+        },
+        {
+          "index": 100,
+          "href": "text/chapter-95.xhtml",
+          "path": "epub/text/chapter-95.xhtml",
+          "characters": 2483,
+          "heading": "XCV",
+          "toc_title": "XCV: The Cassock",
+          "text_prefix": "XCV The Cassock Had you stepped on board the Pequod at a certain juncture of this post-mortemizing of the whale; and had you strolled forward nigh the windlass, pretty sure am I that you would have scanned with no small curiosity a very str",
+          "images": 0
+        },
+        {
+          "index": 101,
+          "href": "text/chapter-96.xhtml",
+          "path": "epub/text/chapter-96.xhtml",
+          "characters": 10244,
+          "heading": "XCVI",
+          "toc_title": "XCVI: The Try-Works",
+          "text_prefix": "XCVI The Try-Works Besides her hoisted boats, an American whaler is outwardly distinguished by her try-works. She presents the curious anomaly of the most solid masonry joining with oak and hemp in constituting the completed ship. It is as ",
+          "images": 0
+        },
+        {
+          "index": 102,
+          "href": "text/chapter-97.xhtml",
+          "path": "epub/text/chapter-97.xhtml",
+          "characters": 1346,
+          "heading": "XCVII",
+          "toc_title": "XCVII: The Lamp",
+          "text_prefix": "XCVII The Lamp Had you descended from the Pequod \u2019s try-works to the Pequod \u2019s forecastle, where the off duty watch were sleeping, for one single moment you would have almost thought you were standing in some illuminated shrine of canonized",
+          "images": 0
+        },
+        {
+          "index": 103,
+          "href": "text/chapter-98.xhtml",
+          "path": "epub/text/chapter-98.xhtml",
+          "characters": 5811,
+          "heading": "XCVIII",
+          "toc_title": "XCVIII: Stowing Down and Clearing Up",
+          "text_prefix": "XCVIII Stowing Down and Clearing Up Already has it been related how the great leviathan is afar off descried from the masthead; how he is chased over the watery moors, and slaughtered in the valleys of the deep; how he is then towed alongsi",
+          "images": 0
+        },
+        {
+          "index": 104,
+          "href": "text/chapter-99.xhtml",
+          "path": "epub/text/chapter-99.xhtml",
+          "characters": 13346,
+          "heading": "XCIX",
+          "toc_title": "XCIX: The Doubloon",
+          "text_prefix": "XCIX The Doubloon Ere now it has been related how Ahab was wont to pace his quarterdeck, taking regular turns at either limit, the binnacle and mainmast; but in the multiplicity of other things requiring narration it has not been added how ",
+          "images": 0
+        },
+        {
+          "index": 105,
+          "href": "text/chapter-100.xhtml",
+          "path": "epub/text/chapter-100.xhtml",
+          "characters": 14907,
+          "heading": "C",
+          "toc_title": "C: Leg and Arm",
+          "text_prefix": "C Leg and Arm The Pequod , of Nantucket, Meets the Samuel Enderby , of London. \u201cShip, ahoy! Hast seen the White Whale?\u201d So cried Ahab, once more hailing a ship showing English colours, bearing down under the stern. Trumpet to mouth, the old",
+          "images": 0
+        },
+        {
+          "index": 106,
+          "href": "text/chapter-101.xhtml",
+          "path": "epub/text/chapter-101.xhtml",
+          "characters": 9902,
+          "heading": "CI",
+          "toc_title": "CI: The Decanter",
+          "text_prefix": "CI The Decanter Ere the English ship fades from sight, be it set down here, that she hailed from London, and was named after the late Samuel Enderby, merchant of that city, the original of the famous whaling house of Enderby & Sons; a house",
+          "images": 0
+        },
+        {
+          "index": 107,
+          "href": "text/chapter-102.xhtml",
+          "path": "epub/text/chapter-102.xhtml",
+          "characters": 9068,
+          "heading": "CII",
+          "toc_title": "CII: A Bower in the Arsacides",
+          "text_prefix": "CII A Bower in the Arsacides Hitherto, in descriptively treating of the Sperm Whale, I have chiefly dwelt upon the marvels of his outer aspect; or separately and in detail upon some few interior structural features. But to a large and thoro",
+          "images": 0
+        },
+        {
+          "index": 108,
+          "href": "text/chapter-103.xhtml",
+          "path": "epub/text/chapter-103.xhtml",
+          "characters": 5186,
+          "heading": "CIII",
+          "toc_title": "CIII: Measurement of the Whale\u2019s Skeleton",
+          "text_prefix": "CIII Measurement of the Whale\u2019s Skeleton In the first place, I wish to lay before you a particular, plain statement, touching the living bulk of this leviathan, whose skeleton we are briefly to exhibit. Such a statement may prove useful her",
+          "images": 0
+        },
+        {
+          "index": 109,
+          "href": "text/chapter-104.xhtml",
+          "path": "epub/text/chapter-104.xhtml",
+          "characters": 8358,
+          "heading": "CIV",
+          "toc_title": "CIV: The Fossil Whale",
+          "text_prefix": "CIV The Fossil Whale From his mighty bulk the whale affords a most congenial theme whereon to enlarge, amplify, and generally expatiate. Would you, you could not compress him. By good rights he should only be treated of in imperial folio. N",
+          "images": 0
+        },
+        {
+          "index": 110,
+          "href": "text/chapter-105.xhtml",
+          "path": "epub/text/chapter-105.xhtml",
+          "characters": 9048,
+          "heading": "CV",
+          "toc_title": "CV: Does the Whale\u2019s Magnitude Diminish?\u2014Will He Perish?",
+          "text_prefix": "CV Does the Whale\u2019s Magnitude Diminish?\ufeff\u2014Will He Perish? Inasmuch, then, as this Leviathan comes floundering down upon us from the headwaters of the Eternities, it may be fitly inquired, whether, in the long course of his generations, he ha",
+          "images": 0
+        },
+        {
+          "index": 111,
+          "href": "text/chapter-106.xhtml",
+          "path": "epub/text/chapter-106.xhtml",
+          "characters": 5445,
+          "heading": "CVI",
+          "toc_title": "CVI: Ahab\u2019s Leg",
+          "text_prefix": "CVI Ahab\u2019s Leg The precipitating manner in which Captain Ahab had quitted the Samuel Enderby of London, had not been unattended with some small violence to his own person. He had lighted with such energy upon a thwart of his boat that his i",
+          "images": 0
+        },
+        {
+          "index": 112,
+          "href": "text/chapter-107.xhtml",
+          "path": "epub/text/chapter-107.xhtml",
+          "characters": 6212,
+          "heading": "CVII",
+          "toc_title": "CVII: The Carpenter",
+          "text_prefix": "CVII The Carpenter Seat thyself sultanically among the moons of Saturn, and take high abstracted man alone; and he seems a wonder, a grandeur, and a woe. But from the same point, take mankind in mass, and for the most part, they seem a mob ",
+          "images": 0
+        },
+        {
+          "index": 113,
+          "href": "text/chapter-108.xhtml",
+          "path": "epub/text/chapter-108.xhtml",
+          "characters": 8516,
+          "heading": "CVIII",
+          "toc_title": "CVIII: Ahab and the Carpenter",
+          "text_prefix": "CVIII Ahab and the Carpenter The Deck\ufeff\u2014First Night Watch. Carpenter standing before his vice-bench, and by the light of two lanterns busily filing the ivory joist for the leg, which joist is firmly fixed in the vice. Slabs of ivory, leather",
+          "images": 0
+        },
+        {
+          "index": 114,
+          "href": "text/chapter-109.xhtml",
+          "path": "epub/text/chapter-109.xhtml",
+          "characters": 4672,
+          "heading": "CIX",
+          "toc_title": "CIX: Ahab and Starbuck in the Cabin",
+          "text_prefix": "CIX Ahab and Starbuck in the Cabin According to usage they were pumping the ship next morning; and lo! no inconsiderable oil came up with the water; the casks below must have sprung a bad leak. Much concern was shown; and Starbuck went down",
+          "images": 0
+        },
+        {
+          "index": 115,
+          "href": "text/chapter-110.xhtml",
+          "path": "epub/text/chapter-110.xhtml",
+          "characters": 12546,
+          "heading": "CX",
+          "toc_title": "CX: Queequeg in His Coffin",
+          "text_prefix": "CX Queequeg in His Coffin Upon searching, it was found that the casks last struck into the hold were perfectly sound, and that the leak must be further off. So, it being calm weather, they broke out deeper and deeper, disturbing the slumber",
+          "images": 0
+        },
+        {
+          "index": 116,
+          "href": "text/chapter-111.xhtml",
+          "path": "epub/text/chapter-111.xhtml",
+          "characters": 2495,
+          "heading": "CXI",
+          "toc_title": "CXI: The Pacific",
+          "text_prefix": "CXI The Pacific When gliding by the Bashee isles we emerged at last upon the great South Sea; were it not for other things, I could have greeted my dear Pacific with uncounted thanks, for now the long supplication of my youth was answered; ",
+          "images": 0
+        },
+        {
+          "index": 117,
+          "href": "text/chapter-112.xhtml",
+          "path": "epub/text/chapter-112.xhtml",
+          "characters": 5538,
+          "heading": "CXII",
+          "toc_title": "CXII: The Blacksmith",
+          "text_prefix": "CXII The Blacksmith Availing himself of the mild, summer-cool weather that now reigned in these latitudes, and in preparation for the peculiarly active pursuits shortly to be anticipated, Perth, the begrimed, blistered old blacksmith, had n",
+          "images": 0
+        },
+        {
+          "index": 118,
+          "href": "text/chapter-113.xhtml",
+          "path": "epub/text/chapter-113.xhtml",
+          "characters": 6840,
+          "heading": "CXIII",
+          "toc_title": "CXIII: The Forge",
+          "text_prefix": "CXIII The Forge With matted beard, and swathed in a bristling sharkskin apron, about midday, Perth was standing between his forge and anvil, the latter placed upon an ironwood log, with one hand holding a pike-head in the coals, and with th",
+          "images": 0
+        },
+        {
+          "index": 119,
+          "href": "text/chapter-114.xhtml",
+          "path": "epub/text/chapter-114.xhtml",
+          "characters": 3753,
+          "heading": "CXIV",
+          "toc_title": "CXIV: The Gilder",
+          "text_prefix": "CXIV The Gilder Penetrating further and further into the heart of the Japanese cruising ground, the Pequod was soon all astir in the fishery. Often, in mild, pleasant weather, for twelve, fifteen, eighteen, and twenty hours on the stretch, ",
+          "images": 0
+        },
+        {
+          "index": 120,
+          "href": "text/chapter-115.xhtml",
+          "path": "epub/text/chapter-115.xhtml",
+          "characters": 5141,
+          "heading": "CXV",
+          "toc_title": "CXV: The Pequod Meets the Bachelor",
+          "text_prefix": "CXV The Pequod Meets the Bachelor And jolly enough were the sights and the sounds that came bearing down before the wind, some few weeks after Ahab\u2019s harpoon had been welded. It was a Nantucket ship, the Bachelor , which had just wedged in ",
+          "images": 0
+        },
+        {
+          "index": 121,
+          "href": "text/chapter-116.xhtml",
+          "path": "epub/text/chapter-116.xhtml",
+          "characters": 2985,
+          "heading": "CXVI",
+          "toc_title": "CXVI: The Dying Whale",
+          "text_prefix": "CXVI The Dying Whale Not seldom in this life, when, on the right side, fortune\u2019s favourites sail close by us, we, though all adroop before, catch somewhat of the rushing breeze, and joyfully feel our bagging sails fill out. So seemed it wit",
+          "images": 0
+        },
+        {
+          "index": 122,
+          "href": "text/chapter-117.xhtml",
+          "path": "epub/text/chapter-117.xhtml",
+          "characters": 2527,
+          "heading": "CXVII",
+          "toc_title": "CXVII: The Whale Watch",
+          "text_prefix": "CXVII The Whale Watch The four whales slain that evening had died wide apart; one, far to windward; one, less distant, to leeward; one ahead; one astern. These last three were brought alongside ere nightfall; but the windward one could not ",
+          "images": 0
+        },
+        {
+          "index": 123,
+          "href": "text/chapter-118.xhtml",
+          "path": "epub/text/chapter-118.xhtml",
+          "characters": 5043,
+          "heading": "CXVIII",
+          "toc_title": "CXVIII: The Quadrant",
+          "text_prefix": "CXVIII The Quadrant The season for the Line at length drew near; and every day when Ahab, coming from his cabin, cast his eyes aloft, the vigilant helmsman would ostentatiously handle his spokes, and the eager mariners quickly run to the br",
+          "images": 0
+        },
+        {
+          "index": 124,
+          "href": "text/chapter-119.xhtml",
+          "path": "epub/text/chapter-119.xhtml",
+          "characters": 13970,
+          "heading": "CXIX",
+          "toc_title": "CXIX: The Candles",
+          "text_prefix": "CXIX The Candles Warmest climes but nurse the cruellest fangs: the tiger of Bengal crouches in spiced groves of ceaseless verdure. Skies the most effulgent but basket the deadliest thunders: gorgeous Cuba knows tornadoes that never swept ta",
+          "images": 0
+        },
+        {
+          "index": 125,
+          "href": "text/chapter-120.xhtml",
+          "path": "epub/text/chapter-120.xhtml",
+          "characters": 1018,
+          "heading": "CXX",
+          "toc_title": "CXX: The Deck Towards the End of the First Night Watch",
+          "text_prefix": "CXX The Deck Towards the End of the First Night Watch Ahab standing by the helm. Starbuck approaching him. \u201cWe must send down the main-top-sail yard, sir. The band is working loose and the lee lift is half-stranded. Shall I strike it, sir?\u201d",
+          "images": 0
+        },
+        {
+          "index": 126,
+          "href": "text/chapter-121.xhtml",
+          "path": "epub/text/chapter-121.xhtml",
+          "characters": 3427,
+          "heading": "CXXI",
+          "toc_title": "CXXI: Midnight.\u2014The Forecastle Bulwarks",
+          "text_prefix": "CXXI Midnight.\ufeff\u2014The Forecastle Bulwarks Stubb and Flask mounted on them, and passing additional lashings over the anchors there hanging. \u201cNo, Stubb; you may pound that knot there as much as you please, but you will never pound into me what ",
+          "images": 0
+        },
+        {
+          "index": 127,
+          "href": "text/chapter-122.xhtml",
+          "path": "epub/text/chapter-122.xhtml",
+          "characters": 287,
+          "heading": "CXXII",
+          "toc_title": "CXXII: Midnight Aloft.\u2014Thunder and Lightning",
+          "text_prefix": "CXXII Midnight Aloft.\ufeff\u2014Thunder and Lightning The main-top-sail yard.\ufeff\u2014Tashtego passing new lashings around it. \u201cUm, um, um. Stop that thunder! Plenty too much thunder up here. What\u2019s the use of thunder? Um, um, um. We don\u2019t want thunder; we",
+          "images": 0
+        },
+        {
+          "index": 128,
+          "href": "text/chapter-123.xhtml",
+          "path": "epub/text/chapter-123.xhtml",
+          "characters": 6821,
+          "heading": "CXXIII",
+          "toc_title": "CXXIII: The Musket",
+          "text_prefix": "CXXIII The Musket During the most violent shocks of the Typhoon, the man at the Pequod \u2019s jawbone tiller had several times been reelingly hurled to the deck by its spasmodic motions, even though preventer tackles had been attached to it\ufeff\u2014fo",
+          "images": 0
+        },
+        {
+          "index": 129,
+          "href": "text/chapter-124.xhtml",
+          "path": "epub/text/chapter-124.xhtml",
+          "characters": 6943,
+          "heading": "CXXIV",
+          "toc_title": "CXXIV: The Needle",
+          "text_prefix": "CXXIV The Needle Next morning the not-yet-subsided sea rolled in long slow billows of mighty bulk, and striving in the Pequod \u2019s gurgling track, pushed her on like giants\u2019 palms outspread. The strong, unstaggering breeze abounded so, that s",
+          "images": 0
+        },
+        {
+          "index": 130,
+          "href": "text/chapter-125.xhtml",
+          "path": "epub/text/chapter-125.xhtml",
+          "characters": 6136,
+          "heading": "CXXV",
+          "toc_title": "CXXV: The Log and Line",
+          "text_prefix": "CXXV The Log and Line While now the fated Pequod had been so long afloat this voyage, the log and line had but very seldom been in use. Owing to a confident reliance upon other means of determining the vessel\u2019s place, some merchantmen, and ",
+          "images": 0
+        },
+        {
+          "index": 131,
+          "href": "text/chapter-126.xhtml",
+          "path": "epub/text/chapter-126.xhtml",
+          "characters": 7504,
+          "heading": "CXXVI",
+          "toc_title": "CXXVI: The Life-Buoy",
+          "text_prefix": "CXXVI The Life-Buoy Steering now southeastward by Ahab\u2019s levelled steel, and her progress solely determined by Ahab\u2019s level log and line; the Pequod held on her path towards the Equator. Making so long a passage through such unfrequented wa",
+          "images": 0
+        },
+        {
+          "index": 132,
+          "href": "text/chapter-127.xhtml",
+          "path": "epub/text/chapter-127.xhtml",
+          "characters": 3907,
+          "heading": "CXXVII",
+          "toc_title": "CXXVII: The Deck",
+          "text_prefix": "CXXVII The Deck The coffin laid upon two line-tubs, between the vice-bench and the open hatchway; the Carpenter caulking its seams; the string of twisted oakum slowly unwinding from a large roll of it placed in the bosom of his frock.\ufeff\u2014Ahab",
+          "images": 0
+        },
+        {
+          "index": 133,
+          "href": "text/chapter-128.xhtml",
+          "path": "epub/text/chapter-128.xhtml",
+          "characters": 7862,
+          "heading": "CXXVIII",
+          "toc_title": "CXXVIII: The Pequod Meets the Rachel",
+          "text_prefix": "CXXVIII The Pequod Meets the Rachel Next day, a large ship, the Rachel , was descried, bearing directly down upon the Pequod , all her spars thickly clustering with men. At the time the Pequod was making good speed through the water; but as",
+          "images": 0
+        },
+        {
+          "index": 134,
+          "href": "text/chapter-129.xhtml",
+          "path": "epub/text/chapter-129.xhtml",
+          "characters": 3023,
+          "heading": "CXXIX",
+          "toc_title": "CXXIX: The Cabin",
+          "text_prefix": "CXXIX The Cabin Ahab moving to go on deck; Pip catches him by the hand to follow. \u201cLad, lad, I tell thee thou must not follow Ahab now. The hour is coming when Ahab would not scare thee from him, yet would not have thee by him. There is tha",
+          "images": 0
+        },
+        {
+          "index": 135,
+          "href": "text/chapter-130.xhtml",
+          "path": "epub/text/chapter-130.xhtml",
+          "characters": 9602,
+          "heading": "CXXX",
+          "toc_title": "CXXX: The Hat",
+          "text_prefix": "CXXX The Hat And now that at the proper time and place, after so long and wide a preliminary cruise, Ahab\ufeff\u2014all other whaling waters swept\ufeff\u2014seemed to have chased his foe into an ocean-fold, to slay him the more securely there; now, that he f",
+          "images": 0
+        },
+        {
+          "index": 136,
+          "href": "text/chapter-131.xhtml",
+          "path": "epub/text/chapter-131.xhtml",
+          "characters": 2472,
+          "heading": "CXXXI",
+          "toc_title": "CXXXI: The Pequod Meets the Delight",
+          "text_prefix": "CXXXI The Pequod Meets the Delight The intense Pequod sailed on; the rolling waves and days went by; the life-buoy-coffin still lightly swung; and another ship, most miserably misnamed the Delight , was descried. As she drew nigh, all eyes ",
+          "images": 0
+        },
+        {
+          "index": 137,
+          "href": "text/chapter-132.xhtml",
+          "path": "epub/text/chapter-132.xhtml",
+          "characters": 8790,
+          "heading": "CXXXII",
+          "toc_title": "CXXXII: The Symphony",
+          "text_prefix": "CXXXII The Symphony It was a clear steel-blue day. The firmaments of air and sea were hardly separable in that all-pervading azure; only, the pensive air was transparently pure and soft, with a woman\u2019s look, and the robust and manlike sea h",
+          "images": 0
+        },
+        {
+          "index": 138,
+          "href": "text/chapter-133.xhtml",
+          "path": "epub/text/chapter-133.xhtml",
+          "characters": 20014,
+          "heading": "CXXXIII",
+          "toc_title": "CXXXIII: The Chase\u2014First Day",
+          "text_prefix": "CXXXIII The Chase\ufeff\u2014First Day That night, in the mid-watch, when the old man\ufeff\u2014as his wont at intervals\ufeff\u2014stepped forth from the scuttle in which he leaned, and went to his pivot-hole, he suddenly thrust out his face fiercely, snuffing up the ",
+          "images": 0
+        },
+        {
+          "index": 139,
+          "href": "text/chapter-134.xhtml",
+          "path": "epub/text/chapter-134.xhtml",
+          "characters": 18619,
+          "heading": "CXXXIV",
+          "toc_title": "CXXXIV: The Chase\u2014Second Day",
+          "text_prefix": "CXXXIV The Chase\ufeff\u2014Second Day At daybreak, the three mastheads were punctually manned afresh. \u201cD\u2019ye see him?\u201d cried Ahab after allowing a little space for the light to spread. \u201cSee nothing, sir.\u201d \u201cTurn up all hands and make sail! he travels ",
+          "images": 0
+        },
+        {
+          "index": 140,
+          "href": "text/chapter-135.xhtml",
+          "path": "epub/text/chapter-135.xhtml",
+          "characters": 25054,
+          "heading": "CXXXV",
+          "toc_title": "CXXXV: The Chase\u2014Third Day",
+          "text_prefix": "CXXXV The Chase\ufeff\u2014Third Day The morning of the third day dawned fair and fresh, and once more the solitary night-man at the foremasthead was relieved by crowds of the daylight lookouts, who dotted every mast and almost every spar. \u201cD\u2019ye see ",
+          "images": 0
+        },
+        {
+          "index": 141,
+          "href": "text/epilogue.xhtml",
+          "path": "epub/text/epilogue.xhtml",
+          "characters": 1505,
+          "heading": "Epilogue",
+          "toc_title": "Epilogue",
+          "text_prefix": "Epilogue \u201cAnd I only am escaped alone to tell thee.\u201d Job The drama\u2019s done. Why then here does anyone step forth?\ufeff\u2014Because one did survive the wreck. It so chanced, that after the Parsee\u2019s disappearance, I was he whom the Fates ordained to t",
+          "images": 0
+        },
+        {
+          "index": 142,
+          "href": "text/endnotes.xhtml",
+          "path": "epub/text/endnotes.xhtml",
+          "characters": 13132,
+          "heading": "Endnotes",
+          "toc_title": "Endnotes",
+          "text_prefix": "Endnotes See subsequent chapters for something more on this head. \u21a9\ufe0e I am aware that down to the present time, the fish styled Lamatins and Dugongs (Pigfish and Sow-fish of the Coffins of Nantucket) are included by many naturalists among th",
+          "images": 0
+        },
+        {
+          "index": 143,
+          "href": "text/colophon.xhtml",
+          "path": "epub/text/colophon.xhtml",
+          "characters": 1054,
+          "heading": "Colophon",
+          "toc_title": "Colophon",
+          "text_prefix": "Colophon Moby Dick was published in 1851 by Herman Melville . This ebook was produced for Standard Ebooks by Robin Whittleton , and is based on a transcription produced in 2001 by Daniel Lazarus , Jonesey , and David Widger for Project Gute",
+          "images": 1
+        },
+        {
+          "index": 144,
+          "href": "text/uncopyright.xhtml",
+          "path": "epub/text/uncopyright.xhtml",
+          "characters": 2060,
+          "heading": "Uncopyright",
+          "toc_title": "Uncopyright",
+          "text_prefix": "Uncopyright May you do good and not evil. May you find forgiveness for yourself and forgive others. May you share freely, never taking more than you give. Copyright pages exist to tell you that you can\u2019t do something. Unlike them, this Unco",
+          "images": 0
+        }
+      ],
+      "target": {
+        "index": 59,
+        "href": "text/chapter-54.xhtml",
+        "path": "epub/text/chapter-54.xhtml",
+        "characters": 44804,
+        "heading": "LIV",
+        "toc_title": "LIV: The Town-Ho \u2019s Story",
+        "text_prefix": "LIV The Town-Ho \u2019s Story As told at the Golden Inn. The Cape of Good Hope, and all the watery region round about there, is much like some noted four corners of a great highway, where you meet more travellers than in any other part. It was n",
+        "images": 0
+      },
+      "section_count": 145,
+      "actual_bytes": 1165503
+    },
+    "illustrated": {
+      "id": "se-alices-adventures-in-wonderland",
+      "title": "Alice's Adventures in Wonderland (Tenniel)",
+      "source": "standard-ebooks",
+      "url": "https://standardebooks.org/ebooks/lewis-carroll/alices-adventures-in-wonderland/john-tenniel/downloads/lewis-carroll_alices-adventures-in-wonderland_john-tenniel.epub?source=download",
+      "sha256": "431719c25bcb0b6a67fc03938b4633723d775324ac2c62a06a04f98862148bef",
+      "bytes": 18398869,
+      "format": "epub",
+      "why": "Trial book: 45 images in figures, a shaped poem",
+      "file": "illustrated.epub",
+      "sections": [
+        {
+          "index": 0,
+          "href": "text/titlepage.xhtml",
+          "path": "epub/text/titlepage.xhtml",
+          "characters": 0,
+          "heading": "",
+          "toc_title": "Titlepage",
+          "text_prefix": "",
+          "images": 1
+        },
+        {
+          "index": 1,
+          "href": "text/imprint.xhtml",
+          "path": "epub/text/imprint.xhtml",
+          "characters": 1195,
+          "heading": "Imprint",
+          "toc_title": "Imprint",
+          "text_prefix": "Imprint This ebook is the product of many hours of hard work by volunteers for Standard Ebooks , and builds on the hard work of other literature lovers made possible by the public domain. This particular ebook is based on a transcription fr",
+          "images": 1
+        },
+        {
+          "index": 2,
+          "href": "text/epigraph.xhtml",
+          "path": "epub/text/epigraph.xhtml",
+          "characters": 1274,
+          "heading": "",
+          "toc_title": "All in the Golden Afternoon",
+          "text_prefix": "All in the golden afternoon Full leisurely we glide; For both our oars, with little skill, By little arms are plied; While little hands make vain pretence Our wanderings to guide. Ah, cruel Three! In such an hour, Beneath such dreamy weathe",
+          "images": 0
+        },
+        {
+          "index": 3,
+          "href": "text/frontispiece.xhtml",
+          "path": "epub/text/frontispiece.xhtml",
+          "characters": 0,
+          "heading": "",
+          "toc_title": "Frontispiece",
+          "text_prefix": "",
+          "images": 1
+        },
+        {
+          "index": 4,
+          "href": "text/halftitlepage.xhtml",
+          "path": "epub/text/halftitlepage.xhtml",
+          "characters": 32,
+          "heading": "Alice\u2019s Adventures in Wonderland",
+          "toc_title": "Alice\u2019s Adventures in Wonderland",
+          "text_prefix": "Alice\u2019s Adventures in Wonderland",
+          "images": 0
+        },
+        {
+          "index": 5,
+          "href": "text/chapter-1.xhtml",
+          "path": "epub/text/chapter-1.xhtml",
+          "characters": 11220,
+          "heading": "I",
+          "toc_title": "I: Down the Rabbit-Hole",
+          "text_prefix": "I Down the Rabbit-Hole Alice was beginning to get very tired of sitting by her sister on the bank, and of having nothing to do: once or twice she had peeped into the book her sister was reading, but it had no pictures or conversations in it",
+          "images": 3
+        },
+        {
+          "index": 6,
+          "href": "text/chapter-2.xhtml",
+          "path": "epub/text/chapter-2.xhtml",
+          "characters": 10875,
+          "heading": "II",
+          "toc_title": "II: The Pool of Tears",
+          "text_prefix": "II The Pool of Tears \u201cCuriouser and curiouser!\u201d cried Alice (she was so much surprised, that for the moment she quite forgot how to speak good English); \u201cnow I\u2019m opening out like the largest telescope that ever was! Goodbye, feet!\u201d (for whe",
+          "images": 4
+        },
+        {
+          "index": 7,
+          "href": "text/chapter-3.xhtml",
+          "path": "epub/text/chapter-3.xhtml",
+          "characters": 9131,
+          "heading": "III",
+          "toc_title": "III: A Caucus-Race and a Long Tale",
+          "text_prefix": "III A Caucus-Race and a Long Tale They were indeed a queer-looking party that assembled on the bank\ufeff\u2014the birds with draggled feathers, the animals with their fur clinging close to them, and all dripping wet, cross, and uncomfortable. The fi",
+          "images": 2
+        },
+        {
+          "index": 8,
+          "href": "text/chapter-4.xhtml",
+          "path": "epub/text/chapter-4.xhtml",
+          "characters": 13834,
+          "heading": "IV",
+          "toc_title": "IV: The Rabbit Sends in a Little Bill",
+          "text_prefix": "IV The Rabbit Sends in a Little Bill It was the White Rabbit, trotting slowly back again, and looking anxiously about as it went, as if it had lost something; and she heard it muttering to itself \u201cThe Duchess! The Duchess! Oh my dear paws! ",
+          "images": 4
+        },
+        {
+          "index": 9,
+          "href": "text/chapter-5.xhtml",
+          "path": "epub/text/chapter-5.xhtml",
+          "characters": 11700,
+          "heading": "V",
+          "toc_title": "V: Advice from a Caterpillar",
+          "text_prefix": "V Advice from a Caterpillar The Caterpillar and Alice looked at each other for some time in silence: at last the Caterpillar took the hookah out of its mouth, and addressed her in a languid, sleepy voice. \u201cWho are you ?\u201d said the Caterpilla",
+          "images": 5
+        },
+        {
+          "index": 10,
+          "href": "text/chapter-6.xhtml",
+          "path": "epub/text/chapter-6.xhtml",
+          "characters": 13718,
+          "heading": "VI",
+          "toc_title": "VI: Pig and Pepper",
+          "text_prefix": "VI Pig and Pepper For a minute or two she stood looking at the house, and wondering what to do next, when suddenly a footman in livery came running out of the wood\ufeff\u2014(she considered him to be a footman because he was in livery: otherwise, ju",
+          "images": 5
+        },
+        {
+          "index": 11,
+          "href": "text/chapter-7.xhtml",
+          "path": "epub/text/chapter-7.xhtml",
+          "characters": 12553,
+          "heading": "VII",
+          "toc_title": "VII: A Mad Tea-Party",
+          "text_prefix": "VII A Mad Tea-Party There was a table set out under a tree in front of the house, and the March Hare and the Hatter were having tea at it: a Dormouse was sitting between them, fast asleep, and the other two were using it as a cushion, resti",
+          "images": 3
+        },
+        {
+          "index": 12,
+          "href": "text/chapter-8.xhtml",
+          "path": "epub/text/chapter-8.xhtml",
+          "characters": 13581,
+          "heading": "VIII",
+          "toc_title": "VIII: The Queen\u2019s Croquet-Ground",
+          "text_prefix": "VIII The Queen\u2019s Croquet-Ground A large rose-tree stood near the entrance of the garden: the roses growing on it were white, but there were three gardeners at it, busily painting them red. Alice thought this a very curious thing, and she we",
+          "images": 4
+        },
+        {
+          "index": 13,
+          "href": "text/chapter-9.xhtml",
+          "path": "epub/text/chapter-9.xhtml",
+          "characters": 12534,
+          "heading": "IX",
+          "toc_title": "IX: The Mock Turtle\u2019s Story",
+          "text_prefix": "IX The Mock Turtle\u2019s Story \u201cYou can\u2019t think how glad I am to see you again, you dear old thing!\u201d said the Duchess, as she tucked her arm affectionately into Alice\u2019s, and they walked off together. Alice was very glad to find her in such a pl",
+          "images": 3
+        },
+        {
+          "index": 14,
+          "href": "text/chapter-10.xhtml",
+          "path": "epub/text/chapter-10.xhtml",
+          "characters": 11221,
+          "heading": "X",
+          "toc_title": "X: The Lobster Quadrille",
+          "text_prefix": "X The Lobster Quadrille The Mock Turtle sighed deeply, and drew the back of one flapper across his eyes. He looked at Alice, and tried to speak, but for a minute or two sobs choked his voice. \u201cSame as if he had a bone in his throat,\u201d said t",
+          "images": 2
+        },
+        {
+          "index": 15,
+          "href": "text/chapter-11.xhtml",
+          "path": "epub/text/chapter-11.xhtml",
+          "characters": 10285,
+          "heading": "XI",
+          "toc_title": "XI: Who Stole the Tarts?",
+          "text_prefix": "XI Who Stole the Tarts? The King and Queen of Hearts were seated on their throne when they arrived, with a great crowd assembled about them\ufeff\u2014all sorts of little birds and beasts, as well as the whole pack of cards: the Knave was standing be",
+          "images": 3
+        },
+        {
+          "index": 16,
+          "href": "text/chapter-12.xhtml",
+          "path": "epub/text/chapter-12.xhtml",
+          "characters": 11511,
+          "heading": "XII",
+          "toc_title": "XII: Alice\u2019s Evidence",
+          "text_prefix": "XII Alice\u2019s Evidence \u201cHere!\u201d cried Alice, quite forgetting in the flurry of the moment how large she had grown in the last few minutes, and she jumped up in such a hurry that she tipped over the jury-box with the edge of her skirt, upsettin",
+          "images": 3
+        },
+        {
+          "index": 17,
+          "href": "text/loi.xhtml",
+          "path": "epub/text/loi.xhtml",
+          "characters": 3584,
+          "heading": "List of Illustrations",
+          "toc_title": "List of Illustrations",
+          "text_prefix": "List of Illustrations The King and Queen of Hearts were seated on their throne, with a great crowd assembled about them\ufeff\u2014all sorts of little birds and beasts, as well as the whole pack of cards. When the Rabbit actually took a watch out of ",
+          "images": 0
+        },
+        {
+          "index": 18,
+          "href": "text/colophon.xhtml",
+          "path": "epub/text/colophon.xhtml",
+          "characters": 1070,
+          "heading": "Colophon",
+          "toc_title": "Colophon",
+          "text_prefix": "Colophon Alice\u2019s Adventures in Wonderland was published in 1865 by Lewis Carroll . This ebook was produced for Standard Ebooks by Alex Cabal , and is based on a transcription produced in 2008 by Arthur DiBianca and David Widger for Project ",
+          "images": 1
+        },
+        {
+          "index": 19,
+          "href": "text/uncopyright.xhtml",
+          "path": "epub/text/uncopyright.xhtml",
+          "characters": 2060,
+          "heading": "Uncopyright",
+          "toc_title": "Uncopyright",
+          "text_prefix": "Uncopyright May you do good and not evil. May you find forgiveness for yourself and forgive others. May you share freely, never taking more than you give. Copyright pages exist to tell you that you can\u2019t do something. Unlike them, this Unco",
+          "images": 0
+        }
+      ],
+      "target": {
+        "index": 5,
+        "href": "text/chapter-1.xhtml",
+        "path": "epub/text/chapter-1.xhtml",
+        "characters": 11220,
+        "heading": "I",
+        "toc_title": "I: Down the Rabbit-Hole",
+        "text_prefix": "I Down the Rabbit-Hole Alice was beginning to get very tired of sitting by her sister on the bank, and of having nothing to do: once or twice she had peeped into the book her sister was reading, but it had no pictures or conversations in it",
+        "images": 3
+      },
+      "section_count": 20,
+      "actual_bytes": 18398869
+    }
+  },
+  "viewport_css_px": [
+    360,
+    640
+  ],
+  "font_css_px": 18,
+  "font_sha256": "97b2d4da6e3cb494b5a1e66ae176914d852ccabef49e0c02c0df25f3e39aca0b",
+  "font_file": "SourceSerif4.ttf",
+  "sources": "/nix/store/0bc0b5qwmdqi2kgbwa8gam2gcfh09fls-bookfin-epub-benchmark-sources",
+  "bookfin_commit": "6ba37d9a4a23be07f857d369da73115fedcc53fb",
+  "koreader_release": "v2026.07.1",
+  "koreader_base": "6e4bc81af4e04f78d81677a323a780a71b29702a",
+  "koreader_crengine": "74bd5a1e2b924bced7513f39562f8fb95d7138e5",
+  "epubjs": "0.3.93",
+  "jszip": "3.10.1"
+}

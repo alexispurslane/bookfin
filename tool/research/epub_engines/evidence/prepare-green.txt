@@ -1,0 +1,7 @@
+test_keeps_the_spine_order_images_and_navigation_title_of_the_requested_section (test_prepare.CorpusDescriptionTest.test_keeps_the_spine_order_images_and_navigation_title_of_the_requested_section) ... ok
+test_repeated_preparation_replaces_read_only_nix_source_copies (test_prepare.CorpusDescriptionTest.test_repeated_preparation_replaces_read_only_nix_source_copies) ... ok
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.003s
+
+OK

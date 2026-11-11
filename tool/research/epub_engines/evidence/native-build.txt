@@ -1,0 +1,132 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.3.1/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preWebviewReleaseBuild UP-TO-DATE
+> Task :app:mergeWebviewReleaseJniLibFolders UP-TO-DATE
+> Task :app:mergeWebviewReleaseNativeLibs NO-SOURCE
+> Task :app:stripWebviewReleaseDebugSymbols NO-SOURCE
+> Task :app:extractWebviewReleaseNativeSymbolTables NO-SOURCE
+> Task :app:mergeWebviewReleaseNativeDebugMetadata NO-SOURCE
+> Task :app:checkWebviewReleaseDuplicateClasses UP-TO-DATE
+> Task :app:generateWebviewReleaseBuildConfig UP-TO-DATE
+> Task :app:generateWebviewReleaseResources UP-TO-DATE
+> Task :app:packageWebviewReleaseResources
+> Task :app:processWebviewReleaseNavigationResources UP-TO-DATE
+> Task :app:parseWebviewReleaseLocalResources UP-TO-DATE
+> Task :app:generateWebviewReleaseRFile UP-TO-DATE
+> Task :app:compileWebviewReleaseKotlin NO-SOURCE
+> Task :app:javaPreCompileWebviewRelease UP-TO-DATE
+> Task :app:compileWebviewReleaseJavaWithJavac UP-TO-DATE
+> Task :app:checkWebviewReleaseAarMetadata UP-TO-DATE
+> Task :app:mapWebviewReleaseSourceSetPaths UP-TO-DATE
+> Task :app:compileWebviewReleaseNavigationResources UP-TO-DATE
+> Task :app:mergeWebviewReleaseResources
+> Task :app:createWebviewReleaseCompatibleScreenManifests
+> Task :app:extractDeepLinksWebviewRelease UP-TO-DATE
+
+> Task :app:processWebviewReleaseMainManifest
+/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/native/app/src/main/AndroidManifest.xml:3:148-180 Warning:
+	android:extractNativeLibs should not be specified in this source AndroidManifest.xml file. See https://d.android.com/guide/topics/manifest/application-element#extractNativeLibs for more information.
+The AGP Upgrade Assistant can remove the attribute from the AndroidManifest.xml file and update the build file accordingly. See https://d.android.com/studio/build/agp-upgrade-assistant for more information.
+
+> Task :app:processWebviewReleaseManifest
+> Task :app:desugarWebviewReleaseFileDependencies
+> Task :app:mergeWebviewReleaseStartupProfile UP-TO-DATE
+> Task :app:processWebviewReleaseManifestForPackage
+> Task :app:mergeExtDexWebviewRelease
+> Task :app:mergeWebviewReleaseArtProfile UP-TO-DATE
+> Task :app:generateWebviewReleaseAssets UP-TO-DATE
+> Task :app:mergeWebviewReleaseAssets UP-TO-DATE
+> Task :app:compressWebviewReleaseAssets UP-TO-DATE
+> Task :app:extractWebviewReleaseVersionControlInfo UP-TO-DATE
+> Task :app:extractProguardFiles UP-TO-DATE
+> Task :app:generateWebviewReleaseLintVitalReportModel
+> Task :app:processWebviewReleaseResources
+> Task :app:dexBuilderWebviewRelease
+> Task :app:mergeDexWebviewRelease
+> Task :app:mergeWebviewReleaseGlobalSynthetics
+> Task :app:compileWebviewReleaseArtProfile
+> Task :app:processWebviewReleaseJavaRes NO-SOURCE
+> Task :app:mergeWebviewReleaseJavaResource UP-TO-DATE
+> Task :app:optimizeWebviewReleaseResources
+> Task :app:collectWebviewReleaseDependencies UP-TO-DATE
+> Task :app:sdkWebviewReleaseDependencyData UP-TO-DATE
+> Task :app:validateSigningWebviewRelease UP-TO-DATE
+> Task :app:writeWebviewReleaseAppMetadata UP-TO-DATE
+> Task :app:writeWebviewReleaseSigningConfigVersions UP-TO-DATE
+> Task :app:preKoreaderReleaseBuild UP-TO-DATE
+> Task :app:mergeKoreaderReleaseJniLibFolders UP-TO-DATE
+> Task :app:mergeKoreaderReleaseNativeLibs UP-TO-DATE
+> Task :app:stripKoreaderReleaseDebugSymbols UP-TO-DATE
+> Task :app:extractKoreaderReleaseNativeSymbolTables UP-TO-DATE
+> Task :app:mergeKoreaderReleaseNativeDebugMetadata UP-TO-DATE
+> Task :app:checkKoreaderReleaseDuplicateClasses UP-TO-DATE
+> Task :app:generateKoreaderReleaseBuildConfig UP-TO-DATE
+> Task :app:generateKoreaderReleaseResources UP-TO-DATE
+> Task :app:packageKoreaderReleaseResources
+> Task :app:processKoreaderReleaseNavigationResources UP-TO-DATE
+> Task :app:parseKoreaderReleaseLocalResources UP-TO-DATE
+> Task :app:generateKoreaderReleaseRFile UP-TO-DATE
+> Task :app:compileKoreaderReleaseKotlin NO-SOURCE
+> Task :app:javaPreCompileKoreaderRelease UP-TO-DATE
+> Task :app:compileKoreaderReleaseJavaWithJavac UP-TO-DATE
+> Task :app:checkKoreaderReleaseAarMetadata UP-TO-DATE
+> Task :app:mapKoreaderReleaseSourceSetPaths UP-TO-DATE
+> Task :app:compileKoreaderReleaseNavigationResources UP-TO-DATE
+> Task :app:mergeKoreaderReleaseResources
+> Task :app:createKoreaderReleaseCompatibleScreenManifests
+> Task :app:extractDeepLinksKoreaderRelease UP-TO-DATE
+
+> Task :app:processKoreaderReleaseMainManifest
+/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/native/app/src/main/AndroidManifest.xml:3:148-180 Warning:
+	android:extractNativeLibs should not be specified in this source AndroidManifest.xml file. See https://d.android.com/guide/topics/manifest/application-element#extractNativeLibs for more information.
+The AGP Upgrade Assistant can remove the attribute from the AndroidManifest.xml file and update the build file accordingly. See https://d.android.com/studio/build/agp-upgrade-assistant for more information.
+
+> Task :app:processKoreaderReleaseManifest
+> Task :app:processKoreaderReleaseManifestForPackage
+> Task :app:processKoreaderReleaseResources
+> Task :app:dexBuilderKoreaderRelease
+> Task :app:desugarKoreaderReleaseFileDependencies
+> Task :app:mergeKoreaderReleaseStartupProfile UP-TO-DATE
+> Task :app:mergeExtDexKoreaderRelease
+> Task :app:mergeDexKoreaderRelease
+> Task :app:mergeKoreaderReleaseArtProfile UP-TO-DATE
+> Task :app:mergeKoreaderReleaseGlobalSynthetics
+> Task :app:compileKoreaderReleaseArtProfile
+> Task :app:generateKoreaderReleaseAssets UP-TO-DATE
+> Task :app:mergeKoreaderReleaseAssets UP-TO-DATE
+> Task :app:compressKoreaderReleaseAssets UP-TO-DATE
+> Task :app:extractKoreaderReleaseVersionControlInfo UP-TO-DATE
+> Task :app:generateKoreaderReleaseLintVitalReportModel
+> Task :app:lintVitalAnalyzeKoreaderRelease
+> Task :app:lintVitalAnalyzeWebviewRelease
+> Task :app:lintVitalReportWebviewRelease
+> Task :app:lintVitalWebviewRelease
+> Task :app:lintVitalReportKoreaderRelease
+> Task :app:lintVitalKoreaderRelease
+> Task :app:processKoreaderReleaseJavaRes NO-SOURCE
+> Task :app:mergeKoreaderReleaseJavaResource UP-TO-DATE
+> Task :app:optimizeKoreaderReleaseResources
+> Task :app:collectKoreaderReleaseDependencies UP-TO-DATE
+> Task :app:sdkKoreaderReleaseDependencyData UP-TO-DATE
+> Task :app:validateSigningKoreaderRelease UP-TO-DATE
+> Task :app:writeKoreaderReleaseAppMetadata UP-TO-DATE
+> Task :app:writeKoreaderReleaseSigningConfigVersions UP-TO-DATE
+> Task :app:packageWebviewRelease
+> Task :app:createWebviewReleaseApkListingFileRedirect
+> Task :app:assembleWebviewRelease
+> Task :app:packageKoreaderRelease
+> Task :app:createKoreaderReleaseApkListingFileRedirect
+> Task :app:assembleKoreaderRelease
+
+[Incubating] Problems report is available at: file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/native/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.3.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 12s
+93 actionable tasks: 40 executed, 53 up-to-date
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.3.1/userguide/configuration_cache_enabling.html
