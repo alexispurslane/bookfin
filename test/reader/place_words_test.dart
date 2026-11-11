@@ -107,7 +107,7 @@ void main() {
   });
 
   test('a short quote reads whole, and white space in it reads as one '
-      'space', () {
+      'space. It gives no separate quote, which would only repeat it', () {
     final words = describeTextPlace(
       saved({
         'cfi': 'epubcfi(/6/2)',
@@ -117,7 +117,7 @@ void main() {
     );
 
     expect(words.short, '“Call me Ishmael.”');
-    expect(words.quote, 'Call me Ishmael.');
+    expect(words.quote, isNull);
   });
 
   test('a place without a quote outside the open edition still reads as '

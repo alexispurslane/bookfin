@@ -466,8 +466,8 @@ void main() {
     );
   });
 
-  test('Go back on a move returns to its before, and Go to returns to its '
-      'after, each with a history restore move', () async {
+  test('Before on a move returns to its before place, and After returns to '
+      'its after place, each with a history restore move', () async {
     final reader = await openBook();
     final start = reader.position!;
     await after(reader, () => reader.goToContents('text/s2.xhtml#cedar'));

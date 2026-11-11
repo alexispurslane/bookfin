@@ -1,6 +1,6 @@
 # Which place a history entry goes to
 
-Ticket: boo-hyl4, under epic boo-fs0n. Status: design, written 2026-11-11. The user must choose between two designs, or a hybrid of them. The questions are at the end. Nothing here is built yet.
+Ticket: boo-hyl4, under epic boo-fs0n. Status: built, 2026-11-11. The user chose design B (see "Decision"). The section "Built" at the end records the details of the build. The sections before it describe the sheet as it was before the build.
 
 The user reported on 2026-11-11, in their own words:
 
@@ -44,7 +44,7 @@ where
 - `entry` = the entry that is open.
 - `event` = the move of that entry.
 - `event.before`, `event.after` = the before place and the after place of the move.
-- `event.changesPosition` = whether the move can change the place. It is true for a seek, a jump, a chapter change, an undo and an open. It is also true for a history restore, a bookmark restore, a link and a search result. It is false for Paused, Played, Interrupted, Stopped, Finished and Closed. Their before and after are the same place.
+- `event.changesPosition` = whether the move can change the place. It is true for a seek, a jump, a chapter change, an undo and an open. It is also true for a history restore, a bookmark restore, a link and a search result. It is false for Paused, Played, Interrupted, Stopped, Finished and Closed. Paused, Stopped and Closed record one place. Played, Interrupted and Finished go from the position sample before the change to the sample that changed it, so their two places can differ by a fraction of a second.
 - `widget.describe(place).short` = the place text of a place (see below).
 - `choice(text, report)` = a compact `TextButton` with the label `text`. A tap calls `report`.
 - `widget.onGoBack`, `widget.onGoTo` = the callbacks to the controller `openHistory`.
@@ -272,15 +272,15 @@ happened. Tickets tc-p3j8 and tc-butt ship with it.
 
 The timeline follows design B with these details, which the decision did not settle:
 
-- An entry has two ends when its before place and its after place differ (`samePlace`). So "Opened" at the start of a reading visit, Paused and Closed show one place. "Opened at the place from Pixel 8" shows two.
+- An entry has two ends when `HistoryEvent.moved` is true: its kind can change the place (`changesPosition`), and its two places differ (`samePlace`). So Played, Paused, Closed and "Opened" at the start of a reading visit show one place. "Opened at the place from Pixel 8" shows two.
 - The tile of an entry with one place has the role word "Go to".
 - The route spans its row, from the left edge of the time column to the right edge of Delete.
 - Name or Rename on a bookmark is a pencil icon to the left of Delete. Delete stays at the right end of every open row.
 - Delete keeps a touch target of 48 by 48 points. So an open row is taller than a closed row.
 - The rail runs beside the rows. It does not cross the tiles of an open route.
-- A tile shows the chapter and the quote of its place on its third line. It leaves out a quote that its place text already shows, as for a place outside the open book.
+- A tile shows the chapter and the quote of its place on its third line. For a place outside the open book, that line shows more of the quote than the place text. If the quote has six words or fewer, the place text shows all of it, so `describeTextPlace` gives no separate quote.
 - `HistoryTimeline.onGoBack` is now `onGoBefore`. `onGoTo` reports the After tile and the tile of an entry with one place.
-- A listening move's distance subtracts the whole seconds that its two place texts show (`audioSeconds`). It names every unit from the largest one that is not zero to the smallest one that is not zero, such as "40 s", "1 m 31 s" or "1 h 0 m 5 s".
+- A listening move's distance subtracts the whole seconds that its two place texts show (`audioSeconds`). It names every unit from the largest one that is not zero to the smallest one that is not zero, such as "40 s", "1 m 31 s" or "1 h 0 m 5 s". A move within one shown second reads as its verb alone, such as "Moved".
 - The method `_end` in `lib/playback/timeline.dart` describes the place of every tile. Cross-edition Go to (boo-z3is) can map a place there.
 
 Screenshots of the built sheet are in `~/.cache/bookfin/previews/boo-hyl4/built/`.

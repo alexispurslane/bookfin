@@ -65,9 +65,7 @@ class _ScrubBarState extends State<ScrubBar> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final accent = Theme.of(context).brightness == Brightness.dark
-        ? theaterGlow
-        : scheme.primary;
+    final accent = glowAccent(Theme.of(context));
     final layout = widget.layout;
     final bar = SliderTheme(
       data: SliderTheme.of(context).copyWith(

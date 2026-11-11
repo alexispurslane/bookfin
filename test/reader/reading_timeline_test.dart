@@ -327,7 +327,7 @@ void main() {
     expect(saved['editionLabel'], otherEdition.label);
   });
 
-  test('Go back on a reading move shows where it began in the open '
+  test('Before on a reading move shows where it began in the open '
       'edition', () async {
     final shown = <ReaderAddress>[];
     await reader.open(book, edition);

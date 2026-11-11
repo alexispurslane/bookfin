@@ -272,12 +272,6 @@ const _timeWidth = 68.0;
 
 const _rowRadius = BorderRadius.all(Radius.circular(8));
 
-/// The color of a timeline's marks and places to go: the warm glow of the
-/// player at night, and the theme's primary color by day.
-Color _accent(ThemeData theme) => theme.brightness == Brightness.dark
-    ? theaterGlow
-    : theme.colorScheme.primary;
-
 class _HistoryTimelineState extends State<HistoryTimeline> {
   /// The entry whose choices are shown, if any.
   String? _open;
@@ -330,7 +324,7 @@ class _HistoryTimelineState extends State<HistoryTimeline> {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final night = theme.brightness == Brightness.dark;
-    final accent = _accent(theme);
+    final accent = glowAccent(theme);
     final small = TextStyle(
       fontSize: 12,
       color: scheme.onSurfaceVariant,
@@ -517,13 +511,11 @@ class _HistoryTimelineState extends State<HistoryTimeline> {
   Widget _end(String role, Place place, VoidCallback go) =>
       _PlaceTile(role: role, words: widget.describe(place), onTap: go);
 
-  /// The move of [entry] when it has two ends: an action whose before
-  /// place differs from its after place. Null for a bookmark, and for an
-  /// action that stayed at one place, such as a pause or the open of a
-  /// reading visit.
+  /// The move of [entry] when it has two ends ([HistoryEvent.moved]). Null
+  /// for a bookmark, and for an action that stayed at one place, such as a
+  /// pause or the open of a reading visit.
   static HistoryEvent<Place>? _moveOf(TimelineEntry entry) => switch (entry) {
-    ActionEntry(:final event) when !samePlace(event.before, event.after) =>
-      event,
+    ActionEntry(:final event) when event.moved => event,
     _ => null,
   };
 
@@ -574,21 +566,24 @@ class _HistoryTimelineState extends State<HistoryTimeline> {
   }
 
   /// A listening move from the shown second [from] to the shown second
-  /// [to], such as "Moved back 40 s" or "Jumped ahead 1 m 31 s".
-  static String _listeningMove(String verb, int from, int to) =>
-      '$verb ${to >= from ? 'ahead' : 'back'} ${_span((to - from).abs())}';
+  /// [to], such as "Moved back 40 s" or "Jumped ahead 1 m 31 s". A move
+  /// within one shown second reads as [verb] alone, because its two place
+  /// texts are the same.
+  static String _listeningMove(String verb, int from, int to) => from == to
+      ? verb
+      : '$verb ${to > from ? 'ahead' : 'back'} ${_span((to - from).abs())}';
 
-  /// A span of [seconds], such as "40 s", "1 m 31 s", "2 m" or
+  /// A span of [seconds] above zero, such as "40 s", "1 m 31 s", "2 m" or
   /// "1 h 0 m 5 s": every unit from the largest one that is not zero down
   /// to the smallest one that is not zero.
   static String _span(int seconds) {
+    assert(seconds > 0);
     final units = [
       (seconds ~/ 3600, 'h'),
       (seconds ~/ 60 % 60, 'm'),
       (seconds % 60, 's'),
     ];
     final first = units.indexWhere((unit) => unit.$1 > 0);
-    if (first < 0) return '0 s';
     final last = units.lastIndexWhere((unit) => unit.$1 > 0);
     return [
       for (final (count, unit) in units.sublist(first, last + 1))
@@ -621,10 +616,7 @@ class _PlaceTile extends StatelessWidget {
     final night = theme.brightness == Brightness.dark;
     final detail = [
       ?words.chapter,
-      // A place outside the open book reads as the first words of its
-      // quote, so the quote would only repeat them.
-      if (words.quote case final quote? when !_opens(quote, words.short))
-        '“$quote”',
+      if (words.quote case final quote?) '“$quote”',
     ].join(' · ');
     Widget line(String text, TextStyle style, {String? semanticsLabel}) => Text(
       text,
@@ -668,7 +660,7 @@ class _PlaceTile extends StatelessWidget {
                     TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
-                      color: _accent(theme),
+                      color: glowAccent(theme),
                       fontFeatures: const [FontFeature.tabularFigures()],
                     ),
                   ),
@@ -684,13 +676,6 @@ class _PlaceTile extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  /// Whether [short] names a place by the first words of [quote], as
-  /// `describeTextPlace` names a place outside the open book.
-  static bool _opens(String quote, String short) {
-    final shown = short.replaceAll(RegExp('[“”…]'), '').trim();
-    return shown.isNotEmpty && quote.startsWith(shown);
   }
 }
 

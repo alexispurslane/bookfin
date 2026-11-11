@@ -300,9 +300,7 @@ class PlayerView extends StatelessWidget {
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: theme.textTheme.labelLarge?.copyWith(
-                                      color: night
-                                          ? theaterGlow
-                                          : scheme.primary,
+                                      color: glowAccent(theme),
                                       fontWeight: FontWeight.w500,
                                     ),
                                   ),
@@ -460,9 +458,7 @@ class PlayerView extends StatelessWidget {
   Widget _tools(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final accent = theme.brightness == Brightness.dark
-        ? theaterGlow
-        : scheme.primary;
+    final accent = glowAccent(theme);
     final value = TextStyle(
       fontSize: 14,
       fontWeight: FontWeight.w600,
@@ -870,9 +866,7 @@ class ChapterList extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final accent = theme.brightness == Brightness.dark
-        ? theaterGlow
-        : scheme.primary;
+    final accent = glowAccent(theme);
     return ListView(
       controller: controller,
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),

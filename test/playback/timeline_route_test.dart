@@ -229,6 +229,36 @@ void main() {
       expect((kind, entry.event), ('go', pause));
     });
 
+    testWidgets('a play-state entry whose two position samples differ by '
+        'milliseconds shows one place', (tester) async {
+      // Playback records Played, Interrupted and Finished from the
+      // position sample before the change to the one that changed it.
+      final kinds = {
+        HistoryAction.resume: 'Played',
+        HistoryAction.interruption: 'Interrupted',
+        HistoryAction.completion: 'Finished',
+      };
+      await showTimeline(tester, [
+        for (final (index, kind) in kinds.keys.indexed)
+          ActionEntry(
+            move(
+              kind.name,
+              kind,
+              listening(4410000),
+              listening(4410180),
+              minutesAgo: index + 1,
+            ),
+          ),
+      ]);
+      expect(find.text('1:13:30'), findsNWidgets(3));
+      expect(find.textContaining('→'), findsNothing);
+      for (final label in kinds.values) {
+        await open(tester, label);
+        expect(find.text('BEFORE'), findsNothing, reason: label);
+        expect(find.text('GO TO'), findsOneWidget, reason: label);
+      }
+    });
+
     testWidgets('an open without another device is one place', (tester) async {
       final visit = reading('The Time Traveller smiled round at us.');
       await showTimeline(tester, [
@@ -261,6 +291,22 @@ void main() {
         [('go', mark), ('rename', mark), ('delete', mark)],
       );
     });
+  });
+
+  testWidgets('a tile of a place outside the open book shows its quote '
+      'under its first words', (tester) async {
+    await showTimeline(tester, everything);
+    await open(tester, 'Changed chapter');
+    expect(
+      find.descendant(
+        of: tile('BEFORE'),
+        matching: find.text(
+          '“The thing the Time Traveller held in his hand was a glittering '
+          'metallic framework”',
+        ),
+      ),
+      findsOneWidget,
+    );
   });
 
   group('an open entry keeps one shape', () {
@@ -313,9 +359,7 @@ void main() {
             of: tile(role),
             matching: find.byType(RichText),
           );
-          // A place outside the open book reads as its quote, and has no
-          // chapter, so its tile has no third line.
-          expect(lines, findsAtLeastNWidgets(2), reason: '$label $role');
+          expect(lines, findsNWidgets(3), reason: '$label $role');
           for (final text in lines.evaluate()) {
             expect(
               lineCount(text.renderObject! as RenderParagraph),
@@ -334,6 +378,31 @@ void main() {
     ) async {
       await showTimeline(tester, [ActionEntry(seek)]);
       expect(find.text('Moved back 40 s', findRichText: true), findsOneWidget);
+    });
+
+    testWidgets('a seek within one shown second reads as its verb alone', (
+      tester,
+    ) async {
+      await showTimeline(tester, [
+        ActionEntry(
+          move(
+            'nudge',
+            HistoryAction.seek,
+            listening(3775900),
+            listening(3775100),
+          ),
+        ),
+      ]);
+      expect(find.text('Moved', findRichText: true), findsOneWidget);
+      await open(tester, 'Moved');
+      expect(
+        find.descendant(of: tile('BEFORE'), matching: find.text('1:02:55')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: tile('AFTER'), matching: find.text('1:02:55')),
+        findsOneWidget,
+      );
     });
 
     testWidgets('a move of a minute or more names minutes and seconds', (
