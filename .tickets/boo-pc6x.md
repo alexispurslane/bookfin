@@ -23,3 +23,7 @@ Explicit defensible endpoints for Bookfin, epub.js/WebView and KOReader; new rel
 **2026-11-11T13:48:23Z**
 
 Started Sol xhigh ticket lead. taskId node:delegated-task:command%3Amcp%3A9af129e3-220f-4626-b1b7-2038d2bfc625%3Adelegate-task%3Asol-xhigh-boo-pc6x-engine-ready-20261111-1; childThreadId thread:delegated-task:command%3Amcp%3A9af129e3-220f-4626-b1b7-2038d2bfc625%3Adelegate-task%3Asol-xhigh-boo-pc6x-engine-ready-20261111-1; clientRequestId sol-xhigh-boo-pc6x-engine-ready-20261111-1. Base 7087ff6. One fresh Sol xhigh read-only review authorized after complete implementation and measurement. local/emulator-5556 only; own device_open binding required, genuine instrumentation runner preferred; no Pixel or homepage edits. Endpoint audit precedes claims; unavoidable mismatch goes to parent.
+
+**2026-11-11T13:53:53Z**
+
+Endpoint audit found no equivalent pre-raster page-image endpoint in pinned KOReader: images decode during Draw. Parent selected Option A to preserve the user-requested exclusion of drawing: report genuine non-equivalent milestones plus limited layout/navigation and retained reference-copy intervals. No equal-work ranking or homepage replacement from readiness diagnostics. Option B matched raster output would add drawing to the requested interval and is outside this run. Lead continues fresh 108-job schedule, post-timing correctness validation, one review and fixes. Branch t3/rerun-epub-preparation-benchmark; worktree t3-d6d84f15.
