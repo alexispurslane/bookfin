@@ -115,6 +115,18 @@ class TextOutline {
     );
   }
 
+  /// The title of the last contents entry that starts at [characters] from
+  /// the book's start or before, or null before the first entry. The book
+  /// map names a place's chapter by the same rule.
+  String? chapterAt(double characters) {
+    String? title;
+    for (final entry in entries) {
+      if (entry.start > characters) break;
+      title = entry.title;
+    }
+    return title;
+  }
+
   Map<String, dynamic> toJson() => {
     'parts': [
       for (final part in parts) [part.path, part.characters],

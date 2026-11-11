@@ -1238,13 +1238,24 @@ class ReaderSession extends ChangeNotifier {
       describeTextPlace(place, address: _compatible(place), map: _bookMap);
 
   /// [landing] in words, as [describe] names a place in the open book: its
-  /// page or its share of the book, and its chapter. Null before the open
-  /// book's map is measured, and when [landing] is not in the open edition
-  /// at the file revision that the reader shows.
+  /// page or its share of the book, and its chapter. Before the reader
+  /// measures the open book, and where the book's map names no chapter, as
+  /// in a PDF, the share and the chapter come from the text outline that
+  /// placed the landing. So it follows [bookMapChanges]. Null, as
+  /// [goToLanding] moves nothing, while no book is open, and when [landing]
+  /// is not in the open edition at the file revision that the reader shows.
   PlaceWords? describeLanding(TextLanding landing) {
+    if (document == null || !_shows(landing)) return null;
     final map = _bookMap;
-    if (map == null || !_shows(landing)) return null;
-    return describeBookFraction(map, map.fractionAt(landing.place));
+    if (map == null) {
+      return describeAlong(landing.share, chapter: landing.chapter);
+    }
+    final target = map.targetAt(map.fractionAt(landing.place));
+    return describeAlong(
+      target.fraction,
+      page: target.page,
+      chapter: target.chapter ?? landing.chapter,
+    );
   }
 
   /// Whether [landing] is in the open edition, at the file revision that

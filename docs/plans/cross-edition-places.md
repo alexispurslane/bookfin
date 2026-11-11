@@ -270,8 +270,9 @@ The timeline gets one new input: `landingOf(place)`, the words of where a choice
 As built in t9-4v0r, on the Before, After and Go to tiles of boo-hyl4:
 
 - A tile of a place of the other medium names its landing, such as "about p. 134", and its detail line names the landing's chapter in the open edition.
-- If no landing exists, the tile keeps the place's own words, such as "1:02:15". A note says why and which screen opens, for example "The chapters of these editions do not match, so this opens the audiobook." The note wraps, so the whole reason shows. When both ends of a move share one note, it shows once, under both tiles, and each tile still reads it to a screen reader.
-- The sheet starts the alignment of the open edition with the book's editions of the other medium as it opens. Until the alignment arrives, a tile shows the place's own words. The landing words replace them when `Crossings` notifies, and only the open tiles follow that signal.
+- If no landing exists, the tile keeps the place's own words, such as "1:02:15". A note says why and which screen opens. An example: "The chapters of these editions do not match, so this opens the audiobook." The note wraps, so the whole reason shows. When both ends of a move share one note, it shows once, under both tiles, and each tile still reads it to a screen reader.
+- The sheet starts the alignment of the open edition with the book's editions of the other medium as it opens. Until the alignment arrives, a tile shows the place's own words. When `Crossings` notifies, the landing words replace them. Only the open tiles follow that signal.
+- In the reader, a landing reads as its page by the open book's map, as every reading place does. The map exists only after the reader measures the book. Before that, the tile names the landing by its share of the book's visible characters and by its chapter. The text outline gives both, for example "about 23%" and "Chapter 4". Then the tile changes to "about p. 134" (t9-m4fw). The landing carries its share and its chapter, so the reader does not need the outline. Where the map names no chapter, as in a PDF, the chapter still comes from the outline.
 - When the history holds one medium, the rail keeps its one lane.
 
 ### Bookmarks of the other edition
