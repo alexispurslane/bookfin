@@ -7,6 +7,8 @@ import 'book_cover.dart';
 import 'book_page.dart' show openBook;
 import 'covers.dart';
 
+import '../crossings/crossings.dart';
+import '../crossings/scope.dart';
 import '../downloads/downloads.dart';
 import '../foundation/derived_value.dart';
 import '../foundation/listenable_selector.dart';
@@ -36,6 +38,7 @@ class LibraryServices {
     this.downloads,
     this.playback,
     this.reader,
+    this.crossings,
   });
   final CatalogController catalog;
   final LibraryLayout layout;
@@ -44,6 +47,7 @@ class LibraryServices {
   final Downloads? downloads;
   final Playback? playback;
   final ReaderSession? reader;
+  final Crossings? crossings;
 
   /// The saved layout, read only. Equal for the same [layout], so a rebuilt
   /// screen keeps its subscription.
@@ -79,12 +83,17 @@ class LibraryServices {
 
   /// Gives covers below [child] the cover store and the current account,
   /// glass panes the book open in the player, and the History sheet the
-  /// reader ([ReaderScope]). A page pushed on the navigator needs this,
-  /// because the library's own scope sits below the navigator.
+  /// reader ([ReaderScope]) and the crossings ([CrossingsScope]). A page
+  /// pushed on the navigator needs this, because the library's own scope
+  /// sits below the navigator.
   Widget pageScope(Widget child) {
     final account = catalog.accountNotifier;
     final selection = playback?.selectionNotifier;
     final reader = this.reader;
+    final crossings = this.crossings;
+    final scoped = crossings == null
+        ? child
+        : CrossingsScope(crossings: crossings, child: child);
     return ListenableSelector(
       listenable: Listenable.merge([account, ?selection]),
       select: () => (
@@ -98,8 +107,8 @@ class LibraryServices {
         child: child!,
       ),
       child: reader == null
-          ? child
-          : ReaderScope(reader: reader, show: showReader, child: child),
+          ? scoped
+          : ReaderScope(reader: reader, show: showReader, child: scoped),
     );
   }
 

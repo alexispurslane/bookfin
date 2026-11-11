@@ -1104,14 +1104,7 @@ class ReaderSession extends ChangeNotifier {
   /// Completes with whether the landing showed: a landing in another edition,
   /// or in another revision of the open file, moves nothing.
   Future<bool> goToLanding(TextLanding landing, HistoryAction kind) async {
-    final (edition, into) = (_edition, landing.into);
-    if (edition == null ||
-        document == null ||
-        edition.id != into.editionId ||
-        edition.files.single.key != into.sourceKey ||
-        edition.files.single.revision != into.revision) {
-      return false;
-    }
+    if (document == null || !_shows(landing)) return false;
     final (:part, :progress) = landing.place;
     return _jump(
       kind,
@@ -1243,6 +1236,26 @@ class ReaderSession extends ChangeNotifier {
   /// current [bookMap], so its page number follows [bookMapChanges].
   PlaceWords describe(TextPosition place) =>
       describeTextPlace(place, address: _compatible(place), map: _bookMap);
+
+  /// [landing] in words, as [describe] names a place in the open book: its
+  /// page or its share of the book, and its chapter. Null before the open
+  /// book's map is measured, and when [landing] is not in the open edition
+  /// at the file revision that the reader shows.
+  PlaceWords? describeLanding(TextLanding landing) {
+    final map = _bookMap;
+    if (map == null || !_shows(landing)) return null;
+    return describeBookFraction(map, map.fractionAt(landing.place));
+  }
+
+  /// Whether [landing] is in the open edition, at the file revision that
+  /// the reader shows.
+  bool _shows(TextLanding landing) {
+    final (edition, into) = (_edition, landing.into);
+    return edition != null &&
+        edition.id == into.editionId &&
+        edition.files.single.key == into.sourceKey &&
+        edition.files.single.revision == into.revision;
+  }
 
   /// The reading moves and bookmarks of [book]'s editions, or of every
   /// book, newest first. It follows [historyChanges] and [bookmarkChanges].

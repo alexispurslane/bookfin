@@ -44,18 +44,20 @@ Future<ReaderDocument> loadReadingDocument(
 Future<Publication> loadPublication(VerifiedFile original) async =>
     _admitted(await _verifiedFile(original.uri), original.digest);
 
-/// The text outline of the downloaded ebook [original] of [source], or null
-/// for a PDF, which has none yet (t9-nl30). One worker isolate reads the
-/// admitted book that Bookfin kept, or admits or converts the file and
-/// keeps it, as the reader does, and measures the outline there. Only the
-/// small outline comes back.
-Future<TextOutline?> measureDownloadedOutline(
+/// The text outline of the downloaded ebook [original] of [source]. One
+/// worker isolate reads the admitted book that Bookfin kept, or admits or
+/// converts the file and keeps it, as the reader does, and measures the
+/// outline there. Only the small outline comes back. A PDF has no outline
+/// yet (t9-nl30), so it throws an [UnsupportedError].
+Future<TextOutline> measureDownloadedOutline(
   VerifiedFile original,
   SourceFile source,
 ) async {
   final file = await _verifiedFile(original.uri);
   return switch (await _containerOf(file, source)) {
-    'pdf' => null,
+    'pdf' => throw UnsupportedError(
+      'Bookfin cannot measure the outline of a PDF yet.',
+    ),
     'mobi' || 'azw3' => readMobi(file, original.digest, measureTextOutline),
     _ => _readAdmitted(file, original.digest, measureTextOutline),
   };

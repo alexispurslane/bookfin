@@ -42,7 +42,7 @@ class DiskOutlines implements OutlineStore {
 
 /// The outline store beside the app's media storage, as the covers keep
 /// theirs, or null when the platform names no storage.
-Future<OutlineStore?> createOutlineStore() async {
+Future<OutlineStore?> findOutlineStore() async {
   try {
     final info = await const MethodChannel('bookfin/media')
         .invokeMapMethod<String, dynamic>('storage');

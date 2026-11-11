@@ -267,6 +267,13 @@ The timeline keeps one list per book, newest first and grouped by day. It shows 
 
 The timeline gets one new input: `landingOf(place)`, the words of where a choice that names `place` lands. For a place of the open edition's medium, it equals `describe(place)`. boo-hyl4 redesigns the before and after choices in the same sheet. Whatever buttons it picks name their places through `landingOf`, so this design does not depend on its outcome.
 
+As built in t9-4v0r, on the Before, After and Go to tiles of boo-hyl4:
+
+- A tile of a place of the other medium names its landing, such as "about p. 134", and its detail line names the landing's chapter in the open edition.
+- If no landing exists, the tile keeps the place's own words, such as "1:02:15". A note under them says why and which screen opens, for example "The chapters of these editions do not match, so this opens the audiobook." The note wraps, so the whole reason shows on a narrow tile.
+- Until the alignment of the pair arrives, the tile shows the place's own words. The landing words replace them when `Crossings` notifies.
+- When the history holds one medium, the rail keeps its one lane.
+
 ### Bookmarks of the other edition
 
 - Go to on a listening bookmark in the reader is a mapped move of kind `bookmarkRestore`, with Undo. The same holds for a reading bookmark in the player.
@@ -283,6 +290,7 @@ The timeline gets one new input: `landingOf(place)`, the words of where a choice
 3. The place lies more than one page (45 s) outside every span. Such places are in text that only one edition has, for example an introduction that the narrator does not read.
 4. The anchors cover less than half of the audio time. This catches abridged recordings and other editions.
 5. In the player: no text outline exists for the ebook edition, because this phone never downloaded it.
+6. The ebook is a PDF. Bookfin cannot measure a PDF's outline until t9-nl30, so the note says that Bookfin cannot yet match this kind of ebook.
 
 Then the choice names the other medium ("1:02:15 in the audiobook"), the detail line says why, and Go to behaves as today.
 

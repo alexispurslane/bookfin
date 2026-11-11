@@ -100,7 +100,9 @@ final class NoLanding extends Crossing {
 ///   increase strictly, and every span reads in the rate band.
 class Crossings {
   /// [measure] measures the text outline of a downloaded ebook edition, or
-  /// gives null when this phone has no download of it. [downloads] notifies
+  /// gives null when this phone has no download of it. It throws an
+  /// [UnsupportedError] when Bookfin cannot measure the outline of the
+  /// ebook's format yet. [downloads] notifies
   /// when downloads change, so that an ebook that was not downloaded is
   /// tried again. [hop] runs the alignment in another isolate.
   Crossings({
@@ -181,10 +183,17 @@ class Crossings {
     if (_pairs[key] case final work?) return work;
     late final Future<_Pair> work;
     work = () async {
-      final outline = await _outline(text);
-      final alignment = outline == null
-          ? null
-          : await _hop(_alignPair, (audioOutline(audio), outline));
+      TextOutline? outline;
+      EditionAlignment alignment;
+      try {
+        outline = await _outline(text);
+        alignment = const UnmatchedChapters(Refusal.noOutline);
+      } on UnsupportedError {
+        alignment = const UnmatchedChapters(Refusal.unsupportedFormat);
+      }
+      if (outline != null) {
+        alignment = await _hop(_alignPair, (audioOutline(audio), outline));
+      }
       final pair = (
         outline: outline,
         alignment: alignment,
@@ -203,7 +212,8 @@ class Crossings {
 
   /// The text outline of [text]: kept in memory, kept in the store, or
   /// measured from its download and then kept. Null when none is kept and
-  /// this phone has no download of it.
+  /// this phone has no download of it. It throws an [UnsupportedError] when
+  /// Bookfin cannot measure the outline of the ebook's format yet.
   Future<TextOutline?> _outline(Edition text) async {
     final key = _outlineKey(text);
     if (_outlines[key] case final outline?) return outline;
@@ -264,14 +274,14 @@ class Crossings {
 
   /// Where [place] of [from] lands in [into], by [pair].
   Crossing _land(Place place, Edition from, Edition into, _Pair pair) {
-    final (outline, alignment) = (pair.outline, pair.alignment);
-    if (outline == null || alignment == null) {
-      return const NoLanding(Refusal.noOutline);
-    }
-    if (alignment case UnmatchedChapters(:final reason)) {
+    if (pair.alignment case UnmatchedChapters(:final reason)) {
       return NoLanding(reason);
     }
-    final matched = alignment as MatchedChapters;
+    // Only an outline aligns, so matched chapters come with one.
+    final (outline, matched) = (
+      pair.outline!,
+      pair.alignment as MatchedChapters,
+    );
     switch (place) {
       case AudioPosition():
         final at = place.fits(from)
@@ -366,11 +376,12 @@ class Crossings {
   }
 }
 
-/// The finished work of one pair: the ebook's outline and its key, and the
-/// alignment, or null for both when this phone has no outline.
+/// The finished work of one pair: the ebook's outline, or null when this
+/// phone has none, its key, and the alignment, which says why none exists
+/// when the outline is null.
 typedef _Pair = ({
   TextOutline? outline,
-  EditionAlignment? alignment,
+  EditionAlignment alignment,
   String key,
 });
 

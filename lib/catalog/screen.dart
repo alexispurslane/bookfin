@@ -9,6 +9,7 @@ import '../downloads/downloads.dart';
 import '../downloads/screen.dart';
 import '../playback/playback.dart';
 import '../playback/screen.dart';
+import '../crossings/crossings.dart';
 import '../reader/session.dart';
 import '../settings/screen.dart';
 import '../sync/alert.dart' show ChoicesBadge;
@@ -32,6 +33,7 @@ class CatalogHome extends StatefulWidget {
     this.downloads,
     this.playback,
     this.reader,
+    this.crossings,
     this.sync,
   });
   final CatalogController catalog;
@@ -44,6 +46,7 @@ class CatalogHome extends StatefulWidget {
   final Downloads? downloads;
   final Playback? playback;
   final ReaderSession? reader;
+  final Crossings? crossings;
   final RecordSync? sync;
   @override
   State<CatalogHome> createState() => _CatalogHomeState();
@@ -76,6 +79,7 @@ class _CatalogHomeState extends State<CatalogHome> {
     downloads: widget.downloads,
     playback: widget.playback,
     reader: widget.reader,
+    crossings: widget.crossings,
   );
 
   @override

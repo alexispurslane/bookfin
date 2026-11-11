@@ -116,6 +116,7 @@ void main() {
   late int measured;
   late int hops;
   TextOutline? download;
+  late bool unsupported;
   final made = <Crossings>[];
 
   setUp(() {
@@ -124,6 +125,7 @@ void main() {
     measured = 0;
     hops = 0;
     download = book;
+    unsupported = false;
   });
   tearDown(() {
     for (final crossings in made) {
@@ -137,6 +139,7 @@ void main() {
       store: store,
       measure: (text) async {
         measured++;
+        if (unsupported) throw UnsupportedError('A PDF has no outline yet.');
         return download;
       },
       downloads: downloads,
@@ -221,6 +224,19 @@ void main() {
     );
 
     expect((found as NoLanding).reason, Refusal.noOutline);
+  });
+
+  test('an ebook whose format Bookfin cannot measure yet has no landing, '
+      'and says so', () async {
+    unsupported = true;
+
+    final found = await crossings().landing(
+      listening(_discOne, 40000),
+      from: audio,
+      into: ebookEdition(),
+    );
+
+    expect((found as NoLanding).reason, Refusal.unsupportedFormat);
   });
 
   test(

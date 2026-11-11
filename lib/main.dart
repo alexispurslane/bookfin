@@ -18,6 +18,8 @@ import 'catalog/controller.dart';
 import 'catalog/screen.dart';
 import 'catalog/model.dart' show Book;
 import 'catalog/store.dart';
+import 'crossings/crossings.dart';
+import 'crossings/outlines.dart';
 import 'foundation/listenable_selector.dart';
 import 'downloads/downloads.dart';
 import 'downloads/platform.dart';
@@ -88,6 +90,21 @@ Future<void> runBookfin({bool gallery = false}) async {
           speed: speed,
           surveyStore: SurveyFiles.new,
         );
+  // Crossings measures an ebook's outline only when the History first asks
+  // for a landing in it, so no launch step waits for it.
+  final crossings = downloads == null
+      ? null
+      : Crossings(
+          store: createOutlineStore(),
+          measure: (text) async => switch (text.files) {
+            [final file] => await downloads.readLocalFile(
+              file,
+              (original) => measureDownloadedOutline(original, file),
+            ),
+            _ => null,
+          },
+          downloads: downloads.phases,
+        );
   runApp(
     BookfinApp(
       appearance: appearance,
@@ -97,6 +114,7 @@ Future<void> runBookfin({bool gallery = false}) async {
       downloads: downloads,
       playback: playback,
       reader: reader,
+      crossings: crossings,
       sync: gallery
           ? null
           : RecordSync(records: records, playback: playback, reader: reader),
@@ -146,6 +164,7 @@ class BookfinApp extends StatefulWidget {
     this.downloads,
     this.playback,
     this.reader,
+    this.crossings,
     this.sync,
   });
 
@@ -157,6 +176,7 @@ class BookfinApp extends StatefulWidget {
   final Downloads? downloads;
   final Playback? playback;
   final ReaderSession? reader;
+  final Crossings? crossings;
   final RecordSync? sync;
 
   @override
@@ -330,6 +350,7 @@ class _BookfinAppState extends State<BookfinApp> with WidgetsBindingObserver {
               downloads: widget.downloads,
               playback: widget.playback,
               reader: widget.reader,
+              crossings: widget.crossings,
               sync: widget.sync,
               onReaderNightChanged: (night) => unawaited(
                 _appearance.selectMode(

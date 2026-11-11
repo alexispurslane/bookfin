@@ -6,6 +6,9 @@ import 'package:flutter/semantics.dart';
 
 import '../catalog/glass.dart';
 import '../catalog/model.dart';
+import '../crossings/alignment.dart' show Refusal;
+import '../crossings/crossings.dart';
+import '../crossings/scope.dart';
 import '../foundation/derived_value.dart';
 import '../foundation/theme.dart';
 import '../foundation/time.dart';
@@ -17,10 +20,14 @@ import 'screen.dart' show openPlayer;
 // openHistory is the controller of the timeline sheet. It wires
 // HistoryTimeline, which only draws entries and reports choices, to the
 // owners of the places: Playback for listening, and the reader session of
-// the ReaderScope for reading. It routes each choice to the owner of its
-// place, confirms a delete, closes the sheet before a jump, shows the
-// screen of the place's medium, and names a bookmark through the shared
-// bookmark editor.
+// the ReaderScope for reading. It routes each choice by one rule
+// (docs/plans/cross-edition-places.md, "One routing rule"): over an open
+// edition, a place of the other medium of the same book goes to its
+// landing in the open edition, which Crossings finds, as a move of the
+// open edition's owner. Any other place goes to the owner of its own
+// medium, which shows it in its own edition, and the screen of that medium
+// comes to the front. It also confirms a delete, closes the sheet before a
+// jump, and names a bookmark through the shared bookmark editor.
 
 /// Opens the History of [book] on a glass sheet: the listening moves and
 /// bookmarks of [playback] and, under a [ReaderScope], the reading moves
@@ -29,8 +36,10 @@ import 'screen.dart' show openPlayer;
 ///
 /// [showing] is the medium of the screen under the sheet: audio in the
 /// player, text in the reader, and null elsewhere, such as on the book
-/// page. Go to on an entry of another medium also shows the player or the
-/// reader at that place.
+/// page. Under a [CrossingsScope], Go to on a place of the other medium of
+/// the open book goes to its landing in the open edition, and the tile
+/// names the landing, or says why none exists. Go to on any other place of
+/// another medium shows the player or the reader at that place.
 void openHistory(
   BuildContext context,
   Playback? playback, {
@@ -39,6 +48,64 @@ void openHistory(
 }) {
   final reading = ReaderScope.maybeOf(context);
   final reader = reading?.reader;
+  final crossings = CrossingsScope.maybeOf(context);
+
+  PlaceWords describe(Place place) => switch (place) {
+    AudioPosition() => playback!.describe(place),
+    TextPosition() => reader!.describe(place),
+  };
+
+  /// The edition of [place] and the open edition, when Go to on [place]
+  /// goes to its landing in the open edition: [place] is in an edition of
+  /// the other medium of the open book. Null when Go to on [place] shows it
+  /// in its own edition.
+  ({Edition from, Edition into})? crossingOf(Place place) {
+    final (open, into) = switch (showing) {
+      EditionKind.audio => (playback?.book, playback?.edition),
+      EditionKind.text => (reader?.book, reader?.edition),
+      null => (null, null),
+    };
+    if (crossings == null || open == null || into == null) return null;
+    final from = open.editions
+        .where((edition) => edition.id == place.editionId)
+        .firstOrNull;
+    if (from == null || from.kind == into.kind) return null;
+    return (from: from, into: into);
+  }
+
+  /// Where Go to on [place] goes, in words: its landing in the open
+  /// edition, or the place itself with the reason why it has none. Until
+  /// the landing is known, the place itself, and the words fill in when
+  /// Crossings notifies.
+  LandingWords landingOf(Place place) {
+    final own = (words: describe(place), note: null);
+    final pair = crossingOf(place);
+    if (pair == null) return own;
+    return switch (crossings!.landingNow(
+      place,
+      from: pair.from,
+      into: pair.into,
+    )) {
+      null => own,
+      final AudioLanding landing => (
+        words: _about(playback!.describe(landing.place), landing),
+        note: null,
+      ),
+      final TextLanding landing => switch (reader!.describeLanding(landing)) {
+        final words? => (words: _about(words, landing), note: null),
+        null => own,
+      },
+      NoLanding(:final reason) => (
+        words: own.words,
+        note:
+            '${_why(reason)}, so this opens the ${switch (place) {
+              AudioPosition() => 'audiobook',
+              TextPosition() => 'ebook',
+            }}.',
+      ),
+    };
+  }
+
   unawaited(
     showGlassSheet<void>(
       context,
@@ -50,10 +117,10 @@ void openHistory(
         initialChildSize: 0.7,
         maxChildSize: 0.95,
         builder: (sheet, scroll) {
-          // A choice that goes to a place closes the timeline, so the screen
-          // of the place's medium shows it and offers Undo.
-          void go(Place place, Future<void> Function() restore) {
-            Navigator.pop(sheet);
+          // Shows [place] in its own edition: [restore] moves the owner of
+          // its medium there, and the screen of that medium comes to the
+          // front.
+          void goAsBefore(Place place, Future<void> Function() restore) {
             switch (place) {
               case AudioPosition() when showing == EditionKind.audio:
                 unawaited(restore());
@@ -70,13 +137,47 @@ void openHistory(
             }
           }
 
+          // A choice that goes to a place closes the timeline, so the screen
+          // that shows the place offers Undo. A place of the other medium
+          // goes to its landing in the open edition, as a move of [kind].
+          // Without a landing, it shows the place in its own edition.
+          void go(
+            Place place,
+            HistoryAction kind,
+            Future<void> Function() restore,
+          ) {
+            Navigator.pop(sheet);
+            final pair = crossingOf(place);
+            if (pair == null) return goAsBefore(place, restore);
+            unawaited(() async {
+              final went = switch (await crossings!.landing(
+                place,
+                from: pair.from,
+                into: pair.into,
+              )) {
+                final AudioLanding landing => await playback!.goToLanding(
+                  landing,
+                  kind,
+                ),
+                final TextLanding landing => await reader!.goToLanding(
+                  landing,
+                  kind,
+                ),
+                NoLanding() => false,
+              };
+              if (!went && context.mounted) goAsBefore(place, restore);
+            }());
+          }
+
           return HistoryTimeline(
             // The rows show labels and places measured from the library and
-            // from the open book's map, so the entries follow the records,
-            // the library, the open book and its pages. A playing tick does
-            // not reach the timeline.
+            // from the open book's map, and the tiles show landings, so the
+            // entries follow the records, the library, the open book, its
+            // pages and the arrival of landings. A playing tick does not
+            // reach the timeline.
             entries: DerivedValue(
               Listenable.merge([
+                ?crossings?.changes,
                 if (playback != null) ...[
                   playback.recordsNotifier,
                   playback.libraryNotifier,
@@ -93,15 +194,14 @@ void openHistory(
                 reader?.timeline(book) ?? const [],
               ),
             ),
-            describe: (place) => switch (place) {
-              AudioPosition() => playback!.describe(place),
-              TextPosition() => reader!.describe(place),
-            },
+            describe: describe,
+            landingOf: landingOf,
             showBooks: book == null,
             header: RecordSaveStatus(playback: playback, reader: reader),
             scroll: scroll,
             onGoBefore: (event) => go(
               event.before,
+              HistoryAction.historyRestore,
               () => switch (event.before) {
                 AudioPosition() => playback!.restoreHistory(event.id),
                 TextPosition() => reader!.restoreHistory(event.id),
@@ -110,6 +210,7 @@ void openHistory(
             onGoTo: (entry) => switch (entry) {
               ActionEntry(:final event) => go(
                 event.after,
+                HistoryAction.historyRestore,
                 () => switch (event.after) {
                   AudioPosition() => playback!.restoreHistory(
                     event.id,
@@ -123,6 +224,7 @@ void openHistory(
               ),
               BookmarkEntry(:final bookmark) => go(
                 bookmark.position,
+                HistoryAction.bookmarkRestore,
                 () => switch (bookmark.position) {
                   AudioPosition() => playback!.restoreBookmark(bookmark.id),
                   TextPosition() => reader!.restoreBookmark(bookmark.id),
@@ -162,6 +264,29 @@ void openHistory(
     ),
   );
 }
+
+/// [words] of the landing [landing]: an estimate from matched chapters
+/// reads "about", such as "about p. 134".
+PlaceWords _about(PlaceWords words, Landing landing) =>
+    switch (landing.matchedBy) {
+      MatchedBy.chapters => (
+        short: 'about ${words.short}',
+        chapter: words.chapter,
+        quote: words.quote,
+        along: words.along,
+      ),
+    };
+
+/// Why a place has no landing in the open edition, for [reason].
+String _why(Refusal reason) => switch (reason) {
+  Refusal.noChapters => 'One of these editions has no chapters',
+  Refusal.fewMatches => 'The chapters of these editions do not match',
+  Refusal.partCovered => 'Too few chapters of these editions match',
+  Refusal.unmeasured => 'Bookfin cannot measure this place',
+  Refusal.outsideMatches => 'Only one of these editions has this part',
+  Refusal.noOutline => 'The ebook is not downloaded on this phone',
+  Refusal.unsupportedFormat => 'Bookfin cannot yet match this kind of ebook',
+};
 
 /// The entries of [first] and [second], each newest first, in one list,
 /// newest first.
@@ -208,6 +333,11 @@ Future<void> _confirmDelete(
   }
 }
 
+/// Where Go to on a place goes, in words: [words] name the place that it
+/// shows, and [note], when it is not null, says why Go to shows the place
+/// on another screen.
+typedef LandingWords = ({PlaceWords words, String? note});
+
 /// A dense, vertical timeline of listening and reading, grouped by day.
 /// Each move is a route with two ends: its row names the place where it
 /// went, after an arrow, and a tap opens the route as two tiles of one
@@ -216,15 +346,18 @@ Future<void> _confirmDelete(
 /// tile goes to its place. An open row keeps the shape of a closed one, and
 /// only its highlight shows that it is open. A bookmark offers Name or
 /// Rename beside its tile. A swipe of a row toward its start, or the row's
-/// Delete action for a screen reader, offers Delete. When the
-/// entries hold both media, a glyph on the rail marks the medium of each
-/// entry. The timeline changes no records itself: it reports each choice
-/// through its callbacks.
+/// Delete action for a screen reader, offers Delete. When the entries hold
+/// both media, the rail has two lanes, each with its own line: listening
+/// on the left and reading on the right, and a glyph of its medium marks
+/// each entry in its lane. A row names its place in its own words, and a
+/// tile names where Go to goes ([landingOf]). The timeline changes no
+/// records itself: it reports each choice through its callbacks.
 class HistoryTimeline extends StatefulWidget {
   const HistoryTimeline({
     super.key,
     required this.entries,
     required this.describe,
+    this.landingOf,
     this.showBooks = false,
     this.header,
     this.scroll,
@@ -242,6 +375,12 @@ class HistoryTimeline extends StatefulWidget {
   /// each time that it builds, because a reading place's page number
   /// changes with the text size.
   final PlaceWords Function(Place place) describe;
+
+  /// Where Go to on a place goes, in words, when that is not the place
+  /// itself in its own edition: its landing in the open edition, or the
+  /// place with a note that says why Go to opens another screen. Without
+  /// it, each tile names its place through [describe].
+  final LandingWords Function(Place place)? landingOf;
 
   /// Whether each entry names its book, for a timeline of every book.
   final bool showBooks;
@@ -273,6 +412,14 @@ class HistoryTimeline extends StatefulWidget {
 /// The width of the time of day column, wide enough for "12:59 PM" on one
 /// line.
 const _timeWidth = 68.0;
+
+/// The width of the rail's one lane, and of each lane of a timeline of
+/// both media, whose two lanes leave the row's label more room.
+const _laneWidth = 24.0;
+const _narrowLaneWidth = 18.0;
+
+/// The width of a line of the rail.
+const _lineWidth = 1.5;
 
 const _rowRadius = BorderRadius.all(Radius.circular(8));
 
@@ -317,9 +464,9 @@ class _HistoryTimelineState extends State<HistoryTimeline> {
 
   /// One entry: its time of day, its mark on the rail, what happened and
   /// where. A move names the place where it went after an arrow. With
-  /// [mixed], the mark is a glyph of the entry's medium. An open entry
-  /// shows its route under the row. A swipe of the row toward its start
-  /// reports Delete.
+  /// [mixed], the rail has a lane for each medium, and the mark is a glyph
+  /// of the entry's medium in its lane. An open entry shows its route under
+  /// the row. A swipe of the row toward its start reports Delete.
   Widget _row(
     BuildContext context,
     TimelineEntry entry, {
@@ -364,6 +511,9 @@ class _HistoryTimelineState extends State<HistoryTimeline> {
         decoration: BoxDecoration(shape: BoxShape.circle, color: markColor),
       ),
     };
+    // Listening on the left and reading on the right.
+    final (lanes, laneWidth) = mixed ? (2, _narrowLaneWidth) : (1, _laneWidth);
+    final lane = mixed && entry.place is TextPosition ? 1 : 0;
     final row = Ink(
       decoration: BoxDecoration(
         color: open
@@ -391,7 +541,11 @@ class _HistoryTimelineState extends State<HistoryTimeline> {
                   textAlign: TextAlign.right,
                 ),
               ),
-              SizedBox(width: 24, child: Center(child: mark)),
+              for (var index = 0; index < lanes; index++)
+                SizedBox(
+                  width: laneWidth,
+                  child: index == lane ? Center(child: mark) : null,
+                ),
               // A glyph of the medium takes the place of the bookmark mark
               // on the rail, so the label shows it.
               if (mixed && bookmark)
@@ -437,14 +591,22 @@ class _HistoryTimelineState extends State<HistoryTimeline> {
       children: [
         Stack(
           children: [
-            // The rail that joins the entries of a day. It runs beside the
-            // rows, not through the tiles of an open route.
-            Positioned(
-              left: _timeWidth + 11.25,
-              top: 0,
-              bottom: 0,
-              child: Container(width: 1.5, color: scheme.outlineVariant),
-            ),
+            // The lines of the rail, one for each lane, which join the
+            // entries of a day. They run beside the rows, not through the
+            // tiles of an open route.
+            for (var index = 0; index < lanes; index++)
+              Positioned(
+                left:
+                    _timeWidth +
+                    index * laneWidth +
+                    (laneWidth - _lineWidth) / 2,
+                top: 0,
+                bottom: 0,
+                child: Container(
+                  width: _lineWidth,
+                  color: scheme.outlineVariant,
+                ),
+              ),
             // A swiped row slides within its own bounds, not over the
             // sheet's edge.
             ClipRRect(
@@ -555,11 +717,15 @@ class _HistoryTimelineState extends State<HistoryTimeline> {
     );
   }
 
-  /// One end of a route: a tile with [role] and [place] in words, whose tap
-  /// calls [go]. Every tile describes its place here, so that a later
-  /// change can show a place of another edition in one spot.
-  Widget _end(String role, Place place, VoidCallback go) =>
-      _PlaceTile(role: role, words: widget.describe(place), onTap: go);
+  /// One end of a route: a tile with [role] and where Go to on [place]
+  /// goes, in words, whose tap calls [go]. Every tile describes its place
+  /// here.
+  Widget _end(String role, Place place, VoidCallback go) {
+    final (:words, :note) =
+        widget.landingOf?.call(place) ??
+        (words: widget.describe(place), note: null);
+    return _PlaceTile(role: role, words: words, note: note, onTap: go);
+  }
 
   /// The move of [entry] when it has two ends ([HistoryEvent.moved]). Null
   /// for a bookmark, and for an action that stayed at one place, such as a
@@ -573,7 +739,13 @@ class _HistoryTimelineState extends State<HistoryTimeline> {
   /// a time in listening, and pages in reading. Before the reader knows
   /// both pages, a reading move says only its direction, and the verb
   /// alone where the open book cannot place it.
+  ///
+  /// A mapped move, which went to the landing of a place of the other
+  /// medium, names that place's medium. One found by matched chapters says
+  /// "about".
   String _label(HistoryEvent<Place> event) {
+    final other = event.counterpartOf;
+    final about = event.matchedBy == MatchedBy.chapters ? 'about ' : '';
     final from = widget.describe(event.before).along;
     final to = widget.describe(event.after).along;
     String moved(String verb) => switch ((from, to)) {
@@ -598,8 +770,16 @@ class _HistoryTimelineState extends State<HistoryTimeline> {
       HistoryAction.jump => moved('Jumped'),
       HistoryAction.chapter => 'Changed chapter',
       HistoryAction.undo => 'Undid a move',
-      HistoryAction.historyRestore => 'Went back in history',
-      HistoryAction.bookmarkRestore => 'Went to a bookmark',
+      HistoryAction.historyRestore => switch (other) {
+        null => 'Went back in history',
+        AudioPosition() => 'Went to ${about}where you listened',
+        TextPosition() => 'Went to ${about}where you read',
+      },
+      HistoryAction.bookmarkRestore => switch (other) {
+        null => 'Went to a bookmark',
+        AudioPosition() => 'Went to ${about}a listening bookmark',
+        TextPosition() => 'Went to ${about}a reading bookmark',
+      },
       HistoryAction.pause => 'Paused',
       HistoryAction.resume => 'Played',
       HistoryAction.interruption => 'Interrupted',
@@ -646,17 +826,21 @@ class _HistoryTimelineState extends State<HistoryTimeline> {
 }
 
 /// One place of an open timeline entry, as a tile that goes there on a
-/// tap: its [role], such as Before, its place text, and its chapter and
-/// quote when [words] knows them. Each line stays on one line, and a line
-/// that is too long ends in "…".
+/// tap: its [role], such as Before, its place text, its chapter and quote
+/// when [words] knows them, and the [note] that says why Go to opens
+/// another screen, when it does. Each line but the note stays on one line,
+/// and a line that is too long ends in "…". The note wraps, so that it
+/// reads in full before the tap.
 class _PlaceTile extends StatelessWidget {
   const _PlaceTile({
     required this.role,
     required this.words,
+    required this.note,
     required this.onTap,
   });
   final String role;
   final PlaceWords words;
+  final String? note;
   final VoidCallback onTap;
 
   @override
@@ -705,6 +889,18 @@ class _PlaceTile extends StatelessWidget {
               line(
                 detail,
                 TextStyle(fontSize: 11, color: scheme.onSurfaceVariant),
+              ),
+            if (note case final note?)
+              Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: Text(
+                  note,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontStyle: FontStyle.italic,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
               ),
           ],
         ),

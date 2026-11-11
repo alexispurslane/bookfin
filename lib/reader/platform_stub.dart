@@ -17,7 +17,7 @@ Future<Publication> loadPublication(VerifiedFile original) async =>
     );
 
 /// No ebook downloads on this platform, so no text outlines.
-Future<TextOutline?> measureDownloadedOutline(
+Future<TextOutline> measureDownloadedOutline(
   VerifiedFile original,
   SourceFile source,
-) async => null;
+) async => throw UnsupportedError('Ebook outlines need the Android app.');

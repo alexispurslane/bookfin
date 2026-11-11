@@ -43,16 +43,7 @@ PlaceWords describeTextPlace(
   }
   final fraction = address == null ? null : map?.fractionOf(address);
   if (map != null && fraction != null) {
-    final target = map.targetAt(fraction);
-    return (
-      short: switch (target.page) {
-        final page? => 'p. $page',
-        null => '${(fraction * 100).round()}%',
-      },
-      chapter: target.chapter,
-      quote: quote,
-      along: AlongText(page: target.page, fraction: fraction),
-    );
+    return describeBookFraction(map, fraction, quote: quote);
   }
   final shown = quote == null ? null : _firstWords(quote);
   return (
@@ -62,6 +53,23 @@ PlaceWords describeTextPlace(
     // would only repeat it.
     quote: shown == quote ? null : quote,
     along: null,
+  );
+}
+
+/// The place at [fraction] of the open book on its [map] in words: its
+/// page among the book's pages, such as "p. 134", once the map knows every
+/// page, else its share of the book, such as "37%", and its chapter from
+/// the map. [quote] describes the place when it is known.
+PlaceWords describeBookFraction(BookMap map, double fraction, {String? quote}) {
+  final target = map.targetAt(fraction);
+  return (
+    short: switch (target.page) {
+      final page? => 'p. $page',
+      null => '${(fraction * 100).round()}%',
+    },
+    chapter: target.chapter,
+    quote: quote,
+    along: AlongText(page: target.page, fraction: fraction),
   );
 }
 

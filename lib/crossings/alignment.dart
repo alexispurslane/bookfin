@@ -211,6 +211,10 @@ enum Refusal {
 
   /// This phone never measured the ebook, because it never downloaded it.
   noOutline,
+
+  /// Bookfin cannot measure the outline of the ebook's format yet, as for a
+  /// PDF (t9-nl30).
+  unsupportedFormat,
 }
 
 /// The alignment of an audio edition with an ebook edition: matched
