@@ -158,7 +158,7 @@ public final class BenchmarkActivity extends Activity {
             String operation = steps.getJSONObject(stepIndex).getString("operation");
             status.setText(BuildConfig.ENGINE + ": " + operation);
             requested = SystemClock.elapsedRealtimeNanos();
-            if (web != null) web.evaluateJavascript("window.command(" + JSONObject.quote(operation) + ")", null);
+            if (web != null) web.evaluateJavascript("window.command(" + JSONObject.quote(operation) + "," + JSONObject.quote(runId + "/" + stepIndex) + ")", null);
             else worker.execute(() -> {
                 try { performKo(operation); } catch (Exception error) { failed(error); }
             });
@@ -166,7 +166,7 @@ public final class BenchmarkActivity extends Activity {
     }
 
     private void performKo(String operation) throws Exception {
-        JSONObject metadata = new JSONObject(KoBridge.evaluate("return perform(" + JSONObject.quote(operation) + ")"));
+        JSONObject metadata = new JSONObject(KoBridge.evaluate("return perform(" + JSONObject.quote(operation) + "," + JSONObject.quote(runId + "/" + stepIndex) + ")"));
         metadata.put("engine_ready_ns", SystemClock.elapsedRealtimeNanos());
         Bitmap bitmap = Bitmap.createBitmap(page.getWidth(), page.getHeight(), Bitmap.Config.ARGB_8888);
         KoBridge.copyPixels(bitmap);
@@ -185,6 +185,9 @@ public final class BenchmarkActivity extends Activity {
     private void capture(JSONObject metadata) {
         try {
             JSONObject step = steps.getJSONObject(stepIndex);
+            if (!metadata.getString("preparation_event_id").equals(runId + "/" + stepIndex)
+                    || !metadata.getString("preparation_operation").equals(step.getString("operation")))
+                throw new IllegalStateException("Stale preparation event does not belong to the requested operation");
             metadata.put("engine", BuildConfig.ENGINE);
             metadata.put("book", selectedBook);
             metadata.put("run_id", runId);
@@ -205,6 +208,7 @@ public final class BenchmarkActivity extends Activity {
     }
 
     private final class WebProbe {
+        @JavascriptInterface public String clockNs() { return Long.toString(SystemClock.elapsedRealtimeNanos()); }
         @JavascriptInterface public void shellReady() { runOnUiThread(BenchmarkActivity.this::ready); }
         @JavascriptInterface public void ready(String raw) {
             long ready = SystemClock.elapsedRealtimeNanos();

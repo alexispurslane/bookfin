@@ -2,6 +2,10 @@
 
 This document describes the resumed harness. The completed dataset and its limits are in `epub-engine-results.md`.
 
+The fresh November 11 page-preparation rerun is documented separately in
+`epub-engine-preparation-method.md`. Its engine-specific phase endpoints are
+explicitly not equivalent. The original method and evidence below are retained.
+
 ## Execution and scope
 
 The target is `bookfin-api36`, Android emulator `emulator-5556` on host `local`. These are engine shells, not complete reader applications. The Bookfin shell imports the unchanged production EPUB loader, pager, viewport, image pipeline, admission cache, and page-map cache. The other shells use epub.js 0.3.93 in the actual Android WebView and KOReader v2026.07.1's real `cre` library.

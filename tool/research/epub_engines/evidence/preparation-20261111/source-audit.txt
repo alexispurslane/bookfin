@@ -1,0 +1,46 @@
+Retrieved 2026-11-11 from official release-linked sources.
+https://api.github.com/repos/koreader/koreader/contents/base?ref=v2026.07.1
+{
+  "name": "base",
+  "path": "base",
+  "sha": "6e4bc81af4e04f78d81677a323a780a71b29702a",
+  "size": 0,
+  "url": "https://api.github.com/repos/koreader/koreader/contents/base?ref=v2026.07.1",
+  "html_url": "https://github.com/koreader/koreader-base/tree/6e4bc81af4e04f78d81677a323a780a71b29702a",
+  "git_url": "https://api.github.com/repos/koreader/koreader-base/git/trees/6e4bc81af4e04f78d81677a323a780a71b29702a",
+  "download_url": null,
+  "type": "submodule",
+  "submodule_git_url": "https://github.com/koreader/koreader-base.git",
+  "_links": {
+    "self": "https://api.github.com/repos/koreader/koreader/contents/base?ref=v2026.07.1",
+    "git": "https://api.github.com/repos/koreader/koreader-base/git/trees/6e4bc81af4e04f78d81677a323a780a71b29702a",
+    "html": "https://github.com/koreader/koreader-base/tree/6e4bc81af4e04f78d81677a323a780a71b29702a"
+  }
+}
+
+https://api.github.com/repos/koreader/koreader-base/contents/thirdparty/kpvcrlib/crengine?ref=6e4bc81af4e04f78d81677a323a780a71b29702a
+{
+  "name": "crengine",
+  "path": "thirdparty/kpvcrlib/crengine",
+  "sha": "b32a88ffbbf505cf2ea5208c1a49002d70d3609f",
+  "size": 0,
+  "url": "https://api.github.com/repos/koreader/koreader-base/contents/thirdparty/kpvcrlib/crengine?ref=6e4bc81af4e04f78d81677a323a780a71b29702a",
+  "html_url": "https://github.com/koreader/crengine/tree/b32a88ffbbf505cf2ea5208c1a49002d70d3609f",
+  "git_url": "https://api.github.com/repos/koreader/crengine/git/trees/b32a88ffbbf505cf2ea5208c1a49002d70d3609f",
+  "download_url": null,
+  "type": "submodule",
+  "submodule_git_url": "https://github.com/koreader/crengine.git",
+  "_links": {
+    "self": "https://api.github.com/repos/koreader/koreader-base/contents/thirdparty/kpvcrlib/crengine?ref=6e4bc81af4e04f78d81677a323a780a71b29702a",
+    "git": "https://api.github.com/repos/koreader/crengine/git/trees/b32a88ffbbf505cf2ea5208c1a49002d70d3609f",
+    "html": "https://github.com/koreader/crengine/tree/b32a88ffbbf505cf2ea5208c1a49002d70d3609f"
+  }
+}
+
+SHA-256 of decoded official source bytes:
+904cc845346883de39cf9ff2836b300d50a6a6800a5ae3afb29225e00b9a2a42  .cache/epub-preparation-audit/cre.cpp
+eca15fc7cde5f975e1f3b55d2aac670fa137977b05e33efb4b61dfba4335180d  .cache/epub-preparation-audit/lvimg.cpp
+82caeab8902aa8f3b05b20d75325d3d95ab9b06cfc543400b54cc5d9292f1438  .cache/epub-preparation-audit/lvdrawbuf.cpp
+180b33059ca15e2b4f129eb7fef6cae0bf6005c02af5194d13e5cb48378d538f  .cache/epub-preparation-audit/epubjs-0.3.93.tgz
+
+Sources: base/cre.cpp, crengine/crengine/src/{lvimg.cpp,lvdrawbuf.cpp}, npm epubjs 0.3.93.

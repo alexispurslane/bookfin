@@ -8,9 +8,26 @@ from collections import defaultdict
 ENGINES = ("bookfin", "webview", "koreader")
 OPERATIONS = ("fresh_open", "cached_reopen", "page_turn", "chapter_crossing", "font_change")
 BOUNDARY = "request_to_reference_window_copy"
+PREPARATION_SCOPES = {
+    "bookfin": "flutter_picture_and_decoded_page_images",
+    "webview": "webview_layout_fonts_and_decoded_section_images",
+    "koreader": "koreader_drawn_page_bitmap",
+}
+PHASE_CLOCKS = {"bookfin": "dart_timeline_us", "webview": "web_performance_ms",
+                "koreader": "android_boottime_ns"}
 
 
 def summarize(rows):
+    result = _summarize(rows, "end_ns")
+    result["milestones"] = {
+        name: _summarize(rows, endpoint)
+        for name, endpoint in (("operation_returned", "operation_returned_ns"),
+                               ("preparation", "preparation_ns"))
+    }
+    return result
+
+
+def _summarize(rows, endpoint):
     grouped = defaultdict(list)
     excluded = []
     seen = set()
@@ -21,18 +38,23 @@ def summarize(rows):
         if identity in seen:
             raise ValueError(f"duplicate sample id: {identity}")
         seen.add(identity)
-        reason = _invalid(row)
+        reason = _invalid(row) or (_invalid_preparation(row) if endpoint != "end_ns" else None)
         if reason:
             excluded.append({"id": identity, "reason": reason})
         else:
             grouped[(row["engine"], row["book"], row["operation"])].append(row)
     cells = []
     for (engine, book, operation), samples in sorted(grouped.items()):
-        durations = sorted((row["end_ns"] - row["start_ns"]) / 1000000 for row in samples)
+        durations = sorted((row[endpoint] - row["start_ns"]) / 1000000 for row in samples)
         cells.append({
             "engine": engine, "book": book, "operation": operation,
-            "boundary": BOUNDARY, "count": len(samples),
+            "boundary": BOUNDARY if endpoint == "end_ns" else endpoint,
+            "scope": (BOUNDARY if endpoint == "end_ns" else
+                      PREPARATION_SCOPES[engine] if endpoint == "preparation_ns" else
+                      f"{engine}_operation_returned_before_resource_or_bitmap_preparation"),
+            "count": len(samples),
             "rounds": len({row["round"] for row in samples}),
+            "mean_ms": statistics.mean(durations),
             "median_ms": statistics.median(durations),
             "p90_ms": durations[math.ceil(len(durations) * .9) - 1],
         })
@@ -40,7 +62,45 @@ def summarize(rows):
         cell["count"] >= (10 if cell["operation"] == "fresh_open" else 30)
         and cell["rounds"] >= 10 for cell in cells
     )
-    return {"cells": cells, "excluded": excluded, "complete": complete}
+    means = []
+    for engine in ENGINES:
+        for operation in OPERATIONS:
+            books = [cell for cell in cells if cell["engine"] == engine and cell["operation"] == operation]
+            if len(books) == 3:
+                means.append({"engine": engine, "operation": operation, "book_count": 3,
+                              "scope": books[0]["scope"],
+                              "mean_ms": statistics.mean(cell["mean_ms"] for cell in books)})
+    return {"cells": cells, "equal_book_means": means, "excluded": excluded, "complete": complete}
+
+
+def _invalid_preparation(row):
+    if row.get("preparation_event_id") != row["id"] or row.get("preparation_operation") != row["operation"]:
+        return "stale or missing preparation event"
+    if row.get("preparation_scope") != PREPARATION_SCOPES[row["engine"]]:
+        return "wrong engine preparation scope"
+    clock = row.get("phase_clock")
+    if not isinstance(clock, dict) or clock.get("source") != PHASE_CLOCKS[row["engine"]]:
+        return "missing or invalid phase clock"
+    if any(type(clock.get(field)) is not int for field in ("offset_ns", "uncertainty_ns")) or clock["uncertainty_ns"] < 0:
+        return "missing or invalid clock conversion"
+    fields = ("start_ns", "operation_returned_ns", "preparation_ns", "engine_ready_ns", "end_ns")
+    times = [row.get(field) for field in fields]
+    if any(type(value) is not int for value in times) or times != sorted(times) or times[2] <= times[0]:
+        return "missing, reversed, or out-of-order preparation endpoints"
+    if row["engine"] != "koreader":
+        unit, multiplier = ("us", 1000) if row["engine"] == "bookfin" else ("ms", 1_000_000)
+        fields = ["operation_returned", "preparation"]
+        if row["engine"] == "bookfin":
+            fields.append("start")
+        for field in fields:
+            source = row.get(f"{field}_source_{unit}")
+            if type(source) not in (int, float) or not math.isfinite(source):
+                return "missing or invalid source timestamp"
+            if abs(source * multiplier + clock["offset_ns"] - row[f"{field}_ns"]) > 1:
+                return "source timestamp conversion mismatch"
+    elif clock["offset_ns"] != 0 or clock["uncertainty_ns"] != 0:
+        return "CLOCK_BOOTTIME needs no conversion"
+    return None
 
 
 def _invalid(row):

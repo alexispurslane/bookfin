@@ -1,0 +1,26 @@
+SDK=/nix/store/in52zy1w2yv0197h7553n827h8f03x8k-bookfin-android-sdk
+package:dev.bookfin.bench.epub.koreader.test
+package:dev.bookfin.bench.bookfin_epub_shell
+package:dev.bookfin.bench.bookfin_epub_shell.test
+package:dev.bookfin.bench.epub.webview.test
+package:dev.bookfin.bench.epub.koreader
+package:dev.bookfin.bench.epub.webview
+Physical size: 1080x2400
+Physical density: 420
+Current WebView Update Service state
+  Current WebView package (name, version): (com.google.android.webview, 133.0.6943.137)
+  Minimum targetSdkVersion: 33
+  Minimum WebView version code: 694313732
+  Number of relros started: 1
+  Number of relros finished: 1
+  WebView package dirty: false
+  Any WebView package installed: true
+  Preferred WebView package (name, version): (com.google.android.webview, 133.0.6943.137)
+  WebView packages:
+    Valid package com.google.android.webview (versionName: 133.0.6943.137, versionCode: 694313732, targetSdkVersion: 34) is  installed/enabled for all users
+    com.google.android.webview.beta is NOT installed.
+    com.google.android.webview.dev is NOT installed.
+    com.google.android.webview.canary is NOT installed.
+    com.google.android.webview.debug is NOT installed.
+    com.android.webview is NOT installed.
+google/sdk_gphone64_arm64/emu64a:16/BE2A.250530.026.F3/13894323:userdebug/dev-keys

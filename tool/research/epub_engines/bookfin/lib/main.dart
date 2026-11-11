@@ -39,6 +39,9 @@ class _BenchmarkShellState extends State<BenchmarkShell> {
   Completer<void>? _raster;
   int _rasterAfter = 0;
   int _shellReady = 0;
+  int _clockOffset = 0;
+  int _clockUncertainty = 0;
+  int _clockRoundTrip = 0;
 
   @override
   void initState() {
@@ -68,12 +71,14 @@ class _BenchmarkShellState extends State<BenchmarkShell> {
           jsonDecode(_configuration['specification'] as String)
               as Map<String, dynamic>;
       _steps = jsonDecode(_configuration['workload'] as String) as List;
+      await _calibrateClock();
       _shellReady = (await platform.invokeMethod<int>('clock'))!;
       for (final (sequence, raw) in _steps.indexed) {
         final step = raw as Map;
         final operation = step['operation'] as String;
         setState(() => _status = 'Bookfin: $operation');
-        final start = (await platform.invokeMethod<int>('clock'))!;
+        final startSource = Timeline.now;
+        final start = _androidTime(startSource);
         switch (operation) {
           case 'fresh_open' || 'cached_reopen':
             await _open();
@@ -110,10 +115,12 @@ class _BenchmarkShellState extends State<BenchmarkShell> {
         }
         if (!mounted) return;
         final page = _pager!.shown.value!.page;
+        final operationReturnedSource = Timeline.now;
         final picture = await _source!.picture(
           page,
           scale: View.of(context).devicePixelRatio,
         );
+        final preparationSource = Timeline.now;
         if (!identical(_pager!.shown.value!.picture, picture)) {
           await _until(() => identical(_pager!.shown.value!.picture, picture));
         }
@@ -149,6 +156,20 @@ class _BenchmarkShellState extends State<BenchmarkShell> {
           ),
           'cache': sequence == 0 ? 'fresh_document' : 'warm_document',
           'start_ns': start,
+          'start_source_us': startSource,
+          'operation_returned_source_us': operationReturnedSource,
+          'preparation_source_us': preparationSource,
+          'operation_returned_ns': _androidTime(operationReturnedSource),
+          'preparation_ns': _androidTime(preparationSource),
+          'preparation_event_id': '${_configuration['run_id']}/$sequence',
+          'preparation_operation': operation,
+          'preparation_scope': 'flutter_picture_and_decoded_page_images',
+          'phase_clock': {
+            'source': 'dart_timeline_us',
+            'offset_ns': _clockOffset,
+            'uncertainty_ns': _clockUncertainty,
+            'calibration_round_trip_ns': _clockRoundTrip,
+          },
           'engine_ready_ns': ready,
           'shell_ready_ns': _shellReady,
           'process_start_ns': _configuration['process_start_ns'],
@@ -185,6 +206,24 @@ class _BenchmarkShellState extends State<BenchmarkShell> {
     } catch (error, stack) {
       debugPrint('EPUB_PROBE_ERROR $error\n$stack');
       if (mounted) setState(() => _status = 'Workload failed: $error');
+    }
+  }
+
+  int _androidTime(int micros) => micros * 1000 + _clockOffset;
+
+  Future<void> _calibrateClock() async {
+    var shortest = 1 << 62;
+    for (var attempt = 0; attempt < 9; attempt++) {
+      final before = Timeline.now * 1000;
+      final native = (await platform.invokeMethod<int>('clock'))!;
+      final after = Timeline.now * 1000;
+      final roundTrip = after - before;
+      if (roundTrip < shortest) {
+        shortest = roundTrip;
+        _clockOffset = native - (before + after) ~/ 2;
+        _clockRoundTrip = roundTrip;
+        _clockUncertainty = (roundTrip + 1) ~/ 2 + 1000;
+      }
     }
   }
 

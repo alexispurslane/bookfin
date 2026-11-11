@@ -10,6 +10,25 @@ let rendition;
 let spec;
 let textSize = 18;
 let ready = Promise.resolve();
+let phaseClock;
+
+function calibrateClock() {
+    let best;
+    for (let attempt = 0; attempt < 9; attempt++) {
+        const before = performance.now() * 1e6;
+        const native = Number(Probe.clockNs());
+        const after = performance.now() * 1e6;
+        const roundTrip = after - before;
+        if (!best || roundTrip < best.calibration_round_trip_ns) {
+            best = {source:"web_performance_ms", offset_ns:Math.round(native - (before + after) / 2),
+                uncertainty_ns:Math.ceil(roundTrip / 2) + 1000,
+                calibration_round_trip_ns:Math.ceil(roundTrip)};
+        }
+    }
+    return best;
+}
+
+function androidTime(milliseconds) { return Math.round(milliseconds * 1e6 + phaseClock.offset_ns); }
 
 async function resourcesReady() {
     await Promise.all(rendition.getContents().map(async content => {
@@ -19,10 +38,13 @@ async function resourcesReady() {
     rendition.views().forEach(view => view.expand());
 }
 
-async function report(operation) {
+async function report(operation, eventId) {
+    const operationReturned = performance.now();
     await resourcesReady();
     const location = rendition.currentLocation();
     const contents = rendition.getContents();
+    contents.forEach(content => content.document.documentElement.getBoundingClientRect());
+    const preparation = performance.now();
     const section = contents.find(content => content.sectionIndex === location.start.index);
     const range = section && section.range(location.start.cfi);
     const bodyText = section ? section.document.body.innerText : "";
@@ -34,6 +56,10 @@ async function report(operation) {
         visible = shown.toString();
     }
     Probe.ready(JSON.stringify({operation, location: location.start.cfi, location_format:"epub_cfi",
+        preparation_event_id:eventId, preparation_operation:operation,
+        preparation_scope:"webview_layout_fonts_and_decoded_section_images",
+        operation_returned_source_ms:operationReturned, preparation_source_ms:preparation,
+        operation_returned_ns:androidTime(operationReturned), preparation_ns:androidTime(preparation), phase_clock:phaseClock,
         spine_index: location.start.index, href: location.start.href,
         end_cfi:location.end.cfi, displayed:location.start.displayed,
         visible_text:visible,
@@ -43,7 +69,7 @@ async function report(operation) {
         text_size_css_px:textSize, whole_book_paginated:false}));
 }
 
-async function execute(operation) {
+async function execute(operation, eventId) {
     if (operation === "fresh_open" || operation === "cached_reopen") {
         textSize = 18;
         if (rendition) rendition.destroy();
@@ -83,7 +109,7 @@ async function execute(operation) {
     } else if (operation !== "paginate") {
         throw Error("Unknown operation: " + operation);
     }
-    await report(operation);
+    await report(operation, eventId);
 }
 
 async function setSize(size) {
@@ -97,11 +123,12 @@ async function setSize(size) {
     await relocated;
 }
 
-window.command = operation => {
-    ready = ready.then(() => execute(operation)).catch(error => Probe.failed(String(error.stack || error)));
+window.command = (operation, eventId) => {
+    ready = ready.then(() => execute(operation, eventId)).catch(error => Probe.failed(String(error.stack || error)));
 };
 fetch("https://epubbench.invalid/manifest.json").then(response => response.json()).then(manifest => {
     spec = manifest.books[new URL(location.href).searchParams.get("book") || "prose"];
+    phaseClock = calibrateClock();
     Probe.shellReady();
 }).catch(error => Probe.failed(String(error)));
 </script></body></html>

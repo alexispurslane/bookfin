@@ -1,0 +1,15 @@
+test_conversion_uncertainty_includes_observed_browser_timer_precision (test_phase_adapters.WebClockTest.test_conversion_uncertainty_includes_observed_browser_timer_precision) ... FAIL
+
+======================================================================
+FAIL: test_conversion_uncertainty_includes_observed_browser_timer_precision (test_phase_adapters.WebClockTest.test_conversion_uncertainty_includes_observed_browser_timer_precision)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-d6d84f15/tool/research/epub_engines/test_phase_adapters.py", line 20, in test_conversion_uncertainty_includes_observed_browser_timer_precision
+    self.assertGreaterEqual(clock["uncertainty_ns"], 100_000)
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 1000 not greater than or equal to 100000
+
+----------------------------------------------------------------------
+Ran 1 test in 0.202s
+
+FAILED (failures=1)
