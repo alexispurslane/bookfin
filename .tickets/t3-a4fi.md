@@ -1,6 +1,6 @@
 ---
 id: t3-a4fi
-status: open
+status: in_progress
 deps: []
 links: []
 created: 2026-11-11T15:39:12Z
@@ -22,3 +22,9 @@ For every book that has an audio edition and an EPUB or MOBI edition, measure th
 
 Report the share of books that design A of the plan refuses. Print counts and title patterns only. Never print or commit the server address or private titles beyond a few anonymized examples. Use the result to set the thresholds of the edition alignment ticket.
 
+
+## Notes
+
+**2026-11-11T19:22:24Z**
+
+Measurement agent started (Claude Opus 5.5 high, worktree, read-only on the server). Key delivered through T3 private secret input as a file; agent may not print or commit it or the address.
