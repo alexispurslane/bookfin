@@ -59,3 +59,7 @@ Drawn page now leaves out only the wait until the drawing frame's vsync; a WebVi
 **2026-11-11T18:34:32Z**
 
 WebView shell records the animation frame running at the end of preparation (frame watcher before epub.js) and both shells count frames inside preparation. Red: old shells fail the new device assertion; green: one job each for Bookfin prose, WebView prose/long/illustrated and KOReader prose. Reviewer finding D4 recorded as t2-er9m.
+
+**2026-11-11T18:41:57Z**
+
+sym-drawn4 job 16 (round-01-prose-webview) failed the device check preparation_ns <= engine_ready_ns by 0.018 ms against a 0.301 ms clock conversion uncertainty. Host collection and the device test now order an engine-clock time and an Android-clock time only within the sample's conversion uncertainty. Only the test APKs were reinstalled; the failed job moved to rejected-check/ and is measured again at its place.

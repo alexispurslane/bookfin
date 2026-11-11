@@ -138,6 +138,24 @@ class PreparedPageIntervalTest(unittest.TestCase):
                 self.assertEqual(result.get("cells", []), [])
                 self.assertEqual(len(result.get("excluded", [])), 1)
 
+    def test_an_engine_time_within_the_clock_uncertainty_of_an_android_time_keeps_its_sample(self):
+        # Dispatch (1.0 ms), the bridge call (1.6 ms) and the window copy
+        # (10 ms) are on Android's clock. WebView's conversion is uncertain by
+        # 101 µs and Bookfin's by 1 µs, so these engine times can seem to
+        # cross them by less than that.
+        for engine, changes, name in (("webview", {"engine_start_ns": 950_000}, "prepared_page"),
+                                      ("webview", {"preparation_ns": 1_650_000}, "prepared_page"),
+                                      ("bookfin", {"drawn_ns": 10_001_000}, "drawn_page")):
+            with self.subTest(engine=engine, changes=changes):
+                self.assertEqual([cell["count"] for cell in cells([prepared(engine=engine, **changes)], name)], [1])
+
+    def test_an_engine_time_beyond_the_clock_uncertainty_of_an_android_time_is_excluded(self):
+        for engine, changes, name in (("webview", {"engine_start_ns": 850_000}, "prepared_page"),
+                                      ("webview", {"preparation_ns": 1_750_000}, "prepared_page"),
+                                      ("bookfin", {"drawn_ns": 10_002_000}, "drawn_page")):
+            with self.subTest(engine=engine, changes=changes):
+                self.assertEqual(cells([prepared(engine=engine, **changes)], name), [])
+
     def test_wrong_pixels_text_and_destination_exclude_every_interval_after_certification(self):
         for engine in SCOPES:
             for changes in ({"capture_sha256": "d" * 64}, {"visible_text": "wrong chapter"},

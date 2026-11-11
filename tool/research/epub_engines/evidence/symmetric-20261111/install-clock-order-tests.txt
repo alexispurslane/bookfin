@@ -1,0 +1,13 @@
+path "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines" does not contain a 'flake.nix', searching up
+bookfin/build/app/outputs/apk/androidTest/release/app-release-androidTest.apk
+97c21b99c38ff13803257d7c424dbc4a241f0370b2ea3ea3d0f7bc64ec6f0361  bookfin/build/app/outputs/apk/androidTest/release/app-release-androidTest.apk
+Performing Streamed Install
+Success
+native/app/build/outputs/apk/androidTest/webview/release/app-webview-release-androidTest.apk
+f47a7c4780f8dc8a71ffbff13b1e128f56443854e1f21d1b9d65315c32d98f2a  native/app/build/outputs/apk/androidTest/webview/release/app-webview-release-androidTest.apk
+Performing Streamed Install
+Success
+native/app/build/outputs/apk/androidTest/koreader/release/app-koreader-release-androidTest.apk
+3defef4c94adc2884fa4a5177c09072f33b939c786b7a81a1d07e3a70127dc66  native/app/build/outputs/apk/androidTest/koreader/release/app-koreader-release-androidTest.apk
+Performing Streamed Install
+Success

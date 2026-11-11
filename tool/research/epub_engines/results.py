@@ -98,7 +98,15 @@ def _invalid_phases(row):
     if any(type(clock.get(field)) is not int for field in required) or any(clock[field] < 0 for field in required[1:]):
         return "missing or invalid clock conversion"
     times = [row.get(field) for field in PHASE_FIELDS]
-    if any(type(value) is not int for value in times) or times != sorted(times) or times[3] <= times[1]:
+    if any(type(value) is not int for value in times):
+        return "missing, reversed, or out-of-order phase endpoints"
+    start, engine_start, returned, preparation, ready, end = times
+    # Dispatch, the bridge call and the window copy are read on Android's
+    # clock, the engine's phases on its own. Across the two clocks, the order
+    # holds only within the conversion uncertainty.
+    slack = clock["uncertainty_ns"]
+    if not (start <= engine_start + slack and engine_start <= returned <= preparation <= ready + slack
+            and start <= ready <= end and engine_start < preparation):
         return "missing, reversed, or out-of-order phase endpoints"
     if row["engine"] != "koreader":
         unit, multiplier = ("us", 1000) if row["engine"] == "bookfin" else ("ms", 1_000_000)
@@ -151,7 +159,10 @@ def _invalid_drawing(row):
     if row.get("drawn_scope") != DRAWN_SCOPES[engine]:
         return "missing or wrong drawing endpoint"
     drawn = row.get("drawn_ns")
-    if type(drawn) is not int or not row["engine_start_ns"] < drawn <= row["end_ns"]:
+    # Bookfin's drawn page is on the engine's clock, WebView's on Android's.
+    slack = row["phase_clock"]["uncertainty_ns"]
+    before, after = (0, slack) if engine == "bookfin" else (slack, 0)
+    if type(drawn) is not int or not row["engine_start_ns"] < drawn + before or not drawn <= row["end_ns"] + after:
         return "drawing endpoint outside the engine interval"
     if engine == "bookfin":
         source = row.get("drawn_source_us")
@@ -177,7 +188,7 @@ def _invalid_drawing(row):
                     or abs(source * 1_000_000 + row["phase_clock"]["offset_ns"] - value) > 1:
                 return "missing frame time or frame time conversion mismatch"
             times[field] = value
-        if not times["frame_vsync"] <= times["frame_start"] or not row["preparation_ns"] <= times["frame_start"] < drawn:
+        if not times["frame_vsync"] <= times["frame_start"] or not row["preparation_ns"] <= times["frame_start"] < drawn + slack:
             return "frame after preparation outside preparation and drawing"
         if ("running_frame_vsync" in times) != ("running_frame_start" in times) or "running_frame_start" in times \
                 and not times["running_frame_vsync"] <= times["running_frame_start"] <= row["preparation_ns"]:
