@@ -1,0 +1,10 @@
+Incomplete independent content evidence: koreader/illustrated/after_crossing18; source=False, OCR=False, images=True
+Incomplete independent content evidence: bookfin/illustrated/after_crossing18; source=False, OCR=False, images=True
+Incomplete independent content evidence: webview/illustrated/after_crossing18; source=False, OCR=False, images=True
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/calibrate.py", line 98, in <module>
+    main()
+    ~~~~^^
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/calibrate.py", line 94, in main
+    raise RuntimeError("Reference promotion refused; inspect and resolve calibration evidence")
+RuntimeError: Reference promotion refused; inspect and resolve calibration evidence

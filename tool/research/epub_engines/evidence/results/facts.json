@@ -1,0 +1,110 @@
+[
+  {
+    "engine": "bookfin",
+    "book": "prose",
+    "independent_process_start_count": 12,
+    "instrumented_process_to_shell_ready_median_ms": 1008.2386535,
+    "instrumented_process_to_first_verified_copy_median_ms": 1497.134367,
+    "fresh_open_whole_book_complete_count": 0,
+    "preparation_whole_book_complete_count": 12,
+    "preparation_engine_ready_median_ms": 1889.2566465,
+    "last_pixel_copy_median_ms": 13.623062000000001,
+    "capture_attempts_max": 3
+  },
+  {
+    "engine": "bookfin",
+    "book": "long",
+    "independent_process_start_count": 12,
+    "instrumented_process_to_shell_ready_median_ms": 1030.7415270000001,
+    "instrumented_process_to_first_verified_copy_median_ms": 1647.254558,
+    "fresh_open_whole_book_complete_count": 0,
+    "preparation_whole_book_complete_count": 12,
+    "preparation_engine_ready_median_ms": 2611.3673345,
+    "last_pixel_copy_median_ms": 13.853958500000001,
+    "capture_attempts_max": 3
+  },
+  {
+    "engine": "bookfin",
+    "book": "illustrated",
+    "independent_process_start_count": 12,
+    "instrumented_process_to_shell_ready_median_ms": 1212.5118885,
+    "instrumented_process_to_first_verified_copy_median_ms": 1918.1767015,
+    "fresh_open_whole_book_complete_count": 0,
+    "preparation_whole_book_complete_count": 12,
+    "preparation_engine_ready_median_ms": 367.2022085,
+    "last_pixel_copy_median_ms": 13.563792,
+    "capture_attempts_max": 3
+  },
+  {
+    "engine": "webview",
+    "book": "prose",
+    "independent_process_start_count": 12,
+    "instrumented_process_to_shell_ready_median_ms": 993.233164,
+    "instrumented_process_to_first_verified_copy_median_ms": 1542.28854,
+    "fresh_open_whole_book_complete_count": 0,
+    "preparation_whole_book_complete_count": 0,
+    "preparation_engine_ready_median_ms": 2.865042,
+    "last_pixel_copy_median_ms": 15.6746455,
+    "capture_attempts_max": 24
+  },
+  {
+    "engine": "webview",
+    "book": "long",
+    "independent_process_start_count": 12,
+    "instrumented_process_to_shell_ready_median_ms": 762.9817364999999,
+    "instrumented_process_to_first_verified_copy_median_ms": 1315.2610955,
+    "fresh_open_whole_book_complete_count": 0,
+    "preparation_whole_book_complete_count": 0,
+    "preparation_engine_ready_median_ms": 3.598542,
+    "last_pixel_copy_median_ms": 14.54425,
+    "capture_attempts_max": 20
+  },
+  {
+    "engine": "webview",
+    "book": "illustrated",
+    "independent_process_start_count": 12,
+    "instrumented_process_to_shell_ready_median_ms": 897.4423965,
+    "instrumented_process_to_first_verified_copy_median_ms": 1563.8330905,
+    "fresh_open_whole_book_complete_count": 0,
+    "preparation_whole_book_complete_count": 0,
+    "preparation_engine_ready_median_ms": 29.80275,
+    "last_pixel_copy_median_ms": 12.856104,
+    "capture_attempts_max": 1
+  },
+  {
+    "engine": "koreader",
+    "book": "prose",
+    "independent_process_start_count": 12,
+    "instrumented_process_to_shell_ready_median_ms": 373.386306,
+    "instrumented_process_to_first_verified_copy_median_ms": 695.7059644999999,
+    "fresh_open_whole_book_complete_count": 12,
+    "preparation_whole_book_complete_count": 12,
+    "preparation_engine_ready_median_ms": 50.430104,
+    "last_pixel_copy_median_ms": 14.0307295,
+    "capture_attempts_max": 2
+  },
+  {
+    "engine": "koreader",
+    "book": "long",
+    "independent_process_start_count": 12,
+    "instrumented_process_to_shell_ready_median_ms": 586.7937375,
+    "instrumented_process_to_first_verified_copy_median_ms": 889.5241550000001,
+    "fresh_open_whole_book_complete_count": 12,
+    "preparation_whole_book_complete_count": 12,
+    "preparation_engine_ready_median_ms": 51.6794795,
+    "last_pixel_copy_median_ms": 14.196562499999999,
+    "capture_attempts_max": 2
+  },
+  {
+    "engine": "koreader",
+    "book": "illustrated",
+    "independent_process_start_count": 12,
+    "instrumented_process_to_shell_ready_median_ms": 624.677042,
+    "instrumented_process_to_first_verified_copy_median_ms": 816.44254,
+    "fresh_open_whole_book_complete_count": 12,
+    "preparation_whole_book_complete_count": 12,
+    "preparation_engine_ready_median_ms": 41.462937499999995,
+    "last_pixel_copy_median_ms": 13.9352085,
+    "capture_attempts_max": 2
+  }
+]

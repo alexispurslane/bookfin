@@ -1,0 +1,7 @@
+  0x0000000000000001 (NEEDED)       Shared library: [libkoreader-monolibtic.so]
+  0x0000000000000001 (NEEDED)       Shared library: [libluajit.so]
+  0x0000000000000001 (NEEDED)       Shared library: [libjnigraphics.so]
+  0x0000000000000001 (NEEDED)       Shared library: [liblog.so]
+  0x0000000000000001 (NEEDED)       Shared library: [libm.so]
+  0x0000000000000001 (NEEDED)       Shared library: [libdl.so]
+  0x0000000000000001 (NEEDED)       Shared library: [libc.so]

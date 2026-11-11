@@ -1,0 +1,16 @@
+test_rendered_words_must_include_an_independent_source_excerpt (test_calibrate.SourceEvidenceTest.test_rendered_words_must_include_an_independent_source_excerpt) ... FAIL
+test_typographic_punctuation_and_whitespace_do_not_hide_matching_words (test_calibrate.SourceEvidenceTest.test_typographic_punctuation_and_whitespace_do_not_hide_matching_words) ... ok
+
+======================================================================
+FAIL: test_rendered_words_must_include_an_independent_source_excerpt (test_calibrate.SourceEvidenceTest.test_rendered_words_must_include_an_independent_source_excerpt)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/test_calibrate.py", line 10, in test_rendered_words_must_include_an_independent_source_excerpt
+    self.assertFalse(has_source_excerpt("The renderer reached chapter one and displayed a valid frame", source))
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.000s
+
+FAILED (failures=1)

@@ -1,0 +1,25 @@
+test_failed_ocr_preserves_the_accepted_reference_file (test_calibrate.ReferencePromotionTest.test_failed_ocr_preserves_the_accepted_reference_file) ... FAIL
+test_missing_illustration_approval_does_not_create_a_promoted_reference_file (test_calibrate.ReferencePromotionTest.test_missing_illustration_approval_does_not_create_a_promoted_reference_file) ... FAIL
+
+======================================================================
+FAIL: test_failed_ocr_preserves_the_accepted_reference_file (test_calibrate.ReferencePromotionTest.test_failed_ocr_preserves_the_accepted_reference_file)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/test_calibrate.py", line 93, in test_failed_ocr_preserves_the_accepted_reference_file
+    self.assertEqual(self.output.read_bytes(), accepted)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: b'{\n[494 chars]ed": false,\n    "ocr_text": "Unrelated render[54979 chars]n}\n' != b'{\n[494 chars]ed": true,\n    "ocr_text": "Alice was beginni[57247 chars]n}\n'
+
+======================================================================
+FAIL: test_missing_illustration_approval_does_not_create_a_promoted_reference_file (test_calibrate.ReferencePromotionTest.test_missing_illustration_approval_does_not_create_a_promoted_reference_file)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/test_calibrate.py", line 99, in test_missing_illustration_approval_does_not_create_a_promoted_reference_file
+    self.assertFalse(self.output.exists())
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.096s
+
+FAILED (failures=2)

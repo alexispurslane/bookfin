@@ -1,0 +1,57 @@
+Build-time environment only. No measured workload ran.
+2026-11-11T00:50:35Z
+arm64
+ProductName:		macOS
+ProductVersion:		27.0
+BuildVersion:		26A428
+ 19:50:35  up 46 days  7:24,  4 users,  load average: 2.33, 3.49, 3.26
+System-wide memory free percentage: 56%
+Flutter 3.47.4 • channel stable • https://github.com/flutter/flutter.git
+Framework • revision nixpkgs000 () • 1970-01-01 00:00:00
+Engine • revision 06a2e2a110 ()
+Tools • Dart 3.13.3 • DevTools 2.60.0
+
+Android platform facts (read only):
+ro.product.cpu.abi=arm64-v8a
+ro.build.version.sdk=36
+ro.build.version.release=16
+ro.build.fingerprint=google/sdk_gphone64_arm64/emu64a:16/BE2A.250530.026.F3/13894323:userdebug/dev-keys
+ro.opengles.version=196609
+Physical size: 1080x2400
+Physical density: 420
+MemTotal:        2021944 kB
+MemFree:          124804 kB
+MemAvailable:     559252 kB
+Current WebView Update Service state
+  Current WebView package (name, version): (com.google.android.webview, 133.0.6943.137)
+  Preferred WebView package (name, version): (com.google.android.webview, 133.0.6943.137)
+GLES: Google (Google Inc. (Google)), Android Emulator OpenGL ES Translator (ANGLE (Google, Vulkan 1.2.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver-5.0.0)), OpenGL ES 3.1 (OpenGL ES 3.1.0 (ANGLE 2.1.1 git hash: fbf66f49c7cc))
+RenderEngine supports protected context: 0
+
+AVD settings:
+abi.type = arm64-v8a
+hw.cpu.arch = arm64
+hw.cpu.ncore = 4
+hw.gpu.enabled = no
+hw.gpu.mode = auto
+hw.lcd.backlight = yes
+hw.lcd.circular = false
+hw.lcd.density = 420
+hw.lcd.depth = 32
+hw.lcd.height = 2400
+hw.lcd.transparent = false
+hw.lcd.vsync = 60
+hw.lcd.width = 1080
+hw.ramSize = 2G
+image.sysdir.1 = /nix/store/ahp82jjy0znf9l2ps98pj3bkl3zgrkgd-bookfin-android-sdk/system-images/android-36/google_apis/arm64-v8a/
+tag.id = google_apis
+tag.ids = google_apis
+
+KOReader binary identity:
+000000000062c6bc T luaopen_cre
+  0x0000000000000001 (NEEDED)       Shared library: [libluajit.so]
+  0x0000000000000001 (NEEDED)       Shared library: [libm.so]
+  0x0000000000000001 (NEEDED)       Shared library: [libandroid.so]
+  0x0000000000000001 (NEEDED)       Shared library: [liblog.so]
+  0x0000000000000001 (NEEDED)       Shared library: [libdl.so]
+  0x0000000000000001 (NEEDED)       Shared library: [libc.so]

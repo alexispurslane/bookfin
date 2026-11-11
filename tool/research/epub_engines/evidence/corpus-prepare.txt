@@ -1,0 +1,44 @@
+{
+  "prose": {
+    "sha256": "85814417c1a74d2ca7f3b077b47454d0cfc728392d40d846d1c97d44f24c5279",
+    "section_count": 65,
+    "target": {
+      "index": 4,
+      "href": "text/chapter-3.xhtml",
+      "path": "epub/text/chapter-3.xhtml",
+      "characters": 9532,
+      "heading": "III",
+      "toc_title": "III",
+      "text_prefix": "III Not all that Mrs. Bennet, however, with the assistance of her five daughters, could ask on the subject was sufficient to draw from her husband any satisfactory description of Mr. Bingley. They attacked him in various ways; with bareface",
+      "images": 0
+    }
+  },
+  "long": {
+    "sha256": "4f0a70cac781ab8f30b5efb8d20ee78db9e7e1fc23e0c261e35c8690f48db34c",
+    "section_count": 145,
+    "target": {
+      "index": 59,
+      "href": "text/chapter-54.xhtml",
+      "path": "epub/text/chapter-54.xhtml",
+      "characters": 44804,
+      "heading": "LIV",
+      "toc_title": "LIV: The Town-Ho \u2019s Story",
+      "text_prefix": "LIV The Town-Ho \u2019s Story As told at the Golden Inn. The Cape of Good Hope, and all the watery region round about there, is much like some noted four corners of a great highway, where you meet more travellers than in any other part. It was n",
+      "images": 0
+    }
+  },
+  "illustrated": {
+    "sha256": "431719c25bcb0b6a67fc03938b4633723d775324ac2c62a06a04f98862148bef",
+    "section_count": 20,
+    "target": {
+      "index": 5,
+      "href": "text/chapter-1.xhtml",
+      "path": "epub/text/chapter-1.xhtml",
+      "characters": 11220,
+      "heading": "I",
+      "toc_title": "I: Down the Rabbit-Hole",
+      "text_prefix": "I Down the Rabbit-Hole Alice was beginning to get very tired of sitting by her sister on the bank, and of having nothing to do: once or twice she had peeped into the book her sister was reading, but it had no pictures or conversations in it",
+      "images": 3
+    }
+  }
+}

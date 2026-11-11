@@ -1,0 +1,1127 @@
+[
+  {
+    "run_id": "calibration-v3-calibration-prose-bookfin",
+    "round": -1,
+    "book": "prose",
+    "engine": "bookfin",
+    "engine_order": 0,
+    "book_order": 0,
+    "steps": [
+      {
+        "operation": "fresh_open",
+        "case": "target18",
+        "measured": true
+      },
+      {
+        "operation": "paginate",
+        "case": "target18",
+        "measured": false
+      },
+      {
+        "operation": "prepare_reopen",
+        "case": "after_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "cached_reopen",
+        "case": "target18",
+        "measured": true
+      },
+      {
+        "operation": "prepare_reopen",
+        "case": "after_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "cached_reopen",
+        "case": "target18",
+        "measured": true
+      },
+      {
+        "operation": "prepare_reopen",
+        "case": "after_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "cached_reopen",
+        "case": "target18",
+        "measured": true
+      },
+      {
+        "operation": "page_turn",
+        "case": "turn1",
+        "measured": true
+      },
+      {
+        "operation": "page_turn",
+        "case": "turn2",
+        "measured": true
+      },
+      {
+        "operation": "page_turn",
+        "case": "turn3",
+        "measured": true
+      },
+      {
+        "operation": "prepare_crossing",
+        "case": "before_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "chapter_crossing",
+        "case": "after_crossing18",
+        "measured": true
+      },
+      {
+        "operation": "prepare_crossing",
+        "case": "before_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "chapter_crossing",
+        "case": "after_crossing18",
+        "measured": true
+      },
+      {
+        "operation": "prepare_crossing",
+        "case": "before_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "chapter_crossing",
+        "case": "after_crossing18",
+        "measured": true
+      },
+      {
+        "operation": "prepare_target",
+        "case": "target18",
+        "measured": false
+      },
+      {
+        "operation": "font_change",
+        "case": "target20",
+        "measured": true
+      },
+      {
+        "operation": "prepare_target",
+        "case": "target18",
+        "measured": false
+      },
+      {
+        "operation": "font_change",
+        "case": "target20",
+        "measured": true
+      },
+      {
+        "operation": "prepare_target",
+        "case": "target18",
+        "measured": false
+      },
+      {
+        "operation": "font_change",
+        "case": "target20",
+        "measured": true
+      }
+    ]
+  },
+  {
+    "run_id": "calibration-v3-calibration-prose-webview",
+    "round": -1,
+    "book": "prose",
+    "engine": "webview",
+    "engine_order": 1,
+    "book_order": 0,
+    "steps": [
+      {
+        "operation": "fresh_open",
+        "case": "target18",
+        "measured": true
+      },
+      {
+        "operation": "paginate",
+        "case": "target18",
+        "measured": false
+      },
+      {
+        "operation": "prepare_reopen",
+        "case": "after_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "cached_reopen",
+        "case": "target18",
+        "measured": true
+      },
+      {
+        "operation": "prepare_reopen",
+        "case": "after_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "cached_reopen",
+        "case": "target18",
+        "measured": true
+      },
+      {
+        "operation": "prepare_reopen",
+        "case": "after_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "cached_reopen",
+        "case": "target18",
+        "measured": true
+      },
+      {
+        "operation": "page_turn",
+        "case": "turn1",
+        "measured": true
+      },
+      {
+        "operation": "page_turn",
+        "case": "turn2",
+        "measured": true
+      },
+      {
+        "operation": "page_turn",
+        "case": "turn3",
+        "measured": true
+      },
+      {
+        "operation": "prepare_crossing",
+        "case": "before_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "chapter_crossing",
+        "case": "after_crossing18",
+        "measured": true
+      },
+      {
+        "operation": "prepare_crossing",
+        "case": "before_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "chapter_crossing",
+        "case": "after_crossing18",
+        "measured": true
+      },
+      {
+        "operation": "prepare_crossing",
+        "case": "before_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "chapter_crossing",
+        "case": "after_crossing18",
+        "measured": true
+      },
+      {
+        "operation": "prepare_target",
+        "case": "target18",
+        "measured": false
+      },
+      {
+        "operation": "font_change",
+        "case": "target20",
+        "measured": true
+      },
+      {
+        "operation": "prepare_target",
+        "case": "target18",
+        "measured": false
+      },
+      {
+        "operation": "font_change",
+        "case": "target20",
+        "measured": true
+      },
+      {
+        "operation": "prepare_target",
+        "case": "target18",
+        "measured": false
+      },
+      {
+        "operation": "font_change",
+        "case": "target20",
+        "measured": true
+      }
+    ]
+  },
+  {
+    "run_id": "calibration-v3-calibration-prose-koreader",
+    "round": -1,
+    "book": "prose",
+    "engine": "koreader",
+    "engine_order": 2,
+    "book_order": 0,
+    "steps": [
+      {
+        "operation": "fresh_open",
+        "case": "target18",
+        "measured": true
+      },
+      {
+        "operation": "paginate",
+        "case": "target18",
+        "measured": false
+      },
+      {
+        "operation": "prepare_reopen",
+        "case": "after_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "cached_reopen",
+        "case": "target18",
+        "measured": true
+      },
+      {
+        "operation": "prepare_reopen",
+        "case": "after_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "cached_reopen",
+        "case": "target18",
+        "measured": true
+      },
+      {
+        "operation": "prepare_reopen",
+        "case": "after_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "cached_reopen",
+        "case": "target18",
+        "measured": true
+      },
+      {
+        "operation": "page_turn",
+        "case": "turn1",
+        "measured": true
+      },
+      {
+        "operation": "page_turn",
+        "case": "turn2",
+        "measured": true
+      },
+      {
+        "operation": "page_turn",
+        "case": "turn3",
+        "measured": true
+      },
+      {
+        "operation": "prepare_crossing",
+        "case": "before_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "chapter_crossing",
+        "case": "after_crossing18",
+        "measured": true
+      },
+      {
+        "operation": "prepare_crossing",
+        "case": "before_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "chapter_crossing",
+        "case": "after_crossing18",
+        "measured": true
+      },
+      {
+        "operation": "prepare_crossing",
+        "case": "before_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "chapter_crossing",
+        "case": "after_crossing18",
+        "measured": true
+      },
+      {
+        "operation": "prepare_target",
+        "case": "target18",
+        "measured": false
+      },
+      {
+        "operation": "font_change",
+        "case": "target20",
+        "measured": true
+      },
+      {
+        "operation": "prepare_target",
+        "case": "target18",
+        "measured": false
+      },
+      {
+        "operation": "font_change",
+        "case": "target20",
+        "measured": true
+      },
+      {
+        "operation": "prepare_target",
+        "case": "target18",
+        "measured": false
+      },
+      {
+        "operation": "font_change",
+        "case": "target20",
+        "measured": true
+      }
+    ]
+  },
+  {
+    "run_id": "calibration-v3-calibration-long-webview",
+    "round": -1,
+    "book": "long",
+    "engine": "webview",
+    "engine_order": 0,
+    "book_order": 1,
+    "steps": [
+      {
+        "operation": "fresh_open",
+        "case": "target18",
+        "measured": true
+      },
+      {
+        "operation": "paginate",
+        "case": "target18",
+        "measured": false
+      },
+      {
+        "operation": "prepare_reopen",
+        "case": "after_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "cached_reopen",
+        "case": "target18",
+        "measured": true
+      },
+      {
+        "operation": "prepare_reopen",
+        "case": "after_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "cached_reopen",
+        "case": "target18",
+        "measured": true
+      },
+      {
+        "operation": "prepare_reopen",
+        "case": "after_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "cached_reopen",
+        "case": "target18",
+        "measured": true
+      },
+      {
+        "operation": "page_turn",
+        "case": "turn1",
+        "measured": true
+      },
+      {
+        "operation": "page_turn",
+        "case": "turn2",
+        "measured": true
+      },
+      {
+        "operation": "page_turn",
+        "case": "turn3",
+        "measured": true
+      },
+      {
+        "operation": "prepare_crossing",
+        "case": "before_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "chapter_crossing",
+        "case": "after_crossing18",
+        "measured": true
+      },
+      {
+        "operation": "prepare_crossing",
+        "case": "before_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "chapter_crossing",
+        "case": "after_crossing18",
+        "measured": true
+      },
+      {
+        "operation": "prepare_crossing",
+        "case": "before_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "chapter_crossing",
+        "case": "after_crossing18",
+        "measured": true
+      },
+      {
+        "operation": "prepare_target",
+        "case": "target18",
+        "measured": false
+      },
+      {
+        "operation": "font_change",
+        "case": "target20",
+        "measured": true
+      },
+      {
+        "operation": "prepare_target",
+        "case": "target18",
+        "measured": false
+      },
+      {
+        "operation": "font_change",
+        "case": "target20",
+        "measured": true
+      },
+      {
+        "operation": "prepare_target",
+        "case": "target18",
+        "measured": false
+      },
+      {
+        "operation": "font_change",
+        "case": "target20",
+        "measured": true
+      }
+    ]
+  },
+  {
+    "run_id": "calibration-v3-calibration-long-koreader",
+    "round": -1,
+    "book": "long",
+    "engine": "koreader",
+    "engine_order": 1,
+    "book_order": 1,
+    "steps": [
+      {
+        "operation": "fresh_open",
+        "case": "target18",
+        "measured": true
+      },
+      {
+        "operation": "paginate",
+        "case": "target18",
+        "measured": false
+      },
+      {
+        "operation": "prepare_reopen",
+        "case": "after_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "cached_reopen",
+        "case": "target18",
+        "measured": true
+      },
+      {
+        "operation": "prepare_reopen",
+        "case": "after_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "cached_reopen",
+        "case": "target18",
+        "measured": true
+      },
+      {
+        "operation": "prepare_reopen",
+        "case": "after_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "cached_reopen",
+        "case": "target18",
+        "measured": true
+      },
+      {
+        "operation": "page_turn",
+        "case": "turn1",
+        "measured": true
+      },
+      {
+        "operation": "page_turn",
+        "case": "turn2",
+        "measured": true
+      },
+      {
+        "operation": "page_turn",
+        "case": "turn3",
+        "measured": true
+      },
+      {
+        "operation": "prepare_crossing",
+        "case": "before_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "chapter_crossing",
+        "case": "after_crossing18",
+        "measured": true
+      },
+      {
+        "operation": "prepare_crossing",
+        "case": "before_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "chapter_crossing",
+        "case": "after_crossing18",
+        "measured": true
+      },
+      {
+        "operation": "prepare_crossing",
+        "case": "before_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "chapter_crossing",
+        "case": "after_crossing18",
+        "measured": true
+      },
+      {
+        "operation": "prepare_target",
+        "case": "target18",
+        "measured": false
+      },
+      {
+        "operation": "font_change",
+        "case": "target20",
+        "measured": true
+      },
+      {
+        "operation": "prepare_target",
+        "case": "target18",
+        "measured": false
+      },
+      {
+        "operation": "font_change",
+        "case": "target20",
+        "measured": true
+      },
+      {
+        "operation": "prepare_target",
+        "case": "target18",
+        "measured": false
+      },
+      {
+        "operation": "font_change",
+        "case": "target20",
+        "measured": true
+      }
+    ]
+  },
+  {
+    "run_id": "calibration-v3-calibration-long-bookfin",
+    "round": -1,
+    "book": "long",
+    "engine": "bookfin",
+    "engine_order": 2,
+    "book_order": 1,
+    "steps": [
+      {
+        "operation": "fresh_open",
+        "case": "target18",
+        "measured": true
+      },
+      {
+        "operation": "paginate",
+        "case": "target18",
+        "measured": false
+      },
+      {
+        "operation": "prepare_reopen",
+        "case": "after_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "cached_reopen",
+        "case": "target18",
+        "measured": true
+      },
+      {
+        "operation": "prepare_reopen",
+        "case": "after_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "cached_reopen",
+        "case": "target18",
+        "measured": true
+      },
+      {
+        "operation": "prepare_reopen",
+        "case": "after_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "cached_reopen",
+        "case": "target18",
+        "measured": true
+      },
+      {
+        "operation": "page_turn",
+        "case": "turn1",
+        "measured": true
+      },
+      {
+        "operation": "page_turn",
+        "case": "turn2",
+        "measured": true
+      },
+      {
+        "operation": "page_turn",
+        "case": "turn3",
+        "measured": true
+      },
+      {
+        "operation": "prepare_crossing",
+        "case": "before_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "chapter_crossing",
+        "case": "after_crossing18",
+        "measured": true
+      },
+      {
+        "operation": "prepare_crossing",
+        "case": "before_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "chapter_crossing",
+        "case": "after_crossing18",
+        "measured": true
+      },
+      {
+        "operation": "prepare_crossing",
+        "case": "before_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "chapter_crossing",
+        "case": "after_crossing18",
+        "measured": true
+      },
+      {
+        "operation": "prepare_target",
+        "case": "target18",
+        "measured": false
+      },
+      {
+        "operation": "font_change",
+        "case": "target20",
+        "measured": true
+      },
+      {
+        "operation": "prepare_target",
+        "case": "target18",
+        "measured": false
+      },
+      {
+        "operation": "font_change",
+        "case": "target20",
+        "measured": true
+      },
+      {
+        "operation": "prepare_target",
+        "case": "target18",
+        "measured": false
+      },
+      {
+        "operation": "font_change",
+        "case": "target20",
+        "measured": true
+      }
+    ]
+  },
+  {
+    "run_id": "calibration-v3-calibration-illustrated-koreader",
+    "round": -1,
+    "book": "illustrated",
+    "engine": "koreader",
+    "engine_order": 0,
+    "book_order": 2,
+    "steps": [
+      {
+        "operation": "fresh_open",
+        "case": "target18",
+        "measured": true
+      },
+      {
+        "operation": "paginate",
+        "case": "target18",
+        "measured": false
+      },
+      {
+        "operation": "prepare_reopen",
+        "case": "after_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "cached_reopen",
+        "case": "target18",
+        "measured": true
+      },
+      {
+        "operation": "prepare_reopen",
+        "case": "after_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "cached_reopen",
+        "case": "target18",
+        "measured": true
+      },
+      {
+        "operation": "prepare_reopen",
+        "case": "after_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "cached_reopen",
+        "case": "target18",
+        "measured": true
+      },
+      {
+        "operation": "page_turn",
+        "case": "turn1",
+        "measured": true
+      },
+      {
+        "operation": "page_turn",
+        "case": "turn2",
+        "measured": true
+      },
+      {
+        "operation": "page_turn",
+        "case": "turn3",
+        "measured": true
+      },
+      {
+        "operation": "prepare_crossing",
+        "case": "before_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "chapter_crossing",
+        "case": "after_crossing18",
+        "measured": true
+      },
+      {
+        "operation": "prepare_crossing",
+        "case": "before_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "chapter_crossing",
+        "case": "after_crossing18",
+        "measured": true
+      },
+      {
+        "operation": "prepare_crossing",
+        "case": "before_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "chapter_crossing",
+        "case": "after_crossing18",
+        "measured": true
+      },
+      {
+        "operation": "prepare_target",
+        "case": "target18",
+        "measured": false
+      },
+      {
+        "operation": "font_change",
+        "case": "target20",
+        "measured": true
+      },
+      {
+        "operation": "prepare_target",
+        "case": "target18",
+        "measured": false
+      },
+      {
+        "operation": "font_change",
+        "case": "target20",
+        "measured": true
+      },
+      {
+        "operation": "prepare_target",
+        "case": "target18",
+        "measured": false
+      },
+      {
+        "operation": "font_change",
+        "case": "target20",
+        "measured": true
+      }
+    ]
+  },
+  {
+    "run_id": "calibration-v3-calibration-illustrated-bookfin",
+    "round": -1,
+    "book": "illustrated",
+    "engine": "bookfin",
+    "engine_order": 1,
+    "book_order": 2,
+    "steps": [
+      {
+        "operation": "fresh_open",
+        "case": "target18",
+        "measured": true
+      },
+      {
+        "operation": "paginate",
+        "case": "target18",
+        "measured": false
+      },
+      {
+        "operation": "prepare_reopen",
+        "case": "after_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "cached_reopen",
+        "case": "target18",
+        "measured": true
+      },
+      {
+        "operation": "prepare_reopen",
+        "case": "after_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "cached_reopen",
+        "case": "target18",
+        "measured": true
+      },
+      {
+        "operation": "prepare_reopen",
+        "case": "after_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "cached_reopen",
+        "case": "target18",
+        "measured": true
+      },
+      {
+        "operation": "page_turn",
+        "case": "turn1",
+        "measured": true
+      },
+      {
+        "operation": "page_turn",
+        "case": "turn2",
+        "measured": true
+      },
+      {
+        "operation": "page_turn",
+        "case": "turn3",
+        "measured": true
+      },
+      {
+        "operation": "prepare_crossing",
+        "case": "before_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "chapter_crossing",
+        "case": "after_crossing18",
+        "measured": true
+      },
+      {
+        "operation": "prepare_crossing",
+        "case": "before_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "chapter_crossing",
+        "case": "after_crossing18",
+        "measured": true
+      },
+      {
+        "operation": "prepare_crossing",
+        "case": "before_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "chapter_crossing",
+        "case": "after_crossing18",
+        "measured": true
+      },
+      {
+        "operation": "prepare_target",
+        "case": "target18",
+        "measured": false
+      },
+      {
+        "operation": "font_change",
+        "case": "target20",
+        "measured": true
+      },
+      {
+        "operation": "prepare_target",
+        "case": "target18",
+        "measured": false
+      },
+      {
+        "operation": "font_change",
+        "case": "target20",
+        "measured": true
+      },
+      {
+        "operation": "prepare_target",
+        "case": "target18",
+        "measured": false
+      },
+      {
+        "operation": "font_change",
+        "case": "target20",
+        "measured": true
+      }
+    ]
+  },
+  {
+    "run_id": "calibration-v3-calibration-illustrated-webview",
+    "round": -1,
+    "book": "illustrated",
+    "engine": "webview",
+    "engine_order": 2,
+    "book_order": 2,
+    "steps": [
+      {
+        "operation": "fresh_open",
+        "case": "target18",
+        "measured": true
+      },
+      {
+        "operation": "paginate",
+        "case": "target18",
+        "measured": false
+      },
+      {
+        "operation": "prepare_reopen",
+        "case": "after_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "cached_reopen",
+        "case": "target18",
+        "measured": true
+      },
+      {
+        "operation": "prepare_reopen",
+        "case": "after_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "cached_reopen",
+        "case": "target18",
+        "measured": true
+      },
+      {
+        "operation": "prepare_reopen",
+        "case": "after_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "cached_reopen",
+        "case": "target18",
+        "measured": true
+      },
+      {
+        "operation": "page_turn",
+        "case": "turn1",
+        "measured": true
+      },
+      {
+        "operation": "page_turn",
+        "case": "turn2",
+        "measured": true
+      },
+      {
+        "operation": "page_turn",
+        "case": "turn3",
+        "measured": true
+      },
+      {
+        "operation": "prepare_crossing",
+        "case": "before_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "chapter_crossing",
+        "case": "after_crossing18",
+        "measured": true
+      },
+      {
+        "operation": "prepare_crossing",
+        "case": "before_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "chapter_crossing",
+        "case": "after_crossing18",
+        "measured": true
+      },
+      {
+        "operation": "prepare_crossing",
+        "case": "before_crossing18",
+        "measured": false
+      },
+      {
+        "operation": "chapter_crossing",
+        "case": "after_crossing18",
+        "measured": true
+      },
+      {
+        "operation": "prepare_target",
+        "case": "target18",
+        "measured": false
+      },
+      {
+        "operation": "font_change",
+        "case": "target20",
+        "measured": true
+      },
+      {
+        "operation": "prepare_target",
+        "case": "target18",
+        "measured": false
+      },
+      {
+        "operation": "font_change",
+        "case": "target20",
+        "measured": true
+      },
+      {
+        "operation": "prepare_target",
+        "case": "target18",
+        "measured": false
+      },
+      {
+        "operation": "font_change",
+        "case": "target20",
+        "measured": true
+      }
+    ]
+  }
+]

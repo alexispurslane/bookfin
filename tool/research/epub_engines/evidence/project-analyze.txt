@@ -1,0 +1,122 @@
+Resolving dependencies...
+Downloading packages...
+  archive 4.0.9 (4.6.0 available)
+  code_assets 1.2.1 (2.2.0 available)
+  crypto 3.0.7 (3.0.8 available)
+  cupertino_ui 1.1.5 (1.1.6 available)
+  flutter_cache_manager 3.4.6 (3.5.0 available)
+  flutter_secure_storage 9.2.4 (11.2.0 available)
+  flutter_secure_storage_linux 1.2.3 (3.0.3 available)
+  flutter_secure_storage_macos 3.1.3 (4.0.0 available)
+  flutter_secure_storage_platform_interface 1.1.2 (2.1.1 available)
+  flutter_secure_storage_web 1.2.1 (2.1.1 available)
+  flutter_secure_storage_windows 3.1.2 (4.2.2 available)
+  hooks 2.0.2 (2.2.0 available)
+  image 4.8.0 (4.12.0 available)
+  jni 1.1.1 (1.1.2 available)
+  js 0.6.7 (0.7.2 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  material_ui 1.9.0 (1.11.0 available)
+  meta 1.18.3 (1.19.0 available)
+  native_toolchain_c 0.19.2 (0.19.6 available)
+  objective_c 9.5.0 (9.6.3 available)
+  pdfrx 2.11.0 (2.12.0 available)
+  pdfrx_engine 0.9.0 (0.9.1 available)
+  petitparser 7.0.2 (7.1.0 available)
+  record_use 0.6.0 (1.1.1 available)
+  shared_preferences_foundation 2.5.7 (2.6.1 available)
+  sqflite 2.4.5 (2.4.6 available)
+  sqflite_android 2.4.5 (2.4.6 available)
+  sqflite_common 2.5.14 (2.5.17 available)
+  sqflite_common_ffi 2.4.0+2 (2.4.6 available)
+  sqflite_darwin 2.4.4+1 (2.4.6 available)
+  sqflite_platform_interface 2.4.3 (2.4.4 available)
+  sqlite3 3.5.2 (3.9.1 available)
+  synchronized 3.5.0 (3.6.1+1 available)
+  test_api 0.7.12 (0.7.15 available)
+  vector_math 2.4.0 (2.4.4 available)
+  win32 5.15.0 (6.4.0 available)
+  xml 6.6.1 (7.1.0 available)
+Got dependencies!
+37 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Analyzing t3-f5521e60...                                        
+
+  error • 'DiskCatalog.read' ('Future<CatalogCache?> Function(AccountScope)') isn't a valid override of 'CatalogStore.read' ('Future<String?> Function(AccountScope)') • tool/acceptance/fixture_support.dart:50:25 • invalid_override
+  error • 'DiskCatalog.write' ('Future<void> Function(AccountScope, CatalogCache)') isn't a valid override of 'CatalogStore.write' ('Future<void> Function(AccountScope, String)') • tool/acceptance/fixture_support.dart:55:16 • invalid_override
+  error • 2 positional arguments expected by 'importMobi', but 1 found. Try adding the missing arguments • tool/reader/kf8_layout_fixture_test.dart:18:47 • not_enough_positional_arguments
+  error • 2 positional arguments expected by 'importMobi', but 1 found. Try adding the missing arguments • tool/reader/kf8_layout_fixture_test.dart:55:45 • not_enough_positional_arguments
+  error • Target of URI doesn't exist: 'gen/database.dart'. Try creating the file referenced by the URI, or try using a URI for a file that does exist • tool/research/record_hop_bench/bench.dart:6:8 • uri_does_not_exist
+  error • Target of URI doesn't exist: 'gen/journal.dart'. Try creating the file referenced by the URI, or try using a URI for a file that does exist • tool/research/record_hop_bench/bench.dart:7:8 • uri_does_not_exist
+  error • Target of URI doesn't exist: 'gen/store.dart'. Try creating the file referenced by the URI, or try using a URI for a file that does exist • tool/research/record_hop_bench/bench.dart:8:8 • uri_does_not_exist
+  error • Undefined class 'RecordJournal'. Try changing the name to the name of an existing class, or creating a class with the name 'RecordJournal' • tool/research/record_hop_bench/bench.dart:46:1 • undefined_class
+  error • The function 'RecordJournal' isn't defined. Try importing the library that defines 'RecordJournal', correcting the name to the name of an existing function, or defining a function named 'RecordJournal' • tool/research/record_hop_bench/bench.dart:47:19 • undefined_function
+  error • Undefined class 'AccountRows'. Try changing the name to the name of an existing class, or creating a class with the name 'AccountRows' • tool/research/record_hop_bench/bench.dart:66:1 • undefined_class
+  error • Undefined class 'RecordJournal'. Try changing the name to the name of an existing class, or creating a class with the name 'RecordJournal' • tool/research/record_hop_bench/bench.dart:66:20 • undefined_class
+  error • The function 'metadataOf' isn't defined. Try importing the library that defines 'metadataOf', correcting the name to the name of an existing function, or defining a function named 'metadataOf' • tool/research/record_hop_bench/bench.dart:71:26 • undefined_function
+  error • Undefined name 'RecordJournal'. Try correcting the name to one that is defined, or defining the name • tool/research/record_hop_bench/bench.dart:74:48 • undefined_identifier
+   info • Don't invoke 'print' in production code. Try using a logging framework • tool/research/record_hop_bench/bench.dart:133:3 • avoid_print
+   info • Don't invoke 'print' in production code. Try using a logging framework • tool/research/record_hop_bench/bench.dart:134:3 • avoid_print
+   info • Don't invoke 'print' in production code. Try using a logging framework • tool/research/record_hop_bench/bench.dart:142:5 • avoid_print
+  error • Undefined name 'restoreText'. Try correcting the name to one that is defined, or defining the name • tool/research/record_hop_bench/bench.dart:145:16 • undefined_identifier
+  error • Undefined name 'restoreText'. Try correcting the name to one that is defined, or defining the name • tool/research/record_hop_bench/bench.dart:146:20 • undefined_identifier
+   info • Don't invoke 'print' in production code. Try using a logging framework • tool/research/record_hop_bench/bench.dart:150:3 • avoid_print
+   info • Don't invoke 'print' in production code. Try using a logging framework • tool/research/record_hop_bench/bench.dart:151:3 • avoid_print
+  error • The function 'metadataOf' isn't defined. Try importing the library that defines 'metadataOf', correcting the name to the name of an existing function, or defining a function named 'metadataOf' • tool/research/record_hop_bench/bench.dart:158:17 • undefined_function
+   info • Don't invoke 'print' in production code. Try using a logging framework • tool/research/record_hop_bench/bench.dart:165:5 • avoid_print
+  error • Undefined name 'restoreRows'. Try correcting the name to one that is defined, or defining the name • tool/research/record_hop_bench/bench.dart:169:16 • undefined_identifier
+  error • Undefined name 'restoreRows'. Try correcting the name to one that is defined, or defining the name • tool/research/record_hop_bench/bench.dart:170:20 • undefined_identifier
+  error • Undefined name 'viewsOfVersions'. Try correcting the name to one that is defined, or defining the name • tool/research/record_hop_bench/bench.dart:171:16 • undefined_identifier
+  error • Undefined name 'viewsOfVersions'. Try correcting the name to one that is defined, or defining the name • tool/research/record_hop_bench/bench.dart:172:20 • undefined_identifier
+  error • Undefined name 'restoreText'. Try correcting the name to one that is defined, or defining the name • tool/research/record_hop_bench/bench.dart:173:16 • undefined_identifier
+  error • Undefined name 'restoreText'. Try correcting the name to one that is defined, or defining the name • tool/research/record_hop_bench/bench.dart:174:20 • undefined_identifier
+  error • Target of URI doesn't exist: 'package:record_rows_bench/main.dart'. Try creating the file referenced by the URI, or try using a URI for a file that does exist • tool/research/record_rows_bench/integration_test/bench_test.dart:3:8 • uri_does_not_exist
+  error • The function 'measure' isn't defined. Try importing the library that defines 'measure', correcting the name to the name of an existing function, or defining a function named 'measure' • tool/research/record_rows_bench/integration_test/bench_test.dart:11:13 • undefined_function
+   info • The imported package 'shared_preferences' isn't a dependency of the importing package. Try adding a dependency for 'shared_preferences' in the 'pubspec.yaml' file • tool/research/record_rows_bench/lib/bookfin/appearance/preferences.dart:5:8 • depend_on_referenced_packages
+   info • The imported package 'crypto' isn't a dependency of the importing package. Try adding a dependency for 'crypto' in the 'pubspec.yaml' file • tool/research/record_rows_bench/lib/bookfin/catalog/covers_io.dart:7:8 • depend_on_referenced_packages
+   info • The imported package 'image' isn't a dependency of the importing package. Try adding a dependency for 'image' in the 'pubspec.yaml' file • tool/research/record_rows_bench/lib/bookfin/catalog/covers_io.dart:9:8 • depend_on_referenced_packages
+   info • The imported package 'shared_preferences' isn't a dependency of the importing package. Try adding a dependency for 'shared_preferences' in the 'pubspec.yaml' file • tool/research/record_rows_bench/lib/bookfin/catalog/layout.dart:4:8 • depend_on_referenced_packages
+   info • The imported package 'crypto' isn't a dependency of the importing package. Try adding a dependency for 'crypto' in the 'pubspec.yaml' file • tool/research/record_rows_bench/lib/bookfin/catalog/store.dart:4:8 • depend_on_referenced_packages
+   info • The imported package 'flutter_secure_storage' isn't a dependency of the importing package. Try adding a dependency for 'flutter_secure_storage' in the 'pubspec.yaml' file • tool/research/record_rows_bench/lib/bookfin/catalog/store.dart:6:8 • depend_on_referenced_packages
+   info • The imported package 'shared_preferences' isn't a dependency of the importing package. Try adding a dependency for 'shared_preferences' in the 'pubspec.yaml' file • tool/research/record_rows_bench/lib/bookfin/catalog/store.dart:7:8 • depend_on_referenced_packages
+   info • The imported package 'web' isn't a dependency of the importing package. Try adding a dependency for 'web' in the 'pubspec.yaml' file • tool/research/record_rows_bench/lib/bookfin/catalog/transport_web.dart:6:8 • depend_on_referenced_packages
+   info • The imported package 'crypto' isn't a dependency of the importing package. Try adding a dependency for 'crypto' in the 'pubspec.yaml' file • tool/research/record_rows_bench/lib/bookfin/downloads/local_downloads.dart:7:8 • depend_on_referenced_packages
+   info • The imported package 'crypto' isn't a dependency of the importing package. Try adding a dependency for 'crypto' in the 'pubspec.yaml' file • tool/research/record_rows_bench/lib/bookfin/playback/apple_audio_files.dart:5:8 • depend_on_referenced_packages
+   info • The imported package 'audio_service' isn't a dependency of the importing package. Try adding a dependency for 'audio_service' in the 'pubspec.yaml' file • tool/research/record_rows_bench/lib/bookfin/playback/native.dart:4:8 • depend_on_referenced_packages
+   info • The imported package 'audio_session' isn't a dependency of the importing package. Try adding a dependency for 'audio_session' in the 'pubspec.yaml' file • tool/research/record_rows_bench/lib/bookfin/playback/native.dart:5:8 • depend_on_referenced_packages
+   info • The imported package 'just_audio' isn't a dependency of the importing package. Try adding a dependency for 'just_audio' in the 'pubspec.yaml' file • tool/research/record_rows_bench/lib/bookfin/playback/native.dart:7:8 • depend_on_referenced_packages
+   info • The imported package 'shared_preferences' isn't a dependency of the importing package. Try adding a dependency for 'shared_preferences' in the 'pubspec.yaml' file • tool/research/record_rows_bench/lib/bookfin/playback/store.dart:7:8 • depend_on_referenced_packages
+   info • The imported package 'xml' isn't a dependency of the importing package. Try adding a dependency for 'xml' in the 'pubspec.yaml' file • tool/research/record_rows_bench/lib/bookfin/reader/book_map.dart:5:8 • depend_on_referenced_packages
+   info • The imported package 'crypto' isn't a dependency of the importing package. Try adding a dependency for 'crypto' in the 'pubspec.yaml' file • tool/research/record_rows_bench/lib/bookfin/reader/document.dart:4:8 • depend_on_referenced_packages
+   info • The imported package 'xml' isn't a dependency of the importing package. Try adding a dependency for 'xml' in the 'pubspec.yaml' file • tool/research/record_rows_bench/lib/bookfin/reader/epub/dom.dart:11:8 • depend_on_referenced_packages
+   info • The imported package 'xml' isn't a dependency of the importing package. Try adding a dependency for 'xml' in the 'pubspec.yaml' file • tool/research/record_rows_bench/lib/bookfin/reader/epub/dom.dart:12:8 • depend_on_referenced_packages
+   info • The imported package 'archive' isn't a dependency of the importing package. Try adding a dependency for 'archive' in the 'pubspec.yaml' file • tool/research/record_rows_bench/lib/bookfin/reader/epub/page_maps.dart:10:8 • depend_on_referenced_packages
+   info • The imported package 'crypto' isn't a dependency of the importing package. Try adding a dependency for 'crypto' in the 'pubspec.yaml' file • tool/research/record_rows_bench/lib/bookfin/reader/epub/page_maps.dart:11:8 • depend_on_referenced_packages
+   info • The imported package 'xml' isn't a dependency of the importing package. Try adding a dependency for 'xml' in the 'pubspec.yaml' file • tool/research/record_rows_bench/lib/bookfin/reader/epub/places.dart:13:8 • depend_on_referenced_packages
+   info • The imported package 'archive' isn't a dependency of the importing package. Try adding a dependency for 'archive' in the 'pubspec.yaml' file • tool/research/record_rows_bench/lib/bookfin/reader/epub/publication.dart:4:8 • depend_on_referenced_packages
+   info • The imported package 'crypto' isn't a dependency of the importing package. Try adding a dependency for 'crypto' in the 'pubspec.yaml' file • tool/research/record_rows_bench/lib/bookfin/reader/epub/publication.dart:5:8 • depend_on_referenced_packages
+   info • The imported package 'image' isn't a dependency of the importing package. Try adding a dependency for 'image' in the 'pubspec.yaml' file • tool/research/record_rows_bench/lib/bookfin/reader/epub/publication.dart:6:8 • depend_on_referenced_packages
+   info • The imported package 'xml' isn't a dependency of the importing package. Try adding a dependency for 'xml' in the 'pubspec.yaml' file • tool/research/record_rows_bench/lib/bookfin/reader/epub/publication.dart:7:8 • depend_on_referenced_packages
+   info • The imported package 'crypto' isn't a dependency of the importing package. Try adding a dependency for 'crypto' in the 'pubspec.yaml' file • tool/research/record_rows_bench/lib/bookfin/reader/mobi.dart:6:8 • depend_on_referenced_packages
+   info • The imported package 'ffi' isn't a dependency of the importing package. Try adding a dependency for 'ffi' in the 'pubspec.yaml' file • tool/research/record_rows_bench/lib/bookfin/reader/mobi.dart:7:8 • depend_on_referenced_packages
+   info • The imported package 'crypto' isn't a dependency of the importing package. Try adding a dependency for 'crypto' in the 'pubspec.yaml' file • tool/research/record_rows_bench/lib/bookfin/reader/ocr.dart:4:8 • depend_on_referenced_packages
+   info • The imported package 'xml' isn't a dependency of the importing package. Try adding a dependency for 'xml' in the 'pubspec.yaml' file • tool/research/record_rows_bench/lib/bookfin/reader/ocr.dart:7:8 • depend_on_referenced_packages
+   info • The imported package 'crypto' isn't a dependency of the importing package. Try adding a dependency for 'crypto' in the 'pubspec.yaml' file • tool/research/record_rows_bench/lib/bookfin/reader/ocr_storage_io.dart:5:8 • depend_on_referenced_packages
+   info • The imported package 'crypto' isn't a dependency of the importing package. Try adding a dependency for 'crypto' in the 'pubspec.yaml' file • tool/research/record_rows_bench/lib/bookfin/reader/pdf.dart:7:8 • depend_on_referenced_packages
+   info • The imported package 'pdfrx_engine' isn't a dependency of the importing package. Try adding a dependency for 'pdfrx_engine' in the 'pubspec.yaml' file • tool/research/record_rows_bench/lib/bookfin/reader/pdf.dart:9:8 • depend_on_referenced_packages
+   info • The imported package 'pdfrx' isn't a dependency of the importing package. Try adding a dependency for 'pdfrx' in the 'pubspec.yaml' file • tool/research/record_rows_bench/lib/bookfin/reader/pdf.dart:10:8 • depend_on_referenced_packages
+   info • The imported package 'shared_preferences' isn't a dependency of the importing package. Try adding a dependency for 'shared_preferences' in the 'pubspec.yaml' file • tool/research/record_rows_bench/lib/bookfin/reader/reading_speed.dart:7:8 • depend_on_referenced_packages
+   info • The imported package 'xml' isn't a dependency of the importing package. Try adding a dependency for 'xml' in the 'pubspec.yaml' file • tool/research/record_rows_bench/lib/bookfin/reader/session.dart:5:8 • depend_on_referenced_packages
+  error • Target of URI doesn't exist: 'package:sherpa_onnx/sherpa_onnx.dart'. Try creating the file referenced by the URI, or try using a URI for a file that does exist • tool/research/tts_bench/bin/mac_check.dart:6:8 • uri_does_not_exist
+  error • Target of URI doesn't exist: 'package:ttsbench/bench.dart'. Try creating the file referenced by the URI, or try using a URI for a file that does exist • tool/research/tts_bench/bin/mac_check.dart:7:8 • uri_does_not_exist
+  error • Undefined name 'Plan'. Try correcting the name to one that is defined, or defining the name • tool/research/tts_bench/bin/mac_check.dart:11:16 • undefined_identifier
+  error • The function 'runPlan' isn't defined. Try importing the library that defines 'runPlan', correcting the name to the name of an existing function, or defining a function named 'runPlan' • tool/research/tts_bench/bin/mac_check.dart:14:3 • undefined_function
+   info • Don't invoke 'print' in production code. Try using a logging framework • tool/research/tts_bench/bin/mac_check.dart:14:32 • avoid_print
+  error • Target of URI doesn't exist: 'package:sherpa_onnx/sherpa_onnx.dart'. Try creating the file referenced by the URI, or try using a URI for a file that does exist • tool/research/tts_bench/lib/bench.dart:7:8 • uri_does_not_exist
+  error • Target of URI doesn't exist: 'package:sherpa_onnx/sherpa_onnx.dart'. Try creating the file referenced by the URI, or try using a URI for a file that does exist • tool/research/tts_bench/lib/main.dart:12:8 • uri_does_not_exist
+   info • Don't invoke 'print' in production code. Try using a logging framework • tool/research/tts_bench/lib/main.dart:64:56 • avoid_print
+   info • Don't invoke 'print' in production code. Try using a logging framework • tool/research/tts_bench/lib/main.dart:71:13 • avoid_print
+   info • Don't invoke 'print' in production code. Try using a logging framework • tool/research/tts_bench/lib/main.dart:80:7 • avoid_print
+   info • Don't invoke 'print' in production code. Try using a logging framework • tool/research/tts_bench/lib/main.dart:84:7 • avoid_print
+
+76 issues found. (ran in 9.9s)

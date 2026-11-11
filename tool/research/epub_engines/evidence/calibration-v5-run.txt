@@ -1,0 +1,8 @@
+3/9 calibration-v5-calibration-prose-koreader
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/run.py", line 73, in <module>
+    main()
+    ~~~~^^
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/run.py", line 63, in main
+    raise RuntimeError(f'Instrumented behavior test failed: {job["run_id"]}; output and raw evidence retained')
+RuntimeError: Instrumented behavior test failed: calibration-v5-calibration-prose-koreader; output and raw evidence retained

@@ -1,0 +1,14 @@
+test_complete_requires_all_engines_books_operations_and_counts (test_results.ResultsTest.test_complete_requires_all_engines_books_operations_and_counts) ... ok
+test_does_not_report_an_incomplete_matrix_as_complete (test_results.ResultsTest.test_does_not_report_an_incomplete_matrix_as_complete) ... ok
+test_excludes_blank_stale_wrong_destination_and_error_samples (test_results.ResultsTest.test_excludes_blank_stale_wrong_destination_and_error_samples) ... ok
+test_excludes_warmups_and_preserves_their_reason (test_results.ResultsTest.test_excludes_warmups_and_preserves_their_reason) ... ok
+test_keeps_books_operations_and_engines_separate (test_results.ResultsTest.test_keeps_books_operations_and_engines_separate) ... ok
+test_preserves_input_rows_without_mutation (test_results.ResultsTest.test_preserves_input_rows_without_mutation) ... ok
+test_rejects_duplicate_ids_instead_of_counting_them_twice (test_results.ResultsTest.test_rejects_duplicate_ids_instead_of_counting_them_twice) ... ok
+test_rejects_mixed_cache_states_in_one_cell (test_results.ResultsTest.test_rejects_mixed_cache_states_in_one_cell) ... ok
+test_reports_nearest_rank_median_and_p90_in_milliseconds (test_results.ResultsTest.test_reports_nearest_rank_median_and_p90_in_milliseconds) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.006s
+
+OK

@@ -1,0 +1,4780 @@
+{
+  "cells": [
+    {
+      "engine": "bookfin",
+      "book": "illustrated",
+      "operation": "cached_reopen",
+      "boundary": "request_to_reference_window_copy",
+      "count": 36,
+      "rounds": 12,
+      "median_ms": 131.7265,
+      "p90_ms": 142.076083
+    },
+    {
+      "engine": "bookfin",
+      "book": "illustrated",
+      "operation": "chapter_crossing",
+      "boundary": "request_to_reference_window_copy",
+      "count": 36,
+      "rounds": 12,
+      "median_ms": 58.06783299999999,
+      "p90_ms": 61.071583
+    },
+    {
+      "engine": "bookfin",
+      "book": "illustrated",
+      "operation": "font_change",
+      "boundary": "request_to_reference_window_copy",
+      "count": 36,
+      "rounds": 12,
+      "median_ms": 111.493604,
+      "p90_ms": 124.995042
+    },
+    {
+      "engine": "bookfin",
+      "book": "illustrated",
+      "operation": "fresh_open",
+      "boundary": "request_to_reference_window_copy",
+      "count": 12,
+      "rounds": 12,
+      "median_ms": 700.31975,
+      "p90_ms": 825.547667
+    },
+    {
+      "engine": "bookfin",
+      "book": "illustrated",
+      "operation": "page_turn",
+      "boundary": "request_to_reference_window_copy",
+      "count": 36,
+      "rounds": 12,
+      "median_ms": 58.0263535,
+      "p90_ms": 76.777458
+    },
+    {
+      "engine": "bookfin",
+      "book": "long",
+      "operation": "cached_reopen",
+      "boundary": "request_to_reference_window_copy",
+      "count": 36,
+      "rounds": 12,
+      "median_ms": 107.391438,
+      "p90_ms": 127.622708
+    },
+    {
+      "engine": "bookfin",
+      "book": "long",
+      "operation": "chapter_crossing",
+      "boundary": "request_to_reference_window_copy",
+      "count": 36,
+      "rounds": 12,
+      "median_ms": 58.9527705,
+      "p90_ms": 66.272416
+    },
+    {
+      "engine": "bookfin",
+      "book": "long",
+      "operation": "font_change",
+      "boundary": "request_to_reference_window_copy",
+      "count": 36,
+      "rounds": 12,
+      "median_ms": 117.9671665,
+      "p90_ms": 176.164167
+    },
+    {
+      "engine": "bookfin",
+      "book": "long",
+      "operation": "fresh_open",
+      "boundary": "request_to_reference_window_copy",
+      "count": 12,
+      "rounds": 12,
+      "median_ms": 621.428209,
+      "p90_ms": 650.980959
+    },
+    {
+      "engine": "bookfin",
+      "book": "long",
+      "operation": "page_turn",
+      "boundary": "request_to_reference_window_copy",
+      "count": 36,
+      "rounds": 12,
+      "median_ms": 58.7761455,
+      "p90_ms": 66.618875
+    },
+    {
+      "engine": "bookfin",
+      "book": "prose",
+      "operation": "cached_reopen",
+      "boundary": "request_to_reference_window_copy",
+      "count": 36,
+      "rounds": 12,
+      "median_ms": 109.02856249999999,
+      "p90_ms": 136.843416
+    },
+    {
+      "engine": "bookfin",
+      "book": "prose",
+      "operation": "chapter_crossing",
+      "boundary": "request_to_reference_window_copy",
+      "count": 36,
+      "rounds": 12,
+      "median_ms": 58.389104,
+      "p90_ms": 75.515084
+    },
+    {
+      "engine": "bookfin",
+      "book": "prose",
+      "operation": "font_change",
+      "boundary": "request_to_reference_window_copy",
+      "count": 36,
+      "rounds": 12,
+      "median_ms": 109.675479,
+      "p90_ms": 129.058959
+    },
+    {
+      "engine": "bookfin",
+      "book": "prose",
+      "operation": "fresh_open",
+      "boundary": "request_to_reference_window_copy",
+      "count": 12,
+      "rounds": 12,
+      "median_ms": 503.93156250000004,
+      "p90_ms": 554.132125
+    },
+    {
+      "engine": "bookfin",
+      "book": "prose",
+      "operation": "page_turn",
+      "boundary": "request_to_reference_window_copy",
+      "count": 36,
+      "rounds": 12,
+      "median_ms": 58.948145999999994,
+      "p90_ms": 68.557084
+    },
+    {
+      "engine": "koreader",
+      "book": "illustrated",
+      "operation": "cached_reopen",
+      "boundary": "request_to_reference_window_copy",
+      "count": 36,
+      "rounds": 12,
+      "median_ms": 72.2103545,
+      "p90_ms": 80.325292
+    },
+    {
+      "engine": "koreader",
+      "book": "illustrated",
+      "operation": "chapter_crossing",
+      "boundary": "request_to_reference_window_copy",
+      "count": 36,
+      "rounds": 12,
+      "median_ms": 60.0289165,
+      "p90_ms": 76.250667
+    },
+    {
+      "engine": "koreader",
+      "book": "illustrated",
+      "operation": "font_change",
+      "boundary": "request_to_reference_window_copy",
+      "count": 36,
+      "rounds": 12,
+      "median_ms": 75.7170625,
+      "p90_ms": 79.05375
+    },
+    {
+      "engine": "koreader",
+      "book": "illustrated",
+      "operation": "fresh_open",
+      "boundary": "request_to_reference_window_copy",
+      "count": 12,
+      "rounds": 12,
+      "median_ms": 183.225125,
+      "p90_ms": 215.993167
+    },
+    {
+      "engine": "koreader",
+      "book": "illustrated",
+      "operation": "page_turn",
+      "boundary": "request_to_reference_window_copy",
+      "count": 36,
+      "rounds": 12,
+      "median_ms": 66.10931249999999,
+      "p90_ms": 77.081042
+    },
+    {
+      "engine": "koreader",
+      "book": "long",
+      "operation": "cached_reopen",
+      "boundary": "request_to_reference_window_copy",
+      "count": 36,
+      "rounds": 12,
+      "median_ms": 67.0236455,
+      "p90_ms": 80.675917
+    },
+    {
+      "engine": "koreader",
+      "book": "long",
+      "operation": "chapter_crossing",
+      "boundary": "request_to_reference_window_copy",
+      "count": 36,
+      "rounds": 12,
+      "median_ms": 66.55425,
+      "p90_ms": 74.913917
+    },
+    {
+      "engine": "koreader",
+      "book": "long",
+      "operation": "font_change",
+      "boundary": "request_to_reference_window_copy",
+      "count": 36,
+      "rounds": 12,
+      "median_ms": 158.56379199999998,
+      "p90_ms": 162.453125
+    },
+    {
+      "engine": "koreader",
+      "book": "long",
+      "operation": "fresh_open",
+      "boundary": "request_to_reference_window_copy",
+      "count": 12,
+      "rounds": 12,
+      "median_ms": 326.279021,
+      "p90_ms": 370.2505
+    },
+    {
+      "engine": "koreader",
+      "book": "long",
+      "operation": "page_turn",
+      "boundary": "request_to_reference_window_copy",
+      "count": 36,
+      "rounds": 12,
+      "median_ms": 67.388958,
+      "p90_ms": 78.343459
+    },
+    {
+      "engine": "koreader",
+      "book": "prose",
+      "operation": "cached_reopen",
+      "boundary": "request_to_reference_window_copy",
+      "count": 36,
+      "rounds": 12,
+      "median_ms": 67.351354,
+      "p90_ms": 90.672542
+    },
+    {
+      "engine": "koreader",
+      "book": "prose",
+      "operation": "chapter_crossing",
+      "boundary": "request_to_reference_window_copy",
+      "count": 36,
+      "rounds": 12,
+      "median_ms": 67.219042,
+      "p90_ms": 78.661625
+    },
+    {
+      "engine": "koreader",
+      "book": "prose",
+      "operation": "font_change",
+      "boundary": "request_to_reference_window_copy",
+      "count": 36,
+      "rounds": 12,
+      "median_ms": 108.97595849999999,
+      "p90_ms": 114.755333
+    },
+    {
+      "engine": "koreader",
+      "book": "prose",
+      "operation": "fresh_open",
+      "boundary": "request_to_reference_window_copy",
+      "count": 12,
+      "rounds": 12,
+      "median_ms": 251.994688,
+      "p90_ms": 321.541792
+    },
+    {
+      "engine": "koreader",
+      "book": "prose",
+      "operation": "page_turn",
+      "boundary": "request_to_reference_window_copy",
+      "count": 36,
+      "rounds": 12,
+      "median_ms": 61.384833,
+      "p90_ms": 74.396084
+    },
+    {
+      "engine": "webview",
+      "book": "illustrated",
+      "operation": "cached_reopen",
+      "boundary": "request_to_reference_window_copy",
+      "count": 36,
+      "rounds": 12,
+      "median_ms": 540.3392289999999,
+      "p90_ms": 635.346292
+    },
+    {
+      "engine": "webview",
+      "book": "illustrated",
+      "operation": "chapter_crossing",
+      "boundary": "request_to_reference_window_copy",
+      "count": 36,
+      "rounds": 12,
+      "median_ms": 79.7063545,
+      "p90_ms": 97.442417
+    },
+    {
+      "engine": "webview",
+      "book": "illustrated",
+      "operation": "font_change",
+      "boundary": "request_to_reference_window_copy",
+      "count": 36,
+      "rounds": 12,
+      "median_ms": 77.315,
+      "p90_ms": 90.666083
+    },
+    {
+      "engine": "webview",
+      "book": "illustrated",
+      "operation": "fresh_open",
+      "boundary": "request_to_reference_window_copy",
+      "count": 12,
+      "rounds": 12,
+      "median_ms": 682.922834,
+      "p90_ms": 749.878042
+    },
+    {
+      "engine": "webview",
+      "book": "illustrated",
+      "operation": "page_turn",
+      "boundary": "request_to_reference_window_copy",
+      "count": 36,
+      "rounds": 12,
+      "median_ms": 70.35220849999999,
+      "p90_ms": 83.093958
+    },
+    {
+      "engine": "webview",
+      "book": "long",
+      "operation": "cached_reopen",
+      "boundary": "request_to_reference_window_copy",
+      "count": 36,
+      "rounds": 12,
+      "median_ms": 239.5129795,
+      "p90_ms": 307.571583
+    },
+    {
+      "engine": "webview",
+      "book": "long",
+      "operation": "chapter_crossing",
+      "boundary": "request_to_reference_window_copy",
+      "count": 36,
+      "rounds": 12,
+      "median_ms": 91.272271,
+      "p90_ms": 110.5795
+    },
+    {
+      "engine": "webview",
+      "book": "long",
+      "operation": "font_change",
+      "boundary": "request_to_reference_window_copy",
+      "count": 36,
+      "rounds": 12,
+      "median_ms": 70.319937,
+      "p90_ms": 82.06325
+    },
+    {
+      "engine": "webview",
+      "book": "long",
+      "operation": "fresh_open",
+      "boundary": "request_to_reference_window_copy",
+      "count": 12,
+      "rounds": 12,
+      "median_ms": 549.729396,
+      "p90_ms": 564.342584
+    },
+    {
+      "engine": "webview",
+      "book": "long",
+      "operation": "page_turn",
+      "boundary": "request_to_reference_window_copy",
+      "count": 36,
+      "rounds": 12,
+      "median_ms": 62.1825205,
+      "p90_ms": 73.649417
+    },
+    {
+      "engine": "webview",
+      "book": "prose",
+      "operation": "cached_reopen",
+      "boundary": "request_to_reference_window_copy",
+      "count": 36,
+      "rounds": 12,
+      "median_ms": 180.64349950000002,
+      "p90_ms": 251.156
+    },
+    {
+      "engine": "webview",
+      "book": "prose",
+      "operation": "chapter_crossing",
+      "boundary": "request_to_reference_window_copy",
+      "count": 36,
+      "rounds": 12,
+      "median_ms": 89.82110399999999,
+      "p90_ms": 98.674958
+    },
+    {
+      "engine": "webview",
+      "book": "prose",
+      "operation": "font_change",
+      "boundary": "request_to_reference_window_copy",
+      "count": 36,
+      "rounds": 12,
+      "median_ms": 57.8555,
+      "p90_ms": 71.580125
+    },
+    {
+      "engine": "webview",
+      "book": "prose",
+      "operation": "fresh_open",
+      "boundary": "request_to_reference_window_copy",
+      "count": 12,
+      "rounds": 12,
+      "median_ms": 550.4428965,
+      "p90_ms": 562.03025
+    },
+    {
+      "engine": "webview",
+      "book": "prose",
+      "operation": "page_turn",
+      "boundary": "request_to_reference_window_copy",
+      "count": 36,
+      "rounds": 12,
+      "median_ms": 65.98949999999999,
+      "p90_ms": 114.796958
+    }
+  ],
+  "excluded": [
+    {
+      "id": "final-round-00-prose-bookfin/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-prose-bookfin/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-prose-bookfin/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-prose-bookfin/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-prose-bookfin/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-prose-bookfin/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-prose-bookfin/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-prose-bookfin/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-prose-bookfin/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-prose-bookfin/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-prose-webview/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-prose-webview/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-prose-webview/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-prose-webview/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-prose-webview/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-prose-webview/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-prose-webview/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-prose-webview/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-prose-webview/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-prose-webview/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-prose-koreader/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-prose-koreader/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-prose-koreader/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-prose-koreader/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-prose-koreader/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-prose-koreader/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-prose-koreader/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-prose-koreader/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-prose-koreader/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-prose-koreader/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-long-webview/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-long-webview/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-long-webview/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-long-webview/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-long-webview/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-long-webview/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-long-webview/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-long-webview/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-long-webview/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-long-webview/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-long-koreader/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-long-koreader/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-long-koreader/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-long-koreader/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-long-koreader/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-long-koreader/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-long-koreader/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-long-koreader/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-long-koreader/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-long-koreader/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-long-bookfin/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-long-bookfin/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-long-bookfin/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-long-bookfin/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-long-bookfin/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-long-bookfin/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-long-bookfin/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-long-bookfin/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-long-bookfin/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-long-bookfin/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-illustrated-koreader/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-illustrated-koreader/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-illustrated-koreader/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-illustrated-koreader/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-illustrated-koreader/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-illustrated-koreader/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-illustrated-koreader/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-illustrated-koreader/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-illustrated-koreader/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-illustrated-koreader/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-illustrated-bookfin/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-illustrated-bookfin/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-illustrated-bookfin/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-illustrated-bookfin/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-illustrated-bookfin/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-illustrated-bookfin/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-illustrated-bookfin/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-illustrated-bookfin/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-illustrated-bookfin/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-illustrated-bookfin/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-illustrated-webview/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-illustrated-webview/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-illustrated-webview/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-illustrated-webview/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-illustrated-webview/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-illustrated-webview/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-illustrated-webview/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-illustrated-webview/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-illustrated-webview/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-00-illustrated-webview/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-long-koreader/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-long-koreader/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-long-koreader/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-long-koreader/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-long-koreader/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-long-koreader/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-long-koreader/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-long-koreader/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-long-koreader/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-long-koreader/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-long-bookfin/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-long-bookfin/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-long-bookfin/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-long-bookfin/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-long-bookfin/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-long-bookfin/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-long-bookfin/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-long-bookfin/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-long-bookfin/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-long-bookfin/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-long-webview/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-long-webview/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-long-webview/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-long-webview/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-long-webview/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-long-webview/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-long-webview/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-long-webview/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-long-webview/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-long-webview/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-illustrated-bookfin/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-illustrated-bookfin/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-illustrated-bookfin/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-illustrated-bookfin/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-illustrated-bookfin/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-illustrated-bookfin/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-illustrated-bookfin/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-illustrated-bookfin/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-illustrated-bookfin/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-illustrated-bookfin/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-illustrated-webview/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-illustrated-webview/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-illustrated-webview/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-illustrated-webview/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-illustrated-webview/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-illustrated-webview/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-illustrated-webview/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-illustrated-webview/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-illustrated-webview/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-illustrated-webview/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-illustrated-koreader/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-illustrated-koreader/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-illustrated-koreader/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-illustrated-koreader/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-illustrated-koreader/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-illustrated-koreader/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-illustrated-koreader/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-illustrated-koreader/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-illustrated-koreader/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-illustrated-koreader/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-prose-webview/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-prose-webview/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-prose-webview/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-prose-webview/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-prose-webview/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-prose-webview/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-prose-webview/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-prose-webview/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-prose-webview/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-prose-webview/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-prose-koreader/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-prose-koreader/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-prose-koreader/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-prose-koreader/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-prose-koreader/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-prose-koreader/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-prose-koreader/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-prose-koreader/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-prose-koreader/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-prose-koreader/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-prose-bookfin/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-prose-bookfin/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-prose-bookfin/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-prose-bookfin/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-prose-bookfin/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-prose-bookfin/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-prose-bookfin/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-prose-bookfin/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-prose-bookfin/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-01-prose-bookfin/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-illustrated-webview/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-illustrated-webview/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-illustrated-webview/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-illustrated-webview/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-illustrated-webview/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-illustrated-webview/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-illustrated-webview/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-illustrated-webview/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-illustrated-webview/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-illustrated-webview/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-illustrated-koreader/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-illustrated-koreader/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-illustrated-koreader/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-illustrated-koreader/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-illustrated-koreader/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-illustrated-koreader/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-illustrated-koreader/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-illustrated-koreader/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-illustrated-koreader/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-illustrated-koreader/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-illustrated-bookfin/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-illustrated-bookfin/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-illustrated-bookfin/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-illustrated-bookfin/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-illustrated-bookfin/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-illustrated-bookfin/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-illustrated-bookfin/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-illustrated-bookfin/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-illustrated-bookfin/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-illustrated-bookfin/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-prose-koreader/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-prose-koreader/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-prose-koreader/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-prose-koreader/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-prose-koreader/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-prose-koreader/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-prose-koreader/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-prose-koreader/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-prose-koreader/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-prose-koreader/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-prose-bookfin/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-prose-bookfin/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-prose-bookfin/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-prose-bookfin/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-prose-bookfin/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-prose-bookfin/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-prose-bookfin/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-prose-bookfin/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-prose-bookfin/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-prose-bookfin/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-prose-webview/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-prose-webview/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-prose-webview/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-prose-webview/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-prose-webview/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-prose-webview/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-prose-webview/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-prose-webview/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-prose-webview/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-prose-webview/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-long-bookfin/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-long-bookfin/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-long-bookfin/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-long-bookfin/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-long-bookfin/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-long-bookfin/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-long-bookfin/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-long-bookfin/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-long-bookfin/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-long-bookfin/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-long-webview/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-long-webview/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-long-webview/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-long-webview/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-long-webview/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-long-webview/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-long-webview/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-long-webview/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-long-webview/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-long-webview/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-long-koreader/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-long-koreader/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-long-koreader/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-long-koreader/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-long-koreader/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-long-koreader/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-long-koreader/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-long-koreader/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-long-koreader/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-02-long-koreader/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-prose-bookfin/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-prose-bookfin/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-prose-bookfin/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-prose-bookfin/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-prose-bookfin/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-prose-bookfin/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-prose-bookfin/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-prose-bookfin/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-prose-bookfin/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-prose-bookfin/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-prose-webview/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-prose-webview/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-prose-webview/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-prose-webview/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-prose-webview/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-prose-webview/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-prose-webview/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-prose-webview/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-prose-webview/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-prose-webview/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-prose-koreader/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-prose-koreader/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-prose-koreader/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-prose-koreader/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-prose-koreader/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-prose-koreader/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-prose-koreader/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-prose-koreader/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-prose-koreader/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-prose-koreader/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-long-webview/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-long-webview/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-long-webview/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-long-webview/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-long-webview/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-long-webview/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-long-webview/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-long-webview/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-long-webview/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-long-webview/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-long-koreader/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-long-koreader/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-long-koreader/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-long-koreader/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-long-koreader/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-long-koreader/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-long-koreader/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-long-koreader/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-long-koreader/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-long-koreader/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-long-bookfin/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-long-bookfin/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-long-bookfin/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-long-bookfin/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-long-bookfin/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-long-bookfin/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-long-bookfin/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-long-bookfin/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-long-bookfin/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-long-bookfin/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-illustrated-koreader/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-illustrated-koreader/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-illustrated-koreader/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-illustrated-koreader/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-illustrated-koreader/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-illustrated-koreader/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-illustrated-koreader/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-illustrated-koreader/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-illustrated-koreader/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-illustrated-koreader/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-illustrated-bookfin/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-illustrated-bookfin/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-illustrated-bookfin/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-illustrated-bookfin/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-illustrated-bookfin/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-illustrated-bookfin/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-illustrated-bookfin/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-illustrated-bookfin/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-illustrated-bookfin/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-illustrated-bookfin/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-illustrated-webview/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-illustrated-webview/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-illustrated-webview/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-illustrated-webview/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-illustrated-webview/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-illustrated-webview/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-illustrated-webview/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-illustrated-webview/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-illustrated-webview/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-03-illustrated-webview/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-long-koreader/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-long-koreader/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-long-koreader/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-long-koreader/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-long-koreader/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-long-koreader/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-long-koreader/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-long-koreader/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-long-koreader/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-long-koreader/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-long-bookfin/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-long-bookfin/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-long-bookfin/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-long-bookfin/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-long-bookfin/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-long-bookfin/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-long-bookfin/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-long-bookfin/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-long-bookfin/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-long-bookfin/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-long-webview/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-long-webview/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-long-webview/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-long-webview/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-long-webview/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-long-webview/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-long-webview/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-long-webview/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-long-webview/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-long-webview/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-illustrated-bookfin/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-illustrated-bookfin/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-illustrated-bookfin/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-illustrated-bookfin/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-illustrated-bookfin/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-illustrated-bookfin/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-illustrated-bookfin/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-illustrated-bookfin/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-illustrated-bookfin/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-illustrated-bookfin/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-illustrated-webview/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-illustrated-webview/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-illustrated-webview/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-illustrated-webview/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-illustrated-webview/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-illustrated-webview/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-illustrated-webview/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-illustrated-webview/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-illustrated-webview/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-illustrated-webview/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-illustrated-koreader/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-illustrated-koreader/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-illustrated-koreader/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-illustrated-koreader/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-illustrated-koreader/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-illustrated-koreader/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-illustrated-koreader/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-illustrated-koreader/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-illustrated-koreader/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-illustrated-koreader/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-prose-webview/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-prose-webview/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-prose-webview/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-prose-webview/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-prose-webview/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-prose-webview/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-prose-webview/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-prose-webview/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-prose-webview/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-prose-webview/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-prose-koreader/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-prose-koreader/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-prose-koreader/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-prose-koreader/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-prose-koreader/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-prose-koreader/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-prose-koreader/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-prose-koreader/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-prose-koreader/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-prose-koreader/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-prose-bookfin/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-prose-bookfin/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-prose-bookfin/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-prose-bookfin/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-prose-bookfin/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-prose-bookfin/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-prose-bookfin/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-prose-bookfin/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-prose-bookfin/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-04-prose-bookfin/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-illustrated-webview/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-illustrated-webview/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-illustrated-webview/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-illustrated-webview/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-illustrated-webview/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-illustrated-webview/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-illustrated-webview/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-illustrated-webview/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-illustrated-webview/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-illustrated-webview/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-illustrated-koreader/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-illustrated-koreader/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-illustrated-koreader/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-illustrated-koreader/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-illustrated-koreader/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-illustrated-koreader/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-illustrated-koreader/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-illustrated-koreader/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-illustrated-koreader/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-illustrated-koreader/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-illustrated-bookfin/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-illustrated-bookfin/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-illustrated-bookfin/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-illustrated-bookfin/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-illustrated-bookfin/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-illustrated-bookfin/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-illustrated-bookfin/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-illustrated-bookfin/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-illustrated-bookfin/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-illustrated-bookfin/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-prose-koreader/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-prose-koreader/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-prose-koreader/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-prose-koreader/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-prose-koreader/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-prose-koreader/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-prose-koreader/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-prose-koreader/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-prose-koreader/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-prose-koreader/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-prose-bookfin/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-prose-bookfin/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-prose-bookfin/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-prose-bookfin/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-prose-bookfin/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-prose-bookfin/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-prose-bookfin/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-prose-bookfin/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-prose-bookfin/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-prose-bookfin/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-prose-webview/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-prose-webview/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-prose-webview/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-prose-webview/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-prose-webview/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-prose-webview/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-prose-webview/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-prose-webview/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-prose-webview/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-prose-webview/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-long-bookfin/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-long-bookfin/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-long-bookfin/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-long-bookfin/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-long-bookfin/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-long-bookfin/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-long-bookfin/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-long-bookfin/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-long-bookfin/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-long-bookfin/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-long-webview/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-long-webview/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-long-webview/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-long-webview/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-long-webview/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-long-webview/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-long-webview/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-long-webview/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-long-webview/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-long-webview/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-long-koreader/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-long-koreader/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-long-koreader/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-long-koreader/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-long-koreader/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-long-koreader/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-long-koreader/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-long-koreader/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-long-koreader/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-05-long-koreader/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-prose-bookfin/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-prose-bookfin/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-prose-bookfin/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-prose-bookfin/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-prose-bookfin/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-prose-bookfin/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-prose-bookfin/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-prose-bookfin/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-prose-bookfin/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-prose-bookfin/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-prose-webview/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-prose-webview/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-prose-webview/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-prose-webview/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-prose-webview/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-prose-webview/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-prose-webview/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-prose-webview/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-prose-webview/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-prose-webview/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-prose-koreader/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-prose-koreader/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-prose-koreader/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-prose-koreader/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-prose-koreader/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-prose-koreader/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-prose-koreader/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-prose-koreader/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-prose-koreader/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-prose-koreader/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-long-webview/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-long-webview/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-long-webview/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-long-webview/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-long-webview/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-long-webview/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-long-webview/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-long-webview/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-long-webview/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-long-webview/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-long-koreader/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-long-koreader/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-long-koreader/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-long-koreader/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-long-koreader/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-long-koreader/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-long-koreader/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-long-koreader/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-long-koreader/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-long-koreader/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-long-bookfin/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-long-bookfin/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-long-bookfin/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-long-bookfin/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-long-bookfin/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-long-bookfin/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-long-bookfin/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-long-bookfin/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-long-bookfin/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-long-bookfin/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-illustrated-koreader/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-illustrated-koreader/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-illustrated-koreader/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-illustrated-koreader/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-illustrated-koreader/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-illustrated-koreader/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-illustrated-koreader/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-illustrated-koreader/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-illustrated-koreader/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-illustrated-koreader/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-illustrated-bookfin/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-illustrated-bookfin/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-illustrated-bookfin/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-illustrated-bookfin/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-illustrated-bookfin/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-illustrated-bookfin/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-illustrated-bookfin/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-illustrated-bookfin/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-illustrated-bookfin/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-illustrated-bookfin/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-illustrated-webview/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-illustrated-webview/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-illustrated-webview/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-illustrated-webview/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-illustrated-webview/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-illustrated-webview/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-illustrated-webview/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-illustrated-webview/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-illustrated-webview/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-06-illustrated-webview/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-long-koreader/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-long-koreader/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-long-koreader/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-long-koreader/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-long-koreader/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-long-koreader/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-long-koreader/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-long-koreader/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-long-koreader/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-long-koreader/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-long-bookfin/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-long-bookfin/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-long-bookfin/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-long-bookfin/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-long-bookfin/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-long-bookfin/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-long-bookfin/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-long-bookfin/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-long-bookfin/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-long-bookfin/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-long-webview/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-long-webview/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-long-webview/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-long-webview/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-long-webview/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-long-webview/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-long-webview/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-long-webview/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-long-webview/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-long-webview/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-illustrated-bookfin/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-illustrated-bookfin/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-illustrated-bookfin/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-illustrated-bookfin/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-illustrated-bookfin/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-illustrated-bookfin/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-illustrated-bookfin/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-illustrated-bookfin/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-illustrated-bookfin/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-illustrated-bookfin/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-illustrated-webview/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-illustrated-webview/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-illustrated-webview/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-illustrated-webview/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-illustrated-webview/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-illustrated-webview/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-illustrated-webview/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-illustrated-webview/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-illustrated-webview/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-illustrated-webview/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-illustrated-koreader/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-illustrated-koreader/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-illustrated-koreader/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-illustrated-koreader/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-illustrated-koreader/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-illustrated-koreader/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-illustrated-koreader/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-illustrated-koreader/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-illustrated-koreader/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-illustrated-koreader/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-prose-webview/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-prose-webview/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-prose-webview/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-prose-webview/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-prose-webview/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-prose-webview/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-prose-webview/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-prose-webview/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-prose-webview/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-prose-webview/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-prose-koreader/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-prose-koreader/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-prose-koreader/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-prose-koreader/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-prose-koreader/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-prose-koreader/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-prose-koreader/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-prose-koreader/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-prose-koreader/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-prose-koreader/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-prose-bookfin/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-prose-bookfin/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-prose-bookfin/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-prose-bookfin/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-prose-bookfin/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-prose-bookfin/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-prose-bookfin/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-prose-bookfin/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-prose-bookfin/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-07-prose-bookfin/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-illustrated-webview/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-illustrated-webview/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-illustrated-webview/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-illustrated-webview/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-illustrated-webview/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-illustrated-webview/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-illustrated-webview/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-illustrated-webview/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-illustrated-webview/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-illustrated-webview/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-illustrated-koreader/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-illustrated-koreader/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-illustrated-koreader/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-illustrated-koreader/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-illustrated-koreader/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-illustrated-koreader/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-illustrated-koreader/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-illustrated-koreader/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-illustrated-koreader/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-illustrated-koreader/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-illustrated-bookfin/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-illustrated-bookfin/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-illustrated-bookfin/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-illustrated-bookfin/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-illustrated-bookfin/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-illustrated-bookfin/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-illustrated-bookfin/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-illustrated-bookfin/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-illustrated-bookfin/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-illustrated-bookfin/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-prose-koreader/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-prose-koreader/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-prose-koreader/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-prose-koreader/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-prose-koreader/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-prose-koreader/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-prose-koreader/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-prose-koreader/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-prose-koreader/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-prose-koreader/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-prose-bookfin/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-prose-bookfin/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-prose-bookfin/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-prose-bookfin/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-prose-bookfin/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-prose-bookfin/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-prose-bookfin/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-prose-bookfin/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-prose-bookfin/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-prose-bookfin/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-prose-webview/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-prose-webview/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-prose-webview/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-prose-webview/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-prose-webview/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-prose-webview/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-prose-webview/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-prose-webview/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-prose-webview/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-prose-webview/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-long-bookfin/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-long-bookfin/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-long-bookfin/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-long-bookfin/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-long-bookfin/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-long-bookfin/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-long-bookfin/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-long-bookfin/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-long-bookfin/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-long-bookfin/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-long-webview/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-long-webview/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-long-webview/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-long-webview/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-long-webview/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-long-webview/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-long-webview/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-long-webview/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-long-webview/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-long-webview/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-long-koreader/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-long-koreader/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-long-koreader/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-long-koreader/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-long-koreader/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-long-koreader/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-long-koreader/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-long-koreader/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-long-koreader/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-08-long-koreader/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-prose-bookfin/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-prose-bookfin/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-prose-bookfin/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-prose-bookfin/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-prose-bookfin/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-prose-bookfin/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-prose-bookfin/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-prose-bookfin/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-prose-bookfin/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-prose-bookfin/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-prose-webview/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-prose-webview/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-prose-webview/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-prose-webview/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-prose-webview/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-prose-webview/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-prose-webview/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-prose-webview/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-prose-webview/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-prose-webview/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-prose-koreader/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-prose-koreader/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-prose-koreader/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-prose-koreader/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-prose-koreader/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-prose-koreader/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-prose-koreader/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-prose-koreader/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-prose-koreader/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-prose-koreader/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-long-webview/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-long-webview/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-long-webview/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-long-webview/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-long-webview/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-long-webview/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-long-webview/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-long-webview/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-long-webview/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-long-webview/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-long-koreader/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-long-koreader/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-long-koreader/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-long-koreader/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-long-koreader/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-long-koreader/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-long-koreader/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-long-koreader/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-long-koreader/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-long-koreader/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-long-bookfin/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-long-bookfin/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-long-bookfin/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-long-bookfin/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-long-bookfin/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-long-bookfin/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-long-bookfin/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-long-bookfin/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-long-bookfin/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-long-bookfin/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-illustrated-koreader/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-illustrated-koreader/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-illustrated-koreader/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-illustrated-koreader/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-illustrated-koreader/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-illustrated-koreader/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-illustrated-koreader/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-illustrated-koreader/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-illustrated-koreader/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-illustrated-koreader/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-illustrated-bookfin/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-illustrated-bookfin/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-illustrated-bookfin/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-illustrated-bookfin/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-illustrated-bookfin/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-illustrated-bookfin/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-illustrated-bookfin/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-illustrated-bookfin/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-illustrated-bookfin/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-illustrated-bookfin/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-illustrated-webview/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-illustrated-webview/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-illustrated-webview/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-illustrated-webview/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-illustrated-webview/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-illustrated-webview/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-illustrated-webview/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-illustrated-webview/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-illustrated-webview/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-09-illustrated-webview/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-long-koreader/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-long-koreader/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-long-koreader/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-long-koreader/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-long-koreader/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-long-koreader/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-long-koreader/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-long-koreader/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-long-koreader/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-long-koreader/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-long-bookfin/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-long-bookfin/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-long-bookfin/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-long-bookfin/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-long-bookfin/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-long-bookfin/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-long-bookfin/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-long-bookfin/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-long-bookfin/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-long-bookfin/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-long-webview/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-long-webview/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-long-webview/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-long-webview/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-long-webview/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-long-webview/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-long-webview/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-long-webview/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-long-webview/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-long-webview/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-illustrated-bookfin/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-illustrated-bookfin/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-illustrated-bookfin/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-illustrated-bookfin/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-illustrated-bookfin/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-illustrated-bookfin/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-illustrated-bookfin/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-illustrated-bookfin/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-illustrated-bookfin/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-illustrated-bookfin/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-illustrated-webview/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-illustrated-webview/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-illustrated-webview/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-illustrated-webview/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-illustrated-webview/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-illustrated-webview/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-illustrated-webview/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-illustrated-webview/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-illustrated-webview/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-illustrated-webview/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-illustrated-koreader/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-illustrated-koreader/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-illustrated-koreader/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-illustrated-koreader/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-illustrated-koreader/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-illustrated-koreader/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-illustrated-koreader/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-illustrated-koreader/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-illustrated-koreader/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-illustrated-koreader/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-prose-webview/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-prose-webview/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-prose-webview/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-prose-webview/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-prose-webview/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-prose-webview/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-prose-webview/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-prose-webview/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-prose-webview/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-prose-webview/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-prose-koreader/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-prose-koreader/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-prose-koreader/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-prose-koreader/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-prose-koreader/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-prose-koreader/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-prose-koreader/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-prose-koreader/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-prose-koreader/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-prose-koreader/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-prose-bookfin/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-prose-bookfin/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-prose-bookfin/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-prose-bookfin/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-prose-bookfin/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-prose-bookfin/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-prose-bookfin/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-prose-bookfin/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-prose-bookfin/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-10-prose-bookfin/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-illustrated-webview/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-illustrated-webview/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-illustrated-webview/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-illustrated-webview/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-illustrated-webview/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-illustrated-webview/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-illustrated-webview/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-illustrated-webview/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-illustrated-webview/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-illustrated-webview/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-illustrated-koreader/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-illustrated-koreader/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-illustrated-koreader/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-illustrated-koreader/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-illustrated-koreader/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-illustrated-koreader/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-illustrated-koreader/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-illustrated-koreader/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-illustrated-koreader/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-illustrated-koreader/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-illustrated-bookfin/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-illustrated-bookfin/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-illustrated-bookfin/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-illustrated-bookfin/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-illustrated-bookfin/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-illustrated-bookfin/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-illustrated-bookfin/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-illustrated-bookfin/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-illustrated-bookfin/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-illustrated-bookfin/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-prose-koreader/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-prose-koreader/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-prose-koreader/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-prose-koreader/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-prose-koreader/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-prose-koreader/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-prose-koreader/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-prose-koreader/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-prose-koreader/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-prose-koreader/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-prose-bookfin/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-prose-bookfin/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-prose-bookfin/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-prose-bookfin/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-prose-bookfin/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-prose-bookfin/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-prose-bookfin/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-prose-bookfin/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-prose-bookfin/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-prose-bookfin/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-prose-webview/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-prose-webview/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-prose-webview/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-prose-webview/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-prose-webview/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-prose-webview/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-prose-webview/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-prose-webview/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-prose-webview/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-prose-webview/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-long-bookfin/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-long-bookfin/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-long-bookfin/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-long-bookfin/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-long-bookfin/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-long-bookfin/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-long-bookfin/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-long-bookfin/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-long-bookfin/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-long-bookfin/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-long-webview/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-long-webview/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-long-webview/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-long-webview/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-long-webview/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-long-webview/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-long-webview/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-long-webview/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-long-webview/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-long-webview/21",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-long-koreader/1",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-long-koreader/2",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-long-koreader/4",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-long-koreader/6",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-long-koreader/11",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-long-koreader/13",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-long-koreader/15",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-long-koreader/17",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-long-koreader/19",
+      "reason": "preparation (not a timed sample)"
+    },
+    {
+      "id": "final-round-11-long-koreader/21",
+      "reason": "preparation (not a timed sample)"
+    }
+  ],
+  "complete": true,
+  "incomplete_jobs": [],
+  "instrumentation_jobs": 108,
+  "independent_processes_complete": true
+}

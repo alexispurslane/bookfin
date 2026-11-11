@@ -1,0 +1,16 @@
+test_failed_partial_workloads_remain_collectable_without_inventing_preparation_facts (test_collect.PartialEvidenceTest.test_failed_partial_workloads_remain_collectable_without_inventing_preparation_facts) ... ok
+test_first_process_latency_uses_each_verified_completion_not_summed_medians (test_collect.PartialEvidenceTest.test_first_process_latency_uses_each_verified_completion_not_summed_medians) ... FAIL
+
+======================================================================
+FAIL: test_first_process_latency_uses_each_verified_completion_not_summed_medians (test_collect.PartialEvidenceTest.test_first_process_latency_uses_each_verified_completion_not_summed_medians)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/test_collect.py", line 43, in test_first_process_latency_uses_each_verified_completion_not_summed_medians
+    self.assertEqual(fact.get("instrumented_process_to_first_verified_copy_median_ms"), 101)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: None != 101
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.112s
+
+FAILED (failures=1)

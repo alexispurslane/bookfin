@@ -1,0 +1,140 @@
+test_a_different_reference_file_on_device_is_not_silently_accepted (test_validation.IndependentReferenceTest.test_a_different_reference_file_on_device_is_not_silently_accepted) ... FAIL
+test_independent_source_checked_reference_certifies_matching_window_content (test_validation.IndependentReferenceTest.test_independent_source_checked_reference_certifies_matching_window_content) ... FAIL
+test_preparation_is_preserved_but_not_counted_as_a_measurement (test_validation.IndependentReferenceTest.test_preparation_is_preserved_but_not_counted_as_a_measurement) ... FAIL
+test_self_reference_wrong_location_and_stale_images_never_certify (test_validation.IndependentReferenceTest.test_self_reference_wrong_location_and_stale_images_never_certify) ... 
+  test_self_reference_wrong_location_and_stale_images_never_certify (test_validation.IndependentReferenceTest.test_self_reference_wrong_location_and_stale_images_never_certify) (row={'engine': 'bookfin', 'book': 'prose', 'case': 'target18', 'run_id': 'round-0', 'capture_sha256': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'cfi': 'epubcfi(/6/10!/4/2)', 'visible_text': 'Alice was beginning to get very tired', 'text_size_css_px': 18, 'book_sha256': 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'pixel_copy_code': 0, 'presentation_verified': True}, references={'bookfin/prose/target18': {'engine': 'bookfin', 'book': 'prose', 'case': 'target18', 'run_id': 'round-0', 'capture_sha256': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'cfi': 'epubcfi(/6/10!/4/2)', 'visible_text': 'Alice was beginning to get very tired', 'text_size_css_px': 18, 'book_sha256': 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'pixel_copy_code': 0, 'presentation_verified': True, 'source_validated': True, 'ocr_validated': True, 'image_reviewed': True, 'spine_index': 4}}) ... FAIL
+  test_self_reference_wrong_location_and_stale_images_never_certify (test_validation.IndependentReferenceTest.test_self_reference_wrong_location_and_stale_images_never_certify) (row={'engine': 'bookfin', 'book': 'prose', 'case': 'target18', 'run_id': 'round-0', 'capture_sha256': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'cfi': 'epubcfi(/6/2!/4)', 'visible_text': 'Alice was beginning to get very tired', 'text_size_css_px': 18, 'book_sha256': 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'pixel_copy_code': 0, 'presentation_verified': True}, references={'bookfin/prose/target18': {'engine': 'bookfin', 'book': 'prose', 'case': 'target18', 'run_id': 'calibration-prose', 'capture_sha256': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'cfi': 'epubcfi(/6/10!/4/2)', 'visible_text': 'Alice was beginning to get very tired', 'text_size_css_px': 18, 'book_sha256': 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'pixel_copy_code': 0, 'presentation_verified': True, 'source_validated': True, 'ocr_validated': True, 'image_reviewed': True, 'spine_index': 4}}) ... FAIL
+  test_self_reference_wrong_location_and_stale_images_never_certify (test_validation.IndependentReferenceTest.test_self_reference_wrong_location_and_stale_images_never_certify) (row={'engine': 'bookfin', 'book': 'prose', 'case': 'target18', 'run_id': 'round-0', 'capture_sha256': 'dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd', 'cfi': 'epubcfi(/6/10!/4/2)', 'visible_text': 'Alice was beginning to get very tired', 'text_size_css_px': 18, 'book_sha256': 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'pixel_copy_code': 0, 'presentation_verified': True}, references={'bookfin/prose/target18': {'engine': 'bookfin', 'book': 'prose', 'case': 'target18', 'run_id': 'calibration-prose', 'capture_sha256': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'cfi': 'epubcfi(/6/10!/4/2)', 'visible_text': 'Alice was beginning to get very tired', 'text_size_css_px': 18, 'book_sha256': 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'pixel_copy_code': 0, 'presentation_verified': True, 'source_validated': True, 'ocr_validated': True, 'image_reviewed': True, 'spine_index': 4}}) ... FAIL
+  test_self_reference_wrong_location_and_stale_images_never_certify (test_validation.IndependentReferenceTest.test_self_reference_wrong_location_and_stale_images_never_certify) (row={'engine': 'bookfin', 'book': 'prose', 'case': 'target18', 'run_id': 'round-0', 'capture_sha256': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'cfi': 'epubcfi(/6/10!/4/2)', 'visible_text': 'stale chapter text', 'text_size_css_px': 18, 'book_sha256': 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'pixel_copy_code': 0, 'presentation_verified': True}, references={'bookfin/prose/target18': {'engine': 'bookfin', 'book': 'prose', 'case': 'target18', 'run_id': 'calibration-prose', 'capture_sha256': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'cfi': 'epubcfi(/6/10!/4/2)', 'visible_text': 'Alice was beginning to get very tired', 'text_size_css_px': 18, 'book_sha256': 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'pixel_copy_code': 0, 'presentation_verified': True, 'source_validated': True, 'ocr_validated': True, 'image_reviewed': True, 'spine_index': 4}}) ... FAIL
+  test_self_reference_wrong_location_and_stale_images_never_certify (test_validation.IndependentReferenceTest.test_self_reference_wrong_location_and_stale_images_never_certify) (row={'engine': 'bookfin', 'book': 'prose', 'case': 'target18', 'run_id': 'round-0', 'capture_sha256': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'cfi': 'epubcfi(/6/10!/4/2)', 'visible_text': 'Alice was beginning to get very tired', 'text_size_css_px': 20, 'book_sha256': 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'pixel_copy_code': 0, 'presentation_verified': True}, references={'bookfin/prose/target18': {'engine': 'bookfin', 'book': 'prose', 'case': 'target18', 'run_id': 'calibration-prose', 'capture_sha256': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'cfi': 'epubcfi(/6/10!/4/2)', 'visible_text': 'Alice was beginning to get very tired', 'text_size_css_px': 18, 'book_sha256': 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'pixel_copy_code': 0, 'presentation_verified': True, 'source_validated': True, 'ocr_validated': True, 'image_reviewed': True, 'spine_index': 4}}) ... FAIL
+  test_self_reference_wrong_location_and_stale_images_never_certify (test_validation.IndependentReferenceTest.test_self_reference_wrong_location_and_stale_images_never_certify) (row={'engine': 'bookfin', 'book': 'prose', 'case': 'target18', 'run_id': 'round-0', 'capture_sha256': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'cfi': 'epubcfi(/6/10!/4/2)', 'visible_text': 'Alice was beginning to get very tired', 'text_size_css_px': 18, 'book_sha256': 'dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd', 'pixel_copy_code': 0, 'presentation_verified': True}, references={'bookfin/prose/target18': {'engine': 'bookfin', 'book': 'prose', 'case': 'target18', 'run_id': 'calibration-prose', 'capture_sha256': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'cfi': 'epubcfi(/6/10!/4/2)', 'visible_text': 'Alice was beginning to get very tired', 'text_size_css_px': 18, 'book_sha256': 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'pixel_copy_code': 0, 'presentation_verified': True, 'source_validated': True, 'ocr_validated': True, 'image_reviewed': True, 'spine_index': 4}}) ... FAIL
+  test_self_reference_wrong_location_and_stale_images_never_certify (test_validation.IndependentReferenceTest.test_self_reference_wrong_location_and_stale_images_never_certify) (row={'engine': 'bookfin', 'book': 'prose', 'case': 'target18', 'run_id': 'round-0', 'capture_sha256': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'cfi': 'epubcfi(/6/10!/4/2)', 'visible_text': 'Alice was beginning to get very tired', 'text_size_css_px': 18, 'book_sha256': 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'pixel_copy_code': 0, 'presentation_verified': True}, references={'bookfin/prose/target18': {'engine': 'bookfin', 'book': 'prose', 'case': 'target18', 'run_id': 'calibration-prose', 'capture_sha256': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'cfi': 'epubcfi(/6/10!/4/2)', 'visible_text': 'Alice was beginning to get very tired', 'text_size_css_px': 18, 'book_sha256': 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'pixel_copy_code': 0, 'presentation_verified': True, 'source_validated': False, 'ocr_validated': True, 'image_reviewed': True, 'spine_index': 4}}) ... FAIL
+  test_self_reference_wrong_location_and_stale_images_never_certify (test_validation.IndependentReferenceTest.test_self_reference_wrong_location_and_stale_images_never_certify) (row={'engine': 'bookfin', 'book': 'prose', 'case': 'target18', 'run_id': 'round-0', 'capture_sha256': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'cfi': 'epubcfi(/6/10!/4/2)', 'visible_text': 'Alice was beginning to get very tired', 'text_size_css_px': 18, 'book_sha256': 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'pixel_copy_code': 0, 'presentation_verified': True}, references={'bookfin/prose/target18': {'engine': 'bookfin', 'book': 'prose', 'case': 'target18', 'run_id': 'calibration-prose', 'capture_sha256': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'cfi': 'epubcfi(/6/10!/4/2)', 'visible_text': 'Alice was beginning to get very tired', 'text_size_css_px': 18, 'book_sha256': 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'pixel_copy_code': 0, 'presentation_verified': True, 'source_validated': True, 'ocr_validated': False, 'image_reviewed': True, 'spine_index': 4}}) ... FAIL
+  test_self_reference_wrong_location_and_stale_images_never_certify (test_validation.IndependentReferenceTest.test_self_reference_wrong_location_and_stale_images_never_certify) (row={'engine': 'bookfin', 'book': 'prose', 'case': 'target18', 'run_id': 'round-0', 'capture_sha256': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'cfi': 'epubcfi(/6/10!/4/2)', 'visible_text': 'Alice was beginning to get very tired', 'text_size_css_px': 18, 'book_sha256': 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'pixel_copy_code': 0, 'presentation_verified': True}, references={}) ... FAIL
+
+======================================================================
+FAIL: test_a_different_reference_file_on_device_is_not_silently_accepted (test_validation.IndependentReferenceTest.test_a_different_reference_file_on_device_is_not_silently_accepted)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/test_validation.py", line 47, in test_a_different_reference_file_on_device_is_not_silently_accepted
+    self.assertTrue(certify([row], reference(), "c" * 64)[0].get("error"))
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: None is not true
+
+======================================================================
+FAIL: test_independent_source_checked_reference_certifies_matching_window_content (test_validation.IndependentReferenceTest.test_independent_source_checked_reference_certifies_matching_window_content)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/test_validation.py", line 25, in test_independent_source_checked_reference_certifies_matching_window_content
+    self.assertTrue(row.get("content_verified"))
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: None is not true
+
+======================================================================
+FAIL: test_preparation_is_preserved_but_not_counted_as_a_measurement (test_validation.IndependentReferenceTest.test_preparation_is_preserved_but_not_counted_as_a_measurement)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/test_validation.py", line 52, in test_preparation_is_preserved_but_not_counted_as_a_measurement
+    self.assertEqual(summarize([sample(measured=False)])["cells"], [])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [{'engine': 'bookfin', 'book': 'prose', 'o[125 chars]1.0}] != []
+
+First list contains 1 additional elements.
+First extra element 0:
+{'engine': 'bookfin', 'book': 'prose', 'operation': 'page_turn', 'boundary': 'request_to_reference_window_copy', 'count': 1, 'rounds': 1, 'median_ms': 1.0, 'p90_ms': 1.0}
+
++ []
+- [{'book': 'prose',
+-   'boundary': 'request_to_reference_window_copy',
+-   'count': 1,
+-   'engine': 'bookfin',
+-   'median_ms': 1.0,
+-   'operation': 'page_turn',
+-   'p90_ms': 1.0,
+-   'rounds': 1}]
+
+======================================================================
+FAIL: test_self_reference_wrong_location_and_stale_images_never_certify (test_validation.IndependentReferenceTest.test_self_reference_wrong_location_and_stale_images_never_certify) (row={'engine': 'bookfin', 'book': 'prose', 'case': 'target18', 'run_id': 'round-0', 'capture_sha256': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'cfi': 'epubcfi(/6/10!/4/2)', 'visible_text': 'Alice was beginning to get very tired', 'text_size_css_px': 18, 'book_sha256': 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'pixel_copy_code': 0, 'presentation_verified': True}, references={'bookfin/prose/target18': {'engine': 'bookfin', 'book': 'prose', 'case': 'target18', 'run_id': 'round-0', 'capture_sha256': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'cfi': 'epubcfi(/6/10!/4/2)', 'visible_text': 'Alice was beginning to get very tired', 'text_size_css_px': 18, 'book_sha256': 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'pixel_copy_code': 0, 'presentation_verified': True, 'source_validated': True, 'ocr_validated': True, 'image_reviewed': True, 'spine_index': 4}})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/test_validation.py", line 43, in test_self_reference_wrong_location_and_stale_images_never_certify
+    self.assertTrue(certified.get("error"))
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: None is not true
+
+======================================================================
+FAIL: test_self_reference_wrong_location_and_stale_images_never_certify (test_validation.IndependentReferenceTest.test_self_reference_wrong_location_and_stale_images_never_certify) (row={'engine': 'bookfin', 'book': 'prose', 'case': 'target18', 'run_id': 'round-0', 'capture_sha256': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'cfi': 'epubcfi(/6/2!/4)', 'visible_text': 'Alice was beginning to get very tired', 'text_size_css_px': 18, 'book_sha256': 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'pixel_copy_code': 0, 'presentation_verified': True}, references={'bookfin/prose/target18': {'engine': 'bookfin', 'book': 'prose', 'case': 'target18', 'run_id': 'calibration-prose', 'capture_sha256': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'cfi': 'epubcfi(/6/10!/4/2)', 'visible_text': 'Alice was beginning to get very tired', 'text_size_css_px': 18, 'book_sha256': 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'pixel_copy_code': 0, 'presentation_verified': True, 'source_validated': True, 'ocr_validated': True, 'image_reviewed': True, 'spine_index': 4}})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/test_validation.py", line 43, in test_self_reference_wrong_location_and_stale_images_never_certify
+    self.assertTrue(certified.get("error"))
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: None is not true
+
+======================================================================
+FAIL: test_self_reference_wrong_location_and_stale_images_never_certify (test_validation.IndependentReferenceTest.test_self_reference_wrong_location_and_stale_images_never_certify) (row={'engine': 'bookfin', 'book': 'prose', 'case': 'target18', 'run_id': 'round-0', 'capture_sha256': 'dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd', 'cfi': 'epubcfi(/6/10!/4/2)', 'visible_text': 'Alice was beginning to get very tired', 'text_size_css_px': 18, 'book_sha256': 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'pixel_copy_code': 0, 'presentation_verified': True}, references={'bookfin/prose/target18': {'engine': 'bookfin', 'book': 'prose', 'case': 'target18', 'run_id': 'calibration-prose', 'capture_sha256': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'cfi': 'epubcfi(/6/10!/4/2)', 'visible_text': 'Alice was beginning to get very tired', 'text_size_css_px': 18, 'book_sha256': 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'pixel_copy_code': 0, 'presentation_verified': True, 'source_validated': True, 'ocr_validated': True, 'image_reviewed': True, 'spine_index': 4}})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/test_validation.py", line 43, in test_self_reference_wrong_location_and_stale_images_never_certify
+    self.assertTrue(certified.get("error"))
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: None is not true
+
+======================================================================
+FAIL: test_self_reference_wrong_location_and_stale_images_never_certify (test_validation.IndependentReferenceTest.test_self_reference_wrong_location_and_stale_images_never_certify) (row={'engine': 'bookfin', 'book': 'prose', 'case': 'target18', 'run_id': 'round-0', 'capture_sha256': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'cfi': 'epubcfi(/6/10!/4/2)', 'visible_text': 'stale chapter text', 'text_size_css_px': 18, 'book_sha256': 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'pixel_copy_code': 0, 'presentation_verified': True}, references={'bookfin/prose/target18': {'engine': 'bookfin', 'book': 'prose', 'case': 'target18', 'run_id': 'calibration-prose', 'capture_sha256': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'cfi': 'epubcfi(/6/10!/4/2)', 'visible_text': 'Alice was beginning to get very tired', 'text_size_css_px': 18, 'book_sha256': 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'pixel_copy_code': 0, 'presentation_verified': True, 'source_validated': True, 'ocr_validated': True, 'image_reviewed': True, 'spine_index': 4}})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/test_validation.py", line 43, in test_self_reference_wrong_location_and_stale_images_never_certify
+    self.assertTrue(certified.get("error"))
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: None is not true
+
+======================================================================
+FAIL: test_self_reference_wrong_location_and_stale_images_never_certify (test_validation.IndependentReferenceTest.test_self_reference_wrong_location_and_stale_images_never_certify) (row={'engine': 'bookfin', 'book': 'prose', 'case': 'target18', 'run_id': 'round-0', 'capture_sha256': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'cfi': 'epubcfi(/6/10!/4/2)', 'visible_text': 'Alice was beginning to get very tired', 'text_size_css_px': 20, 'book_sha256': 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'pixel_copy_code': 0, 'presentation_verified': True}, references={'bookfin/prose/target18': {'engine': 'bookfin', 'book': 'prose', 'case': 'target18', 'run_id': 'calibration-prose', 'capture_sha256': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'cfi': 'epubcfi(/6/10!/4/2)', 'visible_text': 'Alice was beginning to get very tired', 'text_size_css_px': 18, 'book_sha256': 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'pixel_copy_code': 0, 'presentation_verified': True, 'source_validated': True, 'ocr_validated': True, 'image_reviewed': True, 'spine_index': 4}})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/test_validation.py", line 43, in test_self_reference_wrong_location_and_stale_images_never_certify
+    self.assertTrue(certified.get("error"))
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: None is not true
+
+======================================================================
+FAIL: test_self_reference_wrong_location_and_stale_images_never_certify (test_validation.IndependentReferenceTest.test_self_reference_wrong_location_and_stale_images_never_certify) (row={'engine': 'bookfin', 'book': 'prose', 'case': 'target18', 'run_id': 'round-0', 'capture_sha256': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'cfi': 'epubcfi(/6/10!/4/2)', 'visible_text': 'Alice was beginning to get very tired', 'text_size_css_px': 18, 'book_sha256': 'dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd', 'pixel_copy_code': 0, 'presentation_verified': True}, references={'bookfin/prose/target18': {'engine': 'bookfin', 'book': 'prose', 'case': 'target18', 'run_id': 'calibration-prose', 'capture_sha256': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'cfi': 'epubcfi(/6/10!/4/2)', 'visible_text': 'Alice was beginning to get very tired', 'text_size_css_px': 18, 'book_sha256': 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'pixel_copy_code': 0, 'presentation_verified': True, 'source_validated': True, 'ocr_validated': True, 'image_reviewed': True, 'spine_index': 4}})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/test_validation.py", line 43, in test_self_reference_wrong_location_and_stale_images_never_certify
+    self.assertTrue(certified.get("error"))
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: None is not true
+
+======================================================================
+FAIL: test_self_reference_wrong_location_and_stale_images_never_certify (test_validation.IndependentReferenceTest.test_self_reference_wrong_location_and_stale_images_never_certify) (row={'engine': 'bookfin', 'book': 'prose', 'case': 'target18', 'run_id': 'round-0', 'capture_sha256': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'cfi': 'epubcfi(/6/10!/4/2)', 'visible_text': 'Alice was beginning to get very tired', 'text_size_css_px': 18, 'book_sha256': 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'pixel_copy_code': 0, 'presentation_verified': True}, references={'bookfin/prose/target18': {'engine': 'bookfin', 'book': 'prose', 'case': 'target18', 'run_id': 'calibration-prose', 'capture_sha256': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'cfi': 'epubcfi(/6/10!/4/2)', 'visible_text': 'Alice was beginning to get very tired', 'text_size_css_px': 18, 'book_sha256': 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'pixel_copy_code': 0, 'presentation_verified': True, 'source_validated': False, 'ocr_validated': True, 'image_reviewed': True, 'spine_index': 4}})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/test_validation.py", line 43, in test_self_reference_wrong_location_and_stale_images_never_certify
+    self.assertTrue(certified.get("error"))
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: None is not true
+
+======================================================================
+FAIL: test_self_reference_wrong_location_and_stale_images_never_certify (test_validation.IndependentReferenceTest.test_self_reference_wrong_location_and_stale_images_never_certify) (row={'engine': 'bookfin', 'book': 'prose', 'case': 'target18', 'run_id': 'round-0', 'capture_sha256': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'cfi': 'epubcfi(/6/10!/4/2)', 'visible_text': 'Alice was beginning to get very tired', 'text_size_css_px': 18, 'book_sha256': 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'pixel_copy_code': 0, 'presentation_verified': True}, references={'bookfin/prose/target18': {'engine': 'bookfin', 'book': 'prose', 'case': 'target18', 'run_id': 'calibration-prose', 'capture_sha256': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'cfi': 'epubcfi(/6/10!/4/2)', 'visible_text': 'Alice was beginning to get very tired', 'text_size_css_px': 18, 'book_sha256': 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'pixel_copy_code': 0, 'presentation_verified': True, 'source_validated': True, 'ocr_validated': False, 'image_reviewed': True, 'spine_index': 4}})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/test_validation.py", line 43, in test_self_reference_wrong_location_and_stale_images_never_certify
+    self.assertTrue(certified.get("error"))
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: None is not true
+
+======================================================================
+FAIL: test_self_reference_wrong_location_and_stale_images_never_certify (test_validation.IndependentReferenceTest.test_self_reference_wrong_location_and_stale_images_never_certify) (row={'engine': 'bookfin', 'book': 'prose', 'case': 'target18', 'run_id': 'round-0', 'capture_sha256': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'cfi': 'epubcfi(/6/10!/4/2)', 'visible_text': 'Alice was beginning to get very tired', 'text_size_css_px': 18, 'book_sha256': 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'pixel_copy_code': 0, 'presentation_verified': True}, references={})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/test_validation.py", line 43, in test_self_reference_wrong_location_and_stale_images_never_certify
+    self.assertTrue(certified.get("error"))
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: None is not true
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.018s
+
+FAILED (failures=12)

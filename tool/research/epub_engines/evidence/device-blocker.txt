@@ -1,0 +1,15 @@
+Device: hostId=local, deviceId=emulator-5556, name=bookfin-api36
+T3 device_open returned binding t3-0102f260242111a6c68513ad.
+The minimal WebView smoke release APK installed successfully through the Nix SDK.
+The first launch through that binding failed:
+
+Error (DEVICE_IN_USE): Device is already in use by session "t3-130af3b15755d2b73cadb1b2".
+Hint: Run agent-device session list to inspect active sessions. To reuse this device, rerun the command with --session t3-130af3b15755d2b73cadb1b2. To open a new session on this device, first run agent-device close --session t3-130af3b15755d2b73cadb1b2. To wait for the device to free up, run the same open with --wait <ms>.
+Diagnostic ID: mwbdleju-500c9495
+Diagnostics Log: /Users/alexispurslane/.agent-device/remote-diagnostics/t3-0102f260242111a6c68513ad/requests/835ee79910b0df20.ndjson
+
+The host and task rules forbid reusing or closing another session.
+No retry, alternate input driver, subsequent launch, input, screenshot, or device-close was attempted.
+The earlier injectInputEvent failure in boo-kdc6 was not retested.
+Neither emulator-5554 nor Pixel was used.
+No emulator benchmark samples exist for this task.

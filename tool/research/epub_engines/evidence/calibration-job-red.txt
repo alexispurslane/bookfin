@@ -1,0 +1,17 @@
+test_reference_promotion_requires_successful_workload_assertions (test_calibrate.SourceEvidenceTest.test_reference_promotion_requires_successful_workload_assertions) ... FAIL
+test_rendered_words_must_include_an_independent_source_excerpt (test_calibrate.SourceEvidenceTest.test_rendered_words_must_include_an_independent_source_excerpt) ... ok
+test_typographic_punctuation_and_whitespace_do_not_hide_matching_words (test_calibrate.SourceEvidenceTest.test_typographic_punctuation_and_whitespace_do_not_hide_matching_words) ... ok
+
+======================================================================
+FAIL: test_reference_promotion_requires_successful_workload_assertions (test_calibrate.SourceEvidenceTest.test_reference_promotion_requires_successful_workload_assertions)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/test_calibrate.py", line 57, in test_reference_promotion_requires_successful_workload_assertions
+    with self.assertRaisesRegex(RuntimeError, "workload assertions"):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: RuntimeError not raised
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.043s
+
+FAILED (failures=1)

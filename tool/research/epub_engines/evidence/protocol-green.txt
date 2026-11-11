@@ -1,0 +1,9 @@
+test_every_book_and_engine_gets_twelve_independent_process_runs (test_protocol.ScheduleTest.test_every_book_and_engine_gets_twelve_independent_process_runs) ... ok
+test_every_engine_has_each_order_position_four_times_for_each_book (test_protocol.ScheduleTest.test_every_engine_has_each_order_position_four_times_for_each_book) ... ok
+test_every_run_has_a_unique_reproducible_id (test_protocol.ScheduleTest.test_every_run_has_a_unique_reproducible_id) ... ok
+test_rejects_a_round_count_that_cannot_balance_engine_order (test_protocol.ScheduleTest.test_rejects_a_round_count_that_cannot_balance_engine_order) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.001s
+
+OK

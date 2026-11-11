@@ -1,0 +1,68 @@
+{
+  "operation": "chapter_crossing",
+  "location": "epubcfi(\/6\/14!\/4\/2[chapter-2]\/2\/2\/1:0)",
+  "location_format": "epub_cfi",
+  "spine_index": 6,
+  "href": "text\/chapter-2.xhtml",
+  "end_cfi": "epubcfi(\/6\/14!\/4\/2[chapter-2]\/2\/4\/1:17)",
+  "displayed": {
+    "page": 1,
+    "total": 18
+  },
+  "visible_text": "II\n\t\t\t\tThe Pool of Tears",
+  "section_text": "II\n\nThe Pool of Tears\n\n“Curiouser and curiouser!” cried Alice (she was so much surprised, that for the moment she quite forgot how to speak good English); “now I’m opening out like the largest telescope that ever was! Goodbye, feet!” (for when she looked down at her feet, they seemed to be almost out of sight, they were getting so far off). “Oh, my poor little feet, I wonder who will put on your shoes and stockings for you now, dears? I’m sure I shan’t be able! I shall be a great deal too far off to trouble myself about you: you must manage the best way you can;﻿—but I must be kind to them,” thought Alice, “or perhaps they won’t walk the way I want to go! Let me see: I’ll give them a new pair of boots every Christmas.”\n\nAnd she went on planning to herself how she would manage it. “They must go by the carrier,” she thought; “and how funny it’ll seem, sending presents to one’s own feet! And how odd the directions will look!\n\nAlice’s Right Foot, Esq.\nHearthrug,\nNear the Fender,\n(With Alice’s Love).\n\nOh dear, what nonsense I’m talking!”\n\nJust then her head struck against the roof of the hall: in fact she was now more than nine feet high, and she at once took up the little golden key an",
+  "anchor_text": "II",
+  "images": [
+    {
+      "src": "blob:https:\/\/epubbench.invalid\/71b5bc46-90e9-44ed-b51e-7d7b3c7e1780",
+      "loaded": true
+    },
+    {
+      "src": "blob:https:\/\/epubbench.invalid\/8e7bf623-0b8f-484e-a351-331b20e96685",
+      "loaded": true
+    },
+    {
+      "src": "blob:https:\/\/epubbench.invalid\/fb591c43-31b4-42ef-9c70-cb5199fbf9fc",
+      "loaded": true
+    },
+    {
+      "src": "blob:https:\/\/epubbench.invalid\/719a28dc-5212-494c-bcb4-c4eea645c37d",
+      "loaded": true
+    }
+  ],
+  "text_size_css_px": 18,
+  "whole_book_paginated": false,
+  "engine_ready_ns": 689440293050958,
+  "engine": "webview",
+  "book": "illustrated",
+  "run_id": "final-round-04-illustrated-webview",
+  "round": 4,
+  "sequence": 12,
+  "id": "final-round-04-illustrated-webview\/12",
+  "case": "after_crossing18",
+  "measured": true,
+  "warmup": false,
+  "start_ns": 689440215290999,
+  "shell_ready_ns": 689436934962748,
+  "process_start_ns": 689436148000000,
+  "book_sha256": "431719c25bcb0b6a67fc03938b4633723d775324ac2c62a06a04f98862148bef",
+  "cache": "warm_document",
+  "expected_section": 6,
+  "pixel_copy_code": 0,
+  "end_ns": 689440303615624,
+  "copy_start_ns": 689440293841708,
+  "copy_duration_ns": 9773916,
+  "capture_attempts": 1,
+  "clock": "android_elapsed_realtime_ns",
+  "boundary": "request_to_reference_window_copy",
+  "window_copy_verified": true,
+  "physical_display_verified": false,
+  "process_id": 4076,
+  "capture_sha256": "592321e43c2f3c58f16369f94d08432883eb5e8fe3780de30cf36c1bcc877985",
+  "reference_manifest_sha256": "6d6afee5742aff09b2c08b7dd510b1f922343162adb59776bdda3c426d4710b2",
+  "reference_run_id": "calibration-final-calibration-illustrated-webview",
+  "reference_sha256": "592321e43c2f3c58f16369f94d08432883eb5e8fe3780de30cf36c1bcc877985",
+  "width_px": 945,
+  "height_px": 1680,
+  "paper_rgb": 16183266
+}

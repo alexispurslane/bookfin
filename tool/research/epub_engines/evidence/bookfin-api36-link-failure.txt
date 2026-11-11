@@ -1,0 +1,89 @@
+Running Gradle task 'assembleRelease'...                        
+ld.lld: error: cannot open crtbegin_so.o: No such file or directory
+
+
+ld.lld: error: cannot open crtend_so.o: No such file or directory
+
+
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+
+
+Unhandled exception:
+ProcessException: Full command string: '/nix/store/in52zy1w2yv0197h7553n827h8f03x8k-bookfin-android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang --target=aarch64-linux-android36 --sysroot=/nix/store/in52zy1w2yv0197h7553n827h8f03x8k-bookfin-android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/ -fPIC -O3 -Wl,-z,max-page-size=16384 -DRELEASE -DNDEBUG /Users/alexispurslane/.cache/bookfin/pub/hosted/pub.dev/pdfium_dart-0.4.1/src/pdfrx_pdfium_gate.c --shared -o /Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/bookfin/.dart_tool/hooks_runner/shared/pdfium_dart/build/3ac6a6ca95/libpdfrx_pdfium_gate.so -Wl,-rpath,$ORIGIN -L/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/bookfin/.dart_tool/hooks_runner/shared/pdfium_dart/build/3ac6a6ca95/'.
+Exit code: '1'.
+For the output of the process check the logger output.
+  Command: /nix/store/in52zy1w2yv0197h7553n827h8f03x8k-bookfin-android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang --target=aarch64-linux-android36 --sysroot=/nix/store/in52zy1w2yv0197h7553n827h8f03x8k-bookfin-android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/ -fPIC -O3 -Wl,-z,max-page-size=16384 -DRELEASE -DNDEBUG /Users/alexispurslane/.cache/bookfin/pub/hosted/pub.dev/pdfium_dart-0.4.1/src/pdfrx_pdfium_gate.c --shared -o /Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/bookfin/.dart_tool/hooks_runner/shared/pdfium_dart/build/3ac6a6ca95/libpdfrx_pdfium_gate.so -Wl,-rpath,$ORIGIN -L/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/bookfin/.dart_tool/hooks_runner/shared/pdfium_dart/build/3ac6a6ca95/
+#0      runProcess (package:native_toolchain_c/src/utils/run_process.dart:85:5)
+<asynchronous suspension>
+#1      RunCBuilder._compile (package:native_toolchain_c/src/cbuilder/run_cbuilder.dart:249:5)
+<asynchronous suspension>
+#2      RunCBuilder.runClangLike (package:native_toolchain_c/src/cbuilder/run_cbuilder.dart:221:7)
+<asynchronous suspension>
+#3      RunCBuilder.run (package:native_toolchain_c/src/cbuilder/run_cbuilder.dart:139:7)
+<asynchronous suspension>
+#4      CBuilder.run (package:native_toolchain_c/src/cbuilder/cbuilder.dart:224:5)
+<asynchronous suspension>
+#5      main.<anonymous closure> (file:///Users/alexispurslane/.cache/bookfin/pub/hosted/pub.dev/pdfium_dart-0.4.1/hook/build.dart:20:5)
+<asynchronous suspension>
+#6      build (package:hooks/src/api/build_and_link.dart:250:5)
+<asynchronous suspension>
+#7      main (file:///Users/alexispurslane/.cache/bookfin/pub/hosted/pub.dev/pdfium_dart-0.4.1/hook/build.dart:14:3)
+<asynchronous suspension>
+
+  Building assets for package:pdfium_dart failed.
+  build.dart returned with exit code: 255.
+  To reproduce run:
+  (cd /Users/alexispurslane/.cache/bookfin/pub/hosted/pub.dev/pdfium_dart-0.4.1/; /nix/store/673rqiqhlwmdpzs3spwaxlvw1yk5pn8m-flutter-wrapped-3.47.4-sdk-links/bin/cache/dart-sdk/bin/dart --packages=/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/bookfin/.dart_tool/package_config.json /Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/bookfin/.dart_tool/hooks_runner/pdfium_dart/3ac6a6ca95/hook.dill --config=/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/bookfin/.dart_tool/hooks_runner/pdfium_dart/3ac6a6ca95/input.json )
+  stderr:
+  ld.lld: error: cannot open crtbegin_so.o: No such file or directory
+
+ld.lld: error: cannot open crtend_so.o: No such file or directory
+
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+
+Unhandled exception:
+ProcessException: Full command string: '/nix/store/in52zy1w2yv0197h7553n827h8f03x8k-bookfin-android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang --target=aarch64-linux-android36 --sysroot=/nix/store/in52zy1w2yv0197h7553n827h8f03x8k-bookfin-android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/ -fPIC -O3 -Wl,-z,max-page-size=16384 -DRELEASE -DNDEBUG /Users/alexispurslane/.cache/bookfin/pub/hosted/pub.dev/pdfium_dart-0.4.1/src/pdfrx_pdfium_gate.c --shared -o /Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/bookfin/.dart_tool/hooks_runner/shared/pdfium_dart/build/3ac6a6ca95/libpdfrx_pdfium_gate.so -Wl,-rpath,$ORIGIN -L/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/bookfin/.dart_tool/hooks_runner/shared/pdfium_dart/build/3ac6a6ca95/'.
+Exit code: '1'.
+For the output of the process check the logger output.
+  Command: /nix/store/in52zy1w2yv0197h7553n827h8f03x8k-bookfin-android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang --target=aarch64-linux-android36 --sysroot=/nix/store/in52zy1w2yv0197h7553n827h8f03x8k-bookfin-android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/ -fPIC -O3 -Wl,-z,max-page-size=16384 -DRELEASE -DNDEBUG /Users/alexispurslane/.cache/bookfin/pub/hosted/pub.dev/pdfium_dart-0.4.1/src/pdfrx_pdfium_gate.c --shared -o /Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/bookfin/.dart_tool/hooks_runner/shared/pdfium_dart/build/3ac6a6ca95/libpdfrx_pdfium_gate.so -Wl,-rpath,$ORIGIN -L/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/bookfin/.dart_tool/hooks_runner/shared/pdfium_dart/build/3ac6a6ca95/
+#0      runProcess (package:native_toolchain_c/src/utils/run_process.dart:85:5)
+<asynchronous suspension>
+#1      RunCBuilder._compile (package:native_toolchain_c/src/cbuilder/run_cbuilder.dart:249:5)
+<asynchronous suspension>
+#2      RunCBuilder.runClangLike (package:native_toolchain_c/src/cbuilder/run_cbuilder.dart:221:7)
+<asynchronous suspension>
+#3      RunCBuilder.run (package:native_toolchain_c/src/cbuilder/run_cbuilder.dart:139:7)
+<asynchronous suspension>
+#4      CBuilder.run (package:native_toolchain_c/src/cbuilder/cbuilder.dart:224:5)
+<asynchronous suspension>
+#5      main.<anonymous closure> (file:///Users/alexispurslane/.cache/bookfin/pub/hosted/pub.dev/pdfium_dart-0.4.1/hook/build.dart:20:5)
+<asynchronous suspension>
+#6      build (package:hooks/src/api/build_and_link.dart:250:5)
+<asynchronous suspension>
+#7      main (file:///Users/alexispurslane/.cache/bookfin/pub/hosted/pub.dev/pdfium_dart-0.4.1/hook/build.dart:14:3)
+<asynchronous suspension>
+
+  stdout:
+  Running `/nix/store/in52zy1w2yv0197h7553n827h8f03x8k-bookfin-android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang --version`.
+Running `/nix/store/in52zy1w2yv0197h7553n827h8f03x8k-bookfin-android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang --version`.
+Running `/nix/store/in52zy1w2yv0197h7553n827h8f03x8k-bookfin-android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang --target=aarch64-linux-android36 --sysroot=/nix/store/in52zy1w2yv0197h7553n827h8f03x8k-bookfin-android-sdk/ndk/28.2.13676358/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/ -fPIC -O3 -Wl,-z,max-page-size=16384 -DRELEASE -DNDEBUG /Users/alexispurslane/.cache/bookfin/pub/hosted/pub.dev/pdfium_dart-0.4.1/src/pdfrx_pdfium_gate.c --shared -o /Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/bookfin/.dart_tool/hooks_runner/shared/pdfium_dart/build/3ac6a6ca95/libpdfrx_pdfium_gate.so -Wl,-rpath,$ORIGIN -L/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/bookfin/.dart_tool/hooks_runner/shared/pdfium_dart/build/3ac6a6ca95/`.
+
+
+Target build_hooks failed: Error: Building native assets failed. See the logs for more details.
+
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:compileFlutterBuildRelease'.
+> Process 'command '/nix/store/673rqiqhlwmdpzs3spwaxlvw1yk5pn8m-flutter-wrapped-3.47.4-sdk-links/bin/flutter'' finished with non-zero exit value 1
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 22s
+Running Gradle task 'assembleRelease'...                           22.2s
+Gradle task assembleRelease failed with exit code 1

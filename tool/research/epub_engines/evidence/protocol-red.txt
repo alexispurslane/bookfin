@@ -1,0 +1,78 @@
+test_every_book_and_engine_gets_twelve_independent_process_runs (test_protocol.ScheduleTest.test_every_book_and_engine_gets_twelve_independent_process_runs) ... FAIL
+test_every_engine_has_each_order_position_four_times_for_each_book (test_protocol.ScheduleTest.test_every_engine_has_each_order_position_four_times_for_each_book) ... FAIL
+test_every_run_has_a_unique_reproducible_id (test_protocol.ScheduleTest.test_every_run_has_a_unique_reproducible_id) ... FAIL
+test_rejects_a_round_count_that_cannot_balance_engine_order (test_protocol.ScheduleTest.test_rejects_a_round_count_that_cannot_balance_engine_order) ... 
+  test_rejects_a_round_count_that_cannot_balance_engine_order (test_protocol.ScheduleTest.test_rejects_a_round_count_that_cannot_balance_engine_order) (rounds=0) ... FAIL
+  test_rejects_a_round_count_that_cannot_balance_engine_order (test_protocol.ScheduleTest.test_rejects_a_round_count_that_cannot_balance_engine_order) (rounds=1) ... FAIL
+  test_rejects_a_round_count_that_cannot_balance_engine_order (test_protocol.ScheduleTest.test_rejects_a_round_count_that_cannot_balance_engine_order) (rounds=10) ... FAIL
+  test_rejects_a_round_count_that_cannot_balance_engine_order (test_protocol.ScheduleTest.test_rejects_a_round_count_that_cannot_balance_engine_order) (rounds=-3) ... FAIL
+
+======================================================================
+FAIL: test_every_book_and_engine_gets_twelve_independent_process_runs (test_protocol.ScheduleTest.test_every_book_and_engine_gets_twelve_independent_process_runs)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/test_protocol.py", line 10, in test_every_book_and_engine_gets_twelve_independent_process_runs
+    self.assertEqual(counts, {(book, engine): 12 for book in BOOKS for engine in ENGINES})
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Counter() != {('prose', 'bookfin'): 12, ('prose', 'web[206 chars]: 12}
+
+======================================================================
+FAIL: test_every_engine_has_each_order_position_four_times_for_each_book (test_protocol.ScheduleTest.test_every_engine_has_each_order_position_four_times_for_each_book)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/test_protocol.py", line 14, in test_every_engine_has_each_order_position_four_times_for_each_book
+    self.assertEqual(counts, {(book, engine, position): 4
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                             for book in BOOKS for engine in ENGINES for position in range(3)})
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Counter() != {('prose', 'bookfin', 0): 4, ('prose', 'b[764 chars]): 4}
+
+======================================================================
+FAIL: test_every_run_has_a_unique_reproducible_id (test_protocol.ScheduleTest.test_every_run_has_a_unique_reproducible_id)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/test_protocol.py", line 24, in test_every_run_has_a_unique_reproducible_id
+    self.assertEqual(len(jobs), 108)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+AssertionError: 0 != 108
+
+======================================================================
+FAIL: test_rejects_a_round_count_that_cannot_balance_engine_order (test_protocol.ScheduleTest.test_rejects_a_round_count_that_cannot_balance_engine_order) (rounds=0)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/test_protocol.py", line 19, in test_rejects_a_round_count_that_cannot_balance_engine_order
+    with self.subTest(rounds=rounds), self.assertRaises(ValueError):
+                                      ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_rejects_a_round_count_that_cannot_balance_engine_order (test_protocol.ScheduleTest.test_rejects_a_round_count_that_cannot_balance_engine_order) (rounds=1)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/test_protocol.py", line 19, in test_rejects_a_round_count_that_cannot_balance_engine_order
+    with self.subTest(rounds=rounds), self.assertRaises(ValueError):
+                                      ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_rejects_a_round_count_that_cannot_balance_engine_order (test_protocol.ScheduleTest.test_rejects_a_round_count_that_cannot_balance_engine_order) (rounds=10)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/test_protocol.py", line 19, in test_rejects_a_round_count_that_cannot_balance_engine_order
+    with self.subTest(rounds=rounds), self.assertRaises(ValueError):
+                                      ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_rejects_a_round_count_that_cannot_balance_engine_order (test_protocol.ScheduleTest.test_rejects_a_round_count_that_cannot_balance_engine_order) (rounds=-3)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-f5521e60/tool/research/epub_engines/test_protocol.py", line 19, in test_rejects_a_round_count_that_cannot_balance_engine_order
+    with self.subTest(rounds=rounds), self.assertRaises(ValueError):
+                                      ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.001s
+
+FAILED (failures=7)

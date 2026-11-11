@@ -1,0 +1,32 @@
+[
+  {
+    "engine": "bookfin",
+    "package": "dev.bookfin.bench.bookfin_epub_shell",
+    "path": "tool/research/epub_engines/bookfin/build/app/outputs/flutter-apk/app-release.apk",
+    "bytes": 50992080,
+    "sha256": "22c59e4530a9a6e05c561e001aa0e2fa7444c67f46008f2f49f0c219d1c35244",
+    "build_type": "release",
+    "on_device_execution": "blocked",
+    "samples": 0
+  },
+  {
+    "engine": "webview",
+    "package": "dev.bookfin.bench.epub.webview",
+    "path": "tool/research/epub_engines/native/app/build/outputs/apk/webview/release/app-webview-release.apk",
+    "bytes": 24560677,
+    "sha256": "b1e276f40bd64bfd5e5e2ad8af33b7b52433abeed2b97fd0f9385e3220ff5d48",
+    "build_type": "release",
+    "on_device_execution": "blocked",
+    "samples": 0
+  },
+  {
+    "engine": "koreader",
+    "package": "dev.bookfin.bench.epub.koreader",
+    "path": "tool/research/epub_engines/native/app/build/outputs/apk/koreader/release/app-koreader-release.apk",
+    "bytes": 33715090,
+    "sha256": "10e7127180ab8f861601a285111586634e9dc336c4d288c2d40bdfb55d3eb6d9",
+    "build_type": "release",
+    "on_device_execution": "blocked",
+    "samples": 0
+  }
+]

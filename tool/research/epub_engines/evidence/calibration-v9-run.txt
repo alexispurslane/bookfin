@@ -1,0 +1,9 @@
+1/9 calibration-v9-calibration-prose-bookfin
+2/9 calibration-v9-calibration-prose-webview
+3/9 calibration-v9-calibration-prose-koreader
+4/9 calibration-v9-calibration-long-webview
+5/9 calibration-v9-calibration-long-koreader
+6/9 calibration-v9-calibration-long-bookfin
+7/9 calibration-v9-calibration-illustrated-koreader
+8/9 calibration-v9-calibration-illustrated-bookfin
+9/9 calibration-v9-calibration-illustrated-webview

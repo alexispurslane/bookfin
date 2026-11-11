@@ -1,0 +1,61 @@
+{
+  "source_head": "e679fe3796e7b873565727e6b49cd5de6e2550bc",
+  "bookfin_webview_and_test_build_head": "57357fa",
+  "koreader_target_build_head": "d82c4c1",
+  "build_source_note": "The final KOReader-only change sets its CSS render scale. No Bookfin, WebView, or instrumentation code changes after their complete release build. The later e679fe3 commit changes host reference validation and documentation only.",
+  "reference_manifest_sha256": "6d6afee5742aff09b2c08b7dd510b1f922343162adb59776bdda3c426d4710b2",
+  "artifacts": [
+    {
+      "engine": "bookfin",
+      "path": "tool/research/epub_engines/bookfin/build/app/outputs/flutter-apk/app-release.apk",
+      "sha256": "fa08b980992c46f30e9077af04e87b829a2b6c2b9138af4cacf38b4e3862a5f4",
+      "bytes": 67139499,
+      "build_type": "release",
+      "fixture_manifest_sha256": "fc95bde44958f47dc69eab570b19a5b5ca066f450b31c3f8ebf7e9f43f8f6674",
+      "font_sha256": "97b2d4da6e3cb494b5a1e66ae176914d852ccabef49e0c02c0df25f3e39aca0b"
+    },
+    {
+      "engine": "webview",
+      "path": "tool/research/epub_engines/native/app/build/outputs/apk/webview/release/app-webview-release.apk",
+      "sha256": "a262b5ea70524066557ddc646261aac1b412b2fda4132723bdd6482bd5d480e9",
+      "bytes": 24567309,
+      "build_type": "release",
+      "fixture_manifest_sha256": "fc95bde44958f47dc69eab570b19a5b5ca066f450b31c3f8ebf7e9f43f8f6674",
+      "font_sha256": "97b2d4da6e3cb494b5a1e66ae176914d852ccabef49e0c02c0df25f3e39aca0b"
+    },
+    {
+      "engine": "koreader",
+      "path": "tool/research/epub_engines/native/app/build/outputs/apk/koreader/release/app-koreader-release.apk",
+      "sha256": "0b4925a7c6882571add19109a99b1dcf3441143789ac901f86bc3f01f50c3fff",
+      "bytes": 33791810,
+      "build_type": "release",
+      "fixture_manifest_sha256": "fc95bde44958f47dc69eab570b19a5b5ca066f450b31c3f8ebf7e9f43f8f6674",
+      "font_sha256": "97b2d4da6e3cb494b5a1e66ae176914d852ccabef49e0c02c0df25f3e39aca0b",
+      "official_libraries": {
+        "libkoreader-monolibtic.so": "30beab2623c0e20681d2a9a65fbace839bb1b642c2b853a65ba0e9c022fb4bb5",
+        "libluajit.so": "6c45cd5bb6f1666f44ebf1c6b2767ac120c55c6bdb4a7c144b986aab6bd2b2bb"
+      }
+    },
+    {
+      "engine": "bookfin-test",
+      "path": "tool/research/epub_engines/bookfin/build/app/outputs/apk/androidTest/release/app-release-androidTest.apk",
+      "sha256": "3fbcab917c13cf40412a2c0b7bb44873af47c29e03bc0efc46fbede2a47f8ce1",
+      "bytes": 683137,
+      "build_type": "release"
+    },
+    {
+      "engine": "webview-test",
+      "path": "tool/research/epub_engines/native/app/build/outputs/apk/androidTest/webview/release/app-webview-release-androidTest.apk",
+      "sha256": "f4e8c2d2727a9089062e1adbaf5ed0bfe1930f73f858ca8eea6c6ede184cd7d8",
+      "bytes": 1781169,
+      "build_type": "release"
+    },
+    {
+      "engine": "koreader-test",
+      "path": "tool/research/epub_engines/native/app/build/outputs/apk/androidTest/koreader/release/app-koreader-release-androidTest.apk",
+      "sha256": "7ad27903ed945d06ef63b5792e41f82723adb9e6ab1ce59644b6220939d9f233",
+      "bytes": 1781165,
+      "build_type": "release"
+    }
+  ]
+}

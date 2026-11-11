@@ -1,0 +1,22 @@
+test_complete_requires_all_engines_books_operations_and_counts (test_results.ResultsTest.test_complete_requires_all_engines_books_operations_and_counts) ... ok
+test_does_not_report_an_incomplete_matrix_as_complete (test_results.ResultsTest.test_does_not_report_an_incomplete_matrix_as_complete) ... ok
+test_excludes_blank_stale_wrong_destination_and_error_samples (test_results.ResultsTest.test_excludes_blank_stale_wrong_destination_and_error_samples) ... ok
+test_excludes_warmups_and_preserves_their_reason (test_results.ResultsTest.test_excludes_warmups_and_preserves_their_reason) ... ok
+test_keeps_books_operations_and_engines_separate (test_results.ResultsTest.test_keeps_books_operations_and_engines_separate) ... ok
+test_missing_round_information_is_an_exclusion_not_a_crash (test_results.ResultsTest.test_missing_round_information_is_an_exclusion_not_a_crash) ... ok
+test_preserves_input_rows_without_mutation (test_results.ResultsTest.test_preserves_input_rows_without_mutation) ... ok
+test_rejects_duplicate_ids_instead_of_counting_them_twice (test_results.ResultsTest.test_rejects_duplicate_ids_instead_of_counting_them_twice) ... ok
+test_rejects_mixed_cache_states_in_one_cell (test_results.ResultsTest.test_rejects_mixed_cache_states_in_one_cell) ... ok
+test_reports_median_and_nearest_rank_p90_in_milliseconds (test_results.ResultsTest.test_reports_median_and_nearest_rank_p90_in_milliseconds) ... ok
+test_unverified_content_or_presentation_cannot_enter_the_summary (test_results.ResultsTest.test_unverified_content_or_presentation_cannot_enter_the_summary) ... ok
+test_every_book_and_engine_gets_twelve_independent_process_runs (test_protocol.ScheduleTest.test_every_book_and_engine_gets_twelve_independent_process_runs) ... ok
+test_every_engine_has_each_order_position_four_times_for_each_book (test_protocol.ScheduleTest.test_every_engine_has_each_order_position_four_times_for_each_book) ... ok
+test_every_run_has_a_unique_reproducible_id (test_protocol.ScheduleTest.test_every_run_has_a_unique_reproducible_id) ... ok
+test_rejects_a_round_count_that_cannot_balance_engine_order (test_protocol.ScheduleTest.test_rejects_a_round_count_that_cannot_balance_engine_order) ... ok
+test_keeps_the_spine_order_images_and_navigation_title_of_the_requested_section (test_prepare.CorpusDescriptionTest.test_keeps_the_spine_order_images_and_navigation_title_of_the_requested_section) ... ok
+test_repeated_preparation_replaces_read_only_nix_source_copies (test_prepare.CorpusDescriptionTest.test_repeated_preparation_replaces_read_only_nix_source_copies) ... ok
+
+----------------------------------------------------------------------
+Ran 17 tests in 0.010s
+
+OK
