@@ -501,7 +501,7 @@ class EpubPager implements DocumentNavigator {
           SearchSection(
             index: index,
             path: path,
-            xhtml: _publication.resources[path]!,
+            xhtml: _publication.textFiles[path]!,
             spine: steps[index],
           ),
       ],

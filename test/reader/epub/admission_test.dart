@@ -341,8 +341,8 @@ void main() {
     final publication = Publication.admit(standardEbook());
     expect(publication.bookStyles['OPS/css/core.css'], core);
     expect(publication.bookStyles['OPS/css/local.css'], startsWith(namespace));
-    expect(publication.resources['OPS/css/core.css'], isEmpty);
-    expect(publication.resources['OPS/css/local.css'], isEmpty);
+    expect(publication.textFiles['OPS/css/core.css'], isEmpty);
+    expect(publication.textFiles['OPS/css/local.css'], isEmpty);
     publication.checkInvariants();
   });
 
@@ -494,7 +494,7 @@ void main() {
         hop: <M, R>(FutureOr<R> Function(M) work, M input) async => work(input),
       ))!;
       int size(int part) =>
-          publication.resources[publication.spine[part]]!.length;
+          publication.textFiles[publication.spine[part]]!.length;
       final whole = size(0) + size(1) + size(2);
       expect(
         [for (final chapter in book.chapters) chapter.title],

@@ -172,8 +172,8 @@ int _largestSection(CorpusBook book) {
   final publication = book.publication;
   return [for (var index = 0; index < book.sections; index++) index].reduce(
     (a, b) =>
-        publication.resources[publication.spine[a]]!.length >=
-            publication.resources[publication.spine[b]]!.length
+        publication.textFiles[publication.spine[a]]!.length >=
+            publication.textFiles[publication.spine[b]]!.length
         ? a
         : b,
   );

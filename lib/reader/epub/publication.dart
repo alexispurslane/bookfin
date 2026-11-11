@@ -13,7 +13,7 @@ import 'zip.dart';
 
 class Publication {
   Publication._(
-    this.resources,
+    this.textFiles,
     this._files,
     this.mediaTypes,
     this.originalDigest,
@@ -46,7 +46,7 @@ class Publication {
   /// The admitted files that are not images or fonts, by path: the
   /// documents, the style sheets, the NCX, the package document and the
   /// container. Images and fonts come through [bytesOf].
-  final Map<String, Uint8List> resources;
+  final Map<String, Uint8List> textFiles;
 
   /// The admitted images and fonts.
   final _Files _files;
@@ -67,7 +67,7 @@ class Publication {
 
   /// The original text of each style sheet in the manifest, by path, as the
   /// book wrote it. Admission may have emptied or rewritten the sheet in
-  /// [resources]. Each text is the sheet's UTF-8 text, at most
+  /// [textFiles]. Each text is the sheet's UTF-8 text, at most
   /// [maxResourceBytes] long, because the archive limits every entry to that
   /// size and admission refuses a sheet that is not UTF-8.
   final Map<String, String> bookStyles;
@@ -152,7 +152,7 @@ class Publication {
   ///
   /// The bytes are the length of a JSON header as a 32-bit little-endian
   /// number, that header in UTF-8, and then each file's bytes in the order
-  /// that the header lists them: first [resources], then the images and
+  /// that the header lists them: first [textFiles], then the images and
   /// fonts.
   List<Uint8List> encode() {
     final files = switch (_files) {
@@ -182,7 +182,7 @@ class Publication {
         },
         'resources': [
           for (final MapEntry(key: path, value: bytes) in [
-            ...resources.entries,
+            ...textFiles.entries,
             ...files.entries,
           ])
             [path, mediaTypes[path], bytes.length],
@@ -193,7 +193,7 @@ class Publication {
       Uint8List(4)
         ..buffer.asByteData().setUint32(0, header.length, Endian.little),
       header,
-      ...resources.values,
+      ...textFiles.values,
       ...files.values,
     ];
   }
@@ -201,7 +201,7 @@ class Publication {
   /// The publication that [encode] wrote into the file at [path] after the
   /// bytes [head], from the position of [file], an open handle of it.
   ///
-  /// It reads the header and [resources] now. Each image and font is read
+  /// It reads the header and [textFiles] now. Each image and font is read
   /// from the file when [bytesOf] asks for it, while the file still begins
   /// with [head]. Each resource gets bytes of its own, so a resource that
   /// goes to a worker does not take the others along. Throws a
@@ -216,6 +216,11 @@ class Publication {
     try {
       final end = await file.length();
       Future<Uint8List> read(int count) async {
+        // A damaged record can name any length, so the read never asks for
+        // more bytes than the file has left.
+        if (count > end - await file.position()) {
+          throw const FormatException('The record was cut short.');
+        }
         final bytes = await file.read(count);
         if (bytes.length != count) {
           throw const FormatException('The record was cut short.');
@@ -244,10 +249,10 @@ class Publication {
       final block = await read(
         texts.fold(0, (total, entry) => total + entry.$3),
       );
-      final resources = <String, Uint8List>{};
+      final textFiles = <String, Uint8List>{};
       var offset = 0;
       for (final (name, _, size) in texts) {
-        resources[name] = Uint8List.fromList(
+        textFiles[name] = Uint8List.fromList(
           Uint8List.sublistView(block, offset, offset += size),
         ).asUnmodifiableView();
       }
@@ -267,7 +272,7 @@ class Publication {
         throw const FormatException('The record has no main text size.');
       }
       return Publication._(
-        Map.unmodifiable(resources),
+        Map.unmodifiable(textFiles),
         _KeptFiles(path, head, Map.unmodifiable(ranges)),
         Map.unmodifiable({
           for (final path in types.keys.toList()..sort()) path: types[path]!,
@@ -312,7 +317,7 @@ class Publication {
   /// changed since the reopen or cannot be read: the page then draws the
   /// image's alt text, or the text in the reader font.
   Future<Uint8List?> bytesOf(String path) async {
-    if (resources[path] case final bytes?) return bytes;
+    if (textFiles[path] case final bytes?) return bytes;
     return switch (_files) {
       _HeldFiles(:final bytes) => bytes[path],
       final _KeptFiles kept => kept.read(path),
@@ -340,7 +345,7 @@ class Publication {
 
   /// Throws when one of these invariants fails:
   /// - every admitted file is canonical, within the size limits and typed;
-  /// - [resources] holds every admitted file but the images and fonts;
+  /// - [textFiles] holds every admitted file but the images and fonts;
   /// - every spine path is an admitted document;
   /// - [bookStyles] holds exactly the admitted style sheets;
   /// - [imageSizes] holds exactly the admitted PNG and JPEG images;
@@ -360,7 +365,7 @@ class Publication {
 
     final package = Uri(scheme: 'https', host: 'book', path: '/$packagePath');
     final sizes = {
-      for (final MapEntry(key: path, value: bytes) in resources.entries)
+      for (final MapEntry(key: path, value: bytes) in textFiles.entries)
         path: bytes.length,
       ..._files.sizes,
     };
@@ -368,12 +373,12 @@ class Publication {
         sizes.values.fold<int>(0, (total, size) => total + size) >
             maxExpandedBytes ||
         sizes.keys.any((path) => !_canonical(path)) ||
-        !resources.keys.toSet().containsAll(spine) ||
+        !textFiles.keys.toSet().containsAll(spine) ||
         spine.any((path) => !_documents.contains(mediaTypes[path])) ||
-        sizes.length != resources.length + _files.sizes.length ||
+        sizes.length != textFiles.length + _files.sizes.length ||
         sizes.length != mediaTypes.length ||
         !mediaTypes.keys.every(sizes.containsKey) ||
-        resources.keys.any((path) => _binary(mediaTypes[path]!)) ||
+        textFiles.keys.any((path) => _binary(mediaTypes[path]!)) ||
         _files.sizes.keys.any((path) => !_binary(mediaTypes[path]!))) {
       throw StateError(
         'Publication resources, reading order, and media types disagree.',
@@ -406,13 +411,6 @@ class Publication {
   }
 }
 
-/// The identity of an admission of the file whose SHA-256 is [digest].
-///
-/// NOTE: It names the file, the policy and admission's revision, not the
-/// admitted files, so admission hashes no admitted file (boo-yjq6). A saved
-/// place does not match on it (see ReaderDocument.restore). The page maps
-/// of a book are keyed by it, so a book lays them out again once after a
-/// new revision.
 /// Whether a file of [mime] is an image or a font: a file that layout does
 /// not read, which a reopened book reads only when a page draws it.
 bool _binary(String mime) =>
@@ -484,6 +482,13 @@ String _note(String message) =>
     '<html xmlns="http://www.w3.org/1999/xhtml"><head><title></title>'
     '</head><body><p style="text-align:center">$message</p></body></html>';
 
+/// The identity of an admission of the file whose SHA-256 is [digest].
+///
+/// NOTE: It names the file, the policy and admission's revision, not the
+/// admitted files, so admission hashes no admitted file (boo-yjq6). A saved
+/// place does not match on it (see ReaderDocument.restore). The page maps
+/// of a book are keyed by it, so a book lays them out again once after a
+/// new revision.
 String _identityOf(String digest) => sha256
     .convert(
       utf8.encode('${Publication.policy}/${Publication.revision}/$digest'),
@@ -568,14 +573,17 @@ String _relative(String base, String target, [String fragment = '']) {
 /// files that the archive holds but that cannot be read: a file that uses
 /// a ZIP feature that admission does not support, exceeds a size limit,
 /// has a local header that does not match its directory entry, or does not
-/// expand to its size and CRC-32. Admission treats such a file as damaged
-/// (t5-gk30). It does not expand a damaged file past its declared size.
+/// expand to its size and CRC-32, each with the reason. Admission treats
+/// such a file as damaged (t5-gk30). It does not expand a damaged file past
+/// its declared size.
 ///
 /// Throws a [FormatException] when the archive itself cannot be read
 /// safely: its directory is broken, it has too many files or too many
 /// expanded bytes, or a file name is unsafe or repeated, names another
 /// file in its local header, or shares bytes with another file.
-({Map<String, Uint8List> files, Set<String> damaged}) _unpack(Uint8List bytes) {
+({Map<String, Uint8List> files, Map<String, String> damaged}) _unpack(
+  Uint8List bytes,
+) {
   if (bytes.length > Publication.maxArchiveBytes || bytes.length < 22) {
     throw const FormatException(
       'EPUB archive exceeds the 64 MiB limit or is incomplete.',
@@ -603,7 +611,7 @@ String _relative(String base, String target, [String fragment = '']) {
     throw const FormatException('EPUB exceeds archive entry limits.');
   }
   final output = <String, Uint8List>{};
-  final damaged = <String>{};
+  final damaged = <String, String>{};
   final names = <String>{};
   final ranges = <(int, int)>[];
   var expanded = 0;
@@ -622,7 +630,8 @@ String _relative(String base, String target, [String fragment = '']) {
     final local = integer(entry + 42);
     if (next > end || nameLength > 512) {
       throw const FormatException(
-        'EPUB entry exceeds limits or uses unsupported ZIP features.',
+        'EPUB ZIP directory entry runs past the directory or has a name over '
+        '512 bytes.',
       );
     }
     final name = utf8.decode(
@@ -639,25 +648,33 @@ String _relative(String base, String target, [String fragment = '']) {
     // Bits 1 and 2 name the DEFLATE level, bit 3 a data descriptor after
     // the data, and bit 11 a UTF-8 name. Any other flag, such as
     // encryption, makes the file unreadable here.
-    if ((flags & ~0x80e) != 0 ||
-        (method != 0 && method != 8) ||
-        word(entry + 34) != 0 ||
-        ((integer(entry + 38) >> 16) & 0xf000) == 0xa000 ||
-        size > Publication.maxResourceBytes ||
-        compressed > Publication.maxArchiveBytes ||
-        (size > 1024 * 1024 && size > compressed * 250) ||
-        local + 30 > directory ||
-        integer(local) != 0x04034b50 ||
-        word(local + 6) != flags ||
-        word(local + 8) != method) {
-      damaged.add(path);
+    final unreadable = (flags & ~0x80e) != 0
+        ? 'uses the unsupported ZIP flags 0x${flags.toRadixString(16)}'
+        : method != 0 && method != 8
+        ? 'uses the unsupported ZIP compression method $method'
+        : word(entry + 34) != 0
+        ? 'is on another disk of a split archive'
+        : ((integer(entry + 38) >> 16) & 0xf000) == 0xa000
+        ? 'is a symbolic link'
+        : size > Publication.maxResourceBytes ||
+              compressed > Publication.maxArchiveBytes
+        ? 'exceeds the 16 MiB resource limit'
+        : size > 1024 * 1024 && size > compressed * 250
+        ? 'expands more than 250 times'
+        : local + 30 > directory ||
+              integer(local) != 0x04034b50 ||
+              word(local + 6) != flags ||
+              word(local + 8) != method
+        ? 'has a local header that does not match its directory entry'
+        : local + 30 + word(local + 26) + word(local + 28) + compressed >
+              directory
+        ? 'runs into the ZIP directory'
+        : null;
+    if (unreadable != null) {
+      damaged[path] = unreadable;
       continue;
     }
     final start = local + 30 + word(local + 26) + word(local + 28);
-    if (start + compressed > directory) {
-      damaged.add(path);
-      continue;
-    }
     if (utf8.decode(bytes.sublist(local + 30, local + 30 + word(local + 26))) !=
             name ||
         ranges.any(
@@ -669,22 +686,23 @@ String _relative(String base, String target, [String fragment = '']) {
     }
     ranges.add((local, start + compressed));
     if ((expanded += size) > Publication.maxExpandedBytes) {
-      throw const FormatException(
-        'EPUB entry exceeds limits or uses unsupported ZIP features.',
-      );
+      throw const FormatException('EPUB expands past the 128 MiB limit.');
     }
     final content = Uint8List.sublistView(bytes, start, start + compressed);
+    final Uint8List unpacked;
     try {
-      final unpacked = method == 0
+      unpacked = method == 0
           ? Uint8List.fromList(content)
           : inflateEntry(content, size);
-      if (unpacked.length != size || crc32(unpacked) != integer(entry + 16)) {
-        throw const FormatException('The file does not match its CRC-32.');
-      }
-      if (!folder) output[name] = unpacked;
     } on FormatException {
-      damaged.add(path);
+      damaged[path] = 'has DEFLATE data that does not expand to its size';
+      continue;
     }
+    if (unpacked.length != size || crc32(unpacked) != integer(entry + 16)) {
+      damaged[path] = 'does not match its CRC-32 or its length';
+      continue;
+    }
+    if (!folder) output[name] = unpacked;
   }
   if (cursor != end) {
     throw const FormatException('EPUB ZIP directory length does not match.');
@@ -699,8 +717,9 @@ class _Admission {
   /// or holds damaged, gets a note document here.
   final Map<String, Uint8List> raw;
 
-  /// The files that the archive holds but that cannot be read.
-  final Set<String> damaged;
+  /// The files that the archive holds but that cannot be read, each with
+  /// the reason.
+  final Map<String, String> damaged;
   final String digest;
   final output = <String, Uint8List>{};
   final types = <String, String>{};
@@ -710,7 +729,18 @@ class _Admission {
   final sizes = <String, (int, int)>{};
   int _processedBytes = 0;
 
+  /// Throws a [FormatException] that names the damage when admission has
+  /// no file at [path] because the archive holds it damaged. Admission
+  /// cannot do without it. A chapter's note stands in its place.
+  void _whole(String path) {
+    if (raw.containsKey(path)) return;
+    if (damaged[path] case final reason?) {
+      throw FormatException('The book file is damaged: $path $reason.');
+    }
+  }
+
   XmlDocument _xml(String path) {
+    _whole(path);
     final bytes = raw[path];
     if (bytes == null || bytes.length > 4 * 1024 * 1024) {
       throw const FormatException('EPUB document is missing or exceeds 4 MiB.');
@@ -750,12 +780,13 @@ class _Admission {
   }
 
   Publication run() {
+    _whole('mimetype');
     if (utf8.decode(raw['mimetype'] ?? []) != 'application/epub+zip') {
       throw const FormatException('This file is not an EPUB publication.');
     }
     // A damaged encryption.xml still says that the book is encrypted.
     if (raw.containsKey('META-INF/encryption.xml') ||
-        damaged.contains('META-INF/encryption.xml')) {
+        damaged.containsKey('META-INF/encryption.xml')) {
       throw const FormatException(
         'Encrypted or obfuscated EPUB resources are not supported.',
       );
@@ -807,7 +838,7 @@ class _Admission {
         if (_documents.contains(mime) && !types.containsKey(path)) {
           raw[path] = utf8.encode(
             _note(
-              damaged.contains(path)
+              damaged.containsKey(path)
                   ? 'This chapter could not be read from the book file.'
                   : 'This chapter is missing from the book file.',
             ),

@@ -44,7 +44,7 @@ Future<SupportReport> checkSupport(
 }) async {
   final report = SupportReport()..sections = book.sections;
   final opf = String.fromCharCodes(
-    book.publication.resources[book.publication.packagePath]!,
+    book.publication.textFiles[book.publication.packagePath]!,
   );
   if (RegExp(r'page-progression-direction="rtl"').hasMatch(opf)) {
     report.unsupported['right-to-left page order'] = {

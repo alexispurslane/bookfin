@@ -76,14 +76,14 @@ void main() {
         ),
       );
       final package = XmlDocument.parse(
-        utf8.decode(publication.resources['OPS/book.opf']!),
+        utf8.decode(publication.textFiles['OPS/book.opf']!),
       );
       final contents = package
           .findAllElements('item')
           .where((item) => item.getAttribute('id') == 'toc');
       expect(contents, hasLength(1));
       expect(contents.single.getAttribute('href'), 'toc.ncx');
-      expect(publication.resources['OPS/toc.ncx'], isNotNull);
+      expect(publication.textFiles['OPS/toc.ncx'], isNotNull);
     },
   );
 
@@ -93,21 +93,21 @@ void main() {
         chapter: '<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Book</title></head><body onload="alert(1)"><h1>Heading</h1><script>alert(1)</script><iframe src="https://evil.invalid"/><img src="active.svg" alt="Cover drawing"/><p>Readable</p></body></html>',
       ),
     );
-    final body = utf8.decode(publication.resources['OPS/one.xhtml']!);
+    final body = utf8.decode(publication.textFiles['OPS/one.xhtml']!);
     final document = XmlDocument.parse(body);
     expect(document.findAllElements('script'), isEmpty);
     expect(document.findAllElements('iframe'), isEmpty);
     expect(body, isNot(contains('onload')));
     expect(body, contains('Cover drawing'));
     expect(body, contains('Unsupported image'));
-    expect(publication.resources.containsKey('OPS/active.svg'), isFalse);
+    expect(publication.textFiles.containsKey('OPS/active.svg'), isFalse);
     expect(document.findAllElements('h1').single.innerText, 'Heading');
   });
 
   test('remote CSS URLs cannot leave the passive publication', () {
     final publication = Publication.admit(epub());
     expect(
-      utf8.decode(publication.resources['OPS/book.css']!),
+      utf8.decode(publication.textFiles['OPS/book.css']!),
       isNot(contains('evil.invalid')),
     );
   });
@@ -131,7 +131,7 @@ void main() {
     );
     expect(() => dot[0] = 0, throwsUnsupportedError);
     expect(
-      () => publication.resources['OPS/one.xhtml']![0] = 0,
+      () => publication.textFiles['OPS/one.xhtml']![0] = 0,
       throwsUnsupportedError,
     );
     expect(Publication.admit(epub()).identity, publication.identity);
@@ -166,7 +166,7 @@ void main() {
       ),
     );
     final document = XmlDocument.parse(
-      utf8.decode(publication.resources['OPS/one.xhtml']!),
+      utf8.decode(publication.textFiles['OPS/one.xhtml']!),
     );
     expect(
       document.findAllElements('a').single.getAttribute('href'),
@@ -179,7 +179,7 @@ void main() {
     expect(document.findAllElements('h1').single.getAttribute('id'), 'café');
     expect(await publication.bytesOf('OPS/Fonts/font.woff2'), font);
     expect(
-      utf8.decode(publication.resources['OPS/book.css']!),
+      utf8.decode(publication.textFiles['OPS/book.css']!),
       contains('font-family:Book'),
     );
   });
@@ -211,14 +211,14 @@ void main() {
           },
         ),
       );
-      final chapter = utf8.decode(publication.resources['OPS/one.xhtml']!);
+      final chapter = utf8.decode(publication.textFiles['OPS/one.xhtml']!);
       expect(await publication.bytesOf('OPS/cover.jpg'), jpeg);
       expect(chapter.contains('src="cover.jpg"'), svg == wrapper);
       expect(
         chapter.contains('Unsupported image: Cover drawing'),
         svg != wrapper,
       );
-      expect(publication.resources.containsKey('OPS/active.svg'), isFalse);
+      expect(publication.textFiles.containsKey('OPS/active.svg'), isFalse);
     }
   });
 
@@ -239,7 +239,7 @@ void main() {
               '<html><head/><body><h2>Keep</h2><a href="$reference" onclick="bad()">Link</a><img src="$reference" alt="Description"/><form action="https://evil.invalid"><p>Keep paragraph</p></form></body></html>',
         ),
       );
-      final document = utf8.decode(publication.resources['OPS/one.xhtml']!);
+      final document = utf8.decode(publication.textFiles['OPS/one.xhtml']!);
       expect(document, isNot(contains('onclick')));
       expect(document, isNot(contains('evil.invalid')));
       expect(document, contains('Unsupported image: Description'));
@@ -273,7 +273,7 @@ void main() {
       ),
     );
 
-    final chapter = publication.resources['OPS/one.xhtml']!;
+    final chapter = publication.textFiles['OPS/one.xhtml']!;
     expect(chapter.length, lessThan(1000));
     expect(utf8.decode(chapter), contains('could not be read'));
   });
@@ -286,7 +286,7 @@ void main() {
       );
       expect(publication.spine, isNotEmpty);
       final content = publication.spine
-          .map((path) => utf8.decode(publication.resources[path]!))
+          .map((path) => utf8.decode(publication.textFiles[path]!))
           .join();
       expect(content, contains('The river follows the old road.'));
       expect(content, isNot(contains('<script')));
@@ -316,11 +316,11 @@ void main() {
         ),
       );
       expect(
-        utf8.decode(publication.resources['OPS/book.css']!),
+        utf8.decode(publication.textFiles['OPS/book.css']!),
         contains('Styles/extra.css'),
       );
       expect(
-        utf8.decode(publication.resources['OPS/Styles/extra.css']!),
+        utf8.decode(publication.textFiles['OPS/Styles/extra.css']!),
         contains('font-weight:700'),
       );
     },

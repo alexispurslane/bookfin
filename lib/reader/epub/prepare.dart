@@ -72,6 +72,44 @@ class PageSettings {
   String toString() =>
       'PageSettings(${width}x$height, ${fontSize}px'
       '${sizesMainText ? ' main text' : ''}${night ? ', night' : ''})';
+
+  /// These settings as a JSON object that [PageSettings.fromJson] reads.
+  Map<String, Object> toJson() => {
+    'width': width,
+    'height': height,
+    'fontSize': fontSize,
+    'night': night,
+    'sizesMainText': sizesMainText,
+  };
+
+  /// The settings of [json], an object that [toJson] wrote. Throws a
+  /// [FormatException] when it is not one, or names no page area.
+  factory PageSettings.fromJson(Object? json) {
+    if (json is! Map ||
+        json['width'] is! num ||
+        json['height'] is! num ||
+        json['fontSize'] is! num ||
+        json['night'] is! bool ||
+        json['sizesMainText'] is! bool) {
+      throw const FormatException('These are not page settings.');
+    }
+    bool positive(num value) => value > 0 && value.isFinite;
+    final (width, height, fontSize) = (
+      json['width'] as num,
+      json['height'] as num,
+      json['fontSize'] as num,
+    );
+    if (!positive(width) || !positive(height) || !positive(fontSize)) {
+      throw const FormatException('The page settings name no page area.');
+    }
+    return PageSettings(
+      width: width.toDouble(),
+      height: height.toDouble(),
+      fontSize: fontSize.toDouble(),
+      night: json['night'] as bool,
+      sizesMainText: json['sizesMainText'] as bool,
+    );
+  }
 }
 
 /// One spine section and what preparing it reads from the publication.

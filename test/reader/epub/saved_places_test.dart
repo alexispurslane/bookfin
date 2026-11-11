@@ -380,7 +380,7 @@ void _report(String book, String what, int passed, int total) =>
 /// The publication of a recorded book, with what its places need.
 class _Book {
   _Book(this.publication)
-    : _opf = utf8.decode(publication.resources[publication.packagePath]!);
+    : _opf = utf8.decode(publication.textFiles[publication.packagePath]!);
 
   final Publication publication;
   final String _opf;

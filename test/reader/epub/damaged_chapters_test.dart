@@ -72,7 +72,7 @@ Uint8List _damaged(Uint8List book, String name) =>
 
 /// The text of the body of section [index] of [publication].
 String _text(Publication publication, int index) =>
-    utf8.decode(publication.resources[publication.spine[index]]!);
+    utf8.decode(publication.textFiles[publication.spine[index]]!);
 
 void main() {
   test('a book whose later chapter file is missing opens, and that chapter '
@@ -156,6 +156,21 @@ void main() {
       expect(quoteMatches(dom, place!, 'river bends for the third'), isTrue);
     }
     expect(damaged.spineSteps, whole.spineSteps);
+  });
+
+  test('a book whose package document fails the ZIP check is refused with '
+      'the check that it fails', () {
+    expect(
+      () => Publication.admit(_damaged(_book(), 'OPS/book.opf')),
+      throwsA(
+        isA<FormatException>().having(
+          (error) => error.message,
+          'message',
+          'The book file is damaged: OPS/book.opf does not match its CRC-32 '
+              'or its length.',
+        ),
+      ),
+    );
   });
 
   test('a book whose package document is missing is still refused', () {

@@ -392,9 +392,10 @@ To measure again on a device that no one else uses:
    a reopen first shows the kept picture of the last page.
 4. The user chose to open a book whose later chapter file is damaged or
    missing. That chapter shows a short note instead of its text. Ticket
-   t5-gk30 covers the three such EPUBs in the user's library. t5-gk30
-   applies the same rule to the first chapter: the book opens at that
-   chapter's note, and the next page turn goes to the next chapter. Each
+   t5-gk30 covers the three such EPUBs in the user's library. The builder
+   of t5-gk30 decided, pending the orchestrator's acceptance, that the same
+   rule applies to the first chapter: the book opens at that chapter's
+   note, and the next page turn goes to the next chapter. Each
    chapter keeps its place in the reading order, so saved places in the
    other chapters do not move. A book whose container or package document
    is missing or damaged is still refused, because it has no reading order

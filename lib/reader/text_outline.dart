@@ -184,7 +184,7 @@ TextOutline measureTextOutline(Publication publication) {
   }
   final counts = [
     for (final (index, path) in publication.spine.indexed)
-      countSection(publication.resources[path]!, wanted[index] ?? const {}),
+      countSection(publication.textFiles[path]!, wanted[index] ?? const {}),
   ];
   final parts = [
     for (final (index, path) in publication.spine.indexed)

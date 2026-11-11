@@ -642,7 +642,7 @@ void main() {
         SectionSource(
           index: 0,
           path: publication.spine.single,
-          xhtml: utf8.decode(publication.resources[publication.spine.single]!),
+          xhtml: utf8.decode(publication.textFiles[publication.spine.single]!),
           fontPrefix: 'bookfin-ffffffffffff',
           styleSheets: publication.bookStyles,
         ),

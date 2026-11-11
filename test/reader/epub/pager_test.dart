@@ -1234,14 +1234,14 @@ ui.Offset _pointOf(LaidPage page, EpubPlace place) {
 /// The search sections of [publication], in spine order.
 List<SearchSection> _sections(Publication publication) {
   final steps = spineSteps(
-    utf8.decode(publication.resources[publication.packagePath]!),
+    utf8.decode(publication.textFiles[publication.packagePath]!),
   );
   return [
     for (final (index, path) in publication.spine.indexed)
       SearchSection(
         index: index,
         path: path,
-        xhtml: publication.resources[path]!,
+        xhtml: publication.textFiles[path]!,
         spine: steps[index],
       ),
   ];

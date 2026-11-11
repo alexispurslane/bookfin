@@ -1743,7 +1743,7 @@ class ReaderSession extends ChangeNotifier {
 /// another isolate.
 Future<List<ContentsEntry>> _contentsOf(Publication publication) async {
   if (publication.contents.isNotEmpty) return publication.contents;
-  final package = publication.resources[publication.packagePath]!;
+  final package = publication.textFiles[publication.packagePath]!;
   // NOTE: A hop costs a few milliseconds, more than reading a small package
   // document.
   final linear = package.length < 64 << 10

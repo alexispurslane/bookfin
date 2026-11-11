@@ -18,7 +18,7 @@ import 'session_test.dart' show source, edition, book;
 
 void main() {
   final publication = threeSections();
-  int size(String resource) => publication.resources[resource]!.length;
+  int size(String resource) => publication.textFiles[resource]!.length;
   final whole =
       size('OPS/one.xhtml') + size('OPS/two.xhtml') + size('OPS/three.xhtml');
 

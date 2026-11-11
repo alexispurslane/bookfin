@@ -100,7 +100,7 @@ Map<String, Object?> _facts(Publication publication) => {
   'mainTextSize': publication.mainTextSize,
   'resources': {
     for (final MapEntry(key: path, value: bytes)
-        in publication.resources.entries)
+        in publication.textFiles.entries)
       path: _digest(bytes),
   },
 };
@@ -181,6 +181,18 @@ void main() {
     for (final (name, damage) in [
       ('garbage', (Uint8List kept) => utf8.encode('not a kept book')),
       ('cut short', (Uint8List kept) => kept.sublist(0, kept.length ~/ 2)),
+      // The largest header length that the record can name, far past its
+      // end (boo-yjq6 review).
+      (
+        'naming a header past its end',
+        (Uint8List kept) => Uint8List.fromList(kept)
+          ..setRange(kept.indexOf(0x0a) + 1, kept.indexOf(0x0a) + 5, [
+            0xff,
+            0xff,
+            0xff,
+            0xff,
+          ]),
+      ),
     ]) {
       test('a kept record that is $name is set aside, and the book admits '
           'in full', () async {
@@ -205,6 +217,27 @@ void main() {
         expect(_facts(third.publication), _facts(first.publication));
       });
     }
+
+    test('a load whose use of the book fails still keeps the record of the '
+        'book that it admitted', () async {
+      final bytes = epub();
+      final file = await _download(bytes);
+      final digest = _digest(bytes);
+
+      await expectLater(
+        AdmittedBooks.load(
+          file,
+          digest,
+          Publication.policy,
+          () async => Publication.admit(bytes, digest),
+          (_) => throw const FormatException('No outline in this book.'),
+        ),
+        throwsFormatException,
+      );
+
+      await AdmittedBooks.written(file);
+      expect(await _record(file).exists(), isTrue);
+    });
 
     test('removing a download removes its kept admitted book', () async {
       final root = await Directory.systemTemp.createTemp('bookfin-removal-');
@@ -527,8 +560,8 @@ void main() {
         'policy-1',
         () => throw StateError('The book admitted again.'),
       );
-      expect(reopened.resources, contains('OPS/one.xhtml'));
-      expect(reopened.resources, isNot(contains('OPS/dot.png')));
+      expect(reopened.textFiles, contains('OPS/one.xhtml'));
+      expect(reopened.textFiles, isNot(contains('OPS/dot.png')));
 
       // The image's bytes in the record change after the reopen.
       final record = await _record(file).readAsBytes();
@@ -564,7 +597,7 @@ void main() {
         final bytes = epub();
         final publication = await admit(bytes);
 
-        expect(publication.resources, isNot(contains('OPS/dot.png')));
+        expect(publication.textFiles, isNot(contains('OPS/dot.png')));
         expect(await publication.bytesOf('OPS/dot.png'), dot);
       },
     );
@@ -740,7 +773,7 @@ void main() {
         );
 
         expect(publication.imageSizes, isNot(contains('OPS/dot.png')));
-        expect(publication.resources, isNot(contains('OPS/dot.png')));
+        expect(publication.textFiles, isNot(contains('OPS/dot.png')));
         expect(
           publication.warnings,
           contains(
@@ -758,7 +791,7 @@ void main() {
         expect(
           publication.spineSteps,
           spineSteps(
-            utf8.decode(publication.resources[publication.packagePath]!),
+            utf8.decode(publication.textFiles[publication.packagePath]!),
           ),
         );
       }

@@ -744,6 +744,12 @@ class PdfRuntime {
   /// come into this isolate (boo-yjq6). The open measures only the first
   /// page, and the book measures each other page when it first uses it
   /// (boo-yjq6). Each page text is prepared through [hop].
+  ///
+  /// NOTE: PDFium keeps the file open and reads its pages after the
+  /// Downloads read that gave [path] ended. That is safe because Downloads
+  /// replaces a file by a rename and removes it by an unlink: the open
+  /// handle keeps the verified bytes. A removed PDF's space returns when
+  /// the book closes.
   Future<PdfBook> open(
     String path,
     String digest, {

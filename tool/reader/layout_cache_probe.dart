@@ -125,7 +125,7 @@ class _ProbeState extends State<_Probe> {
     final samples = <double>[];
     for (var index = 0; index < spine.length; index++) {
       final path = spine[index];
-      final xhtml = publication.resources[path]!;
+      final xhtml = publication.textFiles[path]!;
       final styles = publication.bookStyles;
       final sizes = publication.imageSizes;
       final language = publication.language;

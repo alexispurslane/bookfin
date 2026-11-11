@@ -187,7 +187,7 @@ void main() {
   group('admission keeps none of the bytes of a chapter', () {
     /// The chapter of [publication].
     String chapter(Publication publication) =>
-        utf8.decode(publication.resources['OPS/one.xhtml']!);
+        utf8.decode(publication.textFiles['OPS/one.xhtml']!);
 
     test('whose entry expands past the size that its directory gives', () {
       // The chapter expands to far more than 1,000 bytes, but stays below
@@ -225,7 +225,7 @@ void main() {
     );
 
     expect(
-      utf8.decode(publication.resources['OPS/one.xhtml']!),
+      utf8.decode(publication.textFiles['OPS/one.xhtml']!),
       contains('A river'),
     );
   });
@@ -236,7 +236,7 @@ void main() {
     );
 
     expect(
-      utf8.decode(publication.resources['OPS/one.xhtml']!),
+      utf8.decode(publication.textFiles['OPS/one.xhtml']!),
       contains('could not be read'),
     );
   });

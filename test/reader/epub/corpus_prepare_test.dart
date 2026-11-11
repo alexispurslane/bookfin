@@ -97,7 +97,7 @@ void main() {
       final samples = [
         for (final index in mainTextSamples([
           for (final path in publication.spine)
-            publication.resources[path]!.length,
+            publication.textFiles[path]!.length,
         ]))
           opened.source(index),
       ];

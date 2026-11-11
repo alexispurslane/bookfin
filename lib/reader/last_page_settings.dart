@@ -73,14 +73,7 @@ class LastPageSettings {
     _value = settings;
     // NOTE: The value is five numbers, far less work than a hop to another
     // isolate.
-    final value = jsonEncode({
-      'version': 1,
-      'width': settings.width,
-      'height': settings.height,
-      'fontSize': settings.fontSize,
-      'night': settings.night,
-      'sizesMainText': settings.sizesMainText,
-    });
+    final value = jsonEncode({'version': 1, ...settings.toJson()});
     _queue = _queue.then((_) => _store.write(value).catchError((Object _) {}));
   }
 
@@ -89,30 +82,9 @@ class LastPageSettings {
   static PageSettings? _decode(String? value) {
     if (value == null) return null;
     final json = jsonDecode(value);
-    if (json is! Map ||
-        json['version'] != 1 ||
-        json['width'] is! num ||
-        json['height'] is! num ||
-        json['fontSize'] is! num ||
-        json['night'] is! bool ||
-        json['sizesMainText'] is! bool) {
+    if (json is! Map || json['version'] != 1) {
       throw const FormatException('These are not kept page settings.');
     }
-    bool positive(num value) => value > 0 && value.isFinite;
-    final (width, height, fontSize) = (
-      json['width'] as num,
-      json['height'] as num,
-      json['fontSize'] as num,
-    );
-    if (!positive(width) || !positive(height) || !positive(fontSize)) {
-      throw const FormatException('The kept page has no page area.');
-    }
-    return PageSettings(
-      width: width.toDouble(),
-      height: height.toDouble(),
-      fontSize: fontSize.toDouble(),
-      night: json['night'] as bool,
-      sizesMainText: json['sizesMainText'] as bool,
-    );
+    return PageSettings.fromJson(json);
   }
 }

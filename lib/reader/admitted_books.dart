@@ -36,9 +36,11 @@ abstract final class AdmittedBooks {
   /// One worker isolate reads the publication from the kept record, or
   /// admits the book with [admit], as [read] does, and runs [use] on it.
   /// Only the result of [use] comes back. When the book was admitted, a
-  /// worker of its own writes its record after, as [keep] does. The load
-  /// first waits for the record writes of [original] that an earlier load
-  /// started ([written]).
+  /// worker of its own writes its record after, as [keep] does. When [use]
+  /// throws, the load worker writes the record before the error leaves it,
+  /// so the next load does not admit the book again. The load first waits
+  /// for the record writes of [original] that an earlier load started
+  /// ([written]).
   ///
   /// [admit] and [use] run in the worker, so they must capture only values
   /// that can be sent to another isolate.
@@ -58,7 +60,14 @@ abstract final class AdmittedBooks {
         policy,
         admit,
       );
-      return (use(publication), record);
+      final T result;
+      try {
+        result = use(publication);
+      } catch (_) {
+        if (record != null) await keep(record);
+        rethrow;
+      }
+      return (result, record);
     });
     if (record != null) _keepLater(record);
     return result;
@@ -132,9 +141,11 @@ abstract final class AdmittedBooks {
   }
 
   /// Writes [record] in a worker isolate of its own. It is static, so that
-  /// the worker's closure holds only [record].
+  /// the worker's closure holds only [record]. A worker that cannot start
+  /// costs one more full admission at the next open, as a failed write
+  /// does, so it does not fail either.
   static Future<void> _keepInWorker(AdmittedRecord record) =>
-      Isolate.run(() => keep(record));
+      Isolate.run(() => keep(record)).catchError((Object _) {});
 
   /// Completes once the record writes of [original] that [load] started in
   /// this isolate ended.

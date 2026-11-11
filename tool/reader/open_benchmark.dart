@@ -217,7 +217,7 @@ class _BenchmarkState extends State<_Benchmark> {
       'firstAdmit': _ms(admit),
       'sections': [
         for (final path in publication.spine)
-          publication.resources[path]!.length,
+          publication.textFiles[path]!.length,
       ],
     });
     final found = <String, Object?>{};
@@ -545,7 +545,7 @@ class _BenchmarkState extends State<_Benchmark> {
   Future<void> _parts(Map plan, EpubDocument document, int section) async {
     final publication = document.publication;
     final path = publication.spine[section];
-    final xhtml = publication.resources[path]!;
+    final xhtml = publication.textFiles[path]!;
     final styles = publication.bookStyles;
     final sizes = publication.imageSizes;
     final language = publication.language;

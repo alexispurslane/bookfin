@@ -16,7 +16,7 @@ List<ContentsEntry> listedContents(Publication publication) =>
     ? publication.contents
     : spineContents(
         publication,
-        linearSpine(publication.resources[publication.packagePath]!),
+        linearSpine(publication.textFiles[publication.packagePath]!),
       );
 
 /// One "Chapter N" entry for each section of the spine of [publication]

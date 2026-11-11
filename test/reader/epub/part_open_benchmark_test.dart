@@ -71,7 +71,7 @@ void main() {
     test('$id $index', () async {
       final publication = CorpusBook.open(await books[id]!.file.readAsBytes())
           .publication;
-      final bytes = publication.resources[publication.spine[index]]!.length;
+      final bytes = publication.textFiles[publication.spine[index]]!.length;
       for (final fraction in _places) {
         final find = _progressIn(index, fraction);
         final times = {'whole': <double>[], 'part': <double>[]};
