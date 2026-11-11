@@ -35,3 +35,7 @@ Built design B in lib/playback/timeline.dart. A closed row of a move shows '→ 
 **2026-11-11T16:09:01Z**
 
 Review (reviewer agent, 2026-11-11) of fd2d5836 resolved: (C1/D1) Played, Interrupted and Finished go from one position sample to the next, so their places can differ by milliseconds; the two-end rule is now one predicate HistoryEvent.moved = changesPosition && !samePlace. (C2) a seek within one shown second reads as its verb alone, not 'Moved ahead 0 s'. (C3/D2/T2) tiles always show chapter and quote; the quote line shows more of a quote place than the place text. (D3) AlongAudio documents that it is the time that PlaceWords.short shows. (D4) one glowAccent(theme) in foundation/theme.dart replaces five copies. (T3) stale doc lines and test names. Open for the user: Delete keeps a 48-point target, so an open row is taller than in the mockup; 'Went back in history' still uses 'back' in the time sense.
+
+**2026-11-11T16:38:53Z**
+
+Follow-up to user feedback (the open row's highlight was too tall, about 56 points against 29, and crowded the tiles): the open row now keeps the closed row's height and content. Delete is a swipe toward the start of any row (end-to-start only), on the error color, and the row springs back because the sheet still confirms. Each row has a Delete accessibility action. Name or Rename is a pencil tile at the right end of a bookmark's Go to line, as tall as the tile and at least 48 points. Screenshots: ~/.cache/bookfin/previews/boo-hyl4/built2/.
