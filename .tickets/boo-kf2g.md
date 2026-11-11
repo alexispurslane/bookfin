@@ -1,6 +1,6 @@
 ---
 id: boo-kf2g
-status: in_progress
+status: closed
 deps: []
 links: []
 created: 2026-11-11T00:13:41Z

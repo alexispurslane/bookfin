@@ -1,6 +1,6 @@
 ---
 id: boo-cldw
-status: in_progress
+status: closed
 deps: [boo-kf2g]
 links: []
 created: 2026-11-11T00:07:15Z
@@ -46,3 +46,7 @@ The user now requests fresh same-emulator measurements of Bookfin, Android WebVi
 **2026-11-11T00:32:07Z**
 
 Integrated prepared section from 432bdcc after parent inspected complete diff and implementation/platform sources. Resolved ticket-only merge conflict by preserving benchmark dependency and both sets of notes. Parent Nix markup/assets check passed:12 images,46 references, one accessible table, preserved PDF/History/reader sections and existing source/install links. Full-document T3 previews at390px Cream and1280px Night visually inspected with embedded bundled fonts and all image paths resolved; desktop check reports pageWidth1280,fonts loaded,12 images loaded,table1180px with no overflow. Phone EPUB section retains horizontal table scrolling within the page. No app code changed or Flutter suite rerun. boo-cldw remains in_progress pending boo-kf2g new emulator measurements and final numeric table; this is integration of the prepared section only. Live-site investigation remains deferred.
+
+**2026-11-11T11:16:16Z**
+
+Completed numeric comparison after benchmark merge e1b8607 and its review resolution. Root index.html now shows every one of45 engine/book/operation cells as median/p90 milliseconds, generated from reviewed JSON. Defines samples and timing interval; discloses instrumented release shells, software graphics, capture costs, cache states, warm crossings, pagination/layout differences and variable host load. Parent checked all45 numeric pairs,12 image dimensions,55 references and three semantic tables through Nix; existing PDF/History/reader sections are unchanged. Rendered390px Cream/Night and1280px Night with bundled fonts. Phone page has no overflow; table scrolling preserves book captions and action labels. Verification: docs/marketing/epub-renderer/verification.json. No application behavior change; no additional Flutter/device run. Live-site publication issue boo-qf93 remains deferred. Both requested homepage section and measured comparison are complete.

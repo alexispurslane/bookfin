@@ -1,0 +1,36 @@
+{
+  "source": "tool/research/epub_engines/evidence/results/summary.json",
+  "source_sha256": "49207cd963cbe00511badfab129e0fd43ce326c79157f0f87eb7e6d3a720c3ce",
+  "verified_cells": 45,
+  "measured_samples": 1404,
+  "instrumentation_jobs": 108,
+  "parent_harness_tests": 37,
+  "raw_recollection": "All cells and diagnostic facts exactly match retained results",
+  "homepage_checks": {
+    "images": 12,
+    "references": 55,
+    "tables": 3,
+    "numeric_pairs": "45 exact matches after one-decimal rounding",
+    "pending_cells": 0,
+    "existing_pdf_history_reader_sections": "unchanged"
+  },
+  "previews": {
+    "mobile_width": 390,
+    "desktop_width": 1280,
+    "themes": [
+      "Cream",
+      "Night"
+    ],
+    "fonts": "bundled font files embedded in verification copy",
+    "mobile_page_width": 390,
+    "horizontal_scrolling": "contained within tables; action labels and book captions stay visible"
+  },
+  "application_source": "unchanged; no repeat application or device measurement run needed",
+  "limitations": [
+    "Instrumented release shells, not full applications",
+    "Software emulator graphics, not Pixel results",
+    "Request-to-verified-window-copy includes capture and validation costs",
+    "Pagination scope and page layout differ; host load varied"
+  ],
+  "live_site": "publication troubleshooting deferred by user"
+}

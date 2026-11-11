@@ -141,11 +141,13 @@ h1{font:600 clamp(2.6rem,6vw,4.6rem)/1.05 var(--serif);margin:0 auto 1.25rem;max
 .table-scroll:focus-visible{outline:2px solid var(--copper);outline-offset:4px}
 .engine-table{width:100%;min-width:42rem;border-collapse:collapse;text-align:left;font:400 1rem/1.55 var(--display)}
 .engine-table caption{text-align:left;font:600 1.1rem var(--serif);padding:1.25rem 1rem;background:var(--wash)}
+.engine-table caption span{display:inline-block;position:sticky;left:1rem;max-width:calc(100vw - 2 * var(--gutter) - 2rem)}
 .engine-table th,.engine-table td{padding:1.25rem 1rem;vertical-align:top;border-bottom:1px solid var(--line)}
 .engine-table thead th{font-weight:600;color:var(--subtle);background:var(--sheet)}
-.engine-table tbody th{width:20%;font-weight:600}
-.engine-table tbody td:nth-child(2){width:50%}
-.engine-table tbody td:last-child{color:var(--subtle)}
+.engine-table tbody th{width:31%;font-weight:600;position:sticky;left:0;background:var(--paper)}
+.engine-table thead th:first-child{position:sticky;left:0}
+.engine-table tbody td{font-variant-numeric:tabular-nums;white-space:nowrap}
+.epub-comparison .table-scroll+.table-scroll{margin-top:1.5rem}
 .engine-table tbody tr:last-child>*{border-bottom:0}
 .epub-comparison .epub-evidence{margin:1rem 0 0;font:400 .95rem/1.6 var(--display)}
 
@@ -390,23 +392,59 @@ footer a{color:var(--subtle);display:inline-block;padding:.6rem .25rem}
       </div>
     </div>
     <div class="epub-comparison">
-      <h3 id="epub-comparison-h">Three ways to put an EPUB on screen</h3>
-      <p>We are preparing fresh tests of Bookfin, Android WebView, and KOReader on the same Android emulator. Comparable results are pending, so there is no speed ranking yet.</p>
-      <p class="table-help" id="epub-table-help">On a narrow screen, scroll the table sideways. With a keyboard, focus the table and use the arrow keys.</p>
-      <div class="table-scroll" role="region" tabindex="0" aria-labelledby="epub-comparison-h" aria-describedby="epub-table-help">
-        <table class="engine-table">
-          <caption>EPUB rendering approaches and performance</caption>
+      <h3 id="epub-comparison-h">Three engines, one Android emulator</h3>
+      <p>We tested Bookfin’s Flutter EPUB engine, epub.js in Android WebView, and KOReader’s crengine in small release test apps. All three read the same public-domain books, with the same font and page dimensions. No library, sign-in, or audio work was included.</p>
+      <p id="epub-timing-key">Each cell shows <strong>median / p90, in milliseconds</strong>; lower means less time. The median is the middle result. The p90 is the time that 90% of the samples reached or beat. Each book has 12 fresh opens and 36 samples of every other action per engine.</p>
+      <p>Timing starts at the reading request and ends when Android copies a rendered page that matches a separately checked reference. This includes rendering, scheduling, content checks, and capture overhead. It measures test-app operations, not pure engine speed or physical display latency.</p>
+      <p class="table-help" id="epub-table-help">On a narrow screen, scroll each table sideways. With a keyboard, focus the table and use the arrow keys.</p>
+      <div class="table-scroll" role="region" tabindex="0" aria-labelledby="epub-prose-caption" aria-describedby="epub-table-help epub-timing-key">
+        <table class="engine-table" data-book="prose">
+          <caption id="epub-prose-caption"><span>Pride and Prejudice</span></caption>
           <thead>
-            <tr><th scope="col">Reader</th><th scope="col">How pages are drawn</th><th scope="col">Same-emulator timing</th></tr>
+            <tr><th scope="col">Reading action</th><th scope="col">Bookfin</th><th scope="col">WebView + epub.js</th><th scope="col">KOReader engine</th></tr>
           </thead>
           <tbody>
-            <tr><th scope="row">Bookfin</th><td>Bookfin's shared Flutter engine lays out and draws EPUB pages. No WebView.</td><td>Results pending</td></tr>
-            <tr><th scope="row">Android WebView</th><td>An embedded browser lays out and draws HTML and CSS supplied by an EPUB reader.</td><td>Results pending</td></tr>
-            <tr><th scope="row">KOReader</th><td>The Cool Reader engine (crengine) lays out and draws EPUB pages.</td><td>Results pending</td></tr>
+            <tr data-operation="fresh_open"><th scope="row">Fresh open</th><td data-engine="bookfin">503.9 / 554.1</td><td data-engine="webview">550.4 / 562.0</td><td data-engine="koreader">252.0 / 321.5</td></tr>
+            <tr data-operation="cached_reopen"><th scope="row">Cached reopen</th><td data-engine="bookfin">109.0 / 136.8</td><td data-engine="webview">180.6 / 251.2</td><td data-engine="koreader">67.4 / 90.7</td></tr>
+            <tr data-operation="page_turn"><th scope="row">Page turn</th><td data-engine="bookfin">58.9 / 68.6</td><td data-engine="webview">66.0 / 114.8</td><td data-engine="koreader">61.4 / 74.4</td></tr>
+            <tr data-operation="chapter_crossing"><th scope="row">Warm chapter crossing</th><td data-engine="bookfin">58.4 / 75.5</td><td data-engine="webview">89.8 / 98.7</td><td data-engine="koreader">67.2 / 78.7</td></tr>
+            <tr data-operation="font_change"><th scope="row">Text size 18 → 20</th><td data-engine="bookfin">109.7 / 129.1</td><td data-engine="webview">57.9 / 71.6</td><td data-engine="koreader">109.0 / 114.8</td></tr>
           </tbody>
         </table>
       </div>
-      <p class="epub-evidence">These are rendering approaches, not a claim that every app or platform has the same features. <a href="docs/marketing/epub-renderer/README.md">Implementation sources and measurement notes</a>.</p>
+      <div class="table-scroll" role="region" tabindex="0" aria-labelledby="epub-long-caption" aria-describedby="epub-table-help epub-timing-key">
+        <table class="engine-table" data-book="long">
+          <caption id="epub-long-caption"><span>Moby-Dick</span></caption>
+          <thead>
+            <tr><th scope="col">Reading action</th><th scope="col">Bookfin</th><th scope="col">WebView + epub.js</th><th scope="col">KOReader engine</th></tr>
+          </thead>
+          <tbody>
+            <tr data-operation="fresh_open"><th scope="row">Fresh open</th><td data-engine="bookfin">621.4 / 651.0</td><td data-engine="webview">549.7 / 564.3</td><td data-engine="koreader">326.3 / 370.3</td></tr>
+            <tr data-operation="cached_reopen"><th scope="row">Cached reopen</th><td data-engine="bookfin">107.4 / 127.6</td><td data-engine="webview">239.5 / 307.6</td><td data-engine="koreader">67.0 / 80.7</td></tr>
+            <tr data-operation="page_turn"><th scope="row">Page turn</th><td data-engine="bookfin">58.8 / 66.6</td><td data-engine="webview">62.2 / 73.6</td><td data-engine="koreader">67.4 / 78.3</td></tr>
+            <tr data-operation="chapter_crossing"><th scope="row">Warm chapter crossing</th><td data-engine="bookfin">59.0 / 66.3</td><td data-engine="webview">91.3 / 110.6</td><td data-engine="koreader">66.6 / 74.9</td></tr>
+            <tr data-operation="font_change"><th scope="row">Text size 18 → 20</th><td data-engine="bookfin">118.0 / 176.2</td><td data-engine="webview">70.3 / 82.1</td><td data-engine="koreader">158.6 / 162.5</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="table-scroll" role="region" tabindex="0" aria-labelledby="epub-illustrated-caption" aria-describedby="epub-table-help epub-timing-key">
+        <table class="engine-table" data-book="illustrated">
+          <caption id="epub-illustrated-caption"><span>Alice’s Adventures in Wonderland</span></caption>
+          <thead>
+            <tr><th scope="col">Reading action</th><th scope="col">Bookfin</th><th scope="col">WebView + epub.js</th><th scope="col">KOReader engine</th></tr>
+          </thead>
+          <tbody>
+            <tr data-operation="fresh_open"><th scope="row">Fresh open</th><td data-engine="bookfin">700.3 / 825.5</td><td data-engine="webview">682.9 / 749.9</td><td data-engine="koreader">183.2 / 216.0</td></tr>
+            <tr data-operation="cached_reopen"><th scope="row">Cached reopen</th><td data-engine="bookfin">131.7 / 142.1</td><td data-engine="webview">540.3 / 635.3</td><td data-engine="koreader">72.2 / 80.3</td></tr>
+            <tr data-operation="page_turn"><th scope="row">Page turn</th><td data-engine="bookfin">58.0 / 76.8</td><td data-engine="webview">70.4 / 83.1</td><td data-engine="koreader">66.1 / 77.1</td></tr>
+            <tr data-operation="chapter_crossing"><th scope="row">Warm chapter crossing</th><td data-engine="bookfin">58.1 / 61.1</td><td data-engine="webview">79.7 / 97.4</td><td data-engine="koreader">60.0 / 76.3</td></tr>
+            <tr data-operation="font_change"><th scope="row">Text size 18 → 20</th><td data-engine="bookfin">111.5 / 125.0</td><td data-engine="webview">77.3 / 90.7</td><td data-engine="koreader">75.7 / 79.1</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="epub-evidence">Measured November 10, 2026: Android 16 emulator, four virtual ARM64 CPUs, 2 GiB RAM, software graphics, and a 360 × 640 logical-pixel reading area. The 108 test runs produced 1,404 measured samples. These are emulator results, not Pixel timings.</p>
+      <p class="epub-evidence">Fresh opens start without the test app’s book caches; Android’s file cache remains. Cached reopens follow cache preparation. Chapter crossings enter an already visited chapter. KOReader lays out the whole book during open and size changes; Bookfin can finish pagination in the background, while WebView lays out chapters as needed. Page breaks and illustration sizes differ.</p>
+      <p class="epub-evidence">The test runner, Flutter’s texture rendering mode, capture overhead, and changing host load limit the comparison. These results do not establish one overall winner or equal rendering quality. <a href="docs/research/epub-engine-results.md">Full results and raw evidence</a> · <a href="docs/research/epub-engine-method.md">How we measured</a> · <a href="docs/marketing/epub-renderer/README.md">Implementation sources</a>.</p>
     </div>
   </section>
 

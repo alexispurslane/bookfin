@@ -35,18 +35,30 @@ this beside the shared-implementation claim, not only in this note.
 These sources establish the rendering approaches. They do not establish a speed
 ranking, identical features, or identical support for every EPUB stylesheet.
 
-## Fresh comparable measurements are pending
+## Completed same-emulator measurements
 
-The user requested new tests of Bookfin, Android WebView, and KOReader on the
-same Android emulator, using minimal shell apps. The parent task owns those
-tests. This homepage change performs no benchmark or device work. All three
-timing cells remain `Results pending` until the parent provides verified data.
+The homepage now reports all 45 reviewed engine/book/operation cells from
+[`epub-engine-results.md`](../../research/epub-engine-results.md). The exact
+[method](../../research/epub-engine-method.md),
+[review and resolved finding](../../research/epub-engine-review.md), and
+[machine-readable results](../../../tool/research/epub_engines/evidence/results/summary.json)
+are retained. The benchmark implementation and review fix were integrated at
+`e1b8607`; the fix preserved accepted references and measurements unchanged.
 
-The final table and this note must name the common measured operation, time
-unit, EPUB fixture, engine versions, emulator configuration, run count, and
-cache state. They must distinguish work inside each shell from whole-app open
-time and physical-device performance. Different measured operations must not
-be combined into a speed multiplier.
+All three real engines ran in optimized release shells on the same Android 16
+emulator. The 108 instrumented runs yielded 1,404 measured samples across three
+books and five actions. Each table cell shows median / nearest-rank p90 in
+milliseconds, rounded to one decimal place directly from the result JSON.
+There are 12 fresh-open and 36 other-action samples per engine and book. The
+three warm samples within each process are not independent process starts.
+
+The homepage defines the interval as request to a matching Android window
+copy. It includes rendering, scheduling, content checks, and capture overhead.
+It discloses software graphics, Flutter texture composition, test-runner work,
+varying host load, cache conditions, warm crossings, and unequal whole-book
+pagination work. The engines also produce different page boundaries and image
+sizes. It makes no whole-app speed ranking, equal-quality claim, or Pixel
+prediction. All three books are shown; no aggregate speed multiplier is used.
 
 Historical studies are deliberately excluded from the table:
 
@@ -58,8 +70,8 @@ Historical studies are deliberately excluded from the table:
 - [`epub-layout-cache.md`](../../research/epub-layout-cache.md) measures Bookfin
   cache behavior, not current end-to-end performance against other engines.
 
-No historical host figure is represented as current Android performance. There
-is no numerical result, winner, or inferred ranking in the prepared table.
+No historical host figure is represented as current Android performance. The new numbers come only from the reviewed emulator run; there is no inferred
+overall ranking.
 
 ## Homepage checks
 
@@ -84,5 +96,10 @@ check, not an app screenshot or a performance measurement.
 | Cream, desktop | 1280 px | 1180 px | 1180 px | No page overflow; all columns fit. |
 | Night, phone | 390 px | 350 px | 672 px | No page overflow; the region accepted keyboard focus and scrolled 322 px. |
 
-The parent owns the final full-page visual review and the new benchmark
-results. This leaf ran no Flutter suite, app build, benchmark, or device action.
+The original writer ran no Flutter suite, app build, benchmark, or device action.
+The parent subsequently integrated the completed benchmark, passed all 37 host
+harness tests, and regenerated every timing cell and diagnostic summary from
+raw records with identical results. Application code did not change during
+integration; the lead's 2,649 passing Flutter tests and 21 skips remain recorded.
+The homepage adds no application behavior. Final table verification checks all
+45 displayed median/p90 pairs and their sample counts against the result JSON.
