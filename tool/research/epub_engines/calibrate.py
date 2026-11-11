@@ -87,11 +87,11 @@ def main():
             failures.append(f"Incomplete independent content evidence: {key}; source={source_validated}, OCR={ocr_validated}, images={image_reviewed}")
     if len(references) != 63:
         failures.append(f"Expected 63 engine/book/page references, found {len(references)}")
-    args.output.write_text(json.dumps(references, indent=2) + "\n")
     if failures:
         print("\n".join(failures))
         if not args.draft:
             raise RuntimeError("Reference promotion refused; inspect and resolve calibration evidence")
+    args.output.write_text(json.dumps(references, indent=2) + "\n")
 
 
 if __name__ == "__main__":

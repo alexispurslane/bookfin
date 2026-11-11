@@ -1,0 +1,4 @@
+PASS: only calibrate.py and test_calibrate.py changed within the harness after review; engine, workload, capture, timing and aggregation code unchanged.
+PASS: accepted references, independently reviewed calibration, image reviews, raw measured evidence, and all summarized results unchanged from 9f51a8fb401368d38ded1345bef2a5cbf975a12e
+PASS: production lib/ and index.html unchanged from original review base.
+PASS: frozen reference SHA256 6d6afee5742aff09b2c08b7dd510b1f922343162adb59776bdda3c426d4710b2

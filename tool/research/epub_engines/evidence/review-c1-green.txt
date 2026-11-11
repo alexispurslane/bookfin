@@ -1,0 +1,12 @@
+test_explicit_drafts_retain_unapproved_content_for_inspection (test_calibrate.ReferencePromotionTest.test_explicit_drafts_retain_unapproved_content_for_inspection) ... ok
+test_failed_ocr_preserves_the_accepted_reference_file (test_calibrate.ReferencePromotionTest.test_failed_ocr_preserves_the_accepted_reference_file) ... ok
+test_missing_illustration_approval_does_not_create_a_promoted_reference_file (test_calibrate.ReferencePromotionTest.test_missing_illustration_approval_does_not_create_a_promoted_reference_file) ... ok
+test_reference_promotion_requires_successful_workload_assertions (test_calibrate.ReferencePromotionTest.test_reference_promotion_requires_successful_workload_assertions) ... ok
+test_a_title_only_page_must_show_the_complete_independent_source_heading (test_calibrate.SourceEvidenceTest.test_a_title_only_page_must_show_the_complete_independent_source_heading) ... ok
+test_rendered_words_must_include_an_independent_source_excerpt (test_calibrate.SourceEvidenceTest.test_rendered_words_must_include_an_independent_source_excerpt) ... ok
+test_typographic_punctuation_and_whitespace_do_not_hide_matching_words (test_calibrate.SourceEvidenceTest.test_typographic_punctuation_and_whitespace_do_not_hide_matching_words) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.197s
+
+OK
