@@ -3,12 +3,18 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 /// A place in a recording as a clock reads it: "05:00" under an hour, and
-/// "1:05:00" from an hour on. Negative times read as "00:00".
+/// "1:05:00" from an hour on. It shows [audioSeconds] of [milliseconds], so
+/// negative times read as "00:00".
 String audioTime(int milliseconds) {
-  final seconds = max(0, milliseconds) ~/ 1000;
+  final seconds = audioSeconds(milliseconds);
   final minutes = seconds ~/ 60;
   return '${minutes ~/ 60 > 0 ? '${minutes ~/ 60}:' : ''}${(minutes % 60).toString().padLeft(2, '0')}:${(seconds % 60).toString().padLeft(2, '0')}';
 }
+
+/// The whole seconds that [audioTime] shows for [milliseconds]: rounded
+/// down, and zero for a negative time. A distance between two shown times
+/// subtracts these, so that it agrees with the times.
+int audioSeconds(int milliseconds) => max(0, milliseconds) ~/ 1000;
 
 /// A length of time to the nearest minute, for example "9 h 44 m", or "12 m"
 /// under one hour.

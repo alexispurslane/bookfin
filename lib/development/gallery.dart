@@ -713,7 +713,7 @@ class _PlayerFixture extends StatelessWidget {
               ),
             },
             showBooks: true,
-            onGoBack: (event) => sample.goTo(event.before),
+            onGoBefore: (event) => sample.goTo(event.before),
             onGoTo: (entry) => sample.goTo(switch (entry) {
               ActionEntry(:final event) => event.after,
               BookmarkEntry(:final bookmark) => bookmark.position,

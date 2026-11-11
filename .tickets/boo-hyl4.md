@@ -27,3 +27,7 @@ Design written in docs/plans/history-choice.md (2026-11-11). Cause of 'not quite
 **2026-11-11T15:40:09Z**
 
 User decision 2026-11-11: design B (a route per move), Before and After tiles of equal size. Implementation delegated with tc-p3j8 and tc-butt.
+
+**2026-11-11T15:54:14Z**
+
+Built design B in lib/playback/timeline.dart. A closed row of a move shows '→ <after place>'. An open move shows two tiles of one size, Before (onGoBefore, renamed from onGoBack) and After (onGoTo), across the row from the time column to Delete. An entry has two ends when samePlace(before, after) is false; other entries and bookmarks show one 'Go to' tile. Delete replaces the place text at the row's end; a bookmark's Name/Rename is a pencil icon before it. Tile lines never wrap. _end() describes every tile's place, for boo-z3is. Tests: test/playback/timeline_route_test.dart; old tests now tap tiles. Screenshots: ~/.cache/bookfin/previews/boo-hyl4/built/. Details in docs/plans/history-choice.md, 'Built'.

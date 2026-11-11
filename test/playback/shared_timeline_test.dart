@@ -184,6 +184,11 @@ void main() {
   Finder inTimeline(Finder finder) =>
       find.descendant(of: find.byType(HistoryTimeline), matching: finder);
 
+  /// The tile of an open entry whose role word is [role], such as BEFORE.
+  Finder tile(String role) => find
+      .ancestor(of: inTimeline(find.text(role)), matching: find.byType(InkWell))
+      .first;
+
   /// Taps the row labeled [row], then its choice [choice], and lets the
   /// work that the choice starts run in real time.
   Future<void> choose(WidgetTester tester, String row, String choice) async {
@@ -235,24 +240,26 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(
-      inTimeline(find.text('Go back to “A river follows the road.”')),
+      find.descendant(
+        of: tile('BEFORE'),
+        matching: find.text('“A river follows the road.”'),
+      ),
       findsOneWidget,
     );
     expect(
-      inTimeline(find.text('Go to “Where the road ends.”')),
+      find.descendant(
+        of: tile('AFTER'),
+        matching: find.text('“Where the road ends.”'),
+      ),
       findsOneWidget,
     );
   });
 
-  testWidgets('Go to on a reading entry from the player opens the reader '
+  testWidgets('After on a reading entry from the player opens the reader '
       'there', (tester) async {
     await showPlayerHistory(tester);
 
-    await choose(
-      tester,
-      'Went to a search result',
-      'Go to “The far shore at last.”',
-    );
+    await choose(tester, 'Went to a search result', 'AFTER');
 
     expect(find.byType(HistoryTimeline), findsNothing);
     expect(find.text('Reader screen'), findsOneWidget);
@@ -261,7 +268,7 @@ void main() {
     expect(reader.initialAddress?.quote, 'The far shore at last.');
   });
 
-  testWidgets('Go to on a reading entry from the player records a history '
+  testWidgets('After on a reading entry from the player records a history '
       'restore move from the edition\'s saved place, and the reader offers '
       'Undo', (tester) async {
     final key = account().scope.key;
@@ -271,11 +278,7 @@ void main() {
     await tester.runAsync(reader.refreshPersonalRecords);
     await showPlayerHistory(tester);
 
-    await choose(
-      tester,
-      'Went to a search result',
-      'Go to “The far shore at last.”',
-    );
+    await choose(tester, 'Went to a search result', 'AFTER');
     await settle(tester, () => reader.document != null);
     // The pager shows the first page, at the place that the book opened at.
     reader.acceptAddress(reader.token, reader.initialAddress!);
@@ -287,40 +290,36 @@ void main() {
     expect(reader.undoOffer?.action, same(moved));
   });
 
-  testWidgets('Go back on a reading entry opens the reader where the move '
+  testWidgets('Before on a reading entry opens the reader where the move '
       'began', (tester) async {
     await showPlayerHistory(tester);
 
-    await choose(
-      tester,
-      'Went to a search result',
-      'Go back to “A river follows the road.”',
-    );
+    await choose(tester, 'Went to a search result', 'BEFORE');
 
     expect(find.text('Reader screen'), findsOneWidget);
     await settle(tester, () => reader.document != null);
     expect(reader.initialAddress?.quote, 'A river follows the road.');
   });
 
-  testWidgets('Go to on a listening entry from outside the player opens the '
+  testWidgets('After on a listening entry from outside the player opens the '
       'player there', (tester) async {
     await tester.runAsync(() => playback.seekEdition(5000));
     await showBookHistory(tester);
 
-    await choose(tester, 'Jumped ahead 30 s', 'Go to 00:30');
+    await choose(tester, 'Jumped ahead 30 s', 'AFTER');
 
     expect(playback.editionMilliseconds, 30000);
     expect(find.byType(PlayerView), findsOneWidget);
     expect(find.text('Reader screen'), findsNothing);
   });
 
-  testWidgets('Go to on a listening entry in the player stays in the player', (
+  testWidgets('After on a listening entry in the player stays in the player', (
     tester,
   ) async {
     await tester.runAsync(() => playback.seekEdition(5000));
     await showPlayerHistory(tester);
 
-    await choose(tester, 'Jumped ahead 30 s', 'Go to 00:30');
+    await choose(tester, 'Jumped ahead 30 s', 'AFTER');
 
     expect(playback.editionMilliseconds, 30000);
     expect(find.byType(PlayerView), findsOneWidget);
@@ -332,7 +331,7 @@ void main() {
 
     await tester.tap(inTimeline(find.text('Bookmark', findRichText: true)));
     await tester.pumpAndSettle();
-    await tester.tap(inTimeline(find.text('Name')));
+    await tester.tap(inTimeline(find.byTooltip('Name')));
     await tester.pumpAndSettle();
     expect(find.text('Edit bookmark'), findsOneWidget);
     expect(find.text('“The far shore at last.”'), findsWidgets);
@@ -485,7 +484,7 @@ void main() {
                   along: AlongAudio(place.milliseconds),
                 ),
               },
-              onGoBack: (_) {},
+              onGoBefore: (_) {},
               onGoTo: (_) {},
               onRename: (_) {},
               onDelete: (_) {},
@@ -517,7 +516,7 @@ void main() {
       await showAlone(tester, [ActionEntry(seek(1037, 1012))]);
 
       expect(find.text('Moved back', findRichText: true), findsOneWidget);
-      expect(find.text('12%'), findsOneWidget);
+      expect(find.text('→ 12%'), findsOneWidget);
     });
 
     testWidgets('a reading move that the open book cannot place reads as its '
@@ -531,25 +530,22 @@ void main() {
       tester,
     ) async {
       await showAlone(tester, [ActionEntry(seek(122, 134))]);
-      expect(find.text('p. 134'), findsOneWidget);
+      expect(find.text('→ p. 134'), findsOneWidget);
       expect(find.textContaining('Chapter 4'), findsNothing);
 
       await tester.tap(find.text('Moved ahead 12 pages', findRichText: true));
       await tester.pumpAndSettle();
 
-      expect(
-        find.textContaining('Chapter 4', findRichText: true),
-        findsOneWidget,
-      );
-      expect(
-        find.textContaining(
-          'It was a bright cold day in April.',
-          findRichText: true,
-        ),
-        findsOneWidget,
-      );
-      expect(find.text('Go back to p. 122'), findsOneWidget);
-      expect(find.text('Go to p. 134'), findsOneWidget);
+      // Each end of the move shows its own page, chapter and quote.
+      for (final (role, page) in [('BEFORE', 'p. 122'), ('AFTER', 'p. 134')]) {
+        Finder inTile(Finder finder) =>
+            find.descendant(of: tile(role), matching: finder);
+        expect(inTile(find.text(page)), findsOneWidget);
+        expect(
+          inTile(find.text('Chapter 4 · “It was a bright cold day in April.”')),
+          findsOneWidget,
+        );
+      }
     });
 
     testWidgets('an open listening entry shows its chapter', (tester) async {

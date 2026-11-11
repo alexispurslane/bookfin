@@ -267,3 +267,20 @@ The user chose design B: each entry is a move with two ends. A closed row
 shows the after place behind "→". An open move shows two tiles of equal
 size, Before on the left and After on the right, in the order that they
 happened. Tickets tc-p3j8 and tc-butt ship with it.
+
+## Built (2026-11-11)
+
+The timeline follows design B with these details, which the decision did not settle:
+
+- An entry has two ends when its before place and its after place differ (`samePlace`). So "Opened" at the start of a reading visit, Paused and Closed show one place. "Opened at the place from Pixel 8" shows two.
+- The tile of an entry with one place has the role word "Go to".
+- The route spans its row, from the left edge of the time column to the right edge of Delete.
+- Name or Rename on a bookmark is a pencil icon to the left of Delete. Delete stays at the right end of every open row.
+- Delete keeps a touch target of 48 by 48 points. So an open row is taller than a closed row.
+- The rail runs beside the rows. It does not cross the tiles of an open route.
+- A tile shows the chapter and the quote of its place on its third line. It leaves out a quote that its place text already shows, as for a place outside the open book.
+- `HistoryTimeline.onGoBack` is now `onGoBefore`. `onGoTo` reports the After tile and the tile of an entry with one place.
+- A listening move's distance subtracts the whole seconds that its two place texts show (`audioSeconds`). It names every unit from the largest one that is not zero to the smallest one that is not zero, such as "40 s", "1 m 31 s" or "1 h 0 m 5 s".
+- The method `_end` in `lib/playback/timeline.dart` describes the place of every tile. Cross-edition Go to (boo-z3is) can map a place there.
+
+Screenshots of the built sheet are in `~/.cache/bookfin/previews/boo-hyl4/built/`.
