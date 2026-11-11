@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:archive/archive.dart';
+import 'package:archive/archive.dart' show getCrc32;
 import 'package:crypto/crypto.dart';
 import 'package:image/image.dart' as raster;
 import 'package:xml/xml.dart';
@@ -9,6 +9,7 @@ import 'package:xml/xml.dart';
 import '../document.dart';
 import 'places.dart';
 import 'prepare.dart';
+import 'zip.dart';
 
 class Publication {
   Publication._(
@@ -454,56 +455,22 @@ Map<String, Uint8List> _unpack(Uint8List bytes) {
       );
     }
     ranges.add((local, start + compressed));
-    final sink = _BoundedOutput(size);
-    final content = bytes.sublist(start, start + compressed);
-    if (method == 0) {
-      sink.writeBytes(content);
-    } else {
-      Inflate(content, output: sink);
-    }
-    final unpacked = sink.getBytes();
+    final content = Uint8List.sublistView(bytes, start, start + compressed);
+    final unpacked = method == 0
+        ? Uint8List.fromList(content)
+        : inflateEntry(content, size);
     if (unpacked.length != size || getCrc32(unpacked) != integer(cursor + 16)) {
       throw const FormatException(
         'EPUB resource checksum or length does not match.',
       );
     }
-    if (!directory) output[name] = Uint8List.fromList(unpacked);
+    if (!directory) output[name] = unpacked;
     cursor = next;
   }
   if (cursor != end) {
     throw const FormatException('EPUB ZIP directory length does not match.');
   }
   return output;
-}
-
-class _BoundedOutput extends OutputMemoryStream {
-  _BoundedOutput(this.limit) : super(size: 1024);
-  final int limit;
-  void _room(int count) {
-    if (length + count > limit) {
-      throw const FormatException(
-        'EPUB decompression exceeds the declared size.',
-      );
-    }
-  }
-
-  @override
-  void writeByte(int value) {
-    _room(1);
-    super.writeByte(value);
-  }
-
-  @override
-  void writeBytes(List<int> bytes, {int? length}) {
-    _room(length ?? bytes.length);
-    super.writeBytes(bytes, length: length);
-  }
-
-  @override
-  void writeStream(InputStream stream) {
-    _room(stream.length);
-    super.writeStream(stream);
-  }
 }
 
 class _Admission {
