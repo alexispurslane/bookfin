@@ -388,7 +388,7 @@ final class BookmarkEntry extends TimelineEntry {
 }
 
 /// A place in words. [short] names it in a timeline row, such as "p. 134",
-/// "37%" or "01:02:15". [chapter] and [quote] describe it on the tile of an
+/// "37%" or "1:02:15". [chapter] and [quote] describe it on the tile of an
 /// open timeline entry, when they are known. [quote] is null when [short]
 /// already shows the whole quote. [along] says how
 /// far into its edition the place is, so that a move can say how far it

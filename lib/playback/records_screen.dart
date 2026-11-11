@@ -130,7 +130,7 @@ String readingPlaceLine(PlaceWords words) => switch (words.along) {
 };
 
 /// Shows a dialog that edits the [title] and [note] of a bookmark under
-/// [heading]. [place] says where the bookmark is, such as "At 01:15".
+/// [heading]. [place] says where the bookmark is, such as "At 1:15".
 /// Returns the edited title and note when the listener saves, or null when
 /// they cancel. The caller saves the bookmark.
 Future<({String title, String note})?> showBookmarkEditor(

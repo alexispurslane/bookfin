@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -430,14 +431,35 @@ class HistoryTimeline extends StatefulWidget {
   State<HistoryTimeline> createState() => _HistoryTimelineState();
 }
 
-/// The width of the time of day column, wide enough for "12:59 PM" on one
-/// line.
+/// The narrowest width of the time of day column: wide enough for "12:59
+/// PM" at the normal text size. At a larger text size the column grows
+/// (see `_timeColumn`).
 const _timeWidth = 68.0;
+
+/// The least space between the start of a row and its widest time of day,
+/// and between its place text and its end.
+const _rowInset = 6.0;
+
+/// The space between the sides of the History's glass sheet and a row. It
+/// is as small as the sheet's own gap to the screen edges, so that a row on
+/// a phone 360 points wide with large text keeps room for its label.
+const _listInset = 8.0;
+
+/// The small text of a row: its time of day and its place.
+const _small = TextStyle(
+  fontSize: 12,
+  fontFeatures: [FontFeature.tabularFigures()],
+);
 
 /// The width of the rail's one lane, and of each lane of a timeline of
 /// both media, whose two lanes leave the row's label more room.
 const _laneWidth = 24.0;
-const _narrowLaneWidth = 18.0;
+const _narrowLaneWidth = 16.0;
+
+/// The size of a mark on the one lane, and of a glyph of a medium on the
+/// two narrow lanes.
+const _markSize = 13.0;
+const _glyphSize = 12.0;
 
 /// The width of a line of the rail.
 const _lineWidth = 1.5;
@@ -457,12 +479,19 @@ class _HistoryTimelineState extends State<HistoryTimeline> {
       final mixed =
           entries.any((entry) => entry.place is AudioPosition) &&
           entries.any((entry) => entry.place is TextPosition);
-      Widget row(int index) => _row(context, entries[index], mixed: mixed);
+      final column = _timeColumn(context);
+      Widget row(int index) =>
+          _row(context, entries[index], mixed: mixed, column: column);
       // Only the rows near the screen are built, because a history can hold
       // thousands of entries.
       return ListView.builder(
         controller: widget.scroll,
-        padding: EdgeInsets.fromLTRB(16, 0, 16, 16 + floatingBarInset(context)),
+        padding: EdgeInsets.fromLTRB(
+          _listInset,
+          0,
+          _listInset,
+          16 + floatingBarInset(context),
+        ),
         // The header, then the entries or a note that there are none.
         itemCount: 1 + (entries.isEmpty ? 1 : entries.length),
         itemBuilder: (context, index) => switch (index - 1) {
@@ -492,40 +521,43 @@ class _HistoryTimelineState extends State<HistoryTimeline> {
     BuildContext context,
     TimelineEntry entry, {
     required bool mixed,
+    required ({double width, double inset}) column,
   }) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final night = theme.brightness == Brightness.dark;
     final accent = glowAccent(theme);
-    final small = TextStyle(
-      fontSize: 12,
-      color: scheme.onSurfaceVariant,
-      fontFeatures: const [FontFeature.tabularFigures()],
-    );
+    final small = _small.copyWith(color: scheme.onSurfaceVariant);
     final open = _open == entry.id;
     final bookmark = entry is BookmarkEntry;
     final words = widget.describe(entry.place);
     final label = switch (entry) {
       ActionEntry(:final event) => _label(event),
-      BookmarkEntry(:final bookmark) => bookmark.title ?? 'Bookmark',
+      BookmarkEntry(:final bookmark) => (
+        shown: bookmark.title ?? 'Bookmark',
+        spoken: bookmark.title ?? 'Bookmark',
+      ),
     };
-    final time = MaterialLocalizations.of(context)
-        .formatTimeOfDay(TimeOfDay.fromDateTime(entry.at.toLocal()));
+    final time = timeOfDay(context, entry.at);
     final markColor = bookmark || open ? accent : scheme.onSurfaceVariant;
     final mark = switch ((mixed, entry.place)) {
       (true, AudioPosition()) => Icon(
         Icons.headphones_rounded,
-        size: 13,
+        size: _glyphSize,
         color: markColor,
         semanticLabel: 'Listening',
       ),
       (true, TextPosition()) => Icon(
         Icons.menu_book_rounded,
-        size: 13,
+        size: _glyphSize,
         color: markColor,
         semanticLabel: 'Reading',
       ),
-      _ when bookmark => Icon(Icons.bookmark_rounded, size: 13, color: accent),
+      _ when bookmark => Icon(
+        Icons.bookmark_rounded,
+        size: _markSize,
+        color: accent,
+      ),
       _ => Container(
         width: 7,
         height: 7,
@@ -548,11 +580,15 @@ class _HistoryTimelineState extends State<HistoryTimeline> {
         borderRadius: _rowRadius,
         onTap: () => setState(() => _open = open ? null : entry.id),
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4),
+          padding: EdgeInsetsDirectional.only(
+            top: 4,
+            bottom: 4,
+            end: column.inset,
+          ),
           child: Row(
             children: [
               SizedBox(
-                width: _timeWidth,
+                width: column.width,
                 child: Text(
                   time,
                   style: small,
@@ -577,12 +613,16 @@ class _HistoryTimelineState extends State<HistoryTimeline> {
               Expanded(
                 child: Text.rich(
                   TextSpan(
-                    text: label,
+                    text: label.shown,
                     children: [
                       if (widget.showBooks)
                         TextSpan(text: ' · ${entry.bookTitle}', style: small),
                     ],
                   ),
+                  semanticsLabel: [
+                    label.spoken,
+                    if (widget.showBooks) ?entry.bookTitle,
+                  ].join(' · '),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(fontSize: 14),
@@ -618,7 +658,7 @@ class _HistoryTimelineState extends State<HistoryTimeline> {
             for (var index = 0; index < lanes; index++)
               Positioned(
                 left:
-                    _timeWidth +
+                    column.width +
                     index * laneWidth +
                     (laneWidth - _lineWidth) / 2,
                 top: 0,
@@ -682,6 +722,33 @@ class _HistoryTimelineState extends State<HistoryTimeline> {
           ),
       ],
     );
+  }
+
+  /// The time of day column at the current text size: its [width], and the
+  /// [inset] before the widest time of day, such as "10:58 PM", which the
+  /// column aligns to its end. The column is [_timeWidth] wide while that
+  /// leaves [_rowInset] or more, and grows otherwise. A row's place text
+  /// ends [inset] before the row's end, so an open row's highlight frames
+  /// the time and the place alike.
+  static ({double width, double inset}) _timeColumn(BuildContext context) {
+    // NOTE: Engine rule 1. This lays out one short string once per build of
+    // the list, far less work than a hop to another isolate.
+    final painter = TextPainter(
+      text: TextSpan(
+        text: MaterialLocalizations.of(context).formatTimeOfDay(
+          const TimeOfDay(hour: 22, minute: 58),
+          alwaysUse24HourFormat: MediaQuery.alwaysUse24HourFormatOf(context),
+        ),
+        style: DefaultTextStyle.of(context).style.merge(_small),
+      ),
+      textScaler: MediaQuery.textScalerOf(context),
+      textDirection: Directionality.of(context),
+      maxLines: 1,
+    )..layout();
+    final widest = painter.width;
+    painter.dispose();
+    final inset = math.max(_rowInset, _timeWidth - widest);
+    return (width: widest + inset, inset: inset);
   }
 
   /// The places of an open [entry], as tiles across its row: Before and
@@ -808,73 +875,102 @@ class _HistoryTimelineState extends State<HistoryTimeline> {
     _ => null,
   };
 
-  /// What [event] did. A move that changed the place says how far it went:
-  /// a time in listening, and pages in reading. Before the reader knows
-  /// both pages, a reading move says only its direction, and the verb
-  /// alone where the open book cannot place it.
+  /// What [event] did, in words: `shown` on its row, as short as it can
+  /// be, and `spoken` in full for a screen reader.
   ///
-  /// A mapped move, which went to the landing of a place of the other
-  /// medium, names that place's medium. One found by matched chapters says
-  /// "about".
-  String _label(HistoryEvent<Place> event) {
+  /// A move that changed the place says how far it went: a time in
+  /// listening, and pages in reading, such as "Ahead 40 s" or "Back 12
+  /// pages". Before the reader knows both pages, a reading move says only
+  /// its verb and direction, and the verb alone where the open book cannot
+  /// place it. A move that went to a place that something else gave says
+  /// "From" and that source, such as "From History", "From search" or
+  /// "From Pixel 8". A mapped move, which went to the landing of a place of
+  /// the other medium, names that medium: "From audiobook". Its spoken
+  /// label says "about" when matched chapters found the landing. "Back"
+  /// names only a direction in the book (docs/plans/history-choice.md).
+  ({String shown, String spoken}) _label(HistoryEvent<Place> event) {
     final other = event.counterpartOf;
     final about = event.matchedBy == MatchedBy.chapters ? 'about ' : '';
     final from = widget.describe(event.before).along;
     final to = widget.describe(event.after).along;
-    String moved(String verb) => switch ((from, to)) {
-      // The distance between the two shown times, so that it agrees with
-      // them.
-      (
-        AlongAudio(milliseconds: final from),
-        AlongAudio(milliseconds: final to),
-      ) =>
-        _listeningMove(verb, audioSeconds(from), audioSeconds(to)),
+    // Which way a move went, and how far when that is known. A listening
+    // move subtracts the two shown times, so that it agrees with them.
+    final step = switch ((from, to)) {
+      (AlongAudio(milliseconds: final from), AlongAudio(milliseconds: final to))
+          when audioSeconds(from) != audioSeconds(to) =>
+        (
+          ahead: audioSeconds(to) > audioSeconds(from),
+          amount: _span((audioSeconds(to) - audioSeconds(from)).abs()),
+        ),
       (AlongText(page: final from?), AlongText(page: final to?))
           when from != to =>
-        '$verb ${to > from ? 'ahead' : 'back'} ${_pages((to - from).abs())}',
+        (ahead: to > from, amount: _pages((to - from).abs())),
       (AlongText(fraction: final from?), AlongText(fraction: final to?))
           when from != to =>
-        '$verb ${to > from ? 'ahead' : 'back'}',
-      _ => verb,
+        (ahead: to > from, amount: null),
+      _ => null,
     };
+    ({String shown, String spoken}) moved(String verb) => switch (step) {
+      null => (shown: verb, spoken: verb),
+      (:final ahead, amount: null) => (
+        shown: '$verb ${ahead ? 'ahead' : 'back'}',
+        spoken: '$verb ${ahead ? 'ahead' : 'back'}',
+      ),
+      (:final ahead, :final amount?) => (
+        shown: '${ahead ? 'Ahead' : 'Back'} $amount',
+        spoken: '$verb ${ahead ? 'ahead' : 'back'} $amount',
+      ),
+    };
+    ({String shown, String spoken}) same(String words) =>
+        (shown: words, spoken: words);
 
     return switch (event.kind) {
       HistoryAction.seek => moved('Moved'),
       HistoryAction.jump => moved('Jumped'),
-      HistoryAction.chapter => 'Changed chapter',
-      HistoryAction.undo => 'Undid a move',
+      HistoryAction.chapter => same('Changed chapter'),
+      HistoryAction.undo => same('Undid a move'),
       HistoryAction.historyRestore => switch (other) {
-        null => 'Went back in history',
-        AudioPosition() => 'Went to ${about}where you listened',
-        TextPosition() => 'Went to ${about}where you read',
+        null => (shown: 'From History', spoken: 'Went to a place from History'),
+        AudioPosition() => (
+          shown: 'From audiobook',
+          spoken: 'Went to ${about}where you listened in the audiobook',
+        ),
+        TextPosition() => (
+          shown: 'From ebook',
+          spoken: 'Went to ${about}where you read in the ebook',
+        ),
       },
       HistoryAction.bookmarkRestore => switch (other) {
-        null => 'Went to a bookmark',
-        AudioPosition() => 'Went to ${about}a listening bookmark',
-        TextPosition() => 'Went to ${about}a reading bookmark',
+        null => (shown: 'From bookmark', spoken: 'Went to a bookmark'),
+        AudioPosition() => (
+          shown: 'From audiobook bookmark',
+          spoken: 'Went to ${about}a bookmark in the audiobook',
+        ),
+        TextPosition() => (
+          shown: 'From ebook bookmark',
+          spoken: 'Went to ${about}a bookmark in the ebook',
+        ),
       },
-      HistoryAction.pause => 'Paused',
-      HistoryAction.resume => 'Played',
-      HistoryAction.interruption => 'Interrupted',
-      HistoryAction.stop => 'Stopped',
-      HistoryAction.completion => 'Finished',
-      HistoryAction.link => 'Followed a link',
-      HistoryAction.search => 'Went to a search result',
+      HistoryAction.pause => same('Paused'),
+      HistoryAction.resume => same('Played'),
+      HistoryAction.interruption => same('Interrupted'),
+      HistoryAction.stop => same('Stopped'),
+      HistoryAction.completion => same('Finished'),
+      HistoryAction.link => (shown: 'From link', spoken: 'Followed a link'),
+      HistoryAction.search => (
+        shown: 'From search',
+        spoken: 'Went to a search result',
+      ),
       HistoryAction.open => switch (event.device) {
-        final device? => 'Opened at the place from $device',
-        null => 'Opened',
+        final device? => (
+          shown: 'From $device',
+          spoken: 'Opened at the place from $device',
+        ),
+        null => same('Opened'),
       },
-      HistoryAction.close => 'Closed',
+      HistoryAction.close => same('Closed'),
     };
   }
-
-  /// A listening move from the shown second [from] to the shown second
-  /// [to], such as "Moved back 40 s" or "Jumped ahead 1 m 31 s". A move
-  /// within one shown second reads as [verb] alone, because its two place
-  /// texts are the same.
-  static String _listeningMove(String verb, int from, int to) => from == to
-      ? verb
-      : '$verb ${to > from ? 'ahead' : 'back'} ${_span((to - from).abs())}';
 
   /// A span of [seconds] above zero, such as "40 s", "1 m 31 s", "2 m" or
   /// "1 h 0 m 5 s": every unit from the largest one that is not zero down

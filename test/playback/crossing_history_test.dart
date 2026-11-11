@@ -241,10 +241,10 @@ void main() {
       'the audiobook', (tester) async {
     await showPlayerHistory(tester);
 
-    await open(tester, 'Went to a search result');
+    await open(tester, 'From search');
 
-    expect(inTile('BEFORE', find.text('about 00:30')), findsOneWidget);
-    expect(inTile('AFTER', find.text('about 01:30')), findsOneWidget);
+    expect(inTile('BEFORE', find.text('about 0:30')), findsOneWidget);
+    expect(inTile('AFTER', find.text('about 1:30')), findsOneWidget);
     expect(inTile('AFTER', find.text('Return')), findsOneWidget);
   });
 
@@ -265,7 +265,7 @@ void main() {
       'record', (tester) async {
     final records = jsonEncode(readingStore.values);
     await showPlayerHistory(tester);
-    await open(tester, 'Went to a search result');
+    await open(tester, 'From search');
 
     await go(tester, 'AFTER', until: playerMoved);
 
@@ -302,14 +302,14 @@ void main() {
   testWidgets('after a mapped jump, the player\'s History names the move by '
       'where it went in the ebook', (tester) async {
     await showPlayerHistory(tester);
-    await open(tester, 'Went to a search result');
+    await open(tester, 'From search');
     await go(tester, 'AFTER', until: playerMoved);
 
     await tester.tap(find.text('History'));
     await tester.pumpAndSettle();
 
     expect(
-      inTimeline(find.text('Went to about where you read', findRichText: true)),
+      inTimeline(find.text('From ebook', findRichText: true)),
       findsOneWidget,
     );
   });
@@ -320,7 +320,7 @@ void main() {
   ) async {
     outline = unmatching;
     await showPlayerHistory(tester);
-    await open(tester, 'Went to a search result');
+    await open(tester, 'From search');
 
     expect(
       inTimeline(
@@ -357,7 +357,7 @@ void main() {
     );
     await tester.tap(find.text('History of the book'));
     await tester.pumpAndSettle();
-    await open(tester, 'Went to a search result');
+    await open(tester, 'From search');
 
     expect(
       inTile('AFTER', find.text('“The far shore at last.”')),

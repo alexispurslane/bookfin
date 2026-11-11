@@ -139,6 +139,8 @@ Existing JSON names stay. Three names are new.
 | `close` (new, design 2B only) | None | Leaving the reader | "Closed" |
 | `pause`, `resume`, `interruption`, `stop`, `completion` | As today | None | As today |
 
+The timeline now shows shorter labels, such as "Ahead 40 s" and "From search", and a screen reader reads the words above. See "Short row labels" in `docs/plans/history-choice.md`.
+
 These are not moves:
 
 - A page turn, by swipe, by tap, or by an arrow in a book without chapters (a PDF's arrows turn one page).

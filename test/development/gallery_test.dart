@@ -254,9 +254,9 @@ void main() {
   ) async {
     await showGallery(tester);
     await openScreen(tester, 'Player & history');
-    await reveal(tester, 'player', find.textContaining('Jumped ahead'));
+    await reveal(tester, 'player', find.textContaining('Ahead 9 m 51 s'));
     expect(find.byType(HistoryTimeline), findsOneWidget);
-    await tester.tap(find.textContaining('Jumped ahead'));
+    await tester.tap(find.textContaining('Ahead 9 m 51 s'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('BEFORE'));
     await tester.pumpAndSettle();
@@ -268,10 +268,10 @@ void main() {
   ) async {
     await showGallery(tester);
     await openScreen(tester, 'Player & history');
-    await reveal(tester, 'player', find.textContaining('Jumped ahead'));
+    await reveal(tester, 'player', find.textContaining('Ahead 9 m 51 s'));
     expect(find.byType(HistoryTimeline), findsOneWidget);
     await tester.fling(
-      find.textContaining('Jumped ahead'),
+      find.textContaining('Ahead 9 m 51 s'),
       const Offset(-400, 0),
       1000,
     );
@@ -279,7 +279,7 @@ void main() {
     expect(find.text('Delete history action?'), findsOneWidget);
     await tester.tap(find.widgetWithText(FilledButton, 'Delete'));
     await tester.pumpAndSettle();
-    expect(find.textContaining('Jumped ahead'), findsNothing);
+    expect(find.textContaining('Ahead 9 m 51 s'), findsNothing);
   });
 
   testWidgets('Start replacement starts the sample from the beginning', (

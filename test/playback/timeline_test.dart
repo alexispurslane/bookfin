@@ -110,7 +110,7 @@ void main() {
     tester,
   ) async {
     await showTimeline(tester);
-    final jump = inTimeline(find.text('Jumped ahead 30 s'));
+    final jump = inTimeline(find.text('Ahead 30 s'));
     final bookmark = inTimeline(find.text('Bookmark'));
     expect(jump, findsOneWidget);
     expect(bookmark, findsOneWidget);
@@ -135,7 +135,7 @@ void main() {
 
   testWidgets('Before on an action returns to where it began', (tester) async {
     await showTimeline(tester);
-    await tester.tap(inTimeline(find.text('Jumped ahead 30 s')));
+    await tester.tap(inTimeline(find.text('Ahead 30 s')));
     await tester.pumpAndSettle();
     await tester.runAsync(() async {
       await tester.tap(inTimeline(find.text('BEFORE')));
@@ -147,7 +147,7 @@ void main() {
 
   testWidgets('After on an action returns to where it ended', (tester) async {
     await showTimeline(tester);
-    await tester.tap(inTimeline(find.text('Jumped ahead 30 s')));
+    await tester.tap(inTimeline(find.text('Ahead 30 s')));
     await tester.pumpAndSettle();
     await tester.runAsync(() async {
       await tester.tap(inTimeline(find.text('AFTER')));
@@ -176,7 +176,7 @@ void main() {
   testWidgets('an open timeline measures its places again when the library '
       'changes the length of an earlier file', (tester) async {
     await showTimeline(tester);
-    expect(inTimeline(find.text('01:15')), findsWidgets);
+    expect(inTimeline(find.text('1:15')), findsWidgets);
     // A refresh of the same account finds that part one runs ten seconds
     // longer, so the bookmark in part two is ten seconds later in the book.
     final longer = Edition(
@@ -206,8 +206,8 @@ void main() {
     );
     await tester.runAsync(() => playback.bind(account(), [refreshed, other]));
     await tester.pump();
-    expect(inTimeline(find.text('01:15')), findsNothing);
-    expect(inTimeline(find.text('01:25')), findsWidgets);
+    expect(inTimeline(find.text('1:15')), findsNothing);
+    expect(inTimeline(find.text('1:25')), findsWidgets);
   });
 
   testWidgets('a playing tick redraws no entry of an open timeline', (
@@ -253,7 +253,7 @@ void main() {
       await playback.flush();
     });
     await tester.pumpAndSettle();
-    expect(inTimeline(find.text('Jumped ahead 30 s')), findsNothing);
+    expect(inTimeline(find.text('Ahead 30 s')), findsNothing);
     expect(
       playback.history.where(
         (event) =>
@@ -269,14 +269,14 @@ void main() {
   ) async {
     await showTimeline(tester);
     await tester.fling(
-      inTimeline(find.text('Jumped ahead 30 s')),
+      inTimeline(find.text('Ahead 30 s')),
       const Offset(-400, 0),
       1000,
     );
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(TextButton, 'Cancel'));
     await tester.pumpAndSettle();
-    expect(inTimeline(find.text('Jumped ahead 30 s')), findsOneWidget);
+    expect(inTimeline(find.text('Ahead 30 s')), findsOneWidget);
     expect(
       playback.history.where((event) => event.kind == HistoryAction.jump),
       hasLength(2),
@@ -404,13 +404,13 @@ void main() {
       tester,
     ) async {
       await showTimeline(tester);
-      await choose(tester, 'Jumped ahead 30 s', find.text('BEFORE'));
+      await choose(tester, 'Ahead 30 s', find.text('BEFORE'));
       expect(reports, [('back', jump)]);
     });
 
     testWidgets('After on an action reports that action', (tester) async {
       await showTimeline(tester);
-      await choose(tester, 'Jumped ahead 30 s', find.text('AFTER'));
+      await choose(tester, 'Ahead 30 s', find.text('AFTER'));
       expect(reports, hasLength(1));
       final (kind, entry) = reports.single as (String, ActionEntry);
       expect((kind, entry.event), ('go', jump));
@@ -438,7 +438,7 @@ void main() {
     ) async {
       await showTimeline(tester);
       await tester.fling(
-        find.text('Jumped ahead 30 s'),
+        find.text('Ahead 30 s'),
         const Offset(-400, 0),
         1000,
       );
@@ -513,8 +513,8 @@ void main() {
     );
 
     for (final label in [
-      'Followed a link',
-      'Went to a search result',
+      'From link',
+      'From search',
       'Opened',
       'Closed',
     ]) {

@@ -2,13 +2,17 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-/// A place in a recording as a clock reads it: "05:00" under an hour, and
-/// "1:05:00" from an hour on. It shows [audioSeconds] of [milliseconds], so
-/// negative times read as "00:00".
+/// A place in a recording as a clock reads it: "5:00" under an hour, and
+/// "1:05:00" from an hour on, with no leading zero, as the approved mockup
+/// shows it. It shows [audioSeconds] of [milliseconds], so negative times
+/// read as "0:00".
 String audioTime(int milliseconds) {
   final seconds = audioSeconds(milliseconds);
-  final minutes = seconds ~/ 60;
-  return '${minutes ~/ 60 > 0 ? '${minutes ~/ 60}:' : ''}${(minutes % 60).toString().padLeft(2, '0')}:${(seconds % 60).toString().padLeft(2, '0')}';
+  final (hours, minutes) = (seconds ~/ 3600, seconds ~/ 60 % 60);
+  String two(int value) => value.toString().padLeft(2, '0');
+  return hours > 0
+      ? '$hours:${two(minutes)}:${two(seconds % 60)}'
+      : '$minutes:${two(seconds % 60)}';
 }
 
 /// The whole seconds that [audioTime] shows for [milliseconds]: rounded

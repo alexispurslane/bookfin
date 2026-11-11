@@ -209,8 +209,8 @@ void main() {
     await showBookHistory(tester);
 
     final rows = [
-      inTimeline(find.text('Went to a search result', findRichText: true)),
-      inTimeline(find.text('Jumped ahead 30 s', findRichText: true)),
+      inTimeline(find.text('From search', findRichText: true)),
+      inTimeline(find.text('Ahead 30 s', findRichText: true)),
       inTimeline(find.text('Bookmark', findRichText: true)),
       inTimeline(find.text('Changed chapter', findRichText: true)),
     ];
@@ -259,7 +259,7 @@ void main() {
       'there', (tester) async {
     await showPlayerHistory(tester);
 
-    await choose(tester, 'Went to a search result', 'AFTER');
+    await choose(tester, 'From search', 'AFTER');
 
     expect(find.byType(HistoryTimeline), findsNothing);
     expect(find.text('Reader screen'), findsOneWidget);
@@ -278,7 +278,7 @@ void main() {
     await tester.runAsync(reader.refreshPersonalRecords);
     await showPlayerHistory(tester);
 
-    await choose(tester, 'Went to a search result', 'AFTER');
+    await choose(tester, 'From search', 'AFTER');
     await settle(tester, () => reader.document != null);
     // The pager shows the first page, at the place that the book opened at.
     reader.acceptAddress(reader.token, reader.initialAddress!);
@@ -294,7 +294,7 @@ void main() {
       'began', (tester) async {
     await showPlayerHistory(tester);
 
-    await choose(tester, 'Went to a search result', 'BEFORE');
+    await choose(tester, 'From search', 'BEFORE');
 
     expect(find.text('Reader screen'), findsOneWidget);
     await settle(tester, () => reader.document != null);
@@ -306,7 +306,7 @@ void main() {
     await tester.runAsync(() => playback.seekEdition(5000));
     await showBookHistory(tester);
 
-    await choose(tester, 'Jumped ahead 30 s', 'AFTER');
+    await choose(tester, 'Ahead 30 s', 'AFTER');
 
     expect(playback.editionMilliseconds, 30000);
     expect(find.byType(PlayerView), findsOneWidget);
@@ -319,7 +319,7 @@ void main() {
     await tester.runAsync(() => playback.seekEdition(5000));
     await showPlayerHistory(tester);
 
-    await choose(tester, 'Jumped ahead 30 s', 'AFTER');
+    await choose(tester, 'Ahead 30 s', 'AFTER');
 
     expect(playback.editionMilliseconds, 30000);
     expect(find.byType(PlayerView), findsOneWidget);
@@ -418,7 +418,7 @@ void main() {
 
     final words = playback.describe(place);
 
-    expect(words.short, '01:15');
+    expect(words.short, '1:15');
     expect(words.chapter, 'Return');
     expect(words.quote, isNull);
     expect(
@@ -502,11 +502,11 @@ void main() {
       ]);
 
       expect(
-        find.text('Moved ahead 12 pages', findRichText: true),
+        find.text('Ahead 12 pages', findRichText: true),
         findsOneWidget,
       );
       expect(
-        find.text('Moved back 1 page', findRichText: true),
+        find.text('Back 1 page', findRichText: true),
         findsOneWidget,
       );
     });
@@ -533,7 +533,7 @@ void main() {
       expect(find.text('→ p. 134'), findsOneWidget);
       expect(find.textContaining('Chapter 4'), findsNothing);
 
-      await tester.tap(find.text('Moved ahead 12 pages', findRichText: true));
+      await tester.tap(find.text('Ahead 12 pages', findRichText: true));
       await tester.pumpAndSettle();
 
       // Each end of the move shows its own page, chapter and quote.

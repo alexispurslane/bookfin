@@ -182,7 +182,7 @@ void main() {
     testWidgets('an open move shows Before on the left and After on the '
         'right, as two tiles of one size', (tester) async {
       await showTimeline(tester, everything);
-      await open(tester, 'Moved back 40 s');
+      await open(tester, 'Back 40 s');
       final before = tester.getRect(tile('BEFORE'));
       final after = tester.getRect(tile('AFTER'));
       expect(
@@ -202,7 +202,7 @@ void main() {
       tester,
     ) async {
       await showTimeline(tester, everything);
-      await open(tester, 'Moved back 40 s');
+      await open(tester, 'Back 40 s');
       await tester.tap(tile('BEFORE'));
       expect(reports, [('before', seek)]);
     });
@@ -211,7 +211,7 @@ void main() {
       tester,
     ) async {
       await showTimeline(tester, everything);
-      await open(tester, 'Moved back 40 s');
+      await open(tester, 'Back 40 s');
       await tester.tap(tile('AFTER'));
       final (kind, entry) = reports.single as (String, ActionEntry);
       expect((kind, entry.event), ('go', seek));
@@ -219,7 +219,7 @@ void main() {
 
     testWidgets('the timeline never offers to go back', (tester) async {
       await showTimeline(tester, everything);
-      for (final label in ['Moved back 40 s', 'Paused', 'Changed chapter']) {
+      for (final label in ['Back 40 s', 'Paused', 'Changed chapter']) {
         await open(tester, label);
         expect(find.textContaining('Go back'), findsNothing);
       }
@@ -378,7 +378,7 @@ void main() {
         'place', (tester) async {
       await showTimeline(tester, everything);
       for (final (label, place) in [
-        ('Moved back 40 s', '→ 1:02:15'),
+        ('Back 40 s', '→ 1:02:15'),
         ('Paused', '1:02:15'),
         ('Changed chapter', '→ “I told some of you'),
         ('Bookmark', '1:15'),
@@ -401,8 +401,8 @@ void main() {
       tester,
     ) async {
       await showTimeline(tester, everything);
-      await open(tester, 'Moved back 40 s');
-      final line = tester.getRect(row('Moved back 40 s').first);
+      await open(tester, 'Back 40 s');
+      final line = tester.getRect(row('Back 40 s').first);
       expect(tester.getRect(tile('BEFORE')).left, line.left);
       expect(tester.getRect(tile('AFTER')).right, line.right);
       await open(tester, 'Paused');
@@ -431,7 +431,7 @@ void main() {
       await showTimeline(tester, everything);
       for (final (label, roles) in [
         ('Changed chapter', ['BEFORE', 'AFTER']),
-        ('Moved back 40 s', ['BEFORE', 'AFTER']),
+        ('Back 40 s', ['BEFORE', 'AFTER']),
         ('Paused', ['GO TO']),
       ]) {
         await open(tester, label);
@@ -458,7 +458,7 @@ void main() {
       tester,
     ) async {
       await showTimeline(tester, [ActionEntry(seek)]);
-      expect(find.text('Moved back 40 s', findRichText: true), findsOneWidget);
+      expect(find.text('Back 40 s', findRichText: true), findsOneWidget);
     });
 
     testWidgets('a seek within one shown second reads as its verb alone', (
@@ -500,7 +500,7 @@ void main() {
         ),
       ]);
       expect(
-        find.text('Moved ahead 1 m 31 s', findRichText: true),
+        find.text('Ahead 1 m 31 s', findRichText: true),
         findsOneWidget,
       );
     });
@@ -514,7 +514,7 @@ void main() {
         ),
       ]);
       expect(
-        find.text('Jumped ahead 1 h 2 m 5 s', findRichText: true),
+        find.text('Ahead 1 h 2 m 5 s', findRichText: true),
         findsOneWidget,
       );
     });
@@ -536,7 +536,7 @@ void main() {
         ),
       ]);
       expect(
-        find.text('Opened at the place from Pixel 8', findRichText: true),
+        find.text('From Pixel 8', findRichText: true),
         findsOneWidget,
       );
     });
@@ -556,7 +556,7 @@ void main() {
         ),
       ]);
       expect(
-        find.text('Opened at the place from Tablet', findRichText: true),
+        find.text('From Tablet', findRichText: true),
         findsOneWidget,
       );
     });

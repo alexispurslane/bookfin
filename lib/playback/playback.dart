@@ -783,7 +783,7 @@ class Playback extends ChangeNotifier {
   }
 
   /// [place] in words, for the History timeline: its time in its edition,
-  /// such as "01:15", or in its file while the edition time is unknown, and
+  /// such as "1:15", or in its file while the edition time is unknown, and
   /// the chapter that holds it while its edition is in the library.
   PlaceWords describe(AudioPosition place) {
     final at = editionTime(place);
