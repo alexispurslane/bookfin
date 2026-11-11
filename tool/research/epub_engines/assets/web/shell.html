@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<link rel="icon" href="data:,">
 <style>html,body{margin:0;padding:0;background:#f6efe2}#reader{width:360px;height:640px}</style>
 <script src="jszip.min.js"></script><script src="epub.min.js"></script></head>
 <body><div id="reader"></div><script>
@@ -10,18 +11,32 @@ let spec;
 let textSize = 18;
 let ready = Promise.resolve();
 
-async function report(operation) {
+async function resourcesReady() {
     await Promise.all(rendition.getContents().map(async content => {
         await content.document.fonts.ready;
         await Promise.all(Array.from(content.document.images).map(image => image.decode().catch(() => {})));
     }));
+    rendition.views().forEach(view => view.expand());
+}
+
+async function report(operation) {
+    await resourcesReady();
     const location = rendition.currentLocation();
     const contents = rendition.getContents();
-    const section = contents.find(content => content.index === location.start.index);
+    const section = contents.find(content => content.sectionIndex === location.start.index);
     const range = section && section.range(location.start.cfi);
     const bodyText = section ? section.document.body.innerText : "";
-    Probe.ready(JSON.stringify({operation, cfi: location.start.cfi,
+    let visible = "";
+    if (section && location.end.index === location.start.index) {
+        const finish = section.range(location.end.cfi);
+        const shown = range.cloneRange();
+        shown.setEnd(finish.endContainer, finish.endOffset);
+        visible = shown.toString();
+    }
+    Probe.ready(JSON.stringify({operation, location: location.start.cfi, location_format:"epub_cfi",
         spine_index: location.start.index, href: location.start.href,
+        end_cfi:location.end.cfi, displayed:location.start.displayed,
+        visible_text:visible,
         section_text: bodyText.slice(0, 1200),
         anchor_text: range ? range.startContainer.textContent.slice(range.startOffset, range.startOffset + 180) : "",
         images: section ? Array.from(section.document.images).map(image => ({src:image.getAttribute("src"),loaded:image.complete && image.naturalWidth>0})) : [],
@@ -29,7 +44,8 @@ async function report(operation) {
 }
 
 async function execute(operation) {
-    if (operation === "open" || operation === "reopen") {
+    if (operation === "fresh_open" || operation === "cached_reopen") {
+        textSize = 18;
         if (rendition) rendition.destroy();
         if (book) book.destroy();
         document.getElementById("reader").replaceChildren();
@@ -44,17 +60,41 @@ async function execute(operation) {
         });
         rendition.themes.fontSize(textSize + "px");
         await rendition.display(spec.target.href);
-    } else if (operation === "page_turn") {
+    } else if (operation === "page_turn" || operation === "chapter_crossing") {
         await rendition.next();
-    } else if (operation === "section_jump") {
+    } else if (operation === "prepare_crossing") {
+        await setSize(18);
+        await rendition.display(spec.sections[spec.target.index+1].href);
+        await rendition.prev();
+        await resourcesReady();
+        while (rendition.currentLocation().start.displayed.page < rendition.currentLocation().start.displayed.total) {
+            await rendition.next();
+            await resourcesReady();
+            if (rendition.currentLocation().start.index !== spec.target.index) throw Error("Last-page preparation left its chapter");
+        }
+        if (rendition.currentLocation().start.index !== spec.target.index) throw Error("Previous page is not in the selected section");
+    } else if (operation === "prepare_target") {
+        await setSize(18);
+        await rendition.display(spec.target.href);
+    } else if (operation === "prepare_reopen") {
         await rendition.display(spec.sections[spec.target.index+1].href);
     } else if (operation === "font_change") {
-        textSize = textSize === 18 ? 20 : 18;
-        const relocated = new Promise(resolve => rendition.once("relocated",resolve));
-        rendition.themes.fontSize(textSize + "px");
-        await relocated;
+        await setSize(20);
+    } else if (operation !== "paginate") {
+        throw Error("Unknown operation: " + operation);
     }
     await report(operation);
+}
+
+async function setSize(size) {
+    if (textSize === size) return;
+    const anchor = rendition.currentLocation().start.cfi;
+    const relocated = new Promise(resolve => rendition.once("relocated",resolve));
+    textSize = size;
+    rendition.themes.fontSize(size + "px");
+    rendition.views().forEach(view => view.expand());
+    await rendition.display(anchor);
+    await relocated;
 }
 
 window.command = operation => {
@@ -62,6 +102,6 @@ window.command = operation => {
 };
 fetch("https://epubbench.invalid/manifest.json").then(response => response.json()).then(manifest => {
     spec = manifest.books[new URL(location.href).searchParams.get("book") || "prose"];
-    window.command("open");
+    Probe.shellReady();
 }).catch(error => Probe.failed(String(error)));
 </script></body></html>

@@ -1,5 +1,7 @@
 # EPUB engine shells: blocked build checkpoint
 
+This section preserves the first checkpoint. The resumed implementation and test-runner method are in `epub-engine-method.md`. The original device reservation was released by its owner. A later repeated launch failure stopped manual device driving. Genuine AndroidJUnitRunner workload tests now execute all three engines. Do not treat the historical zero-sample files as the resumed dataset.
+
 This is not a completed engine comparison. There are no new Android timing samples to publish. Do not use this checkpoint for a homepage speed claim. The settled measurement protocol remains `docs/plans/epub-engine-comparison.md`.
 
 The work happened on November 10, 2026, in New York. The device launch failed at November 11, 2026, 00:23:26 UTC. These are the same local evening, not two runs on different days.
@@ -34,7 +36,7 @@ The native dependency derivation is `tool/research/epub_engines/sources.nix`. It
 
 The upstream release is `https://github.com/koreader/koreader/releases/tag/v2026.07.1`. Its ARM64 APK SHA-256 is `89cecbe06eacd2ff7d91e37152d6beeb52809f2ca38060b6515ed8b00d152412`.
 
-The release's `base` commit is `6e4bc81af4e04f78d81677a323a780a71b29702a`. Its `thirdparty/kpvcrlib` commit, in the KOReader crengine repository, is `74bd5a1e2b924bced7513f39562f8fb95d7138e5`.
+The release's `base` commit is `6e4bc81af4e04f78d81677a323a780a71b29702a`. Its `thirdparty/kpvcrlib/crengine` submodule commit is `b32a88ffbbf505cf2ea5208c1a49002d70d3609f`. The checkpoint had mistaken the containing `thirdparty/kpvcrlib` tree hash, `74bd5a1e2b924bced7513f39562f8fb95d7138e5`, for that submodule commit. The actual pinned release binary is unchanged.
 
 Before writing the bridge, the upstream build and interface were inspected in `koreader-base/cmake/crengine/CMakeLists.txt`, `koreader-base/cre.cpp`, and `koreader/crengine/CMakeLists.txt`. The Android release exports `luaopen_cre` from `libkoreader-monolibtic.so` and ships `libluajit.so`. The shell calls that module's font registration, document loading, pagination, navigation, and drawing functions. It copies the engine's color render buffer into an Android bitmap. It does not substitute another CoolReader build or implement its own text layout.
 

@@ -31,6 +31,7 @@ android {
         // flag during build.
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     signingConfigs {
@@ -45,8 +46,17 @@ android {
     buildTypes {
         release {
             signingConfig = signingConfigs.getByName("benchmark")
+            isMinifyEnabled = false
+            isShrinkResources = false
         }
     }
+    testBuildType = "release"
+    sourceSets.getByName("androidTest").java.srcDir("../../../shared/androidTest")
+}
+
+dependencies {
+    androidTestImplementation("androidx.test:runner:1.6.2")
+    androidTestImplementation("androidx.test.ext:junit:1.2.1")
 }
 
 kotlin {

@@ -13,7 +13,9 @@ def sample(number=0, **changes):
         "clock": "android_elapsed_realtime_ns", "expected": "chapter-1:page-2",
         "actual": "chapter-1:page-2", "text": "The requested page has real text.",
         "capture_sha256": "a" * 64, "reference_sha256": "a" * 64,
-        "presentation_verified": True, "content_verified": True,
+        "window_copy_verified": True, "content_verified": True,
+        "run_id": "measured-run", "reference_run_id": "independent-calibration",
+        "reference_manifest_sha256": "b" * 64,
         "error": None,
     }
     row.update(changes)
@@ -84,7 +86,7 @@ class ResultsTest(unittest.TestCase):
         self.assertEqual(rows, original)
 
     def test_unverified_content_or_presentation_cannot_enter_the_summary(self):
-        for changes in ({"presentation_verified": False}, {"content_verified": False}):
+        for changes in ({"window_copy_verified": False}, {"content_verified": False}):
             result = summarize([sample(**changes)])
             self.assertEqual(result["cells"], [])
             self.assertEqual(len(result["excluded"]), 1)
@@ -95,6 +97,15 @@ class ResultsTest(unittest.TestCase):
         result = summarize([row])
         self.assertEqual(result["cells"], [])
         self.assertEqual(len(result["excluded"]), 1)
+
+    def test_a_capture_cannot_certify_itself_as_a_reference(self):
+        result = summarize([sample(reference_run_id="measured-run")])
+        self.assertEqual(result["cells"], [])
+        self.assertIn("independent", result["excluded"][0]["reason"])
+
+    def test_reference_provenance_is_required_even_when_pixel_hashes_match(self):
+        for changes in ({"reference_run_id": None}, {"reference_manifest_sha256": None}):
+            self.assertEqual(summarize([sample(**changes)])["cells"], [])
 
 
 if __name__ == "__main__":

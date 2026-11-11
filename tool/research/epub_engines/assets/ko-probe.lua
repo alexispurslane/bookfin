@@ -16,52 +16,69 @@ local function quote(value)
     end) .. '"'
 end
 
+local function normalize(title)
+    return title:gsub("%s", ""):gsub("\194\160", "")
+end
+
+local function find_heading(title)
+    for _, entry in ipairs(document:getToc()) do
+        if normalize(entry.title) == normalize(title) then
+            return entry
+        end
+    end
+    error("Target heading was not found in KOReader contents: " .. title)
+end
+
+local function go_heading(title)
+    document:gotoXPointer(find_heading(title).xpointer)
+end
+
 function open_book()
     if document then document:close() end
     document = cre.newDocView(width_px, height_px, 1)
     document:setHeaderInfo(0)
     document:setFontFace("Source Serif 4")
     document:setFontSize(math.floor(18 * density + 0.5))
-    document:setDefaultInterlineSpace(165)
-    document:setPageMargins(math.floor(18*density), 0, math.floor(18*density), 0)
-    document:setBackgroundColor(0xf6efe2)
-    document:setIntProperty("font.color.default", 0x39291f)
+    document:setDefaultInterlineSpace(100)
+    document:setPageMargins(math.floor(15*density), math.floor(20*density), math.floor(15*density), math.floor(20*density))
+    document:setStringProperty("font.color.default", "#39291f")
+    document:setStringProperty("background.color.default", "#f6efe2")
+    document:setIntProperty("crengine.cache.filesize.min", 65536)
     document:setIntProperty("crengine.doc.embedded.fonts.enabled", 1)
     document:setIntProperty("crengine.doc.embedded.styles.enabled", 1)
-    document:setStyleSheet(data_path .. "/epub.css")
+    document:setStyleSheet(data_path .. "/epub.css", "body { line-height: 1.65 !important; }")
     assert(document:loadDocument(book_path), "KOReader crengine did not load the EPUB")
     document:renderDocument()
-    local found = false
-    for _, entry in ipairs(document:getToc()) do
-        if entry.title == heading then
-            document:gotoXPointer(entry.xpointer)
-            found = true
-            break
-        end
-    end
-    assert(found, "Target heading was not found in KOReader contents: " .. heading)
+    go_heading(heading)
     font_size = 18
 end
 
 function perform(operation)
-    if operation == "open" or operation == "reopen" then
+    if operation == "fresh_open" or operation == "cached_reopen" then
         open_book()
-    elseif operation == "page_turn" then
+    elseif operation == "page_turn" or operation == "chapter_crossing" then
         document:gotoPage(document:getCurrentPage()+1)
-    elseif operation == "section_jump" then
-        local page = document:getCurrentPage()
-        local found = false
-        for _, entry in ipairs(document:getToc()) do
-            if entry.page > page then
-                document:gotoXPointer(entry.xpointer)
-                found = true
-                break
-            end
-        end
-        assert(found, "There is no following contents entry")
-    elseif operation == "font_change" then
-        font_size = font_size == 18 and 20 or 18
+    elseif operation == "prepare_crossing" then
+        font_size = 18
         document:setFontSize(math.floor(font_size*density+0.5))
+        go_heading(next_heading)
+        document:gotoPage(document:getCurrentPage()-1)
+    elseif operation == "prepare_target" then
+        font_size = 18
+        document:setFontSize(math.floor(font_size*density+0.5))
+        go_heading(heading)
+    elseif operation == "prepare_reopen" then
+        go_heading(next_heading)
+    elseif operation == "font_change" then
+        local anchor = document:getXPointer()
+        font_size = 20
+        document:setFontSize(math.floor(font_size*density+0.5))
+        document:gotoXPointer(anchor)
+    elseif operation == "paginate" then
+        document:renderDocument()
+        document:close()
+        document = nil
+        open_book()
     else
         error("Unknown operation: " .. operation)
     end
@@ -74,6 +91,8 @@ function perform(operation)
     local finish = document:getPageXPointer(math.min(page+1, document:getPages()))
     local text = document:getTextFromXPointers(start, finish) or ""
     return '{"operation":' .. quote(operation) .. ',"page":' .. page .. ',"pages":' .. document:getPages()
-        .. ',"cfi":' .. quote(document:getPageEPubCFI(page)) .. ',"visible_text":' .. quote(text)
+        .. ',"selected_heading_page":' .. find_heading(heading).page .. ',"following_heading_page":' .. find_heading(next_heading).page
+        .. ',"cache_file":' .. quote(document:getCacheFilePath() or "")
+        .. ',"location":' .. quote(start) .. ',"location_format":"koreader_xpointer","visible_text":' .. quote(text)
         .. ',"text_size_css_px":' .. font_size .. ',"whole_book_paginated":true}'
 end

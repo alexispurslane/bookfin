@@ -7,7 +7,7 @@ from collections import defaultdict
 
 ENGINES = ("bookfin", "webview", "koreader")
 OPERATIONS = ("fresh_open", "cached_reopen", "page_turn", "chapter_crossing", "font_change")
-BOUNDARY = "verified_window_capture"
+BOUNDARY = "request_to_reference_window_copy"
 
 
 def summarize(rows):
@@ -44,6 +44,8 @@ def summarize(rows):
 
 
 def _invalid(row):
+    if row.get("measured") is False:
+        return "preparation (not a timed sample)"
     if row.get("warmup"):
         return "warmup"
     if row.get("error"):
@@ -66,8 +68,12 @@ def _invalid(row):
         return "wrong destination"
     if not isinstance(row.get("text"), str) or not row["text"].strip():
         return "blank content"
-    if row.get("presentation_verified") is not True or row.get("content_verified") is not True:
-        return "unverified content or presentation"
+    if row.get("window_copy_verified") is not True or row.get("content_verified") is not True:
+        return "unverified content or window copy"
+    if not row.get("reference_run_id") or row.get("reference_run_id") == row.get("run_id"):
+        return "missing independent reference run"
+    if not re.fullmatch(r"[0-9a-f]{64}", row.get("reference_manifest_sha256") or ""):
+        return "missing reference manifest provenance"
     capture = row.get("capture_sha256", "")
     if not re.fullmatch(r"[0-9a-f]{64}", capture) or capture != row.get("reference_sha256"):
         return "unverified or stale capture"

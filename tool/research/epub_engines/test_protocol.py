@@ -25,6 +25,34 @@ class ScheduleTest(unittest.TestCase):
         self.assertEqual(len({job["run_id"] for job in jobs}), 108)
         self.assertEqual(jobs, schedule())
 
+    def test_each_process_runs_one_fresh_open_and_three_of_each_warm_operation(self):
+        steps = schedule()[0].get("steps", [])
+        measured = collections.Counter(step["operation"] for step in steps if step["measured"])
+        self.assertEqual(measured, {"fresh_open": 1, "cached_reopen": 3, "page_turn": 3,
+                                    "chapter_crossing": 3, "font_change": 3})
+
+    def test_each_crossing_starts_at_the_previous_sections_last_page(self):
+        steps = schedule()[0].get("steps", [])
+        crossings = [index for index, step in enumerate(steps) if step["operation"] == "chapter_crossing"]
+        self.assertEqual(len(crossings), 3)
+        for index in crossings:
+            self.assertEqual(steps[index-1]["operation"], "prepare_crossing")
+            self.assertFalse(steps[index-1]["measured"])
+
+    def test_font_changes_always_start_from_the_same_location_and_size(self):
+        steps = schedule()[0].get("steps", [])
+        changes = [index for index, step in enumerate(steps) if step["operation"] == "font_change"]
+        self.assertEqual(len(changes), 3)
+        for index in changes:
+            self.assertEqual(steps[index-1]["operation"], "prepare_target")
+
+    def test_reopens_start_from_different_content_so_old_pixels_cannot_pass(self):
+        steps = schedule()[0]["steps"]
+        for index, step in enumerate(steps):
+            if step["operation"] == "cached_reopen":
+                self.assertEqual(steps[index-1]["operation"], "prepare_reopen")
+                self.assertNotEqual(steps[index-1]["case"], step["case"])
+
 
 if __name__ == "__main__":
     unittest.main()

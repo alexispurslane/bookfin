@@ -2387,7 +2387,124 @@
   "bookfin_commit": "6ba37d9a4a23be07f857d369da73115fedcc53fb",
   "koreader_release": "v2026.07.1",
   "koreader_base": "6e4bc81af4e04f78d81677a323a780a71b29702a",
-  "koreader_crengine": "74bd5a1e2b924bced7513f39562f8fb95d7138e5",
+  "koreader_crengine": "b32a88ffbbf505cf2ea5208c1a49002d70d3609f",
   "epubjs": "0.3.93",
-  "jszip": "3.10.1"
+  "jszip": "3.10.1",
+  "workload": [
+    {
+      "operation": "fresh_open",
+      "case": "target18",
+      "measured": true
+    },
+    {
+      "operation": "paginate",
+      "case": "target18",
+      "measured": false
+    },
+    {
+      "operation": "prepare_reopen",
+      "case": "after_crossing18",
+      "measured": false
+    },
+    {
+      "operation": "cached_reopen",
+      "case": "target18",
+      "measured": true
+    },
+    {
+      "operation": "prepare_reopen",
+      "case": "after_crossing18",
+      "measured": false
+    },
+    {
+      "operation": "cached_reopen",
+      "case": "target18",
+      "measured": true
+    },
+    {
+      "operation": "prepare_reopen",
+      "case": "after_crossing18",
+      "measured": false
+    },
+    {
+      "operation": "cached_reopen",
+      "case": "target18",
+      "measured": true
+    },
+    {
+      "operation": "page_turn",
+      "case": "turn1",
+      "measured": true
+    },
+    {
+      "operation": "page_turn",
+      "case": "turn2",
+      "measured": true
+    },
+    {
+      "operation": "page_turn",
+      "case": "turn3",
+      "measured": true
+    },
+    {
+      "operation": "prepare_crossing",
+      "case": "before_crossing18",
+      "measured": false
+    },
+    {
+      "operation": "chapter_crossing",
+      "case": "after_crossing18",
+      "measured": true
+    },
+    {
+      "operation": "prepare_crossing",
+      "case": "before_crossing18",
+      "measured": false
+    },
+    {
+      "operation": "chapter_crossing",
+      "case": "after_crossing18",
+      "measured": true
+    },
+    {
+      "operation": "prepare_crossing",
+      "case": "before_crossing18",
+      "measured": false
+    },
+    {
+      "operation": "chapter_crossing",
+      "case": "after_crossing18",
+      "measured": true
+    },
+    {
+      "operation": "prepare_target",
+      "case": "target18",
+      "measured": false
+    },
+    {
+      "operation": "font_change",
+      "case": "target20",
+      "measured": true
+    },
+    {
+      "operation": "prepare_target",
+      "case": "target18",
+      "measured": false
+    },
+    {
+      "operation": "font_change",
+      "case": "target20",
+      "measured": true
+    },
+    {
+      "operation": "prepare_target",
+      "case": "target18",
+      "measured": false
+    },
+    {
+      "operation": "font_change",
+      "case": "target20",
+      "measured": true
+    }
+  ]
 }

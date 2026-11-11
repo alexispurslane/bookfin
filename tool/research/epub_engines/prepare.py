@@ -6,6 +6,7 @@ import shutil
 import xml.etree.ElementTree as ElementTree
 import zipfile
 import posixpath
+from protocol import workload
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -99,8 +100,9 @@ def main():
                 "font_file": "SourceSerif4.ttf", "sources": str(args.sources),
                 "bookfin_commit": "6ba37d9a4a23be07f857d369da73115fedcc53fb",
                 "koreader_release": "v2026.07.1", "koreader_base": "6e4bc81af4e04f78d81677a323a780a71b29702a",
-                "koreader_crengine": "74bd5a1e2b924bced7513f39562f8fb95d7138e5",
+                "koreader_crengine": "b32a88ffbbf505cf2ea5208c1a49002d70d3609f",
                 "epubjs": "0.3.93", "jszip": "3.10.1"}
+    manifest["workload"] = workload()
     (assets / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
     (Path(__file__).parent / "evidence/corpus.json").write_text(json.dumps(manifest, indent=2) + "\n")
     print(json.dumps({name: {"sha256": entry["sha256"], "section_count": entry["section_count"],
