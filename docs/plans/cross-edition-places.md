@@ -49,7 +49,7 @@ The terms of `docs/plans/reading-history.md` apply: place, move, bookmark, timel
 
 ### Method
 
-The user's library was not measured. Its saved copies on this Mac and on the shared emulators hold only the 14-book demonstration library. A measurement on the server needs a sign-in. Ticket t3-a4fi measures the real library. The data of this section is public:
+The user's library was not measured. Its saved copies on this Mac and on the shared emulators hold only the 14-book demonstration library. A measurement on the server needs a sign-in. Ticket t3-a4fi measured the real library later. "Measured on the user's library" gives its result. The data of this section is public:
 
 - 155 LibriVox recordings of 29 works. Their public section lists give each section's title, length and readers.
 - 39 EPUB editions of the same works from the reader corpus (`tool/reader/epub_corpus.json`): Standard Ebooks and Project Gutenberg.
@@ -108,6 +108,128 @@ The probe used whisper.cpp 1.9.5 from nixpkgs with the English models tiny.en an
 - Commercial audiobooks differ from LibriVox. One narrator reads, and no spoken notice of 15 to 20 s starts each section. That notice adds to the measured error, so commercial recordings can do better. Chapter marks come from the publisher or from a ripping tool: "Chapter 1", "Track 01", "Opening Credits", or none.
 - PDF editions were not measured. A MOBI book converts to EPUB first, so it behaves as an EPUB.
 - Abridged recordings and other translations appear only as the refusals above.
+
+## Measured on the user's library
+
+Ticket t3-a4fi measured design A on the user's Jellyfin library on 2026-11-11, with the shipped code of commit 7d3ccb16. A scratch test outside the repository ran these functions:
+
+- `buildBooks` and `possibleMatches`, to pair editions as the catalog does.
+- `audioOutline`, for the audio outline.
+- `measureDownloadedOutline`, for the text outline of EPUB and AZW3 files.
+- `alignEditions`, for the result.
+
+A copy of the matcher with its steps exposed counted the anchors of each step. It agreed with `alignEditions` on every pairing. The requests were read-only. The scripts and the downloaded books were deleted after the run. This section gives counts only. Letters replace book titles, and W replaces a title word.
+
+### The library
+
+- 1,478 audiobook items, each one file: 1,095 MP3, 347 M4B and 36 M4A. Bookfin makes each item an audio edition of its own book.
+- 24 ebook items: 12 EPUB and 12 PDF. No MOBI.
+- Bookfin's automatic grouping needs a series, a title and an author that agree. It pairs no ebook with an audio edition. The catalog's suggestion (`possibleMatches`) offers an audio book for 2 of the 24 ebooks.
+- A looser search by title words and author finds no other counterpart. For each of the other 22 ebooks, the best audio title shares at most half of the ebook title's words, and its author differs.
+
+So the library holds 2 books with both editions, in 3 pairings, because one book has two recordings. Both ebooks are EPUB. No PDF ebook has an audio counterpart, so PDF support (t9-nl30) changes no result here.
+
+Three pairings are too few to set thresholds. So the measurement also used the user's own recordings of 9 public-domain works. It paired them with the EPUB editions of these works in the reader corpus (`tool/reader/epub_corpus.json`). This gave 10 recordings and 15 pairings. One pairing used an AZW3 file, which went through the MOBI path. The chapter marks of these pairings are the user's real commercial marks. The ebooks are Standard Ebooks and Project Gutenberg editions, not the user's commercial ebooks.
+
+### Chapter marks of all 1,478 recordings
+
+Each recording has the class of most of its chapter titles. The classes are a heuristic of the scratch test, not of Bookfin. Some "words only" titles are track codes such as "W157".
+
+| Class | Example shapes | Recordings | Share | Median chapters |
+| --- | --- | --- | --- | --- |
+| No chapter marks: one chapter named after the file | none | 357 | 24.2% | 1 |
+| Generic: track, disc or file names | "Book A 044", "D03T10 The W W", "Book A 33" | 350 | 23.7% | 25 |
+| Number and words | "72. W", "61 W", "6. The W W W W" | 275 | 18.6% | 21 |
+| Labeled number | "Chapter 9", "Part 2, Chapter 7", "Part 16" | 217 | 14.7% | 28 |
+| Words only | "Introduction: W the W", "The W W W" | 176 | 11.9% | 35 |
+| Bare number | "068", "80" | 103 | 7.0% | 31 |
+
+- 1,121 recordings (75.8%) have chapter marks. `docs/research/jellyfin.md` sampled 27 of 30.
+- 50 recordings with marks start with "Opening Credits". 45 end with "End Credits".
+- 146 recordings with marks have inner chapters whose lengths vary by less than 10%. A tool cut them at fixed times.
+- The LibriVox sections of the public measurement had no track names and always had marks. In the user's library, 24.2% have no marks, and 30.7% have generic titles or bare numbers. Such titles name tracks or files, not chapters.
+
+### Contents of the user's ebooks
+
+- Bookfin opens 9 of the 12 EPUBs. Two list one contents entry whose file is not in the book, and one fails a ZIP check. Ticket t5-gk30 records this.
+- The 9 open EPUBs have 6 to 279 contents entries, with a median of 27. 6 of them use two levels.
+- In 7 of the 9, most entries have words only, such as the title of an essay. One numbers its chapters with words ("3. The W W"). One lists 279 entries of the form "Chapter 12".
+- So a numbered audio chapter rarely finds a numbered entry in the user's own ebooks. Words-only and number-and-words audio titles can still pair by shared words.
+
+### Matching result
+
+Each row is one pairing of a recording and an ebook edition. "Title pairs" counts the pairs that titles make. "Checked" counts what remains after the rate check. "Filled" counts what the ordinal fill adds. "Depth" is the contents depth of most anchors. "Coverage" is the share of the recording that the spans cover. "Right" is a hand label from the title shapes and the anchor places: yes when the anchors name the same chapters. "Hidden error" is the median leave-one-out error: each inner anchor is hidden and placed from its two neighbors, in pages.
+
+| Book | Source | Ebook | Audio class | Audio chapters | Entries | Depth | Title pairs | Checked | Filled | Anchors | Coverage | Result | Right | Hidden error |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| A | Server | EPUB | Number and words | 7 | 12 | 0 | 5 | 5 | 0 | 5 | 0.91 | Matched | Yes | 0.64 |
+| B | Server | EPUB | Labeled number | 16 | 23 | | 0 | 0 | 0 | 0 | 0 | `fewMatches` | No anchor exists | |
+| B | Server | EPUB | Labeled number | 4 | 23 | | 0 | 0 | 0 | 0 | 0 | `fewMatches` | No anchor exists | |
+| C | Corpus | EPUB | Labeled number | 33 | 39 | 1 | 13 | 12 | 0 | 12 | 0.35 | `partCovered` | Yes | 0.14 |
+| C | Corpus | EPUB | Labeled number | 33 | 32 | 0 | 13 | 12 | 0 | 12 | 0.35 | `partCovered` | Yes | 0.14 |
+| D | Corpus | EPUB | Bare number | 39 | 46 | 1 | 38 | 33 | 5 | 33 | 0.91 | Matched | No | 6.04 |
+| D | Corpus | EPUB | Bare number | 39 | 42 | 0 | 38 | 33 | 5 | 33 | 0.91 | Matched | No | 6.04 |
+| E | Corpus | EPUB | No chapter marks | 1 | 102 | | 0 | 0 | 0 | 0 | 0 | `noChapters` | No anchor exists | |
+| E | Corpus | EPUB | Labeled number | 3 | 102 | 1 | 3 | 3 | 0 | 3 | 0.68 | Matched | No | 220.9 |
+| F | Corpus | EPUB | Labeled number | 98 | 25 | 1 | 18 | 12 | 3 | 12 | 0.14 | `partCovered` | No | 31.1 |
+| F | Corpus | EPUB | Labeled number | 98 | 87 | 1 | 18 | 12 | 3 | 12 | 0.14 | `partCovered` | No | 20.4 |
+| G | Corpus | EPUB | Labeled number | 248 | 251 | 1 | 246 | 239 | 0 | 239 | 1.00 | Matched | Yes | 0.16 |
+| H | Corpus | EPUB | Number and words | 43 | 55 | 2 | 14 | 10 | 0 | 10 | 0.63 | Matched | No | 3.19 |
+| I | Corpus | EPUB | Bare number | 57 | 100 | 2 | 11 | 7 | 3 | 7 | 0.10 | `partCovered` | No | 3.91 |
+| I | Corpus | EPUB | Bare number | 57 | 63 | 0 | 11 | 7 | 3 | 7 | 0.10 | `partCovered` | No | 3.92 |
+| I | Corpus | AZW3 | Bare number | 57 | 63 | 0 | 11 | 7 | 3 | 7 | 0.10 | `partCovered` | No | 3.92 |
+| J | Corpus | EPUB | Generic | 21 | 24 | 0 | 20 | 18 | 2 | 19 | 0.99 | Matched | No | 6.21 |
+| K | Corpus | EPUB | Labeled number | 3 | 6 | 0 | 3 | 3 | 0 | 3 | 1.00 | Matched | Yes | 0.53 |
+
+In sum, over 18 pairings, 13 recordings and 11 books:
+
+| Outcome | Pairings | Share |
+| --- | --- | --- |
+| Matched, right anchors | 3 | 17% |
+| Matched, wrong anchors | 5 | 28% |
+| Refused, `partCovered` | 7 | 39% |
+| Refused, `fewMatches` | 2 | 11% |
+| Refused, `noChapters` | 1 | 6% |
+
+So design A refuses 10 of 18 pairings (56%). 2 of these refusals (book C) lose right anchors. The other 8 refusals have no right anchor to find. Of the 3 pairings of the user's own ebooks, design A matches 1 and refuses 2 (`fewMatches`).
+
+### Why pairings fail
+
+1. Titles that number tracks, not chapters. Books D and I have "001" to "039" or "057". Book H has CD track names with a disc part. Book J has "01 Book J" to "21 Book J", where track 01 holds the credits and the preface. These numbers pair with chapter numbers by chance. The spans of such chance anchors read at 0.54 to 1.99 times their median rate. That is inside the band, so the rate check keeps most of them. Design A matches D, H and J and lands a chapter or more away from the true place. In J, every landing is one chapter late. Design A refuses I only because its chance anchors cover 10% of the recording.
+2. "Chapter N" marks that a tool cut. Book F has 98 marks for 18 episodes. Their numbers also pair by chance. The coverage limit refuses F at 14% to 16%.
+3. An ebook that collects several works. Book E's three anchors land in three different works. With three anchors there are two spans, and the median is one of them, so the rate check cannot fail.
+4. Numbered audio chapters against contents entries with words only. Book B makes no title pair, so `fewMatches`.
+5. Chapters numbered inside volumes, with "Volume 2" as an audio chapter of its own, and a long final "End Credits" chapter. Book C's 12 anchors in volume 1 are right. The tail gap holds 19 audio chapters for 16 entries, so the ordinal fill does not run. The anchors cover 35%, so `partCovered`.
+6. No chapter marks: one recording of book E, so `noChapters`.
+
+The three right matches place a hidden chapter start 0.16 to 0.64 pages from its known start at the median. That agrees with the LibriVox result above.
+
+The largest pairing (248 audio chapters against 251 entries) took 110 ms in `alignEditions`, in a test on the M1 Max. The others took 7 ms or less.
+
+### Thresholds
+
+| Threshold | Now | Evidence | Recommendation |
+| --- | --- | --- | --- |
+| Rate band | 0.5 to 2 times the median rate | Bands from 1/3 to 3 down to 0.75 to 1.33 change no result. The check removes anchors and never refuses a pairing. The right pairings keep all their anchors even at 0.67 to 1.5. The wrong matches keep 3 to 36 anchors at every band. | Keep 0.5 to 2. A narrower band does not catch chance anchors. |
+| Coverage limit | Half of the recording | It refuses 7 pairings. 5 have chance anchors at 5% to 16% coverage. 2 have right anchors at 35% (book C). | Lower it to 0.3. This keeps book C, and every wrong pairing here stays refused. The evidence is one book. No abridged recording was in the sample, so the limit's first purpose is not tested. |
+| One-page margin | 582 visible characters, or 51 s | In the right pairings, 0 to 40 s of audio lie before the first anchor (opening credits and a volume mark). 1.4 to 24.5 pages of front matter lie before the first anchor in the text. A place in 40 s of credits lands at most 0.8 pages before chapter 1, inside the margin. | Keep it. |
+
+The thresholds alone do not stop the wrong matches. The measurement suggests one new refusal, a self-check of design A by its own placement:
+
+- Design A hides each inner anchor in turn and places it from its two neighbors. If the median distance from the known start is more than 2 pages, design A refuses the pairing.
+- Right pairings: 0.14 to 0.64 pages on the user's recordings, and 0.22 to 1.25 pages on the nine LibriVox fixtures in `test/crossings/fixtures`. The largest value is "A Christmas Carol", whose staves are long.
+- Wrong pairings: 3.19 to 220.9 pages.
+- Assume this rule and a coverage limit of 0.3. Then design A matches 5 of the 18 pairings, all with right anchors, and refuses 13.
+- The check needs at least three anchors. A pairing of exactly two anchors stays unchecked. None occurred in this sample.
+- The spread of span rates separates less well. Its 90th percentile is 1.19 times the median rate or less in right pairings and 1.43 to 1.84 in most wrong ones. But it misses book E (1.0) and book I (1.2).
+
+With the rule, design A refuses 72% of these pairings, where it now refuses 56%. A refusal sends Go to to the other screen, as today. A wrong match plays or shows the wrong chapter with the word "about". The user chose the refusal for chapters that do not match ("Decision", item 3).
+
+### Limits of this measurement
+
+- 18 pairings of 13 recordings and 11 books. Only 3 pairings use the user's own ebooks.
+- The corpus ebooks are public editions. The user's commercial ebooks name chapters with words more often.
+- The labels "right" and "wrong" come from a reading of the title shapes and the anchor places, not from a sentence-level check.
 
 ## What each technique was made for
 

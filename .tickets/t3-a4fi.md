@@ -1,6 +1,6 @@
 ---
 id: t3-a4fi
-status: open
+status: in_progress
 deps: []
 links: []
 created: 2026-11-11T15:39:12Z
@@ -22,3 +22,20 @@ For every book that has an audio edition and an EPUB or MOBI edition, measure th
 
 Report the share of books that design A of the plan refuses. Print counts and title patterns only. Never print or commit the server address or private titles beyond a few anonymized examples. Use the result to set the thresholds of the edition alignment ticket.
 
+
+## Notes
+
+**2026-11-11T19:22:24Z**
+
+Measurement agent started (Claude Opus 5.5 high, worktree, read-only on the server). Key delivered through T3 private secret input as a file; agent may not print or commit it or the address.
+
+**2026-11-11T19:39:40Z**
+
+Measured on 2026-11-11 with the shipped code (buildBooks, possibleMatches, audioOutline, measureDownloadedOutline, alignEditions) in a scratch test outside the repository. The result is in docs/plans/cross-edition-places.md, 'Measured on the user's library'.
+
+- The server holds 1,478 audiobook files and 24 ebooks (12 EPUB, 12 PDF). Only 2 books have both editions (3 pairings, both EPUB). So the measurement added 15 pairings of the user's recordings of 9 public-domain works with corpus EPUBs.
+- 24.2% of the recordings have no chapter marks. 30.7% have generic track or file names or bare numbers.
+- Design A refuses 10 of 18 pairings (56%): 7 partCovered, 2 fewMatches, 1 noChapters. Of the 8 matches, 5 have wrong anchors: track numbers that pair with chapter numbers by chance, and one collection ebook.
+- No rate band separates right from wrong pairings. Recommendation for the parent: keep the band and the one-page margin, lower the coverage limit to 0.3, and add a self-check that refuses a pairing whose median leave-one-out error exceeds 2 pages. No production code changed.
+- New ticket t5-gk30: Bookfin cannot open 3 of the user's 12 EPUBs.
+- The Jellyfin 12.4 server refused the X-Emby-Token header, so the read-only requests sent the key in the Authorization header. The scratch files are deleted.
