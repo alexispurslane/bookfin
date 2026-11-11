@@ -1,7 +1,7 @@
 ---
 id: boo-cldw
 status: in_progress
-deps: []
+deps: [boo-kf2g]
 links: []
 created: 2026-11-11T00:07:15Z
 type: task
