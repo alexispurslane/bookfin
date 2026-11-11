@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Bookfin · Audiobooks and ebooks from your Jellyfin server</title>
-<meta name="description" content="Bookfin is an Android app for the audiobooks and ebooks on your Jellyfin server. Listen offline, read offline, and never lose your place.">
+<meta name="description" content="Bookfin is an Android app for the audiobooks and ebooks on your Jellyfin server. One history for listening and reading, PDFs rewrapped in their own printed words, and offline books that never lose your place.">
 <meta name="color-scheme" content="light dark">
 <style>
 @font-face{font-family:"Outfit";font-weight:400 800;font-display:swap;src:url(docs/mockups/fonts/outfit-latin.woff2) format("woff2")}
@@ -204,10 +204,10 @@ footer a{color:var(--subtle);display:inline-block;padding:.6rem .25rem}
       Bookfin
     </a>
     <nav aria-label="Page">
-      <a class="wide" href="#shelf">Shelf</a>
-      <a class="wide" href="#player">Player</a>
       <a class="wide" href="#history">History</a>
+      <a class="wide" href="#reflow">PDF reflow</a>
       <a class="wide" href="#reader">Reader</a>
+      <a class="wide" href="#sync">Sync</a>
       <a href="#contents">Contents</a>
       <a href="#setup">Get it</a>
     </nav>
@@ -219,7 +219,7 @@ footer a{color:var(--subtle);display:inline-block;padding:.6rem .25rem}
 
   <section class="hero">
     <h1>Your books, on paper you can carry.</h1>
-    <p class="lede">An Android app for the audiobooks and ebooks on your Jellyfin server, the free media server that you run yourself. Made so that books feel as good there as your films and music.</p>
+    <p class="lede">An Android app for the audiobooks and ebooks on your Jellyfin server, the free media server that you run yourself. It remembers every place you have been in a book, and it makes PDFs readable on a phone.</p>
     <div class="actions">
       <a class="btn primary" href="#setup">Get started</a>
       <a class="btn ghost" href="https://tangled.org/xenolandscapes.com/bookfin">Source code</a>
@@ -236,71 +236,33 @@ footer a{color:var(--subtle);display:inline-block;padding:.6rem .25rem}
 
   <section class="why" id="why">
     <h2>Why I made Bookfin</h2>
-    <p>Jellyfin is a lovely home for films and music. Books have been there for years, but they get far less attention, and the apps show it. The server reads an audiobook's chapters, but the official apps give you no chapter list. Jellyfin keeps only your latest position, with no record of your skips, jumps, and bookmarks. If you scrub too far by accident, or go back to hear a passage again, there is no quick way to return to where you were. An audiobook and its ebook sit in separate lists. A download that stops when the app closes waits for you to restart it, and removed downloads can leave files behind.</p>
-    <p>Books are a quiet corner of Jellyfin, and the server leaves a lot for an app to do. So I built the app that I wanted on top of it: one that treats your books like a shelf, remembers every place you have been, and feels good in your hand.</p>
+    <p>Jellyfin is a lovely home for films and music. Books have been there for years, but they get far less attention, and the apps show it. The server reads an audiobook’s chapters, but the official apps give you no chapter list. Jellyfin keeps only your latest position, with no record of your skips, jumps, and bookmarks, so a slip of the thumb can lose your place. An audiobook and its ebook sit in separate lists. A PDF shows as a whole printed page, too small to read on a phone.</p>
+    <p>So I built the app that I wanted on top of the server: one that treats your books like a shelf, remembers every place you have been, and feels good in your hand.</p>
     <p>I wrote Bookfin in Flutter. It draws every frame with its own engine, so the app looks and behaves the same wherever it runs, and the same code can grow to more platforms later. The codebase stays small, clean, and easy to read.</p>
   </section>
 
   <nav class="contents" id="contents" aria-labelledby="contents-h">
     <h2 id="contents-h">Contents</h2>
     <ol>
-      <li><a href="#shelf"><span class="n">One.</span><span class="t">The shelf</span><span class="dots"></span><span class="d">library and downloads</span></a></li>
-      <li><a href="#player"><span class="n">Two.</span><span class="t">The player</span><span class="dots"></span><span class="d">chapters, late nights</span></a></li>
-      <li><a href="#history"><span class="n">Three.</span><span class="t">Shared history</span><span class="dots"></span><span class="d">listening and reading</span></a></li>
-      <li><a href="#reader"><span class="n">Four.</span><span class="t">The reader</span><span class="dots"></span><span class="d">EPUB, MOBI, scanned PDF</span></a></li>
-      <li><a href="#reflow"><span class="n">Five.</span><span class="t">PDF reflow</span><span class="dots"></span><span class="d">the same page, before and after</span></a></li>
-      <li><a href="#sync"><span class="n">Six.</span><span class="t">Every device</span><span class="dots"></span><span class="d">sync on your server</span></a></li>
+      <li><a href="#history"><span class="n">One.</span><span class="t">Shared history</span><span class="dots"></span><span class="d">listening and reading, one record</span></a></li>
+      <li><a href="#reflow"><span class="n">Two.</span><span class="t">PDF reflow</span><span class="dots"></span><span class="d">the printed words, rewrapped</span></a></li>
+      <li><a href="#reader"><span class="n">Three.</span><span class="t">The EPUB reader</span><span class="dots"></span><span class="d">its own engine</span></a></li>
+      <li><a href="#sync"><span class="n">Four.</span><span class="t">Every device</span><span class="dots"></span><span class="d">sync on your server</span></a></li>
+      <li><a href="#shelf"><span class="n">Five.</span><span class="t">The shelf</span><span class="dots"></span><span class="d">library and downloads</span></a></li>
+      <li><a href="#player"><span class="n">Six.</span><span class="t">The player</span><span class="dots"></span><span class="d">chapters, late nights</span></a></li>
       <li><a href="#setup"><span class="n">Seven.</span><span class="t">Getting it</span><span class="dots"></span><span class="d">build and install</span></a></li>
     </ol>
   </nav>
 
-  <section class="chapter" id="shelf">
-    <div class="copy">
-      <h2><span>One.</span> The shelf</h2>
-      <p class="stand">Audiobooks and ebooks, on one shelf, in your pocket.</p>
-      <p>Most Jellyfin apps keep a book's audio and its text in different places. Bookfin puts them under one cover, shows only your book libraries, and keeps each series in reading order.</p>
-      <p>Download the audiobook, the ebook, or both, then listen and read with no connection at all. Lost signal, a dead battery, or a phone that dies mid-download? Bookfin picks up where it left off, fetches only what is missing, and never hands you a broken file. When you remove a book, its files really go.</p>
-      <ul>
-        <li>Series stack into one card and open in reading order.</li>
-        <li>Filter by audiobooks, ebooks, or what is downloaded.</li>
-      </ul>
-    </div>
-    <div class="phones">
-      <img src="docs/screenshots/library-grid.png" width="720" height="1600" loading="lazy" alt="The library as a grid of covers with stacked series cards">
-      <img src="docs/screenshots/book.png" width="720" height="1600" loading="lazy" alt="A book page with separate download buttons for the audiobook and the ebook">
-    </div>
-  </section>
-</div>
-
-<div class="night" id="player">
-  <div class="wrap">
-    <section class="chapter flip">
-      <div class="copy">
-        <h2><span>Two.</span> The player</h2>
-        <p class="stand">Made for long books and late nights.</p>
-        <p>A twenty-hour book needs more than a play button. Bookfin knows its chapters and shows you where you are in them. After sunset, it turns warm and dim, with a glow in the colors of the cover.</p>
-        <ul>
-          <li>Chapter marks and bookmarks on the position bar.</li>
-          <li>Time left in the chapter and in the whole book.</li>
-        </ul>
-      </div>
-      <div class="phones">
-        <img src="docs/screenshots/player-night.png" width="720" height="1600" loading="lazy" alt="The player at night, with a glow in the colors of the cover">
-        <img src="docs/screenshots/chapters.png" width="720" height="1600" loading="lazy" alt="The chapter list in a frosted glass sheet">
-      </div>
-    </section>
-  </div>
-</div>
-
-<div class="wrap">
   <section class="chapter" id="history">
     <div class="copy">
-      <h2><span>Three.</span> Shared history</h2>
+      <h2><span>One.</span> Shared history</h2>
       <p class="stand">Every place you have been, in audio and text.</p>
-      <p>Skipped too far or followed a reference? A book’s listening moves, reading moves, and bookmarks share one History, available from the player, reader, or book page.</p>
+      <p>Bookfin keeps a book’s audiobook and its ebook under one cover, so they share one History. Your jumps and bookmarks go into it, from listening and from reading alike.</p>
+      <p>Skipped too far, or followed a footnote? Open History from the player, the reader, or the book page, and go back.</p>
       <ul>
-        <li>Choose Go to on any entry to open the audiobook or ebook at that place.</li>
-        <li>Undo a jump or return to where it began without erasing later history.</li>
+        <li>Choose Go to on any entry to open the audiobook or the ebook at that place.</li>
+        <li>Undo a jump, or return to where it began, without erasing later history.</li>
         <li>Name bookmarks in either edition. Your history stays until you delete it.</li>
       </ul>
     </div>
@@ -310,13 +272,47 @@ footer a{color:var(--subtle);display:inline-block;padding:.6rem .25rem}
     </figure>
   </section>
 
+  <section class="chapter full reflow" id="reflow" aria-labelledby="reflow-h">
+    <div class="reflow-intro">
+      <div class="copy">
+        <h2 id="reflow-h"><span>Two.</span> PDF reflow</h2>
+        <p class="stand">The book’s own printed words, rewrapped for your screen.</p>
+        <p>A PDF is a fixed printed page. On a phone the whole page shrinks until the text is too small to read. Most apps fix this by pulling out the text and setting it again in a new font. That loses italics, accents, and formulas, and on a scanned book it adds recognition mistakes.</p>
+        <p>Bookfin does what KOReader’s reflow does. It finds the box around each word on the page, cuts every word out as a small picture, and lays those pictures out again in lines that fit your screen. You read the book’s own type, at your text size and in your colors. Bookfin calls this view Page words.</p>
+      </div>
+      <div class="copy">
+        <ul>
+          <li>Paragraphs, headings, indents, and drop caps stay. Figures and charts stay whole, as pictures.</li>
+          <li>Pages turn by screens of complete lines, with no sideways scrolling.</li>
+          <li>A digital PDF gives Bookfin its word boxes. For a scan, Bookfin finds them on the phone, offline.</li>
+          <li>Select, copy, and search the words. English scans are recognized on the phone for this.</li>
+          <li>Switch to Original, the printed page with its margins and running headers trimmed, or to Text, the words as plain ebook text. Each book keeps its view.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="capture-grid">
+      <figure class="capture">
+        <figcaption>Original<small>The printed page, fitted to the screen.</small></figcaption>
+        <img src="docs/marketing/nihil-unbound/original.webp" width="822" height="1680" loading="lazy" alt="Nihil Unbound printed page 9 in Original view, with dense prose, an indented quotation, and italics">
+      </figure>
+      <figure class="capture">
+        <figcaption>Page words<small>The same printed words, larger and rewrapped.</small></figcaption>
+        <picture>
+          <source media="(prefers-color-scheme:dark)" srcset="docs/marketing/nihil-unbound/page-words-night.webp" width="822" height="1680">
+          <img src="docs/marketing/nihil-unbound/page-words-cream.webp" width="822" height="1680" loading="lazy" alt="The same Nihil Unbound page with larger original words wrapped to the screen, preserving italics and paragraph breaks">
+        </picture>
+      </figure>
+    </div>
+    <p class="capture-note"><cite>Nihil Unbound</cite>, printed page 9. The Page words capture shows the first screen of the page, and the rest of the page follows on the next screen. <a href="docs/marketing/nihil-unbound/README.md">Capture and excerpt notes</a>.</p>
+  </section>
+
   <section class="chapter full" id="reader">
     <div class="reader-intro">
       <div class="copy">
-        <h2><span>Four.</span> The reader</h2>
-        <p class="stand">Your ebooks, at home in Bookfin.</p>
+        <h2><span>Three.</span> The EPUB reader</h2>
+        <p class="stand">Its own engine, written in Flutter.</p>
         <p class="formats">EPUB · MOBI · PDF</p>
-        <p>The built-in EPUB reader lays out and draws pages entirely in Flutter, without a WebView. It shares the app’s controls and one implementation across platforms.</p>
+        <p>Many ebook apps show an EPUB inside a hidden web browser, called a WebView. Bookfin lays out and draws its pages itself, in Flutter. So the reader has the same controls, gestures, and colors as the rest of the app, and one codebase serves every platform.</p>
         <ul>
           <li>Choose your text size and Cream or Night colors.</li>
           <li>Select and copy text, follow links, and open footnotes.</li>
@@ -329,9 +325,9 @@ footer a{color:var(--subtle);display:inline-block;padding:.6rem .25rem}
       </div>
     </div>
     <div class="epub-comparison" id="epub">
-      <h3>EPUB performance</h3>
-      <p>Bookfin, epub.js in Android WebView, and KOReader’s engine ran in small release test apps on the same Android 16 emulator.</p>
-      <p id="epub-timing-key">Average time in milliseconds, with each of three books weighted equally. Lower is faster.</p>
+      <h3>How fast is it?</h3>
+      <p>We timed Bookfin against two established engines: epub.js inside Android’s WebView, and the engine of KOReader. Each ran in a small release test app on the same Android 16 emulator, with the same three books.</p>
+      <p id="epub-timing-key">Times are in milliseconds, averaged so that each book counts equally. Lower is faster.</p>
       <p class="table-help" id="epub-table-help">On a small screen, scroll the table sideways. With a keyboard, focus it and use the arrow keys.</p>
       <div class="table-scroll" role="region" tabindex="0" aria-labelledby="epub-average-caption" aria-describedby="epub-table-help epub-timing-key">
         <table class="engine-table" data-aggregation="mean-of-book-means">
@@ -348,47 +344,15 @@ footer a{color:var(--subtle);display:inline-block;padding:.6rem .25rem}
           </tbody>
         </table>
       </div>
-      <p class="epub-evidence">Includes rendering and screenshot verification. Layout work differs between engines; these are emulator results, not phone timings. <a href="docs/marketing/epub-renderer/README.md#completed-same-emulator-measurements">Books, averaging, and test details</a>.</p>
+      <p class="epub-evidence">Each time ends when a screenshot shows the right page, so it includes drawing and capture. The engines split their layout work differently between opening a book and turning its pages. These are emulator results, not phone timings. <a href="docs/marketing/epub-renderer/README.md#completed-same-emulator-measurements">Books, averaging, and test details</a>.</p>
     </div>
-  </section>
-
-  <section class="chapter full reflow" id="reflow" aria-labelledby="reflow-h">
-    <div class="reflow-intro">
-      <div class="copy">
-        <h2 id="reflow-h"><span>Five.</span> PDF reflow</h2>
-        <p class="stand">The original words, with room to read.</p>
-        <p>Page words rearranges images of the printed words to fit your screen. The book keeps its letterforms and italics at the size and colors you choose.</p>
-      </div>
-      <div class="copy">
-        <ul>
-          <li>Keep paragraphs, headings, and indents. Figures and charts stay together as images.</li>
-          <li>Turn through complete lines, with no sideways scrolling.</li>
-          <li>Switch to Original or plain Text. Bookfin remembers each book’s view and Trim margins choice.</li>
-          <li>Recognize English scans on the phone, offline, for search and text selection.</li>
-        </ul>
-      </div>
-    </div>
-    <div class="capture-grid">
-      <figure class="capture">
-        <figcaption>Original<small>The printed page, fitted to the screen.</small></figcaption>
-        <img src="docs/marketing/nihil-unbound/original.webp" width="822" height="1680" loading="lazy" alt="Nihil Unbound printed page 9 in Original view, with dense prose, an indented quotation, and italics">
-      </figure>
-      <figure class="capture">
-        <figcaption>Page words<small>The same page, enlarged and reflowed.</small></figcaption>
-        <picture>
-          <source media="(prefers-color-scheme:dark)" srcset="docs/marketing/nihil-unbound/page-words-night.webp" width="822" height="1680">
-          <img src="docs/marketing/nihil-unbound/page-words-cream.webp" width="822" height="1680" loading="lazy" alt="The same Nihil Unbound page with larger original words wrapped to the screen, preserving italics and paragraph breaks">
-        </picture>
-      </figure>
-    </div>
-    <p class="capture-note"><cite>Nihil Unbound</cite>, printed page 9. Reflow continues on the next screen. <a href="docs/marketing/nihil-unbound/README.md">Bookfin captures and excerpt notes</a>.</p>
   </section>
 
   <section class="chapter flip" id="sync">
     <div class="copy">
-      <h2><span>Six.</span> Every device</h2>
+      <h2><span>Four.</span> Every device</h2>
       <p class="stand">Your place, on every device.</p>
-      <p>Jellyfin stores how far you got, and Bookfin reports that like any other app. But Jellyfin has no bookmark or history feature. A small server plugin, Bookfin Storage, fills that gap and carries them between your devices.</p>
+      <p>Jellyfin stores how far you got, and Bookfin reports that like any other app. But Jellyfin has no place for bookmarks or history. A small server plugin, Bookfin Storage, fills that gap and carries them between your devices.</p>
       <ul>
         <li>If two devices disagree, Bookfin asks which place is real.</li>
         <li>Choosing keeps both places as bookmarks, so nothing is lost.</li>
@@ -406,6 +370,46 @@ footer a{color:var(--subtle);display:inline-block;padding:.6rem .25rem}
       <img src="docs/screenshots/sync-conflict-bookmarks.png" width="720" height="1600" loading="lazy" alt="The history after the choice, with both places kept as Saved before sync choice bookmarks">
     </div>
   </section>
+
+  <section class="chapter" id="shelf">
+    <div class="copy">
+      <h2><span>Five.</span> The shelf</h2>
+      <p class="stand">Audiobooks and ebooks, on one shelf, in your pocket.</p>
+      <p>Bookfin shows only your book libraries. Each audiobook and its ebook share one cover, and each series opens in reading order.</p>
+      <p>Download the audiobook, the ebook, or both, then listen and read with no connection at all. Lost signal, a dead battery, or a phone that dies mid-download? Bookfin picks up where it left off, fetches only what is missing, and never hands you a broken file. When you remove a book, its files really go.</p>
+      <ul>
+        <li>Series stack into one card and open in reading order.</li>
+        <li>Filter by audiobooks, ebooks, or what is downloaded.</li>
+      </ul>
+    </div>
+    <div class="phones">
+      <img src="docs/screenshots/library-grid.png" width="720" height="1600" loading="lazy" alt="The library as a grid of covers with stacked series cards">
+      <img src="docs/screenshots/book.png" width="720" height="1600" loading="lazy" alt="A book page with separate download buttons for the audiobook and the ebook">
+    </div>
+  </section>
+</div>
+
+<div class="night" id="player">
+  <div class="wrap">
+    <section class="chapter flip">
+      <div class="copy">
+        <h2><span>Six.</span> The player</h2>
+        <p class="stand">Made for long books and late nights.</p>
+        <p>A twenty-hour book needs more than a play button. Bookfin knows its chapters and shows you where you are in them. After sunset, it turns warm and dim, with a glow in the colors of the cover.</p>
+        <ul>
+          <li>Chapter marks and bookmarks on the position bar.</li>
+          <li>Time left in the chapter and in the whole book.</li>
+        </ul>
+      </div>
+      <div class="phones">
+        <img src="docs/screenshots/player-night.png" width="720" height="1600" loading="lazy" alt="The player at night, with a glow in the colors of the cover">
+        <img src="docs/screenshots/chapters.png" width="720" height="1600" loading="lazy" alt="The chapter list in a frosted glass sheet">
+      </div>
+    </section>
+  </div>
+</div>
+
+<div class="wrap">
 
   <section class="chapter full setup" id="setup">
     <div class="copy">
