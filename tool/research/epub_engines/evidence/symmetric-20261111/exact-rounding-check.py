@@ -14,6 +14,7 @@ ENDS = {"drawn_page": "drawn_ns", "prepared_page": "preparation_ns", "koreader_b
 
 
 def wait(row):
+    """The superseded rule: the wait until the drawing frame starts."""
     if row["engine"] == "bookfin":
         start = row["drawn_frame"]["buildStart_us"] * 1000 + row["phase_clock"]["offset_ns"]
     elif row["engine"] == "webview":
@@ -21,6 +22,24 @@ def wait(row):
     else:
         return 0
     return max(0, start - row["preparation_ns"])
+
+
+def vsync_wait(row):
+    """The current rule: the wait until the drawing frame's vsync. For WebView,
+    the running frame draws the page if preparation ended inside one."""
+    if row["engine"] == "bookfin":
+        vsync = row["drawn_frame"]["vsyncStart_us"] * 1000 + row["phase_clock"]["offset_ns"]
+    elif row["engine"] == "webview":
+        running = row.get("running_frame_vsync_ns")
+        vsync = running if running is not None else row["frame_vsync_ns"]
+    else:
+        return 0
+    return max(0, vsync - row["preparation_ns"])
+
+
+# Each summary names the rule of its drawn-page cells in their boundary.
+WAITS = {"engine_start_ns_to_drawn_ns": wait,
+         "engine_start_ns_to_drawn_ns_less_wait_until_drawing_frame_vsync": vsync_wait}
 
 
 def tenth(value):
@@ -35,12 +54,13 @@ for directory in map(Path, sys.argv[1:]):
                 and row.get("window_copy_verified") and not row.get("error")]
     for name, interval in summary["intervals"].items():
         excluded = {entry["id"] for entry in interval["excluded"]}
+        less = WAITS[interval["cells"][0]["boundary"]] if name == "drawn_page" and interval["cells"] else (lambda row: 0)
         groups = defaultdict(list)
         for row in accepted:
             if row["id"] in excluded or (name == "koreader_before_draw" and row["engine"] != "koreader"):
                 continue
             groups[(row["engine"], row["book"], row["operation"])].append(
-                Fraction(row[ENDS[name]] - row["engine_start_ns"] - (wait(row) if name == "drawn_page" else 0), 1_000_000))
+                Fraction(row[ENDS[name]] - row["engine_start_ns"] - less(row), 1_000_000))
         for cell in interval["cells"]:
             values = sorted(groups[(cell["engine"], cell["book"], cell["operation"])])
             count = len(values)

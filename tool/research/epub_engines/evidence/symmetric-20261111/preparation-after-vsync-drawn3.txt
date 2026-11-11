@@ -1,0 +1,5 @@
+fresh_open: 36 samples; preparation ended a median 22.9 ms after the vsync before the next frame, 0 within 8 ms; the superseded rule subtracted a median 3.2 ms
+cached_reopen: 108 samples; preparation ended a median 17.4 ms after the vsync before the next frame, 5 within 8 ms; the superseded rule subtracted a median 4.5 ms
+page_turn: 108 samples; preparation ended a median 4.8 ms after the vsync before the next frame, 90 within 8 ms; the superseded rule subtracted a median 15.9 ms
+chapter_crossing: 108 samples; preparation ended a median 12.8 ms after the vsync before the next frame, 23 within 8 ms; the superseded rule subtracted a median 7.8 ms
+font_change: 108 samples; preparation ended a median 4.5 ms after the vsync before the next frame, 105 within 8 ms; the superseded rule subtracted a median 14.1 ms

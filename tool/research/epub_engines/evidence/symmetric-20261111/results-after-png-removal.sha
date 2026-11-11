@@ -18,3 +18,8 @@ cfdca4712435f76f7561d2b8122f92d642b637c3d4e54149de6222405d802b95  results-drawn-
 6eb7db8a32560f2f6077f1ae3194011c81964873e33d14532cc941fb90d23425  results-drawn-gpu/facts.json
 c08b077bf3852e561c2efa547a0eceaf86662a1a28197fd1f1e662b27137952f  results-gpu-prepared/facts.json
 d57d821d38494a28e18a50a88bbbd12bcbe80c907075d71653ebfc54948cbbdd  results-swiftshader/facts.json
+# 2026-11-11T19:05:53Z results-drawn4-gpu collected again after PNG removal, compared with the results collected before it
+627573b3abba3dbb6c9af561de6b049ec4abf606259c6835370611ff1c6964ac  tool/research/epub_engines/evidence/symmetric-20261111/results-drawn4-gpu/summary.json
+3ef5bb5163e5131017bddf4500521796f767ea56bc2756da47ae837b868c76ae  tool/research/epub_engines/evidence/symmetric-20261111/results-drawn4-gpu/samples.jsonl
+ed8922520a262be75a7bec0c2817ebb5c51c8ddcbcadccc0fcca51ebafc57277  tool/research/epub_engines/evidence/symmetric-20261111/results-drawn4-gpu/facts.json
+dd8749d6002e51c2102b14a708323dddb471c96207c0f25e5f53153421f1cd74  tool/research/epub_engines/evidence/symmetric-20261111/results-drawn4-gpu/frames.json

@@ -1,0 +1,30 @@
+path "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines" does not contain a 'flake.nix', searching up
+1/108 sym-drawn4-round-00-prose-bookfin
+2/108 sym-drawn4-round-00-prose-webview
+3/108 sym-drawn4-round-00-prose-koreader
+4/108 sym-drawn4-round-00-long-webview
+5/108 sym-drawn4-round-00-long-koreader
+6/108 sym-drawn4-round-00-long-bookfin
+7/108 sym-drawn4-round-00-illustrated-koreader
+8/108 sym-drawn4-round-00-illustrated-bookfin
+9/108 sym-drawn4-round-00-illustrated-webview
+10/108 sym-drawn4-round-01-long-koreader
+11/108 sym-drawn4-round-01-long-bookfin
+12/108 sym-drawn4-round-01-long-webview
+13/108 sym-drawn4-round-01-illustrated-bookfin
+14/108 sym-drawn4-round-01-illustrated-webview
+15/108 sym-drawn4-round-01-illustrated-koreader
+16/108 sym-drawn4-round-01-prose-webview
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/run.py", line 148, in <module>
+    main()
+    ~~~~^^
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/run.py", line 138, in main
+    measure_quietly(job["run_id"], attempt, load, time.sleep, args.output, LOAD_LIMIT)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/run.py", line 51, in measure_quietly
+    peak = attempt()
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/run.py", line 135, in attempt
+    raise RuntimeError(f'Instrumented behavior test failed: {job["run_id"]}; output and raw evidence retained')
+RuntimeError: Instrumented behavior test failed: sym-drawn4-round-01-prose-webview; output and raw evidence retained
+exit 1
