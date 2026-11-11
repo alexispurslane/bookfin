@@ -60,6 +60,12 @@ public final class EngineWorkloadTest {
                 assertFalse("The renderer must produce actual page text", row.getString("visible_text").isBlank());
                 assertTrue(row.getLong("start_ns") <= row.getLong("engine_ready_ns"));
                 assertTrue(row.getLong("engine_ready_ns") < row.getLong("end_ns"));
+                assertEquals(row.getString("id"), row.getString("preparation_event_id"));
+                assertEquals(step.getString("operation"), row.getString("preparation_operation"));
+                assertTrue(row.getLong("start_ns") <= row.getLong("operation_returned_ns"));
+                assertTrue(row.getLong("operation_returned_ns") <= row.getLong("preparation_ns"));
+                assertTrue(row.getLong("preparation_ns") <= row.getLong("engine_ready_ns"));
+                assertFalse(row.getJSONObject("phase_clock").getString("source").isEmpty());
                 assertEquals(step.getString("case").equals("target20") ? 20 : 18, row.getInt("text_size_css_px"));
                 int target = book.getJSONObject("target").getInt("index");
                 String pageCase = step.getString("case");

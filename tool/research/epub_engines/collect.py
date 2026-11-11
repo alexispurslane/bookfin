@@ -55,6 +55,8 @@ def main():
                           "capture_attempts_max": max((row["capture_attempts"] for row in measurements), default=None)})
     summary["independent_processes_complete"] = len(facts) == 9 and all(fact["independent_process_start_count"] >= 10 for fact in facts)
     summary["complete"] = summary["complete"] and summary["independent_processes_complete"]
+    for milestone in summary["milestones"].values():
+        milestone["complete"] = milestone["complete"] and not incomplete and summary["independent_processes_complete"]
     (args.output / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")
     (args.output / "facts.json").write_text(json.dumps(facts, indent=2) + "\n")
     print(json.dumps({"cells": len(summary["cells"]), "excluded": len(summary["excluded"]),
