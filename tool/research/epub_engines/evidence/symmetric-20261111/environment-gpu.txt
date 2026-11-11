@@ -1,0 +1,39 @@
+2026-11-11T15:19:21Z
+586dc2ed6f3abda99d640c54365e969f2b03771e
+ 10:19:21  up 46 days 21:53,  4 users,  load average: 5.36, 8.70, 9.68
+System-wide memory free percentage: 48%
+DEVICE emulator-5558 (AVD bookfin-bench-gpu: bookfin-bench-sym config.ini with hw.gpu.enabled=yes, hw.gpu.mode=host)
+bookfin-bench-gpu
+google/sdk_gphone64_arm64/emu64a:16/BE2A.250530.026.F3/13894323:userdebug/dev-keys
+4
+MemTotal:        2021944 kB
+Physical size: 1080x2400
+Physical density: 420
+GLES: Google (Apple), Android Emulator OpenGL ES Translator (Apple M1 Max), OpenGL ES 3.0 (4.1 Metal - 91.7)
+emulation
+ranchu
+skiagl
+  Current WebView package (name, version): (com.google.android.webview, 133.0.6943.137)
+[x] com.android.internal.systemui.navbar.gestural
+[x] com.android.internal.emulation.pixel_7
+      mDisplayCutout=DisplayCutout{insets=Rect(0, 136 - 0, 0) waterfall=Insets{left=0, top=0, right=0, bottom=0} boundin
+AVD CONFIGURATION
+hw.cpu.arch = arm64
+hw.cpu.ncore = 4
+hw.device.name = pixel_7
+hw.gpu.enabled = yes
+hw.gpu.mode = host
+hw.lcd.backlight = yes
+hw.lcd.circular = false
+hw.lcd.density = 420
+hw.lcd.depth = 32
+hw.lcd.height = 2400
+hw.lcd.transparent = false
+hw.lcd.vsync = 60
+hw.lcd.width = 1080
+hw.ramSize = 2G
+image.sysdir.1 = /nix/store/ahp82jjy0znf9l2ps98pj3bkl3zgrkgd-bookfin-android-sdk/system-images/android-36/google_apis/arm64-v8a/
+EMULATOR PROCESS
+/Users/alexispurslane/Library/Android/sdk/emulator/qemu/darwin-aarch64/qemu-system-aarch64-headless -avd bookfin-bench-gpu -no-audio -no-window -gpu auto -no-boot-anim -port 5558 -camera-back imagefil
+REFERENCES
+40f0acc7eb0752496ec659fdee458fe999063950aafa5794e5c1892a80946168  tool/research/epub_engines/evidence/symmetric-20261111/references-gpu.json

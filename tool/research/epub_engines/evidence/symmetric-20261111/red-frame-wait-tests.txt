@@ -1,0 +1,270 @@
+..FFFFFFFFFFFF.................F.F...
+======================================================================
+FAIL: test_a_later_vsync_does_not_change_the_drawn_page (test_preparation.DrawnPageIntervalTest.test_a_later_vsync_does_not_change_the_drawn_page) (engine='bookfin')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_preparation.py", line 212, in test_a_later_vsync_does_not_change_the_drawn_page
+    self.assertAlmostEqual(cells([late], "drawn_page")[0]["mean_ms"],
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                           cells([prompt], "drawn_page")[0]["mean_ms"])
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 11.9 != 1.9 within 7 places (10.0 difference)
+
+======================================================================
+FAIL: test_a_later_vsync_does_not_change_the_drawn_page (test_preparation.DrawnPageIntervalTest.test_a_later_vsync_does_not_change_the_drawn_page) (engine='webview')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_preparation.py", line 212, in test_a_later_vsync_does_not_change_the_drawn_page
+    self.assertAlmostEqual(cells([late], "drawn_page")[0]["mean_ms"],
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                           cells([prompt], "drawn_page")[0]["mean_ms"])
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 11.9 != 1.9 within 7 places (10.0 difference)
+
+======================================================================
+FAIL: test_every_engine_is_timed_from_its_own_entry_through_its_drawing_without_the_wait_for_a_frame (test_preparation.DrawnPageIntervalTest.test_every_engine_is_timed_from_its_own_entry_through_its_drawing_without_the_wait_for_a_frame) (engine='bookfin')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_preparation.py", line 200, in test_every_engine_is_timed_from_its_own_entry_through_its_drawing_without_the_wait_for_a_frame
+    self.assertAlmostEqual(found[0]["mean_ms"], expected)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 1.9 != 1.4 within 7 places (0.5 difference)
+
+======================================================================
+FAIL: test_every_engine_is_timed_from_its_own_entry_through_its_drawing_without_the_wait_for_a_frame (test_preparation.DrawnPageIntervalTest.test_every_engine_is_timed_from_its_own_entry_through_its_drawing_without_the_wait_for_a_frame) (engine='webview')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_preparation.py", line 200, in test_every_engine_is_timed_from_its_own_entry_through_its_drawing_without_the_wait_for_a_frame
+    self.assertAlmostEqual(found[0]["mean_ms"], expected)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 1.9 != 1.4 within 7 places (0.5 difference)
+
+======================================================================
+FAIL: test_impossible_or_mislabeled_drawing_endpoints_are_excluded (test_preparation.DrawnPageIntervalTest.test_impossible_or_mislabeled_drawing_endpoints_are_excluded) (engine='bookfin', changes={'drawn_frame': None})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_preparation.py", line 247, in test_impossible_or_mislabeled_drawing_endpoints_are_excluded
+    self.assertEqual(result.get("cells", []), [])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [{'engine': 'bookfin', 'book': 'prose', 'o[195 chars]1.9}] != []
+
+First list contains 1 additional elements.
+First extra element 0:
+{'engine': 'bookfin', 'book': 'prose', 'operation': 'page_turn', 'boundary': 'engine_start_ns_to_drawn_ns', 'scope': 'flutter_raster_finish_of_first_frame_with_page', 'count': 1, 'rounds': 1, 'mean_ms': 1.9, 'median_ms': 1.9, 'p90_ms': 1.9}
+
++ []
+- [{'book': 'prose',
+-   'boundary': 'engine_start_ns_to_drawn_ns',
+-   'count': 1,
+-   'engine': 'bookfin',
+-   'mean_ms': 1.9,
+-   'median_ms': 1.9,
+-   'operation': 'page_turn',
+-   'p90_ms': 1.9,
+-   'rounds': 1,
+-   'scope': 'flutter_raster_finish_of_first_frame_with_page'}]
+
+======================================================================
+FAIL: test_impossible_or_mislabeled_drawing_endpoints_are_excluded (test_preparation.DrawnPageIntervalTest.test_impossible_or_mislabeled_drawing_endpoints_are_excluded) (engine='bookfin', changes={'drawn_frame': {'number': 9, 'buildStart_us': 3500, 'rasterFinish_us': 3000}})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_preparation.py", line 247, in test_impossible_or_mislabeled_drawing_endpoints_are_excluded
+    self.assertEqual(result.get("cells", []), [])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [{'engine': 'bookfin', 'book': 'prose', 'o[195 chars]1.9}] != []
+
+First list contains 1 additional elements.
+First extra element 0:
+{'engine': 'bookfin', 'book': 'prose', 'operation': 'page_turn', 'boundary': 'engine_start_ns_to_drawn_ns', 'scope': 'flutter_raster_finish_of_first_frame_with_page', 'count': 1, 'rounds': 1, 'mean_ms': 1.9, 'median_ms': 1.9, 'p90_ms': 1.9}
+
++ []
+- [{'book': 'prose',
+-   'boundary': 'engine_start_ns_to_drawn_ns',
+-   'count': 1,
+-   'engine': 'bookfin',
+-   'mean_ms': 1.9,
+-   'median_ms': 1.9,
+-   'operation': 'page_turn',
+-   'p90_ms': 1.9,
+-   'rounds': 1,
+-   'scope': 'flutter_raster_finish_of_first_frame_with_page'}]
+
+======================================================================
+FAIL: test_impossible_or_mislabeled_drawing_endpoints_are_excluded (test_preparation.DrawnPageIntervalTest.test_impossible_or_mislabeled_drawing_endpoints_are_excluded) (engine='bookfin', changes={'drawn_frame': {'number': 9, 'buildStart_us': 1000, 'rasterFinish_us': 3000}})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_preparation.py", line 247, in test_impossible_or_mislabeled_drawing_endpoints_are_excluded
+    self.assertEqual(result.get("cells", []), [])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [{'engine': 'bookfin', 'book': 'prose', 'o[195 chars]1.9}] != []
+
+First list contains 1 additional elements.
+First extra element 0:
+{'engine': 'bookfin', 'book': 'prose', 'operation': 'page_turn', 'boundary': 'engine_start_ns_to_drawn_ns', 'scope': 'flutter_raster_finish_of_first_frame_with_page', 'count': 1, 'rounds': 1, 'mean_ms': 1.9, 'median_ms': 1.9, 'p90_ms': 1.9}
+
++ []
+- [{'book': 'prose',
+-   'boundary': 'engine_start_ns_to_drawn_ns',
+-   'count': 1,
+-   'engine': 'bookfin',
+-   'mean_ms': 1.9,
+-   'median_ms': 1.9,
+-   'operation': 'page_turn',
+-   'p90_ms': 1.9,
+-   'rounds': 1,
+-   'scope': 'flutter_raster_finish_of_first_frame_with_page'}]
+
+======================================================================
+FAIL: test_impossible_or_mislabeled_drawing_endpoints_are_excluded (test_preparation.DrawnPageIntervalTest.test_impossible_or_mislabeled_drawing_endpoints_are_excluded) (engine='bookfin', changes={'drawn_frame': {'number': 9, 'buildStart_us': 2000, 'rasterFinish_us': 2900}})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_preparation.py", line 247, in test_impossible_or_mislabeled_drawing_endpoints_are_excluded
+    self.assertEqual(result.get("cells", []), [])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [{'engine': 'bookfin', 'book': 'prose', 'o[195 chars]1.9}] != []
+
+First list contains 1 additional elements.
+First extra element 0:
+{'engine': 'bookfin', 'book': 'prose', 'operation': 'page_turn', 'boundary': 'engine_start_ns_to_drawn_ns', 'scope': 'flutter_raster_finish_of_first_frame_with_page', 'count': 1, 'rounds': 1, 'mean_ms': 1.9, 'median_ms': 1.9, 'p90_ms': 1.9}
+
++ []
+- [{'book': 'prose',
+-   'boundary': 'engine_start_ns_to_drawn_ns',
+-   'count': 1,
+-   'engine': 'bookfin',
+-   'mean_ms': 1.9,
+-   'median_ms': 1.9,
+-   'operation': 'page_turn',
+-   'p90_ms': 1.9,
+-   'rounds': 1,
+-   'scope': 'flutter_raster_finish_of_first_frame_with_page'}]
+
+======================================================================
+FAIL: test_impossible_or_mislabeled_drawing_endpoints_are_excluded (test_preparation.DrawnPageIntervalTest.test_impossible_or_mislabeled_drawing_endpoints_are_excluded) (engine='webview', changes={'frame_start_ns': None})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_preparation.py", line 247, in test_impossible_or_mislabeled_drawing_endpoints_are_excluded
+    self.assertEqual(result.get("cells", []), [])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [{'engine': 'webview', 'book': 'prose', 'o[196 chars]1.9}] != []
+
+First list contains 1 additional elements.
+First extra element 0:
+{'engine': 'webview', 'book': 'prose', 'operation': 'page_turn', 'boundary': 'engine_start_ns_to_drawn_ns', 'scope': 'webview_visual_state_callback_after_preparation', 'count': 1, 'rounds': 1, 'mean_ms': 1.9, 'median_ms': 1.9, 'p90_ms': 1.9}
+
++ []
+- [{'book': 'prose',
+-   'boundary': 'engine_start_ns_to_drawn_ns',
+-   'count': 1,
+-   'engine': 'webview',
+-   'mean_ms': 1.9,
+-   'median_ms': 1.9,
+-   'operation': 'page_turn',
+-   'p90_ms': 1.9,
+-   'rounds': 1,
+-   'scope': 'webview_visual_state_callback_after_preparation'}]
+
+======================================================================
+FAIL: test_impossible_or_mislabeled_drawing_endpoints_are_excluded (test_preparation.DrawnPageIntervalTest.test_impossible_or_mislabeled_drawing_endpoints_are_excluded) (engine='webview', changes={'frame_start_ns': 1400000, 'frame_start_source_ms': 1.4})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_preparation.py", line 247, in test_impossible_or_mislabeled_drawing_endpoints_are_excluded
+    self.assertEqual(result.get("cells", []), [])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [{'engine': 'webview', 'book': 'prose', 'o[196 chars]1.9}] != []
+
+First list contains 1 additional elements.
+First extra element 0:
+{'engine': 'webview', 'book': 'prose', 'operation': 'page_turn', 'boundary': 'engine_start_ns_to_drawn_ns', 'scope': 'webview_visual_state_callback_after_preparation', 'count': 1, 'rounds': 1, 'mean_ms': 1.9, 'median_ms': 1.9, 'p90_ms': 1.9}
+
++ []
+- [{'book': 'prose',
+-   'boundary': 'engine_start_ns_to_drawn_ns',
+-   'count': 1,
+-   'engine': 'webview',
+-   'mean_ms': 1.9,
+-   'median_ms': 1.9,
+-   'operation': 'page_turn',
+-   'p90_ms': 1.9,
+-   'rounds': 1,
+-   'scope': 'webview_visual_state_callback_after_preparation'}]
+
+======================================================================
+FAIL: test_impossible_or_mislabeled_drawing_endpoints_are_excluded (test_preparation.DrawnPageIntervalTest.test_impossible_or_mislabeled_drawing_endpoints_are_excluded) (engine='webview', changes={'frame_start_ns': 3500000, 'frame_start_source_ms': 3.5})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_preparation.py", line 247, in test_impossible_or_mislabeled_drawing_endpoints_are_excluded
+    self.assertEqual(result.get("cells", []), [])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [{'engine': 'webview', 'book': 'prose', 'o[196 chars]1.9}] != []
+
+First list contains 1 additional elements.
+First extra element 0:
+{'engine': 'webview', 'book': 'prose', 'operation': 'page_turn', 'boundary': 'engine_start_ns_to_drawn_ns', 'scope': 'webview_visual_state_callback_after_preparation', 'count': 1, 'rounds': 1, 'mean_ms': 1.9, 'median_ms': 1.9, 'p90_ms': 1.9}
+
++ []
+- [{'book': 'prose',
+-   'boundary': 'engine_start_ns_to_drawn_ns',
+-   'count': 1,
+-   'engine': 'webview',
+-   'mean_ms': 1.9,
+-   'median_ms': 1.9,
+-   'operation': 'page_turn',
+-   'p90_ms': 1.9,
+-   'rounds': 1,
+-   'scope': 'webview_visual_state_callback_after_preparation'}]
+
+======================================================================
+FAIL: test_impossible_or_mislabeled_drawing_endpoints_are_excluded (test_preparation.DrawnPageIntervalTest.test_impossible_or_mislabeled_drawing_endpoints_are_excluded) (engine='webview', changes={'frame_start_source_ms': 2.1})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_preparation.py", line 247, in test_impossible_or_mislabeled_drawing_endpoints_are_excluded
+    self.assertEqual(result.get("cells", []), [])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [{'engine': 'webview', 'book': 'prose', 'o[196 chars]1.9}] != []
+
+First list contains 1 additional elements.
+First extra element 0:
+{'engine': 'webview', 'book': 'prose', 'operation': 'page_turn', 'boundary': 'engine_start_ns_to_drawn_ns', 'scope': 'webview_visual_state_callback_after_preparation', 'count': 1, 'rounds': 1, 'mean_ms': 1.9, 'median_ms': 1.9, 'p90_ms': 1.9}
+
++ []
+- [{'book': 'prose',
+-   'boundary': 'engine_start_ns_to_drawn_ns',
+-   'count': 1,
+-   'engine': 'webview',
+-   'mean_ms': 1.9,
+-   'median_ms': 1.9,
+-   'operation': 'page_turn',
+-   'p90_ms': 1.9,
+-   'rounds': 1,
+-   'scope': 'webview_visual_state_callback_after_preparation'}]
+
+======================================================================
+FAIL: test_the_first_frame_after_preparation_is_reported_on_the_android_clock_after_its_work (test_phase_adapters.WebDrawingFrameTest.test_the_first_frame_after_preparation_is_reported_on_the_android_clock_after_its_work)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_phase_adapters.py", line 61, in test_the_first_frame_after_preparation_is_reported_on_the_android_clock_after_its_work
+    self.assertEqual((report["requested"], report["beforeFrame"], report["duringFrame"]), (True, 0, 0))
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Tuples differ: (False, 0, 0) != (True, 0, 0)
+
+First differing element 0:
+False
+True
+
+- (False, 0, 0)
++ (True, 0, 0)
+
+======================================================================
+FAIL: test_drawing_facts_describe_the_wait_after_preparation_and_flutter_raster (test_collect.PartialEvidenceTest.test_drawing_facts_describe_the_wait_after_preparation_and_flutter_raster)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_collect.py", line 152, in test_drawing_facts_describe_the_wait_after_preparation_and_flutter_raster
+    self.assertEqual(fact.get("removed_frame_wait_median_ms"), 16)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: None != 16
+
+----------------------------------------------------------------------
+Ran 28 tests in 0.374s
+
+FAILED (failures=14)

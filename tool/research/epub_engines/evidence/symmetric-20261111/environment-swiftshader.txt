@@ -1,0 +1,48 @@
+2026-11-11T14:59:58Z
+586dc2ed6f3abda99d640c54365e969f2b03771e
+ 09:59:58  up 46 days 21:34,  4 users,  load average: 4.96, 4.53, 4.35
+System-wide memory free percentage: 52%
+Flutter 3.47.4 • channel stable • https://github.com/flutter/flutter.git
+Framework • revision nixpkgs000 () • 1970-01-01 00:00:00
+Engine • revision 06a2e2a110 ()
+Tools • Dart 3.13.3 • DevTools 2.60.0
+DEVICE emulator-5558 (AVD bookfin-bench-sym, cloned from bookfin-api36 config.ini)
+bookfin-bench-sym
+google/sdk_gphone64_arm64/emu64a:16/BE2A.250530.026.F3/13894323:userdebug/dev-keys
+4
+MemTotal:        2021944 kB
+Physical size: 1080x2400
+Physical density: 420
+GLES: Google (Google Inc. (Google)), Android Emulator OpenGL ES Translator (ANGLE (Google, Vulkan 1.2.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver-5.0.0)), OpenGL ES 3.1 (OpenGL ES 3.1.0 (ANGLE 2.1.1 git hash: fbf66f49c7cc))
+emulation
+ranchu
+skiagl
+  Current WebView package (name, version): (com.google.android.webview, 133.0.6943.137)
+[ ] com.android.internal.emulation.pixel_7_pro
+[ ] com.android.internal.emulation.pixel_7a
+[x] com.android.internal.systemui.navbar.gestural
+[x] com.android.internal.emulation.pixel_7
+[ ] com.android.systemui.emulation.pixel_7
+[ ] com.android.systemui.emulation.pixel_7_pro
+[ ] com.android.systemui.emulation.pixel_7a
+      mDisplayCutout=DisplayCutout{insets=Rect(0, 136 - 0, 0) waterfall=Insets{left=0, top=0, right=0, bottom=0} boundin
+AVD CONFIGURATION
+hw.cpu.arch = arm64
+hw.cpu.ncore = 4
+hw.device.name = pixel_7
+hw.gpu.enabled = no
+hw.gpu.mode = auto
+hw.lcd.backlight = yes
+hw.lcd.circular = false
+hw.lcd.density = 420
+hw.lcd.depth = 32
+hw.lcd.height = 2400
+hw.lcd.transparent = false
+hw.lcd.vsync = 60
+hw.lcd.width = 1080
+hw.ramSize = 2G
+image.sysdir.1 = /nix/store/ahp82jjy0znf9l2ps98pj3bkl3zgrkgd-bookfin-android-sdk/system-images/android-36/google_apis/arm64-v8a/
+EMULATOR PROCESS
+/Users/alexispurslane/Library/Android/sdk/emulator/qemu/darwin-aarch64/qemu-system-aarch64-headless -avd bookfin-bench-sym -no-audio -no-window -gpu auto -no-boot-anim -port 5558 -camera-back imagefil
+FROZEN REFERENCE
+6d6afee5742aff09b2c08b7dd510b1f922343162adb59776bdda3c426d4710b2  tool/research/epub_engines/evidence/references.json

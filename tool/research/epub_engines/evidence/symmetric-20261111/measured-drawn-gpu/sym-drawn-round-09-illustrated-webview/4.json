@@ -1,0 +1,88 @@
+{
+  "operation": "prepare_reopen",
+  "location": "epubcfi(\/6\/14!\/4\/2[chapter-2]\/2\/2\/1:0)",
+  "location_format": "epub_cfi",
+  "preparation_event_id": "sym-drawn-round-09-illustrated-webview\/4",
+  "preparation_operation": "prepare_reopen",
+  "preparation_scope": "webview_layout_fonts_and_decoded_page_images",
+  "engine_start_source_ms": 2494.899999999907,
+  "operation_returned_source_ms": 2543.600000000093,
+  "preparation_source_ms": 2556.899999999907,
+  "engine_start_ns": 2604740986365,
+  "operation_returned_ns": 2604789686365,
+  "preparation_ns": 2604802986365,
+  "phase_clock": {
+    "source": "web_performance_ms",
+    "offset_ns": 2602246086365,
+    "uncertainty_ns": 301000,
+    "observed_resolution_ns": 100000,
+    "calibration_round_trip_ns": 400000
+  },
+  "page_images": [],
+  "spine_index": 6,
+  "href": "text\/chapter-2.xhtml",
+  "end_cfi": "epubcfi(\/6\/14!\/4\/2[chapter-2]\/2\/4\/1:17)",
+  "displayed": {
+    "page": 1,
+    "total": 18
+  },
+  "visible_text": "II\n\t\t\t\tThe Pool of Tears",
+  "section_text": "II\n\nThe Pool of Tears\n\n“Curiouser and curiouser!” cried Alice (she was so much surprised, that for the moment she quite forgot how to speak good English); “now I’m opening out like the largest telescope that ever was! Goodbye, feet!” (for when she looked down at her feet, they seemed to be almost out of sight, they were getting so far off). “Oh, my poor little feet, I wonder who will put on your shoes and stockings for you now, dears? I’m sure I shan’t be able! I shall be a great deal too far off to trouble myself about you: you must manage the best way you can;﻿—but I must be kind to them,” thought Alice, “or perhaps they won’t walk the way I want to go! Let me see: I’ll give them a new pair of boots every Christmas.”\n\nAnd she went on planning to herself how she would manage it. “They must go by the carrier,” she thought; “and how funny it’ll seem, sending presents to one’s own feet! And how odd the directions will look!\n\nAlice’s Right Foot, Esq.\nHearthrug,\nNear the Fender,\n(With Alice’s Love).\n\nOh dear, what nonsense I’m talking!”\n\nJust then her head struck against the roof of the hall: in fact she was now more than nine feet high, and she at once took up the little golden key an",
+  "anchor_text": "II",
+  "images": [
+    {
+      "src": "blob:https:\/\/epubbench.invalid\/6b5d3507-7da4-4899-b76e-47d3de8e2d15",
+      "loaded": true
+    },
+    {
+      "src": "blob:https:\/\/epubbench.invalid\/58695bc7-fb61-42d2-8ec6-b34bb2e76850",
+      "loaded": true
+    },
+    {
+      "src": "blob:https:\/\/epubbench.invalid\/e1563a81-17a7-4bd2-b0d2-aac6cffc9c38",
+      "loaded": true
+    },
+    {
+      "src": "blob:https:\/\/epubbench.invalid\/6deb3539-1ca5-4344-8a36-a04d7691ca6f",
+      "loaded": true
+    }
+  ],
+  "text_size_css_px": 18,
+  "whole_book_paginated": false,
+  "engine_ready_ns": 2604803896408,
+  "visual_state_requested_ns": 2604804232492,
+  "drawn_ns": 2604823555033,
+  "drawn_scope": "webview_visual_state_callback_after_preparation",
+  "engine": "webview",
+  "book": "illustrated",
+  "run_id": "sym-drawn-round-09-illustrated-webview",
+  "round": 9,
+  "sequence": 4,
+  "id": "sym-drawn-round-09-illustrated-webview\/4",
+  "case": "after_crossing18",
+  "measured": false,
+  "warmup": false,
+  "start_ns": 2604739634700,
+  "shell_ready_ns": 2602534932532,
+  "process_start_ns": 2601758000000,
+  "book_sha256": "431719c25bcb0b6a67fc03938b4633723d775324ac2c62a06a04f98862148bef",
+  "cache": "warm_document",
+  "expected_section": 6,
+  "pixel_copy_code": 0,
+  "end_ns": 2604838847700,
+  "copy_start_ns": 2604823819367,
+  "copy_duration_ns": 15028333,
+  "capture_attempts": 1,
+  "clock": "android_elapsed_realtime_ns",
+  "boundary": "request_to_reference_window_copy",
+  "window_copy_verified": true,
+  "physical_display_verified": false,
+  "process_id": 20693,
+  "capture_sha256": "592321e43c2f3c58f16369f94d08432883eb5e8fe3780de30cf36c1bcc877985",
+  "reference_manifest_sha256": "40f0acc7eb0752496ec659fdee458fe999063950aafa5794e5c1892a80946168",
+  "reference_run_id": "calibration-sym-gpu-calibration-illustrated-webview",
+  "reference_sha256": "592321e43c2f3c58f16369f94d08432883eb5e8fe3780de30cf36c1bcc877985",
+  "width_px": 945,
+  "height_px": 1680,
+  "paper_rgb": 16183266
+}

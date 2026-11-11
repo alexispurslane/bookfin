@@ -1,0 +1,194 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.3.1/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preWebviewReleaseBuild UP-TO-DATE
+> Task :app:mergeWebviewReleaseJniLibFolders UP-TO-DATE
+> Task :app:mergeWebviewReleaseNativeLibs NO-SOURCE
+> Task :app:stripWebviewReleaseDebugSymbols NO-SOURCE
+> Task :app:extractWebviewReleaseNativeSymbolTables NO-SOURCE
+> Task :app:mergeWebviewReleaseNativeDebugMetadata NO-SOURCE
+> Task :app:checkWebviewReleaseDuplicateClasses UP-TO-DATE
+> Task :app:generateWebviewReleaseBuildConfig UP-TO-DATE
+> Task :app:generateWebviewReleaseResources UP-TO-DATE
+> Task :app:packageWebviewReleaseResources UP-TO-DATE
+> Task :app:processWebviewReleaseNavigationResources UP-TO-DATE
+> Task :app:parseWebviewReleaseLocalResources UP-TO-DATE
+> Task :app:generateWebviewReleaseRFile UP-TO-DATE
+> Task :app:compileWebviewReleaseKotlin NO-SOURCE
+> Task :app:javaPreCompileWebviewRelease UP-TO-DATE
+> Task :app:compileWebviewReleaseJavaWithJavac
+> Task :app:checkWebviewReleaseAarMetadata UP-TO-DATE
+> Task :app:mapWebviewReleaseSourceSetPaths UP-TO-DATE
+> Task :app:compileWebviewReleaseNavigationResources UP-TO-DATE
+> Task :app:mergeWebviewReleaseResources UP-TO-DATE
+> Task :app:createWebviewReleaseCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksWebviewRelease UP-TO-DATE
+> Task :app:processWebviewReleaseMainManifest UP-TO-DATE
+> Task :app:processWebviewReleaseManifest UP-TO-DATE
+> Task :app:processWebviewReleaseManifestForPackage UP-TO-DATE
+> Task :app:processWebviewReleaseResources UP-TO-DATE
+> Task :app:dexBuilderWebviewRelease
+> Task :app:desugarWebviewReleaseFileDependencies UP-TO-DATE
+> Task :app:mergeWebviewReleaseStartupProfile UP-TO-DATE
+> Task :app:mergeExtDexWebviewRelease UP-TO-DATE
+> Task :app:mergeWebviewReleaseArtProfile UP-TO-DATE
+> Task :app:mergeWebviewReleaseGlobalSynthetics UP-TO-DATE
+> Task :app:generateWebviewReleaseAssets UP-TO-DATE
+> Task :app:mergeWebviewReleaseAssets UP-TO-DATE
+> Task :app:compressWebviewReleaseAssets UP-TO-DATE
+> Task :app:extractWebviewReleaseVersionControlInfo UP-TO-DATE
+> Task :app:extractProguardFiles UP-TO-DATE
+> Task :app:generateWebviewReleaseLintVitalReportModel
+> Task :app:mergeDexWebviewRelease
+> Task :app:compileWebviewReleaseArtProfile
+> Task :app:processWebviewReleaseJavaRes NO-SOURCE
+> Task :app:mergeWebviewReleaseJavaResource UP-TO-DATE
+> Task :app:optimizeWebviewReleaseResources UP-TO-DATE
+> Task :app:collectWebviewReleaseDependencies UP-TO-DATE
+> Task :app:sdkWebviewReleaseDependencyData UP-TO-DATE
+> Task :app:validateSigningWebviewRelease UP-TO-DATE
+> Task :app:writeWebviewReleaseAppMetadata UP-TO-DATE
+> Task :app:writeWebviewReleaseSigningConfigVersions UP-TO-DATE
+> Task :app:preKoreaderReleaseBuild UP-TO-DATE
+> Task :app:mergeKoreaderReleaseJniLibFolders UP-TO-DATE
+> Task :app:mergeKoreaderReleaseNativeLibs UP-TO-DATE
+> Task :app:stripKoreaderReleaseDebugSymbols UP-TO-DATE
+> Task :app:extractKoreaderReleaseNativeSymbolTables UP-TO-DATE
+> Task :app:mergeKoreaderReleaseNativeDebugMetadata UP-TO-DATE
+> Task :app:checkKoreaderReleaseDuplicateClasses UP-TO-DATE
+> Task :app:generateKoreaderReleaseBuildConfig UP-TO-DATE
+> Task :app:generateKoreaderReleaseResources UP-TO-DATE
+> Task :app:packageKoreaderReleaseResources UP-TO-DATE
+> Task :app:processKoreaderReleaseNavigationResources UP-TO-DATE
+> Task :app:parseKoreaderReleaseLocalResources UP-TO-DATE
+> Task :app:generateKoreaderReleaseRFile UP-TO-DATE
+> Task :app:compileKoreaderReleaseKotlin NO-SOURCE
+> Task :app:javaPreCompileKoreaderRelease UP-TO-DATE
+> Task :app:compileKoreaderReleaseJavaWithJavac
+> Task :app:checkKoreaderReleaseAarMetadata UP-TO-DATE
+> Task :app:mapKoreaderReleaseSourceSetPaths UP-TO-DATE
+> Task :app:compileKoreaderReleaseNavigationResources UP-TO-DATE
+> Task :app:mergeKoreaderReleaseResources UP-TO-DATE
+> Task :app:createKoreaderReleaseCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksKoreaderRelease UP-TO-DATE
+> Task :app:processKoreaderReleaseMainManifest UP-TO-DATE
+> Task :app:processKoreaderReleaseManifest UP-TO-DATE
+> Task :app:processKoreaderReleaseManifestForPackage UP-TO-DATE
+> Task :app:processKoreaderReleaseResources UP-TO-DATE
+> Task :app:dexBuilderKoreaderRelease
+> Task :app:desugarKoreaderReleaseFileDependencies UP-TO-DATE
+> Task :app:mergeKoreaderReleaseStartupProfile UP-TO-DATE
+> Task :app:mergeExtDexKoreaderRelease UP-TO-DATE
+> Task :app:mergeDexKoreaderRelease
+> Task :app:mergeKoreaderReleaseArtProfile UP-TO-DATE
+> Task :app:mergeKoreaderReleaseGlobalSynthetics UP-TO-DATE
+> Task :app:compileKoreaderReleaseArtProfile
+> Task :app:generateKoreaderReleaseAssets UP-TO-DATE
+> Task :app:mergeKoreaderReleaseAssets UP-TO-DATE
+> Task :app:compressKoreaderReleaseAssets UP-TO-DATE
+> Task :app:extractKoreaderReleaseVersionControlInfo UP-TO-DATE
+> Task :app:generateKoreaderReleaseLintVitalReportModel
+> Task :app:lintVitalAnalyzeKoreaderRelease
+> Task :app:lintVitalAnalyzeWebviewRelease
+> Task :app:lintVitalReportWebviewRelease UP-TO-DATE
+> Task :app:lintVitalWebviewRelease
+> Task :app:lintVitalReportKoreaderRelease UP-TO-DATE
+> Task :app:lintVitalKoreaderRelease
+> Task :app:processKoreaderReleaseJavaRes NO-SOURCE
+> Task :app:mergeKoreaderReleaseJavaResource UP-TO-DATE
+> Task :app:optimizeKoreaderReleaseResources UP-TO-DATE
+> Task :app:collectKoreaderReleaseDependencies UP-TO-DATE
+> Task :app:sdkKoreaderReleaseDependencyData UP-TO-DATE
+> Task :app:validateSigningKoreaderRelease UP-TO-DATE
+> Task :app:writeKoreaderReleaseAppMetadata UP-TO-DATE
+> Task :app:writeKoreaderReleaseSigningConfigVersions UP-TO-DATE
+> Task :app:packageWebviewRelease
+> Task :app:createWebviewReleaseApkListingFileRedirect UP-TO-DATE
+> Task :app:assembleWebviewRelease
+> Task :app:bundleWebviewReleaseClassesToCompileJar
+> Task :app:preWebviewReleaseAndroidTestBuild SKIPPED
+> Task :app:processWebviewReleaseAndroidTestManifest UP-TO-DATE
+> Task :app:generateWebviewReleaseAndroidTestBuildConfig UP-TO-DATE
+> Task :app:generateWebviewReleaseAndroidTestResources UP-TO-DATE
+> Task :app:packageWebviewReleaseAndroidTestResources UP-TO-DATE
+> Task :app:processWebviewReleaseAndroidTestNavigationResources UP-TO-DATE
+> Task :app:parseWebviewReleaseAndroidTestLocalResources UP-TO-DATE
+> Task :app:generateWebviewReleaseAndroidTestRFile UP-TO-DATE
+> Task :app:compileWebviewReleaseAndroidTestKotlin NO-SOURCE
+> Task :app:javaPreCompileWebviewReleaseAndroidTest UP-TO-DATE
+> Task :app:compileWebviewReleaseAndroidTestJavaWithJavac UP-TO-DATE
+> Task :app:generateWebviewReleaseAndroidTestAssets UP-TO-DATE
+> Task :app:mergeWebviewReleaseAndroidTestAssets UP-TO-DATE
+> Task :app:compressWebviewReleaseAndroidTestAssets UP-TO-DATE
+> Task :app:checkWebviewReleaseAndroidTestDuplicateClasses UP-TO-DATE
+> Task :app:checkWebviewReleaseAndroidTestAarMetadata UP-TO-DATE
+> Task :app:mapWebviewReleaseAndroidTestSourceSetPaths UP-TO-DATE
+> Task :app:compileWebviewReleaseAndroidTestNavigationResources UP-TO-DATE
+> Task :app:mergeWebviewReleaseAndroidTestResources UP-TO-DATE
+> Task :app:processWebviewReleaseAndroidTestResources UP-TO-DATE
+> Task :app:dexBuilderWebviewReleaseAndroidTest UP-TO-DATE
+> Task :app:desugarWebviewReleaseAndroidTestFileDependencies UP-TO-DATE
+> Task :app:mergeExtDexWebviewReleaseAndroidTest UP-TO-DATE
+> Task :app:mergeDexWebviewReleaseAndroidTest UP-TO-DATE
+> Task :app:mergeWebviewReleaseAndroidTestGlobalSynthetics UP-TO-DATE
+> Task :app:processWebviewReleaseAndroidTestJavaRes NO-SOURCE
+> Task :app:mergeWebviewReleaseAndroidTestJavaResource UP-TO-DATE
+> Task :app:mergeWebviewReleaseAndroidTestJniLibFolders UP-TO-DATE
+> Task :app:packageKoreaderRelease
+> Task :app:createKoreaderReleaseApkListingFileRedirect UP-TO-DATE
+> Task :app:assembleKoreaderRelease
+> Task :app:mergeWebviewReleaseAndroidTestNativeLibs NO-SOURCE
+> Task :app:stripWebviewReleaseAndroidTestDebugSymbols NO-SOURCE
+> Task :app:validateSigningWebviewReleaseAndroidTest UP-TO-DATE
+> Task :app:writeWebviewReleaseAndroidTestSigningConfigVersions UP-TO-DATE
+> Task :app:packageWebviewReleaseAndroidTest UP-TO-DATE
+> Task :app:createWebviewReleaseAndroidTestApkListingFileRedirect UP-TO-DATE
+> Task :app:assembleWebviewReleaseAndroidTest UP-TO-DATE
+> Task :app:preKoreaderReleaseAndroidTestBuild SKIPPED
+> Task :app:bundleKoreaderReleaseClassesToCompileJar
+> Task :app:processKoreaderReleaseAndroidTestManifest UP-TO-DATE
+> Task :app:generateKoreaderReleaseAndroidTestBuildConfig UP-TO-DATE
+> Task :app:generateKoreaderReleaseAndroidTestResources UP-TO-DATE
+> Task :app:packageKoreaderReleaseAndroidTestResources UP-TO-DATE
+> Task :app:processKoreaderReleaseAndroidTestNavigationResources UP-TO-DATE
+> Task :app:parseKoreaderReleaseAndroidTestLocalResources UP-TO-DATE
+> Task :app:generateKoreaderReleaseAndroidTestRFile UP-TO-DATE
+> Task :app:compileKoreaderReleaseAndroidTestKotlin NO-SOURCE
+> Task :app:javaPreCompileKoreaderReleaseAndroidTest UP-TO-DATE
+> Task :app:compileKoreaderReleaseAndroidTestJavaWithJavac UP-TO-DATE
+> Task :app:generateKoreaderReleaseAndroidTestAssets UP-TO-DATE
+> Task :app:mergeKoreaderReleaseAndroidTestAssets UP-TO-DATE
+> Task :app:compressKoreaderReleaseAndroidTestAssets UP-TO-DATE
+> Task :app:checkKoreaderReleaseAndroidTestDuplicateClasses UP-TO-DATE
+> Task :app:checkKoreaderReleaseAndroidTestAarMetadata UP-TO-DATE
+> Task :app:mapKoreaderReleaseAndroidTestSourceSetPaths UP-TO-DATE
+> Task :app:compileKoreaderReleaseAndroidTestNavigationResources UP-TO-DATE
+> Task :app:mergeKoreaderReleaseAndroidTestResources UP-TO-DATE
+> Task :app:processKoreaderReleaseAndroidTestResources UP-TO-DATE
+> Task :app:dexBuilderKoreaderReleaseAndroidTest UP-TO-DATE
+> Task :app:desugarKoreaderReleaseAndroidTestFileDependencies UP-TO-DATE
+> Task :app:mergeExtDexKoreaderReleaseAndroidTest UP-TO-DATE
+> Task :app:mergeDexKoreaderReleaseAndroidTest UP-TO-DATE
+> Task :app:mergeKoreaderReleaseAndroidTestGlobalSynthetics UP-TO-DATE
+> Task :app:processKoreaderReleaseAndroidTestJavaRes NO-SOURCE
+> Task :app:mergeKoreaderReleaseAndroidTestJavaResource UP-TO-DATE
+> Task :app:mergeKoreaderReleaseAndroidTestJniLibFolders UP-TO-DATE
+> Task :app:mergeKoreaderReleaseAndroidTestNativeLibs NO-SOURCE
+> Task :app:stripKoreaderReleaseAndroidTestDebugSymbols NO-SOURCE
+> Task :app:validateSigningKoreaderReleaseAndroidTest UP-TO-DATE
+> Task :app:writeKoreaderReleaseAndroidTestSigningConfigVersions UP-TO-DATE
+> Task :app:packageKoreaderReleaseAndroidTest UP-TO-DATE
+> Task :app:createKoreaderReleaseAndroidTestApkListingFileRedirect UP-TO-DATE
+> Task :app:assembleKoreaderReleaseAndroidTest UP-TO-DATE
+
+[Incubating] Problems report is available at: file:///Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/native/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.3.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 26s
+151 actionable tasks: 18 executed, 133 up-to-date
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.3.1/userguide/configuration_cache_enabling.html

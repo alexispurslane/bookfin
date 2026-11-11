@@ -1,0 +1,59 @@
+.FF.....F
+======================================================================
+FAIL: test_the_drawn_page_callback_is_requested_before_the_page_text_is_read (test_phase_adapters.WebDrawingFrameTest.test_the_drawn_page_callback_is_requested_before_the_page_text_is_read)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_phase_adapters.py", line 88, in test_the_drawn_page_callback_is_requested_before_the_page_text_is_read
+    self.assertEqual(order, ["ready", "text", "frame"])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: ['text', 'ready', 'frame'] != ['ready', 'text', 'frame']
+
+First differing element 0:
+'text'
+'ready'
+
+- ['text', 'ready', 'frame']
++ ['ready', 'text', 'frame']
+
+======================================================================
+FAIL: test_the_first_two_frames_after_preparation_and_the_page_text_are_reported_after_those_frames (test_phase_adapters.WebDrawingFrameTest.test_the_first_two_frames_after_preparation_and_the_page_text_are_reported_after_those_frames)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_phase_adapters.py", line 63, in test_the_first_two_frames_after_preparation_and_the_page_text_are_reported_after_those_frames
+    self.assertEqual(report["calls"], [{"preparation_event_id": "run/3", "frame_start_source_ms": 9.9,
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                        "frame_start_ns": 14_900_000, "next_frame_start_source_ms": 11.6,
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                        "next_frame_start_ns": 16_600_000, "visible_text": "page"}])
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [{'pr[81 chars]00000}] != [{'pr[81 chars]00000, 'next_frame_start_source_ms': 11.6, 'ne[49 chars]ge'}]
+
+First differing element 0:
+{'pre[80 chars]00000}
+{'pre[80 chars]00000, 'next_frame_start_source_ms': 11.6, 'ne[48 chars]age'}
+
+  [{'frame_start_ns': 14900000,
+    'frame_start_source_ms': 9.9,
++   'next_frame_start_ns': 16600000,
++   'next_frame_start_source_ms': 11.6,
+-   'preparation_event_id': 'run/3'}]
+?                                  ^^
+
++   'preparation_event_id': 'run/3',
+?                                  ^
+
++   'visible_text': 'page'}]
+
+======================================================================
+FAIL: test_webview_answers_that_arrive_after_the_next_frame_started_are_counted (test_collect.PartialEvidenceTest.test_webview_answers_that_arrive_after_the_next_frame_started_are_counted)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_collect.py", line 190, in test_webview_answers_that_arrive_after_the_next_frame_started_are_counted
+    self.assertEqual(fact.get("webview_answer_after_next_frame_count"), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: None != 1
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.638s
+
+FAILED (failures=3)

@@ -1,0 +1,14 @@
+......F...............
+======================================================================
+FAIL: test_a_median_halfway_between_two_tenths_rounds_up_in_the_published_table (test_preparation.PreparedPageIntervalTest.test_a_median_halfway_between_two_tenths_rounds_up_in_the_published_table)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/alexispurslane/.t3/worktrees/bookfin/t3-2ccd2d93/tool/research/epub_engines/test_preparation.py", line 71, in test_a_median_halfway_between_two_tenths_rounds_up_in_the_published_table
+    self.assertIn("| WebView | Page turn | 35.9 / 35.9 (2) |", book_table(summary, PREPARED))
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: '| WebView | Page turn | 35.9 / 35.9 (2) |' not found in '| Interval | Action | prose | long | illustrated |\n| --- | --- | ---: | ---: | ---: |\n| Bookfin | Fresh open | n/a | n/a | n/a |\n| Bookfin | Cached reopen | n/a | n/a | n/a |\n| Bookfin | Page turn | n/a | n/a | n/a |\n| Bookfin | Chapter turn (visited) | n/a | n/a | n/a |\n| Bookfin | Size change | n/a | n/a | n/a |\n| WebView | Fresh open | n/a | n/a | n/a |\n| WebView | Cached reopen | n/a | n/a | n/a |\n| WebView | Page turn | 35.8 / 35.9 (2) | n/a | n/a |\n| WebView | Chapter turn (visited) | n/a | n/a | n/a |\n| WebView | Size change | n/a | n/a | n/a |\n| KOReader | Fresh open | n/a | n/a | n/a |\n| KOReader | Cached reopen | n/a | n/a | n/a |\n| KOReader | Page turn | n/a | n/a | n/a |\n| KOReader | Chapter turn (visited) | n/a | n/a | n/a |\n| KOReader | Size change | n/a | n/a | n/a |\n| KOReader before drawing | Fresh open | n/a | n/a | n/a |\n| KOReader before drawing | Cached reopen | n/a | n/a | n/a |\n| KOReader before drawing | Page turn | n/a | n/a | n/a |\n| KOReader before drawing | Chapter turn (visited) | n/a | n/a | n/a |\n| KOReader before drawing | Size change | n/a | n/a | n/a |'
+
+----------------------------------------------------------------------
+Ran 22 tests in 0.009s
+
+FAILED (failures=1)

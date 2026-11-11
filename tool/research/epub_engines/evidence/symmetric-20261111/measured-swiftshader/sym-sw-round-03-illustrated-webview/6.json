@@ -1,0 +1,85 @@
+{
+  "operation": "prepare_reopen",
+  "location": "epubcfi(\/6\/14!\/4\/2[chapter-2]\/2\/2\/1:0)",
+  "location_format": "epub_cfi",
+  "preparation_event_id": "sym-sw-round-03-illustrated-webview\/6",
+  "preparation_operation": "prepare_reopen",
+  "preparation_scope": "webview_layout_fonts_and_decoded_page_images",
+  "engine_start_source_ms": 4125.700000000186,
+  "operation_returned_source_ms": 4184.40000000014,
+  "preparation_source_ms": 4195.300000000047,
+  "engine_start_ns": 1242672590798,
+  "operation_returned_ns": 1242731290798,
+  "preparation_ns": 1242742190798,
+  "phase_clock": {
+    "source": "web_performance_ms",
+    "offset_ns": 1238546890798,
+    "uncertainty_ns": 101000,
+    "observed_resolution_ns": 100000,
+    "calibration_round_trip_ns": 0
+  },
+  "page_images": [],
+  "spine_index": 6,
+  "href": "text\/chapter-2.xhtml",
+  "end_cfi": "epubcfi(\/6\/14!\/4\/2[chapter-2]\/2\/4\/1:17)",
+  "displayed": {
+    "page": 1,
+    "total": 18
+  },
+  "visible_text": "II\n\t\t\t\tThe Pool of Tears",
+  "section_text": "II\n\nThe Pool of Tears\n\n“Curiouser and curiouser!” cried Alice (she was so much surprised, that for the moment she quite forgot how to speak good English); “now I’m opening out like the largest telescope that ever was! Goodbye, feet!” (for when she looked down at her feet, they seemed to be almost out of sight, they were getting so far off). “Oh, my poor little feet, I wonder who will put on your shoes and stockings for you now, dears? I’m sure I shan’t be able! I shall be a great deal too far off to trouble myself about you: you must manage the best way you can;﻿—but I must be kind to them,” thought Alice, “or perhaps they won’t walk the way I want to go! Let me see: I’ll give them a new pair of boots every Christmas.”\n\nAnd she went on planning to herself how she would manage it. “They must go by the carrier,” she thought; “and how funny it’ll seem, sending presents to one’s own feet! And how odd the directions will look!\n\nAlice’s Right Foot, Esq.\nHearthrug,\nNear the Fender,\n(With Alice’s Love).\n\nOh dear, what nonsense I’m talking!”\n\nJust then her head struck against the roof of the hall: in fact she was now more than nine feet high, and she at once took up the little golden key an",
+  "anchor_text": "II",
+  "images": [
+    {
+      "src": "blob:https:\/\/epubbench.invalid\/90db086d-6c73-4177-adb9-b4b750d3bb9c",
+      "loaded": true
+    },
+    {
+      "src": "blob:https:\/\/epubbench.invalid\/4a2f169a-8b2c-4815-828d-dbfab396d366",
+      "loaded": true
+    },
+    {
+      "src": "blob:https:\/\/epubbench.invalid\/4d7ba399-d5f3-4e3d-9410-81a94a094cf1",
+      "loaded": true
+    },
+    {
+      "src": "blob:https:\/\/epubbench.invalid\/1f562647-9fa2-4e23-9da0-d84051a70610",
+      "loaded": true
+    }
+  ],
+  "text_size_css_px": 18,
+  "whole_book_paginated": false,
+  "engine_ready_ns": 1242742778091,
+  "engine": "webview",
+  "book": "illustrated",
+  "run_id": "sym-sw-round-03-illustrated-webview",
+  "round": 3,
+  "sequence": 6,
+  "id": "sym-sw-round-03-illustrated-webview\/6",
+  "case": "after_crossing18",
+  "measured": false,
+  "warmup": false,
+  "start_ns": 1242671536591,
+  "shell_ready_ns": 1238902612548,
+  "process_start_ns": 1237878000000,
+  "book_sha256": "431719c25bcb0b6a67fc03938b4633723d775324ac2c62a06a04f98862148bef",
+  "cache": "warm_document",
+  "expected_section": 6,
+  "pixel_copy_code": 0,
+  "end_ns": 1242789862800,
+  "copy_start_ns": 1242783734216,
+  "copy_duration_ns": 6128584,
+  "capture_attempts": 2,
+  "clock": "android_elapsed_realtime_ns",
+  "boundary": "request_to_reference_window_copy",
+  "window_copy_verified": true,
+  "physical_display_verified": false,
+  "process_id": 9606,
+  "capture_sha256": "592321e43c2f3c58f16369f94d08432883eb5e8fe3780de30cf36c1bcc877985",
+  "reference_manifest_sha256": "6d6afee5742aff09b2c08b7dd510b1f922343162adb59776bdda3c426d4710b2",
+  "reference_run_id": "calibration-final-calibration-illustrated-webview",
+  "reference_sha256": "592321e43c2f3c58f16369f94d08432883eb5e8fe3780de30cf36c1bcc877985",
+  "width_px": 945,
+  "height_px": 1680,
+  "paper_rgb": 16183266
+}

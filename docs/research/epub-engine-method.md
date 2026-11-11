@@ -2,9 +2,10 @@
 
 This document describes the resumed harness. The completed dataset and its limits are in `epub-engine-results.md`.
 
-The fresh November 11 page-preparation rerun is documented separately in
-`epub-engine-preparation-method.md`. Its engine-specific phase endpoints are
-explicitly not equivalent. The original method and evidence below are retained.
+The November 11 rerun, which times each engine from engine entry through
+its drawing of the page, has its own method in
+`epub-engine-drawn-page-method.md`. The original method and evidence below
+are unchanged.
 
 ## Execution and scope
 

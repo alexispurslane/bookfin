@@ -47,3 +47,7 @@ Parent and user decision: the drawn-page interval leaves out the idle wait for t
 **2026-11-11T17:23:12Z**
 
 Host load: another agent's flutter test run raised the one-minute load to about 30 during sym-drawn2. run.py had no per-job load record, so sym-drawn2 was stopped after 20 jobs and is not used. run.py now waits before each job until the one-minute load is under 8, samples it every second during the job, and moves a job measured at or above 8 to rejected-load/ and measures it again at the same place in the schedule; host-load.jsonl records every attempt, and collect.py marks a job without an accepted record as incomplete. The headline schedule runs again as sym-drawn3.
+
+**2026-11-11T17:50:33Z**
+
+Headline run sym-drawn3 (host GPU, emulator-5558, shells of 584205e2, runner of 0db9426f): 108 of 108 jobs passed on their first attempt; highest one-minute host load during any job 7.3, so no job was measured again; 1,404 measured samples accepted; only preparation rows excluded. Drawn-page equal-book means (ms), Bookfin / WebView / KOReader: fresh open 371.7 / 360.3 / 119.3; cached reopen 45.2 / 284.3 / 17.6; page turn 6.6 / 39.1 / 2.4; chapter turn 3.2 / 41.1 / 3.1; size change 34.5 / 50.2 / 68.8. WebView answers after a later vsync: 127 of 468 (frame work median 13.9 ms against 0.8 ms on time). Independent checks: exact-rounding-check.py, 1,050 rounded values, 0 mismatches (after 1b722c2d fixed three diagnostic medians that floats rounded 0.1 ms low). README section and docs/research/epub-engine-drawn-page-method.md written; index.html untouched.
